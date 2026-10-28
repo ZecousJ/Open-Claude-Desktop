@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="build/icon.png" width="128" height="128" alt="Claudex">
+</p>
+
 # Open Claude Desktop
 
 Open Claude Desktop 是一个开源的 AI 模型工作台，应用名为 **Claudex**：macOS、Windows、Linux 桌面端，网页版，以及 iOS 和 Android 手机端，都登录到你自己部署的服务端。对话由开源的 [Codex](https://github.com/openai/codex) agent 运行，模型可以读文件、执行命令、修改代码、调用工具，关键操作需要你批准。
@@ -6,7 +10,21 @@ Open Claude Desktop 是一个开源的 AI 模型工作台，应用名为 **Claud
 
 ![对话旁边打开了一个 HTML 作品](docs/images/screenshot-chat-artifact.png)
 
-**目录：** [功能](#功能) · [整体结构](#整体结构) · [部署](#部署) · [开发](#开发) · [许可](#许可)
+## 在线使用与下载
+
+我们部署了一套可以直接使用的 Claudex，不用自己部署就能体验：
+
+| | |
+| --- | --- |
+| **网页版** | <https://claudex.zecous.cn> |
+| **macOS**（Apple 芯片） | [Claudex-0.0.38-arm64-mac.zip](https://github.com/ZecousJ/Open-Claude-Desktop/releases/download/v0.0.38/Claudex-0.0.38-arm64-mac.zip) |
+| **Windows** | [Claudex-Setup-0.0.38.exe](https://github.com/ZecousJ/Open-Claude-Desktop/releases/download/v0.0.38/Claudex-Setup-0.0.38.exe) |
+| **Android** | [Claudex-0.8.1.apk](https://github.com/ZecousJ/Open-Claude-Desktop/releases/download/v0.0.38/Claudex-0.8.1.apk) |
+| **iOS** | [TestFlight](https://testflight.apple.com/join/2gUKqADt) |
+
+安装包在 [Releases 页面](https://github.com/ZecousJ/Open-Claude-Desktop/releases/latest)，也可以从服务的[下载页](https://claudex.zecous.cn/downloads)获取。这些版本登录的是我们部署的服务，并且会自动更新；想用自己的服务端，见[部署](#部署)。
+
+**目录：** [在线使用与下载](#在线使用与下载) · [功能](#功能) · [整体结构](#整体结构) · [部署](#部署) · [开发](#开发) · [许可](#许可)
 
 桌面端截图来自离线界面预览（`node --import tsx scripts/preview/ui-preview.mts`），用示例数据运行真实界面；手机截图来自 Android 应用的 `demo` 版本和模拟器里的 iOS 应用。
 

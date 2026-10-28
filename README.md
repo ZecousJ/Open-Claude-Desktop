@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="build/icon.png" width="128" height="128" alt="Claudex">
+</p>
+
 # Open Claude Desktop
 
 Open Claude Desktop is an open-source workspace for working with AI models,
@@ -11,7 +15,24 @@ run commands, edit code and use tools, with your approval where it matters.
 
 ![A chat with an HTML artifact open beside it](docs/images/screenshot-chat-artifact.png)
 
-**Contents:** [Features](#features) · [How it fits together](#how-it-fits-together) ·
+## Try it
+
+A hosted Claudex is running, so you can try it without deploying anything:
+
+| | |
+| --- | --- |
+| **Web** | <https://claudex.zecous.cn> |
+| **macOS** (Apple silicon) | [Claudex-0.0.38-arm64-mac.zip](https://github.com/ZecousJ/Open-Claude-Desktop/releases/download/v0.0.38/Claudex-0.0.38-arm64-mac.zip) |
+| **Windows** | [Claudex-Setup-0.0.38.exe](https://github.com/ZecousJ/Open-Claude-Desktop/releases/download/v0.0.38/Claudex-Setup-0.0.38.exe) |
+| **Android** | [Claudex-0.8.1.apk](https://github.com/ZecousJ/Open-Claude-Desktop/releases/download/v0.0.38/Claudex-0.8.1.apk) |
+| **iOS** | [TestFlight](https://testflight.apple.com/join/2gUKqADt) |
+
+Installers are on the [releases page](https://github.com/ZecousJ/Open-Claude-Desktop/releases/latest) and the service's
+[downloads page](https://claudex.zecous.cn/downloads). These builds sign in to
+the hosted service and update themselves; to run your own server, see
+[Deployment](#deployment).
+
+**Contents:** [Try it](#try-it) · [Features](#features) · [How it fits together](#how-it-fits-together) ·
 [Deployment](#deployment) · [Development](#development) · [License](#license)
 
 The desktop screenshots come from the offline interface preview
