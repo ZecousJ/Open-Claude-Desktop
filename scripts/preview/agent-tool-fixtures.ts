@@ -388,6 +388,81 @@ export function backgroundConversation(createdAt: number): Conversation {
   ]);
 }
 
+/** A finished multi-agent workflow: two reviewers, then a verifier. */
+export function workflowConversation(createdAt: number): Conversation {
+  return base("c-workflow", "Review the payment retry change", createdAt, [
+    {
+      id: "t-workflow",
+      prompt:
+        "Review the payment retry change on this branch with a workflow: one agent per area, then verify every finding before reporting.",
+      attachments: [],
+      status: "completed",
+      createdAt,
+      items: [
+        {
+          id: "msg-workflow",
+          type: "agentMessage",
+          text: "I'll split the review across the retry logic and its tests, then have a verifier check each finding against the code.",
+        },
+        {
+          id: "spawn-workflow",
+          type: "collabAgentToolCall",
+          tool: "spawnAgent",
+          status: "completed",
+          receiverThreadIds: [
+            "agent-review-retry",
+            "agent-review-tests",
+            "agent-verify",
+          ],
+          prompt:
+            "Review the retry backoff, idempotency keys and the new tests; verify each finding before it is reported",
+          workflowPhases: ["Review", "Verify"],
+          agentTokenUsage: {
+            "agent-review-retry": 48210,
+            "agent-review-tests": 31877,
+            "agent-verify": 12405,
+          },
+          model: "Opus 5.5",
+          agentsStates: {
+            "agent-review-retry": {
+              status: "completed",
+              message: "3 findings",
+            },
+            "agent-review-tests": { status: "completed", message: "1 finding" },
+            "agent-verify": { status: "completed", message: "3 confirmed" },
+          },
+        },
+        {
+          id: "activity-review-retry",
+          type: "subAgentActivity",
+          kind: "started",
+          agentThreadId: "agent-review-retry",
+          agentPath: "/root/review:retry-logic",
+        },
+        {
+          id: "activity-review-tests",
+          type: "subAgentActivity",
+          kind: "started",
+          agentThreadId: "agent-review-tests",
+          agentPath: "/root/review:tests",
+        },
+        {
+          id: "activity-verify",
+          type: "subAgentActivity",
+          kind: "started",
+          agentThreadId: "agent-verify",
+          agentPath: "/root/verify:findings",
+        },
+        {
+          id: "msg-workflow-done",
+          type: "agentMessage",
+          text: "The verifier confirmed three of the four findings:\n\n1. **Backoff ignores `Retry-After`**: a 429 from the provider is retried after 200 ms instead of the time it asks for.\n2. **Idempotency key changes on retry**: `chargeOnce` builds a new key per attempt, so a timeout followed by a retry can charge twice.\n3. **No test for the final failure**: the tests stop at the second attempt and never check that the third failure is reported.\n\nThe fourth (a missing jitter cap) was already handled in `backoff.ts`.",
+        },
+      ],
+    },
+  ]);
+}
+
 /** Plan steps from turn/plan/updated with the first two done. */
 export function planConversation(createdAt: number): Conversation {
   return base("c-plan", "Reference parity pass", createdAt, [

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>Deploying Claudex</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6a65"/></marker>
+  </defs>
+  <rect width="960" height="300" rx="16" fill="#faf9f5"/>
+  <g font-size="13" fill="#141413">
+    <rect x="24" y="36" width="205" height="228" rx="14" fill="#fbf1ec" stroke="#c2562f" stroke-width="1.4"/>
+    <circle cx="52" cy="66" r="14" fill="#c2562f"/><text x="47" y="71" fill="#fff" font-weight="700">1</text>
+    <text x="76" y="71" font-size="15" font-weight="600">Server</text>
+    <text x="42" y="104">build the image</text>
+    <text x="42" y="128">fill in .env</text>
+    <text x="42" y="152">docker compose up</text>
+    <text x="42" y="168" fill="#52514e">(server, PostgreSQL, Redis)</text>
+    <text x="42" y="192">nginx with TLS in front</text>
+    <text x="42" y="216">backups with backup.sh</text>
+
+    <rect x="257" y="36" width="205" height="228" rx="14" fill="#fff" stroke="#d6d4cc"/>
+    <circle cx="285" cy="66" r="14" fill="#c2562f"/><text x="280" y="71" fill="#fff" font-weight="700">2</text>
+    <text x="309" y="71" font-size="15" font-weight="600">Admin console</text>
+    <text x="275" y="104">accept the deployment</text>
+    <text x="275" y="120">commitment</text>
+    <text x="275" y="144">upstream API accounts</text>
+    <text x="275" y="168">groups, plans, prices</text>
+    <text x="275" y="192">model catalog</text>
+    <text x="275" y="216">web app on, runners</text>
+
+    <rect x="490" y="36" width="205" height="228" rx="14" fill="#fff" stroke="#d6d4cc"/>
+    <circle cx="518" cy="66" r="14" fill="#c2562f"/><text x="513" y="71" fill="#fff" font-weight="700">3</text>
+    <text x="542" y="71" font-size="15" font-weight="600">Runner</text>
+    <text x="508" y="104">Linux host, Node.js</text>
+    <text x="508" y="128">dist-runner + Codex</text>
+    <text x="508" y="152">sandbox image (gVisor)</text>
+    <text x="508" y="176">token from the console</text>
+    <text x="508" y="200">systemctl enable --now</text>
+    <text x="508" y="216" fill="#52514e">claudex-runner</text>
+
+    <rect x="723" y="36" width="213" height="228" rx="14" fill="#fff" stroke="#d6d4cc"/>
+    <circle cx="751" cy="66" r="14" fill="#c2562f"/><text x="746" y="71" fill="#fff" font-weight="700">4</text>
+    <text x="775" y="71" font-size="15" font-weight="600">Clients</text>
+    <text x="741" y="104">web: the server's address</text>
+    <text x="741" y="128">desktop: build with</text>
+    <text x="741" y="144" fill="#52514e">CLAUDEX_SERVICE_URL,</text>
+    <text x="741" y="160" fill="#52514e">publish a release channel</text>
+    <text x="741" y="184">phones: build with</text>
+    <text x="741" y="200" fill="#52514e">the server's origin</text>
+  </g>
+  <g stroke="#6b6a65" stroke-width="1.6" marker-end="url(#a)">
+    <path d="M229 150H253"/><path d="M462 150H486"/><path d="M695 150H719"/>
+  </g>
+</svg>

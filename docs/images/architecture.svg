@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>How Claudex fits together</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6b6a65"/></marker>
+  </defs>
+  <rect width="960" height="560" rx="16" fill="#faf9f5"/>
+  <!-- clients -->
+  <g font-size="15" fill="#141413">
+    <rect x="40" y="36" width="270" height="104" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="60" y="66" font-weight="600">Desktop app</text>
+    <text x="60" y="90" font-size="13" fill="#52514e">macOS · Windows · Linux (Electron)</text>
+    <text x="60" y="112" font-size="13" fill="#52514e">Codex runs on this computer</text>
+    <rect x="345" y="36" width="270" height="104" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="365" y="66" font-weight="600">Web app</text>
+    <text x="365" y="90" font-size="13" fill="#52514e">The same interface in a browser</text>
+    <text x="365" y="112" font-size="13" fill="#52514e">Sessions run on a runner</text>
+    <rect x="650" y="36" width="270" height="104" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="670" y="66" font-weight="600">Phone apps</text>
+    <text x="670" y="90" font-size="13" fill="#52514e">iOS (SwiftUI) · Android (Compose)</text>
+    <text x="670" y="112" font-size="13" fill="#52514e">Cloud chats, remote control</text>
+  </g>
+  <g stroke="#6b6a65" stroke-width="1.6" fill="none" marker-end="url(#a)">
+    <path d="M175 140V214"/><path d="M480 140V214"/><path d="M785 140V214"/>
+  </g>
+  <text x="488" y="184" font-size="12" fill="#6b6a65">HTTPS · WebSocket</text>
+  <!-- server -->
+  <rect x="40" y="218" width="880" height="150" rx="14" fill="#fbf1ec" stroke="#c2562f" stroke-width="1.5"/>
+  <text x="62" y="250" font-size="16" font-weight="600" fill="#141413">Claudex server</text>
+  <text x="196" y="250" font-size="13" fill="#52514e">backend/ · a Sub2API fork (Go) with an admin console</text>
+  <g font-size="13" fill="#141413">
+    <rect x="62" y="268" width="196" height="76" rx="10" fill="#fff" stroke="#e5c7b8"/>
+    <text x="78" y="294" font-weight="600">Accounts &amp; plans</text>
+    <text x="78" y="316" fill="#52514e">users, groups, balance,</text>
+    <text x="78" y="334" fill="#52514e">subscriptions, payments</text>
+    <rect x="274" y="268" width="196" height="76" rx="10" fill="#fff" stroke="#e5c7b8"/>
+    <text x="290" y="294" font-weight="600">Model gateway</text>
+    <text x="290" y="316" fill="#52514e">upstream accounts, model</text>
+    <text x="290" y="334" fill="#52514e">catalog, usage &amp; billing</text>
+    <rect x="486" y="268" width="196" height="76" rx="10" fill="#fff" stroke="#e5c7b8"/>
+    <text x="502" y="294" font-weight="600">Cloud data</text>
+    <text x="502" y="316" fill="#52514e">web &amp; cloud conversations,</text>
+    <text x="502" y="334" fill="#52514e">sync, sharing, memory</text>
+    <rect x="698" y="268" width="200" height="76" rx="10" fill="#fff" stroke="#e5c7b8"/>
+    <text x="714" y="294" font-weight="600">Relay</text>
+    <text x="714" y="316" fill="#52514e">to runners and to desktops</text>
+    <text x="714" y="334" fill="#52514e">(remote control)</text>
+  </g>
+  <!-- bottom -->
+  <g font-size="15" fill="#141413">
+    <rect x="40" y="436" width="270" height="96" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="60" y="466" font-weight="600">PostgreSQL · Redis</text>
+    <text x="60" y="490" font-size="13" fill="#52514e">data and cache, next to the server</text>
+    <rect x="345" y="436" width="270" height="96" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="365" y="466" font-weight="600">Runners</text>
+    <text x="365" y="490" font-size="13" fill="#52514e">Linux hosts, one sandboxed Codex</text>
+    <text x="365" y="510" font-size="13" fill="#52514e">per user (gVisor or bubblewrap)</text>
+    <rect x="650" y="436" width="270" height="96" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="670" y="466" font-weight="600">Model providers</text>
+    <text x="670" y="490" font-size="13" fill="#52514e">OpenAI-compatible and other</text>
+    <text x="670" y="510" font-size="13" fill="#52514e">APIs you have keys for</text>
+  </g>
+  <g stroke="#6b6a65" stroke-width="1.6" fill="none">
+    <path d="M175 368V432" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M480 432V372" marker-end="url(#a)"/>
+    <path d="M785 368V432" marker-end="url(#a)"/>
+  </g>
+  <text x="488" y="406" font-size="12" fill="#6b6a65">dials out (no inbound port)</text>
+</svg>

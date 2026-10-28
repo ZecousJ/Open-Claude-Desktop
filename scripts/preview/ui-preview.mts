@@ -40,9 +40,11 @@ const entry = {
   name: "claudex-ui-preview",
   configureServer(server: any) {
     server.middlewares.use(async (request: any, response: any, next: any) => {
+      // The single-component pages under preview/ are served as they are.
       if (
         request.method !== "GET" ||
         !request.url ||
+        request.url.startsWith("/preview/") ||
         !request.headers.accept?.includes("text/html")
       )
         return next();

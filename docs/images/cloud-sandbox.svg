@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 510" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>A runner and its sandboxes</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b6a65"/></marker>
+  </defs>
+  <rect width="960" height="510" rx="16" fill="#faf9f5"/>
+  <rect x="30" y="30" width="640" height="456" rx="14" fill="#fff" stroke="#d6d4cc"/>
+  <text x="52" y="62" font-size="16" font-weight="600" fill="#141413">Runner host</text>
+  <text x="160" y="62" font-size="13" fill="#52514e">Linux · systemd service claudex-runner</text>
+  <rect x="52" y="82" width="596" height="64" rx="10" fill="#f3f1ea" stroke="#d6d4cc"/>
+  <text x="70" y="108" font-size="14" font-weight="600" fill="#141413">Runner</text>
+  <text x="70" y="130" font-size="13" fill="#52514e">one app context per assigned user: the desktop's engine and handlers, no screen</text>
+  <g font-size="13" fill="#141413">
+    <rect x="52" y="170" width="300" height="210" rx="10" fill="#fbf1ec" stroke="#c2562f" stroke-width="1.4"/>
+    <text x="70" y="196" font-size="14" font-weight="600">Sandbox · user A</text>
+    <text x="70" y="220" fill="#52514e">gVisor (runsc) or bubblewrap</text>
+    <text x="70" y="246">Codex + the session's workspace</text>
+    <text x="70" y="272" fill="#52514e">read-only system image</text>
+    <text x="70" y="296" fill="#52514e">no network interface of its own</text>
+    <text x="70" y="320" fill="#52514e">memory, CPU, process, disk limits</text>
+    <text x="70" y="344" fill="#52514e">the environment's setup script</text>
+    <text x="70" y="364" fill="#52514e">and variables</text>
+    <rect x="52" y="396" width="300" height="74" rx="10" fill="#fbf1ec" stroke="#c2562f" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <text x="70" y="422" font-size="14" font-weight="600">Sandbox · user B</text>
+    <text x="70" y="446" fill="#52514e">users never share files or processes</text>
+
+    <rect x="400" y="170" width="248" height="80" rx="10" fill="#f3f1ea" stroke="#d6d4cc"/>
+    <text x="416" y="196" font-weight="600">Model proxy</text>
+    <text x="416" y="218" fill="#52514e">takes a loopback token;</text>
+    <text x="416" y="236" fill="#52514e">the real key never enters</text>
+    <rect x="400" y="280" width="248" height="80" rx="10" fill="#f3f1ea" stroke="#d6d4cc"/>
+    <text x="416" y="306" font-weight="600">Egress proxy</text>
+    <text x="416" y="328" fill="#52514e">network per environment:</text>
+    <text x="416" y="346" fill="#52514e">none · trusted · full</text>
+    <rect x="400" y="390" width="248" height="80" rx="10" fill="#f3f1ea" stroke="#d6d4cc"/>
+    <text x="416" y="416" font-weight="600">Git broker</text>
+    <text x="416" y="438" fill="#52514e">clone and push with</text>
+    <text x="416" y="456" fill="#52514e">short-lived GitHub tokens</text>
+  </g>
+  <g font-size="14" fill="#141413">
+    <rect x="716" y="82" width="214" height="64" rx="12" fill="#fff" stroke="#c2562f" stroke-width="1.4"/>
+    <text x="734" y="108" font-weight="600">Claudex server</text>
+    <text x="734" y="130" font-size="12" fill="#52514e">assigns users, relays the UI</text>
+    <rect x="716" y="178" width="214" height="64" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="734" y="204" font-weight="600">Model gateway</text>
+    <text x="734" y="226" font-size="12" fill="#52514e">on the Claudex server</text>
+    <rect x="716" y="288" width="214" height="64" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="734" y="326" font-weight="600">Internet</text>
+    <rect x="716" y="398" width="214" height="64" rx="12" fill="#fff" stroke="#d6d4cc"/>
+    <text x="734" y="436" font-weight="600">GitHub</text>
+  </g>
+  <g stroke="#6b6a65" stroke-width="1.4" fill="none" marker-end="url(#a)">
+    <path d="M352 210H396"/><path d="M352 300L396 316"/><path d="M352 360L396 420"/>
+    <path d="M648 114H712"/><path d="M648 210H712"/><path d="M648 320H712"/><path d="M648 430H712"/>
+  </g>
+  <text x="652" y="104" font-size="11" fill="#6b6a65">outbound</text>
+</svg>

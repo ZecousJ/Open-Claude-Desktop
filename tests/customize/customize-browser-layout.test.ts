@@ -114,6 +114,9 @@ createRoot(document.getElementById('root')).render(<CustomizePage settings={${JS
       chrome,
       [
         "--headless=new",
+        // Overlay scrollbars, as on the Macs the layout was measured on; a
+        // runner with classic scrollbars would take 11px off every width.
+        "--hide-scrollbars",
         "--disable-gpu",
         "--disable-background-networking",
         "--disable-component-update",
