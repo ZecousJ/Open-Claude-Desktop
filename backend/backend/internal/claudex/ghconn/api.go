@@ -77,7 +77,7 @@ func (c *client) do(ctx context.Context, req *http.Request, out any) (int, error
 	if err != nil {
 		return 0, errUpstream{}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, maxAPIBody))
 	if err != nil {
 		return resp.StatusCode, errUpstream{status: resp.StatusCode}

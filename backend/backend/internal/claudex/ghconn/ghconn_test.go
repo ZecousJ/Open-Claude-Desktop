@@ -623,7 +623,7 @@ func TestCloneCredential(t *testing.T) {
 
 	v, err := h.c.ServeGitHubOp(ctx, 7, webproto.OpGitHubClone, cloneBody(t, base+"/octo/repo-1.git", "feature/x"))
 	require.NoError(t, err)
-	grant := v.(CloneGrant)
+	grant, _ := v.(CloneGrant)
 	require.Equal(t, base+"/octo/repo-1.git", grant.URL)
 	require.NotContains(t, grant.URL, testAccessTok)
 	require.Equal(t, "x-access-token", grant.Username)
@@ -670,8 +670,9 @@ func TestCloneReadOnlyRepository(t *testing.T) {
 	h.connect(t, 7)
 	v, err := h.c.ServeGitHubOp(context.Background(), 7, webproto.OpGitHubClone, cloneBody(t, h.gh.srv.URL+"/octo/readonly", ""))
 	require.NoError(t, err)
-	require.False(t, v.(CloneGrant).CanPush)
-	require.Equal(t, "trunk", v.(CloneGrant).DefaultBranch)
+	grant, _ := v.(CloneGrant)
+	require.False(t, grant.CanPush)
+	require.Equal(t, "trunk", grant.DefaultBranch)
 }
 
 func TestCloneWhenTurnedOff(t *testing.T) {

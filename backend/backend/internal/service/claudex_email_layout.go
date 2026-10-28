@@ -86,7 +86,7 @@ func ClaudexEmailHTML(l ClaudexEmailLayout) string {
 	}
 	logo := `<img src="cid:` + emailLogoCID + `" width="28" height="28" alt="" style="display:block;width:28px;height:28px;border:0;border-radius:7px;">`
 	var b strings.Builder
-	b.WriteString(`<!DOCTYPE html>
+	_, _ = b.WriteString(`<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -112,17 +112,17 @@ func ClaudexEmailHTML(l ClaudexEmailLayout) string {
 <tr><td style="padding:0 4px 20px;">
 <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>`)
 	if logo != "" {
-		b.WriteString(`<td style="padding-right:8px;vertical-align:middle;">` + logo + `</td>`)
+		_, _ = b.WriteString(`<td style="padding-right:8px;vertical-align:middle;">` + logo + `</td>`)
 	}
-	b.WriteString(`<td style="vertical-align:middle;font-family:` + claudexEmailSerif + `;font-size:22px;line-height:28px;color:#141413;letter-spacing:-0.3px;">` + site + `</td>
+	_, _ = b.WriteString(`<td style="vertical-align:middle;font-family:` + claudexEmailSerif + `;font-size:22px;line-height:28px;color:#141413;letter-spacing:-0.3px;">` + site + `</td>
 </tr></table>
 </td></tr>
 <tr><td class="cx-card" style="background:#ffffff;border:1px solid #e8e6dc;border-radius:16px;padding:36px 36px 30px;font-family:` + claudexEmailFont + `;font-size:15px;line-height:24px;color:#3d3d3a;">
 <div style="width:32px;height:3px;border-radius:2px;background:` + accent + `;margin:0 0 18px;line-height:3px;font-size:0;">&nbsp;</div>
 <h1 style="margin:0 0 18px;font-family:` + claudexEmailSerif + `;font-size:26px;line-height:34px;font-weight:400;color:#141413;letter-spacing:-0.2px;">` + l.Title + `</h1>
 `)
-	b.WriteString(l.Content)
-	b.WriteString(`
+	_, _ = b.WriteString(l.Content)
+	_, _ = b.WriteString(`
 </td></tr>
 <tr><td style="padding:18px 4px 0;font-family:` + claudexEmailFont + `;font-size:12px;line-height:18px;color:#8c8c8a;">` + footer + `</td></tr>
 </table>

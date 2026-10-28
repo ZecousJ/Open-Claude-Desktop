@@ -287,7 +287,7 @@ func (c *Component) directoryRows(g *gin.Context, filter string, args ...any) {
 		response.Error(g, 500, "Failed to load submissions")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	items := []directorySubmission{}
 	for rows.Next() {
 		item, err := readDirectoryRow(rows)
@@ -325,7 +325,7 @@ func (c *Component) directoryApproved(g *gin.Context) {
 		response.Error(g, 500, "Failed to load submissions")
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	items := []map[string]any{}
 	for rows.Next() {
 		var id string

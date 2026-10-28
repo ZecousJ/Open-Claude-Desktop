@@ -227,7 +227,8 @@ func (c *Component) secret(s Settings) (string, error) {
 
 func (c *Component) userLock(userID int64) *sync.Mutex {
 	m, _ := c.locks.LoadOrStore(userID, &sync.Mutex{})
-	return m.(*sync.Mutex)
+	mu, _ := m.(*sync.Mutex)
+	return mu
 }
 
 // accessToken returns the user's usable token, refreshing an expired one. It

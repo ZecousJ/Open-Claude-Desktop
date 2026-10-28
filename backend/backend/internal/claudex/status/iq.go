@@ -470,13 +470,13 @@ func ReadResponsesText(r io.Reader) (string, error) {
 		}
 		switch ev.Type {
 		case "response.output_text.delta":
-			deltas.WriteString(ev.Delta)
+			_, _ = deltas.WriteString(ev.Delta)
 		case "response.completed", "response.done":
 			var b strings.Builder
 			for _, o := range ev.Response.Output {
 				for _, part := range o.Content {
 					if part.Type == "output_text" {
-						b.WriteString(part.Text)
+						_, _ = b.WriteString(part.Text)
 					}
 				}
 			}

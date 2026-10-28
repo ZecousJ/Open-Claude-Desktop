@@ -82,10 +82,10 @@ func TestRoutineWebhookIsMadeWithTheUsersConnectionAndDeliveriesStartTheTask(t *
 	require.NoError(t, err)
 	require.Len(t, h.gh.hooksMade, 1)
 	made := h.gh.hooksMade[0]
-	config := made["config"].(map[string]any)
+	config, _ := made["config"].(map[string]any)
 	require.Equal(t, "https://claudex.example.com/api/v1/claudex/github/hooks/"+hookTrigger, config["url"])
 	require.Equal(t, []any{"pull_request"}, made["events"])
-	secret := config["secret"].(string)
+	secret, _ := config["secret"].(string)
 	require.NotEmpty(t, secret)
 	// Only the sealed secret is kept.
 	require.NotContains(t, hooks.rows[hookTrigger].SecretSealed, secret)
@@ -103,7 +103,7 @@ func TestRoutineWebhookIsMadeWithTheUsersConnectionAndDeliveriesStartTheTask(t *
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/claudex/github/hooks/"+hookTrigger, strings.NewReader(body))
 		req.Header.Set("X-GitHub-Event", kind)
 		mac := hmac.New(sha256.New, []byte(sign))
-		mac.Write([]byte(body))
+		_, _ = mac.Write([]byte(body))
 		req.Header.Set("X-Hub-Signature-256", "sha256="+hex.EncodeToString(mac.Sum(nil)))
 		w := httptest.NewRecorder()
 		h.r.ServeHTTP(w, req)
@@ -117,7 +117,7 @@ func TestRoutineWebhookIsMadeWithTheUsersConnectionAndDeliveriesStartTheTask(t *
 	call := firer.calls[0]
 	require.Equal(t, int64(7), call.user)
 	require.Equal(t, "github", call.kind)
-	event := call.event.(routineEvent)
+	event, _ := call.event.(routineEvent)
 	require.Equal(t, "pull_request.opened", event.Name)
 	require.Equal(t, "mona", event.Fields["pr.author"])
 	require.Equal(t, []string{"bug"}, event.Fields["pr.labels"])

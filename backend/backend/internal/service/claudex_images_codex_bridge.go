@@ -63,20 +63,20 @@ func buildClaudexImagesBridgeRequest(parsed *OpenAIImagesRequest) ([]byte, error
 	}
 	var text strings.Builder
 	if parsed.IsEdits() {
-		text.WriteString("Edit the attached image(s) with the image generation tool. Make exactly one image and no text reply.\n")
+		_, _ = text.WriteString("Edit the attached image(s) with the image generation tool. Make exactly one image and no text reply.\n")
 	} else {
-		text.WriteString("Generate an image with the image generation tool. Make exactly one image and no text reply.\n")
+		_, _ = text.WriteString("Generate an image with the image generation tool. Make exactly one image and no text reply.\n")
 	}
-	text.WriteString("Use this prompt verbatim:\n")
-	text.WriteString(prompt)
+	_, _ = text.WriteString("Use this prompt verbatim:\n")
+	_, _ = text.WriteString(prompt)
 	if size := strings.TrimSpace(parsed.Size); size != "" && size != "auto" {
-		text.WriteString("\nSize: " + size)
+		_, _ = text.WriteString("\nSize: " + size)
 	}
 	if quality := strings.TrimSpace(parsed.Quality); quality != "" && quality != "auto" {
-		text.WriteString("\nQuality: " + quality)
+		_, _ = text.WriteString("\nQuality: " + quality)
 	}
 	if background := strings.TrimSpace(parsed.Background); background != "" && background != "auto" {
-		text.WriteString("\nBackground: " + background)
+		_, _ = text.WriteString("\nBackground: " + background)
 	}
 
 	req := []byte(`{"model":"","instructions":"You are Codex.","stream":true,"store":false,"tools":[],"input":[]}`)

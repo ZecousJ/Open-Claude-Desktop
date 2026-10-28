@@ -37,7 +37,7 @@ func TestPullRequestStateForTheSession(t *testing.T) {
 	require.NoError(t, err)
 	out, err := h.c.serveAPI(context.Background(), 7, body)
 	require.NoError(t, err)
-	got := out.(map[string]any)
+	got, _ := out.(map[string]any)
 	require.Equal(t, "closed", got["state"])
 	require.Equal(t, true, got["merged"])
 	require.Equal(t, "feature/x", got["head_ref"])

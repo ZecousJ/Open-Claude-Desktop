@@ -572,7 +572,7 @@ func TestPerIPLimits(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	defer rdb.Close()
+	defer func() { _ = rdb.Close() }()
 	c := New(&core.Env{Deps: core.Deps{Redis: rdb}})
 	r := gin.New()
 	c.RegisterPublicRoutes(r.Group("/api/v1/claudex"))

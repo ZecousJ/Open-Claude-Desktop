@@ -27,6 +27,9 @@ jobs:
     name: Desktop and web
     runs-on: macos-14
     timeout-minutes: 45
+    env:
+      # Type-checking the whole app needs about 3 GB of heap.
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

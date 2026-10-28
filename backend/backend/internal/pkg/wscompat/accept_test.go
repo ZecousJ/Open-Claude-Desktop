@@ -80,7 +80,7 @@ func TestCrossOriginStillRejected(t *testing.T) {
 		HTTPHeader: http.Header{"Origin": {"https://foreign.invalid"}},
 	})
 	if conn != nil {
-		conn.CloseNow()
+		_ = conn.CloseNow()
 	}
 	if err == nil || response == nil || response.StatusCode != http.StatusForbidden {
 		t.Fatalf("cross-origin handshake: response=%v error=%v", response, err)

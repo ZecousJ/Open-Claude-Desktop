@@ -114,9 +114,9 @@ func injectSiteTitle(html, settingsJSON []byte) []byte {
 
 	newTitle := []byte("<title>" + htmlpkg.EscapeString(cfg.SiteName) + " - AI API Gateway</title>")
 	var buf bytes.Buffer
-	buf.Write(html[:titleStart])
-	buf.Write(newTitle)
-	buf.Write(html[titleEnd+len("</title>"):])
+	_, _ = buf.Write(html[:titleStart])
+	_, _ = buf.Write(newTitle)
+	_, _ = buf.Write(html[titleEnd+len("</title>"):])
 	return buf.Bytes()
 }
 

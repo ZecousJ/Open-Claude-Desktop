@@ -26,7 +26,9 @@ func TestReviewAutoFixUsesAccountGraphQLConnection(t *testing.T) {
 	component := &Component{gh: newClient("https://github.com", "https://api.github.com", client)}
 	out, err := component.serveAutoFixFacts(context.Background(), 7, "user-token", "octo", "repo", 3)
 	require.NoError(t, err)
-	require.Equal(t, "OPEN", out.(map[string]any)["pullRequest"].(map[string]any)["state"])
+	facts, _ := out.(map[string]any)
+	pull, _ := facts["pullRequest"].(map[string]any)
+	require.Equal(t, "OPEN", pull["state"])
 	_, err = component.serveAutoFixFacts(context.Background(), 7, "user-token", "octo", "repo", 0)
 	require.Error(t, err)
 }
@@ -54,7 +56,8 @@ func TestReviewChecksBoundToPullRequest(t *testing.T) {
 	component := &Component{gh: newClient("https://github.com", "https://api.github.com", client)}
 	out, err := component.serveReview(context.Background(), 7, "user-token", "/repos/octo/repo", apiRequest{Action: "pr.annotations", Number: 3, CheckRunID: 12})
 	require.NoError(t, err)
-	require.Len(t, out.(map[string]any)["annotations"], 1)
+	review, _ := out.(map[string]any)
+	require.Len(t, review["annotations"], 1)
 	_, err = component.serveReview(context.Background(), 7, "user-token", "/repos/octo/repo", apiRequest{Action: "pr.rerun", Number: 3, CheckRunID: 99})
 	require.Error(t, err)
 	for _, call := range calls {
@@ -92,7 +95,8 @@ func TestReviewThreadsAndMutationBinding(t *testing.T) {
 	component := &Component{gh: newClient("https://github.com", "https://api.github.com", client)}
 	out, err := component.serveReview(context.Background(), 7, "token", "/repos/octo/repo", apiRequest{Action: "pr.threads", Number: 3})
 	require.NoError(t, err)
-	threads := out.(map[string]any)["threads"].([]map[string]any)
+	review, _ := out.(map[string]any)
+	threads, _ := review["threads"].([]map[string]any)
 	require.Equal(t, "PRRT_one", threads[0]["id"])
 	_, err = component.serveReview(context.Background(), 7, "token", "/repos/octo/repo", apiRequest{Action: "pr.resolve", Number: 3, ThreadID: "PRRT_one"})
 	require.NoError(t, err)

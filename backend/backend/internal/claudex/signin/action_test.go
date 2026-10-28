@@ -76,7 +76,7 @@ func TestActionVerificationSendConfirmAndFreshness(t *testing.T) {
 
 func TestActionVerificationCodeIsBoundToUserSessionAndEmail(t *testing.T) {
 	f := newFixture(t, nil)
-	repo := f.c.env.UserRepo.(*userRepo)
+	repo, _ := f.c.env.UserRepo.(*userRepo)
 	repo.users[9] = &service.User{ID: 9, Email: "other@example.com", Role: service.RoleUser, Status: service.StatusActive}
 	router := actionRouter(f.c)
 	require.Equal(t, 200, actionRequest(router, "/api/v1/claudex/action-verification/send", "{}", 7, "session").Code)

@@ -104,6 +104,6 @@ func TestUserModelsMergeTheDeviceGroups(t *testing.T) {
 	// Bootstrap "models" is the merged catalog too.
 	out, err := h.c.BootstrapSections(context.Background(), &core.BootstrapContext{UserID: 7, Plan: &core.PlanRef{GroupID: 4}})
 	require.NoError(t, err)
-	merged := out[core.SectionModels].(*Catalog)
+	merged, _ := out[core.SectionModels].(*Catalog)
 	require.Len(t, merged.Items, 3)
 }
