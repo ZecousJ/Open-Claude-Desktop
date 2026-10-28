@@ -117,7 +117,7 @@
 :root[data-theme="light"]
   .app.web
   .main-nav
-  > button.new.circled
+  .nav-item.new.circled
   .nav-glyph.add
   > span {
   background: #e6e5e1;
