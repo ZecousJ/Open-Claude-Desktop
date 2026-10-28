@@ -1,0 +1,9 @@
+{
+  "t": "result",
+  "id": "g-19",
+  "ok": false,
+  "error": {
+    "message": "This conversation no longer exists.",
+    "code": "CLAUDEX_WEB_HANDLER_FAILED"
+  }
+}

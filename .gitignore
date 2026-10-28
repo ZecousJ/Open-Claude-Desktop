@@ -1,0 +1,36 @@
+node_modules
+dist/
+dist-electron/
+dist-server/
+# The web app's build (npm run build:web) and its bundle report
+dist-web/
+dist-web.report.json
+# claudex-runner's build (node scripts/build-runner.mjs)
+dist-runner/
+work/
+/release/
+build/runtime/
+build/downloads/
+.DS_Store
+*.log
+test-results/
+# Operator secrets for the Sub2API deployment
+deploy/sub2api/.env
+deploy/sub2api/seed.env
+deploy/sub2api/backups/
+# Computer use driver installed by scripts/computer-use/fetch-driver.mjs
+build/computer-use/*
+!build/computer-use/.gitkeep
+
+# Native apps package this reproducible renderer build, never a remote site.
+dist-mobile-conversation/
+
+# Generated UI acceptance data stay local; commit the progress ledger only.
+docs/audit-live-*/**/*.json
+!docs/audit-live-*/progress.json
+docs/audit-live-*/**/*.png
+docs/audit-live-*/**/*.jpg
+docs/audit-live-*/**/*.jpeg
+docs/audit-live-*/**/*.webp
+docs/audit-live-*/**/*.gif
+docs/audit-live-*/**/*.mp4

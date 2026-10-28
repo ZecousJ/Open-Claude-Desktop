@@ -1,0 +1,467 @@
+/* A reply's text: message tokens, headings, lists, tables, links, code blocks. (part of chat-transcript.css) */
+/* Message tokens. */
+.mode-chat,
+.mode-cowork {
+  --cds-bg-neutral: rgb(255 255 255 / 5%);
+  --cds-bg-user-message: var(--cds-bg-neutral);
+  --cds-text-primary: #f0efec;
+  --cds-text-secondary: #c3c2b7;
+  --cds-surface-3: #20201f;
+  --cds-border: rgb(255 255 255 / 10%);
+  --cds-fill-ghost-selected: rgb(255 255 255 / 15%);
+  --cds-fill-ghost-hover: rgb(255 255 255 / 7.5%);
+  --cds-bg-user-message-personal: rgb(
+    from #032042 calc((r - 5.25) / 0.75) calc((g - 5.25) / 0.75)
+      calc((b - 5.25) / 0.75) / 75%
+  );
+  --cds-text-user-message-personal: #6da7ec;
+}
+:root[data-theme="light"] :is(.mode-chat, .mode-cowork) {
+  --cds-bg-neutral: rgb(11 11 11 / 5%);
+  --cds-text-primary: #0b0b0b;
+  --cds-text-secondary: #52514e;
+  --cds-surface-3: #fff;
+  --cds-border: rgb(11 11 11 / 10%);
+  --cds-fill-ghost-selected: rgb(11 11 11 / 10%);
+  --cds-fill-ghost-hover: rgb(11 11 11 / 5%);
+  --cds-bg-user-message-personal: rgb(
+    from #cde2fb calc((r - 163.8) / 0.35) calc((g - 163.8) / 0.35)
+      calc((b - 163.15) / 0.35) / 35%
+  );
+  --cds-text-user-message-personal: #184f95;
+}
+:root .mode-chat .user-message.personal-message {
+  background: var(--cds-bg-user-message-personal);
+  color: var(--cds-text-user-message-personal);
+}
+.mode-chat .user-message {
+  /* A long prompt's bubble is min(85%, 29.5rem) wide: 472px from a 555px column
+     up. */
+  max-width: min(85%, 29.5rem);
+  border-radius: 12px;
+  padding: 12px 16px;
+  /* The reply's first line starts 46px under the bubble (was 50 in zoomed
+     reference pixels). */
+  margin-bottom: 41.6px;
+  font-size: 15px;
+  line-height: 20px;
+  background: var(--cds-bg-user-message);
+  color: var(--cds-text-primary);
+}
+/* A sent message's pictures keep their own proportions: a 120px tile until the
+   picture loads, then as large as the picture within the column, at most 320px
+   tall; two or more share a row at 240px / half the row (less the 8px gap) and
+   160px tall. A PDF or text file stays the 120px tile. */
+.mode-chat .message-attachments {
+  gap: 8px;
+  align-items: flex-end;
+}
+.mode-chat .message-attachments .attachment-thumbnail {
+  width: auto;
+  height: auto;
+  min-width: 120px;
+  min-height: 120px;
+  max-width: min(100%, 480px);
+}
+.mode-chat .message-attachments .attachment-thumbnail-open {
+  width: auto;
+  height: auto;
+  min-width: 120px;
+  min-height: 120px;
+}
+.mode-chat .message-attachments .attachment-thumbnail-open img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 320px;
+}
+.mode-chat
+  .message-attachments:has(.attachment-thumbnail ~ .attachment-thumbnail)
+  .attachment-thumbnail {
+  max-width: min(100%, 240px, calc(50% - 4px));
+}
+.mode-chat
+  .message-attachments:has(.attachment-thumbnail ~ .attachment-thumbnail)
+  .attachment-thumbnail-open
+  img {
+  max-height: 160px;
+}
+/* The blank line of a prompt is an 8px paragraph gap (line pitch 20, across the
+   gap 28); further blank lines keep a line each. */
+.mode-chat .user-message-text .prompt-paragraph + .prompt-paragraph {
+  margin-top: 8px;
+}
+.mode-chat .user-message-text .prompt-paragraph:empty {
+  min-height: 20px;
+}
+.mode-chat .assistant-mark {
+  display: none;
+}
+.mode-chat .assistant-message {
+  display: block;
+}
+/* The feed numbers prompt and reply separately. A prompt row reserves its 24px
+   actions plus 8px gap, followed by another 8px before the reply; the visible
+   bubble-to-reply gap remains 40px. */
+.user-message-article {
+  position: relative;
+  display: flow-root;
+  margin-bottom: 8px;
+}
+.mode-chat .user-message-article > .user-message {
+  margin-bottom: 32px;
+}
+.messages [role="article"] {
+  border-radius: 8px;
+}
+.messages [role="article"]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+/* Body ink peaks at #fbfaf6 and CJK text is set in a sans face (PingFang), not
+   a serif. */
+/* Source response serif is used whenever the host supplies that face;
+   unavailable reference assets retain the existing system fallback. */
+.mode-chat .markdown {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  /* A reply is font-claude-response-body, 15/22. */
+  font-size: 15px;
+  font-optical-sizing: auto;
+  line-height: 22px;
+  color: var(--cds-text-primary);
+}
+/* H4, H5 and H6 share one 15px bold size (cap height 10px); H5 and H6 are the
+   dimmer #d2d1cd of the quote text. */
+.mode-chat .markdown h4,
+.mode-chat .markdown h5,
+.mode-chat .markdown h6 {
+  font-size: 15px;
+  line-height: 24px;
+  margin: 24px 0 8px;
+  padding: 0 4px;
+  color: #faf9f5;
+}
+.mode-chat .markdown h5,
+.mode-chat .markdown h6 {
+  color: #d2d1cd;
+}
+/* A 3px #2d2d2d rule exactly as tall as the quoted lines, text in #d2d1cd 13px
+   after the rule. */
+.mode-chat .markdown blockquote {
+  margin: 12px 0 16px 8px;
+  padding: 0 0 0 10px;
+  border-left: 3px solid #2d2d2d;
+  color: #d2d1cd;
+}
+.mode-chat .markdown blockquote > p {
+  margin: 0;
+  padding: 0;
+}
+/* A reply's links are blue in every mode, not the accent orange. Chat keeps its
+   own captured values below. */
+.markdown a,
+.user-message-text a {
+  color: #6da7ec;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, currentColor, transparent 60%);
+  text-underline-offset: 3px;
+}
+.markdown a:is(:hover, :focus-visible),
+.user-message-text a:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+:root[data-theme="light"] .markdown a,
+:root[data-theme="light"] .user-message-text a {
+  color: #184f95;
+}
+/* Links take the original's text-accent, underlined in the same colour. */
+.mode-chat .markdown a,
+.mode-chat .user-message-text a {
+  color: #6da7ec;
+  text-decoration-color: currentColor;
+  text-underline-offset: 3px;
+}
+:root[data-theme="light"] .mode-chat .markdown a,
+:root[data-theme="light"] .mode-chat .user-message-text a {
+  color: #184f95;
+}
+/* Long unbroken cell text stays on one line; the table scrolls. */
+.mode-chat .markdown td,
+.mode-chat .markdown th {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* Paragraph, heading and list spacing, sizes, the right-edge stop and the 2em
+   list indent are the live Prose rules in live-web/transcript.css; the older
+   captured margins that stood here are gone. Ordered numbers end 11.8px before
+   the text and right-align (10., 11., 12. start further left). */
+.mode-chat .markdown p {
+  font-size: inherit;
+  line-height: inherit;
+}
+/* Markers are dimmer than the text (#cdcdc5, ~80%) and sit 19.4px before it
+   (the browser's own markers sit 11px before): a 5.7px disc, a 6.5px ring at
+   the second level, a 5.3px square at the third. Ordered numbers end 11.8px
+   before the text and right-align. */
+.mode-chat .markdown ul:not(.contains-task-list) > li {
+  list-style: none;
+  position: relative;
+}
+.mode-chat .markdown ul:not(.contains-task-list) > li::before {
+  content: "";
+  position: absolute;
+  left: -19.4px;
+  top: 13px;
+  width: 5.7px;
+  height: 5.7px;
+  margin: -2.85px 0 0 -2.85px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+}
+.mode-chat .markdown ul ul:not(.contains-task-list) > li::before {
+  width: 6.5px;
+  height: 6.5px;
+  margin: -3.25px 0 0 -3.25px;
+  box-sizing: border-box;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+.mode-chat .markdown ul ul ul:not(.contains-task-list) > li::before {
+  width: 5.3px;
+  height: 5.3px;
+  margin: -2.65px 0 0 -2.65px;
+  border: 0;
+  border-radius: 0;
+  background: currentColor;
+}
+.mode-chat .markdown ol > li::marker {
+  content: counter(list-item) ".\00a0\00a0\200a";
+  color: color-mix(in srgb, currentColor 80%, transparent);
+}
+.mode-chat .markdown .contains-task-list {
+  list-style: none;
+  padding-left: 5px;
+}
+.mode-chat .markdown .task-list-item:has(input:checked) {
+  color: #90908a;
+  text-decoration: line-through;
+}
+.mode-chat .markdown input[type="checkbox"] {
+  accent-color: #90908a;
+  width: 13px;
+  height: 13px;
+  margin: 0 7px 0 0;
+}
+.markdown-table {
+  overflow-x: auto;
+}
+.mode-chat .markdown-table {
+  border: 1px solid #2b2b2b;
+  border-radius: 8px;
+  margin: 25px 8px 24px 0;
+}
+.mode-chat .markdown table {
+  width: 100%;
+  margin: 0;
+  font: inherit;
+  border-collapse: collapse;
+}
+/* Cells are top-aligned (the wrapped 002 row keeps 001's first line on its
+   top), no minimum width, 12.5px side padding, 7.4px above and below a 24px
+   line. */
+.mode-chat .markdown th,
+.mode-chat .markdown td {
+  border: 0;
+  padding: 7px 12px;
+  height: 39px;
+  min-width: 0;
+  vertical-align: top;
+}
+.mode-chat .markdown tr + tr,
+.mode-chat .markdown tbody {
+  border-top: 1px solid #303030;
+}
+.mode-chat .markdown th {
+  font-weight: 600;
+  background: #212121;
+}
+.mode-chat .markdown .code-block {
+  margin: 22px 0 10px;
+  border: 0.5px solid var(--cds-border);
+  border-radius: 8px;
+  background: var(
+    --code-background,
+    color-mix(in oklab, var(--cds-surface-3) 50%, transparent)
+  );
+}
+.mode-chat .code-bar {
+  display: contents;
+  background: transparent;
+  border: 0;
+  font-family: sans-serif;
+  font-size: 11px;
+  line-height: 17px;
+}
+.mode-chat .code-bar > span {
+  display: block;
+  padding: 14px 14px 0;
+  color: var(--cds-text-secondary);
+}
+.mode-chat .code-bar > div {
+  opacity: 0;
+  position: sticky;
+  top: 8px;
+  float: right;
+  width: 0;
+  height: 48px;
+  padding-top: 8px;
+  overflow: visible;
+}
+.mode-chat .code-actions {
+  position: absolute;
+  right: 0;
+  height: 32px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+.mode-chat .code-block:hover .code-bar > div,
+.mode-chat .code-block:focus-within .code-bar > div {
+  opacity: 1;
+}
+@media (hover: none), (pointer: coarse) {
+  .mode-chat .code-bar > div {
+    opacity: 1;
+  }
+}
+.mode-chat .code-open {
+  display: none;
+}
+.mode-chat .code-block pre {
+  margin: 0;
+  padding: 14px;
+  font:
+    14px/23px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.mode-chat .markdown p:has(+ .plain-code) {
+  margin-bottom: 10px;
+}
+.mode-chat .markdown .plain-code {
+  position: relative;
+  margin-top: 10px;
+}
+.mode-chat .plain-code .code-bar {
+  display: contents;
+}
+.mode-chat .plain-code .code-bar > span {
+  display: none;
+}
+/* A block without a language wraps its long line ("...ccd88" over "6e6a0c6dcf")
+   and its buttons float over the text; a block with a language clips and
+   scrolls. */
+.mode-chat .plain-code pre {
+  padding: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mode-chat .code-bar .small-action {
+  background: transparent;
+  backdrop-filter: blur(12px);
+}
+.mode-chat .code-bar .small-action:hover {
+  background: var(--cds-fill-ghost-hover);
+}
+/* Pressed: the same squish as the toolbar buttons below. */
+.code-bar .small-action:not(:disabled):active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+/* Inline code is the danger text on a faint lighter face with a hairline rim,
+   in replies and in prompts alike. */
+.mode-chat .markdown :not(pre) > code,
+.mode-chat .user-message-text code {
+  font-size: 14px;
+  color: var(--danger);
+  background: var(--alpha-1);
+  border: 0.5px solid var(--alpha-2);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+/* R-0437, R-0438, R-0441 (2.629 px/CSS): token colours read from the
+   javascript block; call names like map/log/join take the function blue,
+   console and items in the body stay in the text colour. */
+.hljs-keyword {
+  color: var(--code-keyword, #c483f4);
+}
+.hljs-selector-tag {
+  color: var(--code-tag, #c483f4);
+}
+.hljs-title,
+.hljs-title.function_ {
+  color: var(--code-entity, #8ab9fb);
+}
+.hljs-number,
+.hljs-literal {
+  color: var(--code-constant, #95eeef);
+}
+.hljs-string {
+  color: var(--code-string, #b8e391);
+}
+.hljs-attr {
+  color: var(--code-constant, #b8e391);
+}
+.hljs-comment {
+  color: var(--code-comment, #8a8c99);
+}
+.hljs-params {
+  color: var(--code-foreground, #ecb47e);
+}
+.hljs-built_in {
+  color: var(--code-variable, #89ddff);
+}
+.hljs-variable.language_ {
+  color: var(--code-keyword, #89ddff);
+}
+/* In the javascript block `console` is plain text; only the call (.log) is
+   blue. */
+.mode-chat
+  .markdown
+  code:is(.language-javascript, .language-js)
+  .hljs-built_in {
+  color: var(--code-variable, inherit);
+}
+.mode-chat .message-actions {
+  gap: 0;
+  margin: 8px 0 0 -4px;
+  height: 24px;
+  padding-left: 0;
+}
+/* The toolbar sits 8px under the last line box or code block in both normalized clips,
+   so the reply's final bottom margin does not collapse into it. */
+.mode-chat .markdown:has(+ .message-actions) > :last-child {
+  margin-bottom: 0;
+}
+/* 16px glyphs: icon boxes start on the text column. */
+.mode-chat .small-action.icon-only > .reply-glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
+.mode-chat .message-actions > span {
+  opacity: 0;
+  /* R-0437 "15 minutes ago" is 74.6px wide (ours 82 at 12px), R-0463 "just
+     now" 42.6px: 11px. */
+  font-size: 11px;
+  /* The time starts 17.9-18.6px after the last icon's centre. */
+  margin-left: 5.6px;
+}

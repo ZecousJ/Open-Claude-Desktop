@@ -1,0 +1,28 @@
+{
+  "reference": "ZecousJ/Open-Claude-Desktop",
+  "classification_source": "shared/web-bridge-methods.ts",
+  "native_http_source": "src-web/bridge/api-keys.ts",
+  "account_features_remote_runner": [
+    "apiGroups",
+    "clientPolicy",
+    "deleteSchedule",
+    "listSchedules",
+    "memoryDoc",
+    "memoryStatus",
+    "removeMemoryEdit",
+    "resetMemory",
+    "routineRuns",
+    "runSchedule",
+    "saveMemoryDoc",
+    "saveSchedule",
+    "setApiGroup",
+    "setMemoryPrefs",
+    "updateMemoryEdits"
+  ],
+  "browser_owned_native_equivalents": {
+    "groupRates": [
+      "GET /api/v1/groups/available",
+      "GET /api/v1/groups/rates"
+    ]
+  }
+}

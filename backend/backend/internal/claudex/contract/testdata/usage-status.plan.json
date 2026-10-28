@@ -1,0 +1,106 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "plan": {
+      "group_id": 4,
+      "group_name": "claudex-pro",
+      "subscription_id": 77,
+      "billing_mode": "subscription"
+    },
+    "windows": [
+      {
+        "id": "rule:3",
+        "source": "rule",
+        "kind": "session",
+        "label": "Current session",
+        "window": "5h",
+        "window_seconds": 18000,
+        "used_usd": 1.2,
+        "limit_usd": 5,
+        "percent": 24,
+        "active": true,
+        "window_start": "2026-09-26T01:00:00Z",
+        "resets_at": "2026-09-26T06:00:00Z",
+        "models": null,
+        "exceeded": false
+      },
+      {
+        "id": "subscription:weekly",
+        "source": "subscription",
+        "kind": "all_models",
+        "label": "All models",
+        "window": "7d",
+        "window_seconds": 604800,
+        "used_usd": 30,
+        "limit_usd": 100,
+        "percent": 30,
+        "active": true,
+        "window_start": "2026-09-22T00:00:00Z",
+        "resets_at": "2026-09-29T00:00:00Z",
+        "models": null,
+        "exceeded": false
+      },
+      {
+        "id": "rule:5",
+        "source": "rule",
+        "kind": "models",
+        "label": "Opus",
+        "window": "7d",
+        "window_seconds": 604800,
+        "used_usd": 0,
+        "limit_usd": 20,
+        "percent": 0,
+        "active": false,
+        "window_start": null,
+        "resets_at": null,
+        "models": [
+          "claude-opus-*"
+        ],
+        "exceeded": false
+      },
+      {
+        "id": "subscription:daily",
+        "source": "subscription",
+        "kind": "daily",
+        "label": "Daily",
+        "window": "1d",
+        "window_seconds": 86400,
+        "used_usd": 4,
+        "limit_usd": 20,
+        "percent": 20,
+        "active": true,
+        "window_start": "2026-09-26T00:00:00Z",
+        "resets_at": "2026-09-27T00:00:00Z",
+        "models": null,
+        "exceeded": false
+      },
+      {
+        "id": "key:5h",
+        "source": "key",
+        "kind": "key",
+        "label": "This device · 5 hours",
+        "window": "5h",
+        "window_seconds": 18000,
+        "used_usd": 0.5,
+        "limit_usd": 2,
+        "percent": 25,
+        "active": true,
+        "window_start": "2026-09-26T01:30:00Z",
+        "resets_at": "2026-09-26T06:30:00Z",
+        "models": null,
+        "exceeded": false
+      }
+    ],
+    "balance": {
+      "balance_usd": 12.34
+    },
+    "blocked": {
+      "blocked": false,
+      "window_id": null,
+      "reason": null,
+      "resets_at": null
+    },
+    "updated_at": "2026-09-26T02:30:00Z"
+  }
+}

@@ -1,0 +1,167 @@
+.dynamic-tool-activity > summary,
+.agent-collab-activity > summary {
+  min-width: 0;
+  gap: 7px;
+}
+.dynamic-tool-title,
+.agent-collab-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-collab-activity > summary > small {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.dynamic-tool-body section + section,
+.agent-collab-body section + section {
+  margin-top: 13px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.dynamic-tool-body pre,
+.agent-collab-body pre {
+  max-height: 230px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.dynamic-tool-body img {
+  display: block;
+  max-width: min(100%, 480px);
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 5px;
+}
+.agent-collab-state {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 5px 0;
+  border-top: 1px solid var(--border);
+}
+.agent-collab-state span:first-child {
+  font-family: var(--code-font-custom,) monospace;
+}
+.agent-collab-state small {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.agent-collab-event small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+/* A pause or a compaction: the light row of every other tool (14/20 in the
+   rows' grey, 24px high, the text's 4px edge), with the 12px of air the rows
+   keep from text above and below. Code's rows are its own grey on its 10px
+   rhythm. */
+.agent-tool-event,
+.agent-collab-event {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0;
+  min-width: 0;
+  min-height: 24px;
+  padding: 0 4px;
+  color: #858580;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* Like every other tool row, no leading icon (the running dots stay). */
+.agent-tool-event > svg:first-child,
+.agent-collab-event > svg:first-child {
+  display: none;
+}
+.mode-code :is(.agent-tool-event, .agent-collab-event) {
+  margin: 0;
+  padding: 0;
+  gap: 4px;
+  color: #c3c2b7;
+  /* Settings → Transcript text size (transcript-text-size.css). */
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+}
+:root[data-theme="light"] :is(.agent-tool-event, .agent-collab-event) {
+  color: var(--text-muted);
+}
+.agent-tool-event small,
+.session-tool-activity summary small {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.session-tool-activity summary small {
+  margin-left: auto;
+  max-width: 50%;
+}
+.session-tool-body img {
+  display: block;
+  max-width: min(100%, 480px);
+  max-height: 320px;
+  object-fit: contain;
+}
+.session-tool-body p {
+  overflow-wrap: anywhere;
+}
+/* A generated picture under its row: the frame of the read-image thumbnail; its
+   size (240px tall, its own width) is provisional, the capture's thumbnail is
+   90px. */
+.generated-image-preview {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 4px 0 10px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: transparent;
+  cursor: zoom-in;
+}
+div.generated-image-preview {
+  cursor: default;
+}
+.generated-image-preview img {
+  display: block;
+  height: 240px;
+  max-width: 100%;
+  object-fit: contain;
+}
+.generated-image-preview:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 2px;
+}
+/* The compaction line is plain grey 14px text on the reply column, like the
+   command rows (#858580). */
+.agent-tool-event.compaction-event {
+  margin: 16px 0;
+}
+.mode-code .agent-tool-event.compaction-event {
+  margin: 0;
+}
+/* The viewed picture at the row's right end, 111×62, radius 6, a 1px #3a3a38
+   rim, cover-cropped. */
+.viewed-image-thumbnail {
+  margin-left: auto;
+}
+.viewed-image-thumbnail .generated-image-preview {
+  display: block;
+  width: 111px;
+  height: 62px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #3a3a38;
+  border-radius: 6px;
+}
+.viewed-image-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -1,0 +1,10 @@
+{
+  "main": "4e7593f7a080f10c92c94891278f9d915fc9a5b7",
+  "sha256": {
+    "src/composer/queue.ts": "50bbaf56fc0c5daaa7f0c05e3c7b205cc61748c320816658f69f96cd736f60d1",
+    "shared/agent-api.ts": "06ffe90df6c548c98e0476491204481611b49a811e820e321f5b1f6da0b73269",
+    "shared/bridge-methods.ts": "8e663eddbea3fb2373ab6f30c4aab9f8897635f89001c3feec899c24231df158",
+    "shared/composer-api.ts": "a1256e9f1c32ea065fbe6b86693d5f94a9f349a70ab6d9b6e44ec057fd1caf7b",
+    "src/app/composer-send.ts": "f70ad81e2112e97e50127f96e67b9bdbff4ee2a1580940e4961bd03cf5df1dae"
+  }
+}

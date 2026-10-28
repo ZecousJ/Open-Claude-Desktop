@@ -1,0 +1,425 @@
+/* Code composer footer, measured against Claude's 1351 × 1063 Code home. */
+.code-composer {
+  /* 768px at most, 40px of air at each side when narrower (composer 540 in a
+     620 pane, 518 in a 600 one). */
+  width: min(768px, calc(100% - 80px));
+  padding-bottom: 8px;
+}
+.code-composer .composer {
+  padding-left: 11px;
+  border-color: #363636;
+}
+/* The frame brightens while the prompt has focus. Hovered, it takes the same
+   strong rim, except while the pointer is on one of its buttons: the Chat
+   composer's hover ring (live-web/composer.css), as the original's one composer
+   card does on every surface. */
+.code-composer .composer:focus-within {
+  border-color: #4d4d4d;
+}
+@media (hover: hover) {
+  :root:not([data-theme="light"])
+    .code-composer
+    .composer:hover:not(
+      :has(button:hover, a:hover, [role="button"]:hover, label:hover)
+    ) {
+    border-color: #4d4d4d;
+  }
+}
+.code-composer .composer-input-row textarea::placeholder {
+  color: #8d8d8d;
+}
+/* The row's controls are 18 to 24px tall: the row centres them all, so "+", the
+   microphone, the permission mode, the model and the ring share one centre
+   line. */
+.code-composer .composer-toolbar {
+  height: 27px;
+  padding: 7px 14px 0 8px;
+  align-items: center;
+}
+.code-composer .composer-left {
+  gap: 0;
+  align-items: center;
+}
+.code-composer .composer-right {
+  align-items: center;
+}
+.code-composer .composer-right {
+  gap: 4.5px;
+}
+
+.code-composer .composer-left > .popover-anchor > .icon-button {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  color: #c3c3c3;
+}
+.code-composer .composer-left > .popover-anchor > .icon-button svg {
+  width: 15px;
+  height: 15px;
+}
+/* The knowledge-base chip (Chat's research chip, 31px) at the footer's own icon
+   size, 18px with 5px corners and a 15px glyph, so it sits on the row between
+   "+" and the microphone. */
+.code-composer .composer-left > .composer-chip-slot > .knowledge-chip {
+  width: 18px;
+  height: 18px;
+  margin: 0 4px;
+  border-radius: 5px;
+}
+.code-composer .composer-left > .composer-chip-slot > .knowledge-chip svg {
+  width: 15px;
+  height: 15px;
+}
+.code-composer
+  .composer-left
+  > .popover-anchor
+  > .icon-button:hover:not(:disabled),
+.code-composer .composer-left > .popover-anchor > .icon-button.active {
+  background: #252525;
+  color: #efefef;
+}
+.code-composer .composer-left > .popover-anchor > .icon-button:focus-visible,
+.code-composer
+  .composer-left
+  > .popover-anchor
+  > .icon-button[data-keyboard-focus="true"] {
+  background: #252525;
+  color: #efefef;
+  outline: 1px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.code-voice-controls {
+  flex: none;
+  width: auto;
+  height: 19px;
+  margin: -0.5px 0 0 2px;
+}
+.code-voice-controls .dictation-button {
+  width: 18px;
+  height: 19px;
+  color: #c4c4c4;
+}
+.code-voice-controls .dictation-button > svg {
+  width: 14px;
+  height: 14px;
+  transform: none;
+}
+.code-voice-controls .dictation-button::before {
+  width: 18px;
+  height: 19px;
+  border-radius: 5px;
+}
+.code-voice-controls:hover .dictation-button::before {
+  background: transparent;
+}
+/* The Cowork group's ghost fill and the ⌄'s rounded face do not apply to the
+   footer: each segment has its own #252525 face. */
+.code-voice-controls:hover,
+.code-voice-controls:has(:focus-visible) {
+  background: transparent;
+}
+.code-voice-controls .cowork-voice-options:hover,
+.code-voice-controls .cowork-voice-options:focus-visible,
+.code-voice-controls .cowork-voice-options.open {
+  background: #252525;
+}
+.code-voice-controls .dictation-button:hover::before,
+.code-voice-controls .dictation-button:focus-visible::before {
+  background: #252525;
+}
+/* The ⌄ voice options sit 3px after the footer microphone. */
+.code-voice-controls.with-options {
+  flex-basis: auto;
+  width: auto;
+}
+.code-voice-controls .cowork-voice-options {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 19px;
+  margin-left: 3px;
+  border-radius: 5px;
+  color: #8a8a8a;
+}
+
+.code-composer .code-permission-anchor {
+  margin: -0.5px 0 0 3.5px;
+}
+.code-composer .code-permission-trigger {
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 5px;
+  color: #c4c4c4;
+  font-size: 12px;
+  line-height: 19px;
+}
+
+.code-composer .model-button,
+.code-composer .code-effort-trigger {
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 19px;
+}
+.code-composer .code-effort-trigger {
+  min-width: 0;
+}
+/* The web app's Code chin runs at the comfortable density: 24px pills, 13px
+   text, 6px radius, like Chat's chin. The desktop recordings above are the
+   compact 19px. */
+:root[data-surface="web"] .code-composer .code-permission-trigger,
+:root[data-surface="web"] .code-composer .model-button,
+:root[data-surface="web"] .code-composer .code-effort-trigger {
+  height: 24px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 17px;
+}
+.code-composer .model-button:hover,
+.code-composer .model-button[aria-expanded="true"],
+.code-composer .code-effort-trigger:hover,
+.code-composer .code-effort-trigger[aria-expanded="true"] {
+  background: #232323;
+  color: #f2f2f2;
+}
+/* Context ring: 12px, 2px #2d2d2d track, blue arc from twelve o'clock. */
+.code-composer .context-ring {
+  display: inline-flex;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  margin: -1px 0 0 3.5px;
+  border: 0;
+  border-radius: 50%;
+  outline-offset: 2px;
+}
+/* The ring opens a popover (ContextPopover): its anchor wraps it tightly. */
+.context-ring-anchor {
+  display: inline-flex;
+}
+.context-ring {
+  cursor: pointer;
+}
+.context-ring svg {
+  display: block;
+  overflow: visible;
+}
+.context-ring-track,
+.context-ring-arc {
+  fill: none;
+  stroke-width: 2;
+}
+.context-ring-track {
+  stroke: #2d2d2d;
+}
+.context-ring-arc {
+  stroke: #4175c6;
+  stroke-linecap: round;
+}
+:root[data-theme="light"] .context-ring-track {
+  stroke: #dedbd4;
+}
+:root[data-theme="light"] .context-ring-arc {
+  stroke: #3a6cc0;
+}
+/* Following the plan: amber from 75%, red from 90%, in the popover meters'
+   colours (context-popover.css). */
+.context-ring-arc.warning,
+:root[data-theme="light"] .context-ring-arc.warning {
+  stroke: #fab219;
+}
+.context-ring-arc.critical,
+:root[data-theme="light"] .context-ring-arc.critical {
+  stroke: #d03b3b;
+}
+
+:root[data-theme="light"] .code-composer .model-button,
+:root[data-theme="light"] .code-composer .code-effort-trigger {
+  color: #292927;
+}
+:root[data-theme="light"]
+  .code-composer
+  .composer-left
+  > .popover-anchor
+  > .icon-button,
+:root[data-theme="light"] .code-voice-controls .dictation-button,
+:root[data-theme="light"] .code-composer .code-permission-trigger {
+  color: #55544f;
+}
+:root[data-theme="light"] .code-composer .model-button[aria-expanded="true"],
+:root[data-theme="light"]
+  .code-composer
+  .code-effort-trigger[aria-expanded="true"],
+:root[data-theme="light"] .code-composer .code-permission-trigger.open {
+  background: #ebe8e2;
+}
+.code-composer .code-permission-trigger:hover,
+.code-composer .code-permission-trigger.open,
+.code-composer .code-permission-trigger:focus-visible {
+  background: #222;
+}
+/* Manual, which asks before every change, shows in amber. */
+.code-composer .code-permission-trigger.mode-manual {
+  color: #c3964c;
+}
+:root[data-theme="light"] .code-composer .code-permission-trigger.mode-manual {
+  color: #a8701c;
+}
+/* The faces above (#232323, #252525, #222) are dark measurements; hovered or
+   focused in light the footer's controls take the original's ghost fill (ink
+   5%), as their open state does, rather than a dark chip. */
+:root[data-theme="light"] .code-composer .model-button:hover,
+:root[data-theme="light"] .code-composer .code-effort-trigger:hover,
+:root[data-theme="light"]
+  .code-composer
+  .code-permission-trigger:is(:hover, :focus-visible),
+:root[data-theme="light"]
+  .code-composer
+  .composer-left
+  > .popover-anchor
+  > .icon-button:is(
+    :hover:not(:disabled),
+    .active,
+    :focus-visible,
+    [data-keyboard-focus="true"]
+  ),
+:root[data-theme="light"]
+  .code-voice-controls
+  .cowork-voice-options:is(:hover, :focus-visible, .open) {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"]
+  .code-voice-controls
+  .dictation-button:not(.pill):is(:hover, :focus-visible)::before {
+  background: var(--fill-ghost-hover);
+}
+.code-composer .send-button {
+  margin-right: 3px;
+}
+/* The return glyph is grey while empty and near-white once there is something
+   to send; typed text is #f4f4f4. */
+.code-composer .send-button:not(.stop) {
+  color: #f3f3f3;
+}
+.code-composer .send-button.idle {
+  opacity: 1;
+  color: #7a7a7a;
+}
+.code-composer .composer-input-row textarea {
+  color: var(--text);
+  /* The box stops growing at 400 px (19 lines of 20 px plus 20 px of padding),
+     then scrolls inside. */
+  max-height: 380px;
+}
+.code-composer
+  .composer-left
+  > .popover-anchor
+  > .icon-button[data-keyboard-focus="true"] {
+  position: relative;
+}
+.code-composer
+  .composer-left
+  > .popover-anchor
+  > .icon-button[data-keyboard-focus="true"]::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 7px;
+  box-shadow: 0 0 4px 1.5px #4174cc38;
+  pointer-events: none;
+}
+
+/* An image card is as large as a file card (120 x 120, the picture centred
+   whole on the dark card) and the remove button is a 15px circle centred 2px
+   inside the card's top-right corner, shown on hover. */
+.code-composer .attachment-thumbnail {
+  width: 120px;
+  height: 120px;
+  flex: none;
+}
+.code-composer .attachment-thumbnail-open {
+  border-radius: 8px;
+  background: #171717;
+}
+.code-composer .attachment-thumbnail-open img {
+  object-fit: contain;
+}
+/* The remove button is the shared 20px one, 8px past the corner. */
+
+/* Stop and Send in one cell: both faces sit in the same grid area at its right;
+   the hidden one keeps its place but is invisible. Leaving, a face fades out
+   over 80ms and is hidden at the end; coming, it fades in over 120ms after
+   80ms. */
+.composer-submit.code-submit-cell {
+  display: grid;
+  align-items: center;
+  justify-items: end;
+}
+.code-submit-face {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: default;
+}
+.code-submit-face:not([data-shown]) {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 80ms ease-out,
+    visibility 0s linear 80ms;
+}
+.code-submit-face[data-entering] {
+  animation: code-submit-in 120ms ease-out 80ms backwards;
+}
+@keyframes code-submit-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .code-submit-face:not([data-shown]) {
+    transition: visibility 0s linear 80ms;
+  }
+  .code-submit-face[data-entering] {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .code-submit-face:not([data-shown]) {
+  transition: visibility 0s linear 80ms;
+}
+:root[data-motion="reduced"] .code-submit-face[data-entering] {
+  animation: none;
+}
+
+/* With a tall draft the send button stays at the box's bottom right, level with
+   the last line. */
+.code-composer .composer-input-row > .composer-submit {
+  align-self: flex-end;
+}
+
+/* A narrow composer: at 460px or less the environment and repository take the
+   first line, the permission mode starts the second with the model and usage at
+   its end, 6px below. */
+.composer-wrap.code-composer {
+  container: code-composer / inline-size;
+}
+@container code-composer (max-width: 460px) {
+  .code-composer .composer-toolbar {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .code-composer .composer-toolbar > .composer-left {
+    display: contents;
+  }
+  .code-composer .composer-toolbar > .composer-left > .workspace-bar {
+    flex-basis: 100%;
+  }
+  .code-composer .composer-toolbar > .composer-right {
+    margin-left: auto;
+  }
+}

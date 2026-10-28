@@ -1,0 +1,377 @@
+/*
+ * The API page (src/collections/api). It uses the Scheduled tasks page's
+ * own classes for its head, tools and cards; only what that page does not
+ * have is here.
+ */
+/* The head's row and the note under the title also draw on the desktop,
+   where the Scheduled page uses the routines bar instead. */
+.api-view .routines-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.api-view .routines-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-muted);
+}
+:root[data-theme="light"] .api-view .routines-subtitle {
+  color: #6b6a66;
+}
+/* A key's value reads as a value: the tile's family, at the card's size. */
+.api-key-value {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.02em;
+}
+.routines-notice.failed {
+  color: var(--danger);
+}
+/* Room for a name and a group, not a whole schedule form. */
+.modal.task-dialog.key-dialog {
+  width: 480px;
+}
+/* The white dialog's buttons, as the scheduled task dialog draws them: the
+   primary fill is #0b0b0b with white text. */
+:root[data-theme="light"] .modal.task-dialog.key-dialog .task-save {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .modal.task-dialog.key-dialog .task-cancel {
+  background: transparent;
+  color: #0b0b0b;
+}
+/* A part's title is a history page's group heading (13px, muted). */
+.api-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  margin: 28px 0 0;
+}
+.api-section-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #8e8e8c;
+}
+.api-section-head .routines-tools > .routines-new {
+  margin-left: 0;
+}
+.api-section-head + .routine-grid {
+  margin-top: 8px;
+}
+.api-section-head + .routines-none {
+  margin-top: 12px;
+}
+/* A provider's card carries a menu, not a click of its own. */
+.routine-grid .routine-card.api-provider {
+  align-items: center;
+}
+.routine-grid .routine-card.api-provider .routine-card-text {
+  flex: 1;
+  padding-right: 0;
+}
+.api-group-select {
+  /* The name, its rate badge and the chevron on one centre line. */
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  max-width: 55%;
+}
+.api-group-select > svg {
+  flex: none;
+}
+/* The web's .routines-sort already spaces it 4px (its gap). */
+:root:not([data-surface="web"]) .api-group-select > svg {
+  margin-left: 4px;
+}
+.api-group-select b {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.api-section-head .routines-tools {
+  margin-right: 8px;
+}
+.api-group-select:disabled {
+  opacity: var(--opacity-disabled);
+}
+/* The provider card is not a button: only its group menu acts, so the card
+   keeps no hover fill. */
+.routine-grid .routine-card.api-provider:hover {
+  background: transparent;
+}
+
+/* A group's rate multiplier, a badge beside the group's name as Sub2API marks
+   it, white like the page's New key button: white with dark text in the dark
+   theme, and, as that button does, #0b0b0b with white text in the light one. */
+.rate-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: #fff;
+  color: #0b0b0b;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
+}
+:root[data-theme="light"] .rate-badge {
+  background: #0b0b0b;
+  color: #fff;
+}
+.api-key-group {
+  display: inline-flex;
+  align-items: center;
+}
+.api-key-group .rate-badge {
+  height: 16px;
+  margin-left: 5px;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 16px;
+}
+/* In a menu row the label stretches; the badge keeps its own size. */
+.menu > button > span.rate-badge {
+  flex: none;
+  min-width: 0;
+  overflow: visible;
+}
+
+/*
+ * The keys as a list: a muted header row, then one row per key — the name over
+ * the masked key, the group with its rate, when it was made and last used, what
+ * it has cost in all, its menu — with hairlines between. Phones keep the key,
+ * the group and the menu.
+ */
+.api-key-table {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.api-key-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 2.2fr) minmax(0, 1.2fr) minmax(0, 0.7fr)
+    minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr) 32px;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--fill-ghost-hover);
+}
+.api-key-header {
+  min-height: 0;
+  padding: 0 4px 8px;
+  color: #8e8e8c;
+  font-size: 13px;
+}
+.api-key-row.is-paused .api-key-cell-key strong,
+.api-key-row.is-paused .api-key-value {
+  opacity: 0.55;
+}
+.api-key-cell-key button {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.api-key-cell-key strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--text);
+}
+.api-key-cell-key .api-key-value {
+  flex-basis: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8e8e8c;
+  font-size: 13px;
+}
+.api-key-cell-key button:hover .api-key-value {
+  color: var(--text);
+}
+.api-key-row .api-key-group {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--text);
+}
+.api-key-when {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8e8e8c;
+}
+.api-key-cost {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.api-key-header .api-key-cost {
+  color: inherit;
+}
+.api-key-actions {
+  display: grid;
+  place-items: center;
+}
+.api-key-row .routine-more {
+  position: static;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #d9d9d6;
+}
+.api-key-row .routine-more:hover,
+.api-key-row.menu-open .routine-more {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .api-key-row {
+  border-bottom-color: #0000000f;
+}
+:root[data-theme="light"] .api-key-row .routine-more {
+  color: #52514e;
+}
+
+.api-key-rate {
+  display: flex;
+  align-items: center;
+  color: #8e8e8c;
+}
+.api-key-rate .rate-badge {
+  margin-left: 0;
+}
+/* A provider's model count opens the group's list. */
+.api-models-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #8e8e8c;
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.api-models-toggle:hover,
+.api-models-toggle.menu-open {
+  color: var(--text);
+}
+@media (max-width: 639.98px) {
+  .api-key-row {
+    grid-template-columns: minmax(0, 1fr) auto auto 32px;
+  }
+  .api-key-when,
+  .api-key-cost {
+    display: none;
+  }
+}
+
+/* The address requests go to, copyable, under the keys. */
+/* The rows share their columns, so both addresses start at one edge
+   whatever the length of the translated names. */
+.api-request-url {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  gap: 6px 0;
+  max-width: 560px;
+  margin-top: 20px;
+}
+.api-request-label {
+  grid-column: 1 / -1;
+  color: #8e8e8c;
+  font-size: 13px;
+}
+.api-request-box {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  column-gap: 16px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--alpha-2);
+  border-radius: 8px;
+  background: #ffffff08;
+}
+.api-request-box code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  color: var(--text);
+}
+.api-request-copy {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+  font-size: 12.5px;
+}
+.api-request-copy:hover {
+  background: #ffffff1f;
+}
+.api-request-vendor {
+  white-space: nowrap;
+  color: #8e8e8c;
+  font-size: 13px;
+}
+:root[data-theme="light"] .api-request-box {
+  border-color: #0000001a;
+  background: #00000005;
+}
+:root[data-theme="light"] .api-request-copy {
+  background: #0000000a;
+}
+
+/* Light theme: the key dialog takes the scheduled-task dialog's light inks
+   (scheduled-task-dialog.css); its labels, field and Cancel were the dark
+   near-white on the white modal. */
+:root[data-theme="light"] .key-dialog .task-field > span,
+:root[data-theme="light"] .key-dialog .task-field > label,
+:root[data-theme="light"] .key-dialog .task-row > span {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .key-dialog .task-field > input {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .key-dialog .task-cancel {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .key-dialog .task-save {
+  background: #0b0b0b;
+  color: #fff;
+}

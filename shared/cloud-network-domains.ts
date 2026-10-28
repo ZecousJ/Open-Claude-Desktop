@@ -1,0 +1,57 @@
+export const DEFAULT_TRUSTED_DOMAINS: readonly string[] = [
+  // JavaScript
+  "registry.npmjs.org",
+  "registry.yarnpkg.com",
+  "repo.yarnpkg.com",
+  "nodejs.org",
+  "registry.npmmirror.com",
+  "cdn.npmmirror.com",
+  "npmmirror.com",
+  "jsr.io",
+  // Python
+  "pypi.org",
+  "files.pythonhosted.org",
+  "pypi.python.org",
+  "pypi.tuna.tsinghua.edu.cn",
+  // Rust
+  "crates.io",
+  "index.crates.io",
+  "static.crates.io",
+  "static.rust-lang.org",
+  // Go
+  "proxy.golang.org",
+  "sum.golang.org",
+  "go.dev",
+  "golang.org",
+  "goproxy.cn",
+  // JVM
+  "repo.maven.apache.org",
+  "repo1.maven.org",
+  "plugins.gradle.org",
+  "services.gradle.org",
+  // Ruby, PHP, .NET
+  "rubygems.org",
+  "packagist.org",
+  "repo.packagist.org",
+  "api.nuget.org",
+  // Distribution packages
+  "deb.debian.org",
+  "security.debian.org",
+  "archive.ubuntu.com",
+  "security.ubuntu.com",
+  "ports.ubuntu.com",
+  "dl-cdn.alpinelinux.org",
+  "mirrors.aliyun.com",
+  "mirrors.tuna.tsinghua.edu.cn",
+  // Code hosts
+  "github.com",
+  "api.github.com",
+  "codeload.github.com",
+  "raw.githubusercontent.com",
+  "objects.githubusercontent.com",
+  "release-assets.githubusercontent.com",
+  "ghcr.io",
+  "gitlab.com",
+  "bitbucket.org",
+  "gitee.com",
+];

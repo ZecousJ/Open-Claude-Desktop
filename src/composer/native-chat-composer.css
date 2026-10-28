@@ -1,0 +1,145 @@
+/* Native unified Chat keeps the existing folder browser and access checks.
+   Source: 1016 hW/oD and RE: plainTrigger + hideIcon, a shrinking label with
+   truncate. These rules are intentionally confined to that trigger; web's
+   ProjectPicker has its own measured layout and the Code workspace chips remain
+   separate. */
+.cowork-options[data-picker-surface="desktop-chat"] {
+  min-width: 0;
+  max-width: 100%;
+}
+.cowork-options[data-picker-surface="desktop-chat"] > button {
+  min-width: 0;
+  max-width: 100%;
+}
+.cowork-options[data-picker-surface="desktop-chat"]
+  > button
+  > span:not(.cowork-place-badge) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cowork-menu.native-chat-place-menu {
+  position: fixed;
+  z-index: 60;
+  top: auto;
+  bottom: auto;
+  left: auto;
+  width: min(327px, calc(100vw - 16px));
+  overflow-y: auto;
+}
+.cowork-menu.native-chat-place-menu button {
+  gap: 9px;
+  padding: 0 10px 0 6px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* Same current CDS root shell as the web capture, 32px rows with 20px icons.
+   This file loads only on desktop. */
+.composer-add-menu.composer-add-native-chat {
+  width: 226.375px;
+  padding: 4px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 12px;
+  background: #20201f;
+}
+.composer-add-menu.composer-add-native-chat > button,
+.composer-add-menu.composer-add-native-chat > .composer-add-branch > button {
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.composer-add-menu.composer-add-native-chat > button > :is(svg, [data-icon]),
+.composer-add-menu.composer-add-native-chat
+  > .composer-add-branch
+  > button
+  > svg:not(.composer-add-chevron) {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  color: var(--text-secondary);
+}
+.composer-add-menu.composer-add-native-chat > button > .composer-add-shortcut {
+  display: inline-flex;
+  flex: none;
+  align-items: baseline;
+  gap: 0.15em;
+  margin-left: 16px;
+  overflow: visible;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+}
+.composer-add-menu.composer-add-native-chat .composer-add-shortcut > kbd {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+}
+:root[data-theme="light"] .composer-add-menu.composer-add-native-chat {
+  background: var(--surface);
+}
+.cowork-menu.project-picker.native-project-picker {
+  /* CDS comfortable tokens (1016 CSS:67719/67742, source rem=16px). */
+  --cds-h-control: 32px;
+  --cds-leading-body: 20px;
+  --cds-menu-gutter: 4px;
+  --native-picker-quarter-rem: 4px;
+  width: min(327px, calc(100vw - 16px));
+  border: 0;
+  box-shadow:
+    inset 0 0 0 1px var(--border, #363636),
+    0 8px 24px #0006;
+  overflow: visible;
+}
+.native-project-picker.project-picker .project-picker-search,
+.native-project-picker.project-picker .project-picker-search input {
+  /* c2 Search -> Ef/SY h-control; comfortable control is 32px. */
+  height: var(--cds-h-control);
+}
+.native-project-picker.project-picker .cowork-menu-separator {
+  margin: 4px 10px;
+}
+.native-project-picker.project-picker .project-picker-options {
+  max-height: calc(
+    6 * max(var(--cds-h-control), var(--cds-leading-body)) +
+      var(--cds-menu-gutter) + var(--native-picker-quarter-rem)
+  );
+  padding-bottom: var(--cds-menu-gutter);
+  border-bottom: 1px solid transparent;
+  box-sizing: border-box;
+}
+.native-project-picker .native-project-picker-footer {
+  /* z0 A_: footer overlaps the body's bottom gutter. */
+  display: flow-root;
+  margin-top: -4px;
+}
+.native-project-picker.project-picker .project-picker-row[data-detail] {
+  height: 49px;
+}
+.native-project-picker .project-picker-name small {
+  display: block;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+  text-overflow: ellipsis;
+}
+.native-project-picker .project-picker-section {
+  /* shared-frame zu/xE: comfortable:px-2.5 py-1 text-footnote. */
+  margin: 0;
+  padding: 4px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+}
+.native-project-picker.project-picker .project-picker-filter {
+  top: 36px;
+}
+.native-project-picker.project-picker .project-picker-filter button:disabled {
+  opacity: var(--opacity-disabled, 0.4);
+  cursor: default;
+}

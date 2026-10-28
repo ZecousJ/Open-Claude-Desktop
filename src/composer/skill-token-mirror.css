@@ -1,0 +1,126 @@
+/* O16 shared9:8013–8063/8358–8407: inline atomic skill references use
+   text-accent; the token is still a real editable protocol reference. */
+.composer-skill-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.composer-skill-mirror {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  pointer-events: none;
+  user-select: none;
+}
+.composer-skill-reference {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: #6da7ec;
+}
+.composer-skill-raw {
+  visibility: hidden;
+}
+:root
+  .composer-skill-mirror
+  .composer-skill-reference[data-reference-mode="raw"] {
+  color: var(--text);
+}
+.composer-skill-reference[data-reference-mode="raw"] > .composer-skill-raw {
+  visibility: visible;
+}
+.composer-skill-reference-trigger {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1lh;
+  display: inline-flex;
+  align-items: baseline;
+  padding: 0 0 0 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.composer-skill-prefix {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  opacity: 0.5;
+  user-select: none;
+}
+.composer-skill-name {
+  user-select: none;
+}
+.composer-skill-reference-trigger:hover,
+.composer-skill-reference-trigger[data-card-open] {
+  border-radius: 6px;
+  background: #257de01f;
+}
+.composer-skill-card {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 178px;
+  max-width: calc(100vw - 16px);
+  padding: 8px;
+  border: 0.5px solid rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: #20201f;
+  box-shadow: 0 8px 24px #0004;
+  color: var(--text-muted);
+  font:
+    12px/17px sans-serif;
+}
+.composer-skill-description {
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--bg);
+}
+.composer-skill-description > p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+  margin: 0;
+}
+:root[data-theme="light"] .composer-skill-reference {
+  color: var(--focus-accent);
+}
+:root[data-theme="light"] .composer-skill-card {
+  background: var(--surface);
+  border-color: rgb(11 11 11 / 10%);
+  color: var(--text-muted);
+}
+/* This private reference field must beat the later live-web composer ink
+   rule (:root:not(light) + non-Code frame + composer = specificity 501).
+   Keep the real textarea and visible caret; only its duplicate glyph paint
+   is masked while the synchronized reference mirror is mounted. */
+:root
+  .app
+  .composer-wrap:not(.code-composer)
+  .composer
+  .composer-skill-field:has(> .composer-skill-mirror)
+  > textarea {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: var(--text);
+}

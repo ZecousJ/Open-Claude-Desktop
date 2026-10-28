@@ -1,0 +1,8 @@
+{
+  "status": 403,
+  "body": {
+    "code": 403,
+    "message": "Your account has no plan that Claudex can use. Contact your administrator.",
+    "reason": "CLAUDEX_NO_PLAN"
+  }
+}

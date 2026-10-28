@@ -1,0 +1,95 @@
+/* Allowed-sites card. */
+.modal.ssh-tool-grants {
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  padding: 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #20201f;
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    var(--shadow);
+  font-size: 13px;
+  line-height: 19px;
+}
+:root[data-theme="light"] .modal.ssh-tool-grants {
+  background: #fff;
+  box-shadow:
+    0 0 0 1px #0b0b0b1a,
+    var(--shadow);
+}
+.ssh-tool-grants-description {
+  margin: 4px 0 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.modal.ssh-tool-grants > header {
+  margin: 0 0 4px;
+  gap: 4px;
+}
+.modal.ssh-tool-grants h2 {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--text);
+}
+.ssh-tool-grants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.ssh-tool-grants-list > div {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 0;
+  height: 28px;
+  padding: 0 2px 0 6px;
+  gap: 6px;
+  border-radius: 6px;
+  background: var(--alpha-1);
+}
+.ssh-tool-grants-list > div > span {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.ssh-tool-grants-list small {
+  flex-shrink: 0;
+  max-width: 40%;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+.ssh-tool-grants-list > div > span,
+.ssh-tool-grants-list small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ssh-tool-grants-list button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.ssh-tool-grants-list button:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.ssh-tool-grants-list > p {
+  margin: 0;
+  padding: 0 6px;
+  color: var(--text-muted);
+}
+.modal.ssh-tool-grants > .button-row {
+  justify-content: space-between;
+  margin-top: 20px;
+}

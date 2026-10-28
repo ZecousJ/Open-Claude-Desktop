@@ -1,0 +1,245 @@
+{
+  "codexVersion": "0.144.1",
+  "perThread_gpt-5.2-codex": {
+    "perThreadUrlOverride": true,
+    "bearerTokenEnvVar": true,
+    "mcpToolsDeferredBehindToolSearch": true,
+    "toolNamespace": "mcp__probe",
+    "firstRequestTools": [
+      "exec_command",
+      "write_stdin",
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "update_plan",
+      "request_user_input",
+      "apply_patch",
+      "view_image",
+      "get_goal",
+      "create_goal",
+      "update_goal",
+      "tool_search"
+    ],
+    "otherThreadSeesServer": false,
+    "mcpSessions": 1,
+    "httpGetStreamOpened": true,
+    "protocolVersionOffered": "2025-06-18",
+    "clientCapabilities": {
+      "elicitation": {
+        "form": {},
+        "url": {}
+      }
+    },
+    "toolsCallMeta": {
+      "x-codex-turn-metadata": {
+        "session_id": "01a0dcc4-5186-7763-b093-1ffee649c06c",
+        "thread_id": "01a0dcc4-5186-7763-b093-1ffee649c06c",
+        "turn_id": "01a0dcc4-5500-7fe0-aab5-0432ebe1c03a",
+        "sandbox": "seatbelt",
+        "turn_started_at_unix_ms": 1790410249563,
+        "model": "gpt-5.2-codex",
+        "reasoning_effort": "medium"
+      },
+      "threadId": "01a0dcc4-5186-7763-b093-1ffee649c06c",
+      "progressToken": 1
+    },
+    "elicitationRequest": {
+      "threadId": "01a0dcc4-5186-7763-b093-1ffee649c06c",
+      "turnId": "01a0dcc4-5500-7fe0-aab5-0432ebe1c03a",
+      "serverName": "probe",
+      "mode": "form",
+      "_meta": null,
+      "message": "Allow the spike tool to continue?",
+      "requestedSchema": {
+        "type": "object",
+        "properties": {
+          "choice": {
+            "type": "string",
+            "title": "Choice",
+            "enum": ["allow_once", "deny"]
+          }
+        },
+        "required": ["choice"]
+      }
+    },
+    "imageResultForwardedAsInputImage": true,
+    "startupStatusNotifications": [
+      {
+        "threadId": "01a0dcc4-5186-7763-b093-1ffee649c06c",
+        "name": "probe",
+        "status": "starting",
+        "error": null,
+        "failureReason": null
+      },
+      {
+        "threadId": "01a0dcc4-5186-7763-b093-1ffee649c06c",
+        "name": "probe",
+        "status": "ready",
+        "error": null,
+        "failureReason": null
+      }
+    ]
+  },
+  "perThread_grok-4": {
+    "perThreadUrlOverride": true,
+    "bearerTokenEnvVar": true,
+    "mcpToolsDeferredBehindToolSearch": false,
+    "toolNamespace": "mcp__probe",
+    "firstRequestTools": [
+      "exec_command",
+      "write_stdin",
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "update_plan",
+      "request_user_input",
+      "view_image",
+      "multi_agent_v1/close_agent",
+      "multi_agent_v1/resume_agent",
+      "multi_agent_v1/send_input",
+      "multi_agent_v1/spawn_agent",
+      "multi_agent_v1/wait_agent",
+      "mcp__probe/probe_ask",
+      "mcp__probe/probe_echo",
+      "mcp__probe/probe_image",
+      "get_goal",
+      "create_goal",
+      "update_goal"
+    ],
+    "otherThreadSeesServer": false,
+    "mcpSessions": 1,
+    "httpGetStreamOpened": true,
+    "protocolVersionOffered": "2025-06-18",
+    "clientCapabilities": {
+      "elicitation": {
+        "form": {},
+        "url": {}
+      }
+    },
+    "toolsCallMeta": {
+      "x-codex-turn-metadata": {
+        "session_id": "01a0dcc4-610e-72a1-819d-adb422311367",
+        "thread_id": "01a0dcc4-610e-72a1-819d-adb422311367",
+        "turn_id": "01a0dcc4-63b8-72c3-baa8-b3387db2b2b9",
+        "sandbox": "seatbelt",
+        "turn_started_at_unix_ms": 1790410253278,
+        "model": "grok-4"
+      },
+      "threadId": "01a0dcc4-610e-72a1-819d-adb422311367",
+      "progressToken": 1
+    },
+    "elicitationRequest": {
+      "threadId": "01a0dcc4-610e-72a1-819d-adb422311367",
+      "turnId": "01a0dcc4-63b8-72c3-baa8-b3387db2b2b9",
+      "serverName": "probe",
+      "mode": "form",
+      "_meta": null,
+      "message": "Allow the spike tool to continue?",
+      "requestedSchema": {
+        "type": "object",
+        "properties": {
+          "choice": {
+            "type": "string",
+            "title": "Choice",
+            "enum": ["allow_once", "deny"]
+          }
+        },
+        "required": ["choice"]
+      }
+    },
+    "imageResultForwardedAsInputImage": true,
+    "startupStatusNotifications": [
+      {
+        "threadId": "01a0dcc4-610e-72a1-819d-adb422311367",
+        "name": "probe",
+        "status": "starting",
+        "error": null,
+        "failureReason": null
+      },
+      {
+        "threadId": "01a0dcc4-610e-72a1-819d-adb422311367",
+        "name": "probe",
+        "status": "ready",
+        "error": null,
+        "failureReason": null
+      }
+    ]
+  },
+  "defaultToolsApprovalMode": {
+    "auto": {
+      "codexApprovalRequests": 1,
+      "approvalMeta": {
+        "codex_approval_kind": "mcp_tool_call",
+        "persist": ["session", "always"],
+        "tool_description": "Echo a marker back (spike fixture).",
+        "tool_params": {
+          "text": "x"
+        },
+        "tool_params_display": [
+          {
+            "name": "text",
+            "value": "x",
+            "display_name": "text"
+          }
+        ]
+      },
+      "approvalMessage": "Allow the probe MCP server to run tool \"probe_echo\"?",
+      "toolReachedServer": false,
+      "itemStatus": "failed"
+    },
+    "prompt": {
+      "codexApprovalRequests": 1,
+      "approvalMeta": {
+        "codex_approval_kind": "mcp_tool_call",
+        "tool_description": "Echo a marker back (spike fixture).",
+        "tool_params": {
+          "text": "x"
+        },
+        "tool_params_display": [
+          {
+            "name": "text",
+            "value": "x",
+            "display_name": "text"
+          }
+        ]
+      },
+      "approvalMessage": "Allow the probe MCP server to run tool \"probe_echo\"?",
+      "toolReachedServer": false,
+      "itemStatus": "failed"
+    },
+    "approve": {
+      "codexApprovalRequests": 0,
+      "approvalMeta": null,
+      "approvalMessage": null,
+      "toolReachedServer": true,
+      "itemStatus": "completed"
+    }
+  },
+  "globalServerDisabledPerThread": true,
+  "perThreadStdioEnv": {
+    "works": true,
+    "processesStarted": 2,
+    "oneProcessPerThread": true,
+    "toolsCallMetaHasThreadId": true
+  },
+  "sameOverrideTwoThreads": {
+    "initializeCount": 2,
+    "distinctSessionsUsedByToolCalls": 2
+  },
+  "fork": {
+    "withOverrideServerAvailable": false,
+    "withoutOverrideServerAvailable": false,
+    "withOverrideAfterReady": false,
+    "forkThenUnsubscribeResumeWithOverride": true,
+    "forkRequestsSeen": 1,
+    "forkStartupStatus": ["starting", "ready"]
+  },
+  "perThreadHttpHeaders": {
+    "works": true,
+    "tokenWrittenToDisk": []
+  },
+  "resumeAfterRestart": {
+    "withoutOverrideServerAvailable": false,
+    "withOverrideServerAvailable": true
+  }
+}

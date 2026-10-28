@@ -1,0 +1,27 @@
+/* text-body text-secondary, whitespace-pre-wrap, overflow-wrap:anywhere. */
+.agent-message-attribution {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.agent-message-attribution p {
+  margin: 0;
+}
+:root[data-theme="light"] .agent-message-attribution {
+  color: #52514e;
+}
+
+/* flex justify-center px-md text-center text-balance text-caption text-muted. */
+.agent-transcript-truncated {
+  display: flex;
+  justify-content: center;
+  padding-inline: 8px;
+  text-align: center;
+  text-wrap: balance;
+  color: #898781;
+  font-size: 11px;
+  line-height: 17px;
+}

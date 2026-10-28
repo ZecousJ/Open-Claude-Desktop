@@ -1,0 +1,34 @@
+/* Phone Chat: live/official-details-menus-states.txt:56–60. The current 390px
+   fine-pointer capture remains 15px/24px; resizing a desktop window must not
+   opt it into the touch-only text-entry floor.
+
+   1016 gives the compact greeting its balanced wrapping, 0.96em phone inset and
+   -0.84em mark compensation. The legacy heading's nowrap otherwise clips long
+   names/translations. */
+@media (max-width: 639.98px) {
+  .app.web:not(.mode-code) .chat-main.empty-chat .chat-home > h1 {
+    box-sizing: border-box;
+    white-space: normal;
+    text-wrap: balance;
+    padding-inline: 0.96em;
+  }
+  .app.web:not(.mode-code)
+    .chat-main.empty-chat
+    .chat-home
+    > h1
+    > svg.star.star {
+    margin-inline-start: -0.84em;
+  }
+}
+
+/* The source applies a 16px floor to text entry, including replies, under
+   pointer:coarse. Keep larger text preferences, leave the fine-pointer
+   15px/21px path alone, and do not touch the Code editor. Home already has this
+   floor in 95-web.css; replies lacked it. */
+@media (max-width: 639.98px) and (pointer: coarse) {
+  .app.web .composer-wrap:not(.code-composer) .composer-input-row textarea {
+    min-height: max(22px, var(--composer-line, 21px));
+    font-size: max(16px, var(--composer-text, 15px));
+    line-height: max(22px, var(--composer-line, 21px));
+  }
+}

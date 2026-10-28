@@ -1,0 +1,24 @@
+/* Source fallback: flex-1/min-h-0, centered column, gap-2, px-2. */
+.sidebar-load-error {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-inline: 8px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.sidebar-load-error p {
+  margin: 0;
+}
+.sidebar-load-error > button {
+  min-height: var(--cds-h-control, 32px);
+  padding: 4px 10px;
+  color: var(--text);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}

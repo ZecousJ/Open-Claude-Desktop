@@ -1,0 +1,59 @@
+name: Desktop builds
+# Packages for every platform; run by hand from GitHub Actions.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+jobs:
+  package:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: mac
+            runtimePlatform: darwin
+            arch: arm64
+          - os: macos-15-intel
+            platform: mac
+            runtimePlatform: darwin
+            arch: x64
+          - os: windows-2022
+            platform: win
+            runtimePlatform: win32
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Windows checkouts convert line endings, so formatting is checked once on macOS.
+      - name: Check formatting
+        if: matrix.os == 'macos-14'
+        run: npm run format:check
+      - name: Verify bundled runtime and platform helpers
+        run: node scripts/prepare-runtime.mjs ${{ matrix.runtimePlatform }} ${{ matrix.arch }} --download-only
+      - run: npm test
+      - name: Exercise native Codex and both model protocols
+        run: npm run test:engine
+        timeout-minutes: 8
+      - run: npm run package:${{ matrix.platform }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        id: upload
+        continue-on-error: true
+        with:
+          name: Claudex-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            release/*.zip
+            release/*.exe
+          if-no-files-found: error
+      - name: Report artifact upload failure
+        if: steps.upload.outcome == 'failure'
+        run: echo "::warning::Package built and tested, but artifact upload failed; inspect the upload step for the reason."

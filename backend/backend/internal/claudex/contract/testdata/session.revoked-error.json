@@ -1,0 +1,7 @@
+{
+  "status": 401,
+  "body": {
+    "code": "CLAUDEX_SESSION_REVOKED",
+    "message": "This session was signed out. Sign in again."
+  }
+}

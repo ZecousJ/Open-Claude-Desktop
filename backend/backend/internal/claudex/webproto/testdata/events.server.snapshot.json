@@ -1,0 +1,26 @@
+{
+  "t": "snapshot",
+  "seq": 1843,
+  "snapshot": {
+    "artifactLibrary": {
+      "version": 1,
+      "copies": [],
+      "pinned": []
+    },
+    "dismissedBackgroundTasks": [],
+    "artifactShares": [],
+    "settings": {
+      "theme": "system",
+      "name": "Ada"
+    },
+    "conversations": [],
+    "projects": [],
+    "engine": {
+      "state": "ready",
+      "version": "0.144.1"
+    },
+    "approvals": [],
+    "platform": "darwin",
+    "replyFeedback": {}
+  }
+}

@@ -1,0 +1,149 @@
+.code-permission-anchor {
+  position: relative;
+}
+.code-permission-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 5px;
+}
+/* The mode's glyph and the muted 12px caret. */
+.code-permission-glyph {
+  flex: none;
+}
+.code-permission-caret {
+  display: inline-flex;
+  color: #898781;
+}
+.code-permission-trigger:hover,
+.code-permission-trigger.open,
+.code-permission-trigger:focus-visible {
+  background: #2e2e2e;
+  outline: none;
+}
+/* Measured from claude-code-permission-open-001 / -hover-001 (1351 × 1063, 2×):
+   278.5 × 234.5 box, left edge on the trigger fill, 40.5px rows inset 4px. */
+.code-permission-menu {
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 50;
+  left: -0.5px;
+  bottom: calc(100% + 6.5px);
+  width: 278.5px;
+  padding: 3.25px 3px 3.75px;
+  border: 1px solid #343434;
+  border-radius: 10px;
+  background: #1e1e1e;
+  box-shadow: 0 12px 28px #0006;
+  color: var(--text);
+  font:
+    13px/17px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  outline: none;
+}
+.code-permission-menu header {
+  box-sizing: border-box;
+  height: 23px;
+  padding: 1px 0 0 8px;
+  color: #8c8c8b;
+  font:
+    12px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.code-permission-menu button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  height: 40.5px;
+  padding: 0 8.25px 0 8.5px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  /* Rows appear highlighted at once and have no pressed look: the original's
+     menu rows. */
+  transition: none;
+}
+.code-permission-menu button:hover,
+.code-permission-menu button:focus-visible {
+  background: var(--fill-ghost-hover);
+  outline: none;
+  box-shadow: none;
+}
+.code-permission-text {
+  display: grid;
+  min-width: 0;
+  gap: 0;
+  padding-top: 3px;
+}
+.code-permission-text strong {
+  font:
+    400 13px/17px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  white-space: nowrap;
+}
+.code-permission-text small {
+  color: #908f8c;
+  font:
+    12px/17px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  white-space: nowrap;
+}
+.code-permission-trailing {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: 7.5px;
+  margin-left: 8px;
+  color: #a5a5a4;
+}
+.code-permission-trailing svg {
+  color: var(--link-text);
+  stroke-width: 2.2;
+}
+.code-permission-enable {
+  font-size: 13px;
+  color: #a5a5a4;
+}
+.code-permission-trailing kbd {
+  min-width: 6px;
+  color: #878787;
+  text-align: right;
+  font:
+    12px/17px var(--code-font-custom,) ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+:root[data-theme="light"] .code-permission-menu {
+  background: #fffefa;
+  border-color: #d2d0ca;
+  color: #292927;
+  box-shadow: 0 12px 28px #0002;
+}
+@media (prefers-reduced-motion: reduce) {
+  .code-permission-menu {
+    transition: none;
+    animation: none;
+  }
+}
+/* Bypass without a folder (G-85): greyed, with the reason as its subtitle. */
+.code-permission-menu button.needs-folder {
+  cursor: default;
+}
+.code-permission-menu button.needs-folder strong,
+.code-permission-menu button.needs-folder .code-permission-trailing kbd {
+  color: #7a7a79;
+}
+.code-permission-menu button.needs-folder:hover {
+  background: transparent;
+}

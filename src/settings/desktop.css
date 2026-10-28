@@ -1,0 +1,834 @@
+/*
+ * Desktop and developer Settings pages: Claude Code, Cowork, System, Skills,
+ * Connectors. Measured from R-1360, R-1387, R-1399 and R-设置-Skills-顶部-深色;
+ * dialogs and lists without a capture are provisional.
+ */
+
+/* A row that belongs to the one above: indented 16px, no description. */
+.desktop-subrow {
+  border-top: 1px solid #262626;
+}
+.desktop-subrow > .settings-row {
+  padding-left: 16px;
+}
+/* Create as draft under Create pull requests automatically: ps-6. */
+.desktop-subrow-ps6 > .settings-row {
+  padding-left: 24px;
+}
+.desktop-subrow + .settings-row {
+  border-top: 1px solid #262626;
+}
+
+/* A row with only a label (Desktop app version, Keep awake on battery power) is
+   44 tall, not the 56 of rows with a description. */
+.desktop-page .settings-row:not(:has(.settings-row-text > p)) {
+  min-height: 44px;
+}
+
+/* Cowork files: the folder path as an underlined link. */
+.desktop-path-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #7aa7e8;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  word-break: break-all;
+}
+.desktop-path-link:hover {
+  color: #9bbdf0;
+}
+
+/* TextLink. */
+.settings-row-text p a.code-bypass-security-link {
+  color: #6da7ec;
+  border-radius: 2px;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, currentColor, transparent 60%);
+  text-underline-offset: 3px;
+  transition-property: color, text-decoration-color, box-shadow;
+  transition-duration: 60ms;
+  transition-timing-function: var(--ease-out);
+}
+.settings-row-text p a.code-bypass-security-link:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+:root[data-theme="light"] .settings-row-text p a.code-bypass-security-link {
+  color: #184f95;
+}
+
+/* Dialog text and fields (Global instructions, Storage, Create skill). */
+.desktop-dialog-note {
+  margin: 0 0 12px;
+  color: #a3a29f;
+  line-height: 20px;
+}
+/* Skills: Add, rows, badges. */
+/* List pages' title row: the title sits 4px higher than the shared header puts
+   it, and the row reaches the content's right edge (the close button is above
+   it). */
+.desktop-list > .settings-page-header {
+  margin-top: -5px;
+  margin-right: 0;
+}
+/* Add: 90×31 with "+ Add ⌄". */
+.desktop-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 31px;
+  padding: 0 12px 0 9px;
+  border: 0;
+  border-radius: 8px;
+  background: #fdfdfc;
+  color: #141413;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.desktop-add-button:hover {
+  background: #ebe9e4;
+}
+.desktop-skill-group .settings-list > li > div {
+  flex: 1;
+}
+.desktop-skill-off .settings-list-tile,
+.desktop-skill-off strong {
+  opacity: 0.6;
+}
+.desktop-skill-badge {
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-hover);
+  color: #a3a29f;
+  font-size: 12px;
+  font-weight: 400;
+}
+.desktop-row-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #c7c7c5;
+  cursor: pointer;
+}
+/* Filter and sort beside the search. Colours as Customize's. */
+.settings-page-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 0 -4px;
+}
+.settings-page-anchor {
+  display: inline-flex;
+}
+.settings-page-tools .icon-button.settings-page-tool {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text);
+}
+.settings-page-tools .icon-button.settings-page-tool:hover,
+.settings-page-tools .icon-button.settings-page-tool[aria-expanded="true"] {
+  background: #262626;
+}
+.settings-page-tools .icon-button.settings-page-tool.filtered {
+  color: var(--link-text);
+}
+:root[data-theme="light"] .settings-page-tools .icon-button.settings-page-tool {
+  color: #2b2b29;
+}
+:root[data-theme="light"]
+  .settings-page-tools
+  .icon-button.settings-page-tool:hover,
+:root[data-theme="light"]
+  .settings-page-tools
+  .icon-button.settings-page-tool[aria-expanded="true"] {
+  background: #ebebe9;
+}
+:root[data-theme="light"]
+  .settings-page-tools
+  .icon-button.settings-page-tool.filtered {
+  background: #cce4fe;
+  color: #47698e;
+}
+/* The SKILL.md date at a row's right end. */
+.desktop-skill-date {
+  flex: none;
+  margin-right: 12px;
+  color: #9a9a97;
+  font-size: 13px;
+}
+:root[data-theme="light"] .desktop-skill-date {
+  color: #767674;
+}
+.desktop-row-more:hover,
+.desktop-row-more[aria-expanded="true"] {
+  background: var(--surface-hover);
+}
+.desktop-list-empty {
+  margin: 24px 0 0;
+  color: #a3a29f;
+}
+/* The Add custom connector form follows the dialogs' form layout; its buttons
+   sit on the right like the other Settings dialogs'. */
+.desktop-skill-form > label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.desktop-skill-form > label:has(+ .error-text) {
+  margin-bottom: 6px;
+}
+.desktop-skill-form .settings-input,
+.desktop-skill-form .settings-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: 400;
+}
+.desktop-skill-form .settings-textarea {
+  min-height: 140px;
+}
+.desktop-skill-form > .error-text {
+  margin: 0 0 18px;
+}
+.desktop-skill-form > .button-row {
+  justify-content: flex-end;
+}
+
+/* Connectors: a server that is not running says why instead of the tick. */
+.desktop-connector-state {
+  color: #a3a29f;
+}
+.desktop-connector-state.failed {
+  color: var(--danger);
+}
+
+:root[data-theme="light"] .desktop-subrow,
+:root[data-theme="light"] /* Create as draft under Create pull requests automatically: ps-6. */
+.desktop-subrow-ps6 > .settings-row {
+  padding-left: 24px;
+}
+.desktop-subrow + .settings-row {
+  border-top-color: #e6e6e3;
+}
+:root[data-theme="light"] .desktop-path-link {
+  color: #2f65c2;
+}
+:root[data-theme="light"] .desktop-add-button {
+  background: #141413;
+  color: #fdfdfc;
+}
+:root[data-theme="light"] .desktop-add-button:hover {
+  background: #3d3d3a;
+}
+:root[data-theme="light"] .desktop-skill-badge,
+:root[data-theme="light"] .desktop-row-more:hover,
+:root[data-theme="light"] .desktop-row-more[aria-expanded="true"] {
+  background: #ececea;
+}
+:root[data-theme="light"] .desktop-row-more {
+  color: #5e5d59;
+}
+
+/* Connectors. Header buttons side by side; an action column on the right; a
+   server's tools listed under its row with a switch each. */
+.desktop-connector-actions {
+  display: flex;
+  gap: 8px;
+}
+.desktop-connector-note {
+  margin: 0 0 12px;
+  color: #a3a29f;
+  font-size: 13px;
+}
+/* "N connector tools always allowed · Forget": the link reads as the note's own text. */
+.desktop-connector-forget {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.desktop-connectors td {
+  vertical-align: middle;
+}
+.desktop-connector-buttons {
+  text-align: right;
+  white-space: nowrap;
+}
+.desktop-connector-buttons > .settings-button + .settings-button {
+  margin-left: 6px;
+}
+.desktop-connector-buttons .spin {
+  margin-right: 4px;
+}
+.desktop-connector-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: -4px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.desktop-connector-expand:hover {
+  background: var(--surface-hover);
+}
+.desktop-connector-tools > td {
+  padding-top: 0;
+}
+.desktop-connector-tools .desktop-connector-note {
+  margin: 8px 0 4px 18px;
+  font-size: 12px;
+}
+.desktop-connector-form > label {
+  display: block;
+  margin-bottom: 6px;
+}
+.desktop-connector-form > input {
+  margin-bottom: 6px;
+}
+.desktop-connector-hint {
+  display: block;
+  margin: 0 0 16px;
+  color: #a3a29f;
+  font-size: 12px;
+}
+.desktop-connector-advanced {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 14px -2px;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: #a3a29f;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+:root[data-theme="light"] .desktop-connector-expand:hover {
+  background: #ececea;
+}
+:root[data-theme="light"] .desktop-connector-note,
+:root[data-theme="light"] .desktop-connector-hint,
+:root[data-theme="light"] .desktop-connector-advanced,
+:root[data-theme="light"] .tool-permissions > p,
+:root[data-theme="light"] .tool-permissions li > div > span {
+  color: #6b6a66;
+}
+
+/* Trusted Cowork folders: each folder a rounded row (folder icon, the full path
+   on one line, an × button) 4px apart. */
+.desktop-trusted {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+.desktop-trusted > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--alpha-1);
+  color: var(--text-secondary);
+}
+.desktop-trusted-icon {
+  flex: none;
+  color: var(--text-muted);
+}
+.desktop-trusted > li > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.desktop-trusted-remove {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin: -2px -6px -2px 0;
+  border-radius: 5px;
+  color: var(--text-muted);
+}
+.desktop-trusted-remove:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.desktop-trusted-remove:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.desktop-trusted-empty {
+  margin: 0;
+  padding: 0 6px;
+  color: var(--text-muted);
+}
+.modal > .button-row.desktop-trusted-actions {
+  justify-content: space-between;
+}
+/* A skill row opens its page: the tile and text are one button. */
+.desktop-skill-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  min-height: 62px;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+}
+.desktop-skill-open > span:nth-child(2) {
+  flex: 1;
+  display: block;
+  min-width: 0;
+}
+/* Tool permissions: a 14px semibold title and 13px muted line; the group row
+   (chevron, label, count pill) with its 32px bordered menu button at the right;
+   56px tool rows whose right end is a 30px #f3f3f1 tray of three 28px icon
+   buttons, the chosen one a white chip. Dark: the Settings list colours. */
+.tool-permissions {
+  padding: 4px 0 0 18px;
+}
+.tool-permissions h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.tool-permissions > p {
+  margin: 4px 0 8px;
+  color: #a3a29f;
+  font-size: 13px;
+}
+.tool-permissions-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+}
+.tool-permissions-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  color: inherit;
+  font-size: 14px;
+}
+.tool-permissions-count {
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--surface-hover);
+  color: #a3a29f;
+  font-size: 12px;
+  line-height: 18px;
+}
+.tool-permissions-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px 0 10px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: inherit;
+  font-size: 14px;
+}
+.tool-permissions-all:disabled {
+  opacity: 0.6;
+}
+.tool-permissions ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tool-permissions li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding-left: 24px;
+  border-top: 1px solid #262626;
+}
+.tool-permissions li > div {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+.tool-permissions li strong {
+  font-size: 14px;
+  font-weight: 400;
+}
+.tool-permissions li > div > span {
+  overflow: hidden;
+  color: #a3a29f;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tool-permission {
+  display: inline-flex;
+  flex: none;
+  gap: 1px;
+  padding: 1px;
+  border-radius: 8px;
+  background: #232323;
+}
+.tool-permission button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: #8f8f8c;
+}
+.tool-permission button[aria-checked="true"] {
+  box-shadow: inset 0 0 0 1px #3a3a38;
+  background: #333331;
+  color: var(--text);
+}
+.tool-permission button:disabled:not([aria-checked="true"]) {
+  opacity: var(--opacity-disabled);
+}
+:root[data-theme="light"] .tool-permissions-count {
+  background: #efefed;
+  color: #6b6a66;
+}
+:root[data-theme="light"] .tool-permissions-all {
+  border-color: #e5e5e3;
+}
+:root[data-theme="light"] .tool-permissions li {
+  border-color: #efefef;
+}
+:root[data-theme="light"] .tool-permission {
+  background: #f3f3f1;
+}
+:root[data-theme="light"] .tool-permission button {
+  color: #8f8f8c;
+}
+:root[data-theme="light"] .tool-permission button[aria-checked="true"] {
+  box-shadow: inset 0 0 0 1px #e5e5e3;
+  background: #fff;
+  color: #141413;
+}
+/* Connector directory: "← Connectors" 13px over "All connectors"; the filter
+   button beside the search; cards with a verified check or a grey Community
+   pill and a blue New pill after the name; the empty state's magnifier, 14px
+   line and Reset filters. */
+.connectors-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  margin-bottom: 8px;
+  padding: 0;
+  color: #c7c7c5;
+  font-size: 13px;
+}
+.directory-filter-button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #c7c7c5;
+}
+.directory-filter-button:hover,
+.directory-filter-button[aria-expanded="true"] {
+  background: var(--surface-hover);
+}
+.directory-filter-button.filtered {
+  background: #22324a;
+  color: #7dacec;
+}
+.connector-cards .customize-card {
+  cursor: default;
+}
+.connector-cards strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.connector-cards strong > svg {
+  color: #8f8f8c;
+}
+.connector-badge {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--surface-hover);
+  color: #a3a29f;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+.connector-badge.new {
+  background: #1f3048;
+  color: #7dacec;
+}
+.directory-nothing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 40px;
+}
+.directory-nothing svg {
+  stroke: #d5d4d0;
+  stroke-width: 2.2;
+}
+.directory-nothing .lens {
+  fill: #3a3a38;
+}
+.directory-nothing p {
+  margin: 31px 0 0;
+  color: #a3a29f;
+  font-size: 14px;
+}
+.directory-nothing button {
+  height: 32px;
+  margin-top: 35px;
+  padding: 0 12px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px #3a3a38;
+  color: var(--text);
+  font-size: 14px;
+}
+.directory-nothing .directory-nothing-hint {
+  margin-top: 4px;
+  color: #7d7c7a;
+  font-size: 13px;
+}
+/* Yours: nothing in the chosen status, and a list that could not load. */
+.desktop-connectors-none {
+  margin: 0;
+  padding: 24px 0;
+  color: #7d7c7a;
+  text-align: center;
+}
+.desktop-connectors-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: #7d7c7a;
+}
+.desktop-connectors-failed p {
+  margin: 0;
+}
+:root[data-theme="light"] .directory-nothing .directory-nothing-hint,
+:root[data-theme="light"] .desktop-connectors-none,
+:root[data-theme="light"] .desktop-connectors-failed {
+  color: #767674;
+}
+:root[data-theme="light"] .connectors-back,
+:root[data-theme="light"] .directory-filter-button {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .directory-filter-button:hover,
+:root[data-theme="light"] .directory-filter-button[aria-expanded="true"] {
+  background: #ececea;
+}
+:root[data-theme="light"] .directory-filter-button.filtered {
+  background: #cce4fe;
+  color: #47698e;
+}
+:root[data-theme="light"] .connector-badge {
+  background: #efefed;
+  color: #6b6a66;
+}
+:root[data-theme="light"] .connector-badge.new {
+  background: #dbeafe;
+  color: #2f6fcf;
+}
+:root[data-theme="light"] .directory-nothing svg {
+  stroke: #141413;
+}
+:root[data-theme="light"] .directory-nothing p {
+  color: #4e4e4d;
+}
+:root[data-theme="light"] .directory-nothing .lens {
+  fill: #e9e8e4;
+}
+:root[data-theme="light"] .directory-nothing button {
+  box-shadow: inset 0 0 0 1px #e0e0de;
+  color: #141413;
+}
+/* Top connectors sits 53px under the header's centre line. */
+.customize-directory-head.connector-top-head {
+  margin-top: 22px;
+}
+/* Shortcut field: 222×30, a #d9d9d6 rim with radius 6, the shortcut centred in
+   14px, the clear button (a filled 15px circle with a white ×) 10px from the
+   right end. Recording turns the rim orange. */
+.shortcut-recorder {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 222px;
+}
+.shortcut-recorder > button:first-child {
+  width: 100%;
+  height: 30px;
+  padding: 0 28px;
+  border: 1px solid #3a3a38;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+}
+.shortcut-recorder.recording > button:first-child {
+  border-color: #d97757;
+  box-shadow: 0 0 0 1px #d97757;
+  outline: none;
+}
+.shortcut-recorder-clear {
+  position: absolute;
+  top: 15px;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  transform: translateY(-50%);
+  color: var(--text);
+}
+.shortcut-recorder-x {
+  color: #1a1a1a;
+}
+:root[data-theme="light"] .shortcut-recorder > button:first-child {
+  border-color: #d9d9d6;
+  color: #141413;
+}
+:root[data-theme="light"] .shortcut-recorder-clear {
+  color: #141413;
+}
+:root[data-theme="light"] .shortcut-recorder-x {
+  color: #fff;
+}
+
+:root[data-theme="light"] .desktop-dialog-note,
+:root[data-theme="light"] .desktop-list-empty,
+:root[data-theme="light"] .desktop-connector-state {
+  color: #767674;
+}
+:root[data-theme="light"] .desktop-connector-state.failed {
+  color: #b9403b;
+}
+
+/* Discover's banner sits 10px higher on the Settings pages than on Customize. */
+.desktop-list > .customize-feature {
+  margin-top: 12px;
+}
+/* R-1518/R-1126 W1920: 24 between a block and the next head (Customize's
+   page keeps 40), 8 from a head to its cards (12; 10 to the categories). */
+.desktop-list .customize-directory-head {
+  margin-top: 24px;
+}
+.desktop-list .customize-directory-cards {
+  margin-top: 12px;
+}
+/* Categories are two 386px columns 12 apart in the modal, whatever the window
+   width. */
+.desktop-list .customize-categories {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+/* The title row stays put while a list page scrolls beneath it. Its 16px gap is
+   padding so nothing shows through it. */
+.desktop-list > .settings-page-header {
+  position: sticky;
+  top: -3px;
+  z-index: 3;
+  margin-bottom: 0;
+  padding-bottom: 16px;
+  background: #1a1a1a;
+}
+:root[data-theme="light"] .desktop-list > .settings-page-header {
+  background: #fff;
+}
+
+/* Nothing set yet reads in the muted ink; a refused shortcut says why
+   under the box. */
+.shortcut-recorder-empty {
+  color: #7d7c7a;
+}
+.shortcut-recorder-problem {
+  margin: 0;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: left;
+}
+:root[data-theme="light"] .shortcut-recorder-empty {
+  color: #767674;
+}
+
+/* Cowork → Global instructions edited in the page: a 256px monospace box under
+   the explanation, the count and buttons at the right. */
+.cowork-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+}
+.cowork-instructions > p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.cowork-instructions > textarea {
+  height: 256px;
+  resize: vertical;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+.cowork-instructions > div {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.cowork-instructions [role="status"] {
+  color: var(--danger);
+}
+
+/* Settings → Skills / Plugins: the "Add your first …" card sits right under the
+   title row's 16px, not Customize's 28px. */
+.desktop-list > .customize-callout.customize-yours-callout {
+  margin-top: 0;
+}

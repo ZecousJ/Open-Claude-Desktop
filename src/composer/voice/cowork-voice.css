@@ -1,0 +1,90 @@
+/* The microphone's place in the Cowork home toolbar (claude-cowork-mic-hover-001). With the original's ⌄ voice
+   options segment (greyed, no voices behind it) the group is 47px (claude-cowork-voice-arrow-hover-001). */
+.cowork-voice-controls {
+  display: flex;
+  align-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  margin: -3px -3.5px -3px 6.5px;
+  border-radius: 7px;
+}
+.cowork-voice-controls .dictation-button {
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  color: var(--text);
+}
+.cowork-voice-controls .dictation-button::before {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+}
+/* Hovering either segment gives the whole group the ghost fill, 200ms like the
+   segments' own faces. The Code footer's group draws none
+   (code-composer-footer.css). */
+.cowork-voice-controls {
+  transition: background-color var(--motion-base) var(--ease-standard);
+}
+.cowork-voice-controls:has(:focus-visible) {
+  background: var(--fill-ghost-hover);
+}
+@media (hover: hover) {
+  .cowork-voice-controls:hover {
+    background: var(--fill-ghost-hover);
+  }
+}
+/* The hovered microphone is a fully rounded #3e3e3e face. */
+.cowork-voice-controls .dictation-button:hover::before,
+.cowork-voice-controls .dictation-button:focus-visible::before {
+  background: #3e3e3e;
+}
+:root[data-theme="light"]
+  .cowork-voice-controls:not(.code-voice-controls)
+  .dictation-button:not(.pill):is(:hover, :focus-visible)::before {
+  background: var(--alpha-2);
+}
+.cowork-voice-controls .dictation-button > .dictation-tooltip {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+.cowork-voice-controls.with-options {
+  flex-basis: 47px;
+  width: 47px;
+}
+.cowork-voice-options {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  flex: 0 0 15px;
+  width: 15px;
+  height: 32px;
+  padding: 0;
+  color: #878787;
+}
+/* The hovered ⌄ is a rounded face reaching 1.5px over the microphone
+   (claude-cowork-voice-arrow-hover-001: #3f3f3f; light and the open menu
+   take the ghost's second step). The Code footer draws its own. */
+.cowork-voice-controls:not(.code-voice-controls) .cowork-voice-options::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 0 -1.5px;
+  border-radius: 8px;
+  pointer-events: none;
+  transition: background-color var(--motion-base) var(--ease-standard);
+}
+.cowork-voice-controls:not(.code-voice-controls)
+  .cowork-voice-options:hover::before,
+.cowork-voice-controls:not(.code-voice-controls)
+  .cowork-voice-options:focus-visible::before,
+.cowork-voice-controls:not(.code-voice-controls)
+  .cowork-voice-options.open::before {
+  background: var(--alpha-2);
+}
+:root:not([data-theme="light"])
+  .cowork-voice-controls:not(.code-voice-controls)
+  .cowork-voice-options:is(:hover, :focus-visible)::before {
+  background: #3f3f3f;
+}

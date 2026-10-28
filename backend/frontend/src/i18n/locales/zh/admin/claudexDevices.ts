@@ -1,0 +1,225 @@
+// CLAUDEX: claudexDevices 控制台页面文案（admin.claudexDevices 下的键）。
+// 归 K3（views/admin/claudex/ClaudexDevicesView.vue、components/admin/claudex/devices）。
+export default {
+  claudexDevices: {
+    title: '设备',
+    description: '已登录 Claudex 的桌面设备、它们的设备 Key，以及新设备如何获得套餐分组。',
+    errors: {
+      CLAUDEX_PROVISIONING_INVALID: '部分设备设置无效，请检查表单后重试。',
+      CLAUDEX_DEVICE_NOT_FOUND: '该设备已不存在，请重新加载查看当前列表。',
+      CLAUDEX_GROUP_NOT_FOUND: '该分组已不存在，请重新加载后选择其他分组。',
+      CLAUDEX_USER_NOT_FOUND: '该用户已不存在，请重新加载后选择其他用户。',
+      CLAUDEX_RESERVED_KEY_NAME: '以 claudex-device: 或 claudex-desktop: 开头的名称保留给设备 Key。',
+      CLAUDEX_GROUP_NOT_ALLOWED: '该用户不能使用这个分组，请选择该用户可用的分组或不选分组。',
+      CLAUDEX_API_KEY_INVALID: '部分 Key 设置无效，请检查表单后重试。',
+      CLAUDEX_API_KEY_NOT_FOUND: '该 API Key 已不存在，请重新加载查看当前列表。',
+      CLAUDEX_DEVICE_KEY_MANAGED: '这是 Claudex 设备 Key，请在设备列表中吊销该设备。'
+    },
+    userSearch: {
+      placeholder: '按邮箱、用户名或用户 ID 搜索',
+      clear: '清除用户',
+      noResults: '没有匹配的用户。',
+      userId: '用户 ID {id}',
+      failed: '无法搜索用户'
+    },
+    provisioning: {
+      title: '设备 Key 供应',
+      description: 'Claudex 桌面端登录时如何获得设备 Key。修改对下一次登录和新建的设备 Key 生效。',
+      enabled: '设备登录时发放设备 Key',
+      enabledHint: '关闭后，桌面端无法登记设备或获取设备 Key；已发放的 Key 继续可用。',
+      strategy: '套餐分组',
+      strategySubscription: '最新订阅，其次默认分组',
+      strategySubscriptionHint: '使用该用户到期最晚的订阅；没有订阅时使用默认分组，再其次使用该用户可用的其他分组。',
+      strategyFixed: '始终使用默认分组',
+      strategyFixedHint: '所有设备 Key 都使用默认分组；不能使用该分组的用户无法登录 Claudex。',
+      defaultGroup: '默认分组',
+      noDefaultGroup: '不设默认分组',
+      defaultGroupHint: '用户在允许的分组中没有订阅时使用。',
+      defaultGroupHintFixed: '所有设备 Key 都绑定到这个分组。',
+      allowedGroups: '允许的分组',
+      allowedGroupsHint: 'Claudex 可以选作套餐的分组。全部不勾选表示允许所有分组。',
+      allowedGroupsAll: '全部分组',
+      allowedGroupsCount: '已选 {count} 个',
+      groupSearch: '搜索分组',
+      missingGroup: '分组 #{id}（已删除或已停用）',
+      noGroups: '还没有分组。',
+      grantDefaultGroup: '注册时授予默认分组',
+      grantDefaultGroupHint: '新账户注册后，默认分组会加入其可用分组。仅当默认分组是专属标准分组时有效。',
+      grantWarning: '任何能注册的人都会获得这个分组。',
+      grantNoEffect:
+        '{group} 不是专属标准分组，新账户不会通过此设置获得它。订阅型分组由系统设置中的默认订阅负责。',
+      keyDefaults: '新设备 Key',
+      keyDefaultsHint: '每把新设备 Key 的限额。0 表示不限；有效期留空表示永不过期。',
+      quotaUsd: '额度（USD）',
+      expiresInDays: '有效期（天）',
+      never: '永不过期',
+      rateLimit5h: '5 小时限额（USD）',
+      rateLimit1d: '每日限额（USD）',
+      rateLimit7d: '7 天限额（USD）',
+      maxDevices: '每个用户的设备数',
+      maxDevicesHint: '默认 5，范围 1–50。可在设备列表中为单个用户设置上限。调低不会让已登录的设备退出。',
+      userApiKeys: '允许用户自建 API Key',
+      userApiKeysHint:
+        '默认关闭。关闭时普通用户不能通过 API（/api/v1/keys）新建 API Key，已有的 Key 继续可用；管理员仍可在下方“用户 API Key”中为用户新建 Key，Claudex 设备 Key 不受影响。',
+      revokeAllNote: '“登出所有设备”总会停用该用户的全部 Claudex 设备 Key，用户自己创建的 Key 不受影响。',
+      confirmTitle: '保存设备设置？',
+      confirmMessage: '以下修改对下一次设备登录和新建的设备 Key 生效：',
+      confirmSave: '保存设置',
+      changes: {
+        enabledOn: '设备登录时发放设备 Key',
+        enabledOff: '停止发放设备 Key（桌面端无法登记新设备）',
+        strategy: '套餐分组的选择方式',
+        defaultGroup: '默认分组',
+        allowedGroups: '允许的分组',
+        grantOn: '新账户获得默认分组（任何能注册的人都会获得）',
+        grantOff: '新账户不再获得默认分组',
+        keyDefaults: '新设备 Key 的限额',
+        maxDevices: '每个用户最多 {count} 台设备（单独设置了上限的用户除外）',
+        userApiKeysOn: '用户可以自建 API Key',
+        userApiKeysOff: '用户不能再自建 API Key'
+      }
+    },
+    validation: {
+      strategy: '请选择套餐分组的选择方式。',
+      defaultGroupFixed: '请选择默认分组，或改用“最新订阅，其次默认分组”。',
+      defaultGroupSignup: '请先选择默认分组。',
+      defaultGroupNotAllowed: '默认分组必须是允许的分组之一，请更换默认分组或同时允许它。',
+      usd: '请输入 0 或更大的金额。',
+      expiresInDays: '请输入 1–3650 的整数天数，或留空。',
+      maxDevices: '请输入 1–50 的整数。'
+    },
+    limit: {
+      title: '设备上限',
+      current: '当前上限',
+      sourceUser: '（该用户单独设置）',
+      sourceDefault: '（默认）',
+      active: '已登录设备',
+      newValue: '该用户的上限',
+      hint: '范围 1–50，默认 {default}。调低不会让已登录的设备退出。',
+      useDefault: '恢复默认',
+      save: '保存上限',
+      loadFailed: '无法加载设备上限',
+      confirmSetTitle: '修改设备上限？',
+      confirmSetMessage: '{user} 最多可以在 {count} 台设备上登录 Claudex，已登录的设备不受影响。',
+      confirmResetTitle: '恢复默认上限？',
+      confirmResetMessage: '{user} 将恢复为默认的 {count} 台设备。',
+      saved: '设备上限已设为 {count}。'
+    },
+    list: {
+      title: '设备列表',
+      description: '所有 Claudex 桌面设备及其设备 Key。吊销会让该设备退出登录并停用其 Key。',
+      filterUser: '用户',
+      search: '搜索',
+      searchPlaceholder: '邮箱或设备名',
+      status: '状态',
+      statusActive: '有效',
+      statusRevoked: '已吊销',
+      statusAll: '全部',
+      userBar: '{user} 的设备',
+      empty: '没有匹配的设备。',
+      unnamed: '未命名设备',
+      registered: '添加于 {date}',
+      keyLastUsed: '{time}使用',
+      keyNeverUsed: '尚未使用',
+      revoked: '已吊销',
+      loadFailed: '无法加载设备列表'
+    },
+    columns: {
+      user: '用户',
+      device: '设备',
+      platform: '平台',
+      appVersion: '客户端版本',
+      planGroup: '套餐分组',
+      key: '设备 Key',
+      lastSeen: '最近在线',
+      status: '状态',
+      actions: '操作'
+    },
+    actions: {
+      revoke: '吊销',
+      revokeAll: '登出所有设备',
+      deviceLimit: '设备上限',
+      showUser: '只看该用户的设备'
+    },
+    platforms: {
+      darwin: 'macOS',
+      win32: 'Windows',
+      linux: 'Linux'
+    },
+    keyStatus: {
+      active: '有效',
+      inactive: '已停用',
+      disabled: '已停用',
+      expired: '已过期',
+      quota_exhausted: '额度已用完',
+      deleted: '已删除'
+    },
+    revokedReason: {
+      user: '用户自己退出',
+      admin: '管理员吊销',
+      revoke_all: '登出所有设备',
+      unknown: '已吊销'
+    },
+    confirm: {
+      revokeTitle: '吊销此设备？',
+      revokeMessage: '{user} 的 {device} 将退出 Claudex，其设备 Key 被停用。在该设备上重新登录需要输入密码。',
+      revoked: '设备已吊销。',
+      revokeAllTitle: '让 {user} 登出所有设备？',
+      revokeAllMessage: '该用户所有设备上的 Claudex 都会退出登录，全部设备 Key 被停用。用户自己创建的 API Key 继续可用。',
+      revokedAll: '已登出 {count} 台设备。'
+    },
+    userKeys: {
+      title: '用户 API Key',
+      description:
+        '用户的 API Key（不含设备 Key）。在用户不能自建 Key 期间，可在这里为用户创建。“登出所有设备”不影响这些 Key。',
+      pickUser: '选择用户以查看和管理其 API Key。',
+      createButton: '为用户创建 API Key',
+      empty: '该用户没有 API Key。',
+      loadFailed: '无法加载 API Key',
+      noQuota: '不限',
+      quotaUsed: '{used} / {limit}',
+      delete: '删除 Key',
+      deleteTitle: '删除该 API Key？',
+      deleteMessage: '{user} 的 {name} 将立即失效，且无法恢复。',
+      deleted: '已删除 {name}。',
+      created: '已创建 {name}。',
+      columns: {
+        name: '名称',
+        key: 'Key',
+        group: '分组',
+        quota: '额度用量',
+        expires: '到期',
+        lastUsed: '最近使用'
+      },
+      create: {
+        title: '为用户创建 API Key',
+        name: '名称',
+        namePlaceholder: '例如：CI 部署',
+        group: '分组',
+        noGroup: '不绑定分组',
+        groupHint: '请选择该用户可用的分组，服务端会拒绝其他分组。',
+        quotaHint: '0 表示不限。',
+        ipAllowlist: 'IP 白名单',
+        ipAllowlistPlaceholder: '203.0.113.0/24',
+        ipAllowlistHint: '每行一个 IP 地址或 CIDR 网段。留空表示不限来源。',
+        userKeyNote: '这是用户 API Key：不绑定设备，“登出所有设备”不会停用它。',
+        submit: '创建 Key',
+        creating: '正在创建…',
+        createdFor: '已为 {user} 创建 {name}。',
+        key: 'API Key',
+        copy: '复制',
+        copied: '已复制',
+        copiedToast: '已复制 API Key',
+        onceNotice: '请立即复制此 Key。关闭此窗口后将不再显示。',
+        done: '完成'
+      },
+      validation: {
+        nameRequired: '请输入 Key 名称。',
+        nameLength: '名称最多 100 个字符。',
+        nameReserved: '以 claudex-device: 或 claudex-desktop: 开头的名称保留给设备 Key。',
+        ipCount: '白名单最多 100 条。'
+      }
+    },
+    passwordResetHint: '重置密码会让该用户的 Claudex 桌面端退出登录；重新登录后其设备 Key 继续可用。'
+  }
+}

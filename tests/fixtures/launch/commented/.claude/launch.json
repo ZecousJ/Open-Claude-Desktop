@@ -1,0 +1,8 @@
+{
+  // Written by hand, like VS Code launch.json
+  "version": "0.0.1",
+  /* one server */
+  "configurations": [
+    { "name": "site", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "--host", "http://x//y"], "port": 5173, },
+  ],
+}

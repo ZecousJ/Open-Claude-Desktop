@@ -1,0 +1,5 @@
+{
+  "t": "user-signed-out",
+  "userId": 7,
+  "reason": "revoked"
+}

@@ -1,0 +1,99 @@
+.app {
+  grid-template-rows: minmax(0, 1fr);
+  position: relative;
+}
+.window-drag-surface {
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--titlebar-height);
+  -webkit-app-region: drag;
+  pointer-events: none;
+}
+/* Windows caption buttons: 46 wide, 36 tall, thin 10px glyphs; What's new sits
+   23px left of them. */
+.window-controls {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  height: 36px;
+}
+/* Windows' own caption buttons (WindowControls.tsx, NativeCaption): the page
+   keeps their place, as wide as the system draws them, and lets the pointer
+   through to them. */
+.window-controls.native {
+  width: calc(
+    100vw - env(titlebar-area-x, 0px) -
+      env(titlebar-area-width, calc(100vw - 138px))
+  );
+  pointer-events: none;
+}
+/* Windows caption buttons are 46px wide: the minimise glyph of R-0002
+   (W1802, 1x) is centred 116.5px from the window's edge (1.5 buttons of 46 =
+   115 + 1.5), and R-0349's three glyphs are 46.5px apart. */
+.window-controls button {
+  width: 46px;
+}
+.window-controls button {
+  color: var(--text);
+}
+.window-controls svg:not([data-icon]) {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+/* The link's line is centred with the buttons, 18px down. */
+.app:not(.darwin) .whats-new {
+  top: 9px;
+  right: 161px;
+}
+/* Use incognito: the ghost's 16px glyph is centred 164.5px from the right edge
+   (10.5px clear of the three caption buttons) and 17.5px from the top, in the
+   caption row. */
+.app:not(.darwin):not(.web) .incognito-button {
+  top: 1.5px;
+  right: 148.5px;
+}
+.rotated {
+  transform: rotate(180deg);
+}
+.workspace {
+  position: relative;
+  grid-row: 1;
+}
+.chat-header {
+  height: var(--titlebar-height);
+  min-height: var(--titlebar-height);
+  border: 0;
+  padding: 0 17px;
+  font-size: 14px;
+  -webkit-app-region: drag;
+}
+.chat-header > div:first-child {
+  gap: 7px;
+}
+.chat-header > div:first-child > svg {
+  color: var(--text-secondary);
+}
+.thread-title {
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.mode-badge {
+  border: 0;
+  background: var(--surface-hover);
+  padding: 2px 5px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.header-actions {
+  gap: 7px;
+}
+.header-actions .icon-button {
+  width: 22px;
+  height: 25px;
+}

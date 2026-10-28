@@ -1,0 +1,126 @@
+/*
+ * Relaunch to update: 8px from both sidebar edges, 28px tall, 6px radius,
+ * #232323 on the #111 sidebar; 13px medium label in #f0efec 6px from the left
+ * edge; 11px grey arrow centred 14px from the right edge. Its bottom sits 2px
+ * into the 44px account row, so the avatar is 10px below it as captured.
+ */
+.relaunch-update {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 28px;
+  min-height: 0;
+  margin: 10px 8px -2px;
+  padding: 1px 8.5px 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: #232323;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+  color: var(--text);
+  cursor: default;
+}
+.relaunch-update > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.relaunch-update > :is(svg, .cds-spinner) {
+  flex: 0 0 11px;
+  color: var(--text-muted);
+}
+.relaunch-update:hover {
+  background: #2a2a2a;
+}
+.relaunch-update:active {
+  background: #1f1f1f;
+}
+.relaunch-update:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* Light theme: the strip's tokens: --df-hover is 5% of the ink over the
+   sidebar, --df-selected (hover and pressed) 10%. */
+:root[data-theme="light"] .relaunch-update {
+  background: rgb(11 11 11 / 5%);
+  color: #141413;
+}
+:root[data-theme="light"] .relaunch-update > :is(svg, .cds-spinner) {
+  color: #6f6e69;
+}
+:root[data-theme="light"] .relaunch-update:hover {
+  background: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .relaunch-update:active {
+  background: rgb(11 11 11 / 10%);
+}
+
+/* The "still working" dialog: while waiting, a small spinner 8px before the
+   sentence; with one session running its title is a text link (cds-text-link:
+   accent ink, underline 3px below at 60% until hovered or focused; #6da7ec
+   dark, #184f95 light). */
+.relaunch-waiting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.relaunch-waiting > :is(svg, .cds-spinner) {
+  flex: none;
+}
+.relaunch-session-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: #6da7ec;
+  font: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, currentColor, transparent 60%);
+  text-underline-offset: 3px;
+  transition-property: color, text-decoration-color, box-shadow;
+  transition-duration: var(--motion-fast, 60ms);
+  transition-timing-function: var(--ease-out, ease-out);
+  cursor: pointer;
+}
+:root[data-theme="light"] .relaunch-session-link {
+  color: #184f95;
+}
+.relaunch-session-link:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+.relaunch-session-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus);
+}
+/* Checking / Downloading. */
+.update-status-strip {
+  justify-content: flex-start;
+  cursor: default;
+}
+.update-status-lead {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  color: #c6613f;
+}
+.update-status-text {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

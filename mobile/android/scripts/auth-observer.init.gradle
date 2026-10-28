@@ -1,0 +1,11 @@
+// Opt-in only: build the signed, isolated auth-observer instrumentation fixture.
+// Normal builds keep their default Application, runner, origin and TLS settings.
+allprojects { project ->
+    project.plugins.withId('com.android.application') {
+        project.extensions.getByName('androidComponents').finalizeDsl { android ->
+            android.defaultConfig.testInstrumentationRunner = 'com.claudex.mobile.LoopbackFixtureRunner'
+            android.testBuildType = 'release'
+            android.buildTypes.getByName('release').signingConfig = android.signingConfigs.getByName('debug')
+        }
+    }
+}

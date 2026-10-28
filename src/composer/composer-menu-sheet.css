@@ -1,0 +1,5 @@
+/* Custom menus choose a sheet through menu-sheet.tsx, not viewport width.
+   Their full sheet styling is conditional so fine-pointer startup stays lean. */
+.composer-menu-scrim {
+  display: none;
+}

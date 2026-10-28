@@ -1,0 +1,108 @@
+/* max-w-[30rem], gap-md, body/footnote. */
+.modal.chrome-import {
+  width: 30rem;
+  max-width: calc(100vw - 32px);
+}
+.modal.chrome-import h2 {
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.125rem;
+  font-weight: 580;
+}
+:root[data-theme="light"] .modal.chrome-import h2,
+:root[data-theme="light"] .chrome-import-content {
+  color: #0b0b0b;
+}
+.chrome-import-content {
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.1875rem;
+}
+.chrome-import-source,
+.chrome-import-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.chrome-import-source select,
+.chrome-import-row > span {
+  flex: 1;
+  min-width: 0;
+}
+.chrome-import-row {
+  min-height: 40px;
+  padding: 0.5rem 0.75rem;
+}
+.chrome-import-row input[type="checkbox"] {
+  flex: none;
+}
+.chrome-import-note {
+  margin: 0;
+  color: #898781;
+  font-size: 0.75rem;
+  line-height: 0.9375rem;
+}
+.chrome-import-sites,
+.chrome-import-managed {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+}
+.chrome-import-sites {
+  height: 45vh;
+}
+.chrome-import-managed {
+  max-height: 45vh;
+  border-radius: 0.625rem;
+  background: hsl(from #fff h s l / 5%);
+}
+.chrome-import-managed > li + li {
+  border-top: 1px solid hsl(from #fff h s l / 10%);
+}
+:root[data-theme="light"] .chrome-import-managed {
+  background: hsl(from #0b0b0b h s l / 5%);
+}
+:root[data-theme="light"] .chrome-import-managed > li + li {
+  border-color: hsl(from #0b0b0b h s l / 10%);
+}
+.chrome-import-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+/* A warning Badge (sm) after a sensitive site. */
+.chrome-import-tag {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  /* bg-tint-yellow under text-warning. */
+  background: color-mix(in srgb, var(--warning-fill) 16%, transparent);
+  color: var(--warning);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  white-space: nowrap;
+}
+/* Don't show again: a plain footnote-sized muted link. */
+.chrome-import-dismiss {
+  margin-inline-end: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #898781;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.chrome-import-dismiss:hover {
+  text-decoration: underline;
+}

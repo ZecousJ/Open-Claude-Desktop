@@ -1,0 +1,318 @@
+@import "../../citations/citations.css";
+
+/* Web search rows and their result lists (R5, design R45 §4.5). The result list
+   is R-0740 (W969, 2.4 px/CSS): a 1px card (#2e2e2e, light #e3e3e3, 8px
+   corners) holding 36px rows between 10px of padding, a 16px site icon 12px in,
+   then the title and the host, both 14px in one grey (#939391, light #787876),
+   the host at the right 12px in. Running, several queries, a page search and a
+   failed search have no capture and reuse the plain row of R-0739. */
+.web-search-activity .web-search-detail {
+  display: grid;
+  gap: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.web-search-activity .web-search-detail > div {
+  max-width: 100%;
+}
+.web-search-activity > summary > .web-search-title {
+  flex: none;
+}
+.web-search-activity > summary > .web-search-meta {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* R-0740 (Chat, 2.4 px/CSS): the list is a 1px #2e2e2e box on the page colour;
+   rows 35.8 apart (36), 8 from the box top and bottom (the box 12 under the
+   line); the title starts 36 from the box's left and the host ends 12 from its
+   right; title and host are both #939391. */
+.web-search-activity .web-search-detail:has(.web-search-result) {
+  gap: 0;
+  padding: 8px 12px;
+}
+.web-search-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 36px;
+  padding: 0;
+  border-radius: 6px;
+  color: #939391;
+  text-decoration: none;
+}
+.web-search-result .site-icon-placeholder {
+  background: none;
+  color: transparent;
+}
+.web-search-result:is(:hover, :focus-visible) {
+  color: #cbcac5;
+}
+/* R-0740 draws nothing where a site icon did not load (a blank 16px). */
+.web-search-result .site-icon-placeholder {
+  background: none;
+  color: transparent;
+}
+:root[data-theme="light"] .web-search-result {
+  color: #787876;
+}
+:root[data-theme="light"] .web-search-result:is(:hover, :focus-visible) {
+  color: var(--text);
+}
+.web-search-result:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -2px;
+}
+.web-search-result-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.web-search-result-host {
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  color: #939391;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.web-search-group + .web-search-group {
+  margin-top: 6px;
+}
+.web-search-query {
+  padding: 6px 6px 2px;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.web-search-more {
+  align-self: start;
+  justify-self: start;
+  height: 28px;
+  margin: 2px 0 0;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+/* The ghost fill (00-foundation.css), as every ghost button's hover. */
+.web-search-more:hover {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+/* Pressed: the shared press squish (05-utilities.css .u-press). */
+.web-search-more:active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+/* A failed search is a row that does not open. */
+.web-search-failed .web-search-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 35px;
+  padding: 10px 11px;
+  font-size: 11px;
+  box-sizing: border-box;
+  color: var(--danger);
+}
+/* The line's chevron turns like the command rows' (chat-transcript.css,
+   command-hover-toggle-005): 35ms closing, 58ms opening. */
+.activity.web-search-activity > summary > svg:last-child {
+  transform-origin: center;
+  transition: transform 35ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.activity.web-search-activity[open] > summary > svg:last-child {
+  transition-duration: 58ms;
+}
+/* Its focus ring is the accent line inside the row's edge, without the glow. */
+.web-search-activity > summary:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
+  border-radius: 6px;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity.web-search-activity > summary > svg:last-child {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"]
+  .activity.web-search-activity
+  > summary
+  > svg:last-child {
+  transition: none;
+}
+
+/* R-0739 (Chat) and R-0813/R-0814 (Code), 2.4 px/CSS: a finished search or
+   fetch is a plain line like "Ran 3 commands ›" — no card and no globe — with
+   the query after the label. Label #858580 as the command rows; in Chat the
+   query takes the reply's text colour; in Code the whole line stays grey. */
+.web-search-activity {
+  margin: 0 0 24px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+}
+.web-search-activity > summary {
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 0 4px;
+  color: #858580;
+  font-size: 14px;
+  line-height: 20px;
+}
+.web-search-activity > summary:is(:hover, :focus-visible) {
+  background: none;
+  color: #cbcac5;
+}
+.web-search-activity[open] > summary {
+  border-bottom: 0;
+}
+.web-search-activity > summary > svg:first-child:not(.spin) {
+  display: none;
+}
+.web-search-activity > summary > svg:last-child {
+  margin-left: -5px;
+}
+.web-search-activity > summary > .web-search-meta {
+  color: var(--text);
+}
+.mode-code .web-search-activity > summary > .web-search-meta {
+  color: inherit;
+}
+.web-search-activity > .activity-body {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: none;
+}
+:root[data-theme="light"] .web-search-activity > .activity-body {
+  border-color: #e3e3e3;
+}
+:root[data-theme="light"] .web-search-activity > summary {
+  color: #7e7d7b;
+}
+:root[data-theme="light"]
+  .web-search-activity
+  > summary:is(:hover, :focus-visible) {
+  color: var(--text);
+}
+/* Title and host #787876, box border #e3e3e3. */
+:root[data-theme="light"] .web-search-result,
+:root[data-theme="light"] .web-search-result-host {
+  color: #787876;
+}
+:root[data-theme="light"] .web-search-activity > .activity-body {
+  border-color: #e3e3e3;
+}
+
+/* Cowork's search row (a task's lone "Searched the web query") keeps the same
+   air above and below its words as Chat's step row. */
+.mode-cowork .assistant-content > .web-search-activity {
+  margin: 10px 0 12px;
+}
+
+/* Results table, not the legacy 150px sources box. */
+.web-search-activity > summary > .web-search-meta[data-result-count] {
+  color: #898781;
+}
+.web-search-activity .web-search-detail:has(.web-search-results) {
+  display: block;
+  margin: 4px 10px 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.web-search-results {
+  container-type: inline-size;
+  padding: 4px;
+  border-radius: var(--cds-radius, 6px);
+  background: rgb(255 255 255 / 5%);
+  font-size: 12px;
+  line-height: 15px;
+}
+:root[data-theme="light"] .web-search-results {
+  background: rgb(11 11 11 / 5%);
+}
+.web-search-results-label {
+  min-width: 0;
+  padding: 4px 6px 2px;
+  overflow-wrap: break-word;
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .web-search-results-label {
+  color: #52514e;
+}
+.web-search-results-list {
+  display: grid;
+  grid-template-columns: 28px minmax(30%, 1fr) fit-content(40%) 20px;
+}
+.web-search-result-item {
+  display: contents;
+}
+.web-search-results .web-search-result {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  gap: 0;
+  height: auto;
+  padding: 6px;
+  border-radius: 4px;
+  color: var(--text);
+}
+.web-search-results .web-search-result:is(:hover, :focus-visible) {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.web-search-results .site-icon-placeholder {
+  color: var(--text);
+}
+.web-search-results .web-search-result-title,
+.web-search-results .web-search-result-host {
+  font-size: inherit;
+  line-height: inherit;
+}
+.web-search-results .web-search-result-host {
+  max-width: 40cqw;
+  padding-inline-start: 20px;
+  color: #898781;
+  direction: rtl;
+  text-align: left;
+}
+.web-search-result-caret {
+  justify-self: end;
+  color: #898781;
+  opacity: 0;
+}
+.web-search-result:is(:hover, :focus-visible) .web-search-result-caret {
+  opacity: 1;
+}
+@media (hover: none) {
+  .web-search-result-caret {
+    opacity: 1;
+  }
+}

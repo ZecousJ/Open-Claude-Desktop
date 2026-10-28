@@ -1,0 +1,195 @@
+/*
+ * The repository and branch menus of the web Code home (W-GITHUB). They use the
+ * Cowork "Project or folder" menu (cowork-options.css) as is; only the place
+ * differs: they open 6px above their chip, as the workspace menus do, instead
+ * of below it. The original's repository menu was not captured, so nothing here
+ * is measured beyond that menu.
+ */
+.cowork-menu.repository-menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+  width: 327px;
+  max-width: calc(100vw - 16px);
+}
+.repository-menu-error {
+  color: var(--danger);
+}
+.repository-menu button:disabled,
+.repository-menu button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+/* The chip while GitHub is not set up: greyed as a disabled menu row is (src/ui/menu.css). */
+.workspace-chip.repository-chip-unavailable {
+  opacity: 0.4;
+}
+:root[data-theme="light"] .repository-menu-error {
+  color: #c4413e;
+}
+
+/*
+ * The list's empty and problem messages and their links: a line over footnote
+ * lines 4px apart (`flex flex-col gap-1`), links in the primary text colour
+ * with an underline on hover, an external one followed by a 16px ↗ 4px after
+ * its words (`gap-xs`). "Load more" is a footnote link under the rows.
+ */
+.repository-menu-note {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cowork-menu .repository-menu-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+.cowork-menu .repository-menu-link:hover,
+.cowork-menu .repository-menu-link:focus-visible {
+  background: none;
+  text-decoration: underline;
+}
+.cowork-menu .repository-menu-link > svg:last-child {
+  margin-left: 0;
+  color: #908f8d;
+}
+.cowork-menu .repository-menu-link:disabled {
+  color: #908f8d;
+  text-decoration: none;
+}
+.repository-menu-more {
+  padding: 3px 16px;
+  font-size: 13px;
+  line-height: 18px;
+}
+:root[data-theme="light"] .cowork-menu .repository-menu-link {
+  color: #292927;
+}
+:root[data-theme="light"] .cowork-menu .repository-menu-link > svg:last-child,
+:root[data-theme="light"] .cowork-menu .repository-menu-link:disabled {
+  color: #85837d;
+}
+
+/* The mounted web picker is a searchable dialog; its existing connection,
+   error and pagination actions still use the service's actual capabilities. */
+.app.web .web-code-draft .repository-combobox {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  top: auto;
+  max-height: min(360px, calc(100dvh - 24px));
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 19px;
+}
+.app.web .web-code-draft .repository-combobox .cowork-menu-search {
+  flex: none;
+  height: 24px;
+  margin: 4px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-hover);
+  font-size: 13px;
+  line-height: 19px;
+}
+.app.web .web-code-draft .repository-combobox .cowork-menu-search > svg {
+  width: 12px;
+  height: 12px;
+}
+.app.web .web-code-draft .repository-combobox .cowork-menu-list {
+  min-height: 0;
+  max-height: none;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+.app.web .web-code-draft .repository-combobox [role="option"],
+.app.web .web-code-draft .repository-combobox > button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  width: calc(100% - 8px);
+  min-height: 24px;
+  margin: 0 4px;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.app.web .web-code-draft .repository-combobox [role="option"] {
+  width: 100%;
+  margin: 0;
+}
+.app.web
+  .web-code-draft
+  .repository-combobox
+  [role="option"][data-highlighted] {
+  background: var(--fill-ghost-hover);
+}
+.app.web .web-code-draft .repository-combobox [role="option"][aria-disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+.app.web .web-code-draft .repository-combobox .cowork-menu-text {
+  padding: 0;
+}
+.app.web .web-code-draft .repository-combobox .cowork-menu-text small {
+  display: none;
+}
+.app.web .web-code-draft .repository-combobox [role="option"] > svg,
+.app.web .web-code-draft .repository-combobox > button > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.app.web .web-code-draft .repository-combobox-footer {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  margin: 4px;
+}
+.app.web .web-code-draft .repository-combobox-footer > button {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 19px;
+}
+.app.web .web-code-draft .repository-combobox-footer > button > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.app.web .web-code-draft .repository-combobox-footer > button:hover {
+  background: var(--fill-ghost-hover);
+}
+.app.web .web-code-draft .repository-combobox-footer > a {
+  flex: none;
+  padding-inline-end: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+  text-decoration: underline;
+}

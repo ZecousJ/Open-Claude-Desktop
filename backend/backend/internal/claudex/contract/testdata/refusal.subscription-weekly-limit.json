@@ -1,0 +1,20 @@
+{
+  "status": 429,
+  "body": {
+    "code": "USAGE_LIMIT_EXCEEDED",
+    "message": "weekly usage limit exceeded",
+    "claudex": {
+      "v": 1,
+      "reason": "SUBSCRIPTION_WEEKLY_LIMIT",
+      "kind": "usage_limit",
+      "window": "7d",
+      "resets_at": "2026-09-29T00:00:00Z",
+      "retry_after_seconds": 250000,
+      "limit_usd": 100,
+      "used_usd": 100.4,
+      "reprovision": false,
+      "action": "get_more_usage",
+      "message": "You've reached your weekly usage limit. It resets Sep 29, 12:00 AM UTC."
+    }
+  }
+}

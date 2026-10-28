@@ -1,0 +1,217 @@
+{
+  "codexVersion": "0.144.1",
+  "gpt-5.2-codex": {
+    "stages": [
+      {
+        "stage": "start",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": ["DYN_OK:memory_probe", "DYN_OK:research_probe"],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "resume-same-process",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "resume-after-restart",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "resume-with-dynamicTools-field",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "fork-after-restart",
+        "toolsAdvertised": [],
+        "upfront": [],
+        "memoryCallRouted": false,
+        "namespaceCallRouted": false,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      }
+    ],
+    "resumeWithDynamicTools": "accepted"
+  },
+  "grok-4": {
+    "stages": [
+      {
+        "stage": "start",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": ["DYN_OK:memory_probe", "DYN_OK:research_probe"],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "resume-same-process",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "resume-after-restart",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "resume-with-dynamicTools-field",
+        "toolsAdvertised": ["memory_probe", "claudex_research/research_probe"],
+        "upfront": ["memory_probe", "claudex_research/research_probe"],
+        "memoryCallRouted": true,
+        "namespaceCallRouted": true,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      },
+      {
+        "stage": "fork-after-restart",
+        "toolsAdvertised": [],
+        "upfront": [],
+        "memoryCallRouted": false,
+        "namespaceCallRouted": false,
+        "outputs": [
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe",
+          "DYN_OK:memory_probe",
+          "DYN_OK:research_probe"
+        ],
+        "developerInstructionVersions": ["INSTR_V1"]
+      }
+    ],
+    "resumeWithDynamicTools": "accepted"
+  },
+  "forkThenResume": {
+    "stage": "fork-unsubscribe-resume",
+    "toolsAdvertised": [],
+    "upfront": [],
+    "memoryCallRouted": false,
+    "namespaceCallRouted": false,
+    "outputs": ["DYN_OK:memory_probe"],
+    "developerInstructionVersions": []
+  },
+  "forkWithDynamicToolsField": {
+    "stage": "fork-with-field",
+    "toolsAdvertised": [],
+    "upfront": [],
+    "memoryCallRouted": false,
+    "namespaceCallRouted": false,
+    "outputs": ["DYN_OK:memory_probe"],
+    "developerInstructionVersions": []
+  },
+  "resumeWithDifferentSet": {
+    "stage": "resume-different-set",
+    "toolsAdvertised": ["memory_probe"],
+    "upfront": ["memory_probe"],
+    "memoryCallRouted": false,
+    "namespaceCallRouted": false,
+    "outputs": ["DYN_OK:memory_probe"],
+    "developerInstructionVersions": []
+  },
+  "perTurnInstructionChannels": {
+    "collaborationMode.developer_instructions": {
+      "markerInRequest": true,
+      "roles": ["message:developer"],
+      "snippet": [
+        "{\"type\":\"message\",\"role\":\"developer\",\"content\":[{\"type\":\"input_text\",\"text\":\"<collaboration_mode>INSTR_TURN_COLLAB</collaboration_mode>\"}]}"
+      ],
+      "stillHasV1": true
+    },
+    "additionalContext.application": {
+      "markerInRequest": true,
+      "roles": ["message:developer"],
+      "snippet": [
+        "{\"type\":\"message\",\"role\":\"developer\",\"content\":[{\"type\":\"input_text\",\"text\":\"<claudex_memory>INSTR_TURN_CONTEXT</claudex_memory>\"}]}"
+      ],
+      "stillHasV1": true
+    },
+    "next turn without extras": {
+      "markerInRequest": true,
+      "roles": ["message:developer", "message:developer"],
+      "snippet": [
+        "{\"type\":\"message\",\"role\":\"developer\",\"content\":[{\"type\":\"input_text\",\"text\":\"<collaboration_mode>INSTR_TURN_COLLAB</collaboration_mode>\"}]}",
+        "{\"type\":\"message\",\"role\":\"developer\",\"content\":[{\"type\":\"input_text\",\"text\":\"<claudex_memory>INSTR_TURN_CONTEXT</claudex_memory>\"}]}"
+      ],
+      "stillHasV1": true
+    }
+  }
+}

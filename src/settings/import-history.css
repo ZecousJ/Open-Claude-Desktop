@@ -1,0 +1,272 @@
+/*
+ * Settings → Import and its dialog. Loaded with the page, on first use. The
+ * dialog is 640 wide; a location is a 12px-radius card with a checkbox, its
+ * name and path, and "Added by you" with a remove button, 14px gaps and 12px
+ * 14px padding; "Add another location…" is a dashed card of the same size; the
+ * history is a list of rows with 16px sides and 12px above and below, a 14px
+ * gap after the icon.
+ */
+.modal.import-dialog {
+  width: 640px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+.import-dialog h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.import-subtitle {
+  margin: -4px 0 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.import-lead {
+  max-width: 52ch;
+  margin: 6px 0 16px;
+  color: var(--text-secondary);
+}
+.import-rollup {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+.import-rollup strong,
+.import-source-count strong {
+  font-variant-numeric: tabular-nums;
+}
+.import-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.import-empty {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--alpha-1);
+  color: var(--text-secondary);
+}
+.import-empty p {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+.import-source {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--alpha-1);
+}
+.import-source.dim {
+  opacity: 0.65;
+}
+.import-source-text {
+  min-width: 0;
+}
+.import-source-title {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.import-source-title > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.import-source-count {
+  flex: none;
+  color: var(--text-secondary);
+}
+.import-source-count strong {
+  color: var(--text);
+}
+.import-source-path {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.import-source-note {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.import-source-end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+.import-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.import-source-remove {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+.import-source-remove:hover {
+  background: var(--fill-ghost-hover);
+  color: var(--text-secondary);
+}
+.import-add {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  text-align: left;
+}
+.import-add:hover {
+  background: var(--alpha-1);
+}
+.import-add-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--alpha-2);
+  color: var(--text-secondary);
+}
+.import-add-title,
+.import-add-note {
+  display: block;
+}
+.import-add-note {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.import-refusal {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  color: var(--text);
+}
+.import-refusal svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--danger);
+}
+.import-footnote {
+  margin: 14px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.import-progress h3 + * {
+  margin-top: 8px;
+}
+.import-failed h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.import-failed h3 svg {
+  color: var(--danger);
+}
+.import-failed p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+}
+.import-success {
+  padding-top: 24px;
+  text-align: center;
+}
+.import-success p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+}
+.import-success p.warning {
+  color: var(--danger);
+}
+.import-success-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: var(--alpha-2);
+}
+
+.import-page .import-history {
+  margin-top: 32px;
+}
+.import-history h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 400;
+}
+.import-history-list {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.import-history-empty {
+  margin: 0;
+  padding: 12px 16px;
+  color: var(--text-secondary);
+}
+.import-history-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+}
+.import-history-row + .import-history-row {
+  border-top: 1px solid var(--border);
+}
+.import-history-row > svg {
+  flex: none;
+  color: var(--text-muted);
+}
+.import-history-text {
+  flex: 1;
+  min-width: 0;
+}
+.import-history-text small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.import-history-row time {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.import-history-all {
+  margin-top: 8px;
+}
+.import-remove-warning {
+  display: block;
+  margin-top: 8px;
+  color: var(--danger);
+}

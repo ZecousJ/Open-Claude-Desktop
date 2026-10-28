@@ -1,0 +1,378 @@
+/* Measured static reference: Motion remains unverified. */
+/* Disabled CDS rows. */
+.model-menu button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.model-menu,
+.model-submenu {
+  background: var(--surface-popover);
+  border: 1px solid #383838;
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: var(--shadow);
+  color: #d4d4d1;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+}
+.model-menu {
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  /* O16 shared8 Op.Popup sideOffset=4; R17 live reply/home phone. */
+  bottom: calc(100% + 4px);
+  width: 176px;
+  outline: none;
+}
+.model-menu button {
+  transition: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+.model-menu button:not([aria-disabled="true"]):hover,
+.model-menu button:not([aria-disabled="true"]):focus-visible,
+.model-menu button[aria-expanded="true"] {
+  /* White 7.5% over the menu. */
+  background: var(--fill-ghost-hover);
+  outline: none;
+  box-shadow: none;
+}
+.model-menu button > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* A glyph span (the row's caret) keeps its 16px slot at the row's end and the
+   muted ink; it is not a label. */
+.model-menu button > span.app-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: #898781;
+}
+.model-menu button > svg {
+  flex-shrink: 0;
+  color: #888882;
+}
+.model-menu button[role="menuitemradio"] > svg {
+  width: 20px;
+  height: 20px;
+  margin-right: -2px;
+  color: var(--link-text);
+}
+.model-menu-current {
+  min-height: 48px !important;
+}
+/* A catalog model without a description is one line, like the menu's other rows. */
+.model-menu-current.single-line {
+  min-height: 32px !important;
+}
+.model-menu-current strong {
+  display: block;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-menu-current small {
+  display: block;
+  padding-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-menu small {
+  font: inherit;
+  color: #858580;
+}
+.model-menu-separator {
+  height: 1px;
+  margin: 3px 8px;
+  background: #353535;
+}
+.model-menu-branch {
+  position: relative;
+}
+.model-submenu {
+  position: absolute;
+  left: calc(100% + 6px);
+  bottom: 0;
+  width: 320px;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+.model-menu.opens-left .model-submenu,
+.model-menu .model-submenu.flip-left {
+  left: auto;
+  right: calc(100% + 6px);
+}
+.model-menu.opens-left .model-submenu.flip-right {
+  left: calc(100% + 6px);
+  right: auto;
+}
+/* No room on either side (ModelMenu measures): over the menu, as wide as it,
+   above its row so the row stays to close it. */
+.model-menu .model-submenu.over-menu {
+  left: 0;
+  right: 0;
+  width: auto;
+  bottom: calc(100% + 4px);
+}
+/* A retired model's notice heads the menu; the effort note's style. */
+.model-submenu p,
+.model-menu-notice {
+  margin: 3px 8px 4px;
+  font:
+    13px/17px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  color: #858580;
+}
+.model-menu .model-effort-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 7px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font:
+    10px/13px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.model-menu .model-effort-badge.default {
+  background: #343433;
+  color: #b9b8b4;
+}
+.model-menu .model-effort-badge.usage {
+  background: #2e1c05;
+  color: #d69c44;
+}
+.model-provider-label {
+  margin: 5px 8px;
+  color: #858580;
+  font-size: 12px;
+}
+:root[data-theme="light"] .model-menu,
+:root[data-theme="light"] .model-submenu {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+:root[data-theme="light"] .model-menu button:not([aria-disabled="true"]):hover,
+:root[data-theme="light"]
+  .model-menu
+  button:not([aria-disabled="true"]):focus-visible,
+:root[data-theme="light"] .model-menu button[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .model-menu-separator {
+  background: var(--border);
+}
+
+/*
+ * With the administrator's catalog: as wide as
+ * * Popup min-w-[128px] max-w-[min(26rem,var(--available-width))]; measured
+ *   295px with the live descriptions), one 50px row per model with its name
+ *   (#f7f5f6) over a description (#8f8e8c), both 14px on 18.5px lines, text
+ *   15px inside the rim.
+ */
+.model-menu.catalogued {
+  width: max-content;
+  min-width: 128px;
+  max-width: min(416px, calc(100vw - 12px));
+}
+.model-menu.catalogued .model-menu-current {
+  min-height: 50px !important;
+  padding: 6.5px 10px;
+}
+.model-menu.catalogued .model-menu-current strong {
+  color: var(--text);
+  line-height: 18.5px;
+}
+
+/* O16 shared-8:18590 selects inline below640px. R17 live:13/17 group
+   labels,25px including4px vertical padding; the inner body scrolls. */
+.model-menu.model-menu-inline {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100vw - 12px);
+  max-height: var(--model-menu-available-height, calc(100dvh - 36px));
+  padding: 0;
+  overflow: visible;
+}
+.model-menu-inline-body {
+  min-height: 0;
+  overflow: hidden auto;
+  padding: 4px;
+  border-bottom: 1px solid transparent;
+}
+.model-menu-inline .model-menu-group-label {
+  padding: 4px 10px;
+  color: #898781;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 17px;
+}
+.model-menu-inline .model-inline-group > button {
+  height: 32px;
+  padding: 6px 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.model-menu.catalogued .model-menu-current small {
+  padding-top: 0;
+  color: #8f8e8c;
+  line-height: 18.5px;
+}
+:root[data-theme="light"] .model-menu.catalogued .model-menu-current strong {
+  color: inherit;
+}
+/* On the Chat and Cowork home the menu opens 5.5px below the 29px pill. */
+.chat-home .model-effort-anchor > .model-menu {
+  top: calc(100% + 5.5px);
+  bottom: auto;
+}
+/* Current official Op.Popup uses a 4px gap when flipped above the pill. */
+.chat-home .model-effort-anchor > .model-menu.opens-up {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+/* A phone has no room beside the menu: the effort and More models lists open
+   over it, as wide as it. */
+@media (max-width: 639.98px) {
+  .model-submenu,
+  .model-menu.opens-left .model-submenu {
+    left: 0;
+    right: 0;
+    width: auto;
+    bottom: calc(100% + 4px);
+    max-height: min(420px, calc(100dvh - 160px));
+  }
+}
+
+/*
+ * The makers' switch at the top, drawn as the composer's Chat/Cowork switch: a
+ * white 5% track with 1px inside, 26px segments on a 6px radius, the chosen one
+ * on a white 10% thumb with a 1px white 10% ring; the others #898781. The thumb
+ * slides in claude.ai's base duration and ease-out (200ms, --cds-ease-out).
+ */
+.model-vendor-switch {
+  position: relative;
+  display: flex;
+  margin: 2px 2px 6px;
+  padding: 1px;
+  border-radius: 7px;
+  background: var(--alpha-1);
+}
+.model-vendor-thumb {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  width: calc((100% - 2px) / var(--vendor-count));
+  border-radius: 6px;
+  background: var(--alpha-2);
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 1px 2px #0000000d;
+  transform: translateX(calc(100% * var(--vendor-index)));
+  transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+:is(.model-menu, .code-model-menu) .model-vendor-switch > button {
+  position: relative;
+  flex: 1 1 0;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 17px;
+}
+:is(.model-menu, .code-model-menu) .model-vendor-switch > button:hover,
+:is(.model-menu, .code-model-menu) .model-vendor-switch > button:focus-visible {
+  background: none;
+  color: #f0efec;
+}
+:is(.model-menu, .code-model-menu)
+  .model-vendor-switch
+  > button[aria-checked="true"] {
+  color: var(--text);
+}
+.model-vendor-switch > button > svg {
+  flex: none;
+}
+/* The one-colour marks (OpenAI, xAI) stay in the selected colour like the
+   coloured ones; above the menu's grey icon rule
+   (:root:not([data-theme="light"]) .model-menu button > svg), which had kept
+   them grey. */
+:root:not([data-theme="light"])
+  :is(.model-menu, .code-model-menu)
+  .model-vendor-switch
+  > button
+  > svg[fill="currentColor"],
+.model-vendor-switch > button > svg[fill="currentColor"] {
+  color: #f0efec;
+}
+:root[data-theme="light"]
+  :is(.model-menu, .code-model-menu)
+  .model-vendor-switch
+  > button
+  > svg[fill="currentColor"],
+:root[data-theme="light"]
+  .model-vendor-switch
+  > button
+  > svg[fill="currentColor"] {
+  color: #050505;
+}
+:root[data-theme="light"] .model-vendor-switch {
+  background: #efefed;
+}
+:root[data-theme="light"] .model-vendor-thumb {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e6e6e6;
+}
+:root[data-theme="light"]
+  :is(.model-menu, .code-model-menu)
+  .model-vendor-switch
+  > button {
+  color: #82817d;
+}
+:root[data-theme="light"]
+  :is(.model-menu, .code-model-menu)
+  .model-vendor-switch
+  > button:hover,
+:root[data-theme="light"]
+  :is(.model-menu, .code-model-menu)
+  .model-vendor-switch
+  > button[aria-checked="true"] {
+  background: none;
+  color: #050505;
+}
+:root[data-motion="reduced"] .model-vendor-thumb {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .model-vendor-thumb {
+    transition: none;
+  }
+}

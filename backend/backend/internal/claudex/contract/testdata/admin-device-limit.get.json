@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "user_id": 123,
+    "max_devices": 8,
+    "default": 5,
+    "source": "user",
+    "active_devices": 3
+  }
+}

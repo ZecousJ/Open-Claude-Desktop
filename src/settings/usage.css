@@ -1,0 +1,308 @@
+/* Settings → Usage, measured on R-1304-1311-Usage-limits-{top,bottom}-浅色-W1351
+   and -current-limit-top (Windows 1x: 1 image px = 1 CSS px). The dark theme
+   takes the Settings palette, as measured on the live page. */
+.usage-page {
+  container: usage-page / inline-size;
+  --usage-text: var(--settings-primary);
+  --usage-muted: var(--settings-secondary);
+  --usage-rule: #262626;
+  --usage-fill: #4b8be6;
+  --usage-track: color-mix(in srgb, var(--usage-fill) 28%, transparent);
+  --usage-empty: #2f2f2e;
+  --usage-full: #e0615f;
+  --usage-full-text: var(--usage-full);
+  --usage-warning: #d69c44;
+  --usage-link: #6da7ec;
+}
+:root[data-theme="light"] .usage-page {
+  --usage-text: #050505;
+  --usage-muted: #5f5e5b;
+  --usage-rule: #f2f2f2;
+  /* Fill (48,116,215); the track is the fill at a quarter over white (205,225,249). */
+  --usage-fill: #3074d7;
+  --usage-track: color-mix(in srgb, var(--usage-fill) 24%, white);
+  --usage-empty: #efefef;
+  /* Current session at 100%: bar (211,59,64); "100% used" is a much darker
+     red (darkest glyph pixel (93,46,52) at Windows 1x, corrected by the same
+     factor as the grey text beside it). */
+  --usage-full: #d33b40;
+  --usage-full-text: #7d3f47;
+  --usage-link: #2f5f9e;
+}
+
+/* "Your usage  Max (20x)": the Settings section title with the plan after it. */
+.usage-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--usage-text);
+}
+.usage-heading > span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--usage-muted);
+}
+/* "Fresh week. 8% of your weekly limit used.": cap top 49px under the
+   title's, a hairline 20px under its baseline. */
+.usage-headline {
+  margin: 25px 0 0;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--usage-rule);
+}
+.usage-headline > p {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  color: var(--usage-text);
+}
+/* "Upgrade plan" and "Buy more usage" at Heads up and Limit hit. */
+.usage-headline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+/* The lg buttons: "Buy more usage" is 143 x 40, radius 10, 15px. */
+.usage-headline-actions .settings-button.regular {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+/* Rows 73px apart; the 442px bar is centred on the two text lines and
+   ends 96px from the right edge, where "30% used" is right aligned. */
+.usage-rows {
+  display: grid;
+  gap: 28px;
+  padding-top: 12px;
+}
+.usage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 442px) 96px;
+  align-items: center;
+  column-gap: 0;
+}
+.usage-row-text {
+  min-width: 0;
+  padding-right: 24px;
+}
+.usage-row-label {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--usage-text);
+}
+.usage-row-text > p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--usage-muted);
+}
+.usage-bar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--usage-empty);
+}
+.usage-bar.used {
+  background: var(--usage-track);
+}
+.usage-bar.full {
+  background: var(--usage-full);
+}
+.usage-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--usage-fill);
+  transition: width var(--motion-moderate) var(--ease-out);
+}
+.usage-bar.full > span {
+  background: var(--usage-full);
+}
+/* Amber from 75%, red from 90%, the composer ring's colours; the track is the
+   fill's tint as in the accent bar. */
+.usage-bar.warning {
+  --usage-fill: var(--usage-warning);
+}
+.usage-bar.used.warning {
+  background: color-mix(in srgb, var(--usage-warning) 28%, transparent);
+}
+.usage-bar.critical:not(.full) {
+  --usage-fill: var(--usage-full);
+}
+.usage-bar.used.critical:not(.full) {
+  background: color-mix(in srgb, var(--usage-full) 28%, transparent);
+}
+.usage-row-percent {
+  text-align: right;
+  font-size: 13px;
+  color: var(--usage-muted);
+  white-space: nowrap;
+}
+.usage-row-percent.full {
+  color: var(--usage-full-text);
+}
+
+/* Balance, laid out like the original's "Usage credits  $0" row. */
+.usage-balance {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 48px;
+}
+/* Straight under the title when the plan has no windows. */
+.usage-heading + .usage-balance {
+  margin-top: 28px;
+}
+.usage-balance-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--usage-text);
+}
+.usage-balance p {
+  margin: 1px 0 0;
+  line-height: 20px;
+  color: var(--usage-muted);
+}
+.usage-balance-side {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 16px;
+}
+.usage-balance-side > span {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--usage-text);
+}
+.usage-empty {
+  margin: 20px 0 0;
+  color: var(--usage-muted);
+}
+
+/* "Last updated: … ↻" and the Learn more link. */
+.usage-updated {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 64px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--usage-muted);
+}
+/* Balance only: the time it was read sits close under it. */
+.usage-balance + .usage-updated {
+  margin-top: 24px;
+}
+.usage-refresh {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--usage-text);
+}
+.usage-refresh:hover:not(:disabled) {
+  background: #2a2a29;
+}
+.usage-refresh:active:not(:disabled) {
+  background: #323231;
+}
+:root[data-theme="light"] .usage-refresh:hover:not(:disabled) {
+  background: #f0efec;
+}
+:root[data-theme="light"] .usage-refresh:active:not(:disabled) {
+  background: #e7e6e2;
+}
+.usage-refresh.loading svg {
+  animation: usage-spin 900ms linear infinite;
+}
+@keyframes usage-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.usage-link {
+  display: block;
+  margin-top: 50px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--usage-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.usage-link:hover {
+  text-decoration-thickness: 2px;
+}
+/* Under Learn more, 8px apart. */
+.usage-link + .usage-billing-link {
+  margin-top: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .usage-refresh.loading svg {
+    animation: none;
+  }
+  .usage-bar > span {
+    transition: none;
+  }
+}
+/* Narrow page: the bar moves under the text, the percent stays at the right of
+   the label. */
+@container usage-page (max-width: 700px) {
+  .usage-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 10px;
+  }
+  .usage-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+:root[data-motion="reduced"] .usage-bar > span {
+  transition: none;
+}
+/* The week fold: the week's label is the toggle with a small caret that turns
+   over when open; the per-model rows follow 28px apart (the rows' gap). */
+.usage-week-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+}
+.usage-week-toggle svg {
+  color: var(--usage-muted);
+  transition: transform var(--motion-moderate) var(--ease-out);
+}
+.usage-week[data-state="open"] .usage-week-toggle svg {
+  transform: rotate(180deg);
+}
+.usage-week-scoped {
+  display: grid;
+  gap: 28px;
+  padding-top: 28px;
+}
+/* This week's usage by product: a titled group of the same bar rows. */
+.usage-products {
+  margin-top: 32px;
+}
+.usage-products > h3 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+}

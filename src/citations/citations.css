@@ -1,0 +1,127 @@
+/* Inline citations and their hover card. Pill: 18 tall on the page's lightest
+   surface with a hairline, 6px sides, full radius, 12/17 secondary text, up to
+   180px. Card: 337 wide with 16px padding and 12px corners; each source a link
+   with 6px 8px padding and 6px corners, its title 14/20 medium over the site's
+   icon and name at 12/17. */
+.citation-chip {
+  /* An inline block, not inline-flex: text-overflow only ends a block's
+     own line in "…" (in a flex box the title was cut mid-letter). */
+  display: inline-block;
+  box-sizing: border-box;
+  height: 18px;
+  max-width: 180px;
+  margin: 0 1px 0 4px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font:
+    400 12px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  vertical-align: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.citation-chip:hover,
+.citation-chip[data-open] {
+  background: var(--surface-selected);
+  color: var(--text);
+}
+/* Keyboard focus is the shared ring (00-foundation.css). */
+.citation-card {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  width: 337px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  box-shadow: var(--shadow);
+  opacity: 1;
+  transition: opacity 80ms var(--ease-out);
+}
+.citation-card:focus {
+  outline: none;
+}
+.citation-card[data-placed="false"] {
+  visibility: hidden;
+  opacity: 0;
+}
+.citation-card-item {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+.citation-card-item:hover,
+.citation-card-item:focus-visible {
+  background: var(--fill-ghost-hover);
+  outline: none;
+}
+.citation-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.citation-card-site {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 17px;
+}
+.citation-card-host {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Site icons: a favicon, or the site's initial on a round placeholder. */
+.site-icon {
+  flex: none;
+  border-radius: 3px;
+  object-fit: contain;
+}
+.site-icon-placeholder {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-selected);
+  color: var(--text-secondary);
+  font-weight: 600;
+  line-height: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .citation-card {
+    transition: none;
+  }
+}
+
+:root[data-theme="light"] .citation-chip {
+  background: #f9f9f7;
+  box-shadow: inset 0 0 0 0.5px rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .citation-chip:hover,
+:root[data-theme="light"] .citation-chip[data-open] {
+  background: #f3f3f1;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,61 @@
+/* The reference look for the phones (Chat, and Code's session rows). */
+@import "./official.css";
+/* Native owns the header, safe-area insets, keyboard and composer. The shared
+   surface fills only the transcript slot. Chat's official values live in
+   official.css, each from the spec; nothing else copies colours or type. */
+.app.mobile-conversation {
+  display: flex;
+  height: 100%;
+}
+.mobile-conversation > .workspace {
+  flex: 1;
+}
+.mobile-conversation .chat-main {
+  min-height: 0;
+}
+.mobile-conversation .messages-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-conversation .messages-scroll::before {
+  display: none;
+}
+.mobile-conversation .messages {
+  padding-top: 16px;
+  padding-bottom: 20px;
+}
+.mobile-conversation .message-actions {
+  flex-wrap: wrap;
+}
+.mobile-conversation-error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  padding: 8px 16px;
+}
+.mobile-conversation-error button {
+  float: right;
+}
+.mobile-document {
+  height: 100%;
+  overflow: auto;
+  padding: 16px;
+  background: var(--bg);
+}
+.mobile-document .markdown {
+  max-width: 780px;
+  margin: auto;
+}
+@media (max-width: 600px) {
+  .mobile-conversation .messages {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  /* Touch targets grow; their glyph, colour and typography stay shared. */
+  .mobile-conversation
+    :is(.message-actions button, .user-message-actions button) {
+    min-width: 36px;
+    min-height: 36px;
+  }
+  .mobile-conversation :is(.user-message-actions, .message-actions) {
+    opacity: 1;
+  }
+}

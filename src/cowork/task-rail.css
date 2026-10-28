@@ -1,0 +1,9 @@
+/* Loaded with the rail, after an explicit open. */
+.cowork-tasks-resize {
+  inset-inline-start: -12px;
+  inset-inline-end: auto;
+}
+.cowork-tasks-panel :is(button, a, [role="separator"]):focus-visible {
+  outline: 2px solid var(--task-accent);
+  outline-offset: 2px;
+}

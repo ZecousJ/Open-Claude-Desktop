@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "api_version": 1,
+    "server": {
+      "version": "0.2.8+claudex.1",
+      "build_type": "source"
+    },
+    "channel": "stable",
+    "latest_version": "1.4.0",
+    "minimum_version": "1.2.0",
+    "state": "available",
+    "enforced": false,
+    "download_url": "https://dl.example.com/Claudex-1.4.0-arm64.zip",
+    "sha256": "3f5c9a1e7b2d4c6f8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
+    "release_notes_url": "https://claudex.example.com/releases/1.4.0",
+    "release_notes_md": "## 1.4.0\n- Plan usage limits now show the current session.",
+    "published_at": "2026-09-20T08:00:00Z"
+  }
+}

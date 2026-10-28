@@ -1,0 +1,43 @@
+/* Customize's unified search: the results heading, sections as Customize's own
+   with their count, a footnote-sized muted note, and Show more / Show fewer as
+   a quiet text button under a section. */
+.unified-search {
+  display: flex;
+  flex-direction: column;
+}
+.unified-heading {
+  margin: 24px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+.unified-search > .customize-section:first-of-type {
+  margin-top: 16px;
+}
+.unified-kind {
+  flex: none;
+  margin-inline-start: auto;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.unified-more {
+  align-self: flex-start;
+  margin: 6px 0 0;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+.unified-more:hover {
+  color: var(--text);
+}
+.unified-note {
+  margin: 0;
+  padding: 8px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 16px;
+}

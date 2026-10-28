@@ -1,0 +1,64 @@
+.settings-account .account-devices-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+.settings-account .account-local-devices {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+  line-height: 20px;
+}
+.settings-account .account-local-devices th {
+  /* Live Account tables: 32px header, 13px/17px/500 secondary. */
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px 0 0;
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+  color: var(--settings-secondary);
+}
+.settings-account .account-local-devices td {
+  height: 49px;
+  padding: 8px 12px 8px 0;
+  box-sizing: border-box;
+  border-top: 1px solid var(--settings-alpha-1);
+  color: var(--settings-primary);
+  white-space: nowrap;
+}
+
+.settings-account .account-device-actions {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  color: var(--settings-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.settings-account .account-device-actions:hover {
+  background: var(--settings-alpha-1);
+}
+.settings-account .account-device-details {
+  margin: 8px 0 16px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--settings-secondary);
+}
+
+.settings-account .account-device-verification {
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 20px;
+}
+.settings-account .account-device-verification code {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.settings-account .account-device-verification button {
+  margin: 8px 8px 8px 0;
+}

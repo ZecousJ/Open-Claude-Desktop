@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+// Claudex runner: starts codex (or another program of the image) inside a
+// gVisor sandbox.
+//
+//   sandbox-runsc --spec <spec.json> -- app-server --listen stdio:// -c …
+//
+// Engine never calls this directly: RunscDriver.prepare() writes a
+// per-sandbox launcher (<stateDir>/codex) that execs this program with the
+// sandbox's spec, and the runner passes that launcher to Engine as the codex
+// binary. stdin/stdout carry codex's JSON-RPC unchanged; this program writes
+// diagnostics to stderr only. Needs Node 22.18+ (TypeScript type stripping)
+// unless the runner build bundles it.
+import { main } from "../src/sandbox/runsc.ts";
+
+main(process.argv.slice(2)).then(
+  (code) => process.exit(code),
+  (error) => {
+    process.stderr.write(`sandbox-runsc: ${error?.message ?? error}\n`);
+    process.exit(126);
+  },
+);

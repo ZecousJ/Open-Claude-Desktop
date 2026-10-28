@@ -1,0 +1,192 @@
+/*
+ * Settings → Claude Code → Appearance → Transcript text size
+ * (src/transcript-text-size.ts). The document carries the choice as
+ * data-chat-text-size; a Code prompt, a reply and the queued messages carry
+ * data-text-size ("sm", "lg", none for Medium). Medium keeps the sizes Code
+ * was measured at (14px on 20px lines).
+ *
+ * --transcript-text/--transcript-line: the transcript's own rows (tool rows,
+ *   questions, file paths): 13, 14 or 15px on 1.42857, 1.42857 or 1.46667
+ *   lines.
+ * --message-text/--message-line: a prompt's and a reply's text, and the
+ *   queued messages: 13/19 for Small, 15/22 for Large (the messages'
+ *   body and prose sizes at the density Code is drawn in).
+ * --prompt-text/--prompt-line: the Code composer: 13, 14 or 15px, the line
+ *   1.4 times that, rounded (--prompt-text-size; the composer's leading).
+ * --document-body: a Markdown document's text, 14, 15 or 16px; its column
+ *   is 36 times that wide and its lines 1.6 times that tall.
+ */
+:root {
+  --transcript-text: 14px;
+  --transcript-line: 20px;
+  --prompt-text: 14px;
+  --prompt-line: 20px;
+  --document-body: 15px;
+}
+:root[data-chat-text-size="s"] {
+  --transcript-text: 13px;
+  --transcript-line: calc(13px * 1.42857);
+  --prompt-text: 13px;
+  --prompt-line: 18px;
+  --document-body: 14px;
+}
+:root[data-chat-text-size="l"] {
+  --transcript-text: 15px;
+  --transcript-line: calc(15px * 1.46667);
+  --prompt-text: 15px;
+  --prompt-line: 21px;
+  --document-body: 16px;
+}
+[data-text-size="sm"] {
+  --message-text: 13px;
+  --message-line: 19px;
+}
+[data-text-size="lg"] {
+  --message-text: 15px;
+  --message-line: 22px;
+}
+
+/* A reply's headings and tables keep their proportion to its text, as the
+   original's prose sizes them in em (h1 1.75em, h2 1.375em, h3 1.125em);
+   Code's are 22, 18, 16 and 15px over 14px text. Only away from Medium. */
+.mode-code .assistant-message[data-text-size] .markdown h1 {
+  font-size: calc(22em / 14);
+}
+.mode-code .assistant-message[data-text-size] .markdown h2 {
+  font-size: calc(18em / 14);
+}
+.mode-code .assistant-message[data-text-size] .markdown h3 {
+  font-size: calc(16em / 14);
+}
+.mode-code .assistant-message[data-text-size] .markdown h4 {
+  font-size: calc(15em / 14);
+}
+.mode-code .assistant-message[data-text-size] .markdown table {
+  font-size: var(--message-text);
+}
+
+/*
+ * Chat and Cowork follow the same choice: the message rules key off
+ * data-text-size wherever a prompt or reply sits, and Cowork sessions render
+ * in the same transcript as Code. Their messages are drawn at the comfortable
+ * density, so Small and Large take that density's message sizes, and Medium
+ * keeps the measured ones:
+ *   reply    Medium 15/22 (Chat), 17/24 (Cowork);
+ *            Small 15/22; Large 18/27
+ *            (the prose size and leading at sm and lg);
+ *   prompt   Chat's bubble Medium 15/20; Small 14/20; Large 16/24 (the
+ *            small prose size); Cowork's prompt is Code's, 13/19 and 15/22.
+ * Headings and tables keep their proportion to the reply's text,
+ * as the reply's own sizes are in em away from Medium.
+ */
+[data-text-size="sm"] {
+  --reply-text: 15px;
+  --reply-line: 22px;
+  --bubble-text: 14px;
+  --bubble-line: 20px;
+}
+[data-text-size="lg"] {
+  --reply-text: 18px;
+  --reply-line: 27px;
+  --bubble-text: 16px;
+  --bubble-line: 24px;
+}
+:is(.mode-chat, .mode-cowork) .assistant-message[data-text-size] .markdown {
+  font-size: var(--reply-text);
+  line-height: var(--reply-line);
+}
+.mode-chat
+  :is(
+    .user-message[data-text-size],
+    [data-text-size] .user-message.steered-message
+  ) {
+  font-size: var(--bubble-text);
+  line-height: var(--bubble-line);
+}
+.mode-chat .user-message[data-text-size] .prompt-paragraph:empty {
+  min-height: var(--bubble-line);
+}
+.mode-cowork
+  :is(
+    .user-message[data-text-size],
+    [data-text-size] .user-message.steered-message
+  ) {
+  font-size: var(--message-text);
+  line-height: var(--message-line);
+}
+/* Prose heading scale. */
+.mode-chat .assistant-message[data-text-size] .markdown h1 {
+  font-size: 1.75em;
+  line-height: 1.25;
+}
+.mode-chat .assistant-message[data-text-size] .markdown h2 {
+  font-size: 1.375em;
+  line-height: 1.25;
+}
+.mode-chat .assistant-message[data-text-size] .markdown h3 {
+  font-size: 1.125em;
+  line-height: 1.3;
+}
+.mode-chat .assistant-message[data-text-size] .markdown :is(h4, h5, h6) {
+  font-size: 0.875em;
+  line-height: 1.3;
+}
+.mode-chat .assistant-message[data-text-size] .markdown h4 {
+  font-size: 1em;
+}
+/* Cowork's are 22, 18, 16 and 15px over 17px text, and its tables 14px
+   (92-reference-pages.css). Inline code is 14.4px at every size (the live
+   markdown chip is rem-sized, live-web/transcript.css). */
+.mode-cowork .assistant-message[data-text-size] .markdown h1 {
+  font-size: calc(22em / 17);
+}
+.mode-cowork .assistant-message[data-text-size] .markdown h2 {
+  font-size: calc(18em / 17);
+}
+.mode-cowork .assistant-message[data-text-size] .markdown h3 {
+  font-size: calc(16em / 17);
+}
+.mode-cowork .assistant-message[data-text-size] .markdown h4 {
+  font-size: calc(15em / 17);
+}
+.mode-cowork .assistant-message[data-text-size] .markdown table {
+  font-size: calc(14em / 17);
+}
+
+/* The Chat and Cowork composer, 15px on 21px lines at Medium (live-web/
+   composer.css). The live composer's type size steps a pixel either way
+   with the choice and its lines are 1.4 times that (--prompt-text-size). */
+:root {
+  --composer-text: 15px;
+  --composer-line: 21px;
+}
+:root[data-chat-text-size="s"] {
+  --composer-text: 14px;
+  --composer-line: 20px;
+}
+:root[data-chat-text-size="l"] {
+  --composer-text: 16px;
+  --composer-line: 22px;
+}
+
+/* R17 official-chat-small/large: current unified Chat uses the compact
+   Prose lg tokens (1016 CSS:68271/68275/68285/68289), rather than the
+   comfortable legacy task sizes above. User bubbles already use 14/20
+   and 16/24. Keep the independent Cowork and Code renderers unchanged. */
+.messages-scroll[data-presentation="chat"]
+  [data-cds="AssistantMessage"][data-text-size="sm"] {
+  --reply-text: 14px;
+  --reply-line: 20px;
+}
+.messages-scroll[data-presentation="chat"]
+  [data-cds="AssistantMessage"][data-text-size="lg"] {
+  --reply-text: 16px;
+  --reply-line: 24px;
+}
+/* The official editor stays 15/21 across all three transcript choices.
+   Local variables also keep its prompt preview aligned; the phone's
+   coarse-pointer 16px text-entry floor continues to apply downstream. */
+.composer-wrap[data-presentation="chat"] {
+  --composer-text: 15px;
+  --composer-line: 21px;
+}

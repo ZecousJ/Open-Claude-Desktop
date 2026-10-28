@@ -1,0 +1,4 @@
+{
+  "name": "tools",
+  "scripts": { "start": "node index.js" }
+}

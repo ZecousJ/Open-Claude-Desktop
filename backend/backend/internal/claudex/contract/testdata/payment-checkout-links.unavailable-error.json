@@ -1,0 +1,11 @@
+{
+  "status": 409,
+  "body": {
+    "code": 409,
+    "message": "This order can't be paid in the browser.",
+    "reason": "CLAUDEX_CHECKOUT_UNAVAILABLE",
+    "metadata": {
+      "rule": "provider"
+    }
+  }
+}

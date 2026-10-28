@@ -1,0 +1,22 @@
+# The SSH host of the R9 end-to-end test. Started and removed by run.sh,
+# which sets every variable below; not meant to run on its own.
+name: claudex-ssh-e2e
+services:
+  host:
+    build:
+      context: .
+    image: claudex-ssh-e2e-host:${E2E_TAG:?run scripts/ssh-e2e/run.sh}
+    platform: ${E2E_PLATFORM:?run scripts/ssh-e2e/run.sh}
+    ports:
+      # Loopback only: the test host accepts a known password.
+      - "127.0.0.1:${E2E_SSH_PORT:?run scripts/ssh-e2e/run.sh}:22"
+    environment:
+      E2E_PASSWORD: ${E2E_PASSWORD:?run scripts/ssh-e2e/run.sh}
+    volumes:
+      - ${E2E_DIR:?run scripts/ssh-e2e/run.sh}/authorized_keys:/e2e/authorized_keys:ro
+    mem_limit: 1g
+    # Like a real Linux host (a VM or a server), not a container: Docker's
+    # default seccomp profile blocks the user namespaces Codex's sandbox
+    # (bubblewrap) needs, which would fail every sandboxed command.
+    security_opt:
+      - seccomp=unconfined

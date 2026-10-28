@@ -1,0 +1,136 @@
+/* The side panels' shell beside the conversation. Moved from the end of
+   92-reference-pages.css and loaded right after it. */
+.work-panel,
+.artifact-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 7px 7px 7px 0;
+  background: #191919;
+  min-width: 330px;
+  flex-basis: 33%;
+}
+.work-panel > header,
+.artifact-panel > header {
+  height: 36px;
+  min-height: 36px;
+  border-bottom: 0;
+  padding: 0 9px;
+}
+.work-panel > header strong {
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.work-panel-content {
+  padding: 6px 11px;
+}
+.panel-empty {
+  min-height: 140px;
+  padding: 25px 12px;
+}
+
+/* A tool panel is a card pinned to the window top, 8px from the top, right and
+   bottom edges; the conversation column, title bar included, ends at the card's
+   left edge. Widths there: Changes 537, Terminal and Plan 299, Background tasks
+   and an Agent's transcript 282. In a narrower column the cards keep a share of
+   it: Terminal 280 (49.5%), Changes 322 (60.4% − 20px, which is 537 at 922).
+   The width lives on the workspace so the card, the column and its title bar
+   share it; the Background rail's dragged width arrives as
+   --background-panel-width. */
+.workspace:has(> .chat-layout > .work-panel) {
+  --tool-panel-width: min(299px, 49.5%);
+}
+.workspace:has(> .chat-layout > .changes-panel),
+.workspace:has(> .chat-layout > .browser-panel) {
+  --tool-panel-width: min(537px, calc(60.4% - 20px));
+}
+.workspace:has(> .chat-layout > .background-tasks-panel) {
+  --tool-panel-width: min(
+    var(--background-panel-width, 282px),
+    max(220px, calc(100% - 260px))
+  );
+}
+/* Expanded sizes have no reference (Changes, Plan, Background): kept from
+   before, visual-provisional. */
+.workspace:has(> .chat-layout > .changes-panel.expanded),
+.workspace:has(> .chat-layout > .browser-panel.expanded) {
+  --tool-panel-width: min(900px, 70%);
+}
+.workspace:has(> .chat-layout > .plan-panel.expanded) {
+  --tool-panel-width: min(560px, 55%);
+}
+.workspace:has(> .chat-layout > .background-tasks-panel.expanded) {
+  --tool-panel-width: min(620px, 60%);
+}
+.workspace > .chat-layout > .work-panel {
+  position: absolute;
+  z-index: 11;
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  width: var(--tool-panel-width);
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  flex: none;
+}
+.workspace:has(> .chat-layout > .work-panel) > .chat-header,
+.workspace > .chat-layout:has(> .work-panel) > .chat-main {
+  margin-right: calc(var(--tool-panel-width) + 8px);
+}
+/* With a panel open the title bar's buttons end 24px (⋮ centre) before the
+   card. */
+.workspace:has(> .chat-layout > .work-panel) > .chat-header {
+  padding-right: 12px;
+}
+/* The terminal expanded covers the whole conversation column, 8px from the
+   sidebar edge. The column keeps its width underneath, so the transcript does
+   not reflow. */
+.workspace > .chat-layout > .work-panel.terminal-panel.expanded {
+  left: 8px;
+  width: auto;
+}
+.workspace:has(> .chat-layout > .terminal-panel.expanded) > .chat-header,
+.workspace > .chat-layout:has(> .terminal-panel.expanded) > .chat-main {
+  visibility: hidden;
+}
+.sidebar-hidden.darwin .terminal-panel.expanded > header {
+  padding-left: 164px;
+}
+/* The card's header takes the title bar's place, so it moves the window too. */
+.workspace > .chat-layout > .work-panel > header {
+  -webkit-app-region: drag;
+}
+.workspace > .chat-layout > .work-panel > header :is(button, input, a),
+.workspace > .chat-layout > .work-panel > header [role="tab"] {
+  -webkit-app-region: no-drag;
+}
+
+/* Title bar panel toggles: 26×25 buttons 30px apart; the open panel's toggle is
+   #0b1f40 with a #83a3d7 icon. */
+.header-actions .icon-button.panel-toggle {
+  width: 26px;
+  margin-right: -3px;
+  border-radius: 6px;
+}
+.header-actions .icon-button.panel-toggle + .popover-anchor,
+.header-actions .panel-toggle ~ .popover-anchor {
+  margin-left: 2px;
+}
+.header-actions .icon-button.panel-toggle.active {
+  background: #0b1f40;
+  color: #83a3d7;
+}
+:root[data-theme="light"] .header-actions .icon-button.panel-toggle.active {
+  background: #dce7f8;
+  color: #2f5ea8;
+}
+
+/* Changes with the Browser under it: two cards of the same height, 10px apart
+   (8–520 and 530–1041 in a 1049 window). */
+.workspace > .chat-layout:has(> .browser-panel.split) > .changes-panel {
+  bottom: calc(50% + 5px);
+}
+.workspace > .chat-layout > .work-panel.browser-panel.split {
+  top: calc(50% + 5px);
+}

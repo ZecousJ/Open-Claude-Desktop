@@ -1,0 +1,315 @@
+/* Metadata grid. */
+.connector-detail-metadata {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 1.25rem;
+  row-gap: 0.375rem;
+  font-size: 0.8125rem;
+  line-height: 1.1875rem;
+}
+.connector-detail-metadata dd {
+  margin: 0;
+}
+.connector-detail-url {
+  word-break: break-all;
+  font-size: 0.75rem;
+  line-height: 1.0625rem;
+  font-family: "anthropic-mono", ui-monospace, monospace;
+}
+.connector-detail-status {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.1875rem;
+}
+.connector-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Current /customize/connectors/id, 1440×900: 632/288 columns and 40 gap. */
+.connector-customize-host {
+  min-width: 0;
+}
+.connector-published-detail {
+  width: 100%;
+  padding-top: 20px;
+  color: var(--text);
+}
+.connector-published-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  margin: 0 -10px;
+}
+.connector-published-nav > a,
+.connector-published-nav > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.connector-published-nav > :hover {
+  background: var(--surface-hover);
+}
+.connector-published-header {
+  display: grid;
+  grid-template-columns: minmax(0, 632px) 288px;
+  align-items: center;
+  gap: 40px;
+  margin: 17px 0 57px;
+}
+.connector-published-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 20px;
+}
+.connector-published-identity h1 {
+  min-width: 0;
+  margin: 0;
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-size: 38px;
+  font-weight: 330;
+  line-height: 45.6px;
+  overflow-wrap: anywhere;
+}
+.connector-published-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  background: var(--settings-panel, #1a1a19);
+}
+.connector-published-icon .connector-logo {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.connector-published-title {
+  flex: 1;
+  min-width: 0;
+}
+.connector-published-title > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.connector-published-title > p {
+  margin: 3px 0 0;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+.connector-published-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.connector-published-primary > .primary {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+}
+.connector-published-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 288px;
+  align-items: start;
+  gap: 40px;
+}
+.connector-published-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 26.4px;
+  white-space: pre-line;
+}
+.connector-published-tools {
+  margin-top: 56px;
+}
+.connector-published-detail h3 {
+  margin: 0 0 16px;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 28px;
+}
+.connector-published-tools > ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.connector-published-tools > ul > li + li {
+  margin-top: 8px;
+}
+.connector-published-metadata {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 24px;
+  margin: 6px 0 0;
+  padding: 0;
+}
+.connector-published-field dt {
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.connector-published-field dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.connector-published-field a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+.connector-published-field a:hover {
+  text-decoration: underline;
+}
+.connector-published-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Interior spacing cannot collapse through the surrounding dd. */
+  padding-top: 4px;
+  margin-inline: -4px;
+}
+.connector-published-categories > button,
+.connector-published-categories > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.connector-published-url {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-inline-end: 36px;
+}
+.connector-published-url > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font:
+    13px/19px ui-monospace,
+    monospace;
+}
+.connector-published-url > button {
+  position: absolute;
+  inset-inline-end: 0;
+  top: -6px;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: inherit;
+}
+.connector-published-info {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+.connector-published-related {
+  margin-top: 40px;
+}
+@media (max-width: 767px) {
+  .connector-published-header,
+  .connector-published-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .connector-published-header {
+    margin-bottom: 32px;
+  }
+  .connector-published-identity {
+    padding: 0;
+    gap: 16px;
+  }
+  .connector-published-metadata {
+    margin-top: 24px;
+  }
+}
+
+/* Published names are neutral chips, without list markers. */
+.connector-published-tools > .connector-published-tool-names {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  list-style-type: none;
+  column-gap: 24px;
+}
+.connector-published-tool-names > li {
+  margin: 0 0 8px;
+  break-inside: avoid;
+}
+.connector-published-tools > .connector-published-tool-names > li + li {
+  margin-top: 0;
+}
+.connector-published-tool-names > li > span {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  vertical-align: top;
+}
+.connector-published-show-tools {
+  margin-top: 8px;
+  padding: 4px 0;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.connector-published-show-tools:hover {
+  color: var(--text);
+}
+.connector-published-field dt > h3 {
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.connector-published-categories > button:hover {
+  background: var(--surface-hover);
+}

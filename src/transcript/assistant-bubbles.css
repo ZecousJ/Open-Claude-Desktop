@@ -1,0 +1,1114 @@
+/* Bubble stacks. */
+/* Current main Chat frame: R17 official 1440×900 computed chunk gap is 8px.
+   Paragraph spacing remains in Prose. */
+.assistant-message-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  overflow-wrap: break-word;
+}
+.assistant-message-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+.message-summary {
+  top: 0;
+  inset-inline-start: 0;
+  user-select: none;
+}
+.assistant-bubble-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  overflow-wrap: break-word;
+  --cds-ring-outer: 1px;
+  --cds-alpha-1: rgb(255 255 255 / 5%);
+  --cds-bg-neutral-hover: rgb(255 255 255 / 10%);
+  --cds-border: rgb(255 255 255 / 10%);
+  --cds-radius: 6px;
+  --cds-message-bubble-radius: 10px;
+  --cds-message-bubble-pad-x: 12px;
+  --cds-message-bubble-pad-y: 8px;
+  --cds-message-bubble-measure: 85%;
+  --cds-bg-user-message: rgb(255 255 255 / 5%);
+  --cds-page-bg: #0b0b0b;
+}
+:root[data-theme="light"] .assistant-bubble-stack {
+  --cds-alpha-1: rgb(11 11 11 / 5%);
+  --cds-bg-neutral-hover: rgb(11 11 11 / 10%);
+  --cds-border: rgb(11 11 11 / 10%);
+  --cds-bg-user-message: rgb(0 0 0 / 5%);
+  --cds-page-bg: #f9f9f7;
+}
+.assistant-bubble-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  --cds-message-bubble-item-gap: 1.25rem;
+  gap: var(--cds-message-bubble-item-gap);
+}
+[data-cds="AssistantMessage"][data-cds-bubble-stack] {
+  --cds-assistant-message-text-inset: var(--cds-message-bubble-pad-x);
+  --cds-assistant-message-text-stop: 0px;
+  --cds-message-bubble-stack-gap: 4px;
+  --cds-message-bubble-radius-meeting: 4px;
+  --cds-message-bubble-radius-head: var(--cds-message-bubble-radius);
+  --cds-message-bubble-radius-foot: var(--cds-message-bubble-radius);
+  --cds-message-bubble-join-gap: min(8px, var(--cds-message-bubble-pad-y));
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ) {
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: var(--cds-message-bubble-measure);
+  --cds-radius: calc(
+    var(--cds-message-bubble-radius) - 0.25rem * var(--cds-rem-scale, 1)
+  );
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="TurnStatus"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ),
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="TurnStatusStep"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ),
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="Banner"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ) {
+  max-width: var(--cds-message-bubble-measure);
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="TurnStatus"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > [data-cds-row-panel] {
+  padding-inline: var(--cds-ring-outer);
+  --cds-turn-status-card-pad-x: calc(
+    var(--cds-message-bubble-pad-x) - var(--cds-ring-outer)
+  );
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds-row-panel]
+  [data-cds="TurnStatus"] {
+  --cds-turn-status-card-pad-x: initial;
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="Banner"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ),
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="Card"][data-cds-bubble-stack-item]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ) {
+  --cds-ring-outer: 0px;
+  --cds-ring-inner: 1px;
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="TurnStatus"]:not([data-state="busy"], [data-state="blocked"]):not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div
+  > [data-cds-row-media],
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="TurnStatusStep"]:not(
+    [data-state="busy"],
+    [data-state="blocked"]
+  ):not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div
+  > [data-cds-row-media] {
+  margin-inline-start: 0;
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="TurnStatus"]:not([data-state="busy"], [data-state="blocked"]):not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div
+  > [data-cds-phrases-spare] {
+  order: 9999;
+}
+@media screen {
+  [data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    ) {
+    grid-template-columns:
+      fit-content(var(--cds-message-bubble-measure))
+      minmax(0, 1fr);
+    row-gap: var(--cds-message-bubble-item-gap);
+    display: grid;
+  }
+
+  [data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > *,
+  [data-cds="AssistantMessage"][data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > [data-cds-bubble-stack-cards]
+    > *,
+  [data-cds="AssistantMessage"][data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > [data-cds-bubble-stack-cards]
+    [data-cds="MessageAttachments"] {
+    grid-column: 1/-1;
+    min-width: 0;
+  }
+
+  [data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > [data-cds="Prose"] {
+    grid-column: 1;
+    width: auto;
+    max-width: none;
+  }
+
+  [data-cds="AssistantMessage"][data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > [data-cds-bubble-stack-cards] {
+    grid-template-columns: subgrid;
+    column-gap: 0;
+    display: grid;
+  }
+
+  [data-cds="AssistantMessage"][data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > [data-cds-bubble-stack-cards]
+    > div:has(> [data-cds="Card"][data-cds-bubble-stack-item]) {
+    grid-column: 1;
+  }
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ) {
+  box-sizing: border-box;
+  padding: var(--cds-message-bubble-pad-y) var(--cds-message-bubble-pad-x);
+  border-radius: var(--cds-message-bubble-radius-head)
+    var(--cds-message-bubble-radius-head)
+    var(--cds-message-bubble-radius-meeting)
+    var(--cds-message-bubble-radius-meeting);
+  background: linear-gradient(
+      var(--cds-bg-user-message),
+      var(--cds-bg-user-message)
+    )
+    var(--cds-page-bg);
+  --cds-assistant-message-text-inset: 0px;
+  margin-block-start: var(--cds-message-bubble-meet-above, 0px);
+  margin-inline: 0;
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  :where(
+    pre,
+    table,
+    figure,
+    details,
+    .prose-scroll,
+    .prose-block:not(.footnotes),
+    .math-display,
+    .katex-display,
+    .not-prose,
+    [data-not-prose]
+  ):not(
+    :where(
+        pre,
+        table,
+        figure,
+        details,
+        .prose-scroll,
+        .prose-block:not(.footnotes),
+        .math-display,
+        .katex-display,
+        .not-prose,
+        [data-not-prose]
+      )
+      *
+  ) {
+  box-sizing: border-box;
+  width: 100vw;
+  max-width: 100%;
+  margin-inline: 0;
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(ul, ol),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(ul, ol) {
+  padding-inline-start: calc(var(--cds-message-bubble-pad-x) + 1.5em);
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(pre, table, details),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(pre, table, details) {
+  border-color: #0000;
+}
+@media (forced-colors: none) {
+  [data-cds-bubble-stack]
+    [data-cds="Prose"]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > .prose-scroll,
+  [data-cds-bubble-stack]
+    [data-cds="Prose"]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > div:not(
+      .prose-scroll,
+      .prose-block,
+      .prose-lead,
+      .math-display,
+      .not-prose,
+      [data-not-prose],
+      [data-cds]
+    )
+    > .prose-scroll {
+    border-inline: var(--cds-message-bubble-pad-x) solid transparent;
+    padding-inline: 0;
+  }
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > .prose-scroll
+  table,
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > .prose-scroll
+  table {
+  background: var(--cds-page-bg);
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > .prose-scroll
+  th,
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > .prose-scroll
+  th {
+  background: color-mix(in srgb, var(--cds-alpha-1) 50%, transparent);
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > blockquote,
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > blockquote {
+  border-inline-start: 0;
+  padding-inline-start: calc(var(--cds-message-bubble-pad-x) + 1em);
+  position: relative;
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > blockquote:before,
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > blockquote:before {
+  content: "";
+  inset-block: var(
+      --cds-message-bubble-pad-block-start,
+      var(--cds-message-bubble-pad-y)
+    )
+    var(--cds-message-bubble-pad-y);
+  border-inline-start: 4px solid var(--cds-border);
+  border-radius: 2px;
+  position: absolute;
+  inset-inline-start: var(--cds-message-bubble-pad-x);
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ):last-child,
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ):last-child {
+  border-end-end-radius: var(--cds-message-bubble-radius-foot);
+  border-end-start-radius: var(--cds-message-bubble-radius-foot);
+}
+@media screen and (forced-colors: none) {
+  [data-cds-bubble-stack]
+    [data-cds="Prose"]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > hr,
+  [data-cds-bubble-stack]
+    [data-cds="Prose"]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    )
+    > div:not(
+      .prose-scroll,
+      .prose-block,
+      .prose-lead,
+      .math-display,
+      .not-prose,
+      [data-not-prose],
+      [data-cds]
+    )
+    > hr {
+    border: 0;
+    margin-block: 0;
+  }
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > *
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > *
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ) {
+  border-start-start-radius: var(--cds-message-bubble-radius-meeting);
+  border-start-end-radius: var(--cds-message-bubble-radius-meeting);
+  margin-block-start: var(--cds-message-bubble-stack-gap);
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > hr:first-child
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > hr:first-child
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ) {
+  border-start-start-radius: var(--cds-message-bubble-radius-head);
+  border-start-end-radius: var(--cds-message-bubble-radius-head);
+  margin-block-start: var(--cds-message-bubble-meet-above, 0px);
+}
+
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(h1, h2, h3, h4, h5, h6)
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(h1, h2, h3, h4, h5, h6)
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(h1, h2, h3, h4, h5, h6)
+  + hr
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(h1, h2, h3, h4, h5, h6)
+  + hr
+  + :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .prose-block,
+    .math-display,
+    .katex-display,
+    .footnotes,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(p, .prose-block)
+  + :where(
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .math-display,
+    .katex-display,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(p, .prose-block)
+  + :where(
+    ul,
+    ol,
+    dl,
+    pre,
+    table,
+    figure,
+    details,
+    blockquote,
+    .prose-scroll,
+    .math-display,
+    .katex-display,
+    .not-prose,
+    [data-not-prose]
+  ),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > :where(.footnotes)
+  + :where(.footnotes),
+[data-cds-bubble-stack]
+  [data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  )
+  > div:not(
+    .prose-scroll,
+    .prose-block,
+    .prose-lead,
+    .math-display,
+    .not-prose,
+    [data-not-prose],
+    [data-cds]
+  )
+  > :where(.footnotes)
+  + :where(.footnotes) {
+  --cds-message-bubble-pad-block-start: var(
+    --cds-message-bubble-radius-meeting
+  );
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+  margin-block-start: calc(
+    var(--cds-message-bubble-join-gap) - var(--cds-message-bubble-pad-y) -
+      var(--cds-message-bubble-pad-block-start)
+  );
+  padding-block-start: var(--cds-message-bubble-pad-block-start);
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  .prose[data-cds="Prose"]
+  + div
+  > div:first-child
+  > [data-cds="Card"][data-cds-bubble-stack-item] {
+  --cds-message-bubble-radius-head: var(--cds-message-bubble-radius-meeting);
+  --cds-message-bubble-meet-above: calc(
+    var(--cds-message-bubble-stack-gap) - var(--cds-message-bubble-item-gap)
+  );
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  div:has(> [data-cds="Card"][data-cds-bubble-stack-item])
+  + div
+  > [data-cds="Card"][data-cds-bubble-stack-item] {
+  --cds-message-bubble-radius-head: var(--cds-message-bubble-radius-meeting);
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  .prose[data-cds="Prose"]:has(
+    + div > div:first-child > [data-cds="Card"][data-cds-bubble-stack-item]
+  ),
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  div:has(> [data-cds="Card"][data-cds-bubble-stack-item]):has(
+    + div > [data-cds="Card"][data-cds-bubble-stack-item]
+  )
+  > [data-cds="Card"][data-cds-bubble-stack-item] {
+  --cds-message-bubble-radius-foot: var(--cds-message-bubble-radius-meeting);
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  div[data-cds-bubble-stack-meets][data-cds-bubble-stack-meets~="above"]
+  > [data-cds="Card"][data-cds-bubble-stack-item],
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  > div
+  > div:not([data-cds]):has(> div[data-cds-bubble-stack-meets]:last-child)
+  + div
+  > div[data-cds-bubble-stack-meets]:first-child
+  > [data-cds="Card"][data-cds-bubble-stack-item],
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  > div
+  > div:not([data-cds]):has(
+    > div[data-cds-bubble-stack-meets][data-cds-bubble-stack-meets~="below"]:last-child
+  )
+  + div
+  .prose[data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ),
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  > div
+  > div:not([data-cds]):has(
+    > div[data-cds-bubble-stack-meets][data-cds-bubble-stack-meets~="below"]:last-child
+  )
+  + .prose[data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ) {
+  --cds-message-bubble-radius-head: var(--cds-message-bubble-radius-meeting);
+  --cds-message-bubble-meet-above: calc(
+    var(--cds-message-bubble-stack-gap) - var(--cds-message-bubble-item-gap)
+  );
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  div[data-cds-bubble-stack-meets][data-cds-bubble-stack-meets~="below"]
+  > [data-cds="Card"][data-cds-bubble-stack-item],
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  > div
+  > div:has(+ div > div[data-cds-bubble-stack-meets]:first-child)
+  > div[data-cds-bubble-stack-meets]:last-child
+  > [data-cds="Card"][data-cds-bubble-stack-item],
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  > div
+  > div:has(
+    + div
+      > div[data-cds-bubble-stack-meets][data-cds-bubble-stack-meets~="above"]:first-child
+  )
+  .prose[data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ),
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  > div
+  > .prose[data-cds="Prose"]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ):has(
+    + div
+      > div[data-cds-bubble-stack-meets][data-cds-bubble-stack-meets~="above"]:first-child
+  ) {
+  --cds-message-bubble-radius-foot: var(--cds-message-bubble-radius-meeting);
+}
+@media print {
+  [data-cds="AssistantMessage"][data-cds-bubble-stack] .prose[data-cds="Prose"],
+  [data-cds="AssistantMessage"][data-cds-bubble-stack]
+    [data-cds="Card"][data-cds-bubble-stack-item] {
+    --cds-message-bubble-meet-above: 0px !important;
+    --cds-message-bubble-radius-head: var(
+      --cds-message-bubble-radius
+    ) !important;
+    --cds-message-bubble-radius-foot: var(
+      --cds-message-bubble-radius
+    ) !important;
+  }
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="Card"][data-cds-bubble-stack-item]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ) {
+  box-sizing: border-box;
+  width: var(--cds-message-bubble-measure);
+  border-radius: var(--cds-message-bubble-radius-head)
+    var(--cds-message-bubble-radius-head) var(--cds-message-bubble-radius-foot)
+    var(--cds-message-bubble-radius-foot);
+  max-width: none;
+  margin-block-start: var(--cds-message-bubble-meet-above, 0px);
+}
+@media screen {
+  [data-cds="AssistantMessage"][data-cds-bubble-stack]
+    [data-cds-bubble-stack-run]
+    > [data-cds-bubble-stack-cards]
+    > div
+    > [data-cds="Card"][data-cds-bubble-stack-item]:not(
+      [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+    ) {
+    width: auto;
+  }
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="Card"][data-cds-bubble-stack-item]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ):not(:has([data-cds="CardLink"][aria-current]))
+  > .cds-card-fill {
+  background: linear-gradient(
+      var(--cds-bg-user-message),
+      var(--cds-bg-user-message)
+    )
+    var(--cds-page-bg);
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="Card"][data-cds-bubble-stack-item]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ):has([data-cds="CardLink"]:not([aria-current])):hover
+  > .cds-card-fill {
+  background: linear-gradient(
+      var(--cds-bg-neutral-hover),
+      var(--cds-bg-neutral-hover)
+    )
+    var(--cds-page-bg);
+}
+
+[data-cds="AssistantMessage"][data-cds-bubble-stack]
+  [data-cds="Card"][data-cds-bubble-stack-item]:not(
+    [data-cds-bubble-stack] :where([data-cds]:not([data-cds-bubble-stack])) *
+  ):not(:has([data-cds="CardLink"]:focus-visible)):not(
+    :has([data-cds="CardLink"][aria-current])
+  ):after {
+  box-shadow: none;
+}

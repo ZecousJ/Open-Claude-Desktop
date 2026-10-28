@@ -1,0 +1,3 @@
+# CLAUDEX: backend/.gitignore ignores every directory named release/ (upstream
+# build output). Re-include the console's desktop release components (K4).
+!release/

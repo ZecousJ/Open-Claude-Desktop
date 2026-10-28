@@ -1,0 +1,131 @@
+# Claudex server, development: builds the image from backend/ in this
+# repository and runs it with PostgreSQL 18 and Redis 8 on 127.0.0.1.
+#
+#   docker compose -f deploy/claudex-server/docker-compose.dev.yml up -d --build
+#   deploy/claudex-server/check.sh --dev
+#   docker compose -f deploy/claudex-server/docker-compose.dev.yml down [-v]
+#
+# Development only: no TLS, a fixed database password and a password-less Redis
+# on the private network, a JWT secret generated on first start. The first
+# administrator is admin@claudex.local; without CLAUDEX_DEV_ADMIN_PASSWORD the
+# server prints a one-time password in its log on first start. The compliance
+# commitment is never accepted by anything here: the owner accepts it in the
+# console. Variables are prefixed CLAUDEX_DEV_ so that a production .env in
+# this folder does not apply to the development stack.
+
+name: claudex-server-dev
+
+services:
+  claudex-server:
+    image: claudex-server:dev
+    build:
+      context: ../../backend
+      dockerfile: ../deploy/claudex-server/Dockerfile
+      args:
+        CLAUDEX_REV: ${CLAUDEX_DEV_REV:-0}
+        # "unknown" marks the image as not for distribution in /app/SOURCE.txt;
+        # build-image.sh fills in the real commit.
+        GIT_COMMIT: ${CLAUDEX_DEV_COMMIT:-unknown}
+        GOFLAGS: ${CLAUDEX_DEV_GOFLAGS:-}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:${CLAUDEX_DEV_PORT:-8080}:8080"
+    volumes:
+      - server_data:/app/data
+    environment:
+      AUTO_SETUP: "true"
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: "8080"
+      SERVER_MODE: release
+      RUN_MODE: standard
+      TZ: ${CLAUDEX_DEV_TZ:-Asia/Shanghai}
+
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_USER: sub2api
+      DATABASE_PASSWORD: claudex-dev
+      DATABASE_DBNAME: sub2api
+      DATABASE_SSLMODE: disable
+
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_DB: "0"
+
+      ADMIN_EMAIL: ${CLAUDEX_DEV_ADMIN_EMAIL:-admin@claudex.local}
+      ADMIN_PASSWORD: ${CLAUDEX_DEV_ADMIN_PASSWORD:-}
+      # Empty: generated on first start and kept in config.yaml in server_data.
+      JWT_SECRET: ${CLAUDEX_DEV_JWT_SECRET:-}
+      # Empty: a random key per start, so two-factor login cannot be enabled.
+      TOTP_ENCRYPTION_KEY: ${CLAUDEX_DEV_TOTP_ENCRYPTION_KEY:-}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${CLAUDEX_DEV_JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-T",
+          "5",
+          "-O",
+          "/dev/null",
+          "http://localhost:8080/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 120s
+
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_USER: sub2api
+      POSTGRES_PASSWORD: claudex-dev
+      POSTGRES_DB: sub2api
+      TZ: ${CLAUDEX_DEV_TZ:-Asia/Shanghai}
+    networks:
+      - backend
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U sub2api -d sub2api && psql -U sub2api -d sub2api -Atqc 'SELECT 1' >/dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  server_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:
+    driver: bridge

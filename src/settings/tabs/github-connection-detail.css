@@ -1,0 +1,84 @@
+/* Current official GitHub account detail: a 24px breadcrumb, 56px identity
+   header, 32px mark and 12px identity gap. No unsupported installation rows. */
+.github-connection-page {
+  padding-inline: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.github-connection-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  margin-inline-start: -8px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  text-decoration: none;
+}
+.github-connection-back:hover {
+  background: var(--fill-ghost-hover);
+}
+.github-connection-page > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding-block: 12px;
+}
+.github-connection-page h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.github-connection-page > p {
+  margin: 0 0 16px;
+}
+.github-connection-account {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+.github-connection-account-identity {
+  display: flex;
+  flex: 1 1 256px;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+}
+.github-connection-success {
+  flex: none;
+  color: var(--success);
+}
+.github-connection-account strong {
+  font-weight: 600;
+}
+.github-connection-account small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+:root[data-theme="light"] .github-connection-account {
+  box-shadow: 0 0 0 1px rgb(11 11 11 / 10%);
+}
+
+/* Match the current detail pane, rather than the old 20px list-page gutter. */
+.app.web .settings-page:has(.github-connection-page) {
+  padding-inline: 24px;
+  padding-top: 12px;
+}
+.github-connection-page > nav {
+  display: flex;
+  align-items: center;
+  height: 24px;
+}

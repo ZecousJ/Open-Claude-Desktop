@@ -1,0 +1,28 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "412800"
+  },
+  "body": {
+    "code": "CLAUDEX_USAGE_LIMIT_EXCEEDED",
+    "message": "You've reached the Opus limit. It resets Oct 2, 8:00 AM UTC.",
+    "claudex": {
+      "v": 1,
+      "reason": "RULE_LIMIT",
+      "kind": "rule_limit",
+      "window": "7d",
+      "resets_at": "2026-10-02T08:00:00Z",
+      "retry_after_seconds": 412800,
+      "limit_usd": 20,
+      "used_usd": 20.13,
+      "rule_id": 5,
+      "label": "Opus",
+      "models": [
+        "claude-opus-*"
+      ],
+      "reprovision": false,
+      "action": "wait",
+      "message": "You've reached the Opus limit. It resets Oct 2, 8:00 AM UTC."
+    }
+  }
+}

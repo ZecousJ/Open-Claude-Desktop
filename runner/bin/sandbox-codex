@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+// Claudex runner: starts codex inside a bubblewrap sandbox.
+//
+//   sandbox-codex --spec <spec.json> -- app-server --listen stdio:// -c …
+//
+// Engine never calls this directly: BwrapDriver.prepare() writes a
+// per-sandbox launcher (<stateDir>/codex) that execs this program with the
+// sandbox's spec, and the runner passes that launcher to Engine as the codex
+// binary. stdin/stdout carry codex's JSON-RPC unchanged; this program writes
+// diagnostics to stderr only. Needs Node 22.18+ (TypeScript type stripping)
+// unless the runner build bundles it.
+import { main } from "../src/sandbox/bwrap.ts";
+
+main(process.argv.slice(2)).then(
+  (code) => process.exit(code),
+  (error) => {
+    process.stderr.write(`sandbox-codex: ${error?.message ?? error}\n`);
+    process.exit(126);
+  },
+);

@@ -1,0 +1,67 @@
+/* hn line layout. */
+.capability-tip-home {
+  --tip-secondary: #c3c2b7;
+  --tip-primary: #f0efec;
+  min-width: 0;
+  text-wrap: pretty;
+  font-family: var(--font-ui, sans-serif);
+  font-size: 13px;
+  line-height: 1.375;
+  color: #898781;
+}
+.capability-tip-home-actions {
+  white-space: nowrap;
+}
+.capability-tip-home-prefix {
+  margin-inline-end: 2px;
+}
+.capability-tip-home-action,
+.capability-tip-home-dismiss {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.capability-tip-home-action {
+  margin-inline-start: 2px;
+  color: var(--tip-secondary);
+}
+.capability-tip-home-action:hover,
+.capability-tip-home-action:focus-visible {
+  color: var(--tip-primary);
+}
+.capability-tip-home-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 24px;
+  height: 24px;
+  padding-inline-start: 4px;
+  margin-block: -6px;
+  vertical-align: middle;
+  opacity: 0.7;
+  border-radius: 4px;
+}
+.capability-tip-home-dismiss:hover,
+.capability-tip-home-dismiss:focus-visible {
+  opacity: 1;
+  color: var(--tip-primary);
+}
+:root[data-theme="light"] .capability-tip-home {
+  --tip-secondary: #52514e;
+  --tip-primary: #0b0b0b;
+}
+.capability-tip-home-words {
+  transition: opacity 0.12s ease-out;
+}
+.capability-tip-home-words.leaving {
+  opacity: 0;
+  transition-duration: 60ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .capability-tip-home-words {
+    transition: none;
+  }
+}

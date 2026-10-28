@@ -1,0 +1,28 @@
+# /etc/systemd/system/claudex-runner.service
+[Unit]
+Description=Claudex web runner
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=claudex-runner
+Group=claudex-runner
+WorkingDirectory=/opt/claudex-runner
+EnvironmentFile=/etc/claudex-runner/runner.env
+ExecStart=/usr/local/bin/node /opt/claudex-runner/runner.mjs
+Restart=always
+RestartSec=5
+MemoryMax=10G
+ProtectHome=true
+PrivateTmp=true
+# The gVisor driver calls runsc and the disk-volume tools through sudo
+# (claudex-runner.sudoers); with the bubblewrap driver set this to true.
+NoNewPrivileges=false
+# A stop lets running turns finish: the runner drains on SIGTERM, and its
+# Codex and sandbox processes are killed only once it has exited or the grace
+# has run out.
+KillMode=mixed
+TimeoutStopSec=1260
+
+[Install]
+WantedBy=multi-user.target

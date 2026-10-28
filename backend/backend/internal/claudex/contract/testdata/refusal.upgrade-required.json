@@ -1,0 +1,18 @@
+{
+  "status": 426,
+  "body": {
+    "code": "CLAUDEX_UPGRADE_REQUIRED",
+    "message": "This version of Claudex (1.1.0) is no longer supported. Update to 1.4.0 to keep working.",
+    "claudex": {
+      "v": 1,
+      "reason": "UPGRADE_REQUIRED",
+      "kind": "upgrade",
+      "reprovision": false,
+      "action": "update",
+      "minimum_version": "1.2.0",
+      "latest_version": "1.4.0",
+      "download_url": "https://dl.example.com/Claudex-1.4.0-arm64.zip",
+      "message": "This version of Claudex (1.1.0) is no longer supported. Update to 1.4.0 to keep working."
+    }
+  }
+}

@@ -1,0 +1,170 @@
+/* The Chat home's prompt ideas (StarterPrompts.tsx). Measures are the
+   original's prompt chips and prompt list: secondary buttons 32px tall in a
+   centred, wrapping row 16px under the composer, and a 16px-radius card with a
+   heading row and 14px lines. */
+.starter-prompts {
+  position: relative;
+  width: 100%;
+}
+.starter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 16px 0 0;
+  list-style: none;
+}
+/* An open list covers the row, which keeps its height. */
+.starter-chips.is-covered {
+  visibility: hidden;
+}
+/* Each chip rises 10px into place and fades in over 300ms, 50ms after the one
+   before it. */
+.starter-chips > li {
+  animation: starter-chip-in 300ms cubic-bezier(0.25, 0.1, 0.35, 1) backwards;
+}
+@keyframes starter-chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.starter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  background: var(--alpha-2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.starter-chip > .starter-category-icon {
+  flex-shrink: 0;
+  margin-inline-start: -2px;
+  color: var(--text-muted);
+}
+@media (hover: hover) {
+  .starter-chip:hover {
+    background: var(--fill-ghost-selected);
+  }
+}
+
+/* The open list sits where the chips were, 14px in from the composer's
+   edges (absolute: it takes no height of its own). */
+.starter-list {
+  position: absolute;
+  z-index: 10;
+  top: 16px;
+  left: 14px;
+  right: 14px;
+  padding: 8px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  box-shadow: 0 1px 2px #0000000d;
+  color: var(--text-secondary);
+  animation: starter-list-in 150ms ease-out;
+}
+@keyframes starter-list-in {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}
+.starter-list-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+.starter-list-head > svg {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.starter-list-head > h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+.starter-list-close {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+@media (hover: hover) {
+  .starter-list-close:hover {
+    background: var(--fill-ghost-hover);
+    color: var(--text);
+  }
+}
+.starter-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 20px;
+}
+.starter-list li {
+  border-bottom: 0.5px solid var(--border-strong);
+  transition: border-color var(--motion-snap) var(--ease-out);
+}
+.starter-list li:last-child {
+  border-bottom-color: transparent;
+}
+/* A line's rule hides while it or the line under it is pointed at or focused. */
+.starter-list li:hover,
+.starter-list li:hover + li,
+.starter-list li:focus-within,
+.starter-list li:has(+ li:focus-within) {
+  border-bottom-color: transparent;
+}
+.starter-list li > button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 8px;
+  border-radius: 8px;
+  text-align: left;
+}
+.starter-list li > button > span {
+  flex: 1;
+}
+.starter-list li > button > svg {
+  flex-shrink: 0;
+  visibility: hidden;
+}
+.starter-list li > button:hover,
+.starter-list li > button:focus-visible {
+  background: var(--fill-ghost-hover);
+}
+.starter-list li > button:active {
+  background: var(--fill-ghost-selected);
+}
+.starter-list li > button:hover > svg,
+.starter-list li > button:focus-visible > svg {
+  visibility: visible;
+}
+.starter-list li > button:focus-visible {
+  color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .starter-list,
+  .starter-chips > li {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .starter-list,
+:root[data-motion="reduced"] .starter-chips > li {
+  animation: none;
+}

@@ -1,0 +1,40 @@
+@import "./styles/00-foundation.css";
+@import "./styles/05-utilities.css";
+@import "./styles/10-chrome-navigation.css";
+@import "./styles/20-workspace.css";
+@import "./styles/30-messages-tools.css";
+@import "./styles/40-panels.css";
+@import "./styles/50-controls-menus.css";
+@import "./styles/60-collections.css";
+@import "./styles/80-dialogs-responsive.css";
+@import "./styles/90-reference-foundation.css";
+@import "./styles/91-reference-workspace.css";
+@import "./styles/92-reference-pages.css";
+@import "./styles/92-reference-panels.css";
+@import "./styles/93-reference-responsive.css";
+@import "./ui/checkbox.css";
+@import "./ui/skeleton.css";
+
+@import "./transcript/tools/mcp-tool-view.css";
+@import "./transcript/tools/agent-tool-families.css";
+@import "./transcript/workflow/workflow.css";
+@import "./conversation/background-panel.css";
+
+@import "./transcript/agents/single-agent.css";
+@import "./conversation/background-panel-resize.css";
+
+@import "./diff/diff.css";
+@import "./approval/approval.css";
+@import "./code-tools/code-tools.css";
+@import "./changes/changes-panel.css";
+@import "./plan/plan-panel.css";
+
+/* Round two (docs/ui-workpackages.md §9): a feature stylesheet with new
+   class names needs no entry here. One imported by a `*.slot.tsx` module
+   loads after every sheet above (src/main.tsx loadSlots), so it may
+   override them; only a sheet that must sit between the layers above is
+   registered here, by the WP0 owner.
+
+   The web app's sheet, styles/95-web.css (every rule scoped to the web),
+   is not listed here: src/main.tsx imports it after every other sheet so
+   it overrides the desktop's window-chrome spacing at equal specificity. */

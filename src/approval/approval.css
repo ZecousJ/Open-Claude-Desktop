@@ -1,0 +1,888 @@
+/* Approval card docked above the composer.
+   Measured from R-0805-Code编辑app-js审批卡 / 创建utils-js / 运行node-app (2x, 1164px wide):
+   card 1px #323232 border, radius 8, #1a1a1a; title ink 18.5px below the top edge;
+   blocks 11px apart; buttons 24px tall, 24px below the last block, 11px above the bottom. */
+/* The whole card is 13px text on 20px lines, path labels 12px; content is inset
+   12px from the border on both sides (G-10, G-35). */
+/* 12px inside, rounded-card (radius + 4px = 10px), bg-surface-panel with
+   shadow-panel-sm (a 1px ring of 10% white inside, the small shadow). */
+.approval-card {
+  --approval-mono: var(--code-font-custom,) Menlo, Consolas, monospace;
+  margin: 0 0 6px;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #1a1a19;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 1px 2px 0 rgb(11 11 11 / 6%),
+    0 2px 8px 0 #0000003d;
+  color: #c8c8c4;
+  /* text-body at the default density: 13px on 19px lines. */
+  font:
+    13px/19px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  transform-origin: top;
+  animation: approval-promote 220ms var(--ease-out-cubic);
+  container-type: inline-size;
+}
+/* A card that comes to the front grows out of the first ghost's place: opacity
+   .75, 6px up, 97%. Requests already waiting when the conversation opens skip
+   it. */
+@keyframes approval-promote {
+  from {
+    opacity: 0.75;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+.approval-stack {
+  position: relative;
+  isolation: isolate;
+  margin: 0 0 6px;
+}
+.approval-stack > .approval-card {
+  margin-bottom: 0;
+}
+.approval-stack[data-skip-enter] > .approval-card {
+  animation: none;
+}
+/* Up to two requests wait behind the first as ghosts peeking out above it,
+   each 6px higher, 3% narrower and 25% fainter; they step forward in 220ms
+   as the queue moves, and a new one rises in from one place further back. */
+.approval-ghost {
+  --ghost-depth: 1;
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--ghost-depth) * -1);
+  /* rounded-card bg-surface-1 */
+  border-radius: 10px;
+  background: var(--bg);
+  transform-origin: top;
+  transform: translateY(calc(var(--ghost-depth) * -6px))
+    scale(calc(1 - var(--ghost-depth) * 0.03));
+  opacity: calc(1 - var(--ghost-depth) * 0.25);
+  transition:
+    transform 220ms var(--ease-out-cubic),
+    opacity 220ms var(--ease-out-cubic);
+}
+@starting-style {
+  .approval-ghost {
+    transform: translateY(calc((var(--ghost-depth) + 1) * -6px))
+      scale(calc(1 - (var(--ghost-depth) + 1) * 0.03));
+    opacity: calc(0.75 - var(--ghost-depth) * 0.25);
+  }
+}
+.approval-stack[data-skip-enter] > .approval-ghost {
+  transition: none;
+}
+/* A request card stops at 60% of the window; its details scroll between the
+   title and the buttons with fading edges, and are a keyboard stop of their
+   own while they do (RequestDetails.tsx). */
+.approval-card.approval-request {
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+}
+.approval-details {
+  --scroll-fade-size: 20px;
+  flex: 0 1 auto;
+  min-height: 0;
+  margin: -4px -12px -8px;
+  padding: 4px 12px 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.approval-details:focus-visible {
+  outline: none;
+  border-radius: 6px;
+  box-shadow: var(--focus-shadow);
+}
+/* A card handed keyboard focus after the one before it was answered
+   (focus-handoff.ts) shows the shared ring, as the details pane does: the
+   original's shadow-focus. */
+.approval-card[data-handed-focus]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+.approval-details .approval-code {
+  max-height: none;
+}
+.approval-card.approval-request > :not(.approval-details) {
+  flex: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .approval-card {
+    animation: none;
+  }
+  .approval-ghost {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .approval-card {
+  animation: none;
+}
+:root[data-motion="reduced"] .approval-ghost {
+  transition: none;
+}
+.approval-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  /* text-body-semibold: weight 580. */
+  font-weight: 580;
+  line-height: 19px;
+  overflow-wrap: anywhere;
+  /* A long command is cut at two lines. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.approval-text {
+  margin: 11px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+/* Path label sits 6.5px under the path box and 5.5px over its diff. */
+.approval-text.approval-path {
+  margin-top: 6.5px;
+  font-size: 12px;
+}
+.approval-file:first-child .approval-path,
+.approval-title + .approval-file .approval-path {
+  margin-top: 11px;
+}
+.approval-code {
+  margin: 12px 0 0;
+  padding: 8px 13px;
+  border-radius: 6px;
+  background: #262626;
+  color: #c8c9c4;
+  font: 12px/17px var(--approval-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 176px;
+  overflow: auto;
+}
+.approval-diff {
+  margin-top: 5.5px;
+}
+.approval-permissions {
+  display: grid;
+  gap: 2px;
+}
+.approval-permissions > div {
+  display: flex;
+  gap: 12px;
+}
+/* No reference: the label column fits "Network" in the 12px monospace instead
+   of breaking it (provisional layout). */
+.approval-permissions dt {
+  flex: none;
+  min-width: 56px;
+  width: max-content;
+  color: #8f8e8b;
+}
+.approval-permissions dd {
+  margin: 0;
+  min-width: 0;
+}
+
+/* Buttons: Deny left, Always allow and Allow once right, 10px apart. */
+.approval-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  row-gap: 6px;
+  margin: 23px 1px 0 2px;
+}
+.approval-actions-gap {
+  flex: 1;
+  margin-left: -10px;
+}
+/* A card 420px wide or less stacks its buttons, one per row at full width; the
+   ⌄ half of Allow once stays beside it. */
+@container (width <= 420px) {
+  .approval-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: stretch;
+  }
+  .approval-actions > .approval-button {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+  .approval-actions > .approval-button:has(+ .approval-once-more) {
+    grid-column: 1;
+  }
+  .approval-actions > .approval-button.approval-once-more {
+    grid-column: 2;
+  }
+  .approval-actions > .approval-actions-gap {
+    display: none;
+  }
+}
+.approval-button {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 2px 0 8px;
+  border: 0;
+  /* The design system's buttons: h-control 24px, the radius 6px, secondary on
+     fill-secondary (10% white, 14% on hover), primary on fill-primary (#fff,
+     #e1e0d9 on hover; #0b0b0b and #2c2c2a in light). */
+  border-radius: 6px;
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    var(--press-release);
+}
+.approval-button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+}
+.approval-button:active:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+  scale: var(--press-scale);
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    scale var(--motion-fast) ease-out;
+}
+/* Keyboard focus is the shared ring (00-foundation.css: the original's
+   shadow-focus); a disabled button dims like every disabled control. */
+.approval-button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+.approval-button[data-primary] {
+  background: #fff;
+  color: #0b0b0b;
+}
+.approval-button[data-primary]:hover:not(:disabled) {
+  background: #e1e0d9;
+}
+.approval-button[data-primary]:active:not(:disabled) {
+  background: #dcdcda;
+}
+/* The ⌄ half of Allow once, joined to it by a 1px rule. */
+.approval-button[data-primary]:has(+ .approval-once-more) {
+  border-radius: 5px 0 0 5px;
+}
+.approval-button.approval-once-more {
+  margin-left: -10px;
+  padding: 0 5px;
+  border-left: 1px solid #d6d6d6;
+  border-radius: 0 5px 5px 0;
+  cursor: default;
+}
+.approval-button.approval-once-more > svg {
+  opacity: 0.45;
+}
+.approval-button-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+/* Keycaps: 17px squares with a 1px #4a4a4a rim, 4.5px after the label, groups 8px apart. */
+.approval-keys {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 8px;
+}
+.approval-button-label + .approval-keys {
+  margin-left: 4.5px;
+}
+/* ⌘ cap 17px, Esc 26.5px. */
+.approval-key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  color: #a4a39f;
+  font: 11px/1 inherit;
+  font-family: inherit;
+}
+.approval-key[data-key="1"],
+.approval-key[data-key="2"],
+.approval-key[data-key="3"],
+.approval-key[data-key="4"],
+.approval-key[data-key="mod"],
+.approval-key[data-key="enter"] {
+  padding: 0;
+}
+.approval-button[data-primary] .approval-key {
+  border-color: #c8c8c8;
+  color: #2b2b2a;
+}
+
+/* The plan card: the title with its Open plan link at the right, and the
+   revision field, which takes the settings inputs' fill and rim, three lines
+   tall. */
+.plan-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.plan-card-header > .approval-title {
+  flex: 1;
+}
+.plan-card-open {
+  flex: none;
+  color: #8f8e8b;
+  font-size: 12px;
+  line-height: 20px;
+}
+.plan-card-open:hover {
+  color: var(--text);
+}
+.approval-feedback {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 11px 0 0;
+  padding: 6px 10px;
+  border: 1px solid #363636;
+  border-radius: 6px;
+  background: #262626;
+  color: var(--text);
+  font: inherit;
+  resize: none;
+}
+.approval-feedback:focus {
+  outline: none;
+  border-color: #4d4d4d;
+}
+.approval-feedback::placeholder {
+  color: #8f8e8b;
+}
+:root[data-theme="light"] .plan-card-open:hover {
+  color: #141413;
+}
+:root[data-theme="light"] .approval-feedback {
+  border-color: #dedcd6;
+  background: #fff;
+  color: #141413;
+}
+
+/* Form requests (MCP elicitation, agent questions) reuse the card's rhythm. */
+.approval-fields {
+  display: grid;
+  gap: 11px;
+  margin-top: 11px;
+}
+.approval-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-weight: 400;
+  line-height: 20px;
+}
+.approval-field legend {
+  padding: 0;
+}
+.approval-field-label {
+  color: #e6e5e1;
+}
+.approval-required {
+  color: #d97757;
+}
+.approval-field-note {
+  color: #8f8e8b;
+  font-size: 13px;
+  line-height: 18px;
+}
+.approval-input {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid #363636;
+  border-radius: 6px;
+  background: #262626;
+  color: var(--text);
+  font: inherit;
+}
+.approval-input:focus {
+  outline: none;
+  border-color: #4d4d4d;
+}
+/* A choice field is the settings SelectField, as wide as the card's inputs. */
+.approval-select .settings-select {
+  width: 100%;
+}
+.approval-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+/* The checkbox is the shared one (src/ui/checkbox.css); centred on the
+   first line of the label. */
+.approval-check input.cx-check-input {
+  margin: 1px 0 0;
+}
+.approval-check > span {
+  display: grid;
+}
+.approval-problem {
+  margin: 11px 0 0;
+  color: var(--danger);
+}
+
+:root[data-theme="light"] .approval-card,
+:root[data-theme="light"] .approval-ghost {
+  border-color: #dedcd6;
+  background: #fff;
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .approval-title {
+  color: #141413;
+}
+:root[data-theme="light"] .approval-code {
+  background: #f3f2ee;
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .approval-button {
+  background: rgb(255 255 255 / 10%);
+  box-shadow: 0 0 0 1px rgb(11 11 11 / 10%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .approval-button:hover:not(:disabled) {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .approval-button:active:not(:disabled) {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .approval-button[data-primary] {
+  background: #0b0b0b;
+  box-shadow: none;
+  color: #fff;
+}
+:root[data-theme="light"] .approval-button[data-primary]:hover:not(:disabled) {
+  background: #2c2c2a;
+}
+:root[data-theme="light"] .approval-button[data-primary]:active:not(:disabled) {
+  background: #3a3a37;
+}
+:root[data-theme="light"] .approval-key {
+  border-color: #c9c7c0;
+  color: #6b6a65;
+}
+:root[data-theme="light"] .approval-button[data-primary] .approval-key {
+  border-color: #5a5a58;
+  color: #e8e8e6;
+}
+:root[data-theme="light"] .approval-input {
+  border-color: #dedcd6;
+  background: #fff;
+  color: #141413;
+}
+
+/* Question card: 768 wide like the composer; header 50px with an "n/N" badge
+   (#c69a5d on #2d1b05) 12px in, the 14px title 8px after it and ⌄ ✕ at the
+   right; option rows #242424, radius 6, 12px from the card edge, 5px apart,
+   label 14px #f9f9f9 and description 13px #92918f 8.5px in, keycap 8.5px from
+   the right; Other holds a 30px field 8px in; Back, Skip and Next/Submit 24px
+   buttons under the rows. */
+.approval-card.question-card {
+  padding: 0 0 12px;
+}
+.question-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 50px;
+  padding: 0 8px 0 12px;
+}
+.question-card-header > .approval-title {
+  flex: 1;
+  font-size: 14px;
+}
+/* "{position} of {count}" between its carets: caption text, muted. */
+.question-card-pager {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  color: #898781;
+  font-size: 11px;
+  line-height: 17px;
+}
+.question-card-pager .question-card-icon:disabled {
+  opacity: 0.4;
+}
+.question-card-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  color: #c8c8c4;
+}
+:root[data-theme="light"] .question-card-icon {
+  color: var(--text-muted);
+}
+/* A ghost icon button: the ghost fill under the pointer and the press
+   squish (00-foundation.css, 05-utilities.css). */
+.question-card-icon:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.question-card-icon:not(:disabled):active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+.question-card-icon[aria-expanded="false"] > svg {
+  transform: rotate(-90deg);
+}
+.question-card-options {
+  display: grid;
+  gap: 5px;
+  padding: 0 12px;
+}
+.question-card-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 8px 6px 8.5px;
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+button.question-card-option:hover:not(:disabled),
+button.question-card-option:focus-visible,
+.question-card-option[aria-checked="true"],
+.question-card-other[data-checked] {
+  background: #2c2c2c;
+}
+/* An option row presses to 99% over 100ms and shows keyboard focus as the
+   accent line inside its edge on the hover fill, without the glow. */
+button.question-card-option {
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    scale 100ms var(--ease-standard);
+}
+button.question-card-option:not(:disabled):active {
+  scale: var(--press-card-scale);
+}
+button.question-card-option:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
+  box-shadow: none;
+}
+.question-card-option-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.question-card-label {
+  flex: 1;
+  font-size: 14px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+.question-card-description {
+  color: #92918f;
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.question-card-other {
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+}
+.question-card-input {
+  flex-basis: 100%;
+  height: 30px;
+  margin-top: 4px;
+  padding: 0 8px;
+  border: 1px solid #353535;
+  border-radius: 6px;
+  background: #262626;
+  font-size: 14px;
+}
+.question-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 12px 0;
+}
+.approval-button.question-card-button {
+  padding: 0 8px;
+}
+:root[data-theme="light"] .question-card-option {
+  background: #f3f2ee;
+  color: #141413;
+}
+:root[data-theme="light"] button.question-card-option:hover:not(:disabled),
+:root[data-theme="light"] button.question-card-option:focus-visible,
+:root[data-theme="light"] .question-card-option[aria-checked="true"],
+:root[data-theme="light"] .question-card-other[data-checked] {
+  background: #ebe9e3;
+}
+:root[data-theme="light"] .question-card-input {
+  border-color: #dedcd6;
+  background: #fff;
+}
+:root[data-theme="light"] .approval-button.approval-once-more {
+  border-left-color: #3a3a37;
+}
+/* The focused Other field has the blue focus rim. */
+.question-card-input:focus {
+  border-color: var(--focus);
+  box-shadow: none;
+}
+
+/* The branch setup question: epitaxy-setup-card uses max-w-[420px], gap-md,
+   rounded-xl, border, bg-surface-1, p-md and shadow-sm. */
+.branch-setup-card {
+  display: flex;
+  width: 100%;
+  max-width: 420px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #353535;
+  border-radius: 12px;
+  background: #1a1a19;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 18%);
+  color: var(--text);
+}
+.branch-setup-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.branch-setup-heading h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 580;
+  line-height: 19px;
+}
+.branch-setup-heading p,
+.branch-setup-option small {
+  margin: 0;
+  color: #92918f;
+  font-size: 12px;
+  line-height: 17px;
+}
+.branch-setup-options {
+  display: grid;
+  gap: 4px;
+}
+.branch-setup-option {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.branch-setup-option:hover,
+.branch-setup-option:has(input:checked) {
+  background: rgb(255 255 255 / 6%);
+}
+.branch-setup-option input {
+  margin-top: 3px;
+  accent-color: #d97757;
+}
+.branch-setup-option-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+}
+.branch-setup-option-copy > span {
+  overflow-wrap: anywhere;
+}
+.branch-setup-option-copy > span code,
+.branch-setup-option-copy > span {
+  font-family: inherit;
+}
+.branch-setup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+:root[data-theme="light"] .branch-setup-card {
+  border-color: #dedcd6;
+  background: #fff;
+  color: #141413;
+}
+:root[data-theme="light"] .branch-setup-heading h3,
+:root[data-theme="light"] .branch-setup-option-copy {
+  color: #141413;
+}
+:root[data-theme="light"] .branch-setup-option:hover,
+:root[data-theme="light"] .branch-setup-option:has(input:checked) {
+  background: #f3f2ee;
+}
+
+/* "Run workflow?": icon box beside the question and its note, the four steps on
+   a numbered rail in a bordered box (24px numbers, a 1px line between them,
+   12px gap to the text, 12px under each step), then the buttons. The card is
+   rounded-card on surface-panel with p-lg; borders and the rail are the border
+   token, the numbers sit on surface-2, muted text is text-muted. */
+.approval-card.workflow-approval {
+  padding: 12px;
+  border-radius: 10px;
+  background: #1a1a19;
+}
+:root[data-theme="light"] .approval-card.workflow-approval {
+  background: #fff;
+}
+.workflow-approval-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.workflow-approval-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.workflow-approval-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+.workflow-approval .approval-title {
+  font-weight: 400;
+}
+.workflow-approval .approval-title b {
+  font-weight: 500;
+}
+.workflow-approval .approval-title code {
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: #262626;
+  color: #c8c9c4;
+  font: 12px/17px var(--approval-mono);
+  overflow-wrap: anywhere;
+}
+.workflow-approval-note {
+  margin: 0;
+  color: #898781;
+  font-size: 12px;
+  line-height: 17px;
+}
+.workflow-approval-steps {
+  display: flex;
+  flex-direction: column;
+  margin: 12px 0 0;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  list-style: none;
+}
+.workflow-approval-steps > li {
+  display: flex;
+  gap: 12px;
+}
+.workflow-approval-rail {
+  display: flex;
+  width: 24px;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+}
+.workflow-approval-rail > i {
+  width: 1px;
+  min-height: 8px;
+  flex: 1;
+  margin: 4px 0;
+  background: rgb(255 255 255 / 10%);
+}
+.workflow-approval-number {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #1a1a19;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.workflow-approval-step {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.workflow-approval-steps > li:not(:last-child) .workflow-approval-step {
+  padding-bottom: 12px;
+}
+.workflow-approval-step > span {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  color: var(--text);
+}
+.workflow-approval-step > small {
+  color: #8f8e8b;
+  font-size: 12px;
+  line-height: 17px;
+}
+:root[data-theme="light"] .workflow-approval-icon,
+:root[data-theme="light"] .workflow-approval-steps {
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .workflow-approval-icon {
+  color: #52514e;
+}
+:root[data-theme="light"] .workflow-approval-rail > i {
+  background: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .workflow-approval-number {
+  background: #fff;
+  color: #898781;
+}
+:root[data-theme="light"] .workflow-approval .approval-title code {
+  background: #f3f2ee;
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .workflow-approval-step > span {
+  color: #141413;
+}
+
+/* Light: bg-surface-panel white, the ring outside at 10% ink, the light
+   small shadow; ghosts on surface-1. */
+:root[data-theme="light"] .approval-card {
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(11 11 11 / 10%),
+    0 1px 2px 0 rgb(11 11 11 / 6%),
+    0 2px 8px 0 rgb(11 11 11 / 8%);
+}
+:root[data-theme="light"] .approval-ghost {
+  background: #fcfcfb;
+}

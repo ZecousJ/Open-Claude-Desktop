@@ -1,0 +1,85 @@
+/*
+ * Uncommitted changes on {branch}: a 30rem confirmation; secondary lines in
+ * text-secondary, the changed-file count with its +/- in the success and danger
+ * text colours, Cancel at the start and the split button at the end.
+ */
+.modal.dirty-tree {
+  max-width: 30rem;
+  overflow-wrap: break-word;
+}
+.dirty-tree-body {
+  display: grid;
+  gap: 8px;
+}
+.dirty-tree-body > p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .dirty-tree-body > p {
+  color: #52514e;
+}
+.dirty-tree-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+.dirty-tree-stat {
+  display: inline-flex;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.dirty-tree-stat > .added {
+  color: #0ca30c;
+}
+.dirty-tree-stat > .removed {
+  color: #ec7e7e;
+}
+:root[data-theme="light"] .dirty-tree-stat > .added {
+  color: #006300;
+}
+:root[data-theme="light"] .dirty-tree-stat > .removed {
+  color: #8e2626;
+}
+.dirty-tree-body > .dirty-tree-error {
+  color: #ec7e7e;
+}
+:root[data-theme="light"] .dirty-tree-body > .dirty-tree-error {
+  color: #8e2626;
+}
+.modal.dirty-tree .dirty-tree-actions {
+  justify-content: space-between;
+}
+.dirty-tree-split {
+  display: inline-flex;
+}
+.dirty-tree-split > button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.dirty-tree-split > .dirty-tree-more {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 6px;
+  border-left: 1px solid rgb(255 255 255 / 10%);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+:root[data-theme="light"] .dirty-tree-split > .dirty-tree-more {
+  border-left-color: rgb(11 11 11 / 10%);
+}
+/* A narrow window stacks the buttons full width (80-dialogs-responsive.css):
+   the split button takes the row, its main half growing. */
+@media (max-width: 640px) {
+  .modal.dirty-tree .dirty-tree-actions > .dirty-tree-split {
+    width: 100%;
+  }
+  .modal.dirty-tree .dirty-tree-split > button:first-child {
+    flex: 1;
+    width: auto;
+  }
+  .modal.dirty-tree .dirty-tree-split > .dirty-tree-more {
+    width: auto;
+  }
+}

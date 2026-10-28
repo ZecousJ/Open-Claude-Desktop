@@ -1,0 +1,60 @@
+.settings-mcp-note {
+  color: var(--settings-secondary, var(--text-secondary));
+  line-height: 1.5;
+}
+.settings-mcp-sources {
+  padding-inline-start: 20px;
+}
+.settings-mcp-heading {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 580;
+}
+.settings-mcp-review-description {
+  margin: 6px 0 12px;
+  max-width: 52ch;
+}
+.settings-mcp-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 40vh;
+  overflow: auto;
+}
+.settings-mcp-candidate label {
+  display: flex;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 20px;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+.settings-mcp-candidate small,
+.settings-mcp-candidate p {
+  color: var(--settings-secondary, var(--text-secondary));
+}
+.settings-mcp-candidate summary {
+  cursor: pointer;
+  margin-top: 8px;
+}
+.settings-mcp-candidate pre,
+.settings-mcp-log {
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 40vh;
+}
+
+/* O16 shared-frame fP/base Checkbox and c6a992d55 CDS checkbox tokens. */
+.settings-mcp-candidate input[type="checkbox"].cx-check-input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 4px;
+}
+.settings-mcp-candidate input[type="checkbox"].cx-check-input::after {
+  width: 16px;
+  height: 16px;
+}

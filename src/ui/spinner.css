@@ -1,0 +1,27 @@
+/* CDS Spinner. */
+.cds-spinner {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.cds-spinner-track,
+.cds-spinner-arc {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+.cds-spinner-arc {
+  animation: spin 1s linear infinite;
+}
+.cds-spinner-status {
+  line-height: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cds-spinner-arc {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .cds-spinner-arc {
+  animation: none;
+}

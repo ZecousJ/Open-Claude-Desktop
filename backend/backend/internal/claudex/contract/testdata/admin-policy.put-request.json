@@ -1,0 +1,48 @@
+{
+  "revision": 17,
+  "defaults": {
+    "web_search_default": false,
+    "usage_banner": {
+      "warn_percent": 80
+    },
+    "memory": {
+      "enabled": true,
+      "default_on": false
+    },
+    "research": {
+      "x_search": true,
+      "max_searches_per_turn": 30
+    },
+    "browser": {
+      "blocked_domains": [
+        "mail.example.com"
+      ]
+    },
+    "codex_runtime_mirror": "https://registry.npmmirror.com/"
+  },
+  "group_overrides": [
+    {
+      "group_id": 4,
+      "patch": {
+        "plan_label": "Max",
+        "computer_use": {
+          "enabled": true,
+          "allow_full_control": false,
+          "denied_apps": [
+            "com.apple.Terminal"
+          ],
+          "max_actions_per_turn": 200
+        }
+      }
+    }
+  ],
+  "user_overrides": [
+    {
+      "user_id": 123,
+      "patch": {
+        "external_links": false,
+        "ssh_remote": false
+      }
+    }
+  ]
+}

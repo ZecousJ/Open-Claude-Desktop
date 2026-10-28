@@ -1,0 +1,88 @@
+/* The Changes header's diff scope trigger. Text size, colours and the 8px arrow
+   gap stay R-0874's (.changes-base in changes-panel.css); the hover and press
+   fills and the 26px height are the header's icon buttons'
+   (.changes-icon-button), the closest captured ghost control. Loaded with the
+   panel's lazy chunk. */
+.changes-base.changes-scope {
+  flex: 0 1 auto;
+  height: 26px;
+  margin-left: 3px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.changes-scope:hover,
+.changes-scope[aria-expanded="true"] {
+  background: #2f2f2f;
+}
+.changes-scope:active {
+  background: #292929;
+}
+.changes-scope-range {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) auto minmax(0, max-content);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.changes-scope-range > span,
+.changes-scope-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:root[data-theme="light"] .changes-scope:hover,
+:root[data-theme="light"] .changes-scope[aria-expanded="true"] {
+  background: #efeee9;
+}
+
+/* "Couldn't compare this branch's commits with its base…": the original's
+   warning alert above the diffs (px-sm py-xs around it); colours are the
+   share dialog's captured warning alert (conversation-share.css). */
+.changes-warning {
+  flex: none;
+  margin: 4px 8px;
+  padding: 7px 12px;
+  border: 1px solid #443111;
+  border-radius: 8px;
+  background: #2d1b03;
+  color: #cc9c5e;
+  font-size: 13px;
+  line-height: 19px;
+}
+:root[data-theme="light"] .changes-warning {
+  border-color: #ecd3a8;
+  background: #fbf1e1;
+  color: #8a5a14;
+}
+
+/* Loading, failed and empty states (the original's centred empty state:
+   title, a muted line under it, then the action). */
+.changes-state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* .panel-empty's 13px gap; 24px padding and 13px text as .changes-empty. */
+  gap: 13px;
+  padding: 24px;
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+}
+.changes-state p {
+  margin: 0;
+  color: #8c8c8c;
+}
+.changes-state .spin {
+  color: #8c8c8c;
+}
+:root[data-theme="light"] .changes-state {
+  color: #141413;
+}

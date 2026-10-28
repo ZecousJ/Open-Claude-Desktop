@@ -1,0 +1,158 @@
+/*
+ * The find bar (FindBar.tsx). Its page is a transparent view laid over the
+ * window's top-right corner (electron/find-in-page.ts), 8px of room above the
+ * bar, 16px at the sides and 24px below for its shadow. The bar is 320×48 with
+ * 8px inside: the field, a hairline, then previous, next and close as 32px
+ * ghost icon-only buttons whose glyphs are the icon font's ArrowUp, ArrowDown
+ * and X at 20px. Colours are the app's menu surfaces; the page follows the
+ * app's theme through the colour scheme the app sets.
+ */
+:root {
+  color-scheme: dark;
+  --find-surface: #202020;
+  --find-rim: #373737;
+  --find-text: #f4f4f4;
+  --find-muted: #8d8c8a;
+  --find-hover: color-mix(in srgb, #ffffff 7.5%, transparent);
+  --find-press: color-mix(in srgb, #ffffff 15%, transparent);
+  --find-focus: #2a78d6;
+  --find-shadow: 0 6px 16px #0008;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --find-surface: #ffffff;
+    --find-rim: #e4e4e4;
+    --find-text: #141414;
+    --find-muted: #82817f;
+    --find-hover: color-mix(in srgb, #0b0b0b 5%, transparent);
+    --find-press: color-mix(in srgb, #0b0b0b 10%, transparent);
+    --find-shadow: 0 6px 16px #0002;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.find-bar {
+  position: fixed;
+  inset: 8px 16px 24px;
+  display: flex;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid var(--find-rim);
+  border-radius: 12px;
+  background: var(--find-surface);
+  box-shadow: var(--find-shadow);
+  color: var(--find-text);
+  cursor: text;
+}
+/* The compact 40px bar (the view is 72 tall) keeps its 8px inside, so its
+   content is 24px: ghost buttons of --cds-h-control 24px around 16px glyphs,
+   the footnote at 12px, and 6px between the field's parts. */
+@media (max-height: 75px) {
+  .find-field {
+    gap: 6px;
+  }
+  .find-count {
+    font-size: 12px;
+  }
+  .find-buttons button {
+    width: 24px;
+    height: 24px;
+  }
+}
+.find-field {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-radius: 6px;
+}
+.find-field:has(input:focus-visible) {
+  box-shadow: 0 0 0 1px var(--find-focus);
+}
+.find-field input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.find-field input::placeholder {
+  color: var(--find-muted);
+}
+.find-count {
+  flex-shrink: 0;
+  /* text-footnote at the comfortable density (the 48px bar): 0.8125rem, 13px
+     (find_in_page/find-in-page.html --cds-font-size-footnote). */
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--find-muted);
+  user-select: none;
+}
+.find-divider {
+  flex-shrink: 0;
+  width: 1px;
+  margin: 4px 4px;
+  background: var(--find-rim);
+}
+.find-bar:has(input:focus-visible) .find-divider {
+  opacity: 0;
+}
+.find-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.find-buttons button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: default;
+  transition: background-color 60ms ease-out;
+}
+/* Close is the original's text-secondary X. */
+.find-buttons button.find-close {
+  color: var(--find-muted);
+}
+.find-buttons svg {
+  display: block;
+}
+.find-buttons button:hover:not(:disabled) {
+  background: var(--find-hover);
+}
+.find-buttons button:active:not(:disabled) {
+  background: var(--find-press);
+}
+.find-buttons button:focus-visible {
+  outline: 1px solid var(--find-focus);
+  outline-offset: -1px;
+}
+.find-buttons button:disabled {
+  opacity: 0.4;
+}

@@ -1,0 +1,318 @@
+/* Code terminal panel, measured from R-0882 打开 / 命令输出 / 全宽展开 and R-0885
+   双标签 (2x, 1164px window): a 299px card (92-reference-panels.css); a 34px
+   header with "Terminal" 13px #c2c1bd 13.5px from the border and "+" 14.5px
+   after it; with two or more terminals the title becomes 24px "Terminal N"
+   pills (selected #3a3a3a, 5px apart, each with ×). Text starts 9.5px in and
+   the first row 41px under the card top. Expanded, the card covers the whole
+   conversation column (92-reference-panels.css). */
+.work-panel.terminal-panel {
+  /* The terminal's own background (terminal-theme.ts: surface-2). */
+  --terminal-bg: #1a1a19;
+  background: var(--terminal-bg);
+  border-color: #2b2b2b;
+}
+.work-panel.terminal-panel > header {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 5px 2px 4px;
+  gap: 8px;
+}
+.terminal-panel .terminal-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.terminal-panel .terminal-heading > strong {
+  padding-left: 8.5px;
+  color: #c2c1bd;
+  font-size: 13px;
+  font-weight: 400;
+}
+.terminal-panel .terminal-heading .icon-button,
+.terminal-panel .terminal-controls .icon-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #c2c1bd;
+}
+.terminal-panel .terminal-heading .terminal-new {
+  margin-left: -1px;
+}
+.terminal-panel .terminal-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+/* The tab strip; a tab 24px tall with 2px padding, its label from 6px in and at
+   most 140px, filled ghost-selected when chosen and ghost-hover under the
+   pointer; its 20px close box rounded-sm, muted, shown on hover and on the
+   chosen tab. */
+.terminal-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin: 0 -4px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.terminal-tabs[data-overflowing] {
+  mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - 8px),
+    transparent 100%
+  );
+}
+.terminal-tab {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: 24px;
+  padding: 2px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.terminal-tab:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+.terminal-tab.active {
+  color: var(--text);
+  background: rgb(255 255 255 / 15%);
+}
+.terminal-tab > button:first-child {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0 0 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.terminal-tab-label {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.terminal-tab-close {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 2px;
+  padding: 0;
+  border-radius: 4px;
+  color: #898781;
+  opacity: 0;
+}
+.terminal-tab:hover .terminal-tab-close,
+.terminal-tab.active .terminal-tab-close {
+  opacity: 1;
+}
+.terminal-tab.active .terminal-tab-close {
+  color: var(--text);
+}
+.terminal-tab-close:hover {
+  background: rgb(255 255 255 / 7.5%);
+  color: var(--text);
+}
+/* New terminal, and its Choose shell menu beside it (a split button). */
+.terminal-panel .terminal-new-group {
+  display: inline-flex;
+  align-items: center;
+}
+.terminal-panel .terminal-heading .terminal-new-menu {
+  width: 16px;
+  margin-left: -2px;
+}
+.terminal-exit-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: #9a7a70;
+}
+.terminal-stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.terminal-canvas {
+  flex: 1;
+  min-height: 0;
+  padding: 6px 8px 8px 8.5px;
+  overflow: hidden;
+  background: var(--terminal-bg);
+}
+.terminal-canvas .xterm,
+.terminal-canvas .xterm-viewport {
+  height: 100%;
+}
+.terminal-canvas .xterm-viewport {
+  background: var(--terminal-bg) !important;
+}
+/* Shell exited / Failed to start shell: the stage covered in surface-1 with the
+   title and a small secondary button, centred. */
+.terminal-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+}
+.terminal-overlay > button {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+/* Find in terminal: a panel at the top right (8px down, 20px in), 4px
+   padding and gaps, a 192px field with "No results" at its end. */
+.terminal-find {
+  position: absolute;
+  top: 8px;
+  right: 20px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: #20201f;
+  box-shadow:
+    0 1px 2px 0 rgb(11 11 11 / 6%),
+    0 2px 8px 0 #0000003d;
+}
+.terminal-find-field {
+  display: flex;
+  align-items: center;
+  width: 192px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+}
+.terminal-find-field input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.terminal-find-status {
+  flex-shrink: 0;
+  color: #898781;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.terminal-find .icon-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #c3c2b7;
+}
+/* Attach as context above the selection (the selection pill). */
+.terminal-attach-pill.selection-reply {
+  position: absolute;
+  z-index: 6;
+  height: 28px;
+  font-size: 13px;
+}
+.terminal-attach-keys {
+  color: #898781;
+  font: inherit;
+  font-size: 12px;
+}
+/* The cursor shows 600ms and hides 600ms; xterm's own blink is a 1s cycle. */
+.terminal-canvas .xterm-cursor {
+  animation-duration: 1.2s !important;
+}
+/* A terminal that failed: plain failure red, as the failed write of R-0823
+   (#e5877b); it was a pink strip. */
+.terminal-error {
+  margin: 7px 10px;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.terminal-panel .panel-empty button {
+  color: var(--text);
+  text-decoration: underline;
+}
+:root[data-theme="light"] .work-panel.terminal-panel {
+  --terminal-bg: #ffffff;
+  border-color: #e4e2dc;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .terminal-panel .terminal-heading .icon-button,
+:root[data-theme="light"] .terminal-panel .terminal-controls .icon-button,
+:root[data-theme="light"] .terminal-tab {
+  color: #52514e;
+}
+:root[data-theme="light"] .terminal-tab:hover,
+:root[data-theme="light"] .terminal-tab-close:hover {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .terminal-tab.active {
+  background: rgb(11 11 11 / 10%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .terminal-tab.active .terminal-tab-close,
+:root[data-theme="light"] .terminal-tab-close:hover {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .terminal-overlay {
+  background: #fcfcfb;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .terminal-find {
+  border-color: rgb(11 11 11 / 10%);
+  background: #fff;
+}
+:root[data-theme="light"] .terminal-find-field {
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .terminal-find-field input {
+  color: #0b0b0b;
+}
+/* A width dragged from the card's left edge replaces the 299px default; the
+   conversation keeps 260px, as beside Background tasks. The separator itself is
+   .background-panel-resize. */
+.workspace:has(> .chat-layout > .work-panel.terminal-panel[data-width]) {
+  --tool-panel-width: min(
+    var(--terminal-panel-width, 299px),
+    max(220px, calc(100% - 260px))
+  );
+}
+/* A tab's name while it is renamed: the field takes the label's place, with
+   the focused field's rim (00-foundation.css --field-focus). */
+.terminal-panel .terminal-tab-rename {
+  width: 96px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--field-focus);
+  border-radius: 4px;
+  background: var(--terminal-bg);
+  color: inherit;
+  font-size: 13px;
+}
+.terminal-panel .terminal-tab > .terminal-tab-rename {
+  margin-left: -4px;
+}

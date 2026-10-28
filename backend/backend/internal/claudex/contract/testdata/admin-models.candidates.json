@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "models": [
+      "gpt-5.5",
+      "gpt-5.5-mini"
+    ],
+    "sources": {
+      "gpt-5.5": [
+        "allowlist",
+        "channel_pricing"
+      ]
+    }
+  }
+}

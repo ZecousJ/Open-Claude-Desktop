@@ -1,0 +1,10 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "id": "conv-1",
+      "pinned": true
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status": 400,
+  "body": {
+    "code": 400,
+    "message": "Bypass permissions is not controlled by policy.",
+    "reason": "CLAUDEX_POLICY_INVALID",
+    "metadata": {
+      "field": "group_overrides.4.permission_modes.win32",
+      "rule": "bypass_not_policy_controlled"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+/* Official 288x168 sample: 4px inner gutter + bottom ring, 25px caption,
+   and natural 67px rows with 14/20 labels over two 13/17 description lines.
+   The text can wrap differently in another language; no height is fixed. */
+:root[data-surface="web"] .menu.task-permission-web-chat {
+  padding: 4px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:not([data-theme="light"]) .menu.task-permission-web-chat {
+  background: #20201f;
+}
+.menu.task-permission-web-chat > .menu-heading {
+  height: auto;
+  padding: 4px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+}
+:root[data-surface="web"]
+  .menu.task-permission-web-chat
+  > button.has-description {
+  position: relative;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 10px 7px;
+  border-radius: 8px;
+  color: inherit;
+  font: inherit;
+}
+.menu.task-permission-web-chat > button.has-description::after {
+  content: "";
+  flex: 0 0 32px;
+  height: 20px;
+}
+.menu.task-permission-web-chat .menu-description {
+  font-size: 13px;
+  line-height: 17px;
+}
+.menu.task-permission-web-chat > button > svg.menu-check {
+  display: none;
+}
+.menu.task-permission-web-chat > button > .menu-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  color: #2a78d6;
+}

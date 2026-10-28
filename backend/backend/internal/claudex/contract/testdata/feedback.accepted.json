@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "accepted": true,
+    "duplicate": false,
+    "excerpt_dropped": false
+  }
+}

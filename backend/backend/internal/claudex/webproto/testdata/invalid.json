@@ -1,0 +1,595 @@
+{
+  "cases": [
+    {
+      "kind": "browser",
+      "why": "unknown frame",
+      "frame": {
+        "t": "call",
+        "id": "1"
+      }
+    },
+    {
+      "kind": "browser",
+      "why": "tab id too short",
+      "frame": {
+        "t": "hello",
+        "v": 1,
+        "tabId": "x"
+      }
+    },
+    {
+      "kind": "browser",
+      "why": "presence without focused",
+      "frame": {
+        "t": "presence",
+        "visible": true
+      }
+    },
+    {
+      "kind": "server",
+      "why": "event without type",
+      "frame": {
+        "t": "event",
+        "seq": 1,
+        "event": {}
+      }
+    },
+    {
+      "kind": "server",
+      "why": "event seq 0",
+      "frame": {
+        "t": "event",
+        "seq": 0,
+        "event": {
+          "type": "engine"
+        }
+      }
+    },
+    {
+      "kind": "server",
+      "why": "javascript url",
+      "frame": {
+        "t": "open-url",
+        "url": "javascript:alert(1)",
+        "target": "same-tab"
+      }
+    },
+    {
+      "kind": "server",
+      "why": "protocol-relative url",
+      "frame": {
+        "t": "open-url",
+        "url": "//evil.example/x",
+        "target": "same-tab"
+      }
+    },
+    {
+      "kind": "server",
+      "why": "http url",
+      "frame": {
+        "t": "open-url",
+        "url": "http://example.com/",
+        "target": "new-tab"
+      }
+    },
+    {
+      "kind": "server",
+      "why": "backslash path",
+      "frame": {
+        "t": "open-url",
+        "url": "/\\evil.example/x",
+        "target": "same-tab"
+      }
+    },
+    {
+      "kind": "server",
+      "why": "tab in path",
+      "frame": {
+        "t": "open-url",
+        "url": "/\t/evil.example/x",
+        "target": "same-tab"
+      }
+    },
+    {
+      "kind": "server",
+      "why": "https without authority",
+      "frame": {
+        "t": "open-url",
+        "url": "https:///evil.example",
+        "target": "new-tab"
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "bad method name",
+      "frame": {
+        "t": "hello",
+        "v": 1,
+        "version": "1",
+        "methods": [
+          "../x"
+        ],
+        "capacity": {
+          "engines": 1,
+          "users": 1
+        }
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "duplicate method",
+      "frame": {
+        "t": "hello",
+        "v": 1,
+        "version": "1",
+        "methods": [
+          "send",
+          "send"
+        ],
+        "capacity": {
+          "engines": 1,
+          "users": 1
+        }
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "ok result with error",
+      "frame": {
+        "t": "result",
+        "id": "g-1",
+        "ok": true,
+        "error": {
+          "message": "x"
+        }
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "failed result without message",
+      "frame": {
+        "t": "result",
+        "id": "g-1",
+        "ok": false,
+        "error": {
+          "code": "X"
+        }
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "bad op",
+      "frame": {
+        "t": "request",
+        "id": "r-1",
+        "op": "Store/turns"
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "event without user",
+      "frame": {
+        "t": "event",
+        "event": {
+          "type": "engine"
+        }
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "store request without user",
+      "frame": {
+        "t": "request",
+        "id": "r-1",
+        "op": "store.turns.list"
+      }
+    },
+    {
+      "kind": "runner",
+      "why": "open-url backslash path",
+      "frame": {
+        "t": "open-url",
+        "userId": 7,
+        "url": "/\\\\evil.example",
+        "target": "same-tab"
+      }
+    },
+    {
+      "kind": "go",
+      "why": "call without token",
+      "frame": {
+        "t": "call",
+        "id": "g-1",
+        "user": {
+          "id": 7,
+          "accessToken": ""
+        },
+        "method": "send",
+        "args": [],
+        "deadlineMs": 1
+      }
+    },
+    {
+      "kind": "go",
+      "why": "call args not array",
+      "frame": {
+        "t": "call",
+        "id": "g-1",
+        "user": {
+          "id": 7,
+          "accessToken": "t"
+        },
+        "method": "send",
+        "args": {},
+        "deadlineMs": 1
+      }
+    },
+    {
+      "kind": "go",
+      "why": "unknown sign-out reason",
+      "frame": {
+        "t": "user-signed-out",
+        "userId": 7,
+        "reason": "bored"
+      }
+    },
+    {
+      "kind": "go",
+      "why": "welcome heartbeat too short",
+      "frame": {
+        "t": "welcome",
+        "v": 1,
+        "runnerId": "r",
+        "heartbeatMs": 5
+      }
+    },
+    {
+      "kind": "turn",
+      "why": "turn id mismatch",
+      "frame": {
+        "schema": 1,
+        "conversationId": "conv-1",
+        "branchId": null,
+        "turnId": "turn-x",
+        "ordinal": 0,
+        "turn": {
+          "id": "turn-1",
+          "prompt": "Summarize this file.",
+          "attachments": [
+            {
+              "id": "att-1",
+              "name": "notes.txt",
+              "path": "/workspace/uploads/att-1/notes.txt",
+              "kind": "text",
+              "size": 1200
+            }
+          ],
+          "items": [
+            {
+              "id": "item-1",
+              "type": "reasoning",
+              "summary": [
+                "Reading the notes."
+              ]
+            },
+            {
+              "id": "item-2",
+              "type": "webSearch",
+              "searchTool": "web_search",
+              "sources": [
+                {
+                  "url": "https://example.com/a",
+                  "title": "Example A"
+                }
+              ]
+            },
+            {
+              "id": "item-3",
+              "type": "agentMessage",
+              "text": "Here is the summary.",
+              "citations": [
+                {
+                  "start": 0,
+                  "end": 4,
+                  "sources": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "status": "completed",
+          "createdAt": 1790000000000,
+          "outputTokens": 412,
+          "inputTokens": 1820
+        }
+      }
+    },
+    {
+      "kind": "turn",
+      "why": "missing branchId",
+      "frame": {
+        "schema": 1,
+        "conversationId": "conv-1",
+        "turnId": "turn-1",
+        "ordinal": 0,
+        "turn": {
+          "id": "turn-1",
+          "prompt": "Summarize this file.",
+          "attachments": [
+            {
+              "id": "att-1",
+              "name": "notes.txt",
+              "path": "/workspace/uploads/att-1/notes.txt",
+              "kind": "text",
+              "size": 1200
+            }
+          ],
+          "items": [
+            {
+              "id": "item-1",
+              "type": "reasoning",
+              "summary": [
+                "Reading the notes."
+              ]
+            },
+            {
+              "id": "item-2",
+              "type": "webSearch",
+              "searchTool": "web_search",
+              "sources": [
+                {
+                  "url": "https://example.com/a",
+                  "title": "Example A"
+                }
+              ]
+            },
+            {
+              "id": "item-3",
+              "type": "agentMessage",
+              "text": "Here is the summary.",
+              "citations": [
+                {
+                  "start": 0,
+                  "end": 4,
+                  "sources": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "status": "completed",
+          "createdAt": 1790000000000,
+          "outputTokens": 412,
+          "inputTokens": 1820
+        }
+      }
+    },
+    {
+      "kind": "turn",
+      "why": "schema 2",
+      "frame": {
+        "schema": 2,
+        "conversationId": "conv-1",
+        "branchId": null,
+        "turnId": "turn-1",
+        "ordinal": 0,
+        "turn": {
+          "id": "turn-1",
+          "prompt": "Summarize this file.",
+          "attachments": [
+            {
+              "id": "att-1",
+              "name": "notes.txt",
+              "path": "/workspace/uploads/att-1/notes.txt",
+              "kind": "text",
+              "size": 1200
+            }
+          ],
+          "items": [
+            {
+              "id": "item-1",
+              "type": "reasoning",
+              "summary": [
+                "Reading the notes."
+              ]
+            },
+            {
+              "id": "item-2",
+              "type": "webSearch",
+              "searchTool": "web_search",
+              "sources": [
+                {
+                  "url": "https://example.com/a",
+                  "title": "Example A"
+                }
+              ]
+            },
+            {
+              "id": "item-3",
+              "type": "agentMessage",
+              "text": "Here is the summary.",
+              "citations": [
+                {
+                  "start": 0,
+                  "end": 4,
+                  "sources": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "status": "completed",
+          "createdAt": 1790000000000,
+          "outputTokens": 412,
+          "inputTokens": 1820
+        }
+      }
+    },
+    {
+      "kind": "turn",
+      "why": "unknown status",
+      "frame": {
+        "schema": 1,
+        "conversationId": "conv-1",
+        "branchId": null,
+        "turnId": "turn-1",
+        "ordinal": 0,
+        "turn": {
+          "id": "turn-1",
+          "prompt": "Summarize this file.",
+          "attachments": [
+            {
+              "id": "att-1",
+              "name": "notes.txt",
+              "path": "/workspace/uploads/att-1/notes.txt",
+              "kind": "text",
+              "size": 1200
+            }
+          ],
+          "items": [
+            {
+              "id": "item-1",
+              "type": "reasoning",
+              "summary": [
+                "Reading the notes."
+              ]
+            },
+            {
+              "id": "item-2",
+              "type": "webSearch",
+              "searchTool": "web_search",
+              "sources": [
+                {
+                  "url": "https://example.com/a",
+                  "title": "Example A"
+                }
+              ]
+            },
+            {
+              "id": "item-3",
+              "type": "agentMessage",
+              "text": "Here is the summary.",
+              "citations": [
+                {
+                  "start": 0,
+                  "end": 4,
+                  "sources": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "status": "done",
+          "createdAt": 1790000000000,
+          "outputTokens": 412,
+          "inputTokens": 1820
+        }
+      }
+    },
+    {
+      "kind": "conversation",
+      "why": "carries turns",
+      "frame": {
+        "schema": 1,
+        "conversation": {
+          "activeBranchId": "branch-live",
+          "id": "conv-1",
+          "threadId": "thread-abc",
+          "title": "Notes summary",
+          "mode": "chat",
+          "webSearch": true,
+          "projectId": "proj-1",
+          "providerId": "sub2api",
+          "model": "gpt-5.5",
+          "pinned": false,
+          "archived": false,
+          "createdAt": 1790000000000,
+          "updatedAt": 1790000065000,
+          "usage": {
+            "inputTokens": 1820,
+            "outputTokens": 412,
+            "totalTokens": 2232
+          },
+          "research": false,
+          "turns": []
+        }
+      }
+    },
+    {
+      "kind": "conversation",
+      "why": "incognito",
+      "frame": {
+        "schema": 1,
+        "conversation": {
+          "activeBranchId": "branch-live",
+          "id": "conv-1",
+          "threadId": "thread-abc",
+          "title": "Notes summary",
+          "mode": "chat",
+          "webSearch": true,
+          "projectId": "proj-1",
+          "providerId": "sub2api",
+          "model": "gpt-5.5",
+          "pinned": false,
+          "archived": false,
+          "createdAt": 1790000000000,
+          "updatedAt": 1790000065000,
+          "usage": {
+            "inputTokens": 1820,
+            "outputTokens": 412,
+            "totalTokens": 2232
+          },
+          "research": false,
+          "incognito": true
+        }
+      }
+    },
+    {
+      "kind": "conversation",
+      "why": "unknown mode",
+      "frame": {
+        "schema": 1,
+        "conversation": {
+          "activeBranchId": "branch-live",
+          "id": "conv-1",
+          "threadId": "thread-abc",
+          "title": "Notes summary",
+          "mode": "voice",
+          "webSearch": true,
+          "projectId": "proj-1",
+          "providerId": "sub2api",
+          "model": "gpt-5.5",
+          "pinned": false,
+          "archived": false,
+          "createdAt": 1790000000000,
+          "updatedAt": 1790000065000,
+          "usage": {
+            "inputTokens": 1820,
+            "outputTokens": 412,
+            "totalTokens": 2232
+          },
+          "research": false
+        }
+      }
+    },
+    {
+      "kind": "rpc-request",
+      "why": "args not array",
+      "frame": {
+        "args": "x"
+      }
+    },
+    {
+      "kind": "rpc-request",
+      "why": "unknown field",
+      "frame": {
+        "args": [],
+        "method": "send"
+      }
+    }
+  ]
+}

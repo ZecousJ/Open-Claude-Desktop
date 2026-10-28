@@ -1,0 +1,271 @@
+/*
+ * Settings → Billing (package C5). The plan card is measured from
+ * R-设置-Billing-顶部-深色 (2894×2126, 2.0 image px per CSS px): a 64px drawing 24px
+ * from the page's left edge, 16px semibold name and a 14px line under it, 16px
+ * between drawing and text. Everything below the card has no original capture
+ * and reuses the Settings row styles.
+ */
+.billing-page {
+  --billing-muted: #908f8d;
+  --billing-line: #262626;
+  --billing-field: #212121;
+  --billing-field-border: #3b3b3b;
+}
+.billing-plan {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 14px 0 48px;
+}
+.billing-plan-icon {
+  flex: none;
+  color: var(--text);
+}
+/* The reference's text block sits 1.5px above the drawing's centre. */
+.billing-plan-text {
+  margin-top: -3px;
+}
+.billing-plan-name {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--text);
+}
+.billing-plan-note {
+  margin-top: 3px;
+  line-height: 20px;
+  color: var(--text);
+}
+
+.billing-price {
+  color: #cdccc8;
+}
+.billing-price-was {
+  margin-left: 6px;
+  color: var(--billing-muted);
+}
+.billing-plan-description {
+  display: block;
+}
+
+.billing-redeem {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.billing-redeem .settings-input {
+  box-sizing: border-box;
+  border: 1px solid var(--billing-field-border);
+  border-radius: 8px;
+  background: var(--billing-field);
+  color: inherit;
+  font: inherit;
+}
+.billing-redeem-note {
+  margin: 8px 0 0;
+  color: #cdccc8;
+}
+
+.billing-order {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  box-sizing: border-box;
+  padding: 10px 0;
+}
+.billing-order + .billing-order {
+  border-top: 1px solid var(--billing-line);
+}
+.billing-order-text {
+  flex: 1;
+  min-width: 0;
+}
+.billing-order-text > p {
+  margin: 2px 0 0;
+  color: var(--billing-muted);
+}
+.billing-order-amount {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.billing-status {
+  min-width: 112px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--billing-muted);
+}
+.billing-status.completed {
+  color: #7fb88a;
+}
+.billing-status.pending,
+.billing-status.paid,
+.billing-status.recharging {
+  color: #d9b36c;
+}
+.billing-empty {
+  margin: 0;
+  color: var(--billing-muted);
+}
+.billing-more {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #cdccc8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Checkout dialog */
+.billing-checkout {
+  display: grid;
+  gap: 16px;
+}
+.billing-checkout-plan > p {
+  margin: 4px 0 0;
+  color: var(--billing-muted);
+}
+.billing-amount {
+  display: grid;
+  gap: 6px;
+}
+.billing-methods {
+  display: grid;
+  gap: 6px;
+}
+.billing-method {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--billing-field-border, #3b3b3b);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.billing-method[aria-checked="true"] {
+  border-color: #8f8e8b;
+}
+.billing-method-dot {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 1.5px solid #7d7c7a;
+  border-radius: 50%;
+}
+.billing-method[aria-checked="true"] .billing-method-dot {
+  border: 4.5px solid #f5f5f3;
+}
+.billing-method-label {
+  flex: 1;
+}
+.billing-method-note {
+  color: #908f8d;
+}
+.billing-summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 16px;
+  margin: 0;
+}
+.billing-summary dt {
+  color: #908f8d;
+}
+.billing-summary dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.billing-help {
+  margin: 0;
+  white-space: pre-line;
+  color: #908f8d;
+}
+.billing-pay {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 8px 0 4px;
+  text-align: center;
+}
+.billing-qr {
+  width: 200px;
+  height: 200px;
+  box-sizing: border-box;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff;
+}
+.billing-qr > img {
+  display: block;
+}
+.billing-pay-lead {
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+.billing-pay-note,
+.billing-pay-status {
+  margin: 0;
+  color: #908f8d;
+}
+.billing-pay-status.settled {
+  color: inherit;
+}
+
+:root[data-theme="light"] .billing-page {
+  --billing-muted: #807f7d;
+  --billing-line: #f2f2f2;
+  --billing-field: #fff;
+  --billing-field-border: #e0e0e0;
+}
+:root[data-theme="light"] .billing-plan-icon,
+:root[data-theme="light"] .billing-plan-name,
+:root[data-theme="light"] .billing-plan-note {
+  color: #050505;
+}
+:root[data-theme="light"] .billing-price,
+:root[data-theme="light"] .billing-redeem-note,
+:root[data-theme="light"] .billing-more {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .billing-method {
+  border-color: #e0e0e0;
+}
+:root[data-theme="light"] .billing-method[aria-checked="true"] {
+  border-color: #8f8e8b;
+}
+:root[data-theme="light"]
+  .billing-method[aria-checked="true"]
+  .billing-method-dot {
+  border-color: #050505;
+}
+:root[data-theme="light"] .billing-method-note,
+:root[data-theme="light"] .billing-summary dt,
+:root[data-theme="light"] .billing-help,
+:root[data-theme="light"] .billing-pay-note,
+:root[data-theme="light"] .billing-pay-status {
+  color: #807f7d;
+}
+:root[data-theme="light"] .billing-pay-status.settled {
+  color: inherit;
+}
+:root[data-theme="light"] .billing-qr {
+  border: 1px solid #e0e0e0;
+}
+:root[data-theme="light"] .billing-status.completed {
+  color: #2f7a3e;
+}
+:root[data-theme="light"] .billing-status.pending,
+:root[data-theme="light"] .billing-status.paid,
+:root[data-theme="light"] .billing-status.recharging {
+  color: #9a6a12;
+}
+/* Adjust plan / Upgrade plan at the card's right, aligned to its top. */
+.billing-plan-action {
+  display: flex;
+  align-self: flex-start;
+  margin-left: auto;
+}

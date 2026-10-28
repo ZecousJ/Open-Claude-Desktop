@@ -1,0 +1,345 @@
+/*
+ * The checkout page (CheckoutPage.tsx), laid out after the owner's Stripe
+ * Checkout reference: two halves, the order column ending 60px left of the
+ * middle and the form column starting 60px right of it, both 280–380px wide;
+ * 36px from the top. The summary half is a shade apart from the form half in
+ * either theme; the button is Claudex's own #c6613f where the merchant's colour
+ * stood.
+ */
+.checkout-page {
+  --checkout-summary-bg: #1c1c1b;
+  --checkout-form-bg: #151515;
+  --checkout-text: #f0efec;
+  --checkout-muted: #898781;
+  --checkout-rule: rgb(255 255 255 / 10%);
+  --checkout-field-bg: #1f1f1e;
+  --checkout-field-border: rgb(255 255 255 / 12%);
+  --checkout-accent: #c6613f;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow-y: auto;
+  background: var(--checkout-form-bg);
+  color: var(--checkout-text);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root[data-theme="light"] .checkout-page {
+  --checkout-summary-bg: #f5f5f4;
+  --checkout-form-bg: #ffffff;
+  --checkout-text: #1a1a1a;
+  --checkout-muted: rgb(26 26 26 / 60%);
+  --checkout-rule: rgb(26 26 26 / 10%);
+  --checkout-field-bg: #ffffff;
+  --checkout-field-border: rgb(26 26 26 / 14%);
+}
+.checkout-summary,
+.checkout-form {
+  display: flex;
+  padding: 36px 60px 48px;
+  padding-top: max(36px, env(safe-area-inset-top));
+}
+.checkout-summary {
+  justify-content: flex-end;
+  padding-left: 32px;
+  background: var(--checkout-summary-bg);
+}
+.checkout-form {
+  justify-content: flex-start;
+  padding-right: 32px;
+  padding-bottom: max(48px, env(safe-area-inset-bottom));
+}
+.checkout-column {
+  width: clamp(280px, 28vw, 380px);
+  min-width: 0;
+}
+
+/* The order: who is paid, how much, the lines. */
+.checkout-merchant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  margin-left: -28px;
+}
+.checkout-back {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--checkout-muted);
+}
+.checkout-back:hover {
+  color: var(--checkout-text);
+}
+.checkout-logo {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+.checkout-merchant-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+.checkout-pay-label {
+  margin: 32px 0 4px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--checkout-muted);
+}
+.checkout-amount {
+  margin: 0;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.checkout-lines {
+  margin: 44px 0 0;
+}
+.checkout-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  font-weight: 500;
+}
+.checkout-line + .checkout-line {
+  border-top: 1px solid var(--checkout-rule);
+}
+.checkout-line dt,
+.checkout-line dd {
+  margin: 0;
+}
+.checkout-line dd {
+  font-variant-numeric: tabular-nums;
+}
+.checkout-total {
+  padding-top: 14px;
+}
+.checkout-total dd {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* The form: amount, contact, method, then the button. */
+.checkout-fields,
+.checkout-pay {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.checkout-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+.checkout-group > h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.checkout-field-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+.checkout-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--checkout-field-border);
+  border-radius: 8px;
+  background: var(--checkout-field-bg);
+  color: var(--checkout-text);
+  font-size: 14px;
+}
+.checkout-input[readonly] {
+  color: var(--checkout-muted);
+}
+.checkout-money-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  font-size: 20px;
+  font-weight: 600;
+}
+.checkout-money-input:focus-within,
+.checkout-input:not([readonly]):focus {
+  border-color: var(--checkout-accent);
+  outline: none;
+}
+.checkout-money-input > span {
+  color: var(--checkout-muted);
+}
+.checkout-money-input > input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.checkout-methods {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--checkout-field-border);
+  border-radius: 12px;
+}
+.checkout-method {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--checkout-text);
+  font-size: 15px;
+  text-align: left;
+}
+.checkout-method + .checkout-method {
+  border-top: 1px solid var(--checkout-field-border);
+}
+.checkout-radio {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--checkout-muted);
+  border-radius: 50%;
+}
+.checkout-method[aria-checked="true"] .checkout-radio {
+  border: 5px solid var(--checkout-accent);
+}
+.checkout-method-mark {
+  flex: none;
+}
+.checkout-method-label {
+  flex: 1;
+}
+.checkout-method-note {
+  color: var(--checkout-muted);
+  font-size: 13px;
+}
+.checkout-submit,
+.checkout-secondary {
+  width: 100%;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.checkout-submit {
+  background: var(--checkout-accent);
+  color: #fff;
+}
+.checkout-submit:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.checkout-submit:disabled {
+  opacity: 0.5;
+}
+.checkout-secondary {
+  background: var(--checkout-field-bg);
+  box-shadow: inset 0 0 0 1px var(--checkout-field-border);
+  color: var(--checkout-text);
+}
+
+/* Paying: the QR code on white (scanners need the contrast), the status. */
+.checkout-pay {
+  align-items: center;
+  text-align: center;
+}
+.checkout-pay-title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.checkout-qr-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgb(26 26 26 / 8%);
+}
+.checkout-qr-card .billing-qr img {
+  display: block;
+}
+.checkout-pay-status {
+  margin: 0;
+  font-weight: 500;
+}
+.checkout-pay-status.settled {
+  color: var(--checkout-muted);
+}
+.checkout-pay-note {
+  margin: 0;
+  color: var(--checkout-muted);
+}
+.checkout-done-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2e7d4f;
+  color: #fff;
+}
+.checkout-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Narrow windows and phones: one column, the order on top. */
+@media (max-width: 767.98px) {
+  .checkout-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .checkout-summary,
+  .checkout-form {
+    justify-content: center;
+    padding: 20px 16px 24px;
+  }
+  .checkout-summary {
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+  .checkout-form {
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+  .checkout-column {
+    width: 100%;
+    max-width: 480px;
+  }
+  .checkout-merchant {
+    margin-left: 0;
+  }
+  .checkout-pay-label {
+    margin-top: 20px;
+  }
+  .checkout-lines {
+    margin-top: 20px;
+  }
+}

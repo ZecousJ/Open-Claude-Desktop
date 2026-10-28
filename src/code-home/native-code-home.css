@@ -1,0 +1,165 @@
+/* Current native Code frame uses dframe's full-bleed web variant, with its
+   native 46px titlebar. Chat/Cowork's floating desktop card is separate. */
+.app:not(.web).mode-code {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  column-gap: 0;
+  padding: 0;
+}
+.app:not(.web).mode-code:not(.sidebar-hidden) .sidebar {
+  position: relative;
+  grid-area: 1 / 1;
+  inset: auto;
+  overflow: hidden;
+  /* The edge is the theme's border colour, as in Chat. */
+  border-right: 0.5px solid var(--border);
+  border-radius: 0;
+  background: var(--sidebar);
+  box-shadow: none;
+}
+/* The flat sidebar's drag handle sits on its edge, full height, not on the
+   floating card's offset. */
+.app:not(.web).mode-code:not(.sidebar-hidden) .sidebar-resize-handle {
+  top: 0;
+  bottom: 0;
+  left: calc(var(--sidebar-width) - 6px);
+}
+.app:not(.web).mode-code:not(.sidebar-hidden) .sidebar-chrome {
+  position: static;
+  width: auto;
+  height: 46px;
+  padding-top: 2px;
+}
+.app:not(.web).mode-code .sidebar-body {
+  padding-top: 8px;
+}
+/* Current native web-frame titlebar: first control ms-0.5; switch ms-auto.
+   O14/shared-22:20634-20658 and the native reference at246px sidebar width. */
+.app.darwin:not(.web).mode-code .sidebar-chrome > .window-nav-toggle {
+  margin-inline-start: 2px;
+}
+.app.darwin:not(.web).mode-code .sidebar-chrome > .surface-switch {
+  margin-inline-start: auto;
+}
+.app:not(.web).mode-code.sidebar-hidden {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+/* The full-bleed sidebar's right edge is x=W, so the drag handle centres on it
+   like Chat's; the floating card's +8px inset would leave it 8px inside the
+   content. .dframe-root[data-variant=web]. */
+.app:not(.web).mode-code:not(.sidebar-hidden) .sidebar-resize-handle {
+  top: var(--sidebar-chrome-height);
+  bottom: 0;
+  left: calc(var(--sidebar-width) - 6px);
+}
+.app .native-code-draft-corner {
+  position: absolute;
+  z-index: 4;
+  inset: 9px 9px auto;
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  -webkit-app-region: drag;
+}
+.app .native-code-draft-corner button {
+  -webkit-app-region: no-drag;
+}
+.app .native-code-draft-corner .code-draft-title {
+  margin: 0 auto 0 0;
+  padding-inline-start: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 500;
+}
+.app .native-code-draft-corner .whats-new {
+  position: static;
+}
+.app.sidebar-hidden .native-code-draft-corner {
+  left: 48px;
+}
+
+.app:not(.web) .code-home-composer .cloud-workspace-bar > .pixel-mascot {
+  display: none;
+}
+
+/* Native Code uses the compact search row in the current frame, not the footer
+   search slot. + dframe compact density. */
+.app:not(.web).mode-code .web-sidebar-search {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  /* The same box as Chat's native search (native-chat-sidebar.css): 2px in from
+     each side, the glyph 10px in and the text 34px in, so switching modes moves
+     nothing. */
+  width: calc(100% - 4px);
+  margin-inline: 2px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: rgb(255 255 255 / 5%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 5%),
+    0 1px 2px rgb(0 0 0 / 5%);
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+.app:not(.web).mode-code .web-sidebar-search:focus-visible {
+  outline: 1px solid var(--focus-accent);
+  outline-offset: -1px;
+  box-shadow: var(--sidebar-focus-ring);
+}
+@media (hover: hover) {
+  .app:not(.web).mode-code .web-sidebar-search:hover {
+    background: var(--fill-ghost-hover);
+  }
+}
+.app:not(.web).mode-code .web-sidebar-search .app-icon {
+  width: 16px;
+  height: 16px;
+}
+:root[data-theme="light"] .app:not(.web).mode-code .web-sidebar-search {
+  background: rgb(11 11 11 / 5%);
+  box-shadow:
+    inset 0 0 0 1px rgb(11 11 11 / 5%),
+    0 1px 2px rgb(0 0 0 / 5%);
+}
+@media (hover: hover) {
+  :root[data-theme="light"] .app:not(.web).mode-code .web-sidebar-search:hover {
+    background: var(--fill-ghost-hover);
+  }
+}
+/* The current native Code Group and sort inventory is the session-list menu
+   too. This sheet is already awaited before the native renderer's first paint. */
+:root:not([data-surface="web"]) .menu.code-list-menu {
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: #20201f;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px rgb(0 0 0 / 12%),
+    0 2px 6px rgb(0 0 0 / 8%);
+}
+:root:not([data-surface="web"]) .menu.code-list-menu:not([data-submenu]) {
+  padding-bottom: 5px;
+}
+:root:not([data-surface="web"])[data-theme="light"] .menu.code-list-menu {
+  background: #fff;
+  padding-bottom: 4px;
+}
+.app:not(.web).mode-code .conversation-row {
+  height: 32px;
+  margin-bottom: 2px;
+  padding-block: 0;
+  border-radius: 8px;
+}
+.app:not(.web).mode-code .conversation-link {
+  font-size: 14px;
+  line-height: 21px;
+}
+.app:not(.web) .profile-wrap > .account-code-feedback {
+  width: 32px;
+  height: 32px;
+}

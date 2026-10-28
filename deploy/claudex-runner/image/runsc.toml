@@ -1,0 +1,18 @@
+# Options for containerd-shim-runsc-v1 when the runner starts a sandbox
+# (`ctr run --runtime io.containerd.runsc.v1 --runtime-config-path <this file>`).
+# Install as /etc/claudex-runner/runsc.toml and set the runner's
+# RUNNER_RUNSC_CONFIG to it. RunscDriver.check() refuses to run when
+# network or host-uds below are changed.
+
+# Absolute path of runsc from the gVisor release (keep gvisor-bin/ next to it).
+binary_name = "/usr/local/bin/runsc"
+root = "/run/containerd/runsc/claudex"
+
+[runsc_config]
+  # No network stack at all: the sandbox reaches the model gateway and the
+  # egress proxy only through Unix sockets bound into /run/claudex/fwd.
+  network = "none"
+  # Lets the sandbox connect to those host sockets (nothing else is bound).
+  host-uds = "open"
+  # systrap works on KVM guests and WSL2; use "ptrace" only as a fallback.
+  platform = "systrap"

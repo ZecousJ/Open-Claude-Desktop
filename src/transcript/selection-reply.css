@@ -1,0 +1,50 @@
+/* Reply on a selection: 81×32, #0b0b0b with a #2a2a2a rim, radius 7, 15px white
+   "Reply" and the reply arrow 6px after it, its bottom 7px above the
+   selection's first line. With "Start a side chat" beside it the pill holds
+   both buttons, split by a hairline in the rim's colour. */
+.selection-reply {
+  position: fixed;
+  z-index: 60;
+  display: inline-flex;
+  align-items: stretch;
+  height: 32px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+  border-radius: 7px;
+  background: #0b0b0b;
+  box-shadow: 0 4px 14px #0006;
+  color: #fff;
+  font-size: 15px;
+  transform: translate(-50%, -100%);
+}
+.selection-reply > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 13px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.selection-reply > button:hover {
+  background: #1c1c1c;
+}
+/* Icon-only ghost button. */
+.selection-reply > .selection-dictate {
+  justify-content: center;
+  width: 32px;
+  padding: 0;
+  color: var(--dictation-secondary);
+}
+.selection-reply > span {
+  width: 1px;
+  margin: 7px 0;
+  background: #2a2a2a;
+}
+:root[data-theme="light"] .selection-reply {
+  border-color: #1f1f1f;
+  background: #141413;
+}

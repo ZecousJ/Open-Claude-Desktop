@@ -1,0 +1,34 @@
+/* Live 2026-10-16 Privacy disclosure; leaf styles load with Privacy. */
+.privacy-explanation + .privacy-explanation {
+  border-top: 1px solid var(--settings-alpha-1);
+}
+.privacy-explanation > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 0;
+  border-radius: 8px;
+  color: var(--settings-primary);
+  font: inherit;
+  text-align: start;
+}
+.privacy-explanation > button > svg {
+  flex: none;
+  color: var(--settings-muted);
+}
+.privacy-explanation-body {
+  padding-bottom: 12px;
+  color: var(--settings-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.privacy-explanation-body ul {
+  margin: 0;
+  padding: 4px 0 0 24px;
+}
+.privacy-explanation-body li + li {
+  margin-top: 4px;
+}

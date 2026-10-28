@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "header": [
+        "claudex.v1, ticket.q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_"
+      ],
+      "ticket": "q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_"
+    },
+    {
+      "header": [
+        "claudex.v1",
+        "ticket.q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_"
+      ],
+      "ticket": "q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_"
+    },
+    {
+      "header": [
+        "ticket.q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_"
+      ],
+      "ticket": null
+    },
+    {
+      "header": [
+        "claudex.v1"
+      ],
+      "ticket": null
+    },
+    {
+      "header": [
+        "claudex.v1, ticket.q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_, ticket.q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_"
+      ],
+      "ticket": null
+    },
+    {
+      "header": [
+        "claudex.v1, ticket.short"
+      ],
+      "ticket": null
+    }
+  ]
+}

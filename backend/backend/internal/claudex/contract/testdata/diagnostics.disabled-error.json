@@ -1,0 +1,8 @@
+{
+  "status": 404,
+  "body": {
+    "code": 404,
+    "message": "Reporting is turned off on this server.",
+    "reason": "CLAUDEX_FEEDBACK_DISABLED"
+  }
+}

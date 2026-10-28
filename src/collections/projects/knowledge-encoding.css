@@ -1,0 +1,26 @@
+.prj-knowledge-encoding form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.prj-knowledge-encoding pre {
+  margin: 0;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input);
+  color: var(--text-secondary);
+  font: 12px/1.5 var(--font-mono, monospace);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.prj-knowledge-encoding select {
+  width: 100%;
+  color: var(--text);
+  background: var(--input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+}

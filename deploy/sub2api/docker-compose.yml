@@ -1,0 +1,14 @@
+# Earlier location of the Claudex server stack. It now runs the Claudex server
+# (the Sub2API fork in backend/) through ../claudex-server/docker-compose.yml,
+# under this folder's project name and .env, so a stack started here before the
+# fork keeps its database, Redis and data volumes (claudex-sub2api_*).
+# New deployments use deploy/claudex-server/ directly; see README.md.
+#
+#   cp .env.example .env && chmod 600 .env   # then replace every placeholder
+#   docker compose up -d --remove-orphans    # --remove-orphans once: the service was renamed
+
+name: claudex-sub2api
+
+include:
+  - path: ../claudex-server/docker-compose.yml
+    project_directory: .

@@ -1,0 +1,126 @@
+/* fT / hT / vT / yT. */
+.runs-panel {
+  display: flex;
+  flex-direction: column;
+}
+.runs-content {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+.runs-summary {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 5px;
+}
+.runs-summary h2 {
+  margin: 0;
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+  color: var(--text);
+}
+.runs-summary p,
+.runs-summary small,
+.runs-content h3,
+.runs-content button small,
+.runs-summary > button,
+.runs-empty-message {
+  margin: 0;
+  font-size: 12px;
+  line-height: 15px;
+  color: #898781;
+}
+.runs-summary > button {
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.runs-content section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.runs-content h3 {
+  font-weight: 400;
+}
+.runs-content ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.runs-content li {
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+}
+.runs-content li:hover,
+.runs-content li:focus-within {
+  background: rgb(255 255 255 / 10%);
+}
+.runs-content li[data-current] {
+  background: rgb(255 255 255 / 15%);
+}
+.runs-content li > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  background: none;
+  text-align: start;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+}
+.runs-content li > button > span {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.runs-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 12px;
+  color: #898781;
+  text-align: center;
+}
+.runs-empty h3 {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+}
+.runs-empty p {
+  font-size: 12px;
+  line-height: 15px;
+}
+.runs-empty-message {
+  text-align: center;
+  padding-block: 5px;
+}
+:root[data-theme="light"] .runs-summary h2,
+:root[data-theme="light"] .runs-content li > button,
+:root[data-theme="light"] .runs-empty h3 {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .runs-content li {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .runs-content li:hover,
+:root[data-theme="light"] .runs-content li:focus-within,
+:root[data-theme="light"] .runs-content li[data-current] {
+  background: rgb(11 11 11 / 10%);
+}

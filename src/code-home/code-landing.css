@@ -1,0 +1,168 @@
+/* The Code landing's sections: 24px above, 56px below, 40px between sections; a
+   section's header (h2 in body primary, then Show {count} more in muted) 8px
+   over its list; rows 4px apart on alpha-1 (alpha-2 on hover), rounded-lg, 6px
+   by 5px inside, 8px gaps; a 5px dot in a 16px slot and the state in footnote,
+   the title in body primary, the time in footnote muted. */
+.code-landing {
+  display: flex;
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 40px;
+  margin: 0 auto;
+  padding: 24px 16px 56px;
+}
+.landing-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.landing-section > header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.landing-section h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19px;
+}
+.landing-spring {
+  flex: 1;
+}
+.landing-more {
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #898781;
+  font: inherit;
+  font-size: 12px;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 120ms;
+}
+.landing-section:hover .landing-more,
+.landing-more:focus-visible {
+  opacity: 1;
+}
+.landing-more:hover {
+  background: rgb(255 255 255 / 5%);
+}
+.landing-section ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.landing-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 5px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.landing-row:hover,
+.landing-row:focus-visible {
+  background: rgb(255 255 255 / 10%);
+}
+.landing-pill {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+.landing-dot-slot {
+  display: inline-flex;
+  width: 16px;
+  align-items: center;
+  justify-content: center;
+}
+.landing-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 20%);
+}
+.landing-pill-label {
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+  white-space: nowrap;
+}
+.landing-pill[data-kind="blocked"] .landing-dot {
+  background: #fab219;
+}
+.landing-pill[data-kind="blocked"] .landing-pill-label {
+  color: #db9300;
+}
+.landing-pill[data-kind="review"] .landing-dot,
+.landing-pill[data-kind="unread"] .landing-dot {
+  background: #2a78d6;
+}
+.landing-pill[data-kind="review"] .landing-pill-label,
+.landing-pill[data-kind="unread"] .landing-pill-label {
+  color: #6da7ec;
+}
+.landing-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.landing-meta {
+  max-width: 180px;
+  overflow: hidden;
+  color: #898781;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.landing-time {
+  flex-shrink: 0;
+  color: #898781;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-theme="light"] .landing-section h2,
+:root[data-theme="light"] .landing-title {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .landing-row {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .landing-row:hover,
+:root[data-theme="light"] .landing-row:focus-visible {
+  background: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .landing-dot {
+  background: rgb(11 11 11 / 20%);
+}
+:root[data-theme="light"]
+  .landing-pill[data-kind="blocked"]
+  .landing-pill-label {
+  color: #734500;
+}
+:root[data-theme="light"] .landing-pill[data-kind="review"] .landing-pill-label,
+:root[data-theme="light"]
+  .landing-pill[data-kind="unread"]
+  .landing-pill-label {
+  color: #184f95;
+}

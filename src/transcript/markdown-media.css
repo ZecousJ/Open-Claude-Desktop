@@ -1,0 +1,96 @@
+/* Math, remote images and link confirmation in replies. R-0523/R-0524/R-0584/
+   sizes follow the surrounding reply styles (chat-markdown.md) and are
+   provisional. */
+.markdown .katex {
+  font-size: 1.05em;
+}
+/* Block math is centred and scrolls sideways instead of widening the reply. */
+.markdown .katex-display {
+  margin: 4px 0 16px;
+  padding: 4px 4px 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.markdown .katex-display > .katex {
+  text-align: center;
+}
+.markdown .katex-error {
+  color: inherit;
+  font-size: 0.85em;
+}
+
+.markdown-image {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  margin: 8px 0 16px;
+  border-radius: 8px;
+}
+.markdown-image-placeholder {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 100%;
+  margin: 2px 0;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid #30302e;
+  border-radius: 8px;
+  background: #1f1f1e;
+  color: #a6a59f;
+  font:
+    13px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  vertical-align: middle;
+}
+.markdown-image-label {
+  color: #deddd9;
+  overflow-wrap: anywhere;
+}
+.markdown-image-host {
+  color: #858580;
+}
+.markdown-image-placeholder .small-action {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: #deddd9;
+}
+.markdown-image-placeholder .small-action:hover {
+  background: #292928;
+}
+.markdown-image-placeholder .small-action:active {
+  background: #343432;
+}
+.markdown-image-error {
+  flex-basis: 100%;
+  color: var(--danger);
+  font-size: 12px;
+}
+:root[data-theme="light"] .markdown-image-placeholder {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .markdown-image-label,
+:root[data-theme="light"] .markdown-image-placeholder .small-action {
+  color: var(--text);
+}
+:root[data-theme="light"] .markdown-image-placeholder .small-action:hover {
+  background: var(--surface-hover);
+}
+
+.external-link-url {
+  margin: 0 0 20px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  max-height: 120px;
+  overflow-y: auto;
+}

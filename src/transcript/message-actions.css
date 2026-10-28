@@ -1,0 +1,170 @@
+/* A message's actions row and the streaming star. (part of chat-transcript.css) */
+/* A message's actions (the original's message actions; source: desktop
+   bundle 2.31226.1 static CSS/JS): an older reply's row, and every prompt's,
+   shows once the pointer has rested on it for 100ms, fading in over 120ms
+   on the snap curve, and goes over 60ms on the same curve when the pointer
+   leaves. Hidden, it is out of the tab order; keyboard focus inside shows it
+   over 120ms with no wait, and "Show message actions" (ReplyToolbar) gets a
+   screen reader in. The newest reply's row fades in the same way when it
+   appears. With a coarse pointer or no hover the rows always show. Reduced
+   motion does not fade them: they come and go at once (the --reveal-*
+   timings below drop to 0s). */
+:root {
+  --reveal-in: var(--motion-snap);
+  --reveal-out: var(--motion-fast);
+  --reveal-wait: 100ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --reveal-in: 0s;
+    --reveal-out: 0s;
+    --reveal-wait: 0s;
+  }
+}
+:root[data-motion="reduced"] {
+  --reveal-in: 0s;
+  --reveal-out: 0s;
+  --reveal-wait: 0s;
+}
+.mode-chat .turn[data-latest="false"] .message-actions,
+.user-message-actions {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--reveal-out) var(--ease-snap),
+    visibility 0s linear var(--reveal-out);
+}
+.mode-chat .turn[data-latest="false"]:hover .message-actions,
+.user-message:hover .user-message-actions {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--reveal-in) var(--ease-snap) var(--reveal-wait),
+    visibility 0s linear var(--reveal-wait);
+}
+.mode-chat
+  .turn[data-latest="false"]
+  .message-actions:is(:focus-within, [data-revealed]),
+.user-message-actions:is(:focus-within, [data-revealed]) {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--reveal-in) var(--ease-snap),
+    visibility 0s;
+}
+.show-message-actions {
+  visibility: visible;
+}
+.mode-chat .turn[data-latest="true"] .message-actions {
+  transition: opacity var(--reveal-in) var(--ease-snap) var(--reveal-wait);
+  @starting-style {
+    opacity: 0;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .mode-chat .turn[data-latest="false"] .message-actions,
+  .user-message-actions {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+/* The time beside the icons shows with the pointer or focus on the reply. Under
+   the newest reply's always-shown row it fades like a row does: in over 120ms
+   after the wait (focus: no wait), out over 60ms. Under an older reply the row
+   does the fading and the time follows it without a fade of its own: it goes
+   60ms late, the time the row takes to go, and comes at once. */
+.mode-chat
+  .assistant-message:is(:hover, :focus-within)
+  .message-actions
+  > span {
+  opacity: 1;
+}
+.mode-chat .message-actions > span,
+.mode-cowork .message-actions > span {
+  transition: opacity var(--reveal-out) var(--ease-snap);
+}
+.mode-chat .assistant-message:hover .message-actions > span,
+.mode-cowork .assistant-message:hover .message-actions > span {
+  transition: opacity var(--reveal-in) var(--ease-snap) var(--reveal-wait);
+}
+.mode-chat .assistant-message:focus-within .message-actions > span,
+.mode-cowork .assistant-message:focus-within .message-actions > span {
+  transition: opacity var(--reveal-in) var(--ease-snap);
+}
+.mode-chat .turn[data-latest="false"] .message-actions > span {
+  transition: opacity 0s linear var(--reveal-out);
+}
+.mode-chat
+  .turn[data-latest="false"]
+  .assistant-message:is(:hover, :focus-within)
+  .message-actions
+  > span {
+  transition: none;
+}
+.mode-chat .small-action.icon-only {
+  width: 24px;
+  height: 24px;
+  padding: 5px;
+  border-radius: 6px;
+}
+.mode-chat .small-action.icon-only:has(> .reply-glyph) {
+  padding: 4px;
+}
+/* R-0437-0452-0467 (2.629 px/CSS), measured against the toolbar's first
+   icon: the star sat 2.7px too far left and 2.6px too low (G-63). */
+.response-end-mark {
+  margin: 27.4px 0 22px 2.7px;
+  height: 32px;
+}
+/* reply-retry-001 14.7–17.2s (1.0 px/CSS): while text streams a moving star
+   (26–30px) sits ~36px under the last line and moves down with it. The
+   spinner's 17/20 frame drawn in a 32px box is 27px. On the last frame it
+   shrinks for ~100ms (24 → 10px) before the still end star appears. */
+.response-stream-mark {
+  position: relative;
+  height: 32px;
+  margin: 22px 0 22px;
+}
+.response-stream-mark > .code-spinner {
+  position: static;
+  width: 32px;
+  height: 32px;
+}
+/* 1.5s cycle, full 0–17%, back to the dot ring by 33%, out again from 87%. */
+.chat-spinner path {
+  stroke-width: 2.4;
+  animation: chat-spoke 1.5s linear infinite;
+}
+@keyframes chat-spoke {
+  0%,
+  17% {
+    stroke-dasharray: var(--spoke) 40;
+  }
+  22% {
+    stroke-dasharray: calc(var(--spoke) * 0.5) 40;
+  }
+  28% {
+    stroke-dasharray: calc(var(--spoke) * 0.15) 40;
+  }
+  33%,
+  87% {
+    stroke-dasharray: 0.01 40;
+  }
+  93% {
+    stroke-dasharray: calc(var(--spoke) * 0.3) 40;
+  }
+  100% {
+    stroke-dasharray: var(--spoke) 40;
+  }
+}
+.response-stream-mark[data-ending] > .code-spinner {
+  animation: response-mark-shrink 100ms ease-in forwards;
+}
+@keyframes response-mark-shrink {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(0.37);
+  }
+}

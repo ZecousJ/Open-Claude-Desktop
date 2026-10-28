@@ -1,0 +1,797 @@
+/* The panel keeps 321px at least and leaves the chat column 435px at least. */
+.workspace {
+  --file-viewer-least: 331px;
+  --file-viewer-inset: 433px;
+}
+.workspace:has(.artifact-collaboration) {
+  --file-viewer-least: 341px;
+  --file-viewer-inset: 423px;
+}
+.workspace:has(.file-viewer) {
+  position: relative;
+}
+.workspace:has(.file-viewer) > .chat-header {
+  width: calc(100% - var(--file-viewer-width, 50%));
+}
+.chat-layout:has(> .file-viewer) > .chat-main {
+  flex: 0 0 calc(100% - var(--file-viewer-width, 50%));
+  width: calc(100% - var(--file-viewer-width, 50%));
+  min-width: 0;
+}
+.artifact-panel.file-viewer {
+  position: absolute;
+  z-index: 12;
+  inset: 8px 8px 8px auto;
+  margin: 0;
+  width: calc(var(--file-viewer-width, 50%) - 10px);
+  min-width: 0;
+  max-width: none;
+  border: 1px solid #30302e;
+  border-radius: 11px;
+  background: #202020;
+  overflow: visible;
+}
+.file-viewer > header {
+  position: relative;
+  height: 44px;
+  min-height: 44px;
+  display: flex;
+  gap: 8px;
+  padding: 0 10px;
+  border-bottom: 1px solid #292927;
+  border-radius: 11px 11px 0 0;
+  background: var(--surface);
+  -webkit-app-region: drag;
+}
+.file-viewer > header button {
+  -webkit-app-region: no-drag;
+}
+.file-viewer h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  color: #b9b8b3;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.file-viewer h2 > span {
+  color: #7e7e78;
+}
+/* Preview / Code: the shared segmented control (src/ui/SegmentedControl.tsx);
+   its sliding thumb is the chosen segment's #363636 fill, with the original's
+   inner ring and shadow. */
+.file-viewer .file-view-mode {
+  --segmented-thumb: #363636;
+  --segmented-thumb-ring: rgb(255 255 255 / 6%);
+  --segmented-radius: 5px;
+  --segmented-inset: 0px;
+  display: flex;
+  flex-shrink: 0;
+  gap: 1px;
+  padding: 0;
+  background: #272727;
+  border-radius: 5px;
+}
+.file-viewer > header .file-viewer-controls {
+  display: flex;
+  flex-shrink: 0;
+  gap: 5px;
+}
+.file-viewer-controls .icon-button {
+  width: 26px;
+  height: 28px;
+  color: #a4a49e;
+}
+.file-copy-group > .small-action {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px 0 0 6px;
+  font-size: 14px;
+  color: #d1d0ca;
+}
+.file-copy-group > .small-action > svg {
+  display: none;
+}
+.file-viewer iframe {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 0 0 10px 10px;
+  background: #fff;
+  color-scheme: inherit;
+}
+.file-source {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 0 12px;
+  background: var(--code-background, var(--surface));
+  border-radius: 0 0 10px 10px;
+}
+.file-source-lines {
+  padding: 0;
+}
+.file-source-line {
+  display: flex;
+  align-items: stretch;
+  min-height: 22px;
+  font:
+    12px/22px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.file-source-line > span,
+.file-source-line > button {
+  width: 40px;
+  flex-shrink: 0;
+  padding-right: 9px;
+  text-align: right;
+  border-right: 1px solid #30302e;
+  color: #72726d;
+  user-select: none;
+}
+.file-source-line > button {
+  background: none;
+  border: 0;
+  border-right: 1px solid #30302e;
+  font: inherit;
+  cursor: pointer;
+}
+.file-source-line > code {
+  flex: 1;
+  min-width: 0;
+  padding: 0 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  color: var(--code-foreground, #d2d2cc);
+}
+.artifact-panel.file-viewer[data-expanded="true"] {
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+}
+.workspace:has(.file-viewer[data-expanded="true"]) > .chat-header,
+.chat-layout:has(.file-viewer[data-expanded="true"]) > .chat-main {
+  visibility: hidden;
+}
+.sidebar-hidden.darwin .file-viewer[data-expanded="true"] > header {
+  padding-left: 164px;
+}
+.file-document-card {
+  width: min(520px, 100%);
+  margin: 12px 0 18px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #383833;
+  border-radius: 12px;
+  background: #191919;
+  text-align: left;
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+.file-document-card:hover {
+  background: #252525;
+}
+.file-document-card > svg {
+  color: #96968f;
+}
+.file-document-card > span {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+.file-document-card strong {
+  font-size: 14px;
+  font-weight: 450;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-document-card small {
+  font-size: 12px;
+  color: #878780;
+}
+.file-document-card > em {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #303030;
+  font-size: 12px;
+  font-style: normal;
+}
+:root[data-theme="light"] .file-viewer,
+:root[data-theme="light"] .file-viewer > header {
+  background: var(--surface);
+  border-color: var(--border);
+}
+:root[data-theme="light"] .file-source {
+  background: var(--code-background, var(--surface));
+  border-color: var(--border);
+}
+:root[data-theme="light"] .file-source-line > code {
+  color: var(--code-foreground, var(--text));
+}
+/*
+ * The file viewer's header in light: a white bar with a 1px #e5e5e5 rule, the
+ * name #5f5f5f and " · PY" #8a8a8a, Copy as a white split button with a #e5e5e5
+ * outline, black text, a #e5e5e5 divider and a #8a8a8a arrow, black expand and
+ * close glyphs. The Preview/Code pair is a #f5f5f5 pill whose chosen half is
+ * white (icons #2e2e2e, the other #90918c).
+ */
+:root[data-theme="light"] .file-viewer > header {
+  border-bottom-color: #e5e5e5;
+}
+:root[data-theme="light"] .file-viewer h2 {
+  color: #5f5f5f;
+}
+:root[data-theme="light"] .file-viewer h2 > span {
+  color: #8a8a8a;
+}
+:root[data-theme="light"] .file-copy-group > .small-action {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .file-options:hover,
+:root[data-theme="light"] .file-copy-group > .small-action:hover {
+  background: #f5f5f5;
+}
+:root[data-theme="light"] .file-viewer-controls .icon-button {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .file-viewer .file-view-mode {
+  --segmented-thumb: #fff;
+  --segmented-thumb-ring: #e5e5e5;
+  background: #f5f5f5;
+}
+:root[data-theme="light"]
+  .file-viewer:not(.artifact-collaboration)
+  .file-options[aria-expanded="true"] {
+  background: #f5f5f5;
+}
+
+.file-viewer:focus {
+  outline: none;
+}
+.file-preview {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: var(--surface);
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+.file-preview-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #7a7a75;
+}
+.file-preview-loading svg {
+  animation: spin 1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .file-preview-loading svg {
+    animation: none;
+  }
+}
+
+/* Artifact collaboration is a distinct surface from the file source viewer. */
+.file-viewer > .artifact-collaboration-header {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 8px 0 12px;
+  justify-content: space-between;
+}
+.artifact-title-options {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  height: 24px;
+  color: #b8b7b1;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  border-radius: 5px;
+  margin-left: -6px;
+  padding: 0 6px;
+}
+.artifact-title-options > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.artifact-title-options:hover {
+  color: #e1e0db;
+}
+.artifact-title-options[aria-expanded="true"] {
+  background: #3c3c3b;
+}
+@keyframes artifact-switch-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+/* In the file header the switcher follows the title, which then only
+   takes its own width. */
+.file-viewer > header:has(> .artifact-version-anchor) > h2 {
+  flex: 0 1 auto;
+}
+.file-viewer > header > .artifact-version-anchor {
+  align-self: center;
+  margin: 0 auto 0 -4px;
+}
+.artifact-collaboration-controls .icon-button {
+  width: 25px;
+  height: 28px;
+  color: #898983;
+}
+.artifact-comment-layer {
+  position: absolute;
+  inset: 40px 0 0;
+  z-index: 15;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+.artifact-comment-layer button,
+.artifact-comment-layer textarea,
+.artifact-comment-layer input {
+  pointer-events: auto;
+}
+@keyframes artifact-comment-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes artifact-comment-pulse {
+  from {
+    outline-color: var(--focus-accent);
+    outline-offset: 0;
+  }
+  to {
+    outline-color: transparent;
+    outline-offset: 6px;
+  }
+}
+@keyframes artifact-avatar-lands {
+  from {
+    clip-path: circle(4px);
+  }
+  to {
+    clip-path: circle(50%);
+  }
+}
+@keyframes artifact-avatar-veil {
+  from {
+    opacity: 1;
+  }
+}
+/* Reduced motion: nothing moves; the jumped-to comment keeps a plain ring
+   while it is marked. */
+/* At the measured 68% split the reference leaves an 8px wider chat pane. */
+.workspace:has(.artifact-collaboration) > .chat-header {
+  width: calc(100% - var(--file-viewer-width) + 10px);
+}
+.chat-layout:has(> .artifact-collaboration) > .chat-main {
+  flex-basis: calc(100% - var(--file-viewer-width) + 10px);
+  width: calc(100% - var(--file-viewer-width) + 10px);
+}
+.chat-layout:has(> .artifact-collaboration) > .chat-main {
+  container-type: inline-size;
+}
+@container (max-width:320px) {
+  .conversation-footer {
+    justify-content: flex-end;
+    padding-left: 0;
+    padding-right: 4px;
+  }
+  .conversation-footer > span {
+    display: none;
+  }
+}
+@container (max-width:240px) {
+  .conversation-input-actions .mic-button {
+    display: none;
+  }
+}
+.artifact-panel.artifact-collaboration {
+  width: calc(var(--file-viewer-width) - 20px);
+}
+.artifact-panel.artifact-collaboration[data-expanded="true"] {
+  width: 100%;
+}
+.mode-chat .chat-layout:has(> .artifact-collaboration) .messages {
+  padding-left: 14px;
+  padding-right: 24px;
+}
+.artifact-panel > header > .artifact-chrome-menu,
+.artifact-panel > header > .file-viewer-menu {
+  display: block;
+}
+.artifact-panel.file-viewer iframe {
+  background: #1a1a1a;
+}
+:root[data-theme="light"] .artifact-panel.file-viewer iframe {
+  background: #fff;
+}
+.file-viewer > .artifact-collaboration-header .artifact-title-input {
+  flex: 0 1 auto;
+  min-width: 100px;
+  max-width: calc(100% - 210px);
+  height: 26px;
+  margin: 0;
+  padding: 2px 6px;
+  color: #c9c8c2;
+  background: transparent;
+  border: 1px solid #5794dc;
+  border-radius: 5px;
+  outline: none;
+  box-shadow: 0 0 0 2px #5794dc26;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  -webkit-app-region: no-drag;
+}
+.file-viewer > .artifact-collaboration-header .artifact-title-input {
+  width: auto;
+  field-sizing: content;
+}
+
+/* Artifact header calibrated against artifact-create-001 @40s and artifact-panel-cycle-002 @30s (1747×1063). */
+.file-viewer > .artifact-collaboration-header {
+  height: 41px;
+  min-height: 41px;
+  padding-right: 9px;
+  border-bottom: 0;
+}
+.artifact-collaboration .artifact-comment-layer {
+  top: 41px;
+}
+.artifact-collaboration .artifact-title-options {
+  font-size: 13px;
+  color: #cfceca;
+}
+.artifact-collaboration .artifact-collaboration-controls .icon-button {
+  width: 25px;
+}
+.artifact-collaboration[data-expanded="true"] .artifact-comment-layer {
+  top: 49px;
+}
+.artifact-chat-button > .star {
+  flex-shrink: 0;
+}
+.app:has(.file-viewer[data-expanded="true"])
+  > .app-chrome-layer
+  > .collapsed-chrome {
+  z-index: 13;
+}
+/* Motion from frame analysis: artifact-panel-cycle-001 header 8.71→8.84s, preview 9.80→9.91s;
+   file-viewer-cycle-002 reopen header 27.55→27.62s. The panel box itself appears in one frame. */
+@keyframes file-viewer-header-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.file-viewer:not(.artifact-collaboration) > header {
+  animation: file-viewer-header-in 70ms ease-out;
+  z-index: 16;
+}
+.file-preview > iframe {
+  transition: opacity 100ms var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .artifact-collaboration > .artifact-collaboration-header,
+  .file-viewer:not(.artifact-collaboration) > header {
+    animation: none;
+  }
+  .file-preview > iframe {
+    transition: none;
+  }
+}
+/* Rename field (artifact-rename-001 @40s): border box x582–755, y16–41; muted selection. */
+.file-viewer > .artifact-collaboration-header .artifact-title-input {
+  margin-left: -2px;
+  padding: 2px 20px 2px 7px;
+  font-size: 13px;
+  border-color: #4f86c8;
+}
+/* HTML sources tint only markup; embedded style content stays in the base text
+   colour. */
+:root:not([data-theme="light"])
+  .file-source[data-language="html"]
+  .file-source-line
+  > code {
+  color: var(--code-foreground, #cfcfcc);
+}
+:root:not([data-theme="light"]):where(:not([data-code-theme^="github-"]))
+  .file-source[data-language="html"]
+  [class*="hljs-"] {
+  color: inherit;
+}
+:root:not([data-theme="light"]) .file-source[data-language="html"] .hljs-meta {
+  color: var(--code-constant, #7ec4c4);
+}
+:root:not([data-theme="light"])
+  .file-source[data-language="html"]
+  .hljs-meta
+  .hljs-keyword {
+  color: var(--code-keyword, #86d2d4);
+}
+:root:not([data-theme="light"]):where(:not([data-code-theme^="github-"]))
+  .file-source[data-language="html"]
+  .hljs-tag {
+  color: var(--code-foreground, #cfcfcc);
+}
+:root:not([data-theme="light"])
+  .file-source[data-language="html"]
+  .hljs-tag
+  .hljs-name {
+  color: var(--code-tag, #c9767f);
+}
+:root:not([data-theme="light"])
+  .file-source[data-language="html"]
+  .hljs-tag
+  .hljs-attr {
+  color: var(--code-constant, #cfcfcc);
+}
+:root:not([data-theme="light"])
+  .file-source[data-language="html"]
+  .hljs-tag
+  .hljs-string {
+  color: var(--code-string, #9dc870);
+}
+:root:not([data-theme="light"]):where(:not([data-code-theme^="github-"]))
+  .file-source[data-language="html"]
+  .language-css
+  *,
+:root:not([data-theme="light"]):where(:not([data-code-theme^="github-"]))
+  .file-source[data-language="html"]
+  .language-javascript
+  * {
+  color: inherit;
+}
+:root:not([data-theme="light"]) .file-source-line > code {
+  word-break: break-all;
+}
+.file-viewer:not(.artifact-collaboration) .file-copy-group > .small-action {
+  padding: 0 11px;
+}
+.file-viewer:not(.artifact-collaboration) .file-options {
+  width: 28px;
+}
+.file-viewer:not(.artifact-collaboration) .file-options[aria-expanded="true"] {
+  background: #414141;
+}
+.artifact-panel > header .file-copy-anchor > .file-viewer-menu {
+  display: block;
+}
+.file-viewer:not(.artifact-collaboration) > header {
+  padding-left: 7px;
+}
+.file-viewer:not(.artifact-collaboration) .file-view-mode button {
+  width: 27px;
+}
+/* Transcript file-change rows and Artifact card spacing (generated-file-update-001 @40s,
+   artifact-export-001 @5s): card 71px tall, 47px below the "Edited a file" label (+2 when
+   expanded), reply text 15px below; grouped rows pitch 36px. */
+.file-change-result > .file-change-activity {
+  margin-bottom: 29px;
+}
+.file-change-result > .file-change-activity[open] {
+  margin-bottom: 31px;
+}
+.artifact-document-card.file-document-card {
+  margin-bottom: 10px;
+}
+.grouped-activity-card > .generated-file-row + .generated-file-row {
+  min-height: 36px;
+}
+.grouped-activity-card > .generated-file-row strong {
+  font-weight: 500;
+  color: #d3d2cc;
+}
+.grouped-activity-card > .generated-file-row > svg {
+  width: 14px;
+  height: 14px;
+  color: #9a9a94;
+}
+/* Generating state: the header is 41px including its 1px rule, with only Expand
+   (16px icon) and Close (14px icon); their centres sit 47px and 19.5px left of
+   the panel's right border. The body shows a 20px ring with a brighter arc. */
+.artifact-panel.file-viewer > header.file-viewer-generating-header {
+  height: 41px;
+  min-height: 41px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 7.5px 0 12px;
+}
+.file-viewer > header.file-viewer-generating-header .file-viewer-controls {
+  gap: 3.5px;
+}
+.file-viewer-generating-header .file-viewer-controls .icon-button {
+  width: 24px;
+  height: 28px;
+  color: #898983;
+}
+.file-preview.file-preview-generating {
+  background: #1a1a1a;
+}
+:root[data-theme="light"] .file-preview.file-preview-generating {
+  background: var(--surface);
+}
+
+/* Native previews and the file card. No original capture exists for these;
+   sizes follow the file viewer's measured header, menu and source-view specs
+   and are provisional. */
+.file-copy-group > .small-action:only-child {
+  border-radius: 6px;
+}
+.file-preview.artifact-image-preview {
+  overflow: auto;
+  background: #1a1a1a;
+}
+.file-preview.file-preview-none {
+  overflow: auto;
+}
+:root[data-theme="light"] .file-preview.artifact-image-preview {
+  background: var(--surface);
+}
+
+/* Refresh: the loaded page stays on screen at about 74% under a dim ring until
+   the reloaded page is ready. */
+.file-preview > .file-preview-stale {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  opacity: 0.74;
+  pointer-events: none;
+}
+.file-preview[data-refreshing] > .file-preview-loading {
+  z-index: 1;
+  color: #55554f;
+}
+
+/* While the agent writes it, the card has the file's name, "Artifact" and
+   Open/Hide only. A card whose writing failed or stopped is muted, gives the
+   reason in the failure red of R-0823 and opens nothing. */
+.artifact-document-card[data-state="failed"] .artifact-card-main {
+  cursor: default;
+}
+/* Its main part is a span, which the plain file card lays out as a column. */
+.artifact-document-card[data-state="failed"] > .artifact-card-main {
+  flex-direction: row;
+  gap: 20px;
+}
+.artifact-document-card[data-state="failed"] .artifact-card-description strong {
+  color: #9d9c97;
+}
+.artifact-document-card[data-state="failed"] .artifact-card-description small {
+  color: var(--danger);
+}
+
+/*
+ * A Code session's file panel. A 32px tab row: the tree toggle, the file's tab
+ * (italic name, a preview tab, with ×) and at the right Search, More options,
+ * Expand and Close; then a 32px path row with the eye. Source in 13px mono with
+ * the gutter's numbers right-aligned; the options wrap or not, draw whitespace,
+ * scroll past the end and set the tab width.
+ */
+.artifact-panel.file-viewer.code-file-panel > header.code-file-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border-bottom: 1px solid #2a2a28;
+}
+.code-file-tabs,
+.code-file-path {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 6px;
+}
+.code-file-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 220px;
+  height: 24px;
+  padding: 0 4px 0 8px;
+  border-radius: 6px;
+  background: #2a2a28;
+  color: #e6e5e0;
+  font-size: 13px;
+}
+.code-file-tab em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.code-file-tab button {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  color: #a3a29f;
+}
+.code-file-tab button:hover {
+  background: #3a3a38;
+}
+.code-file-path {
+  justify-content: space-between;
+  padding-left: 8px;
+  color: #c7c6c1;
+  font-size: 13px;
+}
+.code-file-path > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.code-file-panel .file-source {
+  tab-size: var(--code-tab-size, 4);
+}
+.code-file-panel.no-wrap .file-source code {
+  white-space: pre;
+}
+.code-file-panel.no-wrap .file-source {
+  overflow-x: auto;
+}
+.code-file-panel.scroll-past-end .file-source-lines {
+  padding-bottom: calc(100vh - 160px);
+}
+.show-whitespace .file-ws {
+  position: relative;
+}
+.show-whitespace .file-ws::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  color: #5d5d5b;
+  text-align: center;
+}
+.show-whitespace .file-ws.tab::before {
+  content: "→";
+  text-align: left;
+}
+:root[data-theme="light"] .code-file-tab {
+  background: #f0f0ee;
+  color: #141413;
+}
+:root[data-theme="light"] .code-file-path {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .show-whitespace .file-ws::before {
+  color: #b5b4b0;
+}
+
+/* Reduced motion: the share switch's knob jumps; the track still fades. */

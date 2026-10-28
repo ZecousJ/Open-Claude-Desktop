@@ -1,0 +1,5 @@
+{
+  "t": "error",
+  "code": "CLAUDEX_WEB_BAD_TICKET",
+  "message": "Your session could not be verified. Reload the page."
+}

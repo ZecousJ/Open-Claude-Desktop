@@ -1,0 +1,13 @@
+{
+  "args": [
+    "conv-1",
+    {
+      "$bytes": "aGVsbG8="
+    },
+    {
+      "text": "hi",
+      "effort": "high"
+    },
+    null
+  ]
+}

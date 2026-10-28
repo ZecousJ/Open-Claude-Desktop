@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "strategy": "subscription_then_default",
+  "default_group_id": null,
+  "allowed_group_ids": [],
+  "on_signup": {
+    "grant_default_group": false
+  },
+  "key_defaults": {
+    "quota_usd": 0,
+    "expires_in_days": null,
+    "rate_limit_5h": 0,
+    "rate_limit_1d": 0,
+    "rate_limit_7d": 0
+  },
+  "max_devices_per_user": 5
+}

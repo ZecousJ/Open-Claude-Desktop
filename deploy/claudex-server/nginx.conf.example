@@ -1,0 +1,150 @@
+# TLS reverse proxy in front of the Claudex server container (127.0.0.1:8080).
+# Adapted from backend/deploy/EDGE_SECURITY.md. Replace claudex.example.com and
+# the certificate paths, then save as /etc/nginx/conf.d/claudex-server.conf
+# (conf.d files are included inside http {}). Check with `nginx -t`.
+
+# Nginx drops request headers that contain underscores by default. Codex-style
+# clients send `session_id`, which the server uses for sticky account routing.
+underscores_in_headers on;
+
+# Access log without query strings. Query strings can carry secrets: the
+# desktop checkout opens /payment/stripe?client_secret=..., Google-style
+# clients may send ?key=<API key>, and the payment page's URL comes back in the
+# Referer of every asset it loads. So the log keeps the path of the request and
+# of the referer only. Keep the default `combined` format off this server.
+map $http_referer $claudex_referer_path {
+    default              "";
+    "~^(?<claudex_ref>[^?#]*)"  $claudex_ref;
+}
+log_format claudex_noquery '$remote_addr - $remote_user [$time_local] '
+                           '"$request_method $uri $server_protocol" $status $body_bytes_sent '
+                           '"$claudex_referer_path" "$http_user_agent" rt=$request_time';
+
+limit_req_zone $binary_remote_addr zone=claudex_auth:20m rate=5r/s;
+limit_req_zone $binary_remote_addr zone=claudex_api:40m rate=30r/s;
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+server {
+    listen 80;
+    server_name claudex.example.com;
+    access_log /var/log/nginx/claudex-server.access.log claudex_noquery;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name claudex.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/claudex.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/claudex.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    # Browsers connecting directly (no CDN in front): resume sessions
+    # instead of a full handshake, and staple OCSP.
+    ssl_session_cache shared:ClaudexSSL:10m;
+    ssl_session_timeout 1d;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    ssl_trusted_certificate /etc/letsencrypt/live/claudex.example.com/chain.pem;
+    resolver 1.1.1.1 8.8.8.8 valid=300s;
+    resolver_timeout 5s;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    access_log /var/log/nginx/claudex-server.access.log claudex_noquery;
+    # error_log lines can quote the request line, query string included; keep
+    # the level at error or above and restrict who can read the file.
+    error_log /var/log/nginx/claudex-server.error.log error;
+
+    client_header_timeout 10s;
+    # Uploads: attachments and /v1/audio/transcriptions (25 MB audio).
+    client_max_body_size 256m;
+    large_client_header_buffers 4 16k;
+
+    # Model responses stream as SSE for minutes: never compress them.
+    gzip off;
+
+    # Sign-in, refresh and registration: slow down password guessing.
+    location /api/v1/auth/ {
+        limit_req zone=claudex_auth burst=10 nodelay;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://127.0.0.1:8080;
+    }
+
+    # Optional hardening: admin API only from the operator network. The desktop
+    # app never calls /api/v1/admin/.
+    # location /api/v1/admin/ {
+    #     allow 203.0.113.0/24;
+    #     deny all;
+    #     proxy_http_version 1.1;
+    #     proxy_set_header Host $host;
+    #     proxy_set_header X-Real-IP $remote_addr;
+    #     proxy_set_header X-Forwarded-For $remote_addr;
+    #     proxy_set_header X-Forwarded-Proto $scheme;
+    #     proxy_pass http://127.0.0.1:8080;
+    # }
+
+    # Static files (content-hashed, immutable): compressed here. Streaming
+    # routes below keep gzip off so events are not held back.
+    location /assets/ {
+        limit_req zone=claudex_api burst=200 nodelay;
+        gzip on;
+        gzip_comp_level 6;
+        gzip_min_length 1024;
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_types text/css application/javascript text/javascript application/json image/svg+xml application/wasm font/ttf application/vnd.ms-fontobject;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_buffering on;
+        proxy_pass http://127.0.0.1:18080;
+    }
+
+    # The web app's RPC replies (snapshot, conversation turns: JSON up to
+    # about 1 MB, one reply per request): compressed. Event streams and
+    # websockets stay on the route below with gzip off.
+    location /api/v1/claudex/web/rpc/ {
+        limit_req zone=claudex_api burst=60 nodelay;
+        gzip on;
+        gzip_comp_level 5;
+        gzip_min_length 1024;
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_types application/json text/plain;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_read_timeout 1800s;
+        proxy_send_timeout 1800s;
+        proxy_request_buffering off;
+        proxy_pass http://127.0.0.1:18080;
+    }
+
+    location / {
+        limit_req zone=claudex_api burst=60 nodelay;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        # SSE and long model responses: no buffering in either direction,
+        # long timeouts.
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_request_buffering off;
+        proxy_read_timeout 1800s;
+        proxy_send_timeout 1800s;
+        proxy_pass http://127.0.0.1:8080;
+    }
+}

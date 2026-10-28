@@ -1,0 +1,127 @@
+/* The linked computer beside a chat's title: a ghost 28px Laptop button in the
+   muted ink, radius 7; its card 280 wide on surface-3, radius 12, a 1px 10%
+   ring and the popover shadow, 6px under the button with its right edge on the
+   button's. */
+.computer-link {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+.computer-link-trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+}
+.computer-link-trigger:hover,
+.computer-link-trigger[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.computer-link-trigger > .computer-link-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+.computer-link-dot {
+  display: block;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.computer-link-dot.connected {
+  background: var(--success);
+}
+.computer-link-dot.away {
+  background: var(--warning-fill);
+}
+.computer-link-card {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  box-sizing: border-box;
+  width: 280px;
+  border-radius: 12px;
+  background: var(--surface-popover);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: start;
+}
+:root[data-theme="light"] .computer-link-card {
+  box-shadow:
+    inset 0 0 0 1px rgb(11 11 11 / 10%),
+    0 8px 24px rgb(0 0 0 / 12%),
+    0 2px 6px rgb(0 0 0 / 8%);
+}
+.computer-link-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+.computer-link-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+}
+.computer-link-name {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.computer-link-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+}
+.computer-link-status > .computer-link-dot {
+  margin-top: 6px;
+}
+.computer-link-status > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.computer-link-detail {
+  display: block;
+}
+.computer-link-rule {
+  height: 1px;
+  margin: 4px 0;
+  background: rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .computer-link-rule {
+  background: rgb(11 11 11 / 10%);
+}
+.computer-link-manage {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+}
+.computer-link-manage:hover,
+.computer-link-manage:focus-visible {
+  background: var(--fill-ghost-hover);
+}

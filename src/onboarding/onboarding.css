@@ -1,0 +1,633 @@
+/*
+ * The first-run onboarding (src/onboarding/OnboardingFlow.tsx), loaded with its
+ * lazy chunk. The page frame `F`, the steps of the onboarding route; colours
+ * are the app's own tokens (the original's surface-1 page, surface-2 and
+ * surface-3 fields and cards).
+ */
+.onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--text);
+}
+/* The window's drag strip over the top (the desktop sign-in's, 36px). */
+.onboarding-drag {
+  -webkit-app-region: drag;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  height: 36px;
+  margin-bottom: -36px;
+}
+.onboarding-drag .window-controls {
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+}
+/* The wordmark, centred, 40px from the top, 24px high (pt-10, h-6). */
+.onboarding-brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6.5px;
+  height: 24px;
+  padding-top: 40px;
+  color: var(--accent);
+}
+.onboarding-brand span {
+  color: var(--text);
+  font:
+    400 21px/1 "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  letter-spacing: -0.3px;
+}
+:root[data-reference-fonts="true"] .onboarding-brand span,
+:root[data-reference-fonts="true"] .onboarding-head h1,
+:root[data-reference-fonts="true"] .onboarding-question {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+}
+/* The step, centred in the rest of the window: px-4 py-10. */
+.onboarding-main {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  outline: none;
+}
+/* contentWidth sm: 30px between the heading, the body and the actions. */
+.onboarding-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  width: 100%;
+}
+.onboarding-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+/* The serif title (font-ui-serif 28px 500, leading 1.3) and its line under
+   it (text-sm, leading 1.4, secondary): c10bf8b47:7417-7424. */
+.onboarding-head h1 {
+  margin: 0;
+  font:
+    500 28px/1.3 "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  text-wrap: balance;
+  outline: none;
+}
+.onboarding-head p {
+  max-width: 450px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+.onboarding-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 450px;
+}
+.onboarding-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 450px;
+}
+.onboarding .primary,
+.onboarding .secondary {
+  min-height: 36px;
+  font-size: 14px;
+}
+.onboarding-wide {
+  width: 100%;
+}
+.onboarding-arrow svg {
+  margin-right: -2px;
+}
+
+/* The role field: h-auto w-full rounded-2xl bg-surface-2 px-5 py-4. */
+.onboarding-select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+.onboarding-select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Cards: rounded-2xl, border, surface-2, shadow-sm. */
+.onboarding-card {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  box-shadow: 0 1px 2px #0000000d;
+}
+
+/* "Set up and start coding": the card (max 600px, p-lg) and its tiles
+   (72px high, rounded, ring, auto-fit 5.5rem columns, gap-sm). */
+.onboarding-code-card {
+  max-width: 600px;
+  padding: 16px;
+}
+.onboarding-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  gap: 8px;
+}
+.onboarding-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 72px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  transition: background var(--motion-fast, 150ms);
+}
+.onboarding-tile:hover {
+  background: var(--surface-hover);
+}
+.onboarding-code-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.onboarding-code-question {
+  font-size: 14px;
+}
+.onboarding-code-note {
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* "Connect your work tools": the list (divided rows, px-4, py-4, gap-3)
+   and the footer line (border-t, py-3, caption, muted). */
+.onboarding-connectors ul {
+  max-height: max(16rem, calc(100dvh - 29rem));
+  margin: 0;
+  padding: 0 16px;
+  overflow-y: auto;
+  list-style: none;
+}
+.onboarding-connector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+.onboarding-connector + .onboarding-connector {
+  border-top: 1px solid var(--border);
+}
+.onboarding-connector-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.onboarding-connector-name {
+  margin: 0;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.onboarding-connected {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--success);
+  font-size: 12px;
+}
+.onboarding-connector-error {
+  color: var(--danger);
+  font-size: 12px;
+}
+.onboarding-browse {
+  margin: 0 16px;
+  padding: 12px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.onboarding-connectors ul + .onboarding-browse {
+  border-top: 1px solid var(--border);
+}
+.onboarding-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.onboarding-link:hover {
+  color: var(--text);
+}
+.onboarding-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  color: var(--text-muted);
+}
+.onboarding-spin {
+  animation: onboarding-spin 0.8s linear infinite;
+}
+@keyframes onboarding-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* "How did you get here?": written as a reply under the star (max-w-xl,
+   pt-24 on wide windows, gap-6), the question in the reply's serif at
+   text-xl, chips that wrap (gap-3). */
+.onboarding-chat {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 24px;
+  width: 100%;
+  max-width: 576px;
+  margin: 0 auto;
+}
+.onboarding-chat-star {
+  display: flex;
+  color: var(--accent);
+}
+.onboarding-question {
+  margin: 0;
+  font:
+    400 20px/1.4 "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  outline: none;
+}
+.onboarding-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+/* A chip: min-w 6rem, rounded 0.6rem, 1px border, surface-3, px-3 py-3,
+   16px text, shadow-sm; its round mark 20px, filled with a check when on. */
+.onboarding-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  min-width: 6rem;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.6rem;
+  background: var(--surface);
+  box-shadow: 0 1px 2px #0000000d;
+  color: var(--text);
+  font-size: 16px;
+  white-space: nowrap;
+  transition:
+    border-color 100ms,
+    box-shadow 100ms;
+}
+.onboarding-chip:hover {
+  border-color: var(--text-muted);
+  box-shadow: 0 4px 6px #0000001a;
+}
+.onboarding-chip-mark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 50%;
+}
+.onboarding-chip[aria-pressed="true"] .onboarding-chip-mark {
+  border: 0;
+  background: var(--primary);
+  color: var(--primary-text);
+}
+.onboarding-chat-after {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+/* "Tell us more…": the field (py-3, px-4, rounded-2xl, text-lg) with the
+   arrow inside its end. */
+.onboarding-other {
+  position: relative;
+}
+.onboarding-other input,
+.onboarding-other-field {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 18px;
+  outline: none;
+}
+.onboarding-other input {
+  padding-right: 64px;
+}
+.onboarding-other input:focus,
+.onboarding-other-field:focus {
+  border-color: var(--text);
+}
+.onboarding-send {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 36px;
+  padding: 0;
+  transform: translateY(-50%);
+}
+
+/* The first task: rows rounded-lg, 1px border, px-5 py-5, text-lg, the icon
+   in a 50px column; the ideas raised (surface-3, shadow), "I have my own
+   topic" flat on surface-1. */
+.onboarding-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.onboarding-task {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px #0000000d;
+  color: var(--text);
+  font-size: 18px;
+  text-align: left;
+  transition:
+    border-color 100ms,
+    box-shadow 100ms;
+}
+.onboarding-task:hover:not(:disabled) {
+  border-color: var(--text-muted);
+  box-shadow: 0 4px 6px #0000001a;
+}
+.onboarding-own {
+  background: var(--bg);
+  box-shadow: none;
+}
+.onboarding-task-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  margin-right: 8px;
+}
+
+@media (min-width: 768px) {
+  .onboarding-chat {
+    padding-top: 56px;
+  }
+}
+@media (max-width: 639px) {
+  .onboarding-chip,
+  .onboarding-task {
+    white-space: normal;
+  }
+}
+/* The reply-like step sits at the top, not centred (pt-10 md:pt-24). */
+.onboarding-main:has(.onboarding-chat) {
+  justify-content: flex-start;
+}
+/* Cr's max-w-lg, text-3xl/serif/mb-8, mt-9/gap-2 and mt-20/gap-4. */
+.onboarding:has(.onboarding-quick-entry) {
+  background: #0b0b0b;
+}
+.onboarding:has(.onboarding-quick-entry) .onboarding-brand {
+  display: none;
+}
+.onboarding-main:has(.onboarding-quick-entry) {
+  padding: 32px;
+}
+.onboarding-quick-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.onboarding-quick-entry h1 {
+  max-width: 512px;
+  margin: 0 0 32px;
+  color: var(--text);
+  font:
+    500 30px/36px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  text-align: center;
+  text-wrap: balance;
+  outline: none;
+}
+.onboarding-quick-settings {
+  display: flex;
+  align-items: center;
+  color: #898781;
+}
+.onboarding-quick-settings:hover {
+  color: var(--text-secondary);
+}
+.onboarding-quick-settings svg {
+  margin-inline-start: 4px;
+  margin-top: 1px;
+}
+.onboarding-quick-illustrations {
+  display: flex;
+  margin-top: 36px;
+  gap: 8px;
+}
+.onboarding-quick-keys {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 222px;
+  height: 129px;
+  border: 1.5px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  background: #20201f;
+}
+.onboarding-quick-keys kbd {
+  display: flex;
+  align-items: flex-end;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 8px 6px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  background: #2b2b29;
+  color: #e5e4df;
+  font: 500 12px/1 inherit;
+}
+.onboarding-quick-keys kbd[data-wide="true"] {
+  min-width: 72px;
+}
+:root[data-theme="light"] .onboarding-quick-keys {
+  border-color: rgb(0 0 0 / 10%);
+  background: #f5f4ef;
+}
+:root[data-theme="light"] .onboarding-quick-keys kbd {
+  border-color: rgb(0 0 0 / 14%);
+  background: #fff;
+  color: #3d3d3a;
+}
+.onboarding-quick-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 80px;
+}
+.onboarding-quick-actions button {
+  width: 192px;
+  min-height: 28px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.onboarding-quick-actions .primary {
+  color: #0b0b0b;
+  background: #fff;
+}
+.onboarding-quick-actions .primary:hover {
+  background: #e1e0d9;
+}
+.onboarding-quick-actions .secondary {
+  color: var(--text);
+  background: rgb(255 255 255 / 10%);
+}
+.onboarding-quick-actions .secondary:hover {
+  background: rgb(255 255 255 / 14%);
+}
+:root[data-reference-fonts="true"] .onboarding-quick-entry h1 {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+}
+:root[data-theme="light"] .onboarding:has(.onboarding-quick-entry) {
+  background: #f9f9f7;
+}
+:root[data-theme="light"] .onboarding-quick-entry h1 {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .onboarding-quick-settings:hover {
+  color: #52514e;
+}
+:root[data-theme="light"] .onboarding-quick-illustrations img:last-child {
+  background: #fff;
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .onboarding-quick-actions .primary {
+  color: #fff;
+  background: #0b0b0b;
+}
+:root[data-theme="light"] .onboarding-quick-actions .primary:hover {
+  background: #2c2c2a;
+}
+:root[data-theme="light"] .onboarding-quick-actions .secondary {
+  color: #0b0b0b;
+  background: #ffffff1a;
+}
+:root[data-theme="light"] .onboarding-quick-actions .secondary:hover {
+  background: rgb(11 11 11 / 5%);
+}
+
+/* "What kind of science do you do?": the field label above a lg multiple select
+   laid out as the role field; the placeholder in the muted colour. */
+.onboarding-science {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  text-align: start;
+}
+.onboarding-science-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.onboarding-science-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: start;
+  cursor: pointer;
+}
+.onboarding-science-trigger > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.onboarding-science-trigger[data-empty] > span {
+  color: var(--text-muted);
+}
+.onboarding-science-trigger > svg {
+  flex: none;
+  color: var(--text-muted);
+}

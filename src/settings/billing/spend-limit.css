@@ -1,0 +1,83 @@
+/* Monthly spend limit: a 15/20 heading at weight 580 in the secondary ink, a
+   14/20 line and a 13/17 footnote in the same ink at the left, a 28px ghost
+   Manage (14px, 10px sides, radius 7) at the right; the dialog's field and
+   help. */
+.spend-limit {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 0;
+}
+.spend-limit-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.spend-limit h4 {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.spend-limit-line {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.spend-limit-note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 17px;
+}
+.spend-limit-manage {
+  flex: none;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.spend-limit-manage:hover {
+  background: var(--fill-ghost-hover);
+}
+.spend-limit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.spend-limit-form > p {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+}
+.spend-limit-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+}
+.spend-limit-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus);
+}
+.spend-limit-help {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.spend-limit-help.danger {
+  color: var(--danger);
+}

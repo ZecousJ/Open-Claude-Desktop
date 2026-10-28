@@ -1,0 +1,371 @@
+/* Desktop app → Developer, measured from R-设置-Developer-顶部-深色. */
+.settings-page:has(.developer-settings) {
+  padding-bottom: 34px;
+}
+.developer-settings {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin-top: 0.5px;
+}
+.developer-settings .developer-mcp-heading h3 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  margin: 0 0 3px;
+  color: var(--text-strong);
+}
+.developer-settings .developer-mcp-heading p {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.developer-mcp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 34px;
+}
+.developer-mcp-illustration {
+  display: block;
+  color: var(--text);
+}
+.developer-mcp-illustration .developer-mcp-pointer {
+  fill: #505050;
+}
+.developer-settings .developer-mcp-empty p {
+  margin: 25px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+/* Administrator policy notes. */
+.developer-mcp-blocked {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.developer-mcp-managed {
+  margin: 16px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+.developer-mcp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12.5px;
+  margin-top: 16px;
+}
+.developer-mcp-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 31px;
+  padding: 0 13px;
+  border-radius: 7px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.developer-mcp-actions .developer-edit-config {
+  padding: 0 11.5px;
+  background: #fdfdfc;
+  color: #141413;
+  font-weight: 500;
+}
+.developer-mcp-actions .developer-edit-config:hover {
+  background: #ebe9e4;
+}
+.developer-mcp-actions .developer-docs {
+  gap: 5px;
+  padding: 0 5.5px 0 13.5px;
+  background: #313131;
+  color: #e0e0e0;
+}
+.developer-mcp-actions .developer-docs:hover {
+  background: #3d3d3d;
+}
+.developer-access-card {
+  margin-top: 52px;
+  border: 1px solid #2c2c2c;
+  border-radius: 12px;
+  background: var(--bg);
+  padding: 11px 18px 18px 14.6px;
+}
+.developer-access-heading {
+  display: flex;
+  align-items: center;
+  gap: 8.4px;
+  color: var(--text-strong);
+  font-size: 15px;
+  line-height: 22px;
+}
+.developer-access-heading svg {
+  flex: none;
+}
+.developer-access-heading strong {
+  font-weight: 500;
+}
+.developer-access-card p {
+  margin: 6px 0 12px 27.4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 19.5px;
+}
+.developer-access-meta {
+  display: flex;
+  gap: 10px;
+  margin-left: 27.4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.developer-access-meta span + span:before {
+  content: "·";
+  margin-right: 10px;
+}
+@media (max-width: 900px) {
+  .developer-access-card {
+    margin-top: 36px;
+  }
+}
+.developer-mcp-state {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--surface-hover);
+  color: #a3a29f;
+  font-size: 12px;
+  line-height: 16px;
+}
+.developer-mcp-state.ready {
+  background: rgba(92, 170, 110, 0.16);
+  color: #8fcf9c;
+}
+.developer-mcp-state.failed {
+  background: rgba(229, 128, 122, 0.16);
+  color: var(--danger);
+}
+.developer-mcp-config-error {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(229, 128, 122, 0.12);
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* Light: a dark monitor with a white pointer, Edit config black, Developer docs
+   white on a #e5e5e5 rim, the card #fcfcfa on a #e5e5e3 rim. */
+:root[data-theme="light"] .developer-mcp-illustration {
+  color: #141413;
+}
+:root[data-theme="light"] .developer-mcp-illustration {
+  stroke-width: 1.65;
+}
+:root[data-theme="light"] .developer-mcp-illustration .developer-mcp-pointer {
+  fill: #e3d9c7;
+}
+/* Ink of the subtitle, "No servers added" and the card text reads about
+   #494949 in R-1427-1440 W1920 (the darkest strokes), the same as the
+   Settings section notes (#4c4b4a); the grey secondary is too light here. */
+:root[data-theme="light"] .developer-settings .developer-mcp-heading p,
+:root[data-theme="light"] .developer-settings .developer-mcp-empty p,
+:root[data-theme="light"] .developer-access-card p {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .developer-mcp-actions .developer-edit-config {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .developer-mcp-actions .developer-edit-config:hover {
+  background: #2b2b2b;
+}
+:root[data-theme="light"] .developer-mcp-actions .developer-docs {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e5e5e5;
+  color: #141413;
+}
+:root[data-theme="light"] .developer-mcp-actions .developer-docs:hover {
+  background: #f5f5f5;
+}
+:root[data-theme="light"] .developer-access-card {
+  border-color: #e5e5e3;
+  background: #fcfcfa;
+}
+
+/* Light status chips and errors: the grey chip of the Customize badges and the
+   light-theme green and red text used elsewhere. */
+:root[data-theme="light"] .developer-mcp-state {
+  background: #efefed;
+  color: #5e5e5c;
+}
+:root[data-theme="light"] .developer-mcp-state.ready {
+  background: rgba(71, 124, 84, 0.12);
+  color: #477c54;
+}
+:root[data-theme="light"] .developer-mcp-state.failed,
+:root[data-theme="light"] .developer-mcp-config-error {
+  background: rgba(185, 64, 59, 0.1);
+  color: #b9403b;
+}
+
+/* The servers as a list beside the chosen server's details: a bordered box, a
+   192px list with a rule on its right, the detail padded 8px 20px. The chosen
+   row takes the Settings page list's open-page fill. */
+.developer-mcp-split {
+  display: flex;
+  min-height: 214px;
+  margin-top: 32px;
+  padding: 8px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.developer-mcp-names {
+  flex: none;
+  width: 192px;
+  margin: 0;
+  padding: 2px 0;
+  border-right: 1px solid var(--border);
+  list-style: none;
+  overflow-y: auto;
+}
+.developer-mcp-names li {
+  margin: 4px 8px;
+}
+.developer-mcp-names button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 20px 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+}
+.developer-mcp-names button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.developer-mcp-names button > svg {
+  flex: none;
+  color: var(--danger);
+}
+.developer-mcp-names button:hover {
+  background: #262626;
+}
+.developer-mcp-names button[aria-current="true"] {
+  background: #393939;
+}
+.developer-mcp-detail {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 20px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+.developer-mcp-detail header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.developer-mcp-detail h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+.developer-mcp-detail .developer-mcp-blocked {
+  margin-left: 0;
+}
+.developer-mcp-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.developer-mcp-delete:hover {
+  background: #262626;
+  color: var(--text-strong);
+}
+.developer-mcp-detail section {
+  margin-top: 16px;
+}
+.developer-mcp-detail h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.developer-mcp-detail section p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.developer-mcp-failure h3,
+.developer-mcp-failure p {
+  color: var(--danger);
+  white-space: pre-wrap;
+}
+.developer-mcp-logs {
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: 6px;
+  background: #313131;
+  color: #e0e0e0;
+  font-size: 13px;
+}
+.developer-mcp-logs:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.developer-mcp-advanced > button {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.developer-mcp-advanced > button::before {
+  content: "▸ ";
+}
+.developer-mcp-advanced > button[aria-expanded="true"]::before {
+  content: "▾ ";
+}
+.developer-mcp-advanced > div {
+  padding-top: 16px;
+}
+@media (max-width: 900px) {
+  .developer-mcp-split {
+    min-height: 170px;
+  }
+}
+:root[data-theme="light"] .developer-mcp-names button:hover,
+:root[data-theme="light"] .developer-mcp-delete:hover {
+  background: #efefef;
+}
+:root[data-theme="light"] .developer-mcp-names button[aria-current="true"] {
+  background: #e3e3e3;
+}
+:root[data-theme="light"] .developer-mcp-names button > svg,
+:root[data-theme="light"] .developer-mcp-failure h3,
+:root[data-theme="light"] .developer-mcp-failure p {
+  color: #b9403b;
+}
+:root[data-theme="light"] .developer-mcp-logs {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e5e5e5;
+  color: #141413;
+}

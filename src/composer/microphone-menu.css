@@ -1,0 +1,249 @@
+/* The ⌄ after the microphone: a 320 × 137 box with a 1px #383838 rim on
+   #20201e, radius 10, over a 12px #8c8c8b "Microphone" heading (24px), three
+   25px input rows at 13px, a 1px rule, 4px, and the 25px "Hold to record" row
+   with a blue 25.5 × 14 switch. Inset 3px like the Mode menu
+   (code-permission-menu.css, whose row hover and text colours it borrows); the
+   tick is that menu's blue. */
+.microphone-menu {
+  box-sizing: border-box;
+  position: fixed;
+  z-index: 60;
+  width: 320px;
+  padding: 3px;
+  border: 1px solid #383838;
+  border-radius: 10px;
+  background: #20201e;
+  box-shadow: 0 12px 28px #0006;
+  color: var(--text);
+  font:
+    13px/17px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  outline: none;
+}
+.microphone-menu-idle {
+  width: max-content;
+  min-width: 165px;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 4px 4px 5px;
+  border: 0;
+  border-radius: 12px;
+  background: #20201f;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.microphone-menu button:disabled,
+.microphone-menu button:disabled:hover {
+  color: var(--text-muted);
+  cursor: default;
+  background: transparent;
+}
+.microphone-menu.microphone-menu-idle button {
+  height: 32px;
+  padding: 6px 10px;
+  line-height: 20px;
+}
+/* GroupLabel; current live icon header24px. */
+.microphone-status {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 4px 10px;
+  color: var(--text-muted);
+}
+.microphone-settings-heading {
+  padding: 4px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+}
+.microphone-menu.microphone-menu-idle hr {
+  height: 1px;
+  margin: 4px 10px;
+  background: var(--border);
+}
+.microphone-menu-idle .microphone-language-status {
+  color: inherit;
+}
+.microphone-language-status > span:last-child {
+  color: var(--text-muted);
+}
+.microphone-language-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.microphone-language-status > span:first-child {
+  flex-shrink: 0;
+}
+.menu.dictation-language-menu {
+  width: max-content;
+  min-width: 128px;
+  max-width: min(320px, calc(100vw - 10px));
+  max-height: calc(100dvh - 10px);
+  overflow-y: auto;
+  border: 0;
+  border-radius: 12px;
+  padding: 4px;
+  background: #20201f;
+}
+.dictation-language-positioner {
+  position: fixed;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  max-width: calc(100vw - 10px);
+  pointer-events: none;
+}
+.dictation-language-positioner > .menu.dictation-language-menu {
+  position: relative;
+  left: auto !important;
+  top: auto !important;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+.menu.dictation-language-menu > .menu-search {
+  height: 41px;
+  min-height: 41px;
+  margin: 0 0 0;
+  padding: 0 10px 8px;
+  border-color: var(--border);
+}
+.dictation-language-menu .menu-search > svg {
+  display: none;
+}
+.dictation-language-menu .menu-search input {
+  width: 100%;
+  height: 32px;
+  font: inherit;
+}
+.dictation-language-menu > button {
+  position: relative;
+}
+.dictation-language-menu > button > span:first-child {
+  margin-right: 40px;
+}
+.dictation-language-menu > button > .menu-check {
+  position: absolute;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+}
+.menu.dictation-language-menu > .menu-search-empty {
+  margin: 0;
+  padding: 8px 10px;
+  line-height: 17px;
+}
+.microphone-menu header {
+  box-sizing: border-box;
+  height: 24px;
+  padding: 3px 8px 0;
+  color: #8c8c8b;
+  font-size: 12px;
+  line-height: 20px;
+}
+.microphone-menu header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.microphone-menu button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 25px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  /* Rows appear highlighted at once and have no pressed look: the original's
+     menu rows. */
+  transition: none;
+}
+.microphone-menu button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.microphone-menu button:hover,
+.microphone-menu button:focus-visible {
+  /* White 7.5% over the menu (#2f2f2f on its #20201e). */
+  background: var(--fill-ghost-hover);
+  outline: none;
+  box-shadow: none;
+}
+.microphone-menu button > svg {
+  flex: none;
+  color: var(--link-text);
+  stroke-width: 2.2;
+}
+.microphone-menu hr {
+  height: 1px;
+  margin: 0 0 4px;
+  border: 0;
+  background: #383838;
+}
+.microphone-switch {
+  position: relative;
+  flex: 0 0 25.5px;
+  width: 25.5px;
+  height: 14px;
+  border-radius: 8px;
+  background: #515151;
+}
+.microphone-switch::after {
+  content: "";
+  position: absolute;
+  top: 1.5px;
+  left: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left var(--motion-snap) var(--ease-out);
+}
+/* On: the capture's track reads #2579dd (25 × 14, knob #fdfaff). */
+.microphone-switch[data-enabled="true"] {
+  background: #2579dd;
+}
+.microphone-switch[data-enabled="true"]::after {
+  left: 12.5px;
+}
+:root[data-theme="light"] .microphone-menu {
+  background: #fffefa;
+  border-color: #d2d0ca;
+  color: #292927;
+  box-shadow: 0 12px 28px #0002;
+}
+:root[data-theme="light"] .microphone-menu button:hover,
+:root[data-theme="light"] .microphone-menu button:focus-visible {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .microphone-menu hr {
+  background: #e6e6e6;
+}
+:root[data-theme="light"] .microphone-switch {
+  background: #c9c7c1;
+}
+:root[data-theme="light"] .microphone-switch[data-enabled="true"] {
+  background: #2579dd;
+}
+/* Reduced motion: the knob jumps; the track still fades. */
+@media (prefers-reduced-motion: reduce) {
+  .microphone-switch::after {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .microphone-switch::after {
+  transition: none;
+}

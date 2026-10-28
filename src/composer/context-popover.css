@@ -1,0 +1,308 @@
+/* The context ring's popover. Layout from Footnote
+ 12/15px, body 13/19px, heading 14/18px medium; pad xs 4px, sm 6px, lg 12px;
+ gap xs 6px, sm 8px, md 12px; alpha-1 5%, alpha-2 10%, alpha-3 20%): a 360px
+ panel (312px for the Usage panel) 8px above the ring with 6px above and below
+ its rows. The box (border, fill, radius, shadow) is the effort panel's
+ (.code-effort-panel), the text greys and the bar's track and fill are the
+ ring's own. Meter colours: the ring's blue, the effort panel's warning amber
+ and the original's danger fill (src/ui/menu.css). */
+.context-popover {
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  bottom: calc(100% + 8px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  /* The live usage panel: 360px, radius 10, #20201f inside a 1px white-10%
+     ring, the menu shadows; 6px above and below. */
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 6px 0;
+  overflow-wrap: break-word;
+  border: 0;
+  border-radius: 10px;
+  background: #20201f;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+  color: var(--text);
+  font:
+    12px/15px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  --context-muted: #898781;
+  --context-secondary: #c3c2b7;
+  --context-fill: #2a78d6;
+  /* Fill-warning, yellow-200 in both themes. */
+  --context-warning: #fab219;
+  --context-danger: #d03b3b;
+  --context-ghost-hover: color-mix(in srgb, var(--alpha-ink) 7.5%, transparent);
+}
+.context-popover.narrow {
+  width: 312px;
+}
+
+/* "Context window" and the summary; "Plan usage limits · Max" and its arrow. */
+.context-popover-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  padding: 4px 12px;
+  color: var(--context-muted);
+}
+.context-popover-head > :first-child {
+  min-width: 0;
+}
+.context-popover-summary {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.context-popover-body {
+  margin-top: 4px;
+  padding: 0 12px 4px;
+}
+.context-popover-bar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+}
+.context-popover-bar > i,
+.context-meter > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--context-fill);
+  transition: width var(--motion-moderate) var(--ease-out);
+}
+.context-popover-bar > i.warning,
+.context-meter > i.warning {
+  background: var(--context-warning);
+}
+.context-popover-bar > i.critical,
+.context-meter > i.critical {
+  background: var(--context-danger);
+}
+.context-popover-empty {
+  margin: 0;
+  color: var(--context-secondary);
+}
+.context-popover-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  padding: 4px 12px;
+}
+/* The reason compaction waits, in the row left of the button. */
+.context-popover-hint {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--context-secondary);
+}
+.context-popover-row {
+  display: flex;
+  padding: 4px 12px;
+}
+.context-popover-compact {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  /* The original's secondary button: white 10% that steps to 14% on hover; in
+     light, white 10% inside a hairline ring that steps to ink 5%. */
+  background: var(--alpha-2);
+  color: var(--text);
+  font: inherit;
+}
+.context-popover-compact:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--alpha-ink) 14%, transparent);
+}
+.context-popover-rule {
+  flex: none;
+  height: 1px;
+  margin: 6px 12px;
+  background: var(--alpha-2);
+}
+/* "View usage in Settings": a 12px arrow with 4px around it, pulled back into
+ the row; text-muted-as-secondary, text-primary on hover. */
+.context-popover-link {
+  display: grid;
+  flex: none;
+  place-items: center;
+  margin: -4px -4px -4px auto;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--context-muted);
+}
+.context-popover-link:hover {
+  color: var(--text);
+}
+.context-popover-loading {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  margin: 0;
+  padding: 0 12px;
+  color: var(--context-muted);
+}
+
+/* The plan's windows: name, reset time and percent over a 4px meter. */
+.context-popover-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px 4px;
+}
+.context-popover-plan > span {
+  color: var(--context-muted);
+}
+.context-plan-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.context-plan-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.context-plan-value {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--context-muted);
+  font-variant-numeric: tabular-nums;
+}
+.context-meter {
+  height: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+}
+/* The Usage panel's 8px meter: round, on white 10%, and
+ never thinner than its height once something is used. */
+.context-meter.tall {
+  height: 8px;
+  margin-top: 0;
+  border-radius: 999px;
+  background: var(--alpha-2);
+}
+.context-meter.tall > i {
+  min-width: 8px;
+}
+
+/* The 312px Usage panel. */
+.usage-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 12px 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+.usage-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.usage-panel-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--context-secondary);
+}
+.usage-panel-icon.end {
+  margin-right: -4px;
+}
+.usage-panel-icon:hover {
+  background: var(--context-ghost-hover);
+  color: #e4e2df;
+}
+.usage-panel-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 0 12px 6px;
+}
+.usage-panel-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.usage-panel-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 19px;
+}
+.usage-panel-line > :first-child {
+  min-width: 0;
+  font-weight: 500;
+}
+.usage-panel-line > :last-child {
+  flex: none;
+  color: var(--context-muted);
+  font-size: 12px;
+  line-height: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.usage-panel-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--context-muted);
+}
+
+/* The light theme's tokens: surface-3 white, text-primary #0b0b0b, secondary
+ #52514e, muted #898781, accent fill #2a78d6, a ring of the ink at 10%. */
+:root[data-theme="light"] .context-popover {
+  background: #fff;
+  box-shadow:
+    inset 0 0 0 1px rgb(11 11 11 / 10%),
+    0 8px 24px #0000001f,
+    0 2px 6px #00000014;
+  color: #0b0b0b;
+  --context-muted: #898781;
+  --context-secondary: #52514e;
+  --context-fill: #2a78d6;
+  --context-ghost-hover: var(--alpha-1);
+}
+:root[data-theme="light"] .context-popover-bar {
+  background: #dedbd4;
+}
+:root[data-theme="light"] .context-popover-link:hover,
+:root[data-theme="light"] .usage-panel-icon:hover {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .context-popover-compact {
+  background: #ffffff1a;
+  box-shadow:
+    inset 0 0 0 1px var(--alpha-2),
+    0 1px 2px #0000000d;
+  color: #292927;
+}
+:root[data-theme="light"] .context-popover-compact:hover:not(:disabled) {
+  background: var(--alpha-1);
+}

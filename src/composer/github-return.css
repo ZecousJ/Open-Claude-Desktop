@@ -1,0 +1,51 @@
+/*
+ * The GitHub return recovery page (GitHubReturnPrompt.tsx), from the live the
+ * whole window, content centred (`flex min-h-screen items-center
+ * justify-center`), a column at most 28rem wide with 16px between its parts
+ * (`max-w-md space-y-4 text-center`); the title is the 28px serif title style
+ * (weight 500, line height 1.3), the reason the 14px/18px large body style in
+ * the secondary colour, the buttons 12px apart (`gap-3`). It covers the app
+ * above its dialogs (z 140).
+ */
+.github-return {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  background: var(--bg);
+}
+.github-return-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 28rem;
+  text-align: center;
+}
+.github-return-body h3 {
+  margin: 0;
+  color: var(--text);
+  font:
+    500 28px/1.3 "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+}
+.github-return-body p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 18px;
+}
+.github-return-body .github-return-error {
+  color: var(--danger);
+}
+.github-return-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}

@@ -1,0 +1,1923 @@
+/*
+ * Routines page and editor. The file keeps its old name so its place in
+ * src/main.tsx's stylesheet order stays the same. Sizes are measured 1:1 from
+ * the Windows 1x captures 32px page margins, compact 24px controls with 13px
+ * text, two card columns 24px apart and a 696px editor column. Vertical
+ * positions are relative to the page top, which matches the mac pages (the
+ * Windows frame adds 36px above). This sheet loads before the global one, so
+ * rules that meet the global input and button rules are one class stronger.
+ */
+.routines-view,
+.routine-editor-view {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+}
+.routines-view {
+  padding: 56px 32px 48px;
+}
+.routines-inner {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.routines-title {
+  margin: 0;
+  /* 24px/32px medium. */
+  font:
+    500 24px/32px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  color: var(--text);
+}
+:root[data-reference-fonts="true"] .routines-title {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-optical-sizing: auto;
+}
+.routines-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 26px;
+  margin-top: 23px;
+}
+.routines-tabs {
+  display: flex;
+  gap: 2px;
+}
+.routines-tabs > button {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #8d8d8b;
+  /* The original's tabs change fill and ink at once; only their focus ring
+     eases. */
+  transition: none;
+}
+.routines-tabs > button:hover {
+  color: #d9d9d6;
+}
+.routines-tabs > button.selected {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+}
+.routines-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.routines-anchor {
+  display: inline-flex;
+}
+.routines-tools .icon-button.routines-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #e6e6e3;
+}
+.routines-tools .icon-button.routines-icon:hover,
+.routines-tools .icon-button.routines-icon[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.07);
+}
+.routines-tools .icon-button.routines-icon.filtered {
+  color: var(--link-text);
+}
+.routines-search {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: min(386px, 42vw);
+  height: 26px;
+  padding: 0 3px 0 9px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #212121;
+  color: #9a9a97;
+  animation: routines-search-in 140ms var(--ease-out);
+}
+.routines-search:focus-within {
+  border-color: var(--focus-accent);
+}
+.routines-search input,
+.routines-search input:focus {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  color: #f5f5f5;
+}
+.routines-search > button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: #e6e6e3;
+}
+.routines-search > button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+@keyframes routines-search-in {
+  from {
+    width: 24px;
+    opacity: 0;
+  }
+}
+.routines-tools > .routines-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  margin-left: 8px;
+  padding: 0 8px 0 9px;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  white-space: nowrap;
+  color: #111;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    var(--press-release);
+}
+.routines-tools > .routines-new:hover:not(:disabled) {
+  background: #e8e8e6;
+}
+.routines-tools > .routines-new svg {
+  color: #6f6f6c;
+}
+/* Warning alert and monthly date label. */
+.routine-model-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 24px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #311a00;
+  color: #db9300;
+  box-shadow: inset 0 0 0 1px #512e00;
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+  overflow-wrap: break-word;
+}
+.routine-model-warning > svg {
+  flex-shrink: 0;
+}
+.routine-model-warning-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #db9300;
+}
+:root[data-theme="light"] .routine-model-warning {
+  background: #f9dca4;
+  color: #734500;
+  box-shadow: inset 0 0 0 1px #eda100;
+}
+:root[data-theme="light"] .routine-model-warning-icon {
+  color: #734500;
+}
+.routine-monthly-day {
+  display: inline-flex;
+  align-items: center;
+}
+.routine-monthly-day > span {
+  margin: 0 2px;
+  color: #898781;
+  font-size: 13px;
+  line-height: 19px;
+}
+.routines-notice,
+.routine-banner {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  border: 1px solid #2d2d2d;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 18px;
+}
+.routines-notice {
+  margin-top: 20px;
+  padding: 8px 13px;
+  color: #c9c9c6;
+}
+.routines-notice svg,
+.routine-banner svg {
+  flex-shrink: 0;
+}
+
+/* Empty Yours tab: stopwatch, "No routines yet.", a wavy rule, templates. */
+.routines-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 17px;
+  margin-top: 66px;
+}
+.routines-empty > p,
+.routines-none {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #83837e;
+}
+.routines-none {
+  padding: 56px 0;
+  text-align: center;
+}
+/* No match: the line, and under it a button that clears search and filters. */
+.routines-none-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 56px 0;
+}
+.routines-none-block > .routines-none {
+  padding: 0;
+}
+.routines-clear,
+.routines-load-error > button {
+  height: 25px;
+  padding: 0 8px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #3a3a38;
+  color: var(--text);
+  font-size: 13px;
+}
+.routines-clear:hover,
+.routines-load-error > button:hover {
+  background: var(--fill-ghost-hover);
+}
+/* Couldn't load: a centred block, 64px above and below, the warning glyph over
+   the words and a secondary Retry. */
+.routines-load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 0;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.routines-load-error > svg {
+  color: #db9300;
+}
+:root[data-theme="light"] .routines-load-error > svg {
+  color: #734500;
+}
+:root[data-theme="light"] .routines-clear,
+:root[data-theme="light"] .routines-load-error > button {
+  box-shadow: inset 0 0 0 1px #e6e6e6;
+  color: #141413;
+}
+.routines-loading {
+  display: grid;
+  place-items: center;
+  padding: 80px 0;
+  color: #83837e;
+}
+.routines-stopwatch path {
+  fill: none;
+  stroke: #f7f7f5;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.routines-stopwatch .routines-stopwatch-dial {
+  fill: #454442;
+}
+.routines-wave {
+  display: block;
+  width: 100%;
+  margin: 42px 0 45px;
+}
+.routines-wave path {
+  fill: none;
+  stroke: #353535;
+  stroke-width: 1.2;
+}
+.routines-empty + .routines-wave + .routine-grid {
+  margin-top: 0;
+}
+
+/* Cards: one column 12px apart, two 24px apart from 768px, rows of equal
+   height. Paused cards are not dimmed; the Paused chip says so. */
+.routine-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 12px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.routine-grid > li {
+  position: relative;
+  min-width: 0;
+}
+.routine-grid .routine-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  text-align: left;
+  color: inherit;
+  /* The hover tint appears at once (the original's routine rows have no
+     colour transition); only the press eases back. */
+  transition: var(--press-release);
+}
+/* Templates: hover bg-alpha-1. */
+.routine-grid .routine-card:hover:not(:disabled),
+.routine-item.menu-open .routine-card {
+  background: var(--alpha-1);
+}
+.routine-grid .routine-card:disabled {
+  opacity: 1;
+}
+/* A task's card: the surface with a 1px inset ring, 12px inside, 10px corners,
+   a column with 6px between its lines, the hover surface on hover. */
+.routine-grid .routine-item .routine-card {
+  height: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.routine-grid .routine-item .routine-card .routine-card-text {
+  gap: 6px;
+}
+.routine-grid .routine-item .routine-card:hover:not(:disabled),
+.routine-grid .routine-item.menu-open .routine-card {
+  background: var(--surface-hover);
+}
+.routine-grid .routine-card:disabled .routine-card-text {
+  opacity: var(--opacity-disabled);
+}
+.routine-tile {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+  color: #a3a3a0;
+}
+.routine-card-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-right: 24px;
+}
+.routine-card-text strong,
+.routine-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #fff;
+}
+/* A task's title: text-body, medium, primary. */
+.routine-item .routine-card-name,
+.routine-item .routine-card-name strong {
+  font-weight: 500;
+  line-height: 19px;
+  color: var(--text);
+}
+.routine-card-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.routine-card-name strong {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.routine-card-description {
+  display: -webkit-box;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 19.5px;
+  color: #d5d6d1;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+/* A task's description: three lines in the secondary colour. */
+.routine-item .routine-card-description {
+  color: var(--text-secondary);
+  -webkit-line-clamp: 3;
+}
+.routine-card-schedule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #969694;
+}
+.routine-card-schedule svg {
+  flex-shrink: 0;
+  color: #8c8c8a;
+}
+.routine-card-schedule > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.routine-card-error {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--danger);
+}
+/* Footer and run indicators. */
+.routine-item {
+  --routine-secondary: #c3c2b7;
+  --routine-danger: #ec7e7e;
+  --routine-attention: #eb6834;
+  --routine-new: #5598e7;
+  --routine-running: #6d6b67;
+  --routine-neutral: hsl(from #fff h s l / 5%);
+}
+.routine-item .routine-card-text {
+  flex: 1;
+}
+.routine-item .routine-card-schedule,
+.routine-card-footer {
+  font-size: 11px;
+  line-height: 17px;
+  color: #898781;
+}
+.routine-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.routine-run-time {
+  color: var(--routine-secondary);
+}
+.routine-state {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  font-size: inherit;
+  font-weight: 400;
+  color: var(--routine-secondary);
+}
+.routine-state.failed {
+  color: var(--routine-danger);
+}
+/* On hold and Paused. */
+.routine-state.routine-state-pill {
+  gap: 6px;
+  padding: 2px 6px;
+  border: 0.5px solid rgb(255 255 255 / 20%);
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 17px;
+  font-weight: 500;
+  color: #898781;
+  background: #0b0b0b;
+  white-space: nowrap;
+}
+:root[data-theme="light"] .routine-state.routine-state-pill {
+  border-color: rgb(11 11 11 / 20%);
+  background: #f9f9f7;
+}
+.routine-status-dot {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--routine-attention);
+}
+.routine-status-dot[data-dot="new_run"] {
+  background: var(--routine-new);
+}
+.routine-status-dot[data-dot="running"] {
+  background: var(--routine-running);
+}
+.routine-item:hover .routine-status-dot,
+.routine-item:focus-within .routine-status-dot,
+.routine-item.menu-open .routine-status-dot {
+  animation: none;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .routine-status-dot[data-dot="running"] {
+    animation: routine-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+@keyframes routine-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.routine-attention {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  background: var(--routine-neutral);
+  color: var(--routine-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+}
+:root[data-theme="light"] .routine-item {
+  --routine-secondary: #52514e;
+  --routine-danger: #8e2626;
+  --routine-attention: #c25124;
+  --routine-new: #2a78d6;
+  --routine-running: #898781;
+  --routine-neutral: hsl(from #0b0b0b h s l / 5%);
+}
+:root[data-theme="light"] .routine-item .routine-card-schedule {
+  color: #898781;
+}
+.routine-grid .routine-more {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #d9d9d6;
+  opacity: 0;
+  /* Shown at once with the row's hover; only the button's own fill eases. */
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.routine-item:hover .routine-more,
+.routine-item:focus-within .routine-more,
+.routine-item.menu-open .routine-more {
+  opacity: 1;
+}
+.routine-grid .routine-more:hover,
+.routine-item.menu-open .routine-more {
+  background: var(--fill-ghost-hover);
+}
+
+/* Editor: "Routines / New local routine" over a centred 696px form. */
+.routine-crumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 46px;
+  padding: 0 24px;
+  font-size: 13px;
+  color: #cfcfcd;
+  -webkit-app-region: drag;
+}
+.sidebar-hidden.darwin .routine-crumb {
+  padding-left: 166px;
+}
+.sidebar-hidden:is(.win32, .linux) .routine-crumb {
+  padding-left: 122px;
+}
+.routine-crumb > button {
+  padding: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.routine-crumb > button:hover {
+  text-decoration: underline;
+}
+.routine-crumb > span:last-child {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.routine-editor {
+  width: min(696px, calc(100% - 64px));
+  margin: 42px auto 48px;
+}
+.routine-banner {
+  height: 35px;
+  padding: 0 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.routine-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 28px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.routine-field > span:first-child,
+.routine-field > label:first-child {
+  line-height: 20px;
+  color: #918c89;
+}
+.routine-field b {
+  font-weight: 400;
+  color: var(--danger);
+}
+.routine-editor .routine-field > input,
+.routine-editor .routine-time,
+.routine-editor .routine-minute input {
+  box-sizing: border-box;
+  margin: 0;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid #373737;
+  border-radius: 4px;
+  background: #212121;
+  box-shadow: none;
+  font-size: 13px;
+  color: var(--text);
+  color-scheme: dark;
+}
+.routine-editor .routine-field > input:focus,
+.routine-editor .routine-time:focus,
+.routine-editor .routine-minute:focus-within {
+  border-color: var(--focus-accent);
+  box-shadow: none;
+}
+.routine-editor input::placeholder,
+.routine-editor textarea::placeholder {
+  color: #939392;
+}
+.routine-instructions {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #454545;
+  border-radius: 6px;
+  background: #2d2d2d;
+}
+.routine-instructions:focus-within {
+  border-color: var(--focus-accent);
+}
+.routine-editor .routine-instructions textarea,
+.routine-editor .routine-instructions textarea:focus {
+  height: 117px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  font-size: 13px;
+  line-height: 19px;
+  color: #f5f5f5;
+}
+.routine-instructions-bar,
+.routine-folder-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 10px 0 12px;
+  font-size: 12px;
+  color: #918f8d;
+}
+.routine-instructions-bar {
+  height: 28px;
+}
+.routine-folder-bar {
+  height: 30px;
+  background: #383838;
+}
+.routine-permission {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
+}
+.routine-model-button,
+.routine-folder-button,
+.routine-folder-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 22px;
+  padding: 0 2px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #999894;
+}
+.routine-folder-button {
+  gap: 3px;
+  margin-left: -2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.routine-model-button:hover,
+.routine-folder-button:hover,
+.routine-folder-clear:hover,
+.routine-model-button[aria-expanded="true"] {
+  color: #f0f0ee;
+}
+/* The schedule's segments: the shared segmented control
+   (src/ui/SegmentedControl.tsx), whose sliding thumb is the chosen fill. */
+.routine-segments {
+  --segmented-thumb: #383838;
+  --segmented-thumb-ring: rgb(255 255 255 / 6%);
+  --segmented-radius: 4px;
+  --segmented-inset: 2px;
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 1px;
+  height: 25px;
+  padding: 2px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: var(--surface);
+}
+.routine-segments > button {
+  height: 21px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #8f8f8d;
+}
+.routine-segments > button:hover {
+  color: #e6e6e3;
+}
+.routine-segments > button[aria-checked="true"] {
+  color: #fff;
+}
+.routine-when {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1px;
+  color: #d9d9d6;
+}
+.routine-editor .routine-time {
+  width: 139px;
+}
+.routine-minute {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  color: #939392;
+}
+.routine-editor .routine-minute input {
+  width: 64px;
+}
+.routine-when-note {
+  color: #939392;
+}
+.routine-day-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 140px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid #373737;
+  border-radius: 4px;
+  background: #212121;
+  font-size: 13px;
+  color: var(--text);
+}
+.routine-day-button > span {
+  color: #939392;
+}
+.routine-day-button > svg {
+  margin-left: auto;
+  color: #b0b0ad;
+}
+.routine-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.routine-days > button {
+  min-width: 42px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid #373737;
+  border-radius: 4px;
+  background: #212121;
+  font-size: 12px;
+  color: #a9a9a6;
+}
+.routine-days > button.selected {
+  border-color: #4a4a4a;
+  background: #383838;
+  color: #fff;
+}
+.routine-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: #969694;
+}
+.routine-error {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+/* A required field left empty, marked once Create is pressed: its field's 8px
+   gap under the input, a 16px WarningCircle 4px before 13/1.375 text in the
+   danger ink. */
+.routine-problem {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 1.375;
+  font-weight: 400;
+  overflow-wrap: break-word;
+}
+.routine-problem > .app-icon {
+  flex: none;
+  margin-top: 1px;
+}
+.routine-problem > span {
+  min-width: 0;
+}
+/* A problem under a field (the original's text-danger footnote); the field
+   itself turns on aria-invalid. */
+.routine-editor .routine-field > .routine-field-error,
+.routine-cron > .routine-field-error {
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 18px;
+}
+.routine-editor input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+/* Custom: the cron expression in a monospace field of the editor's width. */
+.routine-cron {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 1px;
+}
+.routine-cron > span:first-child {
+  color: #939392;
+  font-size: 12px;
+}
+.routine-editor .routine-cron-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid #373737;
+  border-radius: 4px;
+  background: #212121;
+  box-shadow: none;
+  color: var(--text);
+  color-scheme: dark;
+  font-size: 13px;
+}
+.routine-editor .routine-cron-input:focus {
+  border-color: var(--focus-accent);
+}
+:root[data-theme="light"] .routine-cron > span:first-child {
+  color: #73726c;
+}
+.routine-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 25px;
+}
+.routine-actions > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 25px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.routine-actions > .routine-cancel {
+  background: #2e2e2e;
+  color: #fff;
+}
+.routine-actions > .routine-cancel:hover {
+  background: #363636;
+}
+.routine-actions > .routine-create {
+  background: #fff;
+  color: #111;
+}
+.routine-actions > .routine-create:disabled {
+  opacity: var(--opacity-disabled);
+}
+
+/* The model menu: a search field, then 24px rows. */
+.menu.routine-model-menu {
+  width: 265px;
+  padding: 4px;
+}
+.routine-model-search {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin-bottom: 4px;
+  padding: 0 8px;
+  border: 1px solid var(--focus-accent);
+  border-radius: 6px;
+  color: #bdbdbb;
+}
+.routine-model-search input,
+.routine-model-search input:focus {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  color: #f5f5f5;
+}
+.routine-model-rows {
+  max-height: 264px;
+  overflow: auto;
+}
+.routine-model-rows > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 6px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text);
+}
+.routine-model-rows > button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.routine-model-rows > button > small {
+  font-size: 12px;
+  color: #8c8b89;
+}
+.routine-model-rows > button.active {
+  background: #313131;
+}
+.routine-model-rows > button > .menu-check {
+  color: var(--link-text);
+}
+.routine-model-none {
+  margin: 0;
+  padding: 4px 7px;
+  font-size: 13px;
+  color: #8c8b89;
+}
+
+@media (max-width: 720px) {
+  .routines-view {
+    padding-inline: 20px;
+  }
+  .routine-editor {
+    width: calc(100% - 40px);
+  }
+}
+
+/* Light theme, from R-1281 and R-1282. */
+:root[data-theme="light"] .routines-title {
+  color: #141413;
+}
+:root[data-theme="light"] .routines-tabs > button {
+  color: #767674;
+}
+:root[data-theme="light"] .routines-tabs > button:hover {
+  color: #262624;
+}
+:root[data-theme="light"] .routines-tabs > button.selected {
+  background: #efefed;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .routines-tools .icon-button.routines-icon {
+  color: #2b2b29;
+}
+:root[data-theme="light"] .routines-tools .icon-button.routines-icon:hover,
+:root[data-theme="light"]
+  .routines-tools
+  .icon-button.routines-icon[aria-expanded="true"] {
+  background: #efefed;
+}
+:root[data-theme="light"] .routines-search {
+  border-color: #dcdcda;
+  background: #fff;
+  color: #767674;
+}
+:root[data-theme="light"] .routines-search:focus-within {
+  border-color: #4d80d0;
+}
+:root[data-theme="light"] .routines-search input,
+:root[data-theme="light"] .routines-search > button {
+  color: #141413;
+}
+:root[data-theme="light"] .routines-tools > .routines-new {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .routines-tools > .routines-new:hover:not(:disabled) {
+  background: #2e2e2c;
+}
+:root[data-theme="light"] .routines-tools > .routines-new svg {
+  color: #a3a3a0;
+}
+:root[data-theme="light"] .routines-notice,
+:root[data-theme="light"] .routine-banner {
+  border-color: #e3e3e1;
+}
+:root[data-theme="light"] .routines-notice {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .routine-banner {
+  color: #141413;
+}
+:root[data-theme="light"] .routines-empty > p,
+:root[data-theme="light"] .routines-none,
+:root[data-theme="light"] .routines-loading {
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .routines-stopwatch path {
+  stroke: #141413;
+}
+:root[data-theme="light"] .routines-stopwatch .routines-stopwatch-dial {
+  fill: #e7e6e1;
+}
+:root[data-theme="light"] .routines-wave path {
+  stroke: #d9d9d7;
+}
+
+:root[data-theme="light"] .routine-tile {
+  background: #efefed;
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .routine-card-text strong,
+:root[data-theme="light"] .routine-card-name {
+  color: #000;
+}
+:root[data-theme="light"] .routine-card-description {
+  color: #434341;
+}
+:root[data-theme="light"] .routine-card-schedule {
+  color: #7a7b76;
+}
+:root[data-theme="light"] .routine-card-schedule svg {
+  color: #7a7b76;
+}
+:root[data-theme="light"] .routine-state {
+  color: var(--routine-secondary);
+}
+:root[data-theme="light"] .routine-state.failed {
+  color: var(--routine-danger);
+}
+:root[data-theme="light"] .routine-card-error,
+:root[data-theme="light"] .routine-error {
+  color: #8f2d2a;
+}
+:root[data-theme="light"] .routine-grid .routine-more {
+  color: #3d3d3a;
+}
+
+:root[data-theme="light"] .routine-crumb {
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .routine-crumb > button {
+  color: #141413;
+}
+:root[data-theme="light"] .routine-field > span:first-child,
+:root[data-theme="light"] .routine-field > label:first-child {
+  color: #817d7b;
+}
+:root[data-theme="light"] .routine-editor .routine-field > input,
+:root[data-theme="light"] .routine-editor .routine-time,
+:root[data-theme="light"] .routine-editor .routine-minute input,
+:root[data-theme="light"] .routine-editor .routine-cron-input,
+:root[data-theme="light"] .routine-day-button,
+:root[data-theme="light"] .routine-days > button {
+  border-color: #e3e3e1;
+  background: #fefefc;
+  color: #141413;
+  color-scheme: light;
+}
+:root[data-theme="light"] .routine-editor .routine-field > input:focus,
+:root[data-theme="light"] .routine-editor .routine-time:focus {
+  border-color: #4d80d0;
+}
+:root[data-theme="light"] .routine-editor input::placeholder,
+:root[data-theme="light"] .routine-editor textarea::placeholder {
+  color: #767774;
+}
+:root[data-theme="light"] .routine-instructions {
+  border-color: #e3e3e1;
+  background: #fcfcfa;
+}
+:root[data-theme="light"] .routine-instructions:focus-within {
+  border-color: #4d80d0;
+}
+:root[data-theme="light"] .routine-editor .routine-instructions textarea {
+  color: #141413;
+}
+:root[data-theme="light"] .routine-instructions-bar,
+:root[data-theme="light"] .routine-folder-bar,
+:root[data-theme="light"] .routine-model-button,
+:root[data-theme="light"] .routine-folder-button,
+:root[data-theme="light"] .routine-folder-clear {
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .routine-folder-bar {
+  background: #f0f0f0;
+}
+:root[data-theme="light"] .routine-model-button:hover,
+:root[data-theme="light"] .routine-folder-button:hover,
+:root[data-theme="light"] .routine-folder-clear:hover {
+  color: #141413;
+}
+:root[data-theme="light"] .routine-segments {
+  --segmented-thumb: #d3d3d3;
+  --segmented-thumb-ring: rgb(0 0 0 / 4%);
+  background: #f0f1ec;
+}
+:root[data-theme="light"] .routine-segments > button {
+  color: #767674;
+}
+:root[data-theme="light"] .routine-segments > button:hover {
+  color: #141413;
+}
+:root[data-theme="light"] .routine-segments > button[aria-checked="true"] {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .routine-when {
+  color: #262624;
+}
+:root[data-theme="light"] .routine-days > button.selected {
+  border-color: #c9c9c7;
+  background: #e3e3e1;
+}
+:root[data-theme="light"] .routine-note,
+:root[data-theme="light"] .routine-when-note,
+:root[data-theme="light"] .routine-day-button > span {
+  color: #767674;
+}
+:root[data-theme="light"] .routine-actions > .routine-cancel {
+  border: 1px solid #e3e3e1;
+  background: #f7f7f5;
+  color: #141413;
+}
+:root[data-theme="light"] .routine-actions > .routine-cancel:hover {
+  background: #efefed;
+}
+:root[data-theme="light"] .routine-actions > .routine-create {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .routine-model-search {
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .routine-model-search input,
+:root[data-theme="light"] .routine-model-rows > button {
+  color: #141414;
+}
+:root[data-theme="light"] .routine-model-rows > button.active {
+  background: #f0f0f0;
+}
+:root[data-theme="light"] .routine-model-rows > button > small,
+:root[data-theme="light"] .routine-model-none {
+  color: #82817f;
+}
+/* A narrowing filter turns the button blue in light as in History. */
+:root[data-theme="light"] .routines-tools .icon-button.routines-icon.filtered {
+  background: #cce4fe;
+  color: #47698e;
+}
+
+/* 48px title row, then 32px tabs/tools. Templates have their own 16px row gaps;
+   saved tasks keep 24px at md. */
+:root[data-surface="web"] .routines-view {
+  padding-top: 48px;
+  /* 40px each side, as the other pages. */
+  padding-inline: 40px;
+}
+:root[data-surface="web"] .routines-head {
+  margin-bottom: 28px;
+}
+:root[data-surface="web"] .routines-head > .routines-title-row {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+:root[data-surface="web"] .routines-head .routines-title {
+  font-weight: 500;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routines-title {
+  color: #f0efec;
+}
+:root[data-surface="web"] .routines-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routines-subtitle {
+  color: #898781;
+}
+:root[data-surface="web"] .routines-head .routines-tools {
+  gap: 4px;
+  max-width: 100%;
+  margin-left: auto;
+}
+:root[data-surface="web"] .routines-head .routines-bar {
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 32px;
+  margin-top: 16px;
+}
+:root[data-surface="web"] .routines-head .routines-tabs {
+  gap: 0;
+}
+:root[data-surface="web"] .routines-head .routines-tabs > button {
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #898781;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .routines-head
+  .routines-tabs
+  > button.selected {
+  color: #f0efec;
+}
+:root[data-surface="web"] .routines-head .icon-button.routines-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text);
+}
+:root[data-surface="web"] .routine-grid .routine-more {
+  color: var(--text);
+}
+:root[data-surface="web"] .routines-head .routines-search {
+  height: 32px;
+  border-radius: 8px;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .routines-head
+  .routines-search {
+  border-color: transparent;
+  background: rgb(255 255 255 / 5%);
+}
+:root[data-surface="web"] .routines-head .routines-search input {
+  font-size: 14px;
+}
+:root[data-surface="web"] .routines-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routines-sort {
+  background: rgb(255 255 255 / 10%);
+  color: #898781;
+}
+:root[data-surface="web"] .routines-sort > b {
+  font-weight: 400;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routines-sort > b {
+  color: #f0efec;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routines-sort:hover,
+:root[data-surface="web"]:not([data-theme="light"])
+  .routines-sort[aria-expanded="true"] {
+  background: rgb(255 255 255 / 14%);
+}
+/* The ghost icon buttons sit 4px apart and New task 12px after them. */
+:root[data-surface="web"] .routines-head .routines-tools > .routines-new {
+  width: 106px;
+  height: 32px;
+  margin-left: 8px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  gap: 8px;
+}
+:root[data-surface="web"] .routines-manual {
+  width: 129px;
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 10%);
+  color: #f0efec;
+  font-size: 14px;
+  line-height: 20px;
+}
+:root[data-surface="web"][data-theme="light"] .routines-manual {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-surface="web"] .routines-empty {
+  margin-top: 76px;
+  gap: 16px;
+}
+:root[data-surface="web"] .routines-empty svg {
+  width: auto;
+  height: 96px;
+}
+:root[data-surface="web"] .routines-empty > p,
+:root[data-surface="web"] .routines-none {
+  font-size: 14px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routines-empty > p,
+:root[data-surface="web"]:not([data-theme="light"]) .routines-none {
+  color: #898781;
+}
+:root[data-surface="web"] .routines-wave {
+  margin: 54px 0 50px;
+}
+:root[data-surface="web"] .routine-grid {
+  margin-top: 0;
+}
+:root[data-surface="web"] .routine-template-grid {
+  grid-auto-rows: auto;
+  row-gap: 16px;
+}
+:root[data-surface="web"] .routine-template-grid .routine-card {
+  height: 100%;
+}
+:root[data-surface="web"] .routines-empty + .routines-wave + .routine-grid {
+  margin-top: 0;
+}
+:root[data-surface="web"] .routine-grid .routine-card {
+  gap: 16px;
+  border-radius: 8px;
+}
+/* Narrow Scheduled is source-backed: the template grid switches at 768px.
+   Let the tab and tool rows wrap when the available container is small. */
+@media (max-width: 639.98px) {
+  :root[data-surface="web"] .routines-head .routines-search {
+    width: min(180px, calc(100vw - 240px));
+  }
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routine-tile {
+  background: rgb(255 255 255 / 5%);
+  color: #c3c2b7;
+}
+:root[data-surface="web"] .routine-card-text strong,
+:root[data-surface="web"] .routine-card-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routine-card-text strong,
+:root[data-surface="web"]:not([data-theme="light"]) .routine-card-name {
+  color: #f0efec;
+}
+:root[data-surface="web"] .routine-card-description {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 20px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routine-card-description {
+  color: #c3c2b7;
+}
+:root[data-surface="web"] .routine-card-schedule {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 17px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routine-card-schedule {
+  color: #898781;
+}
+:root[data-surface="web"] .routine-card-schedule svg {
+  width: 16px;
+  height: 16px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .routine-card-schedule svg {
+  color: #898781;
+}
+.task-describe {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 420px;
+}
+.task-describe > p {
+  margin: 0;
+}
+.task-describe > p {
+  color: #a3a29f;
+}
+.task-describe > textarea {
+  box-sizing: border-box;
+  width: 100%;
+  resize: none;
+}
+:root[data-surface="web"] .routine-card-text {
+  padding-right: 0;
+}
+
+/* The web's Create scheduled task dialog: 720 wide on #20201f with 12px corners
+   and 24px padding; fields on white 5% with 8px corners, the instructions box
+   157 high with its model row under a hairline, selects 32 high, Cancel on
+   white 10% and Save on white. */
+.modal.task-dialog {
+  width: 720px;
+  max-width: calc(100vw - 32px);
+  padding: 20px 24px 24px;
+  border-radius: 12px;
+  background: #20201f;
+}
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+.task-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.task-field > span:not(.routine-problem),
+.task-field > label,
+.task-row > span {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+  color: #f0efec;
+}
+.task-field b {
+  color: #ec7e7e;
+  font-weight: 500;
+}
+.task-field > input {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  color: #f0efec;
+  font-size: 14px;
+}
+.task-instructions {
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  overflow: hidden;
+}
+.task-instructions > textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 116px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: #f0efec;
+  font-size: 14px;
+  line-height: 20px;
+  resize: none;
+}
+.task-instructions-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 6px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+.task-model {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  color: #f0efec;
+  font-size: 14px;
+}
+.task-model svg,
+.task-select svg {
+  color: #898781;
+}
+.task-model:hover:not(:disabled) {
+  background: rgb(255 255 255 / 8%);
+}
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.task-row > span {
+  flex: 0 0 128px;
+  line-height: 20px;
+}
+.task-row-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.task-select,
+.task-time,
+.task-minute {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  color: #f0efec;
+  font-size: 14px;
+}
+.task-select {
+  justify-content: space-between;
+  min-width: 132px;
+}
+.task-minute > input {
+  width: 44px;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+}
+.task-time {
+  color-scheme: dark;
+}
+.task-note {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #151515;
+  color: #f0efec;
+}
+.task-error {
+  margin: 0;
+  color: #e8a09a;
+}
+.task-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.task-cancel,
+.task-save {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.task-cancel {
+  background: rgb(255 255 255 / 10%);
+  color: #f0efec;
+}
+.task-save {
+  background: #fff;
+  color: #0b0b0b;
+  font-weight: 500;
+}
+.task-save:disabled {
+  opacity: 0.5;
+}
+:root[data-surface="web"][data-theme="light"] .routines-sort {
+  background: rgb(0 0 0 / 6%);
+  color: #6b6a66;
+}
+:root[data-surface="web"][data-theme="light"] .routines-sort > b {
+  color: #141413;
+}
+:root[data-surface="web"][data-theme="light"] .routines-subtitle {
+  color: #6b6a66;
+}
+
+/* One-time and per-routine permission (WP D5). The date-time field is the
+   platform's own input like the time field; the Completed section is a quiet
+   heading over the same grid. */
+.routine-editor .routine-time.routine-at {
+  width: 190px;
+}
+.task-time.task-at {
+  min-width: 210px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.task-footnote {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-muted);
+}
+.routine-permissions {
+  margin-top: 22px;
+}
+.routine-permission-button {
+  width: 220px;
+  justify-content: space-between;
+}
+.routines-completed {
+  margin-top: 28px;
+}
+.routines-section {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #918c89;
+}
+.routine-always-allowed,
+.task-always-allowed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.always-allowed-title {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text);
+}
+.always-allowed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.always-allowed-list > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  padding: 0 6px 0 10px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 5%);
+  font-size: 12px;
+  color: #d9d9d6;
+}
+.always-allowed-list > li > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.always-allowed-list button,
+.always-allowed-more {
+  color: #918c89;
+}
+.always-allowed-list button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+.always-allowed-list button:hover,
+.always-allowed-more:hover {
+  color: #f0efec;
+}
+.always-allowed-more {
+  align-self: flex-start;
+  font-size: 12px;
+}
+.always-allowed-empty {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: #918c89;
+}
+:root[data-theme="light"] .routines-section,
+:root[data-theme="light"] .always-allowed-empty {
+  color: #767674;
+}
+:root[data-theme="light"] .always-allowed-title,
+:root[data-theme="light"] .always-allowed-list > li {
+  color: #141413;
+}
+:root[data-theme="light"] .always-allowed-list > li {
+  background: rgb(0 0 0 / 5%);
+}
+:root[data-theme="light"] .task-footnote {
+  color: #6b6a66;
+}
+
+/* Where a task runs. */
+.routine-location-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+  max-width: 8rem;
+  margin-inline-start: 8px;
+  padding: 0 6px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--alpha-2);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+/* The project after the run time: 12px Projects glyph, 4px apart. */
+.routine-card-project {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: 8px;
+}
+.routine-card-project > svg {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+}
+.routine-card-project > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* "{count} completed scheduled tasks hidden" under the list. */
+.routines-completed-hidden {
+  margin: 16px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .routine-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+/* A task's card keeps its tokens in both themes over the template rules. */
+:root .routine-grid .routine-item .routine-card:hover:not(:disabled),
+:root .routine-grid .routine-item.menu-open .routine-card {
+  background: var(--surface-hover);
+}
+:root .routine-item .routine-card-name,
+:root .routine-item .routine-card-name strong {
+  color: var(--text);
+}
+:root .routine-item .routine-card-description {
+  color: var(--text-secondary);
+}
+/* Template titles are medium, as the original's. */
+.routine-grid .routine-card-text > strong {
+  font-weight: 500;
+}
+
+/* Saved web tasks use the live link card, not the template's icon tile.
+   cbb0b7045-2-BAqznk.js:40–111;. */
+.routine-grid .routine-item .routine-card.routine-card-web {
+  position: relative;
+  min-height: 97px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+.routine-grid .routine-item .routine-card-web .routine-card-text {
+  width: 100%;
+  padding-right: 0;
+  gap: 4px;
+}
+.routine-grid .routine-card-web .routine-card-name {
+  min-width: 0;
+  padding-right: 40px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.routine-card-web .routine-card-name > a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  text-decoration: none;
+}
+.routine-card-web .routine-card-name > a::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  content: "";
+}
+.routine-card-web .routine-card-name > a:focus-visible {
+  outline: none;
+}
+.routine-grid
+  .routine-item
+  .routine-card-web:has([data-primary]:focus-visible) {
+  box-shadow: var(--focus-shadow);
+}
+.routine-grid .routine-card-web .routine-card-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-line-clamp: 2;
+}
+/* Status, schedule and the rest 8px apart, the dot between the first two. */
+.routine-grid .routine-card-web .routine-card-footer {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  font-size: 13px;
+  line-height: 17px;
+  color: #898781;
+}
+.routine-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.routine-card-active-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5598e7;
+}
+.routine-card-web .routine-status-dot {
+  top: 24px;
+  right: 24px;
+}
+.routine-card-web .routine-model-warning-icon {
+  position: relative;
+}
+.routine-grid .routine-web-item .routine-more {
+  z-index: 1;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+.routine-grid .routine-web-item .routine-more > [data-icon] {
+  width: 20px;
+  height: 20px;
+}
+@media (pointer: coarse), (hover: none) {
+  .routine-web-item .routine-more {
+    opacity: 1;
+  }
+}
+:root[data-theme="light"] .routine-grid .routine-item .routine-card-web {
+  box-shadow: inset 0 0 0 1px rgb(11 11 11 / 10%);
+}

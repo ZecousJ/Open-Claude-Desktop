@@ -1,0 +1,92 @@
+/* The original's EmptyState: flex column, gap-md, px-md py-12, centred; the
+   headline max-w-xs font-medium text-secondary, the line text-footnote; the CTA
+   is CDS's secondary Button. */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 8px;
+  white-space: normal;
+  text-align: center;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-secondary);
+}
+
+.empty-state > h2,
+.empty-state > h3,
+.empty-state > p {
+  max-width: 320px;
+  margin: 0;
+}
+
+.empty-state > h2,
+.empty-state > h3 {
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: 500;
+}
+
+.empty-state-pictogram {
+  flex-shrink: 0;
+  color: var(--text);
+}
+
+.empty-state-cta {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.empty-state-cta:hover {
+  background: rgb(255 255 255 / 14%);
+}
+
+.empty-state-cta:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px #0b0b0b,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px rgb(24 79 149 / 60%);
+}
+
+:root[data-theme="light"] .empty-state-cta {
+  background: #ffffff1a;
+  color: #0b0b0b;
+}
+
+:root[data-theme="light"] .empty-state-cta:hover {
+  background: rgb(11 11 11 / 5%);
+}
+
+:root[data-theme="light"] .empty-state {
+  color: #52514e;
+}
+
+:root[data-theme="light"] .empty-state-pictogram {
+  color: #0b0b0b;
+}
+.empty-state > p {
+  font-size: 12px;
+  line-height: 15px;
+}
+:root[data-theme="light"] .empty-state-cta:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px #f9f9f7,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px #cde2fb;
+}

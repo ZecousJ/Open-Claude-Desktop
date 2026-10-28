@@ -1,0 +1,166 @@
+.cowork-options {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  height: 40px;
+  padding: 0 15px;
+}
+.cowork-options button {
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.cowork-options button:hover {
+  color: var(--text);
+}
+.has-conversation .conversation-composer {
+  width: min(770px, calc(100% - 48px));
+  max-width: none;
+  margin: 0 auto;
+}
+.has-conversation .chat-composer {
+  padding: 14px 0 18px;
+}
+.has-conversation .code-composer {
+  padding: 12px 0 4px;
+}
+.messages {
+  width: min(818px, 100%);
+  max-width: none;
+  padding: 0 24px 18px;
+}
+/* A Code session's transcript starts 48px under the top of its scroller. */
+.chat-main.code-main.has-conversation > .messages-scroll > .messages {
+  padding-top: 48px;
+}
+.messages-scroll {
+  scrollbar-gutter: stable both-edges;
+}
+.user-message {
+  font-size: 14px;
+  line-height: 21px;
+  padding: 11px 15px;
+  margin-bottom: 27px;
+  background: #242424;
+}
+.turn {
+  margin-bottom: 24px;
+}
+.mode-code .assistant-mark {
+  display: none;
+}
+.mode-code .assistant-message {
+  gap: 0;
+}
+.markdown {
+  font-size: 14px;
+  line-height: 21px;
+}
+.markdown p {
+  font-size: 14px;
+  line-height: 21px;
+  margin: 0 0 12px;
+}
+.markdown h1 {
+  font-size: 22px;
+}
+.markdown h2 {
+  font-size: 18px;
+}
+.markdown h3 {
+  font-size: 16px;
+}
+.markdown table {
+  font-size: 14px;
+  margin: 10px 0 20px;
+  display: table;
+}
+.markdown th,
+.markdown td {
+  padding: 7px 11px;
+}
+.markdown :not(pre) > code {
+  color: #c98888;
+  background: #252222;
+  border: 0;
+  padding: 1px 4px;
+  font-size: 12px;
+}
+/* Code mode, as live claude.ai/code renders a reply: the reply's text is
+   text-100 #f0efec, and inline code is the markdown "chip" (bg-text-200/5
+   border-0.5 border-border-300 text-danger-000 rounded-[0.4rem] px-1 py-px
+   text-[0.9rem], read from its bundle and measured: rgb(236 126 126) on 5% of
+   the text grey, a 0.5px 10% white rim, 6.4px corners, 14.4px mono). The light
+   theme keeps its own rules (light-main.css). */
+.mode-code .assistant-content .markdown {
+  color: var(--text);
+}
+.mode-code .markdown :not(pre) > code {
+  color: rgb(236 126 126);
+  background: rgb(195 192 182 / 5%);
+  border: 0.5px solid rgb(255 255 255 / 10%);
+  border-radius: 6.4px;
+  padding: 1px 4px;
+  font-size: 14.4px;
+}
+:root[data-theme="light"] .mode-code .assistant-content .markdown {
+  color: var(--text);
+}
+.mode-code .activity {
+  border: 0;
+  background: none;
+  margin: 2px 0 10px;
+  border-radius: 0;
+}
+.mode-code .activity summary {
+  padding: 0;
+  min-height: 22px;
+  color: #808080;
+  font-size: var(--transcript-text, 14px);
+  gap: 4px;
+}
+.mode-code .activity summary:hover {
+  background: none;
+  color: var(--text-secondary);
+}
+.mode-code .activity summary > svg:first-child {
+  display: none;
+}
+.mode-code .activity summary > svg:last-child {
+  margin-left: 0;
+  width: 12px;
+  height: 12px;
+}
+.mode-code .activity summary > code {
+  display: none;
+}
+.mode-code .activity[open] summary {
+  border: 0;
+}
+.mode-code .activity .activity-body {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  margin-top: 7px;
+}
+.mode-code .reasoning {
+  margin: 0 0 12px;
+}
+.thinking {
+  height: 26px;
+  color: var(--text-muted);
+  font-size: 12px;
+  gap: 10px;
+}
+.thinking span {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  animation: none;
+}
+.message-actions {
+  margin-top: 10px;
+}
+.collection-page {
+  padding-top: 65px;
+}

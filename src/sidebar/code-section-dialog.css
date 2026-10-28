@@ -1,0 +1,62 @@
+/* O14/shared-20:16790-16945; current 400x172 New section dialog.
+   Imported by its existing lazy module, so CSS is ready before it mounts. */
+.modal.code-section-dialog:has(.rename-form) {
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  padding: 20px 24px 24px;
+  border-radius: 12px;
+  border: 0;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 4px 8px rgb(11 11 11 / 8%),
+    0 12px 28px -2px rgb(0 0 0 / 24%);
+}
+.modal.code-section-dialog:has(.rename-form) > header {
+  margin: 0;
+}
+.modal.code-section-dialog:has(.rename-form) h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 580;
+}
+.modal.code-section-dialog .rename-form input {
+  height: 32px;
+  margin-top: 12px;
+  line-height: 20px;
+}
+.modal.code-section-dialog .rename-actions {
+  margin-top: 24px;
+}
+.modal.code-section-dialog .rename-actions > button {
+  height: 32px;
+  line-height: 20px;
+}
+:root:not([data-theme="light"]) .modal.code-section-dialog {
+  background: #20201f;
+  color: #f0efec;
+}
+:root:not([data-theme="light"]) .modal.code-section-dialog .rename-form input {
+  background: rgb(255 255 255 / 5%);
+  color: #f0efec;
+}
+.modal.code-section-dialog .rename-form input:focus {
+  border-color: transparent;
+  box-shadow:
+    inset 0 0 0 1px #20201f,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px rgb(24 79 149 / 60%);
+}
+:root[data-theme="light"] .modal.code-section-dialog {
+  color: #0b0b0b;
+  box-shadow:
+    0 0 0 1px rgb(11 11 11 / 10%),
+    0 4px 8px rgb(11 11 11 / 8%),
+    0 12px 28px -2px rgb(11 11 11 / 8%);
+}
+:root[data-theme="light"] .modal.code-section-dialog .rename-form input:focus {
+  box-shadow:
+    inset 0 0 0 1px #fff,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px #cde2fb;
+}

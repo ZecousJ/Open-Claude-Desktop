@@ -1,0 +1,19 @@
+# Secret scanning (gitleaks). Test fixtures and preview data hold fake keys
+# and tokens on purpose; everything else is scanned with the default rules.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake credentials in tests and fixtures"
+paths = [
+  '''(^|/)tests?/''',
+  '''_test\.go$''',
+  '''\.(test|spec)\.tsx?$''',
+  '''(^|/)__tests__/''',
+  '''(^|/)fixtures?/''',
+  '''^scripts/preview/''',
+  '''^mobile/ios/ClaudexTests/''',
+  '''^backend/backend/internal/.*testdata/''',
+  '''(^|/)SharedConversation/assets/''',
+  '''^mobile/android/app/src/main/assets/conversation/assets/''',
+]

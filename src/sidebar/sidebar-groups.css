@@ -1,0 +1,173 @@
+.group-toggle > .app-icon {
+  width: 12px;
+  height: 12px;
+  color: #878787;
+  opacity: 0;
+  rotate: 90deg;
+  transition: rotate var(--motion-fast) var(--ease-standard);
+}
+.group-toggle[aria-expanded="false"] > .app-icon {
+  rotate: 0deg;
+}
+.row-group-label:hover .group-toggle > .app-icon,
+.group-toggle:focus-visible > .app-icon,
+.group-toggle[aria-expanded="false"] > .app-icon {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .group-toggle > .app-icon {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .group-toggle > .app-icon {
+  transition: none;
+}
+/* Row states, Group by headings, custom groups, Code session headings (part of sidebar.css) */
+/* New while a conversation is open: the 18px disc replaces the 16px plus with
+   its centre unchanged, and the row has no current fill. */
+.main-nav .nav-item.new .circled-plus {
+  margin: 0 -1px;
+  color: #c5c5c3;
+}
+.circled-plus circle {
+  fill: #2c2c2a;
+}
+:root[data-theme="light"] .circled-plus circle {
+  fill: #e6e5e1;
+}
+:root[data-theme="light"] .main-nav .nav-item.new .circled-plus {
+  color: #4c4b4a;
+}
+
+/* Row states. Unread is the accent fill, #2a78d6 in both themes. Waiting for
+   approval is the amber of the selected row in A 6px disc, #efb547 inside. */
+.thread-dot.unread {
+  border: 0;
+  background: var(--focus-accent);
+}
+.thread-dot.attention {
+  border: 0;
+  background: #efb547;
+}
+
+/* Group by headings inside the recent list. */
+.row-group-label {
+  height: 22px;
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 22px;
+  color: #6f6f6d;
+}
+/* Light: the muted ink, as the section headings. */
+:root[data-theme="light"] .row-group-label {
+  color: #898781;
+}
+.row-group + .row-group {
+  margin-top: 6px;
+}
+/* A custom group a dragged row would land in. */
+.row-group {
+  position: relative;
+}
+.row-group-drop {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  transition:
+    background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.row-group + .row-group > .row-group-drop {
+  top: -6px;
+}
+.row-group-drop[data-hot] {
+  background-color: color-mix(in srgb, #2a78d6 10%, transparent);
+  box-shadow: inset 0 0 0 2px #2a78d6;
+}
+/* An empty custom group's line, "Drag or move sessions here". */
+.row-group-hint {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+  margin: 0;
+  padding: 4px 2px 4px 6px;
+  font-size: 11px;
+  line-height: 17px;
+  color: var(--text-muted);
+  user-select: none;
+}
+/* Code's session list: each heading is a row-high band 8px under the group
+   before. */
+.sidebar-scroll[data-mode="code"] .row-group-label {
+  height: 26px;
+  line-height: 26px;
+}
+.sidebar-scroll[data-mode="code"] .row-group + .row-group {
+  margin-top: 8px;
+}
+/* Its ink lifts to the secondary text colour under the pointer, as the
+   section headings do (the session list's heading ink). */
+@media (hover: hover) {
+  .sidebar-scroll[data-mode="code"] .row-group-label:hover {
+    color: var(--text-secondary);
+  }
+}
+/* Code's heading is a button that shows and hides the group's rows. The caret
+   is the section headings': hidden while the group is open until the heading is
+   hovered or focused, turned while it is open, shown while it is shut. */
+.row-group-label.has-toggle {
+  display: flex;
+  align-items: center;
+}
+.group-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 24px;
+  margin-left: -4px;
+  padding: 0 0 0 4px;
+  border-radius: 6px;
+  font: inherit;
+  line-height: 16px;
+  color: inherit;
+  text-align: left;
+}
+.group-toggle > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.group-toggle > svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  color: #878787;
+  opacity: 0;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.group-toggle[aria-expanded="false"] > svg {
+  transform: rotate(-90deg);
+}
+.row-group-label:hover .group-toggle > svg,
+.group-toggle:focus-visible > svg,
+.group-toggle[aria-expanded="false"] > svg {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .group-toggle > svg {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .group-toggle > svg {
+  transition: none;
+}
+/* A custom group's ⋮ (20px wide, 3px in) follows the toggle, as the
+   original's trailing controls do: the toggle stops where the ⋮ starts,
+   23px from the heading's edge (6px of it the heading's padding). */
+.row-group-label.has-toggle:has(> .row-more) > .group-toggle {
+  margin-right: 17px;
+}

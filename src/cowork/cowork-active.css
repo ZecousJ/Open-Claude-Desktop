@@ -1,0 +1,568 @@
+/* Shared-23-RHw-hr47.js and; CDS tokens. */
+.cowork-active,
+.cowork-tasks-panel {
+  --task-primary: #f0efec;
+  --task-secondary: #c3c2b7;
+  --task-muted: #898781;
+  --task-alpha: rgb(255 255 255 / 5%);
+  --task-border: rgb(255 255 255 / 20%);
+  --task-panel: #1a1a19;
+  --task-surface: #20201f;
+  --task-warning-bg: #311a00;
+  --task-warning: #fab219;
+  --task-warning-border: #db9300;
+  --task-danger-bg: #3c0e0e;
+  --task-danger: #ec7e7e;
+  --task-accent-bg: #032042;
+  --task-accent: #6da7ec;
+  --task-success-bg: #11260f;
+  --task-success: #009300;
+  --task-git-merged: #b796ff;
+  color: var(--task-primary);
+}
+:root[data-theme="light"] :is(.cowork-active, .cowork-tasks-panel) {
+  --task-git-merged: #8e6bd9;
+  --task-primary: #0b0b0b;
+  --task-secondary: #52514e;
+  --task-muted: #898781;
+  --task-alpha: rgb(11 11 11 / 5%);
+  --task-border: rgb(11 11 11 / 20%);
+  --task-panel: #fff;
+  --task-surface: #fff;
+  --task-warning-bg: #f9dca4;
+  --task-warning-border: #734500;
+  --task-danger-bg: #fad6d6;
+  --task-danger: #8e2626;
+  --task-accent-bg: #cde2fb;
+  --task-accent: #184f95;
+  --task-success-bg: #caeac7;
+}
+.cowork-active {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 672px;
+  margin: 16px auto 0;
+}
+.cowork-active-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 8px;
+  color: var(--task-muted);
+}
+.cowork-active-head h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 17px;
+}
+.cowork-active-head button,
+.cowork-tasks-more {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--task-muted);
+  background: transparent;
+  border: 0;
+}
+.cowork-active-head button:hover {
+  color: var(--task-secondary);
+}
+.cowork-active-rows {
+  display: flex;
+  flex-direction: column;
+}
+.cowork-active-rows hr {
+  margin: 0 8px;
+  border: 0;
+  border-top: 0.5px solid var(--border);
+  transition: opacity 150ms;
+}
+.cowork-active-rows > a:hover + hr,
+.cowork-active-rows > hr:has(+ a:hover) {
+  opacity: 0;
+}
+.cowork-active a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+}
+.cowork-active a:hover {
+  background: var(--task-alpha);
+}
+.cowork-home-status {
+  position: relative;
+  width: 28px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  color: var(--task-muted);
+}
+.cowork-home-needs_input {
+  color: var(--task-warning-border);
+}
+.cowork-home-errored {
+  color: var(--task-danger);
+}
+.cowork-active-dot {
+  position: absolute;
+  top: -1px;
+  inset-inline-end: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--task-accent);
+}
+.cowork-active-text {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.cowork-active-text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+.cowork-active-text small {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--task-muted);
+}
+.cowork-tasks-more {
+  padding: 8px 8px 16px;
+}
+.cowork-tasks-more:hover {
+  color: var(--task-primary);
+}
+.cowork-open-tasks {
+  align-self: flex-end;
+  margin-top: 16px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  font-size: 13px;
+}
+.cowork-status-tile {
+  display: flex;
+  flex: 0 0 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid transparent;
+  border-radius: 8px;
+  background: var(--task-alpha);
+  color: var(--task-secondary);
+}
+.cowork-status-needs_input {
+  background: var(--task-warning-bg);
+  color: var(--task-warning);
+  border-color: color-mix(
+    in oklab,
+    var(--task-warning-border) 30%,
+    transparent
+  );
+}
+.cowork-status-errored {
+  background: var(--task-danger-bg);
+  color: var(--task-danger);
+  border-color: color-mix(in oklab, var(--task-danger) 30%, transparent);
+}
+.cowork-status-ready_review {
+  background: var(--task-accent-bg);
+  color: var(--task-accent);
+  border-color: color-mix(in oklab, var(--task-accent) 30%, transparent);
+}
+.cowork-status-done {
+  background: var(--task-success-bg);
+  color: var(--task-success);
+  border-color: color-mix(in oklab, var(--task-success) 30%, transparent);
+}
+.cowork-status-idle {
+  color: var(--task-muted);
+}
+.cowork-pr-open {
+  background: var(--task-success-bg);
+  color: var(--task-success);
+  border-color: color-mix(in oklab, var(--task-success) 30%, transparent);
+}
+.cowork-pr-draft {
+  color: var(--task-muted);
+}
+.cowork-pr-queued {
+  background: var(--task-warning-bg);
+  color: var(--task-warning-border);
+  border-color: color-mix(
+    in oklab,
+    var(--task-warning-border) 30%,
+    transparent
+  );
+}
+.cowork-pr-merged {
+  background: color-mix(in srgb, var(--task-git-merged) 20%, transparent);
+  color: var(--task-git-merged);
+  border-color: color-mix(in srgb, var(--task-git-merged) 40%, transparent);
+}
+.cowork-pr-closed {
+  background: var(--task-danger-bg);
+  color: var(--task-danger);
+  border-color: color-mix(in oklab, var(--task-danger) 30%, transparent);
+}
+/* The reference design. */
+.cowork-tile-dots {
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  line-height: 1;
+  transform: scale(1.5);
+}
+.cowork-tile-dots > span {
+  width: 2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--task-muted);
+  animation: cowork-tile-dot-pulse 1.8s linear infinite;
+}
+.cowork-tile-dots > span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.cowork-tile-dots > span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes cowork-tile-dot-pulse {
+  0%,
+  5% {
+    opacity: 0.3;
+    animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  15%,
+  25% {
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  65%,
+  100% {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cowork-tile-dots > span {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .cowork-tile-dots > span {
+  animation: none;
+}
+.cowork-task-spin {
+  animation: cowork-task-spin 1s linear infinite;
+}
+@keyframes cowork-task-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.cowork-tasks-panel {
+  position: relative;
+  z-index: 20;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-inline-end: 8px;
+  max-width: 100%;
+  padding: 12px 24px;
+  background: var(--task-panel);
+}
+/* c1f04f7e1:6139 establishes a session content container; :2354 hides
+   the rail at container<=767, irrespective of the outer window width. */
+.chat-main:has(> .cowork-task-rail-slot),
+.chat-main:has(.cowork-open-tasks) {
+  container-type: inline-size;
+  container-name: cowork-task-content;
+}
+.cowork-task-rail-slot {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.cowork-task-rail-slot > .cowork-tasks-panel {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 8px;
+  margin: 0;
+  pointer-events: auto;
+}
+@container cowork-task-content (min-width: 768px) {
+  .chat-main:has(> .cowork-task-rail-slot) > :not(.cowork-task-rail-slot) {
+    margin-inline-end: calc(var(--cowork-task-rail-width, 320px) + 16px);
+  }
+  /* The dock has an explicit preferred width. Keep it centered in the
+     remaining conversation column instead of extending beneath the rail. */
+  .app
+    .workspace
+    > .chat-layout
+    > .chat-main:has(> .cowork-task-rail-slot)
+    > .composer-wrap.conversation-composer {
+    align-self: center;
+    width: min(
+      var(--chat-column-measure, 768px),
+      calc(100% - var(--cowork-task-rail-width, 320px) - 64px)
+    );
+    margin-inline: 0;
+    transform: translateX(
+      calc((var(--cowork-task-rail-width, 320px) + 16px) / -2)
+    );
+  }
+  .app
+    .workspace
+    > .chat-layout
+    > .chat-main:has(> .cowork-task-rail-slot)
+    > .composer-wrap.conversation-composer:dir(rtl) {
+    transform: translateX(
+      calc((var(--cowork-task-rail-width, 320px) + 16px) / 2)
+    );
+  }
+}
+@container cowork-task-content (max-width: 767px) {
+  .cowork-task-rail-slot,
+  .cowork-open-tasks {
+    display: none;
+  }
+}
+.cowork-tasks-panel header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+.cowork-tasks-panel h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.cowork-tasks-panel button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--task-muted);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.cowork-tasks-panel button:hover {
+  background: var(--task-alpha);
+  color: var(--task-primary);
+}
+.cowork-tasks-content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  margin: 0 -24px;
+  padding: 8px 24px;
+}
+.cowork-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cowork-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px 0;
+}
+.cowork-panel-heading h3 {
+  margin: 0;
+  color: var(--task-muted);
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+.cowork-panel-heading > button {
+  opacity: 0;
+}
+.cowork-panel-heading:hover > button,
+.cowork-panel-heading > button:focus-visible {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .cowork-panel-heading > button {
+    opacity: 1;
+  }
+}
+.cowork-panel-row {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  box-sizing: border-box;
+  height: 56px;
+  gap: 10px;
+  border: 0.5px solid var(--task-border);
+  border-radius: 16px;
+  padding: 0 14px 0 12px;
+  color: inherit;
+  text-decoration: none;
+}
+.cowork-panel-row:is(
+  [data-status="running"],
+  [data-status="needs_input"],
+  [data-status="errored"],
+  [data-status="ready_review"]
+),
+.cowork-panel-row:hover {
+  background: var(--task-surface);
+}
+.cowork-panel-row:hover {
+  box-shadow: inset 0 0 0 0.5px var(--task-border);
+}
+.cowork-panel-row-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.cowork-panel-row-text > span {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.cowork-panel-row-text strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 400;
+}
+.cowork-panel-row-text small {
+  color: var(--task-muted);
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cowork-panel-row-text > small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cowork-panel-row-text > small > svg {
+  flex-shrink: 0;
+}
+.cowork-tasks-empty {
+  margin: 0;
+  padding: 24px 4px;
+  text-align: center;
+  color: var(--task-muted);
+  font-size: 14px;
+}
+.cowork-tasks-resize {
+  position: absolute;
+  inset: 0 auto 0 -12px;
+  width: 24px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.cowork-ongoing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cowork-ongoing .cowork-panel-heading {
+  padding: 0;
+}
+.cowork-ongoing h3 {
+  font-size: 12px;
+  font-weight: 500;
+}
+.cowork-ongoing-track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+.cowork-ongoing-track:active {
+  cursor: grabbing;
+}
+.cowork-ongoing-track::-webkit-scrollbar {
+  display: none;
+}
+.cowork-tasks-panel button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.cowork-ongoing-track :is(button, a) {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  gap: 6px;
+  border: 0.5px solid var(--task-border);
+  background: var(--task-surface);
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: var(--task-secondary);
+}
+.cowork-ongoing-track span {
+  max-width: 120px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cowork-task-spin {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .cowork-task-spin {
+  animation: none;
+}
+.cowork-tasks-read-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: var(--task-secondary);
+}
+.cowork-tasks-read-state[role="alert"] {
+  flex-wrap: wrap;
+}
+.cowork-tasks-read-state button {
+  border: 0.5px solid var(--task-border);
+  padding: 4px 8px;
+}
+.cowork-task-activity > .work-panel {
+  flex: none;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}

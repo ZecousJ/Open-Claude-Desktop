@@ -1,0 +1,107 @@
+/*
+ * Import GitHub issue: a search box 12px above a list of up to half the
+ * window's height. Rows are 12px apart inside, 12px wide of padding and 10px
+ * high, 8px radius, 4px between rows; the pointer and the arrow keys tint a row
+ * with the ghost fills. A note (loading, empty, failed) is italic muted text
+ * with 12px/5px padding.
+ */
+.modal.import-issue {
+  display: flex;
+  flex-direction: column;
+}
+.import-issue-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding-top: 12px;
+}
+.import-issue-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+.import-issue-search:focus-within {
+  border-color: var(--accent);
+}
+.import-issue-search > svg {
+  flex: none;
+}
+.modal .import-issue-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  outline: none;
+}
+.import-issue-body ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 50vh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.import-issue-body li button {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: left;
+}
+.import-issue-body li button:hover {
+  background: var(--fill-ghost-hover);
+}
+.import-issue-body li button:active,
+.import-issue-body li button[aria-selected="true"] {
+  background: var(--fill-ghost-selected);
+}
+.import-issue-state {
+  display: flex;
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-secondary);
+}
+.import-issue-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.import-issue-title {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.import-issue-number {
+  color: var(--text-muted);
+}
+.import-issue-meta {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.import-issue-note {
+  margin: 0;
+  padding: 5px 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-style: italic;
+}

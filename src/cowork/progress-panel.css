@@ -1,0 +1,675 @@
+/* Cowork Progress panel, measured from S-0008 运行行 / 工具请求展开 / 完成后工具组展开
+   (2x, 1164px window): a 313px card 7px from the window top and 8px from its
+   right edge, as tall as its content; #262626 fill, #2c2c2c border; three
+   45px sections split by #313131 rules. Progress was captured open (step
+   rings and hint); the Outputs list and the Context folder row follow the
+   captured Skills row and are visual-provisional. */
+.workspace:has(> .chat-layout > .work-panel.progress-panel) {
+  --tool-panel-width: min(313px, calc(100% - 360px));
+}
+.workspace > .chat-layout > .work-panel.progress-panel {
+  top: 7px;
+  bottom: auto;
+  max-height: calc(100% - 15px);
+  overflow: auto;
+  border: 1px solid #2c2c2c;
+  border-radius: 10px;
+  background: #262626;
+  color: #e6e5e0;
+  font:
+    13px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.progress-section + .progress-section {
+  border-top: 1px solid #313131;
+}
+.progress-computer-use {
+  --preview-surface: #20201f;
+  --preview-border: rgb(255 255 255 / 10%);
+  --preview-primary: #f0efec;
+  --preview-secondary: #c3c2b7;
+  --preview-green: #55bf50;
+  --preview-green-bg: rgb(
+    from #11260f calc((r - 5.25) / 0.75) calc((g - 5.25) / 0.75)
+      calc((b - 5.25) / 0.75) / 75%
+  );
+  border-bottom: 1px solid var(--preview-border);
+}
+:root[data-theme="light"] .progress-computer-use {
+  --preview-surface: #fff;
+  --preview-border: rgb(11 11 11 / 10%);
+  --preview-primary: #0b0b0b;
+  --preview-secondary: #52514e;
+  --preview-green: #006300;
+  --preview-green-bg: rgb(
+    from #caeac7 calc((r - 163.8) / 0.35) calc((g - 163.8) / 0.35)
+      calc((b - 163.15) / 0.35) / 35%
+  );
+}
+/* p-3 / px-3 pb-2; rounded-md border-0.5 bg-surface-3; max-h-72. */
+.progress-computer-heading {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 12px;
+  color: var(--preview-primary);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  text-align: start;
+}
+.progress-computer-heading svg {
+  color: #898781;
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+.progress-computer-heading svg.expanded {
+  transform: rotate(90deg);
+}
+.progress-computer-content {
+  padding: 0 12px 8px;
+}
+.progress-computer-frame {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 0.5px solid var(--preview-border);
+  background: var(--preview-surface);
+}
+.progress-computer-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 288px;
+  object-fit: contain;
+}
+.progress-computer-empty {
+  padding: 24px 12px;
+  text-align: start;
+}
+.progress-computer-empty p {
+  margin: 0;
+  color: #898781;
+  font-size: 11px;
+  line-height: 17px;
+}
+.progress-computer-caption {
+  margin: 6px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--preview-secondary);
+  font-size: 11px;
+  line-height: 17px;
+}
+.progress-computer-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.progress-live {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--preview-green-bg);
+  color: var(--preview-green);
+  font-size: 10px;
+  line-height: round(1.25em, 1px);
+  font-weight: 500;
+}
+/* 45px headings, 14px regular titles 12.5px from the card's left, the chevron
+   4px after the title; a collapsed Progress ends with "n of m" in #8c8b87. The
+   folder heading wraps its name and ends with the chevron and a folder button
+   (centres 42.5 and 23px from the card's right edge). */
+.progress-section-header {
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+}
+.progress-section-heading {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 45px;
+  padding: 11px 4px 11px 12.5px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: left;
+}
+.progress-section-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.progress-section-heading svg,
+.progress-section-chevron svg {
+  flex: none;
+  color: #8c8b87;
+}
+.progress-section-after {
+  margin-left: auto;
+  color: #8c8b87;
+  font-size: 12px;
+}
+.progress-section-chevron {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 28px;
+}
+.progress-section-body {
+  margin-top: -4px;
+  padding: 0 12.5px 14px;
+}
+.progress-section-body h3 {
+  margin: 4px 0 8px;
+  color: #8c8b87;
+  font-size: 13px;
+  font-weight: 400;
+}
+.progress-muted {
+  margin: 0;
+  color: #8c8b87;
+  font-size: 12px;
+  line-height: 17px;
+}
+.progress-download-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  background: transparent;
+  font-size: 12px;
+  opacity: 0;
+}
+.progress-download-all:hover {
+  background: rgb(255 255 255 / 5%);
+}
+.progress-section:hover .progress-download-all,
+.progress-section:focus-within .progress-download-all,
+.progress-download-all[data-busy] {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .progress-download-all {
+    opacity: 1;
+  }
+}
+:root[data-theme="light"] .progress-download-all {
+  color: #52514e;
+}
+:root[data-theme="light"] .progress-download-all:hover {
+  background: rgb(11 11 11 / 5%);
+}
+.cowork-computer-state {
+  padding: 10px 12px;
+  color: #898781;
+  font-size: 12px;
+}
+.cowork-computer-state p {
+  margin: 5px 0 0;
+}
+.cowork-computer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 2px 6px;
+  border: 1px solid hsl(from #fff h s l / 10%);
+  border-radius: 6px;
+  color: #898781;
+  background: rgb(255 255 255 / 5%);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.cowork-computer-chip:hover {
+  opacity: 0.8;
+}
+:root[data-theme="light"] .cowork-computer-chip {
+  border-color: rgb(11 11 11 / 10%);
+  background: rgb(11 11 11 / 5%);
+}
+/* The empty Progress picture: 26px rings joined by 8px dashes; the done ones
+   filled #30302e with a dim check. */
+.progress-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 32px;
+}
+.progress-placeholder i {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #5d5d5d;
+  border-radius: 50%;
+  color: #646462;
+}
+.progress-placeholder i + i::before {
+  content: "";
+  position: absolute;
+  left: -11px;
+  top: 12px;
+  width: 8px;
+  height: 1px;
+  background: #a3a3a3;
+}
+.progress-placeholder i[data-status="completed"] {
+  background: #30302e;
+}
+/* One 32px row per step; a 24px disc, blue #4a7fdc with a white check when done
+   (the text struck through in #8c8b87), else #333 with the step's number; the
+   text 12px after the disc. */
+.progress-steps {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.progress-steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+  color: #e6e5e0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.progress-steps li > i {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #333332;
+  color: #9a9995;
+  font-size: 12px;
+  font-style: normal;
+}
+.progress-steps li[data-status="inProgress"] > i {
+  box-shadow: inset 0 0 0 1px #8c8b87;
+  color: #e6e5e0;
+}
+.progress-steps li[data-status="completed"] > i {
+  background: #4a7fdc;
+  color: #fff;
+}
+.progress-steps li[data-status="completed"] > span {
+  color: #8c8b87;
+  text-decoration: line-through;
+}
+/* The folder's files, 32px rows with a 24px #2f2f2f tile and "name · KIND" (the
+   kind in #8c8b87). */
+.progress-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.progress-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% + 10px);
+  min-height: 32px;
+  padding: 0 5px;
+  margin-left: -5px;
+  border-radius: 6px;
+  color: #c8c7c2;
+  font-size: 14px;
+  text-align: left;
+}
+.progress-list button:hover {
+  background: #313131;
+}
+.progress-file-tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #2f2f2f;
+  color: #8c8b87;
+}
+.progress-list button > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.progress-file-kind {
+  color: #8c8b87;
+}
+/* Context's connectors as 24px #1f1f1f pills with a globe (Web search) or plug. */
+.progress-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.progress-chips li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px 0 8px;
+  border-radius: 12px;
+  background: #1f1f1f;
+  color: #c8c7c2;
+  font-size: 13.5px;
+}
+.progress-chips svg {
+  color: #a3a29e;
+}
+/* The empty Context picture, 101x50 at the body's left edge, 16px above the
+   hint. */
+.progress-context-picture {
+  display: block;
+  overflow: visible;
+  margin: 6px 0 12px 4px;
+  stroke: #6e6d69;
+  stroke-width: 1;
+}
+.progress-context-picture .sheet {
+  fill: #2c2c2b;
+}
+.progress-context-picture .raised {
+  fill: #333332;
+}
+.progress-context-picture .scribble {
+  stroke: #8c8b87;
+  stroke-width: 0.8;
+}
+:root[data-theme="light"]
+  .workspace
+  > .chat-layout
+  > .work-panel.progress-panel {
+  border-color: #dedad3;
+  background: #f7f5f1;
+  color: #38342e;
+}
+:root[data-theme="light"] .progress-section + .progress-section {
+  border-color: #e4e0d9;
+}
+:root[data-theme="light"] .progress-section-heading,
+:root[data-theme="light"] .progress-list button,
+:root[data-theme="light"] .progress-item,
+:root[data-theme="light"] .progress-steps li {
+  color: #38342e;
+}
+:root[data-theme="light"] .progress-list button:hover {
+  background: #ebe7e0;
+}
+/* An output the running turn made and that was not opened yet ends its row with
+   the unread dot of the Active list (#307cd9, cowork-active.css); it was
+   Claude-orange, which no capture uses for it. */
+.progress-new {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: #307cd9;
+}
+/* The folder button; hover as the list rows. */
+.progress-section-action {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #8c8b87;
+}
+.progress-section-action:hover {
+  background: #313131;
+  color: var(--text);
+}
+.progress-section-action:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -2px;
+}
+:root[data-theme="light"] .progress-section-action {
+  color: #75716a;
+}
+:root[data-theme="light"] .progress-section-action:hover {
+  background: #ebe7e0;
+  color: #38342e;
+}
+/* Light: no capture; the card's own light colours (above) carried over. */
+:root[data-theme="light"] .progress-file-tile,
+:root[data-theme="light"] .progress-steps li > i,
+:root[data-theme="light"] .progress-chips li {
+  background: #ebe7e0;
+}
+:root[data-theme="light"] .progress-list button,
+:root[data-theme="light"] .progress-chips li {
+  color: #38342e;
+}
+:root[data-theme="light"] .progress-context-picture .sheet,
+:root[data-theme="light"] .progress-context-picture .raised {
+  fill: #fffefa;
+}
+/* The empty Outputs picture: a 63x43 sheet with three bars over a rule, 16px
+   above the hint; the sheet #30302e with a #dedcd1 edge at 30% in dark, white
+   with #1f1e1d at 30% in light. */
+.progress-artifacts-picture {
+  display: block;
+  margin: 6px 0 12px -4px;
+}
+.progress-artifacts-picture .sheet {
+  fill: #30302e;
+  stroke: rgba(222, 220, 209, 0.3);
+}
+.progress-artifacts-picture .bar {
+  fill: rgba(156, 154, 146, 0.4);
+}
+.progress-artifacts-picture .rule {
+  fill: rgba(222, 220, 209, 0.3);
+}
+:root[data-theme="light"] .progress-artifacts-picture .sheet {
+  fill: #fff;
+  stroke: rgba(31, 30, 29, 0.3);
+}
+:root[data-theme="light"] .progress-artifacts-picture .bar {
+  fill: #e8e6dc;
+}
+:root[data-theme="light"] .progress-artifacts-picture .rule {
+  fill: rgba(31, 30, 29, 0.3);
+}
+/* Several working folders share one section; each is a group with a small
+   heading (name and folder button) over its files. */
+.progress-folder + .progress-folder {
+  margin-top: 6px;
+}
+.progress-folder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.progress-folder-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 28px;
+  color: #8c8b87;
+  font-size: 13px;
+  text-align: left;
+}
+.progress-folder-toggle span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.progress-folder-toggle svg {
+  flex: none;
+}
+/* Resource rows. */
+.progress-panel {
+  --resource-surface: #151515;
+  --resource-secondary: #c3c2b7;
+  --resource-muted: #898781;
+  --resource-hover: rgb(255 255 255 / 7.5%);
+  --resource-alpha: rgb(255 255 255 / 5%);
+  --resource-border: rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .progress-panel {
+  --resource-surface: #fcfcfb;
+  --resource-secondary: #52514e;
+  --resource-hover: rgb(11 11 11 / 5%);
+  --resource-alpha: rgb(11 11 11 / 5%);
+  --resource-border: rgb(11 11 11 / 10%);
+}
+.progress-panel .progress-list button {
+  gap: 10px;
+  width: 100%;
+  min-height: 0;
+  padding: 6px 4px;
+  margin-left: -4px;
+  border-radius: 4px;
+  color: var(--resource-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.progress-panel .progress-list button:hover {
+  background: var(--resource-hover);
+}
+.progress-panel .progress-file-tile {
+  background: var(--resource-alpha);
+  color: var(--resource-muted);
+}
+.progress-panel .progress-list button > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+.progress-panel .progress-list .progress-file-kind {
+  flex: none;
+  color: var(--resource-muted);
+  font-size: 11px;
+  line-height: 17px;
+}
+.progress-folder-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.progress-resource-row {
+  position: relative;
+}
+.progress-panel .progress-list .progress-reveal-file {
+  position: absolute;
+  right: 0;
+  top: 8px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  color: var(--resource-muted);
+  background: var(--resource-surface);
+}
+.progress-resource-row:hover .progress-reveal-file,
+.progress-panel .progress-list .progress-reveal-file:focus-visible {
+  opacity: 1;
+}
+/* -mx-3 mt-auto border-t-0.5: from the Context section's sides, past its
+   12.5px padding, to the card's edges. */
+.cowork-suggestions {
+  --suggestion-surface: #0b0b0b;
+  margin: 12px -12.5px 0;
+  border-top: 0.5px solid var(--resource-border);
+}
+:root[data-theme="light"] .cowork-suggestions {
+  --suggestion-surface: #f9f9f7;
+}
+.cowork-suggestions-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 16px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.cowork-suggestions-heading button {
+  padding: 3px;
+  border-radius: 6px;
+  color: var(--resource-secondary);
+}
+.cowork-suggestions-heading button:hover {
+  background: var(--suggestion-surface);
+}
+.cowork-suggestions > p {
+  padding: 8px 16px;
+  color: var(--resource-muted);
+  font-size: 12px;
+}
+.cowork-suggestion-list {
+  margin: 16px 16px 4px;
+  border: 0.5px solid var(--resource-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cowork-suggestion-list button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  color: var(--resource-secondary);
+  font-size: 12px;
+  text-align: start;
+  border-bottom: 0.5px solid var(--resource-border);
+}
+.cowork-suggestion-list button > span {
+  flex: 1;
+}
+.cowork-suggestion-list button:hover {
+  background: var(--suggestion-surface);
+}
+.cowork-suggestion-list button:disabled {
+  color: var(--resource-muted);
+  pointer-events: none;
+}
+.cowork-suggestion-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  overflow: hidden;
+  border: 0.5px solid var(--resource-border);
+  border-radius: 8px;
+  background: var(--resource-surface);
+}
+.cowork-suggestion-icon[data-connected] {
+  border: 0;
+  border-radius: 50%;
+  background: var(--suggestion-surface);
+}
+.cowork-suggestion-list .cowork-suggestion-all {
+  padding: 8px 12px;
+  border-bottom: 0;
+}

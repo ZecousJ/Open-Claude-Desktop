@@ -1,0 +1,20 @@
+/* h-1.5 / bg-alpha-1 / bg-fill-accent. */
+.dictation-input-level {
+  display: block;
+  height: 6px;
+  flex: 1;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 5%);
+}
+:root[data-theme="light"] .dictation-input-level {
+  background: rgb(11 11 11 / 5%);
+}
+.dictation-input-level > span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 9999px;
+  background: #2a78d6;
+  transition: width 75ms cubic-bezier(0, 0, 0.2, 1);
+}

@@ -1,0 +1,385 @@
+/* The conversation list: sections, rows, titles, dots, rename, row menus (part of sidebar.css) */
+/* Conversation list */
+.sidebar-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  /* Rows scrolled up fade out over the list's top 12px (.u-scroll-fade-y), and
+     the bar's room is kept so rows don't shift when it appears, as in the
+     original's sidebar. */
+  --scroll-fade-top: 12px;
+  --scroll-fade-bottom: 0px;
+  scrollbar-gutter: stable;
+}
+/* Code's list starts 10px further down: the reference design gives the Code
+   sidebar's nav rows 10px of bottom padding, which the older build and the
+   captures did not have. */
+.sidebar-scroll[data-mode="code"] {
+  margin-top: 10px;
+}
+/* The dragged row's copy is a fixed child of the list; the mask would clip
+   it to the list's box. */
+.sidebar-scroll:has(> .conversation-drag-ghost) {
+  mask-image: none;
+}
+.sidebar-empty {
+  padding: 10px 13px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--text-muted);
+}
+.section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+  margin: 0;
+  padding: 12px 1px 4px 2px;
+  font-size: 12px;
+  color: #8d8d8b;
+}
+/* The heading takes the secondary text colour while it is hovered (the
+   original's heading ink, muted to secondary); the resting colour is the
+   measured one. */
+@media (hover: hover) {
+  .section-label:hover {
+    color: var(--text-secondary);
+  }
+}
+/* The label collapses its section; its chevron shows while the header is
+   hovered. The focus ring reaches 4px past the label's left edge, as the
+   original's (the toggle pulls its padding back with a negative margin; the
+   web's own geometry is in web-shell.css). */
+.section-toggle {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin-block: -4px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 12px;
+  color: inherit;
+  text-align: start;
+}
+.app:not(.web) .section-toggle {
+  margin-left: -4px;
+  padding-left: 4px;
+}
+/* The caret (CaretRight) turns over 60ms (Tailwind's transition-transform: the
+   default curve) and appears at once; the original sets no opacity transition.
+   Open it points down (rotate-90), collapsed it points right and stays shown. */
+.section-toggle > .app-icon {
+  width: 12px;
+  height: 12px;
+  color: #878787;
+  opacity: 0;
+  rotate: 90deg;
+  transition: rotate var(--motion-fast) var(--ease-standard);
+}
+/* Reduced motion: the caret turns at once (motion-reduce:transition-none). */
+@media (prefers-reduced-motion: reduce) {
+  .section-toggle > .app-icon {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .section-toggle > .app-icon {
+  transition: none;
+}
+.section-toggle.collapsed > .app-icon {
+  rotate: 0deg;
+}
+.section-label:hover .section-toggle > .app-icon,
+.section-toggle:focus-visible > .app-icon,
+.section-toggle.collapsed > .app-icon {
+  opacity: 1;
+}
+.section-label > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* The icons sit a pixel above the label's centre line. */
+  transform: translateY(-1px);
+}
+.section-label > div > button {
+  width: 20px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 1px;
+  border-radius: 4px;
+  color: #c5c5c3;
+}
+.section-label > div > button:hover,
+.section-label > div > button.open {
+  background: var(--fill-ghost-hover);
+}
+/* Nothing pinned: the section folds away, and opens again over 200ms when a
+   drag or the pin tip needs it. */
+.pinned-section {
+  interpolate-size: allow-keywords;
+  overflow-y: clip;
+  transition:
+    height 0.2s var(--ease-out),
+    opacity 0.2s var(--ease-out),
+    margin 0.2s var(--ease-out);
+}
+.pinned-section[data-stub] {
+  height: 0;
+  margin-bottom: 0 !important;
+  opacity: 0;
+}
+.pinned-section {
+  margin-bottom: 8px;
+}
+/* A section's rows open and close over 150ms on the CSS ease-out curve (the
+   original's sidebar-group expand), and the Pinned rows open over 200ms on the
+   snap curve when the first one arrives or a drag brings one (its pin-section
+   reveal). .u-expand-rows (05-utilities.css) keeps only the fade under reduced
+   motion. */
+.sidebar-group-rows {
+  --expand-duration: 150ms;
+  --expand-ease: ease-out;
+}
+.pinned-reveal {
+  --expand-duration: var(--motion-base);
+  --expand-ease: var(--ease-snap);
+}
+/* Rows sit on a 27.5px pitch; hover and selection fill the middle 26px. */
+.conversation-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 27.5px;
+  box-sizing: border-box;
+  padding: 0.75px 0;
+  border-radius: 6px;
+  background-clip: content-box;
+  cursor: default;
+}
+/* A session under its parent starts 20px in; the row's fill stays full width. */
+.conversation-row[data-nested] > .conversation-link {
+  margin-inline-start: 20px;
+}
+/* #232323 hover, #343434 selected: the ghost fills on the sidebar. */
+.conversation-row.menu-open {
+  background-color: var(--fill-ghost-hover);
+}
+@media (hover: hover) {
+  .conversation-row:hover {
+    background-color: var(--fill-ghost-hover);
+  }
+}
+/* Keyboard focus anywhere in the row (its link or its ⋮) fills it as hover
+   does; the selected fill below still wins, as in the original. */
+.conversation-row:has(:focus-visible) {
+  background-color: var(--fill-ghost-hover);
+}
+/* A row picked with ⌘, Ctrl or Shift looks like the open one. */
+.conversation-row.selected,
+.conversation-row.multi-selected {
+  background-color: var(--fill-ghost-selected);
+}
+.conversation-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  padding: 0 1.5px 0 6px;
+  border-radius: 6px;
+  /* The rows' titles are the nav rows' size. */
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  color: #c9c8c5;
+}
+/* Long titles fade out over their last 25px instead of ending in an ellipsis. */
+.conversation-link > .row-title-slot {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(to right, #000 calc(100% - 25px), transparent);
+}
+.selected .conversation-link,
+.multi-selected .conversation-link {
+  color: var(--text);
+}
+/* A changed title (TitleReveal.tsx): the old one fades out and blurs over
+   200ms, then the new one sharpens in a character at a time, 90ms each on the
+   out-cubic curve, 30ms apart. Reduced motion swaps the text without either. */
+.title-motion {
+  display: inline-block;
+  transition:
+    opacity var(--motion-base) ease-out,
+    filter var(--motion-base) ease-out;
+}
+.title-motion[data-phase="out"] {
+  opacity: 0;
+  filter: blur(6px);
+}
+.title-motion[data-phase="in"] > span {
+  display: inline-block;
+  white-space: pre;
+  animation: title-character-in 90ms var(--ease-out-cubic) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+@keyframes title-character-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .title-motion {
+    transition: none;
+  }
+  .title-motion[data-phase="in"] > span {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .title-motion {
+  transition: none;
+}
+:root[data-motion="reduced"] .title-motion[data-phase="in"] > span {
+  animation: none;
+}
+.conversation-row:hover .conversation-link,
+.conversation-row:has(:focus-visible) .conversation-link,
+.conversation-row.menu-open .conversation-link {
+  padding-right: 24px;
+}
+/* Every row shows a hollow 6px ring centred in the 16px icon column; running rows fill it. */
+.thread-dot {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 6px;
+  height: 6px;
+  margin: 0 5px;
+  border: 1px solid #505050;
+  border-radius: 50%;
+}
+/* A running conversation's dot breathes, as the original's running dot: 1.2s
+   ease-in-out, opacity 0.3 → 1 → 0.3. ConversationRow starts each dot part-way
+   through with a negative delay, so every running dot rises and falls together. */
+.thread-dot.working {
+  border: 0;
+  background: #7b7b7b;
+  animation: thread-dot-blink 1.2s ease-in-out infinite;
+}
+@keyframes thread-dot-blink {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thread-dot.working {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .thread-dot.working {
+  animation: none;
+}
+/* Inline rename: the title becomes an input over the selected fill with a blue
+   rim; the dot stays visible through it. */
+.conversation-row.renaming {
+  background-color: var(--fill-ghost-selected);
+}
+.conversation-row.renaming .conversation-link > span:last-child,
+.conversation-row.renaming .row-more {
+  visibility: hidden;
+}
+.conversation-rename {
+  position: absolute;
+  inset: 0.75px 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  padding: 0 10px 0 29px;
+  border: 1px solid var(--focus-accent);
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  color: var(--text);
+}
+.conversation-rename:focus {
+  border-color: var(--focus-accent);
+  box-shadow: none;
+}
+/* ⋮ at the row's right edge: 20×18, 3px in, shown on hover. */
+.row-more {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 18px;
+  margin-top: -9px;
+  padding: 0;
+  border-radius: 5px;
+  color: #c7c7c5;
+  opacity: 0;
+}
+.conversation-row:hover .row-more,
+.conversation-row:has(:focus-visible) .row-more,
+.conversation-row.menu-open .row-more,
+.row-more:focus-visible {
+  opacity: 1;
+}
+.row-more:hover,
+.row-more[aria-expanded="true"] {
+  background: var(--fill-ghost-selected);
+  color: #f4f4f4;
+}
+/* A touch screen has no hover to reveal them: the section's chevron and the
+   Projects plus show all the time, and the open row shows its ⋮ in place of its
+   status, its title leaving room for it. */
+@media (pointer: coarse) {
+  .conversation-row.selected .row-more,
+  .section-toggle > svg,
+  .group-toggle > svg,
+  .main-nav-item-wrap > .main-nav-row-plus {
+    opacity: 1;
+  }
+  .conversation-row.selected .conversation-link {
+    padding-right: 24px;
+  }
+}
+/* View all and Show more are rows: under the pointer or focused they fill with
+   the ghost hover and the text goes from muted to secondary. The transparent
+   4px borders keep the old 9px of room above and below while the fill covers
+   the 26px of a row. */
+.view-all {
+  display: block;
+  width: 100%;
+  padding: 5px 7px;
+  border: solid transparent;
+  border-width: 4px 0;
+  border-radius: 6px;
+  background-clip: padding-box;
+  font-size: 13px;
+  text-align: left;
+  color: var(--text-muted);
+}
+@media (hover: hover) {
+  .view-all:hover {
+    background-color: var(--fill-ghost-hover);
+    color: var(--text-secondary);
+  }
+}
+.view-all:focus-visible {
+  background-color: var(--fill-ghost-hover);
+  color: var(--text-secondary);
+}

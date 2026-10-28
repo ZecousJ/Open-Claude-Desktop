@@ -1,0 +1,8 @@
+/* w-[220px] flex gap-4 flex-col justify-center. */
+.quick-access-shortcut {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  width: 220px;
+}

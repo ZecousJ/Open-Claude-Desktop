@@ -1,0 +1,129 @@
+/* Session info, the card /status posts (src/session-info/SessionInfoCard.tsx).
+   "flex flex-col gap-md p-lg rounded-lg w-[360px]" with the card outline; the
+   head a 24px footnote row in text-primary with Copy session info; groups 16px
+   apart, each a medium text-secondary label over rows 6px apart: the label
+   muted, the value at the end, cut with an ellipsis (the session ID in the UI
+   mono face) and a small copy button after it. Colours as the usage card's. */
+.session-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 360px;
+  max-width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--border);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 15px;
+  user-select: text;
+}
+.session-info-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  padding-bottom: 4px;
+}
+.session-info-copy {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -4px -4px -4px 0;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.session-info-copy.small {
+  width: 20px;
+  height: 20px;
+  margin: -3px -3px -3px 0;
+}
+.session-info-copy.small svg {
+  width: 14px;
+  height: 14px;
+}
+.session-info-copy:hover {
+  background: color-mix(in srgb, var(--alpha-ink) 7.5%, transparent);
+  color: var(--text);
+}
+:root[data-theme="light"] .session-info-copy:hover {
+  background: var(--alpha-1);
+}
+.session-info-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.session-info-group,
+.session-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.session-info-group-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.session-info-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.session-info-label {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.session-info-end {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  text-align: end;
+}
+.session-info-values {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.session-info-value {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.session-info-value.mono {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.session-info-hint {
+  max-width: 100%;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+/* The MCP row's Manage (an inline link in the row's muted colour) and the
+   loading line. */
+.session-info-manage {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.session-info-manage:hover {
+  opacity: 1;
+}
+.session-info-loading {
+  margin: 0 0 8px;
+  color: #898781;
+  font-size: 12px;
+}

@@ -1,0 +1,117 @@
+/*
+ * View options at the end of the title bar: a DotsVertical ghost button in
+ * text-secondary (#c3c2b7 dark, #52514e light); open, it takes the control fill
+ * (10% white or ink) and text-primary.
+ */
+.header-actions .conversation-more {
+  color: var(--text-secondary);
+}
+/* Unified web Activity uses the captured 28px target and 18px File glyph. */
+.app.web:not(.mobile-conversation)
+  .header-actions
+  .icon-button.session-activity-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+.header-actions .conversation-more[aria-expanded="true"] {
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+}
+:root[data-theme="light"] .header-actions .conversation-more {
+  color: #52514e;
+}
+:root[data-theme="light"]
+  .header-actions
+  .conversation-more[aria-expanded="true"] {
+  background: rgb(11 11 11 / 10%);
+  color: #0b0b0b;
+}
+/* Share without hosted sharing: in place, greyed like other unavailable
+   controls, its tooltip says why. */
+.conversation-share-button.unavailable {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/*
+ * A Code session's folder chip: 19.6px, #2d2d2f, radius 5, 13px #9f9d99 text
+ * 5.4px in, 13.75px after the title's chevron. When the header is narrow (a
+ * side panel open) it shrinks to a 21.7px chip with the folder glyph; the panel
+ * toggles fold into View options (src/header/useHeaderFold.ts).
+ */
+.chat-header {
+  container: chat-header / inline-size;
+}
+.thread-folder-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 19.6px;
+  margin-left: 6px;
+  padding: 0 5.4px;
+  border-radius: 5px;
+  background: #2d2d2f;
+  color: #9f9d99;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.thread-folder-chip > svg {
+  display: none;
+}
+@container chat-header (max-width: 420px) {
+  .thread-folder-chip {
+    width: 21.7px;
+    padding: 0;
+  }
+  .thread-folder-chip > svg {
+    display: block;
+  }
+  .thread-folder-chip > span {
+    display: none;
+  }
+}
+:root[data-theme="light"] .thread-folder-chip {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+/* The rule after Show / Hide session rail. */
+.panel-toggle-rule {
+  width: 1px;
+  height: 16px;
+  flex-shrink: 0;
+  background: rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .panel-toggle-rule {
+  background: rgb(11 11 11 / 10%);
+}
+
+/* A shared Code session's "Shared". */
+.header-actions .icon-button.conversation-share-button.shared {
+  width: auto;
+  gap: 4px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 10%);
+  font-size: 12px;
+  font-weight: 500;
+}
+.header-actions .icon-button.conversation-share-button.shared:hover {
+  background: rgb(255 255 255 / 14%);
+}
+/* Light: the same white fill over a 1px ring of 10% ink (fill-secondary-ring). */
+:root[data-theme="light"]
+  .header-actions
+  .icon-button.conversation-share-button.shared {
+  box-shadow: inset 0 0 0 1px rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"]
+  .header-actions
+  .icon-button.conversation-share-button.shared:hover {
+  background: rgb(11 11 11 / 5%);
+}
+.conversation-share-trigger {
+  display: inline-flex;
+}

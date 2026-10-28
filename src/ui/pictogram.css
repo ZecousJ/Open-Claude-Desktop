@@ -1,0 +1,27 @@
+/* The pictogram's disc (#e7e6e1 light, #454442 dark); its lines take the
+   text colour. */
+.pictogram {
+  flex-shrink: 0;
+  color: var(--text);
+  /* Each fades in over 200ms. */
+  animation: pictogram-in 0.2s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+@keyframes pictogram-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pictogram {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .pictogram {
+  animation: none;
+}
+.pictogram-highlight {
+  fill: #454442;
+}
+:root[data-theme="light"] .pictogram-highlight {
+  fill: #e7e6e1;
+}

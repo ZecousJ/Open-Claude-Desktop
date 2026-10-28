@@ -1,0 +1,195 @@
+.mcp-tool-activity > summary {
+  gap: 7px;
+  min-width: 0;
+}
+.mcp-tool-activity .activity-mark {
+  margin-right: 0;
+}
+.mcp-tool-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mcp-tool-progress {
+  margin-left: auto;
+  min-width: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.mcp-tool-body section + section {
+  margin-top: 13px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.mcp-tool-body strong {
+  display: block;
+  margin-bottom: 7px;
+}
+.mcp-tool-body pre {
+  margin: 0 0 8px;
+  max-height: 230px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.mcp-tool-body img {
+  display: block;
+  max-width: min(100%, 480px);
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 5px;
+}
+.mcp-tool-resource {
+  overflow-wrap: anywhere;
+}
+.mcp-tool-error {
+  color: var(--danger);
+}
+
+/* A connector or dynamic tool call reads as a plain grey text row, like the
+   rows in "Used a tool" groups: no card, no icon; the chevron follows the text.
+   Running it has the working dots; failed it is red text, stopped it says so,
+   still no icon. */
+:is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain.failed
+  > summary {
+  color: var(--danger);
+}
+:is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
+  > summary
+  > svg:first-child:not(:last-child) {
+  display: none;
+}
+:is(
+  .mcp-tool-activity,
+  .dynamic-tool-activity,
+  .agent-collab-activity
+).is-plain {
+  border: 0;
+  background: none;
+}
+:is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
+  > summary {
+  width: fit-content;
+  min-height: 24px;
+  padding: 0 4px;
+  gap: 4px;
+  color: #898781;
+  font-size: 14px;
+  line-height: 20px;
+}
+:is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
+  > summary:hover,
+:is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
+  > summary:focus-visible {
+  color: #c9c8c5;
+  background: none;
+}
+:is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain[open]
+  > summary
+  > svg {
+  transform: rotate(90deg);
+}
+:is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain[open]
+  > .activity-body {
+  margin-top: 6px;
+  border: 1px solid #262625;
+  border-radius: 14px;
+  background: transparent;
+  padding: 21.5px 12px 22.5px;
+}
+/* An opened connector or dynamic call is the opened Bash card: the same frame,
+   an 11px #a9a9a4 label over 12px monospace text, 29.5px between the parts. */
+:is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
+  > .activity-body
+  strong {
+  padding: 0;
+  margin: 0 0 9px;
+  color: #a9a9a4;
+  font:
+    11px/16px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+:is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
+  > .activity-body
+  pre {
+  margin: 0;
+  color: #e0e0de;
+  font:
+    12px/16px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+:is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
+  > .activity-body
+  section
+  + section {
+  margin-top: 29.5px;
+  padding-top: 0;
+  border-top: 0;
+}
+:root[data-theme="light"]
+  :is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain[open]
+  > .activity-body {
+  border-color: var(--border);
+}
+:root[data-theme="light"]
+  :is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain
+  > .activity-body
+  strong {
+  color: var(--text-muted);
+}
+:root[data-theme="light"]
+  :is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain
+  > .activity-body
+  pre {
+  color: var(--text);
+}
+:root[data-theme="light"]
+  :is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain
+  > summary {
+  color: #706c65;
+}
+:root[data-theme="light"]
+  :is(
+    .mcp-tool-activity,
+    .dynamic-tool-activity,
+    .agent-collab-activity
+  ).is-plain
+  > summary:hover {
+  color: #38342e;
+}

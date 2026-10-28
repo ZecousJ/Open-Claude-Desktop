@@ -1,0 +1,488 @@
+/* R18 official-blank-{docs,slides,design,dashboard}: compact toolbar over a
+   real empty document/canvas. Existing artifact pane owns its width/sheet. */
+.blank-artifact-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: #181817;
+  color: #c2c0b6;
+}
+.blank-artifact-panel[data-standalone] {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+}
+.blank-artifact-header {
+  height: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  background: #20201e;
+  border-bottom: 1px solid #292926;
+  font-size: 13px;
+}
+.blank-artifact-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.blank-artifact-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.blank-artifact-header-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 24px;
+  height: 26px;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+.blank-artifact-header-actions button:hover,
+.blank-editor-toolbar button:hover,
+.blank-tool-island button:hover {
+  background: var(--fill-ghost-hover);
+}
+.blank-document,
+.blank-slides,
+.blank-design,
+.blank-dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.blank-document,
+.blank-dashboard {
+  background: #090909;
+}
+.blank-editor-toolbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+  height: 42px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+.blank-editor-toolbar button,
+.blank-tool-island button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 28px;
+  padding: 0 5px;
+  border-radius: 5px;
+}
+.blank-editor-toolbar select,
+.blank-tool-island select {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  max-width: 76px;
+  padding: 4px 0;
+}
+.blank-editor-toolbar option,
+.blank-tool-island option {
+  background: var(--bg-sidebar);
+  color: var(--text-primary);
+}
+.blank-tool-divider {
+  height: 16px;
+  width: 1px;
+  background: #30302d;
+  margin: 0 4px;
+}
+.blank-save-status {
+  margin-inline-start: auto;
+  white-space: nowrap;
+  color: #898781;
+  font-size: 11px;
+}
+.blank-document-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 58px 30px 100px;
+}
+.blank-document-page {
+  position: relative;
+  max-width: 690px;
+  min-height: 100%;
+  margin: 0 auto;
+}
+.blank-document.wide .blank-document-page {
+  max-width: none;
+}
+.blank-editable {
+  outline: none;
+  min-height: 250px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  contain: layout paint;
+}
+.blank-document-body h1 {
+  font-size: 34px;
+  line-height: 1.25;
+  font-weight: 400;
+  margin: 0 0 12px;
+}
+.blank-document-body {
+  font-size: 17px;
+  line-height: 1.6;
+}
+.blank-editable img {
+  max-width: 100%;
+  height: auto;
+}
+.blank-editable table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+.blank-editable td {
+  border: 1px solid #575650;
+  min-width: 60px;
+  padding: 8px;
+}
+.blank-editable p {
+  min-height: 1.6em;
+  margin: 0 0 0.7em;
+}
+.blank-document-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  color: #85847d;
+}
+.blank-document-placeholder[hidden] {
+  display: none;
+}
+.blank-document-placeholder > span {
+  font:
+    34px/1.25 "Claudex Serif",
+    Georgia,
+    serif;
+}
+.blank-document-placeholder > p {
+  font: 16px/1.5 var(--font-ui, system-ui);
+  margin-top: 12px;
+}
+.blank-canvas-toolbar {
+  height: 50px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+}
+.blank-tool-island {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  border: 1px solid #353532;
+  border-radius: 8px;
+  padding: 2px;
+  background: #20201e;
+  box-shadow: 0 2px 5px #0003;
+  font-size: 12px;
+}
+.blank-tool-island button[aria-pressed="true"] {
+  color: #78a9df;
+  background: #203044;
+}
+.blank-tool-island select {
+  max-width: 63px;
+}
+.blank-page-label {
+  padding: 0 5px;
+  font-size: 11px;
+}
+.blank-canvas-empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: #898781;
+}
+.blank-canvas-empty p {
+  margin: 0;
+  line-height: 1.5;
+}
+.blank-canvas-empty button {
+  border-radius: 6px;
+  padding: 5px 12px;
+  background: #30302d;
+  color: #c4c2b8;
+  font-size: 14px;
+}
+.blank-canvas-empty button:hover {
+  background: #3a3a36;
+}
+.blank-empty-slides {
+  font-size: 45px;
+  line-height: 1;
+  color: #42423c;
+  margin-bottom: 8px;
+}
+.blank-slides-workspace,
+.blank-design-workspace {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.blank-slides-workspace > nav {
+  width: 90px;
+  flex-shrink: 0;
+  overflow: auto;
+  border-inline-end: 1px solid #30302c;
+  padding: 10px 5px;
+}
+.blank-slides-workspace > nav button {
+  display: flex;
+  width: 100%;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 11px;
+}
+.blank-slides-workspace > nav button.selected {
+  border-color: #888579;
+}
+.blank-slides-workspace > nav span {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.blank-slide-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 32px 20px;
+}
+.blank-slide-page {
+  aspect-ratio: 16/9;
+  min-width: 200px;
+  margin: auto;
+  background: #fff;
+  color: #20201e;
+  box-shadow: 0 2px 10px #0004;
+  padding: 32px;
+}
+.blank-slide-page > .blank-editable {
+  min-height: 100%;
+}
+.blank-design-canvas {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 10px;
+  touch-action: none;
+}
+.blank-design-canvas > div > svg {
+  width: 100%;
+  height: 100%;
+  contain: layout paint;
+}
+.blank-properties {
+  width: 130px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px;
+  border-inline-start: 1px solid #353532;
+  font-size: 12px;
+}
+.blank-properties label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.blank-properties input {
+  max-width: 100%;
+  background: #30302b;
+  color: inherit;
+  border: 1px solid #55534d;
+  border-radius: 4px;
+}
+.blank-dashboard-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-bottom: 1px solid #292926;
+}
+.blank-dashboard-toolbar button {
+  height: 24px;
+  width: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+}
+.blank-dashboard-toolbar button[aria-checked="true"] {
+  background: #333330;
+}
+.blank-dashboard-toolbar .blank-save-status {
+  margin-inline-end: 10px;
+}
+.blank-dashboard-source {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 18px;
+  font: 12px/1.5 monospace;
+  white-space: pre-wrap;
+}
+.blank-dashboard > iframe {
+  flex: 1;
+  border: 0;
+  width: 100%;
+  background: #fff;
+}
+.blank-editor-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--fill-ghost-hover);
+  font-size: 13px;
+}
+.blank-editor-error button {
+  text-decoration: underline;
+  white-space: nowrap;
+}
+.blank-editor-loading {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.blank-chat-intro {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  min-height: 180px;
+  padding: 40px 24px;
+}
+.blank-chat-intro > svg {
+  height: 88px;
+  width: 88px;
+}
+.blank-chat-intro h1 {
+  margin: 0;
+  max-width: 340px;
+  text-align: center;
+  font: 28px/1.12 var(--font-serif, "Claudex Serif", Georgia, serif);
+  color: var(--text-primary);
+}
+:root[data-theme="light"] .blank-artifact-panel {
+  background: #f8f8f6;
+  color: #3d3d38;
+}
+:root[data-theme="light"] .blank-document,
+:root[data-theme="light"] .blank-dashboard {
+  background: #fff;
+}
+:root[data-theme="light"] .blank-artifact-header,
+:root[data-theme="light"] .blank-tool-island {
+  background: #f3f3ef;
+  border-color: #deded8;
+}
+/* The empty canvas's button is an ink fill with the secondary text. */
+:root[data-theme="light"] .blank-canvas-empty button {
+  background: var(--alpha-2);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .blank-canvas-empty button:hover {
+  background: var(--fill-ghost-selected);
+}
+@media (max-width: 767px) {
+  .blank-canvas-toolbar {
+    padding: 6px;
+    gap: 4px;
+  }
+  .blank-tool-island button {
+    min-width: 23px;
+    padding: 0 3px;
+  }
+  .blank-document-scroll {
+    padding: 40px 24px;
+  }
+  .blank-editor-toolbar {
+    padding: 0 6px;
+  }
+  .blank-editor-toolbar .blank-save-status {
+    display: none;
+  }
+  .blank-slide-page {
+    padding: 16px;
+  }
+  .blank-properties {
+    width: 110px;
+  }
+}
+.messages-scroll:has(> .blank-chat-intro) {
+  display: flex;
+  flex-direction: column;
+}
+.messages-scroll:has(> .blank-chat-intro) > .messages {
+  display: none;
+}
+
+.blank-artifact-panel[data-standalone] .blank-artifact-title {
+  flex: 1;
+}
+.blank-artifact-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+.blank-artifact-home:hover {
+  background: var(--fill-ghost-hover);
+}
+.blank-artifact-panel[data-standalone] .blank-artifact-header-actions > button {
+  height: 24px;
+  border-radius: 6px;
+}

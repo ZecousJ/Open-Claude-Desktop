@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "conversationId": "conv-1",
+  "branchId": "branch-old",
+  "turnId": "turn-b1",
+  "ordinal": 0,
+  "turn": {
+    "id": "turn-b1",
+    "prompt": "Summarize this file.",
+    "attachments": [],
+    "items": [
+      {
+        "id": "item-9",
+        "type": "agentMessage",
+        "text": "An older answer."
+      }
+    ],
+    "status": "completed",
+    "createdAt": 1789999990000
+  }
+}

@@ -1,0 +1,132 @@
+/*
+ * The checkbox of the original's multi-select question card: an 18px box with
+ * 5px corners, a 1px #4d4d4d edge (light #cfcfcf) when clear, and a #2a78d6
+ * fill with a white check when ticked. It stands in wherever a control has no
+ * capture of its own. `.cx-check` is a span box, `.cx-check-input` the same
+ * look on a native input.
+ *
+ * States follow the original's Checkbox: a clear box darkens its edge on hover
+ * (alpha 40%, not when disabled), a ticked or half-ticked one takes the
+ * accent's hover fill (15 lighter per channel, as #2a78d6 to #3987e5 is), and
+ * the tick is wiped in from the left (clip-path, 200ms in and 120ms out on the
+ * ease-out curve).
+ */
+.cx-check,
+input[type="checkbox"].cx-check-input {
+  box-sizing: border-box;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  /* The app-wide input rule's 10px 12px padding stretched the box to 26×22
+     and pushed the tick down-right. */
+  padding: 0;
+  border: 1px solid #4d4d4d;
+  border-radius: 5px;
+  background-color: transparent;
+  color: #fff;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.cx-check.on,
+input[type="checkbox"].cx-check-input:checked,
+input[type="checkbox"].cx-check-input:indeterminate {
+  border-color: #2a78d6;
+  background-color: #2a78d6;
+}
+.cx-check:not(.on):hover,
+input[type="checkbox"].cx-check-input:not(
+    :checked,
+    :indeterminate,
+    :disabled
+  ):hover {
+  border-color: rgb(255 255 255 / 40%);
+}
+.cx-check.on:hover,
+input[type="checkbox"].cx-check-input:is(:checked, :indeterminate):not(
+    :disabled
+  ):hover {
+  border-color: #3987e5;
+  background-color: #3987e5;
+}
+input[type="checkbox"].cx-check-input {
+  appearance: none;
+  cursor: pointer;
+}
+/* The tick (or, half-ticked, a dash) is the input's own ::after, drawn once
+   and uncovered by the clip. */
+input[type="checkbox"].cx-check-input::after {
+  content: "";
+  grid-area: 1 / 1;
+  width: 18px;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4.6 9.4 3 3 5.8-6.4'/%3E%3C/svg%3E")
+    center / 100% no-repeat;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--motion-snap) var(--ease-out);
+}
+input[type="checkbox"].cx-check-input:indeterminate::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M5 9h8'/%3E%3C/svg%3E");
+}
+input[type="checkbox"].cx-check-input:is(:checked, :indeterminate)::after {
+  clip-path: inset(0);
+  transition-duration: var(--motion-base);
+}
+/* The span box's tick (an icon inside) is wiped in the same way when it
+   appears. */
+.cx-check.on > svg {
+  animation: cx-check-wipe var(--motion-base) var(--ease-out);
+}
+@keyframes cx-check-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+input[type="checkbox"].cx-check-input:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+input[type="checkbox"].cx-check-input:focus-visible {
+  outline: 1px solid #497cbf;
+  outline-offset: 1px;
+}
+:root[data-theme="light"] .cx-check,
+:root[data-theme="light"] input[type="checkbox"].cx-check-input {
+  border-color: #cfcfcf;
+}
+:root[data-theme="light"] .cx-check.on,
+:root[data-theme="light"] input[type="checkbox"].cx-check-input:checked,
+:root[data-theme="light"] input[type="checkbox"].cx-check-input:indeterminate {
+  border-color: #2a78d6;
+}
+:root[data-theme="light"] .cx-check:not(.on):hover,
+:root[data-theme="light"]
+  input[type="checkbox"].cx-check-input:not(
+    :checked,
+    :indeterminate,
+    :disabled
+  ):hover {
+  border-color: rgb(11 11 11 / 40%);
+}
+:root[data-theme="light"] .cx-check.on:hover,
+:root[data-theme="light"]
+  input[type="checkbox"].cx-check-input:is(:checked, :indeterminate):not(
+    :disabled
+  ):hover {
+  border-color: #3987e5;
+}
+@media (prefers-reduced-motion: reduce) {
+  input[type="checkbox"].cx-check-input::after,
+  .cx-check.on > svg {
+    transition: none;
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] input[type="checkbox"].cx-check-input::after,
+:root[data-motion="reduced"] .cx-check.on > svg {
+  transition: none;
+  animation: none;
+}

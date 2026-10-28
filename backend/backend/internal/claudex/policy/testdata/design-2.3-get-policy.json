@@ -1,0 +1,102 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "revision": 17,
+    "group_id": 4,
+    "permission_modes": [
+      "auto",
+      "manual",
+      "acceptEdits",
+      "plan"
+    ],
+    "incognito": true,
+    "web_search": true,
+    "web_search_default": false,
+    "voice": true,
+    "local_mcp_editing": true,
+    "developer_mode_enabled": true,
+    "desktop_extensions_enabled": true,
+    "developer_mcp_enabled": true,
+    "remote_images": true,
+    "remote_image_domains": null,
+    "external_links": true,
+    "trusted_link_domains": [],
+    "connectors": [
+      {
+        "name": "github",
+        "url_prefix": "https://api.githubcopilot.com/mcp"
+      },
+      {
+        "name": "linear"
+      }
+    ],
+    "attachments": {
+      "max_bytes": 10485760,
+      "types": [
+        "png",
+        "jpg",
+        "jpeg",
+        "webp",
+        "gif",
+        "txt",
+        "md",
+        "csv",
+        "json",
+        "py",
+        "ts"
+      ]
+    },
+    "links": {
+      "help": "https://docs.example.com",
+      "plans": null,
+      "apps": null,
+      "get_more_usage": "https://claudex.example.com/plans",
+      "usage_learn_more": null,
+      "learn_more": [
+        {
+          "label": "Usage policy",
+          "url": "https://claudex.example.com/policy"
+        }
+      ]
+    },
+    "usage_banner": {
+      "warn_percent": 80
+    },
+    "plan_label": "Max",
+    "scheduled_tasks": {
+      "enabled": true,
+      "max_tasks": null
+    },
+    "approvals_always_allow": true,
+    "memory": {
+      "enabled": true,
+      "search_chats": true,
+      "generate": true,
+      "default_on": false,
+      "model": null
+    },
+    "research": {
+      "enabled": true,
+      "x_search": true,
+      "max_searches_per_turn": 30
+    },
+    "browser": {
+      "enabled": true,
+      "external_sites": true,
+      "allow_script": true,
+      "dev_servers": true,
+      "blocked_domains": []
+    },
+    "ssh_remote": true,
+    "codex_runtime_mirror": null,
+    "computer_use": {
+      "enabled": false,
+      "allow_full_control": true,
+      "denied_apps": [],
+      "max_actions_per_turn": null
+    },
+    "workflows": true,
+    "workflow_approval_required": false
+  }
+}

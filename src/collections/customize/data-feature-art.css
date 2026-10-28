@@ -1,0 +1,16 @@
+.customize-data-illustration {
+  display: block;
+  flex-shrink: 0;
+  width: 128px;
+  height: 128px;
+  color: var(--text);
+}
+.customize-data-illustration > svg {
+  display: block;
+}
+.customize-data-highlight {
+  fill: #629987;
+}
+:root[data-theme="light"] .customize-data-highlight {
+  fill: #bcd1ca;
+}

@@ -1,0 +1,10 @@
+/* py-2 text-center text-body text-muted. */
+.tool-permissions > .connector-tools-empty,
+:root[data-theme="light"] .tool-permissions > .connector-tools-empty {
+  margin: 0;
+  padding-block: 0.5rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  line-height: 1.1875rem;
+  color: var(--text-muted);
+}

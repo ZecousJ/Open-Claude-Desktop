@@ -1,0 +1,56 @@
+/* Settings → Billing → Invoices: a full-width table, py-2 cells, medium header
+   weight, Load more centred 8px under it; muted statuses for refunded and ended
+   orders; the detail's document frame 70vh tall. */
+.billing-invoices {
+  overflow-x: auto;
+}
+.billing-invoices table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.billing-invoices th,
+.billing-invoices td {
+  padding: 8px 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.billing-invoices th {
+  font-weight: 500;
+}
+.billing-invoice-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.billing-invoice-info {
+  display: inline-flex;
+  color: var(--text-secondary);
+}
+.billing-invoice-status.muted {
+  color: var(--text-muted, var(--text-secondary));
+}
+.billing-invoice-actions button {
+  padding: 0;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.billing-invoices-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+.billing-invoices-empty {
+  margin: 0;
+  padding: 12px 0;
+}
+.billing-invoice-detail iframe {
+  display: block;
+  width: 100%;
+  height: 70vh;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+}

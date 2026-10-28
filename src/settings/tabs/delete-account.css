@@ -1,0 +1,52 @@
+/* sm Popup, p-xl, text-heading/body, mt-pad-lg. */
+:root .modal.confirm.delete-account-dialog {
+  width: 400px;
+  padding: 20px;
+  border-radius: 10px;
+  border: 0;
+  background: #20201f;
+  color: #f0efec;
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 4px 8px 0 #0b0b0b14,
+    0 12px 28px -2px #0000003d;
+}
+:root .modal.confirm.delete-account-dialog > header {
+  margin: -4px 0 4px;
+}
+:root .modal.confirm.delete-account-dialog h2 {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
+}
+:root .modal.confirm.delete-account-dialog > .confirm-body {
+  font-size: 13px;
+  line-height: 19px;
+  color: #c3c2b7;
+}
+:root .modal.confirm.delete-account-dialog .button-row {
+  margin-top: 20px;
+  gap: 8px;
+}
+:root .modal.confirm.delete-account-dialog .button-row > button {
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+}
+:root .modal.confirm.delete-account-dialog .button-row > .primary {
+  font-weight: 500;
+}
+:root .modal.confirm.delete-account-dialog .button-row > .danger-button {
+  background: #d03b3b;
+}
+:root[data-theme="light"] .modal.confirm.delete-account-dialog {
+  background: #fff;
+  color: #0b0b0b;
+  box-shadow:
+    0 0 0 1px #0b0b0b1a,
+    0 4px 8px 0 #0b0b0b14,
+    0 12px 28px -2px #0b0b0b14;
+}
+:root[data-theme="light"] .modal.confirm.delete-account-dialog > .confirm-body {
+  color: #52514e;
+}

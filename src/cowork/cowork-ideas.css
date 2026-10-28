@@ -1,0 +1,155 @@
+/*
+ * The Cowork home's ideas (CoworkIdeas.tsx), loaded with them. The block, rows,
+ * illustrations and their colours are the measured ones the home had
+ * (claude-cowork-home-main-001, chat-home-mode-reference-001; moved here from
+ * styles/92-reference-pages.css, styles/93-reference-responsive.css and
+ * chat-home.css). The shuffle heading and "Customize with plugins" follow the
+ * live Cowork suggestions.
+ */
+.cowork-ideas {
+  width: 100%;
+  margin-top: 33px;
+}
+@media (max-height: 710px) {
+  .cowork-ideas {
+    margin-top: 14px;
+  }
+}
+
+/* The heading: the shuffle button with the set's name at the left, the X at
+   the right (the live heading row, justify-between). */
+.cowork-ideas-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20.5px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+:root:not([data-theme="light"]) .cowork-ideas-head {
+  color: #90908f;
+}
+/* The live shuffle button: the 20px Shuffle glyph 8px before the name, muted
+   text that turns primary on hover. The glyph's extra height is taken back
+   so the rows keep their measured place. */
+.cowork-ideas-shuffle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: inherit;
+  font-size: inherit;
+  transition: color var(--motion-snap) var(--ease-out);
+}
+.cowork-ideas-shuffle > svg {
+  flex: none;
+  margin-block: -2px;
+}
+.cowork-ideas-shuffle > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cowork-ideas-shuffle:hover {
+  color: var(--text);
+}
+/* The X at the heading's right and the caret at a row's right show only while
+   the ideas are pointed at or focused. */
+.cowork-ideas-hide {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--motion-snap) var(--ease-out);
+}
+.cowork-ideas-hide:hover {
+  color: var(--text-secondary);
+}
+.cowork-ideas:hover .cowork-ideas-hide,
+.cowork-ideas-hide:focus-visible {
+  opacity: 1;
+}
+
+.cowork-idea {
+  display: flex;
+  align-items: center;
+  gap: 21px;
+  width: 100%;
+  height: 48px;
+  padding: 0 21px 0 22.5px;
+  border-radius: 7px;
+  text-align: left;
+}
+.cowork-idea:hover {
+  background: var(--surface-hover);
+}
+/* Light: the live rows' ghost hover fill. */
+:root[data-theme="light"] .cowork-idea:hover {
+  background: var(--fill-ghost-hover);
+}
+.cowork-idea > span {
+  flex: 1;
+  font-size: 14px;
+}
+:root:not([data-theme="light"]) .cowork-idea > span {
+  color: #f6f6f5;
+}
+.cowork-idea > small {
+  font-size: 12px;
+  color: #5f5f5f;
+  opacity: 0;
+}
+.cowork-idea:hover > small {
+  opacity: 1;
+}
+.cowork-idea > .cowork-idea-caret {
+  flex: none;
+  margin-left: -8px;
+  color: var(--text-muted);
+  visibility: hidden;
+}
+.cowork-idea:hover > .cowork-idea-caret,
+.cowork-idea:focus-visible > .cowork-idea-caret {
+  visibility: visible;
+}
+
+/* Under the rows, the live ghost "Customize with plugins" button (4px below;
+   its text 4px right of the rows' content, as live's 12px button padding sits
+   beside the rows' 8px). Size and fill: the closest Claudex ghost button. */
+.cowork-ideas-plugins {
+  min-height: 32px;
+  margin: 4px 0 0 14.5px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+}
+@media (hover: hover) {
+  .cowork-ideas-plugins:hover {
+    background: var(--fill-ghost-hover);
+  }
+}
+
+/* Cowork idea glyphs (see CoworkIdeaIcons.tsx). */
+.cowork-idea > .cowork-idea-icon {
+  flex: 0 0 28px;
+  margin: 0 -3px 0 -0.5px;
+  color: var(--text-secondary, inherit);
+}
+
+/* Switching to Cowork: the Ideas slide down into place, from 12.5px high,
+   along an ease-out-quint curve within ~360ms (chat-home-mode-reference-001
+   frames 780-791). */
+@keyframes cowork-ideas-enter {
+  from {
+    transform: translateY(-12.5px);
+  }
+}
+.chat-home .cowork-ideas {
+  animation: cowork-ideas-enter 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-home .cowork-ideas {
+    animation: none;
+  }
+}

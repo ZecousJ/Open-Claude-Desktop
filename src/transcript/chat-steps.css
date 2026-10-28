@@ -1,0 +1,729 @@
+/* Chat's steps group: rows, cards, running steps, thoughts, searches, outcomes. (part of chat-transcript.css) */
+/* Chat's steps group. The row: 6px round, 14/20 sans; while the reply works the
+   20px dots sit at the text's edge and the label starts 32px in, then the row
+   slides back (200ms, ease-out) and reads the summary in #c3c2b7; elapsed
+   #898781; a 12px chevron (down when open). About 12px of air above and below,
+   as between text and tool rows in the official transcript. The card: 8px under
+   the row, 4px left of the label, with the CDS card radius and ring; each step
+   8px 12px, one 14/20 line in #898781 with the file it touched in #f0efec,
+   rules of white 10% between steps; the running step shimmers. */
+.chat-steps {
+  --steps-indent: 0px;
+  --steps-label: #6b6a64;
+  --steps-muted: #8a8983;
+  --steps-bright: #1f1e1d;
+  /* The ink of a row under the pointer or focus: the original's
+     text-secondary (gray 600 light, gray 200 dark). */
+  --steps-hover: #52514e;
+  --steps-rim: rgb(11 11 11 / 10%);
+  --steps-ring-inner: 0px;
+  --steps-ring-outer: 1px;
+  /* The original's timeline curve for opening, closing and arriving rows. */
+  --steps-ease: cubic-bezier(0.19, 1, 0.22, 1);
+  /* The status block: 6px above and below, the row 4px in (the text's
+     edge). The same 12px of air above and below the label, as between
+     text and tool rows in the official transcript (the owner's reference). */
+  margin: 0;
+  padding: 6px 0 6px 4px;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+:root:not([data-theme="light"]) .chat-steps {
+  --steps-label: #c3c2b7;
+  --steps-muted: #898781;
+  --steps-bright: #f0efec;
+  --steps-hover: #c3c2b7;
+  --steps-rim: rgb(255 255 255 / 10%);
+  --steps-ring-inner: 1px;
+  --steps-ring-outer: 0px;
+}
+.chat-steps[data-running] {
+  --steps-indent: 32px;
+}
+.chat-steps-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: calc(100% + 12px);
+  margin: 0 -6px;
+  padding: 6px 6px 6px calc(6px + var(--steps-indent));
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--steps-label);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  /* A row is a toggle: clicking it twice must not select a word (the
+     official rows are select-none). */
+  -webkit-user-select: none;
+  user-select: none;
+  transition: padding-left var(--motion-base) var(--ease-out);
+}
+button.chat-steps-head {
+  cursor: pointer;
+}
+.chat-steps-head > .clay-mark,
+.chat-steps-head > .chat-steps-mark-depart {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+}
+/* When the group finishes its dots hold, then fade (420ms, the second half);
+   the summary waits 210ms for them (ActivityLabel). Source: the reference
+   design 2.31226.1 static CSS. Reduced motion: they go at once. */
+.chat-steps-mark-depart {
+  display: flex;
+  animation: steps-mark-depart 420ms linear forwards;
+}
+@keyframes steps-mark-depart {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.chat-steps-head > .activity-label-morph {
+  min-width: 0;
+}
+.chat-steps-head .activity-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-steps-head > .activity-elapsed {
+  color: var(--steps-muted);
+}
+/* The chevron turns over 200ms on the default curve (the original's status
+   row, transition-transform duration-200). */
+.chat-steps-head > svg {
+  flex-shrink: 0;
+  margin-left: -4px;
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+.chat-steps[data-open] > .chat-steps-head > svg {
+  transform: rotate(90deg);
+}
+/* A row that opens brightens to the secondary ink under the pointer or
+   focus, with no fade (the original's status row, text-secondary hover). */
+button.chat-steps-head:not(:disabled):is(:hover, :focus-visible) {
+  color: var(--steps-hover);
+}
+/* A row's focus ring is the accent line inside its edge, without the glow. */
+.chat-steps-head:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
+  box-shadow: none;
+}
+/* The card opens to its height and closes back (.u-expand-rows). */
+.chat-steps-collapse,
+.chat-step-collapse {
+  --expand-ease: var(--steps-ease);
+}
+/* The card sits 4px left of the label: the whole opening moves, so its clip
+   (overflow hidden for the open and close) starts at the card's own edge and
+   keeps the card's left ring. */
+.chat-steps-collapse {
+  margin-left: -4px;
+}
+.chat-steps-card-wrap {
+  padding: 8px 0 6px;
+  padding-inline-start: var(--steps-indent);
+  /* Leaving cells. */
+  transition: padding-inline-start 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.chat-steps[data-running] .chat-steps-card-wrap {
+  transition-duration: 200ms;
+}
+/* Fetch cell tokens. */
+.chat-step-row.web-fetch-row {
+  height: 42px;
+  font-size: 13px;
+  line-height: 19px;
+  color: #52514e;
+  text-decoration: none;
+}
+:root:not([data-theme="light"]) .chat-step-row.web-fetch-row {
+  color: #898781;
+}
+/* Group caption. */
+.thinking-tool-recap {
+  color: #898781;
+  font-size: 14px;
+  line-height: 20px;
+}
+.web-fetch-row > .chat-step-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.web-fetch-title,
+.web-fetch-host {
+  color: #898781;
+}
+.web-fetch-host {
+  flex-shrink: 0;
+  padding-inline-start: 4px;
+  white-space: nowrap;
+}
+.web-fetch-row > svg,
+.web-fetch-row > img {
+  flex-shrink: 0;
+}
+/* Card radius and theme-dependent inner/outer ring. */
+.chat-steps-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: calc(
+    var(--cds-radius, 6px) + 0.25rem * var(--cds-rem-scale, 1)
+  );
+  box-shadow:
+    inset 0 0 0 var(--steps-ring-inner) var(--steps-rim),
+    0 0 0 var(--steps-ring-outer) var(--steps-rim);
+  overflow-y: clip;
+}
+/* divide-y leaves no divider after the last cell. */
+.chat-steps-list {
+  display: flex;
+  flex-direction: column;
+}
+.chat-step-slot {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.chat-step-slot > div {
+  min-height: 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--steps-rim);
+}
+.chat-step-slot:last-child > div {
+  border-bottom: 0;
+}
+/* A row arriving after the card showed opens into place, one leaving folds
+   away (the original's timeline-expand: 200ms on the timeline curve, the
+   row growing from nothing while it fades in), so the rows under a leaving
+   one glide up. */
+.chat-step-slot[data-arriving] {
+  animation: step-slot-in var(--motion-base) var(--steps-ease);
+}
+.chat-step-slot[data-leaving] {
+  pointer-events: none;
+  animation: step-slot-out var(--motion-base) var(--steps-ease) forwards;
+}
+@keyframes step-slot-in {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+@keyframes step-slot-out {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+/* "{n} steps" over a running group's latest two steps (Hide steps once
+   shown): 14px secondary ink, 8px 12px; its caret points up while steps
+   are hidden and turns down when they show. */
+.chat-steps-more {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--steps-muted);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.chat-steps-more > svg {
+  flex-shrink: 0;
+  rotate: 180deg;
+  /* The default transition: 150ms on the default curve (the original's
+     transition-transform on this caret). */
+  transition: rotate 150ms var(--ease-standard);
+}
+.chat-steps-more[aria-expanded="true"] > svg {
+  rotate: 0deg;
+}
+.chat-steps-more:focus-visible,
+button.chat-step-row:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
+  box-shadow: none;
+}
+.chat-step-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--steps-muted);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+}
+/* A viewed picture's row ends with its R-0873 thumbnail (as in Code). */
+.chat-step-viewed-image {
+  display: flex;
+  align-items: center;
+}
+.chat-step-viewed-image > .chat-step-row {
+  flex: 1 1 auto;
+  width: auto;
+}
+.chat-step-viewed-image > .viewed-image-thumbnail {
+  flex: none;
+  padding: 6px 12px 6px 0;
+}
+button.chat-step-row {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  /* The label, its icon and the caret go from muted to the secondary ink
+     under the pointer or focus over 200ms on the default curve (the
+     original's tool row, transition-colors duration-200). */
+  transition: color var(--motion-base) var(--ease-standard);
+}
+button.chat-step-row:not(:disabled):is(:hover, :focus-visible) {
+  color: var(--steps-hover);
+}
+.chat-step-text {
+  min-width: 0;
+}
+/* Thinking detail actions: flex items-start gap-xs; h-[1lh] shrink-0
+   items-center. */
+.chat-step-thinking-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+.chat-step-thinking-text {
+  min-width: 0;
+  flex: 1;
+}
+.thinking-actions {
+  display: flex;
+  height: 1lh;
+  flex-shrink: 0;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.chat-step-thinking-detail:hover .thinking-actions,
+.chat-step[data-thinking]:focus-within .thinking-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.thinking-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--steps-muted);
+  cursor: pointer;
+}
+.thinking-copy:hover {
+  background: hsl(from #fff h s l / 7.5%);
+}
+:root[data-theme="light"] .thinking-copy:hover {
+  background: hsl(from #0b0b0b h s l / 5%);
+}
+.chat-step-text > .activity-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-step-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--steps-bright);
+}
+/* The caret turns over 150ms on the default curve (the original's tool row
+   caret, transition-transform duration-150). */
+.chat-step-row > svg,
+.chat-step-end > svg {
+  flex-shrink: 0;
+  margin-left: -4px;
+  transition: transform 150ms var(--ease-standard);
+}
+.chat-step[data-open] > .chat-step-row svg {
+  transform: rotate(90deg);
+}
+/* A running step's row ends with three quiet dots: 3px #d97757, 3.5px apart,
+   each rising in and fading over 1.9s, 150ms after the one before; with the
+   pointer on the row (or focus) they give way to the caret over 200ms. Reduced
+   motion: the dots stand still. */
+.chat-step-end {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.chat-step-end > * {
+  grid-area: 1 / 1;
+  transition: opacity var(--motion-base) var(--ease-standard);
+}
+/* The caret fades in and turns together (transition-[opacity,rotate]
+   duration-200). */
+.chat-step-end > svg {
+  margin-left: 0;
+  opacity: 0;
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+.chat-step-row:is(:hover, :focus-visible) > .chat-step-end > .quiet-dots {
+  opacity: 0;
+}
+.chat-step-row:is(:hover, :focus-visible) > .chat-step-end > svg {
+  opacity: 1;
+}
+.quiet-dots {
+  position: relative;
+  top: 0.13em;
+  display: inline-flex;
+  gap: 3.5px;
+}
+.quiet-dots > span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #d97757;
+  opacity: 0;
+  animation: quiet-dot 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.quiet-dots > span:nth-child(2) {
+  animation-delay: 150ms;
+}
+.quiet-dots > span:nth-child(3) {
+  animation-delay: 300ms;
+}
+@keyframes quiet-dot {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(-2.5px);
+  }
+  36%,
+  70% {
+    opacity: 1;
+    transform: none;
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+.chat-step-body {
+  padding: 0 12px 12px;
+}
+.chat-step-body .command-card {
+  margin-top: 0;
+}
+/* A running step peeks at what it shows: 72px of it, dimmed to 60% and fading
+   out downwards, full strength under the pointer; a click opens it all. It
+   opens over 250ms and folds away when the step is done. */
+/* The peek shows the newest lines (it follows the writing to its end), so
+   it fades toward the older lines above. */
+.chat-step-peek {
+  height: 72px;
+  overflow: hidden;
+  opacity: 0.6;
+  cursor: pointer;
+  mask-image: linear-gradient(to top, #000, transparent);
+  transition: opacity 250ms var(--steps-ease);
+  animation: step-peek-in 250ms var(--steps-ease);
+}
+.chat-step-peek:hover {
+  opacity: 1;
+}
+.chat-step-peek[data-leaving] {
+  pointer-events: none;
+  animation: step-peek-out var(--motion-base) var(--steps-ease) forwards;
+}
+@keyframes step-peek-in {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+}
+@keyframes step-peek-out {
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+.chat-step-thought {
+  color: var(--steps-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+.chat-step-thought .markdown p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* A long thought: 200px of it behind a 40px fade, Show more under it
+   (12px, muted at 80%, brighter on hover; shown on hover or focus while
+   clamped, always on touch screens). The clamp follows the text's height
+   over 300ms, ease-out (the original's timeline text; source: desktop
+   bundle 2.31226.1 static JS). */
+.chat-step-thought-clip {
+  overflow: hidden;
+  transition: max-height var(--motion-moderate) var(--ease-out);
+}
+.chat-step-thought[data-clamped] > .chat-step-thought-clip {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+}
+.chat-step-thought-toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: color-mix(in srgb, var(--steps-muted) 80%, transparent);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
+  /* The default transition: 150ms on the default curve. */
+  transition:
+    color 150ms var(--ease-standard),
+    opacity 150ms var(--ease-standard);
+}
+.chat-step-thought-toggle:hover {
+  color: var(--steps-bright);
+}
+.chat-step-thought[data-clamped] > .chat-step-thought-toggle {
+  opacity: 0;
+}
+.chat-step-thought[data-clamped]:hover > .chat-step-thought-toggle,
+.chat-step-thought-toggle:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .chat-step-thought[data-clamped] > .chat-step-thought-toggle {
+    opacity: 1;
+  }
+}
+.chat-step-diff pre {
+  margin: 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.chat-step-tool > * {
+  margin: 0;
+}
+/* A connector call in the card is a step row like the others: the row's 8px
+   12px, 8px gap, muted ink and 12px chevron; opened, its frame sits in the
+   body's 12px margins as a command's card does. */
+.chat-step-tool > .activity.is-plain > summary {
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  gap: 8px;
+}
+/* A failed call keeps its red (mcp-tool-view.css). */
+.chat-step-tool > .activity.is-plain:not(.failed) > summary,
+.chat-step-tool > .activity.is-plain:not(.failed) > summary:hover {
+  color: var(--steps-muted);
+}
+.chat-step-tool > .activity.is-plain > summary > svg:last-child {
+  width: 12px;
+  height: 12px;
+  margin-left: -4px;
+}
+/* Opened (ToolStepDetails, after the live "Ran page script ⌄"): no frame
+   inside the card; "key: value" lines (a 12px muted monospace key, the
+   value in the bright step ink) and the result as text, 14px on 24px lines
+   in the row's 12px margins, scrolling past 320px with 16px edge fades on
+   the side that has more (.u-scroll-fade-y, as the original's expanded tool
+   content). */
+.chat-step-tool > .activity.is-plain[open] > .tool-step-details {
+  --scroll-fade-size: 16px;
+  max-height: 320px;
+  margin: 0;
+  padding: 0 12px 12px;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--steps-bright);
+  font-size: 14px;
+  line-height: 24px;
+}
+.tool-step-arg,
+.tool-step-output {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tool-step-arg > code {
+  color: var(--steps-muted);
+  font:
+    12px/24px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.tool-step-arg + .tool-step-output,
+.tool-step-output + .tool-step-output {
+  margin-top: 4px;
+}
+.tool-step-error {
+  color: var(--danger);
+}
+.tool-step-details > img {
+  display: block;
+  max-width: 100%;
+  margin-top: 8px;
+  border-radius: 8px;
+}
+/* The running step and the running label shimmer (ShimmerText): the base
+   in the steps' secondary ink, the band peaking at the label ink mixed 30%
+   into white. */
+.chat-step-text > .activity-label[data-shimmer],
+.chat-steps-head .activity-label[data-shimmer] {
+  color: var(--steps-muted);
+}
+.chat-step-text > .activity-label[data-shimmer] .shimmer-text,
+.chat-steps-head .activity-label[data-shimmer] .shimmer-text {
+  --shimmer-peak: color-mix(in srgb, var(--steps-label) 30%, white);
+}
+/* Pages the steps wrote: 8px above and below, as the artifact block. */
+/* 26px from the row to a card, as on claude.ai (6 + 12 + 8). */
+.chat-steps-files {
+  display: flow-root;
+  margin-top: 12px;
+}
+.chat-steps-files > .file-document-card {
+  margin: 8px 0;
+}
+/* Reduced motion: rows and the card open and close at once, nothing slides
+   or bounces, the departing dots and a finished peek are gone at once. */
+@media (prefers-reduced-motion: reduce) {
+  .chat-steps-head,
+  .chat-steps-card-wrap,
+  .chat-steps-head > svg,
+  .chat-step-row > svg,
+  .chat-step-end > svg,
+  .chat-steps-more > svg,
+  .chat-step-thought-clip {
+    transition: none;
+  }
+  .chat-step-slot,
+  .chat-step-peek,
+  .quiet-dots > span {
+    animation: none;
+  }
+  .quiet-dots > span {
+    opacity: 1;
+  }
+  .chat-steps-mark-depart,
+  .chat-step-peek[data-leaving],
+  .chat-step-slot[data-leaving] {
+    display: none;
+  }
+  /* The caret still fades in over the dots (opacity changes stay, as in the
+     original), without turning. */
+  .chat-step-end > svg {
+    transition: opacity var(--motion-base) var(--ease-standard);
+  }
+}
+:root[data-motion="reduced"]
+  :is(
+    .chat-steps-head,
+    .chat-steps-card-wrap,
+    .chat-steps-head > svg,
+    .chat-step-row > svg,
+    .chat-step-end > svg,
+    .chat-steps-more > svg,
+    .chat-step-thought-clip
+  ) {
+  transition: none;
+}
+:root[data-motion="reduced"] .chat-step-end > svg {
+  transition: opacity var(--motion-base) var(--ease-standard);
+}
+:root[data-motion="reduced"] :is(.chat-step-slot, .chat-step-peek),
+:root[data-motion="reduced"] .quiet-dots > span {
+  animation: none;
+}
+:root[data-motion="reduced"] .quiet-dots > span {
+  opacity: 1;
+}
+:root[data-motion="reduced"]
+  :is(
+    .chat-steps-mark-depart,
+    .chat-step-peek[data-leaving],
+    .chat-step-slot[data-leaving]
+  ) {
+  display: none;
+}
+
+/* One finished search is its own row: the label, then the query in brighter
+   ink; its results open under it in the card. */
+.chat-steps-head .lone-step {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.chat-steps-head .lone-step > .chat-step-name {
+  color: var(--steps-bright);
+}
+.chat-steps-results .web-search-result {
+  min-height: 32px;
+  padding: 0 12px 0 16px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.chat-steps-results .web-search-result-title {
+  color: var(--steps-muted);
+}
+
+/* A settled step group's outcome, 4px after its row: "Failed" in the danger
+   ink, "Stopped" in the secondary. */
+.chat-steps-outcome {
+  flex-shrink: 0;
+  margin-left: -4px;
+}
+.chat-steps-outcome[data-tone="danger"] {
+  color: #ec7e7e;
+}
+.chat-steps-outcome[data-tone="secondary"] {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .chat-steps-outcome[data-tone="danger"] {
+  color: #8e2626;
+}
+:root[data-theme="light"] .chat-steps-outcome[data-tone="secondary"] {
+  color: #52514e;
+}

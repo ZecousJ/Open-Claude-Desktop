@@ -1,0 +1,1 @@
+import{t as e}from"./mic-CDdcVjfi.js";import{t}from"./jsx-runtime-NZYk81nU.js";var n=t();function r({recording:t}){return(0,n.jsx)(e,{className:`app-icon`,size:16,strokeWidth:1.75,fill:t?`currentColor`:`none`,"aria-hidden":`true`})}export{r as CommentMicrophone};

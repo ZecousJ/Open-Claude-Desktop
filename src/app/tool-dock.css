@@ -1,0 +1,317 @@
+/* The Code tool dock (app/ToolDock.tsx): the original with every window open
+   has Background tasks, Changes and Browser stacked in one column and Terminal
+   in a column of its own, each card 8px from the window's edges and 10px from
+   the next. Two stacked cards share the height evenly; with all three, Changes
+   takes half and the others a quarter each. A dragged row divider sets the
+   shares instead (--tool-row-<card> on the column). */
+.workspace > .chat-layout > .tool-dock {
+  position: absolute;
+  z-index: 11;
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  gap: 10px;
+  max-width: calc(100% - 276px);
+}
+.tool-dock-column {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 10px;
+  width: min(282px, 40vw);
+  min-width: 0;
+  max-width: 1000px;
+}
+.tool-dock-column[data-wide] {
+  width: min(537px, 45vw);
+}
+.tool-dock .tool-dock-column > .work-panel,
+.tool-dock > .work-panel {
+  position: relative;
+  inset: auto;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+}
+.tool-dock-column > .work-panel {
+  flex: 1 1 0;
+  min-height: 0;
+}
+.tool-dock-column > .background-tasks-panel {
+  flex-grow: var(--tool-row-background, 1);
+}
+.tool-dock-column > .changes-panel {
+  flex-grow: var(--tool-row-changes, 1);
+}
+.tool-dock-column > .browser-panel {
+  flex-grow: var(--tool-row-browser, 1);
+}
+.tool-dock-column:has(> .background-tasks-panel):has(> .browser-panel)
+  > .changes-panel {
+  flex-grow: var(--tool-row-changes, 2);
+}
+.tool-dock > .terminal-panel {
+  flex: none;
+  width: var(--terminal-panel-width, 299px);
+}
+/* The column drags from its own left edge; the cards' own rails stay idle. */
+.tool-dock-column > .work-panel .background-panel-resize {
+  display: none;
+}
+.tool-dock-column > .work-panel > .file-viewer-resize {
+  display: none;
+}
+.tool-dock-column > .session-panel {
+  flex-grow: var(--tool-row-session, 1);
+}
+.tool-dock-column > .pull-request-panel {
+  flex-grow: var(--tool-row-pr, 1);
+}
+.tool-dock-column > .widget-panel {
+  flex-grow: var(--tool-row-widget, 1);
+}
+.tool-dock-column > .plan-panel {
+  flex-grow: var(--tool-row-plan, 1);
+}
+.tool-dock-column > .agent-transcript-panel {
+  flex-grow: var(--tool-row-agent, 1);
+}
+.tool-dock-column > .artifact-panel {
+  flex-grow: var(--tool-row-artifact, 1);
+}
+.tool-dock-column > .files-panel {
+  flex-grow: var(--tool-row-files, 1);
+}
+.tool-dock-column > .runs-panel {
+  flex-grow: var(--tool-row-runs, 1);
+}
+.tool-dock .tool-dock-column > .artifact-panel.file-viewer {
+  position: relative;
+  inset: auto;
+  width: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.workspace:has(> .chat-layout > .tool-dock .file-viewer) > .chat-header {
+  width: auto;
+}
+.tool-dock-column > .background-panel-resize {
+  left: -8px;
+}
+/* The divider between two stacked cards: a zero-height row in the middle
+   of their 10px gap holding the shared ResizeHandle, lying flat. */
+.tool-dock-row-divider {
+  position: relative;
+  z-index: 4;
+  flex: none;
+  height: 0;
+  margin: -5px 0;
+}
+.tool-dock-row-divider > .resize-handle {
+  top: -6px;
+  bottom: auto;
+  -webkit-app-region: no-drag;
+}
+/* The conversation and its title bar make room for the dock. */
+.workspace:has(> .chat-layout > .tool-dock) > .chat-header,
+.workspace > .chat-layout:has(> .tool-dock) > .chat-main {
+  margin-right: calc(var(--tool-dock-width, 299px) + 8px);
+}
+.workspace:has(> .chat-layout > .tool-dock) > .chat-header {
+  padding-right: 12px;
+}
+/* A card's header takes the title bar's place, so it moves the window. */
+.tool-dock .work-panel > header {
+  -webkit-app-region: drag;
+}
+.tool-dock .work-panel > header :is(button, input, a),
+.tool-dock .work-panel > header [role="tab"] {
+  -webkit-app-region: no-drag;
+}
+
+/* Split panes, after the original's. With two or more cards the one not focused
+   dims (filter opacity .75 and saturate .85 over 120ms) and shows its header
+   buttons only while hovered (120ms). A card opened beside others fades in over
+   180ms on the snap curve. */
+.tool-dock-column > .work-panel,
+.tool-dock > .work-panel,
+.tool-dock > .tool-dock-column {
+  transition:
+    filter 120ms ease-out,
+    opacity 180ms var(--ease-snap),
+    flex-grow var(--motion-base) var(--ease-snap),
+    width var(--motion-base) var(--ease-snap),
+    max-width var(--motion-base) var(--ease-snap),
+    display var(--motion-base) allow-discrete;
+}
+.tool-dock[data-split]:not([data-focus="background"]) .background-tasks-panel,
+.tool-dock[data-split]:not([data-focus="changes"]) .changes-panel,
+.tool-dock[data-split]:not([data-focus="browser"]) .browser-panel,
+.tool-dock[data-split]:not([data-focus="terminal"]) .terminal-panel,
+.tool-dock[data-split]:not([data-focus="runs"]) .runs-panel,
+.tool-dock[data-split]:not([data-focus="session"]) .session-panel,
+.tool-dock[data-split]:not([data-focus="pr"]) .pull-request-panel,
+.tool-dock[data-split]:not([data-focus="widget"]) .widget-panel,
+.tool-dock[data-split]:not([data-focus="plan"]) .plan-panel,
+.tool-dock[data-split]:not([data-focus="agent"]) .agent-transcript-panel,
+.tool-dock[data-split]:not([data-focus="artifact"]) .artifact-panel,
+.tool-dock[data-split]:not([data-focus="files"]) .files-panel {
+  filter: opacity(0.75) saturate(0.85);
+}
+.tool-dock[data-split]
+  .work-panel:is(
+    .background-tasks-panel,
+    .changes-panel,
+    .browser-panel,
+    .terminal-panel,
+    .runs-panel,
+    .session-panel,
+    .pull-request-panel,
+    .widget-panel,
+    .plan-panel,
+    .agent-transcript-panel,
+    .artifact-panel,
+    .files-panel
+  )
+  > header
+  button:not([role="tab"], [role="tab"] *) {
+  transition:
+    var(--button-fill-transition),
+    opacity 120ms ease-out,
+    var(--press-release);
+}
+.tool-dock[data-split]:not([data-focus="background"])
+  .background-tasks-panel:not(:hover)
+  > header
+  button:not([role="tab"], [role="tab"] *, :focus-visible),
+.tool-dock[data-split]:not([data-focus="changes"])
+  .changes-panel:not(:hover)
+  > header
+  button:not([role="tab"], [role="tab"] *, :focus-visible),
+.tool-dock[data-split]:not([data-focus="browser"])
+  .browser-panel:not(:hover)
+  > header
+  button:not([role="tab"], [role="tab"] *, :focus-visible),
+.tool-dock[data-split]:not([data-focus="terminal"]) .terminal-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="runs"]) .runs-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="session"]) .session-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="pr"]) .pull-request-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="widget"]) .widget-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="plan"]) .plan-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="agent"])
+  .agent-transcript-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="artifact"]) .artifact-panel:not(:hover),
+.tool-dock[data-split]:not([data-focus="files"])
+  .files-panel:not(:hover)
+  > header
+  button:not([role="tab"], [role="tab"] *, :focus-visible) {
+  opacity: 0;
+}
+@starting-style {
+  .tool-dock-column > .work-panel ~ .work-panel,
+  .tool-dock-column ~ .work-panel {
+    opacity: 0;
+  }
+}
+
+/* An expanded card covers the conversation column, 8px from the sidebar edge.
+   The dock grows there over 200ms (ToolDock.tsx) while the other cards fold to
+   nothing and fade, and on Restore they unfold back. */
+.workspace > .chat-layout > .tool-dock:has(.expanded) {
+  left: 8px;
+  max-width: none;
+}
+.tool-dock:has(.expanded) > .work-panel:not(.expanded),
+.tool-dock-column:has(> .expanded) > .work-panel:not(.expanded) {
+  display: none;
+  flex-grow: 0;
+  opacity: 0;
+}
+.tool-dock:has(.expanded) > .terminal-panel:not(.expanded) {
+  width: 0;
+}
+.tool-dock:has(.expanded) > .tool-dock-column:not(:has(> .expanded)) {
+  display: none;
+  max-width: 0;
+  opacity: 0;
+}
+.tool-dock-column:has(> .expanded) > .background-panel-resize,
+.tool-dock-column:has(> .expanded) > .tool-dock-row-divider {
+  display: none;
+}
+.tool-dock[data-restoring]
+  .tool-dock-column
+  > .work-panel:not([data-was-expanded]) {
+  animation: tool-card-unfold-row var(--motion-base) var(--ease-snap);
+}
+.tool-dock[data-restoring] > .terminal-panel:not([data-was-expanded]) {
+  animation: tool-card-unfold-column var(--motion-base) var(--ease-snap);
+}
+.tool-dock[data-restoring]
+  > .tool-dock-column:not(:has(> [data-was-expanded])) {
+  animation: tool-column-unfold var(--motion-base) var(--ease-snap);
+}
+@keyframes tool-card-unfold-row {
+  from {
+    flex-grow: 0;
+    opacity: 0;
+  }
+}
+@keyframes tool-card-unfold-column {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+}
+@keyframes tool-column-unfold {
+  from {
+    max-width: 0;
+    opacity: 0;
+  }
+}
+.tool-dock:has(.expanded) > .tool-dock-column:has(> .expanded),
+.tool-dock > .work-panel.expanded {
+  flex: 1;
+  width: auto;
+  max-width: none;
+}
+/* The conversation hides once the card has grown over it, and shows at
+   once on Restore. */
+.workspace:has(> .chat-layout > .tool-dock .expanded) > .chat-header,
+.workspace > .chat-layout:has(> .tool-dock .expanded) > .chat-main {
+  visibility: hidden;
+  transition: visibility 0s linear var(--motion-base);
+}
+
+/* Reduced motion: the cards switch at once; the dimming stays. */
+@media (prefers-reduced-motion: reduce) {
+  .tool-dock-column > .work-panel,
+  .tool-dock > .work-panel,
+  .tool-dock > .tool-dock-column {
+    transition: filter 120ms ease-out;
+  }
+  .workspace:has(> .chat-layout > .tool-dock .expanded) > .chat-header,
+  .workspace > .chat-layout:has(> .tool-dock .expanded) > .chat-main {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"]
+  :is(
+    .tool-dock-column > .work-panel,
+    .tool-dock > .work-panel,
+    .tool-dock > .tool-dock-column
+  ) {
+  transition: filter 120ms ease-out;
+}
+:root[data-motion="reduced"]
+  .workspace:has(> .chat-layout > .tool-dock .expanded)
+  > .chat-header,
+:root[data-motion="reduced"]
+  .workspace
+  > .chat-layout:has(> .tool-dock .expanded)
+  > .chat-main {
+  transition: none;
+}

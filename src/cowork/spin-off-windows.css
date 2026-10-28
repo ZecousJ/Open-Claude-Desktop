@@ -1,0 +1,514 @@
+/*
+ * Spin off a new task windows (SpinOffWindows.tsx). Values are the live A row
+ * 12px from the page's bottom and right edges, windows 12px apart, newest at
+ * the right; a window 26rem wide (16rem collapsed, the width easing 150ms),
+ * rounded 16px, a 0.5px strong rim on the raised surface, shadows 0 24px 60px
+ * (18% black) and 0 4px 16px (8%); its header 6px 12px with 4px gaps; its body
+ * opening and closing with its grid row over 150ms, 4px 8px 8px inside. Colours
+ * are Claudex's tokens; the badge is Claudex's neutral badge
+ * (.customize-badge).
+ */
+.spin-off-row {
+  position: absolute;
+  z-index: 40;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  gap: 12px;
+  /* Windows that do not fit are cut at the sides; menus reach up. */
+  overflow-x: clip;
+  overflow-y: visible;
+  overflow-clip-margin: 4rem;
+  pointer-events: none;
+}
+.spin-off-row[hidden] {
+  display: none;
+}
+.spin-off-window {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 26rem;
+  max-width: 100%;
+  overflow: hidden;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 24px 60px color-mix(in srgb, #000 18%, transparent),
+    0 4px 16px color-mix(in srgb, #000 8%, transparent);
+  color: var(--text);
+  pointer-events: auto;
+  transition: width 150ms ease-out;
+}
+.spin-off-window[data-collapsed] {
+  width: 16rem;
+}
+.spin-off-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.spin-off-heading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: inherit;
+}
+.spin-off-name,
+.spin-off-from {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.spin-off-name {
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.spin-off-from {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+.spin-off-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.spin-off-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #2c2c2c;
+  color: #bcbcb9;
+  font-size: 11px;
+  font-weight: 500;
+}
+:root[data-theme="light"] .spin-off-badge {
+  background: #ebebe9;
+  color: #5e5e5c;
+}
+.spin-off-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.spin-off-icon:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+.spin-off-minus.down {
+  translate: 0 2px;
+}
+.spin-off-minus.up {
+  translate: 0 -2px;
+}
+.spin-off-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 150ms ease-out;
+}
+.spin-off-body[data-open] {
+  grid-template-rows: 1fr;
+}
+.spin-off-body-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+/* Once a window has opened, its menus (model, place) may reach past it. */
+.spin-off-window[data-settled] {
+  overflow: visible;
+}
+.spin-off-title {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.spin-off-status {
+  display: flex;
+  flex: none;
+}
+.spin-off-icon > .app-icon,
+.spin-off-minus > .app-icon {
+  display: block;
+}
+.spin-off-minus {
+  display: block;
+}
+.spin-off-draft {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px 8px;
+}
+.spin-off-session[hidden] {
+  display: none;
+}
+
+/*
+ * The compact task composer: a 12px rounded field, 0.5px rim (strong while it
+ * has the focus) on the raised surface; the words 10px in from the sides and
+ * 12px from the top in the body size, at least 3.75rem tall; the row 10px in,
+ * 4px over and 8px under, its controls 4px apart, the model and Send message at
+ * its end. The caution band is the live one: the danger fill and ink, rounded
+ * 12px at the top, 14px in, 8px over and 20px under, tucked 12px under the
+ * field's edge.
+ */
+.mini-composer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  transition: border-color 150ms ease-out;
+}
+.mini-composer:focus-within {
+  border-color: var(--border-strong);
+}
+.mini-composer-caution {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 4px 0 -12px;
+  padding: 8px 14px 20px;
+  border-radius: 12px 12px 0 0;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 16px;
+}
+.mini-composer-caution > .app-icon {
+  flex: none;
+}
+/* Compact files and upload indicators. */
+.mini-composer-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 12px 0;
+}
+.mini-composer-chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 200px;
+  gap: 6px;
+  padding-block: 2px;
+  padding-inline: 2px 6px;
+  border: 0.5px solid var(--alpha-2);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 5%),
+    0 2px 8px 0 rgb(0 0 0 / 5%);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+:root[data-theme="light"] .mini-composer-chip {
+  color: #52514e;
+}
+.mini-composer-chip button {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.mini-composer-chip img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.mini-composer-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mini-composer-file-remove {
+  color: #898781;
+}
+.mini-composer-file-remove:hover {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .mini-composer-file-remove:hover {
+  color: #52514e;
+}
+.mini-composer-file-remove .app-icon {
+  width: 12px;
+  height: 12px;
+}
+.mini-composer-file-error {
+  flex-shrink: 0;
+  color: #ec7e7e;
+}
+:root[data-theme="light"] .mini-composer-file-error {
+  color: #8e2626;
+}
+.mini-composer-spinner {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--alpha-3);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.mini-composer-spinner.waiting {
+  width: 16px;
+  height: 16px;
+  border-color: currentColor;
+  border-top-color: transparent;
+}
+.mini-composer-words {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 10px 0;
+}
+.mini-composer-words textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 3.75rem;
+  max-height: 12rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 22px;
+  resize: none;
+  outline: none;
+  box-shadow: none;
+}
+.mini-composer-words textarea::placeholder {
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mini-composer-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 8px;
+}
+.mini-composer-end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* The row's icon-only controls: 24px ghost buttons in the secondary ink
+   (the compact density's size-6). */
+.mini-composer-row .task-permission-trigger.icon-only,
+.mini-composer-row .cowork-place-collapsed {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.mini-composer-row
+  :is(.task-permission-trigger.icon-only, .cowork-place-collapsed):is(
+    :hover,
+    [aria-expanded="true"]
+  ) {
+  background: var(--fill-ghost-hover);
+  color: var(--text-strong);
+}
+.mini-composer-row .task-permission-trigger.icon-only.mode-bypass {
+  color: var(--danger);
+}
+/* The icon-only picker's popup: no inline descriptions, so min-w-[200px]
+   max-w-[360px] by content. */
+.menu.task-permission-window {
+  min-width: 200px;
+  max-width: 360px;
+}
+.mini-composer-row .cowork-options[data-collapsed] {
+  padding: 0;
+}
+/* The place's count: a 14px accent pill at the trigger's lower end corner,
+   10px medium white figures, ringed in the page colour. */
+.cowork-place-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--surface);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+}
+/* Its menu opens above the trigger, level with its start. */
+.mini-composer-row .cowork-options[data-collapsed] .cowork-menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+  left: 0;
+}
+/* The model: a ghost pill, its name in the primary ink and the effort
+   muted, 8px rounded (the live compact selector's "!rounded-lg"). */
+.mini-composer-model {
+  position: relative;
+}
+.mini-composer-model-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font-size: 13px;
+  line-height: 17px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mini-composer-model-button:is(:hover, [aria-expanded="true"]) {
+  background: var(--fill-ghost-hover);
+}
+.mini-composer-model-button .model-button-name {
+  color: var(--text-strong);
+}
+.mini-composer-model-button .model-button-effort {
+  color: var(--text-muted);
+}
+
+/*
+ * A started task's live view: at most 28rem tall; the messages scroll 8px in
+ * from the window's sides; "Connecting…" fills 12rem; the status row 6px over
+ * and under, 16px in at the start and 8px at the end, a 20px star 10px before
+ * its footnote; the ended notice a 12px footnote 16px in.
+ */
+.mini-session {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 28rem;
+}
+.mini-session-connecting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 12rem;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+.mini-session-list {
+  flex: 1;
+  min-height: 0;
+  padding: 0 8px;
+  overflow-y: auto;
+  outline: none;
+}
+.mini-session-list .messages {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 8px 0;
+}
+.mini-session-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 16px;
+}
+.mini-session-status > * {
+  flex: none;
+}
+.mini-session-status-text {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mini-session-status-text.failed {
+  color: var(--danger);
+}
+.mini-session-ended {
+  flex: none;
+  margin: 0;
+  padding: 12px 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+.mini-session-reply {
+  flex: none;
+  margin: 0 8px 8px;
+}
+.mini-session-reply .mini-composer-words {
+  padding-bottom: 8px;
+}
+.mini-session-reply .mini-composer-words textarea {
+  min-height: 22px;
+  align-self: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin-off-window,
+  .spin-off-body,
+  .mini-composer {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"]
+  :is(.spin-off-window, .spin-off-body, .mini-composer) {
+  transition: none;
+}

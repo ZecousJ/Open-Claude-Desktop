@@ -1,0 +1,173 @@
+/* Transcript approval card, body and buttons; CDS tokens resolved by
+   audit/tokens.py. */
+.title-offer {
+  --offer-ink: #f0efec;
+  --offer-secondary: #c3c2b7;
+  --offer-alpha: rgb(255 255 255 / 5%);
+  --offer-border: rgb(255 255 255 / 10%);
+  --offer-fill: #fff;
+  --offer-fill-hover: #e1e0d9;
+  --offer-on-fill: #0b0b0b;
+  --offer-secondary-fill: rgb(255 255 255 / 10%);
+  --offer-secondary-hover: rgb(255 255 255 / 14%);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  max-height: 60vh;
+  gap: 24px;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--offer-border);
+  color: var(--offer-ink);
+  font-size: 13px;
+  line-height: 19px;
+}
+:root[data-theme="light"] .title-offer {
+  --offer-ink: #0b0b0b;
+  --offer-secondary: #52514e;
+  --offer-alpha: rgb(11 11 11 / 5%);
+  --offer-border: rgb(11 11 11 / 10%);
+  --offer-fill: #0b0b0b;
+  --offer-fill-hover: #2c2c2a;
+  --offer-on-fill: #fff;
+  --offer-secondary-fill: #ffffff1a;
+  --offer-secondary-hover: rgb(11 11 11 / 5%);
+}
+.title-offer-body {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.title-offer-heading {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  font-weight: 580;
+}
+.title-offer-proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.title-offer-proposal p {
+  margin: 0;
+  color: var(--offer-secondary);
+}
+.title-offer-title {
+  padding: 5px;
+  border-radius: 5px;
+  background: var(--offer-alpha);
+  overflow-wrap: anywhere;
+  user-select: text;
+  unicode-bidi: plaintext;
+}
+.title-offer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.title-offer-actions button {
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--offer-secondary-fill);
+  color: var(--offer-ink);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.title-offer-actions button:hover {
+  background: var(--offer-secondary-hover);
+}
+.title-offer-actions .title-offer-accept {
+  background: var(--offer-fill);
+  color: var(--offer-on-fill);
+  font-weight: 500;
+}
+.title-offer-actions .title-offer-accept:hover {
+  background: var(--offer-fill-hover);
+}
+.title-offer-actions button:disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+.title-offer-actions button:focus-visible,
+/* The resolved offer as the live transcript's step row. */
+/* A step row among the reply's (code-transcript.css .code-command): the
+   rows' 4px apart, under the reply's text with its paragraph gap. */
+.title-offer-resolved {
+  margin: 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  max-width: 100%;
+}
+.title-offer-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: #898781;
+  font: inherit;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: start;
+  cursor: pointer;
+}
+.title-offer-row:hover,
+.title-offer-row:focus-visible {
+  color: #c3c2b7;
+}
+.title-offer-row:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 2px;
+}
+.title-offer-row-label {
+  flex: none;
+  white-space: nowrap;
+}
+.title-offer-row-title {
+  min-width: 0;
+  overflow: hidden;
+  color: #f0efec;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.title-offer-row-caret {
+  flex: none;
+  transition: rotate 0.12s var(--ease-out);
+}
+.title-offer-row-caret[data-open] {
+  rotate: 90deg;
+}
+.title-offer-row-detail {
+  color: #c3c2b7;
+  font-size: 13px;
+  line-height: 19px;
+}
+:root[data-theme="light"] .title-offer-row {
+  color: #898781;
+}
+:root[data-theme="light"] .title-offer-row:hover {
+  color: #52514e;
+}
+:root[data-theme="light"] .title-offer-row-title {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .title-offer-row-detail {
+  color: #52514e;
+}

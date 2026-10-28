@@ -1,0 +1,49 @@
+{{define "content-head"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>{{.Title}}</title>
+<style>{{.CSS}}</style>
+</head>
+{{end}}
+
+{{define "content-markdown"}}{{template "content-head" .}}<body class="doc">
+<article class="markdown">{{.HTML}}</article>
+</body>
+</html>
+{{end}}
+
+{{define "content-code"}}{{template "content-head" .}}<body class="code">
+<pre><code{{if .Lang}} class="language-{{.Lang}}"{{end}}>{{.Code}}</code></pre>
+</body>
+</html>
+{{end}}
+
+{{define "content-mermaid"}}{{template "content-head" .}}<body class="diagram">
+<div id="diagram"></div>
+<pre id="source" hidden>{{.Code}}</pre>
+<script src="{{.AssetSrc}}"></script>
+<script>
+(function () {
+  var source = document.getElementById("source");
+  function fail() {
+    document.querySelectorAll("#dclaudex-diagram,#claudex-diagram").forEach(function (n) { n.remove(); });
+    var note = document.createElement("p");
+    note.className = "error";
+    note.textContent = "This diagram couldn't be rendered. Showing its source instead.";
+    document.body.insertBefore(note, source);
+    source.hidden = false;
+  }
+  if (typeof mermaid === "undefined") { fail(); return; }
+  var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: dark ? "dark" : "default" });
+  mermaid.render("claudex-diagram", source.textContent).then(function (r) {
+    document.getElementById("diagram").innerHTML = r.svg;
+  }).catch(fail);
+})();
+</script>
+</body>
+</html>
+{{end}}

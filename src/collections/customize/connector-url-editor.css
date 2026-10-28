@@ -1,0 +1,111 @@
+/* gap-md, gap-sm, ps-xl, text-footnote. */
+.connector-url-editor,
+.connector-url-options,
+.connector-url-editor fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.connector-url-editor h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+.connector-url-editor h3 small {
+  font-size: 12px;
+  font-weight: 400;
+}
+.connector-url-options {
+  padding-inline-start: 20px;
+}
+.connector-url-editor fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  gap: 8px;
+}
+.connector-url-card {
+  display: flex;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid hsl(from #fff h s l / 10%);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.connector-url-card:has(:checked) {
+  border-color: #0d366b;
+  background: #03162c;
+}
+:root[data-theme="light"] .connector-url-card {
+  border-color: hsl(from #0b0b0b h s l / 10%);
+  background: #fcfcfb;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .connector-url-card:has(:checked) {
+  border-color: #86b6ef;
+  background: #e7f1fb;
+}
+.connector-url-card span {
+  display: flex;
+  flex-direction: column;
+}
+.connector-url-card strong {
+  font-weight: 500;
+}
+.connector-url-card:hover {
+  border-color: hsl(from #fff h s l / 20%);
+}
+:root[data-theme="light"] .connector-url-card:hover {
+  border-color: hsl(from #0b0b0b h s l / 20%);
+}
+.connector-url-card:has(:checked):hover {
+  border-color: #0d366b;
+}
+:root[data-theme="light"] .connector-url-card:has(:checked):hover {
+  border-color: #86b6ef;
+}
+.connector-url-card input[type="radio"] {
+  appearance: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  margin-top: calc((1lh - 16px) / 2);
+  border: 1px solid hsl(from #fff h s l / 20%);
+  border-radius: 50%;
+  background: transparent;
+}
+:root[data-theme="light"] .connector-url-card input[type="radio"] {
+  border-color: hsl(from #0b0b0b h s l / 20%);
+}
+.connector-url-card input[type="radio"]:checked {
+  border: 0;
+  background: #2a78d6;
+}
+.connector-url-card input[type="radio"]:checked::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: 5px;
+  border-radius: 50%;
+  background: #fff;
+}
+.connector-url-editor small {
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .connector-url-editor small {
+  color: #52514e;
+}
+.connector-url-editor .connector-url-mono,
+.connector-url-editor textarea {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}

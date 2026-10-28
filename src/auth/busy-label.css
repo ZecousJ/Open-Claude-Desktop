@@ -1,0 +1,13 @@
+/* A working button keeps its label and shows a spinner over it. */
+.busy-label {
+  display: inline-grid;
+  align-items: center;
+  justify-items: center;
+  min-width: 0;
+}
+.busy-label > * {
+  grid-area: 1 / 1;
+}
+.busy-label-text[data-busy] {
+  opacity: 0;
+}

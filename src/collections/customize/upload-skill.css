@@ -1,0 +1,437 @@
+/*
+ * Upload a skill. "← Your skills" 14px; the 20px semibold title 40px under it
+ * and a 14px muted line 32px under that; "Skill file" 14px medium 48px lower; a
+ * 116px dashed drop zone (radius 8) 19px under the label with a centred upload
+ * glyph and 14px line; 12px format rules; a 52px Security scan row (radius 8)
+ * with a 12px muted note at the right; 30px Upload / Cancel with a 12px hint.
+ * Dark follows the Customize page colours.
+ */
+.upload-skill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 106px;
+}
+.upload-skill-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0;
+  color: #e6e6e3;
+  font-size: 14px;
+}
+.upload-skill h1 {
+  margin: 11px 0 0;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 28px;
+}
+.upload-skill-lead {
+  margin: 8px 0 0;
+  color: #a3a3a0;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* The title block sits 3px lower under the back link than in Settings. */
+.customize-column .upload-skill h1 {
+  margin-top: 14px;
+}
+.upload-skill h2 {
+  margin: 28px 0 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.upload-skill-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 116px;
+  margin-top: 9px;
+  border: 1px dashed #3a3a38;
+  border-radius: 8px;
+  color: #d5d4d0;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+.upload-skill-drop:hover,
+.upload-skill-drop.over {
+  border-color: #6b6a66;
+  background: #1c1c1c;
+}
+.upload-skill-drop:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 1px;
+}
+/*
+ * A chosen file: a 58px card (radius 12, 1px #e5e5e3 on #fcfcfa) with a 16px
+ * file glyph 16px in, the name 14px medium 10px after it, the size 12px muted
+ * after the name and a 16px cross 28px from the right edge.
+ */
+.upload-skill-files {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.upload-skill-files li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  height: 58px;
+  padding: 0 20px 0 16px;
+  border: 1px solid #2f2f2f;
+  border-radius: 12px;
+  color: #e6e6e3;
+  font-size: 14px;
+  font-weight: 500;
+}
+.upload-skill-files li > svg {
+  flex: 0 0 auto;
+  color: #a3a3a0;
+}
+.upload-skill-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.upload-skill-files li small {
+  flex: 1;
+  color: #9a9a97;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.upload-skill-files li button,
+.upload-skill-banner button {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: inherit;
+}
+.upload-skill-files li button:hover:not(:disabled),
+.upload-skill-banner button:hover {
+  background: rgb(127 127 127 / 14%);
+}
+.upload-skill-files li button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+/*
+ * Per-file progress after Upload: a 12px status at the row's end (the row's
+ * size note gives way to it), Added in the success colour, a taken name or a
+ * failure in the error red, and Replace / Skip / Try again as small text
+ * buttons.
+ */
+.upload-skill-files li .upload-skill-status {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin-left: auto;
+  color: #9a9a97;
+  font-size: 12px;
+  font-weight: 400;
+}
+.upload-skill-files li .upload-skill-status.added {
+  color: var(--success);
+}
+.upload-skill-files li .upload-skill-status.failed {
+  color: var(--danger);
+}
+.upload-skill-files li .upload-skill-status svg {
+  flex: none;
+}
+.upload-skill-files li button.upload-skill-row-action {
+  width: auto;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px #3a3a38;
+}
+.upload-skill-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 6px 17px;
+  border-radius: 10px;
+  background: #3a2422;
+  color: #e6e6e3;
+  font-size: 14px;
+  line-height: 20px;
+}
+.upload-skill-summary.added {
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+}
+.upload-skill-summary > svg {
+  flex: none;
+  color: var(--danger);
+}
+.upload-skill-summary.added > svg {
+  color: var(--success);
+}
+.upload-skill-summary button {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+:root[data-theme="light"] .upload-skill-files li .upload-skill-status {
+  color: #7b7c77;
+}
+:root[data-theme="light"] .upload-skill-files li .upload-skill-status.failed {
+  color: #7a2a2d;
+}
+:root[data-theme="light"]
+  .upload-skill-files
+  li
+  button.upload-skill-row-action {
+  box-shadow: inset 0 0 0 1px #e6e6e6;
+}
+:root[data-theme="light"] .upload-skill-summary {
+  background: #fad6d6;
+  color: #141413;
+}
+:root[data-theme="light"] .upload-skill-summary.added {
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+}
+/*
+ * The error banner: 44px, radius 10, 1px #cda2a9 on #fad6d6, a 16px warning
+ * triangle 17px in, 14px text 10px after it and a 16px cross at the right. The
+ * same red at dark values (the developer error red #e5877b).
+ */
+.upload-skill-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 6px 10px 6px 17px;
+  border: 1px solid #6a3a37;
+  border-radius: 10px;
+  background: #3a2422;
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 20px;
+}
+.upload-skill-banner > span {
+  flex: 1;
+  min-width: 0;
+}
+.upload-skill-banner .global-limit-toast-icon {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.upload-skill-banner button {
+  color: var(--text);
+}
+.upload-skill-rules {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #a3a3a0;
+  font-size: 12px;
+  line-height: 17px;
+}
+.upload-skill-files + .upload-skill-rules {
+  margin-top: 5px;
+}
+.upload-skill-banner + .upload-skill-rules {
+  margin-top: 7px;
+}
+.upload-skill-rules + h2 {
+  margin-top: 29px;
+}
+.upload-skill-card {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #2f2f2f;
+  border-radius: 8px;
+  color: #e6e6e3;
+  font-size: 14px;
+}
+/* The Preview card. */
+.upload-skill-preview {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 52px;
+  margin-top: 7px;
+  padding: 16px;
+  line-height: 20px;
+}
+.upload-skill-preview + .upload-skill-preview {
+  margin-top: 8px;
+}
+.upload-skill-preview p {
+  margin: 8px 0 0;
+  color: #a3a3a0;
+  line-height: 20px;
+}
+.upload-skill-scan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  margin-top: 29px;
+  padding: 0 16px;
+}
+.upload-skill-preview + .upload-skill-scan {
+  margin-top: 27px;
+}
+.upload-skill-scan small {
+  color: #9a9a97;
+  font-size: 12px;
+}
+.upload-skill-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 29px;
+  color: #9a9a97;
+  font-size: 12px;
+}
+.upload-skill-actions button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.upload-skill-primary {
+  background: #f5f5f3;
+  color: #141413;
+  font-weight: 500;
+}
+.upload-skill-primary:disabled {
+  background: #5d5d5b;
+  color: #d5d4d0;
+  cursor: default;
+}
+/* Uploading: the label steps aside for a centred spinner, the button keeps its
+   70px and its colour, and Cancel dims. */
+.upload-skill-primary.busy:disabled {
+  background: #f5f5f3;
+  color: #141413;
+}
+.upload-skill-primary.busy > span:not(.cds-spinner) {
+  visibility: hidden;
+}
+.upload-skill-primary.busy > .cds-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+.upload-skill-cancel {
+  box-shadow: inset 0 0 0 1px #3a3a38;
+  color: #e6e6e3;
+}
+.upload-skill-cancel:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.upload-skill-cancel:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+:root[data-theme="light"] .upload-skill-back,
+:root[data-theme="light"] .upload-skill h1,
+:root[data-theme="light"] .upload-skill h2,
+:root[data-theme="light"] .upload-skill-drop,
+:root[data-theme="light"] .upload-skill-card,
+:root[data-theme="light"] .upload-skill-files li,
+:root[data-theme="light"] .upload-skill-cancel {
+  color: #141413;
+}
+:root[data-theme="light"] .upload-skill-drop {
+  border-color: #d9d9d6;
+}
+:root[data-theme="light"] .upload-skill-drop:hover,
+:root[data-theme="light"] .upload-skill-drop.over {
+  border-color: #9a9a97;
+  background: #f5f5f3;
+}
+/* The cards read #fcfcfa with a #e5e5e3 rim; the file glyph #444442, the size
+   #7b7c77. */
+:root[data-theme="light"] .upload-skill-card,
+:root[data-theme="light"] .upload-skill-files li {
+  border-color: #e5e5e3;
+  background: #fcfcfa;
+}
+:root[data-theme="light"] .upload-skill-files li > svg {
+  color: #444442;
+}
+:root[data-theme="light"] .upload-skill-files li small {
+  color: #7b7c77;
+}
+:root[data-theme="light"] .upload-skill-preview p {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .upload-skill-banner {
+  border-color: #cda2a9;
+  background: #fad6d6;
+  color: #7a2a2d;
+}
+:root[data-theme="light"] .upload-skill-banner button {
+  color: #141413;
+}
+:root[data-theme="light"] .upload-skill-primary {
+  background: #141413;
+  color: #fff;
+}
+:root[data-theme="light"] .upload-skill-primary:disabled {
+  background: #9b9b99;
+  color: #fff;
+  opacity: 1;
+}
+:root[data-theme="light"] .upload-skill-primary.busy:disabled {
+  background: #141413;
+}
+/* The lead line reads #3d3d3b at its darkest; the format rules and the hint
+   under the buttons #73746f / #777775. */
+:root[data-theme="light"] .upload-skill-lead {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .upload-skill-rules,
+:root[data-theme="light"] .upload-skill-actions,
+:root[data-theme="light"] .upload-skill-scan small {
+  color: #737370;
+}
+:root[data-theme="light"] .upload-skill-cancel {
+  box-shadow: inset 0 0 0 1px #e6e6e6;
+  background: #fff;
+}
+/* In Settings: 56px between the top band and the back link's text, and the page
+   runs 12px from the frame's sides. */
+.settings-list-page .upload-skill {
+  padding-top: 42px;
+}
+@media (max-width: 760px) {
+  .settings-page:has(.upload-skill) {
+    padding-inline: 12px;
+    scrollbar-gutter: auto;
+  }
+}

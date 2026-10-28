@@ -1,0 +1,18 @@
+/* This is an import manifest, not a second design system. These are the actual
+   web/desktop stylesheets; changes to them flow into every native build. */
+@import "../styles.css";
+@import "../ui/menu.css";
+@import "../ui/sheet.css";
+@import "../transcript/chat-transcript.css";
+@import "../transcript/selection-reply.css";
+@import "../transcript/code-transcript.css";
+@import "../transcript/markdown-media.css";
+@import "../transcript/transcript-states.css";
+@import "../transcript/activity-motion.css";
+@import "../transcript/thinking-motion.css";
+@import "../transcript/tools/web-search.css";
+@import "../ui/tooltip.css";
+@import "../citations/citations.css";
+@import "../artifacts/generated-file-card.css";
+@import "../research/research.css";
+@import "../styles/95-web.css";

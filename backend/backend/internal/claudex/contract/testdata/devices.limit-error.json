@@ -1,0 +1,12 @@
+{
+  "status": 409,
+  "body": {
+    "code": 409,
+    "message": "You're signed in to Claudex on 5 devices, the most your account allows. Sign out on one of them, then sign in again.",
+    "reason": "CLAUDEX_DEVICE_LIMIT",
+    "metadata": {
+      "limit": "5",
+      "active": "5"
+    }
+  }
+}

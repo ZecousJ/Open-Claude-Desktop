@@ -1,0 +1,174 @@
+/* Chat's voice-mode split button after the microphone. While voice mode runs
+   the waveform is lit like a recording microphone (dictation.css: red mark and
+   pulse) and a note in the tooltip's own style says what it is doing. Greyed
+   like an unavailable microphone (chat-home.css) where it cannot run; the ⌄
+   next to it opens the microphone menu. */
+.voice-mode-button {
+  display: flex;
+  width: 47px;
+  height: 32px;
+  margin: -3px -7px;
+  padding: 0;
+}
+.voice-mode-button > button {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #878787;
+}
+/* The ⌄ opens the microphone menu, lit while it is open. */
+.voice-mode-button > .voice-mode-chevron.open,
+.cowork-voice-options.open {
+  color: #f0f0f0;
+}
+.voice-mode-button > .voice-mode-main {
+  width: 32px;
+  color: var(--text);
+}
+/* Hover and keyboard focus: the whole split button takes the ghost fill and the
+   segment under the pointer a second step on top of it. Colours move in 200ms. */
+.voice-mode-button {
+  border-radius: 8px;
+  transition: background-color var(--motion-base) var(--ease-standard);
+}
+.voice-mode-button > button {
+  border-radius: 8px;
+  transition:
+    var(--button-fill-transition),
+    background-color var(--motion-base) var(--ease-standard),
+    var(--press-release);
+}
+.voice-mode-button:has(:focus-visible) {
+  background: var(--fill-ghost-hover);
+}
+.voice-mode-button > button:focus-visible {
+  background: var(--alpha-2);
+}
+:root:not([data-theme="light"])
+  .voice-mode-button
+  > .voice-mode-main:focus-visible {
+  background: #3e3e3e;
+}
+/* Hover waits for a real hover, so a tap on a touch screen doesn't leave it
+   on. */
+@media (hover: hover) {
+  .voice-mode-button:hover {
+    background: var(--fill-ghost-hover);
+  }
+  .voice-mode-button > button:hover {
+    background: var(--alpha-2);
+  }
+  :root:not([data-theme="light"]) .voice-mode-button > .voice-mode-main:hover {
+    background: #3e3e3e;
+  }
+}
+/* The segment lit while its menu is open keeps the step. */
+.voice-mode-button > .voice-mode-chevron.open {
+  background: var(--alpha-2);
+}
+/* Incognito: only the chevron follows the microphone. */
+.voice-mode-button.chevron-only {
+  width: 15px;
+}
+.voice-mode-button > .voice-mode-main.unavailable,
+.voice-mode-chevron.unavailable,
+.cowork-voice-options.unavailable {
+  opacity: 0.45;
+  cursor: default;
+}
+:root[data-theme="light"] .voice-mode-button > .voice-mode-main {
+  color: var(--text);
+}
+
+.voice-mode-button > .voice-mode-main {
+  position: relative;
+}
+/* Lit while voice mode runs: text-accent on bg-accent. */
+:root .voice-mode-button > .voice-mode-main.active:not(:disabled) {
+  background: #257de01f;
+  color: #6aabf1;
+}
+:root[data-theme="light"]
+  .voice-mode-button
+  > .voice-mode-main.active:not(:disabled) {
+  color: #1757ac;
+}
+/* Current unified reply split: 24 + a transparent 1px seam + 20 - 4. */
+.app.web:not(.mobile-conversation)
+  .composer-chin-voice:has(> .reply-voice-mode),
+.app.web:not(.mobile-conversation)
+  .composer-chin-voice
+  > .chin-voice-controls:has(> .reply-voice-mode) {
+  gap: 4px;
+}
+.app.web:not(.mobile-conversation) .voice-mode-button.reply-voice-mode {
+  display: inline-flex;
+  flex: none;
+  width: 41px;
+  height: 24px;
+  margin: 0;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--cds-split-ring, transparent);
+}
+.app.web:not(.mobile-conversation)
+  .voice-mode-button.reply-voice-mode
+  > .voice-mode-main {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.app.web:not(.mobile-conversation)
+  .voice-mode-button.reply-voice-mode
+  > .reply-voice-divider {
+  flex: 0 0 1px;
+  width: 1px;
+  align-self: stretch;
+}
+.app.web:not(.mobile-conversation)
+  .voice-mode-button.reply-voice-mode
+  > .voice-mode-chevron {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 24px;
+  margin-left: -4px;
+  padding: 0 4px;
+  border-radius: 6px;
+}
+.app.web:not(.mobile-conversation)
+  .voice-mode-button.reply-voice-mode:has(
+    .voice-mode-chevron.open,
+    [aria-pressed="true"]
+  ) {
+  --cds-split-ring: var(--cds-border, var(--border));
+}
+@media (hover: hover) {
+  .app.web:not(.mobile-conversation) .voice-mode-button.reply-voice-mode:hover {
+    --cds-split-ring: var(--cds-border, var(--border));
+  }
+}
+.voice-mode-button > .voice-mode-main .voice-mode-status {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The pinned action shares one 24px primary slot; the existing caret stays mounted while its voice chunk loads. */
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .preferred-voice-input
+  .voice-mode-button.standalone,
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .preferred-voice-input
+  .voice-mode-button.standalone
+  > .voice-mode-main {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}

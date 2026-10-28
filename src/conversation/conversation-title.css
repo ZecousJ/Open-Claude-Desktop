@@ -1,0 +1,247 @@
+/* Header title, chevron and project breadcrumb. chat-markdown-complete.png
+   (1x): the chevron's ink is 8 × 4px, 9px after the title — a 14px lucide
+   chevron 6px away. Its 1x peak (187 vs 211) is only antialiasing: in R-0189
+   (~3x) chevron and title both peak at 255, so the chevron takes the title's
+   colour. Provisional. */
+.thread-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Title 14/20 in a 28px control, then a separate 28px caret with a -6px join.
+   The title starts 16px after the open sidebar. */
+.thread-title-split {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-left: -1px;
+}
+.thread-rename-trigger,
+.thread-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.thread-rename-trigger {
+  min-width: 0;
+  max-width: 480px;
+  cursor: text;
+}
+.thread-rename-trigger > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.thread-menu-trigger {
+  flex: 0 0 28px;
+  width: 28px;
+  margin-left: -6px;
+  padding: 0;
+  cursor: pointer;
+}
+.thread-menu-trigger > .app-icon {
+  width: 16px;
+  height: 16px;
+}
+/* The popup's scroll layer reserves a transparent 1px bottom inner-ring border
+   after its 4px gutter (170×178 with five rows). */
+:root[data-surface="web"] body .menu.conversation-title-menu {
+  border-bottom: 1px solid transparent;
+}
+/* Current fine-pointer web title root shows P/R/D at 13/17. The opt-in
+   stays local despite the shared important rule hiding unverified hints. */
+:root[data-surface="web"]
+  body:has(.app.web:not(.mobile-conversation))
+  .menu.conversation-title-menu[role="menu"]
+  > button
+  > kbd {
+  display: block !important;
+  font-size: 13px;
+  line-height: 17px;
+}
+@media (pointer: coarse) {
+  :root[data-surface="web"]
+    body:has(.app.web:not(.mobile-conversation))
+    .menu.conversation-title-menu[role="menu"]
+    > button
+    > kbd {
+    display: none !important;
+  }
+}
+.thread-rename-trigger:hover,
+.thread-menu-trigger:hover,
+.thread-menu-trigger[data-open="true"] {
+  background: var(--surface-hover);
+}
+.chat-header .thread-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 480px;
+  height: 28px;
+  margin: 0 -6px;
+  padding: 0 6px;
+  border-radius: 6px;
+  color: var(--text);
+  transition: background-color 55ms var(--ease-out);
+}
+.chat-header .thread-title > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-header .thread-title > svg {
+  flex-shrink: 0;
+}
+.chat-header .thread-title:hover,
+.chat-header .thread-title[data-open="true"] {
+  background: #ffffff0f;
+  color: var(--text-strong);
+}
+.chat-header .thread-title:active {
+  background: #ffffff17;
+}
+:root[data-theme="light"] .chat-header .thread-title:hover,
+:root[data-theme="light"] .chat-header .thread-title[data-open="true"] {
+  background: #0000000a;
+}
+:root[data-theme="light"] .chat-header .thread-title:active {
+  background: #00000012;
+}
+.thread-project {
+  min-width: 0;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.thread-project:hover {
+  color: var(--text);
+}
+.thread-crumb-sep {
+  color: var(--text-muted);
+}
+/* In-place rename uses the sidebar row's measured focus ring. */
+.thread-rename {
+  width: min(480px, 42vw);
+  height: 28px;
+  margin: 0 -4px;
+  padding: 0 3px;
+  border: 1px solid var(--focus-accent);
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 500;
+  -webkit-app-region: no-drag;
+}
+.thread-rename:focus {
+  border-color: var(--focus-accent);
+  box-shadow: none;
+  outline: none;
+}
+@media (max-width: 760px) {
+  .thread-project,
+  .thread-crumb-sep {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-header .thread-title {
+    transition: none;
+  }
+}
+
+/*
+ * A Code session's title: 13px medium text-primary, not selectable, the caret
+ * in text-secondary; renamed in place in a field as wide as its text, with a
+ * 1.5px accent outline 1px out and a 3px radius.
+ */
+.chat-header .thread-title[data-mode="code"] {
+  font-size: 13px;
+  user-select: none;
+}
+.chat-header .thread-title[data-mode="code"] > svg {
+  color: var(--text-secondary);
+}
+.thread-rename.code {
+  width: auto;
+  max-width: 480px;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  outline: 1.5px solid #2a78d6;
+  outline-offset: 1px;
+  field-sizing: content;
+  font-size: 13px;
+}
+.thread-rename.code:focus {
+  outline: 1.5px solid #2a78d6;
+}
+
+/* A web Code session's title menu and its submenus are the compact kind:
+   #20201f, radius 10, 4px inside, a 1px white-10% rim over 0 8px 24px black 32%
+   and 0 2px 6px black 20%; rows 24px, 2.5px 8px, radius 6, 13/19; the keys
+   12/15 #898781; a submenu's caret 16px muted, 4px into the row's end; rules
+   4px 8px. */
+:root[data-surface="web"] body .menu.code-title-menu {
+  padding: 4px;
+  /* Its scroll layer's transparent 1px inner-ring border at the bottom. */
+  border-bottom: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 19px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) body .menu.code-title-menu {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+}
+:root[data-surface="web"] body .menu.code-title-menu > button {
+  height: 24px;
+  min-height: 24px;
+  gap: 6px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 19px;
+}
+:root[data-surface="web"] body .menu.code-title-menu > button > svg:last-child {
+  margin-right: -4px;
+  color: var(--text-muted);
+}
+:root[data-surface="web"] body .menu.code-title-menu > hr {
+  margin: 4px 8px;
+}
+:root[data-surface="web"]
+  body:has(.app.web:not(.mobile-conversation))
+  .menu.code-title-menu[role="menu"]
+  > button
+  > kbd {
+  display: block !important;
+  margin-left: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+}

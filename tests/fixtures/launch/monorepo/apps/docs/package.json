@@ -1,0 +1,5 @@
+{
+  "name": "docs",
+  "scripts": { "start": "docusaurus start" },
+  "dependencies": { "@docusaurus/core": "3.0.0" }
+}

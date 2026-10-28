@@ -1,0 +1,176 @@
+/* . */
+.code-size-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  width: 100%;
+  max-height: 48px;
+  font-family: var(--cds-font-sans, system-ui, sans-serif);
+  font-size: 12px;
+  line-height: 16px;
+  background: var(--cds-bg-accent, #032042);
+  color: var(--cds-text-accent, #6da7ec);
+}
+.code-size-notice > svg {
+  flex-shrink: 0;
+  margin-inline: 8px;
+}
+.code-size-notice > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.code-block:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--cds-fill-accent, #2a78d6);
+}
+.markdown-mermaid,
+.markdown-mermaid-source {
+  position: relative;
+  overflow-x: auto;
+  border-radius: var(--msg-block-radius, 8px);
+  border: 0.5px solid var(--cds-border, rgb(255 255 255 / 10%));
+  background: color-mix(
+    in oklab,
+    var(--cds-surface-3, #20201f) 50%,
+    transparent
+  );
+  padding: 16px;
+}
+.markdown-mermaid {
+  contain: paint;
+}
+.markdown-mermaid.is-loading {
+  min-height: 96px;
+  animation: markdown-mermaid-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.markdown .markdown-mermaid-source {
+  padding: 14px;
+  white-space: pre;
+  font-family: var(--cds-font-mono, ui-monospace, monospace);
+  font-size: 14px;
+}
+.markdown-mermaid iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+@keyframes markdown-mermaid-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.election-info-source {
+  margin-top: 12px;
+  padding-inline-start: var(--msg-text-inset, 8px);
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--cds-text-secondary, var(--text-secondary));
+}
+.election-info-source a {
+  color: inherit;
+}
+.mcp-resource-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mcp-resource-link {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 240px;
+  height: 36px;
+  padding-inline: 8px;
+  text-align: start;
+  font-family: var(--cds-font-sans, system-ui, sans-serif);
+  border: 0.5px solid var(--cds-border-strong, rgb(255 255 255 / 20%));
+  border-radius: 8px;
+  background: var(--cds-surface-3, #20201f);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  color: var(--cds-text-primary, #f0efec);
+  transition:
+    border-color 150ms,
+    box-shadow 150ms,
+    outline-color 150ms;
+}
+.mcp-resource-link:hover {
+  border-color: var(--cds-border-stronger, rgb(255 255 255 / 40%));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 10%);
+}
+.mcp-resource-link bdi {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 15px;
+}
+.mcp-resource-extension {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  max-width: 64px;
+  height: 18px;
+  padding-inline: 4px;
+  overflow: hidden;
+  border: 0.5px solid var(--cds-border-strong, rgb(255 255 255 / 20%));
+  border-radius: 4px;
+  background: color-mix(
+    in oklab,
+    var(--cds-surface-3, #20201f) 70%,
+    transparent
+  );
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--cds-text-secondary, #c3c2b7);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
+}
+.mcp-resource-link[aria-busy] {
+  cursor: progress;
+}
+.mcp-resource-link[aria-busy] .mcp-resource-extension {
+  visibility: hidden;
+}
+.mcp-resource-spinner {
+  position: absolute;
+  inset-inline-start: 8px;
+  animation: mcp-resource-spin 1s linear infinite;
+}
+@keyframes mcp-resource-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.mcp-resource-links-placeholder {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--cds-text-muted, #898781);
+}
+:root[data-theme="light"] .code-size-notice {
+  background: var(--cds-bg-accent, #cde2fb);
+  color: var(--cds-text-accent, #184f95);
+}
+:root[data-theme="light"]
+  :is(
+    .markdown-mermaid,
+    .markdown-mermaid-source,
+    .mcp-resource-link,
+    .mcp-resource-extension
+  ) {
+  --cds-surface-3: #fff;
+  --cds-border: rgb(11 11 11 / 10%);
+  --cds-border-strong: rgb(11 11 11 / 20%);
+  --cds-border-stronger: rgb(11 11 11 / 40%);
+  --cds-text-primary: #0b0b0b;
+  --cds-text-secondary: #52514e;
+}
+:root[data-theme="light"] .election-info-source {
+  color: var(--cds-text-secondary, #52514e);
+}

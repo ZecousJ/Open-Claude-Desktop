@@ -1,0 +1,552 @@
+/*
+ * The branch row above the Code composer: a 40px band, 8px inside, 10px radius,
+ * 5px between its parts, filled with the ghost-fill tint (--alpha-1). A merged
+ * pull request tints it purple, one in the merge queue yellow (the original's
+ * --cds-bg-git-*: the text colour at 20%). The repository and branch chips end
+ * in an ellipsis; below 320px of row the repository chip goes. The git colours
+ * (--git-*) are the original's --cds-text-git-* values, defined with the
+ * sidebar's PR glyphs (sidebar.css). Controls are the 24px chips of the
+ * workspace bar (workspace-bar.css), the closest analogue the app has.
+ */
+:root {
+  --warning: #db9300;
+}
+:root[data-theme="light"] {
+  --warning: #734500;
+}
+.pr-bar {
+  container: branch-row / inline-size;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--alpha-1);
+  font-size: 14px;
+}
+.pr-bar[data-accent="merged"] {
+  background: color-mix(in srgb, var(--git-merged) 20%, transparent);
+}
+.pr-bar[data-accent="queued"] {
+  background: color-mix(in srgb, var(--git-queued) 20%, transparent);
+}
+.pr-lead {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+.pr-trail {
+  display: contents;
+}
+.pr-glyph {
+  display: inline-flex;
+  flex: none;
+  margin-right: 6px;
+}
+.pr-glyph.pr-plain,
+.pr-glyph[data-state="unknown"] .pr-state-glyph {
+  margin-right: 0;
+  color: var(--text-secondary);
+}
+.pr-glyph[data-state="unknown"] {
+  margin-right: 6px;
+}
+/* The number is muted and takes its state's colour on hover; a merged or queued
+   row shows it in that colour. */
+.pr-number {
+  flex: none;
+  margin-right: 12px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+.pr-number:hover {
+  text-decoration: underline;
+}
+.pr-number[data-state="open"]:hover,
+.pr-number[data-state="approved"]:hover {
+  color: var(--git-opened);
+}
+.pr-number[data-state="draft"]:hover {
+  color: var(--git-draft);
+}
+.pr-number[data-state="closed"]:hover,
+.pr-number[data-state="changesRequested"]:hover {
+  color: var(--git-closed);
+}
+.pr-number[data-state="conflicting"]:hover {
+  color: var(--git-conflicting);
+}
+.pr-number[data-accent="merged"] {
+  color: var(--git-merged);
+}
+.pr-number[data-accent="queued"] {
+  color: var(--git-queued);
+}
+.pr-number:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.pr-chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  height: 24px;
+  padding: 0 5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.pr-chip > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pr-repo {
+  flex: 0 1 auto;
+  max-width: 160px;
+}
+.pr-branch {
+  flex: 0 1 auto;
+}
+@container branch-row (max-width: 320px) {
+  .pr-repo {
+    display: none;
+  }
+}
+.pr-warning {
+  display: inline-flex;
+  flex: none;
+  padding: 0 2px;
+  color: var(--warning);
+}
+.pr-diff,
+.pr-ci {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.pr-ci {
+  padding: 0 5px;
+  color: var(--text-secondary);
+}
+.pr-diff:hover,
+.pr-ci:hover,
+.pr-ci[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.pr-ci-caret {
+  color: var(--text-muted);
+}
+.pr-add {
+  color: var(--git-added);
+}
+.pr-del {
+  color: var(--git-removed);
+}
+.pr-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.pr-dot[data-checks="passed"] {
+  background: var(--git-opened);
+}
+.pr-dot[data-checks="failed"] {
+  background: var(--git-removed);
+}
+.pr-split {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--alpha-2);
+  color: var(--text);
+}
+.pr-action,
+.pr-more,
+.pr-ghost,
+.pr-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  white-space: nowrap;
+}
+.pr-action,
+.pr-ghost,
+.pr-secondary {
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+/* Mark ready, Merge and Confirm merge stand alone as the split's chip. */
+.pr-action.pr-solo,
+.pr-ghost,
+.pr-secondary {
+  flex: none;
+  height: 24px;
+}
+.pr-action.pr-solo,
+.pr-secondary {
+  background: var(--alpha-2);
+  color: var(--text);
+}
+.pr-ghost {
+  color: var(--text-secondary);
+}
+.pr-split[data-menu="true"] .pr-action {
+  padding-right: 8px;
+  border-radius: 6px 0 0 6px;
+}
+.pr-more {
+  width: 24px;
+  border-left: 1px solid var(--border);
+  border-radius: 0 6px 6px 0;
+  color: var(--text-secondary);
+}
+.pr-action:hover:not([aria-disabled="true"]):not(:disabled),
+.pr-more:hover:not([aria-disabled="true"]),
+.pr-more[aria-expanded="true"],
+.pr-ghost:hover:not(:disabled),
+.pr-secondary:hover:not([aria-disabled="true"]) {
+  background: var(--fill-ghost-hover);
+}
+.pr-action.pr-solo:hover:not(:disabled) {
+  background: var(--alpha-3);
+}
+.pr-action[aria-disabled="true"],
+.pr-more[aria-disabled="true"],
+.pr-secondary[aria-disabled="true"],
+.pr-ghost:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+.pr-action[aria-busy="true"] {
+  cursor: progress;
+}
+.pr-confirm {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
+/* The conflict glyph is a button in the conflicts colour; it opens Ask Claude
+   to fix. */
+.pr-conflict {
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+  border-radius: 4px;
+}
+.pr-conflict:hover,
+.pr-conflict[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+
+/* The row's popovers open above their button with the floating menus' box
+   (src/ui/menu.css). The CI panel is at least 220px, 4px across and 6px down
+   its edges, rows the control's 28px; the header 8px across, 3px down; counts
+   in body text (13/19) with a 14px icon box; the conflict panel 288px with 12px
+   inside. */
+.pr-popover-anchor {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+.pr-popover {
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  bottom: calc(100% + 8px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #373737;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 6px 15px #0000006b;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+  text-align: left;
+  white-space: normal;
+}
+:root[data-theme="light"] .pr-popover {
+  border-color: #e4e4e4;
+  background: #fff;
+  box-shadow: 0 12px 28px #0002;
+  color: #141414;
+}
+.pr-ci-panel {
+  min-width: 220px;
+  padding: 6px 4px;
+}
+.pr-ci-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+  padding: 3px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+.pr-ci-open {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.pr-ci-open:hover {
+  background: var(--fill-ghost-hover);
+}
+.pr-ci-note {
+  max-width: 220px;
+  padding: 3px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+.pr-ci-counts {
+  display: flex;
+  flex-direction: column;
+}
+.pr-ci-count {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 8px;
+}
+.pr-ci-count-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pr-ci-count-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+.pr-ci-count-number {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pr-check-glyph[data-result="passed"] {
+  color: var(--git-opened);
+}
+.pr-check-glyph[data-result="failed"] {
+  color: var(--git-removed);
+}
+.pr-ci-spin {
+  color: var(--text-muted);
+}
+.pr-ci-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+}
+.pr-ci-ring > i {
+  box-sizing: border-box;
+  width: 6px;
+  height: 6px;
+  /* The original's alpha-5: the ink at 50%. */
+  border: 1px solid color-mix(in srgb, var(--alpha-ink) 50%, transparent);
+  border-radius: 50%;
+}
+/* The rule between counts and switches: 12px high, a 1px line 8px in. */
+.pr-ci-rule {
+  position: relative;
+  height: 12px;
+}
+.pr-ci-rule::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  left: 8px;
+  height: 1px;
+  background: var(--alpha-2);
+}
+.pr-ci-switch-row {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+}
+.pr-ci-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+}
+.pr-ci-switch-label:hover {
+  background: var(--fill-ghost-hover);
+}
+/* Under the switch's label, indented past the switch. */
+.pr-ci-switch-note {
+  max-width: 180px;
+  margin: 0 8px 4px calc(28.8px + 16px);
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.375;
+}
+/* The xs switch; the track colours are the Settings switch's (settings.css). */
+.pr-switch {
+  position: relative;
+  flex: none;
+  width: 28.8px;
+  height: 16px;
+  padding: 0;
+  border-radius: 8px;
+  background: #31302e;
+  transition: none;
+}
+.pr-switch > span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--motion-snap) var(--ease-overshoot);
+}
+.pr-switch[aria-checked="true"] {
+  background: #2a78d6;
+}
+.pr-switch[aria-checked="true"] > span {
+  transform: translateX(12.8px);
+}
+.pr-switch:hover:not(:disabled) {
+  background: #484745;
+}
+.pr-switch[aria-checked="true"]:hover:not(:disabled) {
+  background: #3987e5;
+}
+.pr-switch:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+:root[data-theme="light"] .pr-switch {
+  background: #c8c8c8;
+}
+:root[data-theme="light"] .pr-switch[aria-checked="true"] {
+  background: #2a78d6;
+}
+.pr-conflict-panel {
+  left: 0;
+  right: auto;
+  gap: 12px;
+  width: 288px;
+  padding: 12px;
+}
+.pr-conflict-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pr-conflict-text > strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.pr-conflict-text > span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 15px;
+}
+.pr-conflict-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+/* The open request's menu button: a 24px ghost square. */
+.pr-ghost.pr-options {
+  width: 24px;
+  padding: 0;
+}
+.pr-ghost.pr-options:hover:not(:disabled),
+.pr-ghost.pr-options[aria-expanded="true"] {
+  background: var(--alpha-2);
+}
+/* Review chips: whose turn — 24px, 3px gap, 5px sides, medium body text; "Your
+   turn" on bg-accent in text-accent, "Their turn" muted; the label hides when
+   the row is narrow — and the open threads' count with an accent Chat glyph. */
+.pr-turn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  padding: 0 5px;
+  border-radius: 6px;
+  color: #898781;
+  font-size: 13px;
+  font-weight: 500;
+}
+.pr-turn[data-yours] {
+  background: #032042;
+  color: #6da7ec;
+}
+:root[data-theme="light"] .pr-turn[data-yours] {
+  background: #cde2fb;
+  color: #184f95;
+}
+@container branch-row (max-width: 480px) {
+  .pr-turn-label {
+    display: none;
+  }
+}
+.pr-comments {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.pr-comments > svg {
+  color: #6da7ec;
+}
+:root[data-theme="light"] .pr-comments > svg {
+  color: #184f95;
+}
+.pr-comments:hover {
+  background: var(--alpha-2);
+}

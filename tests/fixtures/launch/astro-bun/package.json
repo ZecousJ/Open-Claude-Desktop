@@ -1,0 +1,5 @@
+{
+  "name": "astro-site",
+  "scripts": { "start": "astro dev" },
+  "dependencies": { "astro": "5.0.0" }
+}

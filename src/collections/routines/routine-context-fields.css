@@ -1,0 +1,56 @@
+/* O16 c97 Fi → shared-frame BI, size sm: icon-only radios in a 28px track. */
+.routine-source-picker.segmented {
+  display: inline-flex;
+  align-self: flex-end;
+  height: 28px;
+  padding: 1px;
+  border-radius: 6px;
+  background: var(
+    --cds-segmented-control-track,
+    var(--settings-alpha-1, rgb(255 255 255 / 5%))
+  );
+  --segmented-inset: 1px;
+  --segmented-radius: 4px;
+  --segmented-thumb: var(
+    --cds-segmented-control-thumb,
+    var(--task-field, var(--routine-field))
+  );
+  --segmented-thumb-ring: var(--task-ring, var(--routine-ring));
+}
+.routine-source-picker.segmented > button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+.routine-source-picker.segmented > button[aria-checked="true"] {
+  color: var(--text-primary);
+}
+.routine-context-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+.routine-context-field select {
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--task-ring, var(--routine-ring));
+  border-radius: 6px;
+  background: var(--task-field, var(--routine-field));
+  color: inherit;
+}
+.routine-context-path {
+  overflow-wrap: anywhere;
+  color: var(--text-secondary);
+}
+.routine-context-actions {
+  display: flex;
+  gap: 8px;
+}

@@ -1,0 +1,35 @@
+.directory-submissions {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 20px;
+  font-size: 13px;
+  line-height: 19px;
+}
+.directory-submissions h1 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+.directory-submissions p {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .directory-submissions p {
+  color: #52514e;
+}
+.directory-submissions nav,
+.directory-submission-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.directory-submission-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.directory-reviewer-note {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}

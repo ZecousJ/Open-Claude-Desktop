@@ -1,0 +1,842 @@
+/*
+ * The signed-out pages: sign-in steps, registration, password reset and the
+ * account-state pages, on the desktop and the web. Measured on ref-login-email
+ * / ref-login-verify (Safari, 2x, a 1000 x 848 CSS viewport): the wordmark in a
+ * 73px header, the rest centred in the space below it. Light colours are
+ * inferred (provisional). Loaded with the page's lazy chunk, never in the web
+ * app's first load.
+ */
+.signin {
+  --auth-bg: #111111;
+  --auth-text: #f7f7f5;
+  --auth-muted: #8c8c8a;
+  --auth-card-border: #252525;
+  /* bg-surface-1: --cds-gray-850 dark, --cds-gray-10 light. */
+  --auth-card-surface: #151515;
+  --auth-input-bg: #1d1d1d;
+  --auth-input-border: #303030;
+  --auth-primary-bg: #ffffff;
+  --auth-primary-text: #0f0f0f;
+  --auth-secondary-bg: #292929;
+  --auth-link: #86a4ca;
+  --auth-accent: #d97757;
+  --auth-error: #f2a39a;
+  --auth-serif:
+    "Claudex Serif", Georgia, "Times New Roman", "PingFang SC",
+    "Microsoft YaHei", serif;
+  --auth-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--auth-bg);
+  color: var(--auth-text);
+  font-family: var(--auth-sans);
+  -webkit-font-smoothing: antialiased;
+}
+:root[data-reference-fonts="true"] .signin {
+  --auth-serif:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  --auth-sans: -apple-system, "Segoe UI", sans-serif;
+}
+:root[data-theme="light"] .signin {
+  --auth-bg: #faf9f5;
+  --auth-text: #141413;
+  --auth-muted: #6b6a65;
+  --auth-card-border: #dedcd4;
+  --auth-card-surface: #fcfcfb;
+  --auth-input-bg: #ffffff;
+  --auth-input-border: #d6d4cc;
+  --auth-primary-bg: #141413;
+  --auth-primary-text: #ffffff;
+  --auth-secondary-bg: #efede6;
+  --auth-link: #2f6fb7;
+  --auth-error: #b3261e;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .signin {
+    --auth-bg: #faf9f5;
+    --auth-text: #141413;
+    --auth-muted: #6b6a65;
+    --auth-card-border: #dedcd4;
+    --auth-card-surface: #fcfcfb;
+    --auth-input-bg: #ffffff;
+    --auth-input-border: #d6d4cc;
+    --auth-primary-bg: #141413;
+    --auth-primary-text: #ffffff;
+    --auth-secondary-bg: #efede6;
+    --auth-link: #2f6fb7;
+    --auth-error: #b3261e;
+  }
+}
+
+/* Header: the star 22px at x 49, the wordmark 6.5px after it. */
+.signin-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 73px;
+  padding: 0 49px;
+}
+/*
+ * The desktop: no wordmark, a 36px drag strip over the top of the window (its
+ * buttons off macOS, the traffic lights on it), and the page centred in the
+ * whole window with 32px around it.
+ */
+.signin-desktop .signin-header {
+  -webkit-app-region: drag;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: 36px;
+  padding: 0 0 0 12px;
+}
+.signin-desktop .signin-body {
+  padding: 32px;
+}
+/* The heading above the card: serif 30/36, 500, 32px below it; the card
+   keeps its own 32px top margin. */
+.signin.signin-desktop .signin-title {
+  margin-bottom: 32px;
+  font: 500 30px/36px var(--auth-serif);
+  letter-spacing: normal;
+}
+/* A state page's subtitle: muted, 16px under the heading (-mt-4). */
+.signin.signin-desktop .signin-subtitle {
+  margin: -16px 0 32px;
+  color: var(--auth-muted);
+  font: 400 14px/20px var(--auth-sans);
+}
+.signin.signin-desktop .signin-card {
+  margin-top: 32px;
+}
+
+/* The desktop's welcome screen: the app icon 72px with 48px under it, the
+   serif title, a muted line 16px below, "Get started" 48px above the
+   window's bottom edge, 80px in from its sides, at most 448px wide. */
+.signin-app-icon {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 48px;
+}
+.signin-welcome-title {
+  margin: 0;
+  font: 500 30px/36px var(--auth-serif);
+  text-align: center;
+}
+.signin-welcome-title em {
+  font-style: italic;
+}
+.signin-welcome-tagline {
+  margin: 0;
+  padding-top: 16px;
+  color: var(--auth-muted);
+  font: 400 14px/20px var(--auth-sans);
+  text-align: center;
+}
+.signin-welcome-actions {
+  position: absolute;
+  right: 80px;
+  bottom: 48px;
+  left: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 448px;
+  margin: 0 auto;
+}
+.signin-header .window-controls {
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+}
+.signin-brand {
+  display: flex;
+  align-items: center;
+  gap: 6.5px;
+}
+.signin-star {
+  width: 22px;
+  height: 22px;
+  color: var(--auth-accent);
+}
+.signin-wordmark {
+  font: 400 24.5px/1 var(--auth-serif);
+  letter-spacing: -0.3px;
+}
+
+.signin-body {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+/* "Claudex Serif", Georgia matched to the reference's x-height (25.5) and width (463). */
+.signin-title {
+  margin: 0;
+  font: 400 52px/64px var(--auth-serif);
+  letter-spacing: -0.9px;
+  text-align: center;
+  text-wrap: balance;
+}
+:root[data-reference-fonts="true"] .signin-title {
+  font-size: 49px;
+  letter-spacing: -0.6px;
+}
+:root[data-reference-fonts="true"] .signin-subtitle {
+  font-size: 15.7px;
+}
+.signin-subtitle {
+  margin: 10px 0 0;
+  font: 400 16.5px/24px var(--auth-serif);
+  text-align: center;
+}
+/* The original's login card, at the desktop's 0.875 rem scale; the web at full
+   size. */
+.signin-card {
+  box-sizing: border-box;
+  width: min(397px, 100%);
+  margin-top: 28px;
+  padding: 24.5px;
+  border: 0.5px solid var(--auth-card-border);
+  border-radius: 28px;
+  background: var(--auth-card-surface);
+  box-shadow:
+    0 4px 24px 0 rgb(0 0 0 / 1.57%),
+    0 4px 32px 0 rgb(0 0 0 / 1.57%),
+    0 2px 64px 0 rgb(0 0 0 / 1.18%),
+    0 16px 32px 0 rgb(0 0 0 / 1.18%);
+  font-size: 14px;
+}
+:root[data-surface="web"] .signin-card {
+  width: min(448px, 100%);
+  margin-top: 32px;
+  padding: 28px;
+  border-radius: 32px;
+}
+/* The form shell is flex-col gap-4: 16px on the web, 14px at the desktop's
+   0.875 scale; the main button has no extra margin. */
+.signin-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+:root[data-surface="web"] .signin-card form {
+  gap: 16px;
+}
+
+.signin-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 35.5px;
+  padding: 0 14px;
+  border: 1px solid var(--auth-input-border);
+  border-radius: 8px;
+  background: var(--auth-input-bg);
+  color: var(--auth-text);
+  font: 400 15px var(--auth-sans);
+  outline: none;
+}
+.signin-input::placeholder {
+  color: var(--auth-muted);
+  opacity: 1;
+}
+.signin-input:focus {
+  border-color: var(--auth-muted);
+  box-shadow: none;
+}
+.signin-code-input {
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+.signin-primary,
+.signin-secondary {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 35px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  font: 500 15px var(--auth-sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+.signin-primary {
+  width: 100%;
+  background: var(--auth-primary-bg);
+  color: var(--auth-primary-text);
+}
+.signin-secondary {
+  background: var(--auth-secondary-bg);
+  color: var(--auth-text);
+  font-weight: 400;
+}
+.signin-primary:hover:not(:disabled),
+.signin-secondary:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+:root[data-theme="light"] .signin-primary:hover:not(:disabled) {
+  filter: brightness(1.35);
+}
+.signin-primary:disabled,
+.signin-secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.signin-primary:focus-visible,
+.signin-secondary:focus-visible,
+.signin-link:focus-visible,
+.signin-small a:focus-visible {
+  outline: 2px solid var(--auth-link);
+  outline-offset: 2px;
+}
+.signin-wide {
+  width: 100%;
+}
+.signin-download {
+  margin-top: 22px;
+}
+.signin-or {
+  margin: 11px 0 12px;
+  color: var(--auth-muted);
+  font-size: 12px;
+  line-height: 14px;
+  text-align: center;
+}
+
+/* ref-login-verify: 18.5px lines, 14px between paragraphs, 27.5px before
+   the code paragraph. */
+.signin-text {
+  margin: 0 0 14px;
+  color: var(--auth-muted);
+  font-size: 14px;
+  line-height: 18.5px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+/* The system sans is wider than the reference: 13.5px keeps the
+   reference's line breaks ("… Try sending again." on one line). */
+:root:not([data-reference-fonts="true"]) .signin-text {
+  font-size: 13.5px;
+}
+.signin-text strong {
+  color: var(--auth-text);
+  font-weight: 500;
+}
+.signin-gap {
+  margin-top: 27.5px;
+}
+/* mt-4 text-secondary text-center; 16px on the web, 14px at the desktop's
+   scale. */
+.signin-link-hint {
+  margin-top: 14px;
+}
+:root[data-surface="web"] .signin-link-hint {
+  margin-top: 16px;
+}
+/* . */
+.signin-mailbox-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.signin-mailbox {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding-top: 8px;
+  text-align: center;
+}
+.signin-mailbox-icon {
+  color: #6da7ec;
+}
+.signin-mailbox > div {
+  width: 100%;
+  min-width: 0;
+}
+.signin-mailbox p {
+  margin: 0;
+}
+.signin-mailbox-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-weight: 500;
+}
+.signin-mailbox-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.signin-mailbox-form .signin-link,
+.signin-link-fallback .signin-link {
+  color: #6da7ec;
+  border-radius: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, currentColor, transparent 60%);
+  transition:
+    color 60ms cubic-bezier(0.165, 0.84, 0.44, 1),
+    text-decoration-color 60ms cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.signin-mailbox-form .signin-link:is(:hover, :focus-visible),
+.signin-link-fallback .signin-link:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+:root[data-theme="light"] .signin-mailbox-form {
+  color: #52514e;
+}
+:root[data-theme="light"] .signin-mailbox-icon {
+  color: #184f95;
+}
+:root[data-theme="light"] .signin-mailbox-email {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .signin-mailbox-form .signin-link,
+:root[data-theme="light"] .signin-link-fallback .signin-link {
+  color: #184f95;
+}
+/* . */
+.signin-link-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.signin-link-code {
+  border: 1px solid hsl(51 16.5% 84.5%);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 20px;
+  font-size: 48px;
+  line-height: 1;
+}
+.signin-link-fallback > .signin-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+:root[data-theme="light"] .signin-link-code {
+  border-color: hsl(30 3.3% 11.8%);
+  background: #fcfcfb;
+  color: #0b0b0b;
+}
+@media (min-width: 640px) {
+  .signin-link-code {
+    padding-inline: 32px;
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .signin-mailbox-form {
+    color: #52514e;
+  }
+  :root:not([data-theme]) .signin-mailbox-icon {
+    color: #184f95;
+  }
+  :root:not([data-theme]) .signin-mailbox-email {
+    color: #0b0b0b;
+  }
+  :root:not([data-theme]) .signin-mailbox-form .signin-link,
+  :root:not([data-theme]) .signin-link-fallback .signin-link {
+    color: #184f95;
+  }
+  :root:not([data-theme]) .signin-link-code {
+    border-color: hsl(30 3.3% 11.8%);
+    background: #fcfcfb;
+    color: #0b0b0b;
+  }
+}
+.signin-nowrap {
+  white-space: nowrap;
+}
+.signin-small + .signin-small {
+  margin-top: 14px;
+}
+.signin-small {
+  margin: 7px 0 0;
+  color: var(--auth-muted);
+  font-size: 13px;
+  line-height: 17.5px;
+  text-align: center;
+}
+.signin-small a {
+  color: var(--auth-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.signin-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.signin-hint {
+  margin: 0;
+  text-align: left;
+}
+.signin-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.signin-link:hover:not(:disabled) {
+  color: var(--auth-text);
+}
+.signin-link:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.signin-error,
+.signin-sent {
+  margin: 0;
+  font-size: 13px;
+  line-height: 17.5px;
+  text-align: center;
+}
+.signin-error {
+  color: var(--auth-error);
+}
+.signin-sent {
+  color: var(--auth-muted);
+}
+.signin-state {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.signin-state .signin-text {
+  margin: 0;
+}
+.signin-loading {
+  margin: 0;
+}
+/* After the service ended the session: one line above the card, 32px below the
+   heading, 13/19 secondary text, at most 448px wide. */
+.signin-ended {
+  box-sizing: border-box;
+  max-width: 448px;
+  margin: 32px 0 0;
+  padding: 0 16px;
+  color: var(--auth-muted);
+  font-size: 13px;
+  line-height: 19px;
+  text-align: center;
+}
+
+/* Waiting for the connection. Its colours, padding and glyph are the captured
+   repository warning of the Share dialog (conversation-share.css), the same
+   callout in the app. */
+.signin-warning {
+  --signin-warning-bg: #2d1b03;
+  --signin-warning-border: #443111;
+  --signin-warning-text: #cc9c5e;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 7px 12px;
+  border: 1px solid var(--signin-warning-border);
+  border-radius: 8px;
+  background: var(--signin-warning-bg);
+  color: var(--signin-warning-text);
+  font-size: 13px;
+  line-height: 19px;
+  text-align: left;
+}
+.signin-warning > svg {
+  flex: none;
+  margin-top: 2px;
+}
+:root[data-theme="light"] .signin-warning {
+  --signin-warning-bg: #fbf1e1;
+  --signin-warning-border: #ecd3a8;
+  --signin-warning-text: #8a5a14;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .signin-warning {
+    --signin-warning-bg: #fbf1e1;
+    --signin-warning-border: #ecd3a8;
+    --signin-warning-text: #8a5a14;
+  }
+}
+
+/* A ghost button (the chooser's and the add-account page's): no fill until
+   hovered, then the secondary button's fill. Default 32px tall, small 28px. */
+.signin-ghost {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--auth-text);
+  font: 500 14px var(--auth-sans);
+  cursor: pointer;
+}
+.signin-ghost:hover:not(:disabled) {
+  background: var(--auth-secondary-bg);
+}
+.signin-ghost:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.signin-ghost:focus-visible,
+.signin-chooser-pick:focus-visible,
+.signin-chooser-forget:focus-visible {
+  outline: 2px solid var(--auth-link);
+  outline-offset: 2px;
+}
+/* "All accounts": small, flush with the card's start, 12px above the form. */
+.signin-all-accounts {
+  height: 28px;
+  margin: 0 0 12px -8px;
+  padding: 0 8px;
+  color: var(--auth-muted);
+  font-size: 13px;
+}
+.signin-back {
+  margin-top: 22px;
+  color: var(--auth-muted);
+}
+
+/* "Choose an account": 16px between the heading, the list and "Use another
+   account"; rows 12px apart; each row a small card (14px in, 11px corners, a
+   1px ring) with a 32px avatar, the name in 14/20 medium and the email in 12/17
+   muted, and a 28px X. */
+.signin-chooser {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.signin-chooser-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.signin-chooser-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+.signin-chooser-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 11px;
+  box-shadow: inset 0 0 0 1px var(--auth-card-border);
+}
+.signin-chooser-row:has(.signin-chooser-pick:hover:not(:disabled)) {
+  background: var(--auth-secondary-bg);
+}
+.signin-chooser-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--auth-secondary-bg);
+  color: var(--auth-text);
+  font-size: 13px;
+}
+.signin-chooser-pick {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+/* The whole row picks the account (the original's card link). */
+.signin-chooser-pick::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.signin-chooser-pick:disabled {
+  cursor: default;
+}
+.signin-chooser-name,
+.signin-chooser-email {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.signin-chooser-name {
+  color: var(--auth-text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.signin-chooser-email {
+  color: var(--auth-muted);
+  font-size: 12px;
+  line-height: 17px;
+}
+.signin-chooser-forget {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--auth-muted);
+  cursor: pointer;
+}
+.signin-chooser-forget:hover:not(:disabled) {
+  background: var(--auth-input-bg);
+  color: var(--auth-text);
+}
+.signin-chooser-another {
+  align-self: center;
+}
+
+@media (max-width: 600px) {
+  .signin-header {
+    padding: 0 20px;
+  }
+  .signin-title {
+    font-size: 40px;
+    line-height: 46px;
+  }
+}
+
+/* The page rises in (claude.ai's mobile-menu items, navbar-mobile-item-enter:
+   20px, 300ms, cubic-bezier(.22, 1, .36, 1), after .2s and 40ms apart). A
+   step's change is animated from SignInPage.tsx (SignInFrame). */
+@keyframes signin-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.signin-desktop .signin-header,
+.signin-desktop .signin-body > *,
+.signin-desktop .signin-welcome-actions {
+  animation: signin-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(0.2s + var(--signin-i, 0) * 40ms);
+}
+.signin-body > :nth-child(2) {
+  --signin-i: 1;
+}
+.signin-body > :nth-child(3) {
+  --signin-i: 2;
+}
+.signin-body > :nth-child(n + 4),
+.signin-welcome-actions {
+  --signin-i: 3;
+}
+/* A button gives under the finger and springs back: the shared press
+   (.u-press, styles/05-utilities.css). */
+:root[data-motion="reduced"] .signin-header,
+:root[data-motion="reduced"] .signin-body > *,
+:root[data-motion="reduced"] .signin-welcome-actions {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .signin-header,
+  .signin-body > *,
+  .signin-welcome-actions {
+    animation: none;
+  }
+}
+/* Continue with Google (LOGIN-GOOGLE): the card's secondary button with
+   Google's mark; on the account chooser it sits under the accounts. */
+.signin-chooser .signin-google {
+  margin-top: 12px;
+}
+.signin-google > svg {
+  flex: none;
+}
+.signin-support {
+  color: inherit;
+  text-decoration: underline;
+}
+/* "Confirm it’s you" over the second-factor step. */
+.signin-mfa-heading {
+  margin: 0 0 4px;
+  color: var(--auth-text, var(--text));
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18.5px;
+  text-align: center;
+}
+/* The wrapper that carries "Last used": lays its button out as before. */
+.signin-last-used {
+  display: flex;
+  flex-direction: column;
+}
+/* A refused sign-in in the warning callout's frame, with the app's danger
+   colours (the page error banner's). */
+.signin-error[role="alert"] {
+  padding: 7px 12px;
+  border: 1px solid #6a3a37;
+  border-radius: 8px;
+  background: #3a2422;
+  color: var(--danger);
+  line-height: 19px;
+  text-align: left;
+}
+:root[data-theme="light"] .signin-error[role="alert"] {
+  border-color: #f0c9c3;
+  background: #fae9e6;
+  color: #b4443c;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .signin-error[role="alert"] {
+    border-color: #f0c9c3;
+    background: #fae9e6;
+    color: #b4443c;
+  }
+}

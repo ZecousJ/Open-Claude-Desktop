@@ -1,0 +1,116 @@
+/* File drop overlay (DropOverlay.tsx). Timings, sizes and layers follow the
+   original's composer drop zone; Static CSS/JS. The accent is the blue of the
+   focus ring, as the original's fill accent (and Claudex's earlier drop rim,
+   #497cbf) is blue. */
+:root {
+  --drop-accent: var(--focus-accent);
+}
+
+/* Card layers: dashed off-target, a 2px inset ring and 24px glow on-target. */
+.composer:has(> .composer-drop-card) {
+  position: relative;
+}
+.composer-drop-card {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 1;
+  animation: composer-drop-ring-in 150ms var(--ease-out-cubic);
+  transition:
+    opacity 200ms,
+    transform 200ms;
+}
+.composer-drop-card[data-state="closed"] {
+  opacity: 0;
+  transform: scale(0.95);
+}
+.composer-drop-card > .composer-drop-dashed,
+.composer-drop-card > .composer-drop-ring,
+.composer-drop-card > .composer-drop-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.composer-drop-card > .composer-drop-dashed {
+  border: 1px dashed var(--drop-accent);
+}
+.composer-drop-card > .composer-drop-ring,
+.composer-drop-card > .composer-drop-glow,
+.composer-drop-card[data-target] > .composer-drop-dashed {
+  opacity: 0;
+}
+.composer-drop-card > .composer-drop-ring {
+  box-shadow: inset 0 0 0 2px var(--drop-accent);
+}
+.composer-drop-card > .composer-drop-glow {
+  box-shadow: inset 0 0 24px 0
+    color-mix(in srgb, var(--drop-accent) 20%, transparent);
+  animation: composer-drop-fade-in 200ms var(--ease-out-cubic) 80ms backwards;
+}
+.composer-drop-card[data-target] > .composer-drop-ring,
+.composer-drop-card[data-target] > .composer-drop-glow {
+  opacity: 1;
+}
+
+/* Page: the window covered by its surface at 90% under a 0.1s fade, the
+   document pictogram over the label (text-primary), 8px apart, centred. */
+.composer-drop-page {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  pointer-events: none;
+  animation: composer-drop-fade-in 100ms ease-out;
+}
+.composer-drop-page-fill {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklab, var(--bg) 90%, transparent);
+}
+.composer-drop-page-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@keyframes composer-drop-ring-in {
+  from {
+    opacity: 0;
+    transform: scale(1.005);
+  }
+}
+@keyframes composer-drop-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: the overlay appears and goes at once. */
+@media (prefers-reduced-motion: reduce) {
+  .composer-drop-page {
+    animation: none;
+  }
+  .composer-drop-card,
+  .composer-drop-card > div,
+  .composer-drop-card > .composer-drop-glow {
+    animation: none;
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .composer-drop-page {
+  animation: none;
+}
+:root[data-motion="reduced"] .composer-drop-card,
+:root[data-motion="reduced"] .composer-drop-card > div {
+  animation: none;
+  transition: none;
+}

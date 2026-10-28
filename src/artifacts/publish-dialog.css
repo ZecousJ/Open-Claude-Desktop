@@ -1,0 +1,139 @@
+/*
+ * The dialog frame Report artifact (ReportArtifactDialog, report-dialog.css)
+ * builds on. It was first made for the Publish artifact dialog, which now
+ * follows the live Publish modal (PublishArtifactModal); sized after the Share
+ * session dialog.
+ */
+.publish-dialog-note a {
+  color: #7da2e8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+:root[data-theme="light"] .publish-dialog-note a {
+  color: #2f6fd1;
+}
+
+.publish-dialog {
+  width: 512px;
+  max-width: 100%;
+  max-height: 90vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid #363636;
+  border-radius: 12px;
+  background: #212121;
+  box-shadow: 0 24px 80px #0005;
+  color: var(--text);
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.publish-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 -4px 6px 0;
+}
+.publish-dialog h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+}
+.publish-dialog-close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #a5a49f;
+}
+.publish-dialog-close:hover {
+  background: #363636;
+  color: var(--text);
+}
+.publish-dialog-note {
+  margin: 0 0 16px;
+  color: #8f8f8f;
+  font-size: 13px;
+  line-height: 19px;
+}
+.publish-dialog-error {
+  margin: -4px 0 12px;
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 19px;
+}
+.publish-dialog-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.publish-dialog-actions > span {
+  flex: 1;
+}
+.publish-dialog-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #333333;
+  color: #e5e4df;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.publish-dialog-actions > button:hover:not(:disabled) {
+  background: #3d3d3d;
+}
+.publish-dialog .publish-dialog-publish {
+  background: #faf9f7;
+  color: #1f1e1d;
+  font-weight: 600;
+}
+.publish-dialog .publish-dialog-publish:hover:not(:disabled) {
+  background: #e7e4dc;
+}
+.publish-dialog button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+.publish-dialog button:focus-visible,
+.publish-dialog input:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 1px;
+}
+
+:root[data-theme="light"] .publish-dialog {
+  border-color: #dedcd4;
+  background: #fffefb;
+  color: #29261b;
+}
+:root[data-theme="light"] .publish-dialog-close {
+  color: #73726c;
+}
+:root[data-theme="light"] .publish-dialog-close:hover {
+  background: #efede6;
+  color: #29261b;
+}
+:root[data-theme="light"] .publish-dialog-note {
+  color: #73726c;
+}
+:root[data-theme="light"] .publish-dialog-actions > button {
+  background: #f0eee6;
+  color: #29261b;
+}
+:root[data-theme="light"]
+  .publish-dialog-actions
+  > button:hover:not(:disabled) {
+  background: #e7e4dc;
+}
+:root[data-theme="light"] .publish-dialog .publish-dialog-publish {
+  background: #29261b;
+  color: #faf9f5;
+}
+:root[data-theme="light"] .publish-dialog-error {
+  color: #b4443c;
+}

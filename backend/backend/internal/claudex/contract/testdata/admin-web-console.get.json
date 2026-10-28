@@ -1,0 +1,8 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "admin_only": true,
+    "backend_mode_enabled": false
+  }
+}

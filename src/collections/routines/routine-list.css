@@ -1,0 +1,46 @@
+/* O16 cdbc75b4b ci→Hr/Ie: card menus use the default icon Button,
+   not icon_sm. shared-frame tw uses h-control/w-control, rounded and
+   the auto icon: comfortable density = 32px / 8px / 20px. The web card
+   already has these metrics in scheduled.css; keep this native-only. */
+.routine-grid .routine-native-item .routine-more {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.routine-grid .routine-native-item .routine-more > [data-icon] {
+  width: 20px;
+  height: 20px;
+}
+
+/* Small inline host metadata with a 12px glyph and 6px connectivity dot.
+   Unknown connectivity has no status indicator. */
+.routine-computer {
+  min-width: 0;
+  max-width: min(100%, 180px);
+  height: auto;
+  padding: 0;
+  background: none;
+}
+
+.routine-computer-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routine-connectivity-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.routine-connectivity-dot[data-connectivity="connected"] {
+  background: var(--success);
+}
+
+.routine-connectivity-dot[data-connectivity="offline"] {
+  background: var(--warning-fill);
+}

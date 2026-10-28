@@ -1,0 +1,1027 @@
+/* Composer core: column width, attachments, drop target, queued messages and
+   the @ file list. Only the column width and the Pasted card are measured; the
+   rest has no original capture and is provisional. */
+
+/* The conversation composer is 768 wide and the Code composer stays 768 in a
+   900px window (G-57: 66..832), where the narrow-window rule used to stretch it
+   to the window minus 48. Beside a side panel the narrowed frames keep their
+   own widths; the home composers keep theirs. */
+.chat-layout:not(:has(> .artifact-panel, > .work-panel))
+  .composer-wrap.conversation-composer {
+  width: min(var(--chat-column-measure, 768px), calc(100% - 48px));
+}
+
+/* The Chat and Cowork conversation frame's Stop and Send: the reply composer's
+   32px ghost buttons, 8px in from the frame like every control in it, Send a
+   bare return glyph on no fill. */
+.conversation-input-actions .send-button.plain {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  opacity: 1;
+}
+/* Hovered, the original's ghost button fill (white 7.5% / ink 5%), not an
+   opaque grey that only suits the frame it was sampled on. */
+.conversation-input-actions .send-button.plain:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+/* Disabled CDS ghost controls keep their transparent fill and dim the ink. */
+.conversation-input-actions .send-button.plain:disabled {
+  background: transparent;
+  opacity: var(--opacity-disabled);
+  pointer-events: none;
+}
+:root[data-theme="light"] .conversation-input-actions .send-button.plain {
+  color: #0b0b0b;
+}
+
+/* Reply PrimaryAction uses the comfortable CDS control, not the legacy home's
+   animated capsule. */
+.composer-reply-submit {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+.conversation-input-actions .composer-reply-submit .send-button.plain {
+  padding: 0;
+  border: 0;
+}
+.conversation-input-actions
+  .composer-reply-submit
+  .send-button.plain:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px #0b0b0b,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px rgb(24 79 149 / 60%);
+}
+:root[data-theme="light"]
+  .conversation-input-actions
+  .composer-reply-submit
+  .send-button.plain:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px #f9f9f7,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px #cde2fb;
+}
+:root[data-theme="light"]
+  .conversation-input-actions
+  .send-button.plain:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+
+/* The footer's other buttons (effort, permission, the voice segments) are
+   the original's ghost buttons, so they squish like Send does: down to the
+   shared press scale in 60ms, back on the spring (05-utilities.css has the
+   shared list; the release is the base button rule's). Source: desktop
+   bundle 2.31226.1 static CSS. */
+:is(
+    .code-effort-trigger,
+    .code-permission-trigger,
+    .voice-mode-button > button,
+    .cowork-voice-options,
+    .context-popover-compact
+  ):not(:disabled, [aria-disabled="true"]):active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+
+/* Send, Stop and the microphone. Stop fades in and out over 75ms after 50ms.
+   Send and the microphone share one place and cross-fade in 60ms; the one
+   hidden leaves the flow, so the place is as wide as what shows. In Code, Send
+   folds to nothing while a turn runs with no draft, its width, opacity and gap
+   after Stop moving in 120ms. */
+.composer-stop-slot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  animation: composer-control-in 75ms ease-out 50ms backwards;
+}
+.composer-stop-slot[data-state="closed"] {
+  opacity: 0;
+  transition: opacity 75ms ease-out 50ms;
+}
+.composer-send-stack {
+  position: relative;
+  display: grid;
+  flex: none;
+  align-items: center;
+  justify-items: end;
+  gap: inherit;
+}
+.composer-home-voice {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: inherit;
+}
+.composer-send-slot,
+.composer-idle-slot {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: inherit;
+  transition:
+    opacity var(--motion-fast) var(--ease-standard),
+    visibility var(--motion-fast) var(--ease-standard);
+}
+.composer-send-slot:not([data-shown]),
+.composer-idle-slot:not([data-shown]) {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+/* Home: the microphone and tucked caret span 47px, followed by the separate
+   32px voice action. */
+.composer-wrap:not(.code-composer)
+  :is(.composer-idle-slot, .composer-home-voice)
+  .cowork-voice-controls.with-options {
+  flex-basis: 47px;
+  width: 47px;
+}
+.composer-wrap:not(.code-composer)
+  :is(.composer-idle-slot, .composer-home-voice)
+  .cowork-voice-controls
+  .cowork-voice-options {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 32px;
+  margin: 0;
+  margin-inline-start: -5px;
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+.composer-wrap:not(.code-composer)
+  :is(.composer-idle-slot, .composer-home-voice)
+  .cowork-voice-options
+  svg {
+  width: 12px;
+  height: 12px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-idle-slot
+  .voice-mode-button.standalone,
+.composer-home-voice-placeholder {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+}
+.composer-submit {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+.composer-send-fold {
+  display: grid;
+  flex: none;
+  grid-template-columns: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-columns var(--motion-snap) var(--ease-out),
+    opacity var(--motion-snap) var(--ease-out),
+    margin-left var(--motion-snap) var(--ease-out);
+}
+.composer-send-fold > span {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.composer-send-fold:not([data-shown]) > span {
+  overflow: hidden;
+}
+.composer-send-fold[data-shown] {
+  grid-template-columns: 1fr;
+  opacity: 1;
+}
+.composer-send-fold[data-shown][data-after-stop] {
+  margin-left: 8px;
+}
+@keyframes composer-control-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-stop-slot {
+    animation: none;
+  }
+  .composer-send-fold {
+    transition: opacity var(--motion-snap) var(--ease-out);
+  }
+}
+:root[data-motion="reduced"] .composer-stop-slot {
+  animation: none;
+}
+:root[data-motion="reduced"] .composer-send-fold {
+  transition: opacity var(--motion-snap) var(--ease-out);
+}
+
+/* Toolbar indicator chips (Research, knowledge bases; ChipPresence.tsx): 50ms
+   after the mode turns on the chip fades in over 75ms while its place opens, so
+   the controls after it slide aside; it goes the same way. */
+.composer-chip-slot {
+  display: grid;
+  flex: none;
+  grid-template-columns: 1fr;
+  overflow: clip;
+  overflow-clip-margin: 2px;
+  animation: composer-chip-in 75ms ease-out 50ms backwards;
+}
+.composer-chip-slot > * {
+  min-width: 0;
+}
+.composer-chip-slot[data-state="closed"] {
+  grid-template-columns: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-columns 75ms ease-out 50ms,
+    opacity 75ms ease-out 50ms;
+}
+@keyframes composer-chip-in {
+  from {
+    grid-template-columns: 0fr;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-chip-slot {
+    animation: none;
+  }
+  .composer-chip-slot[data-state="closed"] {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .composer-chip-slot {
+  animation: none;
+}
+:root[data-motion="reduced"] .composer-chip-slot[data-state="closed"] {
+  transition: none;
+}
+
+/* Attachments above the input: thumbnails, file cards and the Pasted card. */
+.composer .attachment-list {
+  align-items: flex-end;
+}
+.composer .attachment {
+  position: relative;
+}
+/* Entrance and exit (the original's composer attachments; source: desktop
+   bundle 2.31226.1 static CSS/JS). The row drops in from 8px above while it
+   fades in (200ms) when its first card arrives; each new card grows from
+   92% and 4px low at its left edge (180ms). A card shown again with another
+   draft is marked restored and just appears. Removing one is a view
+   transition (attachment-motion.ts): it shrinks to half and fades in 130ms
+   while the cards after it slide over in 180ms. */
+.composer .attachment-list {
+  transition:
+    opacity var(--motion-base) var(--ease-out-cubic),
+    transform var(--motion-base) var(--ease-out-cubic);
+}
+.composer [data-attachment] {
+  transform-origin: left center;
+  view-transition-class: composer-attachment;
+  transition:
+    opacity 180ms var(--ease-out-cubic),
+    transform 180ms var(--ease-out-cubic);
+}
+@starting-style {
+  .composer .attachment-list:has(> :not([data-restored])) {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  .composer [data-attachment]:not([data-restored]) {
+    opacity: 0;
+    transform: scale(0.92) translateY(4px);
+  }
+}
+/* Without typed view transitions the card fades out on its own first. */
+.composer [data-attachment][data-leaving] {
+  opacity: 0;
+  transform: scale(0.5);
+  pointer-events: none;
+  transition:
+    opacity 130ms var(--ease-in-cubic),
+    transform 130ms var(--ease-in-cubic);
+}
+:root:active-view-transition-type(composer-attachments) {
+  view-transition-name: none;
+}
+:root:active-view-transition-type(composer-attachments)::view-transition-group(
+    .composer-attachment
+  ) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--ease-out-cubic);
+}
+:root:active-view-transition-type(composer-attachments)::view-transition-old(
+    .composer-attachment
+  ):only-child {
+  animation: composer-attachment-out 130ms var(--ease-in-cubic) forwards;
+}
+@keyframes composer-attachment-out {
+  to {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* A file being added (the original's upload tile): it grows into the row
+   over 300ms with its text fading in, and from half a second on pulses down
+   to half opacity every 1.2s until it is kept. */
+.composer .attachment.pending {
+  overflow: hidden;
+  animation:
+    composer-attachment-grow-in var(--motion-moderate) ease-out,
+    composer-upload-pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) 0.5s infinite;
+}
+.composer .attachment.pending > div {
+  animation: composer-attachment-fade-in var(--motion-moderate) ease-out;
+}
+@keyframes composer-attachment-grow-in {
+  from {
+    opacity: 0;
+    max-width: 0;
+  }
+}
+@keyframes composer-attachment-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes composer-upload-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+/* A thumbnail's picture clears from a blur once loaded, over 400ms. */
+.attachment-thumbnail-open img {
+  opacity: 0;
+  filter: blur(8px);
+  transition:
+    opacity 400ms var(--ease-standard),
+    filter 400ms var(--ease-standard);
+}
+.attachment-thumbnail-open img[data-loaded] {
+  opacity: 1;
+  filter: none;
+}
+/* Reduced motion: cards appear and go at once and nothing pulses. */
+@media (prefers-reduced-motion: reduce) {
+  .composer .attachment-list,
+  .composer [data-attachment],
+  .attachment-thumbnail-open img {
+    transition: none;
+  }
+  .composer .attachment.pending,
+  .composer .attachment.pending > div {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .composer .attachment-list,
+:root[data-motion="reduced"] .composer [data-attachment],
+:root[data-motion="reduced"] .attachment-thumbnail-open img {
+  transition: none;
+}
+:root[data-motion="reduced"] .composer .attachment.pending,
+:root[data-motion="reduced"] .composer .attachment.pending > div {
+  animation: none;
+}
+.attachment-remove {
+  /* The original's remove button: 20px, 8px out past the card's corner, a
+     hairline rim over a 90% fill with a small backdrop blur, muted ink that
+     brightens on hover. It fades in with the card's hover or focus in 150ms; on
+     a screen without hover it always shows, on a 50% fill. */
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0.5px solid #4a4a4a;
+  border-radius: 50%;
+  background: rgb(42 42 42 / 90%);
+  backdrop-filter: blur(8px);
+  color: #a3a3a0;
+  opacity: 0;
+  transition:
+    background-color 150ms var(--ease-standard),
+    color 150ms var(--ease-standard),
+    opacity 150ms var(--ease-standard);
+}
+.attachment-remove:hover {
+  background: rgb(42 42 42 / 50%);
+  color: var(--text);
+}
+.attachment:hover .attachment-remove,
+.attachment-thumbnail:hover .attachment-remove,
+.pasted-card:hover .attachment-remove,
+.attachment:focus-within .attachment-remove,
+.attachment-thumbnail:focus-within .attachment-remove,
+.pasted-card:focus-within .attachment-remove {
+  opacity: 1;
+}
+@media (hover: none) {
+  .attachment-remove {
+    opacity: 1;
+    background: rgb(42 42 42 / 50%);
+  }
+}
+/* An image card is as large as a file card, 120 x 120 with the Pasted card's
+   face and rim, the picture centred whole inside it. The capture's "Low res"
+   chip has no known rule for when it shows, so it is not drawn. */
+.attachment-thumbnail {
+  position: relative;
+  flex: none;
+  width: 120px;
+  height: 120px;
+}
+.attachment-thumbnail-open {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0.5px solid #4e4e4e;
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: zoom-in;
+}
+.attachment-thumbnail-open img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* Loading and uploading overlays. */
+.attachment-image-loading,
+.attachment-image-uploading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.attachment-image-uploading {
+  background: color-mix(in srgb, #1a1a19 60%, transparent);
+}
+:root[data-theme="light"] .attachment-image-uploading {
+  background: color-mix(in srgb, #fff 60%, transparent);
+}
+:root[data-theme="light"] .attachment-thumbnail-open {
+  border-color: #d6d3cc;
+  background: #faf9f5;
+}
+.attachment-preview {
+  display: grid;
+  place-items: center;
+  max-height: min(70vh, 720px);
+  overflow: auto;
+}
+.attachment-preview img {
+  max-width: 100%;
+  max-height: min(70vh, 720px);
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+/* R-0284 (JPG, 2.629 px/CSS): 120 wide, #202020 face with a hairline border,
+   8px text on a 12px pitch (six lines, ending in an ellipsis), then 15px down
+   a 50 × 17.5 PASTED label 10.5px in (text 11px, about 40 wide). */
+.pasted-card {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 120px;
+  padding: 9px 10.5px 8.5px;
+  border: 0.5px solid #4e4e4e;
+  border-radius: 12px;
+  background: var(--surface);
+}
+.pasted-card-text {
+  margin: 0;
+  overflow: hidden;
+  color: #b3b2af;
+  font-size: 8px;
+  line-height: 12px;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
+.pasted-card-label {
+  align-self: flex-start;
+  box-sizing: border-box;
+  height: 17.5px;
+  padding: 0 4.5px;
+  border: 0.5px solid #4d4d4d;
+  border-radius: 5px;
+  color: #c9c8c5;
+  font-size: 11px;
+  line-height: 16.5px;
+  letter-spacing: -0.1px;
+  text-transform: uppercase;
+}
+:root[data-theme="light"] .pasted-card {
+  border-color: #d6d3cc;
+  background: #faf9f5;
+}
+:root[data-theme="light"] .pasted-card-text {
+  color: #6b6a66;
+}
+:root[data-theme="light"] .pasted-card-label {
+  border-color: #cfccc4;
+  color: #3d3c39;
+}
+:root[data-theme="light"] .attachment-remove {
+  border-color: #d6d3cc;
+  background: rgb(255 255 255 / 90%);
+  color: #6b6a66;
+}
+:root[data-theme="light"] .attachment-remove:hover {
+  background: rgb(255 255 255 / 50%);
+  color: #292927;
+}
+
+/* The @ file list takes the slash list's frame, wider for paths. */
+/* 559 wide, 5px in from the composer's left edge, its bottom 9.5px into the
+   composer; folder glyph 12px, 24px rows. */
+.mention-palette {
+  left: 5px;
+  bottom: calc(100% - 9.5px);
+  width: min(559px, calc(100% - 10px));
+}
+.mention-palette mark {
+  background: none;
+  color: var(--text);
+  font-weight: 650;
+}
+.mention-palette .mention-dim {
+  color: #a3a3a2;
+}
+.mention-folder .mention-dim {
+  color: #8f8f8e;
+}
+.mention-folder mark {
+  color: #cfcfce;
+}
+.mention-palette .code-slash-list button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.mention-palette .code-slash-list svg {
+  flex: none;
+  color: #9a9a9a;
+}
+.mention-name {
+  flex: none;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mention-folder {
+  min-width: 0;
+  overflow: hidden;
+  color: #8f8f8e;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: left;
+}
+.chat-composer .composer:has(.mention-palette) {
+  position: relative;
+}
+
+/* File tiles share the Pasted card's box, 12px apart in one row that scrolls
+   sideways; the name is 14px on up to two lines with an ellipsis, the detail
+   12px grey under it. */
+.attachment-list:has(.attachment-tile, .attachment-thumbnail) {
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow-x: auto;
+  /* Room for the remove buttons 8px past each card's corner. */
+  padding: 8px 8px 4px 0;
+}
+.attachment-tile {
+  flex: none;
+  justify-content: space-between;
+  height: 120px;
+}
+.attachment-tile-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.attachment-tile-text > strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.attachment-name-head {
+  white-space: nowrap;
+}
+.attachment-tile-text > small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+:root[data-theme="light"] .mention-palette mark {
+  color: #292927;
+}
+:root[data-theme="light"] .mention-palette .mention-dim {
+  color: #5d5b56;
+}
+:root[data-theme="light"] .mention-folder .mention-dim {
+  color: #7b7974;
+}
+:root[data-theme="light"] .mention-folder mark {
+  color: #3d3b37;
+}
+
+/* A home suggestion pointed at (prompt-preview.ts): its prompt shows over the
+   editor in two muted lines, fading in over 150ms, and the draft and its
+   placeholder are hidden meanwhile. Static CSS/JS. */
+.composer-input-row:has(> .composer-prompt-preview) {
+  position: relative;
+}
+.composer-prompt-preview {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: -webkit-box;
+  margin: 0;
+  padding: inherit;
+  overflow: hidden;
+  color: var(--text-muted);
+  font: inherit;
+  /* The editor's size (Settings → Transcript text size). */
+  font-size: var(--composer-text, 15px);
+  line-height: var(--composer-line, 21px);
+  pointer-events: none;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  animation: composer-preview-in 150ms ease-out;
+}
+:root:not([data-theme="light"]) .composer-prompt-preview {
+  color: #898781;
+}
+.composer-input-row textarea[data-previewing] {
+  opacity: 0;
+}
+@keyframes composer-preview-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The window's first composer: its actions fade in over 240ms as they take
+   the place of the boot shell's empty toolbar (the original's static
+   composer boot). Only with motion allowed. */
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-motion="reduced"])
+    .composer-wrap[data-boot]
+    :is(
+      .composer-toolbar,
+      .conversation-input-actions,
+      .composer-input-row > .composer-submit
+    ) {
+    animation: composer-actions-boot 240ms ease-out both;
+  }
+}
+@keyframes composer-actions-boot {
+  from {
+    opacity: 0.01;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-prompt-preview {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .composer-prompt-preview {
+  animation: none;
+}
+
+/* Code's text area sits in a field with a copy of the draft under it, where
+   chosen @ file tokens are marked in the accent (MentionMirror.tsx). The
+   copy matches the text area's font, padding and wrapping. Source: desktop
+   bundle 2.31226.1 (the original's mention chips). */
+.composer-mention-field {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+}
+.composer-mention-field > textarea {
+  position: relative;
+  z-index: 1;
+}
+.composer-mention-mirror {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  padding: 0;
+  color: transparent;
+  font-size: var(--prompt-text, 14px);
+  line-height: var(--prompt-line, 20px);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  pointer-events: none;
+  user-select: none;
+}
+.composer-mention-mirror mark {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--focus-accent) 24%, transparent);
+  color: transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* The prompt history's header. */
+.composer-history-hint {
+  display: flex;
+  min-width: 0;
+  min-height: 18px;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px 0;
+  overflow: hidden;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+  white-space: nowrap;
+}
+.composer-history-hint [data-failed] {
+  color: #ec7e7e;
+}
+.composer-history-hint kbd {
+  font: inherit;
+}
+.composer-history-count {
+  font-variant-numeric: tabular-nums;
+}
+.composer-history-query {
+  color: var(--text);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.composer-history-bar {
+  animation: composer-history-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes composer-history-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.composer-history-keys {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+.composer-history-keys[data-shown] {
+  opacity: 1;
+}
+:root[data-theme="light"] .composer-history-hint [data-failed] {
+  color: #8e2626;
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-history-bar {
+    animation: none;
+  }
+  .composer-history-keys {
+    transition: none;
+  }
+}
+/* Review comments waiting to go with the message. */
+.review-comment-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 8px 0;
+}
+.review-comment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 4px 0 6px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 7.5%);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.review-comment-badge {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #032042;
+  color: #6da7ec;
+  font-size: 12px;
+  line-height: 18px;
+}
+.review-comment-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-comment-chip > button {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #898781;
+  font-size: 15px;
+  line-height: 1;
+}
+.review-comment-chip > button:hover {
+  background: rgb(255 255 255 / 10%);
+  color: #f0efec;
+}
+:root[data-theme="light"] .review-comment-chip {
+  background: rgb(11 11 11 / 5%);
+  color: #52514e;
+}
+:root[data-theme="light"] .review-comment-badge {
+  background: #cde2fb;
+  color: #184f95;
+}
+
+/* Submit capsule. */
+/* The live trigger sits flush with the toolbar's start ([&_button]:!ms-0). */
+.composer-add-trigger {
+  margin-inline-start: 0;
+}
+.composer-submit-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  overflow: hidden;
+  height: 32px;
+  /* As the 8px Send inside it: a 16px capsule clipped the square Send to a
+     circle. */
+  border-radius: 8px;
+  color: #898781;
+}
+.composer-pill-control {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  opacity: 1;
+  transform: scale(1);
+}
+.composer-pill-control[data-state="closed"] {
+  transition:
+    opacity 120ms,
+    transform 120ms;
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
+}
+.composer-pill-send[data-state="closed"] {
+  left: auto;
+  right: 0;
+}
+.composer-submit-pill[data-grouped] .composer-pill-send {
+  z-index: 1;
+}
+.composer-submit-pill .send-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  /* The live app's brand Send is a rounded square. */
+  border-radius: 8px;
+  background: #c6613f;
+  color: #fff;
+}
+.composer-submit-pill .send-button:hover:not(:disabled) {
+  background: #d97757;
+}
+.composer-submit-pill .send-button:disabled {
+  background: rgb(255 255 255 / 10%);
+  color: #898781;
+  opacity: 1;
+  cursor: not-allowed;
+}
+.composer-submit-pill .send-button.composer-ghost-stop {
+  position: relative;
+  background: transparent;
+  color: #898781;
+}
+.composer-submit-pill .send-button.composer-ghost-stop:hover {
+  background: transparent;
+  color: #c3c2b7;
+}
+.composer-submit-pill .send-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #2a78d6;
+}
+.composer-submit-pill .send-button:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.composer-capsule-ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 200ms;
+}
+.composer-circle-ring {
+  left: 50%;
+  margin-left: -16px;
+}
+.composer-capsule-ring[data-state="closed"] {
+  opacity: 0;
+}
+.composer-capsule-ring[data-enter][data-state="open"] {
+  animation: composer-ring-enter 200ms;
+}
+@keyframes composer-ring-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.composer-circle-ring[data-state="closed"] {
+  transition-duration: 150ms;
+}
+.composer-capsule-ring path,
+.composer-capsule-ring circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.001 0.999;
+  stroke-dashoffset: 0;
+  animation: pill-capsule-march 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes pill-capsule-march {
+  to {
+    stroke-dashoffset: -1px;
+  }
+}
+:root[data-theme="light"] .composer-submit-pill .send-button:disabled {
+  background: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .composer-submit-pill .composer-ghost-stop:hover {
+  color: #52514e;
+}
+:root[data-motion="reduced"] .composer-pill-control,
+:root[data-motion="reduced"] .composer-capsule-ring,
+:root[data-motion="reduced"] .composer-capsule-ring path,
+:root[data-motion="reduced"] .composer-capsule-ring circle {
+  transition: none;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-pill-control,
+  .composer-capsule-ring {
+    transition: none;
+    animation: none;
+  }
+  .composer-capsule-ring path,
+  .composer-capsule-ring circle {
+    animation: none;
+  }
+}

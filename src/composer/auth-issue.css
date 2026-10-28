@@ -1,0 +1,74 @@
+.auth-issue-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #311a00;
+  color: #db9300;
+  box-shadow: inset 0 0 0 1px #512e00;
+  font-family: var(--cds-font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19px;
+  overflow-wrap: break-word;
+}
+.auth-issue-icon {
+  display: flex;
+  min-height: 1lh;
+  flex-shrink: 0;
+  align-items: center;
+  margin-inline: 4px -4px;
+}
+.auth-issue-copy {
+  min-width: 0;
+  flex: 1;
+  margin-left: 4px;
+}
+.auth-issue-dismiss-slot {
+  display: flex;
+  height: 1lh;
+  flex-shrink: 0;
+  align-items: center;
+  margin-right: -4px;
+}
+.auth-issue-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.auth-issue-dismiss:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px #0b0b0b,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px rgb(24 79 149 / 60%);
+}
+.auth-issue-dismiss:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+:root[data-theme="light"] .auth-issue-dismiss:hover {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .auth-issue-dismiss {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .auth-issue-dismiss:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px #f9f9f7,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px #cde2fb;
+}
+:root[data-theme="light"] .auth-issue-banner {
+  background: #f9dca4;
+  color: #734500;
+  box-shadow: inset 0 0 0 1px #eda100;
+}

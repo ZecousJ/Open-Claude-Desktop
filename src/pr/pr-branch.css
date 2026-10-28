@@ -1,0 +1,32 @@
+/* The branch chip as a menu button. Size and text stay .pr-chip's; the hover
+   fill is the row's other ghost controls' (.pr-diff). */
+.pr-branch-button {
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+.pr-branch-button:hover,
+.pr-branch-button[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.pr-branch-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* ↓ and the count of commits the base gained (the original's h-control,
+   3px gap, 5px sides, muted medium text); 24px and 13px as .pr-ci. */
+.pr-behind {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  padding: 0 5px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}

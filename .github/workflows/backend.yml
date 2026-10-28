@@ -1,0 +1,197 @@
+# Claudex server: the Sub2API fork in backend/ (Go in backend/backend, Vue in
+# backend/frontend), its image and deployment files, and the operator seed.
+# The desktop app keeps its own workflow (build.yml).
+name: Claudex server
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**", "deploy/**", "scripts/sub2api-seed.ts", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", "deploy/**", "scripts/sub2api-seed.ts", ".github/workflows/backend.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claudex-server-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Compiling internal/service with its tests needs more than 4 GB with the
+      # defaults (backend/README.claudex.md): fewer parallel compiles, one
+      # compile worker for that package, a lower GC target and a soft limit.
+      GOFLAGS: -p=2 -gcflags=github.com/Wei-Shaw/sub2api/internal/service=-c=1
+      GOGC: "50"
+      GOMEMLIMIT: 3400MiB
+    defaults:
+      run:
+        working-directory: backend/backend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/backend/go.mod
+          check-latest: false
+          cache: true
+          cache-dependency-path: backend/backend/go.sum
+      - name: Verify Go version
+        run: go version | grep -q 'go1.27.0'
+      - name: Wire output is up to date
+        env:
+          GOFLAGS: ""
+        run: go run github.com/google/wire/cmd/wire@v0.7.0 diff ./cmd/server
+      - name: Unit tests (upstream make test-unit, Claudex tests included)
+        run: make test-unit
+
+  go-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GOFLAGS: -p=2 -gcflags=github.com/Wei-Shaw/sub2api/internal/service=-c=1
+      GOGC: "50"
+      GOMEMLIMIT: 3400MiB
+    defaults:
+      run:
+        working-directory: backend/backend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/backend/go.mod
+          check-latest: false
+          cache: true
+          cache-dependency-path: backend/backend/go.sum
+      - name: Verify Go version
+        run: go version | grep -q 'go1.27.0'
+      - name: Integration tests (testcontainers PostgreSQL and Redis)
+        run: make test-integration
+
+  golangci-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/backend/go.mod
+          check-latest: false
+          cache: true
+          cache-dependency-path: backend/backend/go.sum
+      - name: Verify Go version
+        run: go version | grep -q 'go1.27.0'
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13
+          args: --timeout=30m
+          working-directory: backend/backend
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend/frontend
+    env:
+      NODE_OPTIONS: --max-old-space-size=3072
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend/frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Locale keys (en/zh)
+        run: pnpm run check:i18n
+      - run: pnpm run typecheck
+      - run: pnpm run lint:check
+      - name: Critical vitest (upstream list)
+        working-directory: backend
+        run: make test-frontend-critical
+      - name: Claudex vitest (every spec whose path contains "claudex", locale key collisions)
+        run: pnpm exec vitest run --passWithNoTests claudex src/i18n/__tests__/localesNoKeyCollision.spec.ts
+      - name: Build (embedded into the server by -tags embed)
+        run: pnpm run build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # build-image.sh numbers the build from the commits that touched backend/.
+          fetch-depth: 0
+      - name: Build the image (not pushed)
+        run: deploy/claudex-server/build-image.sh --tag claudex-server:ci -- --progress=plain
+      - name: Image metadata
+        run: |
+          docker image inspect claudex-server:ci --format '{{json .Config.Labels}}'
+          docker image inspect claudex-server:ci --format '{{.Config.User}}' | grep -qx '1000:1000'
+          docker run --rm claudex-server:ci cat /app/SOURCE.txt
+          # Build metadata (+claudex.N), never a pre-release (-claudex.N): see the Dockerfile.
+          docker run --rm claudex-server:ci --version 2>&1 | tee "$RUNNER_TEMP/version.txt"
+          grep -Eq '[0-9]+\.[0-9]+\.[0-9]+\+claudex\.[0-9]+' "$RUNNER_TEMP/version.txt"
+      - name: Development stack and read-only checks
+        env:
+          CLAUDEX_DEV_COMMIT: ${{ github.sha }}
+        run: |
+          docker compose -f deploy/claudex-server/docker-compose.dev.yml up -d --build --wait --wait-timeout 300
+          deploy/claudex-server/check.sh --dev | tee "$RUNNER_TEMP/check.txt"
+          # The administrator checks ran (fresh stack, one-time password in the log)
+          # and the access token lives 60 minutes.
+          grep -q '^ok    GET /api/v1/admin/claudex/overview (compliance gate) (423)' "$RUNNER_TEMP/check.txt"
+          grep -q 'access token expires_in=3600s' "$RUNNER_TEMP/check.txt"
+      - name: Backup
+        run: deploy/claudex-server/backup.sh -f deploy/claudex-server/docker-compose.dev.yml --dir "$RUNNER_TEMP/backups" --keep 1
+      - name: Server log on failure
+        if: failure()
+        run: docker compose -f deploy/claudex-server/docker-compose.dev.yml logs --no-color --tail 200
+      - name: Stop
+        if: always()
+        run: docker compose -f deploy/claudex-server/docker-compose.dev.yml down -v
+
+  deploy-files:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+      - name: Seed tests (compliance gate, provisioning, cited fork sources)
+        run: npx tsx --test tests/sub2api-seed.test.ts
+      - name: Shell scripts
+        run: shellcheck deploy/claudex-server/*.sh deploy/sub2api/*.sh
+      - name: Both env templates are the same file
+        run: cmp deploy/claudex-server/.env.example deploy/sub2api/.env.example
+      - name: Compose files
+        run: |
+          cp deploy/claudex-server/.env.example deploy/claudex-server/.env
+          cp deploy/sub2api/.env.example deploy/sub2api/.env
+          docker compose -f deploy/claudex-server/docker-compose.yml config --quiet
+          docker compose -f deploy/claudex-server/docker-compose.dev.yml config --quiet
+          docker compose -f deploy/sub2api/docker-compose.yml config --quiet
+      - name: nginx example (nginx -t)
+        run: |
+          certs="$RUNNER_TEMP/certs"
+          mkdir -p "$certs"
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=claudex.example.com \
+            -keyout "$certs/privkey.pem" -out "$certs/fullchain.pem"
+          docker run --rm \
+            -v "$PWD/deploy/claudex-server/nginx.conf.example:/etc/nginx/conf.d/default.conf:ro" \
+            -v "$certs:/etc/letsencrypt/live/claudex.example.com:ro" \
+            nginx:alpine nginx -t

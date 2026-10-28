@@ -1,0 +1,1 @@
+Vendor marks are the existing web/PC ProviderLogo vectors at main dd5137a8, sourced there from @lobehub/icons-static-svg 1.95.1 (MIT). OpenAI/xAI use native tint; Gemini/Qwen retain a single brand color in the native asset instead of the web gradient. No newly invented brand marks.

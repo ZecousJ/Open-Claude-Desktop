@@ -1,0 +1,100 @@
+# Ignore rules for deploy/claudex-server/Dockerfile (build context: backend/).
+# BuildKit reads <Dockerfile>.dockerignore instead of backend/.dockerignore;
+# these are the upstream rules plus the Claudex changes marked below.
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+# Claudex: the change list is copied into the image next to LICENSE.
+!CLAUDEX_CHANGES.md
+!deploy/DOCKER.md
+docs/
+# The admin-compliance pages import docs/legal/*.md at build time.
+!docs/legal/
+!docs/legal/*.md
+# Claudex: not needed for the build.
+assets/
+openspec/
+skills/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+# Claudex: local build output (scripts/backend/fe.sh build, go build, vue-tsc -b).
+backend/internal/web/dist/
+backend/bin/
+backend/.cache/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# Node modules (will be installed in container)
+frontend/node_modules/
+node_modules/
+**/node_modules/
+
+# Go build cache (will be built in container)
+backend/vendor/
+
+# Test files
+*_test.go
+# Claudex: test files at every level (upstream only matched the root).
+**/*_test.go
+**/*.test.js
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local plugin directory may contain release signing keys.
+/plugins/
+
+# Local config
+config.yaml
+config.local.yaml
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Deploy files (not needed in image)
+deploy/install.sh
+deploy/sub2api.service
+deploy/sub2api-sudoers
+deploy/data/
+deploy/postgres_data/
+deploy/redis_data/
+
+# GoReleaser
+.goreleaser.yaml
+
+# GitHub
+.github/
+
+# Claude files
+.claude/
+issues/
+CLAUDE.md

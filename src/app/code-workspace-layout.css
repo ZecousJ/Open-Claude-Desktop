@@ -1,0 +1,252 @@
+/* O14/shared-18 config: 8px padding +1px border, 12px dividers.
+   Stable absolute leaf hosts follow ca67f2c9d's contentHosts arrangement. */
+.code-workspace-layout {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-app-region: no-drag;
+}
+.code-tile {
+  position: absolute;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+.code-tile > .work-panel,
+.code-tile > .work-panel.expanded,
+.code-tile > .file-viewer {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.code-tile > .work-panel .background-panel-resize,
+.code-tile > .work-panel > .file-viewer-resize {
+  display: none;
+}
+.code-chat-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* cc43287c9/G9: Chat's overflowMin is320px, anchored at its left. */
+  min-width: 320px;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+.code-chat-content > .chat-header {
+  padding-inline: 12px;
+  height: 36px;
+  min-height: 36px;
+}
+/* The bar spans what shows of the tile, so it folds its buttons there, while
+   the transcript keeps its 320px column under the next card. */
+.code-chat-content > .chat-header {
+  max-width: var(--tile-width, none);
+}
+.code-chat-content > .chat-main {
+  min-height: 0;
+  width: auto;
+  margin: 0;
+}
+.code-workspace-layout[data-solo] .code-chat-content {
+  border-color: transparent;
+}
+.code-tile[data-hidden] {
+  pointer-events: none;
+}
+.code-workspace-layout[data-dragging],
+.code-workspace-layout[data-dragging] * {
+  cursor: move !important;
+}
+.code-workspace-layout[data-dragging] iframe {
+  pointer-events: none;
+}
+.code-workspace-layout:not([data-solo])
+  .code-tile[data-inactive]
+  > .work-panel {
+  filter: opacity(0.75) saturate(0.85);
+}
+.code-tile > .work-panel {
+  transition: filter 120ms ease-out;
+}
+.code-tile > .work-panel > header {
+  -webkit-app-region: drag;
+}
+.code-tile > .work-panel > header :is(button, input, a, [role="tab"]) {
+  -webkit-app-region: no-drag;
+}
+.code-workspace-layout > .code-pane-divider {
+  inset: auto;
+  -webkit-app-region: no-drag;
+}
+.code-pane-move {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: calc(
+    50% - (var(--top-left-clearance, 0px) - var(--top-right-clearance, 0px)) / 2
+  );
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 44px;
+  height: 16px;
+  min-height: 0;
+  padding: 6px 0 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  cursor: move;
+  touch-action: none;
+  clip-path: inset(0 0 7px);
+  -webkit-app-region: no-drag;
+}
+.code-pane-move > span {
+  width: 32px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--alpha-3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.code-pane-move:hover > span,
+.code-pane-move:focus-visible > span {
+  opacity: 1;
+}
+.code-pane-move:focus-visible > span {
+  background: var(--focus);
+}
+.code-pane-move:active > span {
+  background: var(--text-primary);
+  opacity: 1;
+}
+.code-drop-feedback {
+  position: absolute;
+  z-index: 40;
+  pointer-events: none;
+  border: 0;
+  border-radius: 999px;
+  background: var(--focus);
+}
+.code-pane-divider > .resize-handle-pill {
+  max-height: 56px;
+  max-width: none;
+  background: var(--alpha-3);
+  transition:
+    opacity 120ms ease,
+    background-color 120ms ease;
+  transition-delay: 0ms;
+}
+.code-pane-divider[data-orientation="horizontal"] > .resize-handle-pill {
+  max-width: 56px;
+  max-height: none;
+}
+.code-pane-divider:focus-visible {
+  box-shadow: none;
+}
+.code-pane-divider:focus-visible > .resize-handle-pill {
+  background: var(--focus);
+}
+.code-pane-divider[data-dragging] > .resize-handle-pill {
+  background: var(--text-primary);
+}
+/* c4db265df/Je: bottom/end 176px popup; padded icon toggles, no Move submenu. */
+.code-pane-layout-popup {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 176px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--surface-raised, #20201f);
+  color: var(--text-primary);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px #0000001f,
+    0 2px 6px #00000014;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+.code-layout-group > [role="presentation"] {
+  padding: 4px 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+.code-layout-group > [role="group"] {
+  display: flex;
+  gap: 6px;
+  padding-inline: 4px;
+}
+.code-pane-layout-popup button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  background: transparent;
+}
+.code-pane-layout-popup button:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+.code-pane-layout-popup button[aria-pressed="true"] {
+  background: #0b1f40;
+  color: #83a3d7;
+}
+:root[data-theme="light"] .code-pane-layout-popup button[aria-pressed="true"] {
+  background: #dce7f8;
+  color: #2f5ea8;
+}
+.code-pane-layout-popup button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.code-pane-layout-popup hr {
+  width: 100%;
+  height: 1px;
+  border: 0;
+  margin: 4px 0;
+  background: var(--border);
+}
+.code-pane-layout-popup .code-layout-new-window {
+  width: 100%;
+  height: 28px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding-inline: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+:root[data-theme="light"] .code-pane-layout-popup {
+  background: #fff;
+  box-shadow:
+    inset 0 0 0 1px #0000001a,
+    0 8px 24px #0000001f,
+    0 2px 6px #00000014;
+}

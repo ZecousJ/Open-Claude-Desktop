@@ -1,0 +1,35 @@
+/* Firewall host chips. */
+.network-endpoints {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.network-endpoints h3 {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+.network-endpoint {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.network-endpoint code {
+  display: inline-flex;
+  gap: 6px;
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: var(--alpha-1);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.network-endpoint span {
+  color: var(--text-muted);
+  font-size: 12px;
+}

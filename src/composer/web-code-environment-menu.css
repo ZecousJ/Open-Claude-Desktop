@@ -1,0 +1,126 @@
+/* Current web Code DOM: p0/border0 root; 4+24px search, a 9px
+   separator band, then a body with p0 4px 4px and a transparent 1px rim. */
+:root[data-surface="web"] .menu.web-code-environment-menu {
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+  line-height: 19px;
+}
+.menu.web-code-environment-menu > .menu-search {
+  display: block;
+  height: auto;
+  margin: 0;
+  padding: 4px 4px 0;
+  border: 0;
+}
+.web-code-environment-menu .menu-search input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 24px;
+  padding: 0 8px;
+  font: inherit;
+}
+.web-code-environment-menu > .menu-search::after {
+  content: "";
+  display: block;
+  height: 1px;
+  margin: 4px -4px;
+  background: #373737;
+}
+.web-code-environment-body {
+  box-sizing: border-box;
+  padding: 0 4px 4px;
+  border-bottom: 1px solid transparent;
+}
+.web-code-environment-body > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 24px;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  color: inherit;
+  text-align: left;
+  white-space: nowrap;
+  font: inherit;
+  transition: none;
+}
+.web-code-environment-body > button.active {
+  background: #313131;
+}
+.web-code-environment-body > button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.web-code-environment-body > button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.web-code-environment-body > button > small {
+  order: 2;
+  flex: none;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.web-code-environment-body > button > svg {
+  flex: none;
+  margin-right: -4px;
+  color: #8a8987;
+}
+.web-code-environment-body > button > .menu-check {
+  color: var(--link-text);
+}
+.web-code-environment-body > button > .menu-gear {
+  display: none;
+  flex: none;
+  margin-right: -4px;
+  color: #8a8987;
+}
+.web-code-environment-body > button.active > .menu-gear,
+.web-code-environment-body > button:hover > .menu-gear {
+  display: grid;
+}
+.web-code-environment-body > .menu-search-empty {
+  margin: 5px 8px;
+  color: #8d8c8a;
+  font-size: 13px;
+}
+.web-code-environment-body > button > .rate-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 20px;
+  margin: 0;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 10%);
+  color: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  pointer-events: none;
+}
+.web-code-environment-body > hr {
+  height: 1px;
+  margin: 4px 8px;
+  border: 0;
+  background: #373737;
+}
+:root[data-theme="light"] .web-code-environment-body > button.active {
+  background: #f0f0f0;
+}
+:root[data-theme="light"] .web-code-environment-body > button > .menu-check {
+  color: #2a78d6;
+}
+:root[data-theme="light"] .web-code-environment-body > hr,
+:root[data-theme="light"] .web-code-environment-menu > .menu-search::after {
+  background: #ececec;
+}
+:root[data-theme="light"] .web-code-environment-body .rate-badge {
+  background: rgb(11 11 11 / 6%);
+  color: inherit;
+}

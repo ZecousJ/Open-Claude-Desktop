@@ -1,0 +1,724 @@
+/* Code Changes panel, measured from R-0874-Code-Changes两文件列表及diff, 两文件diff-展开,
+   列表-utils选中 and File-changes面板-空状态 (2x, 1164px window): 537px panel 8px from the
+   window edge, 33px header, a 239px file list with 24px rows, 32px #252525 file headers
+   and 17px diff rows with a 3px change bar. */
+/* 537px wide at a 1164px window; narrower windows keep about 360px for the
+   conversation before the panel shrinks. Size and position:
+   92-reference-panels.css. */
+.work-panel.changes-panel {
+  border: 1px solid #2c2c2c;
+  border-radius: 10px;
+  background: #1a1a1a;
+  color: #c8c8c4;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  overflow: hidden;
+}
+.work-panel.changes-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border-bottom: 0;
+  gap: 0;
+  height: 33px;
+  min-height: 33px;
+  padding: 1px 3px 0 6px;
+}
+.changes-icon-button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: #c8c8c4;
+  cursor: pointer;
+}
+.changes-icon-button:hover {
+  background: #2f2f2f;
+}
+.changes-icon-button:active {
+  background: #292929;
+}
+/* The list toggle while the file list shows: the ghost button's selected fill. */
+.changes-icon-button[aria-pressed="true"] {
+  background: rgb(255 255 255 / 15%);
+  color: var(--text);
+}
+:root[data-theme="light"] .changes-icon-button[aria-pressed="true"] {
+  background: rgb(11 11 11 / 10%);
+  color: #0b0b0b;
+}
+.changes-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-left: 9px;
+  color: #c8c8c4;
+  /* "working tree" is 67px wide, 13px. */
+  font-size: 13px;
+  white-space: nowrap;
+}
+.changes-base svg {
+  flex: none;
+  color: #8c8c8c;
+}
+/* Light: the weak text step, #898781. */
+:root[data-theme="light"] .changes-base {
+  color: var(--text-muted);
+}
+.changes-header-gap {
+  flex: 1;
+}
+.changes-empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 24px;
+  /* "No changes to show" 13px #f0f0f0 (120.5px wide). */
+  color: #f0f0f0;
+  font-size: 13px;
+  text-align: center;
+}
+.changes-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+/* The left column: about 35% of the panel, the changed files as a tree above
+   the turns, a hairline between them; the turns list "All changes" first, a
+   selected row #313131 with 8px corners, each turn's message on one line and
+   its counts under it. */
+.changes-side {
+  display: flex;
+  flex: 0 0 35%;
+  flex-direction: column;
+  min-width: 160px;
+  max-width: 60%;
+  border-right: 1px solid #313131;
+}
+.changes-tree {
+  flex: 1;
+  min-height: 0;
+  padding: 6px 8px 8px 2px;
+  overflow: auto;
+}
+.changes-folder-row {
+  color: #e6e5e1;
+}
+.changes-folder-row svg {
+  flex: none;
+  color: #8c8c8c;
+}
+.changes-turns {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  max-height: 45%;
+  padding: 8px 6px;
+  border-top: 1px solid #313131;
+  overflow: auto;
+}
+.changes-turn-row {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: #e6e5e1;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.changes-turn-row:hover {
+  background: #262626;
+}
+.changes-turn-row[aria-current="true"] {
+  background: #313131;
+}
+.changes-turn-title {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.changes-turn-meta {
+  display: flex;
+  gap: 6px;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 16px;
+}
+:root[data-theme="light"] .changes-side,
+:root[data-theme="light"] .changes-turns {
+  border-color: #e4e2dc;
+}
+:root[data-theme="light"] :is(.changes-turn-row, .changes-folder-row) {
+  color: #2b2a27;
+}
+:root[data-theme="light"] .changes-turn-row:hover {
+  background: #f0eee8;
+}
+:root[data-theme="light"] .changes-turn-row[aria-current="true"] {
+  background: #e8e6df;
+}
+.changes-file-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 24px;
+  padding: 0 5px 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: #e6e5e1;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.changes-file-row:hover {
+  background: #262626;
+}
+.changes-file-row:active,
+.changes-file-row[aria-current="true"] {
+  background: #313131;
+}
+/* File names 13px (app.js 34.5px wide). */
+.changes-file-row .changes-file-name {
+  font-size: 13px;
+}
+.changes-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.changes-file-glyph {
+  flex: none;
+  color: #8c8c8c;
+}
+/* "+2 −1" in the git added and removed text colours. */
+.changes-stat {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.changes-add {
+  color: #32d74b;
+}
+.changes-del {
+  color: #ff2c56;
+}
+:root[data-theme="light"] .changes-add {
+  color: #1e9e3c;
+}
+:root[data-theme="light"] .changes-del {
+  color: #cd2054;
+}
+.changes-diffs {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+.changes-file + .changes-file {
+  margin-top: 8px;
+}
+/* A file jumped to from the list rings once in the accent: 2px at 55% and a
+   16px glow at 25%, fading over 0.9s. Drawn inside the file's edge, over its
+   sticky header, as the list clips anything outside it. */
+.changes-file.review-landed {
+  position: relative;
+}
+.changes-file.review-landed::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: review-landed 0.9s ease-out forwards;
+}
+@keyframes review-landed {
+  from {
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, var(--focus-accent) 55%, transparent),
+      inset 0 0 16px 2px
+        color-mix(in srgb, var(--focus-accent) 25%, transparent);
+  }
+  to {
+    box-shadow:
+      inset 0 0 0 0 transparent,
+      inset 0 0 0 0 transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .changes-file.review-landed::after {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .changes-file.review-landed::after {
+  animation: none;
+}
+.changes-file-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  /* Chevron, glyph and name at 631.5 / 649.5 / 664.5. */
+  gap: 5px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px 0 8px;
+  border: 0;
+  background: #252525;
+  color: #c8c8c4;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+/* Hover and press are not captured; they follow the file list's fills. */
+.changes-file-header:hover {
+  background: #2a2a2a;
+}
+.changes-file-header:active {
+  background: #303030;
+}
+.changes-file-header .changes-file-name {
+  flex: 0 1 auto;
+}
+.changes-file-header > svg:first-child {
+  flex: none;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+.changes-file-header[aria-expanded="false"] > svg:first-child {
+  transform: rotate(-90deg);
+}
+.changes-hunks {
+  padding: 0 0 4px;
+}
+/* Panel rows wrap long lines under the code column. Geometry of the original's
+   diff library with classic indicators: the number column padded calc(2ch +
+   5px) and 1ch, numbers at least 3ch and right-aligned, a 2px rule in the
+   background colour after it; the line padded 1ch with the + or - in its first
+   2ch. A changed row's number cell mixes less of the colour (85% dark, 91%
+   light) than its line (80%, 88%). */
+.diff-lines[data-variant="panel"] {
+  --diff-panel-bg: #151515;
+}
+:root[data-theme="light"] .diff-lines[data-variant="panel"] {
+  --diff-panel-bg: #fcfcfb;
+}
+.diff-lines[data-variant="panel"] .diff-row {
+  min-width: 0;
+}
+.diff-lines[data-variant="panel"] .diff-gutter {
+  box-sizing: content-box;
+  width: auto;
+  gap: 0;
+  padding: 0 1ch 0 calc(2ch + 5px);
+  border-right: 2px solid var(--diff-panel-bg);
+  background: var(--diff-panel-bg);
+}
+.diff-lines[data-variant="panel"] .diff-number {
+  display: inline-block;
+  min-width: 3ch;
+}
+.diff-lines[data-variant="panel"] .diff-mark {
+  width: 1ch;
+  padding: 0 1ch;
+  text-align: left;
+}
+.diff-lines[data-variant="panel"] .diff-code {
+  padding-right: 1ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.diff-lines[data-variant="panel"]
+  .diff-row:not(.diff-split-row)[data-kind="del"]
+  .diff-gutter,
+.diff-lines[data-variant="panel"]
+  .diff-split-row
+  > .diff-half[data-kind="del"]
+  .diff-gutter {
+  background: color-mix(in lab, var(--diff-panel-bg) 85%, #ff2c56);
+}
+.diff-lines[data-variant="panel"]
+  .diff-row:not(.diff-split-row)[data-kind="add"]
+  .diff-gutter,
+.diff-lines[data-variant="panel"]
+  .diff-split-row
+  > .diff-half[data-kind="add"]
+  .diff-gutter {
+  background: color-mix(in lab, var(--diff-panel-bg) 85%, #32d74b);
+}
+:root[data-theme="light"]
+  .diff-lines[data-variant="panel"]
+  .diff-row:not(.diff-split-row)[data-kind="del"]
+  .diff-gutter,
+:root[data-theme="light"]
+  .diff-lines[data-variant="panel"]
+  .diff-split-row
+  > .diff-half[data-kind="del"]
+  .diff-gutter {
+  background: color-mix(in lab, var(--diff-panel-bg) 91%, #cd2054);
+}
+:root[data-theme="light"]
+  .diff-lines[data-variant="panel"]
+  .diff-row:not(.diff-split-row)[data-kind="add"]
+  .diff-gutter,
+:root[data-theme="light"]
+  .diff-lines[data-variant="panel"]
+  .diff-split-row
+  > .diff-half[data-kind="add"]
+  .diff-gutter {
+  background: color-mix(in lab, var(--diff-panel-bg) 91%, #1e9e3c);
+}
+.changes-more {
+  display: flex;
+  align-items: center;
+  /* "Show more lines" 12px (89.5px wide), text at 648.5. */
+  gap: 6px;
+  width: 100%;
+  height: 32px;
+  margin: 4px 0;
+  padding: 0 10px 0 8px;
+  border: 0;
+  background: none;
+  color: #8c8c8c;
+  font:
+    12px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.changes-more:hover {
+  color: #c8c8c4;
+}
+.changes-more:active {
+  color: #e6e5e1;
+}
+.changes-note {
+  margin: 8px 12px;
+  color: #8c8c8c;
+}
+:root[data-theme="light"] .changes-panel {
+  border-color: #e4e2dc;
+  background: #fff;
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .changes-file-header {
+  background: #f3f2ee;
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .changes-file-header:hover {
+  background: #ecebe6;
+}
+:root[data-theme="light"] .changes-file-row {
+  color: #141413;
+}
+:root[data-theme="light"] .changes-file-row:active,
+:root[data-theme="light"] .changes-file-row[aria-current="true"],
+:root[data-theme="light"] .changes-icon-button:hover {
+  background: #efeee9;
+}
+:root[data-theme="light"] .changes-file-header:active {
+  background: #e6e5df;
+}
+
+/* Reduced motion: the chevron turns at once. */
+@media (prefers-reduced-motion: reduce) {
+  .changes-file-header > svg:first-child {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .changes-file-header > svg:first-child {
+  transition: none;
+}
+
+/* The diffs take the focus on a click, for F7 and ⌥F5; no ring for it. */
+.changes-diffs:focus {
+  outline: none;
+}
+/* Go to file. The surface, search row and empty line are the menus' (menu.css);
+   the rows repeat the menu rows' size and highlight. */
+.menu.go-to-file {
+  width: 22rem;
+  max-width: calc(100vw - 16px);
+  max-height: calc(40px + 12 * 24px + 12px);
+  overflow-y: auto;
+}
+.go-to-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 6px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text);
+  transition: none;
+}
+.go-to-file-row.active {
+  background: #313131;
+}
+.go-to-file-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:root[data-theme="light"] .go-to-file-row {
+  color: #141414;
+}
+:root[data-theme="light"] .go-to-file-row.active {
+  background: #f0f0f0;
+}
+
+/* The header's totals: "{count} files" then +N and −N, footnote size, tabular,
+   muted. */
+.changes-totals {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 4px;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Test, build and generated files: a section row (caret, label in
+   text-secondary, count in muted footnote), a rule before every section
+   after the first group. */
+.changes-kind[data-separated] {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .changes-kind[data-separated] {
+  border-top-color: rgb(11 11 11 / 10%);
+}
+.changes-kind-row {
+  gap: 6px;
+}
+.changes-kind-caret {
+  flex: none;
+  color: #898781;
+  transition: transform 0.15s;
+}
+.changes-kind-caret[data-open] {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .changes-kind-caret {
+    transition: none;
+  }
+}
+.changes-kind-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .changes-kind-label {
+  color: #52514e;
+}
+.changes-kind-count {
+  flex: none;
+  color: #898781;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+/* Large diffs fold every file; the note says how to open one. */
+.changes-large-note {
+  padding: 5px 8px;
+  color: #898781;
+  font-size: 13px;
+  line-height: 19px;
+}
+/* Commits: rows pressed like the turns' current row; a commit's second line is
+   "short SHA · author · age" in muted footnote text, the SHA in the code face. */
+.changes-turn-row[aria-pressed="true"] {
+  background: #313131;
+}
+:root[data-theme="light"] .changes-turn-row[aria-pressed="true"] {
+  background: #e8e6df;
+}
+.changes-commit-row .changes-turn-meta {
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+.changes-commit-sha {
+  font-family:
+    var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.changes-commit-author {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.changes-commit-age {
+  flex: none;
+}
+.changes-commits-more {
+  padding: 6px 10px;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+}
+/* A file header's badge: muted body text after the name that gives way first
+   when the row is narrow. */
+.changes-file-badge {
+  flex-shrink: 9999;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #898781;
+  font-size: 13px;
+}
+/* The header row holds the file's toggle and, for an image, View image;
+   the row is what stays at the top while its diff scrolls. */
+.changes-file-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  background: #252525;
+}
+:root[data-theme="light"] .changes-file-head {
+  background: #f3f2ee;
+}
+.changes-file-head > .changes-file-header {
+  position: static;
+  flex: 1;
+  min-width: 0;
+}
+.changes-view-image {
+  flex: none;
+  height: 24px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+}
+.changes-view-image:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+:root[data-theme="light"] .changes-view-image {
+  color: #52514e;
+}
+:root[data-theme="light"] .changes-view-image:hover {
+  background: rgb(11 11 11 / 5%);
+}
+.changes-open-file {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+.changes-file-head:hover > .changes-open-file,
+.changes-file-head:focus-within > .changes-open-file {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .changes-open-file {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .changes-open-file {
+    transition: none;
+  }
+}
+.changes-open-file:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+:root[data-theme="light"] .changes-open-file {
+  color: #52514e;
+}
+:root[data-theme="light"] .changes-open-file:hover {
+  background: rgb(11 11 11 / 5%);
+}
+
+/* Resize file list: a 3px handle on the list's edge; it shows the accent
+   while hovered, focused or dragged. */
+.changes-resize {
+  flex: none;
+  width: 3px;
+  margin-left: -2px;
+  cursor: col-resize;
+  outline: none;
+  touch-action: none;
+  z-index: 2;
+}
+/* The list on the pane's right (File list position): it comes after the diffs
+   with its rule on its start side. */
+.changes-body[data-list-right] {
+  flex-direction: row-reverse;
+}
+.changes-body[data-list-right] > .changes-side {
+  border-right: 0;
+  border-left: 1px solid #313131;
+}
+.changes-body[data-list-right] > .changes-resize {
+  margin-left: 0;
+  margin-right: -2px;
+}
+/* The web's bar: 32px with 4px inside and the 24px ghost buttons 2px apart,
+   radius 6, in the primary ink. */
+.app.web .work-panel.changes-panel > header {
+  height: 32px;
+  min-height: 32px;
+  padding: 4px;
+  gap: 2px;
+}
+.app.web .work-panel.changes-panel > header .changes-icon-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--text);
+}
+.changes-resize:hover,
+.changes-resize:focus-visible,
+.changes-resize:active {
+  background: #2a78d6;
+}

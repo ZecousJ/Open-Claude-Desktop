@@ -1,0 +1,188 @@
+/*
+ * Create a skill: 14px labels 4px over 32px fields 12px apart, a 76px
+ * description box, the 296px SKILL.md editor 16px below it in a framed grey box
+ * (radius 12) with "+ Add file" at its top right and 13px monospace lines on a
+ * 21px pitch numbered in a gutter, then 16px lower a 32px Draft badge on the
+ * left and Cancel / Create on the right (dialog 20px above the title, 24px
+ * below the buttons). An empty name turns the field's rim red with the message
+ * under it; a name that can be saved shows "Saved as /slug" instead. The red is
+ * the settings danger red measured in R-1289 (#d03c3c). At 602 the dialog is
+ * 570 wide (16px from the window); at 1160 it fills the window to 4px, 1152
+ * wide at most, and the editor takes the height left.
+ */
+.create-skill {
+  display: flex;
+  flex-direction: column;
+}
+.create-skill > label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 12px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+/* The dialog's own label rhythm (4px gap) replaces the form default (18px
+   below the label, 4px above the field). */
+.modal .create-skill > label {
+  margin-bottom: 0;
+}
+.modal .create-skill > label > input:not([type="checkbox"]):not([type="radio"]),
+.modal .create-skill > label > textarea {
+  margin-top: 0;
+}
+.create-skill > label:first-child {
+  margin-top: 0;
+}
+.create-skill input,
+.create-skill > label > textarea {
+  margin: 0;
+  font-weight: 400;
+}
+.create-skill input {
+  height: 32px;
+  padding: 0 11px;
+}
+.create-skill > label > textarea {
+  min-height: 76px;
+  padding: 7px 11px;
+  resize: none;
+}
+.create-skill input.invalid {
+  border-color: #d03c3c;
+}
+.create-skill > small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.create-skill-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #d03c3c;
+}
+.create-skill > small.create-skill-error {
+  color: #d03c3c;
+}
+.create-skill-editor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 296px;
+  margin-top: 16px;
+  padding: 9px 12px 12px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-muted, #1b1b1b);
+}
+.create-skill-editor > .settings-unavailable {
+  align-self: flex-end;
+}
+.create-skill-editor > .settings-unavailable > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.create-skill-code {
+  display: flex;
+  flex: 1;
+  margin-top: 14px;
+  font:
+    13px/21px ui-monospace,
+    "SF Mono",
+    Menlo,
+    Consolas,
+    monospace;
+}
+.create-skill-code > ol {
+  flex: 0 0 52px;
+  margin: 0;
+  padding: 0 16px 0 0;
+  list-style: none;
+  text-align: right;
+  color: var(--text-secondary);
+}
+.create-skill-code > textarea {
+  flex: 1;
+  min-height: 200px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  resize: none;
+}
+.create-skill-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.create-skill-draft {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  margin-right: auto;
+  box-sizing: border-box;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+/* The dialog takes the window's width. */
+.modal.create-skill-dialog {
+  width: 100%;
+  max-width: 1152px;
+}
+@media (min-width: 641px) {
+  .overlay:has(> .create-skill-dialog) {
+    padding: 4px;
+  }
+  .modal.create-skill-dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: none;
+  }
+  .modal.create-skill-dialog > form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .modal.create-skill-dialog .create-skill-editor {
+    flex: 1;
+  }
+}
+/* Placeholders and the Draft badge read darker than the app's muted grey
+   (#7a7a78 and #4d4d4b at their darkest). */
+:root[data-theme="light"] .create-skill ::placeholder {
+  color: #7a7a78;
+}
+:root[data-theme="light"] .create-skill-draft {
+  border-color: #e6e6e6;
+  color: #4d4d4b;
+}
+:root[data-theme="light"] .create-skill-editor {
+  border-color: #e4e4e2;
+  background: #fcfcfa;
+}
+/*
+ * Duplicate skill, Rename skill, Duplicate plugin: the same field and footer,
+ * the buttons on the right (no Draft badge), and the saved name in medium
+ * weight ("Saved as <b>…</b>", font-medium).
+ */
+.name-copy-foot {
+  justify-content: flex-end;
+}
+.name-copy-saved {
+  font-weight: 500;
+}

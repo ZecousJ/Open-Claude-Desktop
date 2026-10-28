@@ -1,0 +1,17 @@
+.font-licenses-content p {
+  margin: 12px 0 0;
+  color: var(--settings-secondary);
+  line-height: 20px;
+}
+.font-license-notice {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--settings-alpha-1);
+  color: var(--settings-primary);
+  font:
+    12px/18px ui-monospace,
+    monospace;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

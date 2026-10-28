@@ -1,0 +1,113 @@
+/* oC / cC. */
+.project-outputs-home {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden auto;
+}
+.project-outputs-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 8px 4px;
+}
+.project-outputs-heading h3,
+.project-outputs-heading > span {
+  margin: 0;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+}
+.project-outputs-heading h3 {
+  font-weight: 500;
+}
+.project-outputs-home ul {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.project-outputs-home li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 4px;
+  border-radius: 6px;
+}
+.project-outputs-home li:hover,
+.project-outputs-home li:focus-within {
+  background: rgb(255 255 255 / 10%);
+}
+.project-output-open {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  text-align: start;
+  background: none;
+  border: 0;
+  color: var(--text);
+}
+.project-output-open > svg {
+  flex: none;
+  color: var(--text-secondary);
+}
+.project-output-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.project-output-text > bdi {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 19px;
+}
+.project-output-text > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  color: #898781;
+  font-size: 11px;
+  line-height: 17px;
+}
+.project-output-text bdi {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-output-pin {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: #898781;
+  background: none;
+  opacity: 0;
+}
+.project-outputs-home li:hover .project-output-pin,
+.project-outputs-home li:focus-within .project-output-pin,
+.project-output-pin[aria-pressed="true"] {
+  opacity: 1;
+}
+:root[data-theme="light"] .project-outputs-home li:hover,
+:root[data-theme="light"] .project-outputs-home li:focus-within {
+  background: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .project-output-open {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .project-output-open > svg {
+  color: #52514e;
+}

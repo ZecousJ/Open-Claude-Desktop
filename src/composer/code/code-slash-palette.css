@@ -1,0 +1,197 @@
+/* Measured from claude-code-slash-own-blank-001 and claude-code-slash-filter-own-002
+   (1351 × 1063, 2×): 240 × 384 palette 5px left of the composer edge, 24px rows
+   inset 4px, 13px names, the row after the visible list fades out. */
+.code-composer .composer {
+  position: relative;
+}
+.code-slash-palette {
+  position: absolute;
+  z-index: 46;
+  left: -5px;
+  bottom: calc(100% + 0px);
+  box-sizing: border-box;
+  width: 240px;
+  overflow: hidden;
+  border: 1px solid #363636;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px #0007;
+  color: var(--text);
+  font:
+    13px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.code-slash-list {
+  box-sizing: border-box;
+  max-height: min(382px, calc(100vh - 147px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 3px;
+  scrollbar-width: none;
+}
+.code-slash-list[data-more-below="true"] {
+  mask-image: linear-gradient(
+    to bottom,
+    #000 calc(100% - 28px),
+    transparent calc(100% - 4px)
+  );
+}
+.code-slash-list::-webkit-scrollbar {
+  display: none;
+}
+.code-slash-list button {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 24px;
+  padding: 1px 8.5px 1px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.code-slash-list button[aria-selected="true"] {
+  background: #313131;
+}
+/* A row has no pressed look of its own: the original's menu rows keep the
+   highlight fill while pressed, and appear and go without a transition. */
+.code-slash-list button {
+  transition: none;
+}
+/* A custom prompt or skill: the name, then its source in grey at the row's
+   right edge. */
+.code-slash-list button:has(.code-slash-source) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-slash-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.code-slash-source {
+  flex: none;
+  color: #8f8f8e;
+  font-size: 12px;
+}
+.code-slash-list mark {
+  background: none;
+  color: inherit;
+  font-weight: 650;
+}
+.code-slash-list p {
+  margin: 0;
+  padding: 2px 8px;
+  color: #8f8f8e;
+}
+.code-slash-description {
+  position: fixed;
+  z-index: 47;
+  box-sizing: border-box;
+  max-width: 250px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #020202;
+  color: #fff;
+  font:
+    13px/22px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+:root[data-theme="light"] .code-slash-palette {
+  background: #fffefa;
+  border-color: #d2d0ca;
+  color: #292927;
+}
+:root[data-theme="light"] .code-slash-list button[aria-selected="true"] {
+  background: #f0ede7;
+}
+:root[data-theme="light"] .code-slash-source {
+  color: #7b7974;
+}
+:root[data-theme="light"] .code-slash-description {
+  background: #292927;
+  color: #fffefa;
+}
+
+/* "Type to filter" follows the typed "/" while the palette is open. */
+.code-composer .composer-input-row {
+  position: relative;
+}
+.code-slash-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  height: 20px;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  white-space: pre;
+  pointer-events: none;
+}
+.code-slash-ghost > span:first-child {
+  visibility: hidden;
+}
+.code-slash-ghost > span:last-child {
+  margin-left: 1px;
+  color: #7b7b7b;
+}
+
+.code-composer .composer-input-row:has(.code-slash-token) {
+  gap: 3px;
+  padding-left: 2px;
+}
+.code-slash-token {
+  flex: none;
+  color: #8aa6df;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  white-space: nowrap;
+}
+.code-slash-mark {
+  margin-right: 1px;
+  color: #55617f;
+}
+:root[data-theme="light"] .code-slash-token {
+  color: #3e72a9;
+}
+:root[data-theme="light"] .code-slash-mark {
+  color: #8a9ab8;
+}
+
+/* Second Backspace on a bare command token selects it. */
+.code-slash-token[data-selected] {
+  background: #032143;
+  box-shadow:
+    -3px 0 0 #032143,
+    3px 0 0 #032143,
+    0 1px 0 #032143,
+    0 -1px 0 #032143;
+}
+/* Light theme: not captured; the system selection colours stand in. */
+:root[data-theme="light"] .code-slash-token[data-selected] {
+  background: Highlight;
+  color: HighlightText;
+  box-shadow:
+    -3px 0 0 Highlight,
+    3px 0 0 Highlight,
+    0 1px 0 Highlight,
+    0 -1px 0 Highlight;
+}

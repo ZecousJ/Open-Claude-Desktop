@@ -1,0 +1,98 @@
+{
+  "$comment": "Pinned computer use drivers. fetch-driver.mjs downloads the tarball, checks its SHA-256 and npm integrity, checks every installed file against the hashes below, and installs the result into build/computer-use (packaged as resources/computer-use). Update a pin only together with docs/computer-use.md and THIRD_PARTY_NOTICES.md.",
+  "default": "open-computer-use",
+  "drivers": {
+    "open-computer-use": {
+      "version": "0.3.5",
+      "license": "MIT",
+      "homepage": "https://github.com/iFurySt/open-codex-computer-use",
+      "commit": "386a260d1ab8b690adbbb27f7471595cf0c2b752",
+      "tarball": {
+        "url": "https://registry.npmjs.org/open-computer-use/-/open-computer-use-0.3.5.tgz",
+        "size": 5844280,
+        "sha256": "7c16a87c8cd357787b02c0ebd040dd5f93880c1fb51c1901caa2e0c05d063130",
+        "integrity": "sha512-KKRY42by3yR+XPJiu6tk9wCn6lp0Y/dh1i8ap2SpW45hNSTej/hTPy1uquOLn/E4wF9hvPgProxmrsNj2FdpjQ=="
+      },
+      "licenseFile": {
+        "path": "package/LICENSE",
+        "sha256": "0fdb775e00e6fdde23984b4f1184cd13c34135caac1e714ad489141c239704bc"
+      },
+      "notices": "licenses/open-computer-use-NOTICES.md",
+      "targets": {
+        "darwin-arm64": "macos",
+        "darwin-x64": "macos",
+        "win32-x64": "windows-x64",
+        "win32-arm64": "windows-arm64"
+      },
+      "layouts": {
+        "macos": {
+          "source": "package/dist/Open Computer Use.app",
+          "install": "Open Computer Use.app",
+          "executable": "Contents/MacOS/OpenComputerUse",
+          "files": {
+            "Contents/Info.plist": "7a1c8c9b2c982dabf1c1f7ed8de969be70ffbb95b5a5b45b867508ed297d0f4b",
+            "Contents/MacOS/OpenComputerUse": "245ec7c89c2d1b43b4794a676eb8e0fc51fd8b2110761230501445bd08a08bc8",
+            "Contents/Resources/OpenComputerUse.icns": "4f3a59e94a1af6468c448363fb004ad1da68d81c14d4b2d44eb6953f6c2bae2f",
+            "Contents/_CodeSignature/CodeResources": "cf59c2e200209943cfb95744b121f518fb4f7c2d8a4b4dd775c703603dde39ca"
+          },
+          "exclude": {
+            "Contents/Resources/official-software-cursor-window-252.png": {
+              "sha256": "a85784a3f438da110c42b509b0b27b90d47b85812274a9d329f3f27b9bd8965f",
+              "reason": "Cursor image that upstream extracted from another vendor's app bundle; it is not covered by the MIT license, so Claudex does not redistribute it. Without it the driver draws its own cursor glyph."
+            }
+          },
+          "resign": "adhoc"
+        },
+        "windows-x64": {
+          "source": "package/dist/windows/amd64",
+          "install": ".",
+          "executable": "open-computer-use.exe",
+          "files": {
+            "open-computer-use.exe": "e0739e9cdc84775ae4b9486d23d60cb56666b381682c3da80fe0a88430b90436"
+          },
+          "exclude": {},
+          "resign": "none"
+        },
+        "windows-arm64": {
+          "source": "package/dist/windows/arm64",
+          "install": ".",
+          "executable": "open-computer-use.exe",
+          "files": {
+            "open-computer-use.exe": "f31cb91247d27758f820b1f5def3abbac6fce2a569adba654eee38d5a04cc9c7"
+          },
+          "exclude": {},
+          "resign": "none"
+        }
+      },
+      "args": ["mcp"],
+      "env": {
+        "base": {
+          "OPEN_COMPUTER_USE_DISABLE_APP_AGENT_PROXY": "1",
+          "OPEN_COMPUTER_USE_VISUAL_CURSOR": "0",
+          "OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "0",
+          "OPEN_COMPUTER_USE_WINDOWS_ALLOW_APP_LAUNCH": "0",
+          "OPEN_COMPUTER_USE_WINDOWS_ALLOW_FOCUS_ACTIONS": "0",
+          "OPEN_COMPUTER_USE_WINDOWS_ALLOW_UIA_TEXT_FALLBACK": "0"
+        },
+        "fullControl": {
+          "OPEN_COMPUTER_USE_VISUAL_CURSOR": "1",
+          "OPEN_COMPUTER_USE_ALLOW_GLOBAL_POINTER_FALLBACKS": "1",
+          "OPEN_COMPUTER_USE_WINDOWS_ALLOW_APP_LAUNCH": "1",
+          "OPEN_COMPUTER_USE_WINDOWS_ALLOW_FOCUS_ACTIONS": "1",
+          "OPEN_COMPUTER_USE_WINDOWS_ALLOW_UIA_TEXT_FALLBACK": "1"
+        }
+      },
+      "tools": [
+        "click",
+        "drag",
+        "get_app_state",
+        "list_apps",
+        "perform_secondary_action",
+        "press_key",
+        "scroll",
+        "set_value",
+        "type_text"
+      ]
+    }
+  }
+}

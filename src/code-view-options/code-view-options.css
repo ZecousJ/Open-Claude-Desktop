@@ -1,0 +1,7 @@
+/* View options draws its rows' glyphs on every surface. */
+.menu.code-view-options .menu-icon {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+}

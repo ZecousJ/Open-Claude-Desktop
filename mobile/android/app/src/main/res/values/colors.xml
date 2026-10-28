@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Resource colours: window + splash use bg100. -->
+<resources>
+    <color name="bg100">#f9f9f7</color>
+    <color name="bg300">#f0efec</color>
+    <color name="accentMain100">#c6613f</color>
+    <color name="text100">#131313</color>
+    <color name="text300">#383835</color>
+    <color name="text500">#7b7974</color>
+    <color name="claudeClay">#d97757</color>
+</resources>

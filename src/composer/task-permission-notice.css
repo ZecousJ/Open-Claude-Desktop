@@ -1,0 +1,132 @@
+/* The reference design CDS neutral/warning, text-sm,
+ gap-3. */
+.permission-mode-notice {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  border-radius: 10px;
+  background: #151515;
+  color: #f0efec;
+  font-size: 13px;
+  line-height: 19px;
+}
+.permission-mode-notice.warning {
+  background: #311a00;
+  box-shadow: inset 0 0 0 1px #512e00;
+  color: #db9300;
+}
+.permission-mode-notice > button {
+  align-self: flex-start;
+  flex: none;
+  color: inherit;
+}
+.permission-mode-notice a,
+.skip-approvals-dialog a {
+  text-decoration: underline;
+}
+.skip-approvals-dialog .modal-title-with-icon {
+  gap: 8px;
+}
+.skip-approvals-dialog .skip-approvals-beta {
+  order: 1;
+  border-radius: 6px;
+  padding: 2px 6px;
+  background: rgb(255 255 255 / 5%);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+.skip-approvals-dialog > p {
+  color: #898781;
+  font-size: 14px;
+  line-height: 20px;
+}
+.skip-approvals-dialog section {
+  font-size: 14px;
+  line-height: 20px;
+}
+.skip-approvals-dialog h3 {
+  color: #898781;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+.skip-approvals-dialog ul {
+  list-style: none;
+  padding: 0;
+}
+/* The list scrolls at 13.75rem. */
+.skip-approvals-dialog section > ul {
+  max-height: 13.75rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.skip-approvals-connector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 0;
+  text-align: start;
+}
+.skip-approvals-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.skip-approvals-count {
+  color: #898781;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.skip-approvals-caret {
+  display: flex;
+  flex: none;
+  color: #898781;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.skip-approvals-caret.open {
+  transform: rotate(90deg);
+}
+.skip-approvals-dialog .skip-approvals-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 0 4px 28px;
+  color: #c3c2b7;
+  font-size: 12px;
+  line-height: 16px;
+}
+.skip-approvals-tools > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+.skip-approvals-access {
+  flex: none;
+  color: #898781;
+}
+.skip-approvals-access.write {
+  color: var(--danger);
+}
+.skip-approvals-dialog .button-row {
+  margin-top: 20px;
+  gap: 8px;
+}
+:root[data-theme="light"] .permission-mode-notice {
+  color: #0b0b0b;
+  background: #fcfcfb;
+  box-shadow: inset 0 0 0 1px rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .permission-mode-notice.warning {
+  background: #f9dca4;
+  box-shadow: inset 0 0 0 1px #eda100;
+  color: #734500;
+}
+:root[data-theme="light"] .skip-approvals-beta {
+  background: rgb(11 11 11 / 5%);
+}

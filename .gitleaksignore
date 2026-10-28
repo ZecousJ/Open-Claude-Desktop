@@ -1,0 +1,12 @@
+# Reviewed: upstream Sub2API's public OAuth client values and documentation examples.
+backend/backend/internal/pkg/antigravity/oauth.go:generic-api-key:73
+backend/backend/internal/pkg/geminicli/constants.go:generic-api-key:42
+backend/backend/internal/repository/ops_repo_preagg.go:generic-api-key:208
+backend/backend/internal/repository/ops_repo_preagg.go:generic-api-key:321
+backend/backend/internal/service/plugin_package.go:generic-api-key:28
+backend/docs/ADMIN_PAYMENT_INTEGRATION_API.md:generic-api-key:44
+backend/docs/ADMIN_PAYMENT_INTEGRATION_API.md:generic-api-key:57
+backend/docs/ADMIN_PAYMENT_INTEGRATION_API.md:generic-api-key:64
+backend/docs/ADMIN_PAYMENT_INTEGRATION_API.md:generic-api-key:164
+backend/docs/ADMIN_PAYMENT_INTEGRATION_API.md:generic-api-key:177
+backend/docs/ADMIN_PAYMENT_INTEGRATION_API.md:generic-api-key:184

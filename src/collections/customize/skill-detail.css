@@ -1,0 +1,98 @@
+/*
+ * A skill's details. Facts in two columns, SKILL.md rendered in a scrolling
+ * box, then the folder's files; the buttons sit on the right.
+ */
+.skill-detail-facts {
+  display: flex;
+  gap: 32px;
+  margin: 0 0 14px;
+}
+.skill-detail-facts dt {
+  color: #8f8f8c;
+  font-size: 12px;
+}
+.skill-detail-facts dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+.skill-detail-label {
+  margin: 0 0 6px;
+  color: #8f8f8c;
+  font-size: 12px;
+  font-weight: 500;
+}
+.skill-detail-label > span {
+  margin-left: 4px;
+}
+.skill-detail-markdown {
+  max-height: 280px;
+  margin: 0 0 16px;
+  overflow: auto;
+  padding: 4px 14px;
+  border: 1px solid #2b2b2b;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.skill-detail-files {
+  max-height: 150px;
+  margin: 0 0 16px;
+  overflow: auto;
+  padding: 0;
+  list-style: none;
+}
+.skill-detail-files li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  font-size: 13px;
+}
+.skill-detail-files li > svg {
+  flex-shrink: 0;
+  color: #8f8f8c;
+}
+.skill-detail-files li > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.skill-detail-files small,
+.skill-detail-more {
+  color: #8f8f8c;
+  font-size: 12px;
+}
+.skill-detail-loading {
+  display: grid;
+  place-items: center;
+  height: 80px;
+  color: #8f8f8c;
+}
+.skill-detail-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.skill-detail-actions > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-detail-actions > .skill-detail-remove {
+  margin-right: auto;
+  color: #e5807a;
+}
+:root[data-theme="light"] .skill-detail-markdown {
+  border-color: #e6e6e3;
+}
+:root[data-theme="light"] .skill-detail-actions > .skill-detail-remove {
+  color: #b3413a;
+}
+/* Light: the muted labels use the Customize muted grey. */
+:root[data-theme="light"] .skill-detail-facts dt,
+:root[data-theme="light"] .skill-detail-label,
+:root[data-theme="light"] .skill-detail-more,
+:root[data-theme="light"] .skill-detail-loading {
+  color: #767674;
+}

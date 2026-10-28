@@ -1,0 +1,154 @@
+/* flex-shrink-0 mt-0.5, text-body, text-footnote and gap-0.5. */
+.import-linear-issue {
+  --linear-primary: #f0efec;
+  --linear-muted: #898781;
+  --linear-hover: rgb(255 255 255 / 7.5%);
+  --linear-selected: rgb(255 255 255 / 15%);
+  --linear-field: rgb(255 255 255 / 5%);
+  --linear-border: rgb(255 255 255 / 10%);
+  --linear-border-strong: rgb(255 255 255 / 20%);
+  --linear-focus:
+    inset 0 0 0 1px #0b0b0b, 0 0 0 1px #2a78d6, 0 0 6px 1px rgb(24 79 149 / 60%);
+}
+:root[data-theme="light"] .import-linear-issue {
+  --linear-primary: #0b0b0b;
+  --linear-hover: rgb(11 11 11 / 5%);
+  --linear-selected: rgb(11 11 11 / 10%);
+  --linear-field: #ffffff80;
+  --linear-border: rgb(11 11 11 / 10%);
+  --linear-border-strong: rgb(11 11 11 / 20%);
+  --linear-focus:
+    inset 0 0 0 1px #f9f9f7, 0 0 0 1px #2a78d6, 0 0 6px 1px #cde2fb;
+}
+.import-linear-issue .import-issue-text {
+  gap: 2px;
+}
+.import-linear-issue .import-issue-title {
+  color: var(--linear-primary);
+}
+.import-linear-issue .import-issue-state {
+  color: var(--linear-muted);
+}
+.import-linear-issue .import-issue-number,
+.import-linear-issue .import-issue-meta,
+.import-linear-issue .import-issue-note {
+  color: var(--linear-muted);
+}
+.import-linear-issue .import-issue-body li button:hover {
+  background: var(--linear-hover);
+}
+.import-linear-issue .import-issue-body li button:active,
+.import-linear-issue .import-issue-body li button[aria-selected="true"] {
+  background: var(--linear-selected);
+}
+/*
+ * Input size=sm: h-control--sm, pl-md, rounded, bg-fill-field,
+ * shadow-field-ring.
+ */
+.import-linear-issue .import-issue-search {
+  height: 20px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--linear-field);
+  color: var(--linear-muted);
+  box-shadow: inset 0 0 0 1px var(--linear-border);
+}
+.import-linear-issue .import-issue-search:hover {
+  box-shadow: inset 0 0 0 1px var(--linear-border-strong);
+}
+.import-linear-issue .import-issue-search:focus-within {
+  box-shadow: var(--linear-focus);
+}
+.import-linear-issue .import-issue-search input {
+  color: var(--linear-primary);
+}
+.import-linear-issue .import-issue-search input::placeholder {
+  color: var(--linear-muted);
+}
+.import-linear-issue > header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.import-linear-issue .import-issue-title,
+.import-linear-issue .import-issue-note,
+.import-linear-issue .import-issue-search input {
+  font-size: 13px;
+  line-height: 19px;
+}
+.import-linear-issue .import-issue-meta {
+  font-size: 12px;
+  line-height: 15px;
+}
+
+/*
+ * Wr: h-10 px-md gap-1.25, rounded-sm, bg-fill-secondary,
+ * text-secondary-control; the remove control is size-4, -top-1.5 -end-1.5. CDS
+ * colours resolved with audit/tokens.py.
+ */
+.linear-issue-pill {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: flex-start;
+  --linear-fill: rgb(255 255 255 / 10%);
+  --linear-ink: #c3c2b7;
+  --linear-surface: #1a1a19;
+}
+:root[data-theme="light"] .linear-issue-pill {
+  --linear-fill: #ffffff1a;
+  --linear-ink: #52514e;
+  --linear-surface: #fff;
+}
+.linear-issue-pill-body {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--linear-fill);
+  color: var(--linear-ink);
+  font-size: 13px;
+  line-height: 19px;
+  overflow: hidden;
+}
+.linear-issue-pill-body > span {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.linear-issue-pill-remove {
+  position: absolute;
+  top: -6px;
+  inset-inline-end: -6px;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--linear-surface);
+  color: var(--text-secondary);
+  box-shadow: 0 0 0 1px var(--alpha-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+}
+.linear-issue-pill:hover .linear-issue-pill-remove,
+.linear-issue-pill:focus-within .linear-issue-pill-remove {
+  opacity: 1;
+  pointer-events: auto;
+}
+.linear-issue-pill-remove:hover {
+  color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .linear-issue-pill-remove {
+    transition: none;
+  }
+}

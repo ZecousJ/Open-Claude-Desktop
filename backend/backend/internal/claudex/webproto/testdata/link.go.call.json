@@ -1,0 +1,17 @@
+{
+  "t": "call",
+  "id": "g-17",
+  "user": {
+    "id": 7,
+    "tabId": "tab-7f3c2a9e1b4d",
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9.e30.sig"
+  },
+  "method": "send",
+  "args": [
+    "conv-1",
+    {
+      "text": "hi"
+    }
+  ],
+  "deadlineMs": 120000
+}

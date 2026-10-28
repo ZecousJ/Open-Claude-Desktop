@@ -1,0 +1,15 @@
+{
+  "status": 401,
+  "body": {
+    "code": "API_KEY_DISABLED",
+    "message": "API key is disabled",
+    "claudex": {
+      "v": 1,
+      "reason": "DEVICE_REVOKED",
+      "kind": "key",
+      "reprovision": false,
+      "action": "sign_in",
+      "message": "This device was signed out. Sign in again to keep working."
+    }
+  }
+}

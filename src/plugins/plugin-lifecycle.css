@@ -1,0 +1,14 @@
+/* Loaded with the plugin page; no first-screen stylesheet dependency. */
+.plugin-rows .plugin-row-action > .plugin-row-try {
+  box-sizing: border-box;
+  width: 60px;
+  height: 28px;
+  padding: 0;
+}
+.plugin-detail-read-failure {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--text-secondary);
+}

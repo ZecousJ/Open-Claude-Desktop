@@ -1,0 +1,351 @@
+/* The downloads page (src/downloads/DownloadsPage.tsx), from
+   claude.ai/downloads and the cds tokens in its stylesheet: surface-3 frame
+   around a surface-1 card, font-large-bold titles, font-base text, subgrid rows
+   split by 1px borders, fill-secondary buttons. Light values are the tokens'
+   .cds-root ones, dark the prefers-color-scheme ones. */
+.dl {
+  --dl-page: #151515;
+  --dl-surface-3: #20201f;
+  --dl-surface-1: #151515;
+  --dl-text: #f0efec;
+  --dl-text-secondary: #c3c2b7;
+  --dl-border: rgb(255 255 255 / 10%);
+  --dl-border-strong: rgb(255 255 255 / 20%);
+  --dl-fill: rgb(255 255 255 / 10%);
+  --dl-fill-hover: rgb(255 255 255 / 14%);
+  --dl-fill-ring: transparent;
+  --dl-apple: #fff;
+  --dl-serif: "Claudex Serif", Georgia, "Times New Roman", serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--dl-page);
+  color: var(--dl-text);
+  font-size: 14px;
+  line-height: 21px;
+  -webkit-font-smoothing: antialiased;
+}
+:root[data-theme="light"] .dl {
+  --dl-page: #fcfcfb;
+  --dl-surface-3: #fff;
+  --dl-surface-1: #fcfcfb;
+  --dl-text: #0b0b0b;
+  --dl-text-secondary: #52514e;
+  --dl-border: rgb(11 11 11 / 10%);
+  --dl-border-strong: rgb(11 11 11 / 20%);
+  --dl-fill: rgb(255 255 255 / 10%);
+  --dl-fill-hover: rgb(11 11 11 / 5%);
+  --dl-fill-ring: rgb(11 11 11 / 10%);
+  --dl-apple: #000;
+}
+/* The page scrolls on its own (the app's body does not). */
+:root:has(.dl),
+:root:has(.dl) body,
+:root:has(.dl) #root {
+  height: auto;
+  overflow: visible;
+}
+
+/* header: h-12, border-b-[0.5px] border-strong, px-4, gap-1; the label is
+   text-secondary 14/20. */
+.dl-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 0.5px solid var(--dl-border-strong);
+}
+.dl-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--dl-text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  text-decoration: none;
+}
+.dl-back svg {
+  width: 20px;
+  height: 20px;
+  color: var(--dl-text);
+}
+.dl-back:hover span {
+  color: var(--dl-text);
+}
+
+/* flex-1 flex-col items-center justify-center px-4 md:px-8 pt-8 pb-16 */
+.dl-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px 64px;
+}
+@media (min-width: 768px) {
+  .dl-main {
+    padding-inline: 32px;
+  }
+}
+.dl-title {
+  margin: 0 0 40px;
+  font: 500 28px/36.4px var(--dl-serif);
+  text-align: center;
+  color: var(--dl-text);
+}
+/* Entrance: 500ms ease-out; the title from opacity 0 and 12px (translate-y-3)
+   down, each card from opacity 0 and 16px (translate-y-4) down, delayed 80ms
+   per card. Reduced motion shows them at once. */
+.dl-title,
+.dl-card {
+  opacity: 0;
+  transition:
+    opacity 500ms ease-out,
+    transform 500ms ease-out;
+}
+.dl-title {
+  transform: translateY(12px);
+}
+.dl-card {
+  transform: translateY(16px);
+}
+.dl[data-entered] .dl-title,
+.dl[data-entered] .dl-card {
+  opacity: 1;
+  transform: none;
+}
+.dl[data-entered] .dl-card {
+  transition-delay: calc(var(--dl-index, 0) * 80ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dl-title,
+  .dl-card {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+/* w-full grid grid-cols-1 gap-5 max-w-sm min-[840px]:max-w-4xl min-[840px]:grid-cols-2 */
+.dl-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 384px;
+}
+@media (min-width: 840px) {
+  .dl-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 896px;
+  }
+}
+
+/* rounded-[32px] overflow-hidden bg-surface-3 border-0.5 border-border-300
+   shadow-[0_4px_20px_color-mix(black_4%)] p-2.5, around rounded-3xl
+   border-0.5 bg-surface-1 with pt-7 px-7. The original's picture fills the
+   card's foot; without it the content ends 28px above the frame. */
+.dl-card {
+  padding: 10px;
+  border: 0.5px solid var(--dl-border);
+  border-radius: 32px;
+  background: var(--dl-surface-3);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 4%);
+  overflow: hidden;
+}
+.dl-card-inner {
+  height: 100%;
+  box-sizing: border-box;
+  padding: 28px 28px 14px;
+  border: 0.5px solid var(--dl-border);
+  border-radius: 24px;
+  background: var(--dl-surface-1);
+}
+.dl-card h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--dl-text);
+}
+.dl-card-text {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--dl-text-secondary);
+}
+.dl-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 0;
+}
+/* grid grid-cols-[1fr_auto]; rows py-3.5 border-t first:border-t-0 */
+.dl-rows {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+.dl-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid var(--dl-border);
+}
+.dl-row:first-child {
+  border-top: 0;
+}
+.dl-row-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.dl-row-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--dl-text-secondary);
+}
+.dl-apple {
+  fill: var(--dl-apple);
+  opacity: 0.8;
+}
+
+/* cds Button, secondary: h-control 32, px-md 12, rounded 8, text-body 14/20,
+   bg-fill-secondary (hover fill-secondary-hover), shadow-field. */
+.dl-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--dl-fill);
+  box-shadow:
+    inset 0 0 0 1px var(--dl-fill-ring),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: var(--dl-text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    var(--press-release);
+}
+.dl-button:hover {
+  background: var(--dl-fill-hover);
+}
+.dl-button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* "Take Claude on the go": 520 wide, rounded 12, surface-3, p-6; serif 30/36
+   title; a rounded-2xl 1px border box, p-6, with a 180px QR code and a
+   40px button (rounded 10, px-4, gap 6, 15/22). */
+.dl-dialog {
+  position: relative;
+  width: 520px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--dl-surface-3);
+  color: var(--dl-text);
+}
+.dl-dialog h2 {
+  margin: 24px 0 32px;
+  font: 400 30px/36px var(--dl-serif);
+  text-align: center;
+}
+.dl-dialog-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dl-text-secondary);
+  cursor: pointer;
+}
+.dl-dialog-close:hover {
+  background: var(--dl-fill-hover);
+  color: var(--dl-text);
+}
+.dl-dialog-close svg {
+  width: 16px;
+  height: 16px;
+}
+.dl-dialog-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  padding: 24px;
+  border: 1px solid var(--dl-border);
+  border-radius: 16px;
+}
+.dl-qr {
+  width: 180px;
+  height: 180px;
+}
+.dl-qr img {
+  display: block;
+  width: 180px;
+  height: 180px;
+}
+.dl .dl-qr img,
+.overlay .dl-qr img {
+  filter: invert(1);
+}
+:root[data-theme="light"] .dl-qr img {
+  filter: none;
+}
+.dl-dialog-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--dl-fill);
+  box-shadow:
+    inset 0 0 0 1px var(--dl-fill-ring),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: var(--dl-text);
+  font-size: 15px;
+  line-height: 22px;
+  text-decoration: none;
+}
+.dl-dialog-button:hover {
+  background: var(--dl-fill-hover);
+}
+.dl-dialog-button svg {
+  width: 16px;
+  height: 16px;
+}
+.dl-dialog-version {
+  margin: -14px 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--dl-text-secondary);
+}

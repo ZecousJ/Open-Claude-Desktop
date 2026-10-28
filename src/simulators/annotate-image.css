@@ -1,0 +1,168 @@
+/*
+ * Annotate (AnnotateImage.tsx), after the reference design ("Annotate image"):
+ * the window under 62.5% black with 16px of room (40px from 768px up); the
+ * picture at most min(40rem, 100vw - 2rem) wide and the height less 4rem, with
+ * 5px corners; a floating bar centred 24px above the bottom (10px in from the
+ * sides) holding 4px-spaced groups split by 16px dividers; swatches 14px,
+ * ringed 2px in the text colour when chosen and 1px otherwise. The bar's panel
+ * is the control bar's raised surface (.sim-pill) with the menus' 10px corners.
+ */
+.annotate-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  outline: none;
+  background: rgb(0 0 0 / 62.5%);
+  -webkit-app-region: no-drag;
+}
+@media (min-width: 768px) {
+  .annotate-overlay {
+    padding: 40px;
+  }
+}
+.annotate-stage {
+  position: relative;
+  min-height: 0;
+  width: fit-content;
+}
+.annotate-picture {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(40rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 4rem);
+  border-radius: 5px;
+  user-select: none;
+  pointer-events: none;
+}
+.annotate-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+/* The label being typed: bare text on the picture, kept on its lines. */
+.annotate-text-field {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  line-height: 1.2;
+  white-space: pre;
+  resize: none;
+  overflow: hidden;
+  field-sizing: content;
+}
+.annotate-bar-row {
+  position: absolute;
+  right: 10px;
+  bottom: 24px;
+  left: 10px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.annotate-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  pointer-events: auto;
+  transition: opacity 120ms var(--ease-snap);
+}
+/* Hidden while a mark is drawn or dragged. */
+.annotate-bar.concealed {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 60ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .annotate-bar {
+    transition: none;
+  }
+}
+.annotate-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.annotate-swatches {
+  padding: 0 4px;
+}
+.annotate-divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+}
+.annotate-swatch {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 999px;
+}
+.annotate-swatch.square .annotate-swatch-fill,
+.annotate-swatch.square {
+  border-radius: 3px;
+}
+.annotate-swatch:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+.annotate-swatch-fill {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--border);
+  transition: box-shadow 150ms;
+}
+.annotate-swatch-fill.light {
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.annotate-swatch:hover .annotate-swatch-fill {
+  box-shadow: 0 0 0 1px var(--text-secondary);
+}
+.annotate-swatch-fill.active,
+.annotate-swatch:hover .annotate-swatch-fill.active {
+  box-shadow: 0 0 0 2px var(--text);
+}
+.annotate-close {
+  min-height: 30px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+}
+@media (hover: hover) {
+  .annotate-close:hover {
+    background: var(--fill-ghost-hover);
+  }
+}
+.annotate-add {
+  min-height: 30px;
+  padding: 4px 12px;
+}
+.annotate-add:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

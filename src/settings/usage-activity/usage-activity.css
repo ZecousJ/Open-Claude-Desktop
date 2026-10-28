@@ -1,0 +1,468 @@
+/* Settings → Usage, "Activity" under the plan's limits. It lives inside
+   .usage-page and takes its palette from there (--usage-*): hairline
+   sections, the page's own bars and type, no coloured cards. Loaded with the
+   section, not with the first screen. The chart series are the page's fill
+   at three strengths, so the palette stays the captured one. */
+.ua {
+  --ua-input: var(--usage-fill);
+  --ua-output: color-mix(in srgb, var(--usage-fill) 58%, var(--usage-empty));
+  --ua-cache: color-mix(in srgb, var(--usage-fill) 26%, var(--usage-empty));
+  margin-top: 40px;
+  color: var(--usage-text);
+}
+.ua-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ua-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px 24px;
+  margin: 20px 0 0;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--usage-rule);
+}
+.ua-stat dt {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--usage-muted);
+}
+.ua-stat dd {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+}
+.ua-stat p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--usage-muted);
+}
+.ua-section {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--usage-rule);
+}
+.ua-section > h3,
+.ua-section-head > h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+.ua-section > h3 {
+  margin-bottom: 16px;
+}
+.ua-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* By provider */
+.ua-providers {
+  display: grid;
+  gap: 28px;
+}
+.ua-provider-head,
+.ua-model-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.ua-provider-head b,
+.ua-model-head b {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ua-provider-head span,
+.ua-model-head span {
+  color: var(--usage-muted);
+  font-size: 13px;
+}
+.ua-provider > p,
+.ua-model > p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--usage-muted);
+}
+.ua-quota {
+  display: grid;
+  grid-template-columns: 72px minmax(80px, 1fr) auto;
+  align-items: center;
+  column-gap: 16px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--usage-muted);
+}
+.ua-quota em {
+  font-style: normal;
+  text-align: right;
+  white-space: nowrap;
+}
+.ua-quota em.full {
+  color: var(--usage-full-text);
+}
+.ua-quota small {
+  grid-column: 2 / -1;
+  font-size: 12px;
+  line-height: 16px;
+}
+.ua-models {
+  display: grid;
+  gap: 18px;
+}
+.ua-model .usage-bar {
+  margin-top: 8px;
+}
+
+/* Range controls: the page's plain text buttons, the chosen one boxed. */
+.ua-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ua-segment {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--usage-rule);
+  border-radius: 8px;
+}
+.ua-segment button {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--usage-muted);
+}
+.ua-segment button:hover {
+  color: var(--usage-text);
+}
+.ua-segment button.on {
+  background: var(--usage-empty);
+  color: var(--usage-text);
+}
+.ua-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--usage-muted);
+}
+.ua-dates label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ua-dates input,
+.ua-select {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--usage-rule);
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--usage-text);
+  color-scheme: dark;
+}
+:root[data-theme="light"] .ua-dates input,
+:root[data-theme="light"] .ua-select {
+  color-scheme: light;
+}
+.ua-select {
+  max-width: 220px;
+}
+
+/* Trend chart */
+.ua-summary {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--usage-muted);
+}
+.ua-trend.loading {
+  opacity: 0.6;
+}
+.ua-chart {
+  --ua-axis-width: 44px;
+  position: relative;
+  height: 160px;
+  padding-left: var(--ua-axis-width);
+  border-bottom: 1px solid var(--usage-rule);
+}
+.ua-axis {
+  position: absolute;
+  left: 0;
+  font-size: 12px;
+  line-height: 14px;
+  color: var(--usage-muted);
+}
+.ua-axis.top {
+  top: 0;
+}
+.ua-axis.mid {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.ua-bars {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 100%;
+  background: linear-gradient(var(--usage-rule) 1px, transparent 1px) 0 0 / 100%
+    50%;
+}
+.ua-bar {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column-reverse;
+  min-width: 1px;
+  justify-content: flex-start;
+}
+.ua-bar span {
+  display: block;
+  width: 100%;
+}
+.ua-bar .input,
+.ua-legend .input::before {
+  background: var(--ua-input);
+}
+.ua-bar .output,
+.ua-legend .output::before {
+  background: var(--ua-output);
+}
+.ua-bar .cache,
+.ua-legend .cache::before {
+  background: var(--ua-cache);
+}
+.ua-bar.hover {
+  outline: 1px solid var(--usage-muted);
+}
+.ua-tip {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 140px;
+  padding: 8px 10px;
+  border: 1px solid var(--usage-rule);
+  border-radius: 8px;
+  background: var(--usage-empty);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--usage-muted);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.ua-tip b {
+  font-weight: 600;
+  color: var(--usage-text);
+}
+.ua-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0 0 44px;
+  font-size: 12px;
+  color: var(--usage-muted);
+}
+.ua-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--usage-muted);
+}
+.ua-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
+.ua-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--usage-muted);
+}
+
+/* Requests: a header row and one row per request in four columns, each a value
+   over a muted second line; a row opens to its details. The page's own type,
+   ink and rules. */
+.ua-records {
+  --ua-record-columns: minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 0.8fr)
+    minmax(0, 1fr) 14px;
+}
+.ua-records.loading {
+  opacity: 0.6;
+}
+.ua-record-head,
+.ua-record > summary {
+  display: grid;
+  grid-template-columns: var(--ua-record-columns);
+  align-items: center;
+  gap: 16px;
+}
+.ua-record-head {
+  padding: 0 0 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--usage-muted);
+}
+.ua-record {
+  border-top: 1px solid var(--usage-rule);
+}
+.ua-record > summary {
+  padding: 10px 0;
+  list-style: none;
+  cursor: pointer;
+}
+.ua-record > summary::-webkit-details-marker {
+  display: none;
+}
+.ua-record > summary > span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.ua-record > summary > span > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ua-record b {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.ua-record small {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--usage-muted);
+}
+.ua-record-tokens svg {
+  margin-right: 2px;
+  vertical-align: -1px;
+  color: var(--usage-muted);
+}
+.ua-record-tokens svg:not(:first-child) {
+  margin-left: 8px;
+}
+.ua-record-chevron {
+  color: var(--usage-muted);
+  transition: transform var(--motion-snap) var(--ease-out);
+}
+.ua-record[open] .ua-record-chevron {
+  transform: rotate(90deg);
+}
+.ua-record-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+  margin: 0 0 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--usage-empty);
+  font-size: 13px;
+  line-height: 18px;
+}
+.ua-record-details > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+.ua-record-details dt {
+  color: var(--usage-muted);
+}
+.ua-record-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.ua-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--usage-muted);
+}
+.ua-pager button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--usage-text);
+}
+.ua-pager button:hover:not(:disabled) {
+  background: var(--usage-empty);
+}
+.ua-pager button:disabled {
+  opacity: 0.35;
+}
+.ua-stat-loading {
+  display: grid;
+  gap: 8px;
+}
+@container usage-page (max-width: 700px) {
+  .ua-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ua-records {
+    --ua-record-columns: minmax(0, 1fr) minmax(0, 1fr) 14px;
+  }
+  .ua-record-head {
+    display: none;
+  }
+  .ua-record > summary {
+    row-gap: 6px;
+  }
+  .ua-record-model {
+    grid-column: 1 / 3;
+  }
+  .ua-record-chevron {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .ua-record > summary > .ua-record-latency {
+    grid-column: 1 / 3;
+    display: flex;
+    gap: 16px;
+  }
+  .ua-record-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.ua-loading {
+  display: grid;
+  gap: 24px;
+}
+
+/* Reduced motion: the chevron turns at once. */
+@media (prefers-reduced-motion: reduce) {
+  .ua-record-chevron {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .ua-record-chevron {
+  transition: none;
+}

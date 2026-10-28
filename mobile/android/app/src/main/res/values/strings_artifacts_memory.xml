@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Memory edit result lines (strings-feature-map memory_edit_*); Claudex words the brand. -->
+    <string name="memory_edit_result_done">Done.</string>
+    <string name="memory_edit_result_noop">No changes were made.</string>
+    <string name="memory_edit_result_removed">Removed %1$s</string>
+    <string name="memory_edit_result_updated">Updated memory</string>
+    <string name="memory_edit_result_updated_removed">Updated memory, removed %1$s</string>
+    <string name="memory_edit_rejected">Claudex can’t save that to memory</string>
+    <plurals name="memory_edit_many_files">
+        <item quantity="one">%1$d memory file</item>
+        <item quantity="other">%1$d memory files</item>
+    </plurals>
+    <!-- Artifact sheet: menu, footer, copy to project, comments. -->
+    <string name="artifact_sheet_menu_copy_to_project">Copy to project</string>
+    <string name="artifact_sheet_menu_share_as">Share as %1$s</string>
+    <string name="artifact_copy_to_project_success">Copied to project</string>
+    <string name="artifact_copy_to_project_failed">Failed to copy to project</string>
+    <string name="artifact_sheet_footer_count">Version %1$s of %2$s</string>
+    <string name="artifact_sheet_footer_next">Next version</string>
+    <string name="artifact_sheet_footer_previous">Previous version</string>
+    <string name="ccr_artifact_viewer_comments_enter">Comment</string>
+    <string name="ccr_artifact_viewer_comments_exit">Done commenting</string>
+    <string name="ccr_artifact_viewer_selection_comment">Comment</string>
+    <string name="artifact_comment_sent_title">Artifact comment sent to Claudex</string>
+    <string name="claudex_artifact_comment_title">Comment on this text</string>
+    <string name="claudex_artifact_comment_hint">Your comment</string>
+    <string name="claudex_artifact_comment_send">Send</string>
+    <string name="claudex_artifact_comment_unavailable">Open this artifact from its chat to comment on it.</string>
+    <string name="claudex_artifact_comment_busy">Wait for the current reply to finish before commenting.</string>
+</resources>

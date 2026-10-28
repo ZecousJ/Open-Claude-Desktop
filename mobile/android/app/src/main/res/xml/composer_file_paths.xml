@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Camera captures for the composer's Add to chat sheet (FileProvider, cache only). -->
+<paths>
+    <cache-path name="camera" path="camera/" />
+    <!-- An artifact shared as a file (Share as): one file at a time. -->
+    <cache-path name="share" path="share/" />
+    <!-- A downloaded update, handed to the system installer. -->
+    <cache-path name="updates" path="updates/" />
+</paths>

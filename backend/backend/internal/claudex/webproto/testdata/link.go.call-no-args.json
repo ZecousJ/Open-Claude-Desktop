@@ -1,0 +1,11 @@
+{
+  "t": "call",
+  "id": "g-20",
+  "user": {
+    "id": 7,
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9.e30.sig"
+  },
+  "method": "snapshot",
+  "args": [],
+  "deadlineMs": 30000
+}

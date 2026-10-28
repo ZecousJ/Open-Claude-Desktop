@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鹈鹕骑行记</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    background: #dff3ee;
+    color: #234a45;
+    font-family: system-ui, "Microsoft YaHei", sans-serif;
+  }
+  main { width: min(100%, 1000px); padding: 32px 16px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  h1 { margin: 0; font-size: 28px; }
+  .subtitle { margin: 8px 0 0; font-size: 14px; color: #55756e; }
+  button {
+    width: 44px; height: 44px; flex-shrink: 0;
+    display: grid; place-items: center;
+    border: 1px solid #92bdb1; border-radius: 50%;
+    background: #f7fffc; color: #234a45; cursor: pointer;
+  }
+  button:hover { background: #c6e9de; }
+  button:focus-visible { outline: 3px solid #e58c42; outline-offset: 4px; }
+  button svg { width: 20px; height: 20px; }
+  .scene { display: block; width: 100%; height: auto; margin-top: 24px; }
+  .spin { animation: spin 1.2s linear infinite; }
+  .bob { animation: bob .6s ease-in-out infinite; }
+  .wing { animation: wing .6s ease-in-out infinite; transform-origin: 438px 269px; }
+  .scarf { animation: flutter .6s ease-in-out infinite; transform-origin: 484px 223px; }
+  .road { animation: travel 1.2s linear infinite; }
+  .clouds { animation: travel 24s linear infinite; }
+  .paused * { animation-play-state: paused !important; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
+  @keyframes wing { 50% { transform: rotate(-4deg); } }
+  @keyframes flutter { 50% { transform: rotate(7deg); } }
+  @keyframes travel { to { transform: translateX(-900px); } }
+  @media (max-width: 480px) { h1 { font-size: 23px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .scene * { animation-duration: 12s; }
+    .scene .clouds { animation-duration: 60s; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>鹈鹕骑行记</h1>
+      <p class="subtitle">海风轻轻，踏板不停。</p>
+    </div>
+    <button id="toggle" type="button" aria-label="暂停动画" title="暂停动画">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path id="icon" d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+      </svg>
+    </button>
+  </header>
+
+  <svg class="scene" id="scene" viewBox="0 0 900 560"
+       role="img" aria-labelledby="title description">
+    <title id="title">一只骑着红色单车的鹈鹕</title>
+    <desc id="description">白色鹈鹕戴着绿色围巾，在海边踩着单车向前行驶。</desc>
+    <defs>
+      <clipPath id="frame"><rect width="900" height="560" rx="8"/></clipPath>
+      <g id="cloud" fill="#fff" opacity=".85">
+        <path d="M0 30C-5 12 16 5 28 15C29-9 68-8 73 15C94 4 112 17 108 30Z"/>
+      </g>
+      <g id="spokes" stroke="#8aa6a1" stroke-width="2">
+        <circle r="63" fill="none" stroke="#f8fffc" stroke-width="5"/>
+        <path d="M-62 0H62M0-62V62M-44-44L44 44M-44 44L44-44
+                 M-57-24L57 24M-24-57L24 57M-57 24L57-24M-24 57L24-57"/>
+      </g>
+      <g id="roadMarks" stroke="#fcfff6" stroke-width="5" stroke-linecap="round">
+        <path d="M30 497h70m100 0h70m100 0h70m100 0h70m100 0h70"/>
+      </g>
+    </defs>
+
+    <g clip-path="url(#frame)">
+      <path fill="#d2eeef" d="M0 0h900v560H0z"/>
+      <circle cx="735" cy="101" r="44" fill="#f6ca67"/>
+      <g class="clouds">
+        <use href="#cloud" x="90" y="77"/>
+        <use href="#cloud" x="400" y="42"/>
+        <use href="#cloud" x="830" y="115"/>
+        <use href="#cloud" x="990" y="77"/>
+        <use href="#cloud" x="1300" y="42"/>
+        <use href="#cloud" x="1730" y="115"/>
+      </g>
+      <path d="M0 312Q160 270 325 313T650 306T980 300V435H0Z" fill="#85c9c0"/>
+      <path d="M0 354Q200 310 450 356T900 343V446H0Z" fill="#acd9c0"/>
+      <path d="M0 428H900V560H0Z" fill="#708e88"/>
+      <path d="M0 430H900" stroke="#eaf5ce" stroke-width="9"/>
+      <g class="road">
+        <use href="#roadMarks"/>
+        <use href="#roadMarks" x="900"/>
+      </g>
+      <ellipse cx="457" cy="451" rx="207" ry="13" fill="#31574d" opacity=".16"/>
+
+      <!-- Wheels rotate around their local origins. -->
+      <g transform="translate(320 377)">
+        <circle r="72" fill="#d8ebe5" stroke="#294b47" stroke-width="11"/>
+        <g class="spin"><use href="#spokes"/></g>
+        <circle r="7" fill="#294b47"/>
+      </g>
+      <g transform="translate(602 377)">
+        <circle r="72" fill="#d8ebe5" stroke="#294b47" stroke-width="11"/>
+        <g class="spin"><use href="#spokes"/></g>
+        <circle r="7" fill="#294b47"/>
+      </g>
+
+      <!-- Bicycle frame, chain and handlebars. -->
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M320 377L442 382" stroke="#385851" stroke-width="17"/>
+        <path d="M320 377L442 382" stroke="#b1c3b5" stroke-width="10"/>
+        <path d="M320 377L386 280L442 377L320 377
+                 M386 280L557 280L442 377M557 280L602 377"
+              stroke="#e56858" stroke-width="9"/>
+        <path d="M386 280L377 256M557 280L545 242L568 229"
+              stroke="#34534c" stroke-width="7"/>
+        <path d="M565 229h23" stroke="#23453f" stroke-width="9"/>
+        <path d="M358 254h44" stroke="#294b47" stroke-width="12"/>
+        <path d="M587 232Q624 253 606 307" stroke="#54756b" stroke-width="2"/>
+      </g>
+
+      <g class="bob">
+        <!-- Tail, body, neck and characteristic bill pouch. -->
+        <path d="M374 248L328 217L342 259L378 275" fill="#eaf3e7" stroke="#34534c" stroke-width="3"/>
+        <path d="M367 225C386 200 432 210 466 224
+                 C491 228 488 172 489 149
+                 C489 122 518 112 536 131
+                 C554 150 535 176 526 187
+                 C523 228 527 257 493 281
+                 C466 304 403 295 379 273
+                 C365 258 358 240 367 225Z"
+              fill="#fffdf3" stroke="#34534c" stroke-width="3"/>
+        <path d="M539 151L665 171Q625 234 548 192L527 171Z"
+              fill="#f3bc60" stroke="#34534c" stroke-width="3"/>
+        <path d="M536 149L669 169L538 172"
+              fill="#ed9448" stroke="#34534c" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="524" cy="142" r="5" fill="#253e37"/>
+        <circle cx="525.5" cy="140.5" r="1.5" fill="#fff"/>
+        <path d="M494 126l-10-13m17 11-3-16" stroke="#34534c" stroke-width="3" stroke-linecap="round"/>
+        <path class="scarf" d="M489 218Q455 202 428 211L401 197L410 221Q453 235 489 229Z"
+              fill="#268471"/>
+        <path d="M489 211Q505 221 523 215L522 228Q502 235 487 224Z" fill="#329b7f"/>
+        <path class="wing" d="M400 239Q434 220 459 253L479 268L561 232
+                 Q575 231 568 244L485 285Q472 290 457 280
+                 Q417 279 400 239Z"
+              fill="#e4ede1" stroke="#34534c" stroke-width="3" stroke-linejoin="round"/>
+      </g>
+
+      <!-- Both feet share the crank's circular trajectory. -->
+      <g fill="none" stroke="#d89138" stroke-width="9" stroke-linecap="round">
+        <path d="M418 287L408 335L416 377">
+          <animate attributeName="d" dur="1.2s" repeatCount="indefinite"
+            values="M418 287L408 335L416 377;M418 287L423 346L442 351;M418 287L450 339L468 377;M418 287L429 357L442 403;M418 287L408 335L416 377"/>
+        </path>
+        <path d="M445 289L468 330L468 377">
+          <animate attributeName="d" dur="1.2s" repeatCount="indefinite"
+            values="M445 289L468 330L468 377;M445 289L465 351L442 403;M445 289L422 339L416 377;M445 289L431 320L442 351;M445 289L468 330L468 377"/>
+        </path>
+      </g>
+      <circle cx="442" cy="377" r="14" fill="#f0eee0" stroke="#34534c" stroke-width="4"/>
+      <g transform="translate(442 377)">
+        <g class="spin">
+          <path d="M-26 0H26" stroke="#34534c" stroke-width="5"/>
+          <g transform="translate(26 0)">
+            <g>
+              <animateTransform attributeName="transform" type="rotate"
+                                from="0" to="-360" dur="1.2s" repeatCount="indefinite"/>
+              <path d="M-12-4H13" stroke="#edac49" stroke-width="9" stroke-linecap="round"/>
+              <path d="M-13 3H13" stroke="#34534c" stroke-width="4"/>
+            </g>
+          </g>
+          <g transform="translate(-26 0)">
+            <g>
+              <animateTransform attributeName="transform" type="rotate"
+                                from="0" to="-360" dur="1.2s" repeatCount="indefinite"/>
+              <path d="M-12-4H13" stroke="#edac49" stroke-width="9" stroke-linecap="round"/>
+              <path d="M-13 3H13" stroke="#34534c" stroke-width="4"/>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </svg>
+</main>
+<script>
+  const scene = document.getElementById("scene");
+  const toggle = document.getElementById("toggle");
+  const icon = document.getElementById("icon");
+  let paused = false;
+
+  // Keep SVG timeline animations synchronized with CSS animations.
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    scene.querySelectorAll("animate, animateTransform").forEach(animation => {
+      animation.setAttribute("dur", "12s");
+    });
+  }
+
+  toggle.addEventListener("click", () => {
+    paused = !paused;
+    scene.classList.toggle("paused", paused);
+    paused ? scene.pauseAnimations() : scene.unpauseAnimations();
+    const label = paused ? "继续动画" : "暂停动画";
+    toggle.setAttribute("aria-label", label);
+    toggle.title = label;
+    icon.setAttribute("d", paused
+      ? "M7 3v18l14-9z"
+      : "M6 4h4v16H6zM14 4h4v16h-4z");
+  });
+</script>
+</body>
+</html>

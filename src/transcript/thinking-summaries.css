@@ -1,0 +1,8 @@
+/* pt-[12px] text-body text-muted italic. */
+.thinking-summaries-notice {
+  padding-top: 12px;
+  color: #898781;
+  font-size: 13px;
+  line-height: 19px;
+  font-style: italic;
+}

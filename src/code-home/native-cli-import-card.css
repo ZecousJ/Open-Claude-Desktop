@@ -1,0 +1,5 @@
+/* CLI import is one low-priority row of the start card's suggestion list (P5),
+   listed only while nothing else wants a row. */
+.next-steps:has(> li:not(.native-cli-import-card)) > .native-cli-import-card {
+  display: none;
+}

@@ -1,0 +1,107 @@
+/* Current Customize /customize/plugins/new/upload; Settings retains its dialog. */
+.plugin-upload-page {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 56px 40px 48px;
+}
+.plugin-upload-page-column {
+  width: 100%;
+  margin-inline: auto;
+}
+.plugin-upload-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 20px;
+}
+.plugin-upload-page h2 {
+  margin: 28px 0 0;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 28px;
+}
+.plugin-upload-page .plugin-upload-content {
+  gap: 24px;
+  padding: 8px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text);
+}
+.plugin-upload-page .plugin-upload-content p {
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+.plugin-upload-page .plugin-upload-warning[role="note"] {
+  gap: 12px;
+  padding: 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--alpha-1);
+  color: var(--text-secondary);
+}
+.plugin-upload-page .plugin-upload-label h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.plugin-upload-page-work {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.plugin-upload-page-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.plugin-upload-page .plugin-upload-drop {
+  border-radius: 12px;
+  padding: 32px 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+.plugin-upload-page .plugin-upload-rules {
+  padding: 0;
+  list-style-position: inside;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.plugin-upload-page .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+.plugin-upload-page .button-row > button {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.plugin-upload-page .button-row > .secondary {
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.plugin-upload-page .button-row > span {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 17px;
+}
+@media (max-width: 639px) {
+  .plugin-upload-page {
+    padding-inline: 20px;
+  }
+}

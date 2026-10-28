@@ -1,0 +1,264 @@
+/*
+ * Settings → System → Storage and its cleanups: the dialog is the "lg" popup
+ * (720 wide), its rows are settings rows split by 1px dividers, an area opens
+ * "Details" with a 4px bar and legend of its kinds. Spacing is the settings
+ * density Claudex's settings rows use (pad-md 12, gap-xs 8, gap-sm 12, gap-lg
+ * 28, footnote 13/17); colours are the settings rows' own.
+ */
+.modal.storage-dialog {
+  width: 720px;
+}
+.storage-areas {
+  display: flex;
+  flex-direction: column;
+}
+.storage-areas > * + * {
+  border-top: 1px solid #262626;
+}
+.storage-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+/* A row with what opens below it: flex-col gap-sm py-md. */
+.storage-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+}
+.storage-area-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+.storage-area-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.storage-area-label {
+  color: var(--text);
+  line-height: 20px;
+}
+.storage-area-description {
+  color: #908f8d;
+  line-height: 20px;
+}
+.storage-size {
+  flex-shrink: 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.storage-size.strong {
+  font-weight: 500;
+}
+
+/* A bar of kinds (h-1, gap-px, rounded, surface-2) and its legend. */
+.storage-kinds {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.storage-bar {
+  display: flex;
+  gap: 1px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--alpha-2);
+}
+.storage-bar > div,
+.storage-legend > li > span:first-child {
+  background: var(--accent);
+}
+.storage-bar > div.muted,
+.storage-legend > li > span.muted {
+  background: var(--text-muted);
+}
+.storage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.storage-legend > li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 17px;
+  white-space: nowrap;
+}
+.storage-legend > li > span:first-child {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.storage-legend-label {
+  color: var(--text-secondary);
+}
+.storage-legend-size {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Details: a caret that turns when open, secondary ink, primary on hover. */
+.storage-details-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 17px;
+}
+.storage-details-trigger:hover {
+  color: var(--text);
+}
+.storage-details-trigger > .app-icon {
+  flex-shrink: 0;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+.storage-details-trigger[aria-expanded="true"] > .app-icon {
+  transform: rotate(90deg);
+}
+.storage-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+.storage-cleanup-row {
+  display: flex;
+  gap: 8px;
+}
+.storage-cleanup-row > .secondary {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* Footer: Open folder (ghost) and Refresh, at the end like other dialogs'. */
+.modal .button-row.storage-actions {
+  justify-content: flex-end;
+}
+.storage-actions > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.storage-ghost {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font-size: 14px;
+}
+.storage-ghost:hover {
+  background: var(--fill-ghost-hover);
+}
+
+/* The cleanup: the "md" popup (520 wide), a min-height 240 body. */
+.modal.confirm.storage-cleanup {
+  width: 520px;
+}
+.storage-cleanup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 240px;
+  margin-top: 12px;
+}
+.storage-window {
+  width: fit-content;
+}
+.storage-cleanup-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.storage-cleanup-loading > p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 17px;
+}
+.storage-cleanup-loading .sk-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.storage-cleanup-text {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 20px;
+}
+.storage-cleanup-summary {
+  margin: 0;
+  color: var(--text);
+  line-height: 20px;
+}
+.storage-cleanup-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 17px;
+}
+.storage-cleanup-examples > li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.storage-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.storage-check > input {
+  margin-top: 1px;
+}
+.storage-cleanup-progress {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-theme="light"] .storage-areas > * + * {
+  border-top-color: #f2f2f2;
+}
+:root[data-theme="light"] .storage-area-label,
+:root[data-theme="light"] .storage-size {
+  color: #050505;
+}
+:root[data-theme="light"] .storage-area-description {
+  color: #807f7d;
+}

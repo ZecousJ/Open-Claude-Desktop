@@ -1,0 +1,83 @@
+/* A cloud Code session's start (SessionSetupSteps.tsx). The row is the Code
+   transcript's step row (.code-command); the steps below it follow the A column
+   3px apart (gap-0.75) after the chat item gap (pt-[var(--chat-item-gap)], 10px
+   in the Code transcript), each row a 14px mark 4px before its words (gap-1,
+   size-[14px]), body text in the primary ink once done, the danger ink when
+   failed and the secondary ink otherwise, and a failed step's words 22px in
+   (ms-[22px]) in footnote type (12px on 15px lines). */
+.session-setup-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 10px;
+}
+.session-setup-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.session-setup-mark {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--text-secondary);
+}
+.session-setup-mark[data-status="completed"] {
+  color: var(--success);
+}
+.session-setup-mark[data-status="failed"] {
+  color: var(--danger);
+}
+.session-setup-mark[data-status="running"] > svg {
+  animation: spin 1s linear infinite;
+}
+/* Pending: an empty 10px ring (border-alpha-3); skipped: the ring struck
+   through by a 12px rule at 45 degrees. */
+.session-setup-mark > i {
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--alpha-3);
+  border-radius: 50%;
+}
+.session-setup-mark[data-status="skipped"]::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 1px;
+  background: var(--alpha-3);
+  rotate: 45deg;
+}
+.session-setup-label {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.session-setup-label[data-status="completed"] {
+  color: var(--text);
+}
+.session-setup-label[data-status="failed"] {
+  color: var(--danger);
+}
+.session-setup-error {
+  margin-inline-start: 22px;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+:root[data-motion="reduced"] .session-setup-mark[data-status="running"] > svg {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-setup-mark[data-status="running"] > svg {
+    animation: none;
+  }
+}

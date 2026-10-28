@@ -1,0 +1,40 @@
+/*
+ * Report artifact dialog: the Publish artifact dialog's frame
+ * (publish-dialog.css) with the original's report form: a reason list, name,
+ * email and notes fields. The fields take the app's own input look
+ * (00-foundation.css); only the spacing is set here.
+ */
+.report-dialog-field {
+  display: grid;
+  margin: 0 0 14px;
+  color: #c8c8c8;
+}
+.report-dialog-field > small {
+  margin-top: 4px;
+  line-height: 17px;
+}
+.report-dialog-field > small + small {
+  margin-top: 8px;
+}
+.report-dialog-form-note {
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid #363636;
+  border-radius: 8px;
+  color: #a5a49f;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* "Opt out of training on this report": the label and the switch on one row,
+   apart; the switch is the settings switch. */
+.report-dialog-switch {
+  display: flex;
+  justify-content: space-between;
+}
+:root[data-theme="light"] .report-dialog-field {
+  color: #4d4c47;
+}
+:root[data-theme="light"] .report-dialog-form-note {
+  border-color: #dedcd4;
+  color: #73726c;
+}

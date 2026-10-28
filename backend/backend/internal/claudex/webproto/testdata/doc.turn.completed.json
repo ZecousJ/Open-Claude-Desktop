@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "conversationId": "conv-1",
+  "branchId": null,
+  "turnId": "turn-1",
+  "ordinal": 0,
+  "turn": {
+    "id": "turn-1",
+    "prompt": "Summarize this file.",
+    "attachments": [
+      {
+        "id": "att-1",
+        "name": "notes.txt",
+        "path": "/workspace/uploads/att-1/notes.txt",
+        "kind": "text",
+        "size": 1200
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "type": "reasoning",
+        "summary": [
+          "Reading the notes."
+        ]
+      },
+      {
+        "id": "item-2",
+        "type": "webSearch",
+        "searchTool": "web_search",
+        "sources": [
+          {
+            "url": "https://example.com/a",
+            "title": "Example A"
+          }
+        ]
+      },
+      {
+        "id": "item-3",
+        "type": "agentMessage",
+        "text": "Here is the summary.",
+        "citations": [
+          {
+            "start": 0,
+            "end": 4,
+            "sources": [
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "status": "completed",
+    "createdAt": 1790000000000,
+    "outputTokens": 412,
+    "inputTokens": 1820
+  }
+}

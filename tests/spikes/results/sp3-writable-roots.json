@@ -1,0 +1,69 @@
+{
+  "codexVersion": "0.144.1",
+  "platform": "darwin",
+  "baseline": {
+    "inCwd": {
+      "file": "workspace/base-cwd.txt",
+      "written": true,
+      "approvalRequests": 0,
+      "toolOutput": "Chunk ID: 6d6898\nWall time: 0.0037 seconds\nProcess exited with code 0\nOriginal token count: 0\nOutput:\n"
+    },
+    "inExtra": {
+      "file": "extra-folder/base-extra.txt",
+      "written": false,
+      "approvalRequests": 0,
+      "toolOutput": "Chunk ID: 7d16d1\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 40\nOutput:\ntouch: <root>/extra-folder/base-extra.txt: Operation not permitted\n"
+    }
+  },
+  "turnSandboxPolicy": {
+    "accepted": true,
+    "inExtra": {
+      "file": "extra-folder/turn-extra.txt",
+      "written": true,
+      "approvalRequests": 0,
+      "toolOutput": "Chunk ID: ff44c8\nWall time: 0.1179 seconds\nProcess exited with code 0\nOriginal token count: 0\nOutput:\n"
+    },
+    "inOutside": {
+      "file": "outside/turn-outside.txt",
+      "written": false,
+      "approvalRequests": 0,
+      "toolOutput": "Chunk ID: 9b6a7a\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 39\nOutput:\ntouch: <root>/outside/turn-outside.txt: Operation not permitted\n"
+    },
+    "stickyForNextTurn": {
+      "file": "extra-folder/turn-extra-next.txt",
+      "written": true,
+      "approvalRequests": 0,
+      "toolOutput": "Chunk ID: 470ce4\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 0\nOutput:\n"
+    },
+    "narrowedAgain": {
+      "file": "extra-folder/turn-extra-narrow.txt",
+      "written": false,
+      "approvalRequests": 0,
+      "toolOutput": "Chunk ID: b9deeb\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 42\nOutput:\ntouch: <root>/extra-folder/turn-extra-narrow.txt: Operation not permitted\n"
+    }
+  },
+  "turnRuntimeWorkspaceRoots": {
+    "file": "extra-folder/runtime-roots.txt",
+    "written": true,
+    "approvalRequests": 0,
+    "toolOutput": "Chunk ID: 3d4149\nWall time: 0.0007 seconds\nProcess exited with code 0\nOriginal token count: 0\nOutput:\n"
+  },
+  "resumeConfigWritableRoots": {
+    "file": "extra-folder/resume-config.txt",
+    "written": true,
+    "approvalRequests": 0,
+    "toolOutput": "Chunk ID: 2a62ba\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 0\nOutput:\n"
+  },
+  "applyPatch": {
+    "withoutRoot": {
+      "file": "extra-folder/patch-before.txt",
+      "written": false,
+      "approvalRequests": ["item/fileChange/requestApproval"]
+    },
+    "withRoot": {
+      "file": "extra-folder/patch-after.txt",
+      "written": true,
+      "approvalRequests": []
+    }
+  }
+}

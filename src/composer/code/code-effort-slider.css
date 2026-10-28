@@ -1,0 +1,317 @@
+/* Measured against claude-code-effort-menu-001 / -after-drag-001 and the
+   code-effort-rightmost-reference-002 frames (1351 × 1063 window, 2×). */
+.code-effort-anchor {
+  position: relative;
+}
+.code-effort-trigger {
+  min-width: 32px;
+  text-align: center;
+}
+.code-effort-panel {
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  bottom: calc(100% + 7px);
+  box-sizing: border-box;
+  width: 220px;
+  padding: 9px 11px 13px;
+  border: 1px solid #363636;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 10px 30px #0006;
+  color: #e4e2df;
+  font:
+    13px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.code-effort-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 23px;
+}
+.code-effort-heading > span:first-child {
+  color: #8f8f8e;
+}
+.code-effort-value {
+  display: inline-grid;
+  align-items: center;
+}
+.code-effort-value > strong {
+  grid-area: 1/1;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+}
+.code-effort-value > strong.ultra {
+  color: #9e97e6;
+}
+/* Label roll on every level change (2097af56, 7 transitions fitted with
+   shift, alpha and blur): the new label rises 6px into place over ~155ms,
+   slightly ease-out, with linear opacity and its blur clearing from ~2px;
+   the old one leaves 6px the other way with linear opacity over ~150ms,
+   moving fastest at the start and blurring steadily to ~2px. */
+.code-effort-value > strong[data-phase="in"] {
+  animation:
+    code-effort-label-show 155ms linear both,
+    code-effort-label-in 155ms cubic-bezier(0.3, 0.45, 0.55, 1) both;
+}
+.code-effort-value > strong[data-phase="out"] {
+  animation:
+    code-effort-label-fade 150ms linear both,
+    code-effort-label-out 150ms cubic-bezier(0.5, 1, 0.89, 1) both,
+    code-effort-label-blur 150ms linear both;
+  pointer-events: none;
+}
+.code-effort-value > strong[data-direction="up"] {
+  --from: 6px;
+  --to: -6px;
+}
+.code-effort-value > strong[data-direction="down"] {
+  --from: -6px;
+  --to: 6px;
+}
+@keyframes code-effort-label-in {
+  from {
+    filter: blur(2px);
+    transform: translateY(var(--from));
+  }
+  to {
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+@keyframes code-effort-label-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes code-effort-label-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes code-effort-label-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--to));
+  }
+}
+@keyframes code-effort-label-blur {
+  from {
+    filter: blur(0);
+  }
+  to {
+    filter: blur(2px);
+  }
+}
+.code-effort-help {
+  margin: 0 1.5px 0 auto;
+  padding: 0;
+  color: #8d8d8c;
+  height: 18px;
+  transform: translateY(2px);
+}
+.code-effort-ends {
+  display: flex;
+  justify-content: space-between;
+  margin: 17px 0 8px;
+  color: #8d8d8c;
+  font-size: 12px;
+  line-height: 18px;
+}
+/* The pressed thumb overhangs the track, so only the layers inside the clip
+   are cut to the rounded track. */
+.code-effort-track {
+  position: relative;
+  height: 20px;
+  border-radius: 6px;
+  background: #363636;
+  cursor: ew-resize;
+  touch-action: none;
+  outline: none;
+}
+.code-effort-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+/* After a click and arrow keys the thumb carries a 1px blue-grey ring in both
+   themes; no ring around the track. */
+.code-effort-track:focus-visible .code-effort-thumb {
+  box-shadow:
+    0 0 0 1px #58728b,
+    0 0 5px #0003;
+}
+.code-effort-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #7c7c7c;
+  opacity: 1;
+  transition:
+    opacity 850ms linear,
+    width 180ms var(--code-effort-snap-ease);
+}
+/* 2097af56 (no tone curve): the fill holds ~30ms, then fades to the bare
+   track on a CSS ease-out over 700ms (124/115/100/88/74/66/58/53 at
+   +18/84/184/284/393/492/592/659ms). */
+.code-effort-fill[data-ultra="true"] {
+  opacity: 0;
+  transition:
+    opacity 700ms ease-out 30ms,
+    width 180ms var(--code-effort-snap-ease);
+}
+.code-effort-dot {
+  position: absolute;
+  z-index: 2;
+  top: 8.5px;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  border-radius: 50%;
+  background: #696969;
+  pointer-events: none;
+}
+.code-effort-dot[data-filled="true"] {
+  background: #9e9e9e;
+  transition: background-color 850ms linear;
+}
+/* A level the model does not take: its dot is dimmed like every disabled
+   control, and the thumb never stops there. */
+.code-effort-dot[data-unsupported="true"] {
+  opacity: var(--opacity-disabled);
+}
+/* Dots on the fading fill dim with it, on the same ease-out. */
+.code-effort-track[data-ultra="true"] .code-effort-dot {
+  background: #696969;
+  transition: background-color 700ms ease-out 30ms;
+}
+/* The thumb stays white with no hover change (2097af56). Pressed, it grows
+   from 16×20 to 18×22 within ~50ms, overhanging the track by 1px on every
+   side, and shrinks back on release. This supersedes the grey hover thumb of
+   the older macOS claude-code-effort-after-drag-001 capture. */
+.code-effort-thumb {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  width: 16px;
+  height: 20px;
+  border-radius: 6px;
+  transform: translateX(-50%);
+  background: #fff;
+  box-shadow: 0 0 5px #0003;
+  pointer-events: none;
+  transition:
+    left 180ms var(--code-effort-snap-ease),
+    width 50ms ease-out,
+    height 50ms ease-out,
+    top 50ms ease-out;
+}
+.code-effort-track[data-dragging="true"] .code-effort-thumb {
+  top: -1px;
+  width: 18px;
+  height: 22px;
+}
+/* Ultracode point field: 3px cells on a 4px pitch, drawn by CodeEffortField on
+   a canvas that also carries the steady brightness profile. A soft front mask
+   sweeps from the thumb to the track start. */
+.code-effort-ultra-grid {
+  position: absolute;
+  z-index: 1;
+  inset: 0 auto 0 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent calc(33.333% - 12px),
+    #000 calc(33.333% + 12px)
+  );
+  mask-size: 300% 100%;
+  mask-repeat: no-repeat;
+  mask-position: calc(0% + 12px) 0;
+  /* Exit (2097af56 +0…690ms): the field holds ~100ms, then fades uniformly in
+     place over 600ms, still twinkling; the front does not retreat. */
+  transition:
+    opacity 600ms linear 100ms,
+    mask-position 0s linear 700ms,
+    width 180ms var(--code-effort-snap-ease);
+}
+.code-effort-ultra-grid > canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+}
+/* The front (24px soft edge) leaves the thumb ~290ms after the change and
+   slows exponentially (τ ≈ 1s); its half point sits at 168/142/124/94/81/
+   60px at +493/692/901/1101/1423/1834ms and ends ~26px from the start. */
+.code-effort-ultra-grid[data-active="true"] {
+  opacity: 1;
+  mask-position: calc(50% + 30px) 0;
+  transition:
+    opacity 0s,
+    mask-position 3600ms var(--code-effort-front-ease, ease-out) 290ms,
+    width 180ms var(--code-effort-snap-ease);
+}
+:root[data-theme="light"] .code-effort-panel {
+  background: #fffefa;
+  border-color: #d3d0c9;
+  color: #282824;
+  box-shadow: 0 10px 30px #0002;
+}
+:root[data-theme="light"] .code-effort-value > strong {
+  color: #282824;
+}
+@media (prefers-reduced-motion: reduce) {
+  .code-effort-value > strong[data-phase] {
+    animation: none;
+  }
+  .code-effort-value > strong[data-phase="out"] {
+    display: none;
+  }
+  .code-effort-thumb,
+  .code-effort-ultra-grid,
+  .code-effort-fill,
+  .code-effort-dot {
+    transition: none !important;
+  }
+  .code-effort-ultra-grid[data-active="true"] {
+    mask-position: calc(50% + 30px) 0;
+  }
+}
+
+/* Light theme: the bare track is #e6e6e6, the fill #b4b4b4, dots #a0a0a0 and,
+   inside the fill, #808080. */
+:root[data-theme="light"] .code-effort-track {
+  background: #e6e6e6;
+}
+:root[data-theme="light"] .code-effort-fill {
+  background: #b4b4b4;
+}
+:root[data-theme="light"] .code-effort-dot {
+  background: #a0a0a0;
+}
+:root[data-theme="light"] .code-effort-dot[data-filled="true"] {
+  background: #808080;
+}
+:root[data-motion="reduced"] .code-effort-thumb,
+:root[data-motion="reduced"] .code-effort-ultra-grid,
+:root[data-motion="reduced"] .code-effort-fill,
+:root[data-motion="reduced"] .code-effort-dot {
+  transition: none !important;
+}
+:root[data-motion="reduced"] .code-effort-ultra-grid[data-active="true"] {
+  mask-position: calc(50% + 30px) 0;
+}

@@ -1,0 +1,129 @@
+/* Measured from claude-code-add-menu-open-001 and the Connectors keyframe
+   (1351 × 1063, 2×): 274 × 169.5 menu hanging 1px left of the + fill,
+   24px rows inset 4px, 13px labels, 13-15px glyphs centred in a 16px slot. */
+.code-add-menu,
+.code-add-submenu {
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 45;
+  border: 1px solid #353535;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px #0006;
+  color: var(--text);
+  font:
+    13px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.code-add-menu {
+  left: -1px;
+  bottom: calc(100% + 7px);
+  width: 274px;
+  padding: 3.5px 3px 4px;
+  outline: none;
+}
+.code-add-menu button,
+.code-add-submenu button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  /* Rows appear highlighted at once and have no pressed look: the original's
+     menu rows. */
+  transition: none;
+}
+.code-add-menu button:hover,
+.code-add-menu button:focus-visible,
+.code-add-menu button[aria-expanded="true"],
+.code-add-submenu button:hover,
+.code-add-submenu button:focus-visible,
+.code-add-submenu button[data-active="true"] {
+  background: #313131;
+  outline: none;
+  box-shadow: none;
+}
+.code-add-menu button > svg {
+  flex: 0 0 13px;
+  width: 13px;
+  height: 13px;
+  margin: 0 1.5px;
+  stroke-width: 1.7;
+}
+.code-add-menu button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.code-add-menu kbd {
+  margin-left: auto;
+  color: #8f8f8e;
+  font:
+    12px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.code-add-menu button > .code-add-chevron {
+  flex-basis: 14px;
+  width: 14px;
+  height: 14px;
+  margin: 0 -3px 0 0;
+  color: #8a8a89;
+  stroke-width: 1.6;
+}
+.code-add-menu button > .code-add-blocks {
+  flex-basis: 14.5px;
+  width: 14.5px;
+  height: 14.5px;
+  margin: 0 0.75px;
+}
+.code-add-menu button > .code-add-plug {
+  flex-basis: 15.5px;
+  width: 15.5px;
+  height: 15.5px;
+  margin: 0 1.25px 0 -0.75px;
+  transform: rotate(45deg);
+}
+.code-add-menu button > .code-add-slash {
+  flex-basis: 12.5px;
+  width: 12.5px;
+  height: 12.5px;
+  margin: 0 1.75px;
+}
+.code-add-branch {
+  position: relative;
+}
+.code-add-submenu {
+  left: calc(100% + 6px);
+  bottom: 0;
+}
+.code-add-menu.flips-submenu .code-add-submenu {
+  left: auto;
+  right: calc(100% + 6px);
+}
+:root[data-theme="light"] .code-add-menu,
+:root[data-theme="light"] .code-add-submenu {
+  background: #fffefa;
+  border-color: #d2d0ca;
+  color: #292927;
+  box-shadow: 0 12px 28px #0002;
+}
+:root[data-theme="light"] .code-add-menu button:hover,
+:root[data-theme="light"] .code-add-menu button:focus-visible,
+:root[data-theme="light"] .code-add-menu button[aria-expanded="true"],
+:root[data-theme="light"] .code-add-submenu button:hover,
+:root[data-theme="light"] .code-add-submenu button:focus-visible,
+:root[data-theme="light"] .code-add-submenu button[data-active="true"] {
+  background: #f0ede7;
+}

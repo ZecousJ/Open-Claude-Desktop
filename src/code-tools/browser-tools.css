@@ -1,0 +1,65 @@
+/* Claude's Browser tool rows. The rows are the connector rows
+   (mcp-tool-view.css). Measured from The opened body reads 14px/20px, its text
+   starting 10px in, the error in the danger colour and the arguments as "key:
+   value" with the key in mono. 111×62, radius 6, a 1px #3a3a38 rim,
+   cover-cropped, at the row's right end. */
+.browser-tool-shots {
+  margin-left: auto;
+}
+.browser-tool-shot {
+  display: block;
+  width: 111px;
+  height: 62px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #3a3a38;
+  border-radius: 6px;
+  background: none;
+  cursor: zoom-in;
+}
+.browser-tool-shot > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.browser-tool-body {
+  padding: 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.browser-tool-body pre {
+  margin: 0;
+  max-height: 230px;
+  overflow: auto;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.browser-tool-body pre + .browser-tool-args {
+  margin-top: 8px;
+}
+.browser-tool-error {
+  color: var(--danger);
+}
+.browser-tool-args {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.browser-tool-args dt,
+.browser-tool-args dd {
+  display: inline;
+  margin: 0;
+}
+.browser-tool-args dt {
+  color: var(--text-muted);
+  font:
+    13px "SFMono-Regular",
+    Consolas,
+    monospace;
+}
+/* A failed row's title is red, as its error. */
+.browser-tool[data-phase="failed"] .mcp-tool-title {
+  color: var(--danger);
+}

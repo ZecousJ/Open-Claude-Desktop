@@ -1,0 +1,23 @@
+/* M_. */
+.dictation-bar {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding-inline-start: 6px;
+}
+.dictation-waveform {
+  position: relative;
+  height: 20px;
+  min-width: min(7rem, 20vw);
+  flex: 1;
+  color: var(--dictation-secondary);
+}
+.dictation-waveform svg {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+}

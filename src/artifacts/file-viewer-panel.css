@@ -1,0 +1,2157 @@
+/*
+ * The file viewer panel's own rules, split from file-viewer.css: they load with
+ * the viewer (FileViewer.tsx and the pieces it shows), off the first load, as
+ * the original's viewer styles arrive with its chunk. Rules that the
+ * conversation, the cards or a later global stylesheet also touch stay in
+ * file-viewer.css.
+ */
+.file-view-mode button {
+  width: 26px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  color: #858580;
+}
+/* Strip tabs: w-35 ps/pe-[12px], border-alpha-1, bg-surface-3. */
+.artifact-frame-tabs {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+}
+.artifact-frame-tab {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  width: 140px;
+  min-width: 96px;
+  padding-inline: 12px;
+  border-inline-end: 1px solid hsl(from #fff h s l / 5%);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.artifact-frame-tab[data-selected] {
+  color: var(--text);
+  background: #20201f;
+}
+.artifact-frame-tab:not([data-selected]):hover {
+  background: hsl(from #fff h s l / 7.5%);
+}
+.artifact-frame-tab > [role="tab"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 100%;
+  flex: 1;
+  text-align: start;
+}
+.artifact-frame-tab > [role="tab"]:focus-visible {
+  outline: none;
+}
+.artifact-frame-tab:has(> [role="tab"]:focus-visible)::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 3px;
+  border-radius: 4px;
+  box-shadow: var(--focus-shadow);
+}
+.artifact-frame-tab > [role="tab"] > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.artifact-frame-tab .app-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+.artifact-frame-tab-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: #898781;
+  visibility: hidden;
+}
+.artifact-frame-tab[data-selected] .artifact-frame-tab-close {
+  color: inherit;
+}
+.artifact-frame-tab:hover .artifact-frame-tab-close,
+.artifact-frame-tab:focus-within .artifact-frame-tab-close,
+.artifact-frame-tab[data-selected] .artifact-frame-tab-close {
+  visibility: visible;
+}
+:root[data-theme="light"] .artifact-frame-tab {
+  color: #52514e;
+  border-color: hsl(from #0b0b0b h s l / 5%);
+}
+:root[data-theme="light"] .artifact-frame-tab[data-selected] {
+  color: #0b0b0b;
+  background: #fff;
+}
+:root[data-theme="light"] .artifact-frame-tab:not([data-selected]):hover {
+  background: hsl(from #0b0b0b h s l / 5%);
+}
+/* CDS md spinner, 16px / 1.75px. */
+.artifact-frame-loading {
+  line-height: 0;
+}
+.artifact-frame-spinner {
+  display: inline-block;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.75px solid hsl(from #fff h s l / 10%);
+}
+.artifact-frame-spinner::after {
+  content: "";
+  position: absolute;
+  inset: -1.75px;
+  border-radius: 50%;
+  background: conic-gradient(transparent 40%, #898781);
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 1.75px),
+    #000 calc(100% - 1.25px)
+  );
+  animation: spin 1s linear infinite;
+}
+:root[data-theme="light"] .artifact-frame-spinner {
+  border-color: hsl(from #0b0b0b h s l / 10%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .artifact-frame-spinner::after {
+    animation: none;
+  }
+}
+.file-view-mode button[aria-checked="true"] {
+  color: #c5c4bf;
+}
+.file-view-mode button:hover {
+  color: #e2e1dc;
+}
+.file-copy-group {
+  display: flex;
+  border-radius: 6px;
+  background: #303030;
+  height: 28px;
+}
+.file-options {
+  width: 27px;
+  display: grid;
+  place-items: center;
+  border-left: 1px solid #3a3a37;
+  color: #999992;
+  border-radius: 0 6px 6px 0;
+}
+.file-options:hover {
+  background: #3a3a37;
+}
+/* The panel's divider (src/ui/ResizeHandle.tsx, resize-handle.css), its
+ 12px grab area centred on the panel's edge. */
+.file-viewer-resize {
+  left: -7px;
+}
+.file-viewer-menu {
+  position: absolute;
+  z-index: 5;
+  top: 39px;
+  right: 66px;
+  min-width: 208px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-popover);
+  box-shadow: var(--shadow);
+  -webkit-app-region: no-drag;
+}
+.file-viewer-menu button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 5px;
+  color: #d4d3cc;
+  text-align: left;
+  font-size: 14px;
+}
+.file-viewer-menu button:hover:not(:disabled),
+.file-viewer-menu button:focus-visible {
+  background: var(--fill-ghost-hover);
+}
+.file-viewer-menu button:disabled {
+  color: #74746e;
+}
+:root[data-theme="light"] .file-copy-group {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e5e5e5;
+}
+:root[data-theme="light"] .file-options {
+  border-left-color: #e5e5e5;
+  color: #8a8a8a;
+}
+:root[data-theme="light"] .file-view-mode button {
+  color: #90918c;
+}
+:root[data-theme="light"] .file-view-mode button[aria-checked="true"] {
+  color: #2e2e2e;
+}
+:root[data-theme="light"] .file-view-mode button:hover {
+  color: #2e2e2e;
+}
+/* More options: a white sheet with a #e5e5e5 rim. */
+:root[data-theme="light"] .file-copy-anchor > .file-viewer-menu {
+  border-color: #e5e5e5;
+  background: #fff;
+  box-shadow: 0 6px 20px #33291f1a;
+}
+:root[data-theme="light"] .file-copy-anchor > .file-viewer-menu button {
+  color: var(--text);
+}
+:root[data-theme="light"]
+  .file-copy-anchor
+  > .file-viewer-menu
+  button:hover:not(:disabled),
+:root[data-theme="light"]
+  .file-copy-anchor
+  > .file-viewer-menu
+  button:focus-visible {
+  background: #f5f5f5;
+}
+.artifact-collaboration-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.artifact-header-gap {
+  flex: 1;
+  min-width: 8px;
+}
+/* Switch between artifacts (artifacts/ArtifactSwitcher.tsx), after the
+ original: a ghost list button before the title; while its list is open the
+ title reads "Switch between artifacts". The list is a column of cards under
+ the header, 4px apart: each 8px 16px 8px 12px, at most 288px wide, radius 8,
+ a hairline in the strong border colour and a soft 8px drop shadow; the name
+ on up to two lines over "N versions · type". A card slides in from 12px up
+ over 300ms, 35ms after the one above; hovering it turns its text primary and
+ its rim accent, and the artifact on screen has the accent rim and a 1px
+ accent ring. */
+.artifact-switch-anchor {
+  position: relative;
+  flex: none;
+  margin: 0 2px 0 -6px;
+}
+.artifact-switch-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.artifact-switch-button:hover,
+.artifact-switch-button[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.artifact-switch-heading {
+  min-width: 0;
+  overflow: hidden;
+  padding-left: 4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.artifact-switch-list {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: max-content;
+  max-height: min(70vh, 480px);
+  margin: 0;
+  padding: 8px 12px 8px 0;
+  overflow-y: auto;
+  list-style: none;
+  -webkit-app-region: no-drag;
+}
+.artifact-switch-row {
+  animation: artifact-switch-row-in 300ms ease-out backwards;
+}
+.artifact-switch-row > button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 288px;
+  margin-bottom: 1px;
+  padding: 8px 16px 8px 12px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 16%));
+  transition:
+    color var(--motion-moderate) var(--ease-standard),
+    border-color var(--motion-moderate) var(--ease-standard),
+    box-shadow var(--motion-moderate) var(--ease-standard);
+}
+:root[data-theme="light"] .artifact-switch-row > button {
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 8%));
+}
+.artifact-switch-row > button:hover,
+.artifact-switch-row > button:focus-visible {
+  border-color: var(--focus-accent);
+  color: var(--text);
+  outline: none;
+}
+.artifact-switch-row > button[aria-current="true"] {
+  border-color: var(--focus-accent);
+  box-shadow: 0 0 0 1px var(--focus-accent);
+  color: var(--text);
+}
+.artifact-switch-name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.artifact-switch-detail {
+  color: var(--text-secondary);
+}
+/* The version switcher: "v{n} · Latest" as a small ghost button after the
+ title; its menu lists the versions newest first, the newest marked
+ Latest, the one on screen checked. */
+.artifact-version-anchor {
+  position: relative;
+  flex: none;
+  min-width: 0;
+}
+.artifact-version-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.artifact-version-button:hover,
+.artifact-version-button[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.artifact-version-dot {
+  color: var(--text-muted);
+}
+.artifact-version-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 180px;
+  max-height: min(60vh, 360px);
+  padding: 5px;
+  overflow-y: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  -webkit-app-region: no-drag;
+}
+.artifact-version-row {
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+.artifact-version-row:hover,
+.artifact-version-row:focus-within {
+  background: var(--fill-ghost-hover);
+}
+.artifact-version-row > button:first-child {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 30px;
+  padding: 5px 9px 5px 6px;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 14px;
+  text-align: left;
+}
+.artifact-version-row > button:focus-visible {
+  outline: none;
+}
+/* Compare with current: shown with the row it belongs to. */
+.artifact-version-compare {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 3px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  opacity: 0;
+}
+.artifact-version-row:hover > .artifact-version-compare,
+.artifact-version-row:focus-within > .artifact-version-compare {
+  opacity: 1;
+}
+.artifact-version-compare:hover {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+@media (hover: none) {
+  .artifact-version-compare {
+    opacity: 1;
+  }
+}
+.artifact-version-row > button > small {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.artifact-version-check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 14px;
+  color: var(--text-secondary);
+}
+.artifact-comment-buttons {
+  display: flex;
+  height: var(--artifact-comment-height, 28px);
+  border-radius: 5px;
+  background: #2c2c2b;
+}
+.artifact-comment-buttons button {
+  display: grid;
+  place-items: center;
+  color: #a2a29b;
+  width: 28px;
+  border-radius: 5px;
+}
+.artifact-comment-buttons button + button {
+  width: 26px;
+  border-left: 1px solid #3b3b37;
+  border-radius: 0 5px 5px 0;
+}
+.artifact-comment-buttons button:hover {
+  background: #393937;
+}
+.artifact-comment-buttons button.is-active {
+  background: #183d69;
+  color: #68a8fa;
+}
+/* CDS ghost/xs. */
+.artifact-restore-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  border: 0;
+  border-radius: 0.3125rem;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.0625rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.artifact-restore-button > svg {
+  width: 12px;
+  height: 12px;
+}
+.artifact-restore-button:hover {
+  background: hsl(from #fff h s l / 7.5%);
+}
+:root[data-theme="light"] .artifact-restore-button:hover {
+  background: hsl(from #0b0b0b h s l / 5%);
+}
+.artifact-restore-button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.artifact-share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #faf9f6;
+  color: #20201e;
+  font-size: 14px;
+}
+.artifact-chat-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  color: #c4c3bd;
+  border-radius: 5px;
+  background: #303030;
+}
+.artifact-chrome-menu {
+  position: absolute;
+  z-index: 30;
+  min-width: 220px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-popover);
+  box-shadow: var(--shadow);
+  -webkit-app-region: no-drag;
+  color: #d4d3cc;
+}
+.artifact-comments-menu {
+  top: 36px;
+  right: 110px;
+  min-width: 170px;
+}
+.artifact-menu-meta {
+  padding: 8px 9px;
+  font-size: 12px;
+  color: #92928b;
+}
+.artifact-chrome-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  width: 100%;
+  padding: 5px 9px;
+  text-align: left;
+  font-size: 14px;
+  border-radius: 4px;
+}
+.artifact-chrome-menu button:hover:not(:disabled),
+.artifact-chrome-menu button:focus-visible {
+  background: var(--fill-ghost-hover);
+  outline: none;
+}
+.artifact-chrome-menu button:disabled {
+  color: #7d7d76;
+  cursor: default;
+}
+.artifact-comment-capture {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  cursor: crosshair;
+}
+.artifact-comments-list {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 300px;
+  max-width: calc(100% - 24px);
+  max-height: calc(100% - 24px);
+  overflow: auto;
+  background: #191919;
+  border: 1px solid #30302e;
+  border-radius: 11px;
+  color: #c7c6bf;
+  box-shadow: 0 6px 20px #0002;
+  pointer-events: auto;
+}
+.artifact-comments-list > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 12px 0 16px;
+  font-size: 13px;
+}
+.artifact-comments-list > header > span {
+  flex: 1;
+}
+.artifact-comments-list > header button {
+  color: #a4a49c;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 24px;
+  border-radius: 5px;
+}
+.artifact-comments-list button:hover {
+  background: #ffffff09;
+}
+.artifact-comments-empty {
+  padding: 12px 20px 29px;
+  text-align: center;
+}
+.artifact-comments-empty p {
+  font-size: 13px;
+  margin: 5px 0 8px;
+}
+.artifact-comments-empty span {
+  display: block;
+  font-size: 11px;
+  line-height: 16px;
+  color: #7f7f78;
+}
+/* Comment filter: 130px under the filter button, 24px rows, a fixed page scope
+ and a Show resolved checkbox. */
+.artifact-comments-list .artifact-filter-menu {
+  top: 38px;
+  right: 36px;
+  width: 130px;
+  min-width: 130px;
+  padding: 4px;
+  border-color: #353533;
+  border-radius: 9px;
+  background: var(--surface);
+}
+.artifact-comments-list .artifact-filter-menu button {
+  min-height: 24px;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 13px;
+  gap: 7px;
+  white-space: nowrap;
+}
+.artifact-comments-list .artifact-filter-menu button > svg {
+  margin-left: auto;
+  color: #5c95dd;
+}
+.artifact-comments-list .artifact-filter-menu button:disabled {
+  color: #7a7a75;
+}
+.artifact-filter-menu > [role="separator"] {
+  height: 1px;
+  margin: 4px 4px;
+  background: #353533;
+}
+.artifact-menu-checkbox {
+  display: grid;
+  place-items: center;
+  flex: 0 0 15px;
+  height: 15px;
+  border: 1px solid #5a5a57;
+  border-radius: 4px;
+}
+.artifact-title-menu > [role="menuitemcheckbox"] > .artifact-menu-checkbox {
+  margin-left: auto;
+}
+/* gap-sm px-md py-sm text-footnote. */
+.artifact-storage-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 15px;
+}
+.artifact-storage-lines > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.artifact-storage-figure {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.artifact-storage-figure > span + span {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.artifact-storage-lines > div > span {
+  margin: 0;
+  color: var(--text-secondary);
+}
+[aria-checked="true"] > .artifact-menu-checkbox {
+  border-color: #3a7fd5;
+  background: #3a7fd5;
+  color: #fff;
+}
+.artifact-comments-list .artifact-filter-menu .artifact-menu-checkbox > svg {
+  margin: 0;
+  color: inherit;
+}
+/* Draft: a 33px marker whose pointed corner is the clicked point, and 39px to
+ its right a 300px box with 11px padding. */
+.artifact-comment-draft-anchor {
+  position: absolute;
+  pointer-events: none;
+}
+.artifact-comment-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  border: 1px solid #2a6cbd;
+  border-radius: 2px 50% 50% 50%;
+  background: #2f79d2;
+}
+.artifact-comment-marker > span {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #403d38;
+  color: #e4e0df;
+  font-size: 10px;
+  font-weight: 600;
+}
+.artifact-comment-draft {
+  position: absolute;
+  left: 39px;
+  top: -2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 300px;
+  padding: 13px 13px 9px 11px;
+  border: 1px solid #323230;
+  border-radius: 8px;
+  background: #1a1a1a;
+  box-shadow: 0 6px 20px #0004;
+  pointer-events: auto;
+}
+.artifact-comment-draft-anchor[data-left] > .artifact-comment-draft {
+  left: auto;
+  right: 6px;
+}
+.artifact-comment-mention {
+  position: absolute;
+  top: 13px;
+  left: 11px;
+  padding: 0 6px;
+  line-height: 20px;
+  border-radius: 4px;
+  background: #0a2141;
+  color: #6fa4e6;
+  font-size: 14px;
+}
+.artifact-comment-draft textarea {
+  display: block;
+  min-height: 20px;
+  max-height: 160px;
+  width: 100%;
+  field-sizing: content;
+  resize: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #e6e5e0;
+  font-size: 14px;
+  line-height: 20px;
+  box-shadow: none;
+  outline: none;
+}
+.artifact-comment-draft > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #cfceca;
+}
+.artifact-comment-draft label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: 1px;
+}
+.artifact-comment-draft input {
+  margin: 0;
+  width: 15px;
+  height: 15px;
+  accent-color: #3a7fd5;
+}
+.artifact-comment-draft button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -4px;
+  border-radius: 5px;
+  color: var(--text);
+}
+.artifact-comment-draft button:disabled {
+  color: #6b6b67;
+  cursor: default;
+}
+/* A saved comment keeps the draft marker's shape, its point on the spot
+ (visual provisional: the reference shows only the draft's marker). */
+.artifact-comment-pin {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: #2f79d2;
+  color: #fff;
+  border: 1px solid #2a6cbd;
+  border-radius: 2px 50% 50% 50%;
+  font-size: 11px;
+  font-weight: 600;
+}
+.artifact-comments-list article {
+  padding: 12px 16px;
+  border-top: 1px solid #30302e;
+  font-size: 13px;
+}
+.artifact-comments-list article strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.artifact-comments-list article p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.artifact-comments-list article button {
+  color: #9b9b94;
+  padding: 4px;
+  font-size: 11px;
+}
+/* Comment motion, after the original's: a comment card comes in from 6px up
+ over 280ms on the standard curve; the one a pin jumps to rings once, an
+ accent outline that grows from 0 to 6px out as it fades (1.3s); a draft's
+ avatar lands, its circle opening from 4px across 200ms under an accent veil
+ that fades. */
+.artifact-comments-list article {
+  outline: 2px solid transparent;
+  animation: artifact-comment-in 280ms var(--ease-standard);
+}
+.artifact-comments-list article[data-pulse] {
+  animation:
+    artifact-comment-in 280ms var(--ease-standard),
+    artifact-comment-pulse 1.3s ease-out;
+}
+.artifact-comment-marker > span {
+  position: relative;
+  animation: artifact-avatar-lands var(--motion-base) var(--ease-out);
+}
+.artifact-comment-marker > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  animation: artifact-avatar-veil var(--motion-base) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .artifact-switch-row,
+  .artifact-comments-list article,
+  .artifact-comments-list article[data-pulse],
+  .artifact-comment-marker > span,
+  .artifact-comment-marker > span::after {
+    animation: none;
+  }
+  .artifact-comments-list article[data-pulse] {
+    outline-color: var(--focus-accent);
+  }
+}
+:root[data-motion="reduced"]
+  :is(
+    .artifact-switch-row,
+    .artifact-comments-list article,
+    .artifact-comment-marker > span
+  ),
+:root[data-motion="reduced"] .artifact-comment-marker > span::after {
+  animation: none;
+}
+:root[data-motion="reduced"] .artifact-comments-list article[data-pulse] {
+  outline-color: var(--focus-accent);
+  animation: none;
+}
+.artifact-collaboration .artifact-share-button:disabled {
+  opacity: 1;
+}
+.artifact-title-input::selection {
+  background: #38669a;
+}
+.artifact-export-entry {
+  --artifact-submenu-gap: 8px;
+  position: relative;
+}
+.artifact-submenu-arrow {
+  margin-left: auto;
+}
+.artifact-export-entry > button[aria-expanded="true"] {
+  background: #313131;
+}
+/* Switch artifact: the count 6px before the arrow. */
+.artifact-submenu-count {
+  margin-left: auto;
+  color: var(--text-muted, #8f8e8a);
+  font-size: 13px;
+}
+.artifact-submenu-arrow.after-count {
+  margin-left: 6px;
+}
+.artifact-title-menu .artifact-export-submenu[data-list="true"] {
+  width: max-content;
+  min-width: 124px;
+}
+.artifact-submenu-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.artifact-submenu-check {
+  flex-shrink: 0;
+  color: #5d95dc;
+}
+.artifact-export-submenu .app-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+.artifact-export-submenu {
+  top: 0;
+  left: calc(100% + var(--artifact-submenu-gap));
+  right: auto;
+  min-width: 128px;
+  padding: 3px;
+  border-radius: 9px;
+  background: #202020;
+}
+/* Export card: gap-md, gap-sm, gap-xs, text-heading-semibold, text-body,
+ bg-neutral; Card uses p-lg and rounded-card; the export/share popup uses
+ w-[435px] and max-w-[calc(var(--host-clear-width,100vw)-24px)]. */
+.artifact-title-menu .artifact-export-submenu[data-export-nudge] {
+  width: 435px;
+  max-width: calc(100vw - 24px);
+}
+.artifact-export-nudge {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: hsl(from #fff h s l / 5%);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifact-export-nudge {
+  background: hsl(from #0b0b0b h s l / 5%);
+  color: #52514e;
+}
+.artifact-export-nudge > svg {
+  flex: none;
+  margin-top: 2px;
+}
+.artifact-export-nudge > div {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+.artifact-export-nudge h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 580;
+}
+.artifact-export-nudge-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+:root[data-theme="light"] .artifact-export-nudge h3 {
+  color: #0b0b0b;
+}
+.artifact-export-nudge p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 19px;
+}
+.artifact-export-submenu::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  width: calc(var(--artifact-submenu-gap) + 2px);
+}
+.artifact-export-submenu[data-left="true"] {
+  left: auto;
+  right: calc(100% + var(--artifact-submenu-gap));
+}
+.artifact-export-submenu[data-left="true"]::before {
+  right: auto;
+  left: 100%;
+}
+.artifact-title-menu {
+  top: 38px;
+  left: 6px;
+  width: 240px;
+  min-width: 240px;
+  padding: 4px;
+  background: var(--surface);
+  border-color: #373735;
+  border-radius: 11px;
+}
+.artifact-title-menu .artifact-menu-meta {
+  padding: 4px 7px 3px;
+  font-size: 12px;
+  line-height: 18px;
+}
+.artifact-menu-meta > span {
+  display: block;
+}
+.artifact-title-menu button {
+  min-height: 24px;
+  height: 24px;
+  padding: 2px 8px;
+  font-size: 13px;
+  line-height: 20px;
+  gap: 7px;
+}
+.artifact-title-menu button > svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.artifact-title-menu button:hover:not(:disabled),
+.artifact-title-menu button:focus-visible {
+  background: #313131;
+}
+.artifact-title-menu > [role="separator"] {
+  height: 1px;
+  background: #353533;
+  margin: 4px 7px;
+}
+.artifact-title-menu .artifact-menu-delete {
+  color: #bb827a;
+}
+/* No capture shows a greyed row; the shared Menu's disabled look (opacity 0.4,
+ src/ui/menu.css) is the analogue. */
+.artifact-title-menu button:disabled {
+  color: inherit;
+  opacity: 0.4;
+}
+.artifact-title-menu .artifact-menu-delete:disabled {
+  color: #bb827a;
+}
+.artifact-title-menu .artifact-export-submenu button {
+  padding-inline: 7px;
+}
+
+/* Reference keyboard entry paints the selected row immediately. */
+.artifact-title-menu button:focus-visible {
+  transition: none;
+}
+.artifact-collaboration .artifact-collaboration-controls {
+  gap: 3px;
+}
+.artifact-collaboration .artifact-comment-buttons,
+.artifact-chat-group {
+  margin-right: 1px;
+  border-radius: var(--artifact-comment-radius, 7px);
+  background: #363636;
+}
+.artifact-collaboration .artifact-comment-buttons button {
+  width: var(--artifact-comment-main-width, 29px);
+  border-radius: var(--artifact-comment-radius, 7px) 0 0
+    var(--artifact-comment-radius, 7px);
+  color: #b4b4ae;
+}
+.artifact-collaboration .artifact-comment-buttons button + button {
+  width: var(--artifact-comment-more-width, 28px);
+  border-left-color: #3f3f3d;
+  border-radius: 0 var(--artifact-comment-radius, 7px)
+    var(--artifact-comment-radius, 7px) 0;
+}
+.artifact-collaboration .artifact-comment-buttons button:hover {
+  background: #404040;
+}
+/* Share sizes to its label like Publish beside it: the fixed 74px was the
+ English "Share" with a glyph this button doesn't have, and left a long empty
+ end after a short label such as 分享. */
+.artifact-collaboration .artifact-share-button {
+  width: auto;
+  height: var(--artifact-share-height, 28px);
+  justify-content: center;
+  gap: 7px;
+  padding: 0 8px;
+  border-radius: var(--artifact-share-radius, 7px);
+  background: #fbfbfb;
+  color: #1f1f1e;
+  font-size: 13px;
+}
+/* Existing full-page web controls. Embedded and native panels keep the measured
+ legacy defaults above. */
+.artifact-collaboration-header[data-standalone] {
+  --artifact-comment-height: 24px;
+  --artifact-comment-main-width: 24px;
+  --artifact-comment-more-width: 24px;
+  --artifact-comment-radius: 6px;
+}
+.artifact-share-button[data-standalone] {
+  --artifact-share-height: 24px;
+  --artifact-share-radius: 6px;
+}
+/* Official standalone /artifact page. */
+.artifact-panel.artifact-collaboration[data-standalone]
+  > .artifact-collaboration-header {
+  box-sizing: border-box;
+  height: 40px;
+  min-height: 40px;
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+  background: transparent;
+}
+.artifact-panel.artifact-collaboration[data-standalone]
+  .artifact-title-options {
+  font-size: 13px;
+  border-radius: 6px;
+}
+.artifact-panel.artifact-collaboration[data-standalone]
+  .artifact-comment-layer {
+  top: 40px;
+}
+.artifact-collaboration .artifact-share-button[data-open="true"] {
+  background: #e0dfd8;
+}
+/* Expanded: the header grows to 49px and the window's own navigation stays reachable. */
+.artifact-collaboration[data-expanded="true"] > .artifact-collaboration-header {
+  height: 49px;
+  min-height: 49px;
+}
+/* Expanded header: no Close, Share stays white and ends 12px from the edge; the
+ title button starts 10px in. */
+.artifact-collaboration[data-expanded="true"] > .artifact-collaboration-header {
+  padding-left: 16px;
+  padding-right: 12px;
+}
+.artifact-chat-group {
+  display: flex;
+  height: 28px;
+  border-radius: 7px;
+  background: #363636;
+}
+.artifact-chat-group > button {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  color: #c9c8c2;
+}
+/* Chat: 64px, the 12px Claude star 6px in, 4px to the label. */
+.artifact-collaboration .artifact-chat-group > .artifact-chat-button {
+  gap: 4px;
+  padding: 0 10px 0 6px;
+  border-radius: 7px;
+  background: transparent;
+  color: #f0efea;
+  font-size: 14px;
+}
+.artifact-chat-group > .artifact-chat-button:hover {
+  background: #404040;
+}
+/* Expanded, the title menu keeps a 6px gap under the lower title button and
+ lines up with it. */
+.artifact-collaboration[data-expanded="true"] .artifact-title-menu {
+  top: 42px;
+  left: 10px;
+}
+.artifact-collaboration > .artifact-collaboration-header {
+  animation: file-viewer-header-in 130ms ease-out;
+  z-index: 16;
+}
+/* Export submenu measured at x820–944 in artifact-export-001. */
+.artifact-title-menu .artifact-export-entry {
+  --artifact-submenu-gap: 7px;
+}
+.artifact-title-menu .artifact-export-submenu {
+  min-width: 124px;
+  width: 124px;
+}
+/* Version history popup. */
+.artifact-title-menu .artifact-export-submenu[data-versions] {
+  width: max-content;
+  min-width: 280px;
+  max-width: 320px;
+}
+.artifact-export-submenu button[data-current] {
+  background: hsl(from #fff h s l / 5%);
+}
+:root[data-theme="light"] .artifact-export-submenu button[data-current] {
+  background: hsl(from #0b0b0b h s l / 5%);
+}
+.artifact-version-detail {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 15px;
+  color: #898781;
+}
+.artifact-version-current {
+  font-weight: 500;
+  color: #6da7ec;
+}
+:root[data-theme="light"] .artifact-version-current {
+  color: #184f95;
+}
+.artifact-title-menu .artifact-export-submenu[data-storage] {
+  width: max-content;
+  min-width: 280px;
+  max-width: 320px;
+}
+.artifact-title-menu
+  .artifact-export-submenu[data-list="true"]:not([data-versions]):not(
+    [data-storage]
+  ) {
+  width: max-content;
+  min-width: 240px;
+}
+.artifact-frame-tabs + .artifact-header-gap {
+  flex: 0;
+}
+/* Comment options open under their own button group (artifact-panel-cycle-001 @56s: x1442–1594, y49–89). */
+.artifact-comment-anchor {
+  position: relative;
+  display: flex;
+}
+.artifact-collaboration .artifact-comment-anchor > .artifact-comments-menu {
+  top: calc(100% + 5px);
+  right: 1px;
+  left: auto;
+  width: 153px;
+  min-width: 153px;
+  padding: 4px;
+  border-color: #2f2f2f;
+  border-radius: 10px;
+  background: #232323;
+}
+.artifact-collaboration .artifact-comments-menu button {
+  min-height: 31px;
+  padding: 0 9px;
+  font-size: 14px;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+.artifact-collaboration .artifact-comments-menu button:hover,
+.artifact-collaboration .artifact-comments-menu button:focus-visible {
+  background: #313131;
+}
+/* All comments panel measured in artifact-panel-cycle-002 @52s (x1425–1725, y61–209). */
+.artifact-collaboration .artifact-comments-list {
+  top: 11px;
+}
+.artifact-collaboration .artifact-comments-list > header {
+  height: 40px;
+  padding: 0 14px 0 16px;
+}
+.artifact-collaboration .artifact-comments-list > header > span {
+  font-weight: 500;
+}
+.artifact-collaboration .artifact-comments-empty {
+  padding: 14px 20px 27px;
+}
+.artifact-collaboration .artifact-comments-empty p {
+  margin: 5px 0 3px;
+}
+.artifact-collaboration .artifact-comments-empty span {
+  line-height: 18px;
+}
+.artifact-collaboration .artifact-title-input::selection {
+  background: #48505f;
+}
+/* The muted dark selection was sampled on the dark panel; in light the app's
+ own selection colour keeps the dark text legible. */
+:root[data-theme="light"]
+  .artifact-collaboration
+  .artifact-title-input::selection {
+  background: rgb(78 126 179 / 0.6);
+}
+/* More options: menu x1512–1664, y51–123, 32px rows, no icons. */
+.file-copy-anchor {
+  position: relative;
+  display: flex;
+}
+.file-copy-anchor > .file-viewer-menu {
+  top: calc(100% + 5px);
+  right: 0;
+  width: 153px;
+  min-width: 153px;
+  padding: 4px;
+  border-color: #2f2f2f;
+  border-radius: 10px;
+  background: #232323;
+}
+.file-copy-anchor > .file-viewer-menu button {
+  min-height: 32px;
+  padding: 0 8px;
+  gap: 0;
+  font-size: 14px;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+.file-copy-anchor > .file-viewer-menu button:hover:not(:disabled),
+.file-copy-anchor > .file-viewer-menu button:focus-visible {
+  background: #313131;
+}
+/* Publish artifact with "Content already published" or "Unpublished" under it. */
+.file-viewer-menu-label {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+  white-space: normal;
+  text-align: left;
+}
+.file-viewer-menu-label > small {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+/* Publish / Published: the primary button with its label only. */
+.artifact-collaboration .artifact-share-button.artifact-publish-button {
+  width: auto;
+  justify-content: center;
+  padding: 0 8px;
+}
+/* While the sharing record loads (artifact-panel-cycle-001 frames 499–516) Share is grey and comments are absent. */
+.artifact-collaboration .artifact-share-button:disabled {
+  background: #8f8f8f;
+  color: #262626;
+  cursor: default;
+}
+.artifact-comment-anchor[data-ready="false"] {
+  visibility: hidden;
+}
+.file-preview-generating .generating-ring {
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 1.5px solid #333333;
+  border-top-color: #8a8a86;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .file-preview-generating .generating-ring {
+    animation: none;
+  }
+}
+:root[data-theme="light"] .file-preview-generating .generating-ring {
+  border-color: var(--border);
+  border-top-color: var(--text-muted);
+}
+/*
+ * Markdown in the viewer (artifacts/MarkdownDocument.tsx), live claude.ai
+ * bundle, 2026-10-12. A conversation's artifact: a 768px column, the text
+ * 16px from the top and bottom, 24px from the start and 64px from the end
+ * (24px and 44px from 768px wide), on 1.65rem lines.
+ */
+.file-preview.artifact-markdown-preview {
+  display: block;
+  overflow: auto;
+}
+.artifact-markdown-preview:not(.is-document) > .markdown {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 16px 64px 16px 24px;
+  line-height: 1.65rem;
+}
+@media (min-width: 768px) {
+  .artifact-markdown-preview:not(.is-document) > .markdown {
+    padding: 24px 64px 24px 44px;
+  }
+}
+/*
+ * A Code or Cowork document: the page is a size container; the column keeps
+ * a measure of 36 × the document text (15px, so 540px; 14px or 16px with
+ * Settings → Transcript text size Small or Large, transcript-text-size.css)
+ * with side padding of 6% of the page between 20px and 64px, 32–56px above
+ * and 96px below. The text's lines are 1.6 times its size. The margin
+ * beside it is the gutter the contents rail lives in.
+ */
+.file-preview.artifact-markdown-preview.is-document {
+  container-type: size;
+}
+.markdown-document-column {
+  --markdown-document-measure: calc(var(--document-body, 15px) * 36);
+  --markdown-document-pad: clamp(20px, 6cqi, 64px);
+  --markdown-document-gutter: calc(
+    50cqi -
+      min(
+        var(--markdown-document-measure) / 2,
+        50cqi - var(--markdown-document-pad)
+      )
+  );
+  /* The rail's ticks show once the gutter is 76px wide. */
+  --markdown-rail-room: calc((var(--markdown-document-gutter) - 76px) * 9999);
+  box-sizing: content-box;
+  max-width: var(--markdown-document-measure);
+  margin-inline: auto;
+  padding-inline: var(--markdown-document-pad);
+  padding-block: clamp(32px, 6cqi, 56px) 96px;
+}
+.is-document .markdown-document-column > .markdown,
+.is-document .markdown-document-column > .markdown p {
+  font-size: var(--document-body, 15px);
+  line-height: calc(var(--document-body, 15px) * 1.6);
+}
+/* The document's headings and tables are sized in em of its text, so they
+ follow Transcript text size with it: h1 1.75em on 1.15 lines and h2 1.35em on
+ 1.25, both weight 500, h1 tracked -0.012em; h3 1.125em and h4 1em at 600;
+ tables 0.9375em on 1.5. */
+.is-document .markdown-document-column > .markdown h1 {
+  font-size: 1.75em;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+}
+.is-document .markdown-document-column > .markdown h2 {
+  font-size: 1.35em;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.is-document .markdown-document-column > .markdown h3 {
+  font-size: 1.125em;
+  font-weight: 600;
+}
+.is-document .markdown-document-column > .markdown h4 {
+  font-size: 1em;
+  font-weight: 600;
+}
+.is-document .markdown-document-column > .markdown table {
+  font-size: 0.9375em;
+  line-height: 1.5;
+}
+/*
+ * The contents rail (artifacts/MarkdownRail.tsx), Sticky
+ * at the page's top, 20px from its start edge; the column 12px down and as tall
+ * as the page allows, fading in after 120ms over 180ms.
+ */
+.markdown-rail {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  width: 0;
+  height: 0;
+  margin-inline-start: calc(20px - var(--markdown-document-gutter));
+}
+.markdown-rail-nav {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 12px;
+  width: 48px;
+  height: min(100cqb - 24px - clamp(32px, 6cqi, 56px), 100dvh - 48px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  pointer-events: none;
+  animation: markdown-rail-in 180ms ease-out 120ms both;
+}
+.markdown-rail-nav > nav {
+  position: relative;
+  height: 100%;
+}
+@keyframes markdown-rail-in {
+  from {
+    opacity: 0;
+  }
+}
+.markdown-rail-show {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.markdown-rail-show > button {
+  pointer-events: auto;
+}
+/* 8px rows of 18px × 2px ticks drawn from the start: 14px for the top level,
+ 9px set in 3px for the next, 6px set in 6px for the third. Disabled ink,
+ muted once read, the current one full length, 3px tall, in the accent. */
+.markdown-rail-ticks {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: clamp(0px, var(--markdown-rail-room), 32px);
+  max-height: 100%;
+  margin: 0;
+  padding-block: 6px;
+  padding-inline: clamp(0px, var(--markdown-rail-room), 6px) 0;
+  overflow: hidden;
+  list-style: none;
+  scroll-behavior: smooth;
+  pointer-events: auto;
+  --markdown-rail-fade-top: 0px;
+  --markdown-rail-fade-bottom: 0px;
+}
+.markdown-rail-ticks[data-clip-top],
+.markdown-rail-ticks[data-clip-bottom] {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--markdown-rail-fade-top),
+    black calc(100% - var(--markdown-rail-fade-bottom)),
+    transparent
+  );
+}
+.markdown-rail-ticks[data-clip-top] {
+  --markdown-rail-fade-top: 24px;
+}
+.markdown-rail-ticks[data-clip-bottom] {
+  --markdown-rail-fade-bottom: 24px;
+}
+.markdown-rail-ticks > li {
+  display: flex;
+  flex: 0 0 8px;
+  align-items: center;
+}
+.markdown-rail-ticks > li > span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--alpha-4);
+  transform-origin: left;
+  scale: 0.777778 1;
+}
+.markdown-rail-ticks > li[data-read] > span {
+  background: var(--text-muted);
+}
+.markdown-rail-ticks > li[data-level="1"] > span {
+  translate: 3px;
+  scale: 0.5 1;
+}
+.markdown-rail-ticks > li[data-level="2"] > span {
+  translate: 6px;
+  scale: 0.333333 1;
+}
+.markdown-rail-ticks > li[data-current] > span {
+  background: var(--markdown-rail-accent);
+  translate: 0;
+  scale: 1 1.5;
+}
+.markdown-rail {
+  --markdown-rail-accent: #6da7ec;
+}
+:root[data-theme="light"] .markdown-rail {
+  --markdown-rail-accent: #184f95;
+}
+/* The headings as a list: a popover card 4px before the ticks, as wide as
+ the gutter less 16px (240–272px), 8px corners, 5px 4px inside; it fades
+ over 150ms with no slide. Rows are 22px, 13px type, 6px corners, a tick
+ then the text (10px and 20px further in for the lower levels). */
+.markdown-rail-outline {
+  position: absolute;
+  top: 0;
+  inset-inline-start: -4px;
+  isolation: isolate;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: clamp(
+    min(240px, calc(100cqi - 40px)),
+    calc(var(--markdown-document-gutter) - 16px),
+    272px
+  );
+  max-height: 100%;
+  padding: 5px 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  --outline-lift: 0px;
+  transition:
+    opacity 150ms ease-out,
+    visibility 150ms;
+}
+.markdown-rail-outline:not([data-open]) {
+  visibility: hidden;
+  opacity: 0;
+}
+.markdown-rail-outline[data-open] {
+  pointer-events: auto;
+}
+.markdown-rail-outline > ol {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  list-style: none;
+}
+.markdown-rail-outline[data-clip-top] > ol,
+.markdown-rail-outline[data-clip-bottom] > ol {
+  --outline-fade-top: 0px;
+  --outline-fade-bottom: 0px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent var(--outline-lift),
+    black var(--outline-fade-top),
+    black calc(100% - var(--outline-fade-bottom)),
+    transparent
+  );
+}
+.markdown-rail-outline[data-clip-top] > ol {
+  --outline-fade-top: calc(var(--outline-lift) + 12px);
+}
+.markdown-rail-outline[data-clip-bottom] > ol {
+  --outline-fade-bottom: 28px;
+}
+.markdown-rail-outline li > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 22px;
+  padding-inline: 6px 8px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 15px;
+  text-align: start;
+}
+.markdown-rail-outline li[data-current] > button {
+  color: var(--text);
+  font-weight: 500;
+}
+.markdown-rail-outline li[data-pointed] > button,
+.markdown-rail-outline li > button:hover {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.markdown-rail-tick {
+  display: flex;
+  flex: none;
+  align-items: center;
+  width: 18px;
+}
+.markdown-rail-tick::before {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--alpha-4);
+}
+li[data-read] .markdown-rail-tick::before {
+  background: var(--text-muted);
+}
+li[data-level="1"] .markdown-rail-tick::before {
+  width: 9px;
+  margin-inline-start: 3px;
+}
+li[data-level="2"] .markdown-rail-tick::before {
+  width: 6px;
+  margin-inline-start: 6px;
+}
+li[data-current] .markdown-rail-tick::before {
+  width: 18px;
+  height: 3px;
+  margin-inline-start: 0;
+  background: var(--markdown-rail-accent);
+}
+.markdown-rail-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+li[data-level="1"] .markdown-rail-label {
+  padding-inline-start: 10px;
+}
+li[data-level="2"] .markdown-rail-label {
+  padding-inline-start: 20px;
+}
+/* A heading jumped to lands with its background fading from the accent
+ tint over 1.6s. */
+.artifact-markdown-preview :is(h1, h2, h3, h4, h5, h6):focus {
+  outline: none;
+}
+.artifact-markdown-preview [data-landed] {
+  border-radius: 4px;
+  animation: markdown-landed 1.6s ease-out;
+}
+@keyframes markdown-landed {
+  from {
+    background-color: color-mix(in srgb, var(--focus-accent) 22%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+/* Reduced motion: the rail appears at once, the list without a fade, the
+ rail scrolls at once; no landed flash. */
+@media (prefers-reduced-motion: reduce) {
+  .markdown-rail-nav,
+  .artifact-markdown-preview [data-landed] {
+    animation: none;
+  }
+  .markdown-rail-outline {
+    transition: none;
+  }
+  .markdown-rail-ticks {
+    scroll-behavior: auto;
+  }
+}
+:root[data-motion="reduced"] .markdown-rail-nav,
+:root[data-motion="reduced"] .artifact-markdown-preview [data-landed] {
+  animation: none;
+}
+:root[data-motion="reduced"] .markdown-rail-outline {
+  transition: none;
+}
+:root[data-motion="reduced"] .markdown-rail-ticks {
+  scroll-behavior: auto;
+}
+.artifact-image-toggle {
+  position: absolute;
+  inset: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.artifact-image-toggle > img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.artifact-image-preview[data-actual="true"] .artifact-image-toggle {
+  position: static;
+  display: block;
+  margin: auto;
+  padding: 16px;
+  cursor: zoom-out;
+}
+.artifact-image-preview[data-actual="true"] .artifact-image-toggle > img {
+  max-width: none;
+  max-height: none;
+}
+.artifact-image-toggle:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -2px;
+}
+/* View full screen (the lightbox): a round button in the corner that shows
+ while the picture is hovered or the button has focus. */
+.artifact-image-full-screen {
+  position: absolute;
+  z-index: 1;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 55%);
+  color: rgb(255 255 255 / 85%);
+  opacity: 0;
+  transition:
+    var(--button-fill-transition),
+    opacity var(--motion-snap) var(--ease-out);
+}
+.artifact-image-preview:hover > .artifact-image-full-screen,
+.artifact-image-full-screen:focus-visible {
+  opacity: 1;
+}
+.artifact-image-full-screen:hover {
+  background: rgb(0 0 0 / 75%);
+  color: #fff;
+}
+@media (hover: none) {
+  .artifact-image-full-screen {
+    opacity: 1;
+  }
+}
+.artifact-preview-message {
+  margin: auto;
+  padding: 16px;
+  color: #858580;
+  font-size: 13px;
+  text-align: center;
+}
+.artifact-table-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+.artifact-table-scroll > table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font:
+    13px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: #c5c4bf;
+}
+.artifact-table-scroll th,
+.artifact-table-scroll td {
+  max-width: 320px;
+  padding: 7px 12px;
+  border-bottom: 1px solid #292927;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.artifact-table-scroll th {
+  position: sticky;
+  top: 0;
+  background: #262626;
+  font-weight: 500;
+  color: #e2e1dc;
+  border-bottom-color: #30302e;
+}
+.artifact-table-scroll > .artifact-preview-message {
+  margin: 0;
+  text-align: left;
+}
+/* No preview: a column centred in the panel, gap-md (16px) and p-lg (16px); a
+ 48px round badge (bg-fill-control = alpha-2, text-secondary) holding the 24px
+ File glyph; "No preview" in text-body (14/20) semibold text-primary over the
+ reason in text-footnote (13/17) text-secondary, gap-xs (8px); then a
+ secondary "sm" button (28px, 7px radius, 10px padding, 16px icon, 6px gap,
+ text-body, fill-secondary with a border ring). */
+.file-preview-none {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  text-align: center;
+}
+.file-preview-none-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: var(--alpha-2);
+  color: var(--text-secondary);
+}
+.file-preview-none-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.file-preview-none-title {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+.file-preview-none-reason {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-secondary);
+}
+.file-preview-none-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--alpha-2);
+  box-shadow: inset 0 0 0 0.5px var(--alpha-2);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.file-preview-none-download:hover {
+  background: var(--alpha-3);
+}
+.file-preview-none-download:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.file-preview-none-download svg {
+  flex: none;
+}
+/* Preview runtime error, after the original's card: 20px in from the preview's
+ bottom and sides, a 300px card with a 12px radius, 20px padding, 14px text,
+ the error in a 6px-radius box with 16px padding in 12px monospace, the button
+ at the right 16px below, and a Dismiss X 8px from the top right corner. */
+.artifact-runtime-error-anchor {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  pointer-events: none;
+}
+.artifact-runtime-error {
+  position: relative;
+  box-sizing: border-box;
+  width: 300px;
+  max-width: 100%;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
+  pointer-events: auto;
+}
+.artifact-runtime-error > strong {
+  display: block;
+  margin-bottom: 8px;
+  padding-right: 24px;
+  font-weight: 500;
+}
+.artifact-runtime-error > p {
+  margin: 0 0 8px;
+}
+.artifact-runtime-error > code {
+  display: block;
+  max-height: 120px;
+  overflow: auto;
+  padding: 16px;
+  border-radius: 6px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 17px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.artifact-runtime-error-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.artifact-try-fixing {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: #e2e1dc;
+  color: #1f1e1d;
+  font-size: 13px;
+  font-weight: 500;
+}
+.artifact-try-fixing:hover:not(:disabled) {
+  background: #fff;
+}
+.artifact-try-fixing:disabled {
+  opacity: 0.6;
+}
+.artifact-runtime-error-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #a4a49e;
+}
+.artifact-runtime-error-dismiss:hover {
+  background: #3a3a37;
+}
+:root[data-theme="light"] .artifact-table-scroll > table {
+  color: var(--text);
+}
+:root[data-theme="light"] .artifact-table-scroll th {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .artifact-table-scroll th,
+:root[data-theme="light"] .artifact-table-scroll td {
+  border-color: var(--border);
+}
+:root[data-theme="light"] .artifact-runtime-error {
+  background: var(--surface-raised);
+}
+:root[data-theme="light"] .artifact-try-fixing {
+  background: var(--text-strong);
+  color: var(--surface);
+}
+
+/* Comment mode: the comment half turns deep blue with a light blue icon. */
+.artifact-collaboration .artifact-comment-buttons button.is-active,
+.artifact-collaboration .artifact-comment-buttons button.is-active:hover {
+  background: #0a2243;
+  color: #79b0f1;
+}
+.artifact-comments-list article > header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+.artifact-comments-list article > header > span {
+  color: #85857f;
+  font-size: 11px;
+}
+.artifact-comments-list article[data-resolved] p {
+  color: #8f8f89;
+}
+.code-file-tabs {
+  border-bottom: 1px solid #2a2a28;
+}
+.code-file-tools {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+:root[data-theme="light"] .code-file-header,
+:root[data-theme="light"] .code-file-tabs {
+  border-color: #ececea;
+}
+
+/*
+ * Light theme of the Artifact panel's header: the comment pair is white with a
+ * #e6e6e6 rim and rule and a #2c2c2c glyph, and Share is #262624 with white
+ * text, also while its popover is open. The card is the sheet card
+ * (artifacts/sheet-card.css).
+ */
+:root[data-theme="light"] .artifact-collaboration .artifact-comment-buttons {
+  border: 1px solid #e6e6e6;
+  background: #fdfdfd;
+}
+:root[data-theme="light"]
+  .artifact-collaboration
+  .artifact-comment-buttons
+  button {
+  color: #2c2c2c;
+}
+:root[data-theme="light"]
+  .artifact-collaboration
+  .artifact-comment-buttons
+  button
+  + button {
+  border-left-color: #e5e5e5;
+}
+:root[data-theme="light"]
+  .artifact-collaboration
+  .artifact-comment-buttons
+  button:hover {
+  background: #f3f3f1;
+}
+:root[data-theme="light"] .artifact-collaboration .artifact-share-button {
+  background: #262624;
+  color: #fffffd;
+}
+
+/*
+ * Light theme of the comments panel and its filter: a white card with a soft
+ * shadow and black text; the filter menu white with a #d0d0d0 rim, "This page"
+ * #919191, a blue tick and a #e6e6e6 rule.
+ */
+:root[data-theme="light"] .artifact-comments-list {
+  border-color: #e7e6e4;
+  background: #fff;
+  color: var(--text-strong);
+  box-shadow: 0 8px 28px #33291f1f;
+}
+:root[data-theme="light"] .artifact-comments-list > header button {
+  color: #2c2c2c;
+}
+:root[data-theme="light"] .artifact-comments-list button:hover {
+  background: #0000000a;
+}
+:root[data-theme="light"] .artifact-comments-empty span {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifact-comments-list article {
+  border-top-color: #ececea;
+}
+:root[data-theme="light"] .artifact-comments-list article button,
+:root[data-theme="light"] .artifact-comments-list article > header > span {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifact-comments-list .artifact-filter-menu {
+  border-color: #d0d0d0;
+  background: #fff;
+  box-shadow: 0 6px 20px #33291f1a;
+}
+:root[data-theme="light"] .artifact-comments-list .artifact-filter-menu button {
+  color: var(--text-strong);
+}
+:root[data-theme="light"]
+  .artifact-comments-list
+  .artifact-filter-menu
+  button:disabled {
+  color: #919191;
+}
+:root[data-theme="light"]
+  .artifact-comments-list
+  .artifact-filter-menu
+  button
+  > svg {
+  color: #3073dc;
+}
+:root[data-theme="light"] .artifact-filter-menu > [role="separator"] {
+  background: #e6e6e6;
+}
+:root[data-theme="light"] .artifact-menu-checkbox {
+  border-color: #c4c4c4;
+}
+:root[data-theme="light"] [aria-checked="true"] > .artifact-menu-checkbox {
+  border-color: #3a7fd5;
+}
+
+/* 679: neutral xs viewing pill, only when inspecting an older version. */
+.artifact-viewing-version {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  white-space: nowrap;
+  background: var(--fill-ghost-hover);
+  color: var(--text-secondary);
+}

@@ -1,0 +1,98 @@
+/* CodeMirror file editor metrics and palettes from O14/cbd02b8f2:1590–1670,
+   c5d464fa3:75–270 and shared-11:13613–13709. This T2 sheet loads with the editor. */
+.file-code-editor {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family:
+    var(--code-font-custom, ui-monospace), "SFMono-Regular", Menlo, Consolas,
+    monospace;
+  font-size: 12px;
+  line-height: 17px;
+  --file-editor-fg: var(--code-foreground, hsl(220 15% 93%));
+  --file-editor-muted: var(--code-comment, hsl(220 10% 55%));
+  --file-editor-cursor: var(--code-foreground, #0099ff);
+  --file-editor-selection: #0099ff4d;
+  --file-editor-match: #0099ff24;
+  --file-editor-active-line: #ffffff0d;
+  --file-keyword: var(--code-keyword, hsl(280 85% 72%));
+  --file-string: var(--code-string, hsl(95 75% 65%));
+  --file-number: var(--code-constant, hsl(180 80% 65%));
+  --file-function: var(--code-entity, hsl(210 100% 72%));
+  --file-type: var(--code-entity, #b796ff);
+  --file-property: var(--code-variable, hsl(355 85% 72%));
+  --file-punctuation: hsl(220 15% 85%);
+}
+:root[data-theme="light"] .file-code-editor {
+  --file-editor-fg: var(--code-foreground, #1a1a1a);
+  --file-editor-muted: var(--code-comment, #999);
+  --file-editor-selection: #0073e640;
+  --file-editor-match: #0073e61a;
+  --file-editor-active-line: #1a1a1a0a;
+  --file-keyword: var(--code-keyword, #c5621b);
+  --file-string: var(--code-string, #1e9e3c);
+  --file-number: var(--code-constant, #cd2054);
+  --file-function: var(--code-entity, #0073e6);
+  --file-type: var(--code-entity, #8e6bd9);
+  --file-property: var(--code-foreground, #1a1a1a);
+  --file-punctuation: #737373;
+}
+.file-code-editor .cm-file-keyword {
+  color: var(--file-keyword);
+}
+.file-code-editor .cm-file-string {
+  color: var(--file-string);
+}
+.file-code-editor .cm-file-number {
+  color: var(--file-number);
+}
+.file-code-editor .cm-file-comment {
+  color: var(--file-editor-muted);
+  font-style: italic;
+}
+.file-code-editor .cm-file-function {
+  color: var(--file-function);
+}
+.file-code-editor .cm-file-type {
+  color: var(--file-type);
+}
+.file-code-editor .cm-file-property {
+  color: var(--file-property);
+}
+.file-code-editor .cm-file-punctuation {
+  color: var(--file-punctuation);
+}
+.file-code-editor .cm-file-heading {
+  font-weight: 700;
+}
+.file-code-editor .cm-file-indented {
+  position: relative;
+}
+/* With word wrap on, an indented line's wrapped rows start at its indent, not
+   at the left edge, so the guides stay in the indent and never run through the
+   text. CodeMirror's lines are 6px in. */
+.file-code-editor .cm-lineWrapping .cm-file-indented {
+  padding-left: calc(6px + var(--file-indent-width));
+  text-indent: calc(-1 * var(--file-indent-width));
+}
+.file-code-editor .cm-file-indented::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 4px;
+  width: var(--file-indent-width);
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(var(--file-indent-unit) - 1px),
+    color-mix(in srgb, var(--file-editor-muted) 25%, transparent)
+      calc(var(--file-indent-unit) - 1px) var(--file-indent-unit)
+  );
+  pointer-events: none;
+}
+.file-code-editor .cm-panels {
+  background: var(--surface-raised);
+  color: var(--text);
+  border-color: var(--border-strong);
+}

@@ -1,0 +1,472 @@
+/* O14/cf3dc7910: the resizable tree reserves 160px for its editor. */
+.work-panel.files-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.work-panel.files-panel > header {
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 0 4px;
+}
+.work-panel.files-panel > header .changes-icon-button[aria-pressed="true"] {
+  background: #032042;
+  color: #6da7ec;
+}
+.files-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary, #f0efec);
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.files-body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.files-tree {
+  position: relative;
+  display: flex;
+  width: 240px;
+  flex-shrink: 0;
+  flex-direction: column;
+  min-height: 0;
+  border-inline-end: 1px solid rgb(255 255 255 / 10%);
+}
+.files-tree-contents {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.files-tree-divider,
+.files-tree-edge {
+  position: absolute;
+  z-index: 3;
+  inset-block: 0;
+  width: 12px;
+}
+.files-tree-divider {
+  inset-inline-end: -6px;
+}
+.files-tree-edge {
+  inset-inline-start: -6px;
+}
+/* The tree on the pane's right (File tree position): it comes after the open
+   files with its rule on its start side, and its handles mirror. */
+.files-body.tree-right {
+  flex-direction: row-reverse;
+}
+.files-body.tree-right > .files-tree {
+  border-inline-end: 0;
+  border-inline-start: 1px solid rgb(255 255 255 / 10%);
+}
+.files-body.tree-right .files-tree-divider {
+  inset-inline-end: auto;
+  inset-inline-start: -5px;
+}
+.files-body.tree-right > .files-tree-edge {
+  inset-inline-start: auto;
+  inset-inline-end: -6px;
+}
+/* The web's bar: 32px with 4px inside, "Files" 13/19 in the secondary ink, then
+   the 24px ghost buttons 2px apart, radius 6; the pressed tree toggle is its
+   glyph in the accent ink alone. */
+.app.web .work-panel.files-panel > header {
+  height: 32px;
+  min-height: 32px;
+  padding: 4px;
+  gap: 2px;
+}
+.app.web .work-panel.files-panel > header > .files-title {
+  margin-inline: 0 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+}
+.app.web .work-panel.files-panel > header .changes-icon-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--text);
+}
+.app.web
+  .work-panel.files-panel
+  > header
+  .changes-icon-button[aria-pressed="true"] {
+  background: none;
+  color: #6da7ec;
+}
+.files-filter-box {
+  display: flex;
+  flex-shrink: 0;
+  min-width: 0;
+  height: 24px;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 8px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg, transparent);
+  color: var(--text-muted, #898781);
+}
+.files-filter-box:focus-within {
+  border-color: var(--focus-ring, #6da7ec);
+  box-shadow: 0 0 0 1px var(--focus-ring, #6da7ec);
+}
+.files-filter-box > svg {
+  flex-shrink: 0;
+}
+.files-filter {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary, inherit);
+  font: inherit;
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+.files-filter-box > button {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+.files-filter-box > button:hover {
+  color: var(--text-primary);
+}
+/* Content results. */
+.files-search-note {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 4px 12px;
+  color: var(--text-muted, #898781);
+  font-size: 13px;
+  line-height: 19px;
+}
+.files-search-match {
+  display: flex;
+  width: 100%;
+  min-height: 24px;
+  align-items: baseline;
+  gap: 4px;
+  padding: 0 8px 0 18px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-primary, #f0efec);
+  text-align: start;
+}
+.files-search-line {
+  flex-shrink: 0;
+  min-width: 2.5ch;
+  color: var(--text-muted, #898781);
+  font-size: 12px;
+  line-height: 15px;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+.files-search-preview {
+  min-width: 0;
+  overflow: hidden;
+  font-family:
+    "anthropic-mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+.files-search-match:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+.files-search-preview mark {
+  border-radius: 4px;
+  background: #032042;
+  color: inherit;
+}
+:root[data-theme="light"] .files-search-preview mark {
+  background: #cde2fb;
+}
+:root[data-theme="light"] .files-search-match:hover {
+  background: rgb(11 11 11 / 5%);
+}
+.files-rows {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px;
+}
+.files-row {
+  display: flex;
+  width: 100%;
+  min-height: 24px;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 8px;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--text-secondary, var(--text-secondary));
+  font: inherit;
+  font-size: 13px;
+  text-align: start;
+  cursor: default;
+}
+.files-row:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+.files-row[aria-selected="true"],
+.files-row[data-revealed] {
+  background: rgb(255 255 255 / 10%);
+  color: var(--text-primary, #f0efec);
+}
+.files-row > svg {
+  flex-shrink: 0;
+}
+.files-caret {
+  transition: transform 120ms;
+}
+.files-caret[data-open] {
+  transform: rotate(90deg);
+}
+.files-caret-space {
+  width: 12px;
+  flex-shrink: 0;
+}
+.files-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.files-note {
+  margin: 0;
+  padding: 6px 12px;
+  color: #898781;
+  font-size: 11px;
+  line-height: 17px;
+}
+.files-note.inline {
+  padding-block: 2px;
+}
+.files-view {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.files-tabs {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.files-tab {
+  display: flex;
+  max-width: 200px;
+  min-width: 104px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  height: 24px;
+  border-radius: 6px;
+  color: #898781;
+  font-size: 13px;
+  cursor: default;
+}
+.files-tab > svg {
+  flex-shrink: 0;
+}
+.files-tab[data-preview] > span {
+  font-style: italic;
+}
+.files-tab:focus-visible {
+  outline: 2px solid var(--focus-ring, #6da7ec);
+  outline-offset: -2px;
+}
+.files-tab > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.files-tab[aria-selected="true"] {
+  color: var(--text);
+  background: rgb(255 255 255 / 15%);
+}
+.files-tab-close {
+  position: relative;
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  margin-inline-start: auto;
+  flex-shrink: 0;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  opacity: 0;
+  cursor: pointer;
+}
+.files-tab:hover .files-tab-close,
+.files-tab:focus-within .files-tab-close,
+.files-tab[data-dirty] .files-tab-close,
+.files-tab[aria-selected="true"] .files-tab-close {
+  opacity: 1;
+}
+.files-tab-close:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+.files-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.files-content:has(> .file-code-editor) {
+  overflow: hidden;
+}
+/* An HTML or SVG file shown as a page fills the pane, its frame sized as
+   the artifact panel's (file-viewer.css .file-viewer iframe, which only
+   applies inside the artifact panel). */
+.files-content:has(> .file-preview) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.files-content > .file-preview {
+  border-radius: 0;
+}
+.files-content > .file-preview iframe {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  background: #1a1a1a;
+  color-scheme: inherit;
+}
+:root[data-theme="light"] .files-content > .file-preview iframe {
+  background: #fff;
+}
+.files-welcome {
+  flex-direction: column;
+  gap: 8px;
+}
+.files-welcome small {
+  max-width: 280px;
+  font-size: 12px;
+  line-height: 17px;
+}
+.files-welcome > svg {
+  margin-bottom: 4px;
+}
+.files-save-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 32px;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.files-save-bar > [role="alert"] {
+  color: var(--text-danger, #f58c8c);
+}
+.files-save-gap {
+  flex: 1;
+}
+.files-save-bar > button:not(.changes-icon-button) {
+  min-height: 24px;
+  padding: 2px 8px;
+  font-size: 13px;
+}
+.files-save-bar .files-path {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-secondary);
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.files-save-bar .files-path:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+.files-save-bar .files-cancel {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+}
+.files-empty {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0 16px;
+  color: #898781;
+  font-size: 13px;
+  text-align: center;
+}
+:root[data-theme="light"] .files-tree,
+:root[data-theme="light"] .files-tabs,
+:root[data-theme="light"] .files-tab {
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .files-filter {
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .files-row {
+  color: #52514e;
+}
+:root[data-theme="light"] .files-row:hover {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .files-row[aria-selected="true"],
+:root[data-theme="light"] .files-row[data-revealed] {
+  background: rgb(11 11 11 / 10%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .files-tab[aria-selected="true"] {
+  color: #0b0b0b;
+  background: rgb(11 11 11 / 4%);
+}
+
+:root[data-theme="light"]
+  .work-panel.files-panel
+  > header
+  .changes-icon-button[aria-pressed="true"] {
+  background: #cde2fb;
+  color: #184f95;
+}

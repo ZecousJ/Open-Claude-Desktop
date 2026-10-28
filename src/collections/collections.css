@@ -1,0 +1,435 @@
+/*
+ * Collection pages (History for now). Geometry is measured 1:1 from the 40px
+ * side margins, the 32px header line centred 72px from the top, 14px list and
+ * button text.
+ */
+.collection-view {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  padding: 56px 40px 48px;
+}
+.collection-view > * {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.collection-bar {
+  margin-bottom: 33px;
+}
+.collection-bar-line {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 32px;
+}
+/*
+ * "Chats and tasks" inks 177×19px (ascender to baseline) from y 62.5, which
+ * the reference serif fits at 24px; "Claudex Serif", Georgia stands in when it is absent.
+ */
+.collection-bar h1 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font:
+    500 24px/32px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+:root[data-reference-fonts="true"] .collection-bar h1 {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-optical-sizing: auto;
+}
+.collection-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+/* 20px page glyphs in 32px buttons, centres 36px apart (search at x 932). */
+.collection-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text);
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    var(--press-release);
+}
+.collection-icon:hover,
+.collection-icon[aria-expanded="true"],
+.collection-icon.open {
+  background: #262626;
+}
+/* Pressed: the ghost button keeps its hover fill and squishes; the original has
+   no darker pressed fill. */
+.collection-icon:active:not(:disabled) {
+  scale: var(--press-scale);
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    scale var(--motion-fast) ease-out;
+}
+/*
+ * Select: #2c2c2c, 65×32 (14px text, 12px sides), radius 8, 12.5px after the
+ * icons; New: white, 53×32, 8.5px to its right.
+ */
+.collection-secondary,
+.collection-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    var(--press-release);
+}
+.collection-secondary {
+  margin-left: 8px;
+  background: #2c2c2c;
+  color: var(--text);
+}
+.collection-secondary + .collection-secondary {
+  margin-left: 0;
+}
+.collection-secondary:hover,
+.collection-secondary[aria-expanded="true"] {
+  background: #343434;
+}
+.collection-primary {
+  margin-left: 4px;
+  background: #fff;
+  color: #050505;
+}
+.collection-primary:hover {
+  background: #e8e8e6;
+}
+.collection-secondary:active:not(:disabled),
+.collection-primary:active:not(:disabled) {
+  scale: var(--press-scale);
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    scale var(--motion-fast) ease-out;
+}
+.collection-primary:disabled,
+.collection-secondary:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+.collection-secondary svg,
+.collection-primary svg {
+  flex-shrink: 0;
+}
+.collection-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(280px, 36vw);
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #3b3b3b;
+  border-radius: 8px;
+  background: #1c1c1c;
+  color: #8e8e8c;
+  animation: collection-search-in 140ms var(--ease-out);
+}
+.collection-search:focus-within {
+  border-color: #5a5a5a;
+}
+.collection-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  color: var(--text);
+}
+/* The global input focus ring would otherwise win on load order. */
+.collection-search input:focus {
+  border: 0;
+  box-shadow: none;
+}
+@keyframes collection-search-in {
+  from {
+    width: 32px;
+    opacity: 0;
+  }
+}
+
+/* "Nothing matches “…”": 13px, its line centred 110px under the header's
+   centre, so 84px under the header. */
+.collection-empty-note {
+  margin: 0;
+  padding: 84px 0 56px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  color: #8e8e8c;
+}
+
+@media (max-width: 720px) {
+  .collection-view {
+    padding: 48px 20px 40px;
+  }
+  .collection-secondary,
+  .collection-primary {
+    padding: 0 10px;
+  }
+}
+
+:root[data-theme="light"] .collection-bar h1 {
+  color: #141413;
+}
+:root[data-theme="light"] .collection-icon {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .collection-icon:hover,
+:root[data-theme="light"] .collection-icon[aria-expanded="true"] {
+  background: #ebebe9;
+}
+:root[data-theme="light"] .collection-secondary {
+  box-shadow: inset 0 0 0 1px #e5e5e3;
+  background: #fdfdfc;
+  color: #141413;
+}
+:root[data-theme="light"] .collection-secondary:hover {
+  background: #f3f3f1;
+}
+:root[data-theme="light"] .collection-primary {
+  background: #141413;
+  color: #fff;
+}
+:root[data-theme="light"] .collection-primary:hover {
+  background: #2e2e2c;
+}
+:root[data-theme="light"] .collection-search {
+  border-color: #dcdcda;
+  background: #fff;
+}
+:root[data-theme="light"] .collection-search:focus-within {
+  border-color: #4d80d0;
+}
+:root[data-theme="light"] .collection-search input {
+  color: #141413;
+}
+
+/*
+ * Rename chat (src/dialogs/ConversationManageDialog.tsx), from the W1164
+ * JPGs R-0186-0187 (÷2.629, proportions only): ~398px wide, a 20px title,
+ * a 33px field with a blue focus edge, 31px Cancel and Save, no close
+ * button.
+ */
+.modal:has(.rename-form) {
+  width: 398px;
+  padding: 22px 24px 23px;
+}
+.modal:has(.rename-form) > header {
+  margin: -3px 0 0;
+}
+.modal:has(.rename-form) > header .icon-button {
+  display: none;
+}
+.modal .rename-form input {
+  background: #2a2a2a;
+}
+:root[data-theme="light"] .modal .rename-form input {
+  background: #fff;
+}
+.modal:has(.rename-form) h2 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: normal;
+}
+.rename-form input,
+.rename-form input:focus {
+  height: 33px;
+  margin-top: 13px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.rename-form input:focus {
+  border-color: var(--focus-accent);
+  box-shadow: 0 0 0 1px rgba(77, 128, 208, 0.35);
+}
+.rename-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 17px;
+}
+.rename-actions > button {
+  height: 31px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.rename-actions > .rename-cancel {
+  background: #333;
+  color: var(--text);
+}
+.rename-actions > .rename-save {
+  background: #fff;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .rename-actions > .rename-cancel {
+  border: 1px solid #e0e0de;
+  background: #fff;
+  color: #141413;
+}
+:root[data-theme="light"] .rename-actions > .rename-save {
+  background: #0b0b0b;
+  color: #fff;
+}
+
+/*
+ * Page menus (src/collections/PageMenu.tsx), from the Customize Add menu R-1110
+ * and filter/sort menus R-1137/R-1139: 32px rows, 14px text, icons 12px from
+ * the row edge, a 4px frame and a 12px radius.
+ */
+/* The menu popup: the popover surface inside a 1px white-10% ring, 0 8px 24px
+   black 32% and 0 2px 6px black 20%, 4px inside with a transparent 1px under
+   the rows. */
+.page-menu {
+  position: fixed;
+  z-index: 200;
+  box-sizing: border-box;
+  padding: 4px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--surface-popover);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+  outline: none;
+  /* No open or close motion, as the original's menu popup. */
+}
+.page-menu > button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text);
+}
+/* A row with an icon has 10px either side: the icon's ink starts 16px and the
+   text 42px from the menu's outer edge, the text ending 15px short of the other
+   edge. */
+.page-menu > button:has(> svg:first-child) {
+  padding-inline: 10px;
+}
+.page-menu > button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.page-menu > button.active {
+  background: #2e2e2c;
+}
+.page-menu > button > svg {
+  flex-shrink: 0;
+  color: #dcdcd9;
+}
+.page-menu > button.danger,
+.page-menu > button.danger > svg {
+  color: var(--danger);
+}
+.page-menu > button > .page-menu-check {
+  color: var(--link-text);
+}
+/* A row's single-key hint, as the original's conversation menu; the sidebar
+   menu's kbd. */
+.page-menu > button > kbd {
+  font: inherit;
+  color: #8a8a88;
+}
+.page-menu > button:disabled {
+  opacity: 0.4;
+}
+.page-menu-heading {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+  line-height: 28px;
+  color: #959591;
+}
+.page-menu > hr {
+  height: 1px;
+  margin: 4px 8px;
+  border: 0;
+  background: #353535;
+}
+:root[data-theme="light"] .page-menu {
+  background: #fff;
+  box-shadow:
+    inset 0 0 0 1px rgb(11 11 11 / 10%),
+    0 12px 28px #0002;
+}
+:root[data-theme="light"] .page-menu > button {
+  color: #141413;
+}
+:root[data-theme="light"] .page-menu > button > svg {
+  /* The icons are drawn 16px across (an 18px glyph box) in the text's own
+     near-black. */
+  color: #141413;
+}
+:root[data-theme="light"] .page-menu > button > kbd {
+  color: #82817f;
+}
+:root[data-theme="light"] .page-menu > button.active {
+  background: #f0f0ee;
+}
+/* The captured light menus keep the blue check. */
+:root[data-theme="light"] .page-menu > button > .page-menu-check {
+  color: #4d80d0;
+}
+/* R-1189 / R-1202 (1x light): the Delete row's ink averages (143,109,110),
+   i.e. a dark maroon of about #6a2f31 once the anti-aliasing is taken out. */
+:root[data-theme="light"] .page-menu > button.danger,
+:root[data-theme="light"] .page-menu > button.danger > svg {
+  color: #6a2f31;
+}
+:root[data-theme="light"] .page-menu-heading {
+  color: #82817f;
+}
+:root[data-theme="light"] .page-menu > hr {
+  background: #ececea;
+}
+/* A filter that narrows the list fills its button #cce4fe with a #47698e glyph
+   (light). The menus' #7dacec check on the selected-row tint. */
+.collection-icon.filtered {
+  background: #22324a;
+  color: #7dacec;
+}
+:root[data-theme="light"] .collection-icon.filtered {
+  background: #cce4fe;
+  color: #47698e;
+}
+:root[data-theme="light"] .collection-empty-note {
+  color: #767674;
+}
+:root[data-theme="light"] .collection-secondary.danger:not(:disabled) {
+  color: #b9403b;
+}

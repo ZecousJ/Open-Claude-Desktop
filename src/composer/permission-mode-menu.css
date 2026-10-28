@@ -1,0 +1,83 @@
+/* The permission picker's menu draws its rows' 20px glyphs on every surface. */
+.menu.permission-mode-menu .menu-icon {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+}
+
+/* Current web Code: root p0; one scroll body with p4 and transparent 1px bottom
+   rim. Caption is 23px, each natural row 19+15+2.5+4 = 40.5px. Root live DOM,
+   2026-10-17. */
+:root[data-surface="web"] .menu.web-code-permission-menu {
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+  line-height: 19px;
+}
+.web-code-permission-body {
+  box-sizing: border-box;
+  padding: 4px;
+  border-bottom: 1px solid transparent;
+}
+.web-code-permission-body > .menu-heading {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 15px;
+  color: var(--text-muted);
+}
+:root[data-surface="web"]
+  .menu.web-code-permission-menu
+  .web-code-permission-body
+  > button.has-description {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 2.5px 8px 4px;
+  border-radius: 8px;
+  color: inherit;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19px;
+  transition: none;
+}
+.web-code-permission-body > button > .menu-item-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.web-code-permission-body .menu-item-text > span {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19px;
+}
+.web-code-permission-body .menu-description {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 15px;
+}
+.web-code-permission-body > button > .menu-check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--link-text);
+}
+.web-code-permission-body > button.active {
+  background: var(--fill-ghost-hover);
+}
+.web-code-permission-body > button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+:root[data-theme="light"] .web-code-permission-body > button.active {
+  background: #f0f0f0;
+}
+:root[data-theme="light"] .web-code-permission-body > button > .menu-check {
+  color: #2a78d6;
+}

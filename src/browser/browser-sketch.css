@@ -1,0 +1,57 @@
+/*
+ * Sketch mode on the Browser's page (BrowserSketch.tsx), after the live The
+ * layer covers the page; the still of the page sits at its own size from the
+ * top, centred and clipped; under it a strip as tall as a control plus its
+ * padding and 1.25rem (2rem + 2 × 0.25rem + 1.25rem = 60px) holds the sketch
+ * bar 10px above the bottom (bottom-2.5). The bar itself is the Annotate
+ * editor's (annotate-image.css).
+ */
+.browser-sketch {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  /* The card's own fill (browser-panel.css), over the page's stand-in. */
+  background: #1a1a1a;
+}
+:root[data-theme="light"] .browser-sketch {
+  background: #fff;
+}
+.browser-sketch-page {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: flex-start;
+  justify-content: safe center;
+  overflow: clip;
+}
+.browser-sketch-stage {
+  position: relative;
+  flex-shrink: 0;
+}
+.browser-sketch-picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+.browser-sketch-strip {
+  position: relative;
+  flex-shrink: 0;
+  height: 60px;
+}
+.browser-sketch-strip > .annotate-bar {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  max-width: calc(100% - 20px);
+  overflow-x: auto;
+  transform: translateX(-50%);
+}

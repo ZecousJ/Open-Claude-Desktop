@@ -1,0 +1,10 @@
+{
+  "status": 404,
+  "body": {
+    "ok": false,
+    "error": {
+      "message": "Not available on the web.",
+      "code": "CLAUDEX_WEB_METHOD_UNAVAILABLE"
+    }
+  }
+}

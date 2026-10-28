@@ -1,0 +1,319 @@
+/* Chat and Cowork home, measured against Claude's 1351 × 1063 Actual Size dark-theme screenshots
+   (claude-chat-home-main-001, claude-cowork-home-main-001). Colors are the brightest glyph pixel of each label. */
+
+/* Greeting: Anthropic Serif Display, wght 300, sized by the web's clamp, no
+   longer the 38px of the old 1351 × 1063 screenshots. */
+:root:not([data-theme="light"]) .chat-home > h1 {
+  color: #f8f8f6;
+}
+/* Current unified web home, including incognito, uses the primary text token. */
+:root:not([data-theme="light"]) .app.web .chat-home > h1 {
+  color: #f0efec;
+}
+:root[data-reference-fonts="true"] .chat-home > h1 {
+  font-weight: 300;
+  letter-spacing: -0.15px;
+}
+@media (min-width: 1101px) and (min-height: 711px) {
+  /* Claude's greeting sits 2.25px left of the composer's center line. */
+  .chat-main .chat-home > h1 {
+    margin-left: -4.5px;
+  }
+}
+
+/* Current web home, including incognito, uses the compact greeting layout. The
+   column starts below its 48px header; then come viewport headroom, the
+   greeting's 12px top margin, and a 24px gap before the composer. Keep this in
+   the eager stylesheet so loading the composer chunk cannot move the home.
+   Js:4353-4416; measured at 1440x900 (composer y419.492) and 1440x700
+   (y327.492). Its rem values use a 16px root, while Claudex uses 14px, so
+   retain their actual px sizes. */
+@media (min-width: 640px) {
+  .app.web .chat-main .chat-home {
+    /* Between sm and md: pane sides 8px, column sides 12px and composer
+       sides 8px. The 640px card wrapper retains those composer insets.
+       Notice min-height (10vh - 24px) plus the 24px column gap is 10vh;
+       the greeting's inner wrapper adds 16px before its 12px top margin.
+       Current live 640/767x844 frame y214.148/215.680. */
+    width: min(624px, calc(100% - 56px));
+    padding-top: calc(var(--titlebar-height) + 10vh + 16px);
+  }
+  .app.web .chat-main .chat-home > h1 {
+    font-size: clamp(24px, 18.4px + 1vw, 32px);
+    line-height: 1.2;
+    font-weight: 360;
+    letter-spacing: normal;
+    white-space: normal;
+    text-wrap: balance;
+    margin: 12px 0 24px;
+    padding-inline-end: calc((0.72em + 0.45em) / 2);
+  }
+  :root:not([data-theme="light"]) .app.web .chat-main .chat-home > h1 {
+    font-variation-settings: "wght" 320;
+  }
+  @supports (height: 1cap) {
+    .app.web .chat-main .chat-home > h1 {
+      padding-inline-end: calc((1cap + 0.45em) / 2);
+    }
+  }
+}
+@media (min-width: 768px) {
+  .app.web .chat-main .chat-home {
+    /* At md the column sides become 56px and the pane keeps its 8px
+       sides; the composer wrapper drops its own horizontal padding. */
+    width: min(640px, calc(100% - 128px));
+    padding-top: calc(var(--titlebar-height) + max(28vh + 9.1px, 192px));
+  }
+}
+@media (min-width: 768px) and (min-height: 900px) {
+  .app.web .chat-main .chat-home {
+    padding-top: calc(var(--titlebar-height) + 32vh + 9.1px);
+  }
+}
+
+/* Composer text on the home view (dark theme). */
+:root:not([data-theme="light"])
+  .chat-home
+  .composer-input-row
+  textarea::placeholder {
+  color: #8d8e8c;
+}
+:root:not([data-theme="light"])
+  .chat-home
+  .composer-left
+  > .popover-anchor
+  > .icon-button {
+  color: #f4f5f3;
+}
+
+/* Model + effort pill shared by the Chat/Cowork home and conversation composers. */
+.chat-home .composer-wrap:not(.code-composer) .composer-chin,
+.chat-home
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  :is(.model-effort-pill, .task-permission-trigger) {
+  line-height: 19px;
+}
+/* The pill's padding is cancelled on its anchor, so the text stays put and the model menu's right edge
+   (right:0 on the anchor) lines up with the pill's right edge as in model-menu-001. */
+.model-effort-anchor {
+  margin: 0 -8px;
+}
+.model-effort-pill {
+  gap: 7px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+}
+.model-effort-pill > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.model-effort-pill .model-button-effort {
+  flex-shrink: 0;
+}
+/* The warning glyph 4px after "Max", in the menu badge's amber. */
+.model-button-warning {
+  margin: 0 0 -1px 4px;
+  color: #d69c44;
+}
+:root:not([data-theme="light"]) .model-effort-pill .model-button-name {
+  color: #c7c8c6;
+}
+:root:not([data-theme="light"]) .model-effort-pill .model-button-effort {
+  color: #8e8d8c;
+}
+/* Hover shows the same rounded fill as the open menu (claude.ai). */
+:root:not([data-theme="light"]) .model-effort-pill:hover,
+:root:not([data-theme="light"]) .model-effort-pill[aria-expanded="true"] {
+  /* The original's ghost hover, white 7.5%. */
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .model-effort-pill .model-button-name {
+  color: var(--text);
+}
+:root[data-theme="light"] .model-effort-pill .model-button-effort {
+  color: var(--text-muted);
+}
+:root[data-theme="light"] .model-effort-pill:hover,
+:root[data-theme="light"] .model-effort-pill[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+
+/* Cowork options row text (claude-cowork-home-main-001: 197 / 144). The Ideas text moved with the ideas
+   to src/cowork/cowork-ideas.css. */
+:root:not([data-theme="light"]) .cowork-options button {
+  color: #c7c7c6;
+}
+:root:not([data-theme="light"]) .cowork-options button:hover {
+  color: #f0f0ee;
+}
+
+/* Switching to Cowork: the options row and Ideas slide down into place. Measured from
+   chat-home-mode-reference-001 frames 780-791 (14.063-14.295s): Ideas start 12.5px high, the options
+   row 2.5px high and at ~75% brightness, settling along an ease-out-quint curve within ~360ms. */
+@keyframes cowork-options-enter {
+  from {
+    transform: translateY(-2.5px);
+    opacity: 0.75;
+  }
+}
+/* Only Cowork's row slides in; the Chat home's project picker sits in the same place without it. */
+.chat-home .cowork-options[data-variant="cowork"] {
+  animation: cowork-options-enter 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-home .cowork-options {
+    animation: none;
+  }
+}
+:root:not([data-theme="light"]) .incognito-button {
+  color: #f6f6f5;
+}
+
+.cowork-voice-controls:not(.code-voice-controls) .dictation-button svg {
+  width: 18px;
+  height: 18px;
+}
+/* Home toolbar spacing: the Cowork microphone segment takes the place of Chat's
+   voice segment. The model is no longer beside it: it sits in the row under the
+   frame. */
+.chat-home .cowork-voice-controls {
+  margin-right: -8px;
+}
+/* The ⌄ sits 17.5px after the microphone's centre, 2.5px nearer than the 15px
+   segment alone puts it. */
+.chat-home
+  .cowork-voice-controls:not(.code-voice-controls)
+  .cowork-voice-options {
+  margin-left: -2.5px;
+  margin-right: 2.5px;
+}
+.incognito-button {
+  right: 15px;
+  top: 15px;
+}
+
+/* Add button in the home composer: Claude draws its hover/open face as a 31.5 ×
+   30px rounded square centered on the plus; while the menu is open it is
+   #313131 with a soft drop shadow. */
+.chat-home .composer-left > .popover-anchor > .icon-button {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+.chat-home .composer-left > .popover-anchor > .icon-button:hover:not(:disabled),
+.chat-home .composer-left > .popover-anchor > .icon-button.active {
+  background: transparent;
+}
+.chat-home .composer-left > .popover-anchor > .icon-button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: 31.5px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  pointer-events: none;
+  /* The face is the original's button fill layer: colour and shadow follow the
+     pointer in 60ms. */
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+/* Hover is not captured; the original's ghost fill (white 7.5% / ink 5%),
+   which is also what the open face reads (#313131 on the frame). */
+.chat-home
+  .composer-left
+  > .popover-anchor
+  > .icon-button:hover:not(:disabled)::before {
+  background: var(--fill-ghost-hover);
+}
+.chat-home .composer-left > .popover-anchor > .icon-button.active::before {
+  background: #313131;
+  box-shadow:
+    0 1px 4px #0000004d,
+    0 0 0 0.5px #0000002e;
+}
+:root[data-theme="light"]
+  .chat-home
+  .composer-left
+  > .popover-anchor
+  > .icon-button.active::before {
+  background: var(--fill-ghost-hover);
+  box-shadow: 0 1px 4px #0000001f;
+}
+
+/* The conversation-only 4px content offset for a hidden sidebar does not apply
+   to the empty home: Claude's collapsed Chat home composer spans 711-1991
+   device px, exactly like Cowork. */
+.sidebar-hidden.mode-chat .chat-layout:has(> .chat-main.empty-chat) {
+  padding-left: 0;
+}
+/* An unavailable microphone: greyed, its tooltip says why. */
+.mic-button.dictation-button.unavailable {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* A greeting that changes while the home is open fades in over 350ms. */
+.chat-home > h1.greeting-fade {
+  animation: greeting-fade-in 350ms ease-in-out;
+}
+@keyframes greeting-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-home > h1.greeting-fade {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .chat-home > h1.greeting-fade {
+  animation: none;
+}
+
+/* The greeting's mark sits on the text like the live claude.ai one, so its
+   middle is half a capital above the baseline whatever the font, size or
+   script, not the middle of the serif's tall line box. */
+:root .chat-home > h1 {
+  display: block;
+  text-align: center;
+}
+:root .chat-home > h1 > svg.star.star {
+  display: inline-block;
+  vertical-align: baseline;
+  width: 0.72em;
+  height: 0.72em;
+  margin-inline-end: 0.45em;
+  overflow: visible;
+  transform: scale(1.4);
+}
+@supports (height: 1cap) {
+  :root .chat-home > h1 > svg.star.star {
+    width: 1cap;
+    height: 1cap;
+  }
+}
+
+/* The home's permission button keeps only its glyph while the composer is
+   narrower than 480px. A conversation's composer keeps its word. */
+.chat-home > .composer-wrap:not(.code-composer) {
+  container: home-composer / inline-size;
+}
+@container home-composer (max-width: 479.98px) {
+  .composer-chin .task-permission-trigger {
+    width: 24px;
+    padding: 0;
+    justify-content: center;
+  }
+  .composer-chin .task-permission-trigger > .task-permission-label {
+    display: none;
+  }
+  .composer-chin .task-permission-trigger > .task-permission-mobile-icon {
+    display: inline-block;
+  }
+}

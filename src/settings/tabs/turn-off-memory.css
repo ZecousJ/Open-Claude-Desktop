@@ -1,0 +1,118 @@
+/*
+ * Turn off memory: two radio options, each a label over its explanation, in one
+ * rounded surface-0 panel with 16px of padding and 8px between the options; an
+ * option is a plain row, with no edge of its own. A keyboard focus ring goes
+ * round the row and a disabled one dims to 40% and no longer reacts to the
+ * pointer.
+ */
+.turn-off-memory {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #0b0b0b;
+}
+:root[data-theme="light"] .turn-off-memory {
+  background: #f9f9f7;
+}
+.turn-off-memory > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.turn-off-memory > label:has(input:focus-visible) {
+  outline: 1px solid var(--focus-accent);
+  box-shadow: var(--focus-halo);
+}
+.turn-off-memory > label.disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+/* The radio dot: the checkbox's 18px box (src/ui/checkbox.css) as a circle,
+   an 8px white dot on the accent fill when chosen, the accent's hover fill
+   under the pointer and a stronger edge when clear (the original's radio
+   indicator). */
+.turn-off-memory input[type="radio"] {
+  appearance: none;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  padding: 0;
+  border: 1px solid #4d4d4d;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.turn-off-memory input[type="radio"]::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+}
+.turn-off-memory input[type="radio"]:checked {
+  border-color: #2a78d6;
+  background: #2a78d6;
+}
+.turn-off-memory input[type="radio"]:checked::after {
+  opacity: 1;
+}
+.turn-off-memory
+  > label:not(.disabled):hover
+  input[type="radio"]:not(:checked) {
+  border-color: rgb(255 255 255 / 40%);
+}
+.turn-off-memory > label:not(.disabled):hover input[type="radio"]:checked {
+  border-color: #3987e5;
+  background: #3987e5;
+}
+.turn-off-memory input[type="radio"]:focus-visible {
+  outline: none;
+}
+.turn-off-memory input[type="radio"]:disabled {
+  cursor: default;
+}
+:root[data-theme="light"] .turn-off-memory input[type="radio"] {
+  border-color: #cfcfcf;
+}
+:root[data-theme="light"] .turn-off-memory input[type="radio"]:checked {
+  border-color: #2a78d6;
+}
+:root[data-theme="light"]
+  .turn-off-memory
+  > label:not(.disabled):hover
+  input[type="radio"]:not(:checked) {
+  border-color: rgb(11 11 11 / 40%);
+}
+:root[data-theme="light"]
+  .turn-off-memory
+  > label:not(.disabled):hover
+  input[type="radio"]:checked {
+  border-color: #3987e5;
+}
+.turn-off-memory span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.turn-off-memory strong {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.turn-off-memory small {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 18px;
+}

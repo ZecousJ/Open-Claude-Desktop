@@ -1,0 +1,1740 @@
+/* Settings modal, on desktop and phone widths. */
+:root {
+  --settings-panel: #1a1a19;
+  --settings-rail: #151515;
+  --settings-primary: #f0efec;
+  --settings-secondary: #c3c2b7;
+  --settings-muted: #898781;
+  --settings-alpha-1: rgb(255 255 255 / 5%);
+  --settings-alpha-2: rgb(255 255 255 / 10%);
+  --settings-alpha-3: rgb(255 255 255 / 20%);
+  --settings-ghost-hover: rgb(255 255 255 / 7.5%);
+  --settings-ghost-selected: rgb(255 255 255 / 15%);
+  --settings-field-fill: var(--settings-alpha-1);
+  --settings-page-bg: #151515;
+  --settings-field-focus:
+    inset 0 0 0 1px var(--settings-page-bg), 0 0 0 1px var(--focus-accent),
+    0 0 6px 1px var(--focus-glow);
+  --settings-popup: #20201f;
+  --settings-popup-shadow:
+    inset 0 0 0 1px var(--settings-alpha-2), 0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+}
+:root[data-theme="light"] {
+  --settings-panel: #fff;
+  --settings-rail: #fcfcfb;
+  --settings-primary: #0b0b0b;
+  --settings-secondary: #52514e;
+  --settings-alpha-1: rgb(11 11 11 / 5%);
+  --settings-alpha-2: rgb(11 11 11 / 10%);
+  --settings-alpha-3: rgb(11 11 11 / 20%);
+  /* The switch track a step up in light: alpha-3, alpha-4 on hover. */
+  --settings-switch-track: rgb(11 11 11 / 20%);
+  --settings-switch-hover: rgb(11 11 11 / 35%);
+  --settings-ghost-hover: rgb(11 11 11 / 5%);
+  --settings-ghost-selected: rgb(11 11 11 / 10%);
+  /* O16 c6a992d55:67007, CDS fill-field in light mode. */
+  --settings-field-fill: rgb(255 255 255 / 50%);
+  --settings-page-bg: #fcfcfb;
+  --settings-popup: #fff;
+  --settings-popup-shadow:
+    0 0 0 1px var(--settings-alpha-2), 0 8px 24px rgb(0 0 0 / 12%),
+    0 2px 6px rgb(0 0 0 / 8%);
+}
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  /* The dialog backdrop and motion of .overlay: 50% black in dark, 40% in
+     light, no blur, fading in and out over 200ms with the frame. */
+  background: #00000080;
+  animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+:root[data-theme="light"] .settings-overlay {
+  background: #0006;
+}
+.settings-overlay[data-state="closed"] {
+  pointer-events: none;
+  animation: scrim-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+.settings-overlay[data-state="closed"] > .settings-dialog {
+  animation: dialog-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+.settings-overlay[data-nested] {
+  background: transparent;
+  animation: none;
+}
+.settings-overlay[data-nested-open] > .settings-dialog {
+  filter: blur(2px) brightness(var(--dialog-covered-dim, 0.5));
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-overlay,
+  .settings-overlay > .settings-dialog {
+    animation: none;
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .settings-overlay,
+:root[data-motion="reduced"] .settings-overlay > .settings-dialog {
+  animation: none;
+  transition: none;
+}
+.settings-dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: 192px minmax(0, 1fr);
+  box-sizing: border-box;
+  width: min(1024px, 100%);
+  height: min(800px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--settings-alpha-1);
+  border-radius: 12px;
+  background: var(--settings-panel);
+  box-shadow: 0 16px 70px #0005;
+  color: var(--settings-primary);
+  font-size: 14px;
+  line-height: 20px;
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+  transition: filter var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+/* Focused on open, with no ring. */
+.settings-dialog:focus {
+  outline: none;
+}
+/* Keyboard focus: a 1px blue ring on the control's own edge. */
+.settings-dialog button:focus-visible,
+.settings-dialog a:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 0;
+}
+/* The Memory page's title carries 4px above it, so its rows start 4px lower
+   than other pages'. */
+.settings-section > h2[data-setting="Memory"] {
+  padding-top: 4px;
+}
+/* A description with a second line (Artifacts while code execution holds
+   it on): the lines stack 8px apart (the original's flex-col gap-xs). */
+.settings-row-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* The title and tab row of a narrow window only. */
+.settings-narrow-title {
+  display: none;
+}
+/* Holds the page list and, in a narrow window, its arrows; wide, the list
+   stays the frame's first column. */
+.settings-nav-wrap {
+  display: contents;
+}
+
+/* Page list: search at 13, groups of 32px rows on a 33px pitch. */
+.settings-nav {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  border-right: 1px solid var(--settings-alpha-2);
+  background: var(--settings-rail);
+}
+.settings-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--settings-alpha-1);
+  box-shadow: inset 0 0 0 1px var(--settings-alpha-2);
+  color: var(--settings-muted);
+}
+.settings-search > svg {
+  flex: 0 0 auto;
+}
+/* Focused: the field's own edge turns blue. */
+:root .settings-search:focus-within {
+  box-shadow: inset 0 0 0 1px var(--focus);
+}
+/* 14px placeholder 40px from the field's edge after a 20px magnifier. */
+.settings-search > input {
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  color: var(--settings-primary);
+}
+.settings-search > input::placeholder {
+  color: var(--settings-muted);
+}
+/* The focused search field takes the blue rim. */
+.settings-search:hover:not(:focus-within) {
+  box-shadow: inset 0 0 0 1px var(--settings-alpha-3);
+}
+.settings-nav-group {
+  display: flex;
+  flex-direction: column;
+}
+.settings-nav-group > button + button {
+  margin-top: 1px;
+}
+/* 24px above the 17px group label, then 12px before its first row. */
+.settings-nav-label {
+  display: block;
+  padding: 24px 8px 12px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--settings-muted);
+}
+.settings-nav-group > button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--settings-secondary);
+  /* The original's page rows carry no transition: the fill and the ink change
+     at once. */
+  transition: none;
+}
+.settings-nav-group > button > svg,
+.settings-nav-group > button > [data-cds="Icon"] {
+  flex: 0 0 auto;
+  color: var(--settings-secondary);
+}
+/* Hover: the ghost fill and the ink steps from secondary to primary, the open
+   page already reads primary. */
+.settings-nav-group > button:hover {
+  background: var(--settings-ghost-hover);
+}
+.settings-nav-group > button:not([aria-current="page"]):hover {
+  color: var(--settings-primary);
+}
+/* The open page reads medium weight. */
+.settings-nav-group > button[aria-current="page"] {
+  background: var(--settings-ghost-selected);
+  font-weight: 500;
+  color: var(--settings-primary);
+}
+
+/* Live comfortable density: px-xl=24, pb-lg=16, pt-2=8. The content
+   begins under a 52px close-button strip at 1440×900. */
+.settings-page {
+  position: relative;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: 52px;
+  padding: 8px 24px 16px;
+  scrollbar-gutter: stable;
+  /* Each page fades in as it opens (keyed by tab): claude.ai's
+     cvc-fade-in-flat at --cds-dur-base / --cds-ease-out (page-fade.ts). */
+  animation: settings-page-in 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+@keyframes settings-page-in {
+  from {
+    opacity: 0;
+  }
+}
+:root[data-motion="reduced"] .settings-page {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-page {
+    animation: none;
+  }
+}
+.settings-page,
+.settings-nav {
+  scrollbar-width: thin;
+}
+/* Close: centred in the 56px top row, 12px in from the frame's inner edge. */
+.settings-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--settings-primary);
+}
+.settings-close:hover {
+  background: var(--settings-ghost-hover);
+}
+
+/* Live General: mb-xl=40 and heading mb-md=16. */
+.settings-section + .settings-section {
+  margin-top: 40px;
+}
+/* Cowork's single-row blocks sit 96px apart in R-1384/R-1390 (68px rows). */
+.settings-section + .settings-section.tight-above {
+  margin-top: 28px;
+}
+/* Require trusted devices is a row of the Account group, not a block of its
+   own. */
+.settings-section + .settings-section.joins-above {
+  margin-top: 0;
+}
+/* text-heading-semibold text-primary at comfortable density. */
+.settings-section > :is(h2, h3) {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+  color: var(--settings-primary);
+}
+/* Page introduction under a section title. */
+.settings-section-note {
+  margin: -4px 0 13px;
+  color: var(--settings-secondary);
+}
+/* A section's own description, right under its title. 13px: the same string is
+   0.928 as wide as at 14px in R-1368 (591 vs 637px), R-1384 and R-1400. */
+.settings-section-note.tight {
+  margin-top: -14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.settings-section-note > p {
+  margin: 0;
+}
+/* A row: gap-lg=28px, py-md=12px; dividers use --cds-alpha-1.
+   (settings-group-dividers). */
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  box-sizing: border-box;
+  padding: 12px 0;
+}
+.settings-row + .settings-row {
+  border-top: 1px solid var(--settings-alpha-1);
+}
+/* A row that opens a page. */
+.settings-link-row {
+  min-height: 44px;
+  padding: 0;
+}
+.settings-link-row > button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0;
+  text-align: left;
+}
+.settings-link-row > button > svg {
+  flex: 0 0 auto;
+  margin-right: 2px;
+  color: var(--settings-muted);
+}
+/* The first row centred 48px under the introduction's last line, the next title
+   55px under the last row's centre. */
+.settings-section-note + .settings-link-row {
+  margin-top: 16px;
+}
+.settings-section:has(> .settings-link-row:last-child) + .settings-section {
+  margin-top: 23px;
+}
+.settings-link-row > button[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.4;
+}
+.settings-row-text {
+  flex: 1;
+  min-width: 0;
+}
+/* text-body and text-muted: 14px / 20px, gap-1=4px. */
+.settings-row-label {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--settings-primary);
+}
+.settings-row-text > p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--settings-muted);
+}
+.settings-row-control {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Telemetry boolean row and conditional warning. */
+.nonessential-services-row {
+  --nonessential-switch-track: rgb(255 255 255 / 10%);
+  --nonessential-switch-hover: rgb(255 255 255 / 20%);
+  --nonessential-switch-shadow:
+    0 1px 2px 0 rgb(11 11 11 / 6%), 0 2px 8px 0 #0000003d;
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-radius: 6px;
+}
+.nonessential-services-blocked {
+  margin: 0 -12px;
+  padding-inline: 12px;
+  background: color-mix(in oklab, #c6613f 8%, transparent);
+}
+.nonessential-services-text {
+  flex: 1;
+  min-width: 0;
+}
+.nonessential-services-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text);
+}
+:root[data-theme="light"] .nonessential-services-label {
+  color: #0b0b0b;
+}
+.nonessential-services-text > p {
+  margin: 2px 0 0;
+  padding-inline-end: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #898781;
+}
+.nonessential-services-row > .settings-toggle {
+  align-self: center;
+  flex-shrink: 0;
+}
+.nonessential-services-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #c6613f;
+}
+.nonessential-services-warning-icon {
+  display: flex;
+  height: 1lh;
+  align-items: center;
+  flex-shrink: 0;
+}
+/* CDS Switch; resolved CDS switch/fill/shadow tokens. */
+:root[data-theme="light"] .nonessential-services-row {
+  --nonessential-switch-track: rgb(11 11 11 / 20%);
+  --nonessential-switch-hover: rgb(11 11 11 / 35%);
+  --nonessential-switch-shadow:
+    0 1px 2px 0 rgb(11 11 11 / 6%), 0 2px 8px 0 rgb(11 11 11 / 8%);
+}
+.settings-section .nonessential-services-row > button.settings-toggle {
+  background: var(--nonessential-switch-track);
+}
+.settings-section
+  .nonessential-services-row
+  > button.settings-toggle:hover:not(:disabled) {
+  background: var(--nonessential-switch-hover);
+}
+.settings-section
+  .nonessential-services-row
+  > button.settings-toggle[aria-checked="true"] {
+  background: #2a78d6;
+}
+.settings-section
+  .nonessential-services-row
+  > button.settings-toggle[aria-checked="true"]:hover:not(:disabled) {
+  background: #3987e5;
+}
+.nonessential-services-row > .settings-toggle > span {
+  box-shadow: var(--nonessential-switch-shadow);
+}
+/* 5px more below the Instructions field than below a row. */
+.settings-row-stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding-bottom: 17px;
+}
+.settings-value {
+  color: var(--settings-primary);
+}
+
+/* Switch: 36×20 track, 16px knob. The track changes colour at once: the
+   original's switch transitions only the knob. */
+.settings-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  padding: 0;
+  border-radius: 10px;
+  background: var(--settings-switch-track, var(--settings-alpha-2));
+  /* No track transition: the original's switch changes its track at once and
+     only the knob moves, over 120ms. */
+  transition: none;
+}
+.settings-toggle > span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--motion-snap) var(--ease-overshoot);
+}
+.settings-toggle[aria-checked="true"] {
+  background: #2a78d6;
+}
+/* Hover: the track steps up one level (the original's alpha-2 to alpha-3 in
+   dark, alpha-3 to alpha-4 in light), and an on switch takes the accent's
+   hover fill, 15 lighter per channel as #2a78d6 to #3987e5 is (desktop
+   bundle 2.31226.1). */
+.settings-toggle:hover:not(:disabled) {
+  background: var(--settings-switch-hover, var(--settings-alpha-3));
+}
+.settings-toggle[aria-checked="true"]:hover:not(:disabled) {
+  background: #3987e5;
+}
+.settings-toggle[aria-checked="true"] > span {
+  transform: translateX(16px);
+}
+.settings-toggle:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+/* Holds the tooltip of a switch Claudex cannot back yet. */
+.settings-unavailable {
+  display: inline-flex;
+}
+
+/* Segmented: 32px pill, selected segment raised with a 1px rim. The raised
+   segment is the shared control's sliding thumb (src/ui/SegmentedControl.tsx,
+   segmented-control.css). */
+.settings-segmented {
+  --segmented-thumb: var(--settings-alpha-2);
+  --segmented-thumb-ring: var(--settings-alpha-2);
+  --segmented-radius: 7px;
+  --segmented-inset: 1px;
+  display: flex;
+  gap: 0;
+  padding: 1px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--settings-alpha-1);
+}
+.settings-segmented > button {
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--settings-secondary);
+  /* Only the focus ring eases (60ms); the ink changes at once on hover and
+     selection. */
+  transition: box-shadow var(--motion-fast) var(--ease-standard);
+}
+.settings-segmented > button.icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  padding: 0;
+}
+.settings-segmented > button:hover:not(:disabled) {
+  color: var(--settings-primary);
+}
+.settings-segmented > button[aria-checked="true"] {
+  color: var(--settings-primary);
+}
+
+/* Dropdown: value and chevron, a 32px hover field; list 6px below. */
+/* The open "Normal" trigger is 176 image px wide, its chevron glyph ending 13px
+   from the right edge. */
+.settings-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px 0 8px;
+  border-radius: 8px;
+  color: var(--settings-primary);
+  /* The original's choice field eases every property over 60ms on the standard
+     curve. */
+  transition: var(--field-transition);
+}
+.settings-dropdown > svg {
+  color: var(--settings-muted);
+  /* The chevron warms from muted to secondary with the field's hover, over
+     the default 150ms (the original's group-hover colour). */
+  transition: color 150ms var(--ease-standard);
+}
+.settings-dropdown:hover:not(:disabled) > svg,
+.settings-select:hover:not(:disabled) > svg {
+  color: var(--settings-secondary);
+}
+.settings-dropdown:hover,
+.settings-dropdown.open {
+  background: var(--settings-ghost-hover);
+}
+/* O16 Combobox popup: surface-3, shadow-panel, 4px gutter, 8+4px radius.
+   Its ring is a shadow, so the four 32px font rows still make a 136px popup. */
+.settings-dropdown-menu {
+  position: fixed;
+  z-index: 120;
+  min-width: 192px;
+  max-height: min(360px, calc(100vh - 16px));
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--settings-popup);
+  box-shadow: var(--settings-popup-shadow);
+  outline: none;
+  /* No open or close motion, as the original's popups. */
+}
+.settings-dropdown-menu > [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--settings-primary);
+  cursor: default;
+}
+.settings-dropdown-menu > [role="option"].active {
+  background: var(--settings-ghost-hover);
+}
+/* A choice with a description: the label over a muted footnote that wraps, 2px
+   apart. */
+.settings-dropdown-menu > [role="option"].has-description {
+  height: auto;
+  min-height: 32px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  white-space: normal;
+}
+.settings-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.settings-option-text > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-option-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.settings-option-badge {
+  flex: none;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 17px;
+  font-weight: 500;
+}
+.settings-option-description {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+/* An original choice Claudex cannot offer yet: the menus' disabled look
+   (ui/menu.css, 0.4). */
+.settings-dropdown-menu > [role="option"].unavailable {
+  opacity: 0.4;
+}
+.settings-dropdown-menu > [role="option"].unavailable.active {
+  background: none;
+}
+.settings-dropdown-menu > [role="option"] > svg {
+  flex: 0 0 auto;
+  margin-right: 2px;
+  color: var(--settings-primary);
+}
+/* Voice → Style's preview cell: a 24px cell at the row's end holds the voice
+   mark, shown on the lit row and while playing (text-accent then,
+   text-secondary otherwise), and the chosen voice's check in its place
+   otherwise. */
+.voice-preview-cell {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -4px;
+}
+.voice-preview-cell > svg {
+  grid-area: 1 / 1;
+}
+.voice-preview-cell > .voice-mark {
+  opacity: 0;
+  color: var(--settings-secondary);
+}
+.voice-preview-cell > .check {
+  color: #6da7ec;
+}
+.voice-preview-cell.selected > .voice-mark {
+  color: #6da7ec;
+}
+.voice-preview-cell.lit > .voice-mark,
+.voice-preview-cell.playing > .voice-mark {
+  opacity: 1;
+}
+.voice-preview-cell.lit > .check,
+.voice-preview-cell.playing > .check {
+  opacity: 0;
+}
+.voice-mark rect {
+  transform-box: fill-box;
+  transform-origin: 50%;
+}
+.voice-mark rect.ripple {
+  animation: idle-activity-bar-ripple 0.55s both;
+}
+@keyframes idle-activity-bar-ripple {
+  0% {
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    transform: scaleY(1);
+  }
+  27.273% {
+    transform: scaleY(calc(1 + (var(--ripple-scale) - 1) * 0.966));
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+:root[data-motion="reduced"] .voice-mark rect.ripple {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .voice-mark rect.ripple {
+    animation: none;
+  }
+}
+
+/* Bordered choice field. */
+.settings-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 220px;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 10px 0 8px;
+  border: 1px solid var(--settings-alpha-2);
+  border-radius: 8px;
+  background: var(--settings-field-fill);
+  text-align: left;
+  color: var(--settings-primary);
+  transition: var(--field-transition);
+}
+.settings-select > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-select > svg {
+  flex: 0 0 auto;
+  color: var(--settings-muted);
+  transition: color 150ms var(--ease-standard);
+}
+.settings-select:hover:not(:disabled),
+.settings-select.open {
+  border-color: var(--settings-alpha-3);
+}
+/* A disabled field dims to the original's --cds-opacity-disabled. */
+.settings-select:disabled,
+.settings-dropdown:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+
+/* Fields and buttons. */
+.settings-input,
+.settings-textarea {
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 8px;
+  background: var(--settings-field-fill);
+  /* CDS shadow-field-ring paints inside the field without adding to its inset. */
+  box-shadow: inset 0 0 0 1px var(--settings-alpha-2);
+  font-size: 14px;
+  color: var(--settings-primary);
+}
+/* Text 12.5px from the field's outer edge, the Instructions placeholder 11.5px
+   below the rim. */
+.settings-input {
+  width: 224px;
+  height: 32px;
+  padding: 0 12px;
+}
+.settings-textarea {
+  display: block;
+  width: 100%;
+  min-height: 88px;
+  padding: 8px 12px;
+  line-height: 20px;
+  resize: none;
+}
+.settings-input::placeholder,
+.settings-textarea::placeholder {
+  color: var(--settings-muted);
+}
+.settings-input:focus,
+.settings-textarea:focus {
+  /* O16 c6a992d55:66878–66883/67320–67326: gap, accent ring, glow. */
+  box-shadow: var(--settings-field-focus);
+  outline: none;
+}
+/* Account → Instructions: the text box, a too-long warning (the share
+   dialog's warning ink) and Save changes / Discard while it is changed. */
+.settings-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.settings-instructions-warning {
+  margin: 0;
+  color: #cc9c5e;
+  font-size: 13px;
+  line-height: 18px;
+}
+:root[data-theme="light"] .settings-instructions-warning {
+  color: #8a5a14;
+}
+.settings-instructions-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Hover (not focused, not invalid, not disabled) strengthens the edge, as
+   the select field's does just below; the original's shadow-field-hover is
+   the stronger border. */
+.settings-input:hover:not(:focus):not(:disabled):not([aria-invalid="true"]),
+.settings-textarea:hover:not(:focus):not(:disabled):not([aria-invalid="true"]) {
+  box-shadow: inset 0 0 0 1px var(--settings-alpha-3);
+}
+/* Invalid: the danger fill #d03b3b as the edge, with the focus glow in the
+   danger colour when focused. */
+.settings-input[aria-invalid="true"],
+.settings-textarea[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 1px var(--focus-danger);
+}
+.settings-input[aria-invalid="true"]:focus,
+.settings-textarea[aria-invalid="true"]:focus {
+  box-shadow:
+    inset 0 0 0 1px var(--settings-page-bg),
+    0 0 0 1px var(--focus-danger),
+    0 0 6px 1px var(--focus-danger-glow);
+}
+.settings-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 6px;
+  background: #31302e;
+  white-space: nowrap;
+  color: var(--text);
+}
+.settings-button:hover:not(:disabled) {
+  background: #3a3937;
+}
+/* Every button variant squishes while pressed, like the original's button
+   (.u-press, styles/05-utilities.css). */
+.settings-button:not(:disabled, [aria-disabled="true"]):active,
+.settings-close:not(:disabled, [aria-disabled="true"]):active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+/* size="regular": 32 tall, 12px padding, radius 8. */
+.settings-button.regular {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+}
+.settings-button.primary {
+  background: #fff;
+  color: #141414;
+}
+/* White on red: the global `.danger` (red text, !important) would leave pink
+   text on the red fill, and red on red in the light theme. The fill is the
+   original's red-450 and lightens to red-400 under the pointer, the same in
+   both themes; dark had a derived #b3413b / #c24a43, which no capture backs. */
+.settings-button.danger {
+  background: #d03b3b;
+  color: #fff !important;
+}
+.settings-button.danger:hover:not(:disabled) {
+  background: #e34948;
+}
+.settings-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.settings-button.primary:hover:not(:disabled) {
+  background: #e8e8e6;
+}
+.settings-avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #31302e;
+  color: var(--text);
+}
+/* Avatar button: hovered or focused, the picture fades to 40%, blurs 3px and
+   grows to 1.15, and a shuffle icon shows over it. */
+.settings-avatar-button {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.settings-avatar-button .settings-avatar {
+  transition:
+    opacity var(--motion-snap) var(--ease-out),
+    filter var(--motion-snap) var(--ease-out),
+    transform var(--motion-snap) var(--ease-out);
+}
+.settings-avatar-button > svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  color: var(--text-secondary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-snap) var(--ease-out);
+}
+.settings-avatar-group:hover .settings-avatar-button .settings-avatar,
+.settings-avatar-group:has(:focus-visible)
+  .settings-avatar-button
+  .settings-avatar,
+.settings-avatar-button:focus-visible .settings-avatar {
+  opacity: 0.4;
+  filter: blur(3px);
+  transform: scale(1.15);
+}
+.settings-avatar-group:hover .settings-avatar-button > svg,
+.settings-avatar-group:has(:focus-visible) .settings-avatar-button > svg,
+.settings-avatar-button:focus-visible > svg {
+  opacity: 1;
+}
+/* Avatar controls. CDS surface-popover, alpha-2, fill-ghost-hover and dur-fast. */
+.settings-avatar-group {
+  position: relative;
+  width: fit-content;
+  --avatar-popover: #20201f;
+  --avatar-ring: #ffffff1a;
+  --avatar-hover: #ffffff13;
+}
+:root[data-theme="light"] .settings-avatar-group {
+  --avatar-popover: #fff;
+  --avatar-ring: #0b0b0b1a;
+  --avatar-hover: #0b0b0b0d;
+}
+.settings-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.settings-avatar-group .settings-avatar,
+.settings-avatar-group .settings-avatar-button > svg {
+  transition-duration: 60ms;
+}
+.settings-avatar-clear {
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-start: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--avatar-popover);
+  box-shadow: 0 0 0 1px var(--avatar-ring);
+  opacity: 0;
+  transition:
+    opacity 60ms,
+    background-color 60ms;
+}
+.settings-avatar-clear:hover {
+  background: var(--avatar-hover);
+}
+.settings-avatar-group:hover .settings-avatar-clear,
+.settings-avatar-group:has(:focus-visible) .settings-avatar-clear {
+  opacity: 1;
+}
+.settings-avatar-group.photo-enabled .settings-avatar {
+  filter: none;
+  transform: none;
+}
+.settings-avatar-menu {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 4px);
+  z-index: 1;
+}
+.settings-delete-managed {
+  max-width: 280px;
+  text-align: end;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.settings-row-text p a {
+  color: inherit;
+}
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.settings-code-editor {
+  min-height: 320px;
+  font:
+    13px/20px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+
+/* Pages with a heading and centred empty state (Extensions, MCP editor). */
+.settings-intro-heading > h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.settings-intro-heading > p {
+  margin: 0 0 20px;
+  color: var(--settings-secondary);
+}
+.settings-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-top: 48px;
+  color: var(--settings-secondary);
+}
+.settings-empty > p {
+  margin: 0;
+}
+.settings-empty > small {
+  font-size: 14px;
+  color: var(--settings-muted);
+}
+
+/* List pages (Skills, Connectors, Plugins): 20px side padding, larger title. */
+.settings-page:has(.settings-list-page) {
+  padding-inline: 20px;
+}
+.settings-page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  margin: -1px 44px 16px 0;
+}
+.settings-page-header > h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 580;
+  line-height: 28px;
+  letter-spacing: 0;
+}
+.settings-page-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 256px;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--settings-alpha-2);
+  border-radius: 8px;
+  background: var(--settings-alpha-1);
+  color: var(--settings-muted);
+}
+.settings-page-search > input {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--settings-primary);
+}
+/* "Add your first …": a 16px card on the 5% fill, radius 12; a 15/20 title at
+   580, the sentence 8px under it in the secondary ink, and a white 32px button
+   16px lower. */
+.settings-callout {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--settings-alpha-1);
+}
+.settings-callout > strong,
+.settings-callout > h3 {
+  display: block;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.settings-callout > p {
+  margin: 8px 0 0;
+  color: var(--settings-secondary);
+  line-height: 20px;
+}
+.settings-callout > .settings-button {
+  margin-top: 16px;
+  font-weight: 500;
+}
+/* A list group's title and count: 15/20 at weight 580 in a 28px row, then 8px
+   over an 18px round count, 11/17 weight 500, on the 5% fill. */
+.settings-list-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  margin: 24px 0 8px;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.settings-list-title > span {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  background: var(--settings-alpha-1);
+  color: var(--settings-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 17px;
+}
+.settings-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.settings-list > li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 62px;
+  border-bottom: 1px solid var(--settings-alpha-1);
+}
+.settings-list > li > div {
+  min-width: 0;
+}
+.settings-list strong {
+  font-weight: 500;
+}
+.settings-list p {
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--settings-muted);
+}
+.settings-list p > span {
+  margin-right: 12px;
+}
+.settings-list-tile {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  height: 36px;
+  border: 1px solid var(--settings-alpha-1);
+  border-radius: 8px;
+  background: var(--settings-rail);
+  color: var(--settings-secondary);
+}
+.settings-table {
+  width: calc(100% + 16px);
+  margin-right: -16px;
+  border-collapse: collapse;
+}
+.settings-table th {
+  height: 33px;
+  font-weight: 400;
+  text-align: left;
+  color: var(--settings-secondary);
+}
+.settings-table td {
+  height: 44px;
+  border-top: 1px solid var(--settings-alpha-1);
+}
+.settings-table tr:last-child td {
+  border-bottom: 1px solid var(--settings-alpha-1);
+}
+.settings-table th:nth-child(2),
+.settings-table td:nth-child(2) {
+  width: 160px;
+}
+.settings-table th:nth-child(3),
+.settings-table td:nth-child(3) {
+  width: 148px;
+}
+.settings-badge {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--settings-alpha-2);
+  font-size: 11px;
+  color: var(--settings-secondary);
+}
+
+/* Light theme. */
+/* Light: no inner border; a faint dark ring just outside the 1024×800 frame, so
+   the content starts 1px further up and left. */
+:root[data-theme="light"] .settings-dialog {
+  border: 0;
+  box-shadow:
+    0 0 0 1px #00000017,
+    0 16px 70px #0002;
+}
+:root[data-theme="light"] .settings-section-note {
+  color: var(--settings-secondary);
+}
+:root[data-theme="light"] .settings-select:hover:not(:disabled) > svg {
+  color: var(--settings-secondary);
+}
+:root[data-theme="light"] .settings-toggle {
+  background: var(--settings-alpha-3);
+}
+:root[data-theme="light"] .settings-toggle[aria-checked="true"] {
+  background: #4177d1;
+}
+:root[data-theme="light"] .settings-toggle:hover:not(:disabled) {
+  background: rgb(11 11 11 / 35%);
+}
+:root[data-theme="light"]
+  .settings-toggle[aria-checked="true"]:hover:not(:disabled) {
+  background: #5086e0;
+}
+:root[data-theme="light"] .settings-segmented {
+  --segmented-thumb: #fff;
+}
+:root[data-theme="light"] .voice-preview-cell > .check,
+:root[data-theme="light"] .voice-preview-cell.selected > .voice-mark {
+  color: #184f95;
+}
+/* The search glyph is grey like the placeholder. */
+:root[data-theme="light"] .settings-page-search > input::placeholder {
+  color: var(--settings-muted);
+}
+/* White buttons with a #e6e6e6 rim, #e6e6e6 avatar. */
+:root[data-theme="light"] .settings-button {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e6e6e6;
+  color: #050505;
+}
+:root[data-theme="light"]
+  .settings-button:not(.primary, .danger):hover:not(:disabled) {
+  background: #f5f5f5;
+}
+:root[data-theme="light"] .settings-button.danger {
+  background: #d03c3c;
+  box-shadow: none;
+  color: #fff;
+}
+:root[data-theme="light"] .settings-avatar {
+  background: #e6e6e6;
+  color: #050505;
+}
+:root[data-theme="light"] .settings-button.primary {
+  background: #141414;
+  box-shadow: none;
+  color: #fff;
+}
+/* The light fills' hover, after the fills above (which would otherwise hold the
+   colour): the primary goes to neutral-750, the danger lightens to red-400. */
+:root[data-theme="light"] .settings-button.primary:hover:not(:disabled) {
+  background: #2c2c2a;
+}
+:root[data-theme="light"] .settings-button.danger:hover:not(:disabled) {
+  background: #e34948;
+}
+:root[data-theme="light"] .settings-list > li,
+:root[data-theme="light"] .settings-table td {
+  border-color: #efefef;
+}
+
+/* Account → work type before a choice. */
+.settings-placeholder {
+  color: var(--settings-muted);
+}
+/* Account → Delete account (local accounts; Claudex's own dialog). */
+.account-delete-form > .confirm-body {
+  margin: 0 0 18px;
+}
+.account-delete-form > .button-row {
+  justify-content: flex-end;
+}
+.account-delete-error {
+  margin: -8px 0 0;
+  font-size: 13px;
+}
+
+/*
+ * Current CDS search popup: 280px, aligned with the 12px nav inset,
+ * 4px below its 32px field. Ring and shadow use the same surface-3
+ * contract as the measured choice popup, in both themes.
+ */
+.settings-search-pop {
+  position: absolute;
+  z-index: 3;
+  top: calc(12px + 32px + 4px);
+  left: 12px;
+  box-sizing: border-box;
+  width: 280px;
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--settings-popup);
+  box-shadow: var(--settings-popup-shadow);
+  font-size: 14px;
+  line-height: 20px;
+}
+.settings-search-pop > button {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 6px 4px 5px;
+  border-radius: 8px;
+  text-align: left;
+  color: var(--settings-primary);
+}
+.settings-search-pop > button > svg,
+.settings-search-pop > button > [data-cds="Icon"] {
+  flex: 0 0 auto;
+  color: var(--settings-secondary);
+}
+.settings-search-pop > button > span:not([data-cds="Icon"]) {
+  flex: 1 0 0;
+  min-width: 0;
+  white-space: nowrap;
+}
+/* The label of the matching row sits under the page name. */
+.settings-search-pop > button > small {
+  flex: 0 0 100%;
+  margin: 0 0 0 32px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.settings-search-pop > button.active {
+  background: var(--settings-ghost-hover);
+}
+.settings-search-pop .match {
+  color: var(--link-text);
+}
+/* A row listed under its page, and the "+N more" line: indented past the page
+   icon. */
+.settings-search-pop > button.child,
+.settings-search-pop > button.more {
+  padding-left: 36px;
+}
+.settings-search-pop > button.more {
+  color: var(--settings-muted);
+}
+.settings-search-pop > svg {
+  display: block;
+  margin: 32px auto 0;
+  color: var(--settings-muted);
+}
+.settings-search-pop > p {
+  margin: 14px 0 0;
+  padding-bottom: 29px;
+  text-align: center;
+  color: var(--settings-muted);
+}
+:root[data-theme="light"] .settings-search-pop .match {
+  color: #354c75;
+}
+@media (max-width: 760px) {
+  .settings-search-pop {
+    display: none;
+  }
+}
+.settings-row-found {
+  border-radius: 8px;
+  box-shadow: 0 0 0 6px #232323;
+  background: #232323;
+  transition:
+    background var(--motion-moderate) var(--ease-out),
+    box-shadow var(--motion-moderate) var(--ease-out);
+}
+:root[data-theme="light"] .settings-row-found {
+  box-shadow: 0 0 0 6px #f5f5f5;
+  background: #f5f5f5;
+}
+
+/* Privacy → Shared artifacts → Manage. */
+.settings-shared-list {
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.settings-shared-list > li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  border-top: 1px solid var(--border);
+}
+.settings-shared-list > li:last-child {
+  border-bottom: 1px solid var(--border);
+}
+.settings-shared-list > li > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-shared-list .secondary {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* Narrow windows: a plain #20201f sheet, at most 720 wide, 16px from every
+   window edge, no rim. Its title, page tabs and page scroll as one column with
+   24px padding (p-xl): the 22/28 title (weight 580), Close 32px at 16/16 from
+   the corner, a row of 32px pill tabs 12px under the title (selected: ghost
+   fill, radius 8; others muted), and the page 12px under them. No rail, no
+   search, no divider. */
+@media (max-width: 767.98px) {
+  .settings-dialog,
+  :root[data-surface="web"]:not([data-theme="light"]) .settings-dialog {
+    display: block;
+    width: min(720px, 100%);
+    overflow: hidden auto;
+    padding: 24px;
+    scrollbar-width: thin;
+    border: 0;
+    background: var(--settings-popup);
+    box-shadow: none;
+  }
+  .settings-narrow-title {
+    display: block;
+    margin: -4px 40px 12px 0;
+    padding: 0;
+    background: none;
+    font-size: 22px;
+    font-weight: 580;
+    line-height: 28px;
+  }
+  .settings-close {
+    top: 16px;
+    right: 16px;
+  }
+  .settings-nav {
+    display: flex;
+    gap: 0;
+    overflow: auto hidden;
+    margin: -8px -8px 4px;
+    padding: 8px 0 8px 8px;
+    border-right: 0;
+    border-bottom: 0;
+    background: none;
+    scrollbar-width: none;
+    mask-image: none;
+  }
+  .settings-nav::after {
+    content: "";
+    flex: none;
+    width: 8px;
+  }
+  /* The tab row's arrows (SettingsTabArrows): the row is 8px wider than
+     its 660px of tabs on each side, so its masks sit 8px further in. */
+  .settings-nav-wrap {
+    position: relative;
+    display: block;
+  }
+  .settings-nav {
+    scroll-padding-inline: 40px;
+  }
+  .settings-nav[data-fade="end"] {
+    mask-image: linear-gradient(
+      to right,
+      #000 calc(100% - 60px),
+      transparent calc(100% - 40px)
+    );
+  }
+  .settings-nav[data-fade="start"] {
+    mask-image: linear-gradient(to right, transparent 40px, #000 60px);
+  }
+  .settings-nav[data-fade="both"] {
+    mask-image: linear-gradient(
+      to right,
+      transparent 40px,
+      #000 60px,
+      #000 calc(100% - 60px),
+      transparent calc(100% - 40px)
+    );
+  }
+  .settings-tab-arrow {
+    position: absolute;
+    /* The row's 8px of ring room above the tabs. */
+    top: 8px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    color: var(--settings-primary);
+  }
+  .settings-tab-arrow:hover {
+    background: var(--settings-ghost-hover);
+  }
+  .settings-tab-arrow.start {
+    left: 0;
+  }
+  .settings-tab-arrow.end {
+    right: 0;
+  }
+  .settings-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .settings-nav > .settings-search,
+  .settings-nav-label,
+  .settings-platform-link,
+  .settings-nav-group > button > svg,
+  .settings-nav-group > button > [data-cds="Icon"] {
+    display: none;
+  }
+  .settings-nav-group {
+    display: contents;
+  }
+  .settings-nav-group > button {
+    flex: 0 0 auto;
+    height: 32px;
+    padding: 0 12px;
+    font-weight: 500;
+    color: var(--settings-muted);
+  }
+  .settings-nav-group > button[aria-current="page"] {
+    background: var(--settings-ghost-hover);
+    color: var(--settings-primary);
+  }
+  .settings-nav-group > button + button {
+    margin-top: 0;
+  }
+  .settings-page {
+    overflow: visible;
+    min-height: auto;
+    margin-top: 0;
+    padding: 0;
+    scrollbar-gutter: auto;
+  }
+}
+/* List pages' toolbars and tables have their own narrow layout. General
+   rows keep the measured min-width:0 label and shrink:0 control anatomy. */
+@media (max-width: 639.98px) {
+  /* List pages' header at phone width (claude.ai /customize/connectors at
+     409 wide): the row wraps and its tools sit at the right (8px apart);
+     the search is a 32px icon until it is used, then 256 wide; the view
+     switch keeps its words on one line. */
+  .settings-page-header {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px 8px;
+  }
+  /* The title and the switch on the first line, the tools on the next
+     (an empty full-width item between them; two 4px row gaps make 8). */
+  .settings-page-header::after {
+    content: "";
+    order: 1;
+    flex-basis: 100%;
+  }
+  .settings-page-header > :not(h1, .directory-view-switch) {
+    order: 2;
+  }
+  .settings-page-header > .directory-view-switch {
+    flex: 1 0 auto;
+    margin-left: 8px;
+  }
+  .settings-segmented > button {
+    white-space: nowrap;
+  }
+  /* Tables (Connectors): the 160 and 148px columns would leave the name a
+     few pixels; at phone width they take their content's width. */
+  .settings-table th:nth-child(n + 2),
+  .settings-table td:nth-child(n + 2) {
+    width: auto;
+    padding-left: 12px;
+    white-space: nowrap;
+  }
+}
+
+/* List pages in a narrow window: the page runs 20px from the sheet's edge (the
+   sheet pads 24), its title row is not pinned and has no fill, 12px under the
+   tabs' 4px, and the search is a 32px icon until it is used. */
+@media (max-width: 767.98px) {
+  .settings-page:has(.settings-list-page) {
+    margin-inline: -4px;
+    padding-inline: 0;
+  }
+  .settings-page .desktop-list > .settings-page-header,
+  :root[data-theme="light"]
+    .settings-page
+    .desktop-list
+    > .settings-page-header {
+    position: static;
+    /* 16px of padding, not a margin: a margin would fold into the tab
+       row's 4px below it. */
+    margin: 0;
+    padding: 16px 0;
+    background: none;
+  }
+  .settings-page-search {
+    width: 32px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+    cursor: pointer;
+  }
+  .settings-page-search:not(:focus-within):has(> input:placeholder-shown) {
+    border-color: transparent;
+    background: transparent;
+  }
+  .settings-page-search > input {
+    width: 0;
+  }
+  /* Folded, the glyph is the original's 20px Search in the secondary ink. */
+  .settings-page-search:not(:focus-within):has(> input:placeholder-shown)
+    > :first-child {
+    width: 20px;
+    height: 20px;
+    /* The glyph's inline size is 16px × --cds-rem-scale. */
+    --cds-rem-scale: 1.25;
+    color: var(--settings-secondary);
+  }
+  .settings-page-search:focus-within,
+  .settings-page-search:has(> input:not(:placeholder-shown)) {
+    width: min(256px, 100%);
+    padding: 0 12px;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  .settings-page-search:focus-within > input,
+  .settings-page-search:has(> input:not(:placeholder-shown)) > input {
+    flex: 1;
+    width: auto;
+  }
+}
+
+/* Reduced motion: the toggle's knob jumps (the original's motion-reduce). */
+@media (prefers-reduced-motion: reduce) {
+  .settings-toggle > span {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .settings-toggle > span {
+  transition: none;
+}
+
+/* A Settings page whose data did not load: a footnote line in the secondary ink
+   over Try again, 8px apart, 8px above and below, in the Usage page's muted
+   colours. */
+.settings-load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  color: var(--settings-secondary);
+  font-size: 12px;
+  line-height: 15px;
+}
+.settings-load-error > p {
+  margin: 0;
+}
+/* A row that depends on the one above (the original's indented Row:
+   Strict sandbox mode under Local sandbox). */
+.settings-indented > .settings-row {
+  padding-inline-start: 24px;
+}
+
+/* Current web settings nav: w-53, measured 212px, from the md breakpoint up
+   like the rest of the two-column frame; below 768px the narrow single column
+   above applies (it used to start at 701px, which squeezed the page into the
+   212px column between 701 and 767). */
+@media (min-width: 768px) {
+  :root[data-surface="web"] .settings-dialog {
+    grid-template-columns: 212px minmax(0, 1fr);
+  }
+}
+/* Set up a passkey: the password, then what went wrong under it. */
+.account-passkey-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.account-passkey-form > p {
+  margin: 0;
+}
+.account-passkey-problem {
+  color: var(--danger, #ec7e7e);
+  font-size: 13px;
+  line-height: 17px;
+}

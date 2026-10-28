@@ -1,0 +1,120 @@
+/*
+ * The Quick Entry composer (QuickEntry.tsx). Its window is transparent and
+ * exactly the composer's size; the composer is a 16px-radius card with a soft
+ * top-to-bottom gradient and a 0.5px hairline, the mark in a 56px square and a
+ * 16px field. The card's shadow is the window's own.
+ */
+:root {
+  color-scheme: dark;
+  --quick-top: #403f3ef2;
+  --quick-bottom: #292523;
+  --quick-rim: #fff3;
+  --quick-text: #f5f4ef;
+  --claude-text-500: #a6a39b;
+  --quick-placeholder: var(--claude-text-500);
+  --quick-mark: #d97757;
+  font-family:
+    "anthropic-sans",
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --quick-top: #ffffff;
+    --quick-bottom: #f5f5faf2;
+    --quick-rim: #0003;
+    --quick-text: #141414;
+    --quick-placeholder: color-mix(in oklab, currentColor 50%, transparent);
+  }
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.quick-entry {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  border-radius: 16px;
+  background: linear-gradient(var(--quick-top), var(--quick-bottom));
+  color: var(--quick-text);
+  -webkit-app-region: drag;
+}
+.quick-entry::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 0.5px solid var(--quick-rim);
+  border-radius: 16px;
+  pointer-events: none;
+}
+.quick-entry-mark {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  color: var(--quick-mark);
+}
+.quick-entry-field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.quick-entry-input {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+}
+.quick-entry-field textarea {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 24px;
+  max-height: calc(100vh - 100px);
+  max-height: calc(var(--quick-viewport-height, 100vh) - 100px);
+  margin: 0 22px 0 -8px;
+  padding: 8px;
+  overflow-y: auto;
+  border: 0;
+  outline: none;
+  resize: none;
+  field-sizing: content;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-app-region: no-drag;
+}
+.quick-entry-field textarea::placeholder {
+  color: var(--quick-placeholder);
+}
+.quick-entry .dictation-bar {
+  -webkit-app-region: no-drag;
+}
+.quick-entry .dictation-action {
+  border: 0;
+  padding: 0;
+}
+@media (prefers-color-scheme: light) {
+  .quick-entry {
+    --dictation-secondary: #52514e;
+    --dictation-surface: #f9f9f7;
+    --dictation-hover: #f6f6f4;
+  }
+}

@@ -1,0 +1,516 @@
+/* Project settings: Comfortable density: px-xl 24, py-md 12, gap-lg 28; body
+   14/20. */
+.prj-settings-dialog {
+  --prj-settings-surface: #1a1a19;
+  --prj-settings-primary: #f0efec;
+  --prj-settings-secondary: #c3c2b7;
+  --prj-settings-border: hsl(from #fff h s l / 10%);
+  --prj-settings-danger: #ec7e7e;
+  --prj-settings-surface-1: #151515;
+  --prj-settings-fill-primary: #fff;
+  --prj-settings-on-primary: #0b0b0b;
+  --prj-settings-fill-primary-hover: #e1e0d9;
+  --prj-settings-fill-secondary: hsl(from #fff h s l / 10%);
+}
+.modal.prj-settings-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: calc(100vw - 2rem);
+  max-width: 950px;
+  height: 100dvh;
+  max-height: calc(
+    100dvh - max(2rem, 2 * var(--desktop-titlebar-inset, 0px)) - 2 *
+      max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))
+  );
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--prj-settings-surface);
+  color: var(--prj-settings-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.prj-create-name {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+.prj-create-name > .prj-settings {
+  display: contents;
+}
+.prj-create-name > label {
+  flex: 1;
+  min-width: 0;
+}
+/* The name field's error: a danger footnote with a WarningCircle before it. */
+.prj-field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.375;
+  overflow-wrap: break-word;
+}
+.prj-field-error > [data-icon] {
+  flex: none;
+  margin-top: 1px;
+}
+.prj-create-name .prj-settings-icon-control {
+  margin-bottom: 4px;
+}
+:root[data-theme="light"] .prj-settings-dialog {
+  --prj-settings-surface: #fff;
+  --prj-settings-primary: #0b0b0b;
+  --prj-settings-secondary: #52514e;
+  --prj-settings-border: hsl(from #0b0b0b h s l / 10%);
+  --prj-settings-danger: #8e2626;
+  --prj-settings-surface-1: #fcfcfb;
+  --prj-settings-fill-primary: #0b0b0b;
+  --prj-settings-on-primary: #fff;
+  --prj-settings-fill-primary-hover: #2c2c2a;
+  --prj-settings-fill-secondary: #ffffff1a;
+}
+.modal.prj-settings-dialog > header {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0;
+  padding: 12px 12px 8px;
+  margin: 0;
+}
+.modal.prj-settings-dialog > header h2 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.modal.prj-settings-dialog > header .icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+.modal.prj-settings-dialog h2,
+.prj-settings h3 {
+  margin: 0;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.prj-settings {
+  display: grid;
+  grid-template-columns: 192px minmax(0, 1fr);
+  min-height: 0;
+  flex: 1;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+.prj-settings nav {
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--prj-settings-surface-1);
+  border-inline-end: 1px solid var(--prj-settings-border);
+}
+.prj-settings-nav-title {
+  padding: 12px 8px 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--prj-settings-secondary);
+}
+.prj-settings nav button {
+  text-align: start;
+  padding: 8px;
+  border-radius: 6px;
+}
+.prj-settings nav button[aria-current] {
+  background: var(--prj-settings-border);
+}
+.prj-settings-content {
+  min-width: 0;
+  overflow-y: auto;
+  padding: 52px 24px 16px;
+}
+.prj-settings-content h3 {
+  margin-bottom: 16px;
+}
+.prj-settings-content h4 {
+  margin: 12px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.modal .prj-settings label {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+}
+.prj-settings-name,
+.prj-settings-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-block: 12px;
+}
+.prj-settings-name {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+.prj-settings-name > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--prj-settings-border);
+  border-radius: 8px;
+  min-height: 32px;
+  width: 224px;
+  min-width: 224px;
+}
+.prj-settings-row > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.prj-settings-row .prj-settings-reset {
+  align-self: flex-start;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+}
+.prj-settings-row .settings-select {
+  color: inherit;
+  background: var(--prj-settings-surface);
+}
+.prj-settings-name input {
+  flex: 1;
+  min-width: 0;
+}
+.modal .prj-settings .prj-settings-name input {
+  border: 0;
+}
+.prj-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding-block: 12px;
+}
+.prj-settings-row button,
+.prj-settings footer button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--prj-settings-border);
+  border-radius: 8px;
+  background: var(--prj-settings-fill-secondary);
+}
+.prj-settings-row .prj-settings-delete {
+  color: #fff;
+  background: #d03b3b;
+  border: 0;
+}
+.prj-settings-row .prj-settings-delete:hover {
+  background: #e34948;
+}
+.prj-settings footer .prj-save {
+  background: var(--prj-settings-fill-primary);
+  color: var(--prj-settings-on-primary);
+  border: 0;
+}
+.prj-settings footer .prj-save:hover {
+  background: var(--prj-settings-fill-primary-hover);
+}
+.prj-settings button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.modal .prj-settings input,
+.modal .prj-settings select,
+.modal .prj-settings textarea {
+  box-sizing: border-box;
+  background: var(--prj-settings-surface);
+  color: inherit;
+  border: 1px solid var(--prj-settings-border);
+  border-radius: 8px;
+  font: inherit;
+  padding: 4px 8px;
+}
+.prj-settings-instructions textarea {
+  min-height: 96px;
+  max-height: 320px;
+  resize: vertical;
+}
+.prj-settings footer {
+  grid-column: 2;
+  display: flex;
+  justify-content: flex-end;
+  align-self: end;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid var(--prj-settings-border);
+}
+.prj-settings-icon-control {
+  position: relative;
+}
+.prj-settings-icon-control > button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+.prj-settings-icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  color: var(--prj-icon-color, var(--prj-settings-secondary));
+  background: color-mix(
+    in srgb,
+    var(--prj-icon-color, var(--prj-settings-secondary)) 10%,
+    transparent
+  );
+}
+.prj-settings-icon-picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 288px;
+  padding: 12px;
+  background: var(--prj-settings-surface);
+  border: 1px solid var(--prj-settings-border);
+  border-radius: 8px;
+}
+.prj-settings-icons,
+.prj-settings-colors {
+  display: grid;
+  gap: 4px;
+}
+.prj-settings-icons {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  max-height: 288px;
+  overflow-y: auto;
+}
+.prj-settings-colors {
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  padding-block: 8px;
+  border-block: 1px solid var(--prj-settings-border);
+}
+.prj-settings-icons button,
+.prj-settings-colors button {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 6px;
+}
+.prj-settings-icons button {
+  color: var(--prj-icon-color, var(--prj-settings-secondary));
+}
+.prj-settings-icon-picker[data-color]
+  .prj-settings-icons
+  button[aria-checked="true"] {
+  background: color-mix(in srgb, var(--prj-icon-color) 10%, transparent);
+}
+.prj-settings-icons button[aria-checked="true"],
+.prj-settings-icons button:hover {
+  background: var(--prj-settings-border);
+}
+.prj-settings-icons p {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+.prj-settings-colors span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--prj-icon-color, var(--prj-settings-border));
+}
+.prj-settings-colors span:not([data-color]) {
+  background: var(--prj-settings-border);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--prj-settings-border);
+}
+.prj-settings-colors span:not([data-color])::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  transform: rotate(-45deg);
+}
+.prj-settings-colors button[aria-checked="true"] span {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+}
+.prj-settings-colors button:nth-child(11) {
+  grid-column-start: 2;
+}
+@media (max-width: 767px) {
+  .modal.prj-settings-dialog > header {
+    position: static;
+  }
+  .modal.prj-settings-dialog > header h2 {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+  .prj-settings-nav-title {
+    display: none;
+  }
+  .prj-settings {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .prj-settings nav {
+    grid-row: auto;
+    flex-direction: row;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--prj-settings-border);
+  }
+  .prj-settings-content {
+    padding-top: 16px;
+  }
+  .prj-settings-name,
+  .prj-settings-row:has(.settings-select) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .prj-settings-name > div {
+    width: auto;
+  }
+  .prj-settings footer {
+    grid-column: 1;
+  }
+}
+
+/* Official palette. */
+:root[data-theme="dark"] .prj-settings [data-color="gray"] {
+  --prj-icon-color: #97958d;
+}
+:root[data-theme="dark"] .prj-settings [data-color="gray-deep"] {
+  --prj-icon-color: #898781;
+}
+:root[data-theme="dark"] .prj-settings [data-color="red"] {
+  --prj-icon-color: #e66767;
+}
+:root[data-theme="dark"] .prj-settings [data-color="red-deep"] {
+  --prj-icon-color: #e34948;
+}
+:root[data-theme="dark"] .prj-settings [data-color="orange"] {
+  --prj-icon-color: #eb6834;
+}
+:root[data-theme="dark"] .prj-settings [data-color="orange-deep"] {
+  --prj-icon-color: #d95926;
+}
+:root[data-theme="dark"] .prj-settings [data-color="yellow"] {
+  --prj-icon-color: #c98500;
+}
+:root[data-theme="dark"] .prj-settings [data-color="yellow-deep"] {
+  --prj-icon-color: #b77700;
+}
+:root[data-theme="dark"] .prj-settings [data-color="green"] {
+  --prj-icon-color: #35b231;
+}
+:root[data-theme="dark"] .prj-settings [data-color="green-deep"] {
+  --prj-icon-color: #0ca30c;
+}
+:root[data-theme="dark"] .prj-settings [data-color="aqua"] {
+  --prj-icon-color: #1baf7a;
+}
+:root[data-theme="dark"] .prj-settings [data-color="aqua-deep"] {
+  --prj-icon-color: #199e70;
+}
+:root[data-theme="dark"] .prj-settings [data-color="blue"] {
+  --prj-icon-color: #5598e7;
+}
+:root[data-theme="dark"] .prj-settings [data-color="blue-deep"] {
+  --prj-icon-color: #3987e5;
+}
+:root[data-theme="dark"] .prj-settings [data-color="violet"] {
+  --prj-icon-color: #9085e9;
+}
+:root[data-theme="dark"] .prj-settings [data-color="violet-deep"] {
+  --prj-icon-color: #8173e3;
+}
+:root[data-theme="dark"] .prj-settings [data-color="magenta"] {
+  --prj-icon-color: #e46191;
+}
+:root[data-theme="dark"] .prj-settings [data-color="magenta-deep"] {
+  --prj-icon-color: #d55181;
+}
+:root[data-theme="light"] .prj-settings [data-color="gray"] {
+  --prj-icon-color: #7b7974;
+}
+:root[data-theme="light"] .prj-settings [data-color="gray-deep"] {
+  --prj-icon-color: #52514e;
+}
+:root[data-theme="light"] .prj-settings [data-color="red"] {
+  --prj-icon-color: #d03b3b;
+}
+:root[data-theme="light"] .prj-settings [data-color="red-deep"] {
+  --prj-icon-color: #8e2626;
+}
+:root[data-theme="light"] .prj-settings [data-color="orange"] {
+  --prj-icon-color: #c25124;
+}
+:root[data-theme="light"] .prj-settings [data-color="orange-deep"] {
+  --prj-icon-color: #863311;
+}
+:root[data-theme="light"] .prj-settings [data-color="yellow"] {
+  --prj-icon-color: #a66a00;
+}
+:root[data-theme="light"] .prj-settings [data-color="yellow-deep"] {
+  --prj-icon-color: #734500;
+}
+:root[data-theme="light"] .prj-settings [data-color="green"] {
+  --prj-icon-color: #009300;
+}
+:root[data-theme="light"] .prj-settings [data-color="green-deep"] {
+  --prj-icon-color: #006300;
+}
+:root[data-theme="light"] .prj-settings [data-color="aqua"] {
+  --prj-icon-color: #138e65;
+}
+:root[data-theme="light"] .prj-settings [data-color="aqua-deep"] {
+  --prj-icon-color: #065f49;
+}
+:root[data-theme="light"] .prj-settings [data-color="blue"] {
+  --prj-icon-color: #2a78d6;
+}
+:root[data-theme="light"] .prj-settings [data-color="blue-deep"] {
+  --prj-icon-color: #184f95;
+}
+:root[data-theme="light"] .prj-settings [data-color="violet"] {
+  --prj-icon-color: #7161e0;
+}
+:root[data-theme="light"] .prj-settings [data-color="violet-deep"] {
+  --prj-icon-color: #4a3aa7;
+}
+:root[data-theme="light"] .prj-settings [data-color="magenta"] {
+  --prj-icon-color: #c04873;
+}
+:root[data-theme="light"] .prj-settings [data-color="magenta-deep"] {
+  --prj-icon-color: #862a4c;
+}

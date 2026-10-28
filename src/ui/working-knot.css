@@ -1,0 +1,74 @@
+/* The working mark (WorkingKnot): the knot in the accent, each petal
+   brightening in turn while the knot turns. The pace follows the activity:
+   thinking is slow, reading and searching quicker, writing and running
+   code brisk; waiting on the person holds still, dimmed. */
+.clay-mark {
+  --knot-turn: 6s;
+  --knot-pulse: 1.2s;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  color: var(--clay, #d97757);
+  user-select: none;
+  animation: working-knot-in 0.2s ease-out both;
+}
+.clay-mark[data-kind="think"],
+.clay-mark[data-kind="breathe"] {
+  --knot-turn: 10s;
+  --knot-pulse: 1.6s;
+}
+.clay-mark[data-kind="read"],
+.clay-mark[data-kind="search"],
+.clay-mark[data-kind="tumble"] {
+  --knot-turn: 4s;
+}
+.clay-mark:is([data-kind="code"], [data-kind="write"], [data-kind="compose"]) {
+  --knot-pulse: 0.8s;
+}
+.working-knot {
+  display: block;
+  transform-origin: 50% 50%;
+  animation: working-knot-turn var(--knot-turn) linear infinite;
+}
+.working-knot > path {
+  animation: working-knot-petal var(--knot-pulse) ease-in-out infinite;
+  animation-delay: calc(var(--petal) * var(--knot-pulse) / 6);
+}
+.clay-mark[data-kind="blocked"] {
+  opacity: 0.6;
+}
+.clay-mark[data-kind="blocked"] .working-knot,
+.clay-mark[data-kind="blocked"] .working-knot > path {
+  animation: none;
+}
+@keyframes working-knot-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes working-knot-petal {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes working-knot-in {
+  from {
+    opacity: 0;
+  }
+}
+:root[data-motion="reduced"] .clay-mark,
+:root[data-motion="reduced"] .working-knot,
+:root[data-motion="reduced"] .working-knot > path {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .clay-mark,
+  .working-knot,
+  .working-knot > path {
+    animation: none;
+  }
+}

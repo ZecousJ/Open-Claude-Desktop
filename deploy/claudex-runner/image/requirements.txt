@@ -1,0 +1,60 @@
+# Python packages preinstalled in the claudex-sandbox image (system-wide,
+# /usr/local). The build records the resolved versions in
+# /opt/claudex/python-packages.txt. Users can still `pip install --user`.
+
+# Tools
+uv
+ipython
+ipykernel
+
+# Data analysis and charts
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+plotly
+# Plotly image export; runs the image's Chromium (BROWSER_PATH).
+kaleido
+sympy
+pyarrow
+duckdb
+polars
+
+# Images and fonts
+pillow
+pillow-heif
+rawpy
+cairosvg
+opencv-python-headless
+fonttools
+
+# Word, Excel, PowerPoint
+python-docx
+python-pptx
+openpyxl
+XlsxWriter
+xlrd
+python-calamine
+docxtpl
+
+# PDF and OCR
+pypdf
+pdfplumber
+pypdfium2
+reportlab
+pdf2image
+pytesseract
+ocrmypdf
+
+# Audio
+soundfile
+pydub
+
+# Web and text
+requests
+httpx
+beautifulsoup4
+lxml
+playwright
+markdown

@@ -1,0 +1,18 @@
+{
+  "t": "hello",
+  "v": 1,
+  "version": "0.3.0",
+  "methods": [
+    "snapshot",
+    "send",
+    "interrupt"
+  ],
+  "capacity": {
+    "engines": 1,
+    "users": 8
+  },
+  "labels": {
+    "region": "dc6",
+    "mode": "single"
+  }
+}

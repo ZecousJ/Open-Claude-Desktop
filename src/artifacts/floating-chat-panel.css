@@ -1,0 +1,142 @@
+/* Pop out chat over an expanded Artifact. Measured on
+   R-1047-1048-Pop-out-chat-limit-state-浅色-W1920-全窗.jpg (Windows, 1x, light):
+   the card's outer edge runs x 15–433, y 535–1017 of a 1920×1032 viewport, so
+   15px from the left and bottom, 418×482 with a 1px border and 12px corners;
+   Expand chat and Close chat centre 21px below its top, 36px apart, the last
+   24px from its right edge. The dark colours are provisional (暂定，待补采): no dark
+   capture exists. */
+
+.floating-chat-frame {
+  position: absolute;
+  z-index: 20;
+  left: 15px;
+  bottom: 15px;
+  box-sizing: border-box;
+  width: min(418px, calc(100% - 30px));
+  height: min(482px, calc(100% - 64px));
+  border: 1px solid #3b3b37;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  animation: floating-chat-in 140ms ease-out;
+}
+:root[data-theme="light"] .floating-chat-frame {
+  border-color: rgba(31, 30, 29, 0.17);
+  background: #fff;
+  box-shadow: 0 3px 16px rgba(31, 30, 29, 0.1);
+}
+.floating-chat-controls {
+  position: absolute;
+  top: 6px;
+  right: 9px;
+  display: flex;
+  gap: 8px;
+}
+.floating-chat-controls .icon-button {
+  width: 28px;
+  height: 28px;
+}
+@keyframes floating-chat-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-chat-frame {
+    animation: none;
+  }
+}
+
+/* The page's own conversation column moves into the card, under its
+   controls. It sits above the Artifact panel (z-index 12) so it takes
+   clicks; the card beneath gives it its background and border. */
+.chat-layout:has(> .file-viewer[data-chat-float="true"])
+  > .chat-main.has-conversation {
+  visibility: visible;
+  position: absolute;
+  z-index: 14;
+  left: 16px;
+  bottom: 16px;
+  width: min(416px, calc(100% - 32px));
+  height: calc(min(482px, 100% - 64px) - 43px);
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 0 0 11px 11px;
+  background: transparent;
+}
+
+/* The conversation sits above the whole Artifact panel, so in a short or
+   narrow window it would cover the header's menus and Share popover where
+   they reach down into the card. While one is open the conversation drops
+   back under the panel; the card's frame stays, beneath the menu. */
+.chat-layout:has(
+    > .file-viewer[data-chat-float="true"]
+      :is(.artifact-chrome-menu, .artifact-share-popover)
+  )
+  > .chat-main.has-conversation {
+  z-index: 11;
+}
+
+/* Inside the card the conversation keeps its parts but not the page's margins:
+   the composer runs 8px from the card's sides, the transcript 12px, and the
+   footer keeps only the model picker, as the narrow split view does. */
+.chat-layout:has(> .file-viewer[data-chat-float="true"])
+  > .chat-main.has-conversation
+  .messages {
+  width: 100%;
+  padding: 8px 12px 12px;
+}
+.chat-layout:has(> .file-viewer[data-chat-float="true"])
+  > .chat-main.has-conversation
+  .conversation-composer {
+  width: calc(100% - 16px);
+  max-width: none;
+  padding: 8px 0;
+  background: var(--surface);
+}
+:root[data-theme="light"]
+  .chat-layout:has(> .file-viewer[data-chat-float="true"])
+  > .chat-main.has-conversation
+  .conversation-composer {
+  background: #fff;
+}
+.chat-layout:has(> .file-viewer[data-chat-float="true"])
+  > .chat-main.has-conversation
+  .conversation-footer {
+  justify-content: flex-end;
+  padding-left: 0;
+  padding-right: 4px;
+}
+.chat-layout:has(> .file-viewer[data-chat-float="true"])
+  > .chat-main.has-conversation
+  .conversation-footer
+  > span {
+  display: none;
+}
+
+/* The expanded header's Pop out chat: the second half of the Chat group, 28×28
+   behind a hairline, pressed while the chat floats: pale blue with a dark blue
+   window in the light capture. The Artifact header has only its dark colours so
+   far, so the pressed state takes comment mode's dark blue to match its
+   neighbours; light values wait for a light header. */
+.artifact-chat-group > .artifact-popout-chat {
+  justify-content: center;
+  width: 28px;
+  border-left: 1px solid #3f3f3d;
+  border-radius: 0 7px 7px 0;
+  color: #c9c8c2;
+}
+.artifact-chat-group > .artifact-popout-chat:hover {
+  background: #404040;
+}
+.artifact-chat-group > .artifact-popout-chat[aria-pressed="true"] {
+  border-left-color: transparent;
+  background: #0a2243;
+  color: #79b0f1;
+}
+.artifact-collaboration
+  .artifact-chat-group
+  > .artifact-chat-button:has(+ .artifact-popout-chat) {
+  border-radius: 7px 0 0 7px;
+}

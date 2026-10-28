@@ -1,0 +1,141 @@
+/* Classic creation. This sheet loads only with the project editor. */
+/* The popover surface
+   with a 1px white-10% rim over 0 4px 8px ink 8% and 0 12px 28px -2px black
+   24%; the 32px header row ends level with its 28px title, the close
+   button 16px from the dialog's end with a 20px X in the primary ink. */
+.modal:has(.prj-editor.classic) {
+  border: 0;
+  padding: 24px;
+  background: var(--surface-popover);
+}
+:root:not([data-theme="light"]) .modal:has(.prj-editor.classic) {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 4px 8px rgb(11 11 11 / 8%),
+    0 12px 28px -2px rgb(0 0 0 / 24%);
+}
+.modal:has(.prj-editor.classic) > header {
+  height: 32px;
+  box-sizing: border-box;
+  margin: 0 -8px 12px 0;
+  padding: 0;
+  align-items: flex-end;
+}
+.modal:has(.prj-editor.classic) h2 {
+  color: var(--text);
+  font-weight: 580;
+  line-height: 28px;
+}
+.modal:has(.prj-editor.classic) > header > .icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text);
+}
+.modal:has(.prj-editor.classic) > header > .icon-button > .app-icon {
+  font-size: 20px !important;
+}
+.prj-editor.classic {
+  gap: 28px;
+}
+.prj-editor.classic .prj-create-name {
+  display: block;
+}
+/* The labels 14/14 medium in the primary ink, 8px over their fields; the
+   fields white 5% inside a 1px white-10% ring, radius 8. */
+.modal .prj-editor.classic > label,
+.prj-editor.classic .prj-create-name label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 14px;
+  font-weight: 500;
+}
+.modal .prj-editor.classic .prj-create-name input,
+.modal .prj-editor.classic > label > textarea {
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 8px;
+  background: var(--alpha-1);
+  box-shadow: inset 0 0 0 1px var(--alpha-2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.modal .prj-editor.classic .prj-create-name input {
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  padding: 0 12px;
+}
+.modal .prj-editor.classic > label > textarea {
+  height: 80px;
+  min-height: 80px;
+  padding: 8px 12px;
+}
+.prj-create-context {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+/* "Context" 14/14 medium, "optional" 13/17 muted 6px after it. */
+.prj-create-context > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+}
+.prj-create-context small {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 17px;
+}
+/* Add context: a 28px secondary button (white 10%), its 16px plus. */
+.prj-context-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  padding: 0 10px;
+  background: var(--alpha-2);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+/* Its plus is the original's leading icon, 4px into the padding. */
+.prj-context-add > .app-icon {
+  margin-inline-start: -4px;
+  font-size: 16px !important;
+}
+.prj-editor.classic .prj-editor-actions {
+  gap: 12px;
+  margin-top: 0;
+}
+.modal .prj-editor.classic > label:first-of-type {
+  margin-bottom: 0;
+}
+.prj-editor.classic .prj-editor-actions > button {
+  height: 32px;
+}
+/* Cancel is the secondary button (white 10%, regular weight). */
+.prj-editor.classic .prj-editor-actions > .prj-cancel {
+  border: 0;
+  background: var(--alpha-2);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+  font-weight: 400;
+}

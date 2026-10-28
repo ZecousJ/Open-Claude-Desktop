@@ -1,0 +1,594 @@
+/* Plugins (Settings → Plugins, Customize → Plugins): rows reuse the
+   directory rows' look; the action beside each is a live button. */
+.plugin-row-action > button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+.plugin-row-action > button:disabled {
+  opacity: var(--opacity-disabled);
+}
+.plugin-row-action > button:not(:disabled):hover {
+  background: rgb(255 255 255 / 6%);
+}
+.plugin-rows > li > button > .customize-directory-row-text small {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.plugin-note {
+  margin: 20px 0 0;
+  color: #a3a29f;
+}
+.plugin-empty-state {
+  margin: 0;
+  padding-block: 48px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .plugin-empty-state {
+  color: #52514e;
+}
+.plugin-failure {
+  color: #e8a09a;
+}
+.plugin-failure > button {
+  color: inherit;
+  text-decoration: underline;
+}
+.plugin-callout-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.plugin-callout-actions > button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #fff;
+  color: #0b0b0b;
+  font-size: 14px;
+  font-weight: 500;
+}
+.plugin-callout-actions > button:disabled {
+  opacity: 0.5;
+}
+.plugin-callout-actions > button + button {
+  border: 1px solid #3a3a3a;
+  background: transparent;
+  color: var(--text);
+}
+.plugin-marketplaces {
+  margin-top: 32px;
+}
+.plugin-marketplaces > h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.plugin-marketplaces > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.plugin-marketplaces li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.plugin-marketplaces li > span {
+  display: flex;
+  flex-direction: column;
+}
+.plugin-marketplaces small {
+  color: #a3a29f;
+  font-size: 13px;
+}
+.plugin-marketplaces li > button,
+.plugin-marketplace-actions > button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+.plugin-marketplaces button:disabled {
+  opacity: var(--opacity-disabled);
+}
+.plugin-marketplace-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.plugin-contents {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.plugin-contents li {
+  display: flex;
+  gap: 12px;
+}
+.plugin-contents strong {
+  flex: 0 0 84px;
+  font-weight: 500;
+}
+.plugin-contents span {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+:root[data-theme="light"] .plugin-row-action > button,
+:root[data-theme="light"] .plugin-marketplaces li > button,
+:root[data-theme="light"] .plugin-marketplace-actions > button,
+:root[data-theme="light"] .plugin-callout-actions > button + button {
+  border-color: #e3e3e1;
+  background: #fff;
+  color: #141413;
+}
+:root[data-theme="light"] .plugin-callout-actions > button:first-child {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .plugin-marketplaces li {
+  border-color: #ececea;
+}
+:root[data-theme="light"] .plugin-note,
+:root[data-theme="light"] .plugin-marketplaces small,
+:root[data-theme="light"] .plugin-contents span {
+  color: #6b6a66;
+}
+
+.plugin-row-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.plugin-row-action > .plugin-row-add {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 7px;
+}
+.plugin-detail-actions {
+  align-items: center;
+  justify-content: flex-end;
+}
+.plugin-detail-actions > .plugin-detail-more {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+.plugin-discovery {
+  color: var(--text-primary, #f0efec);
+}
+/* The title is a link-like button in both tones (Skills' green, Plugins' blue). */
+.customize-feature .plugin-discovery-hero-title {
+  height: auto;
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+:root[data-theme="light"] .customize-feature .plugin-discovery-hero-title {
+  background: transparent;
+  color: inherit;
+}
+.plugin-discovery-hero-title:hover {
+  text-decoration: underline;
+}
+.plugin-discovery button:disabled,
+.plugin-discovery-hero button:disabled {
+  opacity: var(--opacity-disabled);
+}
+.plugin-discovery-section {
+  margin-top: 32px;
+}
+.plugin-discovery-section h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.plugin-discovery-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.plugin-discovery-heading > button {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 14px;
+}
+.plugin-discovery .plugin-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+  margin-top: 8px;
+}
+.plugin-discovery .plugin-rows > li {
+  min-height: 117px;
+  border-bottom: 0;
+}
+.plugin-discovery .customize-directory-row-text strong {
+  font-size: 14px;
+}
+.plugin-discovery .customize-directory-row-text small {
+  font-size: 13px;
+}
+.plugin-discovery .plugin-row-action > button {
+  height: 28px;
+}
+.plugin-discovery-categories {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.plugin-discovery-categories > button {
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-standard, #3a3a38);
+  border-radius: 10px;
+  text-align: left;
+  font-size: 14px;
+}
+.plugin-discovery-categories > button:hover,
+.plugin-discovery-categories > button[aria-pressed="true"] {
+  background: var(--fill-ghost-hover);
+}
+.add-marketplace-dialog {
+  width: min(720px, calc(100vw - 32px));
+  padding: 23px;
+  border-radius: 12px;
+}
+.add-marketplace-dialog #marketplace-repository-error:empty {
+  display: none;
+}
+@media (max-width: 760px) {
+  .plugin-discovery .plugin-rows,
+  .plugin-discovery-categories {
+    grid-template-columns: 1fr;
+  }
+}
+.marketplace-repository-results {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--border-standard, #3a3a38);
+  border-radius: 8px;
+  padding: 4px;
+}
+.marketplace-repository-results > button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  text-align: left;
+}
+.marketplace-repository-results button:hover {
+  background: var(--fill-ghost-hover);
+}
+.marketplace-repository-results strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.marketplace-repository-results small,
+.marketplace-repository-results p,
+.marketplace-github-access {
+  color: var(--text-secondary, #c3c2b7);
+  font-size: 12px;
+  line-height: 18px;
+}
+.marketplace-repository-results p {
+  margin: 8px;
+}
+.marketplace-github-access p {
+  margin: 0 0 8px;
+}
+
+/* Official Add marketplace at 1280×720: 720px popup, 672px content, 32px controls. */
+.add-marketplace-dialog > header {
+  min-height: 32px;
+  margin: 0 0 20px;
+}
+.add-marketplace-dialog > header h2 {
+  font-size: 22px;
+  font-weight: 580;
+  line-height: 28px;
+}
+.add-marketplace-dialog > header > button {
+  width: 32px;
+  height: 32px;
+  margin: -8px -8px 0 0;
+  padding: 0;
+}
+.add-marketplace-repository > header {
+  min-height: 28px;
+  margin: -4px 0 28px;
+}
+.add-marketplace-repository > header > button {
+  align-self: flex-end;
+}
+.add-marketplace-dialog > .directory-marketplace {
+  display: flex;
+  flex-direction: column;
+}
+.add-marketplace-repository > .directory-marketplace {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.add-marketplace-repository .directory-warning[role="note"] {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: rgb(60 14 14);
+  color: rgb(236 126 126);
+  box-shadow: inset 0 0 0 1px rgb(100 25 25);
+  font-size: 14px;
+  line-height: 20px;
+}
+.add-marketplace-repository .directory-warning[role="note"] p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+}
+.add-marketplace-repository .directory-warning[role="note"] > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: inherit;
+}
+:root[data-theme="light"]
+  .add-marketplace-repository
+  .directory-warning[role="note"] {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.add-marketplace-repository .marketplace-repository-field {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  gap: 0;
+  margin: 0;
+}
+.marketplace-repository-field > span {
+  display: block;
+  height: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+}
+.marketplace-repository-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong, #50504d);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 4%);
+  color: var(--text-muted, #898781);
+  font-size: 14px;
+  text-align: left;
+}
+.marketplace-repository-trigger[data-selected="true"] {
+  color: var(--text);
+}
+.marketplace-repository-trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.marketplace-repository-trigger[aria-expanded="true"] {
+  outline: 1px solid var(--border-strong, #50504d);
+}
+.add-marketplace-repository .directory-hint {
+  display: block;
+  margin: 6px 0 0;
+  color: var(--text-muted, #898781);
+  font-size: 13px;
+  line-height: 17.875px;
+}
+.add-marketplace-repository .directory-hint code {
+  padding: 0 4px;
+  font-size: inherit;
+  line-height: inherit;
+}
+.add-marketplace-repository form > .button-row {
+  justify-content: flex-end;
+  margin: 32px 0 0;
+}
+.add-marketplace-repository .button-row > .secondary {
+  width: 70px;
+  border: 0;
+  background: rgb(255 255 255 / 10%);
+}
+.add-marketplace-repository .button-row > .primary {
+  width: 56px;
+  font-weight: 500;
+}
+.marketplace-repository-popover {
+  position: fixed;
+  z-index: 1200;
+  max-width: calc(100vw - 32px);
+  max-height: 291px;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid var(--border-strong, #50504d);
+  border-radius: 10px;
+  background: var(--surface-raised, #20201f);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
+}
+.marketplace-repository-popover > .settings-input {
+  width: calc(100% + 2px);
+  margin: -1px -1px 0;
+  display: block;
+  height: 37px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border-standard, #3a3a38);
+  border-radius: 0;
+  background: none;
+  font-size: 14px;
+  line-height: 20px;
+}
+.marketplace-repository-popover .marketplace-repository-results {
+  width: calc(100% + 2px);
+  max-height: 254px;
+  margin: 0 -1px;
+  border: 0;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+.marketplace-query-error {
+  margin: 8px;
+  color: #e8a09a;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.marketplace-repository-popover [role="option"] {
+  gap: 0;
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 4px 12px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.marketplace-repository-popover [role="option"] strong {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.marketplace-repository-popover [role="option"] small {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.add-marketplace-anthropic {
+  max-height: calc(100dvh - 32px);
+  padding-bottom: 19px;
+}
+.add-marketplace-anthropic > header {
+  margin-bottom: 8px;
+}
+.anthropic-sources-description {
+  margin: 0 0 16px;
+  color: var(--text-secondary, #c3c2b7);
+  font-size: 14px;
+  line-height: 20px;
+}
+.anthropic-sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.anthropic-sources-list > li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--border-standard, rgb(255 255 255 / 10%));
+  border-radius: 12px;
+}
+.anthropic-sources-list > li > svg {
+  flex-shrink: 0;
+}
+.anthropic-source-summary {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.anthropic-source-summary > strong {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.anthropic-source-summary > small {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-tertiary, #898781);
+}
+.anthropic-sources-list button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.anthropic-source-add {
+  background: var(--fill-ghost-hover, rgb(255 255 255 / 6%));
+}
+.anthropic-source-add:disabled {
+  opacity: var(--opacity-disabled);
+}
+.anthropic-source-added {
+  background: none;
+}
+.anthropic-sources-content > .button-row {
+  justify-content: flex-end;
+  margin: 32px 0 0;
+}
+
+:root:not([data-theme="light"]) .add-marketplace-dialog {
+  background: #20201f;
+}
+.add-marketplace-repository #marketplace-repository-error:not(:empty) {
+  margin: 8px 0 0;
+  color: var(--danger, #ec7e7e);
+  font-size: 12px;
+  line-height: 18px;
+}

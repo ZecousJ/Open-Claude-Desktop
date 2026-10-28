@@ -1,0 +1,14 @@
+{
+  // The web app's type check (npm run build:web): src/, src-web/ and shared/
+  // with the browser's types. electron/ and server/ are not part of the
+  // program. Node's global types still arrive through @types/qrcode, so the
+  // guard against Node and Electron code in the browser bundle is
+  // scripts/check-web-imports.mjs (source graph) and
+  // scripts/check-web-bundle.mjs (built output).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client"]
+  },
+  "include": ["src", "src-web", "shared"],
+  "exclude": ["electron", "server", "runner", "tests", "scripts", "backend"]
+}

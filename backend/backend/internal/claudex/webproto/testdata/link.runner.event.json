@@ -1,0 +1,8 @@
+{
+  "t": "event",
+  "userId": 7,
+  "event": {
+    "type": "approval-resolved",
+    "id": 3
+  }
+}

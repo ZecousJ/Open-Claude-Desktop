@@ -1,0 +1,598 @@
+/*
+ * Computer use (R10-U). Settings → System → Computer use is measured from
+ * R-1399-DesktopSystem设置长页-02/03 (2.0 image px per CSS px); the access card,
+ * the activity line above the composer and the tool rows have no capture of the
+ * original and follow the approval card and tool rows they sit with.
+ */
+
+/* Settings: "Computer use" and a neutral Badge, gap 8. */
+.cu-section > h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cu-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  white-space: nowrap;
+}
+/* Rows wrapped for their extras keep the hairline between rows. */
+.cu-section > .cu-denied,
+.cu-section > .cu-permission,
+.cu-section > .cu-denied + .settings-row,
+.cu-section > .cu-permission + .settings-row {
+  border-top: 1px solid #262626;
+}
+.cu-link {
+  color: #7aa7e8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cu-link:hover {
+  color: #9bbdf0;
+}
+.cu-segmented > button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.cu-segmented > button:disabled:hover {
+  color: #8d8c8a;
+}
+.cu-segmented[aria-disabled="true"] > button[aria-checked="true"],
+.cu-segmented[aria-disabled="true"] > .segmented-thumb {
+  opacity: 0.6;
+}
+/* "Granted": a status in the shape of a button (75×27, #262626), not clickable. */
+.cu-status {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 6px;
+  background: #262626;
+  color: var(--text);
+  white-space: nowrap;
+}
+.cu-permission[data-attention] .settings-row-label::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: #d97757;
+  vertical-align: 2px;
+}
+
+/* Denied apps: the empty line (brighter than descriptions) and the list. */
+.cu-denied-empty {
+  margin: -2px 0 0;
+  padding-bottom: 12px;
+  color: #cdccc8;
+  line-height: 20px;
+}
+.cu-denied-list {
+  margin: -2px 0 0;
+  padding: 0 0 12px;
+  list-style: none;
+}
+.cu-denied-list > li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+.cu-denied-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #f5f5f3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cu-denied-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #908f8d;
+  font-size: 13px;
+}
+.cu-denied-remove {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #908f8d;
+}
+.cu-denied-remove:hover {
+  background: var(--surface-hover);
+  color: #f5f5f3;
+}
+.cu-app-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+.cu-app-icon-blank {
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--surface-hover);
+  color: #908f8d;
+}
+
+/* Add app ⌄: 91×28, #313131; the list below it, like Settings' dropdowns. */
+.cu-add-app {
+  gap: 4px;
+}
+.cu-add-app > svg {
+  color: #8a8a88;
+}
+.cu-add-menu {
+  position: fixed;
+  z-index: 130;
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  max-height: 320px;
+  box-sizing: border-box;
+  padding: 3px;
+  border: 1px solid #363636;
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px #0007;
+  color: var(--text);
+  font-size: 14px;
+}
+.cu-add-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border-bottom: 1px solid #2e2e2e;
+  color: #8a8a88;
+}
+.cu-add-search > input,
+.cu-add-search > input:focus {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: none;
+  color: #f6f6f4;
+  font: inherit;
+}
+.cu-add-list {
+  overflow-y: auto;
+  padding-top: 3px;
+}
+.cu-add-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: inherit;
+  text-align: left;
+}
+.cu-add-option > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cu-add-option[aria-selected="true"] {
+  background: var(--surface-hover);
+}
+.cu-add-note {
+  margin: 0;
+  padding: 8px 10px;
+  color: #908f8d;
+}
+
+/* The access card: the approval card's shell and buttons. */
+.cu-access-reason {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.cu-access-reason > span {
+  color: #8f8e8b;
+}
+/* The access card: the Interactive glyph and a semibold secondary title, the
+   rest indented 28px under it (ms-7); the apps in one bordered list (divide-y
+   rounded border bg-surface-1), each row 10px in with a 20px icon (radius 4)
+   and the proposed level as a Badge: accent for View only and Click only,
+   neutral for All. */
+.cu-access-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+.cu-access-head > .app-icon {
+  flex: none;
+}
+.cu-access-title {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: inherit;
+  font-weight: 600;
+  line-height: 20px;
+}
+.cu-access-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 12px 28px;
+}
+.cu-access-body:empty {
+  display: none;
+}
+.cu-access-card > .approval-actions {
+  margin-inline-start: 28px;
+}
+.cu-access-apps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #1a1a19;
+}
+.cu-access-apps > li {
+  padding: 10px;
+}
+.cu-access-apps > li + li {
+  border-top: 1px solid var(--border);
+}
+.cu-access-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cu-access-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.cu-access-icon > img {
+  width: 100%;
+  height: 100%;
+  scale: 1.15;
+}
+.cu-access-icon-blank {
+  background: var(--alpha-2);
+}
+.cu-access-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A clipboard row's glyph: 20px, radius 4, alpha-2 under muted ink. */
+.cu-access-icon-glyph {
+  display: grid;
+  place-items: center;
+  background: var(--alpha-2);
+  color: var(--text-muted);
+}
+/* The permissions card: the rows as in Settings, then the ready note
+   (text-footnote text-muted). */
+.cu-access-permissions {
+  margin: 0;
+}
+.cu-access-ready {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+/* Full control asked for in background mode: the 16px glyph 2px down, the
+   question in semibold primary text, 12px above the buttons, both indented
+   28px. */
+.cu-takeover-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.cu-takeover-head > .app-icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-secondary);
+}
+.cu-takeover-title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+}
+.cu-takeover-reason {
+  margin: -4px 0 12px 28px;
+}
+.cu-access-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 4px 0 0 28px;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 16px;
+}
+.cu-access-warning > .app-icon {
+  flex: none;
+  margin-top: 2px;
+}
+.cu-access-note {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.cu-tier {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  background: rgb(0 36 81 / 75%);
+  color: #6da7ec;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  white-space: nowrap;
+}
+.cu-tier[data-tier="full"] {
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .cu-tier {
+  background: rgb(118 178 251 / 35%);
+  color: #184f95;
+}
+:root[data-theme="light"] .cu-tier[data-tier="full"] {
+  background: rgb(11 11 11 / 5%);
+  color: #52514e;
+}
+:root[data-theme="light"] .cu-access-apps {
+  background: #fff;
+}
+.cu-access-denied {
+  margin: 8px 0 0;
+  color: #8f8e8b;
+  font-size: 12px;
+}
+
+/* While Claudex drives apps: a strip with a 20% clay rule below, surface-1
+   under a 15% clay wash, 16px sides and 8px above and below, a pulsing 8px clay
+   dot, the label in 14px semibold clay, and a secondary xs Stop at the end. */
+.cu-activity {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 8px 16px;
+  border-bottom: 1px solid color-mix(in oklab, #d97757 20%, transparent);
+  background: #1a1a19;
+}
+.cu-activity::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, #d97757 15%, transparent);
+  pointer-events: none;
+}
+.cu-activity-dot {
+  position: relative;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d97757;
+  animation: cu-activity-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes cu-activity-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cu-activity-dot {
+    animation: none;
+  }
+}
+.cu-activity-text {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #d97757;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cu-activity-stop.secondary {
+  position: relative;
+  flex: none;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+:root[data-theme="light"] .cu-activity {
+  border-bottom-color: color-mix(in oklab, #c6613f 20%, transparent);
+  background: #fff;
+}
+:root[data-theme="light"] .cu-activity::before {
+  background: color-mix(in oklab, #c6613f 15%, transparent);
+}
+:root[data-theme="light"] .cu-activity-dot {
+  background: #c6613f;
+}
+:root[data-theme="light"] .cu-activity-text {
+  color: #c6613f;
+}
+
+/* Tool rows: the failure reason and the screenshot under the row. */
+.cu-tool-reason {
+  margin: 2px 0 0 23px;
+  color: #908f8d;
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.cu-shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 4px;
+}
+.cu-shot {
+  display: block;
+  width: 240px;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #323232;
+  border-radius: 8px;
+  background: #1f1f1f;
+  cursor: zoom-in;
+}
+.cu-shot > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+}
+.cu-shot-missing {
+  margin: 6px 0 4px;
+  color: #908f8d;
+  font-size: 13px;
+}
+.cu-lightbox {
+  display: grid;
+  place-items: center;
+  max-height: calc(100vh - 160px);
+  overflow: auto;
+}
+.cu-lightbox > img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 160px);
+  border-radius: 6px;
+}
+
+:root[data-theme="light"] .cu-badge {
+  background: rgb(11 11 11 / 5%);
+  color: #52514e;
+}
+:root[data-theme="light"] .cu-status {
+  background: #f0f0f0;
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .cu-section > .cu-denied,
+:root[data-theme="light"] .cu-section > .cu-permission,
+:root[data-theme="light"] .cu-section > .cu-denied + .settings-row,
+:root[data-theme="light"] .cu-section > .cu-permission + .settings-row {
+  border-color: #f2f2f2;
+}
+:root[data-theme="light"] .cu-link {
+  color: #2f6bd0;
+}
+:root[data-theme="light"] .cu-denied-empty {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .cu-denied-name,
+:root[data-theme="light"] .cu-denied-remove:hover,
+:root[data-theme="light"] .cu-app-icon-blank,
+:root[data-theme="light"] .cu-add-option[aria-selected="true"] {
+  background: #f0f0f0;
+}
+:root[data-theme="light"] .cu-add-menu {
+  border-color: #e4e4e4;
+  background: #fff;
+  box-shadow: 0 12px 28px #0002;
+  color: #050505;
+}
+:root[data-theme="light"] .cu-add-search {
+  border-color: #efefef;
+}
+:root[data-theme="light"] .cu-add-search > input {
+  color: #050505;
+}
+:root[data-theme="light"] .cu-shot {
+  border-color: #e4e4e4;
+  background: #f5f5f3;
+}
+
+/* "Turn on computer use?". */
+.cu-enable-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+  color: var(--text-secondary);
+}
+.cu-enable-body p {
+  margin: 0;
+}
+.cu-enable-heading {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.cu-enable-body ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding-inline-start: 20px;
+  list-style: disc;
+}
+.cu-enable-permissions {
+  margin: 0;
+}
+/* The permission status badge and Open System Settings. */
+.cu-permission-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cu-status[data-variant="danger"] {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+}
+/* "Background computer use" with its Beta badge after the title. */
+.cu-intro-dialog .modal-title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cu-intro-dialog .modal-title-with-icon > .cu-badge {
+  order: 1;
+}

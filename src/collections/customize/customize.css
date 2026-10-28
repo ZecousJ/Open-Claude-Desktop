@@ -1,0 +1,982 @@
+/*
+ * Customize; also loaded by the Settings tabs and the Plugins body that share
+ * its rows and cards. Sizes: the mac 2x capture R-Customize-主页-加载完成 (1164
+ * window) for the header, Discover banner and cards; the Windows 1x crops
+ * R-1102–R-1151 for Yours rows, the connector table and menus; R-1284/R-1285
+ * (1920, light) for the 960px column and light colours. This sheet loads before
+ * the global one, so rules that meet the global input and button rules are one
+ * class stronger.
+ */
+/* The title, tabs and tools stay put while the page scrolls under them; the
+   scrollbar starts below them. */
+.customize-view {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+}
+.customize-head {
+  flex: none;
+  padding: 56px 40px 0;
+}
+.customize-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 0 40px 48px;
+}
+.customize-column {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.customize-title {
+  margin: 0;
+  /* 24px/32px medium. */
+  font:
+    500 24px/32px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  color: var(--text);
+}
+:root[data-reference-fonts="true"] .customize-title,
+:root[data-reference-fonts="true"] .customize-feature h3 {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-optical-sizing: auto;
+}
+/* The section/view group wraps with an 8px row gap; tools wrap beneath it with
+   a 16px gap. */
+.customize-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 16px;
+  column-gap: 16px;
+  min-height: 32px;
+  margin-top: 24px;
+}
+.customize-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  min-width: 0;
+}
+.customize-nav:empty {
+  display: none;
+}
+.customize-view-switch {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 16px;
+}
+.customize-tabs,
+.customize-views {
+  display: flex;
+  align-items: center;
+}
+.customize-tabs > button,
+.customize-views > button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-muted);
+  /* 14/20px tabs and a 32px track. */
+  transition: none;
+}
+.customize-tabs > button:hover,
+.customize-views > button:hover {
+  color: var(--text);
+}
+.customize-tabs > button:hover:not(.selected) {
+  background: rgb(255 255 255 / 7.5%);
+}
+.customize-tabs > button.selected {
+  background: rgb(255 255 255 / 7.5%);
+  color: var(--text);
+}
+.customize-divider {
+  width: 1px;
+  height: 20px;
+  background: rgb(255 255 255 / 10%);
+}
+.customize-views {
+  height: 32px;
+  padding: 1px;
+  box-sizing: border-box;
+  gap: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+}
+.customize-views > button {
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.customize-views > button.selected {
+  background: rgb(255 255 255 / 10%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: var(--text);
+}
+.customize-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: 100%;
+  margin-left: auto;
+}
+.customize-anchor {
+  display: inline-flex;
+}
+.customize-tools .icon-button.customize-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  line-height: 20px;
+}
+.customize-tools.compact .icon-button.customize-icon {
+  color: var(--text-secondary);
+}
+.customize-tools .icon-button.customize-icon:hover,
+.customize-tools .icon-button.customize-icon[aria-expanded="true"] {
+  background: #262626;
+}
+.customize-tools .icon-button.customize-icon.filtered {
+  color: var(--link-text);
+}
+/* Search 256x32 on every tab. */
+.customize-search {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  width: 256px;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  color: var(--text-muted);
+  animation: customize-search-in 140ms var(--ease-out);
+}
+.customize-search:focus-within {
+  box-shadow: inset 0 0 0 1px var(--field-focus);
+}
+.customize-search:has(> button) {
+  padding-inline-end: 5px;
+}
+.customize-search input,
+.customize-search input:focus {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 20px;
+  color: #f0efec;
+}
+.customize-search > button {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--text);
+}
+.customize-search > button:hover {
+  background: #2b2b2b;
+}
+.customize-search.wide {
+  width: 256px;
+  animation: none;
+}
+@keyframes customize-search-in {
+  from {
+    width: 32px;
+    opacity: 0;
+  }
+}
+.customize-tools > .customize-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #0b0b0b;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    var(--press-release);
+}
+.customize-tools > .customize-add:hover:not(:disabled) {
+  background: #e8e8e6;
+}
+.customize-tools > .customize-add > :first-child {
+  margin-inline-start: -4px;
+}
+.customize-tools > .customize-add > :last-child {
+  opacity: 0.6;
+}
+
+/* Discover: the featured skill and the cards under it. */
+.customize-feature {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  min-height: 176px;
+  box-sizing: border-box;
+  margin-top: 28px;
+  padding: 24px;
+  border-radius: 12px;
+  background: #11260f;
+}
+.customize-feature > div {
+  flex: 1;
+  min-width: 0;
+  max-width: 70ch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.customize-feature small {
+  display: block;
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.customize-feature h3 {
+  margin: 0;
+  /* 22px/28px regular. */
+  font:
+    400 22px/28px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  color: var(--text);
+}
+.customize-feature p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+.customize-feature button {
+  height: 32px;
+  margin-top: 6px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #0b0b0b;
+}
+/* The banner drawing: the table and chart badge, 1.72× the Settings size (a
+   105px table, 2.6px lines) with its right edge 77px inside the banner. */
+.customize-feature-art {
+  display: block;
+  flex-shrink: 0;
+  padding-inline-end: 40px;
+  color: #d9ded4;
+}
+.customize-feature-art > svg {
+  display: block;
+  width: 165px;
+  height: auto;
+}
+.customize-feature .directory-illustration-fill {
+  fill: #5d8b6d;
+}
+.customize-feature.plugin .directory-illustration-fill {
+  fill: #30475c;
+}
+.customize-section {
+  margin-top: 40px;
+}
+.customize-feature + .customize-section {
+  margin-top: 52px;
+}
+.customize-section > h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text);
+}
+.customize-section > h2 > span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: #2a2a2a;
+  font-size: 11px;
+  font-weight: 500;
+  color: #bcbcb9;
+}
+.customize-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.customize-cards > li {
+  position: relative;
+  min-width: 0;
+}
+.customize-cards .customize-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 107px;
+  box-sizing: border-box;
+  padding: 13px 56px 13px 13px;
+  border: 1px solid #2c2c2c;
+  border-radius: 12px;
+  text-align: left;
+  color: inherit;
+  /* The card fill steps at once on hover; only the press springs back. */
+  transition: var(--press-release);
+}
+.customize-cards .customize-card:hover {
+  border-color: #3a3a3a;
+  background: #1b1b1b;
+}
+.customize-card-tile {
+  display: grid;
+  flex: 0 0 48px;
+  place-items: center;
+  height: 48px;
+  border-radius: 10px;
+  background: #0b0b0b;
+  color: #e6e6e3;
+}
+.customize-card-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.customize-card-text strong {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text);
+}
+.customize-card-description {
+  display: -webkit-box;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 17.5px;
+  color: #c9c9c6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.customize-card-text small {
+  margin-top: 5px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #8f8f8c;
+}
+.customize-cards .customize-card-add {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #2b2a28;
+  color: var(--text);
+}
+.customize-cards .customize-card-add:hover:not(:disabled) {
+  background: #353432;
+}
+.customize-cards .customize-card-add:disabled {
+  opacity: 1;
+  background: transparent;
+  color: #9fb99f;
+}
+
+/* Yours: the first-skills callout and the rows of installed skills. */
+.customize-callout {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 25px;
+  padding: 18px 44px 18px 16px;
+  border-radius: 12px;
+  background: var(--surface-raised);
+  color: #e6e6e3;
+}
+.customize-callout > div {
+  flex: 1;
+  min-width: 0;
+}
+.customize-callout strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text);
+}
+/* Connector empty card heading and browse CTA. */
+.customize-callout h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+  color: var(--text);
+}
+.customize-callout h3 ~ button {
+  height: 32px;
+  font-weight: 500;
+}
+.customize-callout p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #d0d0cd;
+}
+.customize-callout button {
+  height: 30px;
+  margin-top: 14px;
+  padding: 0 11px;
+  border-radius: 7px;
+  background: #fff;
+  font-size: 14px;
+  color: #0b0b0b;
+}
+.customize-callout > svg {
+  flex-shrink: 0;
+  color: var(--text);
+}
+/* Plugins → Yours: "Build for the Claude Directory": white 5%, 24px in, the
+   title 14/20 at 580 over 14/20 secondary text, the buttons right (below the
+   text when the column is narrow). */
+.customize-build {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--alpha-1);
+}
+.customize-build strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 580;
+  line-height: 20px;
+  color: var(--text);
+}
+.customize-build p {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+.customize-build-actions {
+  display: flex;
+  gap: 12px;
+}
+.customize-build-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--alpha-2);
+  font-size: 14px;
+  color: var(--text);
+}
+.customize-build-actions button.primary {
+  background: #fff;
+  font-weight: 500;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .customize-build strong {
+  color: #141413;
+}
+:root[data-theme="light"] .customize-build-actions button.primary {
+  border-color: transparent;
+  background: #0b0b0b;
+  color: #fff;
+}
+.customize-callout + .customize-section {
+  margin-top: 24px;
+}
+.customize-rows {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.customize-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #2a2a2a;
+}
+.customize-row:last-child {
+  border-bottom: 0;
+}
+.customize-rows .customize-row-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  height: 62px;
+  padding: 0 58px 0 0;
+  text-align: left;
+  color: inherit;
+}
+.customize-row-tile {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  height: 36px;
+  border-radius: 8px;
+  background: #0b0b0b;
+  color: #e6e6e3;
+}
+.customize-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.customize-row-text strong,
+.customize-row-text > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.customize-row-text strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text);
+}
+.customize-row-text > span {
+  font-size: 13px;
+  line-height: 18px;
+  color: #a3a3a0;
+}
+.customize-row-main time {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #9a9a97;
+}
+.customize-rows .customize-row-more {
+  position: absolute;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--text);
+}
+.customize-rows .customize-row-more:hover,
+.customize-rows .customize-row-more[aria-expanded="true"] {
+  background: var(--surface-hover);
+}
+.customize-row.is-off .customize-row-tile,
+.customize-row.is-off .customize-row-text > span {
+  opacity: 0.55;
+}
+.customize-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #2c2c2c;
+  font-size: 11px;
+  font-weight: 500;
+  color: #bcbcb9;
+}
+.customize-row-text .customize-badge {
+  margin-left: 0;
+}
+
+/* Connectors: Connector / Type / Status. */
+.customize-table {
+  width: calc(100% + 24px);
+  margin: 32px -12px 0;
+  border-collapse: collapse;
+  font-size: 14px;
+  table-layout: fixed;
+}
+.customize-table th {
+  height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid #2a2a2a;
+  font-size: 13px;
+  font-weight: 400;
+  text-align: left;
+  color: #a3a3a0;
+}
+.customize-table th:nth-child(2),
+.customize-table td:nth-child(2) {
+  width: 160px;
+}
+.customize-table th:nth-child(3),
+.customize-table td:nth-child(3) {
+  width: 160px;
+}
+.customize-table td {
+  height: 44px;
+  padding: 0 12px;
+  border-bottom: 1px solid #2a2a2a;
+  color: #d9d9d6;
+}
+.customize-table td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.customize-table td strong {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.customize-table td.failed {
+  color: var(--danger);
+}
+.customize-table td .spin {
+  vertical-align: -2px;
+}
+.customize-connector-icon {
+  display: grid;
+  flex: 0 0 24px;
+  place-items: center;
+  height: 24px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #1c1c1c;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e6e6e3;
+}
+.customize-none,
+.customize-loading {
+  color: #8f8f8c;
+}
+.customize-table .customize-none {
+  display: table-cell;
+  text-align: center;
+}
+.customize-loading {
+  display: grid;
+  place-items: center;
+  padding: 80px 0;
+}
+
+/* Dialogs. */
+.customize-detail > p {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+.customize-detail pre {
+  max-height: 240px;
+  margin: 0 0 16px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: #1b1b1b;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: #c9c9c6;
+}
+.customize-detail > small {
+  display: block;
+  margin: 0 0 16px;
+  overflow-wrap: anywhere;
+  color: #8f8f8c;
+}
+
+@media (max-width: 760px) {
+  .customize-head,
+  .customize-scroll {
+    padding-inline: 24px;
+  }
+  .customize-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .customize-feature-art {
+    display: none;
+  }
+}
+
+/* Light theme. */
+:root[data-theme="light"] .customize-title {
+  color: #141413;
+}
+:root[data-theme="light"] .customize-tabs > button {
+  color: #898781;
+}
+:root[data-theme="light"] .customize-views > button {
+  color: #52514e;
+}
+:root[data-theme="light"] .customize-tabs > button:hover,
+:root[data-theme="light"] .customize-views > button:hover {
+  color: #0b0b0b;
+}
+/* The hovered tab takes the selected pill's fill. */
+:root[data-theme="light"] .customize-tabs > button:hover:not(.selected) {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .customize-tabs > button.selected {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .customize-divider {
+  background: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .customize-views {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .customize-views > button.selected {
+  background: #fff;
+  box-shadow:
+    inset 0 0 0 1px rgb(11 11 11 / 10%),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .customize-tools .icon-button.customize-icon {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .customize-tools.compact .icon-button.customize-icon {
+  color: #52514e;
+}
+:root[data-theme="light"] .customize-tools .icon-button.customize-icon:hover,
+:root[data-theme="light"]
+  .customize-tools
+  .icon-button.customize-icon[aria-expanded="true"] {
+  background: #ebebe9;
+}
+:root[data-theme="light"] .customize-search {
+  background: rgb(255 255 255 / 50%);
+  box-shadow: inset 0 0 0 1px rgb(11 11 11 / 10%);
+  color: #898781;
+}
+:root[data-theme="light"] .customize-search:focus-within {
+  box-shadow: inset 0 0 0 1px var(--field-focus);
+}
+:root[data-theme="light"] .customize-search input,
+:root[data-theme="light"] .customize-search > button {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .customize-tools > .customize-add {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"]
+  .customize-tools
+  > .customize-add:hover:not(:disabled) {
+  background: #2e2e2c;
+}
+:root[data-theme="light"] .customize-feature {
+  background: #ced6bf;
+}
+/* Plugins → Discover's banner is blue in both themes; Skills' is green. */
+.customize-feature.plugin {
+  background: #032042;
+}
+:root[data-theme="light"] .customize-feature.plugin {
+  background: #c5d3e0;
+}
+:root[data-theme="light"] .customize-feature small,
+:root[data-theme="light"] .customize-feature p {
+  color: #2e3a2a;
+}
+:root[data-theme="light"] .customize-feature h3 {
+  color: #141413;
+}
+:root[data-theme="light"] .customize-feature button {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .customize-feature-art {
+  color: #141413;
+}
+:root[data-theme="light"] .customize-feature .directory-illustration-fill {
+  fill: #bed2c9;
+}
+:root[data-theme="light"] .customize-section > h2,
+:root[data-theme="light"] .customize-card-text strong,
+:root[data-theme="light"] .customize-row-text strong,
+:root[data-theme="light"] .customize-table td strong,
+:root[data-theme="light"] .customize-callout strong {
+  color: #141413;
+}
+:root[data-theme="light"] .customize-section > h2 > span,
+:root[data-theme="light"] .customize-badge {
+  background: #ebebe9;
+  color: #5e5e5c;
+}
+:root[data-theme="light"] .customize-cards .customize-card {
+  border-color: #e3e3e1;
+}
+:root[data-theme="light"] .customize-cards .customize-card:hover {
+  border-color: #d6d6d4;
+  background: #f7f7f5;
+}
+:root[data-theme="light"] .customize-card-tile,
+:root[data-theme="light"] .customize-row-tile {
+  border: 1px solid #e3e3e1;
+  background: #f7f7f5;
+  color: #2b2b29;
+}
+:root[data-theme="light"] .customize-card-description {
+  color: #4a4a48;
+}
+:root[data-theme="light"] .customize-card-text small,
+:root[data-theme="light"] .customize-row-text > span,
+:root[data-theme="light"] .customize-row-main time,
+:root[data-theme="light"] .customize-table th,
+:root[data-theme="light"] .customize-none,
+:root[data-theme="light"] .customize-loading {
+  color: #767674;
+}
+:root[data-theme="light"] .customize-cards .customize-card-add {
+  border: 1px solid #e3e3e1;
+  background: #fff;
+  color: #141413;
+}
+:root[data-theme="light"] .customize-cards .customize-card-add:disabled {
+  border-color: transparent;
+  background: transparent;
+  color: #4c7a4c;
+}
+:root[data-theme="light"] .customize-callout {
+  background: #f0f0ee;
+  color: #262624;
+}
+:root[data-theme="light"] .customize-callout p {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .customize-callout button {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .customize-callout > svg {
+  color: #262624;
+}
+:root[data-theme="light"] .customize-row,
+:root[data-theme="light"] .customize-table th,
+:root[data-theme="light"] .customize-table td {
+  border-color: #ececea;
+}
+:root[data-theme="light"] .customize-rows .customize-row-more {
+  color: #2b2b29;
+}
+:root[data-theme="light"] .customize-rows .customize-row-more:hover,
+:root[data-theme="light"]
+  .customize-rows
+  .customize-row-more[aria-expanded="true"] {
+  background: #ebebe9;
+}
+:root[data-theme="light"] .customize-table td {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .customize-connector-icon {
+  border-color: #e3e3e1;
+  background: #fff;
+  color: #2b2b29;
+}
+:root[data-theme="light"] .customize-detail pre {
+  background: #f3f3f1;
+  color: #3d3d3a;
+}
+/* Loading skills: the row's parts as #262626 blocks (the Customize card fill),
+   a title bar and a shorter description bar. The rows wait, fade in and breathe
+   in a wave with the shared skeleton (src/ui/skeleton.css). */
+.customize-skeleton .customize-row-tile {
+  background: #262626;
+}
+.customize-skeleton .customize-row-text {
+  gap: 7px;
+}
+.customize-skeleton i {
+  display: block;
+  width: 38%;
+  height: 11px;
+  border-radius: 4px;
+  background: #262626;
+}
+.customize-skeleton i + i {
+  width: 64%;
+  height: 9px;
+}
+:root[data-theme="light"] .customize-skeleton .customize-row-tile,
+:root[data-theme="light"] .customize-skeleton i {
+  /* No Customize skeleton is captured; the blocks of R-1616's skeleton. */
+  background: #f3f3f3;
+}
+/* A narrowing filter turns the button blue in light as in History. */
+:root[data-theme="light"]
+  .customize-tools
+  .icon-button.customize-icon.filtered {
+  background: #cce4fe;
+  color: #47698e;
+}
+:root[data-theme="light"] .customize-table td.failed {
+  color: #b9403b;
+}

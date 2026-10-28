@@ -1,0 +1,290 @@
+/* Cowork replies: serif body, tool rows, viewed pictures, queued prompts, plan rows. (part of chat-transcript.css) */
+/* Cowork replies share Chat's serif body and icon toolbar and have no avatar
+   star. */
+.mode-cowork .assistant-message {
+  display: block;
+}
+.mode-cowork .markdown {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-size: 15px;
+  font-optical-sizing: auto;
+  line-height: 22px;
+  color: #deddd9;
+}
+/* Paragraphs keep the body's 17/24 (the shared .markdown p is 14/21), as in
+   Chat. */
+.mode-cowork .markdown p {
+  font-size: inherit;
+  line-height: inherit;
+}
+/* Text and tool rows: the same 12px of air above and below a row's 20px label
+   (10px margin and the 24px row's 2px), rows next to each other share it. While
+   a row works, its dots sit at the text's edge and the label starts 32px in;
+   done, the label slides back (200ms). */
+.mode-cowork
+  .assistant-content
+  > :is(
+    .command-activity,
+    .agent-activity-group,
+    .turn-activity,
+    .session-tool-activity
+  ) {
+  margin: 10px 0;
+}
+.mode-cowork
+  .assistant-content
+  > :is(
+    .command-activity,
+    .agent-activity-group,
+    .turn-activity,
+    .session-tool-activity
+  ):first-child {
+  margin-top: 0;
+}
+/* A picture the agent looked at (or made) has a row of its own in Cowork: the
+   same light row as the other tools, not a card. */
+.mode-cowork .assistant-content > .session-tool-activity {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+.mode-cowork .assistant-content > .session-tool-activity > summary {
+  position: relative;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 0 4px;
+  color: #858580;
+  /* Settings → Transcript text size (transcript-text-size.css). */
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+  background: none;
+}
+.mode-cowork
+  .assistant-content
+  > .session-tool-activity
+  > summary:is(:hover, :focus-visible) {
+  color: #cbcac5;
+  background: none;
+}
+.mode-cowork .assistant-content > .session-tool-activity[open] > summary {
+  border-bottom: 0;
+}
+.mode-cowork
+  .assistant-content
+  > .session-tool-activity
+  > summary
+  > svg:first-child:not(:last-child) {
+  display: none;
+}
+.mode-cowork .assistant-content > .session-tool-activity > .activity-body {
+  margin-top: 8px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  font-size: var(--transcript-text, 14px);
+}
+.mode-cowork .assistant-content > .session-tool-activity > summary small {
+  margin-left: 2px;
+  max-width: 50%;
+  font-size: var(--transcript-text, 14px);
+}
+.mode-cowork
+  .assistant-content
+  > .session-tool-activity
+  > summary
+  > svg:last-of-type {
+  margin-left: 0;
+}
+:root[data-theme="light"]
+  .mode-cowork
+  .assistant-content
+  > .session-tool-activity
+  > summary:is(:hover, :focus-visible) {
+  color: var(--text);
+}
+.mode-cowork
+  .assistant-content
+  > :is(.command-activity, .agent-activity-group)
+  > summary,
+.mode-cowork .assistant-content > .turn-activity {
+  transition: padding-left var(--motion-base) var(--ease-out);
+}
+.mode-cowork
+  .assistant-content
+  > :is(.command-activity, .agent-activity-group)
+  > summary:has(> .activity-mark),
+.mode-cowork .assistant-content > .turn-activity:has(> .activity-mark) {
+  padding-left: 36px;
+}
+.mode-cowork
+  .assistant-content
+  > :is(.command-activity, .agent-activity-group)
+  > summary
+  > .activity-mark.clay,
+.mode-cowork .assistant-content > .turn-activity > .activity-mark.clay {
+  left: 4px;
+  top: 2px;
+}
+/* Like Chat, paragraphs sit 4px inside the column, so the tool-group label and
+   the toolbar's first icon line up with the text. */
+.mode-cowork .markdown p,
+.mode-cowork .markdown h3 {
+  padding: 0 4px;
+}
+.mode-cowork .message-actions {
+  gap: 0;
+  margin: 8px 0 0 -4px;
+  height: 24px;
+  padding-left: 0;
+}
+.mode-cowork .small-action.icon-only {
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border-radius: 6px;
+}
+.mode-cowork .small-action.icon-only > .reply-glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
+.mode-cowork .message-actions > span {
+  opacity: 0;
+  font-size: 12px;
+  margin-left: 8px;
+}
+.mode-cowork .assistant-message:hover .message-actions > span,
+.mode-cowork .assistant-message:focus-within .message-actions > span {
+  opacity: 1;
+}
+:root[data-theme="light"] .mode-cowork .markdown {
+  color: var(--text);
+}
+/* Cowork tool groups read as a timeline: a dot per call joined by a 1px #2d2d2d
+   line. The icons are Claude's own tools; the dots and spacing here are
+   provisional. */
+.agent-activity-content.cowork-timeline {
+  margin-top: 8px;
+  border: 0;
+  border-radius: 0;
+}
+.agent-activity-content.cowork-timeline > * {
+  position: relative;
+  padding-left: 27px;
+  border-top: 0;
+}
+.agent-activity-content.cowork-timeline > *::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5b5a57;
+}
+.agent-activity-content.cowork-timeline > * + *::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: -12px;
+  height: 20px;
+  border-left: 1px solid #2d2d2d;
+}
+.agent-activity-content.cowork-timeline > .command-activity > summary,
+.agent-activity-content.cowork-timeline > .activity > summary {
+  padding-left: 0;
+}
+/* A message sent while the reply ran (E0): a user bubble in place. */
+.assistant-content > .user-message.steered-message,
+.agent-activity-content > .user-message.steered-message {
+  margin: 4px 0 24px auto;
+}
+
+.command-activity {
+  margin: 0 0 24px;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+.command-activity > summary {
+  -webkit-user-select: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: fit-content;
+  padding: 0 4px;
+  min-height: 24px;
+  color: #858580;
+  /* Settings → Transcript text size (transcript-text-size.css). */
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+  cursor: pointer;
+  list-style: none;
+}
+/* R-0728, R-0735, R-0759 (2.4 px/CSS): with the pointer on it the label
+   brightens to #cbcac5; unhovered rows stay #858580. */
+.command-activity > summary:is(:hover, :focus-visible) {
+  color: #cbcac5;
+}
+:root[data-theme="light"]
+  .command-activity
+  > summary:is(:hover, :focus-visible) {
+  color: var(--text);
+}
+.command-activity > summary::-webkit-details-marker {
+  display: none;
+}
+.command-activity[open] > summary > svg {
+  transform: rotate(90deg);
+}
+/* A row's focus ring is the accent line inside its edge, without the glow. */
+.command-activity > summary:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
+  border-radius: 6px;
+  box-shadow: none;
+}
+/* A task-list update (ChatPlanRow): the step row, unfolding the Plan panel's
+   list under it. */
+.chat-plan-steps {
+  margin: 6px 0 0;
+  padding: 0 4px;
+  font:
+    13px/19px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.command-card {
+  border: 1px solid #262625;
+  border-radius: 14px;
+  padding: 21.5px 12px 22.5px;
+  margin-top: 12px;
+  background: transparent;
+}
+.command-language,
+.command-output-label {
+  color: #a9a9a4;
+  font-size: 11px;
+  line-height: 16px;
+}
+.command-source pre,
+.command-output {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 9px 0 0;
+  padding: 0;
+  font:
+    12px/20px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+  color: #e0e0de;
+}
+.command-source code {
+  font: inherit;
+}

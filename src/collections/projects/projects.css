@@ -1,0 +1,1161 @@
+/* Projects list: docs/audit-live-2026-10-16/live/official-projects.txt.
+ * The captured comfortable density uses effective pixels at our 14px root.
+ * Uncaptured detail/dialog rules below retain their existing references. */
+/* CDS card tokens. */
+.prj-view {
+  --cds-surface-1: #151515;
+  --cds-surface-2: #1a1a19;
+  --cds-ring-color: hsl(from #fff h s l / 10%);
+  --cds-radius: 0.375rem;
+  --cds-pad-lg: 16px;
+  --cds-gap-xs: 8px;
+  --cds-gap-md: 16px;
+  --cds-font-size-body: 14px;
+  --cds-leading-body: 20px;
+  --cds-font-size-footnote: 13px;
+  --cds-leading-footnote: 17px;
+  --cds-text-primary: #f0efec;
+  --cds-text-secondary: #c3c2b7;
+  --cds-text-muted: #898781;
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  /* 40px each side; the reserved 8px gutter is part of the right one. */
+  padding: 48px 32px 48px 40px;
+  scrollbar-gutter: stable;
+}
+.prj-column {
+  max-width: 960px;
+  margin-inline: auto;
+}
+/* Student cards. */
+.prj-template-section {
+  margin-bottom: 24px;
+}
+.prj-template-section h2 {
+  margin-inline-start: 4px;
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--cds-text-secondary);
+}
+.prj-template-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+  align-items: stretch;
+}
+.prj-template-cards > button {
+  flex: 1;
+  width: 192px;
+  padding: 16px;
+  text-align: start;
+  border: 0.5px solid var(--cds-ring-color);
+  border-radius: 12px;
+  color: var(--cds-text-secondary);
+  background: linear-gradient(
+    var(--cds-surface-1),
+    color-mix(in oklab, var(--cds-surface-1) 30%, transparent)
+  );
+}
+.prj-template-cards > button:hover {
+  border-color: var(--border-strong);
+  color: var(--cds-text-primary);
+}
+.prj-template-cards > button:active {
+  transform: scale(0.995);
+}
+.prj-template-cards h3 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 500;
+}
+.prj-template-cards p {
+  margin: 0;
+  font-size: 14px;
+}
+@media (min-width: 1024px) {
+  .prj-template-cards > button {
+    width: 208px;
+  }
+}
+@media (max-width: 639px) {
+  .prj-template-cards > button {
+    flex-basis: 100%;
+  }
+}
+.prj-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  height: 64px;
+  padding: 8px 0 24px;
+}
+.prj-head h1,
+.prj-detail-head h1 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  /* The page heading's serif. */
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--cds-text-primary);
+}
+:root[data-reference-fonts="true"] .prj-detail-head h1 {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-optical-sizing: auto;
+}
+.prj-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.prj-anchor {
+  display: inline-flex;
+}
+.prj-tools .icon-button.prj-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text);
+}
+.prj-tools .icon-button.prj-icon:hover,
+.prj-tools .icon-button.prj-icon[aria-expanded="true"] {
+  background: #262626;
+}
+.prj-search {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(258px, 30vw);
+  height: 32px;
+  padding: 0 6px 0 11px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #1c1c1c;
+  color: #9a9a97;
+}
+.prj-search.wide {
+  width: 383px;
+}
+.prj-search:focus-within {
+  border-color: var(--focus-accent);
+}
+.prj-search input,
+.prj-search input:focus {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  color: #f5f5f5;
+}
+.prj-search > button {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--text);
+}
+.prj-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 106px;
+  margin-inline-start: 8px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  color: #0b0b0b;
+}
+.prj-new:hover {
+  background: #e8e8e6;
+}
+
+.prj-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* mb-3 text-label font-medium text-secondary. */
+.prj-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+}
+.prj-group-heading {
+  margin: 0 0 12px;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: 500;
+  color: var(--cds-text-secondary);
+}
+/* md grid utilities. */
+@media (min-width: 768px) {
+  .prj-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .prj-groups {
+    gap: 24px;
+  }
+}
+/* A row's cards are as tall as its tallest (the original's h-full item
+   and card in a grid row). */
+.prj-grid > li {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+/* Shared card utilities. */
+.prj-grid .prj-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 112px;
+  box-sizing: border-box;
+  gap: var(--cds-gap-xs);
+  padding: var(--cds-pad-lg);
+  border: 0;
+  border-radius: 12px;
+  background: var(--cds-surface-1);
+  box-shadow: inset 0 0 0 1px var(--cds-ring-color);
+  text-align: left;
+  color: inherit;
+  /* The original's page card: the fill steps at once on hover, only the press
+     eases back (200ms on the "out" curve, no spring) after a 98% squish in
+     60ms. */
+  --press-card-scale: var(--press-grid-card-scale);
+  transition: scale var(--motion-base) var(--ease-out);
+}
+.prj-grid .prj-card:hover {
+  background: var(--cds-surface-2);
+}
+.prj-card > strong {
+  overflow: hidden;
+  padding-inline-end: 40px;
+  font-size: var(--cds-font-size-body);
+  font-weight: 500;
+  line-height: var(--cds-leading-body);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--cds-text-primary);
+}
+/* Up to three lines. */
+.prj-card > span {
+  display: -webkit-box;
+  margin-bottom: var(--cds-gap-md);
+  overflow: hidden;
+  font-size: var(--cds-font-size-body);
+  line-height: var(--cds-leading-body);
+  color: var(--cds-text-secondary);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+/* Footer utilities and CDS tokens. */
+.prj-card > small {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--cds-font-size-footnote);
+  line-height: var(--cds-leading-footnote);
+  color: var(--cds-text-muted);
+}
+.prj-card-date {
+  position: relative;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.prj-card-badges {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  margin-inline-start: 12px;
+  gap: 8px;
+}
+.prj-card-folder,
+.prj-card-local {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+}
+.prj-card-local {
+  flex-shrink: 0;
+}
+.prj-card-folder {
+  min-width: 0;
+  max-width: 10rem;
+}
+.prj-card-folder > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prj-card-folder > svg,
+.prj-card-local > svg {
+  flex: none;
+}
+:root[data-theme="light"] .prj-card-folder,
+:root[data-theme="light"] .prj-card-local {
+  color: #52514e;
+}
+@media (pointer: coarse), (hover: none) {
+  .prj-card-date,
+  .prj-card-folder,
+  .prj-card-local {
+    pointer-events: none;
+  }
+}
+.prj-card-more {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--cds-text-secondary);
+  z-index: 1;
+  opacity: 0;
+  /* Shown at once with the card's hover; only the button's own fill eases. */
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.prj-grid > li:hover .prj-card-more,
+.prj-grid > li:focus-within .prj-card-more,
+.prj-grid > li.menu-open .prj-card-more,
+.prj-card-more.visible {
+  opacity: 1;
+}
+.prj-card-more:hover,
+.prj-card-more[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+/* A touch screen has no hover to reveal it. */
+@media (hover: none) {
+  .prj-card-more {
+    opacity: 1;
+  }
+}
+.prj-card-more.visible {
+  position: static;
+}
+/* The no-match line. */
+.prj-none {
+  margin: 40px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* One project. */
+.prj-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin: -8px 0 16px -6px;
+  padding: 0 8px 0 6px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: #a3a3a0;
+}
+.prj-back:hover {
+  background: #232323;
+  color: #f0f0ee;
+}
+.prj-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 40px;
+}
+.prj-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.prj-detail-description {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #b3b3b0;
+}
+.prj-start {
+  margin-top: 24px;
+}
+.prj-detail-label,
+.prj-side-head h2 {
+  margin: 32px 0 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #8f8f8c;
+}
+.prj-chats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.prj-chats button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% + 24px);
+  height: 48px;
+  margin: 0 -12px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+  color: var(--text);
+}
+.prj-chats button:hover {
+  background: #1d1d1d;
+}
+.prj-chats button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.prj-chats em {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: #262626;
+  font-size: 12px;
+  font-style: normal;
+  color: #a5a5a3;
+}
+.prj-chats time,
+.prj-muted {
+  flex-shrink: 0;
+  color: #8f8f8c;
+}
+.prj-muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+}
+.prj-detail-side {
+  align-self: start;
+  padding: 4px 16px 16px;
+  border: 1px solid #2b2b2b;
+  border-radius: 12px;
+}
+.prj-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.prj-side-head h2 {
+  margin: 12px 0 6px;
+}
+.prj-side-head button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-top: 6px;
+  border-radius: 6px;
+  color: #d9d9d6;
+}
+.prj-side-head button:hover {
+  background: var(--surface-hover);
+}
+.prj-instructions,
+.prj-path {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #d5d5d2;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+}
+
+/* Memory: the "Only you" pill as the Folder row's in R-1314; the memory in the
+   rail's muted small text cut at two lines, "Last updated …" under it at 60%, a
+   60% wide placeholder line while it loads, and a small secondary Try again 4px
+   under the failure line. */
+.prj-only-you {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  margin-top: 6px;
+  padding: 0 7px;
+  border: 1px solid #3a3a38;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 18px;
+  color: #a5a5a3;
+}
+.prj-overview-side .prj-memory-body {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.prj-overview-side .prj-memory-updated {
+  margin-top: 2px;
+  opacity: 0.6;
+}
+.prj-memory-placeholder {
+  display: flex;
+  align-items: center;
+  height: 17px;
+  margin-top: 4px;
+}
+.prj-memory-retry.secondary {
+  min-height: 28px;
+  margin-top: 4px;
+  padding: 4px 10px;
+}
+
+/*
+ * New project / Edit details: a 520px dialog with a 22px title 20px above the
+ * Name label, and 32px Cancel and Save.
+ */
+.modal:has(.prj-editor) {
+  width: 520px;
+}
+.modal:has(.prj-editor) h2 {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: normal;
+}
+/* The shared dialog header sits 3px lower than these were measured. */
+.modal:has(.prj-editor) > header {
+  margin-top: -3px;
+}
+.modal:has(.prj-editor:not(.create)) > header {
+  margin-bottom: 8px;
+}
+.prj-editor:not(.create) .prj-editor-actions > button {
+  height: 32px;
+}
+.prj-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.modal .prj-editor > label {
+  margin: 0;
+}
+/*
+ * The label's own 6px gap spaces the field, not the shared 4px margin too, and
+ * the one-line fields stay 33px.
+ */
+.modal .prj-editor > label > input:not([type="checkbox"]):not([type="radio"]),
+.modal .prj-editor > label > textarea {
+  margin-top: 0;
+}
+.modal .prj-editor > label > input:not([type="checkbox"]):not([type="radio"]) {
+  height: 33px;
+}
+/* Create a project. */
+/* 22px title 42px below the dialog edge, name field to the second label 33px,
+   78px description, the dialog 392px tall. */
+.modal:has(.prj-editor.create) > header {
+  margin-top: 6px;
+  margin-bottom: 21px;
+}
+.modal:has(.prj-editor.create) h2 {
+  font-size: 22px;
+}
+.modal .prj-editor.create > label:first-of-type {
+  margin-bottom: 10px;
+}
+.modal .prj-editor.create > label > textarea {
+  min-height: 78px;
+}
+.modal .prj-editor.create > label {
+  font-weight: 500;
+}
+.modal .prj-editor > label > input,
+.modal .prj-editor > label > textarea {
+  background: #2a2a2a;
+}
+.prj-use-folder {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin: -1px 0 9px 4px;
+  padding: 0 6px;
+  border-radius: 7px;
+  font-size: 15px;
+  color: var(--text);
+}
+.prj-use-folder:hover {
+  background: var(--surface-hover);
+}
+:root[data-theme="light"] .modal .prj-editor > label > input,
+:root[data-theme="light"] .modal .prj-editor > label > textarea {
+  background: #fff;
+}
+:root[data-theme="light"] .prj-use-folder {
+  color: #141413;
+}
+:root[data-theme="light"] .prj-use-folder:hover {
+  background: #efefed;
+}
+.prj-editor > label,
+.prj-editor-folder > span {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.prj-editor > label > input,
+.prj-editor > label > textarea {
+  margin: 0;
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.prj-editor > label > input {
+  height: 33px;
+  padding-block: 0;
+}
+.prj-editor .prj-create-name label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 500;
+}
+.prj-editor .prj-create-name input {
+  height: 33px;
+  margin-top: 0;
+}
+/* The captured dialog focuses fields with a blue edge, not the accent ring. */
+.modal .prj-editor > label > input:focus,
+.modal .prj-editor > label > textarea:focus {
+  border-color: var(--focus-accent);
+  box-shadow: none;
+}
+.prj-editor > label > textarea {
+  resize: vertical;
+}
+.prj-editor-folder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.prj-editor-folder > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.prj-folder {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 33px;
+  padding: 0 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+  color: inherit;
+}
+.prj-folder > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.prj-folder-clear {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: inherit;
+}
+.prj-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+.prj-editor-actions > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.prj-editor-actions > .prj-cancel {
+  border: 1px solid transparent;
+  background: #333;
+  color: var(--text);
+}
+.prj-editor-actions > .prj-save {
+  background: #fff;
+  color: #0b0b0b;
+}
+
+@media (max-width: 760px) {
+  .prj-view {
+    padding-inline: 20px;
+    scrollbar-gutter: auto;
+  }
+  .prj-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Light. */
+:root[data-theme="light"] .prj-head h1,
+:root[data-theme="light"] .prj-detail-head h1,
+:root[data-theme="light"] .prj-chats button {
+  color: #141413;
+}
+:root[data-theme="light"] .prj-tools .icon-button.prj-icon,
+:root[data-theme="light"] .prj-card-more,
+:root[data-theme="light"] .prj-side-head button {
+  color: #2b2b29;
+}
+:root[data-theme="light"] .prj-tools .icon-button.prj-icon:hover,
+:root[data-theme="light"]
+  .prj-tools
+  .icon-button.prj-icon[aria-expanded="true"],
+:root[data-theme="light"] .prj-side-head button:hover,
+:root[data-theme="light"] .prj-back:hover {
+  background: #efefed;
+}
+:root[data-theme="light"] .prj-search {
+  border-color: #dcdcda;
+  background: #fff;
+  color: #767674;
+}
+:root[data-theme="light"] .prj-search:focus-within {
+  border-color: #4d80d0;
+}
+:root[data-theme="light"] .prj-search input,
+:root[data-theme="light"] .prj-search > button {
+  color: #141413;
+}
+:root[data-theme="light"] .prj-new,
+:root[data-theme="light"] .prj-editor-actions > .prj-save {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .prj-new:hover {
+  background: #2e2e2c;
+}
+:root[data-theme="light"] .prj-detail-side {
+  border-color: #e5e5e3;
+}
+:root[data-theme="light"] .prj-detail-description {
+  color: #5d5d5b;
+}
+:root[data-theme="light"] .prj-view {
+  --cds-surface-1: #fcfcfb;
+  --cds-surface-2: #fff;
+  --cds-ring-color: hsl(from #0b0b0b h s l / 10%);
+  --cds-text-primary: #0b0b0b;
+  --cds-text-secondary: #52514e;
+}
+:root[data-theme="light"] .prj-muted,
+:root[data-theme="light"] .prj-chats time,
+:root[data-theme="light"] .prj-detail-label,
+:root[data-theme="light"] .prj-side-head h2,
+:root[data-theme="light"] .prj-back {
+  color: #767674;
+}
+:root[data-theme="light"] .prj-chats button:hover {
+  background: #f3f3f1;
+}
+:root[data-theme="light"] .prj-chats em {
+  background: #efefed;
+  color: #5e5e5c;
+}
+:root[data-theme="light"] .prj-instructions,
+:root[data-theme="light"] .prj-path,
+:root[data-theme="light"] .prj-editor-actions > .prj-cancel {
+  border-color: #e0e0de;
+  background: #fff;
+  color: #141413;
+}
+
+/* Project context files (R13-D). About 146×119, 1px border, radius 8, name on
+   up to two lines at 13px, the size at 11px under it and the type badge at the
+   foot. The capacity bar, Add text, the remove button and the dark colours are
+   provisional. */
+.prj-knowledge-actions {
+  display: flex;
+  gap: 2px;
+}
+.prj-knowledge-actions button:disabled {
+  opacity: 0.5;
+}
+.prj-capacity {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 2px 0 10px;
+}
+/* The reference design Progress sm geometry. */
+.prj-capacity-bar {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2147483647px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.prj-capacity-fill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: 2147483647px;
+  transition: width 300ms ease-out;
+}
+.prj-capacity-fill.accent {
+  background: #2a78d6;
+}
+.prj-capacity-fill.warning {
+  background: #fab219;
+}
+.prj-capacity-fill.danger {
+  background: #d03b3b;
+}
+.prj-capacity-copy {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  color: #8f8f8c;
+  font-size: 12px;
+}
+.prj-capacity-copy small {
+  overflow: hidden;
+  flex-shrink: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prj-capacity-copy span {
+  flex-shrink: 0;
+}
+:root[data-theme="light"] .prj-capacity-bar {
+  background: rgba(11, 11, 11, 0.05);
+}
+:root[data-theme="light"] .prj-capacity-copy {
+  color: #8f8f8c;
+}
+.prj-files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+}
+.prj-files li {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  min-height: 119px;
+  flex-direction: column;
+  padding: 10px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #1f1f1e;
+}
+.prj-files li > strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.prj-files li > small {
+  margin-top: 4px;
+  color: #8f8f8c;
+  font-size: 11px;
+}
+.prj-file-type {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 1px 4px;
+  border: 1px solid #4a4a48;
+  border-radius: 4px;
+  color: #c9c9c6;
+  font-size: 10px;
+  line-height: 14px;
+}
+.prj-files li > button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--surface-hover);
+  color: #d9d9d6;
+  opacity: 0;
+}
+.prj-files li:hover > button,
+.prj-files li > button:focus-visible {
+  opacity: 1;
+}
+.prj-text-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.prj-text-form input,
+.prj-text-form textarea {
+  font-weight: 400;
+}
+.prj-text-form textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+.prj-text-form .button-row {
+  justify-content: flex-end;
+}
+:root[data-theme="light"] .prj-files li {
+  border-color: #cfcfcf;
+  background: #ffffff;
+  /* A 3px soft shadow under each card's bottom edge. */
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06);
+}
+:root[data-theme="light"] .prj-file-type {
+  border-color: #d6d5d0;
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .prj-files li > button {
+  background: #ececea;
+  color: #2b2b29;
+}
+
+:root[data-theme="light"] .prj-only-you {
+  border-color: #e0e0de;
+  color: #5e5e5c;
+}
+
+/* The web's Projects page: 500-weight title, cards on #151515 with a white 10%
+   inner ring (112 high, hover #1a1a19), name 500 in #f0efec, description
+   #c3c2b7 4px under it, date 13/17 #898781 with 24px above it. */
+:root[data-surface="web"] .prj-head h1 {
+  font-weight: 500;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .prj-head h1 {
+  color: #f0efec;
+}
+/* Your projects · Archived, drawn as the chats page's tabs (history.css). */
+.prj-tabs {
+  display: flex;
+  gap: 3px;
+  margin: 0 0 16px;
+}
+.prj-tabs > button {
+  height: 31.7px;
+  padding: 0 11.25px;
+  border-radius: 8px;
+  color: #8e8d89;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.prj-tabs > button:hover {
+  background: var(--fill-ghost-hover);
+  color: #f7f6f4;
+}
+.prj-tabs > button[aria-selected="true"] {
+  background: #272727;
+  color: #f7f6f4;
+}
+:root[data-theme="light"] .prj-tabs > button {
+  color: var(--text-muted);
+}
+:root[data-theme="light"]
+  .prj-tabs
+  > button:is(:hover, [aria-selected="true"]) {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .prj-tabs > button[aria-selected="true"] {
+  background: #efefed;
+}
+/* The live title link stretches over the card; secondary actions stay separate. */
+.prj-card > strong {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.prj-card-link {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  text-align: start;
+}
+.prj-card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.prj-card-link:focus-visible::after {
+  outline: 1px solid var(--focus);
+  outline-offset: 2px;
+}
+.prj-card-pin {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  box-sizing: border-box;
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0;
+  margin-inline-start: 6px;
+  border-radius: 5px;
+  color: var(--cds-text-muted);
+}
+.prj-card-pin:hover {
+  background: var(--fill-ghost-hover);
+}
+/* A neutral Badge, h-5 ms-2. */
+.prj-card-example {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: 20px;
+  margin-inline-start: 8px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: var(--cds-bg-neutral, rgb(255 255 255 / 5%));
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--cds-text-secondary);
+}
+
+/* Project read skeleton: Source shared-18 DK defaults, one column until md. */
+.prj-loading-grid .sk-cards {
+  margin-top: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 768px) {
+  .prj-loading-grid .sk-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+.prj-read-state .empty-state {
+  padding-bottom: 0;
+}
+
+/* Fresh official Edit details: 520x360 at default textarea size. */
+.modal.prj-details-dialog {
+  position: relative;
+  width: 520px;
+  border: 0;
+  padding: 20px 24px 24px;
+}
+.modal.prj-details-dialog > header {
+  height: 28px;
+  margin: 0 0 12px;
+}
+.modal.prj-details-dialog > header > button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+}
+.modal.prj-details-dialog .prj-details-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal.prj-details-dialog .prj-details-form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+}
+.modal.prj-details-dialog form.prj-details-form > label > .prj-details-input {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 20px;
+}
+.modal.prj-details-dialog .prj-details-input:is(input) {
+  height: 32px;
+}
+.modal.prj-details-dialog .prj-details-input:is(textarea) {
+  height: 136px;
+  min-height: 136px;
+  padding: 8px 12px;
+  resize: vertical;
+}
+.modal.prj-details-dialog .prj-details-form > .button-row {
+  margin-top: 0;
+}

@@ -1,0 +1,100 @@
+/*
+ * Edit local environment: the 520px dialog of
+ * src/styles/80-dialogs-responsive.css with one 14px semibold label, a 176px
+ * monospace field (#272725, placeholder #959593), a 13px note whose ".env
+ * format" is a link, then a filled Cancel (#373735) and a white Save changes.
+ */
+.modal .local-environment > label {
+  display: block;
+  margin: 19px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.modal .local-environment > textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 176px;
+  margin: 0;
+  resize: none;
+  padding: 8px 12px;
+  border: 1px solid #323230;
+  border-radius: 8px;
+  background: #272725;
+  color: var(--text);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 14px;
+  line-height: 20px;
+}
+.modal .local-environment > textarea::placeholder {
+  color: #959593;
+}
+.modal .local-environment > textarea:focus {
+  border-color: #4577d0;
+  outline: none;
+}
+.local-environment-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #9c9b97;
+}
+.local-environment-note a {
+  color: var(--link-text);
+  text-decoration: underline;
+}
+.modal .local-environment > .button-row {
+  margin-top: 26px;
+  justify-content: flex-end;
+}
+.modal .local-environment .button-row > button {
+  border: 0;
+}
+.modal .local-environment .button-row > .secondary {
+  background: #373735;
+  color: var(--text);
+}
+.modal .local-environment .button-row > .primary {
+  background: #fffffd;
+  color: #1f1f1e;
+}
+:root[data-theme="light"] .modal .local-environment > textarea {
+  background: var(--bg);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+:root[data-theme="light"] .modal .local-environment > textarea::placeholder {
+  color: var(--text-muted);
+}
+:root[data-theme="light"] .modal .local-environment .button-row > .secondary {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+:root[data-theme="light"] .modal .local-environment .button-row > .primary {
+  background: #141413;
+  color: #fff;
+}
+:root[data-theme="light"] .local-environment-note {
+  color: var(--text-secondary);
+}
+/* A line the editor can't use: the field's error in the danger text colour, in
+   place of the note. */
+.local-environment-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #ec7e7e;
+}
+:root[data-theme="light"] .local-environment-error {
+  color: #8e2626;
+}
+.modal .local-environment > textarea[aria-invalid="true"] {
+  border-color: #ec7e7e;
+}
+:root[data-theme="light"]
+  .modal
+  .local-environment
+  > textarea[aria-invalid="true"] {
+  border-color: #8e2626;
+}

@@ -1,0 +1,156 @@
+/* Active QuietProjectRail. The older filled rail is a separate branch. */
+.prj-hub-cards {
+  --prj-hub-primary: #f0efec;
+  --prj-hub-secondary: #c3c2b7;
+  --prj-hub-muted: #898781;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0;
+}
+:root[data-theme="light"] .prj-hub-cards {
+  --prj-hub-primary: var(--text-strong);
+  --prj-hub-secondary: var(--text-secondary);
+  --prj-hub-muted: var(--text-muted);
+}
+.prj-hub-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 53px;
+  margin-inline: -12px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: linear-gradient(var(--prj-chat-rule), var(--prj-chat-rule)) top /
+    calc(100% - 24px) 1px no-repeat;
+}
+.prj-hub-card:first-child {
+  background-image: none;
+}
+.prj-hub-card:is(:hover, :focus-within) {
+  background-color: var(--surface-hover);
+  background-image: none;
+}
+.prj-hub-card:has(+ .prj-hub-card:hover) {
+  background-image: none;
+}
+.prj-hub-card-main {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 12px;
+  border-radius: inherit;
+  text-align: start;
+}
+/* The leading icon (an icon-font glyph, or an SVG) keeps its size in the
+   secondary ink; the text column after it takes the rest. */
+.prj-hub-card-main > :is(svg, .app-icon) {
+  flex: none;
+  color: var(--prj-hub-secondary);
+}
+.prj-hub-card-main > span:not(.app-icon) {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  padding-inline-end: 43px;
+}
+.prj-hub-card-title,
+.prj-hub-card-meta {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prj-hub-card-title {
+  flex: none;
+  color: var(--prj-hub-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.prj-hub-card-meta {
+  flex: 1;
+  min-width: 0;
+  color: var(--prj-hub-muted);
+  font-size: 12px;
+  line-height: 17px;
+}
+.prj-hub-add {
+  position: relative;
+  flex: none;
+  margin-inline-start: auto;
+  margin-inline-end: -8px;
+  width: 47px;
+  height: 28px;
+  padding: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--prj-hub-primary);
+  font-size: 14px;
+}
+.prj-hub-add:hover {
+  background: var(--surface-hover);
+}
+.prj-hub-card-main:focus-visible,
+.prj-hub-add:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.prj-hub-dialog:not(.prj-hub-context-dialog) .prj-side-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.prj-hub-dialog:not(.prj-hub-context-dialog) .prj-side-head h2 {
+  flex: 1;
+}
+.prj-hub-dialog:not(.prj-hub-context-dialog) .prj-side-head button {
+  padding: 4px;
+}
+.prj-hub-task-list {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+.prj-hub-task-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Opened Context, live 1016. The 1280×720 capture has one 1152×576 dialog and a
+   432px list pane. */
+.modal.prj-hub-context-dialog {
+  width: min(720px, calc(100vw - 48px));
+  height: min(80dvh, 760px);
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface, #20201f);
+  box-shadow: 0 0 0 1px var(--border-subtle, rgb(255 255 255 / 8%));
+}
+.modal.prj-hub-context-dialog > header {
+  display: none;
+}
+@media (min-width: 768px) {
+  .modal.prj-hub-context-dialog:has(.prj-knowledge[data-preview-open]) {
+    width: min(1152px, calc(100vw - 48px));
+  }
+}
+:root:not([data-theme="light"]) .modal.prj-hub-context-dialog {
+  background: #20201f;
+}

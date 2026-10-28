@@ -1,0 +1,6 @@
+{
+  "name": "vite-app",
+  "private": true,
+  "scripts": { "build": "vite build", "dev": "vite", "preview": "vite preview" },
+  "devDependencies": { "vite": "^7.0.0" }
+}

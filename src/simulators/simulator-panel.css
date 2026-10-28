@@ -1,0 +1,1364 @@
+/*
+ * The iOS Simulator and Android Emulator panes of Code. Loaded with the panes
+ * (a lazy chunk), not with the app. The setup, attach and permission screens
+ * take their sizes from the original's: 48px above and 28px below a 24px
+ * gutter, a 22px title, 14px body, 12px-radius tiles with 14px padding 8px
+ * apart, a 40px full-width button with 8px corners. Colours are the app's own
+ * tokens, so both themes follow.
+ */
+.work-panel.simulator-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.work-panel.simulator-panel > header {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 3px 0 12px;
+  border-bottom: 0;
+}
+.work-panel.simulator-panel > header strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-icon-button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.sim-icon-button:hover:not(:disabled),
+.sim-icon-button[aria-expanded="true"],
+.sim-icon-button[aria-pressed="true"] {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.sim-icon-button.danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* One screen of the pane: setup, attach, permission, shutting down. */
+.sim-shell {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 24px 28px;
+  color: var(--text);
+}
+.sim-scroll {
+  display: flex;
+  flex: auto;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 -24px;
+  padding: 0 24px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sim-title {
+  margin: 0;
+  text-align: center;
+  text-wrap: pretty;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+.sim-body {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.sim-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 22px;
+}
+.sim-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--alpha-2);
+  text-align: left;
+}
+.sim-tile.upcoming {
+  background: var(--alpha-1);
+}
+.sim-tile-glyph {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  width: 16px;
+  padding-top: 1px;
+}
+.sim-tile-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--success);
+  color: var(--bg);
+}
+.sim-tile-circle {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--text);
+  border-radius: 50%;
+}
+.sim-tile.upcoming .sim-tile-circle {
+  border-color: var(--border);
+}
+.sim-tile-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.sim-tile.done .sim-tile-label {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.sim-tile.upcoming .sim-tile-label {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.sim-tile-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.sim-tile.done .sim-tile-sub,
+.sim-tile.upcoming .sim-tile-sub {
+  color: var(--text-muted);
+}
+.sim-command {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.sim-command code {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.sim-command button {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.sim-command button:hover {
+  background: var(--fill-ghost-hover);
+}
+.sim-polling {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.sim-checking {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  color: var(--text-secondary);
+}
+.sim-center {
+  display: grid;
+  flex: 1;
+  grid-template-rows: 1fr auto 1fr;
+  justify-content: center;
+  justify-items: center;
+  gap: 16px;
+}
+.sim-center .sim-title {
+  font-size: 18px;
+}
+.sim-footer {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding-top: 14px;
+}
+.sim-footnote {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.sim-primary,
+.sim-cancel {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.sim-primary {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+.sim-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 88%, var(--bg));
+}
+.sim-primary:disabled,
+.sim-cancel:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.sim-cancel {
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.sim-cancel:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.sim-split {
+  display: flex;
+  gap: 1px;
+  width: 100%;
+  border-radius: 8px;
+}
+.sim-split .sim-primary {
+  flex: 1;
+  border-radius: 8px 0 0 8px;
+}
+.sim-split-caret {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 40px;
+  border-radius: 0 8px 8px 0;
+  background: var(--primary);
+  color: var(--primary-text);
+}
+.sim-split-caret:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 88%, var(--bg));
+}
+.sim-split-caret:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.sim-error {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--danger);
+}
+
+/* Let Claudex use this simulator? */
+.sim-chip {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--alpha-2);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+.sim-permission-body {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.sim-permission-body + .sim-permission-body {
+  margin-top: 8px;
+}
+.sim-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.sim-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--alpha-2);
+}
+.sim-bullet svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--text-muted);
+}
+.sim-bullet p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  text-align: left;
+}
+.sim-permission-footer {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  padding-top: 16px;
+}
+.sim-permission-footer > * {
+  flex: 1;
+}
+
+/* The attached device: a picker row, the screen and the control bar. The 40px
+ tall, 12px side padding, 8px between the picker and the zoom buttons. */
+.sim-device {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.sim-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+}
+.sim-bar-spring {
+  flex: 1;
+  min-width: 0;
+}
+.sim-picker {
+  display: inline-flex;
+  flex-shrink: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+.sim-picker:hover:not([aria-disabled="true"]),
+.sim-picker[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.sim-picker[aria-disabled="true"] {
+  cursor: default;
+}
+/* Name over detail, left-aligned; a long name shrinks before its last characters. */
+.sim-picker-face {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  text-align: left;
+}
+.sim-picker-name {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text);
+}
+.sim-picker-head {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-picker-tail {
+  flex-shrink: 0;
+  white-space: pre;
+}
+.sim-picker-detail {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-picker-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+/* Zoom out | Zoom to fit, Physical size, Zoom in (2px apart). */
+.sim-zoom {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
+.sim-zoom .sim-icon-button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.sim-zoom .sim-icon-button[aria-disabled="true"]:hover {
+  background: none;
+  color: var(--text-secondary);
+}
+.sim-zoom-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 4px 3px;
+  background: var(--border);
+}
+.sim-picker svg {
+  flex: none;
+  color: var(--text-muted);
+}
+.sim-notice {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 10px;
+  margin: 0 12px 6px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--alpha-2);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+.sim-notice button {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+.sim-notice button:hover {
+  background: var(--fill-ghost-hover);
+}
+.sim-stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 4px 12px;
+}
+.sim-screen {
+  position: relative;
+  display: block;
+  /* The picture's size attributes only give its ratio; the stage sizes it. */
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1px var(--border-strong);
+  background: #000;
+  object-fit: contain;
+  user-select: none;
+  touch-action: none;
+  cursor: pointer;
+  outline: none;
+}
+.sim-screen:focus-visible {
+  box-shadow: var(--focus-shadow);
+}
+.sim-screen.android {
+  border-radius: 22px;
+}
+/* Zoomed: the picture keeps its size and the stage scrolls; auto margins
+ centre it while it is smaller than the stage. */
+.sim-stage.zoomed {
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sim-stage.zoomed .sim-screen {
+  flex: none;
+  max-width: none;
+  max-height: none;
+  margin: auto;
+}
+.sim-screen-wait {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.sim-controls {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: 12px 12px 8px;
+}
+.sim-pill {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+
+/* The control bar's dividers, recording time and Stop recording. */
+.sim-pill-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 4px 3px;
+  background: var(--border);
+}
+.sim-icon-button.sim-danger,
+.sim-icon-button.sim-danger:hover:not(:disabled) {
+  color: var(--danger);
+}
+.sim-icon-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.sim-rec-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline: 8px 5px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--danger);
+}
+.sim-rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: currentColor;
+}
+
+/*
+ * Simulator menus: Edit, Device and View as small ghost buttons in a row,
+ * styled as the device picker's button.
+ */
+.sim-menus {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 5px;
+  padding: 8px 12px 5px;
+}
+.sim-menu-trigger {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+.sim-menu-trigger:hover:not(:disabled),
+.sim-menu-trigger[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.sim-menu-trigger:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* "FPS: 3" at the end of the picker row, before the zoom buttons. */
+.sim-bar-spring {
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.sim-fps {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* The stage and the saved capture in its corner. */
+.sim-stage-frame {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  container-type: size;
+}
+.sim-stage-frame[hidden] {
+  display: none;
+}
+
+/*
+ * 16px from the stage's end and bottom, at most 240px (40% of the stage's
+ * height, 60% of its width), a card's border, radius and shadow. It slides in
+ * from 16px over 300ms (a screenshot flies from the screen over 400ms) and
+ * fades the same way out.
+ */
+.sim-capture {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  transform-origin: top left;
+  opacity: 0;
+  transform: translateX(16px);
+  transition:
+    opacity 300ms ease-out,
+    transform 300ms ease-out;
+  pointer-events: none;
+}
+.sim-capture[data-shown] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.sim-capture[data-flying] {
+  transition-duration: 400ms;
+}
+:root[dir="rtl"] .sim-capture {
+  right: auto;
+  left: 16px;
+}
+.sim-capture-button {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.sim-capture-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+.sim-capture-button img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(60cqw, 240px);
+  max-height: min(40cqh, 240px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sim-capture {
+    transform: none;
+  }
+}
+
+/*
+ * Simulator logs: a drawer under the stage. The head (4px 8px, 4px apart): Min
+ * level, the filter, the count, Full height, Clear view, Close logs. Columns of
+ * 12ch time, 5ch level, the scope (widest label up to 28ch) and the message,
+ * 8px apart in the caption size of the code font; levels take the muted,
+ * secondary, primary or danger colour.
+ */
+.sim-logs {
+  position: relative;
+  display: flex;
+  flex: 0 0 40%;
+  flex-direction: column;
+  min-height: 96px;
+  border-top: 1px solid var(--border);
+}
+.sim-logs > .resize-handle[data-orientation] {
+  position: absolute;
+  inset-inline: 0;
+  top: -6px;
+  z-index: 1;
+}
+.sim-stage-row[hidden] + .sim-logs {
+  flex: 1 1 auto;
+}
+.sim-logs-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+}
+.sim-logs-level {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.sim-logs-level:hover,
+.sim-logs-level[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.sim-logs-filter {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+.sim-logs-filter:focus-within {
+  border-color: var(--border-strong);
+}
+.sim-logs-filter input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+}
+.sim-logs-count {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.sim-logs-tool {
+  width: 24px;
+  height: 24px;
+}
+.sim-logs-note {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.sim-logs-columns,
+.sim-log-row {
+  display: grid;
+  grid-template-columns: 12ch 5ch var(--log-scope, 12ch) minmax(0, 1fr);
+  gap: 8px;
+  padding: 0 8px;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+.sim-logs-columns {
+  flex-shrink: 0;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  user-select: none;
+}
+/* The reference design: inline-end handle. */
+.sim-logs-scope-column {
+  position: relative;
+  min-width: 0;
+}
+.sim-logs-scope-column > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-logs-scope-resize {
+  inset-inline-end: calc(
+    -6px - (var(--cds-ring-outer, 0px) - var(--cds-ring-inner, 0px)) / 2
+  );
+}
+.sim-logs-frame {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.sim-logs-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overflow-anchor: none;
+  cursor: text;
+  user-select: text;
+  outline: none;
+}
+.sim-logs-list:focus-visible {
+  box-shadow: var(--focus-shadow);
+}
+.sim-log-row {
+  align-items: start;
+  line-height: 1.5;
+}
+.sim-log-time {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  user-select: none;
+}
+.sim-log-level {
+  text-transform: uppercase;
+  user-select: none;
+}
+.sim-log-row[data-log-level="debug"] {
+  color: var(--text-muted);
+}
+.sim-log-row[data-log-level="info"] {
+  color: var(--text-secondary);
+}
+.sim-log-row[data-log-level="default"] {
+  color: var(--text);
+}
+.sim-log-row[data-log-level="error"],
+.sim-log-row[data-log-level="fault"],
+.sim-log-row[data-log-level="crash"] {
+  color: var(--danger);
+}
+.sim-log-scope {
+  justify-self: start;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--alpha-1);
+  font: inherit;
+  color: var(--text-muted);
+  user-select: none;
+}
+.sim-log-scope span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-log-scope:hover {
+  color: var(--text);
+}
+.sim-log-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.sim-logs-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 12px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.sim-logs-jump {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 8px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.sim-logs-jump button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  color: var(--text);
+  pointer-events: auto;
+}
+.sim-logs-jump button:hover {
+  background: var(--fill-ghost-hover);
+}
+
+/* In the dock a card that is not the focused one dims and shows its header
+ buttons only while hovered, as the other cards do (app/tool-dock.css). */
+.tool-dock[data-split]:not([data-focus="ios-simulator"]) .ios-simulator-panel,
+.tool-dock[data-split]:not([data-focus="android-emulator"])
+  .android-emulator-panel {
+  filter: opacity(0.75) saturate(0.85);
+}
+.tool-dock[data-split]:not([data-focus="ios-simulator"])
+  .ios-simulator-panel:not(:hover)
+  > header
+  button:not(:focus-visible),
+.tool-dock[data-split]:not([data-focus="android-emulator"])
+  .android-emulator-panel:not(:hover)
+  > header
+  button:not(:focus-visible) {
+  opacity: 0;
+}
+/* Rename simulator: the field and the reason under it. */
+.sim-rename-field {
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  padding: 0 11px;
+  font-size: 14px;
+}
+.sim-rename-error {
+  margin: 6px 0 0;
+  color: #ec7e7e;
+  font-size: 12px;
+  line-height: 15px;
+}
+:root[data-theme="light"] .sim-rename-error {
+  color: #8e2626;
+}
+/* Inspect: over the picture, the hovered element ring-1 in fill-accent on 18%
+ of it, the selected one ring-2 on 30%, both rounded; the hover chip in
+ caption on fill-accent above the element; the comment card (w-72, padding sm)
+ with the title row, the note field and Add to chat. */
+.sim-inspect-layer {
+  position: absolute;
+  z-index: 20;
+  cursor: crosshair;
+}
+.sim-inspect-box {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 4px;
+  pointer-events: none;
+}
+.sim-inspect-box.hover {
+  box-shadow: inset 0 0 0 1px #2a78d6;
+  background: color-mix(in srgb, #2a78d6 18%, transparent);
+}
+.sim-inspect-box.selected {
+  box-shadow: inset 0 0 0 2px #2a78d6;
+  background: color-mix(in srgb, #2a78d6 30%, transparent);
+}
+.sim-inspect-chip {
+  position: absolute;
+  z-index: 30;
+  max-width: 100%;
+  padding: 0 4px;
+  overflow: hidden;
+  transform: translateY(calc(-100% - 2px));
+  border-radius: 4px;
+  background: #2a78d6;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sim-inspect-card {
+  position: absolute;
+  z-index: 40;
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: #20201f;
+  box-shadow:
+    0 1px 2px 0 rgb(11 11 11 / 6%),
+    0 2px 8px 0 #0000003d;
+}
+.sim-inspect-card-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sim-inspect-card-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.sim-inspect-card-title > svg {
+  flex-shrink: 0;
+}
+.sim-inspect-card-title > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-inspect-card-title > span {
+  flex-shrink: 0;
+  max-width: calc(100% - 4px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-inspect-card-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+.sim-inspect-icon {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.sim-inspect-icon:hover:not(:disabled) {
+  background: rgb(255 255 255 / 5%);
+}
+.sim-inspect-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.sim-inspect-card textarea {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 160px;
+  padding: 6px 8px;
+  resize: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 19px;
+}
+.sim-inspect-card-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+.sim-inspect-card-foot > button {
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+:root[data-theme="light"] .sim-inspect-card {
+  border-color: rgb(11 11 11 / 10%);
+  background: #fff;
+}
+:root[data-theme="light"] .sim-inspect-card-title,
+:root[data-theme="light"] .sim-inspect-icon {
+  color: #52514e;
+}
+:root[data-theme="light"] .sim-inspect-card-title > strong {
+  color: #0b0b0b;
+}
+/* Min(60%, clamp(320px, 45%, 400px)) wide; header px-md py-sm with "Inspect" in
+ body-medium; tree rows in caption, the selected one bg-accent text-accent,
+ the hovered one fill-ghost-hover; Properties under a rule). */
+.sim-stage-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.sim-stage-row[hidden] {
+  display: none;
+}
+.sim-stage-row > .sim-stage-frame {
+  min-width: 0;
+}
+.sim-inspect-panel {
+  display: flex;
+  width: min(60%, clamp(320px, 45%, 400px));
+  flex-shrink: 0;
+  flex-direction: column;
+  min-height: 0;
+  border-inline-start: 1px solid rgb(255 255 255 / 10%);
+}
+.sim-inspect-panel-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+}
+.sim-inspect-panel-head > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sim-inspect-panel-note {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 8px;
+  color: #898781;
+  font-size: 11px;
+  line-height: 17px;
+  text-align: center;
+}
+.sim-inspect-panel-error {
+  margin: 0 8px 6px;
+  color: #ec7e7e;
+  font-size: 12px;
+  line-height: 15px;
+}
+.sim-inspect-tree {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 120px;
+  overflow: auto;
+  padding: 4px 0;
+}
+.sim-inspect-row {
+  display: flex;
+  min-height: 18px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding-block: 2px;
+  padding-inline-end: 8px;
+  color: var(--text);
+  font-size: 11px;
+  line-height: 17px;
+  white-space: nowrap;
+  cursor: default;
+}
+.sim-inspect-row[data-hovered] {
+  background: rgb(255 255 255 / 7.5%);
+}
+.sim-inspect-row[aria-selected="true"] {
+  background: #032042;
+  color: #6da7ec;
+}
+.sim-inspect-row-name {
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0.75;
+  text-overflow: ellipsis;
+}
+.sim-inspect-properties {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  max-height: 45%;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+.sim-inspect-properties-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+}
+.sim-inspect-properties-head > span {
+  flex: 1;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+}
+.sim-inspect-text-button {
+  display: inline-flex;
+  height: 20px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sim-inspect-text-button:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+.sim-inspect-properties dl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0 8px 8px;
+  overflow: auto;
+  user-select: text;
+}
+.sim-inspect-properties dl > div {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 15px;
+}
+.sim-inspect-properties dt {
+  color: #898781;
+}
+.sim-inspect-properties dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+:root[data-theme="light"] .sim-inspect-panel,
+:root[data-theme="light"] .sim-inspect-properties {
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .sim-inspect-panel-head > span,
+:root[data-theme="light"] .sim-inspect-row,
+:root[data-theme="light"] .sim-inspect-properties-head > span,
+:root[data-theme="light"] .sim-inspect-properties dd {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .sim-inspect-row[data-hovered] {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .sim-inspect-row[aria-selected="true"] {
+  background: #cde2fb;
+  color: #184f95;
+}
+:root[data-theme="light"] .sim-inspect-text-button {
+  color: #52514e;
+}
+/* A foldable's hinge angle. */
+.sim-hinge {
+  width: 120px;
+  margin: 0;
+  accent-color: #2a78d6;
+}
+/* Pt-[54px], mb-2.5, gap-sm, rounded-full, py-xs px-md, and a 5.5ch percentage
+ readout. */
+.sim-controls-hinge {
+  padding-top: 54px;
+}
+.sim-device-pose {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.sim-hinge-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.sim-hinge-value {
+  min-width: 5.5ch;
+  white-space: nowrap;
+  text-align: end;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+/* The log drawer's crash banner (danger) with Go to crash, and Load older lines
+ as a ghost xs button in the note row. */
+.sim-logs-crash {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 6px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, #d03b3b 16%, transparent);
+  color: #ec7e7e;
+  font-size: 12px;
+  line-height: 15px;
+}
+.sim-logs-crash > span {
+  min-width: 0;
+  flex: 1;
+}
+.sim-logs-crash > button:not(.sim-icon-button) {
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.sim-logs-older {
+  height: 20px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sim-logs-older:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+:root[data-theme="light"] .sim-logs-crash {
+  color: #8e2626;
+}
+:root[data-theme="light"] .sim-logs-crash > button:not(.sim-icon-button) {
+  background: rgb(11 11 11 / 6%);
+  color: #0b0b0b;
+}

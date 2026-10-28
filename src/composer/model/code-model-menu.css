@@ -1,0 +1,298 @@
+/* Disabled CDS rows. */
+.code-model-menu button[aria-disabled="true"],
+.code-model-submenu button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.code-model-menu,
+.code-model-submenu {
+  position: absolute;
+  z-index: 48;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 128px;
+  padding: 4px;
+  border: 1px solid #363636;
+  border-radius: 11px;
+  background: var(--surface-popover);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font:
+    13px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.code-model-menu {
+  right: 0;
+  bottom: calc(100% + 7px);
+  padding: 3px 3px 4px;
+  outline: none;
+}
+.code-model-menu button,
+.code-model-submenu button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  height: 24px;
+  padding: 0 5px 0 8.75px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  white-space: nowrap;
+  /* Rows appear highlighted at once and have no pressed look: the original's
+     menu rows. */
+  transition: none;
+}
+.code-model-menu button:not([aria-disabled="true"]):hover,
+.code-model-menu button:not([aria-disabled="true"]):focus-visible,
+.code-model-menu button[aria-expanded="true"],
+.code-model-submenu button:not([aria-disabled="true"]):hover,
+.code-model-submenu button:not([aria-disabled="true"]):focus-visible,
+.code-model-submenu button:not([aria-disabled="true"])[data-active="true"] {
+  background: #313131;
+  outline: none;
+  box-shadow: none;
+}
+.code-model-menu button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.code-model-menu button > svg {
+  flex: 0 0 13px;
+  width: 13px;
+  height: 13px;
+}
+.code-model-menu .code-model-check {
+  color: var(--link-text);
+  stroke-width: 2.4;
+}
+.code-model-menu button > .code-model-chevron {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: -1px;
+  color: #8a8a89;
+  stroke-width: 1.5;
+}
+.code-model-menu kbd {
+  margin-right: 2.5px;
+  color: #8c8c8b;
+  font:
+    12px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.code-model-separator {
+  height: 1px;
+  margin: 4px 8px;
+  background: #353535;
+}
+.code-model-branch {
+  position: relative;
+}
+/* Holds the list and the note beside it, so the list may scroll. */
+.code-model-more {
+  position: absolute;
+  z-index: 48;
+  left: calc(100% + 6px);
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+}
+.code-model-more > .code-model-submenu {
+  position: static;
+}
+/* Its place on the window is set when it opens (CodeModelMenu moreBox). */
+.code-model-submenu {
+  padding: 3px 3px 4px;
+  max-height: min(350px, calc(100vh - 50px));
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.code-model-submenu button {
+  padding-left: 8px;
+}
+:root[data-theme="light"] .code-model-menu,
+:root[data-theme="light"] .code-model-submenu {
+  background: #fffefa;
+  border-color: #d2d0ca;
+  color: #292927;
+  box-shadow: 0 12px 28px #0002;
+}
+:root[data-theme="light"]
+  .code-model-menu
+  button:not([aria-disabled="true"]):hover,
+:root[data-theme="light"]
+  .code-model-menu
+  button:not([aria-disabled="true"]):focus-visible {
+  background: #f0ede7;
+}
+/* A fast tier's tag follows its name. */
+.code-fast-tag {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #3a3322;
+  color: #e3b765;
+  font-size: 11px;
+  line-height: 15px;
+  vertical-align: 1px;
+}
+:root[data-theme="light"] .code-fast-tag {
+  background: #f5ead2;
+  color: #8a5a10;
+}
+
+/* A 47px box (two 20px lines, 3.5px above and below, 9px sideways) in the
+   menu's own fill and rim, 4px right of the list, centred on the highlighted
+   row; wraps at about 195px. */
+.code-model-tip {
+  /* Fixed on <body> (CodeModelMenu ModelTip) and above every layer. */
+  position: fixed;
+  z-index: 2147483000;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 195px;
+  padding: 3.5px 9px;
+  border: 1px solid #373735;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px #0007;
+  color: #e5e5e3;
+  font:
+    13px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  pointer-events: none;
+}
+:root[data-theme="light"] .code-model-tip {
+  border-color: #e4e4e4;
+  background: #fff;
+  color: #3d3c3a;
+}
+
+/* A main-menu model with its description: the name over its description in the
+   menu's grey, like the Chat menu's two-line rows; the menu stays narrow and a
+   long description ends in an ellipsis. */
+.code-model-menu {
+  max-width: 340px;
+}
+.code-model-menu button.code-model-described {
+  height: auto;
+  min-height: 40px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.code-model-described > span > .code-model-name,
+.code-model-described > span > small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.code-model-described > span > small {
+  color: #8a8a89;
+  font-size: 12px;
+  line-height: 16px;
+}
+:root[data-theme="light"] .code-model-described > span > small {
+  color: #7a7975;
+}
+/* The provider switch keeps its own marks and centred names here. */
+.code-model-menu .model-vendor-switch > button > svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.code-model-menu .model-vendor-switch > button > span {
+  flex: 0 1 auto;
+}
+/* More models' search: a borderless field, a rule across the popup, and "No
+   matches" in muted footnote text. */
+.code-model-search {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 160px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.code-model-search::placeholder {
+  color: #898781;
+}
+.code-model-search-rule {
+  height: 1px;
+  margin: 4px -3px;
+  background: rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .code-model-search-rule {
+  background: rgb(11 11 11 / 10%);
+}
+.code-model-no-match {
+  padding: 6px 8px;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+}
+.code-model-fast > .menu-switch {
+  margin-left: auto;
+}
+/* Fast mode's switch: the menu rows' switch (src/ui/menu.css). */
+.code-model-fast > .menu-switch {
+  display: inline-flex;
+  flex: none;
+  width: 25.2px;
+  height: 14px;
+  align-items: center;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  transition: background-color 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.code-model-fast > .menu-switch[data-checked] {
+  background: #2a78d6;
+}
+.code-model-fast > .menu-switch > span {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  transition: translate 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.code-model-fast > .menu-switch[data-checked] > span {
+  translate: 11.2px 0;
+}
+:root[data-theme="light"] .code-model-fast > .menu-switch {
+  background: rgb(11 11 11 / 20%);
+}
+:root[data-theme="light"] .code-model-fast > .menu-switch[data-checked] {
+  background: #2a78d6;
+}
+
+/* The makers' model lists in one grid cell (CodeModelMenu): the menu takes
+   the largest list's size; only the shown list can be seen or reached. */
+.code-model-quick-stack {
+  display: grid;
+}
+.code-model-quick {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+}
+.code-model-quick:not([data-shown]) {
+  visibility: hidden;
+}

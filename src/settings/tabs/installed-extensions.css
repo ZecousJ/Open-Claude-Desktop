@@ -1,0 +1,99 @@
+.installed-extensions {
+  display: grid;
+  gap: 12px;
+}
+.installed-extension-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.installed-extension-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: #ffffff0d;
+  font-size: 24px;
+}
+.installed-extension-card img {
+  flex: 0 0 42px;
+  object-fit: contain;
+}
+.installed-extension-copy {
+  flex: 1;
+  min-width: 0;
+}
+.installed-extension-copy h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 580;
+}
+.installed-extension-copy p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.installed-extension-status {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.installed-extension-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.extension-metadata {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+}
+.extension-metadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.extension-configuration {
+  display: grid;
+  gap: 16px;
+  margin: 16px 0;
+}
+.extension-enabled {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.extension-config-field {
+  display: grid;
+  gap: 6px;
+}
+.extension-config-field small {
+  color: var(--text-secondary);
+}
+.extension-config-field input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: inherit;
+}
+.extension-remove-confirm {
+  padding: 12px 0;
+}
+@media (max-width: 540px) {
+  .installed-extension-card {
+    flex-wrap: wrap;
+  }
+  .installed-extension-actions {
+    margin-left: 54px;
+  }
+}

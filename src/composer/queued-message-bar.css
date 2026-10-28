@@ -1,0 +1,423 @@
+/*
+ * The Code session's queued messages above the composer: the original's
+ * QueuedMessageBar. Values are the bundle's Tailwind classes at the compact
+ * density Claudex draws Code in: 4px spacing unit, 24px controls (20px for the
+ * small ones), 6px control radius, 12px side padding, 14px/20px body text and
+ * 13px/17px footnote text, the card's 10px radius and the --alpha-1 tint the
+ * branch row (pull-request-bar.css) uses. The body text follows Settings →
+ * Transcript text size; the buttons keep their own size
+ * (transcript-text-size.css). Loaded with the first queued message.
+ */
+
+/* One message: a 40px band, 8px inside and 12px at the sides, 5px between
+   its parts (the band of the branch row). */
+.queued-bar {
+  margin-bottom: 8px;
+}
+/* The band rises 6px into place as it appears and sinks back as the last
+   message leaves, 120ms each on the out curve (epitaxy-band-enter/-exit). */
+.queued-bar {
+  transition:
+    opacity var(--motion-snap) var(--ease-out),
+    translate var(--motion-snap) var(--ease-out);
+}
+@starting-style {
+  .queued-bar {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+.queued-bar[data-exiting] {
+  pointer-events: none;
+  animation: queued-bar-exit var(--motion-snap) var(--ease-out) forwards;
+}
+@keyframes queued-bar-exit {
+  to {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+.queued-bar-band {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--alpha-1);
+  color: var(--text);
+  font-size: var(--message-text, 14px);
+  line-height: var(--message-line, 20px);
+  user-select: none;
+}
+.queued-bar-count {
+  flex: none;
+  color: var(--text);
+  font-weight: 500;
+}
+.queued-bar-preview {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Two or more: a button reading "N messages queued · Next: …" with a caret,
+   no padding above and below, a little darker under the pointer. */
+.queued-bar-summary {
+  min-width: 0;
+  padding: 0 12px;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: default;
+}
+.queued-bar-summary:hover {
+  background: var(--alpha-2);
+}
+.queued-bar-summary:focus-visible,
+.queued-bar-collapse:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+.queued-bar-caret {
+  display: grid;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+/* Expanded: the same card with a header, the list (up to 40% of the window
+   or 352px, then it scrolls) and Clear all, 1px lines between them. */
+.queued-bar-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: clip;
+  border-radius: 10px;
+  background: var(--alpha-1);
+  color: var(--text);
+  font-size: var(--message-text, 14px);
+  line-height: var(--message-line, 20px);
+  user-select: none;
+}
+.queued-bar-card > * + * {
+  border-top: 1px solid var(--alpha-2);
+}
+.queued-bar-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 0 12px;
+}
+.queued-bar-header .queued-bar-count {
+  flex: 1;
+  min-width: 0;
+}
+.queued-bar-list {
+  display: flex;
+  flex-direction: column;
+  max-height: min(40vh, 22rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+}
+.queued-bar-divider {
+  border-top: 1px solid var(--alpha-2);
+}
+.queued-bar-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 6px 12px;
+}
+/* Clear all: a text link in the danger colour, 13px, its underline 3px
+   below at 60% until the pointer or focus is on it (cds-text-link). */
+.queued-bar-clear {
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: var(--danger);
+  font: inherit;
+  font-size: 13px;
+  line-height: 17px;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, currentColor, transparent 60%);
+  text-underline-offset: 3px;
+  transition-property: color, text-decoration-color, box-shadow;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--ease-out);
+  cursor: pointer;
+}
+.queued-bar-clear:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+
+/* A row: 5px inside, 6px corners, its text on up to two lines. The row's
+   controls sit over the right end of the text, which fades out under them
+   while they show. */
+.queued-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+  padding: 5px;
+  border-radius: 6px;
+}
+.queued-row[data-dragging] {
+  z-index: 1;
+  background: var(--alpha-2);
+  opacity: 0.8;
+}
+.queued-row[data-shifting] {
+  transition: transform 250ms ease;
+}
+.queued-row-text {
+  display: -webkit-box;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+.queued-row[data-controls="two"]:hover .queued-row-text,
+.queued-row[data-controls="two"][data-held] .queued-row-text {
+  mask-image: linear-gradient(
+    to right,
+    black calc(100% - 120px),
+    transparent calc(100% - 48px)
+  );
+}
+.queued-row[data-controls="one"]:hover .queued-row-text,
+.queued-row[data-controls="one"][data-held] .queued-row-text {
+  mask-image: linear-gradient(
+    to right,
+    black calc(100% - 76px),
+    transparent calc(100% - 28px)
+  );
+}
+.queued-row[data-sent] .queued-row-text {
+  mask-image: linear-gradient(
+    to right,
+    black calc(100% - 152px),
+    transparent calc(100% - 88px)
+  );
+}
+@media (pointer: coarse) {
+  .queued-row[data-controls="two"] .queued-row-text {
+    mask-image: linear-gradient(
+      to right,
+      black calc(100% - 120px),
+      transparent calc(100% - 48px)
+    );
+  }
+  .queued-row[data-controls="one"] .queued-row-text {
+    mask-image: linear-gradient(
+      to right,
+      black calc(100% - 76px),
+      transparent calc(100% - 28px)
+    );
+  }
+}
+.queued-row-controls {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  translate: 0 -50%;
+}
+/* The handle and the ⋮ button show while the row is under the pointer, has
+   them focused, is dragged or has its menu open; always on a touch screen. */
+.queued-row .queued-row-handle,
+.queued-row .queued-row-more {
+  opacity: 0;
+}
+.queued-row:hover .queued-row-handle,
+.queued-row:hover .queued-row-more,
+.queued-row .queued-row-handle:focus-visible,
+.queued-row .queued-row-more:focus-visible,
+.queued-row[data-held] .queued-row-handle,
+.queued-row[data-held] .queued-row-more {
+  opacity: 1;
+}
+.queued-bar-list[data-sorting]
+  .queued-row:not([data-dragging])
+  :is(.queued-row-handle, .queued-row-more) {
+  opacity: 0;
+}
+@media (pointer: coarse) {
+  .queued-row .queued-row-handle,
+  .queued-row .queued-row-more {
+    opacity: 1;
+  }
+}
+.queued-row-handle {
+  display: grid;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  place-items: center;
+  background: none;
+  color: var(--text-muted);
+  cursor: grab;
+  touch-action: none;
+}
+.queued-row-handle:hover,
+.queued-row[data-dragging] .queued-row-handle {
+  color: var(--text);
+}
+.queued-row[data-dragging] .queued-row-handle,
+.queued-row-handle:active {
+  cursor: grabbing;
+}
+.queued-bar-list[data-sorting] .queued-row-more {
+  pointer-events: none;
+}
+
+/* Ghost icon buttons: 24px in the band and header (muted, the text colour
+   under the pointer), 20px in a row; 6px and 5px corners. */
+.queued-bar-button {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  place-items: center;
+  background: transparent;
+  color: var(--text-muted);
+}
+.queued-bar-button:hover:not([aria-disabled="true"]),
+.queued-bar-button[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.queued-bar-button[data-size="sm"] {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: var(--text);
+}
+.queued-bar-button[aria-busy="true"] {
+  cursor: progress;
+}
+.queued-bar-button[aria-busy="true"] > svg {
+  opacity: 0;
+}
+/* A busy button keeps its place and spins: a 12px ring, 1.5px wide, in the
+   button's colour at 25% with a turning arc in the full colour, 1s a turn. */
+.queued-bar-spinner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+.queued-bar-spinner > span {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+.queued-bar-spinner > span::before,
+.queued-bar-spinner > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.queued-bar-spinner > span::before {
+  border: 1.5px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+.queued-bar-spinner > span::after {
+  background: conic-gradient(transparent 40%, currentColor);
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 1.5px),
+    #000 calc(100% - 1px)
+  );
+  animation: spin 1s linear infinite;
+}
+
+/* "✓ Sent": the check drawn in from the left (180ms) after the hint fades
+   up from 40% and 1px lower (400ms). */
+.queued-bar-sent {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  padding: 0 4px;
+  color: var(--text-muted);
+  animation: queued-bar-hint 400ms var(--ease-out-cubic);
+}
+.queued-row .queued-bar-sent {
+  height: 20px;
+}
+.queued-bar-sent > span {
+  display: inline-flex;
+  animation: queued-bar-check 180ms var(--ease-out) both;
+}
+@keyframes queued-bar-hint {
+  from {
+    opacity: 0.4;
+    transform: translateY(1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes queued-bar-check {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queued-bar,
+  .queued-row[data-shifting] {
+    transition: none;
+  }
+  .queued-bar[data-exiting],
+  .queued-bar-sent,
+  .queued-bar-sent > span,
+  .queued-bar-spinner > span::after {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] :is(.queued-bar, .queued-row[data-shifting]) {
+  transition: none;
+}
+:root[data-motion="reduced"]
+  :is(
+    .queued-bar[data-exiting],
+    .queued-bar-sent,
+    .queued-bar-sent > span,
+    .queued-bar-spinner > span::after
+  ) {
+  animation: none;
+}

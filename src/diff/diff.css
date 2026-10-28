@@ -1,0 +1,357 @@
+/* Diff rows shared by the approval card and the Changes panel. 12px/17px mono
+   rows; a 36px gutter with the number right-aligned, a three-character mark
+   column, then code. Colours as the original's diff library mixes them: a
+   changed row is the surface mixed in lab with the git added / removed colour
+   (20% dark, 12% light), its changed words that colour at 20% (15% light). */
+.diff-lines {
+  --diff-mono: var(--code-font-custom,) Menlo, Consolas, monospace;
+  font: 12px/17px var(--diff-mono);
+  color: var(--code-foreground, #e4e4e6);
+  background: var(--code-background, transparent);
+}
+/* Bordered box: 1px #323232, radius 6, 4px above and below the rows. */
+.diff-box {
+  max-height: 320px;
+  overflow: auto;
+  padding: 4px 0;
+  border: 1px solid #323232;
+  border-radius: 6px;
+}
+:root[data-theme="light"] .diff-box {
+  border-color: #e4e2dc;
+}
+.diff-row {
+  display: flex;
+  min-width: max-content;
+}
+.diff-gutter {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1ch;
+  width: 36px;
+  color: #888886;
+  text-align: right;
+  user-select: none;
+}
+/* New files: "+ 1" in a 45px gutter, green from there on. */
+.diff-lines[data-new] .diff-gutter {
+  width: 45px;
+  padding-right: 7px;
+  box-sizing: border-box;
+}
+.diff-lines[data-new] .diff-code {
+  padding-left: 7.5px;
+}
+.diff-mark {
+  flex: none;
+  width: 3ch;
+  text-align: center;
+  user-select: none;
+}
+.diff-code {
+  flex: 1;
+  padding-right: 12px;
+  font: inherit;
+  white-space: pre;
+  background: none;
+}
+.diff-row[data-kind="del"] {
+  background: var(
+    --code-deletion-background,
+    color-mix(in lab, var(--bg) 80%, #ff2c56)
+  );
+}
+.diff-row[data-kind="del"] .diff-gutter {
+  background: transparent;
+  color: var(--code-deletion, #ff2c56);
+}
+.diff-row[data-kind="del"] .diff-mark {
+  color: var(--code-deletion, #ff2c56);
+}
+.diff-row[data-kind="add"] {
+  background: var(
+    --code-addition-background,
+    color-mix(in lab, var(--bg) 80%, #32d74b)
+  );
+}
+.diff-row[data-kind="add"] .diff-gutter {
+  background: transparent;
+  color: var(--code-addition, #32d74b);
+}
+.diff-row[data-kind="add"] .diff-mark {
+  color: var(--code-addition, #32d74b);
+}
+/* A new file keeps the gutter on the card background. */
+.diff-lines[data-new] .diff-row[data-kind="add"] .diff-gutter {
+  background: var(--code-background, #1a1a1a);
+}
+/* Adjacent highlighted spans must join into one run, so no rounding. */
+.diff-row[data-kind="del"] .diff-word {
+  background: var(--code-deletion-word, rgb(255 44 86 / 20%));
+}
+.diff-row[data-kind="add"] .diff-word {
+  background: var(--code-addition-word, rgb(50 215 75 / 20%));
+}
+.diff-lines .hljs-keyword,
+.diff-lines .hljs-meta .hljs-keyword {
+  color: var(--code-keyword, #be8ce1);
+}
+.diff-lines .hljs-selector-tag {
+  color: var(--code-tag, #be8ce1);
+}
+.diff-lines .hljs-literal {
+  color: var(--code-constant, #be8ce1);
+}
+.diff-lines .hljs-title,
+.diff-lines .hljs-title.function_ {
+  color: var(--code-entity, #93b7f1);
+}
+.diff-lines .hljs-built_in {
+  color: var(--code-variable, #93b7f1);
+}
+.diff-lines .hljs-selector-class {
+  color: var(--code-constant, #93b7f1);
+}
+.diff-lines .hljs-params,
+.diff-lines .hljs-property {
+  color: var(--code-foreground, #e4b78d);
+}
+.diff-lines .hljs-variable,
+.diff-lines .hljs-attr {
+  color: var(--code-constant, #e4b78d);
+}
+.diff-lines .hljs-string,
+.diff-lines .hljs-regexp {
+  color: var(--code-string, #bed99b);
+}
+.diff-lines .hljs-template-tag {
+  color: var(--code-keyword, #bed99b);
+}
+.diff-lines .hljs-subst {
+  color: var(--code-foreground, #e4e4e6);
+}
+.diff-lines .hljs-number {
+  color: var(--code-constant, #a4e2e2);
+}
+.diff-lines .hljs-comment {
+  color: var(--code-comment, #7f7f7c);
+}
+:root[data-theme="light"] .diff-lines {
+  color: var(--code-foreground, #29261b);
+}
+:root[data-theme="light"] .diff-row[data-kind="del"] {
+  background: var(
+    --code-deletion-background,
+    color-mix(in lab, #fcfcfb 88%, #cd2054)
+  );
+}
+:root[data-theme="light"] .diff-row[data-kind="del"] .diff-gutter {
+  background: transparent;
+  color: var(--code-deletion, #cd2054);
+}
+:root[data-theme="light"] .diff-row[data-kind="add"] {
+  background: var(
+    --code-addition-background,
+    color-mix(in lab, #fcfcfb 88%, #1e9e3c)
+  );
+}
+:root[data-theme="light"] .diff-row[data-kind="add"] .diff-gutter {
+  background: transparent;
+  color: var(--code-addition, #1e9e3c);
+}
+:root[data-theme="light"] .diff-lines[data-new] .diff-row .diff-gutter {
+  background: transparent;
+}
+:root[data-theme="light"] .diff-row[data-kind="del"] .diff-word {
+  background: var(--code-deletion-word, rgb(205 32 84 / 15%));
+}
+:root[data-theme="light"] .diff-row[data-kind="add"] .diff-word {
+  background: var(--code-addition-word, rgb(30 158 60 / 15%));
+}
+/* Side by side: two halves of equal width, each with its own gutter, mark and
+   code, coloured by its own side; an empty half (the other side's longer run)
+   is plain. */
+.diff-row.diff-split-row,
+:root[data-theme="light"] .diff-row.diff-split-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-width: 0;
+  background: none;
+}
+.diff-split-row > .diff-half {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+.diff-split-row > .diff-half + .diff-half {
+  border-left: 1px solid rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .diff-split-row > .diff-half + .diff-half {
+  border-left-color: rgb(11 11 11 / 10%);
+}
+.diff-split-row .diff-code {
+  min-width: 0;
+  overflow: hidden;
+}
+.diff-row.diff-split-row .diff-gutter {
+  background: none;
+  color: #888886;
+}
+.diff-split-row > .diff-half[data-kind="del"] {
+  background: var(
+    --code-deletion-background,
+    color-mix(in lab, var(--bg) 80%, #ff2c56)
+  );
+}
+.diff-split-row > .diff-half[data-kind="del"] .diff-gutter {
+  background: transparent;
+  color: var(--code-deletion, #ff2c56);
+}
+.diff-split-row > .diff-half[data-kind="del"] .diff-mark {
+  color: var(--code-deletion, #ff2c56);
+}
+.diff-split-row > .diff-half[data-kind="add"] {
+  background: var(
+    --code-addition-background,
+    color-mix(in lab, var(--bg) 80%, #32d74b)
+  );
+}
+.diff-split-row > .diff-half[data-kind="add"] .diff-gutter {
+  background: transparent;
+  color: var(--code-addition, #32d74b);
+}
+.diff-split-row > .diff-half[data-kind="add"] .diff-mark {
+  color: var(--code-addition, #32d74b);
+}
+.diff-split-row > .diff-half[data-kind="context"] .diff-mark,
+.diff-split-row > .diff-half[data-kind="context"] .diff-word {
+  color: inherit;
+  background: none;
+}
+.diff-split-row > .diff-half[data-kind="del"] .diff-word {
+  background: var(--code-deletion-word, rgb(255 44 86 / 20%));
+}
+.diff-split-row > .diff-half[data-kind="add"] .diff-word {
+  background: var(--code-addition-word, rgb(50 215 75 / 20%));
+}
+:root[data-theme="light"] .diff-split-row > .diff-half[data-kind="del"] {
+  background: var(
+    --code-deletion-background,
+    color-mix(in lab, #fcfcfb 88%, #cd2054)
+  );
+}
+:root[data-theme="light"]
+  .diff-split-row
+  > .diff-half[data-kind="del"]
+  .diff-gutter {
+  background: transparent;
+  color: var(--code-deletion, #cd2054);
+}
+:root[data-theme="light"] .diff-split-row > .diff-half[data-kind="add"] {
+  background: var(
+    --code-addition-background,
+    color-mix(in lab, #fcfcfb 88%, #1e9e3c)
+  );
+}
+:root[data-theme="light"]
+  .diff-split-row
+  > .diff-half[data-kind="add"]
+  .diff-gutter {
+  background: transparent;
+  color: var(--code-addition, #1e9e3c);
+}
+:root[data-theme="light"]
+  .diff-split-row
+  > .diff-half[data-kind="del"]
+  .diff-word {
+  background: var(--code-deletion-word, rgb(205 32 84 / 15%));
+}
+:root[data-theme="light"]
+  .diff-split-row
+  > .diff-half[data-kind="add"]
+  .diff-word {
+  background: var(--code-addition-word, rgb(30 158 60 / 15%));
+}
+/* Word wrap: long lines break inside their column. */
+.diff-lines[data-wrap] .diff-row {
+  min-width: 0;
+}
+.diff-lines[data-wrap] .diff-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* Comments for Claude: an accent + at the row's start while it is hovered; rows
+   commented on carry an accent bar; the editor opens under the last row. */
+.diff-row {
+  position: relative;
+}
+.diff-comment-add {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  z-index: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: #2a78d6;
+  color: #fff;
+  font:
+    600 13px/1 -apple-system,
+    "Segoe UI",
+    sans-serif;
+  cursor: pointer;
+}
+.diff-row:hover > .diff-comment-add,
+.diff-comment-add:focus-visible {
+  display: inline-flex;
+}
+.diff-row[data-marked] {
+  box-shadow: inset 2px 0 0 #2a78d6;
+}
+.diff-comment-editor {
+  display: grid;
+  gap: 8px;
+  margin: 6px 12px 8px 40px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #1a1a19;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+.diff-comment-editor > textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  resize: vertical;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: 13px/19px inherit;
+  font-family: inherit;
+  outline: none;
+}
+.diff-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.diff-comment-actions > button {
+  height: 24px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+:root[data-theme="light"] .diff-comment-editor {
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .diff-comment-editor > textarea {
+  color: #0b0b0b;
+}

@@ -1,0 +1,95 @@
+/* Current Activity: 320px, y44; the body reserves 320+16px while its
+   header stays fixed. Native and legacy Progress keep their own layout. */
+@media (min-width: 640px) {
+  .app.web:not(.mobile-conversation)
+    .workspace:has(> .chat-layout > .session-activity-panel) {
+    --tool-panel-width: min(320px, calc(100% - 16px));
+  }
+  .app.web:not(.mobile-conversation)
+    .workspace
+    > .chat-layout
+    > .session-activity-panel {
+    top: 44px;
+    bottom: auto;
+  }
+  .app.web:not(.mobile-conversation)
+    .workspace:has(> .chat-layout > .session-activity-panel)
+    > .chat-header {
+    margin-right: 0;
+    padding-right: 17px;
+  }
+  .app.web:not(.mobile-conversation)
+    .workspace
+    > .chat-layout:has(> .session-activity-panel)
+    > .chat-main {
+    margin-right: calc(var(--tool-panel-width) + 16px);
+  }
+}
+.app.web:not(.mobile-conversation) .session-activity-panel {
+  border-radius: 12px;
+  background: #1a1a19;
+  border: 1px solid rgb(255 255 255 / 10%);
+  color: var(--text-secondary);
+}
+.session-activity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 12px;
+  text-align: center;
+}
+.session-activity-illustration {
+  width: 96px;
+  height: 96px;
+}
+.session-activity-pictogram {
+  overflow: hidden;
+  scale: 1.2;
+}
+.session-activity-flipbook {
+  transform-box: view-box;
+  animation-name: session-activity-flipbook;
+  animation-timing-function: steps(var(--session-activity-steps), jump-none);
+}
+@keyframes session-activity-flipbook {
+  from {
+    transform: translate(0);
+  }
+  to {
+    transform: translateX(var(--session-activity-span));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-activity-flipbook {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .session-activity-flipbook {
+  animation: none;
+}
+.session-activity-empty > h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.session-activity-empty > p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 17px;
+}
+.session-activity-close {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+:root[data-theme="light"]
+  .app.web:not(.mobile-conversation)
+  .session-activity-panel {
+  background: var(--surface);
+  border-color: var(--border);
+}

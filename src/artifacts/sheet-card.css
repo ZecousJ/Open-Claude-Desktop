@@ -1,0 +1,835 @@
+/*
+ * The original's artifact and file block.
+ *
+ * Card: at most 520px, padding 6 16 8 20, a 20px gap, radius 12, a 0.5px rim
+ * (alpha 20%, 35% hovered), a 1px drop shadow; a tint gradient (the tint's 10
+ * at 10% light, its 800 at 15% dark; 40% / 33% hovered) over white 30% /
+ * gray-830 30%, or, while its file is open, the tint's 800 at 5% / its 100 at
+ * 10%. Grey cards keep no gradient. Tile: a 56px square; page and sheet behind
+ * 72px tall from 10px down, radius 8, a 0.5px rim of the tint's 200 / 700 on
+ * its 50 / 800, a white inset light (95% / 15%) and ring (40% / 5%), a white
+ * sheen from the top left (55% / 8%); the glyph (the tint's 600 / 300, grey the
+ * muted text) 20px in the page's top 54px. Title 15/20, kind 13/17 muted, 2px
+ * apart, 4px down. Buttons 32px, radius 8, padding 0 12px, 14/20 on alpha 10%
+ * (14% hovered).
+ */
+.sheet-card {
+  --sheet-rim: rgb(255 255 255 / 20%);
+  --sheet-rim-hover: rgb(255 255 255 / 35%);
+  --sheet-base: rgb(26 26 25 / 30%);
+  --sheet-text: #f0efec;
+  --sheet-muted: #898781;
+  --sheet-fill: rgb(255 255 255 / 10%);
+  --sheet-fill-hover: rgb(255 255 255 / 14%);
+  --sheet-inset: rgb(255 255 255 / 15%);
+  --sheet-ring: rgb(255 255 255 / 5%);
+  --sheet-lit-rest: 0.08;
+  --sheet-lit-hover: 0.12;
+  --sheet-card-ink-boost: 5%;
+  --sheet-shadow-lg:
+    0 4px 8px 0 rgb(11 11 11 / 8%), 0 12px 28px -2px rgb(0 0 0 / 24%);
+  --sheet-grey: #20201f;
+  --sheet-grey-rim: rgb(255 255 255 / 10%);
+  --sheet-grey-open: rgb(255 255 255 / 5%);
+  --sheet-dur-snap: var(--motion-snap);
+  --sheet-dur-base: var(--motion-base);
+  --sheet-dur-slow: var(--motion-slow);
+  --sheet-ease-out: var(--ease-out);
+  --sheet-ease-snap: var(--ease-snap);
+  --sheet-card-mark-delay: var(--sheet-dur-snap);
+  --sheet-tint-card: transparent;
+  --sheet-tint-card-hover: transparent;
+  --sheet-tint-open: var(--sheet-grey-open);
+  --sheet-tint-sheet: var(--sheet-grey);
+  --sheet-tint-rim: var(--sheet-grey-rim);
+  --sheet-tint-glyph: var(--sheet-muted);
+}
+:root[data-theme="light"] .sheet-card {
+  --sheet-rim: rgb(11 11 11 / 20%);
+  --sheet-rim-hover: rgb(11 11 11 / 35%);
+  --sheet-base: rgb(255 255 255 / 30%);
+  --sheet-text: #0b0b0b;
+  --sheet-fill: rgb(11 11 11 / 10%);
+  --sheet-fill-hover: rgb(11 11 11 / 14%);
+  --sheet-inset: rgb(255 255 255 / 95%);
+  --sheet-ring: rgb(255 255 255 / 40%);
+  --sheet-lit-rest: 0.55;
+  --sheet-lit-hover: 0.75;
+  --sheet-card-ink-boost: 0%;
+  --sheet-shadow-lg:
+    0 4px 8px 0 rgb(11 11 11 / 8%), 0 12px 28px -2px rgb(11 11 11 / 8%);
+  --sheet-grey: #f0efec;
+  --sheet-grey-rim: rgb(11 11 11 / 10%);
+  --sheet-grey-open: rgb(11 11 11 / 5%);
+}
+
+/* Tints: card / hovered card / open card / page / rim / glyph. */
+.sheet-card[data-tint="blue"] {
+  --sheet-tint-card: rgb(3 32 66 / 15%);
+  --sheet-tint-card-hover: rgb(3 32 66 / 33%);
+  --sheet-tint-open: rgb(205 226 251 / 10%);
+  --sheet-tint-sheet: #032042;
+  --sheet-tint-rim: #0d366b;
+  --sheet-tint-glyph: #6da7ec;
+}
+.sheet-card[data-tint="green"] {
+  --sheet-tint-card: rgb(17 38 15 / 15%);
+  --sheet-tint-card-hover: rgb(17 38 15 / 33%);
+  --sheet-tint-open: rgb(202 234 199 / 10%);
+  --sheet-tint-sheet: #11260f;
+  --sheet-tint-rim: #074506;
+  --sheet-tint-glyph: #55bf50;
+}
+.sheet-card[data-tint="yellow"] {
+  --sheet-tint-card: rgb(49 26 0 / 15%);
+  --sheet-tint-card-hover: rgb(49 26 0 / 33%);
+  --sheet-tint-open: rgb(249 220 164 / 10%);
+  --sheet-tint-sheet: #311a00;
+  --sheet-tint-rim: #512e00;
+  --sheet-tint-glyph: #db9300;
+}
+.sheet-card[data-tint="orange"] {
+  --sheet-tint-card: rgb(55 20 7 / 15%);
+  --sheet-tint-card-hover: rgb(55 20 7 / 33%);
+  --sheet-tint-open: rgb(247 216 203 / 10%);
+  --sheet-tint-sheet: #371407;
+  --sheet-tint-rim: #5d230b;
+  --sheet-tint-glyph: #ec835a;
+}
+.sheet-card[data-tint="violet"] {
+  --sheet-tint-card: rgb(29 22 73 / 15%);
+  --sheet-tint-card-hover: rgb(29 22 73 / 33%);
+  --sheet-tint-open: rgb(223 219 253 / 10%);
+  --sheet-tint-sheet: #1d1649;
+  --sheet-tint-rim: #322777;
+  --sheet-tint-glyph: #a096eb;
+}
+.sheet-card[data-tint="magenta"] {
+  --sheet-tint-card: rgb(57 15 31 / 15%);
+  --sheet-tint-card-hover: rgb(57 15 31 / 33%);
+  --sheet-tint-open: rgb(249 212 226 / 10%);
+  --sheet-tint-sheet: #390f1f;
+  --sheet-tint-rim: #5e1c34;
+  --sheet-tint-glyph: #e87ba4;
+}
+:root[data-theme="light"] .sheet-card[data-tint="blue"] {
+  --sheet-tint-card: rgb(250 252 255 / 10%);
+  --sheet-tint-card-hover: rgb(250 252 255 / 40%);
+  --sheet-tint-open: rgb(3 32 66 / 5%);
+  --sheet-tint-sheet: #e7f1fb;
+  --sheet-tint-rim: #9ec5f4;
+  --sheet-tint-glyph: #184f95;
+}
+:root[data-theme="light"] .sheet-card[data-tint="green"] {
+  --sheet-tint-card: rgb(250 253 250 / 10%);
+  --sheet-tint-card-hover: rgb(250 253 250 / 40%);
+  --sheet-tint-open: rgb(17 38 15 / 5%);
+  --sheet-tint-sheet: #e5f4e4;
+  --sheet-tint-rim: #91d68b;
+  --sheet-tint-glyph: #006300;
+}
+:root[data-theme="light"] .sheet-card[data-tint="yellow"] {
+  --sheet-tint-card: rgb(254 252 248 / 10%);
+  --sheet-tint-card-hover: rgb(254 252 248 / 40%);
+  --sheet-tint-open: rgb(49 26 0 / 5%);
+  --sheet-tint-sheet: #f9eeda;
+  --sheet-tint-rim: #fab219;
+  --sheet-tint-glyph: #734500;
+}
+:root[data-theme="light"] .sheet-card[data-tint="orange"] {
+  --sheet-tint-card: rgb(254 251 250 / 10%);
+  --sheet-tint-card-hover: rgb(254 251 250 / 40%);
+  --sheet-tint-open: rgb(55 20 7 / 5%);
+  --sheet-tint-sheet: #f9ece7;
+  --sheet-tint-rim: #f4ae94;
+  --sheet-tint-glyph: #863311;
+}
+:root[data-theme="light"] .sheet-card[data-tint="violet"] {
+  --sheet-tint-card: rgb(252 251 255 / 10%);
+  --sheet-tint-card-hover: rgb(252 251 255 / 40%);
+  --sheet-tint-open: rgb(29 22 73 / 5%);
+  --sheet-tint-sheet: #efedff;
+  --sheet-tint-rim: #bfb9f5;
+  --sheet-tint-glyph: #4a3aa7;
+}
+:root[data-theme="light"] .sheet-card[data-tint="magenta"] {
+  --sheet-tint-card: rgb(254 251 252 / 10%);
+  --sheet-tint-card-hover: rgb(254 251 252 / 40%);
+  --sheet-tint-open: rgb(57 15 31 / 5%);
+  --sheet-tint-sheet: #faebf0;
+  --sheet-tint-rim: #f3a8c3;
+  --sheet-tint-glyph: #862a4c;
+}
+
+/* The card. */
+.file-document-card.sheet-card {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  padding: 6px 16px 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  overflow: hidden;
+  border: 0.5px solid var(--sheet-rim);
+  border-radius: 12px;
+  background: linear-gradient(var(--sheet-tint-card), var(--sheet-tint-card))
+    var(--sheet-base);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  color: var(--sheet-text);
+  text-align: left;
+  transition:
+    background-color 0.2s cubic-bezier(0, 0, 0.2, 1),
+    border-color 0.2s cubic-bezier(0, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0, 0, 0.2, 1);
+}
+.file-document-card.sheet-card.is-open,
+.file-document-card.sheet-card[data-open] {
+  background-color: var(--sheet-tint-open);
+}
+.file-document-card.sheet-card[data-sheet-kind]:hover {
+  border-color: var(--sheet-rim-hover);
+  background-image: linear-gradient(
+    var(--sheet-tint-card-hover),
+    var(--sheet-tint-card-hover)
+  );
+}
+.sheet-card[data-tint="gray"][data-sheet-kind]:hover {
+  background-image: none;
+}
+/* The card's main button covers the whole card, under its own buttons. */
+.sheet-card > .artifact-card-main {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.sheet-card > .artifact-card-main::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+}
+.sheet-card > .artifact-card-main:active,
+:root[data-theme="light"] .sheet-card > .artifact-card-main:active {
+  background: none;
+}
+.sheet-card > .artifact-card-main:focus-visible {
+  outline: none;
+}
+.sheet-card:has(> .artifact-card-main:focus-visible) {
+  box-shadow: 0 0 0 2px var(--focus);
+}
+.sheet-card > .artifact-card-open,
+.sheet-card > .artifact-card-share,
+.sheet-card > .generated-file-download {
+  position: relative;
+  z-index: 1;
+}
+.sheet-card .artifact-card-description {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  align-self: auto;
+  padding-top: 4px;
+}
+.sheet-card .artifact-card-description strong,
+:root[data-theme="light"] .sheet-card .artifact-card-description strong {
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--sheet-text);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sheet-card[data-state="generating"] .artifact-card-description strong {
+  color: var(--sheet-muted);
+}
+.sheet-card .artifact-card-description small,
+:root[data-theme="light"] .sheet-card .artifact-card-description small {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--sheet-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Its buttons (the original's secondary button). */
+.sheet-card .artifact-card-open,
+.sheet-card .artifact-card-share,
+.sheet-card .generated-file-download,
+:root[data-theme="light"] .sheet-card .artifact-card-open,
+:root[data-theme="light"] .sheet-card .artifact-card-share,
+:root[data-theme="light"] .sheet-card .generated-file-download {
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--sheet-fill);
+  box-shadow: none;
+  color: var(--sheet-text);
+  font-size: 14px;
+  line-height: 20px;
+  transition:
+    background-color 0.15s cubic-bezier(0, 0, 0.2, 1),
+    var(--press-release);
+}
+.sheet-card .artifact-card-open {
+  padding: 0 12px;
+}
+.sheet-card .artifact-card-open:hover,
+.sheet-card .artifact-card-share:hover:not(:disabled),
+:root[data-theme="light"] .sheet-card .artifact-card-open:hover,
+:root[data-theme="light"]
+  .sheet-card
+  .artifact-card-share:hover:not(:disabled) {
+  background: var(--sheet-fill-hover);
+}
+.sheet-card .artifact-card-open:active,
+.sheet-card .artifact-card-share:active:not(:disabled) {
+  scale: var(--press-scale);
+  transition:
+    background-color 0.15s cubic-bezier(0, 0, 0.2, 1),
+    scale var(--motion-fast) ease-out;
+}
+.sheet-card .generated-file-download,
+:root[data-theme="light"] .sheet-card .generated-file-download {
+  background: none;
+}
+.sheet-card .generated-file-download > button {
+  background: var(--sheet-fill);
+  color: var(--sheet-text);
+  font-size: 14px;
+  transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1);
+}
+.sheet-card .generated-file-download > button:first-child {
+  width: auto;
+  padding: 0 12px;
+}
+.sheet-card .generated-file-download > button:last-child {
+  color: var(--sheet-muted);
+}
+.sheet-card .generated-file-download > button:last-child::before {
+  background: var(--sheet-fill);
+}
+.sheet-card .generated-file-download > button:hover,
+.sheet-card .generated-file-download > button[aria-expanded="true"] {
+  background: var(--sheet-fill-hover);
+}
+/* The web has no Show in Finder: one Download, as the original. */
+:root[data-surface="web"]
+  .sheet-card
+  .generated-file-download
+  > button:last-child {
+  display: none;
+}
+
+/* The tile. */
+.sheet-card-tile {
+  position: relative;
+  z-index: 0;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  pointer-events: none;
+}
+.sheet-card-under,
+.sheet-card-page {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 10px;
+  height: 72px;
+  border: 0.5px solid var(--sheet-tint-rim);
+  border-radius: 8px;
+  background-color: var(--sheet-tint-sheet);
+  background-image: linear-gradient(
+    var(--sheet-card-light-angle, 165deg) in oklab,
+    rgb(255 255 255 / var(--sheet-card-lit, 0.55)) 0%,
+    transparent var(--sheet-card-light-reach, 55%)
+  );
+  --sheet-card-lit: var(--sheet-lit-rest);
+}
+.sheet-card-under {
+  box-shadow:
+    inset 0.5px 1px 0 var(--sheet-inset),
+    inset 0 0 0 1px var(--sheet-ring),
+    0 1px 2px 0 rgb(0 0 0 / 5%);
+  transform-origin: 50% 0;
+  opacity: 0;
+  transform: translate(0) translateY(62px) rotate(0) translateY(-62px);
+  transition:
+    transform var(--sheet-dur-base) var(--sheet-ease-snap),
+    opacity var(--sheet-dur-base) var(--sheet-ease-out);
+}
+.sheet-card-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding-bottom: 18px;
+  color: var(--sheet-tint-glyph);
+  box-shadow:
+    inset 0.5px 1px 0 var(--sheet-inset),
+    inset 0 0 0 1px var(--sheet-ring),
+    var(--sheet-shadow-lg);
+  --sheet-card-light-angle: 165deg;
+  --sheet-card-light-reach: 55%;
+  transition-property:
+    translate, background-color, border-color, color, --sheet-card-lit,
+    --sheet-card-light-angle, --sheet-card-light-reach;
+  transition-duration: var(--sheet-dur-base);
+  transition-timing-function: var(--sheet-ease-out);
+}
+.sheet-card-glyph {
+  position: relative;
+  display: flex;
+}
+.sheet-card[data-state="failed"] .sheet-card-tile {
+  opacity: 0.55;
+}
+@property --sheet-card-sweep {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 90deg;
+}
+@property --sheet-card-lit {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.55;
+}
+@property --sheet-card-light-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 165deg;
+}
+@property --sheet-card-light-reach {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 55%;
+}
+
+/* The marks (drawn on hover). */
+.sheet-card-marks {
+  --sheet-card-ink: color-mix(
+    in oklab,
+    currentColor calc(25% + var(--sheet-card-ink-boost, 0%)),
+    transparent
+  );
+  --sheet-card-ink-stamp: color-mix(
+    in oklab,
+    currentColor calc(35% + var(--sheet-card-ink-boost, 0%)),
+    transparent
+  );
+  position: absolute;
+  top: 38px;
+  left: 14px;
+  width: 28px;
+  height: 18px;
+}
+.sheet-card-part {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  transition: opacity var(--sheet-dur-snap) var(--sheet-ease-out);
+}
+.sheet-card-group {
+  inset: 0;
+}
+.sheet-card-stamp {
+  --sheet-card-ink: var(--sheet-card-ink-stamp);
+}
+.sheet-card-rule {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  width: var(--sheet-card-w, 10px);
+  height: 1px;
+  background: var(--sheet-card-ink);
+  transform-origin: 0;
+}
+.sheet-card-dot {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--sheet-card-ink);
+}
+.sheet-card-ride {
+  translate: var(--sheet-card-w, 0px) 0;
+}
+.sheet-card-fill {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  width: var(--sheet-card-w, 10px);
+  height: var(--sheet-card-h, 3px);
+  border-radius: 0.5px;
+  background: color-mix(
+    in oklab,
+    currentColor
+      calc(var(--sheet-card-o, 0.35) * 100% + var(--sheet-card-ink-boost, 0%)),
+    transparent
+  );
+}
+.sheet-card-svg {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  overflow: visible;
+}
+.sheet-card-svg path {
+  fill: none;
+  stroke: var(--sheet-card-ink);
+  stroke-width: 1px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 0;
+}
+.sheet-card-caret {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  width: 1px;
+  height: var(--sheet-card-h, 7px);
+  background: color-mix(
+    in oklab,
+    currentColor calc(60% + var(--sheet-card-ink-boost, 0%)),
+    transparent
+  );
+}
+.sheet-card-hash {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  width: 5px;
+  height: 5px;
+}
+.sheet-card-hash > span {
+  position: absolute;
+  border-radius: 1px;
+  background: var(--sheet-card-ink);
+}
+.sheet-card-hash > span:nth-child(-n + 2) {
+  top: 0;
+  width: 1px;
+  height: 5px;
+  transform-origin: 50% 0;
+}
+.sheet-card-hash > span:first-child {
+  left: 1px;
+}
+.sheet-card-hash > span:nth-child(2) {
+  left: 3px;
+}
+.sheet-card-hash > span:nth-child(n + 3) {
+  left: 0;
+  width: 5px;
+  height: 1px;
+  transform-origin: 0;
+}
+.sheet-card-hash > span:nth-child(3) {
+  top: 1px;
+}
+.sheet-card-hash > span:nth-child(4) {
+  top: 3px;
+}
+.sheet-card-sweep {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--sheet-card-ink);
+}
+.sheet-card-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--sheet-card-ink-stamp) var(--sheet-card-sweep),
+    transparent 0
+  );
+}
+.sheet-card-zip {
+  left: var(--sheet-card-x, 0px);
+  top: var(--sheet-card-y, 0px);
+  width: 6px;
+  height: 15px;
+}
+.sheet-card-zip > span {
+  position: absolute;
+  left: 0;
+  top: calc(var(--sheet-card-i) * 3px);
+  width: 3px;
+  height: 1px;
+  background: color-mix(
+    in oklab,
+    currentColor calc(45% + var(--sheet-card-ink-boost, 0%)),
+    transparent
+  );
+}
+.sheet-card-zip > span:nth-child(2n) {
+  left: 3px;
+}
+
+@media (hover: hover) {
+  [data-sheet-kind]:hover .sheet-card-page {
+    translate: 0 -2px;
+    --sheet-card-lit: var(--sheet-lit-hover);
+    --sheet-card-light-angle: 200deg;
+    --sheet-card-light-reach: 70%;
+    transition-duration:
+      var(--sheet-dur-base), var(--sheet-dur-base), var(--sheet-dur-base),
+      var(--sheet-dur-base), var(--sheet-dur-slow), var(--sheet-dur-slow),
+      var(--sheet-dur-slow);
+  }
+  [data-sheet-kind]:hover .sheet-card-under {
+    opacity: 0.7;
+    transform: translate(-2px) translateY(62px) rotate(-4deg) translateY(-62px);
+    transition:
+      transform var(--sheet-dur-slow) var(--sheet-ease-out),
+      opacity var(--sheet-dur-snap) var(--sheet-ease-out);
+  }
+  [data-sheet-kind]:hover .sheet-card-part {
+    opacity: 1;
+    transition-duration: 0s;
+  }
+  [data-sheet-kind]:hover .sheet-card-rule,
+  [data-sheet-kind]:hover .sheet-card-hash > .sheet-card-tick:nth-child(n + 3) {
+    animation: sheet-card-draw-x var(--sheet-card-dur, var(--sheet-dur-base))
+      var(--sheet-ease-out)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover
+    .sheet-card-hash
+    > .sheet-card-tick:nth-child(-n + 2) {
+    animation: sheet-card-draw-y var(--sheet-card-dur, var(--sheet-dur-base))
+      var(--sheet-ease-out)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-svg .sheet-card-stroke {
+    animation: sheet-card-dash var(--sheet-card-dur, 0.3s) var(--sheet-ease-out)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-dot {
+    animation: sheet-card-pop var(--sheet-dur-snap) var(--sheet-ease-out)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-stamp {
+    animation: sheet-card-stamp var(--sheet-dur-base) var(--sheet-ease-out)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-stamp .sheet-card-stroke,
+  [data-sheet-kind]:hover .sheet-card-static .sheet-card-stroke {
+    animation: none;
+  }
+  [data-sheet-kind]:hover .sheet-card-group {
+    animation: sheet-card-reveal-x var(--sheet-card-dur, var(--sheet-dur-slow))
+      var(--sheet-card-steps, var(--sheet-ease-out))
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-group > .sheet-card-part {
+    animation: none;
+  }
+  [data-sheet-kind]:hover .sheet-card-typed {
+    animation-timing-function: var(--sheet-card-steps);
+  }
+  [data-sheet-kind]:hover .sheet-card-ride {
+    animation: sheet-card-ride var(--sheet-card-dur, 0.3s)
+      var(--sheet-card-steps)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-caret:not(.sheet-card-ride) {
+    animation: sheet-card-blink 0.8s steps(1, end)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-sweep::after {
+    animation: sheet-card-sweep 0.32s var(--sheet-ease-out)
+      calc(var(--sheet-card-mark-delay) + 80ms) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-tight {
+    animation: sheet-card-tighten 0.32s var(--sheet-ease-out)
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-d, 0s)) both;
+  }
+  [data-sheet-kind]:hover .sheet-card-zip > .sheet-card-tick {
+    animation: sheet-card-appear 1ms linear
+      calc(var(--sheet-card-mark-delay) + var(--sheet-card-i) * 40ms) both;
+  }
+}
+@keyframes sheet-card-draw-x {
+  0% {
+    transform: scaleX(0);
+  }
+}
+@keyframes sheet-card-draw-y {
+  0% {
+    transform: scaleY(0);
+  }
+}
+@keyframes sheet-card-dash {
+  0% {
+    stroke-dashoffset: 1px;
+  }
+}
+@keyframes sheet-card-pop {
+  0% {
+    transform: scale(0);
+  }
+}
+@keyframes sheet-card-stamp {
+  0% {
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.72;
+  }
+}
+@keyframes sheet-card-reveal-x {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+@keyframes sheet-card-ride {
+  0% {
+    translate: 0;
+  }
+}
+@keyframes sheet-card-blink {
+  0%,
+  50%,
+  to {
+    opacity: 1;
+  }
+  25%,
+  75% {
+    opacity: 0;
+  }
+}
+@keyframes sheet-card-sweep {
+  0% {
+    --sheet-card-sweep: 0deg;
+  }
+}
+@keyframes sheet-card-tighten {
+  0% {
+    translate: var(--sheet-card-tx, 0px) var(--sheet-card-ty, 0px);
+    opacity: 0;
+  }
+}
+@keyframes sheet-card-appear {
+  0% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-card-under,
+  .sheet-card-marks {
+    display: none;
+  }
+  [data-sheet-kind]:hover .sheet-card-page {
+    --sheet-card-light-angle: 165deg;
+    --sheet-card-light-reach: 55%;
+  }
+  /* The page lifts at once; its colours still fade. */
+  .sheet-card-page,
+  [data-sheet-kind]:hover .sheet-card-page {
+    transition-duration:
+      0s, var(--sheet-dur-base), var(--sheet-dur-base), var(--sheet-dur-base),
+      var(--sheet-dur-slow), var(--sheet-dur-slow), var(--sheet-dur-slow);
+  }
+}
+:root[data-motion="reduced"] .sheet-card-page,
+:root[data-motion="reduced"] [data-sheet-kind]:hover .sheet-card-page {
+  transition-duration:
+    0s, var(--sheet-dur-base), var(--sheet-dur-base), var(--sheet-dur-base),
+    var(--sheet-dur-slow), var(--sheet-dur-slow), var(--sheet-dur-slow);
+}
+:root[data-motion="reduced"] .sheet-card-under,
+:root[data-motion="reduced"] .sheet-card-marks {
+  display: none;
+}
+:root[data-motion="reduced"] [data-sheet-kind]:hover .sheet-card-page {
+  --sheet-card-light-angle: 165deg;
+  --sheet-card-light-reach: 55%;
+}
+
+/* Narrow transcripts (the artifact panel open beside a small window). */
+@container (max-width: 390px) {
+  .file-document-card.sheet-card {
+    padding: 6px 7px 8px 8px;
+    gap: 8px;
+  }
+  .sheet-card > .artifact-card-main {
+    gap: 8px;
+  }
+  .sheet-card .artifact-card-share {
+    width: 27px;
+    height: 27px;
+  }
+  .sheet-card .artifact-card-open {
+    height: 27px;
+    padding: 0 7px;
+    font-size: 12px;
+  }
+}
+@container (max-width: 240px) {
+  .sheet-card-tile {
+    display: none;
+  }
+}
+
+/* Phones: Download is a 32px square with the 20px glyph, no fill; its word
+   stays for screen readers. */
+.sheet-card .generated-file-download .app-icon {
+  display: none;
+}
+@media (max-width: 639.98px) {
+  .sheet-card .generated-file-download {
+    background: transparent;
+  }
+  .sheet-card .generated-file-download > button:first-child {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    padding: 0;
+    color: var(--text);
+  }
+  :root[data-theme="light"]
+    .sheet-card
+    .generated-file-download
+    > button:first-child {
+    color: var(--sheet-text);
+  }
+  .sheet-card .generated-file-download .app-icon {
+    display: block;
+  }
+  .sheet-card .generated-file-download-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

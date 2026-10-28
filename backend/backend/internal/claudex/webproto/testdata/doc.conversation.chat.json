@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "conversation": {
+    "activeBranchId": "branch-live",
+    "id": "conv-1",
+    "threadId": "thread-abc",
+    "title": "Notes summary",
+    "mode": "chat",
+    "webSearch": true,
+    "projectId": "proj-1",
+    "providerId": "sub2api",
+    "model": "gpt-5.5",
+    "pinned": false,
+    "archived": false,
+    "createdAt": 1790000000000,
+    "updatedAt": 1790000065000,
+    "usage": {
+      "inputTokens": 1820,
+      "outputTokens": 412,
+      "totalTokens": 2232
+    },
+    "research": false,
+    "savedBranches": [
+      {
+        "id": "branch-old",
+        "threadId": "thread-old",
+        "providerId": "sub2api",
+        "model": "gpt-5.5",
+        "visited": 1
+      }
+    ]
+  }
+}

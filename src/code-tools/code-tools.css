@@ -1,0 +1,950 @@
+/* Code transcript tool rows beyond the single command card
+   (grouped calls, file edits, background commands, turn change totals). */
+
+/* Button rows share the command summary's look (.code-command > summary). */
+.mode-code .code-background-row,
+.mode-code .code-turn-changes-toggle,
+.mode-code .code-plan-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+  text-align: left;
+  cursor: pointer;
+}
+.mode-code .code-background-row:hover .code-background-link,
+.mode-code .code-turn-changes-toggle:hover .code-command-label,
+.mode-code .code-plan-row:hover .code-command-label {
+  color: var(--text);
+}
+:root[data-theme="light"] .mode-code .code-background-row,
+:root[data-theme="light"] .mode-code .code-turn-changes-toggle,
+:root[data-theme="light"] .mode-code .code-plan-row {
+  color: #52514e;
+}
+/* A turn's changes (CodeFileChange.tsx): "Changes N files +a −d" with a caret
+   that turns in 60ms, opening to the files, three before "Show N more". */
+.mode-code .code-turn-changes-caret {
+  flex: none;
+  transition: rotate var(--motion-fast) var(--ease-out);
+}
+.mode-code .code-turn-changes[data-open] .code-turn-changes-caret {
+  rotate: 90deg;
+}
+/* The row is the toggle's: its hit area covers the whole row, the line counts
+   let clicks through, and Undo (latest turn, a small ghost button like Show
+   more) sits above it, 4px before the counts. */
+.mode-code .code-turn-changes-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+}
+.mode-code .code-turn-changes-row > .code-turn-changes-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.mode-code .code-turn-changes-row > .code-diff-stat {
+  pointer-events: none;
+}
+.mode-code .code-turn-changes-undo {
+  position: relative;
+  margin: 0;
+}
+.mode-code .code-turn-changes-undo + .code-diff-stat {
+  margin-left: 0;
+}
+.mode-code .code-turn-changes-count {
+  color: #8f8e8b;
+  font-size: 12px;
+}
+.mode-code .code-turn-changes-files {
+  display: grid;
+  margin: 2px 0 0;
+  padding: 0 0 0 18px;
+  list-style: none;
+}
+.mode-code .code-turn-changes-files button {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  min-height: 24px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: #8f8e8b;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: left;
+}
+.mode-code .code-turn-changes-files button:hover {
+  background: var(--fill-ghost-hover);
+}
+.mode-code .code-turn-changes-files button:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
+}
+.mode-code .code-turn-changes-files .code-file-name {
+  flex: none;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mode-code .code-turn-changes-folder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mode-code .code-turn-changes-files .code-diff-stat {
+  margin-left: auto;
+}
+.mode-code .code-turn-changes-more:hover {
+  color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode-code .code-turn-changes-caret {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .mode-code .code-turn-changes-caret {
+  transition: none;
+}
+:root[data-theme="light"] .mode-code .code-turn-changes-more:hover {
+  color: var(--text);
+}
+.mode-code .code-background-row:focus-visible,
+.mode-code .code-turn-changes-toggle:focus-visible,
+.mode-code .code-plan-row:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+/* The running description keeps the sweep; "View live output" is #f4f4f4. */
+.mode-code .code-background-row .code-command-label {
+  color: #bcbcba;
+  -webkit-text-fill-color: transparent;
+  background: linear-gradient(
+      90deg,
+      currentColor 0 28%,
+      #e8e7e4 50%,
+      currentColor 72% 100%
+    )
+    100% 0 / 280% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: code-sweep 3s ease-in-out infinite;
+}
+.mode-code .code-background-link {
+  color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode-code .code-background-row .code-command-label {
+    animation: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
+/* Expanded group: a 1px #2d2d2d bordered list, one row per call 36px tall with
+   a hairline between, label 8.5px in. An open row keeps its card or diff below
+   the label inside the list. */
+.mode-code .code-tool-group-items {
+  margin: 6px 0 0;
+  border: 1px solid #2d2d2d;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.mode-code .code-tool-group-items > .code-command,
+.mode-code .code-tool-group-items > .code-command[open],
+.mode-code .code-tool-group-items > .activity {
+  margin: 0;
+}
+.mode-code .code-tool-group-items > * + * {
+  border-top: 1px solid #2d2d2d;
+}
+.mode-code .code-tool-group-items > .code-command > summary {
+  width: auto;
+  min-height: 35.67px;
+  padding: 0 8.5px;
+}
+.mode-code .code-tool-group-items > .code-command[open] {
+  padding-bottom: 8px;
+}
+/* A background command's row is a button: the list's full width and row height
+   like the others. */
+.mode-code .code-tool-group-items > .code-background-row {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 35.67px;
+  padding: 0 8.5px;
+}
+/* Its text is the row's own, not an opened row's indented body. */
+.mode-code .code-tool-group-items > .code-command.code-background-row > * {
+  margin: 0;
+}
+.mode-code .code-tool-group-items > .code-command > :not(summary) {
+  margin-left: 8.5px;
+  margin-right: 8.5px;
+}
+:root[data-theme="light"] .mode-code .code-tool-group-items,
+:root[data-theme="light"] .mode-code .code-tool-group-items > * + * {
+  border-color: var(--border);
+}
+
+/* Connector and dynamic tool rows: the row opens onto its result as plain
+   14px/20px text, 24px under the label's centre (the body starts 4px into the
+   35.67px row); a failed call's error is red, then each argument reads "name:
+   value" with a 12px monospace name (#969696) over a #cecece value, 25px under
+   the last line. */
+.mode-code .code-tool-call-body {
+  margin-top: -4px;
+  color: #c7c7c5;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.mode-code .code-tool-call-body p {
+  margin: 0;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.mode-code .code-tool-call-body img {
+  display: block;
+  max-width: min(100%, 480px);
+  max-height: 320px;
+  margin-top: 6px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+.mode-code .code-tool-call-error {
+  color: var(--danger);
+}
+.mode-code .code-tool-call-body .code-tool-call-arg {
+  margin-top: 6.5px;
+  line-height: 17px;
+  color: #cecece;
+}
+.mode-code .code-tool-call-arg code {
+  margin-right: 8px;
+  color: #969696;
+  font:
+    12px/17px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.mode-code .code-tool-call-body > :last-child:not(.code-tool-call-arg) {
+  padding-bottom: 5px;
+}
+:root[data-theme="light"] .mode-code .code-tool-call-body,
+:root[data-theme="light"] .mode-code .code-tool-call-arg {
+  color: var(--text);
+}
+:root[data-theme="light"] .mode-code .code-tool-call-error {
+  color: var(--danger);
+}
+:root[data-theme="light"] .mode-code .code-tool-call-arg code {
+  color: var(--text-muted);
+}
+
+.mode-code .code-file-change-body {
+  display: grid;
+  /* One column no wider than the reply: an auto track grew to the long path and
+     the code's longest line and ran past the column. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+}
+/* The written file's path is one line: its folders give way to an ellipsis so
+   the file's name stays, a copy button at its end; its lines wrap under the
+   code column as the Changes panel's do. */
+.mode-code .code-file-diff-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5.5px;
+}
+.mode-code .code-file-diff-path {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  color: #c8c8c4;
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+  text-align: left;
+  white-space: nowrap;
+}
+.mode-code .code-file-diff-dir {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mode-code .code-file-diff-base {
+  flex: none;
+}
+.mode-code .code-file-diff-path-row > .small-action {
+  flex: none;
+}
+/* 13px lines on a 20px pitch in an 8px-round box, the tint on the code only,
+   the numbers on the page. */
+.mode-code .code-file-diff .diff-lines {
+  font-size: 13px;
+  line-height: 20px;
+}
+.mode-code .code-file-diff .diff-box {
+  border-radius: 8px;
+}
+.mode-code .code-file-diff .diff-row[data-kind] .diff-gutter {
+  background: var(--bg);
+  color: var(--text-muted);
+}
+.mode-code .code-file-diff .diff-row {
+  min-width: 0;
+}
+.mode-code .code-file-diff .diff-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.code-diff-stat {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.code-diff-add {
+  color: #6fbf73;
+}
+.code-diff-del {
+  color: #e5616f;
+}
+
+/* A finished Code reply ends with the spinner's largest frame, still: 17px, its
+   left edge on the text's ink edge, its centre 72.5px below the ink top of the
+   last line; the badge starts 27.5px right of the text's ink edge. */
+.code-turn-status.code-turn-end {
+  margin-top: 43.5px;
+  padding-left: 28.5px;
+}
+.code-turn-end > .code-end-star {
+  left: -0.55px;
+}
+/* Blue "1 running task" badge, 20px tall, #0b1f40 with #88a7de text. */
+.code-running-badge {
+  height: 20px;
+  padding: 0 6.5px 0 7px;
+  border: 0;
+  border-radius: 5px;
+  background: #0b1f40;
+  color: #88a7de;
+  font: inherit;
+  cursor: pointer;
+}
+.code-running-badge:hover {
+  background: #11284f;
+  color: #a2bcea;
+}
+.code-running-badge:active {
+  background: #0a1a36;
+}
+:root[data-theme="light"] .code-running-badge {
+  background: #e2ebfb;
+  color: #2f5fb3;
+}
+/* Tasks that only settled: a plain line under the reply in the tool rows'
+   grey, brightening on hover, a failed count in red (the original's settled
+   task row, text-secondary → text-primary). */
+.code-turn-status.code-turn-settled {
+  margin-top: 8px;
+}
+.code-settled-tasks {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #858580;
+  font: inherit;
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+  text-align: start;
+  cursor: pointer;
+}
+.code-settled-tasks:is(:hover, :focus-visible) {
+  color: #cbcac5;
+}
+.code-settled-tasks > .is-failed {
+  color: var(--danger);
+}
+:root[data-theme="light"] .code-settled-tasks {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .code-settled-tasks:is(:hover, :focus-visible) {
+  color: var(--text);
+}
+/* Light theme: the dark captures' near-white highlights would vanish on white. */
+:root[data-theme="light"] .mode-code .code-background-link,
+:root[data-theme="light"]
+  .mode-code
+  .code-background-row:hover
+  .code-background-link,
+:root[data-theme="light"]
+  .mode-code
+  .code-turn-changes-toggle:hover
+  .code-command-label,
+:root[data-theme="light"] .mode-code .code-plan-row:hover .code-command-label {
+  color: var(--text);
+}
+:root[data-theme="light"] .mode-code .code-command-label[data-running],
+:root[data-theme="light"] .mode-code .code-background-row .code-command-label {
+  color: var(--text-secondary);
+  background-image: linear-gradient(
+    90deg,
+    currentColor 0 28%,
+    var(--text) 50%,
+    currentColor 72% 100%
+  );
+}
+:root[data-theme="light"] .mode-code .code-file-diff-path {
+  color: var(--text-secondary);
+}
+
+/* A model-written description is one line; a long one ends in an ellipsis
+   instead of wrapping, as in R-0786's nested tool list. */
+.mode-code .code-command > summary {
+  max-width: 100%;
+}
+.mode-code .code-command > summary > .code-command-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A written file's path opens it in the file panel: a link-like button in the
+   path's own style. */
+.mode-code .code-file-open {
+  display: block;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.mode-code .code-file-open:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* "Asking <header> ⌄" (the tool label, running shimmer) with the question under
+   it in the reply's text colour. */
+.mode-code .asking-row > summary {
+  list-style: none;
+}
+.mode-code .asking-row > summary::-webkit-details-marker {
+  display: none;
+}
+.mode-code .asking-row > p {
+  margin: 4px 0 0;
+  color: #d5d4d0;
+  font-size: var(--transcript-text, 14px);
+}
+:root[data-theme="light"] .mode-code .asking-row > p {
+  color: #3d3d3a;
+}
+/* An earlier Code reply's toolbar (Copy, Fork, Pin, time) shows while the turn
+   is hovered or focused; the latest keeps its star. */
+.mode-code .code-reply-actions {
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.mode-code .turn:hover .code-reply-actions,
+.mode-code .code-reply-actions:focus-within {
+  opacity: 1;
+}
+/* "Failed to write" in red, then the file name in the text colour; open, the
+   reason in red under it. */
+.mode-code .code-file-failed .code-command-label {
+  color: var(--text);
+}
+.mode-code .code-file-failed .code-command-label em {
+  color: var(--danger);
+  font-style: normal;
+}
+.mode-code .code-file-failed-reason {
+  margin: 4px 0 0;
+  color: var(--danger);
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+  white-space: pre-wrap;
+}
+:root[data-theme="light"] .mode-code .code-file-failed .code-command-label {
+  color: #141413;
+}
+:root[data-theme="light"] .mode-code .code-file-failed .code-command-label em,
+:root[data-theme="light"] .mode-code .code-file-failed-reason {
+  color: #8f2d2a;
+}
+
+/* Fork markers: "Forked from {title}" above a forked session, "Forked here:
+   {title}" / "{count} forks from here" under the turn a fork continued from. A
+   muted 12px caption with the split arrow, 4px apart; one that opens a session
+   turns primary on hover. */
+.fork-marker {
+  display: flex;
+  min-width: 0;
+}
+.fork-marker > :is(button, span) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 16px;
+  transition: color var(--motion-fast, 60ms) var(--ease-out, ease-out);
+}
+.fork-marker > button:hover {
+  color: var(--text);
+}
+.fork-marker > :is(button, span) > svg {
+  flex: none;
+}
+.fork-marker > :is(button, span) > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fork-marker .fork-archived {
+  flex: none;
+}
+.fork-source {
+  margin-bottom: 12px;
+}
+/* A rewind marker: the caption, then Undo rewind / Redo rewind, 6px apart. */
+.rewind-marker {
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  margin: 8px 0;
+}
+.rewind-marker > button:disabled {
+  opacity: 0.4;
+}
+
+/* A 28px row, 6px between caret, "Changes" (body, primary) and the file count
+   (caption, muted); then Undo (a small ghost button, caption) 4px before the
+   line counts (body, tabular, 2px apart). Undo keeps none of the Show more
+   button's top margin, so everything sits on one line. */
+.mode-code .code-turn-changes-row {
+  min-height: 28px;
+}
+.mode-code .code-turn-changes-row > .code-turn-changes-toggle {
+  gap: 6px;
+  min-height: 28px;
+  padding: 2px 0;
+}
+.mode-code .code-turn-changes-row .code-command-label {
+  font-size: 14px;
+  line-height: 20px;
+}
+.mode-code .code-turn-changes-row .code-turn-changes-count {
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+}
+.mode-code .code-turn-changes-row > .code-turn-changes-undo.user-message-more {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  font-size: 12px;
+  line-height: 17px;
+}
+.code-diff-stat {
+  gap: 2px;
+}
+.mode-code .code-turn-changes-row > .code-diff-stat {
+  margin-left: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:not([data-theme="light"])
+  .mode-code
+  .code-turn-changes-row
+  > .code-turn-changes-toggle {
+  color: #c3c2b7;
+}
+:root:not([data-theme="light"])
+  .mode-code
+  .code-turn-changes-row
+  .code-command-label {
+  color: #f0efec;
+}
+:root:not([data-theme="light"])
+  .mode-code
+  .code-turn-changes-row
+  .code-turn-changes-count {
+  color: #898781;
+}
+:root:not([data-theme="light"]) .code-diff-add {
+  color: #32d74b;
+}
+:root:not([data-theme="light"]) .code-diff-del {
+  color: #ff2c56;
+}
+:root[data-theme="light"] .code-diff-add {
+  color: #1e9e3c;
+}
+:root[data-theme="light"] .code-diff-del {
+  color: #cd2054;
+}
+/* The pill. */
+.code-diff-stat[data-variant="pill"] {
+  align-self: center;
+  gap: 0;
+  height: 18px;
+  margin-left: 6px;
+  overflow: hidden;
+  border-radius: 4.5px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.code-diff-stat[data-variant="pill"] > span {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 6px;
+}
+.code-diff-stat[data-variant="pill"] > .code-diff-add {
+  background: color-mix(in srgb, currentColor 20%, transparent);
+}
+.code-diff-stat[data-variant="pill"] > .code-diff-del {
+  background: color-mix(in srgb, currentColor 20%, transparent);
+}
+
+/* A turn's edits card: 4px above, an 8px-round card with a 1px inset border,
+   8px in and 4px top and bottom; each row 28px high, 4px in, its hover fill 5px
+   round across the row, 6px between icon, name and folder; the name in body
+   text, the folder in caption, muted; at the end Undo, then the counts and a
+   14px caret 10px apart. */
+/* A turn's files outside a repository: a 45px card, round 10, its type badge
+   (the attachment label's), the name and the size. */
+.turn-file-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.turn-file-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  height: 45px;
+  padding: 0 10px 0 9px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--turn-edits-border, #ffffff1a);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.turn-file-card:hover {
+  background: rgb(255 255 255 / 3%);
+}
+:root[data-theme="light"] .turn-file-card {
+  --turn-edits-border: #0b0b0b1a;
+}
+:root[data-theme="light"] .turn-file-card:hover {
+  background: rgb(11 11 11 / 3%);
+}
+.turn-file-badge {
+  flex: none;
+  box-sizing: border-box;
+  height: 17.5px;
+  padding: 0 4.5px;
+  border: 0.5px solid #4d4d4d;
+  border-radius: 5px;
+  color: #c9c8c5;
+  font-size: 11px;
+  line-height: 16.5px;
+  letter-spacing: -0.1px;
+}
+:root[data-theme="light"] .turn-file-badge {
+  border-color: #cfccc4;
+  color: #3d3c39;
+}
+.turn-file-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.turn-file-size {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+/* The see-all form. */
+.turn-edits-card {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--turn-edits-border, #ffffff1a);
+  user-select: text;
+}
+:root[data-theme="light"] .turn-edits-card {
+  --turn-edits-border: #0b0b0b1a;
+}
+.turn-edits-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.turn-edits-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0 -4px;
+  padding: 0 8px;
+}
+.turn-edits-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  height: 28px;
+  padding: 0 4px;
+}
+.turn-edits-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.turn-edits-rule {
+  flex: none;
+  height: 1px;
+  margin: 0 -7px;
+  background: var(--turn-edits-border, #ffffff1a);
+}
+.turn-edits-see-all {
+  color: var(--text);
+}
+.turn-edits-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  min-height: 28px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.turn-edits-open::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 5px;
+}
+.turn-edits-open:hover::before {
+  background: var(--fill-ghost-hover);
+}
+.turn-edits-open:focus-visible {
+  outline: none;
+}
+.turn-edits-open:focus-visible::before {
+  box-shadow: 0 0 0 2px var(--focus-ring, #2c84db);
+}
+.turn-edits-main {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.turn-edits-icon {
+  display: flex;
+  flex: none;
+  color: #898781;
+}
+.turn-edits-icon-space {
+  display: block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.turn-edits-label {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.turn-edits-detail {
+  flex: none;
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+  color: #898781;
+}
+.turn-edits-more {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-secondary);
+}
+.turn-edits-end {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+.turn-edits-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+.turn-edits-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.turn-edits-meta > .code-diff-stat {
+  margin-left: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.turn-edits-caret {
+  display: flex;
+  flex: none;
+  color: var(--text-secondary);
+}
+.turn-edits-more-caret {
+  rotate: 90deg;
+  transition: rotate var(--motion-fast) var(--ease-out);
+}
+.turn-edits-more-caret[data-open] {
+  rotate: -90deg;
+}
+/* Undo: the small ghost button, caption text. */
+.turn-edits-undo {
+  height: 24px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 17px;
+  cursor: pointer;
+}
+.turn-edits-undo:hover {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+/* Light: the same tokens' light values (primary #0b0b0b, secondary
+   #52514e; muted #898781 in both themes). */
+:root[data-theme="light"] .turn-edits-label,
+:root[data-theme="light"] .turn-edits-undo:hover {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .turn-edits-more,
+:root[data-theme="light"] .turn-edits-caret,
+:root[data-theme="light"] .turn-edits-undo {
+  color: #52514e;
+}
+
+/* A finished Workflow tool run (WorkflowRunRow): "Ran workflow", its
+   description and Stopped/Failed in one 3px-gapped line, the description cut
+   with an ellipsis. Colours are the plan row's. */
+.mode-code .code-workflow-run {
+  display: flex;
+  align-self: flex-start;
+  max-width: 100%;
+  align-items: center;
+  gap: 3px;
+  min-height: 24px;
+  color: var(--text-secondary);
+  font-size: var(--transcript-text, 14px);
+  line-height: var(--transcript-line, 20px);
+}
+.mode-code .code-workflow-run > .code-command-label {
+  flex: none;
+}
+.mode-code .code-workflow-run-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mode-code .code-workflow-run-state {
+  flex: none;
+  border-radius: 3px;
+}
+.mode-code .code-workflow-run-state:focus-visible {
+  outline: 1px solid var(--focus);
+}
+.mode-code .code-workflow-run-state[data-failed] {
+  color: var(--danger);
+}
+:root[data-theme="light"] .mode-code .code-workflow-run {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .mode-code .code-workflow-run-state[data-failed] {
+  color: var(--danger);
+}
+/* A running Workflow run: its row ("Running workflow", text-primary while it
+   shimmers), then the compact card under it. */
+.mode-code .code-workflow-running {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mode-code .code-workflow-run > .shimmer-text.code-command-label {
+  color: var(--text-primary, #f0efec);
+}

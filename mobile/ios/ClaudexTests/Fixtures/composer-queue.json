@@ -1,0 +1,537 @@
+[
+  {
+    "name": "steered waits",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [],
+          "status": "inProgress",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "steered",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "messageId": "m1"
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "steered",
+        "messageId": "m1",
+        "error": null
+      }
+    ],
+    "next": null
+  },
+  {
+    "name": "steered delivered",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [
+            {
+              "id": "i",
+              "type": "userMessage",
+              "steered": true,
+              "clientId": "m1",
+              "text": "one",
+              "attachments": []
+            }
+          ],
+          "status": "inProgress",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "steered",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "messageId": "m1"
+      }
+    ],
+    "expected": [],
+    "next": null
+  },
+  {
+    "name": "unread steer requeued",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [],
+          "status": "completed",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "steered",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "messageId": "m1"
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "queued",
+        "messageId": "m1",
+        "error": null
+      }
+    ],
+    "next": "one"
+  },
+  {
+    "name": "definite null waits",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [],
+          "status": "inProgress",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "queued",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "queued",
+        "messageId": null,
+        "error": null
+      }
+    ],
+    "next": null
+  },
+  {
+    "name": "idle queue sends first",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [],
+          "status": "completed",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "queued",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false
+      },
+      {
+        "id": "two",
+        "text": "two",
+        "attachments": [],
+        "state": "queued",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "queued",
+        "messageId": null,
+        "error": null
+      },
+      {
+        "text": "two",
+        "state": "queued",
+        "messageId": null,
+        "error": null
+      }
+    ],
+    "next": "one"
+  },
+  {
+    "name": "failure blocks later",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [],
+          "status": "completed",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "queued",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "error": "SYNTHETIC failure"
+      },
+      {
+        "id": "two",
+        "text": "two",
+        "attachments": [],
+        "state": "queued",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "queued",
+        "messageId": null,
+        "error": "SYNTHETIC failure"
+      },
+      {
+        "text": "two",
+        "state": "queued",
+        "messageId": null,
+        "error": null
+      }
+    ],
+    "next": null
+  },
+  {
+    "name": "accepted steer blocks queue",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [],
+          "status": "inProgress",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "steered",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "messageId": "m1"
+      },
+      {
+        "id": "two",
+        "text": "two",
+        "attachments": [],
+        "state": "queued",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "steered",
+        "messageId": "m1",
+        "error": null
+      },
+      {
+        "text": "two",
+        "state": "queued",
+        "messageId": null,
+        "error": null
+      }
+    ],
+    "next": null
+  },
+  {
+    "name": "wrong item type cannot deliver",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [
+            {
+              "id": "i",
+              "type": "agentMessage",
+              "steered": true,
+              "clientId": "m1",
+              "text": "one",
+              "attachments": []
+            }
+          ],
+          "status": "inProgress",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "steered",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "messageId": "m1"
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "steered",
+        "messageId": "m1",
+        "error": null
+      }
+    ],
+    "next": null
+  },
+  {
+    "name": "wrong client cannot deliver",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [
+            {
+              "id": "i",
+              "type": "userMessage",
+              "steered": true,
+              "clientId": "other",
+              "text": "one",
+              "attachments": []
+            }
+          ],
+          "status": "inProgress",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "steered",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "messageId": "m1"
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "steered",
+        "messageId": "m1",
+        "error": null
+      }
+    ],
+    "next": null
+  },
+  {
+    "name": "missing steer flag cannot deliver",
+    "conversation": {
+      "id": "synthetic-a",
+      "title": "SYNTHETIC",
+      "mode": "code",
+      "providerId": "p",
+      "model": "m",
+      "pinned": false,
+      "archived": false,
+      "createdAt": 1,
+      "updatedAt": 1,
+      "turns": [
+        {
+          "id": "t",
+          "prompt": "SYNTHETIC",
+          "attachments": [],
+          "items": [
+            {
+              "id": "i",
+              "type": "userMessage",
+              "steered": false,
+              "clientId": "m1",
+              "text": "one",
+              "attachments": []
+            }
+          ],
+          "status": "inProgress",
+          "createdAt": 1
+        }
+      ]
+    },
+    "entries": [
+      {
+        "id": "one",
+        "text": "one",
+        "attachments": [],
+        "state": "steered",
+        "mode": "code",
+        "providerId": "p",
+        "model": "m",
+        "webSearch": false,
+        "messageId": "m1"
+      }
+    ],
+    "expected": [
+      {
+        "text": "one",
+        "state": "steered",
+        "messageId": "m1",
+        "error": null
+      }
+    ],
+    "next": null
+  }
+]

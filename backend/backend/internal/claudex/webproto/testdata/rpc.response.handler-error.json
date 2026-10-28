@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "body": {
+    "ok": false,
+    "error": {
+      "message": "You've reached your weekly limit for this model.",
+      "code": "CLAUDEX_USAGE_LIMIT_EXCEEDED",
+      "details": {
+        "reason": "weekly_model",
+        "resetsAt": "2026-10-01T00:00:00Z"
+      }
+    }
+  }
+}

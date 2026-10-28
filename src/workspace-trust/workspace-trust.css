@@ -1,0 +1,77 @@
+/*
+ * "Trust this workspace?": the confirmation dialog's title, description and
+ * buttons are Claudex's `.modal.confirm`; under the description a scrolling
+ * details block whose parts are 12px apart (mt-3): the folder in the
+ * interface's monospace at the code size, then 12/15px muted footnotes, then
+ * "Execution allowed by:" with the files on a 5%-ink plate (bg-alpha-1), 5px
+ * corners, 6px padding (p-sm), at most 128px tall (max-h-32), lines 3px apart
+ * (gap-0.75). Sizes: --cds-font-size-footnote .75rem / --cds-leading-footnote
+ * .9375rem, --cds-font-size-code .75rem / --cds-leading-code 1.0625rem.
+ */
+/* -mx-pad-xl px-xl: the focus ring spans the dialog's width. */
+.workspace-trust-details {
+  margin: 0 -24px;
+  padding: 0 24px;
+  overflow-y: auto;
+}
+.workspace-trust-details:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.workspace-trust-path,
+.workspace-trust-mono,
+.workspace-trust-sources li {
+  font-family:
+    var(--code-font-custom,) "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    monospace;
+  font-size: 12px;
+  line-height: 17px;
+  overflow-wrap: anywhere;
+}
+.workspace-trust-path {
+  margin-top: 12px;
+  color: var(--text-strong);
+}
+.workspace-trust-note,
+.workspace-trust-sources-label {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+.workspace-trust-note {
+  overflow-wrap: anywhere;
+}
+/* "on {host}": mt-1, a muted footnote, break-all. */
+.workspace-trust-host {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+  word-break: break-all;
+}
+.workspace-trust-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+}
+.workspace-trust-sources-label {
+  margin: 0;
+}
+.workspace-trust-sources ul {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 128px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  border-radius: 5px;
+  background: var(--alpha-1);
+  color: var(--text-secondary);
+  list-style: none;
+}

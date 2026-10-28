@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest something new or an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: The task or problem, not only the solution you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could Claudex help?
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else

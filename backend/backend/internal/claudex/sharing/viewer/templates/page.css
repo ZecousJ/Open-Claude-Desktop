@@ -1,0 +1,770 @@
+/* Public share page (design R1 4.6). Colours follow the desktop app's
+   reference tokens (src/styles/90-reference-foundation.css); the page itself
+   was never captured from the original, so the layout is provisional. */
+/* (live claude.ai bundle, 2026-10-14, frame-shell-chrome-B45f-YAC.js): Dialog sm, gap-sm, ps-lg and text-body. */
+[data-install-steps], [data-artifact-tools] { --tool-surface: #fff; --tool-subtle: #fff; --tool-text: #0b0b0b; --tool-secondary: #52514e; --tool-border: #0b0b0b1a; max-width: 400px; width: calc(100vw - 2rem); max-height: calc(100dvh - 2rem); padding: 20px; border: 0; border-radius: 10px; background: var(--tool-surface); color: var(--tool-text); font: 13px/19px system-ui; box-shadow: inset 0 0 0 1px var(--tool-border), 0 4px 8px #0b0b0b14, 0 12px 28px -2px #0b0b0b14; }
+@media (prefers-color-scheme: dark) { [data-install-steps], [data-artifact-tools] { --tool-surface: #20201f; --tool-subtle: #1a1a19; --tool-text: #f0efec; --tool-secondary: #c3c2b7; --tool-border: #ffffff1a; box-shadow: inset 0 0 0 1px var(--tool-border), 0 4px 8px #0b0b0b14, 0 12px 28px -2px #0000003d; } }
+[data-install-steps][open] { display: flex; flex-direction: column; gap: 12px; }
+[data-install-steps] h2, [data-artifact-tools] h2 { margin: 0; font-size: 14px; font-weight: 500; line-height: 18px; }
+[data-install-steps]::backdrop, [data-artifact-tools]::backdrop { background: #00000080; }
+[data-install-steps] ol { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-inline-start: 12px; list-style: decimal; }
+[data-install-steps] p { margin: 0; color: var(--tool-secondary); }
+[data-install-steps] form { display: flex; justify-content: flex-end; }
+[data-install-close] { position: absolute; top: 20px; right: 20px; }
+[data-install-steps] h2 { padding-right: 24px; }
+[data-artifact-tools][open] { display: flex; flex-direction: column; gap: 0; }
+.tool-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.tool-title { display: flex; min-width: 0; flex: 1; align-items: center; gap: 12px; }
+.tool-connector { display: flex; width: 28px; height: 28px; flex: none; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--tool-border); border-radius: 6px; background: var(--tool-subtle); color: var(--tool-secondary); font-size: 13px; line-height: 19px; }
+.tool-close { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.tool-description { margin: 0; color: var(--tool-secondary); font-size: 12px; line-height: 15px; overflow-wrap: anywhere; }
+.tool-body { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; }
+.tool-list, .tool-args { border: 1px solid var(--tool-border); border-radius: 6px; padding: 6px; background: var(--tool-subtle); color: var(--tool-text); overflow: auto; font-size: 11px; line-height: 17px; }
+.tool-list { display: flex; flex-direction: column; gap: 8px; max-height: 160px; }
+.tool-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: var(--tool-secondary); }
+.tool-group ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; font-family: monospace; color: var(--tool-text); }
+.tool-group li { word-break: break-all; }
+.tool-input { display: flex; flex-direction: column; gap: 4px; color: var(--tool-secondary); font-size: 11px; line-height: 17px; }
+.tool-args { max-height: 256px; font-family: monospace; }
+.tool-args pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.tool-args dl { display: grid; grid-template-columns: fit-content(33%) minmax(0, 1fr); gap: 6px 24px; margin: 0; }
+.tool-args dl > div { display: contents; }
+.tool-args dt { min-width: 0; overflow: hidden; overflow-wrap: anywhere; font-family: system-ui; font-weight: 400; color: var(--tool-secondary); }
+.tool-args dd { min-width: 0; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.tool-args dl > .stacked { grid-column: 1 / -1; display: flex; flex-direction: column; min-width: 0; gap: 4px; }
+.tool-args .stacked dd { padding-left: 12px; }
+.tool-input p { margin: 0; font-size: 12px; line-height: 15px; }
+.tool-footer, .tool-permission-row { display: flex; justify-content: flex-end; gap: 8px; }
+.tool-permission-row { justify-content: space-between; align-items: center; }
+[data-artifact-tools] .button, [data-install-steps] .button { height: 24px; border-radius: 6px; background: transparent; color: var(--tool-text); box-shadow: inset 0 0 0 1px var(--tool-border); }
+[data-artifact-tools] .primary, [data-install-steps] .button { background: #0b0b0b; color: #fff; }
+[data-artifact-tools] .primary:hover, [data-install-steps] .button:hover { background: #2c2c2a; }
+[data-artifact-tools] .button:not(.primary) { background: #ffffff1a; }
+[data-artifact-tools] .button:not(.primary):hover { background: #0b0b0b0d; }
+[data-artifact-tools] button:disabled { opacity: .4; pointer-events: none; }
+.tool-footer { margin-top: 12px; }
+@media (prefers-color-scheme: dark) { [data-artifact-tools] .primary, [data-install-steps] .button { background: #fff; color: #0b0b0b; } [data-artifact-tools] .primary:hover, [data-install-steps] .button:hover { background: #e1e0d9; } [data-artifact-tools] .button:not(.primary):hover { background: #ffffff24; } }
+@media (max-width: 639px) { .tool-footer { flex-direction: column-reverse; } .tool-footer > button { width: 100%; } }
+:root {
+  color-scheme: light dark;
+  --bg: #faf9f5;
+  --surface: #fffefb;
+  --bubble: #f0eee6;
+  --text: #38362f;
+  --strong: #22211c;
+  --muted: #77746c;
+  --faint: #8e8a80;
+  --border: #e1ddd3;
+  --border-strong: #c5bfb2;
+  --code-bg: #eeece5;
+  --inline-code: #a24c2f;
+  --inline-code-bg: #f0ece4;
+  --accent: #c56b4e;
+  --popover: #fffefb;
+  --shadow: 0 12px 40px #0002, 0 2px 8px #0001;
+  --switch-track: #c8c8c8;
+  --switch-on: #4177d1;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141414;
+    --surface: #202020;
+    --bubble: #303030;
+    --text: #c6c6c6;
+    --strong: #e5e5e5;
+    --muted: #929292;
+    --faint: #727272;
+    --border: #292929;
+    --border-strong: #454545;
+    --code-bg: #101010;
+    --inline-code: #c98888;
+    --inline-code-bg: #252222;
+    --accent: #cc785c;
+    --popover: #242424;
+    --shadow: 0 12px 40px #0006, 0 2px 8px #0004;
+    --switch-track: #31302e;
+    --switch-on: #4076ce;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/21px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-wrap: anywhere;
+}
+a {
+  color: inherit;
+}
+a:focus-visible,
+summary:focus-visible,
+button:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+pre,
+code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* Top bar */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.bar.compact {
+  height: 44px;
+}
+/* CLAUDEX: LOGIN star and serif wordmark, as on the sign-in page */
+.brand {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--strong);
+  text-decoration: none;
+}
+.brand-star {
+  flex: none;
+}
+.wordmark {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.3px;
+}
+.bar.compact .wordmark {
+  font-size: 19px;
+}
+.bar-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--muted);
+}
+.bar-title::before {
+  content: "/";
+  margin-right: 12px;
+  color: var(--faint);
+}
+.bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.text-button,
+.report > summary {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  /* A <button> draws as the links beside it, not the browser's own. */
+  border: 0;
+  background: transparent;
+  font: inherit;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  list-style: none;
+}
+.report > summary::-webkit-details-marker {
+  display: none;
+}
+.text-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.text-button:hover:not(:disabled),
+.report > summary:hover,
+.report[open] > summary {
+  background: var(--surface);
+  color: var(--strong);
+}
+
+/* Report popover (no script: a <details> with a plain form) */
+.report {
+  position: relative;
+}
+.report-panel {
+  position: absolute;
+  right: 0;
+  top: 34px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 16px;
+  background: var(--popover);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.report-panel h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: var(--strong);
+}
+.report-panel p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+.report-panel .report-field {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+.report-panel .report-field small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+.report-panel select,
+.report-panel input[name] {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+}
+.report-panel p.report-elsewhere {
+  display: none;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.report-panel:has(option[data-elsewhere]:checked) p.report-elsewhere {
+  display: block;
+}
+.report-panel:has(option[data-elsewhere]:checked) .report-fields,
+.report-panel:has(option[value=""]:checked) .report-fields {
+  display: none;
+}
+.report-panel textarea {
+  display: block;
+  width: 100%;
+  min-height: 72px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  resize: vertical;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+}
+/* "Opt out of training on this report": label and switch on one row, apart,
+   the note under them (live claude.ai report form, 2026-10-12). The switch
+   is the app's settings switch: 36x20 track, 16px knob, 120ms knob move. */
+.report-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+  font-size: 13px;
+}
+.report-switch input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 10px;
+  background: var(--switch-track);
+  cursor: pointer;
+}
+.report-switch input::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 120ms cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.report-switch input:checked {
+  background: var(--switch-on);
+}
+.report-switch input:checked::before {
+  transform: translateX(16px);
+}
+.report-panel p.report-note {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.button {
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--strong);
+  color: var(--bg);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Ask … your own question: held at the bottom while the chat scrolls,
+   centred, 16px from the edges (live claude.ai shared page, 2026-10-12). */
+.continue {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  pointer-events: none;
+}
+.continue .button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+/* Conversation */
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+.share-head {
+  margin-bottom: 32px;
+}
+.share-head h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  line-height: 30px;
+  font-weight: 600;
+  color: var(--strong);
+}
+.meta {
+  color: var(--faint);
+  font-size: 13px;
+}
+.turn-user {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+.bubble {
+  max-width: calc(100% - 40px);
+  padding: 11px 15px;
+  background: var(--bubble);
+  border-radius: 18px;
+  white-space: pre-wrap;
+  color: var(--strong);
+}
+.turn-assistant {
+  margin-bottom: 32px;
+}
+.activity {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  color: var(--faint);
+  font-size: 13px;
+  line-height: 20px;
+}
+.activity li::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 9px 2px 2px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+/* Markdown (mirrors .markdown in the desktop app) */
+.markdown > :first-child {
+  margin-top: 0;
+}
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+.markdown p {
+  margin: 0 0 12px;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  margin: 25px 0 10px;
+  line-height: 1.5;
+  color: var(--strong);
+}
+.markdown h1 {
+  font-size: 22px;
+}
+.markdown h2 {
+  font-size: 18px;
+}
+.markdown h3 {
+  font-size: 16px;
+}
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  font-size: 15px;
+}
+.markdown ul,
+.markdown ol {
+  margin: 12px 0 18px;
+  padding-left: 24px;
+}
+.markdown li {
+  margin: 6px 0;
+}
+.markdown li > p {
+  margin: 7px 0;
+}
+.markdown li > input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0 5px 0 0;
+  vertical-align: -1px;
+  accent-color: var(--accent);
+}
+.markdown blockquote {
+  margin: 18px 0;
+  padding: 3px 17px;
+  border-left: 3px solid var(--border-strong);
+  color: var(--muted);
+}
+.markdown hr {
+  margin: 24px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+.markdown :not(pre) > code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--inline-code-bg);
+  color: var(--inline-code);
+  font-size: 12px;
+}
+.markdown .table-wrap {
+  margin: 10px 0 20px;
+  overflow-x: auto;
+}
+.markdown table {
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.markdown th,
+.markdown td {
+  min-width: 80px;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.markdown th {
+  background: var(--surface);
+  font-weight: 500;
+}
+.markdown .al-c {
+  text-align: center;
+}
+.markdown .al-r {
+  text-align: right;
+}
+.code-block {
+  margin: 17px 0;
+  overflow: hidden;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+.code-bar {
+  display: flex;
+  align-items: center;
+  height: 37px;
+  padding: 0 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--faint);
+  font-size: 11px;
+}
+.code-block pre {
+  margin: 0;
+  padding: 15px;
+  overflow-x: auto;
+  white-space: pre;
+  overflow-wrap: normal;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* Artifact cards */
+.artifact {
+  margin: 12px 0 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.artifact > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 10px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.artifact > summary::-webkit-details-marker {
+  display: none;
+}
+.artifact-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--muted);
+  font: 600 11px/1 "SFMono-Regular", Consolas, Menlo, monospace;
+}
+.artifact-name {
+  flex: 1;
+  min-width: 0;
+}
+.artifact-name strong {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: var(--strong);
+}
+.artifact-name span {
+  color: var(--faint);
+  font-size: 13px;
+}
+.artifact-toggle {
+  flex: none;
+  color: var(--muted);
+  font-size: 13px;
+}
+.artifact-toggle .when-open,
+.artifact[open] .artifact-toggle .when-closed {
+  display: none;
+}
+.artifact[open] .artifact-toggle .when-open {
+  display: inline;
+}
+.artifact-frame {
+  display: block;
+  width: 100%;
+  height: 480px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+.artifact-links {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Artifact share: full-page frame */
+body.full {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.full-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+
+footer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+  border-top: 1px solid var(--border);
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* Status pages */
+/* CLAUDEX: LOGIN notice pages: the sign-in page's look (tokens of SCRATCH/login/TOKENS.md) */
+.status-page {
+  --status-bg: #faf9f5;
+  --status-text: #141413;
+  --status-muted: #6b6a65;
+  --status-secondary: #efede6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--status-bg);
+  color: var(--status-text);
+}
+@media (prefers-color-scheme: dark) {
+  .status-page {
+    --status-bg: #111111;
+    --status-text: #f7f7f5;
+    --status-muted: #8c8c8a;
+    --status-secondary: #292929;
+  }
+}
+.status-head {
+  padding: 24px 48px 0;
+}
+.status-head .brand {
+  color: var(--status-text);
+}
+.status-head .brand-star {
+  width: 22px;
+  height: 22px;
+}
+.status-head .wordmark {
+  font-size: 28px;
+  letter-spacing: -0.4px;
+}
+.status {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 24px 88px;
+  text-align: center;
+}
+.status h1 {
+  max-width: 760px;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(34px, 5.6vw, 56px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--status-text);
+}
+.status p {
+  max-width: 560px;
+  margin: 14px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--status-muted);
+}
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  margin-top: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--status-secondary);
+  color: var(--status-text);
+  font-size: 15px;
+  text-decoration: none;
+}
+.secondary-button:hover {
+  opacity: 0.85;
+}
+@media (max-width: 640px) {
+  .status-head {
+    padding: 16px 16px 0;
+  }
+  .status {
+    justify-content: flex-start;
+    padding: 64px 16px 48px;
+  }
+}
+
+/* Content documents (/s/<token>/a/<n>) for markdown, code and Mermaid */
+body.doc {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+body.code {
+  background: var(--code-bg);
+}
+body.code pre {
+  margin: 0;
+  padding: 16px;
+  white-space: pre;
+  overflow-wrap: normal;
+  font-size: 12px;
+  line-height: 18px;
+}
+body.diagram #diagram {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+body.diagram #diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+body.diagram pre {
+  margin: 0 16px 16px;
+  padding: 12px;
+  white-space: pre-wrap;
+  background: var(--code-bg);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.error {
+  margin: 16px;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  main {
+    padding-top: 24px;
+  }
+  .bubble {
+    max-width: 100%;
+  }
+  .artifact-frame {
+    height: 360px;
+  }
+}

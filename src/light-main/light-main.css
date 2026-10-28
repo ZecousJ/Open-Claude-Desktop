@@ -1,0 +1,430 @@
+/*
+ * Light theme of the main app. The original's light theme is neutral grey;
+ * these rules replace dark-only values that the earlier audits (mostly dark)
+ * left in place. Every value is sampled from a light capture, named per rule.
+ * Loaded after all other sheets (light-main.slot.ts), so the rules win at equal
+ * specificity.
+ */
+
+/* Composer. The dark rules kept #454545 / #4d4d4d. */
+:root[data-theme="light"] .composer,
+:root[data-theme="light"] .composer:focus-within,
+:root[data-theme="light"] .chat-home .composer:focus-within,
+:root[data-theme="light"] .code-composer .composer,
+:root[data-theme="light"] .code-composer .composer:focus-within {
+  background: #ffffff;
+  border-color: #dddddb;
+  box-shadow: 0 2px 4px #00000008;
+}
+
+/* Usage banner: no fill, a #e2e2e0 hairline, and the Get more usage pill white
+   with a #e4e4e4 rim. */
+:root[data-theme="light"] .usage-banner.chat,
+:root[data-theme="light"] .usage-banner.code {
+  background: transparent;
+  border-color: #e2e2e0;
+}
+:root[data-theme="light"]
+  .usage-banner
+  .usage-banner-more:not(.usage-banner-notify) {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e4e4e4;
+  color: #141414;
+}
+
+/* Code and Cowork transcripts: the prompt bubble and inline code take the Chat
+   light faces. Without it a Cowork prompt kept the dark #242424 bubble behind
+   dark text. */
+:root[data-theme="light"] :is(.mode-code, .mode-cowork) .user-message {
+  background: #f0f0f0;
+  color: var(--text);
+}
+:root[data-theme="light"] .markdown :not(pre) > code {
+  color: var(--text);
+  background: #0000000d;
+  border-color: #00000021;
+}
+
+/* Effort slider: white panel with a #dadad8 rim, track #e6e6e6, fill grey. */
+:root[data-theme="light"] .code-effort-panel {
+  background: #ffffff;
+  border-color: #dadad8;
+}
+:root[data-theme="light"] .code-effort-track {
+  background: #e6e6e6;
+}
+:root[data-theme="light"] .code-effort-fill {
+  background: #b4b4b4;
+}
+
+/* Artifact panel header: white, title #3a3a3a, the comment group white with
+   #e5e5e5 rim and divider (icon #020202, chevron #959595) and the Share button
+   #0b0b0b with white text. */
+:root[data-theme="light"] .file-preview {
+  background: #ffffff;
+}
+:root[data-theme="light"] .artifact-title-options {
+  color: #3a3a3a;
+}
+:root[data-theme="light"] .artifact-title-options:hover {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .artifact-title-options[aria-expanded="true"] {
+  background: #f3f3f3;
+}
+:root[data-theme="light"] .artifact-collaboration-controls .icon-button {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .artifact-comment-buttons {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e5e5e5;
+}
+:root[data-theme="light"] .artifact-comment-buttons button {
+  color: #020202;
+}
+:root[data-theme="light"] .artifact-comment-buttons button + button {
+  color: #959595;
+  border-left-color: #e5e5e5;
+}
+:root[data-theme="light"] .artifact-comment-buttons button:hover {
+  background: #f3f3f3;
+}
+:root[data-theme="light"] .artifact-comment-buttons button.is-active {
+  background: #dbe9fb;
+  color: #2f79d2;
+}
+:root[data-theme="light"] .artifact-share-button {
+  background: #0b0b0b;
+  color: #ffffff;
+}
+:root[data-theme="light"] .artifact-chat-button {
+  background: #f3f3f3;
+  color: #141414;
+}
+/* The Chat group's frame and its pop-out half take the light controls too: an
+   ink fill, a hairline of ink at 10%, the secondary ink, and comment mode's
+   pale blue when pressed. */
+:root[data-theme="light"] .artifact-chat-group {
+  background: #f3f3f3;
+}
+:root[data-theme="light"] .artifact-chat-group > .artifact-popout-chat {
+  border-left-color: rgb(11 11 11 / 10%);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifact-chat-group > .artifact-popout-chat:hover {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"]
+  .artifact-chat-group
+  > .artifact-popout-chat[aria-pressed="true"] {
+  border-left-color: transparent;
+  background: #dbe9fb;
+  color: #2f79d2;
+}
+
+/* Artifact menus. */
+:root[data-theme="light"] .artifact-chrome-menu {
+  background: #ffffff;
+  border-color: #e4e4e4;
+  box-shadow: 0 12px 28px #0002;
+  color: #141414;
+}
+:root[data-theme="light"] .artifact-menu-meta {
+  color: #82817f;
+}
+:root[data-theme="light"] .artifact-chrome-menu button:hover:not(:disabled),
+:root[data-theme="light"] .artifact-chrome-menu button:focus-visible {
+  background: #f3f3f3;
+}
+:root[data-theme="light"] .artifact-chrome-menu button:disabled {
+  color: #9b9a97;
+}
+:root[data-theme="light"]
+  .artifact-chrome-menu
+  .artifact-menu-delete:hover:not(:disabled),
+:root[data-theme="light"]
+  .artifact-chrome-menu
+  .artifact-menu-delete:focus-visible {
+  background: #d03c3c;
+  color: #ffffff;
+}
+:root[data-theme="light"] .artifact-filter-menu > [role="separator"] {
+  background: #e6e6e6;
+}
+
+/* Comments: white draft and list, hovered row #f3f3f3. */
+:root[data-theme="light"] .artifact-comments-list,
+:root[data-theme="light"] .artifact-comment-draft {
+  background: #ffffff;
+  border-color: #e4e4e4;
+  color: #141414;
+  box-shadow: 0 6px 20px #0002;
+}
+:root[data-theme="light"] .artifact-comments-list .artifact-filter-menu {
+  background: #ffffff;
+  border-color: #e4e4e4;
+}
+:root[data-theme="light"] .artifact-comments-list > header button {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .artifact-comments-list button:hover {
+  background: #f3f3f3;
+}
+:root[data-theme="light"] .artifact-comments-empty span,
+:root[data-theme="light"] .artifact-comments-list article button {
+  color: #82817f;
+}
+:root[data-theme="light"] .artifact-comments-list article {
+  border-top-color: #ececea;
+}
+:root[data-theme="light"] .artifact-comment-mention {
+  background: #dbe9fb;
+  color: #2a6cbd;
+}
+:root[data-theme="light"] .artifact-comment-draft textarea {
+  color: #141414;
+}
+:root[data-theme="light"] .artifact-comment-draft > div {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .artifact-comment-draft button {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .artifact-comment-draft button:disabled {
+  color: #b5b4b1;
+}
+:root[data-theme="light"] .artifact-menu-checkbox {
+  border-color: #c6c6c4;
+}
+
+/* Code face. */
+:root[data-theme="light"] .mode-chat .markdown .code-block {
+  background: color-mix(in oklab, var(--cds-surface-3) 50%, transparent);
+}
+
+/* Approval and question cards: white card, #e0e0e0 rim, focused option #f3f3f3.
+   The Code cards have no light capture and take the same faces. */
+:root[data-theme="light"] .approval-card {
+  background: #ffffff;
+  border-color: #e0e0e0;
+}
+:root[data-theme="light"] .approval-card .question-card-input {
+  border-color: #e0e0e0;
+}
+:root[data-theme="light"] .approval-key {
+  border-color: #dddddb;
+}
+:root[data-theme="light"] .diff-box {
+  border-color: #e2e2e0;
+}
+
+/* Popovers and palettes: the sidebar popover frame (#e4e4e4). */
+:root[data-theme="light"] .composer-add-menu,
+:root[data-theme="light"] .code-slash-palette {
+  border-color: #e4e4e4;
+}
+:root[data-theme="light"] .code-slash-list > button:hover,
+:root[data-theme="light"] .code-slash-list > button[aria-selected="true"] {
+  background: #f3f3f3;
+}
+:root[data-theme="light"] .code-slash-source {
+  color: #82817f;
+}
+:root[data-theme="light"] .generated-file-row > strong {
+  color: var(--text);
+}
+
+/* Warm tints the earlier light passes chose without a capture, moved to the
+   neutral values measured elsewhere. */
+:root[data-theme="light"] .code-composer .model-button,
+:root[data-theme="light"] .code-composer .code-effort-trigger,
+:root[data-theme="light"] .conversation-input-actions .send-button.plain,
+:root[data-theme="light"] .attachment-remove,
+:root[data-theme="light"] .composer-drop,
+:root[data-theme="light"] .pasted-card-label {
+  color: #141414;
+}
+:root[data-theme="light"]
+  .code-composer
+  .composer-left
+  > .popover-anchor
+  > .icon-button,
+:root[data-theme="light"] .code-voice-controls .dictation-button,
+:root[data-theme="light"] .code-composer .code-permission-trigger {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .code-composer .model-button[aria-expanded="true"],
+:root[data-theme="light"]
+  .code-composer
+  .code-effort-trigger[aria-expanded="true"],
+:root[data-theme="light"] .code-composer .code-permission-trigger.open,
+:root[data-theme="light"]
+  .conversation-input-actions
+  .send-button.plain:hover:not(:disabled) {
+  background: #f3f3f1;
+}
+:root[data-theme="light"] .context-ring-track {
+  stroke: #e2e2e0;
+}
+:root[data-theme="light"] .pasted-card {
+  border-color: #dddddb;
+  background: #fcfcfa;
+}
+:root[data-theme="light"] .pasted-card-label,
+:root[data-theme="light"] .attachment-remove {
+  border-color: #dddddb;
+}
+:root[data-theme="light"] .pasted-card-text {
+  color: #82817f;
+}
+
+/* Code Bash card: command box white with a #e2e2e2 rim, prompt/title/output
+   #484848-#4d4d4d, command word #2c649f and strings #268d3a. */
+:root[data-theme="light"] .mode-code .code-bash-card {
+  border-color: #e2e2e2;
+}
+:root[data-theme="light"] .mode-code .code-bash-source {
+  background: #ffffff;
+  border-color: #e2e2e2;
+  color: #484848;
+}
+:root[data-theme="light"] .mode-code .code-bash-prompt {
+  color: #484848;
+}
+:root[data-theme="light"] .mode-code .code-bash-title {
+  color: #4d4d4d;
+}
+:root[data-theme="light"] .mode-code .code-bash-output {
+  color: #444444;
+}
+:root[data-theme="light"] .mode-code .code-bash-source .sh-command {
+  color: #2c649f;
+}
+:root[data-theme="light"] .mode-code .code-bash-source .sh-string,
+:root[data-theme="light"] .mode-code .code-bash-source .sh-list,
+:root[data-theme="light"] .mode-code .code-bash-source .sh-arg {
+  color: #268d3a;
+}
+:root[data-theme="light"] .mode-code .code-bash-source .sh-keyword {
+  color: #7c3bb5;
+}
+:root[data-theme="light"] .mode-code .code-bash-source .sh-variable,
+:root[data-theme="light"] .mode-code .code-bash-source .sh-number {
+  color: #a44b20;
+}
+:root[data-theme="light"] .mode-code .code-bash-source .sh-comment {
+  color: #82817f;
+}
+
+/* An opened tool row's title reads darker than the folded rows. */
+:root[data-theme="light"] .code-command[open] > summary,
+:root[data-theme="light"] .command-activity[open] > summary,
+:root[data-theme="light"] .web-search-activity[open] > summary {
+  color: #4b4b4b;
+}
+
+/* The 1/2 counter takes the light limit toast's amber; its dark faces are the
+   dark amber row's. */
+:root[data-theme="light"] .question-card-count {
+  background: #f8dba0;
+  color: #5a3a05;
+}
+/* Artifact menu rows and separators keep their dark rules at higher
+   specificity (.artifact-title-menu): the light faces of R-1010. */
+:root[data-theme="light"] .artifact-title-menu {
+  background: #ffffff;
+  border-color: #e4e4e4;
+}
+:root[data-theme="light"] .artifact-title-menu > [role="separator"] {
+  background: #e6e6e6;
+}
+:root[data-theme="light"] .artifact-title-menu button:hover:not(:disabled),
+:root[data-theme="light"] .artifact-title-menu button:focus-visible {
+  background: #f3f3f3;
+}
+:root[data-theme="light"] .artifact-title-menu .artifact-menu-delete {
+  color: var(--danger);
+}
+
+/* The Code composer typed its text and return glyph in near-white, invisible on
+   the white light box. */
+:root[data-theme="light"] .code-composer .composer-input-row textarea {
+  color: var(--text);
+}
+:root[data-theme="light"] .code-composer .send-button:not(.stop):not(.idle) {
+  color: #141414;
+}
+
+/* The light dialog backdrop: 40% black, as .overlay. */
+:root[data-theme="light"] .search-palette-overlay,
+:root[data-theme="light"] .sheet-overlay {
+  background: #0006;
+}
+/* The bypass and folder-access confirmations keep their captured 39%. */
+:root[data-theme="light"] .bypass-backdrop,
+:root[data-theme="light"] .cowork-access-backdrop {
+  background: rgb(0 0 0 / 39%);
+}
+
+/* Code file panel: fill #fcfcfa like the page, rim #dddddb, the rule under the
+   tab and path rows #e6e6e6 (the dark #2a2a28 rule out-ranked the older light
+   border). */
+:root[data-theme="light"] .file-viewer.code-file-panel,
+:root[data-theme="light"] .file-viewer.code-file-panel .file-source {
+  background: #fcfcfa;
+}
+:root[data-theme="light"]
+  .artifact-panel.file-viewer.code-file-panel
+  > header.code-file-header,
+:root[data-theme="light"] .code-file-panel .code-file-tabs {
+  border-bottom-color: #e6e6e6;
+}
+
+/* Composer menus and palettes: the sidebar popover face: white with a #e4e4e4
+   rim; the earlier #fffefa cream and #d2d0ca rims matched no capture. */
+:root[data-theme="light"] .code-slash-palette,
+:root[data-theme="light"] .code-permission-menu,
+:root[data-theme="light"] .code-add-menu,
+:root[data-theme="light"] .code-add-submenu,
+:root[data-theme="light"] .code-model-menu,
+:root[data-theme="light"] .code-model-submenu,
+:root[data-theme="light"] .composer-add-menu,
+:root[data-theme="light"] .composer-add-submenu,
+:root[data-theme="light"] .cowork-menu,
+:root[data-theme="light"] .microphone-menu,
+:root[data-theme="light"] .usage-chart-tip {
+  background: #ffffff;
+  border-color: #e4e4e4;
+}
+
+/* Chat and Cowork home composer: placeholder #777775, + #0e0e0e, the Chat |
+   Cowork track #f1f1ef with a white selected block on a #e7e7e5 rim (no dark
+   outline), Chat #777, model #474747 over effort #7c7c7c, microphone black, ⌄
+   #949494, and the Project or folder / Manual / Output row #3b3b39. The dark
+   rules had left the dark-theme glyph colours in place. */
+:root[data-theme="light"] .chat-home .composer-input-row textarea::placeholder {
+  color: #777775;
+}
+:root[data-theme="light"]
+  .chat-home
+  .composer-left
+  > .popover-anchor
+  > .icon-button {
+  color: #0e0e0e;
+}
+:root[data-theme="light"] .chat-home .model-effort-pill .model-button-name {
+  color: #474747;
+}
+:root[data-theme="light"] .chat-home .model-effort-pill .model-button-effort {
+  color: #7c7c7c;
+}
+:root[data-theme="light"] .cowork-voice-controls .dictation-button {
+  color: #141414;
+}
+:root[data-theme="light"] .cowork-voice-options,
+:root[data-theme="light"] .voice-mode-button > .voice-mode-chevron {
+  color: #949494;
+}
+:root[data-theme="light"] .cowork-options.cowork-options > button {
+  color: #3b3b39;
+}

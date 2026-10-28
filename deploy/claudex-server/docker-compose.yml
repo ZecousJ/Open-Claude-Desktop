@@ -1,0 +1,154 @@
+# Claudex server, production: the Claudex server image (the Sub2API fork in
+# backend/, built with Dockerfile / build-image.sh in this folder) with its own
+# PostgreSQL and Redis. See README.md.
+#
+#   cp .env.example .env && chmod 600 .env   # then replace every change-me value
+#   docker compose up -d
+#
+# The server publishes 127.0.0.1 only; TLS terminates at the reverse proxy
+# (nginx.conf.example). Variables follow backend/deploy/docker-compose.yml.
+
+name: claudex-server
+
+services:
+  claudex-server:
+    # Built from this repository (build-image.sh), then pushed to your registry
+    # or loaded on this host. Pin a version or digest.
+    image: ${CLAUDEX_SERVER_IMAGE:?set CLAUDEX_SERVER_IMAGE in .env}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
+    ports:
+      - "${BIND_HOST:-127.0.0.1}:${CLAUDEX_SERVER_PORT:-8080}:8080"
+    volumes:
+      # config.yaml (written on first start), the install lock and logs.
+      # The volume names match the earlier deploy/sub2api stack, so that
+      # folder can run this file on its existing data (see its README).
+      - sub2api_data:/app/data
+    environment:
+      AUTO_SETUP: "true"
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: "8080"
+      SERVER_MODE: release
+      RUN_MODE: standard
+      TZ: ${TZ:-Asia/Shanghai}
+
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_USER: ${POSTGRES_USER:-sub2api}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      DATABASE_DBNAME: ${POSTGRES_DB:-sub2api}
+      DATABASE_SSLMODE: disable
+
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+      REDIS_DB: "0"
+
+      # First-start administrator: the person who accepts the compliance
+      # commitment. Change the password in the console afterwards.
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+
+      # Fixed keys: random per-start values would log everyone out and break
+      # stored 2FA secrets after every restart.
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY:?set TOTP_ENCRYPTION_KEY in .env}
+      # Access tokens live 60 minutes; the desktop app renews them with the
+      # refresh token. Short tokens bound how long a signed-out session works.
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      JWT_EXPIRE_HOUR: ${JWT_EXPIRE_HOUR:-24}
+
+      # Upstream URL allowlist (recommended: true, with the operator's host).
+      SECURITY_URL_ALLOWLIST_ENABLED: ${SECURITY_URL_ALLOWLIST_ENABLED:-false}
+      SECURITY_URL_ALLOWLIST_UPSTREAM_HOSTS: ${SECURITY_URL_ALLOWLIST_UPSTREAM_HOSTS:-}
+      SECURITY_URL_ALLOWLIST_ALLOW_INSECURE_HTTP: ${SECURITY_URL_ALLOWLIST_ALLOW_INSECURE_HTTP:-true}
+      SECURITY_URL_ALLOWLIST_ALLOW_PRIVATE_HOSTS: ${SECURITY_URL_ALLOWLIST_ALLOW_PRIVATE_HOSTS:-true}
+      # SERVER_TRUSTED_PROXIES is deliberately not passed: even an empty value
+      # switches the client-IP mode. Add it only as README.md describes.
+      UPDATE_PROXY_URL: ${UPDATE_PROXY_URL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-T",
+          "5",
+          "-O",
+          "/dev/null",
+          "http://localhost:8080/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:18-alpine}
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      # postgres:18 keeps data under /var/lib/postgresql/18/docker unless
+      # PGDATA points into the mounted volume.
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_USER: ${POSTGRES_USER:-sub2api}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-sub2api}
+      TZ: ${TZ:-Asia/Shanghai}
+    networks:
+      - backend
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}" && psql -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}" -Atqc 'SELECT 1' >/dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 60s
+    # No published port. Debug with: docker compose exec postgres psql -U sub2api
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:8-alpine}
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    # Persistence on, password required. The password comes from the container
+    # environment so it never appears on the redis-server command line.
+    command:
+      - sh
+      - -c
+      - exec redis-server --save 60 1 --appendonly yes --appendfsync everysec --requirepass "$$REDIS_PASSWORD"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+      TZ: ${TZ:-Asia/Shanghai}
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  sub2api_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:
+    driver: bridge

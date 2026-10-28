@@ -1,0 +1,207 @@
+/* The transcript's frame: scroll fade, scrollbars, title-bar insets, footer. (part of chat-transcript.css) */
+/* Static reference: Motion and unobserved states are intentionally not marked
+   verified. */
+/* R-0437 / R-0430 (2.629 px/CSS, 885px viewport): the code block, and so the
+   reply column, is 563px wide in a 643.5px main area - 40px margins with the
+   11px scrollbar gutter counted in - and at Actual Size 1747 the card is 736px:
+   min(736, main - 80). */
+.mode-chat .messages {
+  /* Existing 58px insets leave Prose 32px inside the selected dock width. */
+  width: min(calc(var(--chat-column-measure, 768px) + 26px), 100%);
+  /* No 15vh drop: neither bundle has one for the list (live-web/transcript.css
+     sets the top inset). */
+  padding: 24px 29px 18px;
+}
+.mode-chat .messages-scroll {
+  scrollbar-gutter: stable both-edges;
+}
+/* R-0546 (W969, 2.4 px/CSS): text scrolling up under the title bar fades out
+   over its first ~20px instead of being cut (a link line's ink is 0.29 at
+   5px, 0.57 at 10px and 0.74 at 15px under the bar's edge). The transcript's
+   scroll fade (.u-scroll-fade-y, ConversationTranscript) draws it, and 48px
+   above the composer while there is more below; only on its side with
+   content to scroll to, as in the original's transcript (source: desktop
+   bundle 2.31226.1 static CSS/JS). Without scroll-driven animations a fixed
+   gradient keeps the top edge. */
+.messages-scroll {
+  --scroll-fade-top: 20px;
+  --scroll-fade-bottom: 48px;
+}
+@supports not (animation-timeline: scroll()) {
+  .mode-chat .messages-scroll::before {
+    content: "";
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: 20px;
+    margin-bottom: -20px;
+    background: linear-gradient(var(--bg), transparent);
+    pointer-events: none;
+  }
+}
+/* R-0558 (2.4 px/CSS): a 7.5px #5d5d5d rounded thumb about 2px from the
+   window's right edge. */
+:root:root .mode-chat .messages-scroll::-webkit-scrollbar {
+  width: 11px;
+}
+:root:root .mode-chat .messages-scroll::-webkit-scrollbar-thumb {
+  background: #5d5d5d;
+  background-clip: padding-box;
+}
+/* #aeaeae. */
+:root[data-theme="light"]:root
+  .mode-chat
+  .messages-scroll::-webkit-scrollbar-thumb {
+  background: #aeaeae;
+  background-clip: padding-box;
+}
+.sidebar-hidden.darwin .chat-header {
+  padding-left: 166px;
+}
+/* Windows and Linux: past ≡, the toggle, back and forward (12 + 4 × 24 + 14). */
+.sidebar-hidden:is(.win32, .linux) .chat-header {
+  padding-left: 122px;
+}
+/* Windows and Linux: the caption buttons (three of 46, fixed at the window's
+   top right, 90-reference-foundation.css) sit over the title bar's right end,
+   so its buttons stop 10px before them, as the incognito ghost does. With a
+   tool panel open the caption buttons are over the panel instead. */
+.app:is(.win32, .linux):not(.web) .workspace > .chat-header {
+  padding-right: 148px;
+  /* The room moves with the panel's slide (ui/spring-panels.ts) instead of
+     switching at one end of it; the left room keeps the sidebar's slide
+     (sidebar.css), which this rule would otherwise drop. */
+  transition:
+    padding-right 380ms cubic-bezier(0.2, 0, 0, 1),
+    padding-left 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+/* A panel sliding out is inert (spring-panels.ts): it no longer counts. */
+.app:is(.win32, .linux):not(.web)
+  .workspace:has(
+    > .chat-layout > :is(.work-panel, .artifact-panel, .tool-dock):not([inert])
+  )
+  > .chat-header {
+  padding-right: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app:is(.win32, .linux):not(.web) .workspace > .chat-header {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"]
+  .app:is(.win32, .linux):not(.web)
+  .workspace
+  > .chat-header {
+  transition: none;
+}
+/* …and the panel card starts under them (36px tall) with the card's own
+   gap, so its header's buttons stay clear. */
+.app:is(.win32, .linux):not(.web)
+  .workspace
+  > .chat-layout
+  > :is(.work-panel, .artifact-panel, .tool-dock) {
+  top: 44px;
+}
+:is(.mode-chat, .mode-cowork) .has-conversation .chat-composer {
+  /* Current dock: 48px frame, 8px gap, 24px chin and 8px to the bottom. The
+     12px before the frame is wrapper headroom, outside that dock. */
+  padding: 12px 0 8px;
+}
+:is(.mode-chat, .mode-cowork) .has-conversation .composer {
+  min-height: 48px;
+  padding: 7px 12px;
+  border-radius: 16px;
+}
+:is(.mode-chat, .mode-cowork) .has-conversation .composer-input-row {
+  min-height: 32px;
+  align-items: center;
+  gap: 10px;
+}
+:is(.mode-chat, .mode-cowork)
+  .has-conversation
+  .composer-input-row
+  > .popover-anchor {
+  flex-shrink: 0;
+}
+:is(.mode-chat, .mode-cowork)
+  .has-conversation
+  .composer-input-row
+  .icon-button {
+  width: 22px;
+  height: 28px;
+}
+.conversation-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.conversation-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 16px 0;
+  color: #808080;
+  font-size: 12px;
+  line-height: 20px;
+}
+/* The disclaimer keeps the footer's grey and underlines on hover. */
+.conversation-disclaimer a {
+  color: inherit;
+  text-decoration: none;
+}
+.conversation-disclaimer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.conversation-disclaimer .disclaimer-feedback {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.conversation-disclaimer .disclaimer-feedback:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+/* R-0213 (W1164, a 594px composer) shows both sentences beside the model
+   pill; R-0546 (W969, 518px) only the first. The line is one row high and
+   the second sentence wraps out of sight when the space runs out. */
+.conversation-disclaimer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.conversation-disclaimer > :is(a, span) {
+  display: flex;
+  flex-wrap: wrap;
+  height: 20px;
+  overflow: hidden;
+  column-gap: 0.28em;
+}
+.conversation-disclaimer > :is(a, span) > span {
+  white-space: nowrap;
+}
+.conversation-composer {
+  container: conversation-composer / inline-size;
+}
+.conversation-disclaimer .disclaimer-more {
+  display: none;
+}
+@container conversation-composer (min-width: 38rem) {
+  .conversation-disclaimer .disclaimer-more {
+    display: inline;
+  }
+}
+.conversation-footer > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.conversation-footer .model-button {
+  font-size: 13px;
+}

@@ -1,0 +1,8 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "token": "q2hX4v9LmN0pQrStUvWxYz1234567890abcdefABCDE",
+    "expires_at": "2026-09-26T02:40:00Z"
+  }
+}

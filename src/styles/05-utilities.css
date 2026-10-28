@@ -1,0 +1,203 @@
+/*
+ * Shared motion utilities on the foundation's tokens (00-foundation.css).
+ * Each respects reduced motion: the press scale tokens drop to 1, size
+ * transitions stop and fades stay.
+ */
+
+/* Press squish. A pressed control shrinks to 97.5% over --motion-fast and, on
+   release, springs back over --motion-slow, overshooting a little before it
+   settles (the original's .cds-btn-squish; a card shrinks to 99%). The shared
+   button classes take it without the class. The press-in curve is the CSS
+   ease-out keyword, as in the original. Static CSS. A component that sets its
+   own transition keeps the spring by listing var(--press-release) in it. */
+.u-press,
+.u-press-card {
+  transition: var(--button-fill-transition), var(--press-release);
+}
+:is(.u-press, .icon-button, .primary, .secondary, .send-button):not(
+    :disabled,
+    [aria-disabled="true"]
+  ):active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+/* A card squishes when it, or the link marked data-card-link inside it, is
+   pressed, not when one of its own buttons is. */
+.u-press-card:not([aria-disabled="true"]):active:not(
+    :has(
+      :is(button, a, input, select, textarea, [role="button"]):not(
+          [data-card-link]
+        ):active
+    )
+  ) {
+  scale: var(--press-card-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+
+/* Scroll fade. A scroller's top and bottom edges fade out only on a side that
+   still has content to scroll to, driven by its own scroll position: the top
+   fade grows over the first --scroll-fade-size of scrolling and the bottom
+   one shrinks over the last (the original's scroll-fade-y). Set
+   --scroll-fade-top / --scroll-fade-bottom for different sizes, 0px for
+   none. Without scroll-driven animations there is no mask. */
+@property --u-fade-top {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --u-fade-bottom {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.u-scroll-fade-y {
+  --scroll-fade-size: 28px;
+}
+@supports (animation-timeline: scroll()) {
+  .u-scroll-fade-y {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--u-fade-top),
+      #000 calc(100% - var(--u-fade-bottom)),
+      transparent
+    );
+    animation:
+      u-scroll-fade-top linear both,
+      u-scroll-fade-bottom linear both;
+    animation-timeline: scroll(self), scroll(self);
+    animation-range:
+      0 var(--scroll-fade-top, var(--scroll-fade-size)),
+      calc(100% - var(--scroll-fade-bottom, var(--scroll-fade-size))) 100%;
+  }
+}
+@keyframes u-scroll-fade-top {
+  from {
+    --u-fade-top: 0px;
+  }
+  to {
+    --u-fade-top: var(--scroll-fade-top, var(--scroll-fade-size));
+  }
+}
+@keyframes u-scroll-fade-bottom {
+  from {
+    --u-fade-bottom: var(--scroll-fade-bottom, var(--scroll-fade-size));
+  }
+  to {
+    --u-fade-bottom: 0px;
+  }
+}
+
+/* The same fade across a horizontal scroller's start and end edges.
+   --scroll-fade-size is 28px as there; --scroll-fade-left / --scroll-fade-right
+   size one side. Items scrolled into view stop clear of the fade. */
+@property --u-fade-left {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --u-fade-right {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.u-scroll-fade-x {
+  --scroll-fade-size: 28px;
+  scroll-padding-inline: var(--scroll-fade-left, var(--scroll-fade-size))
+    var(--scroll-fade-right, var(--scroll-fade-size));
+}
+@supports (animation-timeline: scroll()) {
+  .u-scroll-fade-x {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--u-fade-left),
+      #000 calc(100% - var(--u-fade-right)),
+      transparent
+    );
+    animation:
+      u-scroll-fade-left linear both,
+      u-scroll-fade-right linear both;
+    animation-timeline: scroll(self inline), scroll(self inline);
+    animation-range:
+      0 var(--scroll-fade-left, var(--scroll-fade-size)),
+      calc(100% - var(--scroll-fade-right, var(--scroll-fade-size))) 100%;
+  }
+}
+@keyframes u-scroll-fade-left {
+  from {
+    --u-fade-left: 0px;
+  }
+  to {
+    --u-fade-left: var(--scroll-fade-left, var(--scroll-fade-size));
+  }
+}
+@keyframes u-scroll-fade-right {
+  from {
+    --u-fade-right: var(--scroll-fade-right, var(--scroll-fade-size));
+  }
+  to {
+    --u-fade-right: 0px;
+  }
+}
+
+/* Expanding rows. The element is a one-row grid whose row grows from 0fr
+   to 1fr while it fades in, and back, so a section opens to its content's
+   height without measuring it (the original's expand-rows). Open it with
+   data-open (or data-open="true"); its single child holds the content.
+   --expand-duration and --expand-ease retime it. Closed content is hidden
+   from focus once the row has shut. src/ui/Collapsible.tsx keeps the
+   content mounted while it closes. */
+.u-expand-rows {
+  --expand-duration: var(--motion-base);
+  --expand-ease: var(--ease-out);
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--expand-duration) var(--expand-ease),
+    opacity var(--expand-duration) var(--expand-ease),
+    visibility 0s linear var(--expand-duration);
+}
+.u-expand-rows > * {
+  min-height: 0;
+  overflow: hidden;
+}
+.u-expand-rows:is([data-open=""], [data-open="true"]) {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--expand-duration) var(--expand-ease),
+    opacity var(--expand-duration) var(--expand-ease),
+    visibility 0s;
+}
+/* Reduced motion: the row opens at once; the fade stays. */
+@media (prefers-reduced-motion: reduce) {
+  .u-expand-rows {
+    transition:
+      opacity var(--expand-duration) var(--expand-ease),
+      visibility 0s linear var(--expand-duration);
+  }
+  .u-expand-rows:is([data-open=""], [data-open="true"]) {
+    transition:
+      opacity var(--expand-duration) var(--expand-ease),
+      visibility 0s;
+  }
+}
+:root[data-motion="reduced"] .u-expand-rows {
+  transition:
+    opacity var(--expand-duration) var(--expand-ease),
+    visibility 0s linear var(--expand-duration);
+}
+:root[data-motion="reduced"]
+  .u-expand-rows:is([data-open=""], [data-open="true"]) {
+  transition:
+    opacity var(--expand-duration) var(--expand-ease),
+    visibility 0s;
+}

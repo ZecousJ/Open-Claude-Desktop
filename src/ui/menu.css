@@ -1,0 +1,477 @@
+/*
+ * Floating menus (src/ui/Menu.tsx), measured from the sidebar filter and row
+ * menus: 24px rows, 3px/4px vertical padding, dividers with 4px margins and 7px
+ * insets, submenus 2px to the right.
+ */
+.menu {
+  position: fixed;
+  z-index: 200;
+  box-sizing: border-box;
+  min-width: 128px;
+  /* A long list scrolls inside the window, and the popup stops at 320px. */
+  max-width: 320px;
+  max-height: var(--available-height, calc(100vh - 16px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 3px 4px 4px;
+  border: 1px solid #373737;
+  border-radius: 10px;
+  background: var(--surface-popover);
+  box-shadow: var(--shadow);
+  outline: none;
+  /* Compact density: 13px/19px text; the regular size and the web take the
+     comfortable 14px/20px below. */
+  font-size: 13px;
+  line-height: 19px;
+  /* Opens and closes at once: the original's menu popup has no transition. */
+}
+.menu > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 6px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text);
+  /* The highlight moves from row to row at once: the original's menu item
+     carries no transition, where plain buttons fade their fill over 60ms. */
+  transition: none;
+}
+/* An item with a description line under its label grows to two lines. */
+.menu > button.has-description {
+  height: auto;
+  min-height: 24px;
+  padding-top: 3px;
+  padding-bottom: 4px;
+}
+.menu-item-text {
+  display: flex;
+  flex-direction: column;
+}
+.menu-item-text > span,
+.menu-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.menu-description {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+.menu-description.wraps {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+.menu > button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.menu > button.active {
+  background: #313131;
+}
+/* Focus moves through the rows; the highlight fill marks it, not a ring. */
+.menu > button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+/* A value or hint is cut at 160px, never squeezing the label. */
+.menu > button > small {
+  flex: none;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* text-footnote text-muted: 12px/15px compact, 13px/17px comfortable. */
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--text-muted);
+}
+/* The shortcut's outer span is text-footnote, which wins over the keycap's
+   text-caption. */
+.menu > button > kbd {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--text-muted);
+}
+.menu > button > svg {
+  flex: 0 0 auto;
+  margin-right: -4px;
+  color: #8a8987;
+}
+/* fill-accent #2a78d6, the same in both themes. */
+.menu > button > .menu-check {
+  color: var(--link-text);
+}
+.menu > button.danger {
+  /* text-danger, #ec7e7e in dark; the global .danger rule is !important and
+     reads the same variable. */
+  color: var(--danger);
+}
+/* A highlighted Delete row is filled red with white text: R-1010 (light,
+   W1920) shows the artifact menu's focused Delete #d03b3d on white text. No
+   dark capture of a highlighted danger row; dark takes the original's
+   danger fill #d03b3b, the same in both themes (--cds-fill-danger, desktop
+   bundle 2.31226.1), where it had the settings button's derived #b3413b. */
+.menu > button.danger.active:not(:disabled) {
+  background: #d03b3b;
+  color: #fff !important;
+}
+.menu > button.danger.active:not(:disabled) > kbd {
+  color: #ffffffb3;
+}
+.menu > button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.menu > .menu-heading {
+  /* text-footnote font-medium text-muted with py-1: 4 + 15 + 4 = 23px. */
+  padding: 4px 7px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 15px;
+  color: var(--text-muted);
+}
+.menu > hr {
+  height: 1px;
+  margin: 4px 7px;
+  border: 0;
+  background: #373737;
+}
+/* size="regular": 32px rows, 14px text 14px from the rim, a 24px grey heading. */
+.menu.regular {
+  font-size: 14px;
+  line-height: 20px;
+}
+.menu.regular > button {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+}
+.menu.regular > .menu-heading {
+  height: 24px;
+  padding: 0 10px;
+  font-size: 13px;
+  line-height: 24px;
+}
+.menu.regular > button > small,
+.menu.regular > button > kbd {
+  font-size: 13px;
+  line-height: 17px;
+}
+.menu.regular > hr {
+  margin-inline: 10px;
+}
+:root[data-theme="light"] .menu {
+  border-color: #e4e4e4;
+  background: #fff;
+  box-shadow: 0 12px 28px #0002;
+}
+:root[data-theme="light"] .menu > button {
+  color: #141414;
+}
+:root[data-theme="light"] .menu > button.active {
+  background: #f0f0f0;
+}
+:root[data-theme="light"] .menu > button > svg {
+  color: #82817f;
+}
+:root[data-theme="light"] .menu > button.danger {
+  --danger: #8e2626;
+  color: #8e2626;
+}
+:root[data-theme="light"] .menu > button.danger.active:not(:disabled) {
+  background: #d03c3c;
+}
+:root[data-theme="light"] .menu > button.danger.active:not(:disabled) > kbd {
+  color: #ffffffb3;
+}
+:root[data-theme="light"] .menu > hr {
+  background: #ececec;
+}
+/* The check keeps its accent colour in the light theme (the grey icon rule
+   above must not take it). */
+:root[data-theme="light"] .menu > button > .menu-check {
+  color: #2a78d6;
+}
+/* A row's settings gear: shown while the row is hovered or highlighted, in the
+   row's grey icon colour. */
+.menu > button > .menu-gear {
+  display: none;
+  flex: 0 0 auto;
+  margin-right: -4px;
+  color: #8a8987;
+}
+.menu > button.active > .menu-gear,
+.menu > button:hover > .menu-gear {
+  display: grid;
+}
+.menu > button > .menu-gear:hover {
+  color: var(--text);
+}
+:root[data-theme="light"] .menu > button > .menu-gear {
+  color: #82817f;
+}
+:root[data-theme="light"] .menu > button > .menu-gear:hover {
+  color: #141414;
+}
+
+/* A searchable submenu (Add to project): the search row follows the composer
+   add menu's project search: 40px, a 16px glyph, 14px text over a rule. */
+/* The popup is at least 240px wide. */
+.menu[data-searchable] {
+  min-width: 240px;
+}
+/* A searchable menu (Add to project): the popup search runs edge to edge over
+   the first row, no glyph, 8px above and below its text, a rule under it and
+   4px before the rows: 12px in at 13px/19px compact (36px high), 16px in at
+   14px/20px comfortable (37px). */
+.menu > .menu-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  margin: -3px -4px 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #353535;
+  color: var(--text-muted);
+}
+.menu.regular > .menu-search {
+  padding-inline: 16px;
+}
+.menu-search > svg {
+  flex: 0 0 16px;
+}
+.menu-search input,
+.menu-search input:focus {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+.menu-search input::placeholder {
+  color: var(--text-muted);
+}
+.menu > .menu-search-empty {
+  margin: 5px 8px;
+  font-size: 13px;
+  color: #8d8c8a;
+}
+:root[data-theme="light"] .menu > .menu-search {
+  border-color: #e4e2dc;
+}
+
+/*
+ * On a touch phone (a coarse pointer under 640px) a web menu is a sheet at the
+ * * the screen's full width, rounded 12px at the top only, up to 90% of the
+ *   screen's height, the home indicator's safe area (at least 8px) under the
+ *   last row; a 32px band on top carries a 36 by 4 pill; it rises 0.3s with the
+ *   sheet ease-out over a 50% black scrim (40% in light). Rows take its
+ *   comfortable large size: 40px high, 12px in, rounded 10px, 15/22 text. A
+ *   submenu is a second sheet over it; the first steps back (scale 0.94, 12px
+ *   up) and dims, as its covered sheets.
+ */
+.menu-sheet-scrim {
+  display: none;
+}
+@media (pointer: coarse) and (max-width: 639.98px) {
+  :root[data-surface="web"] .menu-sheet-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: #00000080;
+    animation: scrim-in 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  :root[data-surface="web"][data-theme="light"] .menu-sheet-scrim {
+    background: #0006;
+  }
+  :root[data-surface="web"] .menu[class] {
+    top: auto !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: auto !important;
+    min-width: 0;
+    max-width: none;
+    max-height: 90dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 8px max(env(safe-area-inset-bottom), 8px);
+    border-width: 1px 0 0;
+    border-radius: 12px 12px 0 0;
+    transform-origin: top;
+    animation: menu-sheet-in 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition:
+      transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1),
+      filter 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  /* Closing: the sheet slides down as it came and the scrim fades, 0.3s
+     (the node stays that long, usePresence.ts useExitPresence). */
+  :root[data-surface="web"] .menu[class][data-state="closed"] {
+    pointer-events: none;
+    animation: menu-sheet-out 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  }
+  :root[data-surface="web"] .menu-sheet-scrim[data-state="closed"] {
+    animation: scrim-out 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  }
+  :root[data-surface="web"] .menu[class]::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 14px auto;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 10%);
+  }
+  :root[data-surface="web"][data-theme="light"] .menu[class]::before {
+    background: rgb(0 0 0 / 10%);
+  }
+  :root[data-surface="web"] .menu[class] > button {
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    line-height: 22px;
+  }
+  :root[data-surface="web"] .menu[class] > button.has-description {
+    height: auto;
+    min-height: 40px;
+  }
+  :root[data-surface="web"] .menu[class]:has(~ .menu[data-submenu]) {
+    transform: translateY(-12px) scale(0.94);
+    filter: brightness(0.5);
+  }
+}
+@keyframes menu-sheet-in {
+  from {
+    transform: translateY(calc(100% + 24px));
+  }
+}
+@keyframes menu-sheet-out {
+  to {
+    transform: translateY(calc(100% + 24px));
+  }
+}
+@media (pointer: coarse) and (max-width: 639.98px) and (prefers-reduced-motion: reduce) {
+  :root[data-surface="web"] .menu-sheet-scrim,
+  :root[data-surface="web"] .menu[class] {
+    animation: none;
+    transition: none;
+  }
+}
+:root[data-surface="web"][data-motion="reduced"] .menu-sheet-scrim,
+:root[data-surface="web"][data-motion="reduced"] .menu[class] {
+  animation: none;
+  transition: none;
+}
+
+/* A row's trailing switch (the original's xs Switch, as the session rail's). */
+.menu > button > .menu-switch {
+  display: inline-flex;
+  flex: none;
+  width: 25.2px;
+  height: 14px;
+  align-items: center;
+  margin-left: auto;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  transition: background-color 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.menu > button > .menu-switch[data-checked] {
+  background: #2a78d6;
+}
+.menu > button > .menu-switch > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  transition: translate 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.menu > button > .menu-switch[data-checked] > span {
+  translate: 11.2px 0;
+}
+:root[data-theme="light"] .menu > button > .menu-switch {
+  background: rgb(11 11 11 / 20%);
+}
+:root[data-theme="light"] .menu > button > .menu-switch[data-checked] {
+  background: #2a78d6;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu > button > .menu-switch,
+  .menu > button > .menu-switch > span {
+    transition: none;
+  }
+}
+/* A row's trailing xxs button, 20px tall and 6px in, nudged 2px into the row's
+   end padding. */
+.menu > button > .menu-trailing-button {
+  display: inline-flex;
+  height: 20px;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-right: -2px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 10%);
+  color: #f0efec;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+}
+.menu > button > .menu-trailing-button:hover {
+  background: rgb(255 255 255 / 14%);
+}
+.menu > button > .menu-trailing-button.is-danger {
+  background: #d03b3b;
+  color: #fff;
+}
+.menu > button > .menu-trailing-button.is-danger:hover {
+  background: #e34948;
+}
+:root[data-theme="light"]
+  .menu
+  > button
+  > .menu-trailing-button:not(.is-danger) {
+  background: rgb(11 11 11 / 6%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"]
+  .menu
+  > button
+  > .menu-trailing-button:not(.is-danger):hover {
+  background: rgb(11 11 11 / 10%);
+}
+
+/* The conversation row menu shows its single-key hints on the web too, over the
+   web sheet's important hide; the menu is portaled to <body>, so its own
+   classes and attributes outweigh that rule. A coarse pointer hides them as
+   there ("pointer-coarse:hidden"). */
+:root[data-surface="web"]
+  .menu.row-menu.compact.u-scroll-fade-y[role="menu"][aria-label]
+  > button
+  > kbd {
+  display: inline !important;
+}
+@media (pointer: coarse) {
+  :root[data-surface="web"]
+    .menu.row-menu.compact.u-scroll-fade-y[role="menu"][aria-label]
+    > button
+    > kbd {
+    display: none !important;
+  }
+}

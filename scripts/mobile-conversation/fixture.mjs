@@ -1,0 +1,97 @@
+export const fixture = {
+  version: 1,
+  sessionId: "browser-fixture",
+  revision: 1,
+  theme: "light",
+  conversation: {
+    id: "fixture-conversation",
+    title: "One shared conversation",
+    mode: "chat",
+    providerId: "fixture",
+    model: "fixture",
+    pinned: false,
+    archived: false,
+    createdAt: 1790899200000,
+    updatedAt: 1790899200000,
+    turns: [
+      {
+        id: "turn-rich",
+        prompt: "请用同一套组件展示 Markdown、代码、表格、公式和文件",
+        status: "completed",
+        createdAt: 1790899200000,
+        attachments: [
+          {
+            id: "attachment-1",
+            name: "requirements.md",
+            path: "/fixture/requirements.md",
+            kind: "text",
+            size: 2048,
+          },
+        ],
+        items: [
+          {
+            id: "thought",
+            type: "reasoning",
+            summary: ["检查共享组件和呈现结果"],
+            status: "completed",
+          },
+          {
+            id: "command",
+            type: "commandExecution",
+            command: "npm test",
+            aggregatedOutput: "148 tests passed",
+            status: "completed",
+            exitCode: 0,
+            description: "Validate the shared conversation",
+          },
+          {
+            id: "reply-rich",
+            type: "agentMessage",
+            text: '## One shared conversation\n\n手机、网页和 PC 直接使用同一个组件。**强调文本**、*斜体*、`inline code` 和引用均来自现有 Markdown 渲染器。\n\n> Shared source, shared styles.\n\n| Component | Shared |\n| --- | --- |\n| Markdown | Yes |\n| Reply actions | Yes |\n\n```typescript\nconst platforms = ["web", "desktop", "ios", "android"];\nexport const shared = platforms.every(Boolean);\n```\n\n$$E = mc^2$$\n\n[Open the source](https://github.com/ZecousJ/Open-Claude-Desktop)\n\n![Remote image stays private until loaded](https://example.invalid/image.png)\n\n```html\n<!doctype html><html><head><title>Shared artifact</title></head><body><h1>Shared HTML source</h1></body></html>\n```',
+          },
+          {
+            id: "files",
+            type: "outputFiles",
+            generatedFiles: [
+              {
+                id: "file-1",
+                name: "report.md",
+                path: "/fixture/report.md",
+                language: "markdown",
+                operation: "create",
+                state: "ready",
+                content: "# Shared document\n\nA shared **Markdown** preview.",
+                digest: "fixture-digest",
+              },
+              {
+                id: "file-2",
+                name: "summary.txt",
+                path: "/fixture/summary.txt",
+                language: "text",
+                operation: "create",
+                state: "ready",
+                content: "A second file for the bounded Download all fixture.",
+                digest: "fixture-summary-digest",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "turn-failed",
+        prompt: "Show an interrupted answer",
+        status: "interrupted",
+        stopReason: "length",
+        createdAt: 1790899260000,
+        attachments: [],
+        items: [
+          {
+            id: "reply-stop",
+            type: "agentMessage",
+            text: "The same shared outcome and retry controls appear here.",
+          },
+        ],
+      },
+    ],
+  },
+};

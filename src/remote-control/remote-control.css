@@ -1,0 +1,48 @@
+/* CDS Banner, rY. */
+.remote-control-notice .reply-banner {
+  margin: 0;
+}
+.remote-control-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.remote-control-title {
+  font-weight: 500;
+  color: var(--text);
+}
+.remote-control-notice[data-variant="warning"] .reply-banner {
+  background: #311a00;
+  color: #db9300;
+  box-shadow: inset 0 0 0 1px #512e00;
+}
+.remote-control-notice[data-variant="warning"] .reply-banner-icon {
+  color: inherit;
+}
+/* Try again is a secondary button: the primary ink on the secondary fill,
+   not the banner's amber (50-controls-menus.css .secondary). */
+.remote-control-notice[data-variant="warning"] .reply-banner-action {
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+}
+.remote-control-notice[data-variant="warning"] .reply-banner-action:hover {
+  background: rgb(255 255 255 / 14%);
+}
+:root[data-theme="light"]
+  .remote-control-notice[data-variant="warning"]
+  .reply-banner-action {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+:root[data-theme="light"]
+  .remote-control-notice[data-variant="warning"]
+  .reply-banner-action:hover {
+  background: var(--surface-hover);
+}
+:root[data-theme="light"]
+  .remote-control-notice[data-variant="warning"]
+  .reply-banner {
+  background: #f9dca4;
+  color: #734500;
+  box-shadow: inset 0 0 0 1px #eda100;
+}

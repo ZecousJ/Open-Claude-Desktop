@@ -1,0 +1,13 @@
+{
+  "diagnostics": {
+    "enabled": false,
+    "retention_days": 30,
+    "max_per_user_per_day": 200
+  },
+  "feedback": {
+    "enabled": false,
+    "retention_days": 180,
+    "allow_conversation_excerpt": false,
+    "max_per_user_per_day": 100
+  }
+}

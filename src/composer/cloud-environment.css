@@ -1,0 +1,62 @@
+/* Popup md; scroll body and ruled footer. */
+.modal.cloud-environment-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(
+    100dvh - max(2rem, 2 * var(--desktop-titlebar-inset, 0px)) - 2 *
+      max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px))
+  );
+  overflow: hidden;
+}
+.cloud-environment-editor {
+  display: contents;
+}
+.cloud-environment-fields {
+  display: flex;
+  min-height: 96px;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0 -24px -8px;
+  padding: 12px 24px 8px;
+}
+.cloud-environment-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cloud-environment-field > label,
+.cloud-environment-field > span {
+  font-size: 13px;
+  font-weight: 500;
+}
+.cloud-environment-field > p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.cloud-environment-field textarea {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  resize: vertical;
+}
+.cloud-environment-field .cloud-environment-script {
+  max-height: 40dvh;
+}
+.cloud-environment-editor .button-row {
+  justify-content: flex-end;
+  margin: 24px -24px -8px;
+  padding: 24px 24px 0;
+  border-top: 1px solid var(--border);
+}
+.cloud-environment-checkbox {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+}
+.cloud-environment-editor .cloud-environment-archive {
+  margin-inline-end: auto;
+  background: transparent;
+  color: var(--danger);
+}

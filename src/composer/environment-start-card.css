@@ -1,0 +1,102 @@
+/* w-80 rounded-xl shadow-card-ring; w8 h-8 px-2 gap-2. */
+.environment-start-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 1px;
+}
+.environment-start-card ul {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 12px;
+  background: var(--epitaxy-transcript-surface, var(--bg));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+.environment-start-card li {
+  padding: 2px 4px 0;
+}
+.environment-start-card li:first-child {
+  padding-top: 4px;
+}
+.environment-start-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  gap: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: start;
+}
+.environment-start-row > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.environment-start-row svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.environment-start-card [aria-current="true"] svg:last-child {
+  color: var(--text);
+}
+button.environment-start-row:hover,
+button.environment-start-row[aria-expanded="true"] {
+  background: rgb(255 255 255 / 7.5%);
+}
+.environment-start-card .environment-start-choose {
+  margin-top: 4px;
+  padding: 4px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+.environment-start-card .environment-start-choose:only-child {
+  margin-top: 0;
+  border-top: 0;
+}
+.environment-start-choose-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.environment-start-choose-label > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.environment-start-choose-label > svg {
+  width: 12px;
+  height: 12px;
+  color: var(--text-muted, #898781);
+}
+:root[data-theme="light"] .environment-start-card ul {
+  background: var(--epitaxy-transcript-surface, #fcfcfb);
+  box-shadow: 0 0 0 1px rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .environment-start-row {
+  color: #52514e;
+}
+:root[data-theme="light"] button.environment-start-row:hover,
+:root[data-theme="light"] button.environment-start-row[aria-expanded="true"] {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .environment-start-card .environment-start-choose {
+  border-color: rgb(11 11 11 / 10%);
+}

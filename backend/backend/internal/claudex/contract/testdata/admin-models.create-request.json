@@ -1,0 +1,23 @@
+{
+  "model_id": "gpt-5.5",
+  "group_id": null,
+  "display_name": "GPT-5.5",
+  "description": "Our smartest model for complex work",
+  "badges": [
+    "new"
+  ],
+  "sort_order": 10,
+  "hidden": false,
+  "is_default": true,
+  "supported_efforts": [
+    "low",
+    "medium",
+    "high",
+    "xhigh"
+  ],
+  "default_effort": "medium",
+  "context_window": 400000,
+  "auto_compact_tokens": 320000,
+  "fast_tier": true,
+  "usage_hint": "1.5× usage"
+}

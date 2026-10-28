@@ -1,0 +1,19 @@
+.routine-auto-disabled {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--alpha-1);
+}
+.routine-auto-disabled h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.routine-auto-disabled p {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.routine-auto-disabled > div {
+  display: flex;
+  gap: 8px;
+}

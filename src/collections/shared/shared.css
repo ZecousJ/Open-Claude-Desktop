@@ -1,0 +1,176 @@
+/*
+ * A chat shared with the account (src/collections/shared). The messages use
+ * the transcript's own classes (.user-message, .assistant-message), so they
+ * read as in a chat; the crumbs are the project page's, the title in the
+ * page serif at the size of the other pages' titles.
+ */
+.shared-chat {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+}
+.shared-crumbs {
+  z-index: 1;
+}
+/* Report, on the crumbs' line at the right: the 30px icon button centred on
+   the crumbs' 20px line (prj-crumbs top 50px, web 14px), as far from the
+   edge as the crumbs. */
+.shared-actions {
+  position: absolute;
+  top: 45px;
+  right: 22px;
+  z-index: 1;
+}
+:root[data-surface="web"] .shared-actions {
+  top: 9px;
+  right: 30px;
+}
+:root[data-surface="web"] .shared-crumbs {
+  top: 14px;
+  left: 30px;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.shared-scroll {
+  height: 100%;
+  padding-top: 56px;
+}
+.shared-head {
+  box-sizing: border-box;
+  width: min(calc(100% - 32px), 736px);
+  margin: 24px auto 8px;
+  padding: 0 4px;
+}
+.shared-head h1 {
+  margin: 0;
+  font:
+    500 24px/32px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+}
+.shared-head p {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-muted);
+}
+.shared-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-secondary);
+}
+.shared-disclaimer p {
+  margin: 0;
+}
+.shared-disclaimer button {
+  flex-shrink: 0;
+}
+/* . */
+.artifact-edit-access {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 5px;
+  background: hsl(from #fff h s l / 10%);
+  color: var(--text);
+  font-family: var(--font-ui, sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.artifact-edit-access:hover {
+  background: hsl(from #fff h s l / 14%);
+}
+:root[data-theme="light"] .artifact-edit-access {
+  background: #ffffff1a;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .artifact-edit-access:hover {
+  background: hsl(from #0b0b0b h s l / 5%);
+}
+[data-edit-request][aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+}
+.shared-activity {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-muted);
+}
+.shared-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 24px 12vh;
+  text-align: center;
+  color: var(--text-muted);
+}
+.shared-state h1 {
+  margin: 0;
+  font:
+    500 24px/32px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  color: var(--text);
+}
+.shared-state p {
+  max-width: 420px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* Under the messages, held at the bottom while they scroll. */
+.shared-continue {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: min(calc(100% - 32px), 736px);
+  margin: 0 auto;
+  padding: 16px 0;
+  pointer-events: none;
+}
+.shared-continue > * {
+  pointer-events: auto;
+}
+.shared-own {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--connection-card-bg, #faf9f5);
+  box-shadow: inset 0 0 0 1px var(--connection-card-rim, rgb(0 0 0 / 10%));
+  color: var(--connection-card-text, #1f1e1d);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:not([data-theme="light"]) .shared-own {
+  --connection-card-bg: #151515;
+  --connection-card-rim: rgb(255 255 255 / 10%);
+  --connection-card-text: #f0efec;
+}

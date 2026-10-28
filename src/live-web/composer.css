@@ -1,0 +1,797 @@
+/* Chat and Cowork composer. Code's composer keeps its own rules. */
+.composer-wrap:not(.code-composer) .composer {
+  padding: 8px;
+  min-height: 0;
+  border-width: 0;
+  border-radius: 14px;
+  /* 200ms on the standard curve, as the base frame (20-workspace.css). */
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    opacity var(--motion-base) var(--ease-standard);
+}
+/* Its shadow by state: a 4px 20px drop of black 3.5% and a 1px inner rim of
+   white 10%; the rim white 20% while hovered (not over one of its buttons);
+   focused, the drop 7.5% and the rim 20%. */
+:root:not([data-theme="light"]) .composer-wrap:not(.code-composer) .composer {
+  background: #20201f;
+  box-shadow:
+    0 4px 20px rgb(0 0 0 / 3.5%),
+    inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer:hover:not(
+    :has(button:hover, a:hover, [role="button"]:hover, label:hover)
+  ) {
+  box-shadow:
+    0 4px 20px rgb(0 0 0 / 3.5%),
+    inset 0 0 0 1px rgb(255 255 255 / 20%);
+}
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer:focus-within {
+  box-shadow:
+    0 4px 20px rgb(0 0 0 / 7.5%),
+    inset 0 0 0 1px rgb(255 255 255 / 20%);
+}
+/* The editor: 16px in from the frame, 5px down, two lines of 21px tall. */
+.composer-wrap:not(.code-composer) .composer-input-row {
+  align-items: flex-start;
+  min-height: 47px;
+  padding: 5px 8px 0;
+}
+/* Settings → Transcript text size steps the type (transcript-text-size.css). */
+.composer-wrap:not(.code-composer) .composer-input-row textarea {
+  min-height: var(--composer-line, 21px);
+  font-size: var(--composer-text, 15px);
+  line-height: var(--composer-line, 21px);
+}
+.composer-wrap:not(.code-composer) .composer-toolbar {
+  margin-top: 8px;
+}
+.composer-wrap:not(.code-composer) .composer-left,
+.composer-wrap:not(.code-composer) .composer-right {
+  gap: 8px;
+}
+/* Every toolbar button is a 32px rounded square. The model is no longer
+   in the frame: it sits in the row under it (the chin rules below). */
+.composer-wrap:not(.code-composer) .composer-left .icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+/* Send on the home composer: a 32px square, #c6613f, 20px arrow. In a
+   conversation Send stays the plain return glyph on no fill, draft or not, so
+   `.plain` keeps composer-core.css's rules. */
+.composer-wrap:not(.code-composer) .send-button:not(.plain) {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+/* Disabled it takes the grey alpha-2 fill (20-workspace.css). */
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .send-button:not(.stop, .plain):not(:disabled) {
+  background: #c6613f;
+}
+/* Hovered it takes the original's lighter clay (--cds-fill-brand-hover,
+   #d97757; the live page's fill is the token itself). */
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .send-button:not(.stop, .plain):hover:not(:disabled) {
+  background: #d97757;
+}
+
+/* The toolbar sits 8px in from the frame on both sides. */
+.composer-wrap:not(.code-composer) .composer-left {
+  margin: 0;
+}
+.composer-wrap:not(.code-composer) .composer-right {
+  gap: 8px;
+  margin: 0;
+}
+/* Dictate 32px, voice mode 32px 4px after it, its ⌄ 20px wide over the last
+   5px of it; the group ends on the 8px inset. */
+.composer-wrap:not(.code-composer)
+  .cowork-voice-controls:not(.code-voice-controls) {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  border-radius: 8px;
+}
+.composer-wrap:not(.code-composer)
+  .cowork-voice-controls:not(.code-voice-controls)
+  .dictation-button::before {
+  border-radius: 8px;
+}
+.composer-wrap:not(.code-composer)
+  .cowork-voice-controls:not(.code-voice-controls)
+  .dictation-button
+  svg {
+  width: 20px;
+  height: 20px;
+}
+.composer-wrap:not(.code-composer) .voice-mode-button {
+  width: 47px;
+  height: 32px;
+  margin: 0 0 0 -4px;
+}
+.composer-wrap:not(.code-composer) .voice-mode-button.chevron-only {
+  width: 20px;
+}
+.composer-wrap:not(.code-composer) .voice-mode-button > .voice-mode-main {
+  width: 32px;
+  border-radius: 8px;
+}
+.composer-wrap:not(.code-composer) .voice-mode-button > .voice-mode-main svg {
+  width: 20px;
+  height: 20px;
+}
+.composer-wrap:not(.code-composer) .voice-mode-button > .voice-mode-chevron {
+  width: 20px;
+  margin-left: -5px;
+  border-radius: 8px;
+}
+.composer-wrap:not(.code-composer)
+  .voice-mode-button
+  > .voice-mode-chevron
+  svg {
+  width: 12px;
+  height: 12px;
+}
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .voice-mode-button
+  > .voice-mode-chevron {
+  color: #898781;
+}
+/* Light keeps its captured rim as an inset ring like dark. */
+:root[data-theme="light"] .composer-wrap:not(.code-composer) .composer,
+:root[data-theme="light"]
+  .composer-wrap:not(.code-composer)
+  .composer:focus-within {
+  box-shadow:
+    inset 0 0 0 1px #dddddb,
+    0 2px 4px #00000008;
+}
+
+/* Preserve legacy desktop headroom. Both ordinary and incognito web
+   home use the current compact layout eagerly from chat-home.css. */
+@media (min-width: 768px) {
+  .app:not(.web) .chat-main .chat-home {
+    padding-top: calc(25vh + 57.5px);
+  }
+}
+
+/* The conversation composer: one 48px row, 8px in on every side: the editor
+   with its line centred, then Stop and Send. The frame holds nothing before the
+   text since "+" and the microphone moved to the row under it; the text starts
+   6px in from the frame's padding. Chat and Cowork only: Code's box stays one
+   20px line in a conversation as on its new-task page. */
+.composer-wrap.conversation-composer:not(.code-composer) .composer-input-row {
+  position: relative;
+  display: block;
+  min-height: 32px;
+  /* One row: the text before the actions, which keep to the row's bottom right
+     corner (useComposerMorph.ts measures them). Two rows, once the draft needs
+     the room: the text takes the width and the actions a 32px row 8px under it.
+     The padding moves in 200ms on the standard curve. */
+  padding: 0 var(--composer-trail-w, 0px) 0 6px;
+  transition: padding var(--motion-base) var(--ease-standard);
+}
+.composer-wrap.conversation-composer:not(.code-composer)
+  .composer-input-row[data-multiline] {
+  padding: 0 0 40px 6px;
+}
+.composer-wrap.conversation-composer:not(.code-composer)
+  .composer-input-row
+  textarea {
+  padding: 5.5px 0;
+  min-height: 32px;
+}
+.composer-wrap.conversation-composer:not(.code-composer)
+  .composer-input-row
+  > .conversation-input-actions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-wrap.conversation-composer:not(.code-composer) .composer-input-row {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"]
+  .composer-wrap.conversation-composer:not(.code-composer)
+  .composer-input-row {
+  transition: none;
+}
+
+/* The row under the Chat and Cowork frame. Owner's captures
+   2026-10-12-chat-*-composer.png at 2.2x: the row's centre 20px under the
+   frame; its text 13px. */
+.composer-wrap:not(.code-composer) .composer-chin {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 24px;
+  margin-top: 8px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 17px;
+}
+.composer-wrap:not(.code-composer) .composer {
+  container-type: inline-size;
+}
+@media (max-width: 639px) {
+  .composer-wrap:not(.code-composer) .composer-chin {
+    min-height: 32px;
+    width: 100%;
+    gap: 8px;
+  }
+  .composer-wrap:not(.code-composer) .composer-chin-leading,
+  .composer-wrap:not(.code-composer) .composer-chin-trailing {
+    flex-wrap: wrap;
+  }
+  .composer-wrap:not(.code-composer) .composer-chin-trailing {
+    flex-basis: 100%;
+  }
+  .composer-wrap:not(.code-composer) .conversation-disclaimer {
+    display: none;
+  }
+}
+@container (max-width: 280px) {
+  .composer-wrap:not(.code-composer) .composer-chin-leading {
+    min-height: 32px;
+  }
+}
+@container (max-width: 232px) {
+  .composer-wrap:not(.code-composer) .composer-chin-leading {
+    flex-basis: 100%;
+  }
+}
+.composer-wrap:not(.code-composer) .composer-chin > .composer-chin-leading {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.composer-wrap:not(.code-composer) .composer-chin > .composer-chin-trailing {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-left: auto;
+}
+/* The chin's controls are the 24px xs size; the folder button too, so it
+   does not make the row taller than the live 24px. */
+.composer-wrap:not(.code-composer) .composer-chin .cowork-task-folder {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 6px;
+}
+/* In a conversation: "+" and the microphone at the left, the disclaimer centred
+   on the frame, the model at the right. "+" starts 7px in; the model's label
+   ends 18px before the frame's right edge. */
+.composer-wrap.conversation-composer:not(.code-composer) .composer-chin {
+  display: flex;
+  justify-content: space-between;
+  column-gap: 8px;
+  padding: 0 7px;
+}
+.composer-wrap.conversation-composer:not(.code-composer)
+  .composer-chin
+  > .composer-chin-trailing {
+  margin: 0 3px 0 auto;
+}
+/* The note is laid over the chin, centred, at its own width; ChinDisclaimer
+   moves it to clear the controls or shows it above the frame. */
+.composer-wrap.conversation-composer .composer-chin {
+  position: relative;
+}
+.composer-wrap.conversation-composer .composer-chin > .conversation-disclaimer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 0;
+  font-size: 13px;
+  line-height: 17px;
+  text-align: center;
+  white-space: nowrap;
+}
+.composer-wrap.conversation-composer
+  .composer-chin
+  > .conversation-disclaimer[data-hidden] {
+  visibility: hidden;
+}
+/* Above the frame: "relative flex justify-center px-2 pb-1.5 text-center
+   text-footnote text-muted-as-secondary". */
+.composer-disclaimer-above:empty {
+  display: none;
+}
+.composer-disclaimer-above {
+  display: flex;
+  justify-content: center;
+  padding: 0 8px 6px;
+  color: #898781;
+  font-size: 13px;
+  line-height: 17px;
+  text-align: center;
+}
+.composer-disclaimer-above > .conversation-disclaimer {
+  flex: none;
+  min-width: 0;
+}
+.composer-disclaimer-above > .conversation-disclaimer > :is(a, span) {
+  display: inline;
+  height: auto;
+}
+
+.composer-wrap.conversation-composer
+  .composer-chin
+  > .conversation-disclaimer
+  > :is(a, span) {
+  display: inline;
+  height: auto;
+}
+/* Observed 390px reply: one note row (17+6), the growing input, then
+   a 24px chin with 8px above/below. Contents hoists the single existing
+   note into natural grid flow; notices and attachment rows still grow. */
+@media (max-width: 639px) {
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0;
+    width: calc(100% - 16px);
+    padding: 0 8px env(safe-area-inset-bottom);
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    > :not(.composer):not(.composer-chin) {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    > .composer {
+    grid-column: 1 / -1;
+    order: 1;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    > .composer-chin {
+    display: contents;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin
+    > .conversation-disclaimer {
+    position: static;
+    transform: none;
+    display: block;
+    grid-column: 1 / -1;
+    order: 0;
+    margin: 0 0 6px;
+    overflow: visible;
+    font-size: 13px;
+    line-height: 17px;
+    white-space: normal;
+    text-overflow: clip;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .conversation-disclaimer
+    > a
+    > span {
+    white-space: normal;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin
+    > :is(.composer-chin-leading, .composer-chin-trailing) {
+    order: 2;
+    min-height: 24px;
+    margin: 8px 0;
+    min-width: 0;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin
+    > .composer-chin-leading {
+    grid-column: 1;
+    padding-left: 7px;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin
+    > .composer-chin-trailing {
+    grid-column: 2;
+    padding-right: 9px;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin
+    > :is(.composer-chin-leading, .composer-chin-trailing)
+    > .popover-anchor {
+    display: flex;
+    align-items: center;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin
+    > .composer-dictation-target {
+    display: none;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin[data-dictating="true"]
+    > :not(.composer-dictation-target) {
+    display: none;
+  }
+  .app.web:not(.mobile-conversation)
+    .conversation-composer:not(.code-composer)
+    .composer-chin[data-dictating="true"]
+    > .composer-dictation-target {
+    display: flex;
+    grid-column: 1 / -1;
+    order: 2;
+    margin: 8px 0;
+    min-height: 24px;
+  }
+}
+/* On the home: the place picker's label 17px in (its chip pads it 9px in a row
+   inset 8px, cowork-options.css). The model pill and the permission button sit
+   2px apart, the button ending 8px before the frame's right edge (10px as a
+   lone glyph). The row keeps the 40px the Cowork options row took under the
+   frame, so Ideas stay where they were measured. */
+.composer-wrap:not(.code-composer) .composer-chin[data-place="home"] {
+  padding: 0 0 8px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin[data-place="home"]
+  > .composer-chin-trailing {
+  gap: 2px;
+  margin-right: 8px;
+}
+@container home-composer (max-width: 479.98px) {
+  .composer-wrap:not(.code-composer)
+    .composer-chin[data-place="home"]
+    > .composer-chin-trailing {
+    margin-right: 10px;
+  }
+}
+.composer-wrap:not(.code-composer) .composer-chin .cowork-options {
+  height: 24px;
+}
+/* "+" and Add folder: 24px ghost squares, 16px glyphs. */
+.composer-wrap:not(.code-composer)
+  .composer-chin-leading
+  :is(.popover-anchor > .icon-button, > .icon-button) {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin-leading
+  :is(.popover-anchor > .icon-button, > .icon-button)
+  svg {
+  width: 16px;
+  height: 16px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin-leading
+  .composer-chip-slot
+  > .research-chip {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+/* The microphone 4px after "+" (the chin's "ms-1"), 24px with a 16px glyph; the
+   ⌄ after it 14px wide. Voice mode, shown in Chat while the draft is empty,
+   takes the same 24px square. */
+.composer-wrap:not(.code-composer) .composer-chin .composer-chin-voice {
+  display: flex;
+  align-items: center;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .cowork-voice-controls.chin-voice-controls {
+  flex: none;
+  width: auto;
+  height: 24px;
+  margin: 0;
+  border-radius: 6px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .chin-voice-controls
+  .dictation-button:not(.pill) {
+  width: 24px;
+  height: 24px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .chin-voice-controls
+  .dictation-button::before {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .chin-voice-controls
+  .dictation-button:not(.pill)
+  svg {
+  width: 16px;
+  height: 16px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  :is(.cowork-voice-options, .voice-mode-button > .voice-mode-chevron) {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 24px;
+  margin: 0;
+  border-radius: 6px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  :is(.cowork-voice-options, .voice-mode-chevron)::before {
+  border-radius: 6px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  :is(.cowork-voice-options, .voice-mode-chevron)
+  svg {
+  width: 14px;
+  height: 14px;
+}
+.composer-wrap:not(.code-composer) .composer-chin .voice-mode-button {
+  width: auto;
+  height: 24px;
+  margin: 0;
+}
+/* A separate voice action is a single ghost button, not a double-hover split
+   button. */
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button.standalone {
+  margin-inline-start: 4px;
+  background: transparent;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button.standalone
+  > .voice-mode-main:not(.active) {
+  color: var(--text);
+  background: transparent;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button.standalone
+  > .voice-mode-main:hover:not(.unavailable) {
+  background: var(--fill-ghost-hover);
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button.standalone
+  > .voice-mode-main:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px #0b0b0b,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px rgb(24 79 149 / 60%);
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button.standalone
+  > .voice-mode-main.unavailable {
+  opacity: var(--opacity-disabled);
+}
+:root[data-theme="light"]
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button.standalone
+  > .voice-mode-main:not(.active) {
+  color: #0b0b0b;
+}
+:root[data-theme="light"]
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button.standalone
+  > .voice-mode-main:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px #f9f9f7,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px #cde2fb;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button
+  > .voice-mode-main {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .voice-mode-button
+  > .voice-mode-main
+  svg {
+  width: 16px;
+  height: 16px;
+}
+.composer-wrap:not(.code-composer) .composer-chin .dictation-button.pill {
+  height: 24px;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .dictation-button.pill::before {
+  border-radius: 6px;
+}
+/* The model: a 24px ghost pill, its name in the primary ink and the effort
+   muted. */
+.composer-wrap:not(.code-composer) .composer-chin .model-effort-anchor {
+  margin: 0;
+}
+.composer-wrap:not(.code-composer) .composer-chin .model-button {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 17px;
+}
+/* Current web conversation: 13/19 model and effort text inside the 24px pill. */
+.app.web:not(.mobile-conversation)
+  .conversation-composer:not(.code-composer)
+  .composer-chin
+  .model-button {
+  line-height: 19px;
+}
+/* Inks. The capture samples the dark ones. */
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  :is(
+    .composer-chin-leading .icon-button,
+    .chin-voice-controls .dictation-button:not(.pill),
+    .voice-mode-main,
+    .cowork-options > button
+  ) {
+  color: #c3c2b7;
+}
+:root[data-theme="light"]
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  :is(
+    .composer-chin-leading .icon-button,
+    .chin-voice-controls .dictation-button:not(.pill),
+    .voice-mode-main,
+    .cowork-options > button
+  ) {
+  color: #52514e;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  :is(
+    .cowork-voice-options,
+    .voice-mode-chevron,
+    .cowork-options > button > svg:last-child,
+    .model-effort-pill .model-button-effort
+  ),
+.composer-wrap.conversation-composer .composer-chin > .conversation-disclaimer {
+  color: #898781;
+}
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  .model-effort-pill
+  .model-button-name {
+  color: #f0efec;
+}
+:root[data-theme="light"]
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  .model-effort-pill
+  .model-button-name {
+  color: #0b0b0b;
+}
+
+/* A task's permission mode at the chin's right, after the model: the mode's
+   name only, a 24px ghost button in the chin's secondary ink. */
+.composer-wrap:not(.code-composer) .composer-chin .task-permission-trigger {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 17px;
+  white-space: nowrap;
+}
+.composer-wrap:not(.code-composer)
+  .composer-chin
+  .task-permission-trigger:is(:hover, [aria-expanded="true"]) {
+  background: var(--fill-ghost-hover);
+}
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  .task-permission-trigger {
+  color: #c3c2b7;
+}
+:root[data-theme="light"]
+  .composer-wrap:not(.code-composer)
+  .composer-chin
+  .task-permission-trigger {
+  color: #52514e;
+}
+
+/* Send and the microphone share the home toolbar's last place. */
+.composer-action-slot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: none;
+}
+/* What is typed reads #f0efec, the placeholder #898781. */
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer
+  textarea {
+  color: #f0efec;
+}
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer
+  textarea::placeholder {
+  color: #898781;
+}
+/* Its buttons' ink: Add, Dictate and voice mode #f0efec. */
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer
+  :is(
+    .popover-anchor > .icon-button,
+    .mic-button,
+    .voice-mode-main,
+    .voice-mode-chevron
+  ) {
+  color: #f0efec;
+}
+
+/* The recording pill (dictation.css) over this sheet's microphone ink and
+   20px glyph rule: accent ink, white on hover, the level bars at 16px (12px
+   in the Code footer, whose pill is that row's 19px tall). */
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer
+  .mic-button.pill {
+  color: #79acef;
+}
+:root:not([data-theme="light"])
+  .composer-wrap:not(.code-composer)
+  .composer
+  .mic-button.pill:hover:not(:disabled) {
+  color: #fff;
+}
+:root .code-composer .code-voice-controls .dictation-button.pill {
+  gap: 3px;
+  padding: 0 4px;
+}
+:root .code-composer .code-voice-controls .dictation-button.pill::before {
+  border-radius: 5px;
+}

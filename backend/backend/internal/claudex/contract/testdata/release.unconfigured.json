@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "api_version": 1,
+    "server": {
+      "version": "0.2.8+claudex.1",
+      "build_type": "source"
+    },
+    "channel": null,
+    "latest_version": null,
+    "minimum_version": null,
+    "state": "unknown",
+    "enforced": false,
+    "download_url": null,
+    "sha256": null,
+    "release_notes_url": null,
+    "release_notes_md": null,
+    "published_at": null
+  }
+}

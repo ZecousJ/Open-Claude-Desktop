@@ -1,0 +1,887 @@
+/*
+ * ⌘K search and compose (src/collections/search/SearchPalette.tsx), from
+ * the mac 2x captures R-对话搜索-弹窗 and R-对话搜索-Compose标签 (1164×1049,
+ * ÷2): a 193×35 Search/Compose switch (14px, 30px pills, the chosen one
+ * outlined) 12px above a 672px panel whose top is at 262.5, 14px header,
+ * filter and row text, 36px rows with a #313131 highlight and a 40px
+ * footer of 12px key hints. Like the other component sheets it loads
+ * before the global one: input rules are one class stronger.
+ */
+.search-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 215.5px;
+  /* The dialog backdrop and motion of .overlay: 50% black, no blur, 200ms
+     fades. */
+  background: #00000080;
+  animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.search-palette-overlay > * {
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+@media (max-height: 760px) {
+  .search-palette-overlay {
+    padding-top: 12vh;
+  }
+}
+.search-palette-modes {
+  display: flex;
+  gap: 2px;
+  height: 35px;
+  box-sizing: border-box;
+  padding: 2px;
+  border: 0.5px solid #4d4d4d;
+  border-radius: 10px;
+  background: var(--surface-hover);
+  /* The capture has a dark 1px ring inside the hairline edge. */
+  box-shadow: inset 0 0 0 1px #202020;
+}
+.search-palette-modes > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #9d9d9a;
+}
+.search-palette-modes > button.selected {
+  background: #404040;
+  box-shadow: inset 0 0 0 1px #535353;
+  color: var(--text);
+}
+.search-palette kbd,
+.search-palette-modes kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  padding: 0 3px;
+  border: 1px solid #464646;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 12px;
+  color: #a8a8a5;
+}
+.search-palette {
+  display: flex;
+  flex-direction: column;
+  width: min(672px, calc(100vw - 32px));
+  max-height: calc(100vh - 300px);
+  min-height: 0;
+  box-sizing: border-box;
+  margin-top: 12px;
+  border: 1px solid #4d4d4d;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 24px 60px #0008;
+  overflow: hidden;
+}
+.search-palette-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 19px 14px 0 24px;
+}
+.search-palette-head input,
+.search-palette-head input:focus {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  color: #f5f5f3;
+}
+.search-palette-head input::placeholder {
+  color: #8f8f8c;
+}
+.search-palette-head > button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: #e6e6e3;
+}
+.search-palette-head > button:hover {
+  background: #2e2e2e;
+}
+/* Actions mode has no type tabs: the head carries the rule under it. */
+.search-palette-head[data-entrypoint="actions"] {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #353535;
+}
+/* The mode glyph before the input, and Actions mode's bordered chip with the
+   keyboard glyph and the clear cross: border-0.5 rounded-lg p-0.5 ps-2, pulled
+   6px up and down and 8px left. */
+.search-mode-glyph {
+  display: flex;
+  flex-shrink: 0;
+  margin-inline: -4px 4px;
+  color: var(--text-muted);
+}
+.search-mode-chip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  margin: -6px 0 -6px -8px;
+  padding: 2px 2px 2px 8px;
+  border: 0.5px solid #353535;
+  border-radius: 8px;
+}
+.search-mode-chip > span {
+  display: flex;
+  color: var(--text-muted);
+}
+.search-mode-chip > button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #e6e6e3;
+}
+.search-mode-chip > button:hover {
+  background: #2e2e2e;
+}
+.search-palette-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 10px 20px 14px 23.5px;
+  border-bottom: 1px solid #353535;
+}
+.search-palette-filters button {
+  height: 28px;
+  padding: 0 9.5px;
+  border-radius: 7px;
+  font-size: 14px;
+  color: #9d9d9a;
+}
+.search-palette-filters button:hover {
+  color: #e6e6e3;
+}
+.search-palette-filters button.selected {
+  background: #313131;
+  color: #f5f5f3;
+}
+.search-palette-results {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 11px 10px 12px;
+}
+.search-palette-results h3 {
+  margin: 14px 14px 6px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #8f8f8c;
+}
+.search-palette-results > div:first-child > h3 {
+  margin-top: 10px;
+}
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 14px 0 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: default;
+}
+.search-row.active {
+  background: #313131;
+}
+.search-row > svg {
+  flex-shrink: 0;
+  color: #d9d9d6;
+}
+.search-source-icon {
+  flex-shrink: 0;
+  color: currentColor;
+}
+.search-row-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* Archived: the original's neutral xxs Badge with an Archive glyph in the
+   time's place. */
+.search-row-tag {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--alpha-1);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.search-row-more {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: #d9d9d6;
+}
+.search-row-more:hover,
+.search-row-more[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.search-row > .search-row-enter {
+  margin-left: 0;
+  color: var(--text-muted);
+}
+.search-palette-empty {
+  margin: 0;
+  padding: 0 24px;
+  display: flex;
+  min-height: fit-content;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.search-palette-empty p {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+:root[data-theme="light"] .search-palette-empty {
+  color: #52514e;
+}
+.search-palette-foot {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 19.5px;
+  border-top: 1px solid #2c2c2c;
+  font-size: 12px;
+  color: #8f8f8c;
+}
+.search-palette-foot > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.search-palette-foot kbd {
+  height: 18px;
+  border-radius: 4px;
+  line-height: 1;
+  border-color: rgb(165 164 154 / 22%);
+  color: #a5a49a;
+}
+.search-palette-foot kbd + kbd {
+  margin-left: -6px;
+}
+.search-palette-foot .search-icon-key {
+  width: 18px;
+  padding: 0;
+}
+.search-palette-foot kbd > svg {
+  width: 12px;
+  height: 12px;
+}
+.search-palette.compose .search-palette-foot {
+  border-top: 0;
+}
+.search-palette.compose .search-palette-results {
+  flex: none;
+  padding-top: 14px;
+  padding-bottom: 2px;
+}
+.search-compose-box {
+  display: flex;
+  flex-direction: column;
+  margin: 6px 6px 0;
+  border: 1px solid #3f3f3f;
+  border-radius: 12px;
+  background: var(--surface-hover);
+}
+.search-compose-box textarea,
+.search-compose-box textarea:focus {
+  height: 60px;
+  padding: 16px 16px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  font-size: 14px;
+  line-height: 22px;
+  color: #f5f5f3;
+}
+.search-compose-box textarea::placeholder {
+  color: #8f8f8c;
+}
+.search-compose-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 12px 0;
+  padding: 0;
+  list-style: none;
+}
+.search-compose-files > li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 220px;
+  height: 24px;
+  padding: 0 4px 0 8px;
+  border-radius: 6px;
+  background: #363636;
+  font-size: 12px;
+  color: #d9d9d6;
+}
+.search-compose-files span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.search-compose-files button {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  color: #b0b0ad;
+}
+.search-compose-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 12px;
+}
+.search-compose-attach {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: #d9d9d6;
+}
+.search-compose-attach:hover {
+  background: #363636;
+}
+.search-compose-send {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 7px;
+  background: #b86346;
+  color: #fff;
+}
+.search-compose-send:disabled {
+  opacity: 0.45;
+}
+
+:root[data-theme="light"] .search-palette-overlay {
+  /* The 39% shade measured behind the light dialogs. */
+  background: rgb(0 0 0 / 39%);
+}
+:root[data-theme="light"] .search-palette-modes {
+  border-color: #dedede;
+  background: #f3f3f1;
+  box-shadow: none;
+}
+:root[data-theme="light"] .search-palette-modes > button {
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .search-palette-modes > button.selected {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e3e3e1;
+  color: #141413;
+}
+:root[data-theme="light"] .search-palette kbd,
+:root[data-theme="light"] .search-palette-modes kbd {
+  border-color: #dedede;
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .search-palette {
+  border-color: #e3e3e1;
+  background: #fff;
+  box-shadow: 0 24px 60px #0002;
+}
+:root[data-theme="light"] .search-palette-head input,
+:root[data-theme="light"] .search-row,
+:root[data-theme="light"] .search-compose-box textarea {
+  color: #141413;
+}
+:root[data-theme="light"] .search-palette-head > button,
+:root[data-theme="light"] .search-row > svg,
+:root[data-theme="light"] .search-row-more,
+:root[data-theme="light"] .search-compose-attach {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .search-palette-head[data-entrypoint="actions"],
+:root[data-theme="light"] .search-mode-chip {
+  border-color: #ececea;
+}
+:root[data-theme="light"] .search-mode-chip > button {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .search-mode-chip > button:hover {
+  background: #efefed;
+}
+:root[data-theme="light"] .search-palette-filters {
+  border-color: #ececea;
+}
+:root[data-theme="light"] .search-palette-filters > button {
+  color: #6e6e6c;
+}
+:root[data-theme="light"] .search-palette-filters > button.selected,
+:root[data-theme="light"] .search-row.active {
+  background: #f0f0ee;
+  color: #141413;
+}
+:root[data-theme="light"] .search-palette-results h3,
+:root[data-theme="light"] .search-palette-foot,
+:root[data-theme="light"] .search-palette-empty {
+  color: #767674;
+}
+:root[data-theme="light"] .search-palette-foot {
+  border-color: #f0f0ee;
+}
+:root[data-theme="light"] .search-compose-box {
+  border-color: #e3e3e1;
+  background: #fafaf8;
+}
+:root[data-theme="light"] .search-compose-files > li,
+:root[data-theme="light"] .search-row-tag {
+  background: #efefed;
+  color: #3d3d3a;
+}
+/* Found words in bold, a quoted excerpt 8px after the title in the 13px grey of
+   the headings, and the date bucket on the right. */
+.search-row-title strong {
+  font-weight: 600;
+}
+.search-row-snippet {
+  margin-left: 8px;
+  color: #8f8f8c;
+  font-size: 13px;
+}
+.search-row-snippet strong {
+  color: var(--text);
+}
+.search-row-time {
+  flex-shrink: 0;
+  color: #8f8f8c;
+  font-size: 12px;
+}
+:root[data-theme="light"] .search-row-snippet strong {
+  color: var(--text-strong);
+}
+
+/* The web version: the panel's top at 20.15% of the window with the switch 12px
+   above it; 20px round, #20201f, a 0.5px white-20% edge and 0 25px 50px -12px
+   of shadow; the field 17.6px 10px 14.4px 24px; filters 28px high, 10px sides,
+   14/20 500, #898781 until chosen; a 0.5px white-10% rule; rows 36px, 8px 12px,
+   8px round, a 20px icon 8px from the title, #c3c2b7, the highlighted one
+   #f0efec on white 7.5%; section titles 12/17 #898781 at 12px 14px 8px. The
+   switch: 194×35, 9px round on #20201f, the chosen pill white 10% with a
+   white-10% inset rim. */
+:root[data-surface="web"] .search-palette-overlay {
+  justify-content: center;
+  padding: 16px;
+}
+:root[data-surface="web"] .search-palette-modes {
+  border: 0.5px solid rgb(255 255 255 / 10%);
+  border-radius: 9px;
+  background: #20201f;
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+}
+:root[data-surface="web"] .search-palette-modes > button {
+  border-radius: 7px;
+  color: #898781;
+}
+:root[data-surface="web"] .search-palette-modes > button.selected {
+  background: rgb(255 255 255 / 10%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: #f0efec;
+}
+:root[data-surface="web"] .search-palette {
+  border: 0.5px solid rgb(255 255 255 / 20%);
+  border-radius: 20px;
+  background: #20201f;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%);
+  height: min(582px, calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
+  margin-top: 0;
+}
+.search-palette-foot > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.search-palette-foot > .search-compose-hint {
+  margin-left: auto;
+}
+@media (max-width: 767.98px) {
+  .search-palette-foot > .search-filter-hint {
+    display: none;
+  }
+}
+@media (max-width: 639.98px) {
+  :root[data-surface="web"] .search-palette-overlay {
+    justify-content: flex-start;
+  }
+  :root[data-surface="web"] .search-palette-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  :root[data-surface="web"] .search-palette-filters button {
+    flex-shrink: 0;
+  }
+  .search-palette-foot > .search-type-hint {
+    display: none;
+  }
+}
+.search-filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--fill-ghost-hover);
+  font-size: 13px;
+}
+.search-filter-chip > button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+:root[data-surface="web"] .search-palette-head {
+  padding: 17.6px 10px 14.4px 24px;
+}
+:root[data-surface="web"] .search-palette-head input,
+:root[data-surface="web"] .search-palette-head input:focus {
+  height: 32px;
+  line-height: 20px;
+  color: #f0efec;
+}
+:root[data-surface="web"] .search-palette-head > button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+:root[data-surface="web"] .search-palette-filters {
+  gap: 0;
+  margin-top: -6px;
+  padding: 0 24px 14.4px;
+  border-bottom: 0.5px solid rgb(255 255 255 / 10%);
+}
+:root[data-surface="web"] .search-palette-filters button {
+  padding: 0 10px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #898781;
+}
+:root[data-surface="web"] .search-palette-filters button.selected {
+  background: rgb(255 255 255 / 7.5%);
+  color: #f0efec;
+}
+:root[data-surface="web"] .search-palette-results {
+  padding: 10px;
+}
+:root[data-surface="web"]
+  .search-palette-results
+  > [role="group"]
+  + [role="group"] {
+  margin-top: 4px;
+}
+:root[data-surface="web"] .search-palette-results h3 {
+  margin: 0;
+  padding: 12px 14px 8px;
+  font-size: 12px;
+  line-height: 17px;
+  color: #898781;
+}
+:root[data-surface="web"] .search-palette-results h3 > button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font: inherit;
+}
+:root[data-surface="web"] .search-palette-results > div:first-child > h3 {
+  margin-top: 0;
+}
+:root[data-surface="web"] .search-palette-foot {
+  color: #898781;
+  line-height: 17px;
+}
+:root[data-surface="web"] .search-row {
+  gap: 8px;
+  padding: 8px 12px;
+  line-height: 20px;
+  color: #c3c2b7;
+}
+:root[data-surface="web"] .search-row > svg {
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+}
+:root[data-surface="web"] .search-row > .search-row-enter {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+:root[data-surface="web"] .search-row.active {
+  background: rgb(255 255 255 / 7.5%);
+  color: #f0efec;
+}
+
+/* The web version in light. The same cds tokens in their light values: surface
+   #fff, white alphas as #0b0b0b alphas, inks #0b0b0b / #52514e / #898781. */
+:root[data-surface="web"][data-theme="light"] .search-palette-modes {
+  border-color: rgb(11 11 11 / 10%);
+  background: #fff;
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / 8%),
+    0 2px 6px rgb(0 0 0 / 5%);
+}
+:root[data-surface="web"][data-theme="light"] .search-palette-modes > button {
+  color: #898781;
+}
+:root[data-surface="web"][data-theme="light"]
+  .search-palette-modes
+  > button.selected {
+  background: rgb(11 11 11 / 5%);
+  box-shadow:
+    inset 0 0 0 1px rgb(11 11 11 / 10%),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: #0b0b0b;
+}
+:root[data-surface="web"][data-theme="light"] .search-palette {
+  border-color: rgb(11 11 11 / 20%);
+  background: #fff;
+}
+:root[data-surface="web"][data-theme="light"] .search-palette-head input,
+:root[data-surface="web"][data-theme="light"] .search-palette-head input:focus {
+  color: #0b0b0b;
+}
+:root[data-surface="web"][data-theme="light"] .search-palette-head > button {
+  color: #52514e;
+}
+:root[data-surface="web"][data-theme="light"] .search-palette-filters {
+  border-bottom-color: rgb(11 11 11 / 10%);
+}
+:root[data-surface="web"][data-theme="light"] .search-palette-filters button {
+  color: #898781;
+}
+:root[data-surface="web"][data-theme="light"]
+  .search-palette-filters
+  button.selected {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-surface="web"][data-theme="light"] .search-palette-results h3 {
+  color: #898781;
+}
+:root[data-surface="web"][data-theme="light"] .search-row {
+  color: #52514e;
+}
+:root[data-surface="web"][data-theme="light"] .search-row.active {
+  background: rgb(11 11 11 / 7.5%);
+  color: #0b0b0b;
+}
+
+/* Drop target and title notice. */
+.search-palette-type-tabs {
+  display: contents;
+}
+.search-compose-box {
+  position: relative;
+}
+.search-compose-drop {
+  position: absolute;
+  inset: 4px;
+  z-index: 999;
+  border: 2px dashed #2a78d6;
+  border-radius: 8px;
+  background: color-mix(in oklab, #032042 50%, transparent);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.search-compose-drop.on-target {
+  background: #032042;
+}
+.search-compose-drop p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2a78d6;
+}
+:root[data-theme="light"] .search-compose-drop {
+  background: color-mix(in oklab, #cde2fb 50%, transparent);
+}
+:root[data-theme="light"] .search-compose-drop.on-target {
+  background: #cde2fb;
+}
+.search-palette-notice {
+  padding: 0 14px 8px;
+  font-size: 12px;
+  color: #898781;
+}
+.search-palette-loading {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+}
+.search-palette-loading svg {
+  animation: search-palette-spin 1s linear infinite;
+}
+@keyframes search-palette-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .search-palette-loading svg {
+    animation: none;
+  }
+}
+
+/* Source ce8be540f:2398,3389 and c01b6d4ec:40: state/type are read by
+   assistive technology, schedule is beside the title, counts yield to Enter. */
+.search-source-wrap {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+.search-source-wrap.has-status > .search-source-icon {
+  mask-image: radial-gradient(
+    circle at calc(100% - 2px) 2px,
+    transparent 5px,
+    black 5.5px
+  );
+}
+.search-source-state {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c6613f;
+}
+.search-source-state.awaiting {
+  background: #2a78d6;
+}
+.search-row-title.has-metadata {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.search-row-title.has-metadata > .search-row-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.search-row-schedule {
+  flex: none;
+  max-width: calc(100% - 48px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+.search-row-run-count {
+  flex: none;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.search-row.active > .search-row-run-count {
+  display: none;
+}
+@media (pointer: coarse) {
+  .search-row.active > .search-row-run-count {
+    display: inline;
+  }
+  .search-row > .search-row-enter {
+    display: none;
+  }
+}
+@media (forced-colors: active) {
+  .search-source-wrap.has-status > .search-source-icon {
+    mask-image: none;
+  }
+}
+
+/* Placeholder rows while the results load: 36px rows (52px with a snippet),
+   12px in and 8px above and below, 8px between the blocks, under a 37px
+   heading. */
+.search-skeleton {
+  display: flex;
+  flex-direction: column;
+}
+.search-skeleton-heading {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 37px;
+  padding: 12px 14px 8px;
+}
+.search-skeleton-row {
+  box-sizing: border-box;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  padding: 8px 12px;
+}
+.search-skeleton-row.snippet {
+  height: 52px;
+}
+.search-skeleton-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}

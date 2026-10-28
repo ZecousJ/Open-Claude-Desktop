@@ -1,0 +1,286 @@
+/* Projects: search opens as a 384×32 field, 5% white, radius 8, its focus ring
+   a 1px blue line with a 6px glow; card titles are weight 500. */
+:root:not([data-theme="light"]) .prj-search {
+  width: min(384px, 40vw);
+  padding: 0 4px 0 12px;
+  border: 0;
+  background: #ffffff0d;
+}
+:root:not([data-theme="light"]) .prj-search:focus-within {
+  box-shadow:
+    inset 0 0 0 1px #151515,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px #184f9599;
+}
+.prj-card > strong {
+  font-weight: 500;
+}
+
+/* Artifacts: a 960px column, All / Yours / Shared with you as 32px text tabs
+   24px under the title, "Make something new" tiles 136×96 with radius 14, no
+   rim and a two-part shadow. */
+.artifacts-page > *,
+.artifacts-page > .artifacts-grid {
+  max-width: 960px;
+}
+.artifacts-header {
+  margin-bottom: 24px;
+}
+.artifacts-owner-tabs {
+  gap: 0;
+}
+.artifacts-owner-tabs > button {
+  height: 32px;
+  padding: 0 12px;
+  font-weight: 500;
+}
+.artifacts-make > h2 {
+  font-weight: 500;
+}
+:root:not([data-theme="light"]) .artifacts-make-art {
+  min-height: 96px;
+  border: 0;
+  border-radius: 14px;
+  background: #1a1a19;
+  box-shadow:
+    0 1px 2px #1111110f,
+    0 2px 8px #0000003d;
+}
+
+/* Chat header Share: a 57.5×28 text button, 10% white with a faint rim, 14/20
+   text 10px in. */
+.chat-header .conversation-share-button.text {
+  width: auto;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+:root:not([data-theme="light"]) .chat-header .conversation-share-button.text {
+  background: #ffffff1a;
+  box-shadow:
+    inset 0 0 0 1px #0000,
+    0 1px 2px #0000000d;
+  color: #f0efec;
+}
+
+/* Share ends 8px from the window's right edge, the activity button beside it in
+   the primary ink. Share's -3px margin makes the 11px padding an 8px gap. */
+@media (min-width: 640px) {
+  .app.web .chat-header {
+    padding-right: 11px;
+  }
+}
+:root:not([data-theme="light"])
+  .app.web
+  .chat-header
+  .header-actions
+  .session-activity-toggle {
+  color: #f0efec;
+}
+
+/* Reply toolbar icons rest at #898781. */
+:root:not([data-theme="light"]) [aria-label="Message actions"] button {
+  color: #898781;
+}
+
+/* Settings on the web: the frame keeps 16px above and below, #1a1a19 with a
+   faint rim, and the page reserves no scrollbar gutter (content 782 wide). */
+:root[data-surface="web"] .settings-overlay {
+  padding: 16px;
+}
+@media (min-width: 768px) {
+  :root[data-surface="web"]:not([data-theme="light"]) .settings-dialog {
+    border-color: #ffffff0d;
+    background: #1a1a19;
+    box-shadow: inset 0 0 0 1px #ffffff1a;
+  }
+}
+:root[data-surface="web"] .settings-page {
+  scrollbar-gutter: auto;
+}
+
+/* Menus on the web: #20201f with a 1px #ffffff1a inner ring, radius 12, 4px
+   inside; 32px rows with radius 8, 10px side padding, a 20px glyph 8px before
+   14/20 text, 13/17 #898781 keys, a #ffffff1a rule 4px 10px, Delete in #ec7e7e.
+   The desktop app keeps its captured 24px rows and has no glyphs. */
+/* Its scroll layer keeps a transparent 1px under the rows, and in the dark the
+   shadow is black 32% and 20%. */
+:root[data-surface="web"]:not([data-theme="light"]) .menu {
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: #20201f;
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+}
+:root[data-surface="web"] .menu {
+  border-bottom: 1px solid transparent;
+  padding: 4px;
+  border-radius: 12px;
+  /* Comfortable density: 14px/20px text, 13px/17px values and keys, a 25px
+     heading. */
+  font-size: 14px;
+  line-height: 20px;
+}
+:root[data-surface="web"] .menu > .menu-search {
+  margin: -4px -4px 4px;
+  padding-inline: 16px;
+}
+:root[data-surface="web"] .menu > .menu-heading {
+  padding: 4px 10px;
+  font-size: 13px;
+  line-height: 17px;
+}
+:root[data-surface="web"] .menu > button > small {
+  font-size: 13px;
+  line-height: 17px;
+}
+:root[data-surface="web"] .menu > button {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+}
+/* A row with a description under its label grows with it (the permission
+   picker's wrapped descriptions). */
+:root[data-surface="web"] .menu > button.has-description {
+  height: auto;
+  min-height: 32px;
+  padding-block: 6px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .menu > button {
+  color: #f0efec;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .menu > button.active {
+  background: #ffffff13;
+}
+:root[data-surface="web"] .menu > button > kbd {
+  font-size: 13px;
+  line-height: 17px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .menu > button > kbd {
+  color: #898781;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .menu > button.danger {
+  color: #ec7e7e;
+}
+:root[data-surface="web"] .menu > hr {
+  margin: 4px 10px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .menu > hr {
+  background: #ffffff1a;
+}
+.menu-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-style: normal;
+}
+:root:not([data-surface="web"]) .menu-icon {
+  display: none;
+}
+
+/* The web's confirmation: #20201f with the ring, radius 12, 24px inside; a
+   15/20 500 title, 14/20 #c3c2b7 text, then 32px buttons 16px lower: Cancel 10%
+   white, Delete #d03b3b at 500. */
+:root[data-surface="web"] .modal.confirm {
+  padding: 22px 24px 24px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .modal.confirm {
+  border: 0;
+  background: #20201f;
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 16px 48px #0d0d0d52;
+}
+:root[data-surface="web"] .modal.confirm h2 {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .modal.confirm
+  > .confirm-body {
+  color: #c3c2b7;
+}
+:root[data-surface="web"] .modal.confirm .button-row {
+  margin-top: 16px;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .modal.confirm
+  .button-row
+  > .secondary {
+  border: 0;
+  background: #ffffff1a;
+  color: #f0efec;
+}
+:root[data-surface="web"] .modal.confirm .button-row > .danger-button {
+  border: 0;
+  background: #d03b3b;
+  font-weight: 500;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .menu
+  > button.danger.danger {
+  --danger: #ec7e7e;
+}
+:root[data-surface="web"] .modal.confirm > header {
+  margin-bottom: 4px;
+}
+
+/* The side panel on the web slides in: 200ms, from 48px to the right and
+   transparent, cubic-bezier(0.2, 0, 0, 1). The desktop app's panel appears in
+   one frame. */
+@keyframes web-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+}
+:root[data-surface="web"] .artifact-panel {
+  animation: web-panel-in 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+:root[data-motion="reduced"] .artifact-panel {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-surface="web"] .artifact-panel {
+    animation: none;
+  }
+}
+
+/* Customize → Skills → Discover: 28px between the feature and the sections, a
+   section's title row 28px high with its card grid 16px under it, and the
+   cards' + a 28px square, 7px round. */
+:root[data-surface="web"] .customize-directory-head {
+  margin: 28px 0 0;
+  height: 28px;
+}
+:root[data-surface="web"] .customize-directory-head > button {
+  border-radius: 7px;
+}
+:root[data-surface="web"] .customize-card-add,
+:root[data-surface="web"]
+  .customize-cards
+  .customize-card-unavailable
+  > button {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+
+:root[data-surface="web"] .customize-feature + .customize-section,
+:root[data-surface="web"] .customize-section {
+  margin-top: 28px;
+}
+:root[data-surface="web"] .customize-section > h2 {
+  min-height: 28px;
+}
+:root[data-surface="web"] .customize-section > h2 + .customize-cards {
+  margin-top: 15px;
+}

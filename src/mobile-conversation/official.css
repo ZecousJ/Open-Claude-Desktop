@@ -1,0 +1,1508 @@
+/*
+ * The reference Chat transcript on the phones. Only the phone renderer loads
+ * this sheet. Chat (.mode-chat) takes the whole of it; Code takes only its last
+ * section (the session rows); web, desktop and Cowork keep the shared look.
+ *
+ * Fonts: Anthropic Sans/Serif are proprietary and not used. The serif is the
+ * open Noto Serif the apps ship (iOS serves it at /native-fonts/, Android has
+ * it as the system serif), then a CJK serif so Chinese replies stay serif
+ * (Songti SC on iOS, which the app downloads at launch; Noto Serif CJK SC on
+ * Android). Code is JetBrains Mono (OFL), shipped by both apps.
+ */
+@font-face {
+  font-family: "Claudex Reading Serif";
+  src: url("/native-fonts/NotoSerif.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Claudex Code Mono";
+  src:
+    url("/native-fonts/JetBrainsMono.ttf") format("truetype"),
+    url("/transcript-official/JetBrainsMono.ttf") format("truetype");
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+/* Colour tokens (light) highlight.js colours. */
+:root {
+  --oc-text: #131313; /* Zc6.O */
+  --oc-text2: #383835; /* Zc6.P */
+  --oc-text3: #7b7974; /* Zc6.Q */
+  --oc-raised: #ffffff; /* Zc6.p */
+  --oc-page: #f9f9f7; /* Zc6.q */
+  --oc-code-body: #f3f3f0; /* Zc6.r */
+  --oc-code-head: #f0efec; /* Zc6.s */
+  --oc-bubble: #f0efec; /* Zc6.w0 */
+  --oc-hair-strong: rgb(30 30 29 / 30%); /* Zc6.w */
+  --oc-hair: rgb(30 30 29 / 15%); /* Zc6.x */
+  --oc-link: #d97757; /* Zc6.c */
+  --oc-link-pressed: rgb(217 119 87 / 20%);
+  --oc-inline-code: #184f95; /* G74.w0 */
+  --oc-press: rgb(11 11 11 / 5%); /* G74.C0 */
+  --oc-bubble-code-head: #f9f9f7; /* G74.K */
+  --oc-bubble-code-body: #fcfcfb; /* G74.T */
+  --oc-verb: #0b0b0b; /* G74.o0 */
+  --oc-icon2: #52514e; /* G74.r0 */
+  --oc-ok: #006300; /* G74.G */
+  --oc-primary: #0b0b0b; /* G74.e0 */
+  --oc-primary-pressed: #2c2c2a; /* G74.m0 */
+  --oc-primary-text: #ffffff; /* G74.j0 */
+  --oc-scrim: rgb(0 0 0 / 32%); /* M3 scrim */
+  --oc-hl-0: #383a42;
+  --oc-hl-1: #a0a1a7;
+  --oc-hl-2: #a626a4;
+  --oc-hl-3: #e45649;
+  --oc-hl-4: #0184bb;
+  --oc-hl-5: #50a14f;
+  --oc-hl-6: #986801;
+  --oc-hl-7: #4078f2;
+  --oc-hl-8: #c18401;
+  --oc-serif:
+    "Claudex Reading Serif", "Noto Serif", "Songti SC", "STSongti-SC-Regular",
+    "Noto Serif CJK SC", "Source Han Serif SC", serif;
+  --oc-sans:
+    system-ui, -apple-system, "Roboto", "PingFang SC", "Noto Sans CJK SC",
+    sans-serif;
+  --oc-mono:
+    "Claudex Code Mono", "JetBrains Mono", ui-monospace, Menlo, "PingFang SC",
+    monospace;
+}
+/* Dark, and the highlight.js dark colours. */
+:root[data-theme="dark"] {
+  --oc-text: #f9f9f7;
+  --oc-text2: #c3c2b7;
+  --oc-text3: #97958d;
+  --oc-raised: #20201f;
+  --oc-page: #151515;
+  --oc-code-body: #111111;
+  --oc-code-head: #0d0d0d;
+  --oc-bubble: #2c2c2a;
+  --oc-hair-strong: rgb(225 224 217 / 30%);
+  --oc-hair: rgb(225 224 217 / 15%);
+  --oc-inline-code: #6da7ec;
+  --oc-press: rgb(255 255 255 / 8%);
+  --oc-bubble-code-head: #0b0b0b;
+  --oc-bubble-code-body: #151515;
+  --oc-verb: #f0efec;
+  --oc-icon2: #c3c2b7;
+  --oc-ok: #0ca30c;
+  --oc-primary: #ffffff;
+  --oc-primary-pressed: #e1e0d9;
+  --oc-primary-text: #0b0b0b;
+  --oc-hl-0: #abb2bf;
+  --oc-hl-1: #5c6370;
+  --oc-hl-2: #c678dd;
+  --oc-hl-3: #e06c75;
+  --oc-hl-4: #56b6c2;
+  --oc-hl-5: #98c379;
+  --oc-hl-6: #d19a66;
+  --oc-hl-7: #61aeee;
+  --oc-hl-8: #e6c07b;
+}
+
+:root:root .app.mobile-conversation.mode-chat,
+:root:root .app.mobile-conversation.mode-chat .messages-scroll {
+  background: var(--oc-page);
+  color: var(--oc-text);
+}
+
+/* List geometry: no list padding; each item pads itself. 16 dp above a
+   user turn, 12 dp above each assistant block, the first item flush. */
+:root:root .app.mobile-conversation.mode-chat .messages-scroll {
+  scrollbar-gutter: auto;
+}
+:root:root .app.mobile-conversation.mode-chat .messages {
+  width: 100%;
+  max-width: none;
+  padding: 12px 0 20px;
+}
+:root:root .app.mobile-conversation.mode-chat .turn {
+  margin: 0;
+  padding: 0;
+}
+:root:root .app.mobile-conversation.mode-chat .turn + .turn {
+  padding-top: 16px;
+}
+:root:root .app.mobile-conversation.mode-chat .assistant-message {
+  margin: 12px 0 0;
+  padding: 0 20px;
+}
+:root:root .app.mobile-conversation.mode-chat .assistant-content {
+  margin: 0;
+  padding: 0;
+}
+:root:root .app.mobile-conversation.mode-chat .assistant-content > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+:root:root .app.mobile-conversation.mode-chat .assistant-content > * + * {
+  margin-top: 12px;
+}
+
+/* User message: 36 + 8 dp from the start, 8 dp from the end, at most 652.8
+   dp; 12 dp corners, w0 fill, x hairline, 12 × 14 dp padding, Sans 15/1.4. The
+   official app has no buttons under it: its actions live in the long-press
+   menu, which the apps draw; the renderer's own buttons stay in the page,
+   hidden, for that menu. Version arrows stay. */
+:root:root .app.mobile-conversation.mode-chat .user-message {
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: min(652.8px, calc(100% - 52px));
+  margin: 0 8px 0 auto;
+  padding: 14px 12px;
+  border: 0.5px solid var(--oc-hair);
+  border-radius: 12px;
+  background: var(--oc-bubble);
+  color: var(--oc-text);
+  font: 400 15px/1.4 var(--oc-sans);
+}
+:root:root .app.mobile-conversation.mode-chat .user-message.is-editing {
+  width: auto;
+  background: transparent;
+  border-color: var(--oc-hair-strong);
+}
+:root:root .app.mobile-conversation.mode-chat .user-message-text,
+:root:root
+  .app.mobile-conversation.mode-chat
+  .user-message-text
+  .prompt-paragraph {
+  font: inherit;
+  color: inherit;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .user-message-text
+  :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font: 550 15px/1.4 var(--oc-sans);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .user-message-actions
+  > :not(.reply-versions) {
+  display: none;
+}
+:root:root .app.mobile-conversation.mode-chat .user-message-actions {
+  opacity: 1;
+  color: var(--oc-text3);
+  font: 400 13px/1.4 var(--oc-sans);
+}
+
+/* Assistant text: the transcript serif 17/1.5, paragraph spacing 8,
+   H1–H3 28/24/20 at 550 and 1.3, bold 550. */
+:root:root .app.mobile-conversation.mode-chat .markdown {
+  color: var(--oc-text);
+  font: 400 17px/1.5 var(--oc-serif);
+  letter-spacing: 0;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .markdown
+  :is(p, li, td, th, blockquote) {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+/* Text sits on the 20 dp edge: no extra inset around paragraphs or headings. */
+:root:root
+  .app.mobile-conversation.mode-chat
+  .markdown
+  :is(p, h1, h2, h3, h4, h5, h6) {
+  padding: 0;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown > * + * {
+  margin-top: 8px;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .markdown
+  :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--oc-text);
+  font-family: var(--oc-serif);
+  font-weight: 550;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown h1 {
+  font-size: 28px;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown h2 {
+  font-size: 24px;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown h3 {
+  font-size: 20px;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown :is(h4, h5, h6) {
+  font-size: 17px;
+  line-height: 1.5;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown :is(strong, b) {
+  font-weight: 550;
+}
+/* Lists: marker indent 8, contents indent 4, item spacing 4. */
+:root:root .app.mobile-conversation.mode-chat .markdown :is(ul, ol) {
+  margin-left: 0;
+  padding-left: 28px;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown li {
+  margin: 0;
+  padding-left: 4px;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown li + li {
+  margin-top: 4px;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown li::marker {
+  color: var(--oc-text);
+}
+/* Inline code: mono 15, blue w0, chip C0 with a 0.5 dp x border, 6.4 dp
+   corners, 4 × 1 dp padding. */
+:root:root
+  .app.mobile-conversation.mode-chat
+  :is(.markdown, .user-message-text)
+  :not(pre)
+  > code {
+  padding: 1px 4px;
+  border: 0.5px solid var(--oc-hair);
+  border-radius: 6.4px;
+  background: var(--oc-press);
+  color: var(--oc-inline-code);
+  font-family: var(--oc-mono);
+  font-size: 15px;
+}
+/* Links: clay, underlined; 20 % clay behind while pressed. */
+:root:root
+  .app.mobile-conversation.mode-chat
+  :is(.markdown, .user-message-text)
+  a {
+  border-radius: 2px;
+  color: var(--oc-link);
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  :is(.markdown, .user-message-text)
+  a:active {
+  background: var(--oc-link-pressed);
+}
+
+/* Code block: 12 dp corners; a header at least 40 dp, 16 dp in, in s,
+   the language in mono 13 P with its first letter capitalised and the copy
+   button in P; the body in r, 16 dp padding, mono 15/1.5, no wrap. */
+:root:root .app.mobile-conversation.mode-chat .code-block {
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: var(--oc-code-body);
+  box-shadow: none;
+}
+:root:root .app.mobile-conversation.mode-chat .code-block .code-bar {
+  position: static;
+  box-sizing: border-box;
+  height: auto;
+  min-height: 40px;
+  padding: 0 8px 0 16px;
+  border: 0;
+  background: var(--oc-code-head);
+  color: var(--oc-text2);
+  font: 400 13px/1.5 var(--oc-mono);
+  text-transform: none;
+}
+:root:root .app.mobile-conversation.mode-chat .code-block .code-bar > span {
+  display: inline-block;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  .code-bar
+  > span::first-letter {
+  text-transform: uppercase;
+}
+:root:root .app.mobile-conversation.mode-chat .code-block .code-bar > div {
+  gap: 4px;
+  opacity: 1;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  .code-bar
+  .small-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--oc-text2);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  .code-bar
+  .small-action:active {
+  background: var(--oc-press);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  .code-bar
+  .small-action
+  svg {
+  width: 20px;
+  height: 20px;
+}
+:root:root .app.mobile-conversation.mode-chat .code-block .code-bar .code-open {
+  display: none;
+}
+:root:root .app.mobile-conversation.mode-chat .code-block pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  background: transparent;
+  color: var(--oc-hl-0);
+  font: 400 15px/1.5 var(--oc-mono);
+  white-space: pre;
+}
+:root:root .app.mobile-conversation.mode-chat .code-block pre code {
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: inherit;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .user-message
+  .code-block
+  .code-bar {
+  background: var(--oc-bubble-code-head);
+}
+:root:root .app.mobile-conversation.mode-chat .user-message .code-block {
+  background: var(--oc-bubble-code-body);
+}
+/* Highlight.js token colours as the official app maps them: compound scopes
+   take their first segment, and any other token keeps the base colour. Colour
+   only, no italics or bold. */
+:root:root .app.mobile-conversation.mode-chat .code-block pre [class*="hljs-"] {
+  color: var(--oc-hl-0);
+  font-style: normal;
+  font-weight: inherit;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(.hljs-comment, .hljs-quote) {
+  color: var(--oc-hl-1);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(.hljs-keyword, .hljs-doctag, .hljs-formula) {
+  color: var(--oc-hl-2);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(
+    .hljs-section,
+    .hljs-name,
+    .hljs-selector-tag,
+    .hljs-deletion,
+    .hljs-subst,
+    .hljs-tag
+  ) {
+  color: var(--oc-hl-3);
+}
+:root:root .app.mobile-conversation.mode-chat .code-block pre .hljs-literal {
+  color: var(--oc-hl-4);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(.hljs-string, .hljs-regexp, .hljs-addition, .hljs-attribute, .hljs-char) {
+  color: var(--oc-hl-5);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(
+    .hljs-attr,
+    .hljs-variable,
+    .hljs-template-variable,
+    .hljs-type,
+    .hljs-number,
+    .hljs-selector-class
+  ) {
+  color: var(--oc-hl-6);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(
+    .hljs-symbol,
+    .hljs-bullet,
+    .hljs-link,
+    .hljs-meta,
+    .hljs-selector-id,
+    .hljs-title
+  ) {
+  color: var(--oc-hl-7);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(.hljs-built_in, .hljs-class, .hljs-function) {
+  color: var(--oc-hl-8);
+}
+/* A token nested in another takes its own colour (e.g. a keyword in meta). */
+:root:root
+  .app.mobile-conversation.mode-chat
+  .code-block
+  pre
+  :is(.hljs-params, .hljs-operator, .hljs-punctuation, .hljs-property) {
+  color: var(--oc-hl-0);
+}
+
+/* Tables: header 550, borders w, cells at most 520 dp, sideways scroll. */
+:root:root .app.mobile-conversation.mode-chat .markdown .markdown-table {
+  margin-left: 0;
+  margin-right: 0;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown table {
+  border: 0;
+  border-collapse: collapse;
+  font: inherit;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown :is(th, td) {
+  max-width: 520px;
+  padding: 8px 12px;
+  border: 1px solid var(--oc-hair-strong);
+  background: transparent;
+  text-align: start;
+  vertical-align: top;
+}
+:root:root .app.mobile-conversation.mode-chat .markdown th {
+  font-weight: 550;
+}
+
+/* The collapsed steps row: 8 × 12 dp padding inside the 20 dp inset,
+   the tools' icon stack, 4 dp, the title in Sans 15/1.4 Q on one line, the
+   16 dp caret in Q. */
+:root:root .app.mobile-conversation.mode-chat .official-steps {
+  margin: 0;
+}
+.official-steps-row {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 12px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--oc-text3);
+  font: 400 15px/1.4 var(--oc-sans);
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.official-steps-row:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.official-steps-row:active:not(:disabled) {
+  background: var(--oc-press);
+}
+.official-steps-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.official-steps-caret {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--oc-text3);
+}
+.official-steps-caret svg,
+.official-step-caret svg {
+  width: 16px;
+  height: 16px;
+}
+/* The tools' icon stack, drawn as the reply row's favicon stack: 20 dp each, −8
+   dp overlap, a 2 dp ring in the page colour. */
+.official-icon-stack {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 24px;
+}
+.official-icon-stack-item {
+  display: inline-grid;
+  box-sizing: content-box;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  place-items: center;
+  border: 2px solid var(--oc-page);
+  border-radius: 50%;
+  background: var(--oc-code-head);
+  color: var(--oc-text2);
+}
+.official-icon-stack-item + .official-icon-stack-item {
+  margin-left: -8px;
+}
+.official-icon-stack-item svg {
+  width: 14px;
+  height: 14px;
+}
+.official-icon-stack-item .site-icon {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50%;
+}
+
+/* The thinking verb: transcript font 15/1.6 in o0, shimmering — a band
+   25 % wide where the ink drops to 10 %, crossing in 1500 ms, linear — and
+   swapped with AnimatedContent's default fade. */
+.official-verb {
+  display: inline-flex;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--oc-verb);
+  font: 400 15px/1.6 var(--oc-serif);
+  white-space: nowrap;
+}
+.official-verb-text,
+.official-shimmer {
+  background: linear-gradient(
+      90deg,
+      currentColor 0 37.5%,
+      color-mix(in srgb, currentColor 10%, transparent) 50%,
+      currentColor 62.5% 100%
+    )
+    100% 0 / 400% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation:
+    official-shimmer 1.5s linear infinite,
+    official-verb-in 220ms 90ms linear backwards;
+}
+.official-shimmer {
+  animation: official-shimmer 1.5s linear infinite;
+}
+@keyframes official-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+@keyframes official-verb-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .official-verb-text,
+  .official-shimmer {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+/* The working row: 28 dp tall, the mark, 8 dp, the verb. */
+.official-activity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  color: var(--oc-verb);
+  font: 400 15px/1.6 var(--oc-serif);
+}
+.official-activity > .clay-mark {
+  position: static;
+  flex: none;
+}
+.official-activity-text {
+  color: var(--oc-icon2);
+  font: 400 13px/1.4 var(--oc-sans);
+}
+
+/* The Collapsed Tools sheet: raised fill, 44 dp top corners, the 36 × 5 dp
+   x grabber 5.5 dp from the top, a header 16 dp in, the 32 % scrim; it rises in
+   and leaves with the standard fade. */
+.official-sheet-layer {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.official-sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--oc-scrim);
+  animation: official-fade-in 250ms linear;
+}
+.official-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 16px);
+  border-radius: 44px 44px 0 0;
+  background: var(--oc-raised);
+  color: var(--oc-text);
+  font: 400 15px/1.4 var(--oc-sans);
+  animation: official-sheet-in 300ms cubic-bezier(0.2, 0, 0, 1);
+  transition: transform 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.official-sheet[data-dragging] {
+  transition: none;
+}
+.official-sheet-layer[data-leaving] > .official-sheet-scrim {
+  opacity: 0;
+  transition: opacity 150ms linear;
+}
+.official-sheet-layer[data-leaving] > .official-sheet {
+  transform: translateY(100%);
+  transition: transform 150ms cubic-bezier(0.4, 0, 1, 1);
+}
+@keyframes official-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes official-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.official-sheet-grabber {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  padding: 5.5px 6px;
+  touch-action: none;
+}
+.official-sheet-grabber > span {
+  width: 36px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--oc-hair);
+}
+.official-sheet-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 5px 16px;
+}
+.official-sheet-header-spacer {
+  flex: none;
+  width: 40px;
+}
+.official-sheet-title {
+  display: -webkit-box;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--oc-text);
+  font: 550 17px/1.4 var(--oc-sans);
+  text-align: center;
+}
+.official-icon-button {
+  display: inline-grid;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--oc-text);
+}
+.official-icon-button:active {
+  background: var(--oc-press);
+}
+.official-sheet-back svg {
+  width: 20px;
+  height: 20px;
+  transform: rotate(180deg);
+}
+.official-sheet-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 0 calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Sheet rows: 20 × 12 dp, 12 dp apart, the icon in r0, the words Sans 15 in
+   o0(), the step's file in Q. */
+.official-step-list,
+.official-source-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.official-step,
+.official-source {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 20px;
+  border: 0;
+  background: transparent;
+  color: var(--oc-verb);
+  font: 400 15px/1.4 var(--oc-sans);
+  text-align: start;
+}
+button.official-step:active,
+button.official-source:active {
+  background: var(--oc-press);
+}
+.official-step-icon {
+  display: inline-grid;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: var(--oc-icon2);
+}
+.official-step-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.official-step-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.official-step-name,
+.official-step-mark,
+.official-step-caret {
+  color: var(--oc-text3);
+}
+.official-step-mark,
+.official-step-caret {
+  display: inline-flex;
+  flex: none;
+  font-size: 13px;
+}
+.official-thought {
+  padding: 0 24px;
+}
+.official-thought .markdown {
+  color: var(--oc-text2);
+  font: 400 15px/1.6 var(--oc-serif);
+}
+.official-tool-content {
+  padding: 0 24px;
+}
+.official-tool-content section + section {
+  margin-top: 16px;
+}
+.official-tool-content h3 {
+  margin: 0 0 8px;
+  color: var(--oc-text);
+  font: 550 15px/1.4 var(--oc-sans);
+}
+.official-tool-content pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--oc-code-body);
+  color: var(--oc-text);
+  font: 400 13px/1.5 var(--oc-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.official-tool-content pre + pre {
+  margin-top: 8px;
+}
+.official-tool-content img {
+  max-width: 100%;
+  border-radius: 12px;
+}
+.official-tool-content p {
+  margin: 0;
+  color: var(--oc-text2);
+}
+.official-source-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.official-source-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.official-source-host {
+  overflow: hidden;
+  color: var(--oc-text3);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.official-source .site-icon {
+  flex: none;
+  border-radius: 50%;
+}
+
+/* Reply actions: icons only, tint Q, Small borderless buttons (36 dp,
+   20 dp icon), circle pressed C0(); no time and no tooltips. The sources
+   chip sits at the row's end. */
+:root:root .app.mobile-conversation.mode-chat .message-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+  height: auto;
+  margin: 4px 0 0 -2px;
+  padding: 0;
+  opacity: 1;
+  color: var(--oc-text3);
+  transition: none;
+}
+:root:root .app.mobile-conversation.mode-chat .message-actions .reply-time,
+:root:root .app.mobile-conversation.mode-chat .copy-tooltip {
+  display: none;
+}
+:root:root .app.mobile-conversation.mode-chat .message-actions .small-action {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  margin: 2px;
+  padding: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--oc-text3);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .message-actions
+  .small-action:active {
+  background: var(--oc-press);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .message-actions
+  .small-action:disabled {
+  opacity: 0.38;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .message-actions
+  .small-action
+  :is(svg, .reply-glyph) {
+  width: 20px;
+  height: 20px;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .message-actions
+  .small-action.copied {
+  color: var(--oc-ok);
+  transition: color 300ms;
+}
+/* The footer ends 8 dp from the screen and the chip 6 dp inside it: 14 dp, so 6
+   dp past the 20 dp text edge. On a narrow phone its count gives way before the
+   buttons do. */
+.official-sources-chip {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 36px;
+  margin: 2px -6px 2px auto;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--oc-text3);
+  font: 400 13px/1.4 var(--oc-sans);
+}
+.official-sources-chip:active {
+  background: var(--oc-press);
+}
+
+/* Notice card: 16 dp corners, page fill, 1 dp x border, 16/6/12/6 dp,
+   at least 48 dp, infoCircle 20 P, 12 dp gaps, Sans 15 P, then Small
+   Secondary buttons (Continue keeps the Primary look). */
+:root:root .app.mobile-conversation.mode-chat .reply-banner {
+  display: flex;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin: 12px 0 0;
+  padding: 6px 12px 6px 16px;
+  border: 1px solid var(--oc-hair);
+  border-radius: 16px;
+  background: var(--oc-page);
+  box-shadow: none;
+  color: var(--oc-text2);
+  font: 400 15px/1.4 var(--oc-sans);
+}
+:root:root .app.mobile-conversation.mode-chat .reply-banner .usage-banner-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--oc-text2);
+}
+:root:root .app.mobile-conversation.mode-chat .reply-banner .usage-banner-text {
+  flex: 1 1 160px;
+  min-width: 0;
+  color: inherit;
+  font: inherit;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .reply-banner
+  .usage-banner-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+:root:root .app.mobile-conversation.mode-chat .reply-banner .usage-banner-more {
+  height: 36px;
+  padding: 0 12px;
+  border: 0.5px solid var(--oc-hair);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--oc-text);
+  font: 550 15px/1.4 var(--oc-sans);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .reply-banner
+  .usage-banner-more:active {
+  background: var(--oc-code-head);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .reply-banner
+  .usage-banner-primary {
+  border-color: transparent;
+  background: var(--oc-primary);
+  color: var(--oc-primary-text);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .reply-banner
+  .usage-banner-primary:active {
+  background: var(--oc-primary-pressed);
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  .reply-banner
+  .usage-banner-more[data-disabled] {
+  opacity: 0.38;
+}
+
+/* No plumbing status on the phones (product rule): no reconnecting line and
+   no connection notice. */
+:root:root .app.mobile-conversation .turn-reconnecting,
+:root:root .app.mobile-conversation .turn-connection-notice {
+  display: none;
+}
+
+/* Compaction divider: hairline · label 11/1.5 in w · hairline, 12 dp apart. */
+:root:root .app.mobile-conversation.mode-chat .compaction-event {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  color: var(--oc-hair-strong);
+  font: 400 11px/1.5 var(--oc-sans);
+}
+:root:root .app.mobile-conversation.mode-chat .compaction-event::before,
+:root:root .app.mobile-conversation.mode-chat .compaction-event::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--oc-hair-strong);
+}
+
+/* The end-of-reply mark: Claudex's own mark (never Anthropic's spark),
+   upright, in a 28 dp box on the reply's 20 dp text edge, 12 dp under it. */
+:root:root .app.mobile-conversation.mode-chat .turn > .response-end-mark,
+:root:root .app.mobile-conversation.mode-chat .turn > .response-stream-mark {
+  display: flex;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 12px 0 0 20px;
+  transform: none;
+  rotate: none;
+}
+:root:root .app.mobile-conversation.mode-chat .turn > .response-end-mark > svg,
+:root:root
+  .app.mobile-conversation.mode-chat
+  .turn
+  > .response-stream-mark
+  .spark-mark,
+:root:root
+  .app.mobile-conversation.mode-chat
+  .turn
+  > .response-stream-mark
+  .spark-mark-steps,
+:root:root
+  .app.mobile-conversation.mode-chat
+  .turn
+  > .response-stream-mark
+  svg {
+  width: 28px !important;
+  height: 28px !important;
+}
+:root:root .app.mobile-conversation.mode-chat .turn > .response-end-mark > svg {
+  transform: none;
+  rotate: none;
+}
+
+/* Code and Cowork end on the same mark (CodeEndMark slot), placed like Chat's:
+   on the reply's text edge, 12 dp under it, not the desktop star's offsets. */
+:root:root .app.mobile-conversation .code-turn-status.code-turn-end {
+  margin-top: 12px;
+  padding-left: 0;
+}
+
+/* File and artifact cards: r fill, w hairline, 12 dp corners, on the
+   20 dp text edge. */
+:root:root
+  .app.mobile-conversation.mode-chat
+  .assistant-content
+  .chat-steps-files {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+}
+:root:root
+  .app.mobile-conversation.mode-chat
+  :is(.artifact-card, .file-document-card) {
+  margin-left: 0;
+  border: 1px solid var(--oc-hair-strong);
+  border-radius: 12px;
+  background: var(--oc-code-body);
+  box-shadow: none;
+}
+
+/* Scroll to bottom: a 40 dp circle, p at 96 %, 0.5 dp x border, shadow
+   8/2 at 10 %, the 16 dp arrow in O, 8 dp above the composer. */
+:root:root .app.mobile-conversation.mode-chat .scroll-bottom-dock {
+  bottom: 8px;
+}
+:root:root .app.mobile-conversation.mode-chat .scroll-bottom-button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0.5px solid var(--oc-hair);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--oc-raised) 96%, transparent);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  color: var(--oc-text);
+}
+:root:root .app.mobile-conversation.mode-chat .scroll-bottom-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The chip keeps its own size where a shell styles every button in the row. */
+:root:root
+  .app.mobile-conversation.mode-chat
+  .message-actions
+  > .official-sources-chip {
+  display: inline-flex;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 6px;
+  border-radius: 999px;
+  place-items: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Code sessions. Only the phone renderer loads this, and only Code (.mode-code)
+   takes it.
+   --------------------------------------------------------------------------- */
+:root {
+  --oc-border10: rgb(11 11 11 / 10.2%); /* G74.x: card border, dividers */
+  --oc-muted: #898781; /* G74.v: folders, carets, "Show more" */
+  --oc-add: #1e9e3c; /* G74.F */
+  --oc-add-bg: rgb(30 158 60 / 20%); /* G74.a0 */
+  --oc-del: #cd2054; /* G74.e */
+  --oc-del-bg: rgb(205 32 84 / 20%); /* G74.p */
+  --oc-danger: #8e2626; /* G74.r */
+}
+:root[data-theme="dark"] {
+  --oc-border10: rgb(255 255 255 / 10.2%);
+  --oc-add: #32d74b;
+  --oc-add-bg: rgb(50 215 75 / 20%);
+  --oc-del: #ff2c56;
+  --oc-del-bg: rgb(255 44 86 / 20%);
+  --oc-danger: #ec7e7e;
+}
+
+/* The folded tool-call row: the label in Sans 15 / 1.4 in Q on one line, a lone
+   file named in O. The row sits 8 dp out so its text lines up with the reply's. */
+:root:root .app.mobile-conversation.mode-code .official-code-tools {
+  margin: 0 -8px;
+}
+.official-code-row {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--oc-text3);
+  font: 400 15px/1.4 var(--oc-sans);
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.official-code-row:active {
+  background: var(--oc-press);
+}
+.official-code-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.official-code-subject {
+  color: var(--oc-text);
+}
+.official-code-failed {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--oc-danger);
+}
+.official-code-failed svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The tool-call sheets: the list's "Tool calls (N)" head in je6.I (13 / 550) Q,
+   a detail's Command, Output and Error cards. */
+.official-code-list-title {
+  margin: 0;
+  padding: 0 20px 8px;
+  color: var(--oc-text3);
+  font: 550 13px/1.4 var(--oc-sans);
+}
+.official-code-detail {
+  padding: 0 24px;
+}
+.official-code-detail section + section,
+.official-code-description + section {
+  margin-top: 16px;
+}
+.official-code-description {
+  margin: 0 0 16px;
+  color: var(--oc-text2);
+  font: 400 15px/1.4 var(--oc-sans);
+}
+.official-code-detail h3 {
+  margin: 0 0 8px;
+  color: var(--oc-text3);
+  font: 400 13px/1.4 var(--oc-sans);
+}
+.official-code-detail section[data-error] h3 {
+  color: var(--oc-danger);
+}
+.official-code-detail pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--oc-code-body);
+  color: var(--oc-text);
+  font: 400 13px/1.5 var(--oc-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.official-code-detail section[data-error] pre {
+  color: var(--oc-danger);
+}
+.official-code-detail img {
+  max-width: 100%;
+  border-radius: 12px;
+}
+.official-code-detail p {
+  margin: 0;
+  color: var(--oc-text2);
+}
+.official-code-detail .code-file-diff + .code-file-diff {
+  margin-top: 12px;
+}
+
+/* The turn-edits card: 12 dp corners, g74.K fill, a hairline in g74.x, a 4
+   dp 8 % shadow; the header 16 dp in, its title at least 48 dp tall. */
+.official-turn-edits {
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--oc-border10);
+  border-radius: 12px;
+  background: var(--oc-bubble-code-head);
+  box-shadow: 0 0 4px rgb(0 0 0 / 8%);
+  color: var(--oc-verb);
+  font: 400 15px/1.4 var(--oc-sans);
+}
+.official-edits-header {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+.official-edits-title {
+  display: flex;
+  flex: 1;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+button.official-edits-title {
+  cursor: pointer;
+}
+.official-edits-icon {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--oc-icon2);
+}
+.official-edits-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.official-edits-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The Review button: Secondary, Small (bj3 / ri3): a pill 36 dp tall, 12 dp
+   in, 15 / 550 text in O on a hairline, F0EFEC when pressed. */
+.official-edits-review {
+  flex: none;
+  box-sizing: border-box;
+  height: 36px;
+  margin: 12px 0 12px 16px;
+  padding: 0 12px;
+  border: 1px solid var(--oc-hair);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--oc-text);
+  font: 550 15px/1.4 var(--oc-sans);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.official-edits-review:active {
+  background: var(--oc-code-head);
+}
+/* "+a −d": two chips in one pill, 11 / 550, 6 dp in, 18 dp tall, 4.5 dp
+   corners. */
+.official-diff-pill {
+  display: inline-flex;
+  flex: none;
+  overflow: hidden;
+  border-radius: 4.5px;
+  font: 550 11px/1.5 var(--oc-sans);
+  white-space: nowrap;
+}
+.official-diff-pill > span {
+  box-sizing: border-box;
+  min-height: 18px;
+  padding: 0 6px;
+}
+.official-diff-pill > [data-add] {
+  background: var(--oc-add-bg);
+  color: var(--oc-add);
+}
+.official-diff-pill > [data-del] {
+  background: var(--oc-del-bg);
+  color: var(--oc-del);
+}
+.official-edits-files {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--oc-border10);
+  list-style: none;
+}
+.official-edits-files > li + li {
+  border-top: 1px solid var(--oc-border10);
+}
+.official-edits-files button {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--oc-verb);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.official-edits-files button:active {
+  background: var(--oc-press);
+}
+.official-edits-path {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  font: 400 13px/1.5 var(--oc-mono);
+}
+.official-edits-folder {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--oc-muted);
+  direction: rtl;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.official-edits-name {
+  flex: 0 100 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.official-edits-caret {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--oc-muted);
+}
+.official-edits-caret svg {
+  width: 16px;
+  height: 16px;
+}
+.official-edits-caret[data-open] {
+  rotate: 180deg;
+}
+.official-edits-files button.official-edits-more {
+  justify-content: flex-start;
+  gap: 4px;
+  color: var(--oc-muted);
+  font: 400 13px/1.4 var(--oc-sans);
+}
+
+/* Earlier replies keep Copy alone; its row sits like Chat's reply actions. */
+:root:root .app.mobile-conversation.mode-code .code-reply-actions {
+  margin: 0;
+  padding: 0;
+  opacity: 1;
+  color: var(--oc-text3);
+}
+
+/* Code's back-to-the-latest button is a pill: the arrow, 6 dp, then "Scroll to
+   bottom" in je6.H 13 sp, on Chat's raised fill, hairline and shadow, 36 dp
+   tall (a Small button), 12 dp in. */
+:root:root .app.mobile-conversation.mode-code .scroll-bottom-dock {
+  bottom: 8px;
+}
+:root:root .app.mobile-conversation.mode-code .scroll-bottom-button {
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border: 0.5px solid var(--oc-hair);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--oc-raised) 96%, transparent);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  color: var(--oc-text);
+  font: 400 13px/1.4 var(--oc-sans);
+}
+:root:root .app.mobile-conversation.mode-code .scroll-bottom-button svg {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* The working row: 28 dp tall, the 28 dp mark, 8 dp, the text in je6.H (13 /
+   1.4) and r0(); the elapsed time and tokens run on in the same line as the
+   official " · " segments. */
+:root:root
+  .app.mobile-conversation.mode-code
+  .assistant-content
+  > .code-turn-status:not(.code-turn-end) {
+  min-height: 28px;
+  margin: 0;
+  padding-left: 36px;
+  color: var(--oc-icon2);
+  font: 400 13px/1.4 var(--oc-sans);
+}
+:root:root .app.mobile-conversation.mode-code .code-turn-status .code-spinner {
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+}

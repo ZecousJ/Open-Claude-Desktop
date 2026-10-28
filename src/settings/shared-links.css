@@ -1,0 +1,227 @@
+/*
+ * Privacy → Shared chats / Shared artifacts. The page gives way to the list: a
+ * ghost "← Privacy" on its own 56px line, the title as a section title with its
+ * description under it, then a table (Name, Date …, Location, and the trash at
+ * the right). Sizes follow Claudex's closest analogues: the skill page's back
+ * link, the section title, and the Cowork local devices table (13px, grey
+ * headings over a hairline, 44px rows).
+ */
+.privacy-subpage {
+  display: flex;
+  flex-direction: column;
+}
+/*
+ * Live Privacy subpages: "← Privacy" 28px, 14px, 0 10px padding, r7, 6px gap,
+ * on the dialog's top line; the title 18px under it (15/20/580), the
+ * description 12px under that (14/20 secondary), the table 16px further.
+ */
+.privacy-subpage-back {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  /* Up on the dialog's top line, beside Close (live y65 vs content y111). */
+  margin-top: -46px;
+}
+.privacy-subpage-back > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin-left: -10px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: var(--settings-primary, #f0efec);
+  font-size: 14px;
+  line-height: 20px;
+}
+.privacy-subpage-back > button:hover {
+  background: var(--fill-ghost-hover);
+}
+.privacy-subpage-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 18px 0 16px;
+}
+.privacy-subpage-head h2 {
+  margin: 0;
+  color: var(--settings-primary, #f0efec);
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.privacy-subpage-head p,
+.privacy-subpage-state {
+  margin: 0;
+  color: var(--settings-secondary, #c3c2b7);
+  font-size: 14px;
+  line-height: 20px;
+}
+.privacy-subpage-state {
+  padding: 32px 0;
+  text-align: center;
+}
+/* The live table: 32px header (13/17/500 secondary), 14/20 cells with
+ * 8px 12px padding and a hairline over each row, none under the last. */
+.privacy-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+}
+.privacy-table th {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px 0 0;
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+  text-align: left;
+  color: var(--settings-secondary, #c3c2b7);
+}
+.privacy-table td {
+  height: 44px;
+  padding: 8px 12px 8px 0;
+  /* The hairline is painted, not a border, so it adds no height. */
+  background: linear-gradient(rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.1))
+    top / 100% 1px no-repeat;
+  color: var(--settings-primary, #f0efec);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.privacy-table .date {
+  width: 144px;
+}
+.privacy-table .location {
+  width: 160px;
+}
+.privacy-table .end {
+  width: 96px;
+  padding-right: 0;
+  text-align: right;
+}
+.privacy-table td.name {
+  overflow: hidden;
+}
+.privacy-table td.name > * {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.privacy-link {
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  white-space: nowrap;
+}
+.privacy-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.privacy-link.strong,
+.privacy-name {
+  color: var(--text-strong);
+}
+.privacy-audience {
+  font-size: 12px;
+  line-height: 16px;
+}
+.privacy-audience.removed {
+  color: var(--danger);
+}
+.shared-links-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #c7c7c5;
+  cursor: pointer;
+}
+.shared-links-icon:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+:root[data-theme="light"] .shared-links-icon {
+  color: #5e5d59;
+}
+:root[data-theme="light"] .shared-links-icon:hover:not(:disabled) {
+  background: #ebebe9;
+}
+:root[data-theme="light"] .privacy-audience.removed {
+  color: #b5462b;
+}
+
+/* Uploaded files: Name 306 / Uploaded 112 / Surface 128 / Location 128 /
+ * Delete 80 / chevron 32 at the live 786px table; the size sits under the
+ * name (13/17 muted) and Surface is a 22px badge (12/15/500, r5.5, white 5%). */
+.privacy-uploads .uploaded {
+  width: 112px;
+  color: var(--settings-secondary, #c3c2b7);
+}
+.privacy-uploads .surface,
+.privacy-uploads .location {
+  width: 128px;
+}
+.privacy-uploads .delete {
+  width: 80px;
+}
+.privacy-uploads .expand {
+  width: 32px;
+  padding-right: 0;
+  text-align: right;
+}
+.privacy-size {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-muted, #898781);
+}
+.privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 5.5px;
+  background: rgb(255 255 255 / 0.05);
+  color: var(--settings-secondary, #c3c2b7);
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 500;
+}
+:root[data-theme="light"] .privacy-badge {
+  background: rgb(0 0 0 / 0.05);
+}
+.privacy-uploads .privacy-expand {
+  color: var(--text-muted, #898781);
+}
+.privacy-chats td {
+  height: auto;
+  background: none;
+  padding: 8px 0;
+}
+.privacy-file {
+  display: flex !important;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.privacy-file > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.privacy-chats ul {
+  margin: 0;
+  padding: 0 0 0 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+:root[data-theme="light"] .privacy-table td {
+  background-image: linear-gradient(rgb(11 11 11 / 0.1), rgb(11 11 11 / 0.1));
+}

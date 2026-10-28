@@ -1,0 +1,18 @@
+/* Discover is shared by Settings and Customize. This stylesheet travels with
+   the lazy plugin page; no global or first-screen stylesheet imports it.
+   Existing row/card geometry remains in plugins.css. */
+.plugin-catalog-discover > .plugin-discovery-section:first-child {
+  margin-top: 16px;
+}
+.plugin-catalog-discover > .plugin-discovery-hero + .plugin-discovery-section {
+  margin-top: 32px;
+}
+.plugin-catalog-discover .plugin-discovery-heading > button:focus-visible,
+.plugin-catalog-discover .plugin-discovery-categories > button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.plugin-catalog-discover .plugin-discovery-hero-add {
+  min-width: 51px;
+  min-height: 32px;
+}

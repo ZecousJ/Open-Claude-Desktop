@@ -1,0 +1,302 @@
+/*
+ * Account menu additions: Learn more carries a grey 16px chevron at the right
+ * edge; its submenu reuses the account menu frame.
+ */
+.profile-popover > button > .profile-submenu-chevron,
+.profile-menu-scroll > button > .profile-submenu-chevron {
+  margin-left: auto;
+  /* Its ink ends 13px inside the frame's right edge, as captured (x 267). */
+  margin-right: -3.5px;
+  color: #8a8a88;
+}
+/* An external link ends in ArrowOutSquare, muted (the bundle's text-muted). */
+.profile-popover > button > .profile-external,
+.profile-menu-scroll > button > .profile-external {
+  margin-left: auto;
+  color: #8a8a88;
+}
+:root[data-theme="light"] .profile-popover > button > .profile-external,
+:root[data-theme="light"] .profile-menu-scroll > button > .profile-external {
+  color: #82817f;
+}
+.profile-popover > button.open,
+.profile-menu-scroll > button.open {
+  background: #313131;
+}
+/* Sized to its labels: sidebar.css's .profile-popover (272px) loads later. */
+.popover.profile-popover.profile-submenu {
+  width: auto;
+  min-width: 180px;
+  max-width: 280px;
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+}
+.profile-submenu > button > span,
+.profile-submenu > .profile-menu-scroll > button > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * The account-area download glyph: 10×10 ink at #c7c8c2, as bright as the
+ * account name. A required update keeps the glyph and adds the blue attention
+ * dot the collapsed sidebar's toggle carries (the original's size-1.5
+ * bg-fill-accent indicator, #2a78d6, 6px).
+ */
+.profile-wrap > .icon-button.account-apps,
+.profile-wrap > .icon-button.account-update {
+  /* Glyph centre 20px left of the sidebar edge (221.5 at 241.5). */
+  margin-right: -2px;
+  color: #c7c8c2;
+}
+.profile-wrap > .icon-button.account-update.required {
+  position: relative;
+}
+.profile-wrap > .icon-button.account-update.required::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--focus-accent);
+}
+:root[data-theme="light"] .profile-wrap > .icon-button.account-apps,
+:root[data-theme="light"] .profile-wrap > .icon-button.account-update {
+  color: #4a4a48;
+}
+
+/*
+ * Update notice above the account button: account menu colours, 10px radius
+ * frame, 13px title over 12px grey detail.
+ */
+.update-notice {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin: 0 8px 6px;
+  padding: 9px 30px 10px 10px;
+  border: 1px solid #363636;
+  border-radius: 10px;
+  background: var(--surface);
+  animation: update-notice-in 160ms ease-out;
+}
+@keyframes update-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.update-notice-icon {
+  flex: 0 0 16px;
+  margin-top: 1px;
+  color: #8e8d89;
+}
+.update-notice.required .update-notice-icon {
+  color: #d97757;
+}
+.update-notice-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.update-notice-text strong {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text);
+}
+.update-notice-text span {
+  font-size: 12px;
+  line-height: 16px;
+  color: #8e8d89;
+}
+.update-notice-download {
+  height: 24px;
+  margin-top: 6px;
+  padding: 0 9px;
+  border-radius: 6px;
+  background: #383838;
+  font-size: 13px;
+  color: var(--text);
+}
+.update-notice-download:hover {
+  filter: brightness(1.15);
+}
+.update-notice-download:active {
+  filter: brightness(0.92);
+}
+.update-notice-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  color: #898989;
+}
+.update-notice-close:hover {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .update-notice {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .update-notice {
+  animation: none;
+}
+
+:root[data-theme="light"] .profile-popover > button.open,
+:root[data-theme="light"] .profile-menu-scroll > button.open {
+  background: #f0f0f0;
+}
+:root[data-theme="light"] .update-notice {
+  border-color: #e4e4e4;
+  background: #fff;
+}
+:root[data-theme="light"] .update-notice-text strong {
+  color: #141414;
+}
+:root[data-theme="light"] .update-notice-text span {
+  color: #82817f;
+}
+:root[data-theme="light"] .update-notice-download {
+  background: #ecebe8;
+  color: #141414;
+}
+:root[data-theme="light"] .update-notice-close:hover {
+  background: #0000000d;
+  color: #141414;
+}
+
+/* Administrator notice above the composer: the Chat banner frame. */
+.usage-banner.announcement .usage-banner-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * What's new. The frame is the shared 520px Sheet; inside, What's new is a size
+ * smaller than the Keyboard shortcuts sheet: a 47px header (0.5px #555 rule)
+ * with a 14px semibold title 9px in and a small close cross, 14px semibold
+ * dates, an 18px version pill with 11px text, 11px grey category labels and
+ * 13px/19px items 12px in. Scoped with :has() so the other sheets keep their
+ * look.
+ */
+.sheet:has(.release-notes-version) > header {
+  height: 47px;
+  padding: 0 6px 0 9px;
+  border-bottom-width: 0.5px;
+  border-bottom-color: #555;
+}
+.sheet:has(.release-notes-version) > .sheet-body {
+  padding-right: 19px;
+  padding-left: 19px;
+}
+.sheet:has(.release-notes-version) > header > h2 {
+  font-size: 14px;
+  line-height: 20px;
+}
+.sheet:has(.release-notes-version) > header > button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.sheet:has(.release-notes-version) > header > button > svg {
+  width: 14px;
+  height: 14px;
+}
+.sheet .release-notes-version > header {
+  margin: 3px 0 8px;
+}
+/* A 1px #383836 rule ~17px under the last item, ~27px above the next date. */
+.sheet .release-notes-version + .release-notes-version {
+  margin-top: 11px;
+  padding-top: 24px;
+  border-top: 1px solid #383836;
+}
+:root[data-theme="light"]
+  .sheet
+  .release-notes-version
+  + .release-notes-version {
+  border-top-color: #e4e4e4;
+}
+.sheet .release-notes-version h3 {
+  font-size: 14px;
+  line-height: 20px;
+}
+.sheet .release-notes-version header > code {
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 14px;
+}
+.sheet .release-notes-version h4 {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  line-height: 16px;
+}
+.sheet .release-notes-version ul {
+  padding-left: 12px;
+}
+.sheet .release-notes-version li {
+  font-size: 13px;
+  line-height: 19px;
+}
+
+/* Announcements at the top of What's new: title where the date is, date in the version pill's place. */
+.release-notes-version.announcement header > time {
+  flex: 0 0 auto;
+  margin-left: 12px;
+  font-size: 12px;
+  color: #949492;
+}
+.sheet .release-notes-version .announcement-body {
+  font-size: 13px;
+  line-height: 19px;
+  color: #cccdc8;
+}
+.release-notes-version .announcement-body > :first-child {
+  margin-top: 0;
+}
+:root[data-theme="light"] .sheet .release-notes-version .announcement-body {
+  color: #3d3c3a;
+}
+
+/*
+ * The service's release notes: Markdown headings read as the category
+ * labels, paragraphs and bullets as the items. Images stay labels (never
+ * loaded).
+ */
+.sheet .release-notes-version .release-notes-service {
+  font-size: 13px;
+  line-height: 19px;
+  color: #cccdc8;
+}
+.sheet .release-notes-version .release-notes-service > :is(h1, h2, h3, h4) {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #949492;
+}
+.sheet .release-notes-version .release-notes-service > :first-child {
+  margin-top: 0;
+}
+.sheet .release-notes-version .release-notes-service > p {
+  margin: 0 0 6px;
+}
+:root[data-theme="light"] .sheet .release-notes-version .release-notes-service {
+  color: #3d3c3a;
+}

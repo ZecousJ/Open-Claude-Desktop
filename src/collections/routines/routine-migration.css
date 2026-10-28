@@ -1,0 +1,40 @@
+/* Loaded only with the lazy saved-task migration leaf. */
+.routine-migration {
+  color: var(--text-primary);
+  min-width: 0;
+}
+.routine-migration-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-block: 14px;
+}
+.routine-migration-row > div {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.routine-migration h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.routine-migration p {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.375;
+  overflow-wrap: anywhere;
+}
+.routine-migration > [role="status"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.routine-migration .routine-migration-reason {
+  margin-top: 8px;
+}
+.routine-migration-confirm .button-row {
+  flex-wrap: wrap;
+}

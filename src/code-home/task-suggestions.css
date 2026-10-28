@@ -1,0 +1,5 @@
+/* Suggested tasks are rows of the start card's list (next-steps.css); only the
+   group popup's own rows live here. */
+.task-suggestion-group .next-step-text {
+  flex: 0 1 auto;
+}

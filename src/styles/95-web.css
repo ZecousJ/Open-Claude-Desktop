@@ -1,0 +1,663 @@
+/* The web app (build surface "web"; shared/host.ts). Every rule here is
+   scoped to the web: `:root[data-surface="web"]` (set by src/main.tsx before
+   the first render) or `.app.web` (the signed-in window's root, which has no
+   platform class there: src/host/layout.ts). This sheet loads after every
+   other one (src/main.tsx), so equal specificity wins.
+
+   The browser draws no traffic lights and no window buttons, so the room
+   the desktop keeps for them goes away. Values follow the desktop's own
+   spacing with the 84px traffic-light inset replaced by a 6px edge inset:
+   the claude.ai capture has the sidebar toggle's glyph 12 CSS px from the
+   edge (ref-web-chat-home: x = 14 image px at s = 1.142), and the glyph
+   sits 6px into its 24px button. Provisional until a 100% capture.
+   Responsive and mobile rules are package W-MOBILE's, added below. */
+
+:root[data-surface="web"] #root {
+  /* The mobile address bar grows and shrinks the viewport. */
+  height: 100dvh;
+}
+
+/* Sidebar head: the controls start at the edge. */
+.app.web .sidebar-chrome {
+  padding-left: 6px;
+  justify-content: flex-start;
+}
+/* Collapsed, the toggle floats alone where the sidebar's was: a 24px
+   square 12px from the top and the edge, radius 6, its 16px Sidebar glyph
+   in the secondary ink. Collapsed for want of room, it is a control-sized
+   square (24px with a mouse, 32px on a touch screen) 8px in, its glyph
+   20px. */
+.app.web .collapsed-chrome {
+  top: 12px;
+  left: 12px;
+}
+.app.web .collapsed-chrome > .icon-button {
+  width: 24px;
+  height: 24px;
+  color: var(--text-secondary);
+}
+.app.web .collapsed-chrome > .icon-button::before {
+  inset: 0;
+  border-radius: 6px;
+}
+.app.web.sidebar-narrow .collapsed-chrome {
+  top: max(8px, env(safe-area-inset-top));
+  left: 8px;
+}
+/* The glyph's size is the icon's inline style; the original overrides its
+   chrome glyphs the same way (.df-chrome-btn span[style*=font-size]). */
+.app.web.sidebar-narrow .collapsed-chrome .app-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px !important;
+}
+@media (pointer: coarse) {
+  .app.web.sidebar-narrow .collapsed-chrome > .icon-button {
+    width: 32px;
+    height: 32px;
+  }
+  .app.web.sidebar-narrow .collapsed-chrome > .icon-button::before {
+    border-radius: 8px;
+  }
+}
+/* What sits under the floating controls moves over by their width
+   (desktop macOS: 84 + 82 = 166; web: 6 + 82 = 88). */
+.app.web.sidebar-hidden .routine-crumb {
+  padding-left: 88px;
+}
+/* A conversation's title starts 38px in, clear of the floating toggle; the
+   title row's own -1px start makes that 39px. */
+.app.web.sidebar-hidden .chat-header {
+  padding-left: 39px;
+}
+.app.web.sidebar-hidden .file-viewer[data-expanded="true"] > header,
+.app.web.sidebar-hidden .terminal-panel.expanded > header {
+  padding-left: 86px;
+}
+/* Below 720px the file viewer covers the conversation 8px in, under the
+   floating controls (artifact-narrow.css): its title starts after them. */
+@media (max-width: 719.98px) {
+  .app.web.sidebar-hidden .file-viewer > header {
+    padding-left: 80px;
+  }
+}
+/* No window buttons to leave room for at the top right. */
+.app.web .whats-new {
+  right: 21px;
+}
+.app.web.incognito-app .incognito-bar > .incognito-exit {
+  right: 8px;
+}
+
+/* An address the web app does not know (page "not-found"), in the sign-in
+   pages' style: serif heading, serif subtitle, one button. */
+.app.web .not-found-page .panel-empty {
+  min-height: 0;
+  margin: auto;
+  padding-bottom: 8vh;
+  gap: 14px;
+  color: var(--text-secondary);
+}
+.app.web .not-found-page h1 {
+  margin: 0;
+  font:
+    400 40px/48px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  letter-spacing: -0.6px;
+  color: var(--text);
+}
+.app.web .not-found-page p {
+  margin: 0 0 14px;
+  font:
+    400 16.5px/24px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+}
+.app.web .not-found-page button {
+  height: 35px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Narrow layout. At or under the collapse line, max(700px, width + 329px), the
+   sidebar is never a column: src/sidebar/sidebar-visibility.ts keeps the app
+   `sidebar-hidden` there, from the stored width, which no media query can read.
+   Above a phone's width it opens as the peek over the page (below,
+   sidebar.css); on a phone it is the sheet that covers the screen, which
+   src/App.tsx closes after a row is chosen. The slide (transform) still
+   applies. */
+@media (max-width: 639.98px) {
+  .app.web,
+  .app.web.sidebar-hidden {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+  .app.web .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 60;
+  }
+  .app.web .sidebar-resize-handle {
+    display: none;
+  }
+}
+
+/* Phone home: live 390×844 fine-pointer capture uses a 24px greeting, 15px
+   editor and 24px chin buttons; coarse pointers retain 16px/32px.
+   Header/headroom/greeting spacing comes; the composer uses the sticky bottom
+   seat. Keyboard-open and short-window transitions still need live
+   measurements. */
+@media (max-width: 639.98px) {
+  .app.web .collapsed-chrome {
+    top: max(8px, env(safe-area-inset-top));
+    left: 8px;
+  }
+  .app.web .collapsed-chrome > .icon-button {
+    width: 32px;
+    height: 32px;
+  }
+  .app.web .web-home-corner .incognito-button {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+  }
+  /* There the controls are the one 32px button (8 to 40): the file viewer's
+     title starts 8px after it. */
+  .app.web.sidebar-hidden .file-viewer > header {
+    padding-left: 40px;
+  }
+  /* The title starts right after that button (x 40) and Share stays, 19px
+     from the right, however narrow the header. */
+  .app.web.sidebar-hidden .chat-header {
+    padding-left: 40px;
+    padding-right: 19px;
+  }
+  .app.web
+    .chat-header
+    .header-actions
+    .panel-toggle.conversation-share-button {
+    display: grid;
+    place-items: center;
+  }
+  .app.web:not(.incognito-app) .chat-main.empty-chat {
+    overflow-x: hidden;
+  }
+  /* The dock has room above the microphone. Keep both its idle and
+     focused tooltip inside the viewport instead of centering it offscreen. */
+  .app.web .chat-home .dictation-tooltip {
+    top: auto;
+    bottom: calc(100% + 4px);
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+  }
+  .app.web .chat-home .dictation-tooltip[data-open="true"] {
+    transform: translateY(0);
+  }
+  .app.web .chat-main.empty-chat .chat-home {
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 32px);
+    min-height: 100dvh;
+    box-sizing: border-box;
+    position: relative;
+    padding-top: calc(var(--titlebar-height) + 10dvh + 16px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .app.web .chat-main.empty-chat .chat-home > h1 {
+    width: 100%;
+    flex: none;
+    margin: 12px 0 24px;
+    font-size: 24px;
+    line-height: 28.8px;
+    letter-spacing: normal;
+  }
+  .app.web .chat-main.empty-chat .chat-home > .composer-wrap {
+    position: sticky;
+    bottom: env(safe-area-inset-bottom, 0px);
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: 0;
+  }
+  .app.web .chat-home .composer-wrap:not(.code-composer) .composer-input-row {
+    min-height: 32px;
+    padding: 5.5px 0 5.5px 8px;
+  }
+  .app.web .chat-home .composer-input-row textarea {
+    min-height: 21px;
+    font-size: 15px;
+    line-height: 21px;
+  }
+  .app.web .chat-home .composer-chin {
+    padding-bottom: 8px;
+    min-height: 32px;
+  }
+  .app.web .chat-home .composer-wrap .composer-chin[data-place="home"] {
+    padding: 0 0 8px;
+  }
+  /* O16 shared-5:1920–1925: comfortable glyph end is composer inset
+     (8px) + 2px. Keep the permission button on that 10px trailing inset. */
+  .app.web
+    .chat-home
+    .composer-chin[data-place="home"]
+    > .composer-chin-trailing {
+    margin-right: 10px;
+  }
+  /* O16 shared-frame:4060–4125: text/icon gap4 and an end-icon -4px
+     margin inside 8px button padding. Preserve the label's 8px inset. */
+  .app.web
+    .chat-home
+    .composer-chin[data-place="home"]
+    .cowork-options
+    > button:not(.cowork-place-chosen) {
+    gap: 4px;
+    padding-inline: 8px;
+  }
+  .app.web
+    .chat-home
+    .composer-chin[data-place="home"]
+    .cowork-options
+    > button:not(.cowork-place-chosen)
+    > :is(svg, [data-cds="Icon"]):last-child {
+    margin-inline-end: -4px;
+  }
+  .app.web
+    .chat-home
+    .composer-chin[data-place="home"]
+    > :is(.composer-chin-leading, .composer-chin-trailing) {
+    flex-basis: auto;
+    flex-wrap: nowrap;
+  }
+  .app.web .chat-home .composer-chin .task-permission-trigger {
+    width: 24px;
+    padding: 0;
+    justify-content: center;
+  }
+  .app.web .task-permission-trigger > .task-permission-label {
+    display: none;
+  }
+  .app.web .task-permission-trigger > .task-permission-mobile-icon {
+    display: inline-block;
+  }
+  /* The live chin keeps its 24px row. Touch controls grow 4px above and
+     below it; a narrow fine-pointer window keeps the ordinary xs buttons. */
+  @media (pointer: coarse), (hover: none) {
+    /* The same in a project's composer. */
+    .app.web
+      :is(.chat-home, .prj-overview-composer)
+      .composer-chin
+      :is(
+        .task-permission-trigger,
+        .model-effort-pill,
+        .cowork-options > button
+      ) {
+      height: 32px;
+      margin-block: -4px;
+    }
+    .app.web
+      :is(.chat-home, .prj-overview-composer)
+      .composer-chin
+      :is(.model-effort-pill, .cowork-options > button),
+    .app.web
+      .chat-home
+      .composer-chin[data-place="home"]
+      .cowork-options
+      > button:not(.cowork-place-chosen) {
+      padding-inline: 12px;
+    }
+    .app.web
+      :is(.chat-home, .prj-overview-composer)
+      .composer-chin
+      .task-permission-trigger {
+      width: 32px;
+    }
+  }
+  @media (pointer: coarse) {
+    .app.web .chat-home .composer-wrap:not(.code-composer) .composer-input-row {
+      padding-block: 5px;
+    }
+    .app.web .chat-home .composer-input-row textarea {
+      min-height: 22px;
+      font-size: 16px;
+      line-height: 22px;
+    }
+  }
+  .app.web .has-conversation .conversation-composer {
+    width: calc(100% - 32px);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* One 11px line under the composer, the model pill at its right edge. */
+  .app.web .conversation-footer {
+    gap: 8px;
+    padding: 12px 0 0;
+  }
+  .app.web .composer-wrap.conversation-composer .conversation-disclaimer {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 17px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .app.web .conversation-footer > :last-child {
+    flex: none;
+  }
+  /* The sidebar covers the whole screen, its rows 44px high for a finger, with
+     no scrim behind it. */
+  .app.web .sidebar {
+    width: 100%;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+    border-right: 0;
+  }
+  /* Current top-search branch: a 44px head and a separate Search row 8px below
+     it. */
+  .app.web .sidebar-chrome.web-sidebar-head {
+    height: 44px;
+    padding-left: 8px;
+  }
+  .app.web .web-sidebar-head > .icon-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+  .app.web .web-sidebar-head > .icon-button::before {
+    border-radius: 8px;
+  }
+  .app.web .web-sidebar-head > .web-sidebar-title {
+    margin-left: 8px;
+  }
+  .app.web .sidebar-body {
+    padding-top: 8px;
+  }
+  .app.web .sidebar .main-nav .nav-item,
+  .app.web .sidebar .main-nav-more > button,
+  .app.web .sidebar .conversation-row {
+    height: 44px;
+    min-height: 44px;
+  }
+  /* Search heads the sheet; the account row's search icon goes. */
+  .app.web .sidebar .web-sidebar-search {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    height: 40px;
+    margin: 0 0 4px;
+    padding: 0 16px;
+    border-radius: 10px;
+    background: rgb(255 255 255 / 10%);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 22px;
+  }
+  .app.web .sidebar .web-sidebar-search .app-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: -4px;
+  }
+  .app.web .sidebar .web-sidebar-search > kbd {
+    display: none;
+  }
+  :root[data-theme="light"] .app.web .sidebar .web-sidebar-search {
+    background: rgb(0 0 0 / 5%);
+    color: #0b0b0b;
+  }
+  .app.web .profile-wrap > .account-search {
+    display: none;
+  }
+}
+/* Dialogs keep 16px from the window's edges at every width and may grow to the
+   window's height less that margin and twice the larger safe area (live Its
+   Dialog is `w-[calc(100vw-2rem)]` with `max-h-[calc(100dvh - 2rem - 2 *
+   max(safe-area top, safe-area bottom))]`). :where() keeps the weight of the base
+   rules, so a dialog's own size (import, memory, create-skill) still wins; the
+   Sheet dialogs keep their captured 720px cap inside the 16px margin. */
+:where(:root[data-surface="web"]) .overlay,
+:where(:root[data-surface="web"]) .sheet-overlay {
+  padding: 16px;
+}
+:where(:root[data-surface="web"]) .modal {
+  max-height: calc(
+    100dvh - 32px - 2 *
+      max(env(safe-area-inset-top), env(safe-area-inset-bottom))
+  );
+}
+
+/* Below 640px a dialog's buttons stack, the main one on top, each as wide as
+   the dialog and 8px apart; a confirmation already did
+   (80-dialogs-responsive.css). */
+@media (max-width: 639.98px) {
+  :root[data-surface="web"] .modal > .button-row,
+  :root[data-surface="web"] .modal form > .button-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  :root[data-surface="web"] .modal > .button-row > button,
+  :root[data-surface="web"] .modal form > .button-row > button {
+    width: 100%;
+  }
+}
+
+/* Below 768px the Chat transcript is 20px from each side and centred, and a
+   reply's text runs to its right edge. The desktop's measured 4px centring
+   offset and the text stop short of the right edge (live-web/transcript.css,
+   clamp(0, (width - 384px) * .175, 56px)) are for wide windows. */
+@media (max-width: 767.98px) {
+  .app.web.mode-chat .chat-layout {
+    padding-left: 0;
+  }
+  .app.web.mode-chat .messages,
+  .app.web.mode-chat:not(.sidebar-hidden) .messages {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  /* The live column sits 8px in from the sidebar and runs to the window's edge
+     (overlay scrollbar): at 740 wide its text is 316..720 and the composer
+     304..732 (8px inside the dock's 296..740). Here the transcript keeps an 8px
+     scrollbar gutter on each side, so its text stops 12px from the gutter, and
+     the composer takes 16px on the left and 8 on the right. */
+  .app.web.mode-chat .has-conversation .messages {
+    padding-right: 12px;
+  }
+  .app.web.mode-chat:not(.mobile-conversation)
+    .has-conversation
+    > .conversation-composer {
+    width: calc(100% - 24px);
+    margin: 0 8px 0 16px;
+  }
+  .app.web.mode-chat:not(.sidebar-hidden) .has-conversation > .chat-composer {
+    translate: none;
+  }
+  .app.web.mode-chat .markdown :is(p, h1, h2, h3, h4, h5, h6),
+  .app.web.mode-chat .markdown :is(ul, ol),
+  .app.web.mode-chat .markdown blockquote {
+    padding-right: 0;
+  }
+}
+/* Wider than a phone, search stays the account row's icon. */
+.web-sidebar-search {
+  display: none;
+}
+/* The phone sheet slides in from the left and back out over the live claude.ai
+   bundle's sheet duration and ease-out; reduced motion keeps sidebar.css's
+   jump. */
+@media (max-width: 639.98px) and (prefers-reduced-motion: no-preference) {
+  :root:not([data-motion="reduced"]) .app.web .sidebar {
+    transition:
+      transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1),
+      visibility 0s;
+  }
+  :root:not([data-motion="reduced"]) .app.web.sidebar-hidden .sidebar {
+    transition:
+      transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1),
+      visibility 0s linear 0.3s;
+  }
+}
+/* No hover on a touch screen: the open row's ⋮ and a code block's copy
+   button stay in view. */
+@media (hover: none) {
+  .app.web .conversation-row.selected .row-more,
+  .mode-chat .code-block .code-bar > div {
+    opacity: 1;
+  }
+}
+
+/* claude.ai's light theme, from the live web page: page #fcfcfb, primary text
+   #0b0b0b, secondary #52514e, muted #898781. The light values in the foundation
+   and sidebar sheets come from the desktop app's own capture and sit a shade
+   off these. */
+:root[data-surface="web"][data-theme="light"] {
+  --bg: #fcfcfb;
+  --text: #0b0b0b;
+  --text-strong: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+}
+/* R17 official dframe-sidebar: 0.5px solid ink at10%, on #fbfbf9. */
+:root[data-surface="web"][data-theme="light"] .app.web .sidebar {
+  border-right: 0.5px solid rgb(11 11 11 / 10%);
+}
+:root[data-surface="web"][data-theme="light"] .sidebar-chrome > .icon-button,
+:root[data-surface="web"][data-theme="light"] .collapsed-chrome > .icon-button,
+:root[data-surface="web"][data-theme="light"] .main-nav .nav-item,
+:root[data-surface="web"][data-theme="light"] .main-nav svg,
+:root[data-surface="web"][data-theme="light"] .conversation-link,
+:root[data-surface="web"][data-theme="light"] .section-label > div > button,
+:root[data-surface="web"][data-theme="light"] .row-more,
+:root[data-surface="web"][data-theme="light"] .profile > span:nth-child(2) {
+  color: #52514e;
+}
+:root[data-surface="web"][data-theme="light"] .main-nav .nav-item.current,
+:root[data-surface="web"][data-theme="light"] .main-nav .nav-item.current svg,
+:root[data-surface="web"][data-theme="light"] .selected .conversation-link,
+:root[data-surface="web"][data-theme="light"]
+  .multi-selected
+  .conversation-link,
+:root[data-surface="web"][data-theme="light"] .row-more:hover,
+:root[data-surface="web"][data-theme="light"] .conversation-rename {
+  color: #0b0b0b;
+}
+:root[data-surface="web"][data-theme="light"] .main-nav-more > button,
+:root[data-surface="web"][data-theme="light"] .main-nav-more > button svg,
+:root[data-surface="web"][data-theme="light"] .section-label,
+:root[data-surface="web"][data-theme="light"] .section-toggle > svg,
+:root[data-surface="web"][data-theme="light"] .group-toggle > svg,
+:root[data-surface="web"][data-theme="light"] .profile small,
+:root[data-surface="web"][data-theme="light"] .profile > .app-icon {
+  color: #898781;
+}
+/* Under the pointer a heading lifts from the muted to the secondary ink. */
+@media (hover: hover) {
+  :root[data-surface="web"][data-theme="light"] .section-label:hover {
+    color: var(--text-secondary);
+  }
+}
+:root[data-surface="web"][data-theme="light"] .surface-switch {
+  background: var(--cds-segmented-control-track);
+}
+:root[data-surface="web"][data-theme="light"] .profile .avatar {
+  background: #0a0a0a1a;
+  color: #0b0b0b;
+}
+:root[data-surface="web"][data-theme="light"]
+  .chat-home
+  .model-effort-pill
+  .model-button-effort {
+  color: #898781;
+}
+
+/* Keep unverified shortcut hints hidden. The current sidebar-field branch and
+   command palette show these working shortcuts in the live web UI, and the
+   prompt history's header names its keys (up, down, esc) in the shared
+   composer; :where keeps this rule's specificity for the overrides written
+   against it. */
+:root[data-surface="web"]
+  kbd:not(.markdown kbd):not(.main-nav kbd):not(.web-sidebar-search kbd):not(
+    .search-palette kbd
+  ):not(.search-palette-modes kbd):not(:where(.composer-history-hint kbd)) {
+  display: none !important;
+}
+
+/* The conversation title: a 28px button 8px from the sidebar, radius 7, the
+   title 14/20 at 400 in #f0efec 10px in; the 16px caret 8px after it and 6px
+   from the end (there a second 28px button, here one). */
+:root[data-surface="web"] .chat-header .thread-title {
+  gap: 8px;
+  margin: 0 -6px 0 -9px;
+  padding: 0 6px 0 10px;
+  border-radius: 7px;
+  font-weight: 400;
+  line-height: 20px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .chat-header .thread-title {
+  color: #f0efec;
+}
+:root[data-surface="web"] .chat-header .thread-title > .app-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/*
+ * A tool panel on a phone (Progress, Plan, an Agent's transcript, …): beside
+ * the conversation it got min(313px, 100% − 360px), 15px of a 375px screen, so
+ * a Cowork task's "Updated tasks ›" opened nothing visible. It is the file
+ * viewer's sheet instead: the lower three quarters of the screen, the
+ * conversation dimmed and in place above it, a tap there or a drag down closes
+ * it (ToolPanelHost). [class] outweighs the panels' own lazily loaded rules
+ * (progress-panel.css).
+ */
+@media (max-width: 639.98px) {
+  .app.web .workspace > .chat-layout > .work-panel[class] {
+    position: fixed;
+    inset: 25dvh 0 0;
+    width: auto;
+    max-height: none;
+    padding-top: 12px;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+    border-width: 1px 0 0;
+    border-radius: 11px 11px 0 0;
+    overflow: auto;
+    box-shadow: 0 0 0 100vmax rgb(0 0 0 / calc(50% * var(--sheet-dim, 1)));
+  }
+  .app.web .workspace > .chat-layout > .work-panel[class]::before {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    inset: 0 0 auto;
+    height: 25dvh;
+  }
+  .app.web .workspace > .chat-layout > .work-panel[class]::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(50% - 18px);
+    width: 36px;
+    height: 5px;
+    border-radius: 2.5px;
+    background: rgb(235 235 245 / 30%);
+  }
+  :root[data-theme="light"]
+    .app.web
+    .workspace
+    > .chat-layout
+    > .work-panel[class]::after {
+    background: rgb(60 60 67 / 30%);
+  }
+  .app.web .workspace:has(> .chat-layout > .work-panel) > .chat-header,
+  .app.web .workspace > .chat-layout:has(> .work-panel) > .chat-main {
+    margin-right: 0;
+  }
+}

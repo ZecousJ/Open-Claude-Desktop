@@ -1,0 +1,16 @@
+# Official Maven Central coordinates and SHA-256 of the exact tested bytes
+org.jetbrains.kotlin	kotlin-compiler-embeddable	2.2.20	1c6c3f810bfe6a41abcbc34b3a2ef639f1e3f4aeed3a953a4b0974eea4f41889
+org.jetbrains.kotlin	kotlin-stdlib	2.2.20	8836ccffd3585fadda9901244b20d42901d2f3cd581058d8434e2ffabcf3a3e7
+org.jetbrains.kotlin	kotlin-script-runtime	2.2.20	5c8bd5dd7ae1ea2eeb2778fdbeaa19a562184975f6cab8a0bb6779e4190731ae
+org.jetbrains.kotlin	kotlin-reflect	1.6.10	3277ac102ae17aad10a55abec75ff5696c8d109790396434b496e75087854203
+org.jetbrains.kotlin	kotlin-daemon-embeddable	2.2.20	7c5c8cd2f8beadd3283239bb9ca219a0cafa1af02682b407b181e1179718f2f7
+org.jetbrains.kotlinx	kotlinx-coroutines-core-jvm	1.10.1	069c5988633230e074ec0d39321ec3cdaa4547c49e90ba936c63d8fc91c8c00d
+org.jetbrains.kotlinx	kotlinx-coroutines-test-jvm	1.10.1	ac3f456c9e25c3fc01542dc208655d0583cd37b5f72c35856267b74bd1664ab6
+org.jetbrains	annotations	23.0.0	7b0f19724082cbfcbc66e5abea2b9bc92cf08a1ea11e191933ed43801eb3cd05
+org.jetbrains.kotlin	kotlin-test	2.2.20	0054c51c672512a918440703e35ea946a8e7a210872f2196dbd6b9f2959198b0
+org.jetbrains.kotlin	kotlin-test-junit	2.2.20	6842753b11a1544198f4a14b0f8820728327939b859c23c50b5fd4179c693900
+junit	junit	4.13.2	8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3
+org.hamcrest	hamcrest-core	1.3	66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9
+com.squareup.okhttp3	okhttp	4.12.0	b1050081b14bb7a3a7e55a4d3ef01b5dcfabc453b4573a4fc019767191d5f4e0
+com.squareup.okio	okio-jvm	3.6.0	67543f0736fc422ae927ed0e504b98bc5e269fda0d3500579337cb713da28412
+org.json	json	20240303	3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed

@@ -1,0 +1,48 @@
+/* Web Code's current combined Model/Effort menu. Loaded with the popup;
+   native and running-session menus keep their existing branch. */
+.code-session-model-heading {
+  padding: 0 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 24px;
+}
+.code-session-model-menu button > small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.code-session-effort {
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: 0;
+  border: 0;
+  background: #20201f;
+  font-size: 13px;
+  line-height: 19px;
+}
+.code-session-effort-body {
+  padding: 4px;
+  border-bottom: 1px solid transparent;
+}
+.code-session-effort p {
+  margin: 0;
+  padding: 4px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+  white-space: normal;
+}
+.code-session-effort button {
+  padding: 2.5px 8px;
+}
+.code-session-effort button > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.code-session-effort button small {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+:root[data-theme="light"] .code-session-effort {
+  background: #fffefa;
+}

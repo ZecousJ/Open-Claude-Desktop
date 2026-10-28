@@ -1,0 +1,269 @@
+/*
+ * Share chat / Share session (R1-U1). Measured from R-Code-会话分享弹层-稳定态-深色.png
+ * (2x, ÷2): a 512-wide dialog, 20px in, radius 12, #202020 with a #363636
+ * border; 50px option rows 3px apart, the chosen one #414141; the note 13px
+ * #8f8f8f; the repository warning #2d1b03 with a #443111 border and #cc9c5e
+ * text. Light values, the public link row, the stale line and the stop
+ * confirmation have no capture.
+ */
+.modal:has(> .conversation-share) {
+  width: 512px;
+  padding: 13px 20px 19px;
+  border-radius: 12px;
+  background: var(--surface);
+  border-color: #363636;
+}
+.modal:has(> .conversation-share) > header {
+  margin: 0 -7px 0 0;
+}
+/* "Share session" 131 wide → 20px. */
+.modal:has(> .conversation-share) h2 {
+  font-size: 20px;
+}
+.modal:has(> .conversation-share) > header .icon-button {
+  width: 24px;
+  height: 24px;
+  color: var(--text);
+}
+.conversation-share {
+  --share-title: #f5f5f3;
+  --share-secondary: #c8c8c4;
+  --share-muted: #8f8f8f;
+  --share-selected: #414141;
+  --share-hover: rgb(255 255 255 / 5%);
+  --share-blue: #4f7ac4;
+  --share-link: #80a8e0;
+  --share-warning-bg: #2d1b03;
+  --share-warning-border: #443111;
+  --share-warning-text: #cc9c5e;
+  font-size: 13px;
+}
+:root[data-theme="light"] .modal:has(> .conversation-share) {
+  background: var(--surface-raised);
+  border-color: var(--border-strong);
+}
+:root[data-theme="light"]
+  .modal:has(> .conversation-share)
+  > header
+  .icon-button {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .conversation-share {
+  --share-title: var(--text-strong);
+  --share-secondary: var(--text-secondary);
+  --share-muted: var(--text-muted);
+  --share-selected: var(--surface-selected);
+  --share-hover: var(--surface-hover);
+  --share-blue: #2f6bc4;
+  --share-link: #2f6bc4;
+  --share-warning-bg: #fbf1e1;
+  --share-warning-border: #ecd3a8;
+  --share-warning-text: #8a5a14;
+}
+.share-subtitle {
+  margin: 3px 0 7px;
+  color: var(--share-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.share-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  height: 50px;
+  padding: 0 6px 0 7px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--share-title);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+.share-option:hover:not([aria-disabled="true"]):not(.selected) {
+  background: var(--share-hover);
+}
+.share-option.selected {
+  background: var(--share-selected);
+  cursor: default;
+}
+.share-option[aria-disabled="true"] {
+  cursor: default;
+}
+.share-option:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -2px;
+}
+.share-option-icon {
+  display: flex;
+  justify-content: center;
+  width: 14px;
+  color: #8c8c8a;
+}
+.share-option-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 19px;
+}
+.share-option-title {
+  color: var(--share-title);
+  font-weight: 500;
+}
+.share-option-description {
+  color: var(--share-secondary);
+}
+.share-option-check {
+  flex: none;
+  color: var(--share-blue);
+}
+/* While the link is read, both rows fade. */
+.share-options.loading .share-option-text,
+.share-options.loading .share-option-icon,
+.share-option[aria-disabled="true"]:not(.selected) .share-option-text,
+.share-option[aria-disabled="true"]:not(.selected) .share-option-icon {
+  opacity: 0.55;
+}
+.share-options.loading .share-option-check {
+  opacity: 0.55;
+}
+.share-note {
+  margin: 16px 0 0;
+  color: var(--share-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+.share-note a {
+  color: var(--share-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.share-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 7px 12px;
+  border: 1px solid var(--share-warning-border);
+  border-radius: 8px;
+  background: var(--share-warning-bg);
+  color: var(--share-warning-text);
+  font-size: 13px;
+  line-height: 19px;
+}
+.share-warning > svg {
+  flex: none;
+  margin-top: 2px;
+}
+/* The public link: a rounded alpha-1 bar, the link as text that opens in a new
+   tab (its arrow shows on hover or focus) and Copy link, an xxs button. */
+.share-link {
+  margin-top: 12px;
+}
+.share-link-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 4px 4px 8px;
+  border-radius: 5px;
+  background: var(--alpha-1);
+}
+.share-link-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 3px;
+  color: var(--share-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: start;
+}
+.share-link-open > span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.share-link-open > svg {
+  flex: none;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+.share-link-open:hover,
+.share-link-open:focus-visible {
+  color: var(--share-title);
+}
+.share-link-open:hover > svg,
+.share-link-open:focus-visible > svg {
+  opacity: 1;
+}
+.share-copy {
+  flex: none;
+  min-height: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.share-copy:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+.share-stale {
+  margin: 0 0 8px;
+  color: var(--share-muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+.share-text-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--share-link);
+  font: inherit;
+  cursor: pointer;
+}
+.share-text-button:hover {
+  text-decoration: underline;
+}
+.share-confirm {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+.share-confirm > p {
+  margin: 0 0 10px;
+  color: var(--share-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.share-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.share-confirm-actions > button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.share-error {
+  margin: 12px 0 0;
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 18px;
+}

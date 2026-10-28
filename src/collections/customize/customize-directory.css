@@ -1,0 +1,659 @@
+/*
+ * Customize → Discover's directory: 15px section heads with "Show all →" on the
+ * right, 32px above a head; the cards are the Discover cards above them;
+ * categories are 84px cards (three columns wide, two narrow) with a 56px tile,
+ * a 15px label and the grey count on the right. Show all pages: "← Skills" over
+ * the title in the Customize title's serif, and 66px rows with a category badge
+ * and a framed Add.
+ */
+.customize-directory-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 32px 0 0;
+}
+.customize-directory-head > h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+  color: var(--text);
+}
+/* "Show all" 52px wide, then a 12×12 arrow 10px on, its ink ending 5px inside
+   the column's edge; R-1132's hover pill (28 tall) ends 5px outside the column,
+   10px past the arrow. */
+.customize-directory-head > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  margin-right: -5px;
+  padding: 0 7px 0 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #e6e6e3;
+}
+.customize-directory-head > button:hover {
+  background: var(--fill-ghost-hover);
+}
+.customize-flip {
+  transform: rotate(180deg);
+}
+.customize-directory-cards {
+  margin-top: 16px;
+}
+/* The + the original shows, drawn but not pressable. */
+.customize-cards .customize-card-unavailable {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  padding: 0;
+  background: none;
+}
+.customize-card-unavailable > button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: var(--text);
+}
+.customize-card-unavailable > button:disabled,
+.customize-unavailable > button:disabled {
+  opacity: var(--opacity-disabled);
+}
+.customize-categories {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.customize-categories button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 84px;
+  box-sizing: border-box;
+  padding: 13px 16px 13px 13px;
+  border: 1px solid #2c2c2c;
+  border-radius: 12px;
+  text-align: left;
+  color: inherit;
+}
+.customize-categories button:hover {
+  border-color: #3a3a3a;
+  background: #1b1b1b;
+}
+/* Directory cards (Discover's and the categories): on hover the rim takes the
+   strong border colour and a soft 20px shadow (4% black) lifts the card, both
+   easing in over 150ms. The fill itself steps at once, as the original's card
+   fill does; only the press springs back. */
+.customize-cards > li > .customize-card,
+.customize-categories > li > button {
+  transition:
+    border-color 150ms var(--ease-standard),
+    box-shadow 150ms var(--ease-standard),
+    var(--press-release);
+}
+.customize-cards > li > .customize-card:hover,
+.customize-categories > li > button:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 20px 0 rgb(0 0 0 / 4%);
+}
+.customize-category-tile {
+  display: grid;
+  flex: 0 0 56px;
+  place-items: center;
+  height: 56px;
+  border-radius: 10px;
+  background: #0b0b0b;
+  color: #e6e6e3;
+}
+.customize-categories span:not(.customize-category-tile) {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+}
+.customize-categories small {
+  font-size: 13px;
+  color: #8f8f8c;
+}
+@media (max-width: 900px) {
+  .customize-categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.customize-listing-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 0;
+  font-size: 14px;
+  color: #e6e6e3;
+}
+.customize-listing > .customize-title {
+  margin-top: 12px;
+}
+.customize-directory-rows {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.customize-directory-rows > li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.customize-directory-rows > li > button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+}
+.customize-directory-rows .customize-row-tile {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  height: 36px;
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+}
+.customize-directory-row-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.customize-directory-row-text > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.customize-directory-row-text strong {
+  font-size: 15px;
+  font-weight: 500;
+}
+.customize-directory-row-text em {
+  padding: 0 6px;
+  border-radius: 5px;
+  background: #2a2a2a;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 18px;
+  color: #bcbcb9;
+}
+.customize-directory-row-text small {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8f8f8c;
+}
+.customize-unavailable > button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+.customize-feature .customize-unavailable > button {
+  border: 0;
+  background: #fff;
+  color: #0b0b0b;
+}
+
+/* Light. */
+:root[data-theme="light"] .customize-directory-head > h3 {
+  color: #141413;
+}
+:root[data-theme="light"] .customize-directory-head > button,
+:root[data-theme="light"] .customize-listing-back {
+  color: #141413;
+}
+
+:root[data-theme="light"] .customize-card-unavailable > button,
+:root[data-theme="light"] .customize-unavailable > button,
+:root[data-theme="light"] .customize-directory-rows .customize-row-tile {
+  border-color: #e3e3e1;
+  background: #fff;
+  color: #141413;
+}
+:root[data-theme="light"] .customize-feature .customize-unavailable > button {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .customize-categories button {
+  border-color: #e3e3e1;
+}
+:root[data-theme="light"] .customize-categories button:hover {
+  background: #f7f7f5;
+}
+:root[data-theme="light"] .customize-category-tile {
+  background: #efefed;
+  color: #141413;
+}
+:root[data-theme="light"] .customize-directory-rows > li {
+  border-color: #ececea;
+}
+:root[data-theme="light"] .customize-directory-row-text em {
+  background: #f0f0ee;
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .customize-directory-row-text small,
+:root[data-theme="light"] .customize-categories small {
+  color: #6b6a66;
+}
+/*
+ * Discover's search state: gap-lg, px-md py-xl, max-w-xs text-body
+ * text-secondary.
+ */
+.customize-nothing {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 8px;
+  text-align: center;
+}
+.customize-nothing svg {
+  stroke: #d5d4d0;
+  stroke-width: 2.2;
+}
+.customize-nothing .lens {
+  fill: #3a3a38;
+}
+.customize-nothing p {
+  margin: 0;
+  max-width: 20rem;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+  text-wrap: pretty;
+}
+.customize-nothing span {
+  display: block;
+}
+.customize-table .customize-none strong {
+  display: block;
+  color: var(--text);
+  font-weight: 500;
+}
+.customize-table .customize-none span {
+  display: block;
+  margin-top: 2px;
+}
+.customize-load-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin-top: 25px;
+  padding: 6px 10px 6px 17px;
+  border: 1px solid #6a3a37;
+  border-radius: 10px;
+  background: #3a2422;
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 20px;
+}
+.customize-load-error > span {
+  flex: 1;
+}
+.customize-load-error > button {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #6a3a37;
+  color: var(--text);
+  font-size: 13px;
+}
+.customize-load-error > button:hover {
+  background: rgb(127 127 127 / 14%);
+}
+:root[data-theme="light"] .customize-nothing svg {
+  stroke: #141413;
+}
+:root[data-theme="light"] .customize-nothing .lens {
+  fill: #e9e8e4;
+}
+:root[data-theme="light"] .customize-table .customize-none strong {
+  color: #141413;
+}
+:root[data-theme="light"] .customize-nothing p {
+  color: #52514e;
+}
+:root[data-theme="light"] .customize-load-error {
+  border-color: #cda2a9;
+  background: #fad6d6;
+  color: #7a2a2d;
+}
+:root[data-theme="light"] .customize-load-error > button {
+  box-shadow: inset 0 0 0 1px #cda2a9;
+  color: #141413;
+}
+
+/* 2026-10-16 Customize Discover; scope to these rows so Settings cards keep
+   their established contract. The root uses a 14px base, so measurements
+   from the live capture are expressed in physical pixels here. */
+.customize-directory-head > button {
+  min-width: 93px;
+  justify-content: center;
+  border-radius: 7px;
+  color: var(--text);
+  line-height: 20px;
+}
+.customize-directory-head > h2 {
+  margin: 0;
+  color: #f0efec;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.customize-catalogue-cards.customize-cards {
+  --customize-card-ring: rgb(255 255 255 / 10%);
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+}
+.customize-catalogue-cards.customize-cards .customize-card {
+  min-height: 105px;
+  height: 100%;
+  padding: 14px 126px 14px 14px;
+  border: 0;
+  border-radius: 11px;
+  gap: 12px;
+  box-shadow: inset 0 0 0 1px var(--customize-card-ring);
+}
+.customize-catalogue-cards.customize-cards .customize-card:hover {
+  border-color: transparent;
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 1px var(--customize-card-ring);
+}
+.customize-catalogue-cards .customize-card-tile {
+  flex-basis: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0b0b0b;
+  color: var(--text-muted);
+}
+:root[data-theme="light"] .customize-catalogue-cards.customize-cards {
+  --customize-card-ring: rgb(0 0 0 / 10%);
+}
+:root[data-theme="light"] .customize-catalogue-cards .customize-card-tile {
+  background: #fff;
+}
+.customize-catalogue-cards .customize-card-text strong {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.customize-catalogue-cards .customize-card-description {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-secondary);
+}
+.customize-catalogue-cards .customize-card-text small {
+  margin-top: 2px;
+  color: #898781;
+  font-size: 13px;
+  line-height: 16px;
+}
+/* Try and +: 28px secondary buttons (white 10%) 12px apart; Try 10px in with
+   its 20px Chat glyph 6px before the 14/20 word. */
+.customize-catalogue-actions {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.customize-catalogue-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0;
+  border-radius: 7px;
+  background: var(--alpha-2);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+.customize-catalogue-actions > .customize-catalogue-try {
+  padding: 0 10px;
+}
+/* Its leading glyph sits 4px into the padding, as the original's. */
+.customize-catalogue-actions > .customize-catalogue-try > .app-icon {
+  margin-inline-start: -4px;
+}
+.customize-catalogue-actions > .customize-catalogue-add {
+  width: 28px;
+}
+/* Live Customize at 390px: below the phone width Try is a 28×28 icon and the
+   two actions sit 12px apart (gap-sm). */
+@media (max-width: 639.98px) {
+  .customize-catalogue-actions > .customize-catalogue-try {
+    width: 28px;
+    padding: 0;
+  }
+  .customize-catalogue-try-label {
+    display: none;
+  }
+  /* The text keeps the actions' 68px plus the 12px gap clear. */
+  .customize-catalogue-cards.customize-cards .customize-card {
+    padding-right: 94px;
+  }
+}
+.customize-catalogue-actions > button:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+.customize-catalogue-actions > button:disabled {
+  opacity: var(--opacity-disabled);
+}
+.customize-connector-directory .customize-connector-shelf-head h2 {
+  color: var(--text);
+}
+.customize-connector-directory .customize-connector-shelf-head h2 > span {
+  background: rgb(255 255 255 / 5%);
+  color: #c3c2b7;
+}
+.customize-connector-directory
+  .customize-connector-shelf-head
+  > .settings-button {
+  height: 28px;
+  min-width: 93px;
+  background: transparent;
+  box-shadow: none;
+  color: #f0efec;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* O16 ho: min264, py6/px6, gap6 and rounded-card. The content sets
+   the final height: a 70px two-member strip gives 279px; one83 gives292. */
+.customize-connector-featured .connector-featured-slide {
+  min-height: 264px;
+  padding: 24px;
+  gap: 24px;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+.customize-connector-featured-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.customize-connector-featured .connector-featured-slide h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 400;
+}
+.customize-connector-featured .connector-featured-slide p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.customize-connector-featured .connector-featured-slide small {
+  color: #898781;
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+.customize-connector-featured-cluster {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.customize-connector-featured-carousel .customize-connector-featured-cluster {
+  padding: 0 40px;
+}
+.customize-connector-featured-cluster > span {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #1a1a19;
+  color: #898781;
+}
+:root[data-theme="light"] .customize-connector-featured-cluster > span {
+  background: #fff;
+}
+.customize-connector-featured-cluster img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.customize-connector-featured .directory-outline-button {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.customize-connector-featured-carousel {
+  gap: 16px;
+}
+.customize-connector-featured-carousel .connector-featured-previous,
+.customize-connector-featured-carousel .connector-featured-next {
+  width: 40px;
+  height: 40px;
+}
+/* O16 shared-frame JQ/YH onContent: blurred fill, transparent dark ring. */
+.customize-connector-featured .directory-outline-button,
+.customize-connector-featured-carousel .connector-featured-previous,
+.customize-connector-featured-carousel .connector-featured-next {
+  border: 0;
+  background: rgb(0 0 0 / 55%);
+  box-shadow: inset 0 0 0 1px transparent;
+  backdrop-filter: blur(12px);
+  color: var(--text);
+}
+.customize-connector-featured .directory-outline-button:hover,
+.customize-connector-featured-carousel .connector-featured-previous:hover,
+.customize-connector-featured-carousel .connector-featured-next:hover {
+  background: rgb(0 0 0 / 65%);
+}
+:root[data-theme="light"]
+  .customize-connector-featured
+  .directory-outline-button,
+:root[data-theme="light"]
+  .customize-connector-featured-carousel
+  .connector-featured-previous,
+:root[data-theme="light"]
+  .customize-connector-featured-carousel
+  .connector-featured-next {
+  background: rgb(255 255 255 / 60%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 35%);
+}
+:root[data-theme="light"]
+  .customize-connector-featured
+  .directory-outline-button:hover,
+:root[data-theme="light"]
+  .customize-connector-featured-carousel
+  .connector-featured-previous:hover,
+:root[data-theme="light"]
+  .customize-connector-featured-carousel
+  .connector-featured-next:hover {
+  background: rgb(255 255 255 / 70%);
+}
+.customize-connector-featured-carousel .connector-featured-dots {
+  gap: 8px;
+}
+.customize-connector-featured-carousel .connector-featured-dots button {
+  width: 8px;
+  height: 8px;
+}
+.customize-connector-featured-carousel
+  .connector-featured-dots
+  button[aria-current] {
+  width: 32px;
+}
+:root[data-theme="light"]
+  .customize-catalogue-cards
+  .customize-card-text
+  strong,
+:root[data-theme="light"]
+  .customize-connector-directory
+  .customize-connector-shelf-head
+  h2,
+:root[data-theme="light"]
+  .customize-connector-featured
+  .connector-featured-slide
+  h2 {
+  color: var(--text);
+}
+:root[data-theme="light"]
+  .customize-catalogue-cards
+  .customize-card-description,
+:root[data-theme="light"]
+  .customize-connector-featured
+  .connector-featured-slide
+  p {
+  color: var(--text-secondary);
+}
+
+/* Discover's loading cards (PluginsBody DiscoverSkeleton): the cards' own
+   frame and tile, the bars 4px apart. */
+.customize-discover-skeleton {
+  display: block;
+  margin-top: 8px;
+}
+.customize-discover-skeleton .customize-card-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.customize-discover-skeleton .customize-card-tile-sk {
+  flex: none;
+  border-radius: 8px;
+}

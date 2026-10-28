@@ -1,0 +1,317 @@
+/* Review threads in the Changes panel: px-md py-xs around a card with a rounded
+   (6px) border in the border colour, surface-3 behind and shadow-sm; the head
+   row min-h-7 (28px) with gap-1.5 at px-md pt-1, the author in body-medium
+   (13/19, 500), "Line N" in footnote (12/15) muted; segments at px-md pb-1.25
+   pt-xs; the foot border-top at px-sm py-xs. */
+.review-thread-wrap {
+  padding: 4px 8px;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+  white-space: normal;
+}
+.review-thread {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  background: #20201f;
+  box-shadow:
+    0 1px 2px 0 rgb(11 11 11 / 6%),
+    0 2px 8px 0 #0000003d;
+  color: var(--text);
+}
+.review-thread-folded {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 8px;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.review-thread-folded:hover {
+  background-color: color-mix(in srgb, #20201f, white 7.5%);
+}
+.review-thread-folded > svg {
+  flex-shrink: 0;
+  color: #898781;
+}
+.review-thread-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 8px 0;
+}
+.review-thread-author {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+  text-decoration: none;
+}
+.review-thread-author span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-thread-author:hover span {
+  text-decoration: underline;
+}
+.review-thread-author img {
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+.review-thread-line {
+  flex-shrink: 0;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+}
+.review-thread-summary {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-thread-tools {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+.review-thread-badge {
+  flex-shrink: 0;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+.review-thread-icon {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.review-thread-icon:hover:not(:disabled),
+.review-thread-ghost:hover:not(:disabled) {
+  background: rgb(255 255 255 / 7.5%);
+}
+.review-thread-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 8px 5px;
+}
+.review-thread-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 19px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.review-thread-reply {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+.review-thread-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 6px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+.review-thread-actions-row {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  align-items: center;
+  gap: 4px;
+}
+.review-thread-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.review-thread-error {
+  min-width: 0;
+  padding: 0 4px;
+  color: #ec7e7e;
+  font-size: 12px;
+  line-height: 15px;
+  overflow-wrap: anywhere;
+}
+.review-thread-ghost {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.review-thread-send,
+.review-thread-primary {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  font-size: 13px;
+}
+.review-thread-replybox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 3px;
+}
+.review-thread-replybox textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 19px;
+  outline: none;
+  resize: vertical;
+}
+.review-thread-replybox textarea::placeholder {
+  color: #898781;
+}
+/* "Suggested change": a rounded bordered box, its head bg-alpha-1 px-sm
+   py-0.75 in footnote muted with the GitDiff glyph. */
+.review-suggestion {
+  overflow: clip;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+}
+.review-suggestion-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 5%);
+  color: #898781;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 15px;
+}
+/* The suggestion's rows carry no line numbers. */
+.review-suggestion .diff-gutter {
+  display: none;
+}
+.review-suggestion .diff-code {
+  font-family:
+    var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.review-suggestion-end {
+  margin-left: auto;
+}
+.review-suggestion-head .review-thread-ghost {
+  height: 22px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+:root[data-theme="light"] .review-thread {
+  border-color: rgb(11 11 11 / 10%);
+  background: #fff;
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .review-thread-folded:hover {
+  background-color: color-mix(in srgb, #fff, #0b0b0b 5%);
+}
+:root[data-theme="light"] .review-thread-badge {
+  background: rgb(11 11 11 / 5%);
+  color: #52514e;
+}
+:root[data-theme="light"] .review-thread-icon {
+  color: #52514e;
+}
+:root[data-theme="light"] .review-thread-icon:hover:not(:disabled),
+:root[data-theme="light"] .review-thread-ghost:hover:not(:disabled) {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .review-thread-ghost,
+:root[data-theme="light"] .review-thread-replybox textarea {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .review-thread-reply,
+:root[data-theme="light"] .review-thread-foot,
+:root[data-theme="light"] .review-thread-replybox textarea,
+:root[data-theme="light"] .review-suggestion,
+:root[data-theme="light"] .review-suggestion-head {
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .review-suggestion-head {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .review-thread-error {
+  color: #8e2626;
+}
+/* A review finding: body px-md pt-xs, pb-1.25 above the foot (pb-md without
+   one); the detail muted; the foot border-top px-sm py-xs with Fix this one at
+   the end. */
+.review-finding-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 8px 8px;
+}
+.review-finding-body[data-open] {
+  padding-bottom: 5px;
+}
+.review-finding-detail {
+  color: #898781;
+}
+.review-finding-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 6px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+.review-thread-head > .star {
+  flex-shrink: 0;
+  color: #d97757;
+}
+.review-thread-badge[data-tone="success"] {
+  background: color-mix(in srgb, #32d74b 15%, transparent);
+  color: #32d74b;
+}
+:root[data-theme="light"] .review-finding-foot {
+  border-color: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .review-thread-badge[data-tone="success"] {
+  color: #1e9e3c;
+}

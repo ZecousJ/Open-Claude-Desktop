@@ -1,0 +1,66 @@
+{
+  "$comment": "CLAUDEX W-SITE: single source of truth for the site URL layout (web plan section 3). Read by internal/web/sitepaths (Go dispatch and security headers) and by the web app route tests (W-ROUTE). Paths are matched exactly, or by prefix for the prefixes lists. Legacy redirects are 302, never 301.",
+  "version": 1,
+  "bypass": {
+    "$comment": "Served by Go routes, never by a SPA (shouldBypassEmbeddedFrontend).",
+    "exact": ["/health", "/models", "/responses", "/alpha/search"],
+    "prefixes": ["/api/", "/v1/", "/v1beta/", "/backend-api/", "/antigravity/", "/setup/", "/responses/", "/images/", "/videos/", "/s/"]
+  },
+  "console": {
+    "$comment": "The Vue admin console (Vite base /admin/, assets under /admin/assets/).",
+    "base": "/admin"
+  },
+  "console_root_pages": {
+    "$comment": "Public pages still rendered by the console index at the site root (released desktop builds, emails and third-party callbacks link to them).",
+    "exact": [
+      "/desktop-pay",
+      "/desktop-only",
+      "/payment/result",
+      "/auth/callback",
+      "/auth/oauth/callback",
+      "/auth/linuxdo/callback",
+      "/auth/wechat/callback",
+      "/auth/dingtalk/callback",
+      "/auth/oidc/callback",
+      "/auth/wechat/payment/callback",
+      "/auth/dingtalk/email-completion"
+    ],
+    "prefixes": ["/legal/"]
+  },
+  "legacy_redirects": {
+    "$comment": "Old console paths, 302 to their /admin location with the query kept.",
+    "exact": {
+      "/setup": "/admin/setup",
+      "/home": "/admin/home",
+      "/model-plaza": "/admin/model-plaza",
+      "/key-usage": "/admin/key-usage",
+      "/email-verify": "/admin/email-verify",
+      "/payment/qrcode": "/admin/payment/qrcode",
+      "/payment/stripe": "/admin/payment/stripe",
+      "/payment/stripe-popup": "/admin/payment/stripe-popup",
+      "/payment/airwallex": "/admin/payment/airwallex",
+      "/dashboard": "/admin/my/dashboard",
+      "/keys": "/admin/my/keys",
+      "/usage": "/admin/my/usage",
+      "/redeem": "/admin/my/redeem",
+      "/affiliate": "/admin/my/affiliate",
+      "/available-channels": "/admin/my/available-channels",
+      "/profile": "/admin/my/profile",
+      "/subscriptions": "/admin/my/subscriptions",
+      "/purchase": "/admin/my/purchase",
+      "/orders": "/admin/my/orders",
+      "/batch-image": "/admin/my/batch-image",
+      "/monitor": "/admin/my/monitor"
+    },
+    "prefixes": {
+      "/custom/": "/admin/my/custom/"
+    }
+  },
+  "admin_login_redirect": {
+    "$comment": "/login belongs to the web app; only a login for a console page moves to the console.",
+    "from": "/login",
+    "to": "/admin/login",
+    "redirect_param": "redirect",
+    "redirect_prefix": "/admin"
+  }
+}

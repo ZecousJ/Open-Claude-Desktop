@@ -1,0 +1,159 @@
+{
+  "about": "MCP elicitation forms (src/approval/elicitation-form.ts). Each case: a requestedSchema, its fields in order (fields), and attempts: the values typed and what the form sends (content) or the first problem (problem). The desktop (tests/elicitation-form-cases.test.ts), the iOS Core (ElicitationFormTests) and the Android app (ElicitationFormTest) all pass these. Values are strings, booleans, or lists of strings. Date-times use an explicit offset so the result does not depend on the time zone.",
+  "cases": [
+    {
+      "name": "text with default and optional blank",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "title": "Your name", "description": "As on the invoice" },
+          "note": { "type": "string", "default": "hello" },
+          "nick": { "type": "string" }
+        },
+        "required": ["name"]
+      },
+      "fields": [
+        { "name": "name", "label": "Your name", "description": "As on the invoice", "type": "string", "required": true, "initial": "" },
+        { "name": "note", "label": "note", "type": "string", "required": false, "initial": "hello" },
+        { "name": "nick", "label": "nick", "type": "string", "required": false, "initial": "" }
+      ],
+      "attempts": [
+        { "values": { "name": "  Ada  " }, "content": { "name": "Ada", "note": "hello" } },
+        { "values": { "name": "   " }, "problem": { "kind": "required", "label": "Your name" } },
+        { "values": {}, "problem": { "kind": "required", "label": "Your name" } },
+        { "values": { "name": "Ada", "note": "", "nick": "ad" }, "content": { "name": "Ada", "nick": "ad" } }
+      ]
+    },
+    {
+      "name": "numbers and integers",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "ratio": { "type": "number", "title": "Ratio", "minimum": 0.5, "maximum": 2 },
+          "count": { "type": "integer", "title": "Count", "default": 3 }
+        },
+        "required": ["ratio"]
+      },
+      "fields": [
+        { "name": "ratio", "label": "Ratio", "type": "number", "required": true, "initial": "", "minimum": 0.5, "maximum": 2 },
+        { "name": "count", "label": "Count", "type": "integer", "required": false, "initial": "3" }
+      ],
+      "attempts": [
+        { "values": { "ratio": "1.5" }, "content": { "ratio": 1.5, "count": 3 } },
+        { "values": { "ratio": "2", "count": "10" }, "content": { "ratio": 2, "count": 10 } },
+        { "values": { "ratio": "0.4" }, "problem": { "kind": "minimum", "label": "Ratio", "limit": 0.5 } },
+        { "values": { "ratio": "2.5" }, "problem": { "kind": "maximum", "label": "Ratio", "limit": 2 } },
+        { "values": { "ratio": "abc" }, "problem": { "kind": "number", "label": "Ratio" } },
+        { "values": { "ratio": "1", "count": "2.5" }, "problem": { "kind": "integer", "label": "Count" } },
+        { "values": { "ratio": "1", "count": "x" }, "problem": { "kind": "integer", "label": "Count" } }
+      ]
+    },
+    {
+      "name": "booleans always send a value",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "agree": { "type": "boolean", "title": "I agree", "default": true },
+          "news": { "type": "boolean" }
+        }
+      },
+      "fields": [
+        { "name": "agree", "label": "I agree", "type": "boolean", "required": false, "initial": true },
+        { "name": "news", "label": "news", "type": "boolean", "required": false, "initial": false }
+      ],
+      "attempts": [
+        { "values": {}, "content": { "agree": true, "news": false } },
+        { "values": { "agree": false, "news": true }, "content": { "agree": false, "news": true } }
+      ]
+    },
+    {
+      "name": "single choice from enum with names and from oneOf",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "size": { "type": "string", "title": "Size", "enum": ["s", "m", "l"], "enumNames": ["Small", "Medium", "Large"] },
+          "color": { "type": "string", "oneOf": [{ "const": "r", "title": "Red" }, { "const": "g", "title": "Green" }], "default": "g" }
+        },
+        "required": ["size"]
+      },
+      "fields": [
+        { "name": "size", "label": "Size", "type": "enum", "required": true, "initial": "", "options": [["s", "Small"], ["m", "Medium"], ["l", "Large"]] },
+        { "name": "color", "label": "color", "type": "enum", "required": false, "initial": "g", "options": [["r", "Red"], ["g", "Green"]] }
+      ],
+      "attempts": [
+        { "values": { "size": "m" }, "content": { "size": "m", "color": "g" } },
+        { "values": { "size": "l", "color": "" }, "content": { "size": "l" } },
+        { "values": {}, "problem": { "kind": "required", "label": "Size" } }
+      ]
+    },
+    {
+      "name": "multiple choice",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "tags": { "type": "array", "title": "Tags", "items": { "type": "string", "enum": ["a", "b", "c"] }, "default": ["b"] },
+          "extras": { "type": "array", "title": "Extras", "items": { "anyOf": [{ "const": "x", "title": "Ex" }, { "const": "y", "title": "Why" }] } }
+        },
+        "required": ["extras"]
+      },
+      "fields": [
+        { "name": "tags", "label": "Tags", "type": "multi", "required": false, "initial": ["b"], "options": [["a", "a"], ["b", "b"], ["c", "c"]] },
+        { "name": "extras", "label": "Extras", "type": "multi", "required": true, "initial": [], "options": [["x", "Ex"], ["y", "Why"]] }
+      ],
+      "attempts": [
+        { "values": { "extras": ["y"] }, "content": { "tags": ["b"], "extras": ["y"] } },
+        { "values": { "tags": [], "extras": ["x", "y"] }, "content": { "extras": ["x", "y"] } },
+        { "values": { "tags": ["a"] }, "problem": { "kind": "chooseOne", "label": "Extras" } }
+      ]
+    },
+    {
+      "name": "text length limits",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "title": "Code", "minLength": 3, "maxLength": 5 }
+        }
+      },
+      "fields": [
+        { "name": "code", "label": "Code", "type": "string", "required": false, "initial": "", "minLength": 3, "maxLength": 5 }
+      ],
+      "attempts": [
+        { "values": { "code": "abc" }, "content": { "code": "abc" } },
+        { "values": { "code": "ab" }, "problem": { "kind": "minLength", "label": "Code", "limit": 3 } },
+        { "values": { "code": "abcdef" }, "problem": { "kind": "maxLength", "label": "Code", "limit": 5 } },
+        { "values": { "code": "" }, "content": {} }
+      ]
+    },
+    {
+      "name": "email, url and date-time formats",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "mail": { "type": "string", "title": "Email", "format": "email" },
+          "site": { "type": "string", "title": "Site", "format": "uri" },
+          "when": { "type": "string", "title": "When", "format": "date-time" }
+        }
+      },
+      "fields": [
+        { "name": "mail", "label": "Email", "type": "string", "required": false, "initial": "", "format": "email" },
+        { "name": "site", "label": "Site", "type": "string", "required": false, "initial": "", "format": "uri" },
+        { "name": "when", "label": "When", "type": "string", "required": false, "initial": "", "format": "date-time" }
+      ],
+      "attempts": [
+        { "values": { "mail": "a@b.co", "site": "https://x.test/p", "when": "2026-10-13T10:00:00+08:00" }, "content": { "mail": "a@b.co", "site": "https://x.test/p", "when": "2026-10-13T02:00:00.000Z" } },
+        { "values": { "when": "2026-10-13T10:00:00Z" }, "content": { "when": "2026-10-13T10:00:00.000Z" } },
+        { "values": { "when": "2026-10-13" }, "content": { "when": "2026-10-13T00:00:00.000Z" } },
+        { "values": { "mail": "no-at" }, "problem": { "kind": "email", "label": "Email" } },
+        { "values": { "mail": "a b@c.d" }, "problem": { "kind": "email", "label": "Email" } },
+        { "values": { "site": "example.com" }, "problem": { "kind": "uri", "label": "Site" } },
+        { "values": { "when": "tomorrow-ish" }, "problem": { "kind": "dateTime", "label": "When" } }
+      ]
+    },
+    {
+      "name": "no properties is an empty form",
+      "schema": { "type": "object", "properties": {} },
+      "fields": [],
+      "attempts": [{ "values": {}, "content": {} }]
+    }
+  ]
+}

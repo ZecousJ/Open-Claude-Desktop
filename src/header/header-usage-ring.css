@@ -1,0 +1,51 @@
+/* The chat header's usage ring: a ghost button, ring then "{percent}% used" in
+   tabular figures; its panel is the 360px usage panel, p-lg with gap-md, the
+   title a muted footnote, and the buttons sharing a row. */
+.header-usage-ring {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.header-usage-ring:hover,
+.header-usage-ring[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.context-popover.header-usage-popover {
+  position: fixed;
+  bottom: auto;
+  z-index: 60;
+  padding: 0;
+}
+.header-usage-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.header-usage-title {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--context-muted, var(--text-muted));
+}
+.header-usage-body .context-popover-plan {
+  padding: 0;
+}
+.header-usage-actions {
+  display: flex;
+  gap: 8px;
+}
+.header-usage-actions > button {
+  flex: 1;
+}

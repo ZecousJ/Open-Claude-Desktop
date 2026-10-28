@@ -1,0 +1,788 @@
+/* Dialogs, notifications, startup */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  /* The original's dialog backdrop: 50% black in dark, 40% in light, no blur. */
+  background: #00000080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Centred in the whole window, as R-1289 (339–497 of an 836 window). */
+  padding: 24px;
+  animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+/* 570 wide in a 602 window): 16px from the window's edges on a narrow one. */
+@media (max-width: 640px) {
+  .overlay {
+    padding: 16px;
+  }
+}
+:root[data-theme="light"] .overlay {
+  background: #0006;
+}
+/* Dialogs, measured from R-1289 (Windows 1x, Edit details and Delete project):
+   520 wide with 24px padding, a 22px semibold title level with the close
+   button, 32px buttons 8px apart on the right. The corners are the original's
+   rounded-card, 12px. */
+.modal {
+  width: 520px;
+  max-width: 100%;
+  max-height: 90vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 20px 24px 24px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 24px 80px #0005;
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+/* Dark dialogs: the title, labels, typed text and button text all read near
+   white (title #fefdf9 and fields #fcfcfc at their brightest, "Use a folder"
+   #fbfaf8, Cancel #f9f9f7) and the placeholders #949492, where the page text is
+   #c6c6c6. */
+:root:not([data-theme="light"]) .modal {
+  color: #faf9f5;
+}
+:root:not([data-theme="light"]) .modal input,
+:root:not([data-theme="light"]) .modal textarea {
+  color: #faf9f5;
+}
+:root:not([data-theme="light"]) .modal input::placeholder,
+:root:not([data-theme="light"]) .modal textarea::placeholder {
+  color: #929290;
+}
+/* Light dialogs: pure white, no rim, a tight shadow that darkens the 39% scrim
+   by 15% at the edge and is gone 24px out. */
+:root[data-theme="light"] .modal {
+  border-color: transparent;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 26%);
+  /* The title reads black and the body #3c3c3c at their darkest. */
+  color: #141413;
+}
+:root[data-theme="light"] .modal .confirm-body {
+  color: #3d3d3a;
+}
+.modal.wide {
+  width: 680px;
+}
+.modal > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin: 0 -6px 9px 0;
+}
+/* A sub-view's back button and title, 8px apart. */
+.modal-back-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+/* 22px semibold. */
+.modal h2 {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 28px;
+  margin: 0;
+}
+.modal form > label {
+  margin-bottom: 18px;
+}
+.modal form > .button-row {
+  margin-top: 16px;
+}
+.modal > .button-row {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.modal .button-row {
+  gap: 8px;
+}
+.modal .button-row > .primary,
+.modal .button-row > .secondary {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.modal .button-row > .secondary {
+  font-weight: 400;
+}
+.modal .button-row > .primary {
+  font-weight: 600;
+}
+.modal input,
+.modal textarea {
+  background: var(--bg);
+}
+/* 14px semibold labels, 32px fields, 14px text 12px in. */
+.modal form > label {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.modal label > input:not([type="checkbox"]):not([type="radio"]),
+.modal label > textarea {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.modal label > input:not([type="checkbox"]):not([type="radio"]) {
+  height: 32px;
+  padding: 0 11px;
+}
+.modal label > textarea {
+  padding: 7px 11px;
+}
+/* The confirmation: 400 wide, radius 12, a 15px title straight above the
+   explanation, no close button. */
+.modal.confirm {
+  width: 400px;
+  padding: 22px 24px 24px;
+  border-radius: 12px;
+}
+.modal.confirm > header {
+  margin: 0 0 2px;
+}
+.modal.confirm h2 {
+  font-size: 15px;
+  line-height: 22px;
+}
+.modal.confirm > .confirm-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+/* R-1383/R-1590 Disconnect confirmation (a 404px crop, the narrow window of
+   that session): the confirming button on top and Cancel under it, both the
+   dialog's full width and 8px apart, where R-1289 and R-1583 (wide windows)
+   keep the two side by side on the right. The width limit is inferred. */
+@media (max-width: 640px) {
+  .modal.confirm .button-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .modal.confirm .button-row > button {
+    width: 100%;
+  }
+}
+.confirm-body {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.8;
+  margin-bottom: 0;
+}
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  padding: 0 12px;
+}
+.search-field:focus-within {
+  border-color: var(--accent);
+}
+.search-field > svg {
+  color: var(--text-muted);
+}
+.search-field input {
+  border: 0;
+  background: transparent;
+  padding: 12px 0;
+  box-shadow: none;
+  border-radius: 0;
+  font-size: 13px;
+  min-width: 0;
+}
+.search-field kbd {
+  padding: 2px 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 10px;
+}
+.search-results {
+  max-height: 440px;
+  overflow-y: auto;
+  margin: 15px -7px -7px;
+}
+.search-results > button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 9px;
+  border-radius: 6px;
+}
+.search-results > button:hover {
+  background: var(--surface-hover);
+}
+.search-results > button > svg {
+  color: var(--text-muted);
+}
+.search-results > button > span {
+  min-width: 0;
+  flex: 1;
+}
+.search-results strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.search-results small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/*
+ * The window's notice: a 360×44 box with a 1px border (#373735 dark, #d6d6d4
+ * light) on #20201e / #fff, 12px corners, a 20px info circle 15px in, 14px
+ * semibold text 48px in and a close cross centred 23px from the right edge.
+ * Placed in the corner like the limit notice; the width follows that box.
+ */
+.toast {
+  position: fixed;
+  right: 16px;
+  /* A notice shares the corner: --notice-lift (src/ui/notice-stack.ts) raises
+     it above the others and a composer near the bottom. */
+  bottom: calc(16px + var(--notice-lift, 0px));
+  z-index: 140;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 24px;
+  column-gap: 6px;
+  align-items: start;
+  box-sizing: border-box;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  /* The live toast: px-lg py-md, text-body font-normal. */
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19px;
+  border-radius: 12px;
+  border: 1px solid #373735;
+  background: #20201e;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 35%);
+  animation: fade-in 130ms ease-out;
+}
+:root[data-theme="light"] .toast {
+  color: #1e1e1e;
+  border-color: #d6d6d4;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+}
+.toast-text {
+  overflow-wrap: anywhere;
+}
+/* A toast with a button (Undo after a drag unpins): a small secondary button
+   under the text, 8px below it, for every kind of toast, filled like the rename
+   dialog's Cancel. */
+.toast-text > .toast-action {
+  display: block;
+  margin-top: 8px;
+}
+.toast-action {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #333;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+/* CDS TextLink inheritColor. */
+.toast-inline-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, currentColor, transparent 35%);
+  transition:
+    text-decoration-color 60ms cubic-bezier(0.165, 0.84, 0.44, 1),
+    box-shadow 60ms cubic-bezier(0.165, 0.84, 0.44, 1);
+  cursor: pointer;
+}
+.toast-inline-link:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+:root[data-theme="light"] .toast-action {
+  border: 1px solid #e0e0de;
+  background: #fff;
+  color: #141413;
+}
+/* Hover steps the fill up one level, as the Settings buttons do. */
+@media (hover: hover) {
+  .toast-action:hover:not(:disabled) {
+    background: #3c3c3c;
+  }
+  :root[data-theme="light"] .toast-action:hover:not(:disabled) {
+    background: #f5f5f5;
+  }
+}
+.toast-close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+}
+/* The dismiss cross takes the ghost button's hover fill and the shared focus
+   ring. */
+.toast-close:hover {
+  background: var(--fill-ghost-hover);
+}
+/*
+ * The stack of notices (src/ui/Toaster.tsx), after the original's toaster: the
+ * stack sits where the single notice did and takes the front toast's height.
+ * Toast n (0 in front) is 14px·n higher and scaled 1 − 0.04·n from its bottom
+ * edge; the ones behind are cut to the front's height with their content
+ * hidden. A new toast rises from below (its own height) as it fades in; a
+ * dismissed one shrinks to 85% as it fades out; the others slide to their new
+ * places. All 200ms on the out curve.
+ */
+.toast-stack {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + var(--notice-lift, 0px));
+  z-index: 140;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  height: var(--toast-front-height, 44px);
+}
+.toast-stack > .toast {
+  --toast-y: calc(var(--toast-index, 0) * -14px);
+  --toast-scale: calc(1 - var(--toast-index, 0) * 0.04);
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  transform-origin: bottom;
+  transform: translateY(var(--toast-y)) scale(var(--toast-scale));
+  transition:
+    transform var(--motion-base, 200ms) var(--ease-out, ease-out),
+    opacity var(--motion-base, 200ms) var(--ease-out, ease-out);
+  animation: toast-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.toast-stack > .toast[data-behind] {
+  height: var(--toast-front-height, auto);
+  overflow: hidden;
+}
+.toast-stack > .toast > * {
+  transition: opacity var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.toast-stack > .toast[data-behind] > * {
+  visibility: hidden;
+  opacity: 0;
+}
+/* Past the limit of three: kept, hidden and inert until a place frees. */
+.toast-stack > .toast[data-limited] {
+  opacity: 0;
+  pointer-events: none;
+}
+.toast-stack > .toast[data-state="closed"] {
+  --toast-scale: 0.85;
+  opacity: 0;
+  pointer-events: none;
+}
+.toast-count {
+  font-weight: 400;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    translate: 0 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-stack > .toast,
+  .toast-stack > .toast > * {
+    animation: none;
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .toast-stack > .toast,
+:root[data-motion="reduced"] .toast-stack > .toast > * {
+  animation: none;
+  transition: none;
+}
+/* The error notice uses the corner notice (src/policy/global-limit-toast.css);
+   long messages scroll inside it. */
+.error-banner .global-limit-toast-text {
+  max-height: 160px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+.boot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+  background: var(--bg);
+  padding: 40px;
+  -webkit-app-region: drag;
+}
+.boot h2 {
+  font:
+    29px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  margin: 0 0 12px;
+  letter-spacing: -0.4px;
+}
+.boot > .spin {
+  color: var(--text-muted);
+}
+.boot p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  max-width: 520px;
+}
+.boot p.error-text {
+  color: var(--danger);
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/*
+ * Dialog motion: the panel fades and grows from 98% over 200ms on the out
+ * curve, the backdrop fades over the same 200ms, and both run backwards on
+ * close. A closing dialog stays on screen as `[data-state="closed"]`
+ * (src/ui/usePresence.ts). Each dialog family puts these on its own backdrop
+ * and panel. The scrim fades its colour rather than its opacity, so the panel
+ * inside is not faded twice; `scale` leaves a panel's own transform alone.
+ */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    scale: 0.98;
+  }
+}
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    scale: 0.98;
+  }
+}
+@keyframes scrim-in {
+  from {
+    background-color: transparent;
+  }
+}
+@keyframes scrim-out {
+  to {
+    background-color: transparent;
+  }
+}
+.overlay[data-state="closed"] {
+  pointer-events: none;
+  animation: scrim-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+.overlay[data-state="closed"] > * {
+  animation: dialog-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+/*
+ * A dialog opened over another: the parent's panel blurs 2px and takes the
+ * backdrop's shade once more, over the same 200ms, and the child's backdrop
+ * stays clear, so the window is shaded once (src/ui/dialog-stack.ts). Reduced
+ * motion makes it instant, as the original's `motion-reduce:transition-none` on
+ * the popup.
+ */
+:root {
+  --dialog-covered-dim: 0.5;
+}
+:root[data-theme="light"] {
+  --dialog-covered-dim: 0.6;
+}
+.overlay[data-nested] {
+  background: transparent;
+  animation: none;
+}
+:where(.overlay) > * {
+  transition: filter var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.overlay[data-nested-open] > * {
+  filter: blur(2px) brightness(var(--dialog-covered-dim));
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(.overlay) > * {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] :where(.overlay) > * {
+  transition: none;
+}
+/* The other dialog families (their own backdrops and panels, each with the
+   entrance in its own sheet) close the same way. */
+:is(
+  .search-palette-overlay,
+  .bypass-backdrop,
+  .cowork-access-backdrop,
+  .language-overlay,
+  .announcement-overlay
+)[data-state="closed"] {
+  pointer-events: none;
+  animation: scrim-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+:is(
+    .search-palette-overlay,
+    .bypass-backdrop,
+    .cowork-access-backdrop,
+    .language-overlay,
+    .announcement-overlay
+  )[data-state="closed"]
+  > * {
+  animation: dialog-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(
+    .overlay,
+    .search-palette-overlay,
+    .bypass-backdrop,
+    .cowork-access-backdrop,
+    .language-overlay,
+    .announcement-overlay
+  ),
+  :is(
+      .overlay,
+      .search-palette-overlay,
+      .bypass-backdrop,
+      .cowork-access-backdrop,
+      .language-overlay,
+      .announcement-overlay
+    )
+    > * {
+    animation: none !important;
+  }
+}
+:root[data-motion="reduced"]
+  :is(
+    .overlay,
+    .search-palette-overlay,
+    .bypass-backdrop,
+    .cowork-access-backdrop,
+    .language-overlay,
+    .announcement-overlay
+  ),
+:root[data-motion="reduced"]
+  :is(
+    .overlay,
+    .search-palette-overlay,
+    .bypass-backdrop,
+    .cowork-access-backdrop,
+    .language-overlay,
+    .announcement-overlay
+  )
+  > * {
+  animation: none !important;
+}
+
+@media (min-width: 1500px) {
+  .empty-chat {
+    padding-top: max(95px, 20vh);
+  }
+  .messages {
+    max-width: 840px;
+  }
+  .has-conversation .conversation-composer {
+    max-width: 776px;
+  }
+}
+@media (max-width: 1100px) {
+  .chat-header {
+    padding: 0 19px;
+  }
+  .empty-chat {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+  .welcome h1 {
+    font-size: 32px;
+  }
+  .artifact-panel,
+  .work-panel {
+    min-width: 290px;
+    flex-basis: 43%;
+  }
+  .chat-layout:has(> .artifact-panel) .messages,
+  .chat-layout:has(> .work-panel) .messages {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .chat-layout:has(> .artifact-panel) .conversation-composer,
+  .chat-layout:has(> .work-panel) .conversation-composer {
+    width: calc(100% - 28px);
+  }
+  .chat-layout:has(> .artifact-panel) .permission-label,
+  .chat-layout:has(> .work-panel) .permission-label {
+    display: none;
+  }
+  .chat-layout:has(> .artifact-panel) .model-button,
+  .chat-layout:has(> .work-panel) .model-button {
+    max-width: 135px;
+    font-size: 10px;
+  }
+  .chat-layout:has(> .artifact-panel) .assistant-message,
+  .chat-layout:has(> .work-panel) .assistant-message {
+    gap: 8px;
+  }
+  .chat-layout:has(> .artifact-panel) .assistant-mark,
+  .chat-layout:has(> .work-panel) .assistant-mark {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .empty-chat {
+    padding-top: max(56px, 15vh);
+    padding-left: 23px;
+    padding-right: 23px;
+  }
+  .welcome h1 {
+    font-size: 29px;
+  }
+  .messages {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+  .artifact-panel,
+  .work-panel {
+    min-width: 280px;
+  }
+  .model-button {
+    max-width: 185px;
+  }
+  .collection-page {
+    padding: 33px 27px;
+  }
+  .collection-heading {
+    align-items: flex-start;
+  }
+  .collection-heading h1 {
+    font-size: 23px;
+  }
+  .collection-heading p {
+    max-width: 250px;
+  }
+  .artifact-grid {
+    grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+  }
+}
+@media (max-height: 710px) {
+  .empty-chat {
+    padding-top: 60px;
+  }
+  .welcome {
+    margin-bottom: 23px;
+  }
+  .modal {
+    max-height: calc(100vh - 80px);
+  }
+}
+/* Reduced motion stops every animation (it ends on its last frame) but keeps
+   transitions: colour and opacity changes still fade, as in the original,
+   and each component turns off its own transform and size transitions (the
+   press scale tokens drop to 1 in 00-foundation.css). A scroll-driven mask
+   (.u-scroll-fade-y) is not motion and keeps its timeline. */
+@media (prefers-reduced-motion: reduce) {
+  :not(.u-scroll-fade-y),
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.toast-description {
+  display: block;
+}
+/* Action-bearing error toast. */
+.toast[data-variant="warning"] {
+  grid-template-columns: 20px minmax(0, 1fr) 24px;
+  align-items: start;
+  column-gap: 6px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #311a00;
+  box-shadow: inset 0 0 0 1px #512e00;
+  color: var(--warning);
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+}
+.toast-title {
+  font-weight: 500;
+}
+.toast[data-variant="warning"] .toast-action {
+  background: hsl(from #fff h s l / 10%);
+}
+:root[data-theme="light"] .toast[data-variant="warning"] {
+  background: #f9dca4;
+  box-shadow: inset 0 0 0 1px #eda100;
+  color: var(--warning);
+}
+:root[data-theme="light"] .toast[data-variant="warning"] .toast-action {
+  background: #ffffff1a;
+}
+/* The danger toast: red-800 under a red-700 ring with red-300 text in dark,
+   red-100 under red-250 with red-600 text in light. */
+.toast[data-variant="danger"] {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--danger-bg);
+  box-shadow: inset 0 0 0 1px #641919;
+  color: var(--danger);
+}
+.toast[data-variant="danger"] .toast-action {
+  background: hsl(from #fff h s l / 10%);
+}
+:root[data-theme="light"] .toast[data-variant="danger"] {
+  box-shadow: inset 0 0 0 1px #f09595;
+}
+:root[data-theme="light"] .toast[data-variant="danger"] .toast-action {
+  background: #ffffff1a;
+}

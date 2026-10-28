@@ -1,0 +1,13 @@
+/* Current live controls are about88-90px wide, 32px high; names vary. */
+.settings-voice .settings-dropdown {
+  max-width: 192px;
+}
+.settings-voice .settings-dropdown > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-voice .settings-dropdown > svg {
+  flex: none;
+}

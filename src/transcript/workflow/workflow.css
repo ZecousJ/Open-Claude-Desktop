@@ -1,0 +1,395 @@
+.workflow-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  box-sizing: border-box;
+  width: min(318px, 100%);
+  min-height: 81px;
+  margin: 16px 0;
+  padding: 8.8px 11px 10px;
+  border: 1px solid #2d2c2c;
+  border-radius: 9px;
+  background: var(--bg);
+  text-align: left;
+  /* workflow-user-card-001 (low confidence): title (195,194,183). */
+  color: var(--text-secondary);
+  transition:
+    background var(--motion-snap) var(--ease-out),
+    border-color var(--motion-snap) var(--ease-out);
+}
+.workflow-card:hover,
+.workflow-card:focus-visible {
+  background: #242423;
+  border-color: #555451;
+}
+.workflow-card:active {
+  background: #30302e;
+}
+.workflow-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font:
+    14px/21px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* workflow-user-card-001: the chevron tip sits 15px inside the card edge. */
+.workflow-card-title svg {
+  margin-left: auto;
+  margin-right: -4.5px;
+  flex-shrink: 0;
+  color: #979793;
+}
+.workflow-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font:
+    12px/17px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  color: #898781;
+}
+@keyframes workflow-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+.workflow-card-meta b {
+  font-weight: inherit;
+  color: #c3c2b7;
+}
+.workflow-phase {
+  margin-bottom: 4px;
+}
+.workflow-phase-trigger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  gap: 7px;
+  min-height: 44px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #30302f;
+  color: #c6c5c1;
+  font-size: 13px;
+  text-align: left;
+}
+.workflow-phase-trigger > span:first-child {
+  flex: 1;
+}
+.workflow-phase-trigger > small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.workflow-phase-trigger:hover {
+  background: #3d3d3a;
+}
+.workflow-phase[data-state="queued"] {
+  margin-bottom: 1px;
+}
+.workflow-phase[data-state="queued"] .workflow-phase-trigger {
+  min-height: 43px;
+  background: transparent;
+}
+.workflow-phase[data-state="queued"] .workflow-phase-trigger:hover {
+  background: var(--fill-ghost-hover);
+}
+.workflow-agent-table {
+  padding: 8.5px 8px 3px 28.5px;
+  font-size: 12px;
+}
+.workflow-agent-heading,
+.workflow-agent-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.9fr) auto;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+.workflow-agent-heading {
+  margin-bottom: 5.5px;
+  color: var(--text-muted);
+}
+.workflow-agent-row {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #c5c4c0;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.workflow-agent-row:hover:not(:disabled),
+.workflow-agent-row:focus-visible {
+  background: #3b3b39;
+  color: #e4e2dd;
+  outline: none;
+}
+.workflow-agent-row:active:not(:disabled) {
+  background: #444440;
+}
+.workflow-agent-row:disabled {
+  cursor: default;
+}
+.workflow-agent-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workflow-agent-row > span:first-child {
+  overflow: visible;
+}
+/* Completed agents are muted and marked with a check in the gutter (workflow-user-panel-002). */
+.workflow-agent-row[data-done="true"] {
+  color: #898781;
+}
+.workflow-agent-row > span:first-child {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  position: relative;
+}
+.workflow-agent-row > span:first-child svg {
+  position: absolute;
+  left: -20px;
+  flex-shrink: 0;
+  color: #898781;
+}
+.workflow-agent-table.has-tokens .workflow-agent-heading,
+.workflow-agent-table.has-tokens .workflow-agent-row {
+  grid-template-columns:
+    minmax(0, 2.04fr) minmax(0, 0.42fr) minmax(0, 0.53fr)
+    auto;
+}
+:root[data-theme="light"] .workflow-card {
+  background: #fdfbf8;
+  border-color: #d5d0c8;
+  color: #38342e;
+}
+:root[data-theme="light"] .workflow-phase-trigger {
+  background: #dcd9d2;
+  color: #38342e;
+}
+@media (prefers-reduced-motion: reduce) {
+  .workflow-card {
+    transition: none;
+  }
+}
+@container (max-width:390px) {
+  .workflow-agent-table.has-tokens .workflow-agent-heading,
+  .workflow-agent-table.has-tokens .workflow-agent-row {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  }
+  .workflow-agent-table.has-tokens .workflow-agent-heading > :nth-child(3),
+  .workflow-agent-table.has-tokens .workflow-agent-row > :nth-child(3) {
+    display: none;
+  }
+}
+:root[data-theme="light"] .workflow-agent-heading {
+  color: #706b63;
+}
+:root[data-theme="light"] .workflow-agent-row {
+  color: #38342e;
+}
+:root[data-theme="light"] .workflow-phase-trigger > small {
+  color: #706b63;
+}
+:root[data-theme="light"] .workflow-phase-trigger:hover {
+  background: #d2cec6;
+}
+
+:root[data-theme="light"] .workflow-agent-row:hover:not(:disabled),
+:root[data-theme="light"] .workflow-agent-row:focus-visible {
+  background: #d5d0c8;
+  color: #26221f;
+}
+
+/* Child agents as cells: 6px squares 2px apart. Done 20% ink, running the
+   accent breathing to 72% out of step with its neighbours, failed red, stopped
+   10% ink, queued an outline, and a ghost outline pulsing .25 ↔ .9 every 2.2s
+   when more agents are coming. */
+.agent-status-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+.agent-status-grid[data-wrap] {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.agent-status-grid > i {
+  display: block;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition:
+    background-color 160ms,
+    border-color 160ms,
+    opacity 160ms,
+    filter 160ms;
+}
+.agent-status-grid > i:hover {
+  filter: brightness(1.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-status-grid > i {
+    transition: none;
+  }
+  .agent-status-grid > i[data-state="running"] {
+    animation: none;
+  }
+  .agent-status-grid > i[data-state="ghost"] {
+    opacity: 0.45;
+    animation: none;
+  }
+}
+.agent-status-grid > i[data-state="done"] {
+  background: var(--alpha-3);
+}
+.agent-status-grid > i[data-state="running"] {
+  background: #2a78d6;
+  animation: agent-cell-pulse 2.8s ease-in-out infinite;
+}
+.agent-status-grid > i[data-state="stalled"] {
+  background: #fab219;
+}
+.agent-status-grid > i[data-state="error"] {
+  background: #d03b3b;
+}
+.agent-status-grid > i[data-state="stopped"] {
+  border-color: var(--alpha-3);
+}
+.agent-status-grid > i[data-state="pending"] {
+  border-color: var(--alpha-3);
+}
+.agent-status-grid > i[data-state="ghost"] {
+  border-color: var(--alpha-3);
+  animation: agent-cell-ghost 2.2s ease-in-out infinite;
+}
+@keyframes agent-cell-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+@keyframes agent-cell-ghost {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+:root[data-theme="light"] .agent-status-grid > i:hover {
+  filter: brightness(0.9);
+}
+.background-task-meta > .agent-status-grid {
+  align-self: center;
+}
+.workflow-phase-trigger > .agent-status-grid {
+  flex: 0 0 100%;
+  margin: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-status-grid > i {
+    transition: none;
+  }
+  .agent-status-grid > i[data-state="running"] {
+    animation: none;
+  }
+  .agent-status-grid > i[data-state="ghost"] {
+    opacity: 0.45;
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .agent-status-grid > i {
+  transition: none;
+}
+:root[data-motion="reduced"] .agent-status-grid > i[data-state="running"] {
+  animation: none;
+}
+:root[data-motion="reduced"] .agent-status-grid > i[data-state="ghost"] {
+  opacity: 0.45;
+  animation: none;
+}
+
+/* An open phase without agents. */
+.workflow-phase-empty {
+  margin: 0;
+  padding-inline-start: 8px;
+  color: #898781;
+  font-size: 12px;
+  line-height: 15px;
+}
+/* The running workflow's shimmering title takes the strong title's place. */
+.background-task-title > .background-task-name {
+  align-self: flex-start;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.background-task-meta [data-status="failed"] {
+  color: #ec7e7e;
+}
+/* A failed or stopped workflow's summary box. */
+.background-task-summary {
+  margin: 8px 0 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.background-task-summary[data-status="failed"] {
+  color: #ec7e7e;
+}
+/* A phase's caret turns when it opens, and an open phase is shaded. */
+.workflow-phase-caret {
+  flex: none;
+  color: #898781;
+  transition: rotate 150ms ease-out;
+}
+.workflow-phase-trigger[data-open] .workflow-phase-caret {
+  rotate: 90deg;
+}
+.workflow-phase-trigger[data-open] {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .background-task-title > .background-task-name {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .background-task-summary {
+  background: rgb(11 11 11 / 5%);
+  color: #52514e;
+}
+:root[data-theme="light"] .background-task-meta [data-status="failed"],
+:root[data-theme="light"] .background-task-summary[data-status="failed"] {
+  color: #8e2626;
+}

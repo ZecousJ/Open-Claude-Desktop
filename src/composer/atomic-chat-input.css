@@ -1,0 +1,103 @@
+/* O16 shared9 Cq/jr: a real inline-flex atom in the editor's text flow. */
+.composer-atomic-field {
+  display: block;
+}
+/* Current official reply wrapper: (32px control - 21px leading) / 2.
+   Keep this on the wrapper so the editable paragraphs and placeholder align. */
+.composer-wrap.conversation-composer:not(.code-composer)
+  .composer-input-row
+  .composer-atomic-field {
+  box-sizing: border-box;
+  min-height: 32px;
+  padding-block: max(0px, calc((32px - var(--composer-line, 21px)) / 2));
+}
+.composer-wrap[data-presentation="chat"] .composer-atomic-input {
+  display: block;
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  width: 100%;
+  min-height: var(--composer-line, 21px);
+  max-height: 370px;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  color: var(--text);
+  caret-color: var(--text);
+  font-family: inherit;
+  font-size: var(--composer-text, 15px);
+  line-height: var(--composer-line, 21px);
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+.composer-atomic-input > p {
+  margin: 0;
+  padding: 0;
+  min-height: 1lh;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+.composer-atomic-input[data-empty="true"]::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.composer-atomic-input[data-previewing="true"] {
+  opacity: 0;
+}
+.composer-atomic-skill {
+  display: inline-flex;
+  position: relative;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.composer-atomic-skill[data-callable="true"] {
+  cursor: pointer;
+  color: var(--text-accent, #6da7ec);
+}
+.composer-atomic-label {
+  position: relative;
+}
+.composer-atomic-skill[data-callable="true"] > .composer-atomic-label {
+  padding-inline-start: 8px;
+}
+.composer-atomic-skill[data-callable="true"]::before {
+  content: "";
+  position: absolute;
+  inset: -2px -4px -2px -2px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.composer-atomic-skill[data-callable="true"]:is(
+    :hover,
+    [data-selected="true"]
+  )::before {
+  background: var(--cds-bg-accent, #257de01f);
+}
+.composer-atomic-skill[data-callable="false"] {
+  color: inherit;
+}
+:root[data-theme="light"] .composer-atomic-skill[data-callable="true"] {
+  color: var(--focus-accent);
+}
+.composer-atomic-skill .composer-skill-name {
+  user-select: none;
+}
+@media (max-width: 639.98px) and (pointer: coarse) {
+  .app.web .composer-wrap[data-presentation="chat"] .composer-atomic-input {
+    min-height: max(22px, var(--composer-line, 21px));
+    font-size: max(16px, var(--composer-text, 15px));
+    line-height: max(22px, var(--composer-line, 21px));
+  }
+}

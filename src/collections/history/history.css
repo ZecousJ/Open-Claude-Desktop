@@ -1,0 +1,384 @@
+/*
+ * "Chats and tasks" list: 52px rows over 1px #202020 rules spanning the content
+ * width, 14px #f5f5f5 titles (a 212px title inks as the reference sans at
+ * 14px), right-aligned #8e8d8b times. The hover field bleeds 12px past the
+ * rules.
+ */
+.history-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.history-list li {
+  position: relative;
+}
+/*
+ * The row's ⋮ (Rename, Archive or Unarchive, Delete) takes the time's place
+ * while the row is hovered or focused. * visual provisional, in the style of
+ * the Customize row menus.
+ */
+.history-more {
+  position: absolute;
+  top: 50%;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--text-secondary);
+  opacity: 0;
+  transform: translateY(-50%);
+  /* Shown at once with the row's hover; only the button's own fill eases. */
+  transition: background var(--motion-fast) var(--ease-out);
+}
+.history-list li:hover .history-more,
+.history-list li:focus-within .history-more,
+.history-list li.menu-open .history-more {
+  opacity: 1;
+}
+.history-list li:hover:not(:has(.cx-check)) time,
+.history-list li:focus-within:not(:has(.cx-check)) time,
+.history-list li.menu-open time {
+  visibility: hidden;
+}
+.history-more:hover,
+.history-list li.menu-open .history-more {
+  background: var(--fill-ghost-hover);
+}
+.history-more-rows {
+  height: 1px;
+}
+.history-list section > h2 {
+  margin: 20px 0 4px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.history-list section:first-child > h2 {
+  margin-top: 0;
+}
+.history-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: calc(100% + 24px);
+  height: 53px;
+  margin: 0 -12px;
+  padding: 0 12px 1px;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text);
+  /* The row's fill changes at once on hover, selection and focus. */
+  transition: none;
+}
+.history-item::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 12px;
+  height: 1px;
+  background: var(--border);
+}
+.history-item:hover,
+.history-item:focus-visible {
+  background: var(--fill-ghost-hover);
+}
+.history-item:hover::after {
+  opacity: 0;
+}
+.history-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* The title line: the title does not fill the row, so a badge follows it. */
+.history-title-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.history-title-head > .history-title-line {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* truncate text-footnote text-muted. */
+.history-title-line,
+.history-snippet {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Row captions and attention. */
+.history-untitled {
+  opacity: 0.6;
+}
+.history-attention {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #c6613f;
+}
+.history-repository {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  line-height: 1.0625rem;
+  color: #898781;
+}
+.history-search-status {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  line-height: 1.1875rem;
+  color: #898781;
+}
+/* Joined selection buttons. */
+.history-selection-actions {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px #0000000d;
+}
+.history-selection-actions > .collection-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
+  background: hsl(from #fff h s l / 10%);
+  color: #f0efec;
+}
+.history-selection-actions > .collection-icon:hover:not(:disabled) {
+  background: hsl(from #fff h s l / 14%);
+}
+.history-selection-actions > .collection-icon:disabled {
+  opacity: 0.4;
+}
+.history-selection-actions > .collection-icon:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.history-selection-actions > .collection-icon:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.history-selection-actions > .collection-icon:only-child {
+  border-radius: 6px;
+}
+.history-selection-actions .danger {
+  color: #ec7e7e;
+}
+:root[data-theme="light"] .history-selection-actions {
+  box-shadow:
+    0 1px 2px #0000000d,
+    inset 0 0 0 1px hsl(from #0b0b0b h s l / 10%);
+}
+:root[data-theme="light"] .history-selection-actions .danger {
+  color: #8e2626;
+}
+:root[data-theme="light"]
+  .history-selection-actions
+  > .collection-icon:not(.danger) {
+  color: #0b0b0b;
+}
+:root[data-theme="light"]
+  .history-selection-actions
+  > .collection-icon:hover:not(:disabled) {
+  background: hsl(from #0b0b0b h s l / 5%);
+}
+.history-snippet {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+.history-item time,
+.history-project {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.history-project {
+  max-width: 180px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+/* Neutral CDS badge. */
+.history-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  background: hsl(from #fff h s l / 5%);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+.history-item.checked {
+  background: var(--fill-ghost-hover);
+}
+.history-count {
+  margin-right: 4px;
+  font-size: 14px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.collection-secondary.danger:not(:disabled) {
+  color: var(--danger);
+}
+.collection-search > button {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+/* Select hides the search box, so a narrowed list says so. */
+.history-filter-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -21px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.history-filter-note > button {
+  padding: 0;
+  color: #d6d6d4;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.history-filter-note > button:hover {
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  .history-project,
+  .history-tag {
+    display: none;
+  }
+}
+
+/* Both themes resolve row text and interaction paint from current CDS tokens. */
+:root[data-theme="light"] .history-item {
+  color: var(--text);
+}
+:root[data-theme="light"] .history-item::after {
+  background: var(--border);
+}
+:root[data-theme="light"] .history-more {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="light"] .history-item:focus-visible,
+:root[data-theme="light"] .history-item:hover,
+:root[data-theme="light"] .history-item.checked {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .history-item time,
+:root[data-theme="light"] .history-project,
+:root[data-theme="light"] .history-count,
+:root[data-theme="light"] .history-filter-note {
+  color: var(--text-muted);
+}
+:root[data-theme="light"] .history-filter-note > button {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .history-tag {
+  background: hsl(from #0b0b0b h s l / 5%);
+  color: #52514e;
+}
+
+/*
+ * The tab-style filter (Active, Shared, Archived; Code: Active, Archived) on
+ * its own row under the title, the actions at its right end. They take the
+ * Artifacts page's captured owner tabs (gallery.css), the same component in the
+ * original; the hover fill is the bundle's ghost fill.
+ */
+.collection-bar.with-tabs {
+  margin-bottom: 28px;
+}
+.collection-bar.with-tabs .collection-bar-tabs {
+  justify-content: space-between;
+  margin-top: 24px;
+}
+/* Live claude.ai /recents: the title 24px over the tabs, the first row 28px
+   under them; the tabs touch, 12px in, 14/20 medium, the others' ink muted; the
+   chosen one's fill (white 7.5%, radius 8) stops 1px short of its end. */
+.history-tabs {
+  display: flex;
+  min-width: 0;
+  overflow-x: clip;
+}
+.history-tabs > button {
+  position: relative;
+  isolation: isolate;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #898781;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.history-tabs > button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 1px 0 0;
+  border-radius: 8px;
+}
+.history-tabs > button:hover {
+  color: var(--text);
+}
+.history-tabs > button:hover::before {
+  background: var(--fill-ghost-hover);
+}
+.history-tabs > button[aria-selected="true"] {
+  color: var(--text);
+}
+.history-tabs > button[aria-selected="true"]::before {
+  background: rgb(255 255 255 / 7.5%);
+}
+/* Select puts the count where the tabs were. */
+.collection-bar-tabs > .history-count {
+  display: flex;
+  align-items: center;
+  height: 32px;
+}
+:root[data-theme="light"] .history-tabs > button {
+  color: var(--text-muted);
+}
+:root[data-theme="light"] .history-tabs > button:hover,
+:root[data-theme="light"] .history-tabs > button[aria-selected="true"] {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .history-tabs > button:hover::before,
+:root[data-theme="light"] .history-tabs > button[aria-selected="true"]::before {
+  background: var(--surface-hover);
+}
+/* Pressed ghost sort. */
+.history-view .collection-icon[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.history-view .collection-icon[aria-pressed="true"] {
+  background: hsl(from #fff h s l / 15%);
+  color: #6da7ec;
+}
+:root[data-theme="light"] .history-view .collection-icon[aria-pressed="true"] {
+  background: hsl(from #0b0b0b h s l / 10%);
+  color: #184f95;
+}

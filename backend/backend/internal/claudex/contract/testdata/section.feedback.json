@@ -1,0 +1,11 @@
+{
+  "feedback": {
+    "diagnostics": {
+      "enabled": false
+    },
+    "feedback": {
+      "enabled": false,
+      "allow_conversation_excerpt": false
+    }
+  }
+}

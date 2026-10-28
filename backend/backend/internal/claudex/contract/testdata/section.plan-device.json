@@ -1,0 +1,29 @@
+{
+  "plan": {
+    "group_id": 4,
+    "group_name": "claudex-pro",
+    "platform": "openai",
+    "protocol": "responses",
+    "subscription_type": "subscription",
+    "subscription_id": 77,
+    "expires_at": "2026-10-25T00:00:00Z",
+    "subscribed": true
+  },
+  "device": {
+    "registered": true,
+    "id": 51,
+    "key_group_id": 3,
+    "revoked": false,
+    "reprovision_needed": true,
+    "keys": [
+      {
+        "api_key_id": 812,
+        "group_id": 4,
+        "group_name": "claudex-pro",
+        "platform": "openai",
+        "protocol": "responses",
+        "primary": true
+      }
+    ]
+  }
+}

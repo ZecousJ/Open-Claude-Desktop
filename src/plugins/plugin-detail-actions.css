@@ -1,0 +1,8 @@
+/* Loaded with the actual Remove confirmation, never with the first screen. */
+.plugin-remove-failure {
+  margin: 12px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}

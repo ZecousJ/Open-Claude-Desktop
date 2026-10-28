@@ -1,0 +1,212 @@
+@import "./native-conversation-title.css";
+
+/*
+ * Current native Chat/Cowork uses the unified frame's full-bleed variant.
+ * O16/shared-styles-DG9uV_so.css:5163–5215,5563–5571; sidebar body in. Keep
+ * this native non-Code only: Code's accepted native frame and the browser
+ * sidebar retain their own rules. This stylesheet must be awaited before the
+ * native renderer's first paint. On every desktop platform, as Code's frame
+ * (native-code-home.css): the original's web variant has no platform split, and
+ * the owner wants Windows and Linux like macOS; only the titlebar controls'
+ * margins stay macOS's (the traffic-light spacer).
+ */
+.app:not(.web).mode-chat {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  column-gap: 0;
+  padding: 0;
+}
+.app:not(.web).mode-chat:not(.sidebar-hidden) .sidebar {
+  position: relative;
+  grid-area: 1 / 1;
+  inset: auto;
+  overflow: hidden;
+  border-inline-end: 0.5px solid var(--border);
+  border-radius: 0;
+  background: var(--sidebar);
+  box-shadow: none;
+}
+.app:not(.web).mode-chat:not(.sidebar-hidden) .sidebar-chrome {
+  position: static;
+  width: auto;
+  height: 46px;
+  padding-top: 2px;
+}
+/*
+ * The mode switch lives in the titlebar. The source body consequently has no
+ * direct df-pills child and uses pt-1, not its base pt-3.. With Search's mt-1
+ * this gives the observed 54px top (46 + 4 + 4), without a manual positional
+ * correction.
+ */
+.app:not(.web).mode-chat .sidebar-body {
+  padding-top: 4px;
+}
+.app.darwin:not(.web).mode-chat .sidebar-chrome > .window-nav-toggle {
+  margin-inline-start: 2px;
+}
+.app:not(.web).mode-chat.sidebar-hidden {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+.app:not(.web).mode-chat:not(.sidebar-hidden) .sidebar-resize-handle {
+  top: var(--sidebar-chrome-height);
+  bottom: 0;
+  left: calc(var(--sidebar-width) - 6px);
+}
+
+/*
+ * fieldAboveNew and recentsHeaderIcon are mutually exclusive in the source
+ * layout resolver.
+ */
+.app:not(.web).mode-chat .recents-search {
+  display: none;
+}
+
+/* Native hub rail: 8px iconless pad - (24px leading slot - 16px glyph)/2
+ * = 4px rail shift (source CSS:3110–3116). Existing main-nav markup uses
+ * a bare 16px glyph with an 8px gap, so 10px start padding gives the same
+ * 34px label inset as the source's 2px + 4px + 24px + 4px.
+ */
+/* Both modes (sidebar-chrome.css .app:not(.web) .main-nav .nav-glyph):
+   6px + a 24px glyph slot + 4px put every label 34px in, as the source's
+   2px + 4px + 24px + 4px; Chat and Code no longer differ. */
+
+/* Native non-Code rows use the same trailing-status branch as web rows.
+ * O16/shared-21-DI_JOKFI.js:19763–19827,20164–20183; shared-18:7399–7429.
+ * Compact geometry is row26 / control20: the source's end inset is
+ * (26 - 20)/2 = 3px. Activity and More exchange the same slot on hover,
+ * keyboard focus and menu-open, rather than moving the title's start.
+ */
+.app:not(.web).mode-chat .conversation-link {
+  padding-inline-start: 10px;
+}
+.app:not(.web).mode-chat .conversation-link:has(.row-status-trailing) {
+  padding-inline-end: 26px;
+}
+.app:not(.web).mode-chat .row-status-trailing {
+  position: absolute;
+  inset-inline-end: 3px;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-inline-end: 0;
+  translate: 0 -50%;
+}
+.app:not(.web).mode-chat .conversation-row .row-more {
+  right: auto;
+  inset-inline-end: 3px;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+}
+.app:not(.web).mode-chat
+  .conversation-row:is(:hover, :has(:focus-visible), .menu-open)
+  .row-status-trailing {
+  visibility: hidden;
+}
+@media (pointer: coarse) {
+  .app:not(.web).mode-chat .row-status-trailing {
+    visibility: hidden;
+  }
+}
+
+/* Keep the reorder live region at the list origin. Its absolute static
+ * position otherwise follows the final row, extending the scrollable area.
+ * Preserve the existing screen-reader clip and content; no negative offset
+ * or blanket clipping of list rows is needed.
+ */
+.app:not(.web).mode-chat .sidebar-scroll {
+  position: relative;
+}
+.app:not(.web).mode-chat .sidebar-scroll > .sr-only[aria-live] {
+  top: 0;
+  inset-inline-start: 0;
+  margin: 0;
+}
+
+/*
+ * Compact df-search-field: O16/shared-21-DI_JOKFI.js:6816–6896; density tokens
+ * focus/hover:3009–3037. Sidebar's existing 8px sibling gap supplies the source
+ * wrapper's mb-2.
+ */
+.app:not(.web).mode-chat .native-chat-search-wrap {
+  flex: none;
+  min-width: 0;
+  margin-top: 4px;
+}
+.app:not(.web).mode-chat .native-chat-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: calc(100% - 4px);
+  height: 26px;
+  min-height: 26px;
+  padding: 0 2px;
+  margin-inline: 2px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-muted);
+  background: rgb(255 255 255 / 5%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 5%),
+    0 1px 2px rgb(0 0 0 / 5%);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: start;
+  -webkit-app-region: no-drag;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+.app:not(.web).mode-chat .native-chat-search-leading {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-inline-start: 2px;
+}
+.app:not(.web).mode-chat .native-chat-search-leading .app-icon {
+  width: 16px;
+  height: 16px;
+}
+.app:not(.web).mode-chat .native-chat-search-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app:not(.web).mode-chat .native-chat-search > kbd {
+  flex: none;
+  padding-inline-end: 2px;
+  opacity: 0;
+  font: inherit;
+  font-size: 12px;
+}
+.app:not(.web).mode-chat .native-chat-search:focus-visible {
+  outline: 1px solid var(--focus-accent);
+  outline-offset: -1px;
+  box-shadow: var(--sidebar-focus-ring);
+}
+.app:not(.web).mode-chat .native-chat-search:focus-visible > kbd {
+  opacity: 1;
+}
+@media (hover: hover) {
+  .app:not(.web).mode-chat .native-chat-search:hover {
+    background: var(--fill-ghost-hover);
+  }
+  .app:not(.web).mode-chat .native-chat-search:hover > kbd {
+    opacity: 1;
+  }
+}
+:root[data-theme="light"] .app:not(.web).mode-chat .native-chat-search {
+  background: rgb(11 11 11 / 5%);
+  box-shadow:
+    inset 0 0 0 1px rgb(11 11 11 / 5%),
+    0 1px 2px rgb(0 0 0 / 5%);
+}
+@media (hover: hover) {
+  :root[data-theme="light"] .app:not(.web).mode-chat .native-chat-search:hover {
+    background: var(--fill-ghost-hover);
+  }
+}

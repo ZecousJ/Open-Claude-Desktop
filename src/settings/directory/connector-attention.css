@@ -1,0 +1,10 @@
+/* The connectors banner sits above the list with the page's own gap. */
+.connector-attention {
+  margin: 0 0 12px;
+}
+.connector-attention .auth-issue-banner {
+  align-items: center;
+}
+.connector-attention .auth-issue-copy {
+  margin-right: 4px;
+}

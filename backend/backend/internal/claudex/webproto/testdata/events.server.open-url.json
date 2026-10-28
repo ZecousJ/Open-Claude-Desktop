@@ -1,0 +1,5 @@
+{
+  "t": "open-url",
+  "url": "https://claudex.example.com/desktop-pay?order=42",
+  "target": "same-tab"
+}

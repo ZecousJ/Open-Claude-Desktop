@@ -1,0 +1,322 @@
+/*
+ * Weekly usage limit banner above the home composer. Code: 40px #212121 strip
+ * as wide as the composer, 10px below the chips and 6px above the composer.
+ * 16px gauge 8px in, 13px white title, grey reset time 11px after it, a 20px
+ * #383838 pill with 12px text and a 7.25px close cross centred 20px from the
+ * right edge. Text sizes measured with the reference fonts: 13.5/13px came out
+ * 4.7%/8.6% wider than the captures.
+ */
+.usage-banner {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+}
+.usage-banner.code {
+  height: 40px;
+  margin-bottom: 6px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: #212121;
+  font-size: 13px;
+}
+.usage-banner-icon {
+  flex: 0 0 auto;
+}
+.usage-banner.code .usage-banner-icon {
+  color: #8d8d8b;
+}
+.usage-banner-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.usage-banner.code .usage-banner-text {
+  margin-left: 5.5px;
+}
+.usage-banner.code .usage-banner-title {
+  color: var(--text);
+}
+.usage-banner-detail {
+  margin-left: 11px;
+  color: #8e8d8b;
+}
+.usage-banner-more {
+  flex: 0 0 auto;
+  border-radius: 6px;
+  color: var(--text);
+}
+.usage-banner.code .usage-banner-more {
+  height: 20px;
+  margin-left: 12px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: #383838;
+  font-size: 12px;
+}
+.usage-banner-close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 6px;
+}
+.usage-banner.code .usage-banner-close {
+  margin-left: 10px;
+  color: #898989;
+}
+.usage-banner-more:hover {
+  filter: brightness(1.15);
+}
+.usage-banner-close:hover {
+  background: #ffffff12;
+  color: #f3f3f3;
+}
+
+/*
+ * Chat and Cowork: a 44px outlined box the width of the composer, 8px above it,
+ * on the page colour. 16px info icon 17px in, 14px warm-grey text 10px after
+ * it, a 28px #2d2d2d pill with 14px text and an 8.8px white close cross.
+ */
+.usage-banner.chat {
+  height: 44px;
+  margin-bottom: 8px;
+  padding: 0 9px 0 17px;
+  border: 1px solid #2c2c2c;
+  border-radius: 13.5px;
+  font-size: 14px;
+  color: #c7c8c3;
+}
+.usage-banner.chat .usage-banner-text {
+  margin-left: 10px;
+}
+.usage-banner.chat .usage-banner-more {
+  height: 28px;
+  margin-left: 12px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: #2d2d2d;
+  font-size: 14px;
+}
+/* Continue after a failed reply: the clearer way on, in the page's primary
+   button colours (the New key / New task button). */
+.usage-banner.chat .usage-banner-more.usage-banner-primary {
+  background: #fff;
+  color: #111;
+}
+:root[data-theme="light"]
+  .usage-banner.chat
+  .usage-banner-more.usage-banner-primary {
+  background: #0b0b0b;
+  color: #fff;
+}
+.usage-banner.chat .usage-banner-close {
+  margin-left: 10px;
+  color: #f3f3f1;
+}
+
+/*
+ * Chat and Cowork in a conversation use the home box unchanged, 8px above the
+ * composer. Narrowed by a side panel the icon goes, the text starts 16px in and
+ * the pill moves to a second row: pill 12px from the left and bottom edges,
+ * 40px from the top; the text and cross keep their home rows (80px in all).
+ */
+.usage-banner.chat.narrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 24px;
+  grid-auto-rows: 28px;
+  row-gap: 6px;
+  align-items: center;
+  height: auto;
+  padding: 9px 9px 11px 15px;
+}
+.usage-banner.chat.narrow:not(:has(.usage-banner-more)) {
+  padding-bottom: 9px;
+}
+.usage-banner.chat.narrow .usage-banner-text {
+  grid-area: 1 / 1;
+  margin-left: 0;
+}
+.usage-banner.chat.narrow .usage-banner-close {
+  grid-area: 1 / 2;
+}
+.usage-banner.chat.narrow .usage-banner-actions {
+  margin-left: -4px;
+}
+/* The buttons sit in the row; in the narrow frame they share the second. */
+.usage-banner-actions {
+  display: contents;
+}
+.usage-banner.chat.narrow .usage-banner-actions {
+  display: flex;
+  grid-area: 2 / 1 / 3 / 3;
+  gap: 8px;
+}
+.usage-banner.chat.narrow .usage-banner-actions .usage-banner-more {
+  margin-left: 0;
+}
+.usage-banner.chat.narrow .usage-banner-actions:empty {
+  display: none;
+}
+
+/*
+ * Code in a conversation: the home strip's colours and first row (icon, 13px
+ * title, grey reset time, cross all centred 20px from the top), with the reset
+ * time wrapping under the title when it does not fit and the pill under the
+ * text, 6px below it and 10px above the bottom edge.
+ */
+.usage-banner.code:is(.conversation, .narrow) {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 24px;
+  align-items: start;
+  height: auto;
+  padding: 9px 8px 10px;
+  white-space: normal;
+}
+.usage-banner.code:is(.conversation, .narrow) .usage-banner-icon {
+  grid-area: 1 / 1;
+  margin-top: 3px;
+}
+.usage-banner.code:is(.conversation, .narrow) .usage-banner-text {
+  grid-area: 1 / 2;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 11px;
+  margin-left: 5.5px;
+  line-height: 22px;
+}
+.usage-banner.code:is(.conversation, .narrow) .usage-banner-detail {
+  margin-left: 0;
+}
+.usage-banner.code:is(.conversation, .narrow) .usage-banner-close {
+  grid-area: 1 / 3;
+  margin: -1px 0;
+}
+.usage-banner.code:is(.conversation, .narrow) .usage-banner-more {
+  grid-area: 2 / 2;
+  justify-self: start;
+  margin: 6px 0 0 5px;
+}
+
+/* With the banner the chips sit 10px above it and the mascot stands on it. */
+.workspace-bar:has(+ .usage-banner) {
+  margin-bottom: 7px;
+}
+.workspace-bar:has(+ .usage-banner) .pixel-mascot {
+  bottom: -7px;
+}
+
+:root[data-theme="light"] .usage-banner.code {
+  background: var(--surface-hover);
+}
+:root[data-theme="light"] .usage-banner.code .usage-banner-title,
+:root[data-theme="light"] .usage-banner-more {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .usage-banner.code .usage-banner-more,
+:root[data-theme="light"] .usage-banner.chat .usage-banner-more {
+  background: color-mix(in srgb, var(--surface-hover) 88%, #000);
+}
+:root[data-theme="light"] .usage-banner.chat {
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .usage-banner-detail,
+:root[data-theme="light"] .usage-banner.code .usage-banner-icon,
+:root[data-theme="light"] .usage-banner-close {
+  color: var(--text-muted);
+}
+
+/*
+ * Get notified. In the two-row layouts (narrowed, Code conversation) both share
+ * the second row, Get notified at the start and the pill at the end.
+ */
+.usage-banner.chat.narrow .usage-banner-more.usage-banner-notify,
+.usage-banner.code:is(.conversation, .narrow)
+  .usage-banner-more.usage-banner-notify {
+  justify-self: start;
+}
+.usage-banner.chat.narrow
+  .usage-banner-more.usage-banner-notify
+  + .usage-banner-more,
+.usage-banner.code:is(.conversation, .narrow)
+  .usage-banner-more.usage-banner-notify
+  + .usage-banner-more {
+  justify-self: end;
+  margin-left: 0;
+}
+/* Get notified is an underlined grey link, not a pill. */
+.usage-banner .usage-banner-more.usage-banner-notify {
+  height: auto;
+  padding: 0 2px;
+  background: none;
+  color: #9a9893;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.usage-banner .usage-banner-more.usage-banner-notify + .usage-banner-more {
+  margin-left: 12px;
+}
+:root[data-theme="light"] .usage-banner .usage-banner-more.usage-banner-notify {
+  background: none;
+  color: var(--text-muted);
+}
+
+/* Each notice above the composer sits in a one-row grid (ComposerNotices): the
+   row opens from nothing over 300ms on the original's composer header curve
+   while the notice slides up 8px and fades in (its banner entrance), and closes
+   the same way when the notice goes. Source: the reference design 2.31226.1
+   static CSS/JS. A 3px clip margin keeps focus rings whole. */
+.composer-notice-slot {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: composer-notice-rows-in var(--motion-moderate)
+    cubic-bezier(0.25, 0.1, 0.35, 1);
+}
+.composer-notice-slot > div {
+  min-height: 0;
+  overflow: clip;
+  overflow-clip-margin: 3px;
+}
+.composer-notice-slot > div > * {
+  animation: composer-notice-slide-up var(--motion-moderate) ease-out;
+}
+.composer-notice-slot[data-state="closed"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows var(--motion-moderate) cubic-bezier(0.25, 0.1, 0.35, 1),
+    opacity var(--motion-moderate) cubic-bezier(0.25, 0.1, 0.35, 1);
+}
+@keyframes composer-notice-rows-in {
+  from {
+    grid-template-rows: 0fr;
+  }
+}
+@keyframes composer-notice-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-notice-slot,
+  .composer-notice-slot > div > * {
+    animation: none;
+  }
+  .composer-notice-slot[data-state="closed"] {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .composer-notice-slot,
+:root[data-motion="reduced"] .composer-notice-slot > div > * {
+  animation: none;
+}
+:root[data-motion="reduced"] .composer-notice-slot[data-state="closed"] {
+  transition: none;
+}

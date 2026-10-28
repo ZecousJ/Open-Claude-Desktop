@@ -1,0 +1,19 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "order_id": 1024,
+    "status": "PENDING",
+    "provider": "stripe",
+    "amount": 20,
+    "pay_amount": 20.6,
+    "currency": "USD",
+    "expires_at": "2026-09-26T03:00:00Z",
+    "stripe": {
+      "publishable_key": "pk_live_51Hx",
+      "client_secret": "pi_3QabcDEF_secret_ghiJKL"
+    },
+    "airwallex": null,
+    "result_path": "/payment/result?resume_token=eyJvcmRlcl9pZCI6MTAyNH0.c2lnbmF0dXJl"
+  }
+}

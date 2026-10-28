@@ -1,0 +1,289 @@
+/* Messages, tool traces, and approvals */
+.markdown {
+  font-size: 14px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+.markdown > :first-child {
+  margin-top: 0;
+}
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+.markdown p {
+  margin-bottom: 16px;
+  line-height: 1.85;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  color: var(--text-strong);
+  margin: 25px 0 10px;
+  line-height: 1.5;
+}
+.markdown h1 {
+  font-size: 24px;
+}
+.markdown h2 {
+  font-size: 20px;
+}
+.markdown h3 {
+  font-size: 17px;
+}
+.markdown h4 {
+  font-size: 15px;
+}
+.markdown ul,
+.markdown ol {
+  padding-left: 24px;
+  margin: 12px 0 18px;
+}
+.markdown li {
+  margin: 6px 0;
+}
+.markdown li > p {
+  margin: 7px 0;
+}
+.markdown blockquote {
+  margin: 18px 0;
+  padding: 3px 17px;
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+.markdown hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+.markdown :not(pre) > code {
+  font-size: 0.86em;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 2px 5px;
+  border-radius: 4px;
+  word-break: break-word;
+}
+.markdown table {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 12px;
+}
+.markdown th,
+.markdown td {
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  text-align: left;
+  min-width: 80px;
+}
+.markdown th {
+  background: var(--surface);
+  font-weight: 500;
+}
+.markdown input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin-right: 5px;
+  accent-color: var(--accent);
+}
+.code-block {
+  margin: 17px 0;
+  overflow: hidden;
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+.code-bar {
+  height: 37px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 11px 0 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font:
+    11px -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+.code-bar > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-bar > span {
+  order: -1;
+}
+.code-block pre {
+  padding: 15px;
+  overflow-x: auto;
+  white-space: pre;
+  font-size: 12px;
+}
+.code-block pre code {
+  font-family: inherit;
+  font-size: inherit;
+}
+.small-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 10px;
+  border-radius: 4px;
+  padding: 4px 5px;
+  height: 25px;
+  white-space: nowrap;
+}
+/* Ghost fills (00-foundation.css); hover waits for a real hover. */
+@media (hover: hover) {
+  .small-action:hover {
+    color: var(--text);
+    background: var(--fill-ghost-hover);
+  }
+}
+.activity {
+  margin: 8px 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 7px;
+  overflow: hidden;
+  color: var(--text-secondary);
+}
+.activity summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 11px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 11px;
+  min-height: 35px;
+  user-select: none;
+}
+.activity summary::-webkit-details-marker {
+  display: none;
+}
+@media (hover: hover) {
+  .activity summary:hover {
+    color: var(--text);
+    background: var(--fill-ghost-hover);
+  }
+}
+.activity summary > code {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 5px;
+}
+.activity summary > svg:last-child {
+  margin-left: auto;
+  transition: transform var(--motion-snap) var(--ease-out);
+}
+.activity[open] summary > svg:last-child {
+  transform: rotate(90deg);
+}
+.activity[open] summary {
+  border-bottom: 1px solid var(--border);
+}
+.activity.failed {
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+}
+.activity.failed summary {
+  color: var(--danger);
+}
+.activity-body {
+  padding: 11px 13px;
+  background: var(--sidebar);
+  max-height: 380px;
+  overflow: auto;
+  font-size: 11px;
+}
+.activity-body pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.activity-body > small {
+  display: block;
+  margin-top: 10px;
+  color: var(--text-muted);
+}
+.activity-body > div + div {
+  margin-top: 16px;
+}
+.activity-body strong {
+  display: block;
+  font:
+    11px var(--code-font-custom,) "SFMono-Regular",
+    Consolas,
+    monospace;
+  padding-bottom: 7px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.activity-body.markdown {
+  font-size: 12px;
+  line-height: 1.75;
+}
+.reasoning {
+  border: 0;
+  background: transparent;
+}
+.reasoning summary {
+  padding-left: 0;
+  justify-content: flex-start;
+}
+.reasoning summary > svg:last-child {
+  margin-left: 0;
+}
+.reasoning summary:hover {
+  background: transparent;
+}
+.reasoning .activity-body {
+  background: transparent;
+  border-left: 2px solid var(--border);
+  margin-left: 7px;
+  padding-left: 16px;
+}
+.path {
+  font-size: 10px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+  margin-bottom: 8px;
+}
+.diff {
+  white-space: pre;
+  overflow: auto;
+  color: var(--text-secondary);
+  padding: 12px 0;
+}
+.plan-message {
+  border-left: 2px solid var(--accent);
+  padding-left: 13px;
+  margin: 15px 0;
+}
+
+/* Reduced motion: the chevron turns at once. */
+@media (prefers-reduced-motion: reduce) {
+  .activity summary > svg:last-child {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .activity summary > svg:last-child {
+  transition: none;
+}

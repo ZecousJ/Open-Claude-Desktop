@@ -1,0 +1,292 @@
+/* Local detail sections. */
+.routine-detail {
+  --routine-primary: #f0efec;
+  --routine-secondary: #c3c2b7;
+  --routine-muted: #898781;
+  color: var(--routine-primary);
+  font-size: 13px;
+  line-height: 19px;
+}
+:root[data-theme="light"] .routine-detail {
+  --routine-primary: #0b0b0b;
+  --routine-secondary: #52514e;
+}
+.routine-detail-back {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 8px 0 24px -8px;
+  color: var(--routine-muted);
+}
+.routine-detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 8px;
+}
+.routine-detail h1 {
+  margin: 0;
+  font-family: var(
+    --font-ui-serif,
+    "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif
+  );
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.routine-detail-header p {
+  margin-top: 16px;
+  color: var(--routine-secondary);
+}
+.routine-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.routine-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.routine-detail-main,
+.routine-detail-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.routine-detail section,
+.routine-detail-allowed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.routine-detail h2,
+.routine-detail .always-allowed-title {
+  display: block;
+  margin: 0;
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+  color: var(--routine-muted);
+}
+.routine-detail section p {
+  margin: 0;
+}
+.routine-detail-sidebar button {
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+.routine-detail-instructions {
+  width: 100%;
+  text-align: start;
+  overflow-wrap: anywhere;
+  color: var(--routine-secondary);
+  white-space: pre-wrap;
+  user-select: text;
+}
+.routine-detail-instructions.collapsed {
+  max-height: 3lh;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 55%, transparent);
+}
+.routine-detail-expand {
+  align-self: flex-start;
+}
+.routine-detail-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.routine-detail-status [role="switch"] {
+  width: 28.8px;
+  height: 16px;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 10%);
+  position: relative;
+}
+.routine-detail-status [role="switch"]::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  top: 2px;
+  left: 2px;
+  border-radius: 9999px;
+  background: white;
+}
+.routine-detail-status [aria-checked="true"] {
+  background: #2a78d6;
+}
+.routine-detail-status [aria-checked="true"]::after {
+  transform: translateX(12.8px);
+}
+:root[data-theme="light"] .routine-detail-status [aria-checked="false"] {
+  background: rgb(11 11 11 / 20%);
+}
+.routine-detail-folder {
+  align-self: flex-start;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 5%);
+  font-size: 12px;
+  line-height: 15px;
+}
+:root[data-theme="light"] .routine-detail-folder {
+  background: rgb(11 11 11 / 5%);
+}
+.routine-detail .routine-detail-note {
+  color: var(--routine-muted);
+  font-size: 12px;
+  line-height: 15px;
+}
+@media (min-width: 768px) {
+  .routine-detail-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+}
+
+/* Run now: the primary button with its Play glyph. */
+.routine-detail-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.routine-detail-hold {
+  margin: 8px 0 0;
+  color: var(--routine-secondary);
+}
+
+/* Warning banner. */
+.routine-connection-hold {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  margin-bottom: 24px;
+  border-radius: 10px;
+  background: #311a00;
+  color: #db9300;
+  box-shadow: inset 0 0 0 1px #512e00;
+  font-size: 13px;
+  line-height: 19px;
+}
+.routine-connection-hold > svg {
+  flex-shrink: 0;
+  margin-top: 1.5px;
+}
+.routine-connection-hold-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.routine-connection-hold p {
+  width: 100%;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.routine-connection-hold [role="group"] {
+  display: inline-flex;
+  gap: 8px;
+}
+:root[data-theme="light"] .routine-connection-hold {
+  background: #f9dca4;
+  color: #734500;
+  box-shadow: inset 0 0 0 1px #eda100;
+}
+
+/* Secondary Run now only when the compact unified header did not take the
+   primary action. The current frame keeps its labelled primary in the header,
+   so it has no duplicate. */
+.routine-detail .routine-history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  font: inherit;
+}
+.routine-detail .routine-history-empty > p {
+  margin: 0;
+}
+.routine-detail .routine-history-run {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font: inherit;
+}
+.scheduled-detail-actions > .scheduled-detail-run[data-icon-only] {
+  width: 32px;
+  padding: 0;
+}
+
+/* O16 ccd3f68fe:3298–3435,4760–4907: genuine project/folder metadata;
+   host labels come from the executing host, never from an opaque SSH id. */
+.routine-detail-project > a {
+  align-self: flex-start;
+  color: var(--routine-secondary);
+  overflow-wrap: anywhere;
+}
+.routine-detail-project > .secondary {
+  align-self: flex-start;
+}
+.routine-detail-folders > h2 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.routine-detail-device {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-300);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 500;
+  color: var(--routine-muted);
+}
+.routine-detail-folder-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--routine-secondary);
+}
+.routine-detail-folder-row > bdi {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.routine-detail-folder-row > :first-child {
+  flex-shrink: 0;
+  color: var(--routine-muted);
+}
+.routine-detail-folder-row > button,
+.routine-detail-folder-row > [role="img"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-inline-start: auto;
+  padding: 0;
+}

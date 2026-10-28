@@ -1,0 +1,10 @@
+{
+  "status": 503,
+  "body": {
+    "ok": false,
+    "error": {
+      "message": "The web version is busy. Try again in a minute.",
+      "code": "CLAUDEX_WEB_CAPACITY"
+    }
+  }
+}

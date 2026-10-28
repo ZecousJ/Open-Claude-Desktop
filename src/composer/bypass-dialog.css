@@ -1,0 +1,115 @@
+/*
+ * Bypass confirmation: a 400px dialog centred in the window over a darkened,
+ * blurred app. 20px padding; 14px semibold title, 14px body, the folder in 12px
+ * monospace, a 12px grey note with a blue link, and two 23px buttons with
+ * Cancel focused.
+ */
+.bypass-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  background: #0000007f;
+  backdrop-filter: blur(3px);
+  /* Motion: the dialog's, 200ms in and out. */
+  animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.bypass-backdrop > .bypass-dialog {
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.bypass-dialog {
+  box-sizing: border-box;
+  width: 400px;
+  padding: 16px 20px 20px;
+  border: 1px solid #363636;
+  border-radius: 10px;
+  background: var(--surface);
+  color: #c8c8c6;
+  font-size: 14px;
+  line-height: 19px;
+}
+.bypass-dialog h2 {
+  margin: 0 0 2.5px;
+  padding-top: 0.5px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text);
+}
+.bypass-dialog p {
+  margin: 0;
+  line-height: 19px;
+}
+.bypass-dialog code {
+  display: block;
+  margin-top: 11px;
+  font-family: var(--code-font, ui-monospace, "SF Mono", Menlo, monospace);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+.bypass-dialog small {
+  display: block;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 15px;
+  color: #8d8d8b;
+}
+.bypass-dialog a {
+  color: #7c9dd6;
+  text-decoration: underline;
+  text-decoration-color: #7c9dd680;
+  text-underline-offset: 2px;
+}
+.bypass-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 12px;
+}
+.bypass-dialog footer button {
+  min-height: 0;
+  height: 23px;
+  border: 0;
+  font-weight: 400;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #373737;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 23px;
+}
+.bypass-dialog footer button.bypass-confirm {
+  background: #fff;
+  color: #040404;
+}
+/* The focused button carries a 1px blue ring 1px outside it. */
+.bypass-dialog footer button:focus {
+  outline: 1px solid #4a77c1;
+  outline-offset: 1px;
+}
+.bypass-dialog a:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+:root[data-theme="light"] .bypass-dialog {
+  border-color: #e4e4e4;
+  background: #fff;
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .bypass-dialog h2,
+:root[data-theme="light"] .bypass-dialog code {
+  color: #141414;
+}
+:root[data-theme="light"] .bypass-dialog footer button {
+  background: #efefed;
+  color: #141414;
+}
+:root[data-theme="light"] .bypass-dialog footer button.bypass-confirm {
+  background: #141414;
+  color: #fff;
+}

@@ -1,0 +1,192 @@
+/* Only the lazy conversation tool picker loads this sheet. 500px scrolling tool
+   list, rounded surface card and compact switch rows. */
+.conversation-tool-picker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.conversation-tool-section-title {
+  margin: 0;
+  padding-inline: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.conversation-tool-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.conversation-tool-connector {
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+.conversation-tool-picker-body button {
+  font: inherit;
+  color: inherit;
+}
+.conversation-tool-connector-row,
+.conversation-tool-options > button {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 0;
+  padding: 8px;
+  text-align: start;
+  border-radius: 8px;
+}
+.conversation-tool-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.conversation-tool-connector > small {
+  padding: 0 8px 8px;
+  color: var(--text-muted);
+}
+.conversation-tool-connector-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.conversation-tool-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.conversation-tool-search > input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+.conversation-tool-search:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.conversation-tool-options {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  padding: 8px;
+}
+.conversation-tool-options > button {
+  width: 100%;
+  justify-content: space-between;
+}
+.conversation-tool-options > .conversation-tool-all {
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  margin-bottom: 4px;
+}
+.conversation-tool-option strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.conversation-tool-option small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.conversation-tool-switch {
+  width: 24px;
+  height: 14px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--text-muted);
+  padding: 2px;
+  box-sizing: border-box;
+}
+.conversation-tool-switch::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface-raised);
+}
+.conversation-tool-switch[data-enabled="true"] {
+  background: var(--text-strong);
+}
+.conversation-tool-switch[data-enabled="true"]::after {
+  margin-inline-start: 10px;
+}
+.conversation-tool-picker-body button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.conversation-tool-picker-body button:not(:disabled):hover {
+  background: var(--surface-hover);
+}
+.conversation-tool-picker-body button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.conversation-tool-empty {
+  padding: 24px 8px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.conversation-tool-saving {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+.conversation-tool-failure {
+  margin: 0;
+  color: var(--danger);
+}
+.conversation-tool-failure > button {
+  border: 0;
+  text-decoration: underline;
+  background: none;
+  cursor: pointer;
+}
+.conversation-tool-picker > footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+}
+
+.conversation-tool-connector-actions > button {
+  display: flex;
+  padding: 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+}
+.conversation-tool-connector-row[aria-disabled="false"] {
+  cursor: pointer;
+}
+.conversation-tool-connector-row[aria-disabled="false"]:hover {
+  background: var(--surface-hover);
+}
+.conversation-tool-connector-row:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.conversation-tool-count {
+  border-radius: 12px;
+  background: var(--surface-hover);
+  color: var(--accent);
+  padding: 2px 8px;
+}

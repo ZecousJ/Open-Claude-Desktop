@@ -1,0 +1,342 @@
+/* The account area and its menu, the resize handle (part of sidebar.css) */
+/* Account area */
+.profile-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  margin: 0 -8px -6px;
+  padding: 6px 8px;
+}
+.profile {
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px 0 2px;
+  border-radius: 6px;
+  text-align: left;
+}
+/* #212121 measured on the sidebar: the ghost hover. The original's account
+   button fills at once and rings on focus with the page ring (no transition,
+   no pressed look). */
+.profile:hover,
+.profile.open {
+  background: var(--fill-ghost-hover);
+}
+.profile .avatar {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  background: hsl(from #fff h s l / 10%);
+  font-family: inherit;
+  font-size: 9px;
+  color: var(--text);
+}
+.profile-avatar-slot {
+  display: grid;
+  flex: 0 0 24px;
+  place-items: center;
+}
+.profile > span:nth-child(2) {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.profile small {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.profile > .app-icon {
+  flex: 0 0 12px;
+  margin-left: 0;
+  color: var(--text-muted);
+}
+.profile-wrap > .icon-button {
+  width: 24px;
+  height: 24px;
+  color: #8e8d8b;
+}
+
+/* Account menu: rows sit on a 24px pitch, 4px from the frame. */
+.profile-popover {
+  position: fixed;
+  z-index: 60;
+  box-sizing: border-box;
+  width: 272px;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid #363636;
+  border-radius: 10px;
+  background: var(--surface-popover);
+  box-shadow: var(--shadow);
+  color: #f4f4f4;
+  font-size: 13px;
+}
+.profile-popover > header,
+.profile-menu-scroll > header {
+  height: 22px;
+  padding: 0 7px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8d8c8a;
+}
+.profile-popover > button,
+.profile-menu-scroll > button {
+  height: 24px;
+  min-height: 0;
+  gap: 6px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  color: #f4f4f4;
+}
+/* #313131 and #3e3e3e on the #202020 menu: the ghost fills. A row reached by
+   keyboard is highlighted with the hover fill and no ring, as the original's
+   menu items. */
+.profile-popover > button:hover:not(:disabled),
+.profile-popover > button:focus-visible,
+.profile-menu-scroll > button:hover:not(:disabled),
+.profile-menu-scroll > button:focus-visible,
+.main-nav-more-menu > button:focus-visible {
+  background: var(--fill-ghost-hover);
+}
+.profile-popover > button:focus-visible,
+.profile-menu-scroll > button:focus-visible,
+.main-nav-more-menu > button:focus-visible {
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  box-shadow: none;
+}
+.profile-popover > button:active,
+.profile-menu-scroll > button:active {
+  background: var(--fill-ghost-selected);
+}
+.profile-popover > button > .app-icon,
+.profile-menu-scroll > button > .app-icon {
+  flex: none;
+  color: #f3f3f3;
+}
+.profile-popover kbd {
+  font-size: 12px;
+  color: #8a8a88;
+}
+.profile-popover > hr,
+.profile-menu-scroll > hr {
+  height: 1px;
+  margin: 4px 7px;
+  border: 0;
+  background: #353535;
+}
+
+/* Resize handle on the sidebar's right edge: a 12px grab area centred on the
+   edge with a 3×48px pill in it, as the panel dividers
+   (src/ui/ResizeHandle.tsx, resize-handle.css) and the original's ResizeHandle.
+   Hover fades the pill in over 200ms after a 200ms wait, in the muted text
+   colour; dragging turns it the secondary colour over 120ms; keyboard focus
+   draws it in the accent colour along the whole edge with no wait and rings the
+   grab area. */
+.sidebar-resize-handle {
+  position: absolute;
+  z-index: 6;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--sidebar-width) - 6px);
+  width: 12px;
+  border-radius: 999px;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+  transition: box-shadow var(--motion-fast) var(--ease-standard);
+  -webkit-app-region: no-drag;
+}
+.sidebar-resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 100%;
+  max-height: 48px;
+  border-radius: 999px;
+  translate: -50% -50%;
+  background: var(--text-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition-property: opacity, background-color;
+  transition-duration: var(--motion-base);
+  transition-timing-function: var(--ease-standard);
+  transition-delay: 200ms;
+}
+.app:not(.web) .sidebar-resize-handle {
+  z-index: 21;
+  top: calc(8px + var(--sidebar-chrome-height));
+  bottom: 8px;
+  left: calc(var(--sidebar-width) + 8px - 6px);
+}
+.sidebar-resize-handle:hover::after {
+  opacity: 1;
+}
+.sidebar-resize-handle[data-dragging="true"]::after {
+  background: var(--text-secondary);
+  opacity: 1;
+  transition-duration: var(--motion-snap);
+  transition-delay: 0ms;
+}
+.sidebar-resize-handle:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--focus);
+}
+.sidebar-resize-handle:focus-visible::after {
+  max-height: none;
+  background: var(--focus);
+  opacity: 1;
+  transition-delay: 0ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-resize-handle,
+  .sidebar-resize-handle::after {
+    transition-duration: 0ms;
+    transition-delay: 0ms;
+  }
+}
+:root[data-motion="reduced"] .sidebar-resize-handle,
+:root[data-motion="reduced"] .sidebar-resize-handle::after {
+  transition-duration: 0ms;
+  transition-delay: 0ms;
+}
+.sidebar-hidden .sidebar-resize-handle {
+  display: none;
+}
+
+/*
+ * Dragging a row, as the original's sidebar drag: the dragged row's place stays
+ * laid out but empty, and the other rows slide by whole rows with a transform
+ * over 120ms on the ease-out curve, only while the pointer is down
+ * (useConversationDrag sets data-pin-dragging and the transforms). The copy
+ * under the pointer is the row's own markup on a pill with the floating shadow
+ * at 90%; a release that would unpin fades it to "Release to unpin" over a red
+ * fill, the pill narrowing to the words. The copy is the row as it stands, on
+ * the sidebar's fill with the row's corners and a hairline ring.
+ */
+.sidebar-scroll[data-pin-dragging] [data-drag-shift] {
+  transition: transform var(--motion-snap) ease-out;
+}
+/* The sections clip only to open and fold; while a drag slides rows down, the
+   last one moves past its section's end and must still show. */
+.sidebar-scroll[data-pin-dragging] .pinned-section,
+.sidebar-scroll[data-pin-dragging]
+  .u-expand-rows:is([data-open=""], [data-open="true"])
+  > * {
+  overflow: visible;
+}
+.sidebar-scroll.is-dragging-row {
+  cursor: grabbing;
+  user-select: none;
+}
+/* The selected row keeps its fill under the pointer, as everywhere else. */
+.sidebar-scroll.is-dragging-row .conversation-row:hover:not(.selected) {
+  background-color: transparent;
+}
+.sidebar-scroll.is-dragging-row .conversation-row:hover .row-more {
+  opacity: 0;
+}
+.conversation-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  pointer-events: none;
+  will-change: transform;
+}
+.drag-ghost-pill {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--sidebar);
+  box-shadow:
+    0 0 0 1px var(--alpha-2),
+    0 2px 8px #0000004d,
+    0 12px 32px #00000040;
+  opacity: 0.9;
+  transition-property: opacity, transform, width, left, top;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+.drag-ghost-pill.danger {
+  opacity: 1;
+}
+.drag-ghost-clone,
+.drag-ghost-danger,
+.drag-ghost-label {
+  position: absolute;
+  inset: 0;
+  transition: opacity 150ms ease-out;
+}
+.drag-ghost-pill.labelled .drag-ghost-clone {
+  opacity: 0;
+}
+.drag-ghost-clone > .conversation-row {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+}
+.drag-ghost-clone .row-more {
+  display: none;
+}
+.drag-ghost-danger {
+  border-radius: inherit;
+  background: #281112;
+  box-shadow: inset 0 0 0 1px #641919;
+  opacity: 0;
+}
+.drag-ghost-pill.danger .drag-ghost-danger {
+  opacity: 1;
+}
+.drag-ghost-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  opacity: 0;
+  transition-property: opacity, color;
+}
+.drag-ghost-label > span,
+.drag-ghost-measure {
+  white-space: nowrap;
+}
+.drag-ghost-label > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drag-ghost-pill.labelled .drag-ghost-label {
+  opacity: 1;
+}
+.drag-ghost-pill.danger .drag-ghost-label {
+  color: var(--danger);
+}
+.drag-ghost-measure {
+  position: absolute;
+  visibility: hidden;
+  width: max-content;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+}

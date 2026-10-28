@@ -1,0 +1,67 @@
+/* "Rewind to this message?": gap-md (8px) between the message card and the
+   restore part; the card rounded-card (10px) on bg-neutral, px-lg py-md (12px
+   8px), heading text (14/18) clamped to two lines; the summary in body text
+   (13/19), secondary, its note muted. */
+.rewind-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.rewind-dialog-message {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 18px;
+}
+.rewind-dialog-message p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  white-space: pre-wrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.rewind-dialog-restore {
+  display: grid;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.rewind-dialog-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.rewind-dialog-summary[data-hidden] {
+  visibility: hidden;
+}
+.rewind-dialog-note {
+  color: #898781;
+}
+.rewind-dialog-added {
+  color: #32d74b;
+}
+.rewind-dialog-removed {
+  color: #ff2c56;
+}
+:root[data-theme="light"] .rewind-dialog-message {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .rewind-dialog-restore,
+:root[data-theme="light"] .rewind-dialog-summary {
+  color: #52514e;
+}
+:root[data-theme="light"] .rewind-dialog-added {
+  color: #1e9e3c;
+}
+:root[data-theme="light"] .rewind-dialog-removed {
+  color: #cd2054;
+}

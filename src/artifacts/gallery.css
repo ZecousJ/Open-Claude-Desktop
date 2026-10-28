@@ -1,0 +1,1082 @@
+/* Gallery geometry: docs/audit-live-2026-10-16/live/official-artifacts.txt.
+ * Effective pixels are explicit because the Claudex root is 14px. */
+.artifacts-page {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  padding: 56px 40px 48px 48px;
+  /* Keep the established native viewer inset. Web composes its frame and
+     column padding below instead of adding a scrollbar-sized start inset. */
+  scrollbar-gutter: stable;
+}
+.artifacts-page[data-host="web"] {
+  /* The 1024px border-box column has 32px inner padding; the observed frame
+     scroller adds 8px on each side. The children below cap at its resulting
+     960px content width. */
+  padding-inline: 40px;
+  scrollbar-width: thin;
+}
+.artifacts-page > * {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.artifacts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.artifacts-header > h1 {
+  margin: 0;
+  /* cf35aed38 PageHeader uses font-voice for the collection title, on the
+     desktop too. */
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 500;
+  color: var(--text-strong);
+}
+/*
+ * 32px owner tabs and three applicable local toolbar controls. The vendor
+ * Design service and its relocation notice are omitted.
+ */
+.artifacts-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 32px;
+  margin-top: 0;
+  margin-bottom: 28px;
+}
+.artifacts-page > .artifacts-search + * {
+  margin-top: 28px;
+}
+.artifacts-owner-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4.25px;
+  height: 31.7px;
+  padding: 0 10.9px 0 12px;
+  border-radius: 8px;
+  background: #2c2c2c;
+  color: var(--text);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.artifacts-owner-trigger > svg {
+  color: #b9b8b3;
+}
+.artifacts-owner-trigger:hover,
+.artifacts-owner-trigger[aria-expanded="true"] {
+  background: #343434;
+}
+/* Tabs. */
+.artifacts-owner-tabs {
+  display: flex;
+  align-items: center;
+}
+/* EmptyState CDS classes. */
+.artifacts-search-note {
+  font-size: 12px;
+  line-height: 15px;
+}
+/* EmptyState's secondary Button. */
+:root[data-theme="light"] .artifacts-owner-tabs > button:focus-visible::before {
+  box-shadow:
+    inset 0 0 0 1px #f9f9f7,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px #cde2fb;
+}
+.artifacts-search-note {
+  margin-top: 8px;
+  text-align: center;
+  color: #898781;
+}
+.artifacts-owner-tabs > button {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.artifacts-owner-tabs > button::before {
+  content: "";
+  position: absolute;
+  inset: 0 1px;
+  z-index: -1;
+  border-radius: 6px;
+  transition: box-shadow 60ms;
+}
+.artifacts-owner-tabs > button:first-child::before {
+  left: 0;
+}
+.artifacts-owner-tabs > button:last-child::before {
+  right: 0;
+}
+.artifacts-owner-tabs > button:hover {
+  color: var(--text-secondary);
+}
+.artifacts-owner-tabs > button[aria-selected="true"] {
+  color: var(--text);
+}
+.artifacts-owner-tabs > button:hover::before,
+.artifacts-owner-tabs > button[aria-selected="true"]::before {
+  background: rgb(255 255 255 / 7.5%);
+}
+.artifacts-owner-tabs > button:focus-visible {
+  outline: none;
+}
+.artifacts-owner-tabs > button:focus-visible::before {
+  box-shadow:
+    inset 0 0 0 1px #0b0b0b,
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px rgb(24 79 149 / 60%);
+}
+.artifacts-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.artifacts-tool {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text);
+}
+/* Ghost fills: the text colour at 7.5% (5% light), so they read the same
+   on the page and in a menu (00-foundation.css). */
+.artifacts-tool:hover,
+.artifacts-tool[aria-expanded="true"],
+.artifacts-tool.active {
+  background: var(--fill-ghost-hover);
+}
+/* Group by: a ghost button with its choice and a 16px caret at 60%, 12px clear
+   of the icon buttons beside it; New is a 28px ghost square at the end. */
+.artifacts-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  margin-inline: 8px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.artifacts-group > .app-icon {
+  opacity: 0.6;
+}
+.artifacts-group:hover,
+.artifacts-group[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+.artifacts-tool.artifacts-new {
+  width: 28px;
+  height: 28px;
+}
+/* Grouped, each group's heading (as Make something new's) sits 12px over
+   its own grid, the groups 36px apart. */
+.artifacts-grid-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.artifacts-grid-section + .artifacts-grid-section {
+  margin-top: 36px;
+}
+.artifacts-grid-section > h2 {
+  margin: 0;
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.artifacts-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  height: 32px;
+  margin-top: -13px;
+  padding: 0 7px 0 15px;
+  border: 1px solid #363636;
+  border-radius: 10px;
+  background: #212121;
+  color: #8e8d8b;
+}
+.artifacts-search:focus-within {
+  border-color: #4376b8;
+  box-shadow: 0 0 0 1.5px #4376b859;
+}
+.artifacts-search .artifacts-search-field {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  box-shadow: none;
+}
+.artifacts-search .artifacts-search-field::placeholder {
+  color: #8e8d8b;
+}
+.artifacts-search > button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: #f0efeb;
+}
+.artifacts-search > button:hover {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .artifacts-owner-trigger {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .artifacts-owner-tabs > button {
+  color: #898781;
+}
+:root[data-theme="light"] .artifacts-owner-tabs > button:hover {
+  color: #52514e;
+}
+:root[data-theme="light"] .artifacts-owner-tabs > button[aria-selected="true"] {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .artifacts-owner-tabs > button:hover::before,
+:root[data-theme="light"]
+  .artifacts-owner-tabs
+  > button[aria-selected="true"]::before {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .artifacts-tool {
+  color: var(--text);
+}
+:root[data-theme="light"] .artifacts-search {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+}
+:root[data-theme="light"] .artifacts-search .artifacts-search-field {
+  color: var(--text);
+}
+.artifacts-type-anchor {
+  position: relative;
+}
+/* Type menu: 210px wide with a 1px #393939 rim, 4px inside it, 32px rows, a
+   20px tile 8px in with 7px to the label, the count 9px from the right.
+   Slides/Design/Docs are tinted tiles; "Other" (here Code) has no tile, only
+   its glyph. */
+.artifacts-type-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4.5px);
+  right: 0;
+  box-sizing: border-box;
+  width: 210px;
+  padding: 4px;
+  border: 1px solid #393939;
+  border-radius: 10px;
+  background: #222;
+  box-shadow: 0 8px 24px #0006;
+}
+.artifacts-type-menu > button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  height: 32px;
+  padding: 0 9px 0 8px;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+  text-align: left;
+}
+.artifacts-type-menu > button:hover,
+.artifacts-type-menu > button:focus-visible {
+  background: var(--fill-ghost-hover);
+  outline: none;
+}
+.artifacts-type-menu .artifacts-type-label {
+  flex: 1;
+}
+.artifacts-type-menu > button > small {
+  color: #8e8e8c;
+  font-size: 14px;
+}
+.artifacts-type-menu > button > svg:last-child:not(:first-child) {
+  color: #3376c7;
+}
+.artifacts-type-all {
+  flex-shrink: 0;
+  color: var(--text);
+}
+.artifacts-type-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: #372f22;
+  color: #a6855a;
+}
+.artifacts-type-icon[data-type="document"] {
+  background: #242c37;
+  color: #3b6aba;
+}
+.artifacts-type-icon[data-type="diagram"] {
+  background: #2d2b38;
+  color: #766ba4;
+}
+.artifacts-type-icon[data-type="data"] {
+  background: #272d3d;
+  color: #6871ba;
+}
+.artifacts-type-icon[data-type="code"] {
+  background: transparent;
+  color: var(--text);
+}
+/* Light: the type tiles take the original's artifact tint, the 450 step at 10%
+   behind the same colour; the dark #fcfafb reads white on white, so All types
+   and Code take the text colour. */
+:root[data-theme="light"] .artifacts-type-all,
+:root[data-theme="light"] .artifacts-type-icon[data-type="code"] {
+  color: var(--text);
+}
+:root[data-theme="light"] .artifacts-type-icon {
+  background: rgb(166 106 0 / 10%);
+  color: #a66a00;
+}
+:root[data-theme="light"] .artifacts-type-icon[data-type="document"] {
+  background: rgb(42 120 214 / 10%);
+  color: #2a78d6;
+}
+:root[data-theme="light"] .artifacts-type-icon[data-type="diagram"],
+:root[data-theme="light"] .artifacts-type-icon[data-type="data"] {
+  background: rgb(113 97 224 / 10%);
+  color: #7161e0;
+}
+:root[data-theme="light"] .artifacts-type-icon[data-type="code"] {
+  background: transparent;
+}
+/* Inline templates: 136x119 buttons, 12px gaps, 13/17 labels and
+ * 10/13 badges. Artwork is the observed template structure. */
+/* The heading and the strip are 12px apart in a column (the original's
+ * flex-col gap-3): no margins, so the strip's -8px bleed stays inside it. */
+.artifacts-make {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* mb-10. */
+  margin-bottom: 40px;
+}
+.artifacts-make > h2 {
+  margin: 0;
+  height: 17px;
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+/*
+ * The templates are one row that scrolls sideways. A hidden end fades out over
+ * 56px and a round caret sits over it, 32px down, 6px past the edge (12px right
+ * / 16px left from 768px); touch screens scroll by hand.
+ */
+.artifacts-make-strip {
+  position: relative;
+}
+.artifacts-make-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: -8px;
+  padding: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  list-style: none;
+}
+.artifacts-make-row::-webkit-scrollbar {
+  display: none;
+}
+.artifacts-make-row > li {
+  flex: none;
+}
+.artifacts-make-row[data-fade="right"] {
+  mask-image: linear-gradient(to left, transparent, #000 56px);
+}
+.artifacts-make-row[data-fade="left"] {
+  mask-image: linear-gradient(to right, transparent, #000 56px);
+}
+.artifacts-make-row[data-fade="both"] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 56px,
+    #000 calc(100% - 56px),
+    transparent
+  );
+}
+.artifacts-make-tail {
+  width: 40px;
+  align-self: stretch;
+}
+/* surface-1 under the caret, surface-2 while hovered (dark #151515 / #1a1a19,
+ * light #fcfcfb / #fff), a 1px alpha-3 ring in the dark and the light
+ * shadow pair of the original. */
+.artifacts-make-scroll {
+  position: absolute;
+  top: 32px;
+  display: flex;
+  border-radius: 9999px;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--alpha-3);
+  transition: background-color var(--motion-fast);
+}
+.artifacts-make-scroll:hover {
+  background: #1a1a19;
+}
+.artifacts-make-scroll.right {
+  right: -6px;
+}
+.artifacts-make-scroll.left {
+  left: -6px;
+}
+.artifacts-make-scroll > .icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  color: var(--text);
+}
+@media (min-width: 768px) {
+  .artifacts-make-scroll.right {
+    right: -12px;
+  }
+  .artifacts-make-scroll.left {
+    left: -16px;
+  }
+}
+@media (pointer: coarse) {
+  .artifacts-make-scroll {
+    display: none;
+  }
+}
+:root[data-theme="light"] .artifacts-make-scroll {
+  box-shadow:
+    0 0 0 0.5px rgb(11 11 11 / 16%),
+    0 2px 8px rgb(0 0 0 / 10%);
+}
+:root[data-theme="light"] .artifacts-make-scroll:hover {
+  background: #fff;
+}
+.artifacts-make-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  width: 136px;
+  height: 119px;
+  padding: 0;
+  border-radius: 14px;
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+}
+.artifacts-make-card[aria-disabled="true"] {
+  opacity: 0.4;
+}
+.artifacts-make-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 17px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.artifacts-make-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  flex: none;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 13px;
+  font-weight: 500;
+}
+:root[data-theme="light"] .artifacts-make > h2 {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifacts-make-card {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .artifacts-make-badge {
+  background: rgb(11 11 11 / 5%);
+  color: #5f5d57;
+}
+.artifacts-section {
+  margin-bottom: 19px;
+}
+.artifacts-section > h2 {
+  margin: 0;
+  height: 20px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+  color: #8f8e8c;
+}
+.artifacts-row {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  height: 48px;
+}
+/* Hover, keyboard focus or an open menu fills the row with the ghost fill, 12px
+   past the list on both sides, at once. */
+.artifacts-row::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 -12px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.artifacts-row:hover::before,
+.artifacts-row:has(:focus-visible)::before,
+.artifacts-row:has([aria-expanded="true"])::before {
+  background: var(--fill-ghost-hover);
+}
+.artifacts-row-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  height: 48px;
+  padding: 0 15px 0 0;
+  border-radius: 8px;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+}
+.artifacts-row-main:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -2px;
+}
+.artifacts-tile {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  height: 36px;
+  border-radius: 7px;
+  background: #212121;
+  color: #c6c6c4;
+}
+.artifacts-tile[data-type="document"] {
+  background: #1b222a;
+  color: #6a9fe3;
+}
+.artifacts-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-size: 14px;
+}
+/* text-caption text-muted, as the card's line. */
+.artifacts-row-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  color: #898781;
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+}
+.artifacts-row-meta > i {
+  font-style: normal;
+  color: #4e4e4e;
+}
+.artifacts-row-more {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: #d9d8d4;
+}
+.artifacts-row-more:hover,
+.artifacts-row-more[aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+}
+/* The pin beside a row's time: hidden until the row is hovered or focused, an
+   accent pin while pinned. */
+.artifacts-row-pin {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: #939391;
+  opacity: 0;
+  /* Shown and tinted at once (the original's pin has no transition). */
+  transition: none;
+}
+.artifacts-row:hover > .artifacts-row-pin,
+.artifacts-row-pin:focus-visible,
+.artifacts-row-pin[aria-pressed="true"] {
+  opacity: 1;
+}
+.artifacts-row-pin:hover {
+  background: var(--fill-ghost-hover);
+  color: #d9d8d4;
+}
+.artifacts-row-pin[aria-pressed="true"] {
+  color: var(--accent);
+}
+@media (hover: none) {
+  .artifacts-row-pin {
+    opacity: 1;
+  }
+}
+/* R-0913 (W969, 2.4): the words start at the list's left, 14px #959490. */
+.artifacts-no-results {
+  padding: 20px 8px;
+  color: #959490;
+  font-size: 14px;
+}
+.artifacts-page .artifacts-grid {
+  max-width: 960px;
+}
+@media (max-width: 760px) {
+  .artifacts-page {
+    padding: 40px 20px 32px;
+    scrollbar-gutter: auto;
+  }
+  .artifacts-page[data-host="web"] {
+    padding-inline: 20px;
+  }
+}
+:root[data-theme="light"] .artifacts-header > h1,
+:root[data-theme="light"] .artifacts-row-name,
+:root[data-theme="light"] .artifacts-search .artifacts-search-field {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .artifacts-tool,
+:root[data-theme="light"] .artifacts-type-menu > button,
+:root[data-theme="light"] .artifacts-row-more {
+  color: var(--text);
+}
+:root[data-theme="light"] .artifacts-row-meta,
+:root[data-theme="light"] .artifacts-section > h2,
+:root[data-theme="light"] .artifacts-type-menu > button > small {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifacts-tile {
+  background: var(--surface-hover);
+}
+:root[data-theme="light"] .artifacts-type-menu,
+:root[data-theme="light"] .artifacts-search {
+  background: var(--surface);
+  border-color: var(--border);
+}
+/* Live cards: 304px columns, 160px thumbnails and a title at +14,+175.
+ * A second title line grows the normal 234px card to 254px. */
+.artifacts-page .artifacts-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  margin-block: 0;
+  padding: 0;
+  list-style: none;
+}
+/* A card squishes to 98% while pressed and back, both over 120ms on the default
+   curve, and its fill steps from the card surface to the one below on hover, at
+   once. */
+.artifacts-card {
+  position: relative;
+  min-width: 0;
+  transition: scale var(--motion-snap) var(--ease-standard);
+}
+.artifacts-card:has(> .artifacts-card-main:active) {
+  scale: 0.98;
+}
+@media (prefers-reduced-motion: reduce) {
+  .artifacts-card:has(> .artifacts-card-main:active) {
+    scale: none;
+  }
+}
+:root[data-motion="reduced"]
+  .artifacts-card:has(> .artifacts-card-main:active) {
+  scale: none;
+}
+.artifacts-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 234px;
+  /* Reserve the 17px metadata row, its 8px gap, and 13px bottom padding.
+     The row is a sibling so its Pin button never nests in the opener. */
+  padding: 0 0 38px;
+  border: 1px solid #313131;
+  border-radius: 12px;
+  background: #1a1a1a;
+  text-align: left;
+  transition: none;
+  color: inherit;
+  text-decoration: none;
+}
+.artifacts-card:hover > .artifacts-card-main {
+  border-color: #3a3a3a;
+  background: #151515;
+}
+.artifacts-card-main:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 2px;
+}
+.artifacts-card-preview {
+  position: relative;
+  display: block;
+  flex: 0 0 160px;
+  width: 100%;
+  border-bottom: 1px solid #252525;
+}
+.artifacts-card-frame,
+.artifacts-card-excerpt {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 11px 11px 0 0;
+}
+.artifacts-card-type-media {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px 11px 0 0;
+  background: rgb(144 133 233 / 10%);
+  color: #9085e9;
+}
+/* The page at 1000 px wide, scaled into the card; it can't be clicked or focused. */
+.artifacts-card-frame {
+  width: 400%;
+  height: 400%;
+  border: 0;
+  background: #fff;
+  transform: scale(0.25);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.artifacts-card-excerpt {
+  padding: 16px 16px 0;
+  color: #8f8e8c;
+  font: 10px/1.6 var(--font-mono, ui-monospace, monospace);
+  white-space: pre-wrap;
+  word-break: break-word;
+  mask-image: linear-gradient(#000 45%, transparent);
+}
+.artifacts-card-tile {
+  position: absolute;
+  left: 13px;
+  bottom: -7px;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+.artifacts-tile.artifacts-card-tile:not([data-type="document"]) {
+  background: #1a1a19;
+  color: var(--text-secondary);
+}
+:root:not([data-theme="light"]) .artifacts-card-tile[data-dashboard] {
+  background:
+    linear-gradient(rgb(144 133 233 / 10%), rgb(144 133 233 / 10%)), #1a1a19;
+  color: #9085e9;
+}
+/* Current gallery Slides chip: This is tied to the same real export
+   predicate as the artifact viewer. */
+:root:not([data-theme="light"]) .artifacts-card-tile[data-presentation] {
+  background: #1a1a19;
+  color: #c98500;
+}
+.artifacts-card-name {
+  display: -webkit-box;
+  overflow: hidden;
+  flex: none;
+  min-height: 20px;
+  margin: 6px 13px 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.artifacts-card-meta {
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 17px;
+  pointer-events: none;
+}
+/*
+ * The time is one line that truncates (the original's whitespace-nowrap
+ * text-ellipsis overflow-x-clip span): in a narrow card it must not wrap under
+ * the name.
+ */
+.artifacts-card-time {
+  overflow-x: clip;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.artifacts-card-meta > svg {
+  flex: none;
+}
+/* A 3px alpha-3 dot between the privacy icon and the time (the original's
+ * size-[3px] rounded-full bg-alpha-3 separator). */
+.artifacts-card-dot {
+  flex: none;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--alpha-3);
+}
+.artifacts-card-pin {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin-block: -4px;
+  padding: 4px;
+  color: inherit;
+  opacity: 0;
+  pointer-events: auto;
+}
+.artifacts-card:hover .artifacts-card-pin,
+.artifacts-card-pin[aria-pressed="true"],
+.artifacts-card-pin:focus-visible {
+  opacity: 1;
+}
+.artifacts-card-pin:hover {
+  color: var(--text-strong);
+}
+@media (pointer: coarse) {
+  .artifacts-card-pin {
+    opacity: 1;
+  }
+}
+.artifacts-card-meta > i {
+  color: #4e4e4e;
+  font-style: normal;
+}
+.artifacts-card-more {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg);
+  color: #e5e4df;
+  opacity: 0;
+  /* The ⋯ fades in over the default 150ms (the original's transition-opacity). */
+  transition:
+    opacity 150ms var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-out);
+}
+/* Hovered or open it steps to the surface above (surface-1 to surface-3). */
+.artifacts-card-more:hover,
+.artifacts-card-more[aria-expanded="true"] {
+  background: rgb(32 32 31 / 0.86);
+}
+.artifacts-card:hover > .artifacts-card-more,
+.artifacts-card-more:focus-visible,
+.artifacts-card-more[aria-expanded="true"] {
+  opacity: 1;
+}
+@media (hover: none) {
+  .artifacts-card-more {
+    opacity: 1;
+  }
+}
+:root[data-theme="light"] .artifacts-card-main {
+  border-color: #dedcd4;
+  background: #f7f6f2;
+}
+:root[data-theme="light"] .artifacts-card-main:hover {
+  background: #f3f2ee;
+}
+:root[data-theme="light"] .artifacts-card-preview {
+  border-bottom-color: #dedcd4;
+}
+:root[data-theme="light"]
+  .artifacts-tile.artifacts-card-tile:not([data-type="document"]) {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"]
+  .artifacts-tile.artifacts-card-tile[data-presentation] {
+  /* Yellow450 light / yellow350 dark. */
+  color: #a66a00;
+}
+:root[data-theme="light"] .artifacts-card-name {
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .artifacts-card-meta,
+:root[data-theme="light"] .artifacts-card-excerpt {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifacts-card-more {
+  background: rgb(255 255 255 / 0.9);
+  color: var(--text);
+}
+
+/* Loading: placeholders while the profile's notes are read. */
+.artifacts-skeleton-list {
+  display: grid;
+  padding-top: 20px;
+}
+.artifacts-skeleton-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+.artifacts-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+}
+.artifacts-skeleton-text {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+}
+.artifacts-skeleton-card {
+  display: grid;
+  gap: 8px;
+}
+/* The blocks keep their measured fills; the wait, fade and wave are the
+   shared skeleton's (src/ui/skeleton.css, a wave group). */
+.artifacts-skeleton-tile,
+.artifacts-skeleton-preview,
+.artifacts-skeleton-bar {
+  display: block;
+  border-radius: 6px;
+  background: var(--surface-raised);
+}
+.artifacts-skeleton-tile {
+  flex: 0 0 36px;
+  height: 36px;
+  border-radius: 7px;
+}
+.artifacts-skeleton-preview {
+  aspect-ratio: 10 / 11;
+  border-radius: 12px;
+}
+.artifacts-skeleton-bar {
+  width: 60%;
+  height: 10px;
+}
+.artifacts-skeleton-bar.short {
+  width: 35%;
+}
+.artifacts-skeleton-bar.end {
+  flex: 0 0 64px;
+}
+:root[data-theme="light"] .artifacts-skeleton-tile,
+:root[data-theme="light"] .artifacts-skeleton-preview,
+:root[data-theme="light"] .artifacts-skeleton-bar {
+  background: #ebe9e2;
+}
+
+.artifacts-card-screenshot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* Base / sm / md = one / two / three. */
+@media (min-width: 640px) {
+  .artifacts-page .artifacts-grid,
+  .artifacts-skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  .artifacts-page .artifacts-grid,
+  .artifacts-skeleton-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.artifacts-make-badge.new {
+  background: rgb(
+    from #032042 calc((r - 5.25) / 0.75) calc((g - 5.25) / 0.75)
+      calc((b - 5.25) / 0.75) / 75%
+  );
+  color: #6da7ec;
+}
+:root[data-theme="light"] .artifacts-make-badge.new {
+  background: rgb(
+    from #cde2fb calc((r - 163.8) / 0.35) calc((g - 163.8) / 0.35)
+      calc((b - 163.15) / 0.35) / 35%
+  );
+  color: #184f95;
+}

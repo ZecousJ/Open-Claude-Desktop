@@ -1,0 +1,38 @@
+/*
+ * Compare with current (the version switcher): the dialog the original opens
+ * for an earlier version against the current one is 3xl (768px) and as tall as
+ * the window allows. The diff rows are the Changes panel's own (diff.css,
+ * changes-panel.css); only the frame is set here.
+ */
+.modal.version-compare {
+  display: flex;
+  flex-direction: column;
+  width: 768px;
+  height: 90vh;
+}
+.version-compare-lead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.version-compare-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.version-compare-diff {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.version-compare-hunk + .version-compare-hunk {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}

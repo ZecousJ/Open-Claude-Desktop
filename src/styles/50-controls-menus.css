@@ -1,0 +1,193 @@
+/* Shared controls and menus */
+.icon-button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 0;
+}
+/* Ghost fills are translucent so they read the same on a card or popover
+   (--fill-ghost-*, 00-foundation.css). Hover-only looks wait for a real
+   hover, so a tap on a touch screen doesn't leave them stuck on. */
+.icon-button.active {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+@media (hover: hover) {
+  .icon-button:hover:not(:disabled) {
+    background: var(--fill-ghost-hover);
+    color: var(--text);
+  }
+}
+/* A button that opens a menu keeps its hover fill while the menu is open
+   (the original's group-[[aria-haspopup][aria-expanded=true]] fills). */
+.icon-button[aria-haspopup][aria-expanded="true"] {
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+/* The comfortable-density md button: 32px high, 8px radius, 14px/20px text,
+   medium for the primary and regular for the secondary. */
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.secondary {
+  font-weight: 400;
+}
+.primary {
+  background: var(--primary);
+  color: var(--primary-text);
+  border: 1px solid transparent;
+  font-weight: 500;
+}
+/* The secondary fill is white at 10% over the page with no ring, 14% under
+   the pointer (--cds-fill-secondary, its hover and ring, dark theme). */
+.secondary {
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid transparent;
+  color: var(--text);
+  font-weight: 400;
+}
+:root[data-theme="light"] .secondary {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+@media (hover: hover) {
+  .primary:hover:not(:disabled) {
+    opacity: 0.87;
+  }
+  .secondary:hover:not(:disabled) {
+    background: rgb(255 255 255 / 14%);
+  }
+  :root[data-theme="light"] .secondary:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+}
+.secondary[aria-haspopup][aria-expanded="true"] {
+  background: rgb(255 255 255 / 14%);
+}
+:root[data-theme="light"] .secondary[aria-haspopup][aria-expanded="true"] {
+  background: var(--surface-hover);
+}
+/* The danger fill is the original's red-450 in both themes and lightens to
+   red-400 under the pointer; dark had a derived #ad453c. */
+.danger-button {
+  color: #fff;
+  background: #d03b3b;
+}
+/* #d03c3c. */
+:root[data-theme="light"] .danger-button {
+  background: #d03c3c;
+}
+@media (hover: hover) {
+  .danger-button:hover:not(:disabled) {
+    background: #e34948;
+    opacity: 1;
+  }
+}
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 4px 0;
+  color: var(--text-secondary);
+}
+@media (hover: hover) {
+  .text-button:hover {
+    color: var(--text);
+  }
+}
+.button-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.button-row.spread {
+  justify-content: space-between;
+}
+.popover-anchor {
+  position: relative;
+  min-width: 0;
+}
+.popover {
+  z-index: 30;
+  position: absolute;
+  min-width: 220px;
+  padding: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  /* No open or close motion: the original's menu and popover popups carry no
+     transition. */
+}
+.popover > button,
+.popover > div > button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 5px;
+  padding: 8px 9px;
+  font-size: 12px;
+  text-align: left;
+  min-height: 33px;
+}
+.popover button:hover:not(:disabled),
+.popover button.selected {
+  background: var(--surface-hover);
+}
+.popover button > svg {
+  color: var(--text-secondary);
+}
+.popover button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.popover header {
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 7px 9px 9px;
+}
+.popover small {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 11px 9px 6px;
+}
+.popover .permission-note {
+  margin: 0;
+  padding: 5px 9px 9px;
+  max-width: 240px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+.model-popover {
+  right: 0;
+  bottom: calc(100% + 12px);
+  width: 292px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+.thread-popover {
+  right: 0;
+  top: calc(100% + 7px);
+}

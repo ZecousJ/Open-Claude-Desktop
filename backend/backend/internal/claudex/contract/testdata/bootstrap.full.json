@@ -1,0 +1,268 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "schema_version": 1,
+    "generated_at": "2026-09-26T02:30:00Z",
+    "server": {
+      "site_name": "Claudex",
+      "version": "0.2.8+claudex.1",
+      "timezone": "Asia/Shanghai"
+    },
+    "plan": {
+      "group_id": 4,
+      "group_name": "claudex-pro",
+      "platform": "openai",
+      "protocol": "responses",
+      "subscription_type": "subscription",
+      "subscription_id": 77,
+      "expires_at": "2026-10-25T00:00:00Z",
+      "subscribed": true
+    },
+    "device": {
+      "registered": true,
+      "id": 51,
+      "key_group_id": 4,
+      "revoked": false,
+      "reprovision_needed": false,
+      "keys": [
+        {
+          "api_key_id": 812,
+          "group_id": 4,
+          "group_name": "claudex-pro",
+          "platform": "openai",
+          "protocol": "responses",
+          "primary": true
+        },
+        {
+          "api_key_id": 813,
+          "group_id": 11,
+          "group_name": "claudex-grok",
+          "platform": "grok",
+          "protocol": "chat",
+          "primary": false
+        }
+      ]
+    },
+    "policy": {
+      "revision": 17,
+      "group_id": 4,
+      "permission_modes": [
+        "auto",
+        "manual",
+        "acceptEdits",
+        "plan"
+      ],
+      "incognito": true,
+      "web_search": true,
+      "web_search_default": false,
+      "voice": true,
+      "local_mcp_editing": true,
+      "remote_images": true,
+      "remote_image_domains": null,
+      "external_links": true,
+      "trusted_link_domains": [],
+      "connectors": [
+        {
+          "name": "github",
+          "url_prefix": "https://api.githubcopilot.com/mcp"
+        },
+        {
+          "name": "linear"
+        }
+      ],
+      "attachments": {
+        "max_bytes": 10485760,
+        "types": [
+          "png",
+          "jpg",
+          "jpeg",
+          "webp",
+          "gif",
+          "txt",
+          "md",
+          "csv",
+          "json",
+          "py",
+          "ts"
+        ]
+      },
+      "links": {
+        "help": "https://docs.example.com",
+        "plans": null,
+        "apps": null,
+        "get_more_usage": "https://claudex.example.com/plans",
+        "usage_learn_more": null,
+        "learn_more": [
+          {
+            "label": "Usage policy",
+            "url": "https://claudex.example.com/policy"
+          }
+        ]
+      },
+      "usage_banner": {
+        "warn_percent": 80
+      },
+      "plan_label": "Max",
+      "scheduled_tasks": {
+        "enabled": true,
+        "max_tasks": null
+      },
+      "approvals_always_allow": true,
+      "memory": {
+        "enabled": true,
+        "search_chats": true,
+        "generate": true,
+        "default_on": false,
+        "model": null
+      },
+      "research": {
+        "enabled": true,
+        "x_search": true,
+        "max_searches_per_turn": 30
+      },
+      "browser": {
+        "enabled": true,
+        "external_sites": true,
+        "allow_script": true,
+        "dev_servers": true,
+        "blocked_domains": [
+          "mail.example.com"
+        ]
+      },
+      "ssh_remote": true,
+      "codex_runtime_mirror": "https://registry.npmmirror.com/",
+      "computer_use": {
+        "enabled": false,
+        "allow_full_control": true,
+        "denied_apps": [
+          "com.apple.Terminal"
+        ],
+        "max_actions_per_turn": null
+      }
+    },
+    "models": {
+      "group_id": 4,
+      "default_model": "gpt-5.5",
+      "items": [
+        {
+          "id": "gpt-5.5",
+          "display_name": "GPT-5.5",
+          "description": "Our smartest model for complex work",
+          "badges": [
+            "new"
+          ],
+          "sort": 10,
+          "hidden": false,
+          "default": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "default_effort": "medium",
+          "context_window": 400000,
+          "auto_compact_tokens": 320000,
+          "usage_hint": "1.5× usage",
+          "web_search": "native",
+          "x_search": false,
+          "group_id": 4,
+          "minimum_desktop_version": ""
+        },
+        {
+          "id": "gpt-5.5-mini",
+          "display_name": "GPT-5.5 mini",
+          "description": "Fast for everyday tasks",
+          "badges": [],
+          "sort": 20,
+          "hidden": false,
+          "default": false,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "default_effort": "low",
+          "context_window": 400000,
+          "auto_compact_tokens": null,
+          "usage_hint": "",
+          "web_search": "native",
+          "x_search": false,
+          "group_id": 4,
+          "minimum_desktop_version": ""
+        }
+      ]
+    },
+    "release": {
+      "channel": "stable",
+      "latest_version": "1.4.0",
+      "minimum_version": "1.2.0",
+      "state": "available",
+      "enforced": false,
+      "download_url": "https://dl.example.com/Claudex-1.4.0-arm64.zip",
+      "sha256": "3f5c9a1e7b2d4c6f8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
+      "release_notes_url": "https://claudex.example.com/releases/1.4.0",
+      "release_notes_md": "## 1.4.0\n- Plan usage limits now show the current session.",
+      "published_at": "2026-09-20T08:00:00Z",
+      "ui": null,
+      "app_pack": {
+        "url": "https://claudex.example/downloads/claudex/0.0.37/Claudex-0.0.37-win-x64-app.zip",
+        "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "runtime": "44.4.3",
+        "keep": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+      },
+      "desktop_updater_config": {
+        "check_interval_ticks": 2,
+        "staged_peek_min_interval_minutes": 30
+      }
+    },
+    "voice": {
+      "transcription": {
+        "enabled": true,
+        "protocol": "websocket",
+        "path": "/v1/audio/realtime/transcriptions",
+        "audio": {
+          "format": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "max_session_seconds": 600,
+        "max_bytes": 19200000,
+        "idle_timeout_seconds": 30
+      },
+      "available": {
+        "transcription": true
+      }
+    },
+    "usage": {
+      "rules_enabled": true,
+      "has_session_window": true
+    },
+    "feedback": {
+      "diagnostics": {
+        "enabled": false
+      },
+      "feedback": {
+        "enabled": false,
+        "allow_conversation_excerpt": false
+      }
+    },
+    "features": {
+      "device_keys": true,
+      "usage_status": true,
+      "structured_refusals": true,
+      "model_catalog": true,
+      "voice_transcription": true,
+      "voice_speech": false,
+      "payment": true,
+      "desktop_checkout": true,
+      "redeem": true,
+      "diagnostics": false,
+      "feedback": false,
+      "self_delete": false,
+      "announcements": true
+    },
+    "errors": []
+  }
+}

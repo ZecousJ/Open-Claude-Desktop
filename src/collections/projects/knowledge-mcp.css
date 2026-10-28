@@ -1,0 +1,69 @@
+/* An MCP server's resources for project knowledge: the search or URL field over
+   a scrolling list of the resources. */
+.knowledge-mcp-search {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+}
+.knowledge-mcp-search:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus);
+}
+.knowledge-mcp-error {
+  margin: 8px 0 0;
+  color: var(--danger);
+  font-size: 12px;
+}
+.knowledge-mcp-loading {
+  display: grid;
+  place-items: center;
+  padding: 24px 0;
+}
+.knowledge-mcp-empty {
+  margin: 16px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+.knowledge-mcp-list {
+  max-height: 320px;
+  margin: 8px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.knowledge-mcp-list button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.knowledge-mcp-list button:hover {
+  background: var(--alpha-1);
+}
+.knowledge-mcp-name {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.knowledge-mcp-detail {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

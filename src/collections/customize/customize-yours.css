@@ -1,0 +1,174 @@
+/* Current signed-in Skills/Plugins Yours, 1440×900, 2026-10-16.
+   The source taxonomy still follows real runtime provenance. */
+.customize-callout.customize-yours-callout {
+  gap: 28px;
+  margin-top: 28px;
+  padding: 16px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text);
+  line-height: 20px;
+}
+.customize-yours-callout h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.customize-yours-callout p {
+  margin-top: 8px;
+  color: var(--text-secondary);
+  line-height: 20px;
+}
+.customize-callout.customize-yours-callout button {
+  height: 32px;
+  margin-top: 16px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.customize-yours-callout > svg {
+  width: 64px;
+  height: 64px;
+  margin-inline: 0 24px;
+  color: var(--text);
+}
+.customize-yours .customize-section {
+  margin-top: 28px;
+}
+.customize-yours .customize-section > h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+}
+.customize-yours .customize-section > h3 > span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted, #898781);
+}
+.customize-yours .customize-rows {
+  margin: 0 -12px;
+}
+.customize-yours .customize-row {
+  border: 0;
+  border-radius: 12px;
+}
+.customize-yours .customize-row::after {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 12px;
+  height: 1px;
+  background: rgb(255 255 255 / 10%);
+  content: "";
+}
+.customize-yours .customize-row:last-child::after,
+.customize-yours
+  .customize-row:has(.customize-row-more[aria-expanded="true"])::after {
+  display: none;
+}
+.customize-yours .customize-row-main {
+  gap: 16px;
+  height: 63px;
+  padding: 12px 72px 12px 12px;
+  border-radius: inherit;
+  line-height: 20px;
+}
+.customize-yours .customize-row-tile {
+  border: 1px solid rgb(255 255 255 / 10%);
+  color: var(--text-muted, #898781);
+}
+.customize-yours .customize-row-text > span {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  line-height: 17px;
+}
+.customize-yours .customize-row-text strong {
+  color: var(--text);
+}
+.customize-yours .customize-row-main time {
+  margin-left: 12px;
+  line-height: 17px;
+  color: var(--text-muted, #898781);
+}
+/*
+ * Live Yours: the section count is an 18px round counter (11/17/500 secondary
+ * on white 5%); rows from a publisher read "from Anthropic · …" with the dot
+ * padded 8px.
+ */
+.customize-yours .customize-section > h3 > .customize-section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary, #c3c2b7);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 17px;
+}
+:root[data-theme="light"]
+  .customize-yours
+  .customize-section
+  > h3
+  > .customize-section-count {
+  background: rgb(11 11 11 / 5%);
+}
+.customize-yours .customize-row-dot {
+  padding: 0 8px;
+}
+.customize-yours .customize-row-more {
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  line-height: 20px;
+}
+:root[data-theme="light"] .customize-callout.customize-yours-callout {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .customize-yours-callout h3 {
+  color: var(--text);
+}
+:root[data-theme="light"] .customize-yours .customize-row::after {
+  background: rgb(0 0 0 / 10%);
+}
+:root[data-theme="light"] .customize-yours .customize-row-tile {
+  border-color: rgb(0 0 0 / 10%);
+}
+@media (max-width: 639px) {
+  .customize-yours-callout > .pictogram {
+    display: none;
+  }
+}
+
+/* Yours filtered-empty recovery. */
+.customize-filter-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.customize-filter-empty p {
+  max-width: 320px;
+  margin: 0;
+}
+.customize-filter-empty > button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}

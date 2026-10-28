@@ -1,0 +1,502 @@
+/*
+ * Manage memory (src/memory/ManageMemoryDialog.tsx). Values from the live
+ * claude.ai bundle, 2026-10-12 (the memory modal and MemoryPreviewContent)
+ * and its tokens: dark surface-3 #20201f, surface-0 #0b0b0b, surface-1
+ * #151515, muted #6d6b67; light #fff, #f9f9f7, #fcfcfb, #898781; the 0.5px
+ * border-300 at 15%; clay #d97757. Text uses Claudex's own primary and
+ * secondary colours, the closest analogue.
+ */
+.manage-memory {
+  --mm-surface-3: #20201f;
+  --mm-surface-0: #0b0b0b;
+  --mm-surface-1: #151515;
+  --mm-muted: #6d6b67;
+  --mm-border: rgb(225 224 217 / 15%);
+  --mm-ink: #fff;
+  --mm-shadow-color: rgb(0 0 0 / 24%);
+  --mm-clay: #d97757;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+:root[data-theme="light"] .manage-memory {
+  --mm-surface-3: #fff;
+  --mm-surface-0: #f9f9f7;
+  --mm-surface-1: #fcfcfb;
+  --mm-muted: #898781;
+  --mm-border: rgb(30 30 29 / 15%);
+  --mm-ink: #0b0b0b;
+  --mm-shadow-color: rgb(11 11 11 / 8%);
+}
+
+/* The dialog is the original's "lg" popup: up to 720 wide. While a change
+   is saved it has no close button (and Escape or the backdrop do nothing). */
+.modal.manage-memory-modal {
+  width: 720px;
+}
+.modal.manage-memory-modal:has(.manage-memory[data-updating])
+  > header
+  .icon-button {
+  visibility: hidden;
+}
+/* The header's description: 4px under the title, body size, secondary. */
+.manage-memory-intro {
+  margin: -5px 0 16px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+/* The box: 0.5px border, 12px round, surface-3, clipped. */
+.manage-memory-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 0.5px solid var(--mm-border);
+  border-radius: 12px;
+  background: var(--mm-surface-3);
+}
+/* The clay glow from the lower right: hidden, breathing while updating
+   (opacity 0.3 → 1 → 1 → 0.3 over 2 s, repeated). */
+.manage-memory-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background-image: radial-gradient(
+    at 90% 90%,
+    color-mix(in srgb, var(--mm-clay) 10%, transparent) 0%,
+    transparent 90%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+.manage-memory[data-updating] .manage-memory-glow {
+  animation: manage-memory-breathe 2s linear infinite;
+}
+@keyframes manage-memory-breathe {
+  0% {
+    opacity: 0.3;
+  }
+  33.3%,
+  66.6% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+/* The frame the text scrolls in (the fade and "Updating" sit on it). */
+.manage-memory-frame {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+}
+/* The text: 20px across, 16px down, 96px clear at the foot for the pencil;
+   the surface-0 wash at 20%. */
+.manage-memory-scroll {
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px 20px 96px;
+  border-radius: 8px 8px 0 0;
+  background: color-mix(in oklab, var(--mm-surface-0) 20%, transparent);
+  outline: none;
+}
+.manage-memory-text,
+.manage-memory-updating {
+  animation: manage-memory-fade 300ms var(--ease-out);
+}
+@keyframes manage-memory-fade {
+  from {
+    opacity: 0;
+  }
+}
+/* The reply face at 14/20: Claudex's chat serif. */
+.manage-memory-text {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.manage-memory-text > :first-child {
+  margin-top: 0;
+}
+.manage-memory-text h1,
+.manage-memory-text h2,
+.manage-memory-text h3,
+.manage-memory-text h4 {
+  margin: 16px 0 6px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.manage-memory-text p,
+.manage-memory-text ul,
+.manage-memory-text ol {
+  margin: 0 0 8px;
+}
+.manage-memory-text ul,
+.manage-memory-text ol {
+  padding-left: 20px;
+}
+/* An 18px strip at the foot: primary ink to surface-1 at 2%. */
+.manage-memory-text-fade {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 18px;
+  background: linear-gradient(to top, var(--mm-ink), var(--mm-surface-1));
+  opacity: 0.02;
+  pointer-events: none;
+}
+/* "Updating memory...": centred, 12/17 at half strength, a 16px spinner. */
+.manage-memory-updating {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text);
+  opacity: 0.5;
+}
+.manage-memory-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .manage-memory-spinner,
+  .manage-memory[data-updating] .manage-memory-glow {
+    animation: none;
+  }
+  .manage-memory[data-updating] .manage-memory-glow {
+    opacity: 1;
+  }
+}
+.manage-memory-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+/* The pencil: a 56px circle 20px in from the box's lower left that widens
+   to the box (less 20px each side) over 300ms when focused. */
+.memory-edit-field {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  transition: width 300ms var(--ease-out);
+}
+.memory-edit-field[data-open] {
+  width: calc(100% - 40px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .memory-edit-field {
+    transition: none;
+  }
+}
+/* Frosted (16px blur), round, 0.5px border; surface-3 at 70% with the md
+   shadow, 80% and the lg shadow under the pointer, 90% and the xl shadow
+   open. */
+.memory-edit-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  border: 0.5px solid var(--mm-border);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--mm-surface-3) 70%, transparent);
+  box-shadow:
+    0 2px 4px 0 rgb(11 11 11 / 7%),
+    0 6px 16px 0 var(--mm-shadow-color);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  transition:
+    background-color 150ms var(--ease-standard),
+    box-shadow 150ms var(--ease-standard);
+}
+@media (hover: hover) {
+  .memory-edit-field:not([data-open]) .memory-edit-pill:hover {
+    background: color-mix(in oklab, var(--mm-surface-3) 80%, transparent);
+    box-shadow:
+      0 4px 8px 0 rgb(11 11 11 / 8%),
+      0 12px 28px -2px var(--mm-shadow-color);
+  }
+}
+.memory-edit-field[data-open] .memory-edit-pill {
+  background: color-mix(in oklab, var(--mm-surface-3) 90%, transparent);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 10%),
+    0 8px 10px -6px rgb(0 0 0 / 10%);
+}
+.memory-edit-pill > form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 999px;
+}
+.memory-edit-pill input {
+  width: 100%;
+  height: 100%;
+  padding: 0 56px 0 24px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.memory-edit-field:not([data-open]) .memory-edit-pill input {
+  opacity: 0;
+  cursor: pointer;
+}
+/* The changing hint: muted, one line, 24px in; each new one rises 4px into
+   place after 0.3 s. */
+.memory-edit-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 12px 12px 12px 24px;
+  color: var(--mm-muted);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+}
+.memory-edit-hint[data-shown] {
+  opacity: 1;
+}
+.memory-edit-hint > p {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: memory-hint-in 300ms var(--ease-out) 300ms both;
+}
+@keyframes memory-hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+/* The pencil's 56px square; it fades back in after the field closes
+   (0.3 s, then 0.3 s) and tilts 10° under the pointer. */
+.memory-edit-pencil {
+  position: absolute;
+  left: 0;
+  width: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  pointer-events: none;
+  transition: opacity 300ms var(--ease-standard) 300ms;
+}
+.memory-edit-pencil > svg {
+  transition: transform 150ms ease-in-out;
+}
+.memory-edit-field:hover .memory-edit-pencil > svg {
+  transform: rotate(10deg);
+}
+.memory-edit-field[data-open] .memory-edit-pencil {
+  opacity: 0;
+  transition-duration: 0s;
+  transition-delay: 0s;
+}
+/* The arrow: a primary icon button 10px from the right, fading in after
+   0.3 s. */
+.memory-edit-submit {
+  position: absolute;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  animation: memory-submit-in 150ms linear 300ms both;
+}
+@keyframes memory-submit-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* "Manage edits": 36px, 8px round, 0.5px border, 16px under the box;
+   surface-0 under the pointer. The count sits in a 20px round chip. */
+.manage-memory-edits-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  margin-top: 16px;
+  padding: 0 12px;
+  border: 0.5px solid var(--mm-border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: start;
+}
+@media (hover: hover) {
+  .manage-memory-edits-row:hover {
+    background: var(--mm-surface-0);
+  }
+}
+.manage-memory-edits-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.manage-memory-edits-count > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 0.5px solid var(--mm-border);
+  border-radius: 999px;
+  background: var(--mm-surface-1);
+  box-shadow:
+    0 1px 2px 0 rgb(11 11 11 / 6%),
+    0 2px 8px 0 var(--mm-shadow-color);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+/* The edits view: 512 tall, the head row then the list, 12px apart. */
+.manage-memory-edits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+.manage-memory-edits-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.manage-memory-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+/* Flush: the text lines up with the content's edge. */
+.manage-memory-ghost.flush {
+  margin-left: -10px;
+}
+@media (hover: hover) {
+  .manage-memory-ghost:hover:not(:disabled),
+  .manage-memory-trash:hover:not(:disabled) {
+    background: var(--fill-ghost-hover);
+  }
+}
+.manage-memory-save {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.manage-memory-edits-body {
+  height: 100%;
+  min-height: 0;
+}
+.manage-memory-edits-scroll {
+  max-height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.manage-memory-edits ul {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 0.5px solid var(--mm-border);
+  border-radius: 8px;
+}
+.manage-memory-edits li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0 10px 12px;
+  border-bottom: 0.5px solid var(--mm-border);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.manage-memory-edits li:last-child {
+  border-bottom: 0;
+}
+.manage-memory-edits li > p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.manage-memory-trash {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+/* Emptied: a 40px muted line in a 12px-round frame. */
+.manage-memory-edits-empty {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border: 0.5px solid var(--mm-border);
+  border-radius: 12px;
+  color: var(--mm-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* Loading: the box with six 12px lines 12px apart, the pencil's circle. */
+.manage-memory-skeleton .manage-memory-box {
+  gap: 12px;
+  padding: 16px 20px;
+}
+.manage-memory-skeleton-line {
+  display: flex;
+  align-items: center;
+  height: 20px;
+}
+.manage-memory-skeleton-pencil {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+}

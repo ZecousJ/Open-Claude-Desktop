@@ -1,0 +1,352 @@
+/* Research mode (R4, design R45 §4.2–4.4, §4.7). Loaded by research.slot.tsx
+   after the app's own stylesheets. Measurements are from S-0006 (2x) where
+   the design says "测"; the rest is provisional. */
+
+/* Composer chip: 31×31 right of "+", #09203f with a #7fa0d3 icon; the light
+   colours are provisional (Q1). */
+.research-chip {
+  display: grid;
+  flex: none;
+  place-items: center;
+  box-sizing: border-box;
+  width: 31px;
+  height: 31px;
+  /* No button padding: in the 24px chin chip the browser's 6px sides left
+     12px for the 16px glyph, which spilled 2px to the right. */
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: #09203f;
+  color: #7fa0d3;
+}
+.research-chip:hover {
+  background: #0d2a52;
+}
+.research-chip:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 1px;
+}
+.research-chip:disabled {
+  opacity: var(--opacity-disabled);
+}
+:root[data-theme="light"] .research-chip {
+  background: #e3ecfb;
+  color: #2f6fd6;
+}
+:root[data-theme="light"] .research-chip:hover {
+  background: #d6e3f8;
+}
+/* A chip that turns its mode off shows an × in place of its icon while hovered.
+   The × is drawn here so every such chip gets it. */
+.research-chip {
+  position: relative;
+}
+.research-chip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  opacity: 0;
+}
+@media (hover: hover) {
+  .research-chip:hover:not(:disabled) > svg {
+    opacity: 0;
+  }
+  .research-chip:hover:not(:disabled)::after {
+    opacity: 1;
+  }
+}
+
+/* Research surfaces and timeline. */
+.research-card,
+.research-panel {
+  --cds-border: rgb(255 255 255 / 10%);
+  --cds-border-strong: rgb(255 255 255 / 20%);
+  --cds-surface-3: #20201f;
+  --cds-text-primary: #f0efec;
+  --cds-text-secondary: #c3c2b7;
+  --cds-text-muted: #898781;
+  --cds-fill-accent-hover: #3987e5;
+  --cds-fill-danger-hover: #e34948;
+  --cds-shadow-sm: 0 1px 2px 0 rgb(11 11 11 / 6%), 0 2px 8px 0 #0000003d;
+  --research-brand: hsl(14.7692 63.1068% 59.6078%);
+  color: var(--cds-text-primary);
+}
+:root[data-theme="light"] .research-card,
+:root[data-theme="light"] .research-panel {
+  --cds-border: rgb(11 11 11 / 10%);
+  --cds-border-strong: rgb(11 11 11 / 20%);
+  --cds-surface-3: #fff;
+  --cds-text-primary: #0b0b0b;
+  --cds-text-secondary: #52514e;
+  --cds-shadow-sm:
+    0 1px 2px 0 rgb(11 11 11 / 6%), 0 2px 8px 0 rgb(11 11 11 / 8%);
+}
+.research-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin: 4px 0 12px;
+  padding: 0 16px 16px;
+  border: 1px solid var(--cds-border);
+  border-radius: var(--msg-block-radius, 0.75rem);
+  box-shadow: 0 1px 2px 0 #0000000d;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: start;
+  transition: border-color 300ms;
+}
+@media (hover: hover) {
+  .research-card:not([aria-disabled="true"]):hover {
+    border-color: var(--cds-border-strong);
+    background: color-mix(in oklab, var(--cds-surface-3) 50%, transparent);
+    box-shadow: var(--cds-shadow-sm);
+  }
+}
+.research-card[aria-expanded="true"] {
+  border-color: var(--cds-fill-accent-hover) !important;
+}
+.research-card:focus-visible {
+  outline: 1px solid var(--focus-accent);
+  outline-offset: 0;
+}
+.research-card[aria-disabled="true"] {
+  cursor: default;
+}
+.research-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 36px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.research-card-title > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.research-card-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cds-text-secondary);
+  font-size: 12px;
+  line-height: 20px;
+}
+.research-card-icons {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+.research-card-icons > .site-icon {
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--cds-surface-3);
+  animation: research-favicon-in 300ms ease-out 100ms backwards;
+}
+.research-card-icons > .site-icon + .site-icon {
+  margin-left: -6px;
+}
+.research-card-icons > :nth-child(2) {
+  animation-delay: 150ms;
+}
+.research-card-icons > :nth-child(3) {
+  animation-delay: 200ms;
+}
+@keyframes research-favicon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+.workspace:has(> .chat-layout > .research-panel) {
+  --tool-panel-width: min(450px, calc(100% - 360px));
+}
+.work-panel.research-panel {
+  background: var(--cds-surface-3);
+}
+.work-panel.research-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 52px;
+  min-height: 52px;
+  padding: 0 20px;
+  border: 0;
+}
+.research-panel > header > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.research-panel > header h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--cds-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.research-panel > header button {
+  color: var(--cds-text-secondary);
+  flex: none;
+}
+.research-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.research-progress {
+  display: flex;
+  flex-direction: column;
+  margin: -4px 0 0;
+  padding: 4px 20px 20px;
+  list-style: none;
+}
+.research-step {
+  display: flex;
+  gap: 12px;
+  min-height: 34px;
+  flex-shrink: 0;
+}
+.research-step-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5px;
+}
+.research-step-track > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--research-brand);
+  flex: none;
+}
+.research-step:not(:last-child) > .research-step-track::after,
+.research-step.expanded > .research-step-track::after {
+  content: "";
+  width: 1px;
+  flex: 1;
+  margin-bottom: -4px;
+  background: linear-gradient(
+    color-mix(in srgb, var(--research-brand) 50%, transparent),
+    transparent
+  );
+}
+.research-step.complete .research-step-track > span {
+  background: var(--cds-text-muted);
+}
+.research-step.complete > .research-step-track::after {
+  background: var(--cds-border);
+}
+.research-step.error .research-step-track > span {
+  background: var(--cds-fill-danger-hover);
+}
+.research-step.error h4 {
+  color: var(--cds-fill-danger-hover);
+}
+.research-step-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+.research-step h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+}
+.research-step h4 button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  padding: 0;
+  color: var(--cds-text-primary);
+  text-align: start;
+  font-size: 14px;
+  line-height: 20px;
+}
+.research-step h4 button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.research-step h4 svg {
+  flex: none;
+  color: var(--cds-text-secondary);
+  transition: transform 400ms var(--ease-out);
+}
+.research-step h4 svg.collapsed {
+  transform: rotate(-90deg);
+}
+.research-step-detail {
+  padding: 16px 0 24px;
+  font-size: 14px;
+  color: var(--cds-text-secondary);
+}
+.research-source-count {
+  color: var(--cds-text-secondary);
+  font-size: 14px;
+}
+.research-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.research-sources a {
+  color: var(--cds-text-primary);
+}
+.research-source-snippet {
+  font-size: 14px;
+  color: var(--cds-text-secondary);
+}
+.research-source-snippet summary {
+  cursor: pointer;
+}
+.research-source-snippet p {
+  margin: 8px 0 0;
+}
+.research-sources-empty {
+  margin: 0;
+  padding: 64px 32px;
+  text-align: center;
+  color: var(--cds-text-muted);
+}
+.research-panel-count {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cds-text-secondary);
+}
+.research-panel-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 20px 20px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .research-card-icons > * {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .research-card-icons > * {
+  animation: none;
+}

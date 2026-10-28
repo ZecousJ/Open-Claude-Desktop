@@ -1,0 +1,232 @@
+/*
+ * The reply feedback dialog: a 520px card with 12px corners and 24px padding, a
+ * 22px/28px title of weight 580 and no close button. The issue type is one 32px
+ * field on white 50% with 8px corners under a 14px/500 label; the details label
+ * is muted 14/20, the box 76px high with 8px 12px padding; the note is 11.2px
+ * italic; Cancel and Submit are 32px tall with 8px corners, Submit filled with
+ * the primary ink. Measured again in both themes: the title sits 20px down and
+ * the label 12px under it; the card and the fields are ringed by a 1px shadow,
+ * not a border; Cancel is a filled chip; Submit weight 500.
+ */
+.modal.reply-feedback-modal {
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  padding: 20px 24px 24px;
+  border: 0;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 4px 8px rgb(13 13 13 / 8%),
+    0 12px 28px -2px rgb(13 13 13 / 8%);
+}
+.modal.reply-feedback-modal > header {
+  margin: 0 0 12px;
+  padding: 0;
+}
+.modal.reply-feedback-modal > header .icon-button {
+  display: none;
+}
+.modal.reply-feedback-modal > header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 580;
+  line-height: 28px;
+}
+.reply-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.reply-feedback-type {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reply-feedback-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+  color: var(--text);
+}
+.reply-feedback-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 50%);
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+}
+:root:not([data-theme="light"]) .reply-feedback-select {
+  background: rgb(255 255 255 / 5%);
+}
+.reply-feedback-select[data-empty] > span {
+  color: var(--text-muted);
+}
+.reply-feedback-select > svg {
+  color: var(--text-muted);
+}
+.reply-feedback-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal .reply-feedback > label {
+  margin-bottom: 0;
+}
+.reply-feedback-details-label {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--text-muted);
+}
+.reply-feedback-details > :is(textarea, input) {
+  box-sizing: border-box;
+  min-height: 76px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 50%);
+  box-shadow: inset 0 0 0 1px var(--border);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  resize: none;
+}
+.reply-feedback-details > input {
+  min-height: 32px;
+}
+:root:not([data-theme="light"]) .reply-feedback-details > :is(textarea, input) {
+  background: rgb(255 255 255 / 5%);
+}
+.reply-feedback-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--text);
+  cursor: pointer;
+}
+.modal .reply-feedback > .reply-feedback-check {
+  font-weight: 400;
+}
+.reply-feedback-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11.2px;
+  font-style: italic;
+  line-height: 14px;
+}
+.reply-feedback-error {
+  margin: 0;
+  color: var(--danger, #e5484d);
+  font-size: 13px;
+}
+.reply-feedback > .button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 0;
+}
+.reply-feedback > .button-row > button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.reply-feedback > .button-row > .secondary {
+  border: 0;
+  background: rgb(255 255 255 / 10%);
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: var(--text);
+}
+:root:not([data-theme="light"]) .reply-feedback > .button-row > .secondary {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+}
+.reply-feedback > .button-row > .primary {
+  border: 0;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-weight: 500;
+}
+.modal.reply-feedback-modal .reply-feedback > .button-row > .primary {
+  font-weight: 500;
+}
+.reply-feedback > .button-row > .primary:disabled {
+  opacity: 0.5;
+}
+
+/* The web's own inks. Light: white, ringed at 10% of #0a0a0a, Submit #0b0b0b.
+   Dark: #20201f ringed by white at 10% inside, 0 4 8 at 8% and 0 12 28 -2 at
+   24%, text #f0efec, muted #898781, Submit white with #0b0b0b ink. The page
+   behind is dimmed to 50% black, blurred 2px. */
+:root[data-surface="web"] .modal.reply-feedback-modal {
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(10 10 10 / 10%),
+    0 4px 8px rgb(13 13 13 / 8%),
+    0 12px 28px -2px rgb(13 13 13 / 8%);
+}
+:root[data-surface="web"] .modal.reply-feedback-modal .button-row > .primary {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .modal.reply-feedback-modal {
+  --text: #f0efec;
+  --text-muted: #898781;
+  --border: rgb(255 255 255 / 10%);
+  background: #20201f;
+  color: var(--text);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 4px 8px rgb(13 13 13 / 8%),
+    0 12px 28px -2px rgb(0 0 0 / 24%);
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .modal.reply-feedback-modal
+  > header
+  h2 {
+  color: var(--text);
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .modal.reply-feedback-modal
+  .button-row
+  > .primary {
+  background: #fff;
+  color: #0b0b0b;
+}
+:root[data-surface="web"] .overlay:has(> .reply-feedback-modal) {
+  background: rgb(0 0 0 / 50%);
+  backdrop-filter: blur(2px);
+}
+/* The dialogs' general field rule (a 4px top margin, 7px 11px padding, its
+   own ink) must not reach the details box. */
+.modal .reply-feedback-details > :is(textarea, input) {
+  margin: 0;
+  padding: 8px 12px;
+  color: var(--text);
+}
+.reply-feedback-select {
+  padding-right: 10px;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .modal.reply-feedback-modal
+  textarea {
+  color: var(--text);
+}

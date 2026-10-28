@@ -1,0 +1,103 @@
+/*
+ * Split view (src/split-view/SplitPanes.tsx): while panes are open the
+ * window's grid is the pane host, as the original's `dframe-pane-host`
+ * (source: ion bundle 2.31226.1 static CSS). The sidebar keeps the first
+ * column; the primary pane and the other panes take one track per column
+ * (`--df-col-tracks`, the columns' weights) and two rows when a column has
+ * a pane below (`--df-pane-row`, the top row's share, default .5). Loaded
+ * with the first pane; nothing here applies without `data-split`.
+ */
+.app[data-split] {
+  grid-template-columns: calc(var(--sidebar-width) + 8px) var(
+      --df-col-tracks,
+      minmax(0, 1fr)
+    );
+  grid-template-rows:
+    minmax(0, calc(var(--df-pane-row, 0.5) * 100%))
+    minmax(0, 1fr);
+}
+.app[data-split].sidebar-hidden {
+  grid-template-columns: 0 var(--df-col-tracks, minmax(0, 1fr));
+}
+.app[data-split] > .sidebar {
+  grid-row: 1 / -1;
+}
+/* The primary pane is the first column's top: it spans both rows unless a pane sits below it. */
+.app[data-split] > .workspace {
+  grid-column: 2;
+  grid-row: 1 / -1;
+}
+.app[data-split][data-split-stack] > .workspace {
+  grid-row: 1;
+}
+
+/* A pane beside the primary pane: the same column the workspace is. */
+.split-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    opacity 0.18s var(--ease-out),
+    filter 0.12s ease-out;
+}
+@starting-style {
+  .split-pane {
+    opacity: 0;
+  }
+}
+.split-pane[data-row="1"] {
+  border-top: 1px solid var(--border);
+}
+/* Panes without the focus step back: the original's filter(.75 opacity, .85 saturation). */
+.app[data-split] > .workspace {
+  transition: filter 0.12s ease-out;
+}
+.app[data-split] > .workspace:not([data-focused]),
+.app[data-split] > .split-pane:not([data-focused]) {
+  filter: opacity(0.75) saturate(0.85);
+}
+
+/* Each column's overlay holds its dividers; the line between columns is its left edge. */
+.split-col {
+  position: relative;
+  grid-row: 1 / -1;
+  min-width: 0;
+  pointer-events: none;
+}
+.split-col > * {
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
+}
+.split-col:not([data-col="0"]) {
+  border-left: 1px solid var(--border);
+}
+/* The 12px grab areas (src/ui/resize-handle.css) straddle the line. */
+.split-col-resize {
+  right: -6px;
+  z-index: 11;
+}
+.split-row-resize {
+  top: calc(var(--df-pane-row, 0.5) * 100%);
+  z-index: 10;
+  transform: translateY(-50%);
+}
+
+/* The collapsed sidebar's buttons and the traffic lights sit over the first column only. */
+.app[data-split] .split-pane > .chat-header.chat-header {
+  padding-left: 17px;
+}
+/* Windows and Linux: the caption buttons are over the last column's top pane only. */
+.app:is(.win32, .linux):not(.web)[data-split]:not([data-split-cols="1"])
+  .workspace
+  > .chat-header {
+  padding-right: 17px;
+}
+.app:is(.win32, .linux):not(.web)
+  .split-pane:not([data-caption-clear])
+  > .chat-header {
+  padding-right: 148px;
+}

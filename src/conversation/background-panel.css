@@ -1,0 +1,464 @@
+/* The Background tasks panel: the panel, its task cards, background terminals
+   and finished tasks. Moved from workflow.css, which keeps the workflow cards
+   and agent tables shown inside it. Loaded right after workflow.css, so the
+   cascade is unchanged. */
+/* Loop cards: p-md, gap-sm, gap-1.25, pb-0.75, text-body/footnote and
+   bg-alpha-1. */
+.session-loop-task {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 4px;
+  padding: 8px 8px 11px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text);
+  outline: none;
+  user-select: text;
+  min-width: 0;
+}
+.session-loop-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 19px;
+  overflow-wrap: break-word;
+}
+.session-loop-title > span {
+  flex: 1;
+  min-width: 0;
+}
+.session-loop-title > button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 10%);
+  color: inherit;
+}
+.session-loop-title > button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+}
+.session-loop-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 15px;
+  color: #898781;
+  overflow-wrap: anywhere;
+}
+.session-loop-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  row-gap: 3px;
+}
+.session-loop-kind,
+.session-loop-value {
+  color: var(--text-secondary);
+}
+.session-loop-next {
+  font-variant-numeric: tabular-nums;
+}
+:root[data-theme="light"] .session-loop-task {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .session-loop-kind,
+:root[data-theme="light"] .session-loop-value {
+  color: #52514e;
+}
+:root[data-theme="light"] .session-loop-title > button {
+  background: #ffffff1a;
+}
+:root[data-theme="light"] .session-loop-title > button:hover:not(:disabled) {
+  background: rgb(11 11 11 / 5%);
+}
+/* Card: R-0646 Running卡片 (2x, 1164px window), 282px wide (width and
+   position in 92-reference-panels.css), #1a1a1a fill, #2b2b2b border. */
+.background-tasks-panel {
+  background: #1a1a1a;
+  border: 1px solid #2b2b2b;
+  border-radius: 10px;
+}
+/* "Background tasks" 10px from the card edge, 17px below its top; the list
+   follows. */
+.background-tasks-panel > header {
+  height: 24px;
+  min-height: 24px;
+  margin: 3.5px 0 10.5px;
+  padding: 0 4px 0 8px;
+  border-bottom: 0;
+}
+.background-tasks-panel > header strong {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.background-tasks-panel > header > div {
+  display: flex;
+  gap: 0;
+}
+.background-tasks-panel > header button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: #c8c8c4;
+  border-radius: 5px;
+}
+.background-tasks-panel > header button:hover {
+  background: var(--fill-ghost-hover);
+}
+.background-tasks-scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 10px 12px;
+}
+/* R-0646/R-0654: "Finished N" sits 26px (centre) under the last running
+   card, or where "Running" would be when nothing runs; cards start 5px
+   under it. */
+.background-tasks-scroll > section + section {
+  margin-top: 13px;
+}
+.background-tasks-scroll > .background-finished:first-child {
+  margin-top: 0.5px;
+}
+.background-finished-heading {
+  min-height: 26px;
+  margin-bottom: 5px;
+}
+.background-finished-heading > button:first-child {
+  margin-left: -4px;
+}
+.background-tasks-scroll h3 {
+  margin: 2.5px 0 6.5px;
+  color: var(--text-muted);
+  font: 12px/18px sans-serif;
+}
+.background-task {
+  padding: 8px 8px 12px;
+  margin-bottom: 9px;
+  border-radius: 9px;
+  background: #252524;
+  color: #c5c4c0;
+}
+.background-task-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #c3c2b7;
+}
+.background-task-title strong {
+  align-self: flex-start;
+  flex: 1;
+  min-width: 0;
+  font-weight: 400;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.background-task-title button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  background: #3b3b3a;
+  color: var(--text);
+}
+.background-task-title button:disabled {
+  opacity: 0.4;
+}
+.background-task-title button:hover:not(:disabled) {
+  background: #50504d;
+}
+/* workflow-user-panel-001/002: names and numbers bright, durations and units muted. */
+.background-task-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 5.5px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.background-task-meta b {
+  font-weight: inherit;
+  color: #c3c2b7;
+}
+.background-task p {
+  margin: 13px 0 25.5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.background-task h3 {
+  margin: 0 0 6.5px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+}
+.background-finished {
+  margin: 14px 0;
+}
+.background-finished-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.background-finished-heading button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 5px;
+  color: #878785;
+  font-size: 12px;
+}
+.background-finished-heading button:hover {
+  color: #c4c2bd;
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .background-tasks-panel {
+  background: #fdfbf8;
+  border-color: #d5d0c8;
+  color: #38342e;
+}
+:root[data-theme="light"] .background-task {
+  background: #e8e5df;
+  color: #38342e;
+}
+
+.background-tasks-panel {
+  container-type: inline-size;
+}
+
+/* R-0646 Running卡片 / R-0654 / R-0655 (2x): #252525 cards 260px wide with
+   8px padding and 4.5px apart; 13px/19px title (#ececec, #9a9996 once
+   finished), then "Bash" #c1c2bd and the running time #868684 counting
+   every second, or Stopped/Completed; a 20px #3b3b3b stop square. A
+   finished card opens to its "$ command" box and output. */
+.background-terminal-task {
+  margin: 0 0 4.5px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #252525;
+  color: var(--text);
+}
+.background-terminal-task > div,
+.background-terminal-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+}
+.background-terminal-task strong {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 400;
+}
+.background-terminal-task > div > button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  height: 20px;
+  background: #3b3b3b;
+  border-radius: 5px;
+  color: #ececec;
+}
+.background-terminal-task > div > button:hover:not(:disabled) {
+  background: #4d4d4d;
+}
+.background-terminal-task small {
+  display: flex;
+  gap: 8px;
+  margin-top: 3px;
+  color: #c1c2bd;
+  font-size: 12px;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.background-terminal-elapsed {
+  color: #868684;
+  font-variant-numeric: tabular-nums;
+}
+.background-terminal-task.is-finished {
+  color: #9a9996;
+}
+.background-terminal-task.is-finished:hover {
+  background: var(--fill-ghost-hover);
+}
+.background-terminal-task.is-finished small {
+  color: #868684;
+}
+.background-terminal-summary > svg {
+  flex: none;
+  margin-top: 3px;
+  color: #8c8b87;
+  opacity: 0;
+}
+.background-terminal-task.is-finished:hover .background-terminal-summary > svg,
+.background-terminal-summary:focus-visible > svg {
+  opacity: 1;
+}
+.background-terminal-command,
+.background-terminal-output {
+  margin: 10px 0 0;
+  padding: 3.5px 8px;
+  border-radius: 7px;
+  font:
+    12px/18px ui-monospace,
+    Menlo,
+    Consolas,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.background-terminal-command {
+  border: 1px solid #464646;
+  background: #1a1a1a;
+  color: #8fb3e8;
+}
+.background-terminal-command > span {
+  color: #c1c2bd;
+}
+.background-terminal-output {
+  margin: 5px 0 9px;
+  padding: 4px 8px;
+  background: #464646;
+  color: #e6e6e6;
+}
+/* Clear finished tasks in the header. */
+.background-tasks-panel > header .background-clear[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.background-tasks-panel > header .background-clear[aria-disabled="true"]:hover {
+  background: none;
+}
+/* "Finished" with its count after it and a caret turning when open (h3
+   footnote muted, the original's collapsible). */
+.background-tasks-scroll h3.background-finished-heading {
+  margin: 0 0 5px;
+}
+.background-finished-heading button {
+  margin-left: -4px;
+}
+.background-finished-count {
+  font-variant-numeric: tabular-nums;
+}
+.background-finished-caret {
+  transition: rotate var(--motion-fast, 0.15s) ease-out;
+}
+.background-finished-heading button[data-open] .background-finished-caret {
+  rotate: 90deg;
+}
+/* A row's Stop: the quiet ghost xs Stop glyph. */
+.background-terminal-task > div > button.background-stop {
+  background: transparent;
+  color: #c3c2b7;
+}
+.background-terminal-task > div > button.background-stop:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+  color: #f0efec;
+}
+.background-terminal-task > div > button.background-stop[aria-busy="true"] {
+  opacity: 0.6;
+}
+:root[data-theme="light"] .background-tasks-panel > header strong {
+  color: #38342e;
+}
+:root[data-theme="light"] .background-tasks-panel > header button {
+  color: #514d46;
+}
+:root[data-theme="light"] .background-tasks-scroll h3,
+:root[data-theme="light"] .background-finished-heading button {
+  color: #6b675f;
+}
+:root[data-theme="light"] .background-task-meta,
+:root[data-theme="light"] .background-terminal-task small {
+  color: #706b63;
+}
+:root[data-theme="light"] .background-task p {
+  color: #706b63;
+}
+:root[data-theme="light"] .background-task h3 {
+  color: #38342e;
+}
+:root[data-theme="light"] .background-terminal-task {
+  background: #e8e5df;
+  color: #38342e;
+}
+:root[data-theme="light"] .background-terminal-task button {
+  background: #d6d2cb;
+}
+:root[data-theme="light"] .background-finished-heading button:hover {
+  color: #38342e;
+}
+:root[data-theme="light"] .background-task-title button {
+  background: #d6d2cb;
+  color: #454039;
+}
+:root[data-theme="light"] .background-task-title button:hover:not(:disabled) {
+  background: #c8c3ba;
+}
+/* The back arrow centre sits 16px from the card edge. */
+.background-tasks-panel.agent-transcript-panel > header {
+  padding-left: 4px;
+}
+:root[data-theme="light"] .background-finished-heading .background-clear {
+  color: #5f5b54;
+}
+
+/* "Background tasks appear here" and "No terminal open" are drawn as the
+   Changes panel's empty state: the words centred in the card, 13px #f0f0f0; the
+   Background tasks one has the original's AgentsSimple glyph (24px in a 28px
+   box, muted) over its line. */
+.background-tasks-panel .panel-empty > p {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+.background-tasks-panel .panel-empty,
+.terminal-panel .panel-empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  min-height: 0;
+  padding: 24px;
+  color: #f0f0f0;
+  font-size: 13px;
+  text-align: center;
+}
+.background-tasks-panel .panel-empty > .app-icon {
+  margin: 2px;
+}
+/* A failed agent's status word in the danger colour. */
+.single-agent-task-footer [data-status="failed"] {
+  color: #ec7e7e;
+}
+:root[data-theme="light"] .single-agent-task-footer [data-status="failed"] {
+  color: #8e2626;
+}

@@ -1,0 +1,47 @@
+/* ghost/sm/iconOnly: h-control--sm, rounded--sm and aria-pressed:text-accent. */
+.artifact-comment-draft button.comment-dictation,
+.artifact-thread-compose button.comment-dictation {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 5px;
+  color: #f0efec;
+  background: transparent;
+}
+.comment-dictation.dictation-button::before {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+}
+.comment-dictation.dictation-button > svg {
+  transform: none;
+}
+.comment-dictation.dictation-button:hover::before {
+  background: rgb(255 255 255 / 7.5%);
+}
+.comment-dictation.dictation-button[aria-pressed="true"] {
+  color: #6da7ec;
+}
+.comment-dictation.dictation-button[aria-pressed="true"]::before {
+  background: rgb(255 255 255 / 15%);
+}
+:root[data-theme="light"] .comment-dictation.dictation-button {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .comment-dictation.dictation-button:hover::before {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"]
+  .comment-dictation.dictation-button[aria-pressed="true"] {
+  color: #184f95;
+}
+:root[data-theme="light"]
+  .comment-dictation.dictation-button[aria-pressed="true"]::before {
+  background: rgb(11 11 11 / 10%);
+}

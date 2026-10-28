@@ -1,0 +1,18 @@
+# sshd for the R9 end-to-end test. Close to a stock server: key and
+# password sign-in, remote forwards bound to loopback only (GatewayPorts no).
+Port 22
+HostKey /etc/ssh/ssh_host_ed25519_key
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication yes
+KbdInteractiveAuthentication no
+AuthorizedKeysFile .ssh/authorized_keys
+AllowTcpForwarding yes
+GatewayPorts no
+X11Forwarding no
+PermitTTY yes
+ClientAliveInterval 15
+MaxSessions 32
+MaxStartups 32:30:64
+LogLevel INFO
+Subsystem sftp internal-sftp

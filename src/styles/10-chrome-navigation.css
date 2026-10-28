@@ -1,0 +1,60 @@
+/* Window chrome and navigation */
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+}
+.app-name {
+  margin-left: 9px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.1px;
+}
+/* App.tsx's last child, for buttons that must follow the pages' drag
+   regions (AppSidebar's TopLayer); it adds no box of its own. */
+.app-chrome-layer {
+  display: contents;
+}
+.window-controls {
+  display: flex;
+  align-self: stretch;
+  -webkit-app-region: no-drag;
+}
+.window-controls button {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  color: var(--text-secondary);
+  border-radius: 0;
+  /* Native caption buttons change at once. */
+  transition: none;
+}
+/* The ghost hover: the opaque --surface-hover it replaces, on the page. */
+.window-controls button:hover {
+  background: var(--fill-ghost-hover);
+}
+.window-controls button:last-child:hover {
+  background: #c42b1c;
+  color: #fff;
+}
+.more-history {
+  margin: 8px 10px;
+  font-size: 11px !important;
+}
+.avatar {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #514a3d;
+  color: #f3e9d4;
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-size: 15px;
+  font-weight: 500;
+}

@@ -1,0 +1,164 @@
+/*
+ * A comment's thread in All comments: replies, the Comment options menu, an
+ * edit field and the reply field. The reference's cards were not captured at
+ * this level; the rows reuse the list's own card (file-viewer.css) and the
+ * draft box's text field (14px/20px, 24px send button), so nothing here is a
+ * new value.
+ */
+.artifact-comments-list article > header,
+.artifact-thread-reply > header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+/* "Show N resolved" after "No open comments.": an inline link in the mention's blue. */
+.artifact-comments-list .artifact-comments-show-resolved {
+  padding: 0;
+  color: #6fa4e6;
+  font: inherit;
+  text-decoration: underline;
+}
+:root[data-theme="light"]
+  .artifact-comments-list
+  .artifact-comments-show-resolved {
+  color: #2a6cbd;
+}
+.artifact-chrome-menu .artifact-menu-count {
+  margin-left: auto;
+  color: #92928b;
+  font-variant-numeric: tabular-nums;
+}
+/* The comment button's dot while open comments wait (the original's indicator). */
+.artifact-comment-buttons > button {
+  position: relative;
+}
+.artifact-comment-open-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #68a8fa;
+  pointer-events: none;
+}
+.artifact-thread-edited::before {
+  content: "· ";
+}
+.artifact-thread-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+.artifact-comments-list article .artifact-thread-actions button {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  border-radius: 5px;
+  color: #9b9b94;
+  font-size: 11px;
+}
+.artifact-comments-list article .artifact-thread-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.artifact-thread-reply {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #30302e;
+}
+.artifact-thread-reply > p,
+.artifact-comments-list article > p {
+  margin-top: 4px;
+}
+.artifact-thread-compose {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+}
+.artifact-thread-compose textarea,
+.artifact-thread-edit textarea {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  min-height: 20px;
+  max-height: 160px;
+  field-sizing: content;
+  resize: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #e6e5e0;
+  font-size: 13px;
+  line-height: 20px;
+  box-shadow: none;
+  outline: none;
+}
+.artifact-thread-compose textarea::placeholder {
+  color: #7f7f78;
+}
+.artifact-thread-edit {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid #323230;
+  border-radius: 8px;
+}
+.artifact-thread-edit > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.artifact-comments-list article .artifact-thread-edit button,
+.artifact-comments-list article .artifact-thread-compose button {
+  padding: 4px 8px;
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 12px;
+}
+.artifact-comments-list article .artifact-thread-compose button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+}
+.artifact-comments-list article .artifact-thread-edit button:disabled {
+  color: #6b6b67;
+  cursor: default;
+}
+:root[data-theme="light"] .artifact-thread-compose textarea,
+:root[data-theme="light"] .artifact-thread-edit textarea {
+  color: #141414;
+}
+:root[data-theme="light"] .artifact-thread-reply {
+  border-top-color: #ececea;
+}
+:root[data-theme="light"] .artifact-thread-edit {
+  border-color: #e4e4e4;
+}
+:root[data-theme="light"]
+  .artifact-comments-list
+  article
+  .artifact-thread-edit
+  button,
+:root[data-theme="light"]
+  .artifact-comments-list
+  article
+  .artifact-thread-compose
+  button {
+  color: #141414;
+}
+:root[data-theme="light"]
+  .artifact-comments-list
+  article
+  .artifact-thread-edit
+  button:disabled {
+  color: #b0b0ab;
+}

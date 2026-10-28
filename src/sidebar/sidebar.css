@@ -1,0 +1,9 @@
+/* The sidebar in cascade order (each part's header says what it
+ * holds). */
+@import "./sidebar-chrome.css";
+@import "./sidebar-list.css";
+@import "./sidebar-account.css";
+@import "./sidebar-light.css";
+@import "./sidebar-groups.css";
+@import "./sidebar-collapse.css";
+@import "./sidebar-details.css";

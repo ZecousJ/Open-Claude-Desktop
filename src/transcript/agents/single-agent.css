@@ -1,0 +1,631 @@
+.single-agent-task {
+  margin: 0 0 3px;
+  padding: 7.5px 8px 10px;
+  border-radius: 9px;
+  background: #252524;
+  color: #c5c4c0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.single-agent-task-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-secondary);
+}
+.single-agent-task-title strong {
+  min-width: 0;
+  flex: 1;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.single-agent-task-title button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  background: #3b3b3a;
+  color: var(--text);
+}
+.single-agent-task-title button:hover:not(:disabled),
+.single-agent-task-title button:focus-visible {
+  background: #50504d;
+}
+.single-agent-task-title button:disabled {
+  opacity: 0.5;
+}
+.single-agent-task-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 1.5px;
+  color: var(--text-muted);
+}
+/* single-agent-user-list-001: labels and numbers are bright, durations, units and activity are muted. */
+.single-agent-task-line b {
+  font-weight: inherit;
+  color: var(--text-secondary);
+}
+.single-agent-task-title + .single-agent-task-line {
+  margin-top: 4px;
+}
+.single-agent-task-title + .single-agent-task-line + .single-agent-task-line {
+  margin-top: 2px;
+}
+
+.single-agent-task-footer {
+  gap: 8px;
+  margin-top: 0;
+}
+.single-agent-task-footer button {
+  padding: 0;
+  color: #6da6ec;
+  text-align: left;
+}
+.single-agent-task-footer button:hover,
+.single-agent-task-footer button:focus-visible {
+  text-decoration: underline;
+  color: #abd3ff;
+}
+/* single-agent-user-activity-001 (2.0 px/CSS): heading (195,194,183), the
+   connector row (137,135,129), the card 1.5px higher. */
+.single-agent-event {
+  margin: 14px 0;
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.single-agent-event > summary {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+.single-agent-event > summary::-webkit-details-marker {
+  display: none;
+}
+.single-agent-event > summary svg {
+  transform: rotate(90deg);
+}
+.single-agent-event:not([open]) > summary svg {
+  transform: none;
+}
+.single-agent-event-rows {
+  margin-top: 7px;
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.single-agent-event-rows > * {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 14px;
+}
+.single-agent-event-rows > * + * {
+  border-top: 1px solid #2d2c2c;
+}
+.single-agent-event-rows button:hover,
+.single-agent-event-rows button:focus-visible {
+  background: #292928;
+}
+.single-agent-prior-tool {
+  color: var(--text-muted);
+  min-height: 36px;
+}
+.single-agent-prior-tool summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  cursor: pointer;
+}
+.single-agent-prior-tool summary::-webkit-details-marker {
+  display: none;
+}
+.single-agent-prior-tool[open] summary svg {
+  transform: rotate(90deg);
+}
+.single-agent-prior-tool:hover summary,
+.single-agent-prior-tool summary:focus-visible {
+  color: #c9c8c5;
+}
+.single-agent-prior-body {
+  padding: 10px 12px;
+  border-top: 1px solid #2d2c2c;
+  color: #aaa9a6;
+  font-size: 12px;
+}
+.single-agent-prior-body section + section {
+  margin-top: 10px;
+}
+.single-agent-prior-body strong {
+  display: block;
+  font-weight: 500;
+}
+.single-agent-prior-body pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 240px;
+  overflow: auto;
+  font:
+    11px/1.5 var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.single-agent-prior-body img {
+  max-width: 100%;
+}
+.agent-transcript-panel > header {
+  display: flex;
+  gap: 7px;
+}
+.agent-transcript-panel > header > button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 23px;
+  height: 25px;
+  color: #c5c4c0;
+}
+/* single-agent-user-transcript-001 (2x): the back arrow's ink centre 16.5px from
+   the card edge, the title text 36px. */
+.agent-transcript-panel > header > button:first-child > svg {
+  margin-left: -2.5px;
+}
+.agent-transcript-panel > header strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-transcript-scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 2.5px 12px 28px;
+  color: #c8c7c4;
+}
+.agent-transcript-model {
+  margin: 0 0 11px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.agent-transcript-model b {
+  font-weight: inherit;
+  color: var(--text-secondary);
+} /* single-agent-user-transcript-001: context and reply use the bright 13px transcript text. */
+.agent-transcript-context {
+  padding: 5.5px 12.5px 10px;
+  border-radius: 9px;
+  background: #252524;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+}
+.agent-transcript-context > div {
+  max-height: 253.5px;
+  overflow: hidden;
+}
+.agent-transcript-context.is-clipped:not(.is-open) > div {
+  mask-image: linear-gradient(#000 75%, transparent);
+}
+.agent-transcript-context.is-open > div {
+  max-height: none;
+  mask-image: none;
+}
+.agent-transcript-context button {
+  margin-top: 9px;
+  padding: 0;
+  color: #d3d1cc;
+}
+/* The reference reads context and reply at 13px/19px; the shared markdown
+   rules would make them 14px/21px. */
+.agent-transcript-context > div,
+.agent-transcript-context p,
+.agent-transcript-context li,
+.agent-transcript-message.markdown,
+.agent-transcript-message.markdown p,
+.agent-transcript-message.markdown li {
+  font-size: 13px;
+  line-height: 19px;
+}
+.agent-transcript-context p,
+.agent-transcript-message.markdown p {
+  margin: 0 0 9px;
+}
+.agent-transcript-context > div > :last-child {
+  margin-bottom: 0;
+}
+.agent-transcript-message {
+  margin: 40px 0 8px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+}
+/* The child's thinking is inline, without a "Thought process" step: since the
+   reference design such thinking sits behind a 2px alpha-2 rule on its start
+   side with pad-md (0.5rem) before the text (border-s-2 border-alpha-2 ps-md).
+   Size and colour stay R-0786's. */
+.agent-transcript-thinking {
+  margin: 12px 0;
+  padding-inline-start: 0.5rem;
+  border-inline-start: 2px solid var(--alpha-2);
+  color: #8e8d89;
+  font-size: 12px;
+}
+.agent-transcript-running {
+  margin: 18px 0;
+  color: #dc845e;
+  animation: agent-transcript-pulse 1.3s ease-in-out infinite;
+}
+@keyframes agent-transcript-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+.agent-transcript-commands {
+  margin: 12px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+/* The group summary is light grey, the rows under it dimmer. */
+.agent-transcript-commands > summary {
+  color: #c3c2bd;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  list-style: none;
+}
+.agent-transcript-commands > summary::-webkit-details-marker {
+  display: none;
+}
+.agent-transcript-commands[open] > summary > svg {
+  transform: rotate(90deg);
+}
+.agent-transcript-commands.is-running > summary {
+  color: #d1d0cc;
+}
+/* R-0786 nested tool list (2.0 px/CSS): a 1px bordered list on #1a1a1a, one
+   collapsed row per call, 36px apart (the first 32px), text 8px in, ~13px,
+   (136,135,133), cut with an ellipsis; failed rows #cc8f93 and open to the
+   `$` command over red monospace output (200,144,147). */
+.agent-tool-list {
+  margin-top: 6px;
+  border: 1px solid #303030;
+  border-radius: 8px;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+.agent-tool-row + .agent-tool-row {
+  border-top: 1px solid #303030;
+}
+.agent-tool-row > summary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 10px 0 8px;
+  color: #888785;
+  font-size: 13px;
+  line-height: 20px;
+  list-style: none;
+  cursor: pointer;
+}
+.agent-tool-row:first-child > summary {
+  min-height: 32px;
+}
+.agent-tool-row > summary::-webkit-details-marker {
+  display: none;
+}
+.agent-tool-row > summary > svg {
+  flex: none;
+  transition: transform 50ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.agent-tool-row[open] > summary > svg {
+  transform: rotate(90deg);
+}
+.agent-tool-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-tool-label .code-file-name {
+  color: var(--text);
+}
+.agent-tool-row[data-failed] > summary {
+  color: #cc8f93;
+}
+.agent-tool-row > summary:hover,
+.agent-tool-row > summary:focus-visible {
+  color: #c9c8c5;
+}
+.agent-tool-row[data-failed] > summary:hover {
+  color: #e0a9ac;
+}
+.agent-tool-body {
+  padding: 0 8px 10px;
+}
+.agent-tool-source,
+.agent-tool-output {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/17px var(--code-font-custom,) Menlo,
+    Consolas,
+    monospace;
+}
+.agent-tool-source {
+  padding: 4px 8px;
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+  color: var(--text);
+}
+.agent-tool-prompt {
+  color: #c7c8c3;
+}
+.agent-tool-output {
+  margin-top: 10px;
+  max-height: 240px;
+  overflow: auto;
+  color: #c7c7c5;
+}
+.agent-tool-row[data-failed] .agent-tool-output {
+  color: #c89093;
+}
+/* The reference breaks long output at any character. */
+.agent-tool-output {
+  word-break: break-all;
+}
+.agent-tool-source .sh-command {
+  color: #93b7f1;
+}
+.agent-tool-source .sh-number {
+  color: #a4e2e2;
+}
+.agent-tool-source .sh-string,
+.agent-tool-source .sh-list,
+.agent-tool-source .sh-arg {
+  color: #bed99b;
+}
+.agent-tool-source .sh-keyword {
+  color: #be8ce1;
+}
+.agent-tool-source .sh-variable {
+  color: #e4b78d;
+}
+:root[data-theme="light"] .agent-tool-list,
+:root[data-theme="light"] .agent-tool-row + .agent-tool-row,
+:root[data-theme="light"] .agent-tool-source {
+  border-color: #d3cfc8;
+}
+:root[data-theme="light"] .agent-tool-list {
+  background: #fff;
+}
+:root[data-theme="light"] .agent-tool-row > summary {
+  color: #77736b;
+}
+:root[data-theme="light"] .agent-tool-label .code-file-name,
+:root[data-theme="light"] .agent-tool-source,
+:root[data-theme="light"] .agent-tool-output {
+  color: #38342e;
+}
+:root[data-theme="light"] .agent-tool-row[data-failed] > summary,
+:root[data-theme="light"] .agent-tool-row[data-failed] .agent-tool-output {
+  color: var(--danger);
+}
+:root[data-theme="light"] .single-agent-task,
+:root[data-theme="light"] .agent-transcript-context {
+  background: #e8e5df;
+  color: #38342e;
+}
+@media (prefers-reduced-motion: reduce) {
+  .single-agent-event > summary svg {
+    transition: none;
+  }
+  .agent-transcript-running {
+    animation: none;
+  }
+}
+
+.single-agent-activity-fixture .single-agent-event {
+  margin-top: 9.5px;
+}
+.single-agent-event-rows button:active {
+  background: #343432;
+}
+:root[data-theme="light"] .single-agent-task-title button {
+  background: #d6d2cb;
+  color: #454039;
+}
+:root[data-theme="light"] .single-agent-task-title button:hover:not(:disabled),
+:root[data-theme="light"] .single-agent-task-title button:focus-visible {
+  background: #c8c3ba;
+}
+:root[data-theme="light"] .single-agent-task-line,
+:root[data-theme="light"] .agent-transcript-model {
+  color: #77736b;
+}
+:root[data-theme="light"] .single-agent-task-footer button {
+  color: #276aa4;
+}
+:root[data-theme="light"] .single-agent-task-footer button:hover,
+:root[data-theme="light"] .single-agent-task-footer button:focus-visible {
+  color: #164c7c;
+}
+:root[data-theme="light"] .single-agent-event {
+  color: #38342e;
+}
+:root[data-theme="light"] .single-agent-event-rows {
+  border-color: #d3cfc8;
+}
+:root[data-theme="light"] .single-agent-event-rows > * + * {
+  border-color: #d3cfc8;
+}
+:root[data-theme="light"] .single-agent-event-rows button:hover,
+:root[data-theme="light"] .single-agent-event-rows button:focus-visible {
+  background: #efede8;
+}
+:root[data-theme="light"] .single-agent-event-rows button:active {
+  background: #e2ded7;
+}
+:root[data-theme="light"] .single-agent-prior-tool {
+  color: #706c65;
+}
+:root[data-theme="light"] .single-agent-prior-tool:hover summary,
+:root[data-theme="light"] .single-agent-prior-tool summary:focus-visible {
+  color: #38342e;
+}
+:root[data-theme="light"] .single-agent-prior-body {
+  color: #625e57;
+  border-color: #d3cfc8;
+}
+:root[data-theme="light"] .agent-transcript-panel > header > button,
+:root[data-theme="light"] .agent-transcript-scroll {
+  color: #38342e;
+}
+:root[data-theme="light"] .agent-transcript-context button {
+  color: #3d3933;
+}
+:root[data-theme="light"] .agent-transcript-thinking,
+:root[data-theme="light"] .agent-transcript-commands {
+  color: #77736b;
+}
+:root[data-theme="light"] .agent-transcript-commands.is-running > summary {
+  color: #38342e;
+}
+
+/* A transcript that could not load: plain failure red like the failed write of
+   R-0823 (dark #e5877b, light #8f2d2a), with Retry as the grey chip of "Get
+   more usage". */
+.agent-transcript-error {
+  margin: 12px 0;
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 20px;
+}
+.agent-transcript-error strong {
+  font-weight: 400;
+}
+.agent-transcript-error p {
+  margin: 4px 0 12px;
+  overflow-wrap: anywhere;
+}
+.agent-transcript-error button {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: #393939;
+  color: var(--text);
+}
+.agent-transcript-error button:hover,
+.agent-transcript-error button:focus-visible {
+  background: #444;
+}
+:root[data-theme="light"] .agent-transcript-error {
+  color: #8f2d2a;
+}
+:root[data-theme="light"] .agent-transcript-error button {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.agent-transcript-terminal {
+  margin: 18px 0;
+  color: #97958f;
+  font-size: 12px;
+}
+.agent-transcript-terminal.is-failed {
+  color: #df8f80;
+}
+:root[data-theme="light"] .agent-transcript-terminal {
+  color: #77736b;
+}
+:root[data-theme="light"] .agent-transcript-terminal.is-failed {
+  color: #a74232;
+}
+
+.background-tasks-scroll section:has(> .single-agent-task) > h2 {
+  margin-bottom: 7px;
+}
+:root[data-theme="light"] .single-agent-task-line b,
+:root[data-theme="light"] .single-agent-task-title {
+  color: #38342e;
+}
+:root[data-theme="light"] .agent-transcript-model b,
+:root[data-theme="light"] .agent-transcript-message {
+  color: #38342e;
+}
+
+/* Code: a background agent is one grey line, its title then its model. */
+.code-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5px;
+  min-height: 24px;
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #8c8c8a;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.code-agent-row:hover,
+.code-agent-row:focus-visible {
+  color: #c9c8c5;
+}
+.code-agent-row:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.code-agent-row > svg {
+  flex: none;
+}
+.code-agent-row[data-status="failed"] {
+  color: var(--danger);
+}
+:root[data-theme="light"] .code-agent-row {
+  color: #77736b;
+}
+:root[data-theme="light"] .code-agent-row:hover {
+  color: #38342e;
+}
+
+.agent-transcript-loading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Reduced motion: the tool row's chevron turns at once. */
+@media (prefers-reduced-motion: reduce) {
+  .agent-tool-row > summary > svg {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .agent-tool-row > summary > svg {
+  transition: none;
+}

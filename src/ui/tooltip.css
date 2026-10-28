@@ -1,0 +1,127 @@
+/* Chrome tooltips, measured from R-0001 (Use incognito) and R-0003 (Exit
+   incognito) held hover at 1164px: 24px tall, radius 6, 9px side padding, grey
+   shortcut 10px after the label. Text, size and motion follow the original's
+   Tooltip: 13/18 text, at least 24px tall with 3px above and below, at most
+   240px wide, and a 120ms fade and grow from 98% on the snap curve, in and out,
+   from the side facing the button (src/ui/Tooltip.tsx sets the origin). It has
+   no border: shadow-sm in light, and in dark shadow-panel-sm, a 1px inner ring
+   at 10% white under shadow-sm. */
+.chrome-tooltip {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  max-width: 240px;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  /* tooltip-bg / tooltip-fg: surface-3 and text-primary in dark, gray-900 and
+     white in light. */
+  background: #20201f;
+  color: var(--text);
+  font:
+    13px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 1px 2px #0b0b0b0f,
+    0 2px 8px #0000003d;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.98;
+  transition:
+    opacity var(--motion-snap, 120ms) var(--ease-snap, ease-out),
+    scale var(--motion-snap, 120ms) var(--ease-snap, ease-out);
+}
+/* Shown at once while another tooltip of the group was up. */
+.chrome-tooltip[data-instant] {
+  transition-duration: 0ms;
+}
+/* size="wrap": a longer explanation on several lines. The original's multi-line
+   tooltip has 6px above and below and balances its lines. */
+.chrome-tooltip.wrap {
+  padding: 6px 8px;
+  text-wrap: balance;
+}
+/* A title over a smaller line (the working-directory path): the 13/18 title,
+   then an 11/14 text-secondary line 2px under it, 6px above and below, 46px in
+   all. */
+.chrome-tooltip.detail {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  height: auto;
+  padding: 6px 8px;
+  line-height: 18px;
+}
+.chrome-tooltip-detail {
+  font-size: 11px;
+  line-height: 14px;
+  color: #c3c2b7;
+}
+/* A multi-line tooltip (the Code Send): rows 4px apart, each its words and keys
+   6px apart, the keys at the end. */
+.chrome-tooltip-rows {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 3px 0;
+}
+.chrome-tooltip-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.chrome-tooltip-row .chrome-tooltip-keys {
+  margin-left: 0;
+}
+/* Hoverable while open: the pointer may move onto it. */
+.chrome-tooltip[data-open="true"] {
+  opacity: 1;
+  scale: 1;
+  pointer-events: auto;
+}
+.chrome-tooltip-keys {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 10px;
+  color: #898989;
+}
+.chrome-tooltip-keys kbd {
+  min-width: 10px;
+  font: inherit;
+  text-align: center;
+}
+/* Incognito's black tooltip: #0b0b0b with a #121212 rim. */
+body:has(.incognito-app) .chrome-tooltip {
+  background: #0b0b0b;
+  color: #fff;
+}
+/* Light theme: black too; the incognito black above. */
+:root[data-theme="light"] .chrome-tooltip {
+  background: #0b0b0b;
+  color: #fff;
+  box-shadow:
+    0 1px 2px #0b0b0b0f,
+    0 2px 8px #0b0b0b14;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chrome-tooltip {
+    transition: none;
+    scale: none;
+  }
+}
+:root[data-motion="reduced"] .chrome-tooltip {
+  transition: none;
+  scale: none;
+}
+/* The focusable wrapper of a disabled control that says why (ReasonTooltip
+   wrap): inline-flex, as the original's. */
+.reason-wrapper {
+  display: inline-flex;
+}

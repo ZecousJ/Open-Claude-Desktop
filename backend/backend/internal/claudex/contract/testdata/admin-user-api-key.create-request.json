@@ -1,0 +1,7 @@
+{
+  "name": "CI deploy",
+  "group_id": 4,
+  "quota": 25,
+  "expires_in_days": 90,
+  "ip_whitelist": ["203.0.113.0/24"]
+}

@@ -1,0 +1,10 @@
+{
+  "t": "event",
+  "seq": 1842,
+  "event": {
+    "type": "engine",
+    "engine": {
+      "state": "ready"
+    }
+  }
+}

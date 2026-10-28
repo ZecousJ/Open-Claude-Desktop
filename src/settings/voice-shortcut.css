@@ -1,0 +1,25 @@
+/* Native shortcut controls. */
+.voice-shortcut {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 280px;
+}
+.voice-shortcut-control {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: flex-end;
+  width: 220px;
+  gap: 16px;
+}
+.voice-shortcut > p {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .voice-shortcut > p {
+  color: #52514e;
+}

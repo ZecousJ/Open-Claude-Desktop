@@ -1,0 +1,233 @@
+/*
+ * The phone's transcript look over the shared conversation renderer. The renderer bundle itself is pinned and never
+ * edited; the native shell injects this sheet once the page is ready. Section numbers are the spec's.
+ * Fonts: the system sans and serif
+ * (Noto Serif / Noto Serif CJK on Android) stand in; JetBrains Mono (OFL) is bundled for code.
+ */
+@font-face { font-family: "OX JetBrains Mono"; src: url("/transcript-official/JetBrainsMono.ttf") format("truetype"); font-weight: 100 800; font-display: swap; }
+
+/* Colour tokens, light */
+:root.ox {
+  --ox-bg: #F9F9F7;            /* zc6.q page */
+  --ox-text: #131313;          /* zc6.O */
+  --ox-text2: #383835;         /* zc6.P */
+  --ox-text3: #7B7974;         /* zc6.Q */
+  --ox-raised: #FFFFFF;        /* zc6.p */
+  --ox-code-body: #F3F3F0;     /* zc6.r */
+  --ox-code-head: #F0EFEC;     /* zc6.s */
+  --ox-bubble: #F0EFEC;        /* zc6.w0 */
+  --ox-hair-strong: rgba(30, 30, 29, .30); /* zc6.w */
+  --ox-hair: rgba(30, 30, 29, .15);        /* zc6.x */
+  --ox-link: #D97757;          /* zc6.c */
+  --ox-inline: #184F95;        /* g74.w0() */
+  --ox-chip: rgba(11, 11, 11, .05);        /* g74.C0() */
+  --ox-status: #52514E;        /* g74.r0() */
+  --ox-verb: #0B0B0B;          /* g74.o0() */
+  --ox-ok: #006300;            /* g74.G() */
+  --ox-danger: #8E2626;        /* g74.r() */
+  --ox-menu-border: rgba(11, 11, 11, .102); /* g74.x() */
+  --ox-quote: rgba(11, 11, 11, .10);        /* zc6.B0 */
+  --ox-scrim: rgba(0, 0, 0, .32);
+  --ox-serif: "Noto Serif", "Noto Serif CJK SC", "Source Han Serif SC", serif;
+  --ox-sans: "Roboto", "Noto Sans CJK SC", sans-serif;
+  --ox-mono: "OX JetBrains Mono", "JetBrains Mono", monospace;
+}
+/* Colour tokens, dark */
+:root.ox:not([data-theme=light]) {
+  --ox-bg: #151515; --ox-text: #F9F9F7; --ox-text2: #C3C2B7; --ox-text3: #97958D; --ox-raised: #20201F;
+  --ox-code-body: #111111; --ox-code-head: #0D0D0D; --ox-bubble: #2C2C2A;
+  --ox-hair-strong: rgba(225, 224, 217, .30); --ox-hair: rgba(225, 224, 217, .15);
+  --ox-inline: #6DA7EC; --ox-chip: rgba(255, 255, 255, .08); --ox-status: #C3C2B7; --ox-verb: #F0EFEC;
+  --ox-ok: #0CA30C; --ox-danger: #EC7E7E; --ox-menu-border: rgba(255, 255, 255, .102); --ox-quote: rgba(255, 255, 255, .10);
+  --ox-scrim: rgba(0, 0, 0, .5);
+}
+
+:root.ox body, :root.ox .app.mobile-conversation { background: var(--ox-bg) !important; color: var(--ox-text); }
+:root.ox .mobile-conversation .messages-scroll { background: var(--ox-bg) !important; }
+
+/* List geometry: no list padding; items pad themselves. 16 dp above a user turn, 12 above a block. */
+:root.ox .mode-chat .messages { padding: 8px 0 24px !important; max-width: none !important; }
+:root.ox .mode-chat .turn { margin: 0 !important; padding: 0 !important; }
+:root.ox .mode-chat .turn + .turn { padding-top: 16px !important; }
+:root.ox .mode-chat .assistant-message { margin: 12px 0 0 !important; padding: 0 !important; }
+:root.ox .mode-chat .assistant-content { padding: 0 20px !important; margin: 0 !important; }
+:root.ox .mode-chat .assistant-content > * { margin-top: 0; }
+:root.ox .mode-chat .assistant-content > * + :is(.markdown, .chat-steps, .turn-activity, .ox-notice, .turn-error, [class*=artifact-card], [class*=file-]) { margin-top: 12px !important; }
+
+/* User message: bubble 12 dp, w0 fill, hairline x, 12 × 14 dp padding, 15/1.4 sans; 44 dp from the
+ * start (36 + 8), 8 dp from the end, max 652.8 dp. Message actions live in the long-press menu. */
+:root.ox .mode-chat .user-message {
+  background: var(--ox-bubble) !important; color: var(--ox-text) !important;
+  border: .5px solid var(--ox-hair) !important; border-radius: 12px !important;
+  padding: 14px 12px !important; margin: 0 8px 0 auto !important;
+  max-width: min(652.8px, calc(100% - 52px)) !important;
+  font: 400 15px/1.4 var(--ox-sans) !important;
+}
+:root.ox .mode-chat .user-message-text, :root.ox .mode-chat .user-message-text .prompt-paragraph { font: inherit !important; line-height: 1.4 !important; color: inherit !important; }
+:root.ox .mode-chat .user-message-actions { display: none !important; }
+:root.ox .mode-chat .user-message:has(.user-edit-actions) { margin-bottom: 44px !important; }
+:root.ox .mode-chat .user-message-text :is(h1, h2, h3, h4, h5, h6) { font: 550 15px/1.4 var(--ox-sans) !important; }
+
+/* Assistant text: serif 17/1.5, paragraph spacing 8, H1–H3 28/24/20 at 550 lh 1.3. */
+:root.ox .mode-chat .markdown { font: 400 17px/1.5 var(--ox-serif) !important; color: var(--ox-text) !important; letter-spacing: 0 !important; }
+:root.ox .mode-chat .markdown :is(p, li, td, th, blockquote) { font-size: inherit !important; line-height: inherit !important; }
+:root.ox .mode-chat .markdown > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+:root.ox .mode-chat .markdown > * + * { margin-top: 8px !important; }
+:root.ox .mode-chat .markdown :is(h1, h2, h3, h4, h5, h6) { font-family: var(--ox-serif) !important; font-weight: 550 !important; line-height: 1.3 !important; color: var(--ox-text) !important; letter-spacing: 0 !important; }
+:root.ox .mode-chat .markdown h1 { font-size: 28px !important; }
+:root.ox .mode-chat .markdown h2 { font-size: 24px !important; }
+:root.ox .mode-chat .markdown h3 { font-size: 20px !important; }
+:root.ox .mode-chat .markdown :is(h4, h5, h6) { font-size: 17px !important; line-height: 1.5 !important; }
+:root.ox .mode-chat .markdown :is(strong, b) { font-weight: 550 !important; }
+/* lists: marker indent 8, contents indent 4, item spacing 4 */
+:root.ox .mode-chat .markdown :is(ul, ol) { padding-left: 28px !important; margin-left: 0 !important; }
+:root.ox .mode-chat .markdown li { padding-left: 4px !important; margin: 0 !important; }
+:root.ox .mode-chat .markdown li + li, :root.ox .mode-chat .markdown li > :is(ul, ol, p + p) { margin-top: 4px !important; }
+:root.ox .mode-chat .markdown li::marker { color: var(--ox-text) !important; }
+:root.ox .mode-chat .markdown blockquote { margin: 0 !important; padding: 0 0 0 12px !important; border-left: 3px solid var(--ox-quote) !important; color: var(--ox-text) !important; font-style: normal; }
+:root.ox .mode-chat .markdown hr { border: 0 !important; border-top: 1px solid var(--ox-hair-strong) !important; margin: 16px 0 !important; }
+/* inline code: mono, blue w0(), chip C0() with a 0.5 dp x border, 6.4 dp corners, 4 × 1 dp padding */
+:root.ox .mode-chat :is(.markdown, .user-message-text) :not(pre) > code {
+  font-family: var(--ox-mono) !important; font-size: .88em !important; color: var(--ox-inline) !important;
+  background: var(--ox-chip) !important; border: .5px solid var(--ox-hair) !important; border-radius: 6.4px !important; padding: 1px 4px !important;
+}
+/* links: clay, underlined; 20 % clay while pressed */
+:root.ox .mode-chat :is(.markdown, .user-message-text) a { color: var(--ox-link) !important; text-decoration: underline !important; text-decoration-color: currentColor !important; -webkit-text-decoration-color: currentColor !important; border-radius: 2px; }
+:root.ox .mode-chat :is(.markdown, .user-message-text) a:active { background: rgba(217, 119, 87, .2) !important; }
+
+/* Code block: 12 dp clip; header ≥ 40 dp in s, 16 dp side padding, language in mono 13 P with the
+ * first letter capitalised; body r, 16 dp padding, mono 15/1.5, no wrap (horizontal scroll). */
+:root.ox .mode-chat .markdown .code-block { border: 0 !important; border-radius: 12px !important; background: var(--ox-code-body) !important; overflow: hidden !important; box-shadow: none !important; }
+:root.ox .mode-chat .markdown .code-block .code-bar {
+  position: static !important; height: auto !important; min-height: 40px !important; padding: 0 8px 0 16px !important; border: 0 !important;
+  background: var(--ox-code-head) !important; color: var(--ox-text2) !important; font: 400 13px/1.5 var(--ox-mono) !important;
+}
+:root.ox .mode-chat .markdown .code-block .code-bar > span { display: inline-block !important; }
+:root.ox .mode-chat .markdown .code-block .code-bar > span::first-letter { text-transform: uppercase; }
+:root.ox .mode-chat .markdown .code-block .code-bar > div { opacity: 1 !important; gap: 4px !important; }
+:root.ox .mode-chat .markdown .code-block .code-bar .small-action { color: var(--ox-text2) !important; background: transparent !important; width: 36px !important; height: 36px !important; border-radius: 50% !important; }
+:root.ox .mode-chat .markdown .code-block .code-bar .small-action:active { background: var(--ox-chip) !important; }
+:root.ox .mode-chat .markdown .code-block .code-bar .small-action svg { width: 20px !important; height: 20px !important; }
+:root.ox .mode-chat .markdown .code-block pre { margin: 0 !important; padding: 16px !important; background: transparent !important; white-space: pre !important; overflow-x: auto !important; font: 400 15px/1.5 var(--ox-mono) !important; }
+:root.ox .mode-chat .markdown .code-block pre code { font: inherit !important; white-space: inherit !important; background: transparent !important; }
+:root.ox .mode-chat .user-message-text .code-block { background: var(--ox-raised) !important; }
+
+/* tables: header weight 550, borders w, cells max 520 dp, scroll sideways */
+:root.ox .mode-chat .markdown .markdown-table { overflow-x: auto !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; }
+:root.ox .mode-chat .markdown table { border-collapse: collapse !important; border: 0 !important; font: inherit !important; }
+:root.ox .mode-chat .markdown :is(th, td) { border: 1px solid var(--ox-hair-strong) !important; padding: 8px 12px !important; max-width: 520px; background: transparent !important; text-align: start; vertical-align: top; }
+:root.ox .mode-chat .markdown th { font-weight: 550 !important; }
+
+/* Collapsed steps row: 12 dp top, 8 × 12 dp padding inside the 20 dp inset, 15/1.4 sans Q,
+ * one line, caretRight 16 dp. Tapping opens the steps sheet instead of expanding in place. */
+:root.ox .mode-chat .chat-steps { margin: 0 !important; padding: 0 !important; font-family: var(--ox-sans) !important; }
+:root.ox .mode-chat .chat-steps > summary {
+  display: flex !important; align-items: center; gap: 4px; width: auto !important; max-width: 100% !important; min-height: 24px;
+  padding: 12px 8px !important; color: var(--ox-text3) !important; font: 400 15px/1.4 var(--ox-sans) !important; border-radius: 8px !important; background: transparent !important;
+}
+:root.ox .mode-chat .chat-steps[data-running] > summary { padding-left: 36px !important; }
+:root.ox .mode-chat .chat-steps > summary > .clay-mark { top: 14px !important; left: 8px !important; }
+:root.ox .mode-chat .chat-steps > summary .activity-label { color: var(--ox-text3) !important; -webkit-text-fill-color: currentColor !important; }
+:root.ox .mode-chat .chat-steps > summary .activity-elapsed { display: none !important; }
+:root.ox .mode-chat .chat-steps > summary > svg { width: 16px !important; height: 16px !important; margin: 0 !important; color: var(--ox-text3) !important; }
+:root.ox .mode-chat .chat-steps[open] > summary > svg { transform: none !important; }
+:root.ox .mode-chat .chat-steps[open] > summary::before { content: ""; position: fixed; inset: 0; z-index: 60; background: var(--ox-scrim); cursor: default; animation: ox-fade-in .25s ease-out; }
+:root.ox .mode-chat .chat-steps[open] > .chat-steps-card-wrap {
+  position: fixed !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 61 !important;
+  margin: 0 !important; padding: 0 16px calc(24px + env(safe-area-inset-bottom)) !important; max-height: 85vh; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--ox-raised) !important; color: var(--ox-text) !important; border-radius: 44px 44px 0 0 !important;
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, .10); animation: ox-sheet-in .3s cubic-bezier(.2, 0, 0, 1);
+}
+:root.ox .mode-chat .chat-steps[open] > .chat-steps-card-wrap::before { content: ""; display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--ox-hair); margin: 6px auto 5.5px; }
+:root.ox .mode-chat .chat-steps[open] .chat-steps-card { box-shadow: none !important; border-radius: 0 !important; background: transparent !important; }
+:root.ox .mode-chat .chat-steps[open] .chat-steps-card::before { content: var(--ox-s-summary, ""); display: block; padding: 5px 0 12px; text-align: center; font: 550 17px/1.4 var(--ox-sans); color: var(--ox-text); }
+:root.ox .mode-chat .chat-steps .chat-step-row { font: 400 15px/1.4 var(--ox-sans) !important; color: var(--ox-text) !important; padding: 12px 0 !important; }
+:root.ox .mode-chat .chat-steps .chat-step + .chat-step { border-top: 1px solid var(--ox-hair) !important; }
+:root.ox .mode-chat .chat-steps .chat-step-name { color: var(--ox-text3) !important; }
+:root.ox .mode-chat .chat-steps .chat-step-thought { font: 400 15px/1.6 var(--ox-serif) !important; color: var(--ox-text2) !important; }
+@keyframes ox-sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes ox-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Working row: 28 dp tall, spark then 8 dp, the thinking verb in the transcript font 15/1.6
+ * o0() with the 1.5 s shimmer (band 25 %, highlight = colour at 10 %). No elapsed-time plumbing. */
+:root.ox .mode-chat .turn-activity { min-height: 28px !important; margin: 0 !important; padding: 0 !important; gap: 8px !important; color: var(--ox-verb) !important; font: 400 15px/1.6 var(--ox-serif) !important; }
+:root.ox .mode-chat .assistant-content > * + .turn-activity { margin-top: 12px !important; }
+:root.ox .mode-chat .turn-activity > .clay-mark, :root.ox .mode-chat .pre-tool-activity > .clay-mark { position: static !important; flex: none; width: 20px; height: 20px; }
+:root.ox .mode-chat .turn-activity > .activity-mark { position: static !important; transform: none !important; }
+:root.ox .mode-chat .turn-activity .activity-elapsed, :root.ox .mode-chat .turn-activity .turn-marker-detail { display: none !important; }
+:root.ox .mode-chat .turn-activity .activity-label {
+  color: var(--ox-verb) !important; -webkit-text-fill-color: transparent !important;
+  background: linear-gradient(90deg, var(--ox-verb) 0 37.5%, color-mix(in srgb, var(--ox-verb) 10%, transparent) 50%, var(--ox-verb) 62.5% 100%) 100% 0 / 400% 100% no-repeat !important;
+  -webkit-background-clip: text !important; background-clip: text !important; animation: ox-shimmer 1.5s linear infinite !important;
+}
+@keyframes ox-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { :root.ox .mode-chat .turn-activity .activity-label { animation: none !important; -webkit-text-fill-color: currentColor !important; background: none !important; } }
+/* Plumbing status is never shown (product rule). */
+:root.ox .turn-reconnecting { display: none !important; }
+
+/* Reply actions: icons only, tint Q, Small borderless 36 dp visual / 40 dp target, 20 dp icons;
+ * Copy · Share · Narrate · Good · Bad · Retry. No timestamps or tooltips. */
+:root.ox .mode-chat .message-actions { opacity: 1 !important; height: auto !important; margin: 4px 0 0 0 !important; padding: 0 !important; gap: 0 !important; color: var(--ox-text3) !important; flex-wrap: wrap; }
+:root.ox .mode-chat .turn .message-actions { transition: none !important; }
+:root.ox .mode-chat .message-actions > span, :root.ox .mode-chat .message-actions .reply-time { display: none !important; }
+:root.ox .mode-chat .message-actions .small-action {
+  width: 36px !important; height: 36px !important; min-width: 36px !important; min-height: 36px !important; margin: 2px !important; padding: 0 !important;
+  border-radius: 50% !important; background: transparent !important; color: var(--ox-text3) !important; display: inline-grid; place-items: center;
+}
+:root.ox .mode-chat .message-actions .small-action:first-child { margin-left: -6px !important; }
+:root.ox .mode-chat .message-actions .small-action:active { background: var(--ox-chip) !important; }
+:root.ox .mode-chat .message-actions .small-action:disabled { opacity: .38 !important; }
+:root.ox .mode-chat .message-actions .small-action :is(svg, .reply-glyph) { width: 20px !important; height: 20px !important; }
+:root.ox .copy-tooltip { display: none !important; }
+:root.ox .mode-chat .message-actions .small-action[data-copied=true], :root.ox .mode-chat .message-actions .small-action.copied { color: var(--ox-ok) !important; transition: color .3s; }
+
+/* Notice card: 16 dp corners, page fill, 1 dp x border, 16/6/12/6 padding, ≥ 48 dp, infoCircle 20 P,
+ * 12 dp gaps, 15 sp P text, trailing Small Secondary button. */
+:root.ox .ox-notice, :root.ox .mode-chat .turn-error {
+  display: flex !important; align-items: center !important; justify-content: space-between; gap: 12px !important; min-height: 48px; box-sizing: border-box;
+  margin: 0 !important; padding: 6px 12px 6px 16px !important; border: 1px solid var(--ox-hair) !important; border-radius: 16px !important;
+  background: var(--ox-bg) !important; color: var(--ox-text2) !important; font: 400 15px/1.4 var(--ox-sans) !important;
+}
+:root.ox .ox-notice > .ox-notice-text, :root.ox .mode-chat .turn-error > p { flex: 1; margin: 0 !important; color: inherit !important; font: inherit !important; }
+:root.ox .ox-notice > svg { flex: none; width: 20px; height: 20px; color: var(--ox-text2); }
+:root.ox .ox-secondary, :root.ox .mode-chat .turn-error .turn-error-action {
+  flex: none; height: 36px; padding: 0 12px !important; border-radius: 999px !important; border: 1px solid var(--ox-hair) !important;
+  background: transparent !important; color: var(--ox-text) !important; font: 550 15px/1.4 var(--ox-sans) !important; cursor: pointer;
+}
+:root.ox .ox-secondary:active, :root.ox .mode-chat .turn-error .turn-error-action:active { background: var(--ox-code-head) !important; }
+:root.ox .ox-secondary:disabled { color: var(--ox-text3) !important; }
+:root.ox .mode-chat .assistant-content.ox-failed-only > .message-actions { display: none !important; }
+
+/* Scroll-to-bottom: 40 dp circle, p @ 96 %, 0.5 dp x border, shadow 8/2 black 10 %, arrowDown 16 dp O. */
+:root.ox .scroll-bottom-dock { bottom: 8px !important; }
+:root.ox .scroll-bottom-button {
+  width: 40px !important; height: 40px !important; border-radius: 50% !important; border: .5px solid var(--ox-hair) !important;
+  background: color-mix(in srgb, var(--ox-raised) 96%, transparent) !important; color: var(--ox-text) !important; box-shadow: 0 2px 8px rgba(0, 0, 0, .10) !important;
+}
+:root.ox .scroll-bottom-button svg { width: 16px !important; height: 16px !important; }
+:root.ox .scroll-bottom-button[data-visible=true] { animation: ox-pop .3s cubic-bezier(.2, 0, 0, 1); }
+@keyframes ox-pop { from { transform: translateY(-100%) scale(.01); opacity: 0; } }
+
+/* Artifact / file cards: r fill, w hairline, 12 dp corners, 12 dp padding, title 17/550 sans. */
+:root.ox .mode-chat :is(.artifact-card, .file-document-card, .generated-file-row) { background: var(--ox-code-body) !important; border: 1px solid var(--ox-hair-strong) !important; border-radius: 12px !important; box-shadow: none !important; }
+
+/* Message long-press menu (DropdownMenu): 12 dp, raised fill, x() hairline, 8 dp shadow; rows ≥ 44 dp,
+ * 4 dp inset, 12 dp corners, 20 dp icons in Q, 15 sp labels in O, 180 dp minimum width. */
+:root.ox .ox-menu-layer { position: fixed; inset: 0; z-index: 80; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+:root.ox .ox-menu {
+  position: fixed; z-index: 81; min-width: 180px; max-width: calc(100vw - 32px); padding: 4px 0; box-sizing: border-box;
+  background: var(--ox-raised); border: 1px solid var(--ox-menu-border); border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, .14);
+  transform-origin: top left; animation: ox-menu-in .15s cubic-bezier(.2, 0, 0, 1);
+}
+:root.ox .ox-menu button {
+  display: flex; align-items: center; gap: 12px; width: calc(100% - 8px); min-height: 44px; margin: 0 4px; padding: 0 12px;
+  border: 0; border-radius: 12px; background: transparent; color: var(--ox-text); font: 400 15px/1.4 var(--ox-sans); text-align: start; cursor: pointer;
+}
+:root.ox .ox-menu button:active { background: var(--ox-chip); }
+:root.ox .ox-menu button svg { flex: none; width: 20px; height: 20px; color: var(--ox-text3); }
+@keyframes ox-menu-in { from { opacity: 0; transform: scale(.92); } }
+:root.ox .ox-selecting .markdown, :root.ox .ox-selecting .user-message-text { -webkit-user-select: text !important; user-select: text !important; }
+
+/* The system CJK serif has one weight and the shared sheets turn bold synthesis off: bold text
+   gets a thin same-colour stroke so bold Chinese reads bold (the Latin bold face barely changes). */
+:root .app.mobile-conversation .markdown :is(strong, b, h1, h2, h3, h4, h5, h6, th) { -webkit-text-stroke: .028em currentColor; }

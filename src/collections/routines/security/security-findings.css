@@ -1,0 +1,273 @@
+/*
+ * A security-review routine's findings. Sizes follow the routine history dialog
+ * it sits beside (routine-history.css: 12–13px text, secondary grey, 1px
+ * rules), the dialog's buttons are the shared .secondary ones, and the severity
+ * colours are the ones a failed run (#e5877b, light #8f2d2a) and the model
+ * menu's Max warning (#d69c44) already use.
+ */
+.sec-findings {
+  max-height: 64vh;
+  overflow: auto;
+  font-size: 13px;
+}
+.sec-loading {
+  display: grid;
+  place-items: center;
+  height: 80px;
+  color: var(--text-secondary);
+}
+.sec-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.sec-counts {
+  min-width: 0;
+}
+.sec-summary,
+.sec-schedule {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+.sec-summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 18px;
+}
+.sec-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+.sec-tool {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+.sec-tool[data-active] {
+  color: var(--accent);
+}
+@media (hover: hover) {
+  .sec-tool:hover {
+    background: var(--fill-ghost-hover);
+    color: var(--text);
+  }
+}
+.sec-button {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 400;
+}
+.sec-button:disabled {
+  opacity: var(--opacity-disabled);
+}
+.sec-status-line {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.sec-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.sec-banner > button,
+.sec-clear {
+  color: var(--text);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sec-count {
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.sec-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sec-list > li + li {
+  border-top: 1px solid var(--border);
+}
+.sec-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 6px;
+  border-radius: 8px;
+  text-align: left;
+}
+@media (hover: hover) {
+  .sec-row:hover {
+    background: var(--fill-ghost-hover);
+  }
+}
+.sec-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.sec-row-text > strong {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sec-row-text > small {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sec-severity {
+  flex: none;
+  min-width: 54px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--alpha-2);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+.sec-severity.critical,
+.sec-severity.high {
+  color: var(--danger);
+}
+.sec-severity.medium {
+  color: #d69c44;
+}
+:root[data-theme="light"] .sec-severity.critical,
+:root[data-theme="light"] .sec-severity.high {
+  color: #8f2d2a;
+}
+:root[data-theme="light"] .sec-severity.medium {
+  color: #8a5a10;
+}
+.sec-status {
+  flex: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.sec-status.open {
+  color: var(--text);
+}
+.sec-empty {
+  margin: 8px 0 16px;
+  color: var(--text-secondary);
+}
+.sec-clear {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.sec-detail-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.sec-grow {
+  flex: 1;
+}
+.sec-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: -4px;
+  padding: 4px 6px 4px 2px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+@media (hover: hover) {
+  .sec-back:hover {
+    background: var(--fill-ghost-hover);
+    color: var(--text);
+  }
+}
+h3.sec-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+}
+.sec-section {
+  margin: 0 0 14px;
+}
+.sec-section > h3 {
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+.sec-section .markdown {
+  font-size: 13px;
+  line-height: 20px;
+}
+.sec-where {
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.sec-steps {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 20px;
+}
+.sec-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.sec-fields dt {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.sec-fields dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+.sec-help {
+  margin: -10px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+@media (max-width: 560px) {
+  .sec-toolbar {
+    flex-direction: column;
+  }
+  .sec-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

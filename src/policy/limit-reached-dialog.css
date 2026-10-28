@@ -1,0 +1,50 @@
+/* The limit-hit dialog: the original's non-upgrade body: mt-2 text-sm mb-5
+   sentence, a benefit list (gap-2.5 mb-1 text-secondary, text-sm) and
+   full-width buttons in a column 8px apart, the quiet one underlined. */
+.limit-reached .limit-reached-body {
+  margin: 8px 0 20px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.limit-reached .limit-reached-benefits {
+  list-style: none;
+  margin: 0 0 32px;
+  padding: 0;
+}
+.limit-reached .limit-reached-benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+.limit-reached .limit-reached-benefits svg {
+  flex: none;
+}
+.limit-reached .limit-reached-benefits span {
+  font-size: 14px;
+  line-height: 20px;
+}
+.limit-reached .limit-reached-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.limit-reached .limit-reached-actions button {
+  width: 100%;
+}
+/* The original's ghost button: no fill or border until the pointer. */
+.limit-reached .limit-reached-actions .limit-reached-wait {
+  background: transparent;
+  border-color: transparent;
+  text-decoration: underline;
+}
+@media (hover: hover) {
+  .limit-reached
+    .limit-reached-actions
+    .limit-reached-wait:hover:not(:disabled) {
+    background: var(--fill-ghost-hover);
+  }
+}

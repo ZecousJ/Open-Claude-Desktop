@@ -1,0 +1,418 @@
+/* Conversation workspace */
+.workspace {
+  grid-column: 2;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.chat-header {
+  height: var(--titlebar-height);
+  min-height: var(--titlebar-height);
+  padding: 0 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  font-size: 12px;
+}
+.chat-header > div:first-child {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.header-icon {
+  display: flex;
+  color: var(--text-secondary);
+}
+.thread-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 5px 1px;
+  font-weight: 500;
+  max-width: 480px;
+  text-align: left;
+}
+.thread-title:hover {
+  color: var(--text-strong);
+}
+.mode-badge {
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 2px 5px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.chat-layout {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.chat-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.empty-chat {
+  align-items: center;
+  padding: max(55px, 17vh) 36px 24px;
+  overflow-y: auto;
+}
+.welcome {
+  width: min(100%, 680px);
+  margin-bottom: 30px;
+  padding-left: 5px;
+}
+.welcome h1 {
+  font-family: "Claudex Serif", Georgia, "Songti SC", "STSong", "SimSun", serif;
+  font-size: clamp(28px, 3vw, 39px);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: -0.9px;
+  margin: 10px 0 0;
+  color: var(--text-strong);
+}
+.welcome p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 10px 0 0;
+}
+.composer-wrap {
+  width: min(100%, 700px);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.composer {
+  padding: 16px 15px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 17px;
+  box-shadow: 0 4px 14px #0000000a;
+  /* The frame's fill, rim, ring and dimming follow hover and focus in 200ms
+     on the standard curve (the original's composer card). Source: desktop
+     bundle 2.31226.1 static CSS/JS. */
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    opacity var(--motion-base) var(--ease-standard);
+}
+.composer:focus-within {
+  border-color: color-mix(
+    in srgb,
+    var(--border-strong) 50%,
+    var(--text-secondary)
+  );
+  box-shadow: 0 3px 16px #0000000d;
+}
+.composer.is-running {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.composer > textarea {
+  display: block;
+  width: 100%;
+  min-height: 66px;
+  max-height: 200px;
+  padding: 1px 2px 10px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  resize: none;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.composer > textarea::placeholder {
+  color: var(--text-secondary);
+}
+.composer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+.composer-left,
+.composer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.composer-right {
+  gap: 10px;
+}
+.composer-left .icon-button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+.permission-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.model-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 6px 3px;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.model-button:hover {
+  color: var(--text);
+}
+.send-button {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  /* The original's brand button. */
+  background: #c6613f;
+  color: #fff;
+  flex-shrink: 0;
+}
+.send-button:hover:not(:disabled) {
+  background: #d97757;
+}
+/* Disabled: a grey alpha-2 fill with the muted glyph. */
+.send-button:disabled {
+  background: var(--alpha-2);
+  color: var(--text-muted);
+  opacity: 1;
+}
+.send-button.stop {
+  background: var(--text);
+  color: var(--surface);
+}
+.composer-footnote {
+  min-height: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 9px 5px 3px;
+}
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 14px;
+}
+.suggestions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  height: 34px;
+  font-size: 12px;
+  padding: 0 14px;
+}
+.suggestions button svg {
+  color: var(--text-muted);
+}
+.suggestions button:hover {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.attachment-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: -3px 0 13px;
+}
+.attachment {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  padding: 8px 6px 8px 10px;
+  max-width: 230px;
+}
+.attachment > svg {
+  color: var(--accent);
+}
+.attachment > div {
+  min-width: 0;
+}
+.attachment strong {
+  display: block;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.attachment small {
+  color: var(--text-muted);
+  font-size: 10px;
+  display: block;
+  margin-top: 3px;
+}
+.attachment .icon-button {
+  width: 23px;
+  height: 23px;
+}
+/* The column itself never scrolls (only .messages-scroll does): clip, not
+   hidden, so a focus or scrollIntoView inside a menu that reaches past its
+   bottom cannot scroll it and leave the composer stranded mid-page. */
+.has-conversation {
+  overflow: clip;
+}
+.messages-scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  overscroll-behavior: contain;
+  scroll-behavior: auto;
+}
+.messages {
+  width: min(100%, 780px);
+  margin: 0 auto;
+  padding: 29px 40px 18px;
+}
+.turn {
+  margin-bottom: 34px;
+}
+.user-message {
+  position: relative;
+  width: fit-content;
+  max-width: calc(100% - 40px);
+  margin-left: auto;
+  background: var(--surface-selected);
+  border-radius: 13px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.75;
+  margin-bottom: 27px;
+}
+.user-message > div:first-child {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.user-message > .small-action {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  opacity: 0;
+}
+.user-message:hover > .small-action,
+.user-message:focus-within > .small-action {
+  opacity: 1;
+}
+/* A sent message's files: the composer's 120px tiles in a row above the bubble,
+   at its right edge. */
+.message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  width: fit-content;
+  max-width: calc(100% - 40px);
+  margin: 0 0 8px auto;
+}
+.message-attachments .attachment-thumbnail-open {
+  cursor: zoom-in;
+}
+.assistant-message {
+  display: flex;
+  gap: 13px;
+}
+.assistant-mark {
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+.assistant-content {
+  min-width: 0;
+  flex: 1;
+}
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 15px;
+  color: var(--text-muted);
+}
+.message-actions > span {
+  font-size: 10px;
+  opacity: 0;
+}
+.assistant-message:hover .message-actions > span {
+  opacity: 1;
+}
+.has-conversation .conversation-composer {
+  width: calc(100% - 64px);
+  max-width: 716px;
+  margin: 0 auto;
+  padding-top: 10px;
+  background: var(--bg);
+}
+.has-conversation .composer-footnote {
+  min-height: 31px;
+  padding-bottom: 9px;
+}
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 29px;
+  padding: 7px 0;
+}
+.thinking span {
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 1.3s ease-in-out infinite;
+}
+.thinking span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.thinking span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}

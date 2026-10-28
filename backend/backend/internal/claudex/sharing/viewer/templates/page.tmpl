@@ -1,0 +1,100 @@
+{{define "head"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>{{.DocTitle}}</title>
+{{if .ScreenshotURL}}<meta property="og:image" content="{{.ScreenshotURL}}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{.ScreenshotURL}}">{{end}}
+<style nonce="{{.Nonce}}">{{.CSS}}</style>
+</head>
+{{end}}
+
+{{/* CLAUDEX: LOGIN the Claudex star and serif wordmark, linking to the web app at / */}}
+{{define "brand"}}<a class="brand" href="/"><svg class="brand-star" viewBox="120 120 784 784" width="20" height="20" aria-hidden="true" focusable="false"><g fill="none" stroke="#d97757" stroke-width="64" stroke-linejoin="round"><path d="M392 492C282 362 362 182 582 162 632 262 622 402 392 492Z"/><path d="M469.3 398.1C526.9 237.8 722.8 217.1 850.1 397.6 788.5 490.9 662.3 552.3 469.3 398.1Z"/><path d="M589.3 418.1C756.9 387.8 872.8 547.1 780.1 747.6 668.5 740.9 552.3 662.3 589.3 418.1Z"/><path d="M632 532C742 662 662 842 442 862 392 762 402 622 632 532Z"/><path d="M554.7 625.9C497.1 786.2 301.2 806.9 173.9 626.4 235.5 533.1 361.7 471.7 554.7 625.9Z"/><path d="M434.7 605.9C267.1 636.2 151.2 476.9 243.9 276.4 355.5 283.1 471.7 361.7 434.7 605.9Z"/></g></svg><span class="wordmark">{{.SiteName}}</span></a>{{end}}
+
+{{define "report"}}{{if .ReportAction}}<details class="report">
+<summary data-l10n>Report</summary>
+<form class="report-panel" method="post" action="{{.ReportAction}}">
+<h2>Report this content</h2>
+{{/* CLAUDEX: the live claude.ai report form (2026-10-12) as the app's Report dialog draws it: the 13 categories, then name, e-mail and notes once one the form takes is chosen (CSS :has, as the page runs no script) */}}
+<label class="report-field">Why are you reporting this?<select name="category" required><option value="" selected disabled>Select report reason</option>{{range .Categories}}<option value="{{.Value}}"{{if not .Reason}} data-elsewhere{{end}}>{{.Label}}</option>{{end}}</select></label>
+<p class="report-elsewhere" role="note">Please use this form to report copyright infringement.</p>
+<div class="report-fields">
+<label class="report-field">Your name<input name="reporter_name" maxlength="255" placeholder="Optional"></label>
+<label class="report-field">Your email<small>If provided, we may contact you for additional information or updates on this report</small><input type="email" name="reporter_email" maxlength="255" placeholder="Optional"></label>
+<label class="report-field">Additional information<small>Please provide any additional information to help us understand your request.</small><small>If you are reporting the content as illegal/unlawful, please describe in detail why you believe the identified content is illegal/unlawful, citing specific provisions of law wherever possible.</small><small>If you are reporting the content as violating our policies (including our terms or Usage Policy), please describe in detail why you believe the identified content is in violation of our policies, with specific citations to our policies wherever possible.</small><textarea name="notes" maxlength="1000" placeholder="Optional"></textarea></label>
+{{/* CLAUDEX: the live claude.ai report form (2026-10-12) ends with "Opt out of training on this report", off by default; a checkbox drawn as a switch, as the page runs no script */}}
+<div class="report-switch"><label for="report-opt-out">Opt out of training on this report</label><input id="report-opt-out" type="checkbox" role="switch" name="opt_out_of_training" value="on" aria-describedby="report-opt-out-note"></div>
+<p id="report-opt-out-note" class="report-note">Reports help the administrator of {{.SiteName}} keep this service safe and enforce its usage policy. Unless you opt out, the administrator may use reports to train models for moderation. Opt out of this use by changing the toggle above.</p>
+<button class="button" type="submit">Report</button>
+</div>
+</form>
+</details>{{end}}{{end}}
+
+{{define "footer"}}<footer>Shared from {{.SiteName}}{{if .SharedOn}} on {{.SharedOn}}{{end}}. Content is written by the person who shared it and AI.{{if .UsagePolicyURL}} <a href="{{.UsagePolicyURL}}" rel="nofollow noopener noreferrer" target="_blank">Usage Policy</a>{{end}}</footer>{{end}}
+
+{{define "conversation"}}{{template "head" .}}<body>
+<header class="bar">
+{{template "brand" .}}
+<span class="bar-title">{{.Title}}</span>
+<nav class="bar-actions">{{template "report" .}}</nav>
+</header>
+<main>
+<div class="share-head">
+<h1>{{.Title}}</h1>
+<div class="meta">{{.Meta}}</div>
+</div>
+{{range .Messages}}{{if .User}}<section class="turn-user"><div class="bubble">{{.Text}}</div></section>
+{{else}}<section class="turn-assistant">
+{{if .Activity}}<ul class="activity">{{range .Activity}}<li>{{.}}</li>{{end}}</ul>
+{{end}}<div class="markdown">{{.HTML}}</div>
+{{range .Artifacts}}<details class="artifact">
+<summary>
+<span class="artifact-icon" aria-hidden="true">{{.Badge}}</span>
+<span class="artifact-name"><strong>{{.Title}}</strong><span>{{.Label}}</span></span>
+<span class="artifact-toggle"><span class="when-closed">Show</span><span class="when-open">Hide</span></span>
+</summary>
+<iframe class="artifact-frame" title="{{.Title}}" src="{{.Src}}" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" loading="lazy"></iframe>
+<div class="artifact-links"><a class="text-button" href="{{.Src}}" target="_blank" rel="noopener noreferrer">Open full page</a><a class="text-button" href="{{.RawSrc}}" rel="nofollow noopener noreferrer">View source</a></div>
+</details>
+{{end}}</section>
+{{end}}{{end}}</main>
+{{/* CLAUDEX: the live claude.ai shared page (2026-10-12) ends with a sticky "Ask Claude your own question" that starts a new chat */}}
+<div class="continue"><a class="button" href="/">Ask {{.SiteName}} your own question</a></div>
+{{template "footer" .}}
+</body>
+</html>
+{{end}}
+
+{{define "artifact"}}{{template "head" .}}<body class="full">
+<header class="bar compact">
+{{template "brand" .}}
+<span class="bar-title">{{.Title}}</span>
+<nav class="bar-actions"><button class="text-button" data-artifact-permissions>Permissions</button><button class="text-button" data-install-artifact aria-describedby="install-reason" disabled>Install artifact</button>{{with .Artifact}}<a class="text-button" href="{{.Src}}" target="_blank" rel="noopener noreferrer" data-l10n>Open full page</a><a class="text-button" href="{{.RawSrc}}" rel="nofollow noopener noreferrer" data-l10n>View source</a>{{end}}{{template "report" .}}</nav>
+</header>
+{{with .Artifact}}<iframe class="full-frame" title="{{.Title}}" src="{{.Src}}" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>{{end}}
+<span id="install-reason" data-install-reason hidden></span>
+<dialog data-install-steps><h2></h2><ol></ol><p></p><form method="dialog"><button class="button">Done</button><button class="tool-close" data-install-close aria-label="Close">×</button></form></dialog>
+<dialog data-artifact-tools aria-labelledby="artifact-tool-title" tabindex="-1"></dialog>
+<script type="application/json" data-install-messages nonce="{{.Nonce}}">{{.InstallMessages}}</script>
+<script nonce="{{.Nonce}}">{{.InstallJS}}</script>
+<script nonce="{{.Nonce}}">{{.ToolsJS}}</script>
+</body>
+</html>
+{{end}}
+
+{{/* CLAUDEX: LOGIN notice pages have the sign-in page's look (provisional, no reference capture) */}}
+{{define "status"}}{{template "head" .}}<body class="status-page">
+<header class="status-head">{{template "brand" .}}</header>
+<main class="status" role="status">
+<h1>{{.Heading}}</h1>
+<p>{{.Detail}}</p>
+{{if .BackHref}}<a class="secondary-button" href="{{.BackHref}}">Back to the shared page</a>{{else}}<a class="secondary-button" href="/">Go to {{.SiteName}}</a>{{end}}
+</main>
+</body>
+</html>
+{{end}}

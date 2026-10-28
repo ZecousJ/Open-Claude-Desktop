@@ -1,0 +1,565 @@
+/* The sidebar frame, window chrome, mode pills and nav rows (part of sidebar.css) */
+/*
+ * Sidebar: window chrome, main navigation, conversation list, account area,
+ * resize handle and drag feedback. This file is the only place sidebar
+ * elements are styled; it loads after styles.css.
+ */
+
+/*
+ * Every value below cited as "" was checked again
+ * * unchanged unless a rule says otherwise.
+ *
+ * Interaction states. The original's sidebar rows, section headings, nav rows
+ * and account button are plain buttons with no transition: hover, selection,
+ * the shortcut hint and a row's ⋮ change at once (the global button transition
+ * in 00-foundation.css is the fill layer of its Button component, which only
+ * its icon buttons use). Those icon buttons (title bar, section heading
+ * buttons, ⋮) fade their fill in 60ms on the out curve and squish when pressed,
+ * while their glyph colour changes at once. --sidebar-paint-transition is that:
+ * the fill layer and the release spring.
+ *
+ * A row's keyboard focus is an inset 1px accent ring with a faint 6px glow
+ * (accent at 20%), not the page ring around the control, and the row takes the
+ * hover fill while it is focused. Kept as an outline too, so forced colours
+ * still draw a ring.
+ */
+:root {
+  --sidebar-paint-transition:
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out), var(--press-release);
+  --sidebar-focus-ring:
+    inset 0 0 0 1px var(--focus-accent),
+    0 0 6px 0 color-mix(in srgb, var(--focus-accent) 20%, transparent);
+}
+.main-nav .nav-item,
+.main-nav-more > button,
+.main-nav-more-menu > button,
+.main-nav-item-wrap > .main-nav-row-plus,
+.conversation-link,
+.section-toggle,
+.group-toggle,
+.view-all,
+.profile,
+.profile-popover > button,
+.profile-menu-scroll > button {
+  transition: none;
+}
+.main-nav .nav-item:focus-visible,
+.main-nav-more > button:focus-visible,
+.main-nav-item-wrap > .main-nav-row-plus:focus-visible,
+.conversation-link:focus-visible,
+.section-toggle:focus-visible,
+.group-toggle:focus-visible,
+.view-all:focus-visible {
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  box-shadow: var(--sidebar-focus-ring);
+}
+/* The ⋮, the section heading's buttons and the title bar's icon buttons are
+   the original's icon Button: the fill fades, the glyph does not, and a
+   press squishes (05-utilities.css has the same for .icon-button). */
+.row-more,
+.section-label > div > button {
+  transition: var(--sidebar-paint-transition);
+}
+.row-more:not(:disabled):active,
+.section-label > div > button:not(:disabled):active {
+  scale: var(--press-scale);
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    scale var(--motion-fast) ease-out;
+}
+
+/* Layout */
+.app.sidebar-hidden {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+.sidebar {
+  grid-column: 1;
+  grid-row: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 0;
+  /* One device pixel on a 2x display, as in the reference. */
+  border-right: 0.5px solid #2a2a2a;
+  background: var(--sidebar);
+  user-select: none;
+}
+.sidebar-hidden .sidebar {
+  visibility: hidden;
+  padding: 0;
+  border: 0;
+}
+
+/* Floating desktop card. */
+.app:not(.web) {
+  --sidebar-chrome-height: 36px;
+  --sidebar-controls-top: var(--sidebar-chrome-height);
+  --traffic-light-spacer: 0px;
+  --sidebar-card-bg: hsl(0 0% 14.9%);
+  --sidebar-card-ring: hsl(from #fff h s l / 10%);
+  grid-template-columns: calc(var(--sidebar-width) + 8px) minmax(0, 1fr);
+  column-gap: 8px;
+  padding-top: var(--sidebar-chrome-height);
+  padding-inline-end: 8px;
+}
+:root[data-theme="light"] .app:not(.web) {
+  --sidebar-card-bg: white;
+  --sidebar-card-ring: hsl(from #0b0b0b h s l / 10%);
+}
+.app:not(.web):not(.sidebar-hidden) .sidebar {
+  position: absolute;
+  grid-area: auto;
+  z-index: 20;
+  top: calc(8px + var(--sidebar-chrome-height));
+  bottom: 8px;
+  inset-inline-start: 8px;
+  overflow: visible;
+  border: 0;
+  border-radius: 8px;
+  -electron-corner-smoothing: system-ui;
+  background: var(--sidebar-card-bg);
+  box-shadow:
+    inset 0 0 0 0 transparent,
+    0 0 0 1px var(--sidebar-card-ring),
+    0 4px 24px color-mix(in oklab, #0b0b0b 6%, transparent);
+}
+.app:not(.web):not(.sidebar-hidden) .sidebar-chrome {
+  position: absolute;
+  top: calc(-8px - var(--sidebar-chrome-height));
+  inset-inline-start: -8px;
+  width: calc(var(--sidebar-width) + 8px);
+  height: var(--sidebar-chrome-height);
+}
+.app:not(.web).sidebar-hidden {
+  grid-template-columns: 0 minmax(0, 1fr);
+  column-gap: 0;
+  padding-inline-start: 8px;
+}
+/* macOS has no chrome bar and reserves 74px for traffic lights; the sidebar's
+   titlebar is h-11 with px-2 before that spacer. */
+.app.darwin:not(.web) {
+  --sidebar-chrome-height: 0px;
+  --sidebar-controls-top: 10px;
+  --traffic-light-spacer: 74px;
+}
+.app.darwin:not(.web):not(.sidebar-hidden) .sidebar-chrome {
+  position: static;
+  width: auto;
+  height: 44px;
+  padding-left: calc(8px + var(--traffic-light-spacer));
+}
+.sidebar-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 8px;
+  padding: 12px 8px 6px;
+  overflow: clip;
+  border-radius: inherit;
+}
+
+/* Window chrome: sidebar toggle, back/forward and the Chat | Code switch */
+.sidebar-chrome {
+  flex-shrink: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  -webkit-app-region: drag;
+}
+/* Windows and Linux: no traffic lights; ≡, the sidebar toggle, back and
+   forward start at the window's left edge, then the Chat/Code switch. */
+.app:not(.darwin) .sidebar-chrome {
+  padding-left: 12px;
+  justify-content: flex-start;
+}
+/* The Chat | Code switch ends the sidebar's title bar on every platform and
+   surface: Windows' chrome lead spans the sidebar and its switcher is ms-auto
+   me-1. */
+.app:not(.web):not(.sidebar-hidden) .sidebar-chrome > .surface-switch {
+  margin-inline-start: auto;
+}
+/* Collapsed, the same three controls float where the sidebar's were. */
+/* Collapsed, the controls sit after the traffic-light spacer (74px) plus
+   16 (floating card: 90px on macOS), 10px below the chrome bar. */
+.collapsed-chrome {
+  position: fixed;
+  z-index: 6;
+  top: var(--sidebar-controls-top, 10px);
+  left: 90px;
+  display: flex;
+}
+.app:not(.darwin) .collapsed-chrome {
+  left: 8px;
+}
+/* macOS Chat and Code use the full-bleed frame, whose collapsed toggle sits at
+   the traffic-light spacer + 8px = 82px (the floating card keeps +16).
+   .dframe-root[data-variant=web]:not([data-web]) [data-collapsed]. */
+.app.darwin:not(.web):not(.full-screen) .collapsed-chrome {
+  left: calc(var(--traffic-light-spacer) + 8px);
+}
+.sidebar-chrome > .icon-button,
+.collapsed-chrome > .icon-button {
+  position: relative;
+  isolation: isolate;
+  width: 24px;
+  height: 28px;
+  color: #c6c5c2;
+  /* The original's chrome button has no transition of its own: its ring and
+     glyph change at once and only the fill layer, the ::before below, fades. */
+  transition: var(--press-release);
+}
+/* The hover square overhangs the 24px slot by 2px each side. */
+.sidebar-chrome > .icon-button::before,
+.collapsed-chrome > .icon-button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 -2px;
+  border-radius: 7px;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+.sidebar-chrome > .icon-button:hover:not(:disabled),
+.collapsed-chrome > .icon-button:hover:not(:disabled) {
+  background: none;
+  color: #c6c5c2;
+}
+/* The measured #262626 on the #111 sidebar is about the ghost hover, which
+   also reads right where the collapsed copy floats over the page. */
+.sidebar-chrome > .icon-button:hover:not(:disabled)::before,
+.collapsed-chrome > .icon-button:hover:not(:disabled)::before {
+  background: var(--fill-ghost-hover);
+}
+/* The sidebar's own toggle rests at 70% and comes up to full while the sidebar
+   is hovered or a title-bar control has keyboard focus, over 120ms on the snap
+   curve. The fade stays under reduced motion. */
+.sidebar-chrome > .window-nav-toggle {
+  opacity: 0.7;
+  transition:
+    var(--press-release),
+    opacity var(--motion-snap) var(--ease-snap);
+}
+.sidebar:hover .sidebar-chrome > .window-nav-toggle,
+.sidebar-chrome:has(:focus-visible) > .window-nav-toggle {
+  opacity: 1;
+}
+/* No hover on a touch screen: the toggle stays at full strength. */
+@media (hover: none), (pointer: coarse) {
+  .sidebar-chrome > .window-nav-toggle {
+    opacity: 1;
+  }
+}
+.surface-switch {
+  --cds-segmented-control-track: rgb(255 255 255 / 5%);
+  --cds-segmented-control-thumb: rgb(255 255 255 / 10%);
+  --cds-border: rgb(255 255 255 / 10%);
+  --cds-text-muted: #898781;
+  --cds-text-primary: #f0efec;
+  position: relative;
+  display: flex;
+  margin-left: 7.5px;
+  padding: 1px;
+  border-radius: 7px;
+  background: var(--cds-segmented-control-track);
+}
+/* Track, thumb and inset ring. SurfaceSwitch sets data-active. */
+.surface-switch::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  width: 34px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: var(--cds-segmented-control-thumb);
+  box-shadow:
+    inset 0 0 0 1px var(--cds-border),
+    0 1px 2px 0 rgb(0 0 0 / 5%);
+  transition:
+    transform var(--motion-snap) var(--ease-snap),
+    background-color var(--motion-moderate) var(--ease-snap);
+}
+.surface-switch[data-active="code"]::before {
+  transform: translateX(34px);
+}
+/* The pill's colour follows the pointer at once; only its ring fades in 60ms. */
+.surface-switch button {
+  position: relative;
+  width: 34px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--cds-text-muted);
+  transition: box-shadow var(--motion-fast);
+}
+/* A conversation on the other surface is running (grey), waits for approval
+   (amber) or finished unread (blue): the row dots' colours. */
+.surface-switch button.busy::after,
+.surface-switch button.attention::after,
+.surface-switch button.unread::after {
+  content: "";
+  position: absolute;
+  top: 2.75px;
+  left: 18.75px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cds-text-muted);
+}
+.surface-switch button.attention::after {
+  background: #fab219;
+}
+.surface-switch button.unread::after {
+  background: #2a78d6;
+}
+.surface-switch button.selected {
+  color: var(--cds-text-primary);
+}
+/* An inactive pill takes the primary text colour under the pointer; the
+   chosen one and a greyed one do not (.df-pill:hover:not([data-active])). */
+.surface-switch button:hover:not(.selected, .unavailable) {
+  color: var(--cds-text-primary);
+}
+
+/*
+ * Main navigation: 26px rows on a 26.5px pitch, icon box at x 14, label at x
+ * 38. Labels, conversation rows and the account menu are 13px: with the
+ * reference fonts, 14px measured 8% wider than R-0805, S-0006 and
+ * R-个人菜单 (2x), while the 12px section labels and the 13px account name
+ * matched to the half pixel.
+ */
+.main-nav {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.5px;
+  padding: 0;
+}
+.main-nav .nav-item,
+.main-nav-more > button {
+  width: 100%;
+  height: 26px;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0 6px;
+  /* --df-radius-pill at the desktop's compact density. */
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1;
+  text-align: left;
+  color: #c9c8c6;
+}
+.main-nav svg {
+  flex-shrink: 0;
+  color: #c7c6c4;
+}
+/* The desktop's rows: 6px in, a 24px slot holding the glyph (20px, or the New
+   row's 16px plus), 4px before the label, in Chat and Code alike. */
+.app:not(.web) .main-nav .nav-item,
+.app:not(.web) .main-nav-more > button {
+  gap: 4px;
+  padding-inline-start: 6px;
+}
+.app:not(.web) .main-nav .nav-glyph {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+/* Hover fills without changing text colour. The measured #232323 hover and
+   #353535 current row on the #111 sidebar are the ghost fills, white at 7.5%
+   and 15% (00-foundation.css). */
+@media (hover: hover) {
+  .main-nav .nav-item:hover,
+  .main-nav-more > button:hover {
+    background: var(--fill-ghost-hover);
+  }
+}
+/* A focused row takes the hover fill too; the current row's fill stays. */
+.main-nav .nav-item:focus-visible,
+.main-nav-more > button:focus-visible {
+  background: var(--fill-ghost-hover);
+}
+.main-nav .nav-item.current,
+.main-nav-more > button.current {
+  background: var(--fill-ghost-selected);
+  color: var(--text);
+}
+.main-nav .nav-item.current svg,
+.main-nav-more > button.current svg {
+  color: var(--text);
+}
+/* More reads as secondary. */
+.main-nav-more > button {
+  color: #8d8c8a;
+}
+.main-nav-more > button svg {
+  color: #6d6d6d;
+}
+.main-nav-more > button.open {
+  background: var(--fill-ghost-hover);
+}
+/* Neutral xs Badge and ready indicator. */
+.main-nav .main-nav-badge,
+.main-nav-more-menu .main-nav-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  margin-inline-start: 8px;
+  height: 16px;
+  padding-inline: 4px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 13px;
+  white-space: nowrap;
+}
+.main-nav-new-marker {
+  flex: none;
+  margin-inline-start: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2a78d6;
+}
+:root[data-theme="light"] .main-nav .main-nav-badge,
+:root[data-theme="light"] .main-nav-more-menu .main-nav-badge {
+  background: rgb(11 11 11 / 5%);
+  color: #52514e;
+}
+/* Shortcut hint follows the label and appears on hover. R-0011 hover (jpg,
+   2.629 px/CSS): the "⌘" and "N" inks are 20 and 17 px wide against 23 and 20
+   at 12px (glyph height 21 against 23), the Windows crop's "Ctrl+N" about 11px;
+   the gap after the label is 10.3px and the space between ⌘ and N 6px between
+   inks (word-spacing makes up the difference); checked at 11px: inks 20 and 17
+   px wide, 166-186 tall, as in the capture. It appears and goes at once, as the
+   original's group-hover hint. */
+.main-nav .nav-item kbd {
+  margin-left: 0.1px;
+  font: inherit;
+  font-size: 11px;
+  word-spacing: 1.2px;
+  color: #8c8b89;
+  opacity: 0;
+}
+.main-nav .nav-item:hover kbd {
+  opacity: 1;
+}
+/* Rendered in a portal beside the More row. */
+.main-nav-more-menu {
+  position: fixed;
+  z-index: 60;
+  /* 128px measured; wider when a row's words need it (translations). */
+  width: max-content;
+  min-width: 128px;
+  padding: 1px 4px 2px;
+  border: 1px solid #373737;
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: 0 6px 16px #0008;
+}
+.main-nav-more-menu > button {
+  width: 100%;
+  height: 28px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 7px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--text);
+}
+.main-nav-more-menu > button > svg {
+  color: var(--text);
+}
+.main-nav-more-menu > button > span {
+  white-space: nowrap;
+}
+/* A row moved here from the sidebar brings the sidebar's glyph (the web's
+   icon-font glyph in its 28px slot): drawn at the popup's 15px, the size
+   its own rows' icons use. */
+.main-nav-more-menu > button > .nav-glyph {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  color: var(--text);
+}
+.main-nav-more-menu > button > .nav-glyph > svg {
+  width: 15px;
+  height: 15px;
+}
+/* Design: kept in the popup, dimmed, until Claudex has a Design surface. */
+.main-nav-more-menu > button.main-nav-more-unavailable {
+  cursor: default;
+}
+.main-nav-more-menu > button.main-nav-more-unavailable > svg,
+.main-nav-more-menu > button.main-nav-more-unavailable > span {
+  opacity: 0.5;
+}
+.main-nav-more-menu > hr {
+  height: 1px;
+  margin: 2px 7px;
+  border: 0;
+  background: #373737;
+}
+
+/*
+ * The desktop's sidebar now has the web's sizes: rows 32px, 2px in, a 28px
+ * glyph slot (20px glyphs, New's 16px plus in a 22px disc) 8px before the 14/21
+ * label, radius 8; the search 32px, radius 8, 14px text.
+ */
+.app:not(.web) .sidebar .main-nav .nav-item,
+.app:not(.web) .sidebar .main-nav-more > button {
+  height: 32px;
+  min-height: 32px;
+  gap: 8px;
+  padding: 0 2px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 21px;
+}
+.app:not(.web) .sidebar .main-nav .nav-glyph {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+}
+.app:not(.web) .sidebar .main-nav .nav-glyph > svg.app-icon {
+  width: 20px;
+  height: 20px;
+}
+.app:not(.web) .sidebar .main-nav .nav-glyph.add > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+.app:not(.web) .sidebar .main-nav .nav-glyph.add svg {
+  width: 16px;
+  height: 16px;
+}
+.app:not(.web).mode-chat .sidebar .native-chat-search,
+.app:not(.web).mode-code .sidebar .web-sidebar-search {
+  height: 32px;
+  min-height: 32px;
+  border-radius: 8px;
+  font-size: 14px;
+}

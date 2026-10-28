@@ -1,0 +1,26 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "3600"
+  },
+  "body": {
+    "code": "CLAUDEX_USAGE_LIMIT_EXCEEDED",
+    "message": "You've reached your session limit. It resets Sep 26, 7:00 AM UTC.",
+    "claudex": {
+      "v": 1,
+      "reason": "RULE_LIMIT",
+      "kind": "rule_limit",
+      "window": "5h",
+      "resets_at": "2026-09-26T07:00:00Z",
+      "retry_after_seconds": 3600,
+      "limit_usd": 5,
+      "used_usd": 5.02,
+      "rule_id": 3,
+      "rule_kind": "session",
+      "label": "Current session",
+      "reprovision": false,
+      "action": "wait",
+      "message": "You've reached your session limit. It resets Sep 26, 7:00 AM UTC."
+    }
+  }
+}

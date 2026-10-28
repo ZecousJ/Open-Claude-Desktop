@@ -1,0 +1,177 @@
+/* O16 shared-frame Hc/tP/cD:10620–10637; native menu
+   c86ccec3d:1200–1230/1420–1450. Menus use lg density, radius card =
+   comfortable lg radius + 4px, CDS ease-out and .3s. */
+[data-composer-sheet="true"][class],
+[data-composer-sheet-child="true"][class] {
+  --composer-sheet-radius: calc(14px * var(--cds-rem-scale, 1));
+  --composer-sheet-control: calc(40px * var(--cds-rem-scale, 1));
+  --composer-sheet-duration: var(--cds-dur-sheet, 0.3s);
+  --composer-sheet-backdrop: var(--cds-backdrop, #00000080);
+  --composer-sheet-ease: var(
+    --cds-ease-out,
+    cubic-bezier(0.165, 0.84, 0.44, 1)
+  );
+  position: fixed !important;
+  translate: 0 0 !important;
+  scale: 1;
+  transform: none;
+  transform-origin: top;
+  z-index: 210;
+  inset: auto 0 0 !important;
+  width: auto !important;
+  min-width: 0;
+  max-width: none;
+  max-height: calc(100dvh - max(env(safe-area-inset-top), 8px));
+  overflow: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  padding: 0 env(safe-area-inset-right, 0px)
+    max(env(safe-area-inset-bottom), 8px) env(safe-area-inset-left, 0px) !important;
+  border-width: 1px 0 0;
+  border-radius: var(--composer-sheet-radius) var(--composer-sheet-radius) 0 0 !important;
+  font-size: calc(15px * var(--cds-rem-scale, 1));
+  line-height: calc(22px * var(--cds-rem-scale, 1));
+  transition-property: translate, height, scale;
+  transition-duration: var(--composer-sheet-duration);
+  transition-timing-function: var(--composer-sheet-ease);
+}
+[data-composer-sheet="true"][class]::before,
+[data-composer-sheet-child="true"][class]::before {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 14px auto;
+  border-radius: 999px;
+  background: var(--border-strong);
+}
+/* Native c86ccec3d:404–430 reserves 32px but draws no nested handle. */
+[data-composer-sheet-child="true"][class]::before {
+  visibility: hidden;
+}
+[data-composer-sheet-child="true"][class] {
+  z-index: 211;
+  margin: 0;
+}
+[data-composer-sheet-starting="true"][data-composer-sheet="true"][class],
+[data-composer-sheet-ending="true"][data-composer-sheet="true"][class],
+[data-composer-sheet-tree-closing="true"][data-composer-sheet-child="true"][class] {
+  translate: 0 calc(100% + 24px) !important;
+}
+[data-composer-sheet-starting="true"][data-composer-sheet-child="true"][class],
+[data-composer-sheet-peeling="true"][data-composer-sheet-ending="true"][class] {
+  translate: 100% 0 !important;
+}
+[data-composer-sheet-starting="true"][data-composer-sheet-child="true"][class]:dir(
+    rtl
+  ),
+[data-composer-sheet-peeling="true"][data-composer-sheet-ending="true"][class]:dir(
+    rtl
+  ) {
+  translate: -100% 0 !important;
+}
+[data-composer-sheet-covered="true"][data-composer-sheet-layered="true"][class]:not(
+    [data-composer-sheet-starting]
+  ):not([data-composer-sheet-ending]) {
+  translate: 0 -12px !important;
+}
+[data-composer-sheet-covered="true"][data-composer-sheet-layered="true"][class] {
+  scale: 0.94;
+}
+[data-composer-sheet="true"][class]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: var(--composer-sheet-backdrop);
+  opacity: 0;
+  transition: opacity var(--composer-sheet-duration) var(--composer-sheet-ease);
+}
+[data-composer-sheet-covered="true"][data-composer-sheet-layered="true"][class]::after {
+  opacity: 1;
+}
+[data-composer-sheet-content-covered="true"] {
+  pointer-events: none;
+  translate: calc(-100vw - env(safe-area-inset-left, 0px)) 0;
+  transition: translate var(--composer-sheet-duration)
+    var(--composer-sheet-ease);
+}
+[data-composer-sheet-content-covered="true"]:dir(rtl) {
+  translate: calc(100vw + env(safe-area-inset-right, 0px)) 0;
+}
+[data-composer-sheet="true"][class] > :not([data-composer-sheet-child]) {
+  transition: translate var(--composer-sheet-duration)
+    var(--composer-sheet-ease);
+}
+[data-composer-sheet="true"][class] [role^="menuitem"],
+[data-composer-sheet-child="true"][class] [role^="menuitem"] {
+  min-height: var(--composer-sheet-control);
+  height: auto;
+}
+[data-composer-sheet-child="true"][class] > .composer-sheet-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--composer-sheet-control);
+  padding: 0 4px 4px;
+  font-weight: 600;
+}
+[data-composer-sheet-child="true"][class] .composer-sheet-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--composer-sheet-control);
+  min-height: var(--composer-sheet-control);
+  width: var(--composer-sheet-control);
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+[data-composer-sheet-child="true"][class] .composer-sheet-back > svg {
+  color: inherit;
+}
+.composer-menu-scrim[data-composer-sheet-scrim="true"] {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 209;
+  background: var(--cds-backdrop, #00000080);
+  opacity: 1;
+  transition: opacity var(--cds-dur-sheet, 0.3s)
+    var(--cds-ease-out, cubic-bezier(0.165, 0.84, 0.44, 1));
+  touch-action: none;
+}
+.composer-menu-scrim:is(
+  [data-composer-sheet-starting="true"],
+  [data-composer-sheet-ending="true"]
+) {
+  opacity: 0;
+}
+/* Official light backdrop is #0006; dark is #00000080 (67131/67420). */
+:root[data-theme="light"]
+  :is([data-composer-sheet="true"], [data-composer-sheet-child="true"]) {
+  --composer-sheet-backdrop: var(--cds-backdrop, #0006);
+}
+:root[data-theme="light"]
+  .composer-menu-scrim[data-composer-sheet-scrim="true"] {
+  background: var(--cds-backdrop, #0006);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-composer-sheet="true"][class],
+  [data-composer-sheet-child="true"][class],
+  [data-composer-sheet="true"][class] > *,
+  .composer-menu-scrim[data-composer-sheet-scrim="true"],
+  [data-composer-sheet="true"][class]::after {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"]
+  :is([data-composer-sheet="true"], [data-composer-sheet-child="true"])[class],
+:root[data-motion="reduced"] [data-composer-sheet="true"][class] > *,
+:root[data-motion="reduced"]
+  .composer-menu-scrim[data-composer-sheet-scrim="true"],
+:root[data-motion="reduced"] [data-composer-sheet="true"][class]::after {
+  transition: none;
+}

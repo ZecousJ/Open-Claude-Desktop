@@ -1,0 +1,410 @@
+/*
+ * The row under the Cowork home composer and its menus. The composer's left
+ * edge is x=383: the open chip spans 391–505 × 569–593 (#272727) with its 13px
+ * label from x=400, so the row is inset 8px and each chip pads its label by
+ * 9px; labels are 18px apart. The menu opens 6px below the chip, at its left
+ * edge: 327px wide, #202020 with a 1px #363636 rim; a 40px search row over a
+ * rule (glyph at 409, text at 432), then 32px rows (49px with a path line) with
+ * 20px icons (glyph 407–423) and names from x=434, 14px #f7f6f4 names and 13px
+ * #908f8d paths.
+ */
+.cowork-options.cowork-options {
+  position: relative;
+  gap: 0;
+  padding: 0 8px;
+}
+/* Reserve the chin's 24px row before the deferred live-composer sheet
+   arrives. The legacy standalone options row is 40px tall. */
+.composer-chin .cowork-options {
+  height: 24px;
+}
+.cowork-options.cowork-options > button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.cowork-options.cowork-options > button.open {
+  background: #272727;
+  color: var(--text);
+}
+.cowork-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(50% + 11.5px + 6.5px);
+  left: 8px;
+  box-sizing: border-box;
+  width: 327px;
+  padding: 0 0 3.5px;
+  border: 1px solid #363636;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px #0006;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.cowork-menu-search.cowork-menu-search {
+  display: flex;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  margin: 0 11px;
+  padding: 0 4px;
+  border-bottom: 1px solid #353535;
+  color: #908f8d;
+}
+.cowork-menu .cowork-menu-search input,
+.cowork-menu .cowork-menu-search input:focus {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #f7f6f4;
+  font: inherit;
+  outline: none;
+}
+.cowork-menu-search input::placeholder {
+  color: #908f8d;
+}
+.cowork-menu-list {
+  max-height: 260px;
+  padding-top: 5px;
+  overflow-y: auto;
+}
+.cowork-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10.5px;
+  box-sizing: border-box;
+  width: calc(100% - 12px);
+  min-height: 32px;
+  margin: 0 6px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: inherit;
+  text-align: left;
+}
+.cowork-menu button > svg:first-child {
+  flex: 0 0 auto;
+}
+.cowork-menu button > svg:last-child:not(:first-child) {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--link-text);
+}
+.cowork-menu button:hover,
+.cowork-menu button:focus-visible {
+  background: var(--surface-hover);
+  outline: none;
+}
+.cowork-menu-text {
+  display: grid;
+  min-width: 0;
+  padding: 6px 0;
+}
+.cowork-menu-text strong {
+  overflow: hidden;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cowork-menu-text small {
+  overflow: hidden;
+  color: #908f8d;
+  font-size: 13px;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cowork-menu-separator {
+  height: 1px;
+  margin: 6px 11px 3px;
+  background: #353535;
+}
+.cowork-menu-empty {
+  margin: 4px 16px 8px;
+  color: #908f8d;
+  font-size: 13px;
+  line-height: 18px;
+}
+/* Current projects-only picker: 258px shell, 250x32 options, input166x32 beside
+   the 32px Filter control. Folder menus retain the legacy geometry above. The
+   shell's rim is inset rather than taking width away from its 4px content
+   padding. */
+.project-picker.cowork-menu {
+  position: fixed;
+  top: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 60;
+  width: 258px;
+  padding: 4px;
+  border: 0;
+  overflow: visible;
+}
+.project-picker-search-row {
+  display: flex;
+  align-items: center;
+  padding-right: 4px;
+}
+.project-picker-search {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 12px;
+  color: var(--text-muted);
+}
+.project-picker-search > .app-icon {
+  flex: none;
+}
+.project-picker-search input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+.project-picker .project-picker-filter-trigger {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  min-height: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+}
+.project-picker-options {
+  max-height: 360px;
+  overflow-y: auto;
+}
+.project-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.project-picker-row[data-active],
+.project-picker-row:hover {
+  background: var(--fill-ghost-hover);
+}
+.project-picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-picker .project-picker-default {
+  flex: none;
+  width: 20px;
+  min-height: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+}
+.project-picker-default[aria-pressed="false"] {
+  opacity: 0;
+}
+.project-picker-row:is(:hover, [data-active]) .project-picker-default,
+.project-picker-default:focus-visible {
+  opacity: 1;
+}
+@media (pointer: coarse), (hover: none) {
+  .project-picker-default[aria-pressed="false"] {
+    opacity: 1;
+  }
+}
+.project-picker-filter {
+  position: absolute;
+  z-index: 1;
+  top: 36px;
+  right: 4px;
+  min-width: 160px;
+  padding: 4px;
+  border-radius: inherit;
+  background: inherit;
+  box-shadow: 0 8px 24px #0006;
+}
+.project-picker-filter > p {
+  margin: 4px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.project-picker-filter button {
+  width: 100%;
+  margin: 0;
+}
+/* Permission menu: the Code permission menu's measures. */
+.cowork-permission-menu {
+  width: 280px;
+  padding: 4px 0;
+}
+.cowork-permission-menu .cowork-menu-text strong {
+  font-size: 13px;
+  line-height: 17px;
+}
+.cowork-permission-menu .cowork-menu-text small {
+  font-size: 12px;
+}
+:root[data-theme="light"] .cowork-options.cowork-options > button.open {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .cowork-menu {
+  border-color: #d2d0ca;
+  background: #fffefa;
+  color: #292927;
+  box-shadow: 0 12px 28px #0002;
+}
+:root[data-theme="light"] .cowork-menu button:hover,
+:root[data-theme="light"] .cowork-menu button:focus-visible {
+  background: #f0ede7;
+}
+:root[data-theme="light"] .cowork-menu-search,
+:root[data-theme="light"] .cowork-menu-separator {
+  border-color: #e4e2dc;
+}
+:root[data-theme="light"] .cowork-menu-separator {
+  background: #e4e2dc;
+}
+:root[data-theme="light"] .cowork-menu-search input {
+  color: #292927;
+}
+/* The row's own 13px grey button rules (92-reference-pages.css, chat-home.css) do not reach the menu rows. */
+.cowork-options .cowork-menu button {
+  font-size: 14px;
+  line-height: 20px;
+  padding: 0 10px;
+}
+:root:not([data-theme="light"]) .cowork-options .cowork-menu button,
+:root:not([data-theme="light"]) .cowork-options .cowork-menu button:hover {
+  color: #f7f6f4;
+}
+/* Place menu rows: 20px icons 6px inside the row, names 9px after them. */
+.cowork-options .cowork-place-menu button {
+  gap: 9px;
+  padding: 0 10px 0 6px;
+}
+
+/*
+ * Output menu. The menu opens 6.5px under the Output chip, level with its left
+ * edge: 323px wide, 4px above the first row, 32px rows. A 20px tile (radius 5)
+ * sits 13.5px in from the menu's edge with the 14px label 8.5px after it; Beta
+ * is a 17.5px #2b2b2b pill 9px after the label with 12px #c8c7c2 text. The rule
+ * is inset 13.5px, 4px under the Design row and 4.5px above Artifact, whose
+ * #8f8e8a note starts 124.5px in. Tiles: Docs #242c37 / #3b6aba, Slides #372f22
+ * / #a6855a, Design #2d2b38 / #766ba4. Greyed formats keep the capture's
+ * colours at the Menu's disabled opacity (0.4, src/ui/menu.css).
+ */
+.cowork-output-menu.cowork-menu {
+  width: 323px;
+  padding: 4px 0 3.5px;
+}
+.cowork-output-menu .cowork-menu-separator {
+  margin: 4px 13.5px 4.5px;
+}
+.cowork-options .cowork-output-menu button.output-format {
+  gap: 8.5px;
+  padding: 0 7.5px;
+}
+.output-tile {
+  display: grid;
+  flex: 0 0 20px;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+}
+.output-docs .output-tile {
+  background: #242c37;
+  color: #3b6aba;
+}
+.output-slides .output-tile {
+  background: #372f22;
+  color: #a6855a;
+}
+.output-design .output-tile {
+  background: #2d2b38;
+  color: #766ba4;
+}
+.output-beta {
+  display: inline-flex;
+  align-items: center;
+  height: 17.5px;
+  margin-left: 0.5px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--surface-hover);
+  color: #c8c7c2;
+  font-size: 12px;
+}
+.output-note {
+  position: absolute;
+  left: 118.5px; /* 124.5 from the menu edge, less the row's 6px margin */
+  color: #8f8e8a;
+}
+.cowork-output-menu button {
+  position: relative;
+}
+.cowork-output-menu button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.cowork-output-menu button[aria-disabled="true"]:hover {
+  background: transparent;
+}
+:root[data-theme="light"] .output-beta {
+  background: #edebe5;
+  color: #5f5d57;
+}
+:root[data-theme="light"] .output-note {
+  color: #85837d;
+}
+
+/* A chosen project or folder: a #272727 chip, its 16px glyph 10px in, 14px
+   #fdfbfc name 6.5px after it, a 12px grey chevron 10px from the right edge. */
+.cowork-options.cowork-options > button.cowork-place-chosen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6.5px;
+  padding: 0 10px 0 8px;
+  background: #272727;
+  color: var(--text);
+  font-size: 14px;
+}
+.cowork-options > button.cowork-place-chosen > svg:last-child {
+  margin-left: 4px;
+  color: #8e8e8c;
+}
+:root[data-theme="light"]
+  .cowork-options.cowork-options
+  > button.cowork-place-chosen {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}

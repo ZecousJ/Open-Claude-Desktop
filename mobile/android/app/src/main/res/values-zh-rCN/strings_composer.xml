@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 输入框与相关面板的简体中文目录。键与 values/strings_composer.xml 一一对应。 -->
+<resources>
+    <string name="chat_input_hint">与 Claudex 对话…</string>
+    <string name="chat_input_hint_in_project">在 %1$s 中与 Claudex 对话…</string>
+    <string name="chat_input_hint_reply">回复 Claudex…</string>
+    <string name="chat_input_hint_reply_in_project">在 %1$s 中回复 Claudex…</string>
+    <string name="chat_input_hint_sending">发送中…</string>
+    <string name="type_or_hold_to_talk">输入文字，或按住说话</string>
+    <string name="reply_or_hold_to_talk">回复，或按住说话</string>
+    <string name="agent_chat_input_placeholder_v2">向 Claudex 提问</string>
+    <string name="ccr_input_placeholder_chat_style_new_session">描述一项任务或提出问题…</string>
+    <string name="chat_input_add_to_chat">添加到对话</string>
+    <string name="chat_input_start_speech_input">开始语音输入</string>
+    <string name="chat_input_send_button_content_description">发送</string>
+    <string name="chat_input_send_button_waiting_for_uploads">正在等待附件上传</string>
+    <string name="chat_input_stop_button_content_description">停止回复</string>
+    <string name="chat_input_image_remove_button_content_description">移除</string>
+    <string name="chat_input_attachment_limit_reached_toast">每条消息最多可添加 %1$d 个附件。</string>
+    <string name="file_preview_file_content_description">文件附件预览</string>
+    <string name="file_preview_image_content_description">图片附件预览</string>
+
+    <string name="chat_options_add_to_chat">添加到对话</string>
+    <string name="chat_options_add_to_session">添加到会话</string>
+    <string name="upload_camera_button">相机</string>
+    <string name="upload_photos_button">照片</string>
+    <string name="upload_file_button">文件</string>
+    <string name="composer_connectors_label">连接器</string>
+
+    <string name="chat_options_select_model">选择模型</string>
+    <string name="chat_options_more_models">更多模型</string>
+    <string name="chat_options_effort">推理强度</string>
+    <string name="model_picker_effort_default_badge">默认</string>
+    <string name="model_selector_chip_a11y">模型：%1$s。点按可更改。</string>
+    <string name="model_selector_chip_a11y_empty">选择模型。点按可更改。</string>
+    <string name="composer_selected">已选中</string>
+    <string name="claudex_model_none">暂无可用模型</string>
+    <string name="claudex_effort_low">低</string>
+    <string name="claudex_effort_medium">中</string>
+    <string name="claudex_effort_high">高</string>
+    <string name="claudex_effort_xhigh">更高</string>
+    <string name="claudex_effort_max">最高</string>
+
+    <string name="audio_permission_required">请开启麦克风权限以使用语音输入。</string>
+    <string name="stt_error_language_not_found"><b>抱歉，所选的语音输入语言已不可用。</b>请在设置中更新。</string>
+    <string name="stt_error_microphone"><b>抱歉，没有听清。</b>请确认麦克风工作正常。</string>
+    <string name="stt_error_microphone_interrupted">麦克风被中断，听写已停止。</string>
+    <string name="stt_error_network"><b>抱歉，没有听清。</b>请检查网络连接后重试。</string>
+    <string name="stt_error_server"><b>抱歉，没有听清。</b>服务器返回了错误的响应。</string>
+    <string name="stt_error_transcription_empty"><b>抱歉，没有听清。</b>请再试一次。</string>
+    <string name="stt_input_send_dictation">发送听写内容</string>
+    <string name="stt_input_stop_dictation">停止听写</string>
+    <string name="stt_input_transcribing">正在转写…</string>
+    <string name="stt_release_to_cancel">松开即取消</string>
+    <string name="stt_release_to_send">松开即发送</string>
+    <string name="stt_release_to_stop">松开即停止</string>
+    <string name="claudex_stt_unavailable">此设备没有可用的语音输入服务，可以使用键盘上的麦克风。</string>
+
+    <plurals name="chat_waiting_messages_count">
+        <item quantity="other">%d 条等待中</item>
+    </plurals>
+    <plurals name="chat_waiting_messages_sheet_title">
+        <item quantity="other">%d 条消息等待中</item>
+    </plurals>
+    <string name="chat_waiting_messages_sheet_note">Claudex 会尽快读取这些消息</string>
+    <string name="chat_waiting_messages_show_all">显示全部等待中的消息</string>
+    <string name="chat_waiting_message_menu_send_now">立即发送</string>
+    <string name="chat_message_queued_state_description">等待 Claudex 回复完毕</string>
+    <string name="claudex_waiting_message_remove">移除</string>
+    <string name="claudex_waiting_message_options">消息选项</string>
+
+    <string name="composer_rate_limit_reached">已达到用量上限</string>
+    <string name="composer_rate_limit_approaching">即将达到用量上限</string>
+    <string name="composer_rate_limit_resets_at_time">%1$s 重置</string>
+    <string name="composer_rate_limit_resets_day_at_time">%1$s %2$s 重置</string>
+    <string name="composer_rate_limit_try_again_later">请稍后再试</string>
+    <string name="composer_usage_percent_used">已使用 %1$d%%</string>
+    <string name="composer_usage_title">用量</string>
+</resources>

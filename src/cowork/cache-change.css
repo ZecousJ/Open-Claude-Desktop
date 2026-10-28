@@ -1,0 +1,91 @@
+/* ConfirmationDialog sm, p-xl, text-heading, mt-1 text-body text-secondary. */
+:root .modal.confirm.cache-change-dialog {
+  width: 400px;
+  padding: 20px;
+}
+.modal.confirm.cache-change-dialog > header {
+  margin: -2px 0 0;
+}
+:root .modal.confirm.cache-change-dialog h2 {
+  color: #f0efec;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
+}
+.modal.confirm.cache-change-dialog > .confirm-body {
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+}
+.cache-change-dialog strong {
+  color: var(--text);
+  font-weight: 700;
+}
+.cache-change-dialog > footer {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  margin-top: 12px;
+}
+.cache-change-dialog > footer > button {
+  height: 24px;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 19px;
+}
+.cache-change-dialog > footer > .primary {
+  background: #fff;
+  color: #0b0b0b;
+}
+.cache-change-dialog > footer > .secondary {
+  background: #ffffff1a;
+  color: var(--text);
+  font-weight: 400;
+}
+@media (min-width: 640px) {
+  .cache-change-dialog > footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+@media (hover: hover) {
+  .cache-change-dialog > footer > .primary:hover:not(:disabled) {
+    background: #e1e0d9;
+    opacity: 1;
+  }
+  .cache-change-dialog > footer > .secondary:hover:not(:disabled) {
+    background: #ffffff24;
+  }
+  :root[data-theme="light"]
+    .cache-change-dialog
+    > footer
+    > .primary:hover:not(:disabled) {
+    background: #2c2c2a;
+  }
+  :root[data-theme="light"]
+    .cache-change-dialog
+    > footer
+    > .secondary:hover:not(:disabled) {
+    background: #0b0b0b0d;
+  }
+}
+:root[data-theme="light"] .cache-change-dialog > footer > .primary {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-theme="light"] .cache-change-dialog > footer > .secondary {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .modal.confirm.cache-change-dialog > .confirm-body {
+  color: #52514e;
+}
+:root[data-theme="light"] .cache-change-dialog strong {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .modal.confirm.cache-change-dialog h2 {
+  color: #0b0b0b;
+}

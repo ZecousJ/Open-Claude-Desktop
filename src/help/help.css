@@ -1,0 +1,74 @@
+/* Tailwind max-w-3xl, p-6, gap-3, text-base and text-2xl from the live
+   2026-10-14 rules.json; links follow. CDS surface-1, text-primary,
+   text-secondary and border values are resolved with work/audit/tokens.py for
+   each theme. */
+:root:has(.help-page),
+:root:has(.help-page) body,
+:root:has(.help-page) #root {
+  height: auto;
+  overflow: visible;
+}
+.help-page {
+  --help-bg: #151515;
+  --help-text: #f0efec;
+  --help-secondary: #c3c2b7;
+  --help-border: rgb(255 255 255 / 10%);
+  min-height: 100dvh;
+  background: var(--help-bg);
+  color: var(--help-text);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+:root[data-theme="light"] .help-page {
+  --help-bg: #fcfcfb;
+  --help-text: #0b0b0b;
+  --help-secondary: #52514e;
+  --help-border: rgb(11 11 11 / 10%);
+}
+.help-header,
+.help-content {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: 24px;
+}
+.help-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--help-border);
+}
+.help-header label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.help-header select {
+  max-width: 100%;
+  background: var(--help-bg);
+  color: var(--help-text);
+  border: 1px solid var(--help-border);
+}
+.help-content h1 {
+  font-size: 1.5rem;
+  line-height: calc(2 / 1.5);
+  margin-bottom: 24px;
+}
+.help-page a {
+  color: var(--help-secondary);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.help-content p {
+  margin-bottom: 24px;
+}
+.help-content ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-inline-start: 20px;
+  list-style: disc;
+  overflow-wrap: anywhere;
+}

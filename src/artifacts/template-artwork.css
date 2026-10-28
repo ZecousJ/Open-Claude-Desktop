@@ -1,0 +1,91 @@
+/* The gallery's 136×96 template tiles: the kind's glyph on a wash of its
+   hue. */
+.artifacts-make-art {
+  --hue: #256abf;
+  --neutral: #fff;
+  --template-surface: #1a1a19;
+  --template-clay: #d97757;
+  --template-clay-emphasized: #c6613f;
+  --template-green: #008300;
+  --template-accent: #3987e5;
+  --template-shadow: rgb(0 0 0 / 24%);
+  --tile-ring: color-mix(in srgb, var(--hue) 50%, transparent);
+  position: relative;
+  display: block;
+  flex: none;
+  width: 136px;
+  height: 96px;
+  border-radius: 14px;
+  background: var(--template-surface);
+  box-shadow:
+    0 1px 2px rgb(11 11 11 / 6%),
+    0 2px 8px var(--template-shadow);
+  transition: box-shadow 200ms ease-out;
+}
+.artifacts-make-art[data-artwork-kind="slides"] {
+  --hue: #b7791f;
+}
+.artifacts-make-art[data-artwork-kind="design"] {
+  --hue: #7663b8;
+}
+.artifacts-make-art[data-artwork-kind="dashboard"] {
+  --hue: #6250d6;
+}
+.artifacts-make-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--neutral) 10%, transparent);
+  pointer-events: none;
+  transition: box-shadow 200ms ease-out;
+}
+.artifacts-make-card:hover .artifacts-make-art {
+  box-shadow:
+    0 2px 4px rgb(11 11 11 / 7%),
+    0 6px 16px var(--template-shadow);
+}
+.artifacts-make-card:hover .artifacts-make-art::after {
+  box-shadow: inset 0 0 0 1px var(--tile-ring);
+}
+.artifacts-template-clip {
+  position: absolute;
+  display: block;
+  inset: 6px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.artifacts-template-gradient {
+  position: absolute;
+  display: block;
+  inset: 0;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--hue) 24%, transparent) 0%,
+    color-mix(in srgb, var(--hue) 15%, transparent) 35%,
+    color-mix(in srgb, var(--hue) 7%, transparent) 70%,
+    color-mix(in srgb, var(--hue) 3%, transparent) 100%
+  );
+}
+.artifacts-template-glyph {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  color: color-mix(in srgb, var(--hue) 72%, white);
+}
+:root[data-theme="light"] .artifacts-make-art {
+  --neutral: #0b0b0b;
+  --template-surface: #fff;
+  --template-shadow: rgb(11 11 11 / 8%);
+}
+:root[data-theme="light"] .artifacts-template-glyph {
+  color: var(--hue);
+}
+@media (prefers-reduced-motion: reduce) {
+  .artifacts-make-art,
+  .artifacts-make-art::after {
+    transition: none;
+  }
+}

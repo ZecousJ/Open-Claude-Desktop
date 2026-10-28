@@ -1,0 +1,55 @@
+/*
+ * File cards for the other files a reply wrote: the sheet card (sheet-card.css)
+ * with a Download button. On the desktop it is split, its ⌄ the original app's
+ * "Show in Finder"; the web has the one Download. Cards stand 8px apart.
+ * Download all is a 32px #2d2d2d button (radius 8) with a download glyph, under
+ * the last card.
+ */
+.generated-file-card.file-document-card {
+  margin-bottom: 8px;
+}
+.generated-file-download {
+  display: flex;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.generated-file-download > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.generated-file-download > button:last-child {
+  position: relative;
+  width: 33px;
+}
+.generated-file-download > button:last-child::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 0;
+  width: 1px;
+}
+.generated-file-download-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin-bottom: 12px;
+  padding: 0 12px 0 10px;
+  border-radius: 8px;
+  background: #2d2d2d;
+  color: var(--text);
+  font-size: 14px;
+}
+.generated-file-download-all:hover:not(:disabled) {
+  background: #3a3a39;
+}
+.generated-file-download-all:disabled {
+  opacity: var(--opacity-disabled);
+}
+:root[data-theme="light"] .generated-file-download-all {
+  background: var(--surface-hover);
+  color: var(--text);
+}

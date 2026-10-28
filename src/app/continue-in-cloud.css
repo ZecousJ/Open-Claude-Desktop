@@ -1,0 +1,103 @@
+/*
+ * "Move this session to the cloud?" (ContinueInCloudDialog.tsx). The frame is
+ * the confirmation dialog; what is inside follows the live dialog: the
+ * description's sentences, then 12px below (`mt-3`) the step list, 3px between
+ * rows (`gap-0.75`), each a 14px glyph 4px before its label in the secondary
+ * ink (done: a check in the success colour; running: a spinner; waiting: a 10px
+ * ring, its label muted), and after a refused upload "Git said:" over git's
+ * words in a code block at most 128px tall.
+ */
+.modal.continue-cloud .confirm-body + .confirm-body {
+  margin-top: 8px;
+}
+.continue-cloud-steps {
+  margin-top: 12px;
+}
+.continue-cloud-steps ul {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.continue-cloud-steps li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.continue-cloud-steps li[data-state="pending"] {
+  color: var(--text-muted);
+}
+.continue-cloud-step-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+.continue-cloud-steps li[data-state="done"] .continue-cloud-step-icon {
+  color: var(--success);
+}
+.continue-cloud-step-dot {
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+}
+/*
+ * After a refused upload (live dialog): 12px below, "Git said:" over git's
+ * words (4px apart), then 12px below Ask Claudex to push, a small secondary
+ * button (the sizes of Claudex's small secondary buttons, sec-button).
+ * Names in the description are inline code on the raised surface with 4px
+ * sides; a refused save is a 12px line in the danger colour, 12px below.
+ */
+.continue-cloud-git {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.continue-cloud-said {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.continue-cloud-ask {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 400;
+}
+.continue-cloud-code {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+.continue-cloud-alert {
+  margin: 12px 0 0;
+  color: var(--danger);
+  font-size: 12px;
+}
+.continue-cloud-git pre {
+  max-height: 128px;
+  margin: 0;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 4px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-size: 12px;
+  white-space: pre-wrap;
+}

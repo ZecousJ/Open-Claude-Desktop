@@ -1,0 +1,175 @@
+/*
+ * Next steps: a 320px card on surface-1 with the card ring (1px of 10% white
+ * inside in dark, 10% ink outside in light), radius 12, 4px padding and 2px
+ * between rows. A row is 32px, radius 8, 8px between its icon, words and end;
+ * title in text-secondary, detail in text-muted (secondary on hover); the hover
+ * fill is fill-ghost-hover. The × fades in at the row's end on hover or focus
+ * (always on touch screens), where the chevron fades out.
+ */
+.next-steps {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 320px;
+  max-width: 100%;
+  margin: 12px auto 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .next-steps {
+  background: #fcfcfb;
+  box-shadow: 0 0 0 1px rgb(11 11 11 / 10%);
+}
+.next-steps > li {
+  position: relative;
+}
+.next-step-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: start;
+  outline: none;
+}
+:root[data-theme="light"] .next-step-row {
+  color: #52514e;
+}
+.next-step-row > .app-icon {
+  flex: none;
+}
+.next-step:hover > .next-step-row,
+.next-step:has(:focus-visible) > .next-step-row {
+  background: rgb(255 255 255 / 7.5%);
+}
+:root[data-theme="light"] .next-step:hover > .next-step-row,
+:root[data-theme="light"] .next-step:has(:focus-visible) > .next-step-row {
+  background: rgb(11 11 11 / 5%);
+}
+.next-step-text {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  min-width: 0;
+  height: 20px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.next-step-title {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.next-step-row[data-taken] > .next-step-title {
+  flex: 1;
+}
+.next-step-detail {
+  flex: 1 1 96px;
+  min-width: 0;
+  max-width: max-content;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #898781;
+}
+.next-step-detail[data-holds] {
+  flex: none;
+}
+.next-step:hover .next-step-detail,
+.next-step:has(:focus-visible) .next-step-detail {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .next-step:hover .next-step-detail,
+:root[data-theme="light"] .next-step:has(:focus-visible) .next-step-detail {
+  color: #52514e;
+}
+.next-step-chevron {
+  display: inline-flex;
+  flex: none;
+  color: #898781;
+}
+.next-step:hover .next-step-chevron,
+.next-step:has(:focus-visible) .next-step-chevron {
+  opacity: 0;
+}
+.next-step-spacer {
+  flex: none;
+  width: 12px;
+}
+.next-step-check {
+  flex: none;
+  color: var(--text);
+}
+:root[data-theme="light"] .next-step-check {
+  color: #0b0b0b;
+}
+.next-step-dismiss {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 4px;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.next-step:hover .next-step-dismiss,
+.next-step:has(:focus-visible) .next-step-dismiss {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .next-step-dismiss {
+    opacity: 1;
+  }
+  .next-step-chevron {
+    opacity: 0;
+  }
+}
+.next-step-dismiss > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  pointer-events: auto;
+}
+.next-step-dismiss > button:hover,
+.next-step-dismiss > button:focus-visible {
+  background: rgb(255 255 255 / 7.5%);
+  color: var(--text);
+  outline: none;
+}
+:root[data-theme="light"] .next-step-dismiss > button {
+  color: #52514e;
+}
+:root[data-theme="light"] .next-step-dismiss > button:hover,
+:root[data-theme="light"] .next-step-dismiss > button:focus-visible {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+/* A row that opens a list shows its CaretDown ("xs", muted) beside the title. */
+.next-step-caret {
+  display: inline-flex;
+  flex: none;
+  color: #898781;
+}

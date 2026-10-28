@@ -1,0 +1,218 @@
+/* The reference design, shared-23-RHw-hr47.js: checklist rows, border-300/400,
+ surface-0 and neutral-30. */
+.home-checklist {
+  --checklist-border: rgb(255 255 255 / 10%);
+  --checklist-hover: #0b0b0b;
+  --checklist-complete: #111;
+  margin-bottom: 24px;
+  width: 100%;
+}
+:root[data-theme="light"] .home-checklist {
+  --checklist-border: rgb(11 11 11 / 10%);
+  --checklist-hover: #f9f9f7;
+  --checklist-complete: #f6f6f4;
+}
+.home-checklist header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 4px 8px;
+}
+.home-checklist h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.home-checklist header > span {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+.home-checklist-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 40px 12px 4px;
+  transition: background-color 150ms;
+}
+.home-checklist-row + .home-checklist-row {
+  border-top: 1px solid var(--checklist-border);
+}
+.home-checklist-row:first-of-type {
+  border-radius: 8px 8px 0 0;
+}
+.home-checklist-row:last-child {
+  border-radius: 0 0 8px 8px;
+}
+.home-checklist-row:hover {
+  background: var(--checklist-hover);
+}
+.checklist-circle {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--checklist-border);
+  border-radius: 50%;
+  color: var(--text-muted);
+}
+.checklist-circle[data-complete] {
+  border-width: 0.5px;
+  background: var(--checklist-complete);
+}
+.checklist-action {
+  flex: 1;
+  text-align: start;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text);
+}
+.checklist-action::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.checklist-action[data-complete] {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.checklist-dismiss {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  color: var(--text-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+}
+.home-checklist header .checklist-dismiss {
+  margin-inline-start: auto;
+}
+.home-checklist-row > .checklist-dismiss {
+  position: absolute;
+  inset-inline-end: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.home-checklist:hover header .checklist-dismiss,
+.home-checklist:focus-within header .checklist-dismiss,
+.home-checklist-row:hover > .checklist-dismiss,
+.home-checklist-row:focus-within > .checklist-dismiss {
+  opacity: 1;
+  pointer-events: auto;
+}
+.checklist-dismiss:hover {
+  background: var(--fill-ghost-selected);
+  color: var(--text);
+}
+
+/* Finance chips and menu. */
+.finance-starters {
+  --finance-chip-hover: rgb(255 255 255 / 14%);
+  --finance-chip-accent: #6da7ec;
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  padding-top: 16px;
+}
+:root[data-theme="light"] .finance-starters {
+  --finance-chip-hover: rgb(11 11 11 / 5%);
+  --finance-chip-accent: #184f95;
+}
+.finance-starters .starter-chip > svg {
+  margin-left: 0;
+  color: inherit;
+}
+.finance-starters .starter-chip[aria-pressed="true"] {
+  background: var(--fill-ghost-selected);
+  color: var(--finance-chip-accent);
+}
+@media (hover: hover) {
+  .finance-starters .starter-chip:hover:not([aria-pressed="true"]) {
+    background: var(--finance-chip-hover);
+  }
+}
+.finance-starter-chips {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.finance-starter-chips > div {
+  position: relative;
+  animation: starter-chip-in 300ms cubic-bezier(0.25, 0.1, 0.35, 1) backwards;
+}
+.finance-starter-category {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.finance-starter-category > svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 150ms;
+}
+.finance-starter-chips [aria-expanded="true"] .finance-starter-category > svg {
+  transform: rotate(180deg);
+}
+.finance-starter-menu {
+  position: absolute;
+  top: 100%;
+  inset-inline-start: 0;
+  margin-top: 4px;
+  z-index: 20;
+  min-width: 200px;
+  border-radius: 8px;
+  background: var(--surface-raised);
+  border: 0.5px solid var(--border-strong);
+  box-shadow:
+    0 10px 15px -3px #0000001a,
+    0 4px 6px -4px #0000001a;
+  overflow: hidden;
+  animation: finance-menu-in 150ms;
+}
+.finance-starter-menu > button {
+  width: 100%;
+  padding: 10px 12px;
+  text-align: start;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition:
+    color 150ms,
+    background-color 150ms;
+}
+.finance-starter-menu > button:hover {
+  background: var(--checklist-hover, #0b0b0b);
+  color: var(--text);
+}
+:root[data-theme="light"] .finance-starter-menu > button:hover {
+  background: #f9f9f7;
+}
+@keyframes finance-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finance-starter-chips > div,
+  .finance-starter-menu {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .finance-starter-chips > div,
+:root[data-motion="reduced"] .finance-starter-menu {
+  animation: none;
+}

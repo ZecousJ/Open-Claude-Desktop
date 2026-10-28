@@ -1,0 +1,868 @@
+/* Captured web editor. Keep this scope lazy; task-dialog is also used by API
+   keys/local tasks. */
+/* As tall as the live dialog whatever it holds (44rem, at most the window less
+   2rem), the actions at its foot. */
+:root .modal.task-dialog.scheduled-task-dialog {
+  --task-primary: #f0efec;
+  --task-field: rgb(255 255 255 / 5%);
+  --task-ring: rgb(255 255 255 / 10%);
+  --task-footer: #0b0b0b;
+  --task-note: #151515;
+  display: flex;
+  flex-direction: column;
+  width: 620px;
+  height: 704px;
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+  overflow: hidden;
+  border: 0;
+  color: var(--task-primary);
+}
+.scheduled-task-dialog > header {
+  flex: none;
+  height: 24px;
+  margin: 0 0 12px;
+  align-items: flex-start;
+  gap: 8px;
+}
+.scheduled-task-dialog > header h2 {
+  margin-top: -4px;
+  font-weight: 580;
+}
+.scheduled-task-dialog > header .icon-button {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: -8px -8px 0 0;
+  border-radius: 8px;
+  color: inherit;
+}
+.scheduled-task-dialog .task-form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0;
+  margin: 0;
+}
+.scheduled-task-dialog .task-form-body {
+  flex: 1;
+  min-height: 0;
+  min-inline-size: 0;
+  margin: -4px;
+  padding: 4px;
+  border: 0;
+  overflow: auto;
+  /* The live body's thin scrollbar. */
+  scrollbar-width: thin;
+}
+.scheduled-task-dialog .task-field {
+  margin: 0;
+  gap: 8px;
+}
+.scheduled-task-dialog .task-custom-cron {
+  margin-top: 16px;
+}
+.scheduled-task-dialog .task-field > span:not(.routine-problem) {
+  color: var(--task-primary);
+}
+.modal.scheduled-task-dialog .task-form .task-field > input {
+  margin: 0;
+  padding-inline: 12px;
+  background: var(--task-field);
+  color: var(--task-primary);
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+}
+.scheduled-task-dialog .task-field + .task-field,
+/* A cloud Code task has no notice between its instructions and triggers. */
+.scheduled-task-dialog .task-field + :is(.task-trigger, .task-triggers) {
+  margin-top: 24px;
+}
+/* A required field left empty: the name's field and the instructions' box
+   ringed in the danger fill, the name's focus ring red too. */
+.modal.scheduled-task-dialog
+  .task-form
+  .task-field
+  > input[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 1px var(--field-invalid);
+}
+.modal.scheduled-task-dialog
+  .task-form
+  .task-field
+  > input[aria-invalid="true"]:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px #20201f,
+    0 0 0 1px var(--field-invalid),
+    0 0 6px 1px var(--focus-danger-glow);
+}
+.scheduled-task-dialog .task-instructions {
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+}
+.scheduled-task-dialog .task-instructions.invalid:not(:focus-within) {
+  box-shadow: inset 0 0 0 1px var(--field-invalid);
+}
+.scheduled-task-dialog .task-instructions > textarea {
+  height: 140px;
+  padding: 10px 12px;
+  color: var(--task-primary);
+  background: transparent;
+}
+.scheduled-task-dialog .task-instructions-bar {
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top-width: 0.5px;
+  border-color: var(--task-ring);
+  background: var(--task-footer);
+}
+.scheduled-task-dialog .task-instructions-bar :is(.task-model, .task-select) {
+  min-width: 0;
+  height: 28px;
+  gap: 4px;
+  padding-inline: 10px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--task-primary);
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .task-model {
+  margin-left: auto;
+}
+/* A cloud Code task's permissions: the 12px LockShield 6px before 13/17 text in
+   the secondary ink, 8px in. */
+.scheduled-task-dialog .task-permission-environment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  color: #898781;
+  font-size: 13px;
+  line-height: 17px;
+}
+.scheduled-task-dialog .task-model > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scheduled-task-dialog
+  .task-instructions-bar
+  .task-permission
+  > svg:first-child {
+  color: inherit;
+}
+.scheduled-task-dialog
+  :is(.task-permission, .task-trigger-type)
+  > .app-icon:first-child {
+  margin-left: -4px;
+}
+.scheduled-task-dialog :is(.task-note, .permission-mode-notice) {
+  margin: 12px 0 32px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .permission-mode-notice > div {
+  min-width: 0;
+}
+.scheduled-task-dialog .task-note {
+  background: var(--task-note);
+  color: var(--task-primary);
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+}
+.scheduled-task-dialog .permission-mode-notice a {
+  color: inherit;
+}
+.scheduled-task-dialog .task-trigger {
+  flex-wrap: wrap;
+  gap: 10px 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+}
+.scheduled-task-dialog .task-trigger > span {
+  flex: 0 0 56px;
+  color: var(--task-primary);
+}
+.scheduled-task-dialog .task-row-fields {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.scheduled-task-dialog .task-trigger .task-select,
+.scheduled-task-dialog .task-time,
+.scheduled-task-dialog .task-minute,
+.scheduled-task-dialog .task-frequency {
+  min-width: 0;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--task-field);
+  color: var(--task-primary);
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .task-time {
+  width: 104px;
+  padding-inline: 10px;
+}
+.scheduled-task-dialog .task-trigger .task-trigger-type {
+  gap: 4px;
+  padding-inline: 10px;
+  background: rgb(255 255 255 / 10%);
+}
+/* The triggers: + ends the one-row layout 16px in, a 28px ghost square (radius
+   7) with the 20px Add glyph. With another trigger the card is a 56px head
+   ("Trigger" 14/20 medium, +) and a row per trigger under a 0.5px rule, 14px
+   16px inside: a 128px name column (its 16px glyph in the secondary ink, 14/20
+   text) 8px before its fields, the remove button (the 20px Trash) at the end.
+   Its schedule's fields are 32px tall; the API row says 13/17 in the secondary
+   ink when the token comes. The menu: 299 wide, under +, its rows 50px with a
+   20px glyph, 14/20 title and 13/17 line. */
+.scheduled-task-dialog .task-trigger > .task-trigger-add {
+  margin-left: auto;
+}
+.scheduled-task-dialog :is(.task-trigger-add, .task-trigger-remove) {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--task-primary);
+}
+.scheduled-task-dialog
+  :is(.task-trigger-add, .task-trigger-remove)
+  > .app-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px !important;
+}
+.scheduled-task-dialog .task-triggers {
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+}
+.scheduled-task-dialog .task-triggers-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  color: var(--task-primary);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.scheduled-task-dialog .task-trigger-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-top: 0.5px solid var(--task-ring);
+}
+.scheduled-task-dialog .task-trigger-name {
+  display: flex;
+  flex: 0 0 128px;
+  align-items: center;
+  gap: 8px;
+  color: var(--task-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .task-trigger-name > .app-icon {
+  color: #898781;
+}
+.scheduled-task-dialog .task-trigger-item > .task-row-fields {
+  flex: 1;
+}
+.scheduled-task-dialog .task-trigger-item > .task-trigger-remove {
+  margin-left: auto;
+}
+.scheduled-task-dialog .task-trigger-note {
+  flex: 1;
+  min-width: 0;
+  color: #898781;
+  font-size: 13px;
+  line-height: 17px;
+}
+.scheduled-task-dialog .task-trigger-item .task-frequency {
+  height: 32px;
+  background: none;
+  box-shadow: none;
+}
+.scheduled-task-dialog .task-trigger-item .task-time {
+  height: 32px;
+  border-radius: 8px;
+}
+:root[data-surface="web"] .menu.task-trigger-menu > button.has-description {
+  align-items: flex-start;
+  min-height: 50px;
+  padding: 6px 10px 7px;
+}
+.menu.task-trigger-menu .menu-description {
+  font-size: 13px;
+  line-height: 17px;
+}
+.scheduled-task-dialog .task-time::-webkit-calendar-picker-indicator {
+  display: none;
+}
+.scheduled-task-dialog .task-frequency {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+}
+.scheduled-task-dialog .task-frequency select {
+  appearance: none;
+  field-sizing: content;
+  width: auto;
+  height: 100%;
+  padding: 0 26px 0 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.scheduled-task-dialog .task-frequency > svg {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: #898781;
+}
+.scheduled-task-dialog .routine-settings {
+  margin-top: 12px;
+}
+.scheduled-task-dialog .routine-advanced-trigger {
+  min-height: 56px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.scheduled-task-dialog .task-actions {
+  flex: none;
+  margin-top: 20px;
+}
+/* Cancel is the secondary button (white 10%). */
+.scheduled-task-dialog .task-cancel {
+  background: var(--task-ring);
+  color: var(--task-primary);
+}
+.scheduled-task-dialog .task-actions > button {
+  line-height: 20px;
+}
+.scheduled-task-dialog :is(input, textarea):focus-visible,
+.scheduled-task-dialog .task-frequency:focus-within {
+  outline: 2px solid #2a78d6;
+  outline-offset: 1px;
+}
+:root[data-theme="light"] .modal.scheduled-task-dialog {
+  --task-primary: #0b0b0b;
+  --task-field: rgb(11 11 11 / 5%);
+  --task-ring: rgb(11 11 11 / 10%);
+  --task-footer: #f9f9f7;
+  --task-note: #fcfcfb;
+  background: #fff;
+}
+:root[data-theme="light"] .scheduled-task-dialog .task-time {
+  color-scheme: light;
+}
+:root[data-theme="light"]
+  .scheduled-task-dialog
+  .task-trigger
+  .task-trigger-type {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .scheduled-task-dialog .task-save {
+  background: #0b0b0b;
+  color: #fff;
+}
+@media (max-width: 639.98px) {
+  :root .modal.task-dialog.scheduled-task-dialog {
+    max-height: calc(100dvh - 32px);
+  }
+  .scheduled-task-dialog .task-instructions-bar {
+    flex-wrap: wrap;
+  }
+  .scheduled-task-dialog .task-trigger {
+    align-items: flex-start;
+  }
+  .scheduled-task-dialog .task-trigger > span {
+    flex-basis: 100%;
+  }
+  .scheduled-task-dialog .task-time.task-at {
+    width: 100%;
+    min-width: 0;
+  }
+  .scheduled-task-dialog .task-actions {
+    flex-direction: column-reverse;
+  }
+}
+
+/* "Set up with Claudex instead": 4px under the title row, 13/17 muted
+   underlined text, 16px over the first field. */
+.scheduled-task-dialog > header:has(+ .modal-subtitle) {
+  margin-bottom: 4px;
+}
+.scheduled-task-dialog > .modal-subtitle {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+}
+.modal-subtitle-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* The API trigger of a saved task: under its name, a panel 8px inside on white
+   5% with radius 10, 4px between its lines: 13/17 labels in the secondary ink
+   (the status in the success ink while a token is active), the address in a
+   monospace field with its copy button, the token's last characters on white 3%
+   (radius 5) with Generate or Regenerate and Delete, then the example request
+   folded under a ghost button, its curl on white 3%. */
+.scheduled-task-dialog .task-trigger-api {
+  flex-direction: column;
+  align-items: stretch;
+}
+.scheduled-task-dialog .task-trigger-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scheduled-task-dialog .task-trigger-line > .task-trigger-remove {
+  margin-left: auto;
+}
+.routine-api-access {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--alpha-1, rgb(255 255 255 / 5%));
+  font-size: 13px;
+  line-height: 17px;
+  color: #898781;
+}
+.routine-api-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+.routine-api-active {
+  color: #6abf69;
+}
+.routine-api-url,
+.routine-api-token {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.routine-api-url > input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--task-primary, #f0efec);
+  font: 13px/17px var(--font-mono, ui-monospace, monospace);
+}
+.routine-api-token > :is(code, span) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 3%);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.routine-api-token > code {
+  color: var(--task-primary, #f0efec);
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+.routine-api-token > .secondary {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 13px;
+}
+.routine-api-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: #898781;
+}
+.routine-api-icon:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+  color: var(--task-primary, #f0efec);
+}
+.routine-api-example {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #898781;
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+}
+.routine-api-example:hover {
+  color: var(--task-primary, #f0efec);
+}
+.routine-api-access > pre {
+  margin: 0;
+  padding: 5px 12px;
+  overflow-x: auto;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--task-primary, #f0efec);
+  font: 13px/17px var(--font-mono, ui-monospace, monospace);
+  user-select: text;
+}
+
+/* A new token, shown once: the warning on the warning fill, 12px 8px inside,
+   radius 10, its glyph in the warning ink 5px before the 13/17 text; the token
+   on white 3%, 12px 5px inside, radius 5, wrapping anywhere, with its copy
+   button; Done at the end. */
+.routine-token-dialog {
+  max-width: 480px;
+}
+.routine-token-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgb(250 178 25 / 12%);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 17px;
+}
+.routine-token-notice > .app-icon {
+  flex: none;
+  color: #e6a23c;
+}
+.routine-token-notice > p {
+  margin: 0;
+}
+.routine-token-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.routine-token-row > code {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 12px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 3%);
+  color: var(--text);
+  font: 13px/17px var(--font-mono, ui-monospace, monospace);
+  word-break: break-all;
+  user-select: text;
+}
+.routine-token-copy {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--text-secondary);
+}
+.routine-token-dialog .button-row {
+  margin-top: 16px;
+}
+
+/* Advanced settings on the web: the tabs 12px in, 28px tall, 14/20 medium, 10px
+   inside, the chosen one in the primary ink on a white-7.5% pill (radius 7),
+   the others in the secondary ink; each row 16px in, 14px above and below, a
+   0.5px rule between rows, its choice a 28px button on white 10% (radius 7),
+   10px inside, 6px between its parts. */
+.scheduled-task-dialog .routine-advanced-tabs [role="tablist"] {
+  display: flex;
+  padding: 0 12px;
+}
+.scheduled-task-dialog .routine-advanced-tabs [role="tab"] {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: #898781;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.scheduled-task-dialog .routine-advanced-tabs [role="tab"].active {
+  background: rgb(255 255 255 / 7.5%);
+  color: var(--task-primary);
+}
+.scheduled-task-dialog .routine-advanced-tabs [role="tabpanel"] {
+  padding: 0 16px;
+}
+.scheduled-task-dialog
+  .routine-advanced-tabs
+  [role="tabpanel"]
+  > .routine-setting-row {
+  padding: 14px 0;
+}
+.scheduled-task-dialog
+  .routine-advanced-tabs
+  [role="tabpanel"]
+  > .routine-setting-row
+  + .routine-setting-row {
+  border-top: 0.5px solid var(--task-ring);
+}
+.scheduled-task-dialog .routine-setting-choice {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 10%);
+  color: var(--task-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .routine-connectors-empty,
+.scheduled-task-dialog .routine-connectors {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 0;
+  text-align: center;
+  color: #898781;
+  font-size: 13px;
+  line-height: 17px;
+}
+.scheduled-task-dialog .routine-connectors {
+  align-items: stretch;
+  text-align: start;
+}
+.scheduled-task-dialog .routine-connectors-empty > strong {
+  color: var(--task-primary);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.scheduled-task-dialog .routine-connectors ul {
+  margin: 4px 0;
+  padding: 0;
+  list-style: none;
+}
+.scheduled-task-dialog .routine-connectors li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--task-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .routine-connectors-add {
+  align-self: center;
+  margin-top: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+}
+/* A GitHub event trigger: its row as the others, the repository a 32px field
+   (white 5%, radius 8, 8px in, the 16px caret in the muted ink). Once it has
+   one, a card 16px in from the trigger card's sides and 16px above its foot
+   (radius 12, the ring), 16px in: Event with its choice at the end (12px above
+   and below), then under a 0.5px rule Filter with a 32px ghost Add (12px above,
+   8 below); each condition is the field, operator and value (1: 1.4: 2.1) and
+   the 20px Trash 8px apart, 16px under it; the run limit warning under a rule
+   and Runs as are 13/17 in the muted ink, 12px clear. */
+.scheduled-task-dialog .task-trigger-github {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+.scheduled-task-dialog .task-trigger-github.with-card {
+  padding-bottom: 16px;
+}
+.scheduled-task-dialog
+  .task-trigger-github
+  .task-trigger-line
+  > .task-trigger-remove {
+  margin-left: auto;
+}
+.scheduled-task-dialog .routine-github-select,
+.scheduled-task-dialog .routine-github-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 5%);
+  box-shadow: none;
+  color: var(--task-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .routine-github-select > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scheduled-task-dialog .routine-github-repository > span {
+  max-width: 200px;
+}
+.scheduled-task-dialog .routine-github-select > svg {
+  flex: none;
+  margin-left: auto;
+  color: #898781;
+}
+.scheduled-task-dialog .routine-github-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--task-ring);
+}
+.scheduled-task-dialog .routine-github-row,
+.scheduled-task-dialog .routine-github-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--task-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.scheduled-task-dialog .routine-github-row {
+  padding: 12px 0;
+}
+.scheduled-task-dialog .routine-github-filter {
+  display: flex;
+  flex-direction: column;
+  border-top: 0.5px solid var(--task-ring);
+}
+.scheduled-task-dialog .routine-github-filter-head {
+  padding: 12px 0 8px;
+}
+.scheduled-task-dialog .routine-github-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--task-primary);
+}
+.scheduled-task-dialog .routine-github-icon > .app-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px !important;
+}
+.scheduled-task-dialog .routine-github-clause {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+}
+.scheduled-task-dialog .routine-github-clause-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Field, operator and value share the row 1: 1.4: 2.1 from a base of
+   their inline padding, 8px for a choice (its caret 8px in sits in its
+   content) and 24px for the text field, as the original's. */
+.scheduled-task-dialog .routine-github-clause-line > * {
+  box-sizing: border-box;
+}
+.scheduled-task-dialog .routine-github-clause-line > .routine-github-select {
+  padding-right: 0;
+}
+.scheduled-task-dialog
+  .routine-github-clause-line
+  > .routine-github-select
+  > svg {
+  margin-right: 8px;
+}
+.scheduled-task-dialog .routine-github-field {
+  flex: 1;
+}
+.scheduled-task-dialog .routine-github-op {
+  flex: 1.4;
+}
+.scheduled-task-dialog .routine-github-clause-line > .routine-github-value {
+  flex: 2.1;
+}
+.scheduled-task-dialog input.routine-github-value {
+  padding: 0 12px;
+  outline: none;
+}
+.scheduled-task-dialog input.routine-github-value.regex {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+.scheduled-task-dialog input.routine-github-value::placeholder {
+  color: #898781;
+}
+.scheduled-task-dialog
+  :is(.routine-github-hint, .routine-github-warning, .routine-github-runs-as) {
+  margin: 0;
+  color: #898781;
+  font-size: 13px;
+  line-height: 17px;
+}
+.scheduled-task-dialog .routine-github-warning {
+  padding: 12px 0;
+  border-top: 0.5px solid var(--task-ring);
+}
+.scheduled-task-dialog .routine-github-runs-as {
+  padding-bottom: 12px;
+}
+/* Behavior's switch rows: the text takes the row bar the 36px switch 8px after
+   it, at the row's top; the title 14/20 medium, 2px over the 13/17 line in the
+   muted ink. */
+.scheduled-task-dialog .routine-behavior-row {
+  align-items: flex-start;
+  gap: 8px;
+}
+.scheduled-task-dialog .routine-behavior-row > span:first-child {
+  flex: 1;
+}
+.scheduled-task-dialog .routine-behavior-row .routine-setting-description {
+  font-size: 13px;
+  line-height: 17px;
+}

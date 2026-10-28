@@ -1,0 +1,5 @@
+{
+  "name": "web",
+  "scripts": { "dev": "vite --port 5174" },
+  "devDependencies": { "vite": "^7.0.0" }
+}

@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "conversation": {
+    "id": "conv-2",
+    "title": "",
+    "mode": "cowork",
+    "providerId": "",
+    "model": "",
+    "pinned": true,
+    "archived": false,
+    "createdAt": 0,
+    "updatedAt": 0
+  }
+}

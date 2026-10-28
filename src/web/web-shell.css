@@ -1,0 +1,890 @@
+/* The web app's shell and sidebar head (package W-SHELL; W-UI-design §3,
+   §4.1). Every rule is scoped to the web (`.app.web`, or classes only the
+   web renders), so the desktop is unchanged. This sheet can load before
+   sidebar.css and 95-web.css, so selectors carry the extra specificity.
+   Sizes are measured on ref-web-chat-home at s = 1.142 image px per CSS px
+   and stay provisional until a 100% capture (web plan Q17). */
+
+/* Head: toggle glyph 13 from the edge, the name 40, the switch 11 from the
+   right edge. */
+.app.web .sidebar-chrome.web-sidebar-head {
+  padding: 0 9px 0 12px;
+  height: 48px;
+}
+@media (min-width: 640px) {
+  .app.web .sidebar-body {
+    padding-top: 4px;
+  }
+}
+/* The toggle is a 24px square at (12, 12); its hover face fills it. */
+.app.web .sidebar-chrome > .icon-button {
+  height: 24px;
+  border-radius: 6px;
+}
+.app.web .sidebar-chrome > .icon-button::before {
+  inset: 0;
+  border-radius: 6px;
+}
+.web-sidebar-title {
+  min-width: 0;
+  margin-left: 8.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font:
+    400 22px/1 "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  letter-spacing: -0.2px;
+  color: var(--text);
+  text-decoration: none;
+}
+.app.web .web-sidebar-head > .surface-switch {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Navigation: 32px rows on a 32.5px pitch, 272 wide from x 8, padding 0 2px and
+   radius 8; a 28px glyph slot (the icon font's glyphs at 20px), then 8px to the
+   14/21 label at x 38, #c3c2b7 (More #898781, its caret #c3c2b7; the open page
+   #f0efec). Hovered rows fill white 7.5% and keep their colour. New's 16px Add
+   sits in a 22px disc, #2c2c2a while a conversation is open; on the new-chat
+   page the row is #f0efec with no fill. */
+.app.web .main-nav {
+  padding: 0;
+}
+.app.web .main-nav .nav-item,
+.app.web .main-nav-more > button {
+  height: 32px;
+  min-height: 32px;
+  gap: 8px;
+  padding: 0 2px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 21px;
+}
+:root:not([data-theme="light"]) .app.web .main-nav .nav-item,
+:root:not([data-theme="light"]) .app.web .main-nav .nav-glyph {
+  color: #c3c2b7;
+}
+:root:not([data-theme="light"]) .app.web .main-nav-more > button {
+  color: #898781;
+}
+:root:not([data-theme="light"]) .app.web .main-nav .nav-item.current {
+  color: #f0efec;
+}
+.app.web .main-nav .nav-item:hover,
+.app.web .main-nav-more > button:hover {
+  background: rgb(255 255 255 / 7.5%);
+}
+.app.web .main-nav .nav-item.new.current {
+  background: rgb(255 255 255 / 15%);
+}
+:root[data-theme="light"] .app.web .main-nav .nav-item.new.current {
+  background: rgb(11 11 11 / 5%);
+}
+.app.web .main-nav .nav-glyph {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+}
+.app.web .main-nav .nav-glyph > svg {
+  width: 20px;
+  height: 20px;
+}
+.app.web .main-nav .nav-glyph > svg:not(.app-icon) {
+  width: 18px;
+  height: 18px;
+}
+.app.web .main-nav .nav-glyph.add > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+.app.web .main-nav .nav-glyph.add svg {
+  width: 16px;
+  height: 16px;
+}
+.app.web .main-nav .nav-item.new.circled .nav-glyph.add > span {
+  background: #2c2c2a;
+}
+:root[data-theme="light"]
+  .app.web
+  .main-nav
+  > button.new.circled
+  .nav-glyph.add
+  > span {
+  background: #e6e5e1;
+}
+
+/* Comfortable footer density. */
+.app.web .profile-wrap {
+  gap: 6px;
+  padding: 8px;
+}
+.app.web .profile-wrap > .profile {
+  height: 32px;
+  margin-right: auto;
+  gap: 8px;
+  padding: 0 10px 0 2px;
+  border-radius: 8px;
+  flex: 1;
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+}
+.app.web .profile-wrap > .icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+.app.web .profile .avatar {
+  flex-basis: 24px;
+  width: 24px;
+  height: 24px;
+  font-size: 9px;
+  line-height: 13.5px;
+  font-weight: 500;
+}
+.app.web .profile .avatar > img {
+  width: 100%;
+  height: 100%;
+}
+.app.web .profile-avatar-slot {
+  flex-basis: 28px;
+}
+.app.web .profile > span:nth-child(2) {
+  font-size: 14px;
+}
+.app.web .profile small {
+  font-size: 12px;
+  line-height: 18px;
+}
+.app.web .profile > .app-icon {
+  flex-basis: 12px;
+}
+.app.web .profile-wrap > .icon-button {
+  color: #bfbfbd;
+}
+:root[data-theme="light"] .app.web .profile-wrap > .icon-button {
+  color: #4c4b4a;
+}
+
+/* Home corner: What's new or incognito, then Beta at the right end. */
+.web-home-corner {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* The badge's height: taller buttons centre on it. */
+  height: 32px;
+}
+.app.web .web-home-corner > * {
+  position: static;
+}
+/* The incognito button is a 32px square 8px from the corner, its glyph 20px. */
+.app.web .web-home-corner .incognito-button svg {
+  width: 20px;
+  height: 20px;
+}
+.web-beta-badge {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 22px;
+  border-radius: 6px;
+  background: #1f1f1f;
+  font-size: 12px;
+  color: #bbbcb7;
+}
+:root[data-theme="light"] .web-beta-badge {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+/* The body supplies the list's padding and gap; search stays in the footer. */
+.app.web .sidebar-scroll {
+  margin-top: 0;
+  padding-left: 0;
+}
+/* Chat's first section starts 12.5px under the last nav row, the next one 10px
+   under the pinned rows. */
+.app.web .sidebar-scroll:not([data-mode="code"]) {
+  padding-top: 4.5px;
+}
+/* A section's rows start 1px under its label (the section's "gap-px"). */
+.app.web .sidebar-scroll:not([data-mode="code"]) .section-label + * {
+  margin-top: 1px;
+}
+/* Code: 10px more under the nav rows. */
+.app.web .sidebar-scroll[data-mode="code"] {
+  margin-top: 10px;
+}
+/* Code's group headings are a row high: the web's 32px row. */
+.app.web .sidebar-scroll[data-mode="code"] .row-group-label {
+  height: 32px;
+  line-height: 32px;
+}
+/* The empty group line is a web row high, in the comfortable caption type. */
+.app.web .row-group-hint {
+  min-height: 32px;
+  font-size: 12px;
+}
+/* Section labels: a 24px button from x 10, padding 4px 0 4px 4px, radius 8; the
+   label 13/16 #898781 (#c3c2b7 hovered), then 4px to a 12px caret (the font's
+   CaretRight, turned a quarter while the section is open, 60ms) shown while it
+   is hovered. */
+.app.web .section-label {
+  min-height: 44px;
+  padding: 16px 4px 4px 2px;
+  font-size: 13px;
+}
+.app.web .section-toggle {
+  height: 24px;
+  gap: 4px;
+  padding: 4px 0 4px 4px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 16px;
+}
+:root:not([data-theme="light"]) .app.web .section-label,
+:root:not([data-theme="light"]) .app.web .section-toggle > .app-icon {
+  color: #898781;
+}
+:root:not([data-theme="light"]) .app.web .section-toggle:hover {
+  color: #c3c2b7;
+}
+.app.web .section-toggle > .app-icon {
+  width: 12px;
+  height: 12px;
+  rotate: 90deg;
+  transform: none;
+  transition: rotate 60ms var(--ease-standard);
+}
+.app.web .section-toggle.collapsed > .app-icon {
+  rotate: 0deg;
+}
+/* Code's group headings carry the same caret (sidebar.css .group-toggle). */
+:root:not([data-theme="light"]) .app.web .group-toggle > .app-icon {
+  color: #898781;
+}
+.app.web .group-toggle > .app-icon {
+  width: 12px;
+  height: 12px;
+  rotate: 90deg;
+  transform: none;
+  transition: rotate 60ms var(--ease-standard);
+}
+.app.web .group-toggle[aria-expanded="false"] > .app-icon {
+  rotate: 0deg;
+}
+.app.web .pinned-section {
+  margin-bottom: 9px;
+}
+/* Rows: 8px round, hovered white 7.5%; the title 14/21 #c3c2b7 from x 46, the
+   dot centred 16px in; ⋮ a 24px square (6px round) 4px from the right, only
+   while the row is hovered. */
+.app.web .conversation-row {
+  height: 32px;
+  margin-bottom: 2px;
+  padding-block: 0;
+  border-radius: 8px;
+}
+.app.web .conversation-row:hover,
+.app.web .conversation-row:has(:focus-visible) {
+  background: rgb(255 255 255 / 7.5%);
+}
+.app.web .conversation-link {
+  gap: 13.6px;
+  padding-left: 8px;
+  font-size: 14px;
+  line-height: 21px;
+}
+.app.web .conversation-link.plain-recent {
+  padding-left: 6px;
+}
+.app.web .conversation-link > .row-title-slot {
+  flex: 1;
+  min-width: 0;
+}
+/* A row's status (the unread dot) fills the same 24px slot as More, 4px from
+   the row's end. It is the link's last flex item, so the row's centring aligns
+   it with the title and the link's 4px end padding places it; the title stops
+   the link's 8px gap before it. Under the pointer, keyboard focus or an open
+   menu it keeps its place, hidden, and More (an overlay outside the flow)
+   covers it. */
+.app.web .row-status-trailing {
+  position: static;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+.app.web .conversation-link:has(.row-status-trailing),
+.app.web
+  .conversation-row:is(:hover, :has(:focus-visible), .menu-open)
+  .conversation-link:has(.row-status-trailing) {
+  padding-inline-end: 4px;
+}
+.app.web
+  .conversation-row:is(:hover, :has(:focus-visible), .menu-open)
+  .row-status-trailing {
+  visibility: hidden;
+}
+:root:not([data-theme="light"]) .app.web .conversation-link {
+  color: #c3c2b7;
+}
+.app.web .conversation-row .row-more {
+  width: 24px;
+  height: 24px;
+  margin-top: 0;
+  translate: 0 -50%;
+  right: 4px;
+  border-radius: 6px;
+}
+.app.web .code-recents-new {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+.app.web .code-recents-new:hover {
+  background: var(--fill-ghost-hover);
+}
+.app.web .sidebar {
+  overflow: clip;
+}
+.app.web .sidebar-scroll[data-mode="code"] .section-label {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 0 0 10px;
+}
+.app.web .sidebar-scroll[data-mode="code"] .section-toggle {
+  margin-left: -4px;
+}
+.app.web .sidebar-scroll[data-mode="code"] .section-label > div {
+  gap: 0;
+  transform: none;
+}
+.app.web .code-recents-sort {
+  display: flex;
+  width: 0;
+  overflow: hidden;
+}
+.app.web .code-recents-sort > button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+.app.web .code-recents-sort > button:hover,
+.app.web .code-recents-sort > button.open {
+  background: var(--fill-ghost-hover);
+}
+.app.web .recent-label:hover .code-recents-sort,
+.app.web .recent-label:has(:focus-visible) .code-recents-sort,
+.app.web .code-recents-sort:has([aria-expanded="true"]) {
+  width: auto;
+  overflow: visible;
+}
+@media (pointer: coarse) {
+  .app.web .code-recents-sort {
+    width: auto;
+    overflow: visible;
+  }
+}
+
+/* The account menu: 272 wide, #20201f, 12px round with a 1px white-10% inset
+   rim, 4px inside; the email 13/17 500 #898781 at 4px 10px; items 32 high, 6px
+   10px, 8px round, a 20px icon and 8px gap, 14/20 #f0efec; the Settings keys
+   13/17 #898781; rules 1px white 10%, 4px 10px. The submenu (Learn more) is the
+   same box. */
+:root[data-surface="web"] .profile-popover {
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #20201f;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  color: #f0efec;
+  font-size: 14px;
+}
+:root[data-surface="web"] .profile-menu-scroll {
+  box-sizing: border-box;
+  padding: 4px;
+  border-bottom: 1px solid transparent;
+}
+:root[data-surface="web"] .profile-menu-scroll > header {
+  height: auto;
+  padding: 4px 10px;
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+  color: #898781;
+}
+:root[data-surface="web"] .profile-menu-scroll > button {
+  height: 32px;
+  min-height: 0;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #f0efec;
+}
+:root[data-surface="web"] .profile-menu-scroll > button > .app-icon {
+  color: #f0efec;
+}
+:root[data-surface="web"] .profile-popover kbd {
+  margin-left: 16px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 17px;
+  color: #898781;
+}
+:root[data-surface="web"] .profile-menu-scroll > hr {
+  margin: 4px 10px;
+  background: rgb(255 255 255 / 10%);
+}
+:root[data-surface="web"][data-theme="light"] .profile-popover {
+  background: #fffefa;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 10%);
+  color: #1f1e1d;
+}
+:root[data-surface="web"][data-theme="light"] .profile-menu-scroll > button,
+:root[data-surface="web"][data-theme="light"]
+  .profile-menu-scroll
+  > button
+  > svg {
+  color: #1f1e1d;
+}
+:root[data-surface="web"][data-theme="light"] .profile-menu-scroll > hr {
+  background: rgb(0 0 0 / 10%);
+}
+
+/* The sidebar's More menu is the same menu box: 12px round, #20201f, a 1px
+   white-10% inset rim with the panel shadow, 4px inside; items 32 high, 6px
+   10px, 8px round, a 20px icon slot (kept empty on Edit sidebar…) and 8px gap,
+   14/20 #f0efec; the rule 1px white 10% at 4px 10px. */
+:root[data-surface="web"] .main-nav-more-menu {
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: #20201f;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+  color: #f0efec;
+}
+:root[data-surface="web"] .main-nav-more-menu > :is(a, button) {
+  box-sizing: border-box;
+  height: 32px;
+  min-height: 0;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #f0efec;
+}
+:root[data-surface="web"] .main-nav-more-menu > :is(a, button) > .nav-glyph {
+  display: grid;
+  flex: 0 0 20px;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: #f0efec;
+}
+:root[data-surface="web"]
+  .main-nav-more-menu
+  > :is(a, button)
+  > span:not(.nav-glyph) {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:root[data-surface="web"] .main-nav-more-menu > hr {
+  margin: 4px 10px;
+  background: rgb(255 255 255 / 10%);
+}
+:root[data-surface="web"][data-theme="light"] .main-nav-more-menu {
+  background: #fffefa;
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 10%),
+    0 8px 24px rgb(0 0 0 / 12%),
+    0 2px 6px rgb(0 0 0 / 8%);
+  color: #1f1e1d;
+}
+:root[data-surface="web"][data-theme="light"]
+  .main-nav-more-menu
+  > :is(a, button),
+:root[data-surface="web"][data-theme="light"]
+  .main-nav-more-menu
+  > :is(a, button)
+  > .nav-glyph {
+  color: #1f1e1d;
+}
+:root[data-surface="web"][data-theme="light"] .main-nav-more-menu > hr {
+  background: rgb(0 0 0 / 10%);
+}
+
+/* Fields on white 5% with 8px corners and no border (textarea padding 8px
+   12px), row buttons on white 10% with 7px corners and 10px padding. */
+:root[data-surface="web"]:not([data-theme="light"]) .settings-input,
+:root[data-surface="web"]:not([data-theme="light"]) .settings-textarea {
+  border-color: transparent;
+  background: var(--settings-field-fill);
+}
+:root[data-surface="web"]:not([data-theme="light"]) .settings-textarea {
+  padding: 8px 12px;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .settings-input {
+  padding: 0 12px;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .settings-button:not(.primary):not(.danger) {
+  background: rgb(255 255 255 / 10%);
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .settings-button:not(.primary):not(.danger):hover:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+}
+:root[data-surface="web"] .settings-button:not(.regular) {
+  padding: 0 10px;
+  border-radius: 7px;
+}
+
+/* Customize's title uses the web heading treatment. Header controls are shared
+   with desktop in customize/customize.css. */
+:root[data-surface="web"]:not([data-theme="light"]) .customize-title {
+  font-weight: 500;
+  color: #f0efec;
+}
+
+/* Reduced motion: the chevron turns at once. */
+@media (prefers-reduced-motion: reduce) {
+  .app.web .section-toggle > .app-icon,
+  .app.web .group-toggle > .app-icon {
+    transition: none;
+  }
+}
+.app.web .surface-switch::before {
+  box-shadow:
+    inset 0 0 0 0.5px var(--cds-border),
+    0 1px 2px rgb(0 0 0 / 5%);
+  border-radius: 5px;
+}
+.app.web .web-sidebar-search {
+  display: flex;
+}
+.app.web .recents-search {
+  display: none;
+}
+.app.web .web-sidebar-search {
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+  background: rgb(255 255 255 / 5%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+}
+.app.web .web-sidebar-search .app-icon {
+  width: 16px;
+  height: 16px;
+}
+:root[data-theme="light"] .app.web .web-sidebar-search {
+  background: rgb(11 11 11 / 5%);
+  box-shadow: inset 0 0 0 1px rgb(11 11 11 / 5%);
+}
+.app.web .section-label > div {
+  display: flex;
+  align-items: center;
+}
+.app.web .pinned-project .conversation-link {
+  gap: 8px;
+}
+.settings-platform-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  font: inherit;
+  color: var(--text-secondary);
+}
+.settings-platform-link > svg:last-child {
+  margin-left: auto;
+  color: var(--text-muted);
+}
+.settings-platform-link:hover {
+  background: var(--fill-ghost-hover);
+}
+:root[data-motion="reduced"] .app.web .section-toggle > .app-icon,
+:root[data-motion="reduced"] .app.web .group-toggle > .app-icon {
+  transition: none;
+}
+
+/* A web Code session is a panel 9px in from the sidebar and 1px from the
+   window's end (its margins, so its border box is the panel), and its
+   transcript and prompt share one column: at most 768px of content, centred,
+   with 24px before it and 40px after it (24px while the panel is 560px or
+   narrower, 32px beside the session rail). Panel 297..739 at 740 wide and
+   297..899 at 900, its column padded 24 / 24 and 24 / 40. */
+.app.web .chat-main.code-main.has-conversation {
+  container: code-panel / inline-size;
+}
+@media (min-width: 640px) {
+  .app.web .chat-main.code-main.has-conversation {
+    margin-inline: 9px 1px;
+  }
+}
+/* In the tiled workspace (a Code session on the web) the conversation and
+   each pane are cards on the #151515 page: #1a1a19, radius 10, a faint
+   drop shadow, a pane with a 1px white-10% ring too. The conversation's
+   card sits at its tile, its title bar at the card's top; when nothing
+   follows it the card reaches 8px further, to 1px from the window's end,
+   and the bar and the column keep their room past the tile's own end
+   ("bleed": the bar's buttons 12px in, the column's end 40px); before a
+   pane they give way ("shave": 4px and 28px, 12px in a card 560px or
+   narrower). */
+:root:not([data-theme="light"]) .app.web .code-chat-content,
+:root:not([data-theme="light"]) .app.web .code-tile > .work-panel {
+  border: 0;
+  border-radius: 10px;
+  background: #1a1a19;
+  box-shadow:
+    0 1px 2px #0b0b0b0f,
+    0 2px 8px #0000003d;
+}
+/* Inside the conversation's card its surface is the page colour, so what
+   paints the page (the prompt's backdrop over the scrolled transcript)
+   takes the card's. */
+:root:not([data-theme="light"]) .app.web .code-chat-content {
+  --bg: #1a1a19;
+}
+:root:not([data-theme="light"]) .app.web .code-tile > .work-panel {
+  box-shadow:
+    0 0 0 1px #ffffff1a,
+    0 1px 2px #0b0b0b0f,
+    0 2px 8px #0000003d;
+}
+.app.web .code-tile[data-chat-end] {
+  --chat-bleed: 0px;
+}
+.app.web .code-tile[data-chat-end="bleed"] {
+  --chat-bleed: 8px;
+}
+@media (min-width: 640px) {
+  .app.web .code-chat-content > .chat-header.code-header,
+  .app.web.sidebar-hidden .code-chat-content > .chat-header.code-header {
+    margin: 0;
+    padding-right: calc(4px + var(--chat-bleed, 8px));
+    padding-left: 7px;
+  }
+  .app.web .code-chat-content > .chat-main.code-main.has-conversation {
+    margin-inline: 0;
+  }
+  /* The prompt's toolbar row ends 1px above the card's foot (the live
+     panel body's 3px less the row's 2px overhang). */
+  .app.web
+    .code-chat-content
+    > .chat-main.code-main
+    > .composer-wrap.code-composer.conversation-composer {
+    padding-bottom: 1px;
+  }
+  /* The top-left card's bar starts clear of the floating sidebar toggle. */
+  .app.web.sidebar-hidden
+    .code-tile[data-top-left]
+    > .code-chat-content
+    > .chat-header.code-header {
+    margin-left: 32px;
+  }
+}
+.app.web
+  .code-tile[data-chat-end="shave"]
+  .chat-main.code-main.has-conversation
+  > * {
+  --code-gutter-end: 28px;
+}
+@container code-panel (max-width: 560px) {
+  .app.web
+    .code-tile[data-chat-end="shave"]
+    .chat-main.code-main.has-conversation
+    > * {
+    --code-gutter-end: 12px;
+  }
+}
+/* The rail ends 11px inside the panel (12px from the window), and the
+   column stops where the rail begins; the panel's border box is what
+   decides whether the rail fits (useSessionRail). */
+.app.web .chat-main.code-main.with-session-rail {
+  padding-right: calc(var(--session-rail-w, 280px) + 11px);
+}
+.app.web .chat-main.code-main > .session-rail {
+  right: 11px;
+}
+/* Raised over the conversation it ends 12px in (session-rail.css). */
+.app.web .chat-main.code-main > .session-rail.raised {
+  right: 12px;
+}
+.app.web .chat-main.code-main.has-conversation > * {
+  --code-gutter-start: 24px;
+  --code-gutter-end: 40px;
+  --code-column-spare: calc(
+    (
+        100% - var(--chat-column-measure, 768px) - var(--code-gutter-start) -
+          var(--code-gutter-end)
+      ) /
+      2
+  );
+}
+.app.web .chat-main.code-main.with-session-rail > * {
+  --code-gutter-end: 32px;
+}
+@container code-panel (max-width: 560px) {
+  .app.web .chat-main.code-main.has-conversation > * {
+    --code-gutter-end: 24px;
+  }
+}
+/* The transcript scrolls the whole panel, under the rail too, with the
+   system's thin scrollbar on both edges (an overlay one takes no room), as
+   the live scroller: scrollbar-width thin, gutter stable both-edges, its
+   end padding and negative margin the rail's room. */
+.app.web .chat-main.code-main.has-conversation > .messages-scroll {
+  scrollbar-width: thin;
+  scrollbar-gutter: stable both-edges;
+}
+.app.web .chat-main.code-main.with-session-rail > .messages-scroll {
+  margin-right: calc(-1 * (var(--session-rail-w, 280px) + 11px));
+  padding-right: calc(var(--session-rail-w, 280px) + 11px);
+}
+.app.web .chat-main.code-main.has-conversation > .messages-scroll > .messages,
+.app.web
+  .chat-main.code-main.has-conversation
+  > .composer-wrap.code-composer.conversation-composer {
+  align-self: stretch;
+  width: auto;
+  max-width: none;
+  padding-inline: 0;
+  margin-left: max(
+    var(--code-gutter-start),
+    calc(var(--code-column-spare) + var(--code-gutter-start))
+  );
+  margin-right: max(
+    var(--code-gutter-end),
+    calc(var(--code-column-spare) + var(--code-gutter-end))
+  );
+}
+
+/* The web Code session's title bar sits in the panel too: a 32px row 9px
+   down, its title 7px in and its buttons ending 12px before the panel's
+   end, so its middle is 25px down; with the sidebar collapsed it starts
+   32px further in, clear of the floating toggle. The title is the Rename
+   button (14/20 medium, a control tall: 24px with a mouse, 32px on a touch
+   screen, drawn out over the gap by its 4px or 6px padding, radius 6 or
+   8) and a square caret of the same height beside it; the end buttons are
+   26px ghost squares, radius 6 or 8, 4px apart, the session rail's rule 4px
+   from each neighbour. */
+@media (min-width: 640px) {
+  .app.web .chat-header.code-header {
+    height: 32px;
+    min-height: 0;
+    margin: 9px 1px 0 9px;
+    padding: 4px 12px 4px 7px;
+    gap: 24px;
+  }
+  .app.web.sidebar-hidden .chat-header.code-header {
+    margin-left: 41px;
+    padding-left: 7px;
+  }
+}
+.app.web .chat-header.code-header .thread-title-split {
+  margin-left: 0;
+}
+.app.web .chat-header.code-header .thread-rename-trigger {
+  height: 24px;
+  margin: 0 -4px;
+  padding: 0 4px;
+  border-radius: 6px;
+  color: var(--text);
+  font-weight: 500;
+  user-select: none;
+}
+.app.web .chat-header.code-header .thread-menu-trigger {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  margin-left: 0;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+@media (pointer: coarse) {
+  .app.web .chat-header.code-header .thread-rename-trigger {
+    height: 32px;
+    margin: 0 -6px;
+    padding: 0 6px;
+    border-radius: 8px;
+  }
+  .app.web .chat-header.code-header .thread-menu-trigger {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+}
+.app.web .chat-header.code-header .header-actions {
+  gap: 4px;
+}
+.app.web .chat-header.code-header .header-actions .icon-button {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  border-radius: 6px;
+}
+@media (pointer: coarse) {
+  .app.web .chat-header.code-header .header-actions .icon-button {
+    border-radius: 8px;
+  }
+}
+/* Their 18px glyphs; a pressed one (a pane or the rail on screen) is the
+   ghost selected fill with the primary ink, not the desktop's blue. */
+.app.web .chat-header.code-header .header-actions .icon-button > .app-icon {
+  width: 18px;
+  height: 18px;
+}
+.app.web .chat-header.code-header .header-actions .icon-button.active {
+  background: var(--fill-ghost-selected);
+  color: var(--text);
+}
+/* The web's Code rows end 4px in (the open row on a touch screen adds its
+   ⋯'s room to it, sidebar-details.css). */
+.app.web {
+  --code-row-end: 4px;
+}

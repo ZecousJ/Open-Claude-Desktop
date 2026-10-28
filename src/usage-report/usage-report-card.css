@@ -1,0 +1,225 @@
+/* The usage report card in a Code transcript (src/usage-report/
+   UsageReportCard.tsx). 360px at most, 8px round (radius-lg .5rem), a hairline
+   outline (the card outline: box-shadow 0 0 0 1px border), 16px around and 12px
+   on top, 24px between its parts; every text footnote (12/15px). Inside: gap md
+   12px, xs 6px, sm 8px, 0.75 = 3px, 1.25 = 5px, 2.5 = 10px; rules 0.5px of
+   alpha-3. Meter colours are the context popover's (context-popover.css: the
+   ring's blue, the effort panel's amber, the original's danger red); Lines'
+   colours are the pull request bar's git added / removed. */
+/* A posted report sits after its turn as another turn would (.turn's 24px). */
+.usage-report-turn {
+  margin-top: 24px;
+}
+.usage-card {
+  --usage-card-fill: #4175c6;
+  --usage-card-warning: #d69c44;
+  --usage-card-danger: #d03b3b;
+  --usage-card-added: #32d74b;
+  --usage-card-removed: #ff2c56;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+  width: 360px;
+  max-width: 100%;
+  padding: 12px 16px 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--border);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 15px;
+  outline: none;
+  user-select: text;
+}
+:root[data-theme="light"] .usage-card {
+  --usage-card-fill: #3a6cc0;
+  --usage-card-added: #1e9e3c;
+  --usage-card-removed: #cd2054;
+}
+.usage-card-muted {
+  color: var(--text-muted);
+}
+
+/* "Usage" and Copy report, then the plan's windows. */
+.usage-card-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.usage-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 4px;
+  color: var(--text);
+}
+/* The ghost icon button: the Usage panel's (context-popover.css). */
+.usage-card-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -4px -4px -4px 0;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+.usage-card-icon:hover {
+  background: color-mix(in srgb, var(--alpha-ink) 7.5%, transparent);
+  color: var(--text);
+}
+:root[data-theme="light"] .usage-card-icon:hover {
+  background: var(--alpha-1);
+}
+.usage-card-failed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-muted);
+}
+/* Retry: the context popover's secondary button. */
+.usage-card-retry {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--alpha-2);
+  color: var(--text);
+  font: inherit;
+}
+.usage-card-retry:hover {
+  background: color-mix(in srgb, var(--alpha-ink) 14%, transparent);
+}
+.usage-card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.usage-card-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.usage-card-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.usage-card-value {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.usage-card-percent.normal {
+  color: var(--text);
+}
+.usage-card-percent.warning {
+  color: var(--usage-card-warning);
+}
+.usage-card-percent.critical {
+  color: var(--usage-card-danger);
+}
+/* The 8px meter: round, on 10% ink, never thinner than its height. */
+.usage-card-meter {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--alpha-2);
+}
+.usage-card-meter > i {
+  display: block;
+  min-width: 8px;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--usage-card-fill);
+  transition: width var(--motion-moderate) var(--ease-out);
+}
+.usage-card-meter > i.warning {
+  background: var(--usage-card-warning);
+}
+.usage-card-meter > i.critical {
+  background: var(--usage-card-danger);
+}
+
+/* "This session": its cells, three to a row, then the Breakdown. */
+.usage-card-session {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.usage-card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.usage-card-title {
+  color: var(--text);
+}
+.usage-card-stat-rows {
+  display: flex;
+  flex-direction: column;
+}
+.usage-card-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 10px;
+  padding: 3px 0;
+  border-bottom: 0.5px solid var(--alpha-3);
+}
+.usage-card-stat-row:first-child {
+  padding-top: 0;
+}
+.usage-card-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.usage-card-stat-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+}
+.usage-card-stat-value {
+  flex: none;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.usage-card-added {
+  color: var(--usage-card-added);
+}
+.usage-card-removed {
+  color: var(--usage-card-removed);
+}
+.usage-card-grid {
+  display: grid;
+  align-items: center;
+  gap: 3px 6px;
+  font-variant-numeric: tabular-nums;
+}
+.usage-card-grid-head {
+  padding-bottom: 2px;
+}
+.usage-card-cells {
+  display: contents;
+  color: var(--text-muted);
+}
+.usage-card-cell {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.usage-card-rule {
+  grid-column: 1 / -1;
+  border-bottom: 0.5px solid var(--alpha-3);
+}

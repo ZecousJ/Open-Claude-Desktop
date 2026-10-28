@@ -1,0 +1,599 @@
+/* The serif the original draws its greetings, titles and artifact names in is a
+   private font read from a Claude installation when there is one
+   (electron/app/reference-fonts.ts). Everywhere else, and on the web, Source
+   Serif 4 (Adobe, SIL Open Font License 1.1, THIRD_PARTY_NOTICES.md) stands in:
+   a variable text serif of the same cut, so the 360/320 weights the original
+   asks for exist. */
+@font-face {
+  font-family: "Claudex Serif";
+  src: url("../assets/fonts/SourceSerif4Variable-Roman.ttf.woff2")
+    format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Claudex Serif";
+  src: url("../assets/fonts/SourceSerif4Variable-Italic.ttf.woff2")
+    format("woff2");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+:root {
+  color-scheme: dark;
+  /* The page, sidebar and surfaces in effect. */
+  --bg: #151515;
+  --sidebar: #111111;
+  --surface: #202020;
+  --surface-raised: #242424;
+  --surface-hover: #2b2b2b;
+  --surface-selected: #343434;
+  --input: #202020;
+  /* surface-popover: the original's gray-800, for menus, popovers and drawers. */
+  --surface-popover: #20201f;
+  --text: #f0efec;
+  --text-strong: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  /* The original's border is white at 10% and its strong border 20% (the
+     alpha steps below). */
+  --border: var(--alpha-2);
+  --border-strong: var(--alpha-3);
+  --accent: #cc785c;
+  --accent-soft: #38271f;
+  --accent-text: #edb092;
+  --link-text: #6da7ec;
+  /* The original's fill-primary and on-primary. */
+  --primary: #ffffff;
+  --primary-text: #0b0b0b;
+  /* The original's danger and success roles. */
+  --danger: #ec7e7e;
+  --danger-bg: #3c0e0e;
+  /* The original's warning role. */
+  --warning: #db9300;
+  --warning-fill: #fab219;
+  --success: #0ca30c;
+  /* shadow-popover. */
+  --shadow: 0 8px 24px #00000052, 0 2px 6px #0003;
+  /* Desktop frame. */
+  --sidebar-width: 288px;
+  --titlebar-height: 48px;
+  /* The original's UI sans stack, with Microsoft YaHei kept before the generic
+     family so Chinese text on Windows does not fall back to a serif. */
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "PingFang SC",
+    "PingFang TC",
+    "Hiragino Sans",
+    "Apple SD Gothic Neo",
+    "Microsoft YaHei",
+    sans-serif;
+  /* The root keeps the browser's size, as the original's does, so a rem means
+     16px as in its Tailwind values; the app's 14px text is set on body. */
+  font-size: 100%;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text);
+  background: var(--bg);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  /* Page #fcfcfa, sidebar #fbfbf9, cards and the composer #fff, hairlines
+     #e2e2e0, hover fills #f3f3f1, selected rows #edece8, secondary text
+     #82817f. The original's light theme is neutral grey; the earlier warm cream
+     values came from the web app and matched no capture. */
+  --bg: #fcfcfb;
+  --sidebar: #fbfbf9;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-hover: #f3f3f1;
+  --surface-selected: #edece8;
+  --input: #ffffff;
+  --surface-popover: #ffffff;
+  /* The original's light text steps. */
+  --text: #0b0b0b;
+  --text-strong: #0a0a0a;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --border: #e2e2e0;
+  --border-strong: #cfcfcc;
+  --accent: #c56b4e;
+  --accent-soft: #f4e6dc;
+  --accent-text: #a65338;
+  --link-text: #184f95;
+  --primary: #0b0b0b;
+  --primary-text: #ffffff;
+  --danger: #8e2626;
+  --danger-bg: #fad6d6;
+  --warning: #734500;
+  --warning-fill: #fab219;
+  --success: #006300;
+  --shadow: 0 8px 24px #0000001f, 0 2px 6px #00000014;
+}
+
+/*
+ * Motion. The original's design system times everything from one scale
+ * (60/120/200/300/450ms) and a few curves; its "out" is (.165,.84,.44,1), not
+ * the CSS ease-out keyword (0,0,.58,1). static CSS.
+ */
+:root {
+  --motion-fast: 60ms;
+  --motion-snap: 120ms;
+  --motion-base: 200ms;
+  --motion-moderate: 300ms;
+  --motion-slow: 450ms;
+  --ease-out: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-snap: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-overshoot: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  /* The original's button spring: it passes 1 about a quarter of the way in,
+     peaks near 1.09 and settles. Pressed controls spring back on it over
+     --motion-slow. */
+  --ease-spring: linear(
+    0,
+    0.2459,
+    0.6526,
+    0.9468,
+    1.0764,
+    1.0915,
+    1.0585,
+    1.0219,
+    0.9993,
+    0.9914,
+    0.9921,
+    0.9957,
+    0.9988,
+    1.0004,
+    1
+  );
+  /* Press squish (.u-press, 05-utilities.css): down over --motion-fast,
+     back on the spring. Reduced motion sets the scales to 1. */
+  --press-scale: 0.975;
+  --press-card-scale: 0.99;
+  /* The page-grid cards (projects) press to 98% and come back over 200ms on
+     the "out" curve, with no spring (the original's list card). */
+  --press-grid-card-scale: 0.98;
+  --press-release: scale var(--motion-slow) var(--ease-spring);
+  /* A control's fill and colour follow the pointer in 60ms (the original's
+     button fill layer). */
+  --button-fill-transition:
+    background-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out);
+  /* A text field or choice field eases in 60ms on the default curve (the
+     original's "transition duration-fast" on inputs and comboboxes). */
+  --field-transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard);
+  /* A disabled control, the original's --cds-opacity-disabled. */
+  --opacity-disabled: 0.4;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --press-scale: 1;
+    --press-card-scale: 1;
+    --press-grid-card-scale: 1;
+  }
+}
+:root[data-motion="reduced"] {
+  --press-scale: 1;
+  --press-card-scale: 1;
+  --press-grid-card-scale: 1;
+}
+
+/*
+ * Translucent fills. A ghost control's hover and selection are the text colour
+ * at a low alpha (dark: white 7.5% / 15%, light: #0b0b0b 5% / 10%), so they
+ * read the same on the page, a card or a popover; an opaque hex only matches
+ * the surface it was measured on. --alpha-1/2 are the 5% and 10% steps of the
+ * same colour.
+ */
+:root {
+  --alpha-ink: #ffffff;
+  --alpha-1: color-mix(in srgb, var(--alpha-ink) 5%, transparent);
+  --alpha-2: color-mix(in srgb, var(--alpha-ink) 10%, transparent);
+  --alpha-3: color-mix(in srgb, var(--alpha-ink) 20%, transparent);
+  --alpha-4: color-mix(in srgb, var(--alpha-ink) 35%, transparent);
+  --fill-ghost-hover: color-mix(in srgb, var(--alpha-ink) 7.5%, transparent);
+  --fill-ghost-selected: color-mix(in srgb, var(--alpha-ink) 15%, transparent);
+}
+:root[data-theme="light"] {
+  --alpha-ink: #0b0b0b;
+  --fill-ghost-hover: var(--alpha-1);
+  --fill-ghost-selected: var(--alpha-2);
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  font-size: 14px;
+}
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+/*
+ * No CSS minimum width: the window's own minimum (electron/main.ts) keeps it
+ * usable, and with the page zoomed in the viewport is narrower than that in CSS
+ * px, as in the original's W969 captures at 1.2 zoom, where the page still fits
+ * the window.
+ */
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+/* Controls in a scrolling list keep no region of their own: they never sit in a
+   drag area where they show, and a no-drag box still counts where a control
+   scrolled out of view lies, under the title bar, so the window could not be
+   dragged from the bar's middle. */
+.messages-scroll :is(button, input, textarea, select, a),
+.sidebar-scroll :is(button, input, a) {
+  -webkit-app-region: initial;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Fills and colours follow the pointer in 60ms; a pressed control's scale
+   springs back (--press-release, .u-press in 05-utilities.css). */
+button {
+  transition: var(--button-fill-transition), var(--press-release);
+}
+button:disabled,
+input:disabled:not([type="checkbox"]),
+textarea:disabled {
+  cursor: default;
+  opacity: var(--opacity-disabled);
+}
+/* A disabled text field dims like a disabled button instead of taking the
+   browser's fixed grey. */
+input:disabled:not([type="checkbox"], [type="radio"], [type="range"]),
+textarea:disabled {
+  cursor: default;
+  opacity: var(--opacity-disabled);
+}
+/* Keyboard focus is three layers: a 1px gap in the page colour on the control's
+   edge, a 1px accent ring outside it and a soft 6px accent glow (the original's
+   --cds-focus-shadow: accent #2a78d6 in both themes, the glow #184f95 at 60% in
+   dark and #cde2fb in light). Source: the reference design 2.31226.1 static
+   CSS. The 1px #497cbf ring of R-0119/R-0310/R-1004 was its accent ring alone.
+   Here the ring is the outline and the gap and glow are the shadow
+   (--focus-halo), so a control that sets its own box-shadow, or its own
+   outline, still shows a ring, and forced colours keep it. --focus-shadow is
+   all three as shadows; --focus is the accent, for controls that draw an
+   outline of their own. */
+:root {
+  --focus-accent: #2a78d6;
+  --focus-glow: rgb(24 79 149 / 60%);
+  --focus: var(--focus-accent);
+  --focus-halo: inset 0 0 0 1px var(--bg), 0 0 6px 1px var(--focus-glow);
+  --focus-shadow:
+    inset 0 0 0 1px var(--bg), 0 0 0 1px var(--focus-accent),
+    0 0 6px 1px var(--focus-glow);
+  --field-focus: #4f729a;
+}
+:root[data-theme="light"] {
+  --focus-glow: #cde2fb;
+}
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+button[data-initial-focus]:focus {
+  outline: 1px solid var(--focus-accent);
+  outline-offset: 0;
+  box-shadow: var(--focus-halo);
+}
+/* A dialog's first focused button (Modal sets data-initial-focus, as the
+   original's ConfirmationDialog does) shows the ring whatever moved focus
+   there; a mouse click that opened the dialog leaves :focus-visible off. A
+   danger button's ring is red: the same three layers on the danger fill, its
+   glow red-600 at 60% in dark and red-100 in light. */
+:root {
+  --focus-danger: #d03b3b;
+  --focus-danger-glow: rgb(142 38 38 / 60%);
+}
+:root[data-theme="light"] {
+  --focus-danger-glow: #fad6d6;
+}
+:is(.danger-button, .settings-button.danger):is(
+  :focus-visible,
+  [data-initial-focus]:focus
+) {
+  outline-color: var(--focus-danger);
+  box-shadow:
+    inset 0 0 0 1px var(--bg),
+    0 0 6px 1px var(--focus-danger-glow);
+}
+/* A text or choice field's rim. At rest the rim is the ink at 10%, on hover
+   20%, drawn over the field's own fill: #363636 / #4d4d4d on the dark #202020
+   field and #e6e6e6 / #cecece on the light white one, which the Settings fields
+   measured from captures (#3b3b3b / #4a4a4a dark, #e0e0e0 / --border-strong
+   light) agree with. An invalid field's rim is red-450 #d03b3b in both themes;
+   focused, it keeps the red rim and takes the danger glow (--focus-danger-glow)
+   where a valid field shows its blue rim. */
+:root {
+  --field-rim: var(--alpha-2);
+  --field-rim-hover: var(--alpha-3);
+  --field-invalid: var(--focus-danger);
+}
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--field-rim);
+  background: var(--input);
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: none;
+  transition: var(--field-transition);
+}
+/* Hover strengthens the rim, except while focused, invalid or disabled.
+   These rules (and the invalid ones below) weigh no more than the element
+   name, so a component's own class rule for its border always wins over
+   them; they reach only the fields that take the base rim above. */
+input:where(
+  :hover:not(
+    :focus,
+    :disabled,
+    [aria-invalid="true"],
+    [type="checkbox"],
+    [type="radio"],
+    [type="range"]
+  )
+),
+textarea:where(:hover:not(:focus, :disabled, [aria-invalid="true"])),
+select:where(:hover:not(:focus, :disabled, [aria-invalid="true"])) {
+  border-color: var(--field-rim-hover);
+}
+input:where([aria-invalid="true"]),
+textarea:where([aria-invalid="true"]),
+select:where([aria-invalid="true"]) {
+  border-color: var(--field-invalid);
+}
+/* A focused text field keeps its size and shows a 1px blue rim, no halo:
+   R-1588's Skill name (light PNG, the crisp top rim reads #4f729a), R-1593's
+   domain field, R-1540's Settings search and R-1107's Customize search
+   (light, #496f94; dark, #516f93) all read this blue. */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--field-focus);
+  box-shadow: none;
+}
+/* Focused and invalid: the red rim stays and the danger glow shows. */
+input:focus:where([aria-invalid="true"]),
+textarea:focus:where([aria-invalid="true"]),
+select:focus:where([aria-invalid="true"]) {
+  border-color: var(--field-invalid);
+  box-shadow: 0 0 6px 1px var(--focus-danger-glow);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+textarea {
+  line-height: 1.65;
+  resize: vertical;
+}
+select {
+  cursor: pointer;
+  padding-right: 28px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+label > input,
+label > textarea,
+label > select {
+  display: block;
+  margin-top: 7px;
+  font-weight: 400;
+}
+label > small {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 7px;
+  font-weight: 400;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1,
+h2,
+h3 {
+  font-weight: 550;
+}
+/* b and strong are font-bold in the original. */
+b,
+strong {
+  font-weight: 600;
+}
+p {
+  line-height: 1.7;
+}
+/* Prose links take the original's text-accent everywhere. */
+a {
+  color: var(--link-text);
+  text-decoration-color: color-mix(in srgb, var(--link-text) 60%, transparent);
+  text-underline-offset: 3px;
+}
+svg {
+  flex-shrink: 0;
+}
+/* The font roles the stylesheets name. Here they are the app's own stacks, so a
+   rule that reads one of them gets a family, not an invalid declaration. */
+:root {
+  --font-ui:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "PingFang SC", "PingFang TC", "Hiragino Sans",
+    "Apple SD Gothic Neo", "Microsoft YaHei", sans-serif;
+  --font-sans: var(--font-ui);
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  --font-ui-serif:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  --font-serif: var(--font-ui-serif);
+}
+pre,
+code,
+.mono,
+.path {
+  /* The original's monospace stack. */
+  font-family:
+    var(--code-font-custom,) ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+}
+pre {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+kbd {
+  color: var(--text-muted);
+  font:
+    11px -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  white-space: nowrap;
+}
+/* R-0525 (2.4 px/CSS): selected text sits on #375474 over the #151515 page
+   and #395270 over a #1a1a1a code block, i.e. #4e7eb3 at 60%. */
+::selection {
+  background: rgb(78 126 179 / 0.6);
+}
+/* The query selected in the Settings search field reads solid #3269d6 with
+   white text; the only light capture, so it stands for all light text. */
+:root[data-theme="light"] ::selection {
+  background: #3269d6;
+  color: #fff;
+}
+/* Scrollbars. Windows too: the live front-end draws thin bars on every platform
+   (*{scrollbar-width:thin}), not the system's wide ones with arrows. :root:root
+   keeps the weight the old Windows exception gave these rules. */
+:root:root ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+:root:root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+:root:root ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--alpha-ink) 20%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 9999px;
+}
+:root:root ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--alpha-ink) 35%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.star {
+  color: var(--accent);
+}
+.muted {
+  color: var(--text-secondary);
+}
+.small {
+  font-size: 12px;
+}
+.danger {
+  color: var(--danger) !important;
+}
+.success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--success);
+  font-size: 12px;
+}
+.error-text {
+  color: var(--danger);
+}
+.spin {
+  animation: spin 1s linear infinite;
+}
+/* A primary button that is working keeps its size and colour, hides its label
+   and shows a spinner in the middle. */
+button.busy {
+  position: relative;
+}
+button.busy:disabled {
+  opacity: 1;
+}
+button.busy > .busy-label {
+  visibility: hidden;
+}
+button.busy > .cds-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Visually hidden but announced by screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

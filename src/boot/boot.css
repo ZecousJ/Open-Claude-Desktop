@@ -1,0 +1,196 @@
+.boot-shell {
+  min-height: 100dvh;
+  background: var(--boot-bg, var(--bg));
+}
+/* Installed Claude 2.42304.0 main_window/index.html reserves 48px at 1x.
+   Reuse our titlebar token; the web static/React shell stays empty. */
+.boot-shell > .boot-drag-strip {
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--titlebar-height, 48px);
+  -webkit-app-region: drag;
+}
+/* The page in place of the app when it could not start (src/boot/
+   BootErrorPage.tsx), after the original's: centred on the window, 96px above
+   and 128px below, the product's lockup (24px high) 40px over a 20px/28px serif
+   headline, a 14px/18px secondary line, 8px apart, and the buttons 16px under
+   them, 12px apart. The window is dragged by it on the desktop; its text can be
+   selected. */
+.boot-error {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100vh;
+  padding: 96px 16px 128px;
+  background: var(--bg);
+  color: var(--text);
+  text-align: center;
+  user-select: text;
+  -webkit-app-region: drag;
+}
+.boot-error-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 24px;
+  margin-bottom: 40px;
+  font:
+    400 22px/1 "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  letter-spacing: -0.3px;
+}
+.boot-error-logo > svg {
+  color: var(--accent);
+}
+.boot-error h2 {
+  max-width: 672px;
+  margin: 0;
+  font:
+    400 20px/28px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  text-wrap: balance;
+}
+.boot-error h3 {
+  max-width: 672px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+  text-wrap: balance;
+}
+.boot-error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  min-width: 256px;
+  margin-top: 16px;
+}
+.boot-error-actions > button {
+  font-size: 14px;
+}
+.boot-error-actions > button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* A page that failed to render (src/app/PageBoundary.tsx): the original's
+   danger banner in a 12px box, in the colours of the app's other load-error
+   banners (the Customize and Routines pages'). */
+.page-error {
+  padding: 12px;
+}
+/* The whole window failed: the same banner on the page's background, under
+   a strip the desktop window is dragged by (and its caption buttons on
+   Windows). */
+.window-error {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding-top: 36px;
+  background: var(--bg);
+  color: var(--text);
+}
+.window-error::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: 36px;
+  -webkit-app-region: drag;
+}
+.page-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 6px 10px 6px 14px;
+  border: 1px solid #6a3a37;
+  border-radius: 10px;
+  background: #3a2422;
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 19px;
+}
+.page-error-banner > svg {
+  flex: none;
+  margin-top: 0;
+}
+.page-error-banner > span {
+  flex: 1;
+  min-width: 0;
+}
+.page-error-banner > button {
+  flex: none;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #6a3a37;
+  color: var(--text);
+  font-size: 13px;
+}
+.page-error-banner > button:hover {
+  background: rgb(127 127 127 / 14%);
+}
+:root[data-theme="light"] .page-error-banner {
+  border-color: #cda2a9;
+  background: #fad6d6;
+  color: #7a2a2d;
+}
+:root[data-theme="light"] .page-error-banner > button {
+  box-shadow: inset 0 0 0 1px #cda2a9;
+  color: #141413;
+}
+/* A Code session that failed to render: its pane's own view (live: the
+   sentence in the danger ink, 18px/28px medium, 24px over a primary Try
+   again, centred, at most 448px wide). */
+.session-error {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 0 16px;
+  text-align: center;
+}
+.session-error > p {
+  max-width: 448px;
+  margin: 0 0 24px;
+  color: var(--danger);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+/* A lazily loaded piece that did not load, in its place. In the first-load
+   styles so it shows when nothing more can be fetched. The button is the app's
+   small secondary (Project memory's Try again). */
+.chunk-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 8px;
+  text-align: center;
+}
+.chunk-error > span {
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 19px;
+}
+.chunk-error > .secondary {
+  min-height: 28px;
+  padding: 4px 10px;
+}

@@ -1,0 +1,410 @@
+/* Code tool rows and running activity: command groups, spinners, shimmer text, status labels. (part of chat-transcript.css) */
+/* normalized-command-group-001 / -hover-007: 16px source lines; command names blue, arguments and strings green. */
+.command-source pre {
+  margin-top: 10px;
+  line-height: 16px;
+}
+.command-output {
+  margin-top: 13.5px;
+}
+.command-source .sh-command {
+  color: #7eabeb;
+}
+.command-source .sh-string,
+.command-source .sh-arg,
+.command-source .sh-list,
+.command-source .sh-number {
+  color: #a2d372;
+}
+.command-source .sh-keyword {
+  color: #c792ea;
+}
+.command-source .sh-variable {
+  color: #f4bf88;
+}
+.command-source .sh-comment {
+  color: #707680;
+}
+:root[data-theme="light"] .command-source .sh-command {
+  color: #225d94;
+}
+:root[data-theme="light"] .command-source .sh-string,
+:root[data-theme="light"] .command-source .sh-arg,
+:root[data-theme="light"] .command-source .sh-list,
+:root[data-theme="light"] .command-source .sh-number {
+  color: #446822;
+}
+.command-output-label {
+  margin-top: 29.5px;
+}
+.command-error {
+  margin-top: 12px;
+  color: var(--danger);
+  font-size: 12px;
+}
+:root[data-theme="light"] .command-card {
+  border-color: var(--border);
+}
+:root[data-theme="light"] .command-source pre,
+:root[data-theme="light"] .command-output {
+  color: var(--text);
+}
+/* R-0546 (light, 2.4 px/CSS): prompt bubble #f0f0f0, table head #f0f0ee
+   with #e1e1e1 rules. Headings, quotes and inline code have no light capture;
+   they take the reply text colour and the dark theme's alpha faces. */
+:root[data-theme="light"] .mode-chat .markdown,
+:root[data-theme="light"] .mode-chat .markdown :is(h4, h5, h6, blockquote) {
+  color: var(--text);
+}
+:root[data-theme="light"] .mode-chat .markdown blockquote {
+  border-left-color: #e1e1e1;
+}
+:root[data-theme="light"] .mode-chat .markdown :not(pre) > code,
+:root[data-theme="light"] .mode-chat .user-message-text code {
+  color: var(--text);
+  background: #0000000d;
+  border-color: #00000021;
+}
+:root[data-theme="light"] .mode-chat .markdown-table,
+:root[data-theme="light"] .mode-chat .markdown tr + tr,
+:root[data-theme="light"] .mode-chat .markdown tbody {
+  border-color: #e1e1e1;
+}
+:root[data-theme="light"] .mode-chat .markdown th {
+  background: #f0f0ee;
+}
+:root[data-theme="light"] .mode-chat .markdown .code-block {
+  background: var(
+    --code-background,
+    color-mix(in oklab, var(--cds-surface-3) 50%, transparent)
+  );
+  border-color: var(--cds-border);
+}
+:root[data-theme="light"] .hljs-keyword {
+  color: var(--code-keyword, #7c3bb5);
+}
+:root[data-theme="light"] .hljs-title {
+  color: var(--code-entity, #225d94);
+}
+:root[data-theme="light"] .hljs-string {
+  color: var(--code-string, #446822);
+}
+:root[data-theme="light"] .hljs-attr {
+  color: var(--code-constant, #446822);
+}
+:root[data-theme="light"] .hljs-number,
+:root[data-theme="light"] .hljs-literal {
+  color: var(--code-constant, #a44b20);
+}
+
+.turn-activity {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 24px;
+  margin: 0 0 24px;
+  padding: 0 4px;
+  color: #858580;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.activity-mark {
+  position: relative;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+}
+.activity-mark i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: #d48b6b;
+}
+.activity-mark i:nth-child(1) {
+  transform: translate(4.5px, 4px);
+}
+.activity-mark i:nth-child(2) {
+  transform: translate(15.5px, 4px);
+}
+.activity-mark i:nth-child(3) {
+  transform: translate(4.5px, 15px);
+}
+.activity-mark i:nth-child(4) {
+  transform: translate(15.5px, 15px);
+}
+.activity-mark[data-phase="thinking"] i:nth-child(1) {
+  transform: translate(2px, 9.5px);
+}
+.activity-mark[data-phase="thinking"] i:nth-child(2) {
+  transform: translate(9px, 9.5px);
+}
+.activity-mark[data-phase="thinking"] i:nth-child(3) {
+  transform: translate(16px, 9.5px);
+}
+/* agent-lifecycle-001 / agent-disclosure-001 (110% page zoom, divided by 1.1 here):
+   the marker hangs in the gutter; running and completed labels share one x.
+   Keyframe coordinates are reference-pixel offsets inside the 24px ROI, so the
+   whole ROI is scaled 1/1.1 instead of re-deriving the trajectories. */
+.agent-activity-group > summary,
+.assistant-content > .command-activity > summary {
+  position: relative;
+}
+.agent-activity-group > summary > .activity-mark,
+.assistant-content > .command-activity > summary > .activity-mark,
+.turn-activity > .activity-mark {
+  position: absolute;
+  left: -29.4px;
+  top: 0.8px;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  transform: scale(0.9091);
+  transform-origin: 0 0;
+}
+.agent-activity-group > summary > .activity-mark i,
+.assistant-content > .command-activity > summary > .activity-mark i,
+.turn-activity > .activity-mark i {
+  width: 4px;
+  height: 4px;
+  margin: -0.25px 0 0 -0.25px;
+  background: #d0846f;
+}
+.activity-elapsed {
+  color: inherit;
+  font-size: inherit;
+  margin-left: 5px;
+}
+/* Pre-tool status: spinner centred 14.5px into the column, label at 34px (agent-disclosure-001, ÷1.1). */
+.pre-tool-activity {
+  padding-left: 34px;
+}
+.pre-tool-activity > .code-spinner {
+  position: absolute;
+  left: 4.5px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  fill: #d97757;
+  stroke: #d97757;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+/* A running label's base ink. */
+.activity-label[data-shimmer] {
+  color: #7a7a77;
+}
+@media (prefers-reduced-motion: reduce) {
+  .response-stream-mark[data-ending] > .code-spinner,
+  .chat-spinner path {
+    animation: none;
+  }
+}
+
+/* Shimmer text. The text keeps its colour; a copy laid over it is clipped to
+   the glyphs and carries a 120° band, from transparent at 37.5% to the peak
+   (the ink mixed 30% into white) at 50% and back at 62.5%, on a layer four
+   times as wide that slides from -62.5% to -12.5%: resting 15% of the 3s cycle,
+   crossing on cubic-bezier(0.714, 0.121, 0.211, 0.888) until 85%, resting
+   again. Every shimmer runs on the page's clock (--shimmer-delay), so a
+   replaced label keeps the band where it was. Reduced motion: no band. */
+.shimmer-text {
+  position: relative;
+  --shimmer-peak: color-mix(in srgb, currentColor 30%, white);
+}
+.shimmer-text-band {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  padding: inherit;
+  white-space: inherit;
+  text-overflow: inherit;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-text-fill-color: transparent;
+}
+@supports (-webkit-mask-clip: text) {
+  .shimmer-text-band {
+    -webkit-mask-image: linear-gradient(#000 0 0);
+    -webkit-mask-clip: text;
+  }
+  .shimmer-text-band::after {
+    content: "";
+    position: absolute;
+    inset: 0 -300% 0 0;
+    translate: -62.5%;
+    background-image: linear-gradient(
+      120deg,
+      transparent 37.5%,
+      var(--shimmer-peak) 50%,
+      transparent 62.5%
+    );
+    animation: shimmer-band 3s linear infinite;
+    animation-delay: var(--shimmer-delay, 0s);
+  }
+}
+/* Without glyph masks the copy paints the band through its own text. */
+@supports not (-webkit-mask-clip: text) {
+  .shimmer-text-band {
+    background: linear-gradient(
+        120deg,
+        transparent 37.5%,
+        var(--shimmer-peak) 50%,
+        transparent 62.5%
+      )
+      83.333% 0 / 400% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shimmer-band-fallback 3s linear infinite;
+    animation-delay: var(--shimmer-delay, 0s);
+  }
+}
+@keyframes shimmer-band {
+  0%,
+  15% {
+    translate: -62.5%;
+    animation-timing-function: cubic-bezier(0.714, 0.121, 0.211, 0.888);
+  }
+  85%,
+  100% {
+    translate: -12.5%;
+  }
+}
+@keyframes shimmer-band-fallback {
+  0%,
+  15% {
+    background-position: 83.333% 0;
+    animation-timing-function: cubic-bezier(0.714, 0.121, 0.211, 0.888);
+  }
+  85%,
+  100% {
+    background-position: 16.667% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-text-band {
+    display: none;
+  }
+}
+:root[data-motion="reduced"] .shimmer-text-band {
+  display: none;
+}
+
+/* Status text swaps in place: the new label fades in over 250ms (ease-in-out)
+   while the old one fades out over 150ms (ease-out), both in one grid cell;
+   after the working mark it waits 210ms for the mark to go. A step's quiet row
+   rises 6px into place over 240ms, cubic-bezier(0.3, 0.7, 0.4, 1), the old text
+   dropping 4px away over 180ms. Reduced motion: the new label is there at once
+   and the old one is gone. */
+.activity-label-morph {
+  display: inline-grid;
+  min-width: 0;
+}
+.activity-label-morph > .activity-label {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.activity-label[data-swap="enter"] {
+  animation: status-fade-in 250ms ease-in-out;
+}
+.activity-label[data-swap="enter-after-mark"] {
+  animation: status-fade-in 250ms ease-in-out 210ms both;
+}
+.activity-label[data-swap="leave"] {
+  animation: status-fade-out 150ms ease-out forwards;
+}
+.activity-label[data-swap="enter-quiet"] {
+  animation: status-rise 240ms cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+.activity-label[data-swap="leave-quiet"] {
+  animation: status-fall 180ms ease-out forwards;
+}
+.activity-label:is([data-swap="leave"], [data-swap="leave-quiet"]) {
+  pointer-events: none;
+}
+@keyframes status-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes status-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes status-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes status-fall {
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-label[data-swap] {
+    animation: none;
+  }
+  .activity-label:is([data-swap="leave"], [data-swap="leave-quiet"]) {
+    display: none;
+  }
+}
+:root[data-motion="reduced"] .activity-label[data-swap] {
+  animation: none;
+}
+:root[data-motion="reduced"]
+  .activity-label:is([data-swap="leave"], [data-swap="leave-quiet"]) {
+  display: none;
+}
+.agent-activity-content > .command-card + .command-card {
+  margin-top: 12px;
+}
+.agent-activity-content > .reasoning {
+  margin: 12px 0;
+}
+/* Card height switches immediately; the chevron has a short independent turn.
+   Timing is provisional from command-hover-toggle-005, not a full motion pass. */
+/* command-hover-toggle-005: collapse reached its end angle in ~35ms, expand in ~58ms. */
+.command-activity > summary > svg {
+  transform-origin: center;
+  transition: transform 35ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.command-activity[open] > summary > svg {
+  transition-duration: 58ms;
+}
+/* Reduced motion: chevrons turn and indents move at once. */
+@media (prefers-reduced-motion: reduce) {
+  .command-activity > summary > svg,
+  .generated-diff > summary > svg,
+  .mode-cowork
+    .assistant-content
+    > :is(.command-activity, .agent-activity-group)
+    > summary,
+  .mode-cowork .assistant-content > .turn-activity,
+  .chat-steps-card-wrap {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .command-activity > summary > svg,
+:root[data-motion="reduced"] .generated-diff > summary > svg {
+  transition: none;
+}
+:root[data-motion="reduced"]
+  .mode-cowork
+  .assistant-content
+  > :is(.command-activity, .agent-activity-group)
+  > summary,
+:root[data-motion="reduced"] .mode-cowork .assistant-content > .turn-activity,
+:root[data-motion="reduced"] .chat-steps-card-wrap {
+  transition: none;
+}

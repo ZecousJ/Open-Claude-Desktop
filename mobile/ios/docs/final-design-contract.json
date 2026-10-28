@@ -1,0 +1,319 @@
+{
+  "design": "FINAL approved 2026-10-01",
+  "baseline_commit": "5a585fcaeb083cdb67a53a4b34aeda21773d1927",
+  "screens": [
+    {
+      "number": "01",
+      "title": "新对话",
+      "source": "Claudex/UI/ConversationViews.swift",
+      "view": "ConversationHome",
+      "actions": [
+        "侧栏",
+        "模型",
+        "附件",
+        "发送",
+        "设备听写"
+      ],
+      "reference": "01-home.png",
+      "reference_sha256": "9d7f2ed6de094cfd0435197d673e6507ac90005855fce974ef223c546b1a9e7d",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "02",
+      "title": "登录",
+      "source": "Claudex/UI/AuthenticationViews.swift",
+      "view": "LoginView",
+      "actions": [
+        "邮箱码或密码",
+        "注册",
+        "隐私政策"
+      ],
+      "reference": "02-login.png",
+      "reference_sha256": "2bfd6435fa4c587779b07ecce90adccb5695357bf99d1f0fb66afed24febad7b",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "03",
+      "title": "验证邮箱",
+      "source": "Claudex/UI/AuthenticationViews.swift",
+      "view": "LoginStepView",
+      "actions": [
+        "六格验证码",
+        "自动填充",
+        "重发",
+        "切换邮箱",
+        "2FA"
+      ],
+      "reference": "03-verify-email.png",
+      "reference_sha256": "866e64af4c57b444010cb5a224462bf667f034749cb22ba4ae0ca20c5b78b93a",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "04",
+      "title": "侧边栏与历史",
+      "source": "Claudex/UI/SidebarView.swift",
+      "view": "SidebarView",
+      "actions": [
+        "五个主入口",
+        "搜索",
+        "置顶",
+        "归档",
+        "重命名",
+        "设置",
+        "新对话"
+      ],
+      "reference": "04-history.png",
+      "reference_sha256": "7dfb8acdc8f626999474c5e086058a67b6211fb1ab83843aed1f27ed5db3eb02",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "05",
+      "title": "对话",
+      "source": "Claudex/UI/ConversationViews.swift",
+      "view": "ChatView",
+      "actions": [
+        "真实转录",
+        "slim完整加载",
+        "工具输出",
+        "审批",
+        "停止",
+        "分享"
+      ],
+      "reference": "05-conversation.png",
+      "reference_sha256": "be7ad3812112fdf88a81e40fa49d40423ddb7f14933edcf282e22f8b104e4c10",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "06",
+      "title": "模型与思考",
+      "source": "Claudex/UI/ComposerSheets.swift",
+      "view": "ModelSheet",
+      "actions": [
+        "真实模型目录",
+        "更多模型",
+        "账户思考档位"
+      ],
+      "reference": "06-model-sheet.png",
+      "reference_sha256": "e605509199d373f42e09e9764d9212153a035c676c177a991368228bfb9fd5c0",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "07",
+      "title": "添加附件",
+      "source": "Claudex/UI/ComposerSheets.swift",
+      "view": "AttachmentSheet",
+      "actions": [
+        "文件",
+        "照片图库",
+        "移除",
+        "本机预览"
+      ],
+      "reference": "07-add-attachment.png",
+      "reference_sha256": "fde02d83119a2796fccf6cd1539bc563c8853dfcfd272ec1deb2d9c95ff6d491",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "08",
+      "title": "附件预览",
+      "source": "Claudex/UI/AttachmentViews.swift",
+      "view": "AttachmentPreviewView",
+      "actions": [
+        "Quick Look",
+        "本机分享",
+        "真实远端图片与提取状态"
+      ],
+      "reference": "08-attachment-preview.png",
+      "reference_sha256": "b8c39b60830adf1ca145e54c96f5f59bd8a1847da53d7613321f77399107a86a",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "09",
+      "title": "项目",
+      "source": "Claudex/UI/ProjectViews.swift",
+      "view": "WorkView",
+      "actions": [
+        "项目搜索",
+        "新建",
+        "详情"
+      ],
+      "reference": "09-projects.png",
+      "reference_sha256": "27ba614b16f9c0110518a2a57d6fbffc9a8378079d43197d470299a44b870a9c",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "10",
+      "title": "项目详情",
+      "source": "Claudex/UI/ProjectViews.swift",
+      "view": "ProjectDetailView",
+      "actions": [
+        "指令编辑",
+        "知识文件增删",
+        "项目对话",
+        "项目composer"
+      ],
+      "reference": "10-project-detail.png",
+      "reference_sha256": "546bfde062eedcf45c1fb2b6f3cc93da600d3a33d5b91b18947629e41f77ed40",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "11",
+      "title": "代码",
+      "source": "Claudex/UI/WorkViews.swift",
+      "view": "CodeWorkspaceView",
+      "actions": [
+        "云端仓库",
+        "分支",
+        "权限模式",
+        "最近任务",
+        "composer"
+      ],
+      "reference": "11-code-workspace.png",
+      "reference_sha256": "3648c3989132a77e1db5f931fb6dedcb57eddb5a41fdd42a424f12e63de916a3",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "12",
+      "title": "GitHub仓库",
+      "source": "Claudex/UI/RepositoryPickerView.swift",
+      "view": "RepositoryPickerView",
+      "actions": [
+        "真实授权",
+        "搜索",
+        "分页",
+        "分支",
+        "不使用仓库"
+      ],
+      "reference": "12-github-picker.png",
+      "reference_sha256": "5b305a3f97945552aec255e96a94886f38c7dd95cc6f9cc33136b456419067e8",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "13",
+      "title": "后台任务",
+      "source": "Claudex/UI/WorkViews.swift",
+      "view": "BackgroundTaskDetailView",
+      "actions": [
+        "真实活动时间线",
+        "tokens",
+        "打开对话",
+        "停止"
+      ],
+      "reference": "13-background-task.png",
+      "reference_sha256": "89466b2d9a3a6fbc123d534ad38b297c641a9c1bd54ade5d042939a1bf9281b2",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "14",
+      "title": "资料库",
+      "source": "Claudex/UI/LibrarySettingsViews.swift",
+      "view": "ArtifactLibraryView",
+      "actions": [
+        "最近/置顶",
+        "搜索",
+        "复制副本",
+        "来源会话"
+      ],
+      "reference": "14-artifact-library.png",
+      "reference_sha256": "0158b81b8358e88ec18398c896e8efce1e30f38f8017e026552de16dfbbeccf8",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "15",
+      "title": "设置",
+      "source": "Claudex/UI/SettingsViews.swift",
+      "view": "SettingsView",
+      "actions": [
+        "真实账户",
+        "套餐/状态",
+        "个性化/指令",
+        "外观",
+        "注销"
+      ],
+      "reference": "15-settings.png",
+      "reference_sha256": "2e3de24e977a89e5ee447d9077cf15e400c3ad56c828bb229a3d08f89b8978e1",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "16",
+      "title": "套餐与用量",
+      "source": "Claudex/UI/SettingsViews.swift",
+      "view": "UsageView",
+      "actions": [
+        "真实套餐",
+        "额度",
+        "重置时间",
+        "刷新"
+      ],
+      "reference": "16-plan-usage.png",
+      "reference_sha256": "c1230b32da27480822fdeb2c97a7348437e049cc7d719cfc9aef2a29e7ab8ec5",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "17",
+      "title": "服务状态",
+      "source": "Claudex/UI/ServiceStatusView.swift",
+      "view": "ServiceStatusView",
+      "actions": [
+        "真实监控",
+        "历史时段",
+        "事件",
+        "刷新"
+      ],
+      "reference": "17-service-status.png",
+      "reference_sha256": "967b30db953c429962dfbadb5ce1edef5395e622e45233b54f392381e3c8bcc4",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "18",
+      "title": "分享对话",
+      "source": "Claudex/UI/ShareConversationView.swift",
+      "view": "ShareConversationView",
+      "actions": [
+        "默认受邀",
+        "范围确认",
+        "链接复制",
+        "邀请",
+        "更新/停止"
+      ],
+      "reference": "18-share-conversation.png",
+      "reference_sha256": "d8900667c7fe9d59409601fd30b494c1ddf2b3450ba49c614256072939e4fbf3",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "19",
+      "title": "变更审阅",
+      "source": "Claudex/UI/WorkViews.swift",
+      "view": "ReviewChangesView",
+      "actions": [
+        "真实diff",
+        "文件选择",
+        "增删行色",
+        "返回任务"
+      ],
+      "reference": "19-review-changes.png",
+      "reference_sha256": "30869441b288fe04c7e3b4f0620780bc4a7586da1a170ba2baf3b2fdb0fe989a",
+      "native_runtime_verified": false
+    },
+    {
+      "number": "20",
+      "title": "产物预览",
+      "source": "Claudex/UI/LibrarySettingsViews.swift",
+      "view": "ArtifactPreviewView",
+      "actions": [
+        "预览/代码",
+        "禁脚本禁网络",
+        "下载",
+        "复制",
+        "分享",
+        "来源"
+      ],
+      "reference": "20-artifact-preview.png",
+      "reference_sha256": "bf1b1bfbc30f960cc4bab427442c33b9fdc44986d728e44af262639f05084508",
+      "native_runtime_verified": false
+    }
+  ],
+  "logo_sha256": "9586e41c5891d6bb949b3f1ad1ffe1041630af35a9d1499c50de0c9a942ce49d",
+  "native_build": "not run: Linux has no Apple SDK or Xcode",
+  "live_account_end_to_end": "not run",
+  "sample_data_in_production": false
+}

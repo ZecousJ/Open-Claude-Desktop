@@ -1,0 +1,189 @@
+/*
+ * Settings → Account → Active sessions. The table keeps Cowork local devices'
+ * header and 44px rows, the cells take the Settings rows' label and description
+ * colours, and rows are divided like Settings rows.
+ */
+.active-sessions {
+  padding-top: 8px;
+  overflow-x: auto;
+}
+/* The columns' smallest sizes add up to 648px; a narrower page scrolls
+   the table sideways rather than squeezing the dates. */
+.active-sessions table {
+  min-width: 648px;
+  table-layout: fixed;
+  margin-top: 0;
+}
+.active-sessions .col-device {
+  min-width: 160px;
+}
+.active-sessions .col-location {
+  width: 22%;
+  min-width: 100px;
+}
+.active-sessions .col-date {
+  width: 170px;
+}
+.active-sessions .col-actions {
+  width: 48px;
+}
+.active-sessions th,
+.active-sessions td {
+  padding-right: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.active-sessions th:last-child,
+.active-sessions td:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+.active-sessions tbody tr {
+  border-bottom: 1px solid #262626;
+}
+.active-sessions tbody tr:last-child {
+  border-bottom: 0;
+}
+/* Device in the label colour, the rest in the descriptions' (text-primary,
+   text-secondary). */
+.active-sessions .session-device {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.active-sessions .session-device > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.active-sessions td {
+  color: #908f8d;
+}
+/* "Current": the accent badge (bg-tint-blue / text-accent, 18px tall,
+   6px sides, 11px medium, corners a quarter of the height). */
+.active-sessions .session-current {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  background: rgb(0 36 81 / 75%);
+  color: #6da7ec;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+}
+/* Updated's header explains itself on hover (cursor-help). */
+.active-sessions .session-updated-head {
+  cursor: help;
+}
+/* The row's ⋮: hidden until the row is hovered or focused, or its menu is open. */
+.active-sessions .session-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #c7c7c5;
+  cursor: pointer;
+  opacity: 0;
+}
+.active-sessions tr:hover .session-more,
+.active-sessions .session-more:focus-visible,
+.active-sessions .session-more[aria-expanded="true"] {
+  opacity: 1;
+}
+.active-sessions .session-more:hover,
+.active-sessions .session-more[aria-expanded="true"] {
+  background: var(--surface-hover);
+}
+.active-sessions .session-more:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+@media (hover: none) {
+  .active-sessions .session-more {
+    opacity: 1;
+  }
+}
+/* Empty and error lines (text-muted; the error is text-body). */
+.active-sessions .session-empty {
+  padding: 12px 0;
+  text-align: center;
+  white-space: normal;
+}
+.active-sessions-error {
+  margin: 0;
+  padding-top: 8px;
+  color: #8d8c8a;
+}
+/* Pages: "Showing 1–10 of 14" on the left, ‹ Page 1 of 2 › on the right
+   (8px above and below, 4px between the buttons and the label). */
+.active-sessions-pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: #8d8c8a;
+}
+.active-sessions-pager > nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: #908f8d;
+  font-variant-numeric: tabular-nums;
+}
+.active-sessions-pager button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #c7c7c5;
+  cursor: pointer;
+}
+.active-sessions-pager button:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+.active-sessions-pager button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+:root[data-theme="light"] .active-sessions tbody tr {
+  border-color: #f2f2f2;
+}
+:root[data-theme="light"] .active-sessions .session-device > span:first-child {
+  color: #050505;
+}
+:root[data-theme="light"] .active-sessions td,
+:root[data-theme="light"] .active-sessions-pager > nav {
+  color: #807f7d;
+}
+:root[data-theme="light"] .active-sessions .session-current {
+  background: rgb(118 178 251 / 35%);
+  color: #184f95;
+}
+:root[data-theme="light"] .active-sessions .session-more,
+:root[data-theme="light"] .active-sessions-pager button {
+  color: #5e5d59;
+}
+:root[data-theme="light"] .active-sessions .session-more:hover,
+:root[data-theme="light"] .active-sessions .session-more[aria-expanded="true"],
+:root[data-theme="light"] .active-sessions-pager button:hover:not(:disabled) {
+  background: #ececea;
+}
+:root[data-theme="light"] .active-sessions-error,
+:root[data-theme="light"] .active-sessions-pager {
+  color: #807f7d;
+}

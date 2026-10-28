@@ -1,0 +1,116 @@
+/* Folder request card. */
+.cowork-access-floating {
+  position: fixed;
+  inset: auto 0 24px;
+  z-index: 300;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.cowork-access-dialog {
+  --folder-primary: #f0efec;
+  --folder-secondary: #c3c2b7;
+  --folder-muted: #898781;
+  --folder-border: rgb(255 255 255 / 10%);
+  --folder-border-strong: rgb(255 255 255 / 20%);
+  --folder-surface: #1a1a19;
+  --folder-shadow: 0 4px 8px 0 rgb(11 11 11 / 8%), 0 12px 28px -2px #0000003d;
+  box-sizing: border-box;
+  pointer-events: auto;
+  overflow: hidden;
+  width: 100%;
+  max-width: 672px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--folder-border);
+  border-radius: 10px;
+  background: var(--folder-surface);
+  box-shadow: var(--folder-shadow);
+  color: var(--folder-secondary);
+  font-size: 13px;
+  line-height: 19px;
+  text-align: start;
+}
+.cowork-access-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.cowork-access-content > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.cowork-access-description {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.cowork-access-path {
+  font-family: var(--font-mono, monospace);
+  color: var(--folder-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  unicode-bidi: bidi-override;
+}
+.cowork-access-dialog p {
+  margin: 0;
+}
+.cowork-access-dialog blockquote {
+  margin: 0;
+  border-inline-start: 2px solid var(--folder-border-strong);
+  padding-inline-start: 8px;
+  font-size: 12px;
+  line-height: 15px;
+  font-style: italic;
+  overflow-wrap: anywhere;
+  unicode-bidi: isolate;
+}
+.cowork-access-dialog .cowork-access-note {
+  color: var(--folder-muted);
+  font-size: 12px;
+  line-height: 15px;
+  margin-top: 4px;
+}
+.cowork-access-dialog .cowork-access-error {
+  color: var(--danger, #ec7e7e);
+}
+.cowork-access-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.cowork-access-dialog footer button {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--folder-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--folder-primary);
+  font: inherit;
+}
+.cowork-access-dialog footer .cowork-access-allow {
+  border-color: transparent;
+  background: var(--folder-primary);
+  color: var(--folder-surface);
+}
+.cowork-access-dialog button:disabled {
+  opacity: 0.4;
+}
+.cowork-access-dialog button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+:root[data-theme="light"] .cowork-access-dialog {
+  --folder-primary: #0b0b0b;
+  --folder-secondary: #52514e;
+  --folder-border: rgb(11 11 11 / 10%);
+  --folder-border-strong: rgb(11 11 11 / 20%);
+  --folder-surface: #fff;
+  --folder-shadow:
+    0 4px 8px 0 rgb(11 11 11 / 8%), 0 12px 28px -2px rgb(11 11 11 / 8%);
+}

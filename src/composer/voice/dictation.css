@@ -1,0 +1,135 @@
+.dictation-button {
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+  color: #f1f1f1;
+}
+.dictation-button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  border-radius: 7px;
+  background: transparent;
+  pointer-events: none;
+}
+/* Hovered, the original's alpha-2 step; the Cowork and Code groups keep their
+   captured faces (cowork-voice.css, code-composer-footer.css). */
+.dictation-button:hover::before,
+.dictation-button:focus-visible::before {
+  background: var(--alpha-2);
+}
+.dictation-button > svg {
+  transform: translateY(0.5px);
+}
+/* Above the button, 4px off it: side top, sideOffset 4. */
+.dictation-tooltip {
+  position: absolute;
+  z-index: 50;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translate(-50%, 3px);
+  padding: 1px 7px;
+  border: 1px solid #343434;
+  border-radius: 6px;
+  background: #1e1e1e;
+  box-shadow: 0 6px 15px #0005;
+  color: #e4e2df;
+  font:
+    13px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 35ms var(--ease-out),
+    transform 35ms var(--ease-out),
+    visibility 35ms;
+}
+.dictation-tooltip[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-duration: 50ms;
+}
+/* The microphone's hint opens above the button, 4px off: its Tooltip names no
+   side, so it takes the default "top". The voice-mode status chip keeps the
+   rule above. */
+.dictation-button > .dictation-tooltip {
+  top: auto;
+  bottom: calc(100% + 4px);
+  transform: translate(-50%, 3px);
+}
+.dictation-button > .dictation-tooltip[data-open="true"] {
+  transform: translate(-50%, 0);
+}
+/* Tooltip detail. */
+.dictation-tooltip-detail {
+  display: block;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--dictation-secondary);
+}
+/* Tooltip fades in over ~50ms and, after the 190ms hold, out within ~35ms. */
+@media (prefers-reduced-motion: reduce) {
+  .dictation-tooltip,
+  .dictation-button > .dictation-tooltip {
+    transition:
+      opacity 35ms var(--ease-out),
+      visibility 35ms;
+    transform: translate(-50%, 0);
+  }
+}
+:root[data-motion="reduced"] .dictation-tooltip,
+:root[data-motion="reduced"] .dictation-button > .dictation-tooltip {
+  transition:
+    opacity 35ms var(--ease-out),
+    visibility 35ms;
+  transform: translate(-50%, 0);
+}
+
+/* Recording toolbar and text-danger. */
+:root {
+  --dictation-danger: #ec7e7e;
+  --dictation-secondary: #c3c2b7;
+  --dictation-surface: #0b0b0b;
+  --dictation-hover: #111;
+}
+:root[data-theme="light"] {
+  --dictation-danger: #8e2626;
+  --dictation-secondary: #52514e;
+  --dictation-surface: #f9f9f7;
+  --dictation-hover: #f6f6f4;
+}
+:root .dictation-button.dictation-error > svg {
+  color: var(--dictation-danger);
+}
+/* Hidden until dictation runs; the footer's ".conversation-footer > div"
+   flex rule would otherwise keep it, and its gap pushed "+" 8px in. */
+.composer-dictation-target,
+.conversation-footer > .composer-dictation-target {
+  display: none;
+}
+.composer-wrap [data-dictating="true"] > :not(.composer-dictation-target) {
+  display: none;
+}
+.composer-wrap [data-dictating="true"] > .composer-dictation-target {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+.dictation-button::before {
+  transition: background-color var(--motion-base) var(--ease-standard);
+}
+.dictation-button {
+  transition:
+    var(--button-fill-transition),
+    color var(--motion-base) var(--ease-standard),
+    var(--press-release);
+}

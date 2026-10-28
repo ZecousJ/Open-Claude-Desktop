@@ -1,0 +1,161 @@
+@media (max-width: 1100px) {
+  .has-conversation .conversation-composer {
+    width: calc(100% - 48px);
+  }
+  .has-conversation .conversation-composer.code-composer {
+    width: calc(100% - 80px);
+  }
+  .chat-home {
+    width: min(640px, calc(100% - 48px));
+  }
+  .chat-home > h1 {
+    letter-spacing: -1px;
+  }
+  .work-panel,
+  .artifact-panel {
+    min-width: 280px;
+    flex-basis: 40%;
+  }
+  .chat-layout:has(> .artifact-panel) .conversation-composer,
+  .chat-layout:has(> .work-panel) .conversation-composer {
+    width: calc(100% - 28px);
+  }
+}
+@media (max-width: 900px) {
+  .chat-home > h1 {
+    gap: 5px;
+  }
+  .chat-home > h1 .star {
+    width: 32px;
+    height: 32px;
+  }
+  .chat-composer .model-button {
+    max-width: 145px;
+  }
+  .chat-composer .composer-right {
+    gap: 5px;
+  }
+  .chat-composer .composer-right > .mic-button {
+    margin-left: 0;
+  }
+}
+@media (max-height: 710px) {
+  .empty-chat {
+    padding: 0;
+  }
+  .chat-home {
+    padding-top: 26vh;
+  }
+  .code-home {
+    padding-top: 54px;
+  }
+}
+@media (min-width: 1500px) {
+  .empty-chat {
+    padding: 0;
+  }
+  .messages {
+    max-width: 818px;
+  }
+  .has-conversation .conversation-composer {
+    max-width: 770px;
+  }
+  /* Code's columns are the width chosen in Settings (768, 960 or 1280;
+     appearance.css), at any window width. */
+  .mode-code .messages,
+  .mode-code .has-conversation .conversation-composer {
+    max-width: none;
+  }
+}
+:root[data-theme="light"] .composer {
+  background: var(--surface);
+}
+:root[data-theme="light"] .chat-home > h1 {
+  color: var(--text-strong);
+}
+
+:root {
+  --hover: var(--surface-hover);
+  --muted: var(--text-muted);
+}
+.chat-composer .composer {
+  border-color: #393939;
+}
+
+.code-home {
+  padding-top: 52px;
+}
+.code-home h1 {
+  font-size: 22px;
+  margin-bottom: 45px;
+}
+.code-composer {
+  padding-bottom: 8px;
+}
+.has-conversation .code-composer {
+  padding-bottom: 8px;
+}
+/* The greeting and composer sit 31.3vh down. As the composer grows the block
+   moves up so the box stays in the window: R-0238 (W1164, 30 lines) has the
+   greeting at 93px where the empty page has it at 167px, while R-0218 (10 lines
+   in a 1158px window) shows nothing moving. Both follow from leaving 460px
+   (the block, 180px, and about 280px of room under the composer) and
+   taking the growth out of the space above, down to 78px. --composer-grow is
+   the textarea's height beyond one line (useComposerAutosize). */
+.chat-home {
+  padding-top: max(
+    78px,
+    min(calc(31.3vh - 5px), calc(100vh - 460px - var(--composer-grow, 0px)))
+  );
+}
+.chat-home > h1 {
+  letter-spacing: -0.5px;
+}
+/* The greeting's line box starts 25% of the window height plus 60px (48px
+   header, 12px margin) down; ours is 4.5px taller, so 57.5px. */
+@media (min-width: 1101px) and (min-height: 711px) {
+  .chat-main .chat-home {
+    padding-top: max(
+      78px,
+      min(calc(25vh + 57.5px), calc(100vh - 460px - var(--composer-grow, 0px)))
+    );
+  }
+  .chat-main .chat-home > h1 {
+    margin-bottom: 34px;
+  }
+  .chat-main .chat-home > h1 .star {
+    width: 36px;
+    height: 36px;
+  }
+}
+/* The toolbar inside the home composer measures the same at W1164, so these
+   follow the window down to 700px rather than the 1101px above. */
+@media (min-width: 700px) and (min-height: 711px) {
+  .chat-main .chat-home .composer-left .icon-button svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+@media (max-height: 710px) {
+  .chat-home {
+    padding-top: max(
+      78px,
+      min(calc(26vh - 5px), calc(100vh - 460px - var(--composer-grow, 0px)))
+    );
+  }
+}
+
+/* Optional local font faces are read from an existing Claude installation, never distributed. */
+:root[data-reference-fonts="true"] {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+:root[data-reference-fonts="true"] .chat-home > h1,
+:root[data-reference-fonts="true"] .customize-inner > h1,
+:root[data-reference-fonts="true"] .customize-feature h3 {
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  font-optical-sizing: auto;
+}
+:root[data-reference-fonts="true"] .chat-home > h1 {
+  letter-spacing: -1.5px;
+}

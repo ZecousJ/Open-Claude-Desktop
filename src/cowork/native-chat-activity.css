@@ -1,0 +1,55 @@
+/* Current native main Chat, R15 official-native-chat-activity.jpg: File18
+   toggle; a 20rem activity card below the header. Shared. The independent
+   embedded conversation and Code retain their own shells. */
+.app.host-desktop.mode-chat
+  .header-actions
+  .icon-button.session-activity-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+.app.host-desktop.mode-chat
+  .header-actions
+  .icon-button.session-activity-toggle.active {
+  background: var(--cds-fill-ghost-selected);
+  color: var(--text);
+}
+
+.app.host-desktop.mode-chat .session-activity-panel {
+  border-radius: 12px;
+  background: #1a1a19;
+  border: 1px solid rgb(255 255 255 / 10%);
+  color: var(--text-secondary);
+}
+
+@media (min-width: 640px) {
+  .app.host-desktop.mode-chat
+    .workspace:has(> .chat-layout > .session-activity-panel) {
+    --tool-panel-width: min(320px, calc(100% - 16px));
+  }
+  .app.host-desktop.mode-chat
+    .workspace
+    > .chat-layout
+    > .session-activity-panel {
+    top: 44px;
+    bottom: auto;
+    max-height: min(70%, 640px);
+  }
+  .app.host-desktop.mode-chat
+    .workspace:has(> .chat-layout > .session-activity-panel)
+    > .chat-header {
+    margin-right: 0;
+    padding-right: 12px;
+  }
+  .app.host-desktop.mode-chat
+    .workspace
+    > .chat-layout:has(> .session-activity-panel)
+    > .chat-main {
+    margin-right: calc(var(--tool-panel-width) + 16px);
+  }
+}
+
+:root[data-theme="light"] .app.host-desktop.mode-chat .session-activity-panel {
+  background: var(--surface);
+  border-color: var(--border);
+}

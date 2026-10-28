@@ -1,0 +1,8 @@
+/* inline-flex, Warning sm text-danger. */
+.web-fetch-error {
+  display: inline-flex;
+  color: #ec7e7e;
+}
+:root[data-theme="light"] .web-fetch-error {
+  color: #8e2626;
+}

@@ -1,0 +1,34 @@
+{
+  "t": "request",
+  "id": "r-5",
+  "op": "store.turns.put",
+  "userId": 7,
+  "body": {
+    "schema": 1,
+    "conversationId": "conv-1",
+    "branchId": null,
+    "turnId": "turn-2",
+    "ordinal": 1,
+    "turn": {
+      "id": "turn-2",
+      "responseGroupId": "rg-2",
+      "prompt": "Now draft a reply.",
+      "attachments": [],
+      "items": [
+        {
+          "id": "item-4",
+          "type": "commandExecution",
+          "command": "wc -l notes.txt",
+          "description": "Counts the lines of the notes",
+          "status": "inProgress",
+          "futureField": {
+            "kept": true
+          }
+        }
+      ],
+      "status": "inProgress",
+      "createdAt": 1790000060000,
+      "reconnecting": "2/5"
+    }
+  }
+}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" data-surface="web">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- As claude.ai: the layout shrinks with the on-screen keyboard (the
+         composer stays above it, the header stays in view) and reaches under
+         the notch and home bar, which the phone styles pad by the safe areas
+         (src/styles/95-web.css). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#151515" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- The Content-Security-Policy comes from the server (web plan §2 #15),
+         which gives each inline script its nonce. -->
+    <title>Claudex</title>
+    <style nonce="__CSP_NONCE_VALUE__">
+      html {
+        --boot-bg: #151515;
+        background: var(--boot-bg);
+      }
+      html[data-boot-surface] {
+        background: var(--boot-bg);
+      }
+      html[data-theme="light"] {
+        --boot-bg: #fcfcfb;
+      }
+      html[data-boot-surface="signin"] {
+        --boot-bg: #111111;
+      }
+      html[data-boot-surface="signin"][data-theme="light"] {
+        --boot-bg: #faf9f5;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+    <script nonce="__CSP_NONCE_VALUE__">
+      /* Restore this device's theme before scripts or styles can paint. */
+      (function () {
+        var root = document.documentElement;
+        var hints = {};
+        try {
+          hints =
+            JSON.parse(localStorage.getItem("claudex.boot") || "{}") || {};
+        } catch (e) {}
+        // A first visit follows the device until the account's own theme
+        // arrives (it flashed dark, then light, on a light phone).
+        var authRoute = /^\/(login|register|reset-password|sign-in)(\/|$)/.test(
+          location.pathname,
+        );
+        root.dataset.bootSurface =
+          authRoute || hints.signedIn !== true ? "signin" : "workspace";
+        var theme =
+          hints.theme === "dark" || hints.theme === "light"
+            ? hints.theme
+            : "system";
+        if (theme === "system")
+          theme = matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        if (theme === "dark" || theme === "light") root.dataset.theme = theme;
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute(
+            "content",
+            root.dataset.bootSurface === "signin"
+              ? theme === "light"
+                ? "#faf9f5"
+                : "#111111"
+              : theme === "light"
+                ? "#fcfcfb"
+                : "#151515",
+          );
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <!-- boot:start -->
+      <div class="boot-shell" aria-busy="true"></div>
+      <!-- boot:end -->
+    </div>
+    <script type="module" src="/src-web/main.tsx"></script>
+  </body>
+</html>

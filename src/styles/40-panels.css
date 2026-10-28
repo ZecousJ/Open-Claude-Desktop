@@ -1,0 +1,161 @@
+/* Artifact and execution panels */
+.artifact-panel,
+.work-panel {
+  flex: 0 0 43%;
+  min-width: 320px;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  background: var(--sidebar);
+  border-left: 1px solid var(--border);
+  min-height: 0;
+  overflow: hidden;
+}
+.artifact-panel > header,
+.work-panel > header {
+  height: 48px;
+  flex-shrink: 0;
+  padding: 0 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+.artifact-panel > header > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  font-size: 12px;
+}
+.artifact-panel > header > div > svg {
+  color: var(--text-muted);
+}
+.artifact-panel header strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+.work-panel > header strong {
+  font-size: 12px;
+}
+.artifact-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 13px;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.artifact-toolbar > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.segmented {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  gap: 2px;
+}
+.segmented button {
+  border-radius: 4px;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.segmented button:hover {
+  color: var(--text);
+}
+.segmented button.selected {
+  background: var(--surface-selected);
+  color: var(--text);
+  box-shadow: 0 1px 3px #0001;
+}
+.artifact-panel iframe {
+  width: 100%;
+  flex: 1;
+  background: #fff;
+  border: 0;
+  min-height: 0;
+}
+.artifact-source {
+  flex: 1;
+  overflow: auto;
+  padding: 15px 0;
+  min-height: 0;
+  font-size: 11px;
+}
+.artifact-source > div {
+  display: flex;
+  min-width: max-content;
+  padding: 0 18px 0 0;
+  line-height: 1.9;
+}
+.artifact-source > div:hover {
+  background: var(--surface);
+}
+.artifact-source > div > span {
+  width: 45px;
+  padding-right: 14px;
+  flex-shrink: 0;
+  text-align: right;
+  color: var(--text-muted);
+  user-select: none;
+  opacity: 0.6;
+}
+.artifact-source > div > code {
+  white-space: pre;
+  font-size: inherit;
+  color: var(--text-secondary);
+}
+.artifact-panel > footer {
+  padding: 9px 14px;
+  color: var(--text-muted);
+  font-size: 10px;
+  border-top: 1px solid var(--border);
+}
+.work-panel-content {
+  padding: 9px 12px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.work-panel-content .activity summary {
+  flex-wrap: wrap;
+}
+.work-panel-content .activity summary code {
+  flex-basis: calc(100% - 30px);
+  order: 4;
+  margin-left: 23px;
+}
+.work-panel-content .activity-body {
+  max-height: 500px;
+}
+.panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  color: var(--text-muted);
+  min-height: 240px;
+  padding: 30px;
+  text-align: center;
+}
+.panel-empty > svg {
+  opacity: 0.55;
+}
+.panel-empty p {
+  font-size: 12px;
+  margin-bottom: 0;
+  line-height: 1.8;
+}

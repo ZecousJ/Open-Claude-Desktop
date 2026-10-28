@@ -1,0 +1,245 @@
+/* border-0.5 rounded-xl; py-3 ps-3 pe-5; gap-2.5; text-body. */
+.artifact-version-share {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 19px;
+}
+.artifact-version-card {
+  display: flex;
+  flex-direction: column;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 12px;
+}
+.artifact-version-access {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px 12px 12px;
+}
+.artifact-version-access > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.artifact-version-access strong,
+.artifact-version-automatic strong {
+  font-weight: 500;
+}
+.artifact-version-share p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.artifact-version-card:has(.artifact-version-link) .artifact-version-access {
+  border-bottom: 0.5px solid var(--border-strong);
+}
+.artifact-version-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 0 16px;
+}
+.artifact-version-link > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  user-select: all;
+}
+.artifact-version-link > button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.artifact-version-selector {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  gap: 8px;
+  margin: 0 0 12px 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+.artifact-version-selector:hover {
+  background: var(--fill-ghost-hover);
+}
+.artifact-version-automatic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 12px 12px 12px 16px;
+}
+.artifact-version-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.artifact-version-actions:has(> .primary) {
+  margin-top: 12px;
+  justify-content: end;
+}
+/* flex-col gap-4; items-start gap-2; text-footnote text-muted. */
+.artifact-share-invite,
+.artifact-share-person {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+}
+.artifact-share-invite > input,
+.artifact-share-person > span {
+  min-width: 0;
+  flex: 1;
+}
+.artifact-share-people {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.artifact-share-people h3,
+.artifact-share-access-heading {
+  margin: 0;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+  color: #898781;
+}
+.artifact-people-share {
+  gap: 16px;
+}
+.artifact-share-footer {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+  border-top: 1px solid var(--border-strong);
+  padding-top: 12px;
+}
+.artifact-people-share .artifact-version-card {
+  border: 0;
+}
+/* Audience row and avatar. */
+.artifact-share-audience {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  margin-inline: -8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  text-align: start;
+}
+.artifact-share-audience:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.artifact-share-audience:disabled {
+  opacity: 0.6;
+}
+.artifact-share-avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 10%);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .artifact-share-avatar {
+  background: rgb(11 11 11 / 10%);
+}
+.artifact-share-audience-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  font-size: 13px;
+  line-height: 19px;
+}
+.artifact-share-audience-text small {
+  font-size: 11px;
+  line-height: 17px;
+  color: var(--text-secondary);
+}
+.artifact-share-footer > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.artifact-share-role,
+.artifact-share-notify,
+.artifact-share-message {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.artifact-share-role label,
+.artifact-share-notify span,
+.artifact-share-message {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+.artifact-share-role select,
+.artifact-share-person select,
+.artifact-share-message textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 0.5px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.artifact-share-notify small,
+.artifact-share-message small {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.artifact-share-message textarea {
+  min-height: 56px;
+  resize: vertical;
+}
+/* One row each, as the original's Notify people (a checkbox with its label)
+   and role choice: the page's label rules (blocks, full-width fields, 7px
+   above them) would put the checkbox across half the row and the role's
+   select on a line of its own. */
+.artifact-share-role {
+  align-items: center;
+}
+.artifact-share-role label {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.artifact-share-role select {
+  width: auto;
+  min-width: 140px;
+  margin-top: 0;
+}
+.artifact-share-notify > input[type="checkbox"] {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+}
+.artifact-share-notify span {
+  min-width: 0;
+  gap: 2px;
+}
+.artifact-share-notify strong {
+  font-weight: 500;
+}
+.artifact-share-message textarea {
+  margin-top: 0;
+}
+.artifact-share-message small {
+  margin-top: 0;
+  align-self: flex-end;
+}

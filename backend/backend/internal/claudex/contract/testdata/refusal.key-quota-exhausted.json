@@ -1,0 +1,21 @@
+{
+  "status": 429,
+  "body": {
+    "error": {
+      "message": "API key 额度已用完",
+      "type": "insufficient_quota",
+      "param": null,
+      "code": "insufficient_quota"
+    },
+    "claudex": {
+      "v": 1,
+      "reason": "KEY_QUOTA_EXHAUSTED",
+      "kind": "key_limit",
+      "limit_usd": 50,
+      "used_usd": 50,
+      "reprovision": false,
+      "action": "contact_admin",
+      "message": "This device has used its full quota. Contact your administrator."
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "order_id": 1024,
+    "status": "COMPLETED",
+    "provider": "stripe",
+    "amount": 20,
+    "pay_amount": 20.6,
+    "currency": "USD",
+    "expires_at": "2026-09-26T03:00:00Z",
+    "stripe": null,
+    "airwallex": null,
+    "result_path": "/payment/result?resume_token=eyJvcmRlcl9pZCI6MTAyNH0.c2lnbmF0dXJl"
+  }
+}

@@ -1,0 +1,303 @@
+/*
+ * The image lightbox (Lightbox.tsx), after the original's: the window under 80%
+ * black with a 40px blur; a close button at the top right over a fade; slides
+ * 75vw wide and 32px apart, the picture at most 70% of the height with 16px
+ * corners; neighbours at 40%, 70% on hover, 300ms; the pager centred 24px above
+ * the bottom. Its colours are the original's always-black and always-white, the
+ * same in both themes.
+ */
+.lightbox {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  outline: none;
+  background: rgb(0 0 0 / 80%);
+  backdrop-filter: blur(40px);
+  color: #fff;
+  -webkit-app-region: no-drag;
+  user-select: none;
+  /* Without a thumbnail to grow from: the backdrop fades in over 200ms and
+     the content scales up from 95% over 250ms (.lightbox-stage). */
+  animation: lightbox-fade-in 200ms ease-out;
+}
+.lightbox[data-state="closed"] {
+  pointer-events: none;
+  animation: lightbox-fade-out 200ms ease-out forwards;
+}
+.lightbox-top {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+  background: linear-gradient(
+    rgb(0 0 0 / 80%),
+    rgb(0 0 0 / 80%) 75%,
+    transparent
+  );
+  pointer-events: none;
+}
+.lightbox-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: rgb(255 255 255 / 70%);
+  pointer-events: auto;
+}
+.lightbox-close:hover {
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+}
+.lightbox-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: clip;
+  animation: lightbox-scale-in 250ms ease-out;
+}
+.lightbox-track {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  height: 100%;
+  transition: transform var(--motion-moderate, 300ms) var(--ease-out, ease-out);
+}
+.lightbox-slide {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 75vw;
+  height: 100%;
+}
+.lightbox-slide > img {
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  border-radius: 16px;
+  object-fit: contain;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity var(--motion-moderate, 300ms) var(--ease-out, ease-out);
+}
+.lightbox-slide:not([data-current]) > img:hover {
+  opacity: 0.7;
+}
+.lightbox-slide[data-current] > img {
+  opacity: 1;
+  cursor: zoom-in;
+  outline: none;
+}
+/* Zoomed: it rises over its neighbours, follows the pointer without a
+   transition, and takes touch for panning. */
+.lightbox-slide[data-current] > img[data-zoomed] {
+  position: relative;
+  z-index: 10;
+  cursor: zoom-out;
+  touch-action: none;
+  translate: 0 0 1px;
+}
+.lightbox-slide[data-current] > img:focus-visible {
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 70%);
+}
+/* A caption: bottom left on the pager's row, over a fade max(128px, 10vh) tall
+   from clear to 80% black at 66.41%; on narrow windows it sits centred just
+   above that row. */
+.lightbox-bottom-fade {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: max(128px, 10vh);
+  background: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 0%) 0%,
+    rgb(0 0 0 / 80%) 66.41%
+  );
+  pointer-events: none;
+}
+.lightbox-caption {
+  position: absolute;
+  z-index: 1;
+  bottom: 24px;
+  left: 24px;
+  display: block;
+  max-width: calc(50vw - 7rem);
+  overflow: hidden;
+  color: rgb(255 255 255 / 80%);
+  font-size: 14px;
+  line-height: 56px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@media (max-width: 639px) {
+  .lightbox-caption {
+    right: 24px;
+    bottom: 80px;
+    max-width: none;
+    line-height: 20px;
+    text-align: center;
+  }
+}
+.lightbox-pager {
+  position: absolute;
+  z-index: 1;
+  bottom: 24px;
+  left: 50%;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  height: 56px;
+  translate: -50% 0;
+}
+.lightbox-pager > button {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  color: #fff;
+}
+.lightbox-pager > button:hover:not([aria-disabled="true"]) {
+  background: rgb(255 255 255 / 10%);
+}
+.lightbox-pager > button[aria-disabled="true"] {
+  color: rgb(255 255 255 / 30%);
+  cursor: default;
+}
+.lightbox-pager > span {
+  padding: 0 8px;
+  color: rgb(255 255 255 / 80%);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+@keyframes lightbox-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes lightbox-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes lightbox-scale-in {
+  from {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+
+/*
+ * The morph from a thumbnail. Only the picture is named for the view
+ * transition; the rest of the window cross-fades in step with it (350ms
+ * open, 250ms close). The picture's box moves on the snap curve while its
+ * inset, corners and shadow go from the thumbnail's to the lightbox's.
+ * While it runs, the lightbox's own entrance is off: the transition draws it.
+ */
+.lightbox-morphing .lightbox,
+.lightbox-morphing .lightbox-stage {
+  animation: none;
+}
+.lightbox-morphing :not(html) {
+  view-transition-name: none;
+}
+.lightbox-morphing::view-transition-group(root) {
+  animation-duration: 350ms;
+}
+.lightbox-morphing.lightbox-morph-closing::view-transition-group(root) {
+  animation-duration: 250ms;
+}
+::view-transition-group(lightbox-image) {
+  animation-duration: 350ms;
+  animation-timing-function: var(--ease-snap, cubic-bezier(0.32, 0.72, 0, 1));
+}
+.lightbox-morph-closing::view-transition-group(lightbox-image) {
+  animation-duration: 250ms;
+}
+::view-transition-image-pair(lightbox-image) {
+  isolation: auto;
+  overflow: clip;
+  animation: lightbox-morph-grow 350ms
+    var(--ease-snap, cubic-bezier(0.32, 0.72, 0, 1)) both;
+}
+.lightbox-morph-closing::view-transition-image-pair(lightbox-image) {
+  animation-name: lightbox-morph-shrink;
+  animation-duration: 250ms;
+}
+::view-transition-old(lightbox-image),
+::view-transition-new(lightbox-image) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: normal;
+  animation: none;
+}
+/* Opening shows the full picture throughout, closing the thumbnail. */
+:root:not(.lightbox-morph-closing)::view-transition-old(lightbox-image),
+.lightbox-morph-closing::view-transition-new(lightbox-image) {
+  display: none;
+}
+@keyframes lightbox-morph-grow {
+  from {
+    inset: var(--lightbox-source-inset, 0%);
+    border-radius: var(--lightbox-source-radius, 8px);
+    box-shadow:
+      0 4px 32px rgb(0 0 0 / 0%),
+      0 0 0 0.5px rgb(0 0 0 / 0%);
+  }
+  to {
+    inset: 0%;
+    border-radius: 16px;
+    box-shadow:
+      0 4px 32px rgb(0 0 0 / 30%),
+      0 0 0 0.5px rgb(0 0 0 / 25%);
+  }
+}
+@keyframes lightbox-morph-shrink {
+  from {
+    inset: 0%;
+    border-radius: 16px;
+    box-shadow:
+      0 4px 32px rgb(0 0 0 / 30%),
+      0 0 0 0.5px rgb(0 0 0 / 25%);
+  }
+  to {
+    inset: var(--lightbox-source-inset, 0%);
+    border-radius: var(--lightbox-source-radius, 8px);
+    box-shadow:
+      0 4px 32px rgb(0 0 0 / 0%),
+      0 0 0 0.5px rgb(0 0 0 / 0%);
+  }
+}
+
+/* Reduced motion: no morph (Lightbox.tsx skips it), no slide or scale; the
+   fades stay. */
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-track {
+    transition: none;
+  }
+  .lightbox-stage {
+    animation-name: lightbox-fade-in;
+  }
+}
+:root[data-motion="reduced"] .lightbox-track {
+  transition: none;
+}
+:root[data-motion="reduced"] .lightbox-stage {
+  animation-name: lightbox-fade-in;
+}
+
+/* A loaded picture in a reply opens the lightbox (ui/MarkdownImage.tsx). */
+img.markdown-image:not(a img) {
+  cursor: zoom-in;
+}

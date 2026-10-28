@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  English catalogue. Claudex-only strings use the prefix claudex_; "reworded" marks copy changed from an earlier
+  wording. Every key has a Chinese translation in values-zh-rCN/strings.xml; Chinese is what the app shows by
+  default (MainActivity.attachBaseContext). Copy conventions: … not ..., typographic quotes, sentence case.
+-->
+<resources>
+    <!-- S22 generic -->
+    <string name="generic_button_cancel">Cancel</string>
+    <string name="generic_button_close">Close</string>
+    <string name="generic_button_content_description_dismiss">Dismiss</string>
+    <string name="generic_button_continue">Continue</string>
+    <string name="generic_button_delete">Delete</string>
+    <string name="generic_button_done">Done</string>
+    <string name="generic_button_more_options">More options</string>
+    <string name="generic_button_open_menu">Open menu</string>
+    <string name="generic_button_open_menu_new_feature">Open menu, new feature available</string>
+    <string name="generic_button_okay">Okay</string>
+    <string name="generic_back_button_content_description">Go back</string>
+    <string name="generic_search">Search</string>
+    <string name="generic_search_clear">Clear</string>
+    <string name="generic_search_close">Close search</string>
+    <string name="generic_untitled">Untitled</string>
+    <string name="generic_error_title">Error</string>
+    <string name="generic_error_something_went_wrong">Something went wrong</string>
+    <string name="generic_error_something_went_wrong_try_again">Something went wrong. Please try again.</string>
+    <string name="generic_error_internet_offline">The Internet connection appears to be offline.</string>
+    <string name="error_unknown">An error has occurred. Please try again.</string>
+    <string name="chat_access_check_in_progress">Loading</string>
+    <string name="chat_response_try_again">Try again</string>
+    <string name="sheet_grabber_description">Drag handle</string>
+    <string name="close_sheet">Close sheet</string>
+    <string name="title_settings">Settings</string>
+
+    <!-- S03 navigation drawer, chat list -->
+    <string name="navigation_menu">Navigation menu</string>
+    <string name="close_drawer">Close navigation menu</string>
+    <string name="nav_drawer_item_chats">Chats</string>
+    <string name="nav_drawer_section_header_projects">Projects</string>
+    <string name="nav_drawer_item_code">Code</string>
+    <string name="product_name_artifacts">Artifacts</string>
+    <string name="nav_drawer_item_scheduled">Scheduled</string>
+    <string name="nav_drawer_item_dramatic_shrimp">Cowork</string>
+    <string name="nav_drawer_badge_new">New</string>
+    <string name="nav_drawer_pinned_show_less">Show less</string>
+    <plurals name="nav_drawer_pinned_show_all">
+        <item quantity="one">Show all %1$d</item>
+        <item quantity="other">Show all %1$d</item>
+    </plurals>
+    <string name="nav_drawer_code_session_row_description">%1$s, Code</string>
+    <string name="nav_drawer_cowork_session_row_description">%1$s, Cowork</string>
+    <string name="section_header_pinned">Pinned</string>
+    <string name="section_header_recents">Recents</string>
+    <string name="recency_today">Today</string>
+    <string name="recency_yesterday">Yesterday</string>
+    <string name="recency_this_week">This week</string>
+    <string name="recency_last_week">Last week</string>
+    <string name="recency_this_month">This month</string>
+    <string name="recency_last_month">Last month</string>
+    <string name="recency_this_year">This year</string>
+    <string name="recency_older">Older</string>
+    <string name="account_options_button_description">Account options for %1$s</string>
+    <string name="user_avatar_default_content_description">User</string>
+    <string name="user_avatar_settings_content_description">%1$s, Settings</string>
+    <string name="chat_list_screen_title">Chats</string>
+    <string name="chats_filter_all">All</string>
+    <string name="chats_filter_starred">Pinned</string>
+    <string name="chats_filter_archived">Archived</string>
+    <string name="conversation_search">Conversation search</string>
+    <!-- reworded: "Ask Claude anything. Your chats with Claude will show up here." -->
+    <string name="empty_state_chat_title">Ask anything. Your chats will show up here.</string>
+    <string name="empty_state_chat_starred_title">Nothing pinned yet. Anything you pin will show up here.</string>
+    <string name="empty_state_chat_archived_title">Nothing archived yet. Anything you archive will show up here.</string>
+    <string name="empty_state_search_title">No results found for\n“%s”</string>
+
+    <!-- S08 chat menu -->
+    <string name="chat_new_chat">New chat</string>
+    <string name="chat_menu_rename">Rename</string>
+    <string name="chat_menu_rename_dialog_title">Rename</string>
+    <string name="chat_star">Pin</string>
+    <string name="chat_unstar">Unpin</string>
+    <string name="chat_menu_delete">Delete</string>
+    <string name="chat_menu_delete_conversation_dialog_title">Delete chat?</string>
+    <string name="delete_dialog_default_subtitle">This can’t be undone.</string>
+    <string name="claudex_chat_menu_archive">Archive</string>
+    <string name="claudex_chat_menu_unarchive">Unarchive</string>
+    <string name="claudex_chat_menu_share">Share</string>
+
+    <!-- S04 home -->
+    <string name="chat_headline_today">How can I help you today?</string>
+    <!-- ^1 = project name, coloured claudeClay in code -->
+    <string name="chat_headline_project">How can I help with ^1?</string>
+    <!-- reworded: "Claude is AI and can make mistakes." -->
+    <string name="conversation_disclaimer_1">Claudex is AI and can make mistakes.</string>
+
+    <!-- S01 login -->
+    <string name="animated_login_welcome_title">The AI for problem solvers</string>
+    <string name="login_welcome_email_placeholder">Enter your email</string>
+    <string name="login_welcome_email_error_invalid_email">Please enter a valid email address</string>
+    <string name="login_welcome_continue_with_email_button">Continue with email</string>
+    <string name="login_welcome_session_expired_error">Your session has expired.\nPlease log in again.</string>
+    <string name="login_sign_in_again_title">Sign in again</string>
+    <string name="login_magic_link_enter_code">Enter the code we sent to your email</string>
+    <string name="login_magic_link_code_placeholder">Code</string>
+    <!-- ^1 = email, bold -->
+    <string name="login_magic_link_sent_to">We sent an email to\n^1</string>
+    <string name="login_magic_link_change_email_button">Change email address</string>
+    <string name="login_magic_link_incorrect_code">Incorrect code</string>
+    <string name="claudex_login_password_placeholder">Enter your password</string>
+    <string name="claudex_login_create_account">Don’t have an account? Create one</string>
+    <string name="claudex_login_two_factor_prompt">Enter the 6-digit code from your authenticator app</string>
+    <string name="claudex_login_code_a11y">6-digit code</string>
+    <string name="claudex_login_set_password_placeholder">Set a password (at least 8 characters)</string>
+    <string name="claudex_login_verify_button">Verify</string>
+    <string name="claudex_login_resend_code">Resend code</string>
+    <string name="claudex_login_resend_in">Resend in %1$d s</string>
+    <string name="claudex_login_back_to_sign_in">Back to sign in</string>
+    <string name="claudex_login_continue_with_email_a11y">Continue with Email</string>
+    <string name="claudex_demo_continue">Continue to the local demo</string>
+    <string name="claudex_demo_notice">Local demo. No email or password is collected.</string>
+    <string name="claudex_mark_description">Claudex</string>
+</resources>

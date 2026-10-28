@@ -1,0 +1,252 @@
+/*
+ * Chat and Cowork's queued messages in the composer's dock: the live claude.ai
+ * bundle's ChatComposerQueuedMessages. Values are the bundle's Tailwind classes
+ * at the comfortable density claude.ai draws Chat in: a list `-my-1 py-1
+ * gap-xs` (8px between rows) that scrolls past min(40vh, 22rem), rows
+ * right-aligned; the bubble is Claudex's own Chat prompt bubble
+ * (chat-transcript.css: 12px radius, 12px 16px, 15/20) with the queued
+ * message's muted text (`rJ.queued: text-muted`). The actions are 24px ghost
+ * icon buttons (h-control--xs), 6px (ps-xs / pe-xs) from the bubble,
+ * bottom-aligned in a band as tall as one line of the bubble (pad-md * 2 + the
+ * line). They show as a message's actions do (chat-transcript.css --reveal-*):
+ * after the pointer rests 100ms, in over 120ms, out over 60ms; at once with
+ * focus inside; always on a touch screen. Loaded with the first queued message.
+ */
+.chat-queued {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+  outline: none;
+}
+.chat-queued-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-height: min(40vh, 22rem);
+  margin: -4px 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.chat-queued-row {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  transition:
+    opacity var(--motion-snap) var(--ease-out),
+    translate var(--motion-snap) var(--ease-out);
+}
+/* A message rises 6px into place as it joins and sinks back out as it
+   leaves, 120ms each (the band's enter and exit). */
+@starting-style {
+  .chat-queued-row {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+.chat-queued-row[data-exiting] {
+  pointer-events: none;
+  animation: chat-queued-exit var(--motion-snap) var(--ease-out) forwards;
+}
+@keyframes chat-queued-exit {
+  to {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+.chat-queued-message {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+  max-width: 85%;
+}
+/* With the actions at the bubble's left the row keeps room for them there,
+   yielding up to 15% of the row to a long message. */
+.chat-queued-message[data-reserve] {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-inline-start: max(
+    0px,
+    calc(
+      (var(--queued-reserve) - var(--queued-yield) * 100%) /
+        (1 - var(--queued-yield))
+    )
+  );
+}
+.chat-queued-bubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #222;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+:root[data-theme="light"] .chat-queued-bubble {
+  background: #f0f0f0;
+}
+.chat-queued-text {
+  align-self: stretch;
+  white-space: pre-wrap;
+}
+.chat-queued-bubble > .message-attachments {
+  margin: 0;
+}
+
+.chat-queued-actions {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  color: var(--text-muted);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--reveal-out) var(--ease-snap),
+    visibility 0s linear var(--reveal-out);
+}
+.chat-queued-actions[data-side="end"] {
+  left: 100%;
+  padding-inline-start: 6px;
+}
+.chat-queued-actions[data-side="inside"] {
+  right: 100%;
+  padding-inline-end: 6px;
+}
+.chat-queued-actions[data-side="start"] {
+  left: 8px;
+}
+.chat-queued-row:hover .chat-queued-actions {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--reveal-in) var(--ease-snap) var(--reveal-wait),
+    visibility 0s linear var(--reveal-wait);
+}
+.chat-queued-row:focus-within .chat-queued-actions,
+.chat-queued-actions[data-sent],
+.chat-queued-actions:has([aria-busy="true"]) {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--reveal-in) var(--ease-snap),
+    visibility 0s;
+}
+@media (hover: none), (pointer: coarse) {
+  .chat-queued-actions {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+.chat-queued-action {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+}
+@media (hover: hover) {
+  .chat-queued-action:hover:not([aria-disabled="true"]) {
+    background: var(--fill-ghost-hover);
+    color: var(--text);
+  }
+}
+.chat-queued-action[aria-busy="true"] {
+  cursor: progress;
+}
+.chat-queued-action[aria-busy="true"] > svg {
+  opacity: 0;
+}
+/* A busy Send now keeps its place and spins. */
+.chat-queued-spinner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+.chat-queued-spinner > span:first-child {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+.chat-queued-spinner > span:first-child::before,
+.chat-queued-spinner > span:first-child::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.chat-queued-spinner > span:first-child::before {
+  border: 1.5px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+.chat-queued-spinner > span:first-child::after {
+  background: conic-gradient(transparent 40%, currentColor);
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 1.5px),
+    #000 calc(100% - 1px)
+  );
+  animation: spin 1s linear infinite;
+}
+/* "✓ Sent": the check drawn in from the left. */
+.chat-queued-sent {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.chat-queued-sent > span {
+  display: inline-flex;
+  animation: chat-queued-check 180ms var(--ease-out) both;
+}
+@keyframes chat-queued-check {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-queued-row {
+    transition: none;
+  }
+  .chat-queued-row[data-exiting],
+  .chat-queued-sent > span,
+  .chat-queued-spinner > span:first-child::after {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .chat-queued-row {
+  transition: none;
+}
+:root[data-motion="reduced"]
+  :is(
+    .chat-queued-row[data-exiting],
+    .chat-queued-sent > span,
+    .chat-queued-spinner > span:first-child::after
+  ) {
+  animation: none;
+}

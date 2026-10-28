@@ -1,0 +1,1 @@
+import{n as e}from"./i18n-AhzdNqK0.js";import{t}from"./jsx-runtime-NZYk81nU.js";import{dt as n,ft as r}from"./index-C_yTkybZ.js";var i=t();function a({model:t}){let a=r();return(0,i.jsx)(`p`,{className:`model-switch-note`,role:`status`,children:e(`Switched to {toName}`,{toName:n(a,t)})})}export{a as ModelSwitchNote};

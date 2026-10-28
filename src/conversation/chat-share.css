@@ -1,0 +1,611 @@
+/*
+ * Share chat popover (src/ChatSharePopover.tsx), measured on live claude.ai:
+ * 480px wide, 12px corners, 11px from the right edge and 46px from the top.
+ * Title 15/20 weight 580 at 20px in and 16 down with a 28px close button at
+ * 12px; the note under it 13/17 muted; the invite field 32px high from 28px in
+ * with a 61px Invite button; "Who has access" 13/17 muted; the access row
+ * 456×44 with a 20px icon and 14px weight-500 text; the owner row a 32px
+ * avatar, 14/20 name, 12/17 email and "Owner" on the right; the usage note
+ * 12/17 muted; a 32px settings button and a 106×32 Copy link filled with the
+ * primary ink. The surface is ringed by a 1px shadow (outside in light, inset
+ * in dark), not a border; Invite, the settings button and Back are filled
+ * chips; the access icon sits in a 32px round chip; a hairline runs above the
+ * actions; the settings view has Back and Save at its foot.
+ */
+.chat-share {
+  position: fixed;
+  top: 46px;
+  right: 12px;
+  z-index: 70;
+  box-sizing: border-box;
+  width: 480px;
+  max-width: calc(100vw - 24px);
+  padding: 0 0 16px;
+  border-radius: 12px;
+  /* The panel takes focus when it opens but draws no ring. */
+  outline: none;
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow:
+    0 0 0 1px var(--border),
+    var(--shadow);
+  font-size: 14px;
+  line-height: 20px;
+}
+.chat-share > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 20px;
+  margin: 16px 20px 0;
+}
+.chat-share h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 580;
+  line-height: 20px;
+  color: var(--text);
+}
+.chat-share-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin-right: -8px;
+  border-radius: 7px;
+  color: var(--text);
+}
+.chat-share-icon:hover {
+  background: var(--fill-ghost-hover);
+}
+.chat-share-icon.settings {
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  border-radius: 8px;
+}
+.chat-share-icon.back {
+  margin: 0 -4px 0 -6px;
+}
+.chat-share > header:has(.back) {
+  justify-content: flex-start;
+}
+.chat-share-sub {
+  margin: 6px 20px 0;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.chat-share-invite {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 32px;
+  margin: 16px 20px 0;
+}
+.share-recipient-field {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 32px;
+  box-sizing: border-box;
+  /* Source member-adder Nr: ps-sm pe-1; R18 measured 8px / 4px. */
+  padding: 0 4px 0 8px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 50%);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+:root:not([data-theme="light"]) .share-recipient-field {
+  background: rgb(255 255 255 / 5%);
+}
+.share-recipient-field:focus-within {
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.share-recipient-input-row {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 0;
+}
+.share-recipient-input-row > input {
+  flex: 1;
+  min-width: 40px;
+  width: 0;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.share-recipient-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgb(from var(--text) r g b / 10%);
+  font-size: 12px;
+  line-height: 20px;
+}
+.share-recipient-chip > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.share-recipient-chip button {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  color: inherit;
+}
+.share-recipient-options {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 8px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--border),
+    var(--shadow);
+}
+.share-recipient-options > li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+.share-recipient-option-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgb(from var(--text) r g b / 10%);
+  color: var(--text-secondary);
+}
+.share-recipient-option-text {
+  flex: 1;
+  min-width: 0;
+}
+.share-recipient-option-hint {
+  flex: none;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.share-recipient-options > li[aria-selected="true"] {
+  background: var(--fill-ghost-hover);
+  cursor: pointer;
+}
+.share-recipient-options > li[aria-disabled] {
+  color: var(--text-muted);
+}
+.share-recipient-error {
+  flex-basis: 100%;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 17px;
+}
+.chat-share-retry {
+  margin: 8px 20px 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--fill-ghost-hover);
+  color: var(--text);
+}
+.chat-share-loading {
+  position: relative;
+  padding: 16px 20px 0;
+}
+.chat-share-loading i {
+  display: block;
+  border-radius: 4px;
+}
+.chat-share-loading-invite {
+  display: flex;
+  gap: 8px;
+  height: 32px;
+}
+.chat-share-loading-invite > i:first-child {
+  flex: 1;
+}
+.chat-share-loading-invite > i:last-child {
+  width: 72px;
+}
+.chat-share-loading-label {
+  width: 96px;
+  height: 13px;
+  margin: 16px 0 8px;
+}
+.chat-share-loading-access {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+}
+.chat-share-loading-access > i:first-child,
+.chat-share-loading-person > i {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.chat-share-loading-access > i:last-child {
+  width: 144px;
+  height: 14px;
+}
+.chat-share-loading-person {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+.chat-share-loading-person > span {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 3px 0;
+}
+.chat-share-loading-person > span > i {
+  width: 160px;
+  height: 12px;
+}
+.chat-share-loading-person > span > i:last-child {
+  width: 120px;
+}
+.chat-share-loading-note {
+  margin-top: 22px;
+}
+.chat-share-loading-note > i {
+  height: 12px;
+  width: 96%;
+}
+.chat-share-loading-note > i:last-child {
+  width: 22%;
+  margin-top: 5px;
+}
+.chat-share-loading-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--border);
+}
+.chat-share-loading-actions > i {
+  width: 32px;
+  height: 32px;
+}
+.chat-share-loading-actions > i:last-child {
+  width: 112px;
+}
+.chat-share-invite > input {
+  align-self: stretch;
+  height: auto;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 50%);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.chat-share-invite[data-off] {
+  opacity: 0.6;
+}
+.chat-share-invite > input:focus {
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+:root:not([data-theme="light"]) .chat-share-invite > input {
+  background: rgb(255 255 255 / 5%);
+}
+.chat-share-invite > input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text);
+}
+.chat-share-invite > button:disabled {
+  opacity: 0.5;
+}
+.chat-share-invite > button,
+.chat-share-icon.settings,
+.chat-share-secondary {
+  background: rgb(255 255 255 / 10%);
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    0 1px 2px rgb(0 0 0 / 5%);
+}
+:root:not([data-theme="light"])
+  :is(
+    .chat-share-invite > button,
+    .chat-share-icon.settings,
+    .chat-share-secondary
+  ) {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+}
+.chat-share-invite > button {
+  flex: none;
+  /* O16 ca31:909 uses the shared secondary Button's natural label width.
+     The measured English 60.664px is not a fixed width in other locales. */
+  width: auto;
+  padding: 0 12px;
+  white-space: nowrap;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+.chat-share-secondary {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+.chat-share-label {
+  margin: 16px 20px 4px;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.chat-share-label.settings {
+  margin-top: 20px;
+}
+.chat-share-access,
+.chat-share-select {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  color: var(--text);
+}
+.chat-share-access {
+  gap: 12px;
+  width: calc(100% - 24px);
+  height: 44px;
+  margin: 0 12px;
+  padding: 0 8px;
+  font-weight: 500;
+}
+.chat-share-access-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgb(from var(--text) r g b / 10%);
+  color: var(--text-secondary);
+}
+.chat-share-access:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+/* The settings view's choice: a filled 32px chip across the popover. */
+.chat-share-select {
+  gap: 4px;
+  width: calc(100% - 40px);
+  height: 32px;
+  margin: 8px 20px 0;
+  padding: 0 12px 0 8px;
+  background: rgb(from var(--text) r g b / 10%);
+  font-weight: 400;
+}
+.chat-share-select > svg:first-child {
+  flex: none;
+}
+.chat-share-access > span:not(.chat-share-access-icon),
+.chat-share-select > span {
+  flex: 1;
+  min-width: 0;
+}
+.chat-share-chevron {
+  flex: none;
+  color: var(--text-muted);
+}
+.chat-share-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 20px 0;
+}
+.chat-share-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgb(from var(--text) r g b / 10%);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 17px;
+}
+.chat-share-who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.chat-share-who em {
+  color: var(--text-muted);
+  font-style: normal;
+}
+.chat-share-who small {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.chat-share-role {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.chat-share-note {
+  margin: 22px 20px 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.chat-share-note a {
+  color: #184f95;
+  text-decoration: underline;
+  text-decoration-color: rgb(24 79 149 / 40%);
+  border-radius: 2px;
+}
+:root:not([data-theme="light"]) .chat-share-note a {
+  color: #80a8e0;
+}
+.chat-share-stale {
+  margin: 12px 20px 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.chat-share-stale button {
+  padding: 0;
+  color: #184f95;
+  text-decoration: underline;
+}
+.chat-share-error {
+  margin: 12px 20px 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--danger);
+}
+.chat-share-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 16px 20px 0;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--border);
+}
+.chat-share-actions.settings {
+  margin-top: 20px;
+  padding-top: 0;
+  border-top: 0;
+}
+.chat-share-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.chat-share-copy:disabled {
+  opacity: 0.5;
+}
+.chat-share-confirm {
+  margin: 12px 20px 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.chat-share-confirm > p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.chat-share-confirm > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.chat-share-confirm button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  border: 1px solid var(--border-strong);
+}
+.chat-share-confirm button.primary {
+  border: 0;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-weight: 500;
+}
+.chat-share-icon.remove {
+  width: 24px;
+  height: 24px;
+  margin-right: -6px;
+  color: var(--text-muted);
+}
+.chat-share-notice {
+  margin: 10px 20px 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+
+/* The web's own inks for the popover. Light: a white surface ringed at 10% of
+   #0a0a0a outside, 0 8 24 at 12% and 0 2 6 at 8%, Copy link #0b0b0b on white.
+   Dark: #20201f ringed by white at 10% inside, 0 8 24 at 32% and 0 2 6 at 20%;
+   text #f0efec, muted #898781, the access icon #c3c2b7, Copy link white with
+   #0b0b0b ink, the policy link #6da7ec. */
+:root[data-surface="web"] .chat-share {
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(10 10 10 / 10%),
+    0 8px 24px rgb(0 0 0 / 12%),
+    0 2px 6px rgb(0 0 0 / 8%);
+}
+:root[data-surface="web"] .chat-share-copy {
+  background: #0b0b0b;
+  color: #fff;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .chat-share {
+  --text: #f0efec;
+  --text-muted: #898781;
+  --text-secondary: #c3c2b7;
+  --border: rgb(255 255 255 / 10%);
+  background: #20201f;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 8px 24px rgb(0 0 0 / 32%),
+    0 2px 6px rgb(0 0 0 / 20%);
+}
+:root[data-surface="web"]:not([data-theme="light"]) .chat-share-copy {
+  background: #fff;
+  color: #0b0b0b;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .chat-share-note a {
+  color: #6da7ec;
+}
+:root[data-surface="web"]:not([data-theme="light"]) .chat-share-access-icon,
+:root[data-surface="web"]:not([data-theme="light"]) .chat-share-avatar,
+:root[data-surface="web"]:not([data-theme="light"]) .chat-share-select {
+  background: rgb(255 255 255 / 10%);
+}

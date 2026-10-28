@@ -1,0 +1,726 @@
+/* A turn's layout: reply space, toolbar buttons, the prompt editor, reasoning groups, artifacts comments, connection notices. (part of chat-transcript.css) */
+.mode-chat .messages-scroll {
+  overflow-anchor: none;
+}
+
+/* Same-size, Actual Size reference has a 4px content-center offset. */
+.sidebar-hidden.mode-chat .chat-layout {
+  padding-left: 8px;
+}
+/* The same 4px holds with the sidebar docked, for the transcript column and
+   the composer but not the title bar: R-0430 code block 153-1633 px in a main
+   area 35-1728 (2.629 px/CSS) is centred 4.4px right of the middle, and the
+   W969 R-0546 composer sits 27.3px from the sidebar and 19.8px from the
+   window edge. The column keeps its width: the padding moves from the right
+   to the left. */
+.mode-chat:not(.sidebar-hidden) .messages {
+  padding-left: 33.2px;
+  padding-right: 24.8px;
+}
+.mode-chat:not(.sidebar-hidden) .has-conversation > .chat-composer {
+  translate: 4.2px 0;
+}
+
+/* Reply action feedback measured at Actual Size; motion curve remains provisional. */
+.small-action.icon-only {
+  position: relative;
+}
+.copy-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  z-index: 30;
+  /* The chrome tooltip's look (ui/tooltip.css): tooltip-bg #20201f, no border,
+     shadow-panel-sm, 24px tall with 3px above and below a 13/18 label. */
+  box-sizing: border-box;
+  height: 24px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #20201f;
+  color: #f0efec;
+  white-space: nowrap;
+  pointer-events: none;
+  font:
+    13px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  opacity: 0;
+  visibility: hidden;
+  /* Fades and grows from 98% over 120ms on the snap curve, in and out, from the
+     side facing the button, as the chrome tooltip does. Reduced motion: at
+     once. */
+  scale: 0.98;
+  transform-origin: 50% 100%;
+  transition:
+    opacity var(--reveal-in) var(--ease-snap),
+    scale var(--reveal-in) var(--ease-snap),
+    visibility 0s linear var(--reveal-in);
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 1px 2px #0b0b0b0f,
+    0 2px 8px #0000003d;
+}
+.copy-tooltip[data-open="true"] {
+  opacity: 1;
+  scale: 1;
+  visibility: visible;
+  transition:
+    opacity var(--reveal-in) var(--ease-snap),
+    scale var(--reveal-in) var(--ease-snap),
+    visibility 0s;
+}
+/* An unopened browser hint must not contribute an offscreen scroll box. */
+.app.web:not(.mobile-conversation) .copy-tooltip:not([data-open="true"]) {
+  display: none;
+}
+.copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* reply-hover-003: highlight completes within ~58ms; tooltip starts ~392ms after entry. */
+.mode-chat .message-actions .small-action {
+  transition:
+    background-color 55ms var(--ease-out),
+    color 55ms var(--ease-out),
+    var(--press-release);
+}
+/* The ghost fills (00-foundation.css): measured #292928 / #343432 on the
+   dark page, the same steps over any surface. */
+.mode-chat .message-actions .small-action:hover {
+  background: var(--fill-ghost-hover);
+  color: #deddd9;
+}
+.mode-chat .message-actions .small-action:active {
+  background: var(--fill-ghost-selected);
+}
+/* Every toolbar button (a reply's, a prompt's, in all three modes) presses like
+   the original's ghost icon button over 60ms and springs back
+   (--press-release). The reference design no longer shrinks every button to
+   97.5%: a button pulls in by a fixed inset per side, its height / 32 held to
+   0.5-1.5px (no smaller than 80%), so a 24px toolbar button presses to 1 - 2 x
+   0.75 / 24 = 93.75%. Written against --press-scale (0.975) so reduced motion
+   (1) still means no scale. */
+:is(.message-actions, .user-message-actions)
+  .small-action:not(:disabled, [aria-disabled="true"]):active {
+  scale: calc(1 - (1 - var(--press-scale)) * 2.5);
+  transition:
+    background-color 55ms var(--ease-out),
+    color 55ms var(--ease-out),
+    scale var(--motion-fast) ease-out;
+}
+/* The web surface sets the buttons' resting ink with more weight than the
+   hover rules above, so a hovered button never brightened there: the hover
+   ink, the original's text-primary on a toolbar button that is not pressed
+   (a rating already chosen keeps its ink, below). */
+:root[data-surface="web"]
+  :is(.message-actions, .user-message-actions)
+  .small-action:hover:not([aria-pressed="true"], :disabled) {
+  color: #deddd9;
+}
+:root[data-surface="web"][data-theme="light"]
+  :is(.message-actions, .user-message-actions)
+  .small-action:hover:not([aria-pressed="true"], :disabled) {
+  color: var(--text);
+}
+/* Both filled thumbs use ghost selected, not legacy accent/danger ink. */
+:root
+  :is(.mode-chat, .mode-cowork)
+  .message-actions
+  .small-action.reply-rating[aria-pressed="true"] {
+  color: var(--cds-text-primary);
+  background: var(--cds-fill-ghost-selected);
+}
+:root[data-theme="light"]
+  :is(.mode-chat, .mode-cowork)
+  .message-actions
+  .small-action.reply-rating[aria-pressed="true"] {
+  color: var(--cds-text-primary);
+  background: var(--cds-fill-ghost-selected);
+}
+:root[data-theme="light"] .copy-tooltip {
+  background: #0b0b0b;
+  color: #fff;
+  box-shadow:
+    0 1px 2px #0b0b0b0f,
+    0 2px 8px #0b0b0b14;
+}
+:root[data-theme="light"] .mode-chat .message-actions .small-action:hover {
+  color: var(--text);
+}
+
+.reply-versions {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  gap: 0;
+  color: #858580;
+  font:
+    11px/16px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+/* R-0463-R-0465, R-0496 (2.629 px/CSS): a chevron's centre is 27px from the
+   counter's, so the counter's box is 30px wide for "2 / 2". */
+.reply-versions > span {
+  white-space: nowrap;
+  min-width: 24px;
+  padding: 0 4.5px;
+  text-align: center;
+}
+/* A toolbar button that cannot be used dims like every disabled control:
+   the original's --cds-opacity-disabled (0.4), and it takes no hover. */
+.mode-chat .message-actions .small-action:disabled,
+:is(.message-actions, .user-message-actions) .small-action:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+  background: transparent;
+}
+
+/* User-message editor observed at Actual Size; motion remains provisional. */
+.user-message-actions,
+.user-edit-actions {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  height: 24px;
+  white-space: nowrap;
+  color: #999993;
+  font:
+    12px/18px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+/* R-0496 (2.629 px/CSS): the row's centre is 20px under the bubble, the icons
+   sit on a 24px pitch with no gap and the time ends 18px before Retry's centre. */
+.user-message-actions {
+  gap: 0;
+}
+/* The row hangs 8px under the bubble and goes 60ms after the pointer leaves the
+   message; a hidden row takes no pointer, so crossing the gap lost it. The gap
+   belongs to the row, so the pointer stays on the message all the way down. */
+.user-message-actions::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  height: 8px;
+}
+.user-message-actions .reply-time {
+  margin-right: 6.3px;
+  /* 70px wide, 11px. */
+  font-size: 11px;
+}
+/* R-0494 (2.629 px/CSS): the edit box is as wide as its longest line plus the
+   17px padding (398px around a 3-line message), like the bubble it replaces;
+   a long message reaches 626px of a 736px column (85%). Cowork's edit box
+   (its last prompt's Edit) takes Chat's, the closest capture. */
+:is(.mode-chat, .mode-cowork) .user-message.is-editing {
+  width: fit-content;
+  min-width: 96px;
+  max-width: min(626px, 85%);
+  padding: 13px 16px;
+  background: transparent;
+  /* The reference design card ring is a 1px inner ring in --cds-border (10% of
+     the text colour), and focus draws --cds-focus-shadow: a 1px page-colour
+     inset, a 1px accent (blue-450) ring and a 6px halo of blue-600 at 60%. */
+  box-shadow: inset 0 0 0 1px var(--cds-border);
+}
+:is(.mode-chat, .mode-cowork) .user-message.is-editing:focus-within {
+  box-shadow:
+    inset 0 0 0 1px var(--bg),
+    0 0 0 1px #2a78d6,
+    0 0 6px 1px rgb(24 79 149 / 60%);
+}
+.user-message textarea {
+  display: block;
+  width: 100%;
+  field-sizing: content;
+  min-height: 20px;
+  padding: 0 2px 0 0; /* room for the caret at a line end */
+  border: 0;
+  outline: 0;
+  resize: none;
+  /* The box grows with its text up to min(40svh, 24rem), then scrolls. */
+  max-height: min(40svh, 24rem);
+  overflow-y: auto;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+}
+.user-edit-actions {
+  gap: 10px;
+  margin-top: 8px;
+}
+.user-edit-actions > span {
+  display: flex;
+}
+/* The note is a focusable image with a tooltip (the original's "About saving"). */
+.user-edit-actions > .user-edit-note {
+  border-radius: 2px;
+}
+.user-edit-actions > .user-edit-note:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: 1px;
+}
+.user-edit-actions button {
+  border: 0;
+  border-radius: 5px;
+  padding: 3px 7px;
+  background: transparent;
+  color: #d6d5d0;
+  font: inherit;
+  cursor: pointer;
+}
+.user-edit-actions button:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+/* Pressed: the shared press squish (05-utilities.css .u-press). */
+.user-edit-actions button:not(:disabled):active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+.user-edit-actions .save-message {
+  padding: 2px 8.5px;
+  background: #fdfdfd;
+  color: #0a0a0a;
+}
+.user-edit-actions .save-message:hover:not(:disabled) {
+  background: #fff;
+}
+/* Light: Cancel reads the secondary text and Save is the primary fill. */
+:root[data-theme="light"] .user-edit-actions button {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .user-edit-actions .save-message {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+:root[data-theme="light"]
+  .user-edit-actions
+  .save-message:hover:not(:disabled) {
+  background: var(--primary);
+}
+.user-edit-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.user-message textarea:focus {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+/* Mixed command/reasoning groups have a shared frame and nested disclosures. */
+.grouped-activity-card {
+  margin-top: 12px;
+  border: 1px solid #262625;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.grouped-activity-card > .command-activity {
+  margin: 0;
+}
+/* Inner row text starts 12.5px in, 11.5px down. */
+.grouped-activity-card > .command-activity > summary {
+  width: 100%;
+  min-height: 35px;
+  padding: 5.5px 10.5px;
+}
+.grouped-activity-card .command-card {
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding-top: 11px;
+}
+.grouped-activity-card > * + * {
+  border-top: 1px solid #262625;
+}
+/* Connector rows inside a group are plain rows like the command rows; a failed
+   one is red text, no box or icon. A Browser tool row (BrowserToolView) sits in
+   its own wrapper, which takes the same rules. */
+:is(.grouped-activity-card, .grouped-activity-card > .browser-tool)
+  > :is(.mcp-tool-activity, .dynamic-tool-activity) {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+:is(.grouped-activity-card, .grouped-activity-card > .browser-tool)
+  > :is(.mcp-tool-activity, .dynamic-tool-activity)
+  > summary {
+  width: 100%;
+  min-height: 35px;
+  padding: 5.5px 10.5px;
+  box-sizing: border-box;
+}
+:is(.grouped-activity-card, .grouped-activity-card > .browser-tool)
+  > :is(.mcp-tool-activity, .dynamic-tool-activity).failed
+  > summary {
+  color: var(--danger);
+}
+:is(.grouped-activity-card, .grouped-activity-card > .browser-tool)
+  > :is(.mcp-tool-activity, .dynamic-tool-activity).failed
+  > summary
+  > svg:first-child {
+  display: none;
+}
+:is(.grouped-activity-card, .grouped-activity-card > .browser-tool)
+  > :is(.mcp-tool-activity, .dynamic-tool-activity)
+  > .activity-body {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #262625;
+  border-radius: 0;
+}
+/* Reasoning summaries are dimmer than the command rows (~72%, 1x video; provisional). */
+.activity-summary-text {
+  min-height: 36px;
+  padding: 7px 12px;
+  color: #6a6a68;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.activity-summary-text > :first-child {
+  margin-top: 0;
+}
+.activity-summary-text > :last-child {
+  margin-bottom: 0;
+}
+.activity-summary-text p {
+  margin: 0 0 8px;
+  line-height: inherit;
+}
+:root[data-theme="light"] .grouped-activity-card,
+:root[data-theme="light"] .grouped-activity-card > * + * {
+  border-color: var(--border);
+}
+
+.file-change-activity {
+  margin-bottom: 24px;
+}
+.generated-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 35px;
+  padding: 7px 12px;
+  color: #858580;
+  text-align: left;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.generated-file-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  color: #c3c2bc;
+}
+/* R-0937 has no hover capture; the tool rows' is the analogue: the label
+   brightens to #cbcac5 and no fill appears. */
+.generated-file-row:is(:hover, :focus-visible):not(:disabled),
+.generated-file-row:is(:hover, :focus-visible):not(:disabled) strong {
+  color: #cbcac5;
+}
+:root[data-theme="light"]
+  .generated-file-row:is(:hover, :focus-visible):not(:disabled),
+:root[data-theme="light"]
+  .generated-file-row:is(:hover, :focus-visible):not(:disabled)
+  strong {
+  color: var(--text);
+}
+.generated-file-row:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+.generated-file-errors {
+  margin: 10px 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.generated-file-errors p {
+  margin: 4px 0;
+}
+.generated-diff {
+  margin: 10px 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.generated-diff > summary {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: fit-content;
+  cursor: pointer;
+  list-style: none;
+}
+.generated-diff > summary::-webkit-details-marker {
+  display: none;
+}
+.generated-diff > summary > svg {
+  transition: transform 50ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.generated-diff[open] > summary > svg {
+  transform: rotate(90deg);
+}
+.generated-diff pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+}
+.file-change-result > .file-document-card {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+.generated-file-row:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
+  box-shadow: none;
+}
+/* A comment sent from an artifact: the prompt bubble as a bordered card (radius
+   12) with the comment, then a rule and "View thread ›" 14px at the right. */
+.user-message.comment-message {
+  border: 1px solid #333331;
+  border-radius: 12px;
+  padding-bottom: 0;
+}
+.comment-message-thread {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: calc(100% + 32px);
+  height: 38px;
+  margin: 12px -16px 0;
+  padding: 0 14px;
+  border-top: 1px solid #333331;
+  color: #a3a29f;
+  font-size: 14px;
+}
+.comment-message-thread:hover {
+  color: #ecebe7;
+}
+:root[data-theme="light"] .user-message.comment-message {
+  border-color: #e5e5e3;
+  background: #fff;
+}
+:root[data-theme="light"] .comment-message-thread {
+  border-color: #ececea;
+  color: #73726c;
+}
+/* R-0846 / S-0008 (2.0 px/CSS): "Running workflow… · 1m 3s" under Cowork's
+   tool rows. Label and time #909090; three #da7a5d dots, 4px, whose outer pair
+   slides 4.95 ↔ 6.85px from the middle one while it swells and shrinks (outer
+   dots 0.55 ↔ 1, middle 1 ↔ 0.63). The cycle takes 1.347s (40.4 frames at 30 fps
+   in 15s): expanded hold to 20%, gathering by 45%, gathered hold to 74%, back
+   out by 94%. */
+.running-workflow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 27.5px;
+  padding-left: 43.5px;
+  color: #909090;
+  font-size: 14px;
+  line-height: 20px;
+}
+.running-workflow-sep {
+  margin-right: 2px;
+}
+.running-workflow-mark {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 30px;
+  height: 4px;
+  margin-top: -2px;
+}
+.running-workflow-mark i {
+  position: absolute;
+  left: 13px;
+  top: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #da7a5d;
+  animation: running-workflow-outer 1.347s ease-in-out infinite;
+}
+.running-workflow-mark i:nth-child(2) {
+  animation-name: running-workflow-middle;
+}
+.running-workflow-mark i:nth-child(3) {
+  --side: 1;
+}
+.running-workflow-mark i:nth-child(1) {
+  --side: -1;
+}
+@keyframes running-workflow-outer {
+  0%,
+  15%,
+  96%,
+  100% {
+    transform: translateX(calc(var(--side) * 6.85px)) scale(1);
+  }
+  45%,
+  72% {
+    transform: translateX(calc(var(--side) * 4.95px)) scale(0.55);
+  }
+}
+@keyframes running-workflow-middle {
+  0%,
+  15%,
+  96%,
+  100% {
+    transform: scale(0.63);
+  }
+  45%,
+  72% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .running-workflow-mark i {
+    animation: none;
+    transform: translateX(calc(var(--side, 0) * 5.9px));
+  }
+}
+
+/* Inline visualizations (Settings → Capabilities): drawn on the reply's own
+   background with no frame of their own; the block rhythm is the
+   transcript's 8px, the spinner the file preview's while it loads. */
+.markdown .inline-visualization {
+  position: relative;
+  margin: 8px 0;
+}
+.markdown .inline-visualization[aria-busy="true"] {
+  min-height: 120px;
+}
+.markdown .inline-visualization iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  transition: opacity var(--motion-base) var(--ease-out);
+}
+.markdown .inline-visualization[aria-busy="true"] iframe {
+  position: absolute;
+  inset: 0;
+}
+
+/* Connection lost / No reply yet under a running reply: 8px under the reply and
+   8px in; a 12px-round card on #151515 with a 1px inset rim of white at 10%,
+   12px 16px inside, 8px gaps; the 20px info glyph in #c3c2b7; 14/20 sans in
+   #f0efec; Check now 28px high, 10px sides, 7px round, white at 10%, reaching
+   4px past the line. The light colours are provisional. */
+.turn-connection-notice {
+  margin-top: 8px;
+  padding-left: 8px;
+}
+.turn-connection-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--connection-card-bg, #faf9f5);
+  box-shadow: inset 0 0 0 1px var(--connection-card-rim, rgb(0 0 0 / 10%));
+  color: var(--connection-card-text, #1f1e1d);
+  font-family: var(--font-sans, system-ui);
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:not([data-theme="light"]) .turn-connection-card {
+  --connection-card-bg: #151515;
+  --connection-card-rim: rgb(255 255 255 / 10%);
+  --connection-card-text: #f0efec;
+}
+.turn-connection-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  min-height: 20px;
+  color: var(--connection-card-icon, #6b6a64);
+}
+:root:not([data-theme="light"]) .turn-connection-icon {
+  --connection-card-icon: #c3c2b7;
+}
+.turn-connection-body {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 16px;
+  min-width: 0;
+}
+.turn-connection-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.turn-connection-check {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  margin: -4px -14px -4px -2px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--connection-check-bg, rgb(0 0 0 / 6%));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+:root:not([data-theme="light"]) .turn-connection-check {
+  --connection-check-bg: rgb(255 255 255 / 10%);
+}
+.turn-connection-check[aria-busy] > span {
+  visibility: hidden;
+}
+.turn-connection-check > svg {
+  position: absolute;
+  animation: spin 1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn-connection-check > svg {
+    animation: none;
+  }
+}
+
+/* A refused, too long or failed memory change: the warning strip, 8px wider
+   than the text each side. */
+.memory-tool-warning > summary {
+  margin-inline: -8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #311a00;
+  color: var(--text);
+}
+:root[data-theme="light"] .memory-tool-warning > summary {
+  background: #f9dca4;
+}

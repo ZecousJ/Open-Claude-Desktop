@@ -1,0 +1,179 @@
+/* Light theme (part of sidebar.css) */
+/* Light theme */
+:root[data-theme="light"] .sidebar {
+  background: #fbfbf9;
+}
+:root[data-theme="light"] .surface-switch {
+  --cds-segmented-control-track: rgb(11 11 11 / 5%);
+  --cds-segmented-control-thumb: #fff;
+  --cds-border: rgb(11 11 11 / 10%);
+  --cds-text-primary: #0b0b0b;
+}
+:root[data-theme="light"] .surface-switch button {
+  color: var(--cds-text-muted);
+}
+:root[data-theme="light"] .surface-switch::before {
+  background: var(--cds-segmented-control-thumb);
+}
+:root[data-theme="light"] .surface-switch button.selected {
+  color: var(--cds-text-primary);
+}
+:root[data-theme="light"]
+  .surface-switch
+  button:hover:not(.selected, .unavailable) {
+  color: var(--cds-text-primary);
+}
+:root[data-theme="light"] .main-nav .nav-item.current,
+:root[data-theme="light"] .main-nav-more > button.current {
+  background: #edece8;
+  color: #040301;
+}
+:root[data-theme="light"] .main-nav .nav-item.current svg,
+:root[data-theme="light"] .main-nav-more > button.current svg {
+  color: #070604;
+}
+:root[data-theme="light"] .drag-ghost-pill {
+  box-shadow:
+    0 2px 8px #0000000a,
+    0 12px 32px #00000008;
+}
+:root[data-theme="light"] .drag-ghost-danger {
+  background: #f9e3e2;
+  box-shadow: inset 0 0 0 1px #f09595;
+}
+:root[data-theme="light"] .drag-ghost-pill.danger .drag-ghost-label {
+  color: #c4413e;
+}
+:root[data-theme="light"]
+  .sidebar-scroll.is-dragging-row
+  .conversation-row:hover:not(.selected) {
+  background-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-scroll[data-pin-dragging] [data-drag-shift],
+  .drag-ghost-pill,
+  .drag-ghost-pill > * {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"]
+  .sidebar-scroll[data-pin-dragging]
+  [data-drag-shift],
+:root[data-motion="reduced"] .drag-ghost-pill,
+:root[data-motion="reduced"] .drag-ghost-pill > * {
+  transition: none;
+}
+
+/* Light theme, continued. Measured from R-0025 where captured (text, icons,
+   More, current row); hover fills and menus have no light capture yet. */
+:root[data-theme="light"] .sidebar-chrome > .icon-button,
+:root[data-theme="light"] .collapsed-chrome > .icon-button,
+:root[data-theme="light"] .main-nav .nav-item,
+:root[data-theme="light"] .main-nav svg,
+:root[data-theme="light"] .conversation-link,
+:root[data-theme="light"] .section-label > div > button,
+:root[data-theme="light"] .row-more,
+:root[data-theme="light"] .profile > span:nth-child(2) {
+  color: #4c4b4a;
+}
+:root[data-theme="light"] .profile > span:nth-child(2) {
+  color: #52514e;
+}
+/* The light ghost hover, #0b0b0b at 5%. */
+:root[data-theme="light"] .main-nav-more > button.open,
+:root[data-theme="light"] .conversation-row.menu-open,
+:root[data-theme="light"] .section-label > div > button.open,
+:root[data-theme="light"] .profile.open {
+  background-color: var(--fill-ghost-hover);
+}
+@media (hover: hover) {
+  :root[data-theme="light"]
+    .sidebar-chrome
+    > .icon-button:hover:not(:disabled)::before,
+  :root[data-theme="light"]
+    .collapsed-chrome
+    > .icon-button:hover:not(:disabled)::before,
+  :root[data-theme="light"] .main-nav .nav-item:hover,
+  :root[data-theme="light"] .main-nav-more > button:hover,
+  :root[data-theme="light"] .conversation-row:hover,
+  :root[data-theme="light"] .section-label > div > button:hover,
+  :root[data-theme="light"] .profile:hover {
+    background-color: var(--fill-ghost-hover);
+  }
+}
+:root[data-theme="light"] .conversation-row.selected,
+:root[data-theme="light"] .conversation-row.multi-selected,
+:root[data-theme="light"] .conversation-row.renaming,
+:root[data-theme="light"] .row-more:hover,
+:root[data-theme="light"] .row-more[aria-expanded="true"] {
+  background-color: #edece8;
+}
+:root[data-theme="light"] .conversation-rename {
+  color: #040301;
+}
+:root[data-theme="light"] .selected .conversation-link,
+:root[data-theme="light"] .multi-selected .conversation-link,
+:root[data-theme="light"] .row-more:hover {
+  color: #050505;
+}
+:root[data-theme="light"] .main-nav-more > button,
+:root[data-theme="light"] .main-nav-more > button svg {
+  color: #81807c;
+}
+:root[data-theme="light"] .main-nav-more > button svg,
+:root[data-theme="light"] .section-label,
+:root[data-theme="light"] .section-toggle > .app-icon,
+:root[data-theme="light"] .group-toggle > .app-icon,
+:root[data-theme="light"] .profile small,
+:root[data-theme="light"] .profile > .app-icon {
+  color: #82817f;
+}
+/* The rules above out-rank the hover rule of sidebar-list.css, so the
+   heading's lift to the secondary ink is repeated here (light: #52514e). */
+@media (hover: hover) {
+  :root[data-theme="light"] .section-label:hover {
+    color: var(--text-secondary);
+  }
+}
+:root[data-theme="light"] .thread-dot {
+  border-color: #b5b4b1;
+}
+:root[data-theme="light"] .thread-dot.working {
+  background: #8a8987;
+}
+:root[data-theme="light"] .sidebar {
+  border-right-color: #e4e4e4;
+}
+:root[data-theme="light"] .sidebar-scroll {
+  background-image: none;
+}
+:root[data-theme="light"] .profile .avatar {
+  background: hsl(from #0b0b0b h s l / 10%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .main-nav-more-menu,
+:root[data-theme="light"] .profile-popover {
+  border-color: #e4e4e4;
+  background: #fff;
+  box-shadow: 0 12px 28px #0002;
+}
+:root[data-theme="light"] .main-nav-more-menu > button,
+:root[data-theme="light"] .main-nav-more-menu > button > svg,
+:root[data-theme="light"] .main-nav-more-menu > button > .nav-glyph,
+:root[data-theme="light"] .profile-popover > button,
+:root[data-theme="light"] .profile-popover > button > .app-icon {
+  color: #141414;
+}
+:root[data-theme="light"] .profile-popover > header,
+:root[data-theme="light"] .profile-popover kbd {
+  color: #82817f;
+}
+:root[data-theme="light"] .profile-popover > button:hover:not(:disabled),
+:root[data-theme="light"] .main-nav-more-menu > button:hover {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .profile-popover > hr,
+:root[data-theme="light"] .main-nav-more-menu > hr {
+  background: #ececec;
+}

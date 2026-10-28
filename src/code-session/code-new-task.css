@@ -1,0 +1,78 @@
+/* px-lg py-md gap-md, text-body and Button sm. */
+.code-new-task {
+  --code-task-border: rgb(255 255 255 / 10%);
+  --code-task-alpha: rgb(255 255 255 / 5%);
+  --code-task-fill: #fff;
+  --code-task-fill-hover: #e1e0d9;
+  --code-task-on-fill: #0b0b0b;
+  --code-task-ghost-hover: rgb(255 255 255 / 7.5%);
+  display: flex;
+  width: 100%;
+  max-width: 480px;
+  min-width: 0;
+  overflow: clip;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--code-task-border);
+  flex-direction: column;
+  font-size: var(--cds-font-size-body, 0.8125rem);
+  line-height: var(--cds-leading-body, 1.1875rem);
+}
+:root[data-theme="light"] .code-new-task {
+  --code-task-border: rgb(11 11 11 / 10%);
+  --code-task-alpha: rgb(11 11 11 / 5%);
+  --code-task-fill: #0b0b0b;
+  --code-task-fill-hover: #2c2c2a;
+  --code-task-on-fill: #fff;
+  --code-task-ghost-hover: rgb(11 11 11 / 5%);
+}
+.code-new-task-header {
+  padding: 0.5rem 0.75rem;
+  background: var(--code-task-alpha);
+}
+.code-new-task-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-top: 1px solid var(--code-task-border);
+  padding: 0.5rem 0.75rem;
+}
+.code-new-task-prompt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: var(--text-secondary);
+}
+.code-new-task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+.code-new-task-actions > :first-child {
+  margin-inline-end: auto;
+}
+.code-new-task-actions > .settings-button,
+.code-new-task-actions .settings-dropdown {
+  height: 1.25rem;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 0.3125rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+.code-new-task-actions > .settings-button:hover:not(:disabled),
+.code-new-task-actions .settings-dropdown:hover:not(:disabled) {
+  background: var(--code-task-ghost-hover);
+}
+.code-new-task-actions > .settings-button.primary {
+  background: var(--code-task-fill);
+  color: var(--code-task-on-fill);
+  font-weight: 500;
+}
+.code-new-task-actions > .settings-button.primary:hover:not(:disabled) {
+  background: var(--code-task-fill-hover);
+}

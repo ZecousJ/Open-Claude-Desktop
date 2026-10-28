@@ -1,0 +1,332 @@
+/* 299px panel 8px from the window edge (size and position in
+   92-reference-panels.css); "Plan" 13px #c6c5c0 at the top left; "TASKS" 10px
+   #8c8b89 capitals; 13px/19px steps 6px apart, text 20px after the 16px status
+   glyph; open steps #efefef, the running one #eeeeee, done ones #c3c2bd struck
+   through. */
+.work-panel.plan-panel {
+  border: 1px solid #2c2c2c;
+  border-radius: 10px;
+  background: #1a1a1a;
+  font:
+    13px/19px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.work-panel.plan-panel > header {
+  height: 33px;
+  min-height: 33px;
+  padding: 1px 3px 0 9px;
+  border-bottom: 0;
+}
+.work-panel.plan-panel > header strong {
+  color: #c6c5c0;
+  font-size: 13px;
+  font-weight: 400;
+}
+.plan-panel > header > div {
+  display: flex;
+}
+.plan-panel > header button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  color: #c8c8c4;
+}
+.plan-panel > header button:hover {
+  background: var(--fill-ghost-hover);
+}
+.plan-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 25px 12px 16px 12px;
+}
+.plan-panel-body h2 {
+  margin: 0 0 11px 0.5px;
+  color: #8c8b89;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.plan-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.plan-steps li {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  color: var(--text);
+}
+.plan-steps li[data-status="inProgress"] {
+  color: var(--text);
+}
+.plan-steps li[data-status="completed"] {
+  color: #c3c2bd;
+}
+.plan-steps li[data-status="completed"] .plan-step-text {
+  text-decoration: line-through;
+  text-decoration-color: #c3c2bd;
+}
+.plan-knob {
+  display: flex;
+  flex: none;
+}
+.plan-step-icon {
+  flex: none;
+  margin-top: 1.5px;
+  color: #8c8b89;
+}
+/* The open ring is 12px across and the done check #c1c0bc; the running ring
+   keeps its dim track (the audit's 11.5×8.5 dark ink is the arc's frame, not a
+   missing ring). */
+.plan-step-icon[data-status="inProgress"] {
+  color: #c8c8c3;
+}
+.plan-step-icon[data-status="pending"] circle {
+  r: 5.5px;
+}
+.plan-step-icon[data-status="completed"] {
+  color: #c1c0bc;
+}
+.plan-step-arc {
+  transform-origin: 8px 8px;
+  animation: plan-step-spin 1s linear infinite;
+}
+@keyframes plan-step-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-step-arc {
+    animation: none;
+  }
+}
+
+/* The progress rail: a 2px rail from under each glyph to the next one, 10% ink,
+   20% along the part already walked. */
+.plan-rail {
+  position: absolute;
+  top: 17.5px;
+  bottom: -7.5px;
+  left: 7px;
+  width: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: var(--alpha-2);
+  transform-origin: top;
+  transition: background-color var(--motion-base) var(--ease-out);
+}
+.plan-rail[data-walked] {
+  background: var(--alpha-3);
+}
+/* A step that arrives rises 4px into place and the rail grows down to it,
+   220ms; a step that starts running pops its glyph in from 40%, 180ms. */
+.plan-rail[data-grow] {
+  animation: plan-rail-grow 220ms var(--ease-out);
+}
+.plan-steps li[data-enter] > :is(.plan-step-text, .plan-knob) {
+  animation: plan-step-in 220ms var(--ease-out);
+}
+.plan-steps li > .plan-knob[data-enter] {
+  animation: plan-knob-in 180ms var(--ease-out);
+}
+@keyframes plan-rail-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes plan-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes plan-knob-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+/* While a running task's list has no step started, a light runs down the
+   rail every 1.6s. */
+.plan-rail::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 25%,
+    #1a1a1a 50%,
+    transparent 75%
+  );
+  transition: opacity var(--motion-base) var(--ease-out);
+}
+.plan-progress[data-building] .plan-rail::after {
+  opacity: 0.75;
+  animation: plan-rail-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes plan-rail-shimmer {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+/* "Updated tasks ›" lights the current step up and lets it fade over 1.4s. */
+.plan-step-reveal {
+  position: absolute;
+  inset: -2px -4px;
+  border-radius: 4px;
+  pointer-events: none;
+  animation: plan-step-reveal 1.4s ease-out forwards;
+}
+@keyframes plan-step-reveal {
+  0%,
+  55% {
+    background-color: var(--alpha-1);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+/* Finished steps at the top fold under "N earlier steps" (two stay); a
+   short rail stub stands for them, and the caret shows on hover. */
+.plan-fold {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 0;
+  color: #8c8b89;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: left;
+}
+.plan-fold-rail {
+  position: relative;
+  flex: none;
+  width: 16px;
+}
+.plan-fold-rail > i {
+  position: absolute;
+  left: 7px;
+  bottom: 0;
+  width: 2px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--alpha-2);
+}
+.plan-fold-rail > i:nth-child(2) {
+  bottom: 7px;
+  height: 4px;
+  opacity: 0.7;
+}
+.plan-fold-rail > i:nth-child(3) {
+  bottom: 13px;
+  height: 3px;
+  opacity: 0.45;
+}
+.plan-fold-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: -4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  transition: color var(--motion-snap) var(--ease-snap);
+}
+.plan-fold-label > svg {
+  opacity: 0;
+  transition:
+    opacity var(--motion-snap) var(--ease-snap),
+    rotate var(--motion-snap) var(--ease-snap);
+}
+.plan-fold:focus-visible {
+  outline: none;
+}
+.plan-fold:focus-visible .plan-fold-label {
+  box-shadow: var(--focus-shadow);
+}
+.plan-fold:is(:hover, :focus-visible) .plan-fold-label {
+  color: #c6c5c0;
+}
+.plan-fold:is(:hover, :focus-visible) .plan-fold-label > svg,
+.plan-fold[aria-expanded="true"] .plan-fold-label > svg {
+  opacity: 1;
+}
+.plan-fold[aria-expanded="true"] .plan-fold-label > svg {
+  rotate: 180deg;
+}
+.plan-earlier .plan-steps {
+  padding-bottom: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-rail,
+  .plan-steps li > :not(.plan-step-reveal),
+  .plan-progress[data-building] .plan-rail::after {
+    animation: none;
+  }
+  .plan-step-reveal {
+    background-color: var(--alpha-1);
+    animation-duration: 1ms;
+    animation-delay: 1.4s;
+  }
+}
+:root[data-motion="reduced"]
+  :is(.plan-rail, .plan-steps li > :not(.plan-step-reveal)),
+:root[data-motion="reduced"] .plan-progress[data-building] .plan-rail::after {
+  animation: none;
+}
+:root[data-motion="reduced"] .plan-step-reveal {
+  background-color: var(--alpha-1);
+  animation: plan-step-reveal 1ms 1.4s forwards;
+}
+.plan-empty {
+  margin: 0;
+  color: #8c8b89;
+}
+:root[data-theme="light"] .work-panel.plan-panel {
+  border-color: #e4e2dc;
+  background: #fff;
+}
+:root[data-theme="light"] .plan-steps li {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .plan-steps li[data-status="inProgress"] {
+  color: #141413;
+}
+/* The step icons' dark greys vanish on white: the running ring reads the
+   secondary text and the done check the weak step. */
+:root[data-theme="light"] .plan-step-icon[data-status="inProgress"] {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .plan-step-icon[data-status="completed"] {
+  color: var(--text-muted);
+}
+
+:root[data-theme="light"] .plan-rail::after {
+  background: linear-gradient(
+    to bottom,
+    transparent 25%,
+    #fff 50%,
+    transparent 75%
+  );
+}
+:root[data-theme="light"]
+  .plan-fold:is(:hover, :focus-visible)
+  .plan-fold-label {
+  color: #3d3d3a;
+}

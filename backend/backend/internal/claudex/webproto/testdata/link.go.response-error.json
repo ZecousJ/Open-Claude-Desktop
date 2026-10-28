@@ -1,0 +1,9 @@
+{
+  "t": "response",
+  "id": "r-6",
+  "ok": false,
+  "error": {
+    "message": "Your storage is full.",
+    "code": "CLAUDEX_WEB_QUOTA_EXCEEDED"
+  }
+}

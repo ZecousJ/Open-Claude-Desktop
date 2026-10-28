@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash icon: the Claudex knot inset into the 288 dp splash icon canvas (icon area is the inner 2/3 circle). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:drawable="@drawable/claudex_knot" android:inset="28%" />

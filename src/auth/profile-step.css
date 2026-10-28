@@ -1,0 +1,69 @@
+/*
+ * The account step after sign-up (src/auth/ProfileStep.tsx) inside the sign-in
+ * card. The form is left-aligned, 20px between its rows (gap-5), the checkbox
+ * row puts 12px beside the box (gap-3). Type, colours and the field itself are
+ * the sign-in card's own (sign-in.css: .signin-input, .signin-small,
+ * .signin-error); the box is the shared checkbox (src/ui/checkbox.css).
+ */
+.signin-card form.profile-form {
+  gap: 20px;
+  text-align: left;
+}
+.signin-card form.profile-form > .signin-primary {
+  margin-top: 0;
+}
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.profile-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.profile-label {
+  color: var(--auth-text);
+  font-size: 14px;
+  line-height: 18.5px;
+}
+.profile-tip {
+  display: inline-flex;
+  color: var(--auth-muted);
+  cursor: default;
+}
+.profile-tip:focus-visible {
+  outline: 2px solid var(--auth-link);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+.profile-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--auth-muted);
+  font-size: 13px;
+  line-height: 17.5px;
+  cursor: pointer;
+}
+.profile-check .cx-check-input {
+  margin-top: 0;
+}
+.profile-check a {
+  color: var(--auth-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.profile-check a:focus-visible {
+  outline: 2px solid var(--auth-link);
+  outline-offset: 2px;
+}
+.profile-field-error {
+  margin: 0;
+  color: var(--auth-error);
+  font-size: 13px;
+  line-height: 17.5px;
+}
+.profile-footer {
+  margin-top: 20px;
+}

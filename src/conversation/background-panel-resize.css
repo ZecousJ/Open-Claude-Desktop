@@ -1,0 +1,8 @@
+.background-tasks-panel {
+  position: relative;
+}
+/* The card's divider (src/ui/ResizeHandle.tsx, resize-handle.css), its
+   12px grab area centred on the card's left edge. */
+.background-panel-resize {
+  left: -6px;
+}

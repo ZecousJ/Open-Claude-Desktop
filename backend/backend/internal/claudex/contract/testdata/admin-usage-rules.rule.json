@@ -1,0 +1,19 @@
+{
+  "id": 5,
+  "group_id": 4,
+  "group_name": "claudex-pro",
+  "group_deleted": false,
+  "kind": "models",
+  "label": "Opus",
+  "model_patterns": [
+    "claude-opus-*"
+  ],
+  "window_seconds": 604800,
+  "limit_usd": 20,
+  "enabled": true,
+  "show_in_client": true,
+  "sort_order": 10,
+  "created_by": 1,
+  "created_at": "2026-09-25T10:00:00Z",
+  "updated_at": "2026-09-25T10:00:00Z"
+}

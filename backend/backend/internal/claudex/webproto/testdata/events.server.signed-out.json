@@ -1,0 +1,9 @@
+{
+  "t": "event",
+  "seq": 1843,
+  "event": {
+    "type": "signed-out",
+    "reason": "revoked",
+    "message": "You were signed out on all devices."
+  }
+}

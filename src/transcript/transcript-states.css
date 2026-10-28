@@ -1,0 +1,328 @@
+/* Conversation states. The ordinary Chat scroll control was captured
+   live on 2026-10-16; other state motion remains provisional. */
+
+/* Back to the latest message. A zero-height dock between the transcript and the
+   composer, outside the transcript's edge fade, holds a 24px pill whose top is
+   32px above the composer: 4px in, 6px round, the raised surface with a
+   hairline ring (none in dark) and a faint 1px shadow, secondary ink and a 12px
+   caret; hovered, the secondary button's hover fill over it. It fades in and
+   out over 150ms. While the conversation waits on the person it reads "Needs
+   your input" (12/15) after a 6px accent dot, 6px apart. */
+.scroll-bottom-dock {
+  position: relative;
+  z-index: 5;
+  height: 0;
+}
+.scroll-bottom-button {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background-color: var(--surface-raised);
+  color: var(--text-secondary);
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    0 1px 2px #0000000d;
+  --jump-hover-fill: color-mix(in srgb, var(--alpha-ink) 14%, transparent);
+  font: inherit;
+  font-size: 12px;
+  line-height: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 150ms var(--ease-standard),
+    visibility 0s linear 150ms;
+}
+:root:not([data-theme="light"]) .scroll-bottom-button {
+  box-shadow: 0 1px 2px #0000000d;
+}
+:root[data-theme="light"] .scroll-bottom-button {
+  --jump-hover-fill: var(--alpha-1);
+}
+.scroll-bottom-button[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 150ms var(--ease-standard),
+    visibility 0s;
+}
+/* Hovered, the secondary button's hover fill lies over the raised surface
+   (14% of the ink in dark, 5% in light), at once: only the fade is timed.
+   Keyboard focus is the shared ring (00-foundation.css). */
+.scroll-bottom-button:hover {
+  background-image: linear-gradient(
+    var(--jump-hover-fill),
+    var(--jump-hover-fill)
+  );
+}
+.scroll-bottom-button > .app-icon {
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+/* Ordinary Chat: 36px circle and 20px ArrowDown; the input-request and
+   Code pills keep their wider label layout. Dark fill is bg-000 at 80%. */
+.scroll-bottom-button[data-round] {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--text);
+}
+:root:not([data-theme="light"]) .scroll-bottom-button[data-round] {
+  background-color: rgb(43 43 42 / 80%);
+}
+.scroll-bottom-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Long prompts: a prompt over 300px folds to 200px behind a fade over its last
+   3rem; Show more is a small ghost button, the editor's Cancel
+   (chat-transcript.css) in size and fill, set back by its own padding so the
+   label lines up with the text. */
+.user-message-text.is-clamped {
+  max-height: 200px;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+}
+.user-message-more {
+  display: block;
+  margin: 4px 0 0 -7px;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #d6d5d0;
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.user-message-more:hover {
+  background: var(--fill-ghost-hover);
+}
+/* Pressed: the shared press squish (05-utilities.css .u-press). */
+.user-message-more:active {
+  scale: var(--press-scale);
+  transition:
+    var(--button-fill-transition),
+    scale var(--motion-fast) ease-out;
+}
+:root[data-theme="light"] .user-message-more {
+  color: var(--text-secondary);
+}
+
+/* Reconnecting and closed-early lines: plain grey text in the reply's size,
+   like "Background task stopped · …" in R-0654; a stop itself shows nothing. */
+.turn-interrupted,
+.turn-reconnecting {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 4px;
+  color: #858580;
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+/* Chat reply paragraphs have a 4px inset (chat-transcript.css). */
+.mode-chat .turn-interrupted,
+.mode-chat .turn-reconnecting {
+  padding: 0 4px;
+}
+:root[data-theme="light"] .turn-interrupted,
+:root[data-theme="light"] .turn-reconnecting {
+  color: var(--text-muted);
+}
+
+/* Notice. */
+.reply-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  margin: 16px calc(var(--msg-block-inset, 0.5rem) * -0.5) 4px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 0 0 1px #ffffff1a;
+  font: 400 13px/19px sans-serif;
+  overflow-wrap: break-word;
+}
+.reply-banner-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 1lh;
+  color: var(--text-secondary);
+}
+.reply-banner-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.reply-banner-body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 12px;
+}
+.reply-banner-text {
+  max-width: 100%;
+  min-width: 0;
+  flex: auto;
+}
+.reply-banner-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  margin-block: calc((1lh - 24px) / 2);
+  margin-inline: -2px -6px;
+}
+/* A title over a sentence: the buttons across the text's middle, the text
+   at least 20ch before they wrap under it (actionAlign "center"). */
+.reply-banner[data-action-align="center"] .reply-banner-body {
+  align-items: center;
+}
+.reply-banner[data-action-align="center"] .reply-banner-text {
+  min-width: min(20ch, 100%);
+  flex: 1;
+}
+/* The close button ends the first line, after the buttons, which then keep
+   their own end edge. */
+.reply-banner[data-dismissible] .reply-banner-actions {
+  margin-inline-end: 0;
+}
+.reply-banner-dismiss-slot {
+  display: flex;
+  height: 1lh;
+  flex-shrink: 0;
+  align-items: center;
+  margin-right: -6px;
+}
+.reply-banner[data-cta-layout="wrapped"] {
+  padding-bottom: 12px;
+}
+.reply-banner[data-cta-layout="wrapped"] .reply-banner-actions {
+  margin-block: 0;
+  margin-inline-start: 0;
+}
+.reply-banner-action {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--alpha-2);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.reply-banner-action:hover {
+  background: #ffffff24;
+}
+.reply-banner-action[aria-busy] {
+  position: relative;
+}
+.reply-banner-action[aria-busy] > :is(.cds-spinner, .cds-spinner-status) {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+.reply-banner-action[data-disabled] {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+:root[data-theme="light"] .reply-banner {
+  background: #fcfcfb;
+  color: #0b0b0b;
+  box-shadow: 0 0 0 1px #0b0b0b1a;
+}
+:root[data-theme="light"] .reply-banner-icon {
+  color: #52514e;
+}
+:root[data-theme="light"] .reply-banner-action {
+  background: #ffffff1a;
+}
+:root[data-theme="light"] .reply-banner-action:hover {
+  background: #0b0b0b0d;
+}
+/* A failed Code turn (src/CodeTurnError.tsx), after the Code session's
+   turn-error card: at least 480px wide (never past the transcript), 12px round,
+   a hairline outline; a header strip on the 5% fill, 8px tall padding and 12px
+   sides, the warning glyph 12px from the headline in the primary ink; the hint
+   12px under it in the secondary ink; the buttons on the right, 8px apart, 8px
+   under the hint and 12px above the card's edge. Body text 13px/19px. */
+.code-turn-error {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  min-width: min(480px, 100%);
+  max-width: 100%;
+  margin: 12px 0 8px;
+  overflow: clip;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-size: 13px;
+  line-height: 19px;
+  user-select: text;
+}
+.code-turn-error-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--alpha-1);
+  color: var(--text);
+}
+.code-turn-error-head > svg {
+  flex: none;
+  margin-top: 0;
+  color: var(--text-secondary);
+}
+.code-turn-error-head > span {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.code-turn-error-body {
+  padding: 12px 12px 8px;
+  color: var(--text-secondary);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.code-turn-error-body:last-child {
+  padding-bottom: 12px;
+}
+.code-turn-error-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px 12px;
+}
+.code-turn-error-foot > button[data-disabled] {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}

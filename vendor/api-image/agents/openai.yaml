@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Image"
+  short_description: "Generate images through the configured provider API"
+  default_prompt: "Use $api-image for all raster image generation or editing instead of native $imagegen; use the configured provider, default to 2048x1152 high quality, and pass reference images, masks, size, quality, and output options when needed."

@@ -1,0 +1,552 @@
+/* Projects plus, template menu, full screen, scrollbar, status dots, PR status, empty list (part of sidebar.css) */
+/* The Projects row's plus: 7px glyph #9fa093 at the same right end, in the
+   second row (New is the first), shown on hover. */
+.main-nav-item-wrap > .main-nav-row-plus {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: #9fa093;
+  opacity: 0;
+}
+.main-nav-item-wrap > .main-nav-row-plus svg {
+  width: 15px;
+  height: 15px;
+  color: inherit;
+}
+/* It appears with the row, at once, whether the row is hovered or focused;
+   under the pointer it fills (like any row of the nav) and brightens (the
+   original's row control: hover:bg + hover:text-primary). */
+.main-nav .nav-item.projects:hover + .main-nav-row-plus,
+.main-nav .nav-item.projects:focus-visible + .main-nav-row-plus,
+.main-nav-item-wrap > .main-nav-row-plus:hover,
+.main-nav-item-wrap > .main-nav-row-plus:focus-visible {
+  opacity: 1;
+}
+.main-nav-item-wrap > .main-nav-row-plus:hover {
+  color: var(--text);
+}
+.main-nav-create {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  opacity: 0;
+}
+.main-nav-item-wrap:hover .main-nav-create,
+.main-nav-create:focus-visible,
+.main-nav-create[aria-expanded="true"] {
+  opacity: 1;
+}
+.main-nav-create:hover {
+  background: var(--fill-ghost-hover);
+}
+@media (max-width: 639.98px) {
+  .app.web .main-nav-create {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+}
+.menu.nav-create-menu > .menu-heading {
+  height: auto;
+  padding: 6px 8px 4px;
+  white-space: normal;
+  text-wrap: balance;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 17px;
+}
+/* The badge follows its text and each kind keeps its own 16%-tinted tile. */
+.nav-create-menu.artifacts > button > span:not(.rate-badge) {
+  flex: none;
+}
+.nav-create-menu.artifacts > button .rate-badge {
+  flex: none;
+  height: 18px;
+  margin: 0 0 0 8px;
+  vertical-align: middle;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  background: rgb(
+    from #032042 calc((r - 5.25) / 0.75) calc((g - 5.25) / 0.75)
+      calc((b - 5.25) / 0.75) / 75%
+  );
+  color: #6da7ec;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+}
+.nav-template-icon {
+  --template-ink: #256abf;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: var(--template-ink);
+  background: color-mix(in srgb, var(--template-ink) 16%, transparent);
+}
+.nav-template-icon[data-template="Slides"] {
+  --template-ink: #b7791f;
+}
+.nav-template-icon[data-template="Design"] {
+  --template-ink: #7663b8;
+}
+.nav-template-icon[data-template="Dashboard"] {
+  --template-ink: #6250d6;
+}
+.nav-create-menu.artifacts
+  > button:has([data-template="Dashboard"])
+  .rate-badge {
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .nav-create-menu.artifacts > button .rate-badge {
+  background: rgb(
+    from #cde2fb calc((r - 163.8) / 0.35) calc((g - 163.8) / 0.35)
+      calc((b - 163.15) / 0.35) / 35%
+  );
+  color: #184f95;
+}
+:root[data-theme="light"]
+  .nav-create-menu.artifacts
+  > button:has([data-template="Dashboard"])
+  .rate-badge {
+  background: rgb(11 11 11 / 5%);
+  color: var(--text-secondary);
+}
+.pinned-project-sessions {
+  padding-left: 16px;
+}
+.project-sessions-toggle {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  border-radius: 6px;
+  background: var(--sidebar, #111111);
+}
+.pinned-project .conversation-row:hover .project-sessions-toggle,
+.project-sessions-toggle:focus-visible {
+  opacity: 1;
+}
+.recents-search,
+.recents-view-all {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.task-permission-trigger > .task-permission-mobile-icon {
+  display: none;
+}
+.recents-search .app-icon,
+.recents-view-all .app-icon {
+  width: 20px;
+  height: 20px;
+}
+/* The web's section buttons. */
+:root[data-surface="web"] .section-label {
+  column-gap: 8px;
+}
+:root[data-surface="web"] .section-label > div {
+  gap: 4px;
+  transform: none;
+}
+:root[data-surface="web"] .section-label > div > button {
+  width: 24px;
+  border-radius: 6px;
+  padding: 0;
+}
+:root[data-surface="web"]:not([data-theme="light"])
+  .section-label
+  > div
+  > button {
+  color: #c3c2b7;
+}
+:root[data-surface="web"] .recents-view-all .app-icon {
+  width: 16px;
+  height: 16px;
+}
+.recents-view-all {
+  color: var(--text-secondary);
+  opacity: 0;
+}
+.sidebar-scroll > [data-drop-section="recent"]:hover .recents-view-all,
+.recent-label:focus-within .recents-view-all {
+  opacity: 1;
+}
+.recents-view-all:hover {
+  background: var(--fill-ghost-hover);
+}
+.web-sidebar-search > kbd {
+  margin-left: auto;
+  font: inherit;
+  font-size: 12px;
+  opacity: 0;
+}
+.web-sidebar-search:hover > kbd,
+.web-sidebar-search:focus-visible > kbd {
+  opacity: 1;
+}
+@media (hover: none), (pointer: coarse) {
+  .recents-view-all {
+    opacity: 1;
+  }
+}
+.main-nav-more-menu > a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: inherit;
+}
+.main-nav-more-menu > a:hover {
+  background: var(--fill-ghost-hover);
+}
+/* Code without a cloud environment (the web before phase C): greyed. */
+.surface-switch > button.unavailable,
+.surface-switch > button.unavailable:hover {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* macOS full screen: the traffic lights are hidden, so the toolbar starts at
+   the window's left edge like the Windows layout without ≡ (12px, then the
+   toggle, back and forward: 12 + 3 x 24 + 14 = 98px of header inset). The
+   original's full screen is not captured; the Windows layout is the closest
+   analogue. */
+.app.darwin.full-screen .sidebar-chrome {
+  padding-left: 12px;
+}
+.app.darwin.full-screen .collapsed-chrome {
+  left: 12px;
+}
+.sidebar-hidden.darwin.full-screen .chat-header,
+.sidebar-hidden.darwin.full-screen .routine-crumb {
+  padding-left: 98px;
+}
+.sidebar-hidden.darwin.full-screen .file-viewer[data-expanded="true"] > header,
+.sidebar-hidden.darwin.full-screen .terminal-panel.expanded > header {
+  padding-left: 96px;
+}
+.app.conversation-window.darwin.full-screen
+  .chat-header.conversation-window-header {
+  padding-left: 12px;
+}
+
+/* The bar's room is given back to the rows (ConversationList measures it), so
+   they end 8px from the edge whether or not the list overflows. */
+:root:root .sidebar-scroll {
+  margin-right: calc(-1 * var(--list-gutter, 0px));
+}
+/* The list's scrollbar is an overlay bar: none at rest, as in R-0044 (an
+   overflowing list, the pointer over a row), a thumb while it scrolls or under
+   the pointer. The fade is not reproduced: Chromium does not animate the
+   scrollbar pieces. Windows draws the same bars. */
+:root:root .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+:root:root .sidebar-scroll[data-scrolling]::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-muted) 35%, transparent);
+  background-clip: padding-box;
+}
+:root:root .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text-muted) 65%, transparent);
+  background-clip: padding-box;
+}
+
+/* A row's dot with its name (StatusDot.tsx). A Chat or Cowork row's dot is a
+   button for marking read or unread, with a hit area a few pixels wider than
+   the dot, as the original's. An archived row shows the Archive glyph in the
+   same 16px column. */
+.row-status {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+.row-status[data-clickable]::before {
+  content: "";
+  position: absolute;
+  inset: -4px -6px -4px -5px;
+}
+.thread-archived {
+  margin: 0 1px;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+/* A Code session's pull request in place of the dot: the 14px bold glyph in its
+   state's git colour, the 16px column kept. The colours are the original's
+   --cds-text-git-* values (dark / light); the branch row reads them too. */
+:root {
+  --git-opened: #32d74b;
+  --git-draft: #a6a6a6;
+  --git-merged: #b796ff;
+  --git-closed: #ff6159;
+  --git-conflicting: #fa832e;
+  --git-queued: #ffd014;
+  --git-added: #32d74b;
+  --git-removed: #ff2c56;
+}
+:root[data-theme="light"] {
+  --git-opened: #1e9e3c;
+  --git-draft: #737373;
+  --git-merged: #8e6bd9;
+  --git-closed: #ff3a30;
+  --git-conflicting: #c5621b;
+  --git-queued: #98801f;
+  --git-added: #1e9e3c;
+  --git-removed: #cd2054;
+}
+.row-status > .pr-state-glyph {
+  margin: 0 1px;
+}
+.pr-state-glyph[data-state="open"],
+.pr-state-glyph[data-state="approved"] {
+  color: var(--git-opened);
+}
+.pr-state-glyph[data-state="draft"] {
+  color: var(--git-draft);
+}
+.pr-state-glyph[data-state="merged"] {
+  color: var(--git-merged);
+}
+.pr-state-glyph[data-state="closed"],
+.pr-state-glyph[data-state="changesRequested"] {
+  color: var(--git-closed);
+}
+.pr-state-glyph[data-state="conflicting"] {
+  color: var(--git-conflicting);
+}
+.pr-state-glyph[data-state="queued"] {
+  color: var(--git-queued);
+}
+
+/* Code's list says why it is empty; Show all sessions clears the filter. */
+.sidebar-empty-action {
+  display: block;
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+.sidebar-empty-action:hover {
+  color: var(--text);
+}
+
+/* A custom group's heading has the row's ⋮ menu. */
+.row-group-label {
+  position: relative;
+}
+.row-group-label:hover > .row-more,
+.row-group-label > .row-more[aria-expanded="true"] {
+  opacity: 1;
+}
+
+/* Dragging into an empty Pinned section: a Pin row reads "Drop here", the pin
+   tilting while a row is dragged, and "Let go" on the neutral fill while a
+   release would pin. After the release the dropped row stands on it until the
+   list has the row. */
+.pin-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  margin: 0.75px 0;
+  padding: 0 6px 0 5px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  opacity: 0.8;
+  pointer-events: none;
+  /* 150ms on Tailwind's default curve (transition-colors, transition-transform). */
+  transition:
+    background-color 150ms var(--ease-standard),
+    color 150ms var(--ease-standard);
+}
+.pin-hint > svg {
+  transition: transform 150ms var(--ease-standard);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pin-hint,
+  .pin-hint > svg {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .pin-hint,
+:root[data-motion="reduced"] .pin-hint > svg {
+  transition: none;
+}
+.pin-hint[data-dragging] > svg {
+  transform: rotate(6deg) scale(1.05);
+}
+.pin-hint[data-hot] {
+  background-color: var(--fill-ghost-hover);
+  color: var(--text-secondary);
+  opacity: 1;
+}
+.pin-hint[data-dropped] > * {
+  visibility: hidden;
+}
+.group-name-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* A row's number while ⌘ (Ctrl+Shift) is held (jump-hints.ts), over the 16px
+   leading column: a 16px tag, radius 3, 0.5px border on surface-1, 10px medium
+   secondary text. */
+.row-jump-hint {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 16px;
+  min-width: 16px;
+  padding: 0 3px;
+  border: 0.5px solid rgb(255 255 255 / 10%);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+:root[data-theme="light"] .row-jump-hint {
+  border-color: rgb(11 11 11 / 10%);
+  background: #fcfcfb;
+  color: #52514e;
+}
+
+/* Current Code rows: the status and More share the final 24px slot. The status
+   is the link's last flex item: the row's centring lines it up with the title
+   and the link's end padding (none here) places it, so the title stops 8px (the
+   link's gap) before it. Without a status the link keeps 32px for More. More
+   itself is an overlay outside the flow, centred on the row. */
+:root .app.mode-code .conversation-link.plain-recent {
+  padding-left: 10px;
+  padding-right: 32px;
+}
+:root .app.mode-code .conversation-link.plain-recent:has(.row-status-trailing),
+:root
+  .app.mode-code
+  .conversation-row:is(:hover, :has(:focus-visible), .menu-open)
+  .conversation-link.plain-recent:has(.row-status-trailing) {
+  padding-right: 0;
+}
+:root .app.mode-code .row-status-trailing {
+  position: static;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  translate: none;
+}
+:root .app.mode-code .conversation-row .row-more {
+  right: 0;
+  width: 24px;
+  height: 24px;
+  margin-top: 0;
+  translate: 0 -50%;
+  border-radius: 6px;
+}
+/* Under the pointer the status keeps its place, hidden, and More covers it. */
+:root
+  .app.mode-code
+  .conversation-row:is(:hover, :has(:focus-visible), .menu-open)
+  .row-status-trailing {
+  visibility: hidden;
+}
+
+/* A touch screen keeps every row's status or place; only the open row shows its
+   ⋯, at the end, and the slot moves in before it. */
+@media (pointer: coarse) {
+  :root .app.mode-code .conversation-row:not(.selected) .row-more {
+    opacity: 0;
+    pointer-events: none;
+  }
+  :root .app.mode-code .conversation-row.selected .row-status-trailing {
+    visibility: visible;
+  }
+  :root
+    .app.mode-code
+    .conversation-row.selected:is(*, :hover)
+    .conversation-link.plain-recent:has(.row-status-trailing) {
+    padding-right: calc(var(--code-row-end, 0px) + 24px);
+  }
+}
+
+/* Template label and badge share the reference inline line box. */
+:root .menu.nav-create-menu.artifacts > button {
+  height: auto;
+  min-height: 32px;
+  padding-block: 6px;
+}
+
+/* The Code Recents heading's buttons on every surface (the web rules in
+   web-shell.css say the same): Group and sort folds away until the heading is
+   hovered or focused, New session stays. */
+.app.mode-code .code-recents-new,
+.app.mode-code .code-recents-sort > button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+}
+.app.mode-code .code-recents-new:hover,
+.app.mode-code .code-recents-sort > button:hover,
+.app.mode-code .code-recents-sort > button.open {
+  background: var(--fill-ghost-hover);
+}
+.app.mode-code .code-recents-sort {
+  display: flex;
+  width: 0;
+  overflow: hidden;
+}
+.app.mode-code .recent-label:hover .code-recents-sort,
+.app.mode-code .recent-label:has(:focus-visible) .code-recents-sort,
+.app.mode-code .code-recents-sort:has([aria-expanded="true"]) {
+  width: auto;
+  overflow: visible;
+}
+@media (pointer: coarse) {
+  .app.mode-code .code-recents-sort {
+    width: auto;
+    overflow: visible;
+  }
+}

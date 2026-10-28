@@ -1,0 +1,27 @@
+{
+  "channels": {
+    "stable": {
+      "latest_version": "1.4.0",
+      "minimum_version": "1.2.0",
+      "published_at": "2026-09-20T08:00:00Z",
+      "release_notes_url": "https://claudex.example.com/releases/1.4.0",
+      "release_notes_md": "## 1.4.0\n- Plan usage limits now show the current session.",
+      "downloads": {
+        "darwin-arm64": {
+          "url": "https://dl.example.com/Claudex-1.4.0-arm64.zip",
+          "sha256": "3f5c9a1e7b2d4c6f8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f"
+        },
+        "darwin-x64": {
+          "url": "https://dl.example.com/Claudex-1.4.0-x64.zip",
+          "sha256": ""
+        },
+        "win32-x64": {
+          "url": "https://dl.example.com/Claudex-Setup-1.4.0.exe",
+          "sha256": ""
+        },
+        "linux-x64": null
+      }
+    }
+  },
+  "enforce_minimum_on_gateway": false
+}

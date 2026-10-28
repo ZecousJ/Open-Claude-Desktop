@@ -1,0 +1,221 @@
+/* The window turns into a light #f0efeb frame with a 50px title bar, and the
+   chat sits in a #151515 card inset 8px with 12px corners. The sidebar and its
+   title-bar buttons are gone until incognito ends. */
+.app.incognito-app {
+  grid-template-columns: minmax(0, 1fr);
+  background: #f0efeb;
+}
+/* The phone's normal hidden-sidebar grid starts with a zero-width column.
+   Incognito has one workspace in column 1, so retain its single-column grid. */
+.app.web.incognito-app.sidebar-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* Incognito has no sidebar column. The current native Chat frame's more
+   specific hidden-sidebar rule otherwise places the workspace in a zero
+   width first column, clipping the actual pointer targets. */
+.app:not(.web).incognito-app.sidebar-hidden,
+.app:not(.web).mode-chat.incognito-app.sidebar-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+.app.incognito-app > .workspace {
+  grid-column: 1;
+  margin: 50px 8px 8px;
+  border-radius: 12px;
+  background: var(--bg);
+}
+/* The web's frame is rounded-2xl. */
+.app.web.incognito-app > .workspace {
+  border-radius: 16px;
+}
+/* No title-bar buttons to clear inside the card. */
+.app.incognito-app .chat-header {
+  padding-left: 17px;
+}
+.app.incognito-app:not(.darwin) .incognito-bar > .incognito-exit {
+  right: 146px;
+}
+.incognito-bar {
+  position: fixed;
+  z-index: 7;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #202020;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+/* Ghost 16px at y 16–32, the title 11px after it; both centred on the window. */
+.incognito-bar > h1 {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 0 1px;
+  font:
+    400 15px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+/* 32px square 8px from the top-right corner; #e5e4e0 on hover. */
+.incognito-bar > .incognito-exit {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #202020;
+  -webkit-app-region: no-drag;
+}
+.incognito-bar > .incognito-exit:hover:not(:disabled) {
+  background: #e5e4e0;
+  color: #202020;
+}
+/* The home keeps the greeting where the normal Chat home has it. */
+.incognito-app .chat-home {
+  margin-top: -50px;
+}
+/* The composer's rim is dashed #5d5d5d, about 3px on, 2px off. */
+.incognito-app .composer {
+  border-style: dashed;
+  border-color: #5d5d5d;
+}
+.app.web.incognito-app .composer {
+  border-width: 1px;
+}
+@media (max-width: 639.98px) {
+  /* The web frame already contributes 8px on either side. Current 390px
+     incognito keeps a 358px composer at x16 with a 1px dashed rim. */
+  .app.web.incognito-app .chat-main.empty-chat .chat-home {
+    width: calc(100% - 16px);
+  }
+}
+/* "Incognito chats stay out of …", 15px #8e8d8b about 55px below the composer. */
+.incognito-note {
+  margin: 47px 0 0;
+  text-align: center;
+  font-size: 15px;
+  line-height: 20px;
+  color: #8e8d8b;
+}
+.incognito-learn-more {
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* Light theme has no capture; the frame inverts to a dark band. */
+:root[data-theme="light"] .app.incognito-app {
+  background: #262624;
+}
+:root[data-theme="light"] .app.incognito-app > .workspace {
+  background: var(--bg);
+}
+:root[data-theme="light"] .incognito-bar,
+:root[data-theme="light"] .incognito-bar > .incognito-exit {
+  color: #ecebe7;
+}
+:root[data-theme="light"]
+  .incognito-bar
+  > .incognito-exit:hover:not(:disabled) {
+  background: #3a3a37;
+  color: #ecebe7;
+}
+:root[data-theme="light"] .incognito-app .composer {
+  border-color: #b5b3ad;
+}
+:root[data-theme="light"] .incognito-note {
+  color: var(--text-secondary);
+}
+
+/* Use incognito on the Chat home: a 32px square 8px from the corner with a
+   #262626 hover face. */
+.incognito-button {
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+.incognito-button:hover {
+  background: #262626;
+}
+:root[data-theme="light"] .incognito-button:hover {
+  background: var(--surface-hover);
+}
+
+/* Current web incognito: same home composition, 1px dashed semantic 30% rim in
+   both themes. The note starts 48px below the chin (column gap24 + source Gf
+   mt6=24) at 14/20, with Learn more on its own line. Scope to web; the native
+   window keeps its separate chrome. Source: shared-5:2327–2335,
+   shared-23:7192–7226. */
+.app.web.incognito-app .incognito-bar {
+  justify-content: flex-start;
+  height: 48px;
+  padding: 0 8px 0 20px;
+  color: #20201f;
+}
+.app.web.incognito-app .incognito-bar > h1 {
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.app.web.incognito-app .incognito-bar-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+:root[data-theme="light"] .app.web.incognito-app {
+  background: #0b0b0b;
+}
+:root[data-theme="light"] .app.web.incognito-app > .workspace {
+  background: #fcfcfa;
+}
+:root[data-theme="light"] .app.web.incognito-app .incognito-bar,
+:root[data-theme="light"] .app.web.incognito-app .incognito-exit {
+  color: #fff;
+}
+.app.web.incognito-app .composer,
+.app.web.incognito-app .composer:focus-within {
+  border: 1px dashed rgb(225 224 217 / 30%);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 3.5%);
+}
+.app.web.incognito-app .composer:focus-within {
+  box-shadow: 0 4px 20px rgb(0 0 0 / 7.5%);
+}
+:root[data-theme="light"] .app.web.incognito-app .composer,
+:root[data-theme="light"] .app.web.incognito-app .composer:focus-within {
+  border-color: rgb(30 30 29 / 30%);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 3.5%);
+}
+:root[data-theme="light"] .app.web.incognito-app .composer:focus-within {
+  box-shadow: 0 4px 20px rgb(0 0 0 / 7.5%);
+}
+.app.web.incognito-app .incognito-note {
+  margin: 48px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #898781;
+}
+.app.web.incognito-app .incognito-learn-more {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--link-text);
+}
+@media (min-width: 640px) {
+  /* The current home chin has no legacy Ideas-row spacer beneath it. */
+  .app.web.incognito-app .composer-chin[data-place="home"] {
+    padding-bottom: 0;
+  }
+}

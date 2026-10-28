@@ -1,0 +1,161 @@
+/* The reference design. */
+.cowork-file-browser {
+  width: 768px;
+  max-width: calc(100vw - 32px);
+  --resource-surface: #151515;
+  --resource-border: rgb(255 255 255 / 10%);
+  --resource-secondary: #c3c2b7;
+  --resource-muted: #898781;
+  --resource-hover: rgb(255 255 255 / 7.5%);
+  --resource-active: #111;
+  --resource-primary: #f0efec;
+  --resource-selected: hsl(15 63.1% 59.6%);
+}
+:root[data-theme="light"] .cowork-file-browser {
+  --resource-surface: #fcfcfb;
+  --resource-border: rgb(11 11 11 / 10%);
+  --resource-secondary: #52514e;
+  --resource-hover: rgb(11 11 11 / 5%);
+  --resource-active: #f6f6f4;
+  --resource-primary: #0b0b0b;
+  --resource-selected: hsl(15 54.2% 51.2%);
+}
+.cowork-browser-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 70vh;
+  min-height: 24rem;
+}
+.cowork-browser-tabs {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--resource-border);
+}
+.cowork-browser-tabs button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  max-width: 192px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cowork-browser-tabs button[aria-selected="true"] {
+  background: var(--resource-active);
+  font-weight: 500;
+}
+.cowork-browser-columns {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
+}
+.cowork-browser-tree,
+.cowork-browser-preview {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--resource-border);
+  border-radius: 8px;
+  background: var(--resource-surface);
+  overflow: hidden;
+}
+.cowork-browser-tree {
+  width: 288px;
+  flex-shrink: 0;
+}
+.cowork-browser-preview {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+.cowork-browser-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 6px;
+  border-bottom: 1px solid var(--resource-border);
+  color: var(--resource-secondary);
+  font-size: 12px;
+}
+.cowork-browser-toolbar span {
+  flex: 1;
+}
+.cowork-browser-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--resource-muted);
+}
+.cowork-browser-tree-scroll {
+  overflow: auto;
+  padding: 0 12px;
+}
+.cowork-browser-tree ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.cowork-browser-tree li > ul {
+  margin-inline-start: 8px;
+  border-inline-start: 1px dotted var(--resource-border);
+  padding-inline-start: 13px;
+}
+/* Classic folder rows. */
+.cowork-browser-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: calc(100% + 12px);
+  margin-inline: -6px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  text-align: start;
+  color: var(--resource-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.cowork-browser-entry[aria-expanded] {
+  color: var(--resource-secondary);
+}
+.cowork-browser-entry span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cowork-browser-entry svg {
+  flex-shrink: 0;
+}
+.cowork-browser-entry:hover,
+.cowork-browser-toolbar button:hover {
+  background: rgb(from var(--resource-active) r g b / 40%);
+}
+.cowork-browser-entry[aria-current="true"] {
+  background: var(--resource-selected);
+  color: #fff;
+}
+.cowork-browser-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  color: var(--resource-muted);
+  font-size: 14px;
+  padding: 0 16px;
+  text-align: center;
+}
+.cowork-browser-tree .cowork-browser-empty {
+  font-size: 12px;
+  padding: 0 8px;
+}
+.cowork-browser-resource {
+  max-height: 70vh;
+  overflow: auto;
+}
+.cowork-browser-resource pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

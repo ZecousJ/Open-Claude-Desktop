@@ -1,0 +1,20 @@
+{
+  "voice": {
+    "transcription": {
+      "enabled": true,
+      "protocol": "websocket",
+      "path": "/v1/audio/realtime/transcriptions",
+      "audio": {
+        "format": "pcm_s16le",
+        "sample_rate": 16000,
+        "channels": 1
+      },
+      "max_session_seconds": 600,
+      "max_bytes": 19200000,
+      "idle_timeout_seconds": 30
+    },
+    "available": {
+      "transcription": true
+    }
+  }
+}

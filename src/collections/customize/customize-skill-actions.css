@@ -1,0 +1,5 @@
+/* Listing pages retain the same independent catalogue actions as the shelves. */
+.customize-directory-rows > li > .customize-catalogue-actions {
+  position: static;
+  flex-shrink: 0;
+}

@@ -1,0 +1,80 @@
+/* #20201f with a 1px #ffffff1a inset ring and no drop shadow, radius 12, 4px
+   inside; 294.5px wide with a 286.5px row per model (50px: name 14/20 over a
+   13/17 description, padding 6px 10px 7px, radius 8), a 1px #ffffff1a rule with
+   4px 10px margins, and 32px rows (Effort ›, More models ›). */
+:root:not([data-theme="light"]) .model-menu,
+:root:not([data-theme="light"]) .model-submenu {
+  border: 0;
+  background: #20201f;
+  box-shadow: inset 0 0 0 1px #ffffff1a;
+  color: #f0efec;
+}
+.model-menu.catalogued {
+  width: 294.5px;
+}
+.model-menu.catalogued .model-menu-current {
+  min-height: 50px !important;
+  padding: 6px 10px 7px;
+  border-radius: 8px;
+}
+.model-menu.catalogued .model-menu-current.single-line {
+  min-height: 32px !important;
+}
+.model-menu.catalogued .model-menu-current strong {
+  font-size: 14px;
+  line-height: 20px;
+}
+.model-menu.catalogued .model-menu-current small {
+  padding-top: 0;
+  font-size: 13px;
+  line-height: 17px;
+}
+:root:not([data-theme="light"])
+  .model-menu.catalogued
+  .model-menu-current
+  strong {
+  color: #f0efec;
+}
+:root:not([data-theme="light"])
+  .model-menu.catalogued
+  .model-menu-current
+  small {
+  color: #898781;
+}
+.model-menu button {
+  border-radius: 8px;
+}
+:root:not([data-theme="light"]) .model-menu button:hover,
+:root:not([data-theme="light"]) .model-menu button:focus-visible,
+:root:not([data-theme="light"]) .model-menu button[aria-expanded="true"] {
+  background: #ffffff13;
+}
+.model-menu .model-menu-separator {
+  height: 1px;
+  margin: 4px 10px;
+}
+:root:not([data-theme="light"]) .model-menu .model-menu-separator {
+  background: #ffffff1a;
+}
+.model-menu-branch > button {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+:root:not([data-theme="light"]) .model-menu-branch > button > small {
+  color: #898781;
+  font-size: 13px;
+  line-height: 17px;
+}
+:root:not([data-theme="light"]) .model-menu button > svg {
+  color: #898781;
+}
+:root:not([data-theme="light"]) .model-menu button[role="menuitemradio"] > svg {
+  color: #2a78d6;
+}
+/* The pill's open and hover face is 7.5% white over the page. */
+:root:not([data-theme="light"]) .model-effort-pill:hover,
+:root:not([data-theme="light"]) .model-effort-pill[aria-expanded="true"] {
+  background: #ffffff13;
+}

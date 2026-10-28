@@ -1,0 +1,299 @@
+.chat-layout {
+  overflow: hidden;
+}
+.empty-chat {
+  padding: 0;
+  overflow: auto;
+  align-items: stretch;
+}
+.code-home {
+  width: min(768px, calc(100% - 80px));
+  margin: 0 auto;
+  padding-top: 54px;
+}
+.code-home h1 {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 450;
+  letter-spacing: -0.35px;
+  margin: 0 0 43px;
+}
+.code-home h1 .star {
+  margin-left: -1px;
+}
+.whats-new {
+  position: absolute;
+  z-index: 4;
+  top: 16px;
+  right: 21px;
+  font-size: 13px;
+  color: #7c96bc;
+  padding: 1px;
+}
+.whats-new:hover {
+  color: #aac8f3;
+}
+.incognito-button {
+  position: absolute;
+  right: 13px;
+  top: 13px;
+  color: var(--text-secondary);
+  padding: 1px;
+  z-index: 4;
+}
+.chat-home {
+  width: min(640px, calc(100% - 48px));
+  margin: 0 auto;
+  padding-top: 31.3vh;
+}
+.chat-home > h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family:
+    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+  color: #e2e1de;
+  font-size: clamp(24px, 18.4px + 1vw, 32px);
+  font-weight: 400;
+  letter-spacing: -1.5px;
+  line-height: 52px;
+  white-space: nowrap;
+  margin: 0 0 36px;
+}
+.chat-home > h1 .star {
+  width: 39px;
+  height: 39px;
+}
+.connection-notice {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 43px;
+  padding: 0 10px 0 16px;
+  margin-bottom: 8px;
+  border: 1px solid #303030;
+  border-radius: 15px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.connection-notice > span {
+  flex: 1;
+}
+.connection-notice > button:not(.icon-button) {
+  background: #2d2d2d;
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #b7b7b7;
+}
+/* Light: the secondary button is an ink fill with the primary text. */
+:root[data-theme="light"] .connection-notice > button:not(.icon-button) {
+  background: var(--alpha-2);
+  color: var(--text);
+}
+.connection-notice .icon-button {
+  width: 23px;
+  height: 26px;
+}
+.composer-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+.composer {
+  box-shadow: 0 2px 4px #0002;
+  background: var(--surface);
+  border-color: #454545;
+}
+.composer:focus-within {
+  box-shadow: 0 2px 4px #0002;
+  border-color: #575757;
+}
+.composer-input-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.composer-input-row textarea {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  display: block;
+  min-width: 0;
+  width: 100%;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 22px;
+  /* The Chat/Cowork box stops at 434 px (18 lines visible, the tools row 56 px
+     under them) and scrolls inside; 370 px of text leaves ours at 434. */
+  max-height: 370px;
+}
+.composer-input-row textarea::placeholder {
+  color: #828282;
+}
+.composer-toolbar {
+  margin: 0;
+}
+.composer-left,
+.composer-right {
+  gap: 8px;
+}
+.composer-left .icon-button {
+  border: 0;
+  border-radius: 4px;
+  width: 25px;
+  height: 26px;
+}
+.model-button {
+  font-size: 13px;
+  padding: 0;
+  max-width: 225px;
+  color: #b8b8b8;
+  gap: 3px;
+  line-height: 20px;
+}
+.effort-button {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 0;
+  line-height: 20px;
+}
+.mic-button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  width: 21px;
+  height: 26px;
+  color: #b0b0b0;
+}
+.mic-button:disabled {
+  opacity: 0.8;
+}
+/* Send in the Chat and Cowork composers: a 31px square, radius 8, #b86845 with
+   a white 18px arrow in both themes. Code keeps its own (code-composer rules
+   below). */
+.send-button {
+  width: 31px;
+  height: 31px;
+  border-radius: 8px;
+  background: #b86845;
+  color: #fff;
+}
+/* Hover is not captured. The original's brand button goes from its fill
+   (#c6613f) to the lighter clay #d97757; in this capture's colours (#c6613f
+   reads #b86845) that is #cb7d5c. The stop button, a neutral disc, steps toward
+   the frame by the same 15% the base rule uses instead of taking the brand
+   tint. */
+.send-button:hover:not(:disabled) {
+  background: #cb7d5c;
+}
+.send-button.stop:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text) 85%, var(--surface));
+}
+.chat-composer .composer {
+  padding: 13px 15px 10px;
+  border-radius: 15px;
+  min-height: 105px;
+}
+.chat-home .composer:focus-within {
+  border-color: #4d4d4d;
+}
+.chat-composer .composer-input-row {
+  min-height: 38px;
+  align-items: flex-start;
+}
+.chat-composer .composer-toolbar {
+  margin-top: 11px;
+  min-height: 29px;
+}
+.chat-composer .composer-right {
+  gap: 7px;
+}
+.chat-composer .composer-right > .mic-button {
+  margin-left: 12px;
+}
+.code-composer {
+  width: min(768px, calc(100% - 80px));
+  align-self: center;
+  margin-top: auto;
+  padding-bottom: 4px;
+  padding-top: 24px;
+}
+.code-composer .composer {
+  border-radius: 11px;
+  padding: 9px 10px;
+  min-height: 40px;
+}
+.code-composer .composer-input-row {
+  gap: 8px;
+  min-height: 20px;
+}
+.code-composer .composer-input-row textarea {
+  min-height: var(--prompt-line, 20px);
+  font-size: var(--prompt-text, 14px);
+  line-height: var(--prompt-line, 20px);
+}
+.code-composer .send-button {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  width: 17px;
+  height: 20px;
+  border-radius: 3px;
+}
+.code-composer .send-button.idle {
+  opacity: 0.4;
+}
+.code-composer .send-button:not(:disabled):hover {
+  color: var(--text);
+  /* The original's ghost button fill (white 7.5% dark, ink 5% light). */
+  background: var(--fill-ghost-hover);
+}
+.code-composer .send-button.stop {
+  color: var(--text-strong);
+}
+.code-composer .composer-toolbar {
+  height: 28px;
+  padding: 3px 7px 0;
+}
+.code-composer .composer-left {
+  gap: 3px;
+}
+.code-composer .composer-right {
+  gap: 15px;
+}
+.code-composer .composer-left .icon-button {
+  width: 17px;
+  height: 23px;
+}
+.code-composer .mic-button {
+  width: 17px;
+  height: 23px;
+}
+.code-composer .mic-button svg {
+  width: 12px;
+  height: 12px;
+}
+.permission-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 0 2px;
+  color: #999;
+}
+.context-ring {
+  width: 11px;
+  height: 11px;
+  border: 1px solid #333;
+  border-radius: 50%;
+  display: inline-block;
+}

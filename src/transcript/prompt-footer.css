@@ -1,0 +1,157 @@
+/* Prompt size, failed-prompt footer, the wait ladder, GitHub asset roles. (part of chat-transcript.css) */
+/* A prompt in Chat and Cowork is the same size as the reply; it was the generic
+   14/21. */
+:is(.mode-chat, .mode-cowork) .user-message {
+  font-size: 15px;
+  line-height: 20px;
+}
+
+/* Failed prompt footer and the verbatim sent-prompt blocks. */
+.failed-send-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  color: #ec7e7e;
+  font-size: 11px;
+  line-height: 17px;
+}
+:root[data-theme="light"] .failed-send-row {
+  color: #8e2626;
+}
+.failed-send-row button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+.failed-send-row button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.sent-prompt-description {
+  color: var(--sent-secondary);
+  margin: 0 0 12px;
+}
+.sent-prompt-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.sent-prompt-blocks pre {
+  background: var(--sent-surface);
+  border: 1px solid var(--sent-border);
+  color: var(--sent-secondary);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+  line-height: 17px;
+  margin: 0;
+  overflow-x: auto;
+  padding: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.modal.sent-prompt-dialog {
+  width: 1024px;
+  --sent-surface: #151515;
+  --sent-border: rgb(255 255 255 / 10%);
+  --sent-secondary: #c3c2b7;
+}
+:root[data-theme="light"] .sent-prompt-dialog {
+  --sent-surface: #fcfcfb;
+  --sent-border: rgb(11 11 11 / 10%);
+  --sent-secondary: #52514e;
+}
+/* Supported GitHub asset roles; default palettes above remain unchanged. */
+:root[data-code-theme^="github-"] :is(.hljs, .markdown pre) {
+  color: var(--code-foreground);
+  background: var(--code-background);
+}
+:root[data-code-theme^="github-"]
+  :is(
+    .hljs-doctag,
+    .hljs-keyword,
+    .hljs-meta .hljs-keyword,
+    .hljs-template-tag,
+    .hljs-template-variable,
+    .hljs-type,
+    .hljs-variable.language_
+  ) {
+  color: var(--code-keyword);
+}
+:root[data-code-theme^="github-"]
+  :is(
+    .hljs-title,
+    .hljs-title.class_,
+    .hljs-title.class_.inherited__,
+    .hljs-title.function_
+  ) {
+  color: var(--code-entity);
+}
+:root[data-code-theme^="github-"]
+  :is(
+    .hljs-attr,
+    .hljs-attribute,
+    .hljs-literal,
+    .hljs-meta,
+    .hljs-number,
+    .hljs-operator,
+    .hljs-variable,
+    .hljs-selector-attr,
+    .hljs-selector-class,
+    .hljs-selector-id
+  ) {
+  color: var(--code-constant);
+}
+:root[data-code-theme^="github-"]
+  :is(.hljs-regexp, .hljs-string, .hljs-meta .hljs-string) {
+  color: var(--code-string);
+}
+:root[data-code-theme^="github-"] :is(.hljs-built_in, .hljs-symbol) {
+  color: var(--code-variable);
+}
+:root[data-code-theme^="github-"]
+  :is(.hljs-comment, .hljs-code, .hljs-formula) {
+  color: var(--code-comment);
+}
+:root[data-code-theme^="github-"]
+  :is(.hljs-name, .hljs-quote, .hljs-selector-tag, .hljs-selector-pseudo) {
+  color: var(--code-tag);
+}
+:root[data-code-theme^="github-"]
+  :is(.hljs-subst, .hljs-emphasis, .hljs-strong) {
+  color: var(--code-foreground);
+}
+:root[data-code-theme^="github-"]
+  :is(
+    .hljs-char.escape_,
+    .hljs-link,
+    .hljs-params,
+    .hljs-property,
+    .hljs-punctuation,
+    .hljs-tag
+  ) {
+  color: inherit;
+}
+:root[data-code-theme^="github-"] .hljs-section {
+  color: var(--code-heading);
+}
+:root[data-code-theme^="github-"] .hljs-bullet {
+  color: var(--code-bullet);
+}
+:root[data-code-theme^="github-"] .hljs-addition {
+  color: var(--code-addition);
+  background-color: var(--code-addition-background);
+}
+:root[data-code-theme^="github-"] .hljs-deletion {
+  color: var(--code-deletion);
+  background-color: var(--code-deletion-background);
+}

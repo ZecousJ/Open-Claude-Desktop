@@ -1,0 +1,17 @@
+/* Warning body: flex-col gap-3 text-sm text-secondary, with a text-xs safety
+   note. */
+.browser-actions-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.browser-actions-copy p {
+  margin: 0;
+}
+.browser-actions-copy p:last-child {
+  font-size: 12px;
+  line-height: 16px;
+}

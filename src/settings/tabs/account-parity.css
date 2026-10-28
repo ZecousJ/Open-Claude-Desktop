@@ -1,0 +1,41 @@
+/* Account profile and device composition: official 1016 Zt/Qt and. */
+.settings-account .account-profile-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.settings-account .account-profile-loading {
+  display: inline-flex;
+}
+.settings-account .account-profile-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.settings-account .settings-avatar {
+  background: var(--settings-alpha-2);
+  color: var(--settings-primary);
+}
+/* Autosize, min-h-[5.5rem], max-h-40. */
+.settings-account .settings-instructions > .settings-textarea {
+  field-sizing: content;
+  min-height: 88px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+/* O16 H keeps an inactive warning sr-only, outside the flex flow. An empty
+   in-flow status would add a gap under the field. */
+.settings-account .settings-instructions > [role="status"]:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.settings-account .settings-section-note.tight {
+  line-height: 17px;
+}

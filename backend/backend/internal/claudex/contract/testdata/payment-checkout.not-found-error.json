@@ -1,0 +1,8 @@
+{
+  "status": 404,
+  "body": {
+    "code": 404,
+    "message": "This checkout link has expired. Go back to Claudex to try again.",
+    "reason": "CLAUDEX_CHECKOUT_NOT_FOUND"
+  }
+}

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Home composer and its sheets. claudex_ keys are Claudex-only.
+  Every key has a Chinese counterpart in values-zh-rCN/strings_composer.xml.
+-->
+<resources>
+    <!-- reworded: "Chat with Claude…" -->
+    <string name="chat_input_hint">Chat with Claudex…</string>
+    <!-- reworded: "Chat with Claude in %1$s…" -->
+    <string name="chat_input_hint_in_project">Chat with Claudex in %1$s…</string>
+    <!-- reworded: "Reply to Claude…" -->
+    <string name="chat_input_hint_reply">Reply to Claudex…</string>
+    <!-- reworded: "Reply to Claude in %1$s…" -->
+    <string name="chat_input_hint_reply_in_project">Reply to Claudex in %1$s…</string>
+    <string name="chat_input_hint_sending">Sending…</string>
+    <string name="type_or_hold_to_talk">Type or hold to talk</string>
+    <string name="reply_or_hold_to_talk">Reply or hold to talk</string>
+    <!-- reworded: "Ask Claude anything" -->
+    <string name="agent_chat_input_placeholder_v2">Ask Claudex anything</string>
+    <string name="ccr_input_placeholder_chat_style_new_session">Describe a task or ask a question…</string>
+    <string name="chat_input_add_to_chat">Add to chat</string>
+    <string name="chat_input_start_speech_input">Start speech input</string>
+    <string name="chat_input_send_button_content_description">Send</string>
+    <string name="chat_input_send_button_waiting_for_uploads">Waiting for attachments to upload</string>
+    <string name="chat_input_stop_button_content_description">Stop responding</string>
+    <string name="chat_input_image_remove_button_content_description">Remove</string>
+    <string name="chat_input_attachment_limit_reached_toast">You can add at most %1$d attachments to a message.</string>
+    <string name="file_preview_file_content_description">File attachment preview</string>
+    <string name="file_preview_image_content_description">Image attachment preview</string>
+
+    <string name="chat_options_add_to_chat">Add to chat</string>
+    <string name="chat_options_add_to_session">Add to session</string>
+    <string name="upload_camera_button">Camera</string>
+    <string name="upload_photos_button">Photos</string>
+    <string name="upload_file_button">Files</string>
+    <string name="composer_connectors_label">Connectors</string>
+    <!-- Claudex: a knowledge base the service cannot reach right now (tool_setting_* caption style). -->
+
+    <string name="chat_options_select_model">Select model</string>
+    <string name="chat_options_more_models">More models</string>
+    <string name="chat_options_effort">Effort</string>
+    <string name="model_picker_effort_default_badge">Default</string>
+    <string name="model_selector_chip_a11y">Model: %1$s. Tap to change.</string>
+    <string name="model_selector_chip_a11y_empty">Choose model. Tap to change.</string>
+    <string name="composer_selected">Selected</string>
+    <string name="claudex_model_none">No models available</string>
+    <string name="claudex_effort_low">Low</string>
+    <string name="claudex_effort_medium">Medium</string>
+    <string name="claudex_effort_high">High</string>
+    <string name="claudex_effort_xhigh">Extra high</string>
+    <string name="claudex_effort_max">Max</string>
+
+    <string name="audio_permission_required">Please enable the microphone permission to use speech input.</string>
+    <string name="stt_error_language_not_found"><b>Sorry, the selected speech input language is no longer available.</b> Please update it in the settings.</string>
+    <string name="stt_error_microphone"><b>Sorry, we didn’t catch that.</b> Please make sure your microphone is working.</string>
+    <string name="stt_error_microphone_interrupted">Dictation stopped because the microphone was interrupted.</string>
+    <string name="stt_error_network"><b>Sorry, we didn’t catch that.</b> Please check your internet connection and try again.</string>
+    <string name="stt_error_server"><b>Sorry, we didn’t catch that.</b> There was a bad response from the server.</string>
+    <string name="stt_error_transcription_empty"><b>Sorry, we didn’t catch that.</b> Please try again.</string>
+    <string name="stt_input_send_dictation">Send dictation</string>
+    <string name="stt_input_stop_dictation">Stop dictation</string>
+    <string name="stt_input_transcribing">Transcribing…</string>
+    <string name="stt_release_to_cancel">Release to cancel</string>
+    <string name="stt_release_to_send">Release to send</string>
+    <string name="stt_release_to_stop">Release to stop</string>
+    <!-- Claudex: the device has no speech recogniser at all. -->
+    <string name="claudex_stt_unavailable">Speech input isn’t available on this device. Try the keyboard’s microphone.</string>
+
+    <plurals name="chat_waiting_messages_count">
+        <item quantity="one">%d waiting</item>
+        <item quantity="other">%d waiting</item>
+    </plurals>
+    <plurals name="chat_waiting_messages_sheet_title">
+        <item quantity="one">%d message waiting</item>
+        <item quantity="other">%d messages waiting</item>
+    </plurals>
+    <!-- reworded: "Claude will read these as soon as it can" -->
+    <string name="chat_waiting_messages_sheet_note">Claudex will read these as soon as it can</string>
+    <string name="chat_waiting_messages_show_all">show all waiting messages</string>
+    <string name="chat_waiting_message_menu_send_now">Send now</string>
+    <!-- reworded: "Waiting for Claude to finish replying" -->
+    <string name="chat_message_queued_state_description">Waiting for Claudex to finish replying</string>
+    <string name="claudex_waiting_message_remove">Remove</string>
+    <string name="claudex_waiting_message_options">Message options</string>
+
+    <string name="composer_rate_limit_reached">Limit reached</string>
+    <string name="composer_rate_limit_approaching">Approaching limit</string>
+    <string name="composer_rate_limit_resets_at_time">Resets at %1$s</string>
+    <string name="composer_rate_limit_resets_day_at_time">Resets %1$s at %2$s</string>
+    <string name="composer_rate_limit_try_again_later">Try again later</string>
+    <string name="composer_usage_percent_used">%1$d%% used</string>
+    <!-- composer_* = same copy as the official key without the prefix (usage_title, usage_percent_used, selected, connectors_label, rate_limit_*); prefixed so other pages can own those keys. -->
+    <string name="composer_usage_title">Usage</string>
+</resources>

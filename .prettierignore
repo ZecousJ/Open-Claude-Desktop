@@ -1,0 +1,14 @@
+package-lock.json
+# Vendored Sub2API fork (LGPL-3.0) keeps the upstream formatting.
+/backend/
+# Recorded evidence and measurements are data, kept byte-for-byte as captured.
+/fidelity/
+/validation/
+scripts/preview/fixtures/
+# Prose documents are edited by hand.
+*.md
+
+handoff/wip/
+handoff/tools/
+handoff/research-2026-09-25.json
+.claude/

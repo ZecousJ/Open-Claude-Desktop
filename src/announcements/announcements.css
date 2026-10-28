@@ -1,0 +1,164 @@
+/*
+ * An announcement pop-up (src/announcements), after claude.ai's "New" dialogs:
+ * a white card with 22px corners; the text column 28px in with a "New" badge
+ * (12/16, weight 500, 6px corners, blue on pale blue), a 30/36 serif title of
+ * weight 500, the body at 15/22, and at the foot a black 40px main button and a
+ * plain second one with a hairline, 8px apart; the picture fills the right
+ * half; the close button is a 36px square with 10px corners at the top right.
+ * Without a picture the card is one 400px column. Dark: the popover surface
+ * #20201f, ink #f0efec, the badge in the toggled-on blue (#0b1f40 with
+ * #83a3d7), the main button white with black ink.
+ */
+.announcement-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 50%);
+  backdrop-filter: blur(2px);
+  /* Motion: the dialog's, 200ms in and out. */
+  animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.announcement-overlay > .announcement {
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.announcement {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  width: 400px;
+  max-width: 100%;
+  max-height: calc(100vh - 32px);
+  overflow: hidden;
+  border-radius: 22px;
+  background: #fff;
+  color: #0b0b0b;
+  box-shadow:
+    0 0 0 1px rgb(10 10 10 / 10%),
+    0 12px 40px rgb(0 0 0 / 24%);
+}
+.announcement.with-image {
+  width: 960px;
+}
+.announcement-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  min-height: 440px;
+  padding: 28px;
+}
+.announcement.with-image .announcement-text {
+  flex-basis: 50%;
+}
+.announcement-badge {
+  align-self: flex-start;
+  margin-bottom: 20px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #e2ecfa;
+  color: #1f4f94;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+.announcement h2 {
+  margin: 0 0 24px;
+  font:
+    500 30px/36px "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif;
+  color: inherit;
+}
+.announcement-body {
+  flex: 1;
+  width: 100%;
+  min-height: 190px;
+  border: 0;
+  background: transparent;
+}
+.announcement-paragraphs {
+  overflow: auto;
+  font-size: 15px;
+  line-height: 22px;
+}
+.announcement-paragraphs p {
+  margin: 0 0 12px;
+}
+.announcement-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 24px;
+}
+.announcement-actions button {
+  height: 40px;
+  border-radius: 9px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.announcement-primary {
+  background: #0b0b0b;
+  color: #fff;
+  font-weight: 500;
+}
+.announcement-secondary {
+  box-shadow:
+    inset 0 0 0 1px rgb(10 10 10 / 10%),
+    0 1px 2px rgb(0 0 0 / 5%);
+  color: inherit;
+}
+.announcement-image {
+  flex: 0 0 50%;
+  width: 50%;
+  object-fit: cover;
+}
+.announcement-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 85%);
+  color: #0b0b0b;
+}
+:root:not([data-theme="light"]) .announcement {
+  background: #20201f;
+  color: #f0efec;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 12px 40px rgb(0 0 0 / 40%);
+}
+:root:not([data-theme="light"]) .announcement-badge {
+  background: #0b1f40;
+  color: #83a3d7;
+}
+:root:not([data-theme="light"]) .announcement-primary {
+  background: #fff;
+  color: #0b0b0b;
+}
+:root:not([data-theme="light"]) .announcement-secondary {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 1px 2px rgb(0 0 0 / 5%);
+}
+:root:not([data-theme="light"]) .announcement-close {
+  background: rgb(0 0 0 / 40%);
+  color: #fff;
+}
+@media (max-width: 720px) {
+  .announcement.with-image .announcement-image {
+    display: none;
+  }
+  .announcement.with-image {
+    width: 400px;
+  }
+}

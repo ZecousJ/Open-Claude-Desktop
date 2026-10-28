@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws://127.0.0.1:5173; frame-src 'self' blob: claudex-preview:; object-src 'none'; base-uri 'none'"
+    />
+    <!-- NativeTheme already reflects the saved app preference in Electron.
+         Match its canvas before the renderer CSS, locale and fonts arrive
+         (installed Claude 2.42304.0 main_window/index.html first-frame rules). -->
+    <style id="native-boot-theme">
+      html {
+        background: var(--bg, #fcfcfb);
+        color-scheme: light;
+      }
+      html:not([data-theme]) {
+        background: #fcfcfb;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        html {
+          background: var(--bg, #151515);
+          color-scheme: dark;
+        }
+        html:not([data-theme]) {
+          background: #151515;
+          color-scheme: dark;
+        }
+      }
+      html[data-theme="light"] {
+        background: var(--bg, #fcfcfb);
+        color-scheme: light;
+      }
+      html[data-theme="dark"] {
+        background: var(--bg, #151515);
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+      }
+      html:not([data-theme]) body {
+        background: inherit;
+      }
+    </style>
+    <script type="module" src="/src/boot/native-theme.ts"></script>
+    <link
+      rel="preload"
+      href="/src/assets/fonts/anthropicons-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <title>Claudex</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

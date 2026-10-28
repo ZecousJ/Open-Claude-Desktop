@@ -1,0 +1,114 @@
+/* Allowed sites: a 400px card; an Add URL field and 28px site rows, 20px apart;
+   Clear all at the left of the footer. */
+.modal.allowed-sites {
+  width: 400px;
+  max-width: calc(100vw - 32px);
+}
+.modal.allowed-sites .desktop-dialog-note {
+  margin: 0 0 20px;
+  color: #a3a29f;
+  line-height: 20px;
+}
+:root[data-theme="light"] .modal.allowed-sites .desktop-dialog-note {
+  color: #767674;
+}
+.allowed-sites-add {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+.allowed-sites-add > label {
+  padding: 0 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+.allowed-sites-add > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 3px 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.allowed-sites-add > div:focus-within {
+  border-color: var(--border-strong);
+}
+.allowed-sites-add input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 12px;
+  outline: none;
+}
+.allowed-sites-add > div > button,
+.allowed-sites-list button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--text-secondary);
+}
+.allowed-sites-add > div > button:hover:not(:disabled),
+.allowed-sites-list button:hover {
+  background: var(--fill-ghost-hover);
+}
+.allowed-sites-add > div > button:disabled {
+  opacity: 0.4;
+}
+.allowed-sites-add > p {
+  margin: 0;
+  padding: 0 6px;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 16px;
+}
+.allowed-sites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.allowed-sites-list > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 2px 0 6px;
+  border-radius: 6px;
+  background: var(--alpha-1);
+}
+.allowed-sites-list > div.built-in {
+  padding-right: 8px;
+}
+.allowed-sites-list > div > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.allowed-sites-list small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.allowed-sites-list > p {
+  margin: 0;
+  padding: 0 6px;
+  color: var(--text-muted);
+}
+.modal.allowed-sites > .button-row {
+  justify-content: space-between;
+  margin-top: 20px;
+}

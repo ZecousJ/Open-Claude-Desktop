@@ -1,0 +1,29 @@
+/* Bash mode: the line is typed in the mono face, placeholder included
+   (.epitaxy-prompt[data-bash-mode]), and a small "bash" pill sits before Send.
+   The pill is the original's Badge variant pro, size sm: bg-tint-violet
+   text-pro, h-control-nested (18px), rounded-chip (a quarter of that), px-sm
+   (6px) and caption text (11/17) at medium weight. */
+.composer-wrap textarea[data-bash-mode] {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.composer-wrap textarea[data-bash-mode]::placeholder {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+.bash-mode-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  align-self: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4.5px;
+  background: #785ee81f;
+  color: #a89af0;
+  font-size: 11px;
+  line-height: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+:root[data-theme="light"] .bash-mode-pill {
+  color: #5437b8;
+}

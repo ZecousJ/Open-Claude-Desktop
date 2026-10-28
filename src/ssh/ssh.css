@@ -1,0 +1,372 @@
+/* mt-3, gap-sm, text-footnote text-secondary. */
+.ssh-link-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.ssh-link-details p {
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--text-secondary);
+}
+/*
+ * SSH environments (R9-S5). Sizes follow the environment chip, the Code usage
+ * banner and the app's form dialogs, with the existing tokens. Provisional
+ * until references exist.
+ */
+
+/* Environment chip on a host: a 16px server icon, or a 12px spinner in its
+   place while connecting, with a 6px red dot at its top right when offline. */
+.ssh-chip-icon {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+.ssh-chip-error {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 0 1.5px #2d2d2d;
+}
+.workspace-chip.open .ssh-chip-error,
+.workspace-chip:hover .ssh-chip-error {
+  box-shadow: 0 0 0 1.5px #353535;
+}
+
+/* Connection strip above an SSH conversation's composer: the Code usage
+   banner's 40px #212121 strip, 16px icon 8px in, 13px text. */
+.ssh-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  margin-bottom: 6px;
+  padding: 0 8px 0 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #212121;
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.ssh-banner > :is(svg, .cds-spinner) {
+  flex: 0 0 auto;
+  color: #8d8d8b;
+}
+.ssh-banner.error > :is(svg, .cds-spinner) {
+  color: var(--danger);
+}
+.ssh-banner-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ssh-banner-action {
+  flex: 0 0 auto;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #383838;
+  color: var(--text);
+  font-size: 12px;
+}
+.ssh-banner-action:hover {
+  background: #444;
+}
+/* Setting up Claudex on the host: a 2px accent line along the bottom. */
+.ssh-banner-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width var(--motion-base) var(--ease-out);
+}
+:root[data-theme="light"] .ssh-banner {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+:root[data-theme="light"] .ssh-banner-action {
+  background: color-mix(in srgb, var(--surface-hover) 85%, #000);
+  color: var(--text-strong);
+}
+
+/* Add / Edit connection: the form dialog's 14px semibold labels over 32px
+   fields, Name and Port side by side. */
+.ssh-host-form > label,
+.ssh-host-pair > label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.ssh-host-form input,
+.ssh-folder input,
+.ssh-prompt input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  margin-top: 4px;
+  padding: 0 11px;
+  font-size: 14px;
+  font-weight: 400;
+  background: var(--bg);
+}
+.ssh-host-intro {
+  margin: 0 0 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+.ssh-host-pair {
+  display: grid;
+  grid-template-columns: 1fr 96px;
+  gap: 12px;
+}
+.ssh-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -8px 0 14px;
+}
+.ssh-suggestions > button {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+.ssh-suggestions > button:hover {
+  color: var(--text-strong);
+}
+.ssh-advanced-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 12px -2px;
+  padding: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.ssh-advanced-toggle > svg {
+  transition: transform var(--motion-snap) var(--ease-out);
+}
+.ssh-advanced-toggle > svg.open {
+  transform: rotate(90deg);
+}
+.ssh-test-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 18px;
+}
+.ssh-test-result.ok {
+  color: var(--success);
+}
+.ssh-test-result.failed {
+  color: var(--danger);
+}
+.ssh-host-form .button-row,
+.ssh-folder .button-row,
+.ssh-prompt .button-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+/* Ghost text-danger, sm:me-auto. */
+.ssh-host-form .ssh-delete-connection {
+  color: var(--danger);
+  background: transparent;
+  border-color: transparent;
+}
+@media (min-width: 640px) {
+  .ssh-host-form .ssh-delete-connection {
+    margin-inline-end: auto;
+  }
+}
+@media (hover: hover) {
+  .ssh-host-form .ssh-delete-connection:hover:not(:disabled) {
+    background: var(--fill-ghost-hover);
+  }
+}
+.modal .button-row > button > .spin {
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+
+/* Askpass: ssh's own words in a monospace block, then the answer. */
+.ssh-prompt-text {
+  max-height: 160px;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  overflow: auto;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
+.ssh-fingerprint {
+  margin: 0 0 8px;
+  font-size: 13px;
+  user-select: text;
+}
+.ssh-prompt-note {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* Choose a folder on a host: the path with an Up button, then the folders
+   as 28px rows in a 240px scrolling list. */
+.ssh-folder-path {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ssh-folder-path input {
+  margin-top: 0;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 13px;
+}
+.ssh-folder-up {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+.ssh-folder-list {
+  height: 240px;
+  margin-top: 8px;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.ssh-folder-list > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font-size: 14px;
+  text-align: left;
+}
+.ssh-folder-list > button:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.ssh-folder-list > button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ssh-folder-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.ssh-link {
+  padding: 0;
+  background: none;
+  color: var(--text-strong);
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+/* Settings → Claude Code → SSH connections. */
+.ssh-host-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ssh-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.ssh-dot.ready {
+  background: var(--success);
+}
+.ssh-dot.error {
+  background: var(--danger);
+}
+.ssh-host-actions {
+  display: flex;
+  gap: 6px;
+}
+.ssh-host-actions .spin {
+  margin-right: 4px;
+}
+
+/* : mt-2 rounded bg-surface-1 px-3 py-2 text-code. */
+.ssh-technical-details summary {
+  font-size: 12px;
+  line-height: 15px;
+}
+.ssh-technical-details > div {
+  margin-top: 8px;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 17px;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+:root[data-theme="light"] .ssh-technical-details > div {
+  background: #fcfcfb;
+}
+
+/* Reduced motion: the bar and the chevron jump. */
+@media (prefers-reduced-motion: reduce) {
+  .ssh-banner-progress,
+  .ssh-advanced-toggle > svg {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .ssh-banner-progress,
+:root[data-motion="reduced"] .ssh-advanced-toggle > svg {
+  transition: none;
+}

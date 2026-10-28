@@ -1,0 +1,285 @@
+.code-home-draft {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+.code-home-environments {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: min-content;
+  padding-inline: 16px;
+}
+.app.web .code-home-environments {
+  padding-top: 41px;
+}
+.app.web .web-home-corner.code-draft-corner {
+  top: 9px;
+  left: 9px;
+  justify-content: flex-end;
+}
+.app.web.sidebar-hidden .web-home-corner.code-draft-corner {
+  left: 48px;
+}
+.app.web .web-home-corner .code-draft-title {
+  margin: 0;
+  margin-inline-end: auto;
+  padding-inline-start: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 500;
+}
+.code-home-draft > .code-composer {
+  margin-top: 0;
+}
+.native-code-home-centre {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: min-content;
+  gap: 12px;
+  padding: 16px;
+}
+.native-code-home-environments {
+  /*320px list plus the source start-card wrapper's1px padding per side. */
+  width: 322px;
+  max-width: 100%;
+}
+
+/* Current web Code draft: a 44px prompt, then a 24px chin 10px below. Native
+   home uses the same source component; opened sessions stay separate. */
+.app .code-home-composer {
+  padding: 0 0 10px;
+}
+.app :is(.code-home-composer, .code-live-composer) .composer {
+  min-height: 44px;
+  padding: 8px;
+  border-width: 0;
+  border-radius: 14px;
+}
+/* Current dark Code frame: shadow-composer and shadow-composer-focus,
+   measured from the mounted draft. The light and native rules stay separate. */
+:root:not([data-theme="light"])
+  .app
+  :is(.code-home-composer, .code-live-composer)
+  .composer {
+  background: #20201f;
+  box-shadow:
+    0 4px 20px rgb(0 0 0 / 3.5%),
+    inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+:root:not([data-theme="light"])
+  .app
+  :is(.code-home-composer, .code-live-composer)
+  .composer:focus-within {
+  box-shadow:
+    0 4px 20px rgb(0 0 0 / 7.5%),
+    inset 0 0 0 1px rgb(255 255 255 / 20%);
+}
+.app :is(.code-home-composer, .code-live-composer) .composer-input-row {
+  min-height: 28px;
+  gap: 6px;
+}
+.app :is(.code-home-composer, .code-live-composer) .composer-mention-field {
+  align-items: center;
+}
+.app
+  :is(.code-home-composer, .code-live-composer)
+  .composer-input-row
+  textarea {
+  min-height: 20px;
+  font-size: var(--prompt-text, 14px);
+  line-height: var(--prompt-line, 20px);
+}
+.app
+  :is(.code-home-composer, .code-live-composer)
+  .composer-input-row
+  > .popover-anchor
+  > .icon-button,
+.app :is(.code-home-composer, .code-live-composer) .dictation-button,
+.app :is(.code-home-composer, .code-live-composer) .send-button {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  border-radius: 6px;
+}
+.app
+  :is(.code-home-composer, .code-live-composer)
+  .composer-input-row
+  > .popover-anchor
+  > .icon-button
+  svg {
+  width: 18px;
+  height: 18px;
+}
+.web-code-draft-microphone {
+  display: flex;
+  align-self: flex-end;
+}
+.app :is(.code-home-composer, .code-live-composer) .dictation-button::before {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+.app :is(.code-home-composer, .code-live-composer) .composer-toolbar {
+  min-height: 24px;
+  height: auto;
+  margin-top: 10px;
+  padding: 0 10px;
+  align-items: center;
+}
+.app :is(.code-home-composer, .code-live-composer) .composer-left,
+.app :is(.code-home-composer, .code-live-composer) .composer-right {
+  align-items: center;
+  gap: 4px;
+}
+.app :is(.code-home-composer, .code-live-composer) .code-permission-anchor {
+  margin: 0;
+}
+.app :is(.code-home-composer, .code-live-composer) .code-permission-trigger,
+.app :is(.code-home-composer, .code-live-composer) .model-button,
+.app :is(.code-home-composer, .code-live-composer) .code-effort-trigger {
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.app :is(.code-home-composer, .code-live-composer) .code-permission-glyph,
+.app :is(.code-home-composer, .code-live-composer) .code-permission-caret {
+  display: none;
+}
+.app :is(.code-home-composer, .code-live-composer) .context-ring {
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+.app .code-home-composer .cloud-workspace-bar {
+  flex-wrap: wrap;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  gap: 4px;
+}
+.app .code-home-composer .workspace-chip {
+  padding: 0 6px;
+  background: none;
+  box-shadow: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.app .code-home-composer .workspace-chip:hover,
+.app .code-home-composer .workspace-chip.open {
+  background: var(--fill-ghost-hover);
+}
+.app .code-home-composer .pixel-mascot {
+  width: 80px;
+  height: 80px;
+  /* Same-state official anchor: right -13px, below its zero-height top
+     anchor by 144px/11. This SVG is inside the frame instead. */
+  right: -13px;
+  bottom: calc(100% - 144px / 11);
+}
+.app .code-home-composer .cloud-workspace-bar:has(.workspace-repo) {
+  max-width: 100%;
+}
+@media (max-width: 639px) {
+  .app.web .code-home-composer {
+    width: calc(100% - 50px);
+  }
+  .app .code-home-composer .composer-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 4px;
+    height: auto;
+  }
+  .app .code-home-composer .composer-left {
+    display: contents;
+  }
+  .app .code-home-composer .cloud-workspace-bar {
+    grid-column: 1 / -1;
+  }
+  .app .code-home-composer .web-code-draft-workspace-placeholder {
+    grid-column: 1 / -1;
+    height: 24px;
+  }
+}
+
+/* Native home environment/folder selectors share the 24px chin; their
+   local/SSH/remote actions remain real. */
+.app .code-home-composer .workspace-bar {
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  gap: 4px;
+}
+.app .code-home-composer .workspace-chip {
+  padding: 0 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.app .code-home-composer .workspace-chip:hover,
+.app .code-home-composer .workspace-chip.open {
+  background: var(--fill-ghost-hover);
+}
+
+/* The one start-card suggestion list: Next steps, suggested tasks and the CLI
+   import portal their rows into it. */
+.native-code-home-suggestions.next-steps {
+  margin: 0;
+}
+.native-code-home-suggestions:empty {
+  display: none;
+}
+.next-step-blocked {
+  color: var(--warning);
+}
+
+.app.web .code-home-composer {
+  width: min(768px, calc(100% - 2 * var(--code-home-gutter, 41px)));
+}
+/* The observed Code microphone uses the shared two-line tooltip: 6x8
+   padding, 2px gap, 13/18 primary, 11/14 detail and 4px side offset. */
+.app.web .code-home-composer .dictation-tooltip:has(.dictation-tooltip-detail) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 0;
+  width: max-content;
+  max-width: 240px;
+  white-space: normal;
+  font-size: 13px;
+  line-height: 18px;
+}
+:root:not([data-theme="light"])
+  .app.web
+  .code-home-composer
+  .dictation-tooltip {
+  background: #20201f;
+  color: #f0efec;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 1px 2px rgb(11 11 11 / 6%),
+    0 2px 8px rgb(0 0 0 / 24%);
+}
+
+/* An opened web session's prompt keeps the live dock's 10px under its
+   footer row, as the home's does. */
+.app .code-live-composer {
+  padding-bottom: 10px;
+}

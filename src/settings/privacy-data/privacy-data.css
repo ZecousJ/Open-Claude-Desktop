@@ -1,0 +1,109 @@
+/*
+ * Privacy → Your feedback: a 32px ghost Back flush with the content edge and
+ * the 15/20/500 title 12px after it, an 8px gap, the 13px secondary footnote
+ * and 16px to the table. Header cells: 14px/500 secondary, 12px under, a
+ * hairline below; cells 16px tall padding, 16px apart, rows divided.
+ */
+.privacy-feedback {
+  display: flex;
+  flex-direction: column;
+}
+.privacy-feedback-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.privacy-feedback-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: -6px;
+  border-radius: 8px;
+  color: var(--settings-primary, #f0efec);
+}
+.privacy-feedback-back:hover {
+  background: var(--fill-ghost-hover);
+}
+.privacy-feedback-head h2 {
+  margin: 0;
+  color: var(--settings-primary, #f0efec);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.privacy-feedback-note {
+  margin: 0 0 16px;
+  color: var(--settings-secondary, #c3c2b7);
+  font-size: 13px;
+  line-height: 17px;
+}
+.privacy-feedback-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+}
+.privacy-feedback-table th {
+  padding: 0 16px 12px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  color: var(--settings-secondary, #c3c2b7);
+  font-weight: 500;
+  text-align: left;
+}
+.privacy-feedback-table td {
+  padding: 16px;
+  color: var(--settings-secondary, #c3c2b7);
+  white-space: nowrap;
+}
+.privacy-feedback-table tbody tr + tr td {
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+}
+.privacy-feedback-table th:first-child,
+.privacy-feedback-table td:first-child {
+  padding-left: 0;
+}
+.privacy-feedback-table th:last-child,
+.privacy-feedback-table td:last-child {
+  padding-right: 0;
+}
+.privacy-feedback-table .center {
+  text-align: center;
+}
+.privacy-feedback-table .reason {
+  max-width: 196px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.privacy-feedback-table .reason > span {
+  color: var(--settings-primary, #f0efec);
+}
+.privacy-feedback-table .muted {
+  color: var(--text-muted, #898781);
+}
+.privacy-feedback-rating {
+  display: inline-flex;
+}
+.privacy-feedback-withdraw {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--danger);
+}
+.privacy-feedback-withdraw:hover:not(:disabled) {
+  background: var(--fill-ghost-hover);
+}
+.privacy-feedback-more {
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
+}
+:root[data-theme="light"] .privacy-feedback-table th,
+:root[data-theme="light"] .privacy-feedback-table tbody tr + tr td {
+  border-color: rgb(11 11 11 / 0.1);
+}

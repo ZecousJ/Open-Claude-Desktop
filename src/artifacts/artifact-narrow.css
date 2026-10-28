@@ -1,0 +1,140 @@
+/*
+ * The file viewer in a narrow window. W969 captures are at 1.2 page zoom (2.4
+ * image px per CSS px; 808 CSS px wide). With the sidebar open, the original's
+ * panel covers the whole conversation column flush against the sidebar and the
+ * window's top, right and bottom edges, with Close and no Expand. With the
+ * sidebar collapsed at the same width it stays beside the conversation in its
+ * framed, inset form with Expand. At W602 the preview fills the window. The
+ * breakpoints repeat artifactOverlayWidth (1000) and artifactCollapseWidth
+ * (720); neither was measured, only bounded by the captures.
+ */
+@media (max-width: 999.98px) {
+  .app:not(.sidebar-hidden) .artifact-panel.file-viewer {
+    inset: 0;
+    width: auto;
+    border-width: 0 0 0 1px;
+    border-color: #2a2a2a;
+    border-radius: 0;
+  }
+  /* Flush with the window's top, the header is 48px with its controls centred
+     in it, and no rounded top corners. */
+  .app:not(.sidebar-hidden) .artifact-panel.file-viewer > header {
+    height: 48px;
+    min-height: 48px;
+    border-radius: 0;
+  }
+  .app:not(.sidebar-hidden) .artifact-collaboration .artifact-comment-layer {
+    top: 48px;
+  }
+  .app:not(.sidebar-hidden) .workspace:has(.file-viewer) > .chat-header,
+  .app:not(.sidebar-hidden)
+    .chat-layout:has(> .file-viewer)
+    > :is(.chat-main, .artifacts-page) {
+    visibility: hidden;
+  }
+  /* Covering the column already, the panel neither resizes nor expands. */
+  .app:not(.sidebar-hidden) .file-viewer > .file-viewer-resize,
+  .app:not(.sidebar-hidden)
+    .file-viewer:not([data-expanded="true"])
+    button[aria-label="Expand"] {
+    display: none;
+  }
+}
+@media (max-width: 719.98px) {
+  .artifact-panel.file-viewer {
+    left: 8px;
+    width: auto;
+  }
+  .workspace:has(.file-viewer) > .chat-header,
+  .chat-layout:has(> .file-viewer) > :is(.chat-main, .artifacts-page) {
+    visibility: hidden;
+  }
+  .file-viewer > .file-viewer-resize,
+  .file-viewer:not([data-expanded="true"]) button[aria-label="Expand"] {
+    display: none;
+  }
+  .app:has(.file-viewer) > .app-chrome-layer > .collapsed-chrome {
+    z-index: 13;
+  }
+  .sidebar-hidden.darwin .file-viewer > header {
+    padding-left: 164px;
+  }
+}
+@media (max-width: 999.98px) {
+  :root[data-theme="light"]
+    .app:not(.sidebar-hidden)
+    .artifact-panel.file-viewer {
+    border-color: var(--border);
+  }
+}
+/*
+ * A phone (the web below 640px, also the Android app): the viewer is a sheet
+ * over the lower three quarters of the screen, like the iOS app's sheets, and
+ * goes down with a drag. The conversation stays where it is, full width and
+ * dimmed with the drawer's scrim (95-web.css), so opening a file moves nothing
+ * under it; a tap on the dimmed part (the ::before) closes the sheet. The drag
+ * indicator is the iOS one: 36 by 5, 5px from the top, tertiary label grey. The
+ * top corners are the panel's 11px. Opened from the Artifacts page (expanded) a
+ * file still takes the page.
+ */
+@media (max-width: 639.98px) {
+  .app.web .artifact-panel.file-viewer:not([data-expanded="true"]) {
+    position: fixed;
+    inset: 25dvh 0 0;
+    width: auto;
+    border-width: 1px 0 0;
+    border-radius: 11px 11px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+    box-shadow: 0 0 0 100vmax rgb(0 0 0 / calc(50% * var(--sheet-dim, 1)));
+  }
+  .app.web .artifact-panel.file-viewer:not([data-expanded="true"])::before {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    inset: 0 0 auto;
+    height: 25dvh;
+  }
+  .app.web .file-viewer:not([data-expanded="true"]) > header,
+  .app.web.sidebar-hidden .file-viewer:not([data-expanded="true"]) > header {
+    height: 56px;
+    min-height: 56px;
+    padding: 12px 10px 0;
+    box-sizing: border-box;
+    border-radius: 11px 11px 0 0;
+  }
+  .app.web .file-viewer:not([data-expanded="true"]) > header::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(50% - 18px);
+    width: 36px;
+    height: 5px;
+    border-radius: 2.5px;
+    background: rgb(235 235 245 / 30%);
+  }
+  :root[data-theme="light"]
+    .app.web
+    .file-viewer:not([data-expanded="true"])
+    > header::before {
+    background: rgb(60 60 67 / 30%);
+  }
+  .app.web
+    .chat-layout:has(> .file-viewer:not([data-expanded="true"]))
+    > :is(.chat-main, .artifacts-page) {
+    flex: 1;
+    width: auto;
+    visibility: visible;
+  }
+  .app.web
+    .workspace:has(.file-viewer:not([data-expanded="true"]))
+    > .chat-header {
+    width: auto;
+    visibility: visible;
+  }
+  .app.web:has(.file-viewer:not([data-expanded="true"]))
+    > .app-chrome-layer
+    > .collapsed-chrome {
+    z-index: 6;
+  }
+}

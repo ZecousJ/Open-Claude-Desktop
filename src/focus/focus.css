@@ -1,0 +1,150 @@
+/*
+ * Settings → Time and focus: rows with 16px above and below (a two-line row
+ * 76px, the days row 125px with the circles 16px under the note), the hours and
+ * minutes menus 84×32 on white 5% without a border, day circles 32px, 12px
+ * apart, 12px 580 letters in #898781 on white 10%. The chosen state and the
+ * From/To menus had no capture (opening them changes the account): a chosen day
+ * is drawn like a chosen segment (primary ink on white 20%).
+ */
+.focus-page .settings-row {
+  padding: 16px 0;
+}
+.focus-page .settings-row-stacked {
+  gap: 0;
+}
+:root:not([data-theme="light"]) .focus-break-menus .settings-select {
+  border: 0;
+  background: rgb(255 255 255 / 5%);
+}
+.focus-break-menus {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+.focus-quiet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+.focus-days {
+  display: flex;
+  gap: 12px;
+}
+.focus-days > button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 6%);
+  color: #73726c;
+  font-size: 12px;
+  font-weight: 580;
+  cursor: pointer;
+}
+:root:not([data-theme="light"]) .focus-days > button {
+  background: rgb(255 255 255 / 10%);
+  color: #898781;
+}
+.focus-days > button[aria-pressed="true"] {
+  background: rgb(0 0 0 / 16%);
+  color: #1f1e1d;
+}
+:root:not([data-theme="light"]) .focus-days > button[aria-pressed="true"] {
+  background: rgb(255 255 255 / 20%);
+  color: #f0efec;
+}
+.focus-times {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+/* The corner notice's Snooze. */
+.focus-toast-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.focus-toast-actions > button {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: rgb(128 128 128 / 18%);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.focus-toast {
+  align-items: start;
+}
+
+/* Settings → Reflect: the empty state centred in the page, 48px above and
+   below, the 96px pictogram 16px over its sentence, 13/17 #c3c2b7 at most 320
+   wide, the link in #6da7ec. */
+.reflect-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 12px;
+  text-align: center;
+  color: var(--text);
+}
+.reflect-empty > p {
+  max-width: 320px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 17px;
+}
+:root:not([data-theme="light"]) .reflect-empty > p {
+  color: #c3c2b7;
+}
+/* Reflect's note: 13/17, 4px under the title, the page 20px under it (the
+   original's flex-col gap-xs header, then gap-6). */
+.settings-section:has(> .reflect-empty, > .reflect-body)
+  > .settings-section-note.tight {
+  margin-top: -12px;
+  margin-bottom: 20px;
+  line-height: 17px;
+}
+.reflect-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #2c6bc4;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+:root:not([data-theme="light"]) .reflect-link {
+  color: #6da7ec;
+}
+.reflect-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+.reflect-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.reflect-body .markdown > * {
+  margin-top: 0;
+  margin-bottom: 8px;
+}

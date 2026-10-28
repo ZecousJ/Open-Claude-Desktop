@@ -1,0 +1,302 @@
+/* Collapse and expand, the floating card, the edge hint (part of sidebar.css) */
+/* Collapsed sidebar: a 6px accent dot on the toggle while a chat is unread or a
+   request waits. */
+.collapsed-chrome > .icon-button.has-dot::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--focus-accent);
+}
+
+/* Collapse / expand. On the desktop the column and the sidebar switch at once,
+   with no slide: the original's desktop frame gives its sidebar `transition:
+   none` when it collapses, and R-0021 (Windows, 1x) already shows the final
+   layout in the first screenshot after a click. The title-bar buttons do not
+   move: the floating copy takes the sidebar's place in the same frame. */
+.sidebar {
+  width: var(--sidebar-width);
+}
+.app:not(.sidebar-hidden) .collapsed-chrome {
+  visibility: hidden;
+}
+.app.sidebar-hidden .sidebar-chrome > .icon-button {
+  visibility: hidden;
+}
+/* The sidebar slides (the web app's slide; its phone drawer slides over the
+   page, 95-web.css): 150ms with the column, only while toggling, so resizing
+   the window stays direct; the floating copy hands back when the slide ends.
+   The desktop slides too. */
+.app.sidebar-animating {
+  transition: grid-template-columns 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+.app .sidebar {
+  transition:
+    transform 150ms cubic-bezier(0.2, 0, 0, 1),
+    visibility 0s;
+}
+.app.sidebar-hidden .sidebar {
+  transform: translateX(-100%);
+  transition:
+    transform 150ms cubic-bezier(0.2, 0, 0, 1),
+    visibility 0s linear 150ms;
+}
+.app:not(.sidebar-hidden) .collapsed-chrome {
+  transition: visibility 0s linear 150ms;
+}
+/* What sits under the floating controls takes their room (the padding the
+   sidebar-hidden rules give it) with the same slide: at once, the first frame
+   pushed a conversation's title bar right while the column was still there, and
+   its buttons jumped under the caption buttons and back. */
+.app.sidebar-animating
+  :is(
+    .chat-header,
+    .routine-crumb,
+    .file-viewer > header,
+    .terminal-panel > header
+  ) {
+  transition: padding-left 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+.app:not(.sidebar-hidden) .sidebar-chrome > .icon-button {
+  transition: visibility 0s linear 150ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app.sidebar-animating,
+  .app .sidebar,
+  .app.sidebar-hidden .sidebar,
+  .app:not(.sidebar-hidden) .collapsed-chrome,
+  .app:not(.sidebar-hidden) .sidebar-chrome > .icon-button,
+  .app.sidebar-animating
+    :is(
+      .chat-header,
+      .routine-crumb,
+      .file-viewer > header,
+      .terminal-panel > header
+    ) {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .app.sidebar-animating,
+:root[data-motion="reduced"] .app .sidebar,
+:root[data-motion="reduced"] .app.sidebar-hidden .sidebar,
+:root[data-motion="reduced"] .app:not(.sidebar-hidden) .collapsed-chrome,
+:root[data-motion="reduced"]
+  .app:not(.sidebar-hidden)
+  .sidebar-chrome
+  > .icon-button,
+:root[data-motion="reduced"]
+  .app.sidebar-animating
+  :is(
+    .chat-header,
+    .routine-crumb,
+    .file-viewer > header,
+    .terminal-panel > header
+  ) {
+  transition: none;
+}
+
+/*
+ * Peek (useSidebarPeek.ts). Collapsed, the sidebar waits as a card below the
+ * floating toggle: 280px wide, at most 70% of the window tall, 6px from the
+ * window's left edge and 8px under the toggle, radius 8 with the popover
+ * shadow. Resting the pointer on the left edge or the toggle brings it up:
+ * opacity over 140ms (ease) and a settle from 6px up and 98% over 180ms on the
+ * snap curve, from its top-left corner. The transitions apply only once
+ * `data-peek` is set, a frame after collapsing, so hiding the docked sidebar
+ * does not animate. The web app keeps its drawer.
+ */
+.app.sidebar-hidden:not(.web) .sidebar {
+  position: fixed;
+  z-index: 50;
+  top: calc(var(--sidebar-controls-top) + 36px);
+  left: 6px;
+  width: 280px;
+  max-height: 70vh;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow:
+    0 0 0 0.5px #ffffff14,
+    0 4px 12px #0006,
+    0 16px 40px #00000080;
+  opacity: 0;
+  transform: translate(0, -6px) scale(0.98);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.app.sidebar-hidden:not(.web) .sidebar[data-peek] {
+  transition:
+    opacity 140ms ease,
+    transform 180ms var(--ease-snap),
+    visibility 0s linear 180ms;
+}
+.app.sidebar-hidden:not(.web) .sidebar[data-peek="open"] {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition:
+    opacity 140ms ease,
+    transform 180ms var(--ease-snap),
+    visibility 0s;
+}
+/* In the card the title bar's controls stay with the floating copy; the
+   Chat | Code switch leads the card. */
+.app.sidebar-hidden:not(.web) .sidebar-chrome {
+  height: 40px;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+}
+.app.sidebar-hidden:not(.web) .sidebar-chrome > .icon-button {
+  display: none;
+}
+.app.sidebar-hidden:not(.web) .sidebar-chrome > .surface-switch {
+  margin-left: 0;
+}
+.app.sidebar-hidden:not(.web) .sidebar-scroll {
+  margin-top: 0;
+}
+/* Code's 10px under the nav rows holds in the card too (see .sidebar-scroll). */
+.app.sidebar-hidden:not(.web) .sidebar-scroll[data-mode="code"] {
+  margin-top: 10px;
+}
+:root[data-theme="light"] .app.sidebar-hidden:not(.web) .sidebar {
+  background: var(--surface);
+  box-shadow:
+    0 0 0 0.5px #0000000f,
+    0 4px 12px #0000000f,
+    0 16px 40px #00000014;
+}
+/*
+ * The web's peek. Wider than a phone, the collapsed sidebar comes up as a panel
+ * at the window's left edge, its stored width and the page's full height, on
+ * the popover fill with its 0.5px CDS border and the popover shadow, over no
+ * scrim: it fades in over 0.14s (ease) while it slides the last 4px in from the
+ * left over 0.18s on the snap curve. The floating controls stay over its head.
+ * This look applies once `data-peek` is set, after the docked sidebar's slide
+ * out (AppSidebar armMs).
+ */
+@media (min-width: 640px) {
+  .app.web.sidebar-hidden .sidebar[data-peek] {
+    position: fixed;
+    z-index: 50;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--sidebar-peek-width, 288px);
+    max-width: 100vw;
+    /* shared-styles-BDdb-EXC.css:3766–3785,4122–4124. */
+    border-right: 0.5px solid rgb(255 255 255 / 10%);
+    background: #20201f;
+    box-shadow:
+      0 0 0 0.5px #ffffff14,
+      0 4px 12px #0006,
+      0 16px 40px #00000080;
+    opacity: 0;
+    transform: translateX(-4px);
+    pointer-events: none;
+    transition:
+      opacity 140ms ease,
+      transform 180ms var(--ease-snap),
+      visibility 0s linear 180ms;
+  }
+  .app.web.sidebar-hidden .sidebar[data-peek="open"] {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    transition:
+      opacity 140ms ease,
+      transform 180ms var(--ease-snap),
+      visibility 0s;
+  }
+  :root[data-theme="light"] .app.web.sidebar-hidden .sidebar[data-peek] {
+    border-right-color: rgb(11 11 11 / 10%);
+    background: #fff;
+    box-shadow:
+      0 0 0 0.5px #0000000f,
+      0 4px 12px #0000000f,
+      0 16px 40px #00000014;
+  }
+  /* The floating toggle stays above the panel's head. */
+  .app.web:has(> .sidebar[data-peek="open"])
+    > .app-chrome-layer
+    > .collapsed-chrome {
+    z-index: 51;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app.web.sidebar-hidden .sidebar[data-peek],
+  .app.web.sidebar-hidden .sidebar[data-peek="open"] {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .app.web.sidebar-hidden .sidebar[data-peek],
+:root[data-motion="reduced"]
+  .app.web.sidebar-hidden
+  .sidebar[data-peek="open"] {
+  transition: none;
+}
+/* The left edge's hint: an 8px strip slides in while the pointer is near the
+   edge and widens to 24px once resting there will open the card; it goes when
+   the card opens. */
+.sidebar-edge-hint {
+  position: fixed;
+  z-index: 21;
+  top: 48px;
+  bottom: 0;
+  left: 0;
+  width: 8px;
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 0.5px #ffffff14,
+    0 4px 12px #0006;
+  opacity: 0;
+  transform: translateX(-100%);
+  pointer-events: none;
+  transition:
+    opacity 140ms ease,
+    transform 180ms var(--ease-snap),
+    width 180ms var(--ease-snap);
+}
+.sidebar-edge-hint:is([data-hint="shown"], [data-hint="snap"]) {
+  opacity: 1;
+  transform: none;
+}
+.sidebar-edge-hint[data-hint="snap"] {
+  width: 24px;
+}
+:root[data-theme="light"] .sidebar-edge-hint {
+  box-shadow:
+    0 0 0 0.5px #0000000f,
+    0 4px 12px #0000000f;
+}
+/* Reduced motion: the card and the hint appear and go at once. */
+@media (prefers-reduced-motion: reduce) {
+  .app.sidebar-hidden:not(.web) .sidebar[data-peek],
+  .app.sidebar-hidden:not(.web) .sidebar[data-peek="open"],
+  .sidebar-edge-hint {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .app.sidebar-hidden:not(.web) .sidebar[data-peek],
+:root[data-motion="reduced"]
+  .app.sidebar-hidden:not(.web)
+  .sidebar[data-peek="open"],
+:root[data-motion="reduced"] .sidebar-edge-hint {
+  transition: none;
+}
+
+.main-nav {
+  position: relative;
+}
+.main-nav-item-wrap {
+  position: relative;
+}
+.main-nav .nav-item,
+.main-nav-more-menu > a {
+  text-decoration: none;
+  font-family: inherit;
+}

@@ -1,0 +1,9 @@
+/* V3's flex h-full flex-1 centred wrapper. */
+.chat-load-error {
+  display: flex;
+  height: 100%;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

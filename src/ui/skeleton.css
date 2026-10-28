@@ -1,0 +1,205 @@
+/*
+ * Loading placeholders: one primitive set for every page.
+ *
+ * A group shows nothing for --placeholder-reveal-delay (0.5s), so a quick
+ * load never flashes a skeleton; then its placeholders fade in over 150ms.
+ * While they wait they move in one of three ways, chosen on the group
+ * (.sk-group data-motion):
+ *   wave    each block (.sk, or a page's own .sk-item) breathes 1 → 0.6 → 1
+ *           over 2s, ease-in-out, 90ms after the one before it (--sk-i is
+ *           its index, set by SkeletonGroup); the default;
+ *   breathe the whole group's opacity does the same together;
+ *   sweep   a sheen band (105°, from 35% to 65% of the block) crosses each
+ *           block left to right in 2s, linear, forever.
+ * data-hold="none" shows them at once. A lone .sk (outside a group) is
+ * there at once, with a full-width 90° sheen crossing it in 2s, linear.
+ * Reduced motion keeps the wait and ends the breathing in its end state
+ * (0.01ms, once) and hides the sheen.
+ *
+ * A block (.sk) is the page's own 8px-rounded rectangle in white at 7.5%
+ * (dark) or #0b0b0b at 5% (light). A page may set --sk-base for its own
+ * measured fill.
+ */
+:root {
+  --placeholder-reveal-delay: 0.5s;
+}
+.sk {
+  --sk-base: rgb(255 255 255 / 7.5%);
+  position: relative;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--sk-base);
+}
+:root[data-theme="light"] .sk {
+  --sk-base: rgb(11 11 11 / 5%);
+}
+.sk.round {
+  border-radius: 9999px;
+}
+/* The wait, then the fade; a group does it once for all its blocks. */
+.sk-group {
+  --sk-reveal-end: calc(var(--placeholder-reveal-delay) + 150ms);
+  animation: sk-reveal 150ms var(--ease-out) var(--placeholder-reveal-delay)
+    backwards;
+}
+.sk-group[data-hold="none"] {
+  --placeholder-reveal-delay: 0s;
+}
+.sk-group[data-motion="breathe"] {
+  animation:
+    sk-reveal 150ms var(--ease-out) var(--placeholder-reveal-delay) backwards,
+    sk-breathe 2s ease-in-out var(--sk-reveal-end) infinite;
+}
+.sk-group[data-motion="wave"] :is(.sk-item, .sk:not(.sk-item .sk)) {
+  animation: sk-breathe 2s ease-in-out
+    calc(var(--sk-reveal-end) + var(--sk-i, 0) * 90ms) infinite;
+}
+/* The sheen of a lone block: full width, from the first frame. */
+.sk:not(.sk-group .sk)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--sk-base), transparent);
+  animation: sk-sweep 2s linear infinite;
+}
+/* The sheen of the blocks of a sweeping group. */
+.sk-group:is(:not([data-motion]), [data-motion="sweep"]) .sk::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    var(--sk-base),
+    transparent 65%
+  );
+  animation: sk-sweep 2s linear var(--sk-reveal-end, 0s) infinite backwards;
+}
+@keyframes sk-reveal {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes sk-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+@keyframes sk-sweep {
+  0% {
+    transform: translate(-100%);
+  }
+  100% {
+    transform: translate(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk-group[data-motion],
+  .sk-group[data-motion] :is(.sk-item, .sk) {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+  .sk::after {
+    display: none;
+  }
+}
+:root[data-motion="reduced"] .sk-group[data-motion],
+:root[data-motion="reduced"] .sk-group[data-motion] :is(.sk-item, .sk) {
+  animation-duration: 0.01ms;
+  animation-iteration-count: 1;
+}
+:root[data-motion="reduced"] .sk::after {
+  display: none;
+}
+
+/* The Usage page's shape: title and note, three lines, a row with a button
+   at its right, a bar and a last line. */
+.sk-page {
+  display: grid;
+  row-gap: 24px;
+  /* The first block sits 109px under the dialog's top, as in the original. */
+  padding: 50px 0 12px;
+}
+.sk-head > .sk:first-child {
+  margin-bottom: 8px;
+}
+.sk-page .sk-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+/* Cards, as the original's Scheduled tasks and Projects pages load: two columns
+   24px apart, eight 140px cards with 16px padding and 12px corners, #151515
+   with a 1px inset white 10% ring in dark, #fcfcfb with a 1px #0b0b0b 10% ring
+   outside in light. In each: a title at 60% (16px), 16px below it two lines
+   (12px, 100% and 85%, 8px apart), and a 100×10 foot at the bottom. */
+.sk-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 28px;
+}
+.sk-card {
+  display: flex;
+  flex-direction: column;
+  height: 140px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .sk-card {
+  background: #fcfcfb;
+  box-shadow: 0 0 0 1px rgb(11 11 11 / 10%);
+}
+.sk-card > .sk:first-child {
+  width: 60%;
+  margin-bottom: 16px;
+}
+.sk-card > .sk + .sk {
+  margin-top: 8px;
+}
+.sk-card > .sk.sk-foot {
+  margin-top: auto;
+}
+@media (max-width: 700px) {
+  .sk-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A list, as the original's Customize → Connectors loads: a header of
+   three 13px labels (64, 32, 32 wide) over the name and two columns 160
+   and 136px wide, then rows 45px apart of a 24px icon, a 14px name and two
+   14px values. */
+.sk-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 136px;
+  align-items: center;
+  row-gap: 21px;
+  margin-top: 16px;
+}
+.sk-table > .sk-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Settings page, as the original's Billing loads: a 28px title across,
+   28px under it three 56px blocks 16px apart, then a 120px one. */
+.sk-settings {
+  display: grid;
+  row-gap: 16px;
+  padding: 2px 0 12px;
+}
+.sk-settings > .sk:first-child {
+  margin-bottom: 12px;
+}

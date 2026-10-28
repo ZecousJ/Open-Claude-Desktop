@@ -1,0 +1,611 @@
+.composer-add-menu,
+.composer-add-submenu {
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 40;
+  width: 228px;
+  padding: 2px 4px 4px;
+  border: 1px solid #353535;
+  border-radius: 11px;
+  background: var(--surface-popover);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font:
+    14px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+.composer-add-menu {
+  left: -8px;
+  top: calc(100% + 8px);
+  outline: none;
+}
+.composer-add-submenu[data-add-panel="devices"] {
+  width: max-content;
+  min-width: 128px;
+  max-width: min(320px, calc(100vw - 20px));
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 12px;
+  padding: 4px;
+}
+.composer-device-heading {
+  padding: 4px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+}
+.composer-add-submenu .composer-device-row {
+  min-height: 32px;
+  height: auto;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.composer-add-submenu[data-add-panel="devices"]
+  > button:not(.composer-device-row) {
+  height: 32px;
+  padding: 6px 10px;
+  gap: 8px;
+  border-radius: 8px;
+}
+.composer-device-name {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 20px;
+}
+.composer-device-name small {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+}
+.composer-device-error {
+  max-width: 280px;
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--text-muted);
+}
+.composer-add-submenu[data-add-panel="devices"]
+  button
+  > .composer-device-trailing {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-inline-start: 16px;
+  overflow: visible;
+}
+.composer-device-check {
+  display: flex;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: -4px;
+  color: #2a78d6;
+}
+:root:not([data-theme="light"])
+  .composer-add-submenu[data-add-panel="devices"] {
+  background: #20201f;
+  color: #f0efec;
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 8px 24px #0005;
+}
+.composer-add-submenu[data-add-panel="devices"]
+  .composer-device-row
+  > [data-icon],
+.composer-add-submenu[data-add-panel="devices"] button > [data-icon] {
+  color: inherit;
+}
+/* Current web root only: 226.375px shell, 4px gutter and 1px inner bottom
+   ring. Rows and eligibility determine its height; submenus keep theirs. */
+.app.web:not(.mobile-conversation) .composer-add-menu.composer-add-web-chat {
+  /* The menu's start lines up with "+", 4px under it on /new and 4px above it
+     in a conversation (opens-above). */
+  left: 0;
+  top: calc(100% + 4px);
+  width: 226.375px;
+  padding: 4px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 12px;
+}
+:root:not([data-theme="light"])
+  .app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat {
+  background: #20201f;
+}
+/* Current CDS popup shell, O16 shared-frame MenuPopup + shadow-panel.
+   Verified live in R18: native/web retain their existing row inventory. */
+:root:not([data-theme="light"])
+  .composer-add-menu:is(.composer-add-web-chat, .composer-add-native-chat) {
+  color: #f0efec;
+  box-shadow:
+    inset 0 0 0 1px #ffffff1a,
+    0 8px 24px rgba(0, 0, 0, 0.32),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat
+  > button,
+.app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat
+  > .composer-add-branch
+  > button {
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat
+  > button
+  > svg,
+.app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat
+  > .composer-add-branch
+  > button
+  > svg:not(.composer-add-chevron) {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+.app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat
+  > button
+  > .composer-add-shortcut {
+  display: inline-flex;
+  flex: none;
+  align-items: baseline;
+  gap: 0.15em;
+  margin-left: 16px;
+  overflow: visible;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 17px;
+}
+/* The shared web sheet suppresses unverified hints with !important; only
+   this observed root action opts back in, under the same fine-pointer rule. */
+:root[data-surface="web"]
+  .app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat
+  > button
+  > .composer-add-shortcut
+  > kbd {
+  display: block !important;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+}
+@media (pointer: coarse) {
+  .app.web:not(.mobile-conversation)
+    .composer-add-menu.composer-add-web-chat
+    > button
+    > .composer-add-shortcut {
+    display: none;
+  }
+}
+.composer-add-menu.opens-above {
+  top: auto;
+  bottom: calc(100% + 7px);
+}
+.app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat.opens-above {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+.app.web:not(.mobile-conversation)
+  .composer-add-menu.composer-add-web-chat.opens-left {
+  left: auto;
+  right: 0;
+}
+.composer-add-menu.opens-left {
+  left: auto;
+  right: -7px;
+}
+.composer-add-menu button,
+.composer-add-submenu button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  /* Rows appear highlighted at once and have no pressed look: the original's
+     menu rows. */
+  transition: none;
+}
+.composer-add-menu button:hover,
+.composer-add-menu button:focus-visible,
+.composer-add-menu button[aria-expanded="true"],
+.composer-add-submenu button:hover,
+.composer-add-submenu button:focus-visible {
+  /* White 7.5% over the popover (#30302f on its #202020). */
+  background: var(--fill-ghost-hover);
+  outline: none;
+  box-shadow: none;
+}
+.composer-add-menu button > svg {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.7;
+  color: var(--text);
+}
+.composer-add-menu button > .composer-add-wide-icon {
+  flex-basis: 20px;
+  width: 20px;
+  height: 20px;
+  margin: 0 -1px;
+  stroke-width: 1.35;
+}
+/* sm, text-secondary. */
+.composer-add-menu button > .composer-thinking-icon {
+  flex-basis: 16px;
+  width: 16px;
+  height: 16px;
+  color: light-dark(#52514e, #c3c2b7);
+}
+/* The label fills the row; an icon-font glyph is a span too, but keeps its
+   20px slot (the Devices row's Computer glyph). */
+.composer-add-menu button > span:not([data-icon]),
+.composer-add-submenu button > span:not([data-icon]) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.composer-add-menu button > .composer-add-chevron {
+  flex-basis: 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: -5.5px;
+  color: #8d8e8a;
+}
+.composer-add-menu button > .composer-add-check {
+  flex-basis: 20px;
+  width: 20px;
+  height: 20px;
+  margin-right: -5px;
+  color: var(--link-text);
+}
+.composer-add-menu kbd {
+  margin-left: auto;
+  color: #8f8e8a;
+  font:
+    12px/20px -apple-system,
+    "Segoe UI",
+    sans-serif;
+  white-space: nowrap;
+}
+.composer-add-separator {
+  height: 1px;
+  margin: 4px 8.5px 4px 9.5px;
+  background: #363636;
+}
+.composer-add-branch {
+  position: relative;
+}
+.composer-add-submenu {
+  left: calc(100% + 5px);
+  top: -3px;
+  width: 208px;
+  max-height: 330px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.composer-add-menu.opens-left .composer-add-submenu,
+.composer-add-menu .composer-add-submenu.flip-left {
+  left: auto;
+  right: calc(100% + 5px);
+}
+.composer-add-menu.opens-left .composer-add-submenu.flip-right {
+  left: calc(100% + 5px);
+  right: auto;
+}
+.composer-add-submenu button {
+  gap: 7px;
+  padding-left: 9px;
+}
+.composer-add-submenu button > svg {
+  color: var(--link-text);
+}
+.composer-add-submenu p {
+  margin: 5px 8px;
+  color: #8c8b87;
+  font-size: 12px;
+}
+:root[data-theme="light"] .composer-add-menu,
+:root[data-theme="light"] .composer-add-submenu {
+  background: #fffefa;
+  border-color: #d2d0ca;
+  color: #292927;
+  box-shadow: 0 10px 26px #0002;
+}
+:root[data-theme="light"] .composer-add-menu button > svg {
+  color: #5f5d59;
+}
+:root[data-theme="light"] .composer-add-menu button:hover,
+:root[data-theme="light"] .composer-add-menu button:focus-visible,
+:root[data-theme="light"] .composer-add-menu button[aria-expanded="true"],
+:root[data-theme="light"] .composer-add-submenu button:hover,
+:root[data-theme="light"] .composer-add-submenu button:focus-visible {
+  background: var(--fill-ghost-hover);
+}
+:root[data-theme="light"] .composer-add-separator {
+  background: #dedbd4;
+}
+/* Skills and Connectors submenu switches. */
+.composer-add-submenu button > .composer-add-switch {
+  position: relative;
+  flex: 0 0 25.5px;
+  width: 25.5px;
+  height: 14px;
+  border-radius: 8px;
+  background: #515151;
+}
+.composer-add-switch::after {
+  content: "";
+  position: absolute;
+  top: 1.5px;
+  left: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left var(--motion-snap) var(--ease-out);
+}
+/* An enabled connector's track is blue (the row rule above set the grey with
+   higher specificity, so every switch read as off). */
+.composer-add-submenu button > .composer-add-switch[data-enabled="true"] {
+  background: #3f76c8;
+}
+.composer-add-switch[data-enabled="true"]::after {
+  left: 12.5px;
+}
+.composer-add-submenu button > .composer-add-wide-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  color: #d8d7d3;
+}
+.composer-add-submenu button > svg[data-icon="Connectors"] {
+  flex: 0 0 15px;
+  width: 15px;
+  height: 15px;
+  color: #d8d7d3;
+}
+:root[data-theme="light"] .composer-add-switch {
+  background: #c9c7c1;
+}
+:root[data-theme="light"]
+  .composer-add-submenu
+  button
+  > .composer-add-switch[data-enabled="true"] {
+  background: #3f76c8;
+}
+:root[data-theme="light"]
+  .composer-add-submenu
+  button
+  > .composer-add-wide-icon,
+:root[data-theme="light"]
+  .composer-add-submenu
+  button
+  > svg[data-icon="Connectors"] {
+  color: #5f5d59;
+}
+/* Research that can't run here reads grey; hovering the row says why. */
+.composer-add-menu button.composer-add-research:disabled > span {
+  color: #8c8b87;
+}
+:root[data-theme="light"]
+  .composer-add-menu
+  button.composer-add-research:disabled
+  > span {
+  color: #8a8780;
+}
+/* Row icons in the submenus take the connector glyph's size and colour; rows
+   Claudex cannot offer yet are greyed. */
+.composer-add-submenu button > svg[data-icon="Add"],
+.composer-add-submenu button > svg[data-icon="Search"] {
+  flex: 0 0 15px;
+  width: 15px;
+  height: 15px;
+  color: #d8d7d3;
+}
+.composer-add-submenu button:disabled {
+  opacity: var(--opacity-disabled);
+  background: none;
+  cursor: default;
+}
+:root[data-theme="light"]
+  .composer-add-submenu
+  button
+  > svg:is([data-icon="Add"], [data-icon="Search"]) {
+  color: #5f5d59;
+}
+
+/* The project submenu opens with "Search or create a project". No capture shows
+   its geometry, so the row follows the Cowork project menu's captured search
+   row and the rows the submenu already had. */
+.composer-add-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 40px;
+  margin: -4px 5px 0;
+  padding: 0 4px;
+  border-bottom: 1px solid #353535;
+  color: #908f8d;
+}
+.composer-add-search > svg {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+}
+.composer-add-search input,
+.composer-add-search input:focus {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #f7f6f4;
+  font: inherit;
+  outline: none;
+}
+.composer-add-search input::placeholder {
+  color: #908f8d;
+}
+.composer-add-project-list {
+  max-height: 232px;
+  padding-top: 5px;
+  overflow-y: auto;
+}
+.composer-add-submenu .composer-add-project-list button > svg:first-child {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--text);
+}
+.composer-add-submenu .composer-add-project-list p {
+  margin: 5px 8px;
+}
+.composer-add-create-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.composer-add-project-tag {
+  min-width: 0;
+  overflow: hidden;
+  color: #8c8b87;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:root[data-theme="light"] .composer-add-search {
+  border-color: #e4e2dc;
+}
+:root[data-theme="light"] .composer-add-search input {
+  color: #292927;
+}
+:root[data-theme="light"]
+  .composer-add-submenu
+  .composer-add-project-list
+  button
+  > svg:first-child {
+  color: #5f5d59;
+}
+
+/* A phone has no room beside the menu: a branch's list opens over it. */
+@media (max-width: 639.98px) {
+  .composer-add-submenu,
+  .composer-add-menu.opens-left .composer-add-submenu {
+    left: 0;
+    right: 0;
+    top: 0;
+    width: auto;
+    max-height: min(330px, calc(100dvh - 160px));
+  }
+}
+
+/* Reduced motion: the knob jumps; the track still fades. */
+@media (prefers-reduced-motion: reduce) {
+  .composer-add-switch::after {
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .composer-add-switch::after {
+  transition: none;
+}
+/* O16 c752:356–375: loading row h-control, 20px icon and 96×16 text. */
+.composer-add-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+}
+.composer-add-load-error > p {
+  margin: 4px 10px;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+/* Connectors → Tool access (ToolAccessMenu.tsx): beside the scrolling
+   connectors list, as wide as Capabilities' described Tool access list
+   (22rem); each choice carries its note in the submenus' 12px grey. */
+.composer-add-submenu.composer-add-tool-access-panel {
+  position: fixed;
+  width: 22rem;
+  max-height: none;
+}
+/* Two-line rows as the device rows above: 32px at least, 6/10 padding. */
+.composer-add-submenu .composer-add-choice {
+  min-height: 32px;
+  height: auto;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  align-items: center;
+}
+.composer-add-choice-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+.composer-add-choice-text > small {
+  color: #8c8b87;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: normal;
+}
+.composer-add-tool-access-inline {
+  padding-left: 24px;
+}
+/* Add connector's choices open the same way: a fixed panel beside the
+   connectors list, or in place in a phone sheet. */
+.composer-add-submenu.composer-add-nested-panel {
+  position: fixed;
+  max-height: none;
+}
+.composer-add-nested-inline {
+  padding-left: 24px;
+}
+
+.composer-add-menu button > [data-icon],
+.composer-add-submenu button > [data-icon] {
+  flex: 0 0 20px;
+}
+
+/* The connector list's loading row (ConnectorReconnectRows): a row high,
+   10px in, the block and the bar 4px apart. */
+.composer-connector-loading {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 10px;
+}

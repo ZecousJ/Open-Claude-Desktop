@@ -1,0 +1,55 @@
+/*
+ * The Cowork new-task page's backdrop, after the original's task grid: 1px
+ * lines every 32px in the original's lowest surface (#0b0b0b over #151515 dark,
+ * #f9f9f7 over #fcfcfb light), here a shade off Claudex's page, drawn behind
+ * the home. It arrives once per mount: it fades in over 0.5s while a circle
+ * opens from the middle to 150% over 1.5s (both ease-in-out). Reduced motion:
+ * the fade only.
+ */
+.app.mode-cowork .chat-main:has(> .chat-home) {
+  isolation: isolate;
+}
+.app.mode-cowork .chat-main:has(> .chat-home)::before {
+  --cowork-grid-line: #0d0d0d;
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(to right, var(--cowork-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--cowork-grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  animation:
+    cowork-grid-fade 0.5s ease-in-out,
+    cowork-grid-reveal 1.5s ease-in-out;
+}
+:root[data-theme="light"]
+  .app.mode-cowork
+  .chat-main:has(> .chat-home)::before {
+  --cowork-grid-line: #f3f3f0;
+}
+@keyframes cowork-grid-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cowork-grid-reveal {
+  from {
+    clip-path: circle(0%);
+  }
+  to {
+    clip-path: circle(150%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app.mode-cowork .chat-main:has(> .chat-home)::before {
+    animation: cowork-grid-fade 0.5s ease-in-out;
+  }
+}
+:root[data-motion="reduced"]
+  .app.mode-cowork
+  .chat-main:has(> .chat-home)::before {
+  animation: cowork-grid-fade 0.5s ease-in-out;
+}

@@ -1,0 +1,2 @@
+# backend/ is the vendored Sub2API fork (LGPL-3.0); keep it out of language stats.
+backend/** linguist-vendored

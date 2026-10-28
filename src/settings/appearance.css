@@ -1,0 +1,125 @@
+/* Window-only preferences set on :root by useAppearance. */
+
+/* Chat font. Serif (the default) is the chat transcript's own stack, Anthropic
+   Serif when a local Claude installation lends it. */
+:root[data-reference-fonts="true"][data-chat-font="serif"]
+  .mode-chat
+  .markdown {
+  font-family: "Claudex Serif", Georgia, "PingFang SC", serif;
+}
+:root[data-chat-font="sans"] .mode-chat .markdown {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+:root[data-chat-font="system"] .mode-chat .markdown {
+  font-family: system-ui, sans-serif;
+}
+
+/* OpenDyslexic (CC BY 3.0, Abelardo Gonzalez; THIRD_PARTY_NOTICES.md):
+   the files load only once the face is used. */
+@font-face {
+  font-family: OpenDyslexic;
+  src: url("../assets/fonts/OpenDyslexic-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: OpenDyslexic;
+  src: url("../assets/fonts/OpenDyslexic-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: OpenDyslexic;
+  src: url("../assets/fonts/OpenDyslexic-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: OpenDyslexic;
+  src: url("../assets/fonts/OpenDyslexic-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+:root[data-chat-font="dyslexia"] .mode-chat .markdown {
+  font-family:
+    OpenDyslexic, "Comic Sans MS", ui-serif, "Claudex Serif", Georgia,
+    "PingFang SC", "Microsoft YaHei", serif;
+}
+
+/* Transcript width: Code's transcript and composer columns are 768px at most
+   (Narrow, the default), 960px (Medium) or 1280px (Wide). The transcript keeps
+   its 24px of padding at each side around the column. */
+:root[data-transcript-width="m"] .mode-code .messages {
+  width: min(1008px, 100%);
+}
+:root[data-transcript-width="l"] .mode-code .messages {
+  width: min(1328px, 100%);
+}
+:root[data-transcript-width="m"] .mode-code .code-composer,
+:root[data-transcript-width="m"] .code-home {
+  width: min(960px, calc(100% - 80px));
+}
+:root[data-transcript-width="l"] .mode-code .code-composer,
+:root[data-transcript-width="l"] .code-home {
+  width: min(1280px, calc(100% - 80px));
+}
+
+/* Unified Chat uses the same 768 / 960 / 1280 measure for its reply and
+   conversation dock (1016 shared-6 jw). Current live Prose is 32px inside
+   the dock: Narrow 736, Medium 928, Wide 1248. Stored Cowork sessions
+   projected as Chat use .app.mode-chat; legacy .mode-cowork stays separate. */
+:root[data-transcript-width="m"] .app.mode-chat {
+  --chat-column-measure: 960px;
+}
+:root[data-transcript-width="l"] .app.mode-chat {
+  --chat-column-measure: 1280px;
+}
+/* The older >=1500px captures imposed fixed 818 / 770 maxima. The selected
+   measure now caps the columns; their existing pane/phone gutters remain. */
+.app.mode-chat .has-conversation .messages,
+.app.mode-chat .has-conversation > .conversation-composer {
+  max-width: none;
+}
+@media (min-width: 768px) {
+  /* Both hosts use the actual full-pane dock measure. Its 48px pane
+     gutters cannot be inferred from a scrollport: native reserves 22px
+     for scrollbars, current web16px. The existing 58px message padding
+     leaves Prose at dock - 32, matching shared-6 jw on either host. */
+  .app.mode-chat .has-conversation .messages {
+    width: min(
+      calc(
+        var(--chat-composer-measure, var(--chat-column-measure, 768px)) + 26px
+      ),
+      100%
+    );
+  }
+}
+
+/* Interface font. Anthropic Sans is the reference face when a local Claude
+   installation lends it, else the system's (93-reference-responsive.css, which
+   loads later: the doubled attribute outranks it). */
+:root[data-interface-font="system"][data-interface-font] {
+  font-family: system-ui, sans-serif;
+}
+:root[data-interface-font="dyslexic"][data-interface-font] {
+  font-family:
+    OpenDyslexic,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* Reduced motion regardless of the system setting: animations stop, colour
+   and opacity transitions stay (see 80-dialogs-responsive.css). */
+:root[data-motion="reduced"] :not(.u-scroll-fade-y),
+:root[data-motion="reduced"] ::before,
+:root[data-motion="reduced"] ::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}

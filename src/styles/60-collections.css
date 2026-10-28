@@ -1,0 +1,120 @@
+/* Collections */
+.collection-page {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 44px clamp(28px, 5vw, 70px);
+}
+.collection-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1120px;
+  margin: 0 auto 33px;
+}
+.collection-heading h1 {
+  font-size: 26px;
+  margin: 0 0 10px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+}
+.collection-heading p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 0;
+}
+.collection-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+  padding: 52px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.collection-empty > svg {
+  color: var(--text-muted);
+  margin-bottom: 21px;
+  opacity: 0.65;
+}
+.collection-empty h2 {
+  font-size: 20px;
+  font-weight: 450;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.collection-empty p {
+  font-size: 13px;
+  line-height: 1.9;
+  margin-bottom: 21px;
+}
+.artifact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 17px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.artifact-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  overflow: hidden;
+  padding: 0;
+  background: var(--surface);
+}
+.artifact-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+.artifact-thumbnail {
+  width: 100%;
+  height: 157px;
+  overflow: hidden;
+  position: relative;
+  padding: 17px 19px;
+  border-bottom: 1px solid var(--border);
+  background: var(--sidebar);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text-muted);
+}
+.artifact-thumbnail > span {
+  font-size: 10px;
+  line-height: 30px;
+  letter-spacing: 0.5px;
+}
+.artifact-thumbnail pre {
+  position: absolute;
+  top: 61px;
+  left: 19px;
+  right: 12px;
+  opacity: 0.45;
+  font-size: 10px;
+  line-height: 1.7;
+  mask-image: linear-gradient(#000 40%, transparent);
+  height: 96px;
+  white-space: pre-wrap;
+}
+.artifact-card > strong {
+  width: 100%;
+  font-size: 12px;
+  padding: 14px 16px 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.artifact-card > small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 0 16px 15px;
+}

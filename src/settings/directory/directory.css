@@ -1,0 +1,1114 @@
+/* Design systems, Plugins and Extensions. Dark tokens follow settings.css;
+   light overrides at the end. */
+
+/* Heading + description on the left, an outlined action on the right
+   (Design systems, Extensions). */
+.directory-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.directory-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.directory-header p {
+  max-width: 480px;
+  margin: 0;
+  color: #a3a29f;
+}
+.directory-header .settings-intro-heading > p {
+  margin-bottom: 0;
+}
+.directory-outline-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid #3b3b3b;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.directory-outline-button:hover {
+  background: var(--surface-hover);
+}
+.directory-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 0;
+  border: 0;
+  background: transparent;
+  color: #c7c7c5;
+  font: inherit;
+  cursor: pointer;
+}
+.directory-back:hover {
+  color: var(--text);
+}
+.directory-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: #e6e5e2;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.directory-flip {
+  transform: rotate(180deg);
+}
+.directory-count {
+  color: #a3a29f;
+  font-size: 13px;
+  font-weight: 400;
+}
+.directory-unavailable {
+  margin: 0;
+  color: #a3a29f;
+  font-size: 13px;
+}
+.directory-illustration {
+  color: #e6e5e2;
+}
+.directory-illustration-fill {
+  fill: #464543;
+}
+
+/* Design systems: search half the width, "Showing 1–1 of 1" on the right, then
+   the table. */
+.directory-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 24px 0 16px;
+}
+.directory-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(50%, 360px);
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 11px;
+  border: 1px solid #3b3b3b;
+  border-radius: 8px;
+  background: #252525;
+  color: #8a8988;
+}
+.directory-search > input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text);
+}
+.directory-table th {
+  color: #a3a29f;
+  font-size: 13px;
+}
+.directory-table th:nth-child(4),
+.directory-table td:nth-child(4) {
+  width: 44px;
+}
+.directory-th-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.directory-table-more {
+  text-align: right;
+}
+.directory-square-more {
+  border: 1px solid #3b3b3b;
+}
+.directory-empty {
+  padding: 32px 16px;
+  border: 1px dashed #3b3b3b;
+  border-radius: 12px;
+  text-align: center;
+}
+.directory-empty > p {
+  margin: 4px 0 0;
+  color: #a3a29f;
+}
+
+/* Set up your design system. */
+.directory-setup {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.directory-setup-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.directory-setup-title {
+  margin: 0;
+  font-family: var(
+    --font-serif,
+    "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif
+  );
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 34px;
+}
+.directory-setup-lead {
+  margin: 4px 0 8px;
+  color: #a3a29f;
+}
+.directory-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 20px;
+}
+.directory-field > span {
+  font-weight: 500;
+}
+.directory-field > small {
+  margin-top: -4px;
+  color: #a3a29f;
+  font-size: 13px;
+}
+.directory-field > .settings-input {
+  width: 100%;
+}
+.directory-sources {
+  margin-top: 12px;
+  border: 1px solid #313131;
+  border-radius: 12px;
+}
+.directory-source {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+}
+.directory-source + .directory-source {
+  border-top: 1px solid #313131;
+}
+.directory-source strong {
+  font-weight: 500;
+}
+.directory-source p {
+  margin: 4px 0 0;
+  color: #a3a29f;
+  font-size: 13px;
+}
+.directory-inline-input {
+  display: flex;
+  gap: 8px;
+}
+.directory-inline-input > .settings-input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.directory-dropzone {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  border: 1px dashed #3b3b3b;
+  border-radius: 8px;
+  color: #8a8988;
+  font-size: 13px;
+  cursor: not-allowed;
+}
+
+/* Extensions: heading with Browse extensions, the stepped plug, "No extensions
+   installed", Advanced settings and the drop hint. */
+.directory-extensions {
+  min-height: 360px;
+  border-radius: 12px;
+}
+.directory-extensions.dragging {
+  outline: 2px dashed #5a5a5a;
+  outline-offset: 4px;
+}
+.directory-extensions-empty {
+  gap: 14px;
+  padding-top: 40px;
+}
+.directory-drop-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.directory-extension-settings > .directory-back {
+  margin-bottom: 16px;
+}
+.directory-extension-settings .directory-unavailable {
+  margin: 0;
+}
+.directory-warning {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #6b2f2b;
+  border-radius: 10px;
+  background: #3a1f1d;
+  color: #f0c9c5;
+}
+.directory-warning > svg {
+  flex: none;
+  margin-top: 2px;
+  color: #e5736b;
+}
+.directory-warning p {
+  margin: 0;
+}
+.directory-warning strong + p {
+  margin-top: 2px;
+}
+.directory-button-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+.extension-detected-tools {
+  padding-block: 8px;
+  color: var(--text);
+}
+.extension-detected-tools > p {
+  margin: 0 0 12px;
+}
+.extension-detected-tools > div {
+  margin-bottom: 8px;
+}
+.extension-detected-tools > div > span {
+  color: var(--text-secondary);
+}
+:root[data-theme="light"] .extension-detected-tools {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .extension-detected-tools > div > span {
+  color: #52514e;
+}
+/* "Install extension" is 132 wide in 14px medium and "Install unpacked
+   extension" 199 wide in 14px regular; outside a row the buttons inherited the
+   page's 13px. */
+.directory-button-pair .settings-button {
+  font-size: 14px;
+}
+.directory-button-pair .settings-button.primary {
+  font-weight: 500;
+}
+.directory-developer-link {
+  margin: 16px 0 0;
+  color: #a3a29f;
+}
+
+/* Plugins: Yours | Discover beside the title, the search, filter and sort icons
+   and Add on the right. */
+.directory-plugins .settings-page-header > h1 {
+  flex: none;
+}
+.directory-view-switch {
+  flex: 1;
+}
+.directory-icon-button {
+  width: 32px;
+  height: 32px;
+}
+.directory-icon-button.active {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+.directory-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border-radius: 12px;
+  background: #1f2a36;
+  color: var(--text);
+}
+.directory-banner small {
+  font-size: 12px;
+  color: #b9c3cd;
+}
+.directory-banner h2 {
+  margin: 4px 0;
+  font-family: var(
+    --font-serif,
+    "Claudex Serif",
+    Georgia,
+    "PingFang SC",
+    "Microsoft YaHei",
+    serif
+  );
+  font-size: 24px;
+  font-weight: 400;
+}
+.directory-banner p {
+  max-width: 440px;
+  margin: 0 0 16px;
+  color: #d5dbe1;
+}
+.directory-banner-art {
+  flex: none;
+  color: var(--text);
+}
+.directory-banner .directory-illustration-fill {
+  fill: #30475c;
+}
+.directory-install:disabled,
+.directory-card-add:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.directory-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 28px 0 12px;
+}
+.directory-section-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.directory-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.directory-card {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #313131;
+  border-radius: 10px;
+}
+.directory-card:hover {
+  background: var(--surface-raised);
+}
+.directory-card > div {
+  flex: 1;
+  min-width: 0;
+}
+.directory-card strong {
+  font-weight: 500;
+}
+.directory-card p {
+  display: -webkit-box;
+  margin: 2px 0 4px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: #c7c7c5;
+  font-size: 13px;
+}
+.directory-card small {
+  color: #a3a29f;
+  font-size: 13px;
+}
+.directory-card-open {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.directory-card-add {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #3b3b3b;
+  border-radius: 6px;
+  background: transparent;
+  color: #e6e5e2;
+}
+.directory-tile {
+  position: relative;
+  pointer-events: none;
+}
+.directory-categories {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.directory-categories button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #313131;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.directory-categories button:hover {
+  background: var(--surface-raised);
+}
+.directory-categories span {
+  flex: 1;
+}
+.directory-categories small {
+  color: #a3a29f;
+}
+
+/* Plugin details and Add marketplace. */
+.directory-detail > p {
+  margin: 12px 0;
+}
+.directory-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.directory-detail-head > div {
+  display: flex;
+  flex-direction: column;
+  color: #a3a29f;
+}
+.directory-detail-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* The "New" badge. The dark pair has no capture; it takes the blue of a
+   narrowing filter. */
+.directory-new {
+  display: inline-grid;
+  place-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 4px;
+  background: rgba(128, 166, 227, 0.2);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--link-text);
+}
+.directory-marketplace {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.directory-marketplace .directory-field {
+  margin-top: 4px;
+}
+.directory-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #3b3b3b;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.directory-option:hover:not(:disabled) {
+  background: var(--surface-raised);
+}
+.directory-option:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.directory-option > span {
+  display: flex;
+  flex-direction: column;
+}
+.directory-option strong {
+  font-weight: 500;
+}
+.directory-option small {
+  color: #a3a29f;
+  font-size: 13px;
+}
+.directory-hint {
+  margin-top: -4px;
+  color: #a3a29f;
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .directory-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .directory-categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .directory-source {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .directory-banner-art {
+    display: none;
+  }
+}
+
+:root[data-theme="light"] .directory-header p,
+:root[data-theme="light"] .directory-count,
+:root[data-theme="light"] .directory-unavailable,
+:root[data-theme="light"] .directory-table th,
+:root[data-theme="light"] .directory-empty > p,
+:root[data-theme="light"] .directory-setup-lead,
+:root[data-theme="light"] .directory-field > small,
+:root[data-theme="light"] .directory-source p,
+:root[data-theme="light"] .directory-card small,
+:root[data-theme="light"] .directory-categories small,
+:root[data-theme="light"] .directory-option small,
+:root[data-theme="light"] .directory-hint,
+:root[data-theme="light"] .directory-developer-link,
+:root[data-theme="light"] .directory-detail-head > div {
+  color: #6b6a66;
+}
+:root[data-theme="light"] .directory-outline-button,
+:root[data-theme="light"] .directory-search,
+:root[data-theme="light"] .directory-square-more,
+:root[data-theme="light"] .directory-card-add,
+:root[data-theme="light"] .directory-option,
+:root[data-theme="light"] .directory-dropzone,
+:root[data-theme="light"] .directory-empty {
+  border-color: #e0e0e0;
+  color: #141413;
+}
+:root[data-theme="light"] .directory-outline-button {
+  background: #fff;
+}
+:root[data-theme="light"] .directory-search {
+  background: #fff;
+}
+:root[data-theme="light"] .directory-search > input {
+  color: #050505;
+}
+:root[data-theme="light"] .directory-outline-button:hover,
+:root[data-theme="light"] .directory-card:hover,
+:root[data-theme="light"] .directory-categories button:hover,
+:root[data-theme="light"] .directory-option:hover:not(:disabled),
+:root[data-theme="light"] .directory-icon-button.active {
+  background: #f5f5f4;
+}
+:root[data-theme="light"] .directory-back,
+:root[data-theme="light"] .directory-link {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .directory-back:hover,
+:root[data-theme="light"] .directory-icon-button.active {
+  color: #141413;
+}
+:root[data-theme="light"] .directory-sources,
+:root[data-theme="light"] .directory-source + .directory-source,
+:root[data-theme="light"] .directory-card,
+:root[data-theme="light"] .directory-categories button {
+  border-color: #e6e6e3;
+}
+:root[data-theme="light"] .directory-card p {
+  color: #3d3d3a;
+}
+:root[data-theme="light"] .directory-illustration {
+  color: #141413;
+}
+:root[data-theme="light"] .directory-illustration-fill {
+  /* The base reads #e3dacb. */
+  fill: #e3dacb;
+}
+:root[data-theme="light"] .directory-plugins-art .directory-illustration-fill {
+  fill: #e7e6e1;
+}
+/* The blue-grey Data banner. */
+:root[data-theme="light"] .directory-banner {
+  background: #c9d6e0;
+  color: #141413;
+}
+:root[data-theme="light"] .directory-banner small,
+:root[data-theme="light"] .directory-banner p {
+  color: #2f3a44;
+}
+:root[data-theme="light"] .directory-banner-art {
+  color: #141413;
+}
+:root[data-theme="light"] .directory-banner .directory-illustration-fill {
+  fill: #d4e4d8;
+}
+:root[data-theme="light"] .directory-warning {
+  border-color: #f0b8b3;
+  background: #fbe3e1;
+  color: #5e1f1a;
+}
+:root[data-theme="light"] .directory-warning > svg {
+  color: #c2413a;
+}
+:root[data-theme="light"] .directory-extensions.dragging {
+  outline-color: #b5b4b0;
+}
+
+/* Extensions: the Developer page's heading sizes — a 15px title over a one-line
+   13px description — the 72×80 illustration 39px under it, and "No extensions
+   installed" in dark grey. */
+.directory-extensions .directory-header h2 {
+  font-size: 15px;
+  line-height: 22px;
+}
+.directory-extensions .directory-header p {
+  max-width: none;
+  margin-top: 2.5px;
+  font-size: 13px;
+  line-height: 17px;
+}
+.directory-extensions .directory-extensions-empty {
+  padding-top: 36.5px;
+}
+/* The buttons are 32 tall; the piece 79 tall from y 253, the text centred 35
+   under its foot, the button 26 under the text, the hint 25 under the button. */
+.directory-extensions .directory-outline-button {
+  height: 32px;
+}
+.directory-extensions .directory-extensions-empty > p {
+  margin-top: 10px;
+}
+.directory-extensions .directory-extensions-empty > .directory-outline-button {
+  margin-top: -1px;
+}
+.directory-extensions .directory-drop-hint {
+  margin-top: 2px;
+}
+:root[data-theme="light"] .directory-extensions-empty > p {
+  color: #3d3d3a;
+}
+/* The description reads about #494949 in R-1443 W1920 (as the Developer
+   page's), the fill of the piece #e3dacb. */
+:root[data-theme="light"] .directory-extensions .directory-header p {
+  color: #4c4b4a;
+}
+:root[data-theme="light"]
+  .directory-extensions-art
+  .directory-illustration-fill {
+  fill: #e3dacb;
+}
+
+/* A page with Yours/Discover: the switch follows the title, the search takes
+   the rest. */
+.settings-page-header:has(> .directory-view-switch) > h1 {
+  flex: none;
+}
+.directory-view-switch > .settings-segmented {
+  width: fit-content;
+}
+
+:root[data-theme="light"] .directory-new {
+  background: #cee2fa;
+  color: #25497b;
+}
+
+/* Design systems list. */
+.design-systems-page .directory-header h2 {
+  font-size: 15px;
+  line-height: 22px;
+}
+.design-systems-page .directory-header p {
+  max-width: 560px;
+  margin-top: 1px;
+  font-size: 13px;
+  line-height: 18px;
+}
+.design-systems-page .directory-outline-button {
+  height: 30px;
+  padding: 0 10px 0 5px;
+  border-radius: 8px;
+}
+.design-systems-page .directory-search > input {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.design-systems-page .directory-search {
+  flex: 0 1 447px;
+  width: auto;
+  min-width: 0;
+  padding: 0 11px;
+}
+.design-systems-page .directory-count {
+  flex: none;
+  font-size: 14px;
+}
+.design-systems-page .directory-table {
+  width: 100%;
+  margin-right: 0;
+  table-layout: fixed;
+}
+.design-systems-page .directory-table th {
+  height: 32px;
+  border-bottom: 1px solid #262626;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 17px;
+}
+.design-systems-page .directory-table th:nth-child(1),
+.design-systems-page .directory-table td:nth-child(1) {
+  width: 45.3%;
+}
+.design-systems-page .directory-table th:nth-child(2),
+.design-systems-page .directory-table td:nth-child(2) {
+  width: 22.6%;
+}
+.design-systems-page .directory-table th:nth-child(3),
+.design-systems-page .directory-table td:nth-child(3) {
+  width: 23%;
+}
+.design-systems-page .directory-table th:nth-child(4),
+.design-systems-page .directory-table td:nth-child(4) {
+  width: 9.1%;
+}
+.design-systems-page .directory-table td {
+  box-sizing: border-box;
+  height: 50px;
+  padding: 8px 12px;
+  border-top: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.design-systems-page .directory-table tr + tr td {
+  border-top: 1px solid #262626;
+}
+.design-systems-page .directory-table tr:last-child td {
+  border-bottom: 0;
+}
+.design-system-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.design-systems-page .directory-table .settings-badge {
+  margin-left: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 16px;
+}
+.design-systems-page .directory-table-more {
+  text-align: left;
+}
+.design-systems-page .directory-square-more {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+/* Title 15/20, note 13/17 wrapping at 572, "+ New design system" 182.5×28 on
+   white 10% with 7px corners, the search 448×32 on white 5% with 8px corners
+   and no border 28px under the note, the table drawn even when empty (header
+   row 32px, empty cell 149px). */
+.design-systems-page .directory-header h2 {
+  line-height: 20px;
+}
+.design-systems-page .directory-header p {
+  max-width: 572px;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  line-height: 17px;
+}
+:root:not([data-theme="light"]) .design-systems-page .directory-table th {
+  color: #c3c2b7;
+}
+.design-systems-new {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px 0 6px;
+  border: 0;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.design-systems-new:hover,
+.design-systems-new[aria-expanded="true"] {
+  background: rgb(255 255 255 / 14%);
+}
+.design-systems-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 16px;
+}
+.design-systems-search {
+  display: block;
+  flex: 0 1 448px;
+  width: 448px;
+  min-width: 0;
+  max-width: 100%;
+  height: 32px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text);
+  font: inherit;
+}
+.design-systems-search::placeholder {
+  color: #898781;
+}
+.design-systems-search:focus-visible {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 25%);
+}
+.design-systems-count {
+  flex: none;
+  margin: 0;
+  color: var(--settings-muted);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.design-systems-availability-info {
+  position: relative;
+  display: inline-block;
+  font-weight: 400;
+}
+.design-systems-availability-info > summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+}
+.design-systems-availability-info > summary::-webkit-details-marker {
+  display: none;
+}
+.design-systems-availability-info > p {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 2;
+  width: max-content;
+  max-width: 240px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--settings-alpha-2);
+  border-radius: 8px;
+  background: var(--settings-panel);
+  color: var(--settings-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: normal;
+}
+.design-systems-page .design-systems-table td.design-systems-empty {
+  height: 149px;
+  padding: 48px 12px;
+  box-sizing: border-box;
+  color: #c3c2b7;
+  text-align: center;
+}
+.design-system-name {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.design-systems-page .design-systems-table .design-system-kind {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  box-sizing: border-box;
+  height: 22px;
+  margin: 0;
+  padding: 0 8px;
+  border-radius: 5.5px;
+  color: var(--settings-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 15px;
+}
+@media (max-width: 639.98px) {
+  /* Let the real column contents set the minimum width. Settings' page
+     scroller keeps every column and action reachable on a narrow screen. */
+  .design-systems-page .design-systems-table {
+    table-layout: auto;
+  }
+}
+/* A design system's own page. */
+.design-system-use {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 12px 16px;
+  border: 1px solid #313131;
+  border-radius: 12px;
+}
+.design-system-use p {
+  margin: 2px 0 0;
+  color: #a3a29f;
+  font-size: 13px;
+}
+.design-source-list {
+  display: flex;
+  flex-direction: column;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.design-source-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  border-bottom: 1px solid #262626;
+  font-size: 13px;
+}
+.design-source-list li > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.design-source-list small {
+  color: #a3a29f;
+}
+.design-source-list button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: #a3a29f;
+  cursor: pointer;
+}
+.design-source-list button:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #f5f5f3;
+}
+.design-guidelines {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 19px;
+}
+.design-system-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.design-system-editor {
+  padding-bottom: 32px;
+}
+.directory-dropzone.over {
+  border-color: #6a6a68;
+  background: rgb(255 255 255 / 4%);
+}
+.directory-dropzone[role="button"] {
+  cursor: pointer;
+}
+.directory-dropzone[role="button"]:hover {
+  border-color: #5a5a58;
+}
+:root[data-theme="light"] .design-systems-new {
+  background: rgb(0 0 0 / 6%);
+  color: #141413;
+}
+:root[data-theme="light"] .design-systems-search {
+  background: rgb(0 0 0 / 4%);
+  color: #050505;
+}
+:root[data-theme="light"] .design-system-use,
+:root[data-theme="light"] .design-source-list li {
+  border-color: #e0e0e0;
+}
+:root[data-theme="light"] .design-system-use p,
+:root[data-theme="light"] .design-source-list small {
+  color: #6b6a66;
+}
+:root[data-theme="light"] .design-systems-page .directory-header p {
+  color: #4b4b4b;
+}
+:root[data-theme="light"] .design-systems-page .directory-count {
+  color: #838383;
+}
+:root[data-theme="light"] .design-systems-page .directory-table th {
+  border-bottom-color: #f2f2f2;
+  color: #474747;
+}
+:root[data-theme="light"] .design-systems-page .directory-table tr + tr td {
+  border-top-color: #f2f2f2;
+}
+:root[data-theme="light"] .design-systems-page .directory-table td {
+  color: #4a4a4a;
+}
+:root[data-theme="light"] .design-systems-page .design-system-name {
+  color: #080808;
+}
+:root[data-theme="light"]
+  .design-systems-page
+  .directory-table
+  td:nth-child(2) {
+  color: #838383;
+}
+:root[data-theme="light"]
+  .design-systems-page
+  .directory-table
+  .settings-badge {
+  background: #f2f2f2;
+  color: #4a4a4a;
+}
+:root[data-theme="light"] .design-systems-page .directory-outline-button,
+:root[data-theme="light"] .design-systems-page .directory-search,
+:root[data-theme="light"] .design-systems-page .directory-square-more {
+  border-color: #e4e4e4;
+}
+:root[data-theme="light"]
+  .design-systems-page
+  .directory-search
+  > input::placeholder {
+  color: #7f7f7d;
+}

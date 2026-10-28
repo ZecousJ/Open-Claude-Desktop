@@ -1,0 +1,29 @@
+/* Personal connector form. */
+.modal.connector-wizard-modal {
+  width: 33.5rem;
+  max-width: 100%;
+}
+.connector-wizard,
+.connector-wizard-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.connector-wizard-hint,
+.connector-wizard-trust,
+.connector-wizard-builder {
+  margin: 0;
+  color: #898781;
+  font-size: 14px;
+  line-height: 20px;
+}
+.connector-wizard-trust {
+  margin-top: 24px;
+}
+.connector-wizard-hint {
+  font-size: 12px;
+  line-height: 1.375;
+}
+.connector-wizard-builder {
+  margin-top: 12px;
+}

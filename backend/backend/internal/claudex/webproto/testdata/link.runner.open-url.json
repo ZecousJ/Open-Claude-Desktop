@@ -1,0 +1,7 @@
+{
+  "t": "open-url",
+  "userId": 7,
+  "url": "https://pay.example.com/checkout/abc",
+  "target": "same-tab",
+  "tabId": "tab-7f3c2a9e1b4d"
+}

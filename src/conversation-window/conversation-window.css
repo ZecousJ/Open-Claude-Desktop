@@ -1,0 +1,113 @@
+/*
+ * A separate conversation window's title bar (R2, package R2-C). Reference:
+ * 03-对话/独立Code窗口/Code失败命令独立窗口-W{900,1351}-*-深色.png: a 48px bar in the page
+ * colour with no rule under it; the environment icon starts at x 85 after the
+ * traffic lights; three 16px icons on the right, 30 apart, the last centred
+ * 25.5 from the window's right edge. Every rule is scoped to
+ * `.app.conversation-window`, so the main window's title bar is untouched.
+ */
+html[data-tool-pane-window] .chat-main,
+html[data-tool-pane-window] .conversation-window-header {
+  display: none;
+}
+html[data-tool-pane-window] .workspace > .chat-layout > .tool-dock {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  width: 100%;
+}
+html[data-tool-pane-window] .tool-dock-column,
+html[data-tool-pane-window] .tool-dock > .terminal-panel {
+  width: 100% !important;
+  max-width: none;
+  flex: 1;
+}
+html[data-tool-pane-window] .app.darwin .work-panel > header {
+  padding-left: 84px;
+}
+html[data-tool-pane-window] .app:not(.darwin) .work-panel > header {
+  padding-right: 138px;
+}
+.app.conversation-window .chat-header.conversation-window-header {
+  height: 48px;
+  min-height: 48px;
+  padding: 0 11.5px 0 16px;
+  border-bottom: 0;
+  background: transparent;
+}
+/* After the traffic lights (the Artifact window uses the same 84). */
+.app.conversation-window.darwin .chat-header.conversation-window-header {
+  padding-left: 84px;
+}
+/* Elsewhere the window's own controls (3 × 42) sit at the right end. */
+.app.conversation-window:not(.darwin) .chat-header.conversation-window-header {
+  padding-right: 138px;
+}
+.conversation-window-header > div:first-child {
+  gap: 8px;
+  min-width: 0;
+}
+.conversation-window-header > div:first-child > svg {
+  flex-shrink: 0;
+  color: var(--text);
+}
+/* Projects open in the main window, so the breadcrumb is not offered here. */
+.conversation-window-header .thread-project,
+.conversation-window-header .thread-crumb-sep {
+  display: none;
+}
+/* The environment badge: (44,44,44) under (201,200,196) text, 20 high. */
+.conversation-window-header .mode-badge {
+  margin-left: 3.5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #2c2c2c;
+  color: #c9c8c4;
+  font-size: 12px;
+  line-height: 16px;
+}
+:root[data-theme="light"] .conversation-window-header .mode-badge {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+.conversation-window-actions {
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+.conversation-window-actions .icon-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #c8c7c3;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    var(--press-release);
+}
+.conversation-window-actions .icon-button:hover:not(:disabled) {
+  background: #2a2a28;
+  color: #e6e5e0;
+}
+/* Keep on top while it is on (the Artifact window's pressed colours). */
+.conversation-window-actions .conversation-window-pin.active,
+.conversation-window-actions .conversation-window-pin.active:hover {
+  background: #0a2243;
+  color: #79b0f1;
+}
+:root[data-theme="light"] .conversation-window-actions .icon-button {
+  color: #55544f;
+}
+:root[data-theme="light"]
+  .conversation-window-actions
+  .icon-button:hover:not(:disabled) {
+  background: #e8e6df;
+  color: #3d3d3a;
+}
+:root[data-theme="light"]
+  .conversation-window-actions
+  .conversation-window-pin.active,
+:root[data-theme="light"]
+  .conversation-window-actions
+  .conversation-window-pin.active:hover {
+  background: #dbe8fb;
+  color: #1f5fb8;
+}

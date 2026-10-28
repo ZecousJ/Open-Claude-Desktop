@@ -1,0 +1,674 @@
+/* The Code session rail: a 280px column 12px in from the pane's end and 12px
+   down, cards 10px apart, each a 10px-radius 1px ring (white 10% dark, ink 10%
+   light) with 8px top and bottom; the heading row 8px in, 26px tall, its button
+   12px/15px medium with a 12px caret that turns when open and a muted summary
+   at the end; rows 26px with a 20px icon well in the secondary ink, 13px/19px
+   text, hover fill 7.5% white (5% ink). */
+/* The chat column ends where the rail begins, and the column's own gutters do
+   the rest: 24px at the start after the panel's 9px inset, 32px at the end
+   (--code-gutter-* in web-shell.css). At 1280 wide the prompt and the text run
+   321..956. */
+.chat-main.with-session-rail {
+  padding-right: calc(var(--session-rail-w, 280px) + 12px);
+}
+/* The transcript still scrolls the whole pane, under the rail too, so its
+   scrollbar is at the window's end: the scroller gives back the column's end
+   room as its own padding. */
+.chat-main.code-main.has-conversation > .messages-scroll {
+  scrollbar-width: thin;
+}
+.chat-main.code-main.with-session-rail > .messages-scroll {
+  margin-right: calc(-1 * (var(--session-rail-w, 280px) + 12px));
+  padding-right: calc(var(--session-rail-w, 280px) + 12px);
+}
+.session-rail {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  bottom: 0;
+  right: 12px;
+  display: flex;
+  width: var(--session-rail-w, 280px);
+  min-height: 0;
+  flex-direction: column;
+  padding-block: 12px 3px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 19px;
+}
+.session-rail-scroll {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 1px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.session-rail-scroll::-webkit-scrollbar {
+  display: none;
+}
+.rail-card {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  padding-block: 8px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+.rail-card-top {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 26px;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 8px;
+}
+.rail-card-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  font: inherit;
+}
+.rail-card-head {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 26px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+.rail-card-head:focus-visible,
+.rail-row.interactive:focus-visible,
+.rail-switch:focus-visible,
+.rail-stop:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.rail-card-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-card-caret {
+  display: flex;
+  flex-shrink: 0;
+  color: #898781;
+}
+.rail-card-head[data-panel-open] .rail-card-caret {
+  rotate: 90deg;
+}
+.rail-card-summary {
+  min-width: 0;
+  margin-left: auto;
+  padding-left: 6px;
+  overflow: hidden;
+  color: #898781;
+  font-size: 12px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-card-body {
+  display: flex;
+  flex-direction: column;
+  padding-inline: 8px;
+}
+.rail-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 26px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.rail-row.interactive {
+  border-radius: 6px;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .rail-row.interactive:hover {
+    background: rgb(255 255 255 / 7.5%);
+  }
+}
+.rail-row.interactive:active {
+  background: rgb(255 255 255 / 10%);
+}
+.rail-row-icon {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.rail-row-label {
+  display: block;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-more .rail-row-label {
+  color: #898781;
+}
+.rail-detail {
+  color: #898781;
+}
+.rail-tabular {
+  font-variant-numeric: tabular-nums;
+}
+.rail-context-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.rail-meter {
+  display: flex;
+  width: 24px;
+  height: 10px;
+  flex-shrink: 0;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+}
+.rail-meter-fill {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: 999px;
+  background: #2a78d6;
+}
+.rail-meter-fill[data-severity="warning"] {
+  background: var(--warning-fill);
+}
+.rail-meter-fill[data-severity="danger"] {
+  background: #d03b3b;
+}
+/* Context (and Usage): "{percent} used" and the token summary over a 4px bar in
+   the chart's reference tint, then the auto-compact hint and an xs Compact this
+   session. */
+.rail-context-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 4px 6px;
+}
+.rail-context-row {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.rail-context-bar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(151 149 141 / 15%);
+}
+.rail-context-fill {
+  height: 100%;
+  background: #2a78d6;
+  transition: width 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.rail-context-fill[data-severity="warning"] {
+  background: var(--warning-fill);
+}
+.rail-context-fill[data-severity="danger"] {
+  background: #d03b3b;
+}
+.rail-context-empty {
+  padding: 0 4px 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 15px;
+}
+.rail-compact {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  font-size: 12px;
+  line-height: 15px;
+}
+.rail-compact-hint {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The xs secondary button: 20px, 6px in, the secondary fill. */
+.rail-compact-button {
+  min-width: 0;
+  height: 20px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.rail-compact-button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+}
+.rail-compact-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.rail-trailing {
+  flex-shrink: 0;
+  max-width: 50%;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-trailing[data-state="failed"] {
+  color: #d03b3b;
+}
+/* An SSH host's Disconnected (text-danger: #ec7e7e dark, #8e2626 light). */
+.rail-row .rail-trailing.rail-detail[data-state="failed"],
+.rail-row .rail-task-end > .rail-detail[data-state="failed"] {
+  color: #ec7e7e;
+}
+:root[data-theme="light"]
+  .rail-row
+  :is(
+    .rail-trailing.rail-detail,
+    .rail-task-end > .rail-detail
+  )[data-state="failed"] {
+  color: #8e2626;
+}
+/* The grip. */
+.rail-grip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  width: 80px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  color: #898781;
+  opacity: 0;
+  outline: none;
+  cursor: grab;
+  touch-action: none;
+}
+.rail-grip:active {
+  cursor: grabbing;
+}
+.rail-card-top:hover .rail-grip,
+.rail-grip:focus-visible {
+  opacity: 1;
+}
+.rail-card-top:hover .rail-card-summary,
+.rail-card-top:has(.rail-grip:focus-visible) .rail-card-summary {
+  opacity: 0;
+}
+.rail-grip-box {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+.rail-grip:focus-visible .rail-grip-box {
+  box-shadow: 0 0 0 2px var(--focus);
+}
+.rail-grip-dots {
+  display: grid;
+  grid-template-columns: repeat(2, 2px);
+  gap: 3px;
+  scale: 0.75;
+}
+.rail-grip-dots > i {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.rail-card-slot {
+  position: relative;
+}
+/* The dragged card is drawn on the page fill above the others (live rail:
+   z-index 1 and bg-page while dragging, rounded like the card). */
+.rail-card-slot[data-dragging] {
+  z-index: 2;
+  border-radius: 10px;
+  background: var(--bg);
+}
+.rail-context-row .rail-detail {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Folder paths: min-w-0, truncate; the path shrinks before the name. The ghost
+   xs button resolves to 20px, radius 5px, a 12px Add icon. */
+.rail-folder-content {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+.rail-folder-button {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.rail-folder-content > .rail-detail {
+  width: 8ch;
+  min-width: 0;
+  flex-basis: content;
+  flex-shrink: 9999;
+  overflow: hidden;
+  padding-inline: 8px;
+  color: #898781;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-folder-add {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+}
+/* A row's action (Add folder, Edit cloud environment) ends at the row's edge;
+   the row's 4px end padding is the text's. */
+.rail-row > .rail-folder-add:last-child {
+  margin-right: -4px;
+}
+.rail-folder-add > svg {
+  width: 12px;
+  height: 12px;
+}
+.rail-folder-button:hover {
+  background: var(--fill-ghost-hover);
+}
+.rail-folder-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.rail-task-end {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.rail-stop {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.rail-stop:hover:not(:disabled) {
+  background: rgb(255 255 255 / 7.5%);
+  color: var(--text);
+}
+.rail-stop:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* The xs switch: 14px tall, 1.8 times as wide, 2px in, a 10px knob. */
+.rail-switch {
+  position: relative;
+  display: inline-flex;
+  width: 25.2px;
+  height: 14px;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  cursor: pointer;
+  transition: background-color 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.rail-switch:hover:not(:disabled) {
+  background: rgb(255 255 255 / 20%);
+}
+.rail-switch[data-checked] {
+  background: #2a78d6;
+}
+.rail-switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.rail-switch-knob {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  transition: translate 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.rail-switch[data-checked] .rail-switch-knob {
+  translate: 11.2px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail-switch,
+  .rail-switch-knob {
+    transition: none;
+  }
+}
+
+:root[data-theme="light"] .session-rail,
+:root[data-theme="light"] .rail-card-head,
+:root[data-theme="light"] .rail-row-label,
+:root[data-theme="light"] .rail-stop:hover:not(:disabled) {
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .rail-card {
+  box-shadow: inset 0 0 0 1px rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .rail-row-icon,
+:root[data-theme="light"] .rail-stop {
+  color: #52514e;
+}
+:root[data-theme="light"] .rail-row.interactive:hover,
+:root[data-theme="light"] .rail-stop:hover:not(:disabled) {
+  background: rgb(11 11 11 / 5%);
+}
+:root[data-theme="light"] .rail-row.interactive:active,
+:root[data-theme="light"] .rail-meter {
+  background: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .rail-switch {
+  background: rgb(11 11 11 / 20%);
+}
+:root[data-theme="light"] .rail-switch[data-checked] {
+  background: #2a78d6;
+}
+
+:root[data-theme="light"] .rail-context-bar {
+  background: rgb(137 135 129 / 15%);
+}
+:root[data-theme="light"] .rail-context-empty,
+:root[data-theme="light"] .rail-compact-hint {
+  color: #52514e;
+}
+:root[data-theme="light"] .rail-compact-button {
+  background: rgb(11 11 11 / 5%);
+  color: #0b0b0b;
+}
+:root[data-theme="light"] .rail-compact-button:hover:not(:disabled) {
+  background: rgb(11 11 11 / 8%);
+}
+
+/* Progress: the task list 4px in and 4px down (px-xs py-1). */
+.rail-progress {
+  padding: 4px;
+}
+
+/* The session's earlier pull requests: a disclosure row, caret xs muted turning
+   when open, the count in text-secondary, "{count} merged" in muted footnote. */
+.rail-earlier {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rail-earlier-caret {
+  display: flex;
+  flex-shrink: 0;
+  color: #898781;
+}
+.rail-earlier-head[data-panel-open] .rail-earlier-caret {
+  rotate: 90deg;
+}
+.rail-earlier-label {
+  flex: 1;
+  color: var(--text-secondary);
+}
+.rail-earlier-merged {
+  flex-shrink: 0;
+  color: #898781;
+  font-size: 12px;
+}
+:root[data-theme="light"] .rail-earlier-label {
+  color: #52514e;
+}
+/* What's contributing (this session): category, name, amount per row. */
+.rail-contributions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.rail-contributions h4 {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+.rail-contributions ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rail-contributions li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.rail-contribution-category {
+  flex-shrink: 0;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 5%);
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.rail-contribution-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-contributions p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 17px;
+}
+:root[data-theme="light"] .rail-contributions h4,
+:root[data-theme="light"] .rail-contribution-category {
+  color: #52514e;
+}
+:root[data-theme="light"] .rail-contribution-category {
+  background: rgb(11 11 11 / 5%);
+}
+
+/* Raised over the conversation when the column has no room: 12px in from the
+   panel's end, from 12px under the title bar to 8px above the prompt, one card
+   (surface-1, 12px radius, a 1px border, the panel's medium shadow) whose
+   sections lie flat, a rule between each. */
+.session-rail.raised {
+  z-index: 5;
+  right: 12px;
+  bottom: 96px;
+  bottom: anchor(--code-prompt top, 96px);
+  padding-block: 12px 8px;
+}
+.chat-main.code-main > .composer-wrap.code-composer .composer {
+  anchor-name: --code-prompt;
+}
+.session-rail.raised > .session-rail-scroll {
+  gap: 0;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow:
+    0 2px 4px rgb(11 11 11 / 7%),
+    0 6px 16px rgb(0 0 0 / 24%);
+}
+.session-rail.raised .rail-card {
+  border-radius: 0;
+  box-shadow: none;
+}
+.session-rail.raised .rail-card-slot + .rail-card-slot {
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+:root[data-theme="light"] .session-rail.raised > .session-rail-scroll,
+:root[data-theme="light"]
+  .session-rail.raised
+  .rail-card-slot
+  + .rail-card-slot {
+  border-color: rgb(11 11 11 / 10%);
+}

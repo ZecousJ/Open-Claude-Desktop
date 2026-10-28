@@ -1,0 +1,285 @@
+/* Sheet dialogs (src/ui/Sheet.tsx): Keyboard shortcuts and What's new. */
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  /* The dialog backdrop and motion of .overlay (80-dialogs-responsive.css):
+     50% black, no blur, fading over 200ms. */
+  background: #00000080;
+  animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.sheet-overlay[data-state="closed"] {
+  pointer-events: none;
+  animation: scrim-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+.sheet-overlay[data-state="closed"] > .sheet {
+  animation: dialog-out var(--motion-base, 200ms) var(--ease-out, ease-out)
+    forwards;
+}
+.sheet-overlay[data-nested] {
+  background: transparent;
+  animation: none;
+}
+/* A dialog over this one blurs it and shades it once more (the same
+   covered state as .overlay, 80-dialogs-responsive.css). */
+.sheet-overlay[data-nested-open] > .sheet {
+  filter: blur(2px) brightness(var(--dialog-covered-dim, 0.5));
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-overlay,
+  .sheet-overlay > .sheet {
+    animation: none;
+    transition: none;
+  }
+}
+:root[data-motion="reduced"] .sheet-overlay,
+:root[data-motion="reduced"] .sheet-overlay > .sheet {
+  animation: none;
+  transition: none;
+}
+.sheet {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: min(520px, 100%);
+  max-height: min(720px, 100%);
+  overflow: hidden;
+  border: 1px solid #363636;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 16px 70px #0005;
+  color: #cccdc8;
+  outline: none;
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+  transition: filter var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.sheet > header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  height: 54px;
+  box-sizing: border-box;
+  padding: 0 11px 0 20px;
+  border-bottom: 1px solid #484848;
+  background: var(--surface-hover);
+}
+.sheet > header > h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: var(--text);
+}
+.sheet > header > button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text);
+}
+.sheet > header > button:hover {
+  background: #363636;
+}
+.sheet-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 20px 24px;
+}
+
+/* Shortcut rows. */
+.shortcuts-section {
+  --shortcuts-secondary: #c3c2b7;
+  --shortcuts-border: rgb(255 255 255 / 10%);
+}
+.shortcuts-section + .shortcuts-section {
+  margin-top: 28px;
+}
+.shortcuts-section > h3 {
+  margin: 16px 0 6px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--text);
+}
+.shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--shortcuts-border);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--shortcuts-secondary);
+}
+.shortcuts-row:last-child {
+  border-bottom: 0;
+}
+.shortcuts-keys {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shortcuts-keys > small {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #898781;
+}
+.shortcuts-combination {
+  display: flex;
+  align-items: center;
+  gap: 3.5px;
+}
+.shortcuts-combination > kbd {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  border: 1px solid #3d3d3d;
+  border-radius: 4px;
+  background: #212120;
+  font: 11px/1 inherit;
+  color: #acaba7;
+}
+
+/*
+ * Keyboard shortcuts against R-0126 (Windows 1x crop, 520 wide; the mac 2x
+ * jpg agrees at about 2.59 px/CSS): a 47px header with a 0.5px #555 rule, the
+ * 14.75px bold title 13px in (ink 142 wide) and a 12px cross centred 23.5px
+ * from the right rim; the body starts 24px in, the first heading centres 50px
+ * under the rule and rows sit on a 37px pitch. What's new (policy.css) keeps
+ * its own R-0358 values.
+ */
+.sheet:has(.shortcuts-section) > header {
+  height: 47px;
+  /* Right padding set by measurement: the cross's ink lands 5.5px nearer the
+     rim than the box arithmetic says. */
+  padding: 0 15.5px 0 13px;
+  border-bottom-width: 0.5px;
+  border-bottom-color: #555;
+}
+.sheet:has(.shortcuts-section) > header > h2 {
+  font-size: 14.75px;
+  line-height: 20px;
+}
+.sheet:has(.shortcuts-section) > header > button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+/* The cross's ink is 12px wide; the lucide X inks half its box plus its stroke. */
+.sheet:has(.shortcuts-section) > header > button > svg {
+  width: 21.5px;
+  height: 21.5px;
+}
+.sheet:has(.shortcuts-section) .shortcuts-keys {
+  gap: 8px;
+}
+.sheet:has(.shortcuts-section) .shortcuts-combination > kbd {
+  height: 17.5px;
+  min-width: 17px;
+  font-size: 12px;
+}
+.sheet:has(.shortcuts-section) > .sheet-body {
+  padding: 24px 24px 24px;
+}
+.sheet:has(.shortcuts-section) .shortcuts-section > h3 {
+  margin: 16px 0 5.5px;
+  font-size: 14px;
+}
+
+/* What's new: a dated block per version, grey category labels, bullets. */
+.release-notes-version + .release-notes-version {
+  margin-top: 32px;
+}
+.release-notes-version > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0 8px;
+}
+.release-notes-version h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.release-notes-version header > code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--surface-hover);
+  font:
+    13px/18px var(--code-font-custom,) Menlo,
+    monospace;
+  color: #cacbc5;
+}
+.release-notes-version h4 {
+  margin: 14px 0 4px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #949492;
+}
+.release-notes-version ul {
+  margin: 0;
+  padding-left: 16px;
+}
+.release-notes-version li {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 19px;
+  color: #cccdc8;
+}
+
+:root[data-theme="light"] .sheet-overlay {
+  background: rgb(0 0 0 / 39%);
+}
+:root[data-theme="light"] .shortcuts-section {
+  --shortcuts-secondary: #52514e;
+  --shortcuts-border: rgb(11 11 11 / 10%);
+}
+:root[data-theme="light"] .sheet {
+  border-color: #e4e4e4;
+  background: #fff;
+  color: #3d3c3a;
+}
+:root[data-theme="light"] .sheet > header {
+  border-color: #e2e2e2;
+  background: #f4f4f4;
+}
+:root[data-theme="light"] .sheet > header > h2,
+:root[data-theme="light"] .sheet > header > button,
+:root[data-theme="light"] .shortcuts-section > h3,
+:root[data-theme="light"] .release-notes-version h3 {
+  color: #141414;
+}
+:root[data-theme="light"] .sheet > header > button:hover {
+  background: #ececea;
+}
+:root[data-theme="light"] .shortcuts-combination > kbd {
+  border-color: #dedede;
+  background: #fafafa;
+  color: #5a5956;
+}
+:root[data-theme="light"] .release-notes-version li {
+  color: #2b2b2b;
+}
+/* The group labels read #727270 and the notes #303030 at their darkest. */
+:root[data-theme="light"] .release-notes-version h4 {
+  color: #727270;
+}
+:root[data-theme="light"] .release-notes-version header > code {
+  background: #f0f0ee;
+  color: #3d3c3a;
+}
