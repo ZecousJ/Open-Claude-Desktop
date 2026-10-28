@@ -140,7 +140,6 @@ type fakeGitHub struct {
 	srv        *httptest.Server
 	mu         sync.Mutex
 	tokenCalls []url.Values
-	revoked    bool
 	grantCalls int
 	// tokenReply overrides the token endpoint's answer.
 	tokenReply func(form url.Values) map[string]any

@@ -27,7 +27,7 @@ func TestClientFramesWithoutCompression(t *testing.T) {
 					serverDone <- err
 					return
 				}
-				defer conn.CloseNow()
+				defer func() { _ = conn.CloseNow() }()
 				for _, size := range []int{100, 800, 5000, 50000} {
 					if err := conn.Write(ctx, typ, bytes.Repeat([]byte("x"), size)); err != nil {
 						serverDone <- err
@@ -35,7 +35,7 @@ func TestClientFramesWithoutCompression(t *testing.T) {
 					}
 				}
 				serverDone <- nil
-				conn.Close(websocket.StatusNormalClosure, "done")
+				_ = conn.Close(websocket.StatusNormalClosure, "done")
 			}))
 			defer srv.Close()
 			conn, response, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http"), &websocket.DialOptions{
@@ -45,7 +45,7 @@ func TestClientFramesWithoutCompression(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer conn.CloseNow()
+			defer func() { _ = conn.CloseNow() }()
 			if extension := response.Header.Get("Sec-WebSocket-Extensions"); extension != "" {
 				t.Fatalf("server negotiated compression: %q", extension)
 			}
@@ -70,7 +70,7 @@ func TestCrossOriginStillRejected(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := websocket.Accept(w, r, AcceptOptions())
 		if err == nil {
-			conn.CloseNow()
+			_ = conn.CloseNow()
 		}
 	}))
 	defer srv.Close()

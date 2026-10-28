@@ -471,12 +471,12 @@ func (s *BalanceNotifyService) emailSiteURL() string {
 // emailRows renders label/value pairs as the layout's rows (values already HTML).
 func emailRows(rows [][2]string) string {
 	var b strings.Builder
-	b.WriteString(`<table class="cx-rows" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;margin:8px 0 18px;">`)
+	_, _ = b.WriteString(`<table class="cx-rows" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;margin:8px 0 18px;">`)
 	for _, r := range rows {
-		b.WriteString(`<tr><td style="padding:8px 0;border-bottom:1px solid #eeece4;color:#6b6a65;font-size:14px;">` + r[0] +
+		_, _ = b.WriteString(`<tr><td style="padding:8px 0;border-bottom:1px solid #eeece4;color:#6b6a65;font-size:14px;">` + r[0] +
 			`</td><td align="right" style="padding:8px 0;border-bottom:1px solid #eeece4;color:#141413;font-size:14px;font-weight:600;">` + r[1] + `</td></tr>`)
 	}
-	b.WriteString(`</table>`)
+	_, _ = b.WriteString(`</table>`)
 	return b.String()
 }
 

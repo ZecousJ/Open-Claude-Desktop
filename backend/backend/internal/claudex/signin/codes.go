@@ -64,8 +64,8 @@ func validCode(s string) bool {
 func (s *codeStore) mac(parts ...string) string {
 	m := hmac.New(sha256.New, s.key)
 	for _, p := range parts {
-		m.Write([]byte(p))
-		m.Write([]byte{0})
+		_, _ = m.Write([]byte(p))
+		_, _ = m.Write([]byte{0})
 	}
 	return hex.EncodeToString(m.Sum(nil))
 }

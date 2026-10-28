@@ -26,7 +26,7 @@ func (s *sqlStore) editAccessRequests(ctx context.Context, id int64) ([]EditAcce
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	result := []EditAccessRequest{}
 	for rows.Next() {
 		var request EditAccessRequest
@@ -46,7 +46,7 @@ func (s *sqlStore) editAccess(ctx context.Context, id int64, email, decision str
 	if err != nil {
 		return "", err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	var active bool
 	err = tx.QueryRowContext(ctx, `SELECT status='active' AND kind='artifact' AND (expires_at IS NULL OR expires_at>$2) FROM claudex_shares WHERE id=$1 FOR UPDATE`, id, now).Scan(&active)
 	if err != nil {

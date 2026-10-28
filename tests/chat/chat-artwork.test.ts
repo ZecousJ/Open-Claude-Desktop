@@ -100,4 +100,3 @@ test("all four rendered template pictures retain measured frame, clip, label and
     await env.clean();
   }
 });
-

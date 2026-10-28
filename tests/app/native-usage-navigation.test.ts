@@ -271,9 +271,8 @@ test("actual local account Usage action opens Settings Usage and the real statis
     await page.click(page.document.querySelector("button.profile")!);
     const usage = [...page.document.querySelectorAll('[role="menuitem"]')].find(
       (element) =>
-        element
-          .querySelector("span:not([data-icon])")
-          ?.textContent?.trim() === "Usage",
+        element.querySelector("span:not([data-icon])")?.textContent?.trim() ===
+        "Usage",
     )!;
     assert.ok(usage, "the actual account menu exposes Usage");
     await page.click(usage);
@@ -301,9 +300,8 @@ test("actual web service-plan Usage action keeps the service page without local 
     await page.click(page.document.querySelector("button.profile")!);
     const usage = [...page.document.querySelectorAll('[role="menuitem"]')].find(
       (element) =>
-        element
-          .querySelector("span:not([data-icon])")
-          ?.textContent?.trim() === "Usage",
+        element.querySelector("span:not([data-icon])")?.textContent?.trim() ===
+        "Usage",
     )!;
     await page.click(usage);
     assert.deepEqual(page.actions, ["settings:usage"]);

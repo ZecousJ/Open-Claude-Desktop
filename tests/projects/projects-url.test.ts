@@ -633,10 +633,7 @@ test("gallery query preservation owns only its collection and lets routing repla
     ),
     "/artifacts?tab=mine&search=Alpha&template=docs&surface=code&connector=new#settings/connectors",
   );
-  assert.equal(
-    withProjectQuery("/projects", current),
-    "/projects",
-  );
+  assert.equal(withProjectQuery("/projects", current), "/projects");
   assert.equal(
     withProjectQuery("/artifacts", {
       pathname: "/projects",

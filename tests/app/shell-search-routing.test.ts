@@ -304,13 +304,7 @@ test("the phone sheet's App close selector matches real web navigation anchors a
     ];
     assert.deepEqual(
       links.map((link) => link.getAttribute("href")),
-      [
-        "/new",
-        "/projects",
-        "/artifacts",
-        "/api",
-        "/status",
-      ],
+      ["/new", "/projects", "/artifacts", "/api", "/status"],
     );
     for (const link of links) {
       assert.ok(link.closest(selector) === link, link.getAttribute("href")!);

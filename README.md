@@ -9,6 +9,18 @@ where it matters.
 
 [简体中文](README.zh-CN.md)
 
+![Chat with an artifact open beside the conversation](docs/images/screenshot-chat-artifact.png)
+
+## Screenshots
+
+| Code session | New chat (dark) |
+| --- | --- |
+| ![A Code session with the edited files and the session rail](docs/images/screenshot-code.png) | ![The new-chat page in the dark theme](docs/images/screenshot-home-dark.png) |
+
+The screenshots come from the offline interface preview
+(`node --import tsx scripts/preview/ui-preview.mts`), which runs the real
+interface on sample data.
+
 ## What's in it
 
 - **Chat** with artifacts (HTML, SVG, React, Mermaid, documents), file

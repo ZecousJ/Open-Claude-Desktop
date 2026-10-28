@@ -1410,14 +1410,10 @@ func defaultCodexModelIDsForPlatform(platform string) []string {
 	}
 }
 
-// CLAUDEX: the defaults and the id merge live in the service
-// (claudex_model_listing.go) so the Claudex catalog lists what /v1/models does.
+// CLAUDEX: the defaults live in the service (claudex_model_listing.go) so the
+// Claudex catalog lists what /v1/models does.
 func defaultModelIDsForPlatform(platform string) []string {
 	return service.DefaultListingModelIDs(platform)
-}
-
-func mergeModelIDs(primary, secondary []string) []string {
-	return service.MergeModelIDs(primary, secondary)
 }
 
 // AntigravityModels 返回 Antigravity 支持的全部模型

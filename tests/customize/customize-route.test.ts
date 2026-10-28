@@ -38,13 +38,20 @@ for (const section of ["skills", "connectors", "plugins"] as const) {
           }),
           url,
         );
-        const settings = parseWebRoute(url, "", "#settings/data-privacy-controls");
+        const settings = parseWebRoute(
+          url,
+          "",
+          "#settings/data-privacy-controls",
+        );
         assert.deepEqual(settings, {
           kind: "settings",
           tab: "privacy",
           background: route,
         });
-        assert.equal(formatWebRoute(settings), `${url}#settings/data-privacy-controls`);
+        assert.equal(
+          formatWebRoute(settings),
+          `${url}#settings/data-privacy-controls`,
+        );
       }
     });
   }

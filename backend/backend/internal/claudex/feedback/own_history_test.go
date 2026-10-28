@@ -40,7 +40,7 @@ func TestB34OwnHistoryValidationAndUnavailable(t *testing.T) {
 func TestB34OwnHistoryUsesSubjectAndProjectsOnlyPublicFields(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	f := newFixture(t, fixtureOptions{db: db})
 	at := time.Date(2026, 10, 19, 2, 3, 4, 0, time.UTC)
 	columns := []string{"id", "feedback_uuid", "user_id", "rating", "categories", "comment", "model", "request_id", "has_excerpt", "app_version", "platform", "created_at"}

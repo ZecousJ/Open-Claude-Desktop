@@ -130,8 +130,7 @@ test("native projects-only Chat never lists or authorizes folders while ordinary
     );
     const trigger = document.querySelector(".cowork-options > button")!;
     assert.equal(
-      trigger.querySelector(":scope > span:not([data-icon])")
-        ?.textContent,
+      trigger.querySelector(":scope > span:not([data-icon])")?.textContent,
       "Project or folder",
     );
     assert.equal(trigger.getAttribute("title"), null);

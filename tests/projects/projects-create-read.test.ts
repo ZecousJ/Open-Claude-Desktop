@@ -256,11 +256,7 @@ test("education setup is an affirmative capability, while existing query/history
       new URLSearchParams(env.window.location.search).get("category"),
       "shared",
     );
-    env.window.history.replaceState(
-      { keep: true },
-      "",
-      "/projects?keep=1",
-    );
+    env.window.history.replaceState({ keep: true }, "", "/projects?keep=1");
     await act(async () =>
       env.window.dispatchEvent(new env.window.Event("popstate")),
     );

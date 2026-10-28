@@ -19,7 +19,7 @@ func directoryFixture(t *testing.T) (*gin.Engine, sqlmock.Sqlmock) {
 	t.Helper()
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, mock.ExpectationsWereMet()); db.Close() })
+	t.Cleanup(func() { require.NoError(t, mock.ExpectationsWereMet()); _ = db.Close() })
 	c := New(&core.Env{Deps: core.Deps{DB: db}})
 	r := gin.New()
 	r.Use(func(g *gin.Context) { g.Set(string(middleware.ContextKeyUser), middleware.AuthSubject{UserID: 7}) })

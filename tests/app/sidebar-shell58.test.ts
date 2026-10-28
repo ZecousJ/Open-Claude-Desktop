@@ -545,9 +545,7 @@ test("the real New task menu has Source Chat/Settings icons; Manual opens the re
       );
       assert.deepEqual(
         buttons.map((button) =>
-          button
-            .querySelector("[data-icon]")
-            ?.getAttribute("data-icon"),
+          button.querySelector("[data-icon]")?.getAttribute("data-icon"),
         ),
         ["Chat", "Settings"],
       );

@@ -215,9 +215,7 @@ for (const host of [taskWebHost, desktopHost]) {
       );
       assert.deepEqual(
         items.map((item) =>
-          item
-            .querySelector("[data-icon]")
-            ?.getAttribute("data-icon"),
+          item.querySelector("[data-icon]")?.getAttribute("data-icon"),
         ),
         ["Chat", "Settings"],
       );
@@ -416,10 +414,7 @@ test("both card variants name their action by the exact task title and use the S
       ),
     );
     assert.match(html, /aria-label="More options for Review · 夸我"/);
-    assert.match(
-      html,
-      /class="routine-more"[^]*data-icon="DotsVertical"/,
-    );
+    assert.match(html, /class="routine-more"[^]*data-icon="DotsVertical"/);
     assert.doesNotMatch(html, /Review · 夸我 actions/);
     assert.equal(html.includes("routine-native-item"), host.kind === "desktop");
     assert.doesNotMatch(

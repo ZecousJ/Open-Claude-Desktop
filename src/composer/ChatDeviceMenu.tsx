@@ -247,9 +247,7 @@ export function ChatDeviceMenu({
                 <small>{t("Default")}</small>
               )}
               <span className="composer-device-check" aria-hidden="true">
-                {selected === device.id && (
-                  <AppIcon name="Check" size={20} />
-                )}
+                {selected === device.id && <AppIcon name="Check" size={20} />}
               </span>
             </span>
           </button>

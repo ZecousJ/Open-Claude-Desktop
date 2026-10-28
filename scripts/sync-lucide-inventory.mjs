@@ -13,8 +13,13 @@ for (const path of sources)
   for (const match of fs
     .readFileSync(path, "utf8")
     .matchAll(/import\s*\{([^}]+)\}\s*from "lucide-react"/g))
-    for (const name of match[1].split(",").map((part) => part.trim()).filter(Boolean))
+    for (const name of match[1]
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean))
       users.set(name, [...(users.get(name) ?? []), path]);
-for (const [name, entry] of Object.entries(inventory.remaining.namedLucideImports))
+for (const [name, entry] of Object.entries(
+  inventory.remaining.namedLucideImports,
+))
   entry.files = [...new Set(users.get(name) ?? [])].sort();
 fs.writeFileSync(file, `${JSON.stringify(inventory, null, 2)}\n`);

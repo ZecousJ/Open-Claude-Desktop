@@ -270,10 +270,7 @@ export function PlacePickerSurface({
             entry.onDefault?.();
           }}
         >
-          <AppIcon
-            name={entry.isDefault ? "StarFilled" : "Star"}
-            size={12}
-          />
+          <AppIcon name={entry.isDefault ? "StarFilled" : "Star"} size={12} />
         </button>
       )}
       {entry.selected && <AppIcon name="Check" size={12} />}
@@ -563,15 +560,10 @@ export function PlacePickerSurface({
                       }}
                     >
                       {control.icon && (
-                        <AppIcon
-                          name={control.icon}
-                          size={native ? 20 : 16}
-                        />
+                        <AppIcon name={control.icon} size={native ? 20 : 16} />
                       )}
                       <span>{t(control.label)}</span>
-                      {control.checked && (
-                        <AppIcon name="Check" size={12} />
-                      )}
+                      {control.checked && <AppIcon name="Check" size={12} />}
                     </button>
                   </Fragment>
                 ))}

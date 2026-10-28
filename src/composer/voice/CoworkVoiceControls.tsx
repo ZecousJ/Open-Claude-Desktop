@@ -48,10 +48,7 @@ export function MicrophoneChevron({
         aria-disabled={reason ? "true" : undefined}
         onClick={() => !reason && setOpen((value) => !value)}
       >
-        <AppIcon
-          name="CaretDown"
-          size={menuVariant === "idle" ? 12 : 13}
-        />
+        <AppIcon name="CaretDown" size={menuVariant === "idle" ? 12 : 13} />
       </button>
       {reason && tooltip}
       {open && (

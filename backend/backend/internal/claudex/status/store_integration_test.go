@@ -83,7 +83,8 @@ func freshDB(t *testing.T) *sql.DB {
 	db := openDB(t, u.String())
 	// The two Sub2API tables the component reads, as far as it reads them.
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS channel_monitors (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL,
-		provider TEXT NOT NULL, primary_model TEXT NOT NULL, enabled BOOLEAN NOT NULL DEFAULT TRUE);
+		provider TEXT NOT NULL, primary_model TEXT NOT NULL, enabled BOOLEAN NOT NULL DEFAULT TRUE,
+		extra_models JSONB NOT NULL DEFAULT '[]'::jsonb, group_name VARCHAR(100) NOT NULL DEFAULT '');
 		CREATE TABLE channel_monitor_histories (id BIGSERIAL PRIMARY KEY, monitor_id BIGINT NOT NULL,
 		model VARCHAR(200) NOT NULL, status VARCHAR(20) NOT NULL, checked_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`)
 	require.NoError(t, err)

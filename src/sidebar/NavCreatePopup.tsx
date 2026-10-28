@@ -110,10 +110,7 @@ export function NavCreatePopup({
                 {
                   label: "Create with Claudex",
                   icon: (
-                    <AppIcon
-                      name="Chat"
-                      size={host.kind === "web" ? 20 : 16}
-                    />
+                    <AppIcon name="Chat" size={host.kind === "web" ? 20 : 16} />
                   ),
                   onSelect: () => {
                     closePhoneSidebar();
@@ -124,10 +121,7 @@ export function NavCreatePopup({
           {
             label: "Set up manually",
             icon: (
-              <AppIcon
-                name="Settings"
-                size={host.kind === "web" ? 20 : 16}
-              />
+              <AppIcon name="Settings" size={host.kind === "web" ? 20 : 16} />
             ),
             onSelect: schedule,
           },

@@ -104,9 +104,7 @@ export function RoutineSourcePicker({
       segments={sources.map((value) => ({
         value,
         label: t(value === "chat" ? "Chat" : "Code"),
-        icon: (
-          <AppIcon name={value === "chat" ? "Chats" : "Code"} size={16} />
-        ),
+        icon: <AppIcon name={value === "chat" ? "Chats" : "Code"} size={16} />,
         disabled:
           Boolean(draft.projectId || draft.securityReview) && value !== source,
       }))}

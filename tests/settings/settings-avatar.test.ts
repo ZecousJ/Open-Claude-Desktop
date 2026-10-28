@@ -241,14 +241,8 @@ test("instructions use the live merged-chat cross-account copy and exact links",
   const markup = renderToStaticMarkup(createElement(InstructionsDescription));
   assert.match(markup, /associated accounts across chats within/);
   assert.doesNotMatch(markup, /across chats and Cowork/);
-  assert.match(
-    markup,
-    /href="\/help\/usage-policy"/,
-  );
-  assert.match(
-    markup,
-    /href="\/help\/personalization"/,
-  );
+  assert.match(markup, /href="\/help\/usage-policy"/);
+  assert.match(markup, /href="\/help\/personalization"/);
   assert.match(markup, /Claudex usage policy/);
   assert.match(markup, />Learn more<\/a><\/span>$/);
 });

@@ -70,9 +70,9 @@ func injectSiteFavicon(html, settingsJSON []byte) []byte {
 	replacement := []byte(`<link rel="icon" href="` + htmlpkg.EscapeString(logoURL) + `" />`)
 
 	var buf bytes.Buffer
-	buf.Write(html[:linkStart])
-	buf.Write(replacement)
-	buf.Write(html[linkEnd:])
+	_, _ = buf.Write(html[:linkStart])
+	_, _ = buf.Write(replacement)
+	_, _ = buf.Write(html[linkEnd:])
 	return buf.Bytes()
 }
 

@@ -173,7 +173,7 @@ jobs:
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
       - name: Seed tests (compliance gate, provisioning, cited fork sources)
-        run: npx tsx --test tests/sub2api-seed.test.ts
+        run: npx tsx --test tests/account/sub2api-seed.test.ts
       - name: Shell scripts
         run: shellcheck deploy/claudex-server/*.sh deploy/sub2api/*.sh
       - name: Both env templates are the same file

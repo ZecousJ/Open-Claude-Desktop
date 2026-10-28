@@ -449,8 +449,7 @@ test("the real Engine's first Chat send uses that same editable file while the v
 });
 
 test("new paired runner IDs keep their owning file route when an older snapshot settles after creation", async () => {
-  const { fixtureSnapshot } =
-    await import("../../scripts/preview/app-fixture");
+  const { fixtureSnapshot } = await import("../../scripts/preview/app-fixture");
   const snapshot = fixtureSnapshot({ history: "empty" }),
     gate = deferred(),
     id = randomUUID();

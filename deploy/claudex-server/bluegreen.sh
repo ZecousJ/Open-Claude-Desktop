@@ -125,7 +125,7 @@ if [ "$active" = legacy ]; then
   systemctl disable -q claudex-server 2>/dev/null || true
   systemctl stop --no-block claudex-server 2>/dev/null || true
 else
-  systemctl disable -q claudex-server@$active 2>/dev/null || true
-  systemctl stop --no-block claudex-server@$active
+  systemctl disable -q claudex-server@"$active" 2>/dev/null || true
+  systemctl stop --no-block claudex-server@"$active"
 fi
 echo "live: $next ($port) on $(readlink /opt/claudex/sub2api-$next); $active stopping"

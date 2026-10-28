@@ -533,8 +533,7 @@ export class Gateway {
   }
 }
 
-export interface Gateway {
-}
+export interface Gateway {}
 
 export interface Gateway {
   observeDrawnImages: OmitThisParameter<

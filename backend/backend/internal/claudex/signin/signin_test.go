@@ -239,7 +239,7 @@ func TestCodeFormat(t *testing.T) {
 func TestCodeStore(t *testing.T) {
 	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	defer rdb.Close()
+	defer func() { _ = rdb.Close() }()
 	s := &codeStore{rdb: rdb, key: []byte("k")}
 	ctx := context.Background()
 	email := "a@example.com"
@@ -304,7 +304,7 @@ func TestCodeStore(t *testing.T) {
 func TestSpentCodeConcurrentVerification(t *testing.T) {
 	redisServer := miniredis.RunT(t)
 	client := redis.NewClient(&redis.Options{Addr: redisServer.Addr()})
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 	store := &codeStore{rdb: client, key: []byte("k")}
 	ctx := context.Background()
 	email := "a@example.com"
@@ -331,7 +331,7 @@ func TestSpentCodeConcurrentVerification(t *testing.T) {
 func TestSendCooldownAndHourlyCap(t *testing.T) {
 	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	defer rdb.Close()
+	defer func() { _ = rdb.Close() }()
 	s := &codeStore{rdb: rdb, key: []byte("k")}
 	ctx := context.Background()
 	id := s.id("a@example.com")

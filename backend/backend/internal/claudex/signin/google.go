@@ -261,7 +261,7 @@ func (c *Component) exchangeGoogleCode(ctx context.Context, clientID, secret str
 		slog.Warn("claudex signin: google token exchange failed", "error", err)
 		return "", errGoogleUnavailable
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	data, _ := io.ReadAll(io.LimitReader(res.Body, googleMaxBody))
 	if res.StatusCode >= 500 {
 		return "", errGoogleUnavailable
@@ -289,7 +289,7 @@ func (c *Component) checkGoogleToken(ctx context.Context, token string, audience
 		slog.Warn("claudex signin: google tokeninfo failed", "error", err)
 		return GoogleClaims{}, errGoogleUnavailable
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	data, _ := io.ReadAll(io.LimitReader(res.Body, googleMaxBody))
 	if res.StatusCode >= 500 {
 		return GoogleClaims{}, errGoogleUnavailable

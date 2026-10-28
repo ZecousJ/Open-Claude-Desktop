@@ -157,7 +157,7 @@ func verifyBcryptSHA256(password, stored string, version int) bool {
 	var digest []byte
 	if version == 2 {
 		mac := hmac.New(sha256.New, []byte(salt))
-		mac.Write([]byte(password))
+		_, _ = mac.Write([]byte(password))
 		digest = mac.Sum(nil)
 	} else {
 		sum := sha256.Sum256([]byte(password))

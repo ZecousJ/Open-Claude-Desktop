@@ -58,17 +58,19 @@ func startPostgres(t *testing.T) *sql.DB {
 		INSERT INTO users (email) VALUES ('admin@example.com');
 		INSERT INTO groups (name) VALUES ('claudex-pro'), ('claudex-team'), ('exclusive');`)
 	require.NoError(t, err)
-	migration, err := migrations.FS.ReadFile("claudex_0010_model_meta.sql")
-	require.NoError(t, err)
-	for i := 0; i < 2; i++ {
-		_, err = db.ExecContext(ctx, string(migration))
-		require.NoError(t, err, "apply %d", i+1)
-	}
-	minimumVersion, err := migrations.FS.ReadFile("claudex_0162_model_minimum_desktop_version.sql")
-	require.NoError(t, err)
-	for i := 0; i < 2; i++ {
-		_, err = db.ExecContext(ctx, string(minimumVersion))
-		require.NoError(t, err, "apply minimum desktop version %d", i+1)
+	// Every catalog migration, each applied twice (they are idempotent).
+	for _, name := range []string{
+		"claudex_0010_model_meta.sql",
+		"claudex_0011_model_placements.sql",
+		"claudex_0012_placement_default.sql",
+		"claudex_0162_model_minimum_desktop_version.sql",
+	} {
+		migration, err := migrations.FS.ReadFile(name)
+		require.NoError(t, err)
+		for i := 0; i < 2; i++ {
+			_, err = db.ExecContext(ctx, string(migration))
+			require.NoError(t, err, "apply %s %d", name, i+1)
+		}
 	}
 	return db
 }
@@ -351,7 +353,7 @@ func TestIntegrationDefaultSwitchIsTransactional(t *testing.T) {
 }
 
 // TestIntegrationConsoleDefaultReachesClientAndBootstrap is the acceptance
-// check of design 2.4: after the console sets the default model, GET
+// check of design 2.4: after the console sets a group's default model, GET
 // /claudex/models and the bootstrap section "models" both name it; a group
 // the user cannot use is ignored.
 func TestIntegrationConsoleDefaultReachesClientAndBootstrap(t *testing.T) {
@@ -379,8 +381,10 @@ func TestIntegrationConsoleDefaultReachesClientAndBootstrap(t *testing.T) {
 	require.Equal(t, []string{"low", "medium", "high"}, *gpt.Efforts, "cut to the group ceiling")
 	require.Equal(t, "medium", gpt.DefaultEffort)
 
-	// The console makes the mini model the default of group 1.
-	h.create(`{"model_id":"gpt-5.5-mini","group_id":1,"sort_order":20,"is_default":true}`)
+	// The console makes the mini model the default of group 1 (its placements).
+	rec, _ := h.do(http.MethodPut, "/api/v1/admin/claudex/models/groups/1/placements", nil,
+		`{"items":[{"model_id":"gpt-5.5-mini","placement":"main","is_default":true}]}`)
+	require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
 	_, env = h.user("/api/v1/claudex/models")
 	cat = decodeCatalog(t, env)
 	require.Equal(t, "gpt-5.5-mini", *cat.DefaultModel)

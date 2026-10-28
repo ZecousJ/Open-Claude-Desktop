@@ -4,6 +4,16 @@ Open Claude Desktop 是一个开源的 AI 模型工作台，应用名为 **Claud
 
 [English](README.md)
 
+![对话旁边打开了一个作品](docs/images/screenshot-chat-artifact.png)
+
+## 界面截图
+
+| Code 会话 | 新对话（深色） |
+| --- | --- |
+| ![Code 会话：改动的文件和会话侧栏](docs/images/screenshot-code.png) | ![深色主题下的新对话页](docs/images/screenshot-home-dark.png) |
+
+截图来自离线界面预览（`node --import tsx scripts/preview/ui-preview.mts`），用示例数据运行真实界面。
+
 ## 功能
 
 - **Chat**：作品（HTML、SVG、React、Mermaid、文档）、文件附件、带独立指令和文件的项目、记忆、联网搜索与研究。

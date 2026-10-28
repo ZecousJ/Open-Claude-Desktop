@@ -32,7 +32,7 @@ var claudexMigrationRanges = []struct {
 	from, to int
 	owner    string
 }{
-	{1, 9, ""}, // reserved for B0, which creates no table
+	{1, 9, ""},                   // reserved for B0, which creates no table
 	{10, 19, "B3 model catalog"}, // includes plugin/connector directory submissions
 	{20, 29, "B4 devices"},
 	{30, 39, "B5 usage rules"},

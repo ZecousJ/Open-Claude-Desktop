@@ -300,10 +300,7 @@ test("the actual route writer retains project query state without leaking it to 
     "/projects?search=robot&sort_by=name&group=type&keep=%E4%B8%AD",
   );
   assert.equal(
-    withProjectQuery(
-      "/project/p1?connector=new#settings/connectors",
-      current,
-    ),
+    withProjectQuery("/project/p1?connector=new#settings/connectors", current),
     "/project/p1?search=robot&sort_by=name&group=type&keep=%E4%B8%AD&connector=new#settings/connectors",
   );
   assert.equal(withProjectQuery("/new", current), "/new");

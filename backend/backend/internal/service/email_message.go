@@ -85,10 +85,10 @@ func buildSMTPMessage(config *SMTPConfig, to, subject, body string) (smtpMessage
 			"Content-Disposition: inline; filename=\"claudex.png\"\r\n\r\n")
 		encoded := base64.StdEncoding.EncodeToString(emailLogoPNG)
 		for len(encoded) > 76 {
-			message.WriteString(encoded[:76] + "\r\n")
+			_, _ = message.WriteString(encoded[:76] + "\r\n")
 			encoded = encoded[76:]
 		}
-		message.WriteString(encoded + "\r\n")
+		_, _ = message.WriteString(encoded + "\r\n")
 		fmt.Fprintf(&message, "--%s--\r\n", boundary)
 	}
 

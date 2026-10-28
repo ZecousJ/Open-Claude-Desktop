@@ -412,14 +412,14 @@ func iqRequest(ctx context.Context, endpoint, secret string) (string, int, error
 			"content": []any{map[string]any{"type": "input_text", "text": iqPrompt}},
 		}},
 	})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body)) //nolint:gosec // G704: the endpoint is this server's own gateway, not request input
 	if err != nil {
 		return "", 0, err
 	}
 	req.Header.Set("Authorization", "Bearer "+secret)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
-	res, err := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req) //nolint:gosec // G704: the endpoint is this server's own gateway, not request input
 	if err != nil {
 		return "", 0, err
 	}

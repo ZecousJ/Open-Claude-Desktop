@@ -20,7 +20,7 @@
 set -euo pipefail
 
 COMMIT=${1:?usage: native-install.sh <commit>}
-ADMIN_EMAIL=${ADMIN_EMAIL:?set ADMIN_EMAIL to the first administrator's address}
+ADMIN_EMAIL=${ADMIN_EMAIL:?set ADMIN_EMAIL to the first administrator address}
 PORT=${PORT:-18080}
 BIN=/opt/claudex/releases/sub2api-$COMMIT
 [ -x "$BIN" ] || { echo "missing $BIN" >&2; exit 1; }

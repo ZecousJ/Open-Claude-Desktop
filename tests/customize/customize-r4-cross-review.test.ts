@@ -285,7 +285,10 @@ test("review: full page follows Contents, Settings hash, popstate and Your skill
       );
       assert.equal(document.querySelector('[role="dialog"]'), null);
       await click('.installed-skill-tabs a[href$="/contents"]');
-      assert.equal(url(), detail("release-notes", true) + "#settings/data-privacy-controls");
+      assert.equal(
+        url(),
+        detail("release-notes", true) + "#settings/data-privacy-controls",
+      );
       assert.match(
         document.querySelector(".installed-skill-reader")?.textContent ?? "",
         /release-notes/,
@@ -800,9 +803,7 @@ test("review: assembled page exposes each tab's specific Add name and the actual
           "20",
         );
         assert.equal(
-          add
-            .querySelector('[data-icon="CaretDown"]')
-            ?.getAttribute("width"),
+          add.querySelector('[data-icon="CaretDown"]')?.getAttribute("width"),
           "16",
         );
       }

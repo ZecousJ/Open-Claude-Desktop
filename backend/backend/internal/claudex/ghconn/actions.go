@@ -290,7 +290,7 @@ func (c *client) sendTo(ctx context.Context, token, method, address string, payl
 	if err != nil {
 		return errUpstream{}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, maxAPIBody))
 	switch {
 	case resp.StatusCode == http.StatusUnauthorized:

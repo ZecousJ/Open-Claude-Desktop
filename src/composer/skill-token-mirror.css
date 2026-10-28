@@ -87,8 +87,7 @@
   background: #20201f;
   box-shadow: 0 8px 24px #0004;
   color: var(--text-muted);
-  font:
-    12px/17px sans-serif;
+  font: 12px/17px sans-serif;
 }
 .composer-skill-description {
   border-radius: 8px;

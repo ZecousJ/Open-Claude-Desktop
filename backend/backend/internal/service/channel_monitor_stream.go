@@ -25,8 +25,8 @@ func readMonitorSSE(r io.Reader, limit int) ([]byte, error) {
 	terminal := false
 	for scanner.Scan() {
 		line := scanner.Text()
-		out.WriteString(line)
-		out.WriteByte('\n')
+		_, _ = out.WriteString(line)
+		_ = out.WriteByte('\n')
 		trimmed := strings.TrimSpace(line)
 		switch {
 		case trimmed == "" && terminal:

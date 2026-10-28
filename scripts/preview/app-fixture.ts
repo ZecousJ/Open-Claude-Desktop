@@ -946,6 +946,9 @@ export function createFixtureDesktop(
       state.approvals = state.approvals.filter((a) => a.id !== id);
       emit({ type: "approval-resolved", id });
     },
+    // No scheduled prompts or loops in the fixture sessions.
+    listSessionLoops: async () => [],
+    stopSessionLoop: async () => true,
     workingTreeChanges: async (
       conversationId,
       context,

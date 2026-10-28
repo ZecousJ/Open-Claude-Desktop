@@ -243,9 +243,7 @@ test("Capabilities on a Mac offers Chat execution and the local domain controls"
     ),
   ).window.document;
   assert.equal(
-    dom.querySelector(
-      '[role="switch"][aria-label="Run code in the cloud"]',
-    ),
+    dom.querySelector('[role="switch"][aria-label="Run code in the cloud"]'),
     null,
   );
   // Chat's code reaches the network through the local sandbox's profile
