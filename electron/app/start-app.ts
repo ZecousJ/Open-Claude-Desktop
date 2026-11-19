@@ -173,7 +173,7 @@ export function startApp() {
       // 2026-10-22: a staged installer still in use failed the start).
       let handedOver = false;
       try {
-        handedOver = !localEdition && await prepareLaunch();
+        handedOver = officialUiEnabled() && await prepareLaunch();
       } catch (error) {
         console.warn("update check at launch:", (error as Error).message);
       }
@@ -296,7 +296,7 @@ export function startApp() {
         reset: () => setZoomLevel(0),
       }, requestOfficialSupportBundle);
       try {
-        if (!localEdition) startAppUpdates(ctx);
+        if (officialUiEnabled()) startAppUpdates(ctx);
       } catch (error) {
         console.warn("updates:", (error as Error).message);
       }
