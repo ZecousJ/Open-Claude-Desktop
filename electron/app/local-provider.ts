@@ -18,6 +18,27 @@ const connection = z.object({
   protocol: z.enum(["responses", "chat"]),
 }).strict();
 
+const modelList = z.object({
+  data: z.array(z.object({ id: z.string().trim().min(1).max(200) })).max(2_000),
+});
+
+async function availableModels(baseUrl: string, apiKey: string, selected: string) {
+  try {
+    const response = await fetch(baseUrl + "/models", {
+      headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
+      redirect: "error",
+      signal: AbortSignal.timeout(3500),
+    });
+    if (!response.ok) return [selected];
+    const catalog = modelList.safeParse(await response.json());
+    if (catalog.success)
+      return [...new Set([selected, ...catalog.data.data.map((item) => item.id)])];
+  } catch {
+    // A proxy can serve completions without providing a model inventory.
+  }
+  return [selected];
+}
+
 function setupTheme() {
   return nativeTheme.shouldUseDarkColors ? "dark" : "light";
 }
@@ -57,9 +78,10 @@ export function registerLocalProvider(handle: (method: string, handler: (input?:
     const protocol = /\/chat\/completions\/?$/.test(url.pathname)
       ? "chat" : /\/responses\/?$/.test(url.pathname) ? "responses" : input.protocol;
     url.pathname = url.pathname.replace(/\/(chat\/completions|responses)\/?$/, "").replace(/\/+$/, "");
+    const baseUrl = url.href.replace(/\/$/, "");
     const provider: Provider = {
-      id: providerId, name: "Local API", baseUrl: url.href.replace(/\/$/, ""),
-      protocol, model: input.model, models: [input.model],
+      id: providerId, name: "Local API", baseUrl,
+      protocol, model: input.model, models: await availableModels(baseUrl, input.apiKey, input.model),
     };
     fs.mkdirSync(desktopCredentials.root, { recursive: true, mode: 0o700 });
     const vault = new ProviderCredentials(desktopCredentials.root, providerServiceScript(), desktopCredentials.cipher);

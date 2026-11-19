@@ -2,7 +2,7 @@
   "name": "claudex-desktop",
   "productName": "Claudex",
   "desktopName": "claudex.desktop",
-  "version": "0.0.55",
+  "version": "0.0.56",
   "private": true,
   "description": "Claude-inspired desktop workspace powered by the open-source Codex agent",
   "author": "Claudex contributors",
@@ -114,6 +114,14 @@
       "!backend{,/**/*}"
     ],
     "extraResources": [
+      {
+        "from": "build/official-ui",
+        "to": "official-ui"
+      },
+      {
+        "from": "build/official-usercontent",
+        "to": "official-usercontent"
+      },
       {
         "from": "build/runtime",
         "to": "codex"

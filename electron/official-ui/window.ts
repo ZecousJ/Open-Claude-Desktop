@@ -405,7 +405,7 @@ export function prepareOfficialUiQuit() {
 }
 
 export function officialUiEnabled() {
-  return false;
+  return app.isPackaged || process.env.CLAUDEX_OFFICIAL_UI === "1";
 }
 
 /**

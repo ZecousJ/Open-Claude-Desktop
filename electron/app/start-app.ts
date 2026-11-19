@@ -34,9 +34,7 @@ import { takeStealthWindow } from "../updates/stealth-window";
 import { startFindInPage } from "./find-in-page-main";
 import {
   cancelRelaunchToUpdate,
-  prepareLaunch,
   setUpdateQuitInProgress,
-  startAppUpdates,
 } from "../updates/launch";
 import {
   app,
@@ -167,17 +165,6 @@ export function startApp() {
     installSupportLogging(app.getPath("logs"));
     let startupShell: ReturnType<typeof showOfficialStartupShell>;
     try {
-      // Package OTA: a misnamed bundle moves to Claudex.app, a staged
-      // update left from the last run installs, ZecousAI hands off.
-      // An update's leftovers never keep Claudex from starting (owner,
-      // 2026-10-22: a staged installer still in use failed the start).
-      let handedOver = false;
-      try {
-        handedOver = officialUiEnabled() && await prepareLaunch();
-      } catch (error) {
-        console.warn("update check at launch:", (error as Error).message);
-      }
-      if (handedOver) return;
       const savedWindow = readMainWindowState(mainWindowFile());
       mainState.zoomLevel = savedWindow?.zoomLevel ?? 0;
       if (officialUiEnabled())
@@ -295,11 +282,6 @@ export function startApp() {
           setZoomLevel(steppedZoomLevel(mainState.zoomLevel, delta)),
         reset: () => setZoomLevel(0),
       }, requestOfficialSupportBundle);
-      try {
-        if (officialUiEnabled()) startAppUpdates(ctx);
-      } catch (error) {
-        console.warn("updates:", (error as Error).message);
-      }
       // The interface packs: serve the scheme, copy the old page's local
       // storage once, and refresh idle windows to a new pack.
       if (!localEdition)

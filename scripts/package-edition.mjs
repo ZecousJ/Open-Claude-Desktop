@@ -17,6 +17,7 @@ function run(file, args) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
+run("scripts/prepare-workspace-ui.mjs", []);
 run(require.resolve("typescript/bin/tsc"), ["--noEmit"]);
 run(fileURLToPath(new URL("../node_modules/vite/bin/vite.js", import.meta.url)), ["build"]);
 run("scripts/build.mjs", []);

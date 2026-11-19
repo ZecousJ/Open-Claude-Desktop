@@ -1,0 +1,60 @@
+import fs from "node:fs";
+import path from "node:path";
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+
+const output = "build";
+const resources = ["official-ui", "official-usercontent"];
+const asset = "claudex-workspace-production-0.0.55.tar.gz";
+const publishedRelease = "v0.0.56-local";
+const digest = "586b71b1af12ed488b7530072bb79d88fefe24e739e87b5a718b6ad67fb66b67";
+const buildId = "79979f1379";
+const assembledAt = "2026-11-18T10:30:15.548Z";
+
+function hasWorkspace(directory) {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(directory, "official-ui", "manifest.json"), "utf8"));
+    return manifest.buildId === buildId && manifest.generatedAt === assembledAt &&
+      fs.existsSync(path.join(directory, "official-ui", "ui", "index.html")) &&
+      fs.existsSync(path.join(directory, "official-usercontent", "manifest.json"));
+  } catch {
+    return false;
+  }
+}
+
+async function prepare() {
+  if (hasWorkspace(output)) return;
+  if (resources.some(directory => fs.existsSync(path.join(output, directory))))
+    throw Error("Move the existing build/official-ui and build/official-usercontent directories before installing the published workspace.");
+
+  fs.mkdirSync(output, { recursive: true });
+  const stage = fs.mkdtempSync(path.join(output, "workspace-ui-"));
+  try {
+    const local = process.env.CLAUDEX_WORKSPACE_UI_ARCHIVE;
+    const archive = local ? path.resolve(local) : path.join(stage, asset);
+    if (!local) {
+      const source = `https://github.com/ZecousJ/Open-Claude-Desktop/releases/download/${publishedRelease}/${asset}`;
+      const response = await fetch(source, { signal: AbortSignal.timeout(600_000) });
+      if (!response.ok || !response.body)
+        throw Error(`Could not download the workspace archive (HTTP ${response.status}).`);
+      await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(archive));
+    }
+    const hash = createHash("sha256");
+    for await (const chunk of fs.createReadStream(archive)) hash.update(chunk);
+    if (hash.digest("hex") !== digest)
+      throw Error("The workspace archive does not match the published build.");
+    execFileSync("tar", ["-xzf", archive, "-C", stage], {
+      stdio: "inherit",
+      env: { ...process.env, COPYFILE_DISABLE: "1" },
+    });
+    if (!hasWorkspace(stage)) throw Error("The workspace archive does not contain the published workspace.");
+    for (const directory of resources)
+      fs.renameSync(path.join(stage, directory), path.join(output, directory));
+  } finally {
+    fs.rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+await prepare();
