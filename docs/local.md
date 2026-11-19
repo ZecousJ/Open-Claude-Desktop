@@ -2,7 +2,7 @@
 
 从 [GitHub Releases](https://github.com/ZecousJ/Open-Claude-Desktop/releases/latest) 下载带 **Local** 或 **本地版** 标识的包。打开 macOS DMG，将 Claudex Local 拖入「应用程序」。Windows 使用安装程序。查看发行说明确认对应系统和架构。
 
-首次启动填写以下内容，点击「进入工作区」。
+首次启动填写以下内容，点击「进入工作区」。连接页保存的模型是默认模型，API 提供模型列表时，可用的对话模型也会进入模型菜单。
 
 | 字段 | 示例与说明 |
 | --- | --- |
@@ -27,3 +27,5 @@ npm run package:local -- darwin arm64
 ```
 
 macOS 打包 DMG 时，通过 `CLAUDEX_MAC_SIGNING_IDENTITY` 指定自己的签名身份。Windows 和 Linux 分别使用 `npm run package:local -- win32 x64` 与 `npm run package:local -- linux x64`。产物位于 `release/local/`。打包脚本会获取指定平台的 Codex 二进制并放入应用资源。
+
+打包脚本从 Release 获取对应的桌面工作区资源。离线构建时，可提前下载 `claudex-workspace-production-0.0.55.tar.gz`，用 `CLAUDEX_WORKSPACE_UI_ARCHIVE` 指定该文件的绝对路径。

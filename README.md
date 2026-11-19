@@ -4,29 +4,12 @@ Claudex 是基于开源 Codex 执行引擎的桌面聊天与开发工作台。�
 
 [下载本地版](https://github.com/ZecousJ/Open-Claude-Desktop/releases/latest) · [本地版使用手册](docs/local.md) · [完整版部署手册](docs/self-hosted.md) · [服务参数参考](docs/self-hosted-configuration.md)
 
-## 界面演示
+## 使用方式
 
-以下截图来自在 Apple Silicon Mac 上运行的 Claudex Local 0.0.55。对话使用测试 API 的示例回复，Code 的文件创建和测试命令在临时目录中实际执行。
+- **对话**支持 Markdown 回复、会话历史和项目整理。模型菜单显示当前连接提供的可用模型。
+- **Code**支持在本机工作目录运行任务。通过会话工具栏查看终端、更改、浏览器和文件，展开对话里的命令步骤可查看执行结果。
 
-### 连接模型
-
-首次启动填写自己的 API 地址、密钥和模型 ID，选择上游使用的协议，然后点击**进入工作区**。
-
-<p align="center">
-  <img src="docs/screenshots/model-setup.png" alt="首次启动的模型连接页，显示请求地址、API 密钥、模型和协议字段" width="470">
-</p>
-
-### 发起对话
-
-用对话把口头需求变成发布清单。左侧可以回到最近的会话，输入框下方显示当前模型和思考强度。
-
-![Claudex 对话页面根据示例问题生成了分阶段的发布检查清单](docs/screenshots/chat.png)
-
-### 在 Code 中执行任务
-
-切换到 **Code**，新建会话并选择本地目录。示例在目录内创建 `release-check.test.mjs`，通过内置执行引擎运行 `node --test`。展开对话中的命令步骤可以查看执行结果，右侧文件面板可以打开生成的测试文件。
-
-![Code 会话在本机工作目录创建版本号测试文件并运行测试](docs/screenshots/code.png)
+桌面工作区使用 Claudex 线上 0.0.55 的界面资源。本地版首次启动提供模型连接页，Web、云端同步及远程控制需要自托管服务支持。
 
 ## 选择版本
 
@@ -69,6 +52,6 @@ Claudex 是基于开源 Codex 执行引擎的桌面聊天与开发工作台。�
 | [`backend/`](backend/) | Claudex 服务端与 Sub2API 管理后台 |
 | [`deploy/`](deploy/) | Compose、反向代理、初始化和部署脚本 |
 
-公开发行版使用 Claudex 自有界面和开放许可图标。托管环境中的账号、预置模型、存储地址和运维凭据由部署方配置。
+桌面打包时使用随 Release 提供的工作区资源。托管环境中的账号、模型目录、存储地址和运维凭据由部署方配置。
 
-桌面端、Web 和 Runner 使用 Apache-2.0。仓库内的 Sub2API 分支使用 LGPL-3.0。第三方依赖保留各自的许可证。 [LICENSE](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · [Sub2API 源码声明](backend/SOURCE_OFFER.md)
+桌面端、Web 和 Runner 使用 Apache-2.0。仓库内的 Sub2API 分支使用 LGPL-3.0。工作区资源和第三方依赖保留各自的许可。 [LICENSE](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · [Sub2API 源码声明](backend/SOURCE_OFFER.md)
