@@ -222,6 +222,7 @@ test("completed commands retain their tool call, result and failure state", () =
       id: "cmd",
       type: "commandExecution",
       command: "pwd",
+      description: "核对 线上 OSS 更新 清单",
       aggregatedOutput: "/work",
       lifecycleStatus: "failed",
     },
@@ -233,7 +234,7 @@ test("completed commands retain their tool call, result and failure state", () =
       type: "tool_use",
       id: "turn:tool:cmd",
       name: "Bash",
-      input: { command: "pwd" },
+      input: { command: "pwd", description: "核对线上 OSS 更新清单" },
     },
   ]);
   assert.deepEqual(rows[2].message.content, [

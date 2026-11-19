@@ -221,6 +221,18 @@ test("descriptions are cleaned of controls, bidi and zero-width characters", () 
   assert.equal(sanitizeDescription("列出仓库文件"), "列出仓库文件");
 });
 
+test("Chinese tool titles join Han words and preserve Latin text and literal names", () => {
+  assert.equal(
+    sanitizeDescription("读取 官 方 OSS 更新 清单 和 发布 提交"),
+    "读取官方 OSS 更新清单和发布提交",
+  );
+  assert.equal(
+    sanitizeDescription('查找 文件 "发布 清单.json" 与 `更新 清单.json`'),
+    '查找文件 "发布 清单.json" 与 `更新 清单.json`',
+  );
+  assert.equal(sanitizeDescription("Read release manifest and commits"), "Read release manifest and commits");
+});
+
 test("the main process checks the signal again", () => {
   assert.deepEqual(
     parseToolDescriptionSignal({

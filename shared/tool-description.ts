@@ -25,12 +25,12 @@ export const maxDescriptionLength = 160;
 export const descriptionParameter = Object.freeze({
   type: "string",
   description:
-    'Clear, concise description of what this command does, in 5-10 words, imperative mood (e.g. "List repository files", "Run the unit tests"). Shown to the user as the title of this step; write it in the user\'s language.',
+    'A short, action-oriented title in the user\'s language, with its ordinary spelling and spacing (e.g. "List repository files" or "读取官方 OSS 更新清单").',
 });
 
 /** The developer-instruction line that backs the schema change up. */
 export const describeToolsInstruction =
-  "Every shell command call must include a short description (5-10 words, imperative) of what it does.";
+  "Describe each shell command with a short action title in the user's language. Follow its normal spacing, including continuous Chinese text between Han characters.";
 
 /** A description read from a shell tool call, as the gateway reports it. */
 export interface ToolDescriptionEvent {
@@ -51,8 +51,8 @@ const loneSurrogate =
 
 /**
  * The description as shown: control, bidi and zero-width characters removed,
- * whitespace folded to single spaces, cut to `maxDescriptionLength` code
- * points (never inside a surrogate pair). undefined when nothing is left.
+ * whitespace normalized, and length limited to `maxDescriptionLength` code
+ * points. Returns undefined when nothing is left.
  */
 export function sanitizeDescription(value: unknown): string | undefined {
   if (typeof value !== "string") return;
@@ -62,6 +62,9 @@ export function sanitizeDescription(value: unknown): string | undefined {
     .replace(invisible, "")
     .replace(loneSurrogate, "")
     .replace(/\s+/g, " ")
+    .replace(/`[^`]*`|"[^"]*"|(?<=\p{Script=Han}) (?=\p{Script=Han})/gu, part =>
+      part === " " ? "" : part,
+    )
     .trim();
   if (!folded) return;
   const points = Array.from(folded);

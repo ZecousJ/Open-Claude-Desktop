@@ -8,6 +8,7 @@ import { codeAgentTranscript } from "./code-agent-transcript";
  */
 import { posix as path } from "node:path";
 import type { Attachment, Conversation, GeneratedFile, Item, Settings, Turn } from "../../../shared/types";
+import { sanitizeDescription } from "../../../shared/tool-description";
 import { itemIsRunning } from "../../../shared/activity";
 import { isSteeredMessage } from "../../../shared/agent-api";
 import {
@@ -943,6 +944,7 @@ export function convertCodeTranscript(
       ) {
         const toolId = `${turn.id}:tool:${item.id}`;
         const toolUuid = `${toolId}:use`;
+        const description = sanitizeDescription(item.description);
         rows.push({
           type: "assistant",
           uuid: toolUuid,
@@ -959,9 +961,7 @@ export function convertCodeTranscript(
                 name: "Bash",
                 input: {
                   command: item.command,
-                  ...(item.description
-                    ? { description: item.description }
-                    : {}),
+                  ...(description ? { description } : {}),
                 },
               },
             ],

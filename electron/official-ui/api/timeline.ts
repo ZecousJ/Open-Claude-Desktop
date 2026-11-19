@@ -1,3 +1,4 @@
+import { sanitizeDescription } from "../../../shared/tool-description";
 import { chatPermissionToWire, type ChatPermissionMode } from "../../../shared/chat-permission-mode";
 import type { ChatElicitationHost } from "./chat-elicitation";
 import { chatConnectorPreferences } from "./chat-connector-preferences";
@@ -224,7 +225,7 @@ function blocksOf(item: Item, groupId: string, prefix: string, turnStatus: Turn[
         id: `${prefix}:${item.id}`,
         rowKind: TOOL_ROW_SHELL,
         toolDisplayName: "Bash",
-        title: item.description ?? item.command ?? "Command",
+        title: sanitizeDescription(item.description) ?? item.command ?? "Command",
         inputSummaryKind: INPUT_SUMMARY_COMMAND,
         inputSummary: item.command ?? "",
         text: item.aggregatedOutput ?? "",

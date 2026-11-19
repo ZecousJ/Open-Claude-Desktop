@@ -347,7 +347,7 @@ test("a thread starts with the extensions' servers, tools, config, instructions 
     assert.ok(
       at("RESEARCH-BLOCK") < at("You are a collaborative desktop assistant"),
     );
-    assert.match(instructions, /short description \(5-10 words, imperative\)/);
+    assert.match(instructions, /short action title in the user's language/);
     const turn = env.calls.find((call) => call.method === "turn/start")!;
     assert.deepEqual(turn.params.additionalContext, {
       "memory.update": { value: "Memory changed", kind: "application" },

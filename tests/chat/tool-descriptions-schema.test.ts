@@ -67,7 +67,7 @@ test("only Codex's three shell function tools get a required description", () =>
   assert.equal(exec.parameters.properties.description.type, "string");
   assert.match(
     exec.parameters.properties.description.description,
-    /5-10 words/,
+    /ordinary spelling and spacing/,
   );
   assert.deepEqual(exec.parameters.required, ["cmd", "description"]);
   assert.equal(exec.parameters.additionalProperties, false);
