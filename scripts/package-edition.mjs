@@ -22,10 +22,13 @@ run(fileURLToPath(new URL("../node_modules/vite/bin/vite.js", import.meta.url)),
 run("scripts/build.mjs", []);
 run("scripts/prepare-runtime.mjs", [target, arch]);
 const platform = target === "darwin" ? "--mac" : target === "win32" ? "--win" : "--linux";
-const format = target === "darwin" ? "zip" : target === "win32" ? "nsis" : "tar.gz";
+const format = target === "darwin" ? "dmg" : target === "win32" ? "nsis" : "tar.gz";
 const title = edition === "local" ? "Claudex Local" : "Claudex Self-Hosted";
-const options = target === "win32" ? [
-  "-c.nsis.artifactName=" + title.replaceAll(" ", "-") + "-Setup-${version}-${arch}.exe",
+const artifactPrefix = title.replaceAll(" ", "-");
+const options = target === "darwin" ? [
+  "-c.dmg.artifactName=" + artifactPrefix + "-${version}-${arch}.dmg",
+] : target === "win32" ? [
+  "-c.nsis.artifactName=" + artifactPrefix + "-Setup-${version}-${arch}.exe",
   ...(process.platform === "win32" ? [] : ["-c.win.signAndEditExecutable=false"]),
 ] : [];
 run(require.resolve("electron-builder/cli.js"), [

@@ -7,8 +7,8 @@ export default function signMacRelease({ electronPlatformName, appOutDir, packag
   if (electronPlatformName !== "darwin") return;
   const identity = process.env.CLAUDEX_MAC_SIGNING_IDENTITY;
   if (!identity) {
-    if (targets.some(target => target.name === "zip"))
-      throw Error("Set CLAUDEX_MAC_SIGNING_IDENTITY to the Claudex macOS release certificate before building a ZIP.");
+    if (targets.some(target => target.name === "dmg"))
+      throw Error("Set CLAUDEX_MAC_SIGNING_IDENTITY to the Claudex macOS release certificate before building a DMG.");
     return;
   }
 

@@ -1,6 +1,6 @@
 # 本地版
 
-从 [GitHub Releases](https://github.com/ZecousJ/Open-Claude-Desktop/releases/latest) 下载带 **Local** 或 **本地版** 标识的包。解压 macOS ZIP 后，将应用拖入「应用程序」。Windows 使用安装程序。查看发行说明确认对应系统和架构。
+从 [GitHub Releases](https://github.com/ZecousJ/Open-Claude-Desktop/releases/latest) 下载带 **Local** 或 **本地版** 标识的包。打开 macOS DMG，将 Claudex Local 拖入「应用程序」。Windows 使用安装程序。查看发行说明确认对应系统和架构。
 
 首次启动填写以下内容，点击「进入工作区」。
 
@@ -26,4 +26,4 @@ npm ci
 npm run package:local -- darwin arm64
 ```
 
-macOS 发布 ZIP 时，通过 `CLAUDEX_MAC_SIGNING_IDENTITY` 指定自己的签名身份。Windows 和 Linux 分别使用 `npm run package:local -- win32 x64` 与 `npm run package:local -- linux x64`。产物位于 `release/local/`。打包脚本会获取指定平台的 Codex 二进制并放入应用资源。
+macOS 打包 DMG 时，通过 `CLAUDEX_MAC_SIGNING_IDENTITY` 指定自己的签名身份。Windows 和 Linux 分别使用 `npm run package:local -- win32 x64` 与 `npm run package:local -- linux x64`。产物位于 `release/local/`。打包脚本会获取指定平台的 Codex 二进制并放入应用资源。

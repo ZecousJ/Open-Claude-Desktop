@@ -154,7 +154,7 @@
     ],
     "mac": {
       "target": [
-        "zip"
+        "dmg"
       ],
       "category": "public.app-category.productivity",
       "identity": null,
