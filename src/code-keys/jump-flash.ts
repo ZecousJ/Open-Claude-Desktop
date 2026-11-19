@@ -1,6 +1,7 @@
 /**
- * Lights a transcript row up for a moment where a jump landed: the 10% ink wash
- * fades out over 1.2s. Used by the prompt jump keys.
+ * Lights a transcript row up for a moment where a jump landed: the 10% ink
+ * wash fades out over 1.2s (desktop bundle 2.31226.1, code-reply-flash;
+ * the class is in code-transcript.css). Used by the prompt jump keys.
  */
 export function flashJumpTarget(element: Element) {
   element.classList.remove("code-jump-flash");

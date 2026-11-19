@@ -69,7 +69,7 @@ function absent(error: unknown) {
   return code === "ENOENT" || code === "ENOTDIR";
 }
 
-// Machine then user plist precedence.
+// Machine then user plist precedence (desktop 2.37337.1, index.chunk-BWk6pVUt.js, fHe / CHe).
 export function readManagedSettings(
   deps: ManagedSettingsHost = host,
 ): ManagedSettings {

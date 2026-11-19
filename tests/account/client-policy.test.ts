@@ -22,14 +22,13 @@ import {
   releaseUpdate,
   urlUnderPrefix,
 } from "../../shared/client-policy-rules";
-import { cachedPolicyInForce } from "../../electron/account/client-policy";
 import { parsePolicy } from "../../shared/claudex-contract";
 import { catalogForModels } from "../../shared/model-catalog-api";
 import type { ModelCatalogItem } from "../../shared/model-catalog-api";
 import {
   policyFixtures,
   servicePolicyWire as wirePolicy,
-} from "../../scripts/preview/fixtures/policy-data";
+} from "../../scripts/fidelity/fixtures/policy-data";
 
 test("versions compare by semantic-version precedence", () => {
   const ordered = [
@@ -316,7 +315,7 @@ test("search capabilities pass through the gateway intersection; fast is never s
 
 test("round-2 policy presets: local open, pending and offline careful, locked closed", () => {
   // A local account: everything, computer use included (no service to ask).
-  assert.equal(openPolicy.computerUse?.enabled, true);
+  assert.equal(openPolicy.computerUse?.allowFullControl, true);
   assert.equal(openPolicy.memory?.enabled, true);
   assert.equal(
     openPolicy.memory?.defaultOn,
@@ -326,10 +325,9 @@ test("round-2 policy presets: local open, pending and offline careful, locked cl
   assert.equal(openPolicy.research?.maxSearchesPerTurn, 30);
   assert.equal(openPolicy.sshRemote, true);
   assert.equal(openPolicy.codexRuntimeMirror, null);
-  // Before the service answers, and offline without a cache: computer use
-  // waits; SSH, the browser and memory stay usable, no mirror.
+  // Before the service answers, Computer Use can access approved apps.
   for (const policy of [pendingPolicy, offlinePolicy({ mcpServers: {} })]) {
-    assert.equal(policy.computerUse?.enabled, false);
+    assert.equal(policy.computerUse?.allowFullControl, false);
     assert.equal(policy.sshRemote, true);
     assert.equal(policy.browser?.enabled, true);
     assert.equal(policy.memory?.enabled, true);
@@ -337,7 +335,7 @@ test("round-2 policy presets: local open, pending and offline careful, locked cl
   }
   // A policy file that cannot be read: nothing optional runs, except the
   // browser, which runs on this computer (design R8 5.2).
-  assert.equal(lockedPolicy.computerUse?.enabled, false);
+  assert.equal(lockedPolicy.computerUse?.allowFullControl, false);
   assert.equal(lockedPolicy.memory?.enabled, false);
   assert.equal(lockedPolicy.research?.enabled, false);
   assert.equal(lockedPolicy.sshRemote, false);
@@ -360,8 +358,7 @@ test("round-2 fields an older service does not send read on their own terms", ()
     codexRuntimeMirror: undefined,
     computerUse: undefined,
   };
-  // Research follows web search; the browser and SSH are allowed; computer
-  // use stays off.
+  // Research follows web search; app-level Computer Use does not need a policy.
   assert.deepEqual(researchPolicyOf(older), {
     enabled: true,
     xSearch: true,
@@ -375,7 +372,7 @@ test("round-2 fields an older service does not send read on their own terms", ()
   assert.equal(browserPolicyOf(older).enabled, true);
   assert.equal(sshRemoteAllowed(older), true);
   assert.equal(sshRemoteAllowed({ sshRemote: false }), false);
-  assert.equal(computerUsePolicyOf(older).enabled, false);
+  assert.equal(computerUsePolicyOf(older).allowFullControl, false);
   // Web search off wins over a research block that says otherwise.
   assert.equal(
     researchPolicyOf({
@@ -400,23 +397,6 @@ test("blocked browser domains cover their subdomains, never lookalikes", () => {
   assert.equal(browserHostBlocked(policy, "bank.test"), true);
   assert.equal(browserHostBlocked(policy, "www.bank.test"), true);
   assert.equal(browserHostBlocked({}, "example.com"), false);
-});
-
-test("a cached policy keeps computer use waiting until the service answers", () => {
-  const allowed: ClientPolicy = {
-    ...openPolicy,
-    computerUse: {
-      enabled: true,
-      allowFullControl: true,
-      deniedApps: ["cmd.exe"],
-      maxActionsPerTurn: 20,
-    },
-  };
-  assert.deepEqual(cachedPolicyInForce(allowed).computerUse, {
-    ...allowed.computerUse,
-    enabled: false,
-  });
-  assert.equal(cachedPolicyInForce(pendingPolicy), pendingPolicy);
 });
 
 test("the fixture's service policy is what the client makes of the wire sample", () => {

@@ -34,7 +34,7 @@ export function integrationName(item: Item) {
   return item.server?.trim() || item.tool?.match(/^mcp__(.+?)__/)?.[1];
 }
 
-/** Group counts, stable ordering and compact overflow. */
+/** Group counts, stable ordering and compact overflow (live claude.ai bundle, 2026-10-14, shared-10-C9_UFbV-). */
 export function toolGroupSummary(items: Item[], compact = true, steps = false) {
   const memory = items.filter(isMemoryTool);
   if (

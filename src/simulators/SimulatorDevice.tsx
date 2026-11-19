@@ -48,8 +48,9 @@ export interface Notice {
 export const typingDelayMs = 120;
 
 /**
- * The picker's face: the name in medium weight over the OS version in caption
- * size; a long name keeps its end whole.
+ * The picker's face (live claude.ai bundle, 2026-10-12): the name in
+ * medium weight over the OS version in caption size; a long name keeps its
+ * end whole.
  */
 export function PickerFace({ device }: { device: SimulatorDevice }) {
   const { head, tail } = nameParts(device.name);
@@ -73,12 +74,13 @@ export type ShownCapture = SimulatorCapture & {
 };
 
 /**
- * The attached device: the Simulator menus row (Edit and Device on iOS, View),
- * the device picker (its menu ends with Detach and Shut down) with the frame
- * rate and the zoom buttons, notices, the screen (a picture redrawn about three
- * times a second; click and drag on it to tap and swipe, type to send
- * keystrokes) with a saved capture in its corner, the log drawer when open, and
- * the control bar.
+ * The attached device (live claude.ai bundle, 2026-10-12): the Simulator
+ * menus row (Edit and Device on iOS, View), the device picker (its menu
+ * ends with Detach and Shut down) with the frame rate and the zoom
+ * buttons, notices, the screen (a picture redrawn about three times a
+ * second; click and drag on it to tap and swipe, type to send keystrokes)
+ * with a saved capture in its corner, the log drawer when open, and the
+ * control bar.
  */
 export function DeviceView({
   kind,

@@ -12,9 +12,9 @@
   scrollbar-gutter: stable;
 }
 .artifacts-page[data-host="web"] {
-  /* The 1024px border-box column has 32px inner padding; the observed frame
-     scroller adds 8px on each side. The children below cap at its resulting
-     960px content width. */
+  /* c193cfc9b: the 1024px border-box column has 32px inner padding;
+     the observed frame scroller adds 8px on each side. The children below
+     cap at its resulting 960px content width. */
   padding-inline: 40px;
   scrollbar-width: thin;
 }
@@ -32,18 +32,17 @@
 .artifacts-header > h1 {
   margin: 0;
   /* cf35aed38 PageHeader uses font-voice for the collection title, on the
-     desktop too. */
+     desktop too (live claude.ai bundle, 2026-10-16, shared-l-p-m-6). */
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   font-size: 24px;
   line-height: 32px;
   font-weight: 500;
   color: var(--text-strong);
 }
-/*
- * 32px owner tabs and three applicable local toolbar controls. The vendor
- * Design service and its relocation notice are omitted.
- */
+/* Captured header: 32px owner tabs and three applicable local toolbar
+ * controls. The vendor Design service and its relocation notice are omitted. */
 .artifacts-toolbar {
   display: flex;
   align-items: center;
@@ -75,17 +74,17 @@
 .artifacts-owner-trigger[aria-expanded="true"] {
   background: #343434;
 }
-/* Tabs. */
+/* Tabs (live claude.ai bundle, 2026-10-14, shared-10-C9_UFbV-.js:1113). */
 .artifacts-owner-tabs {
   display: flex;
   align-items: center;
 }
-/* EmptyState CDS classes. */
+/* EmptyState CDS classes (live claude.ai bundle, 2026-10-14, shared-2-ATjXCy8a.js:20810). */
 .artifacts-search-note {
   font-size: 12px;
   line-height: 15px;
 }
-/* EmptyState's secondary Button. */
+/* EmptyState's secondary Button (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js:3717). */
 :root[data-theme="light"] .artifacts-owner-tabs > button:focus-visible::before {
   box-shadow:
     inset 0 0 0 1px #f9f9f7,
@@ -169,8 +168,9 @@
 .artifacts-tool.active {
   background: var(--fill-ghost-hover);
 }
-/* Group by: a ghost button with its choice and a 16px caret at 60%, 12px clear
-   of the icon buttons beside it; New is a 28px ghost square at the end. */
+/* Group by (live claude.ai, 2026-10-21): a ghost button with its choice
+   and a 16px caret at 60%, 12px clear of the icon buttons beside it; New is
+   a 28px ghost square at the end. */
 .artifacts-group {
   display: inline-flex;
   align-items: center;
@@ -184,7 +184,7 @@
   line-height: 20px;
   white-space: nowrap;
 }
-.artifacts-group > .app-icon {
+.artifacts-group > .anthropicon {
   opacity: 0.6;
 }
 .artifacts-group:hover,
@@ -287,10 +287,11 @@
 .artifacts-type-anchor {
   position: relative;
 }
-/* Type menu: 210px wide with a 1px #393939 rim, 4px inside it, 32px rows, a
-   20px tile 8px in with 7px to the label, the count 9px from the right.
-   Slides/Design/Docs are tinted tiles; "Other" (here Code) has no tile, only
-   its glyph. */
+/* Type menu (R-0914, W969 at 2.4 px/CSS): 210px wide with a 1px #393939 rim,
+   4px inside it, 32px rows, a 20px tile 8px in with 7px to the label, the
+   count 9px from the right. Slides/Design/Docs are tinted tiles (the same
+   tints as Cowork's Output menu, R-Cowork-Output菜单); "Other" (here Code)
+   has no tile, only its glyph. */
 .artifacts-type-menu {
   position: absolute;
   z-index: 20;
@@ -360,9 +361,11 @@
   background: transparent;
   color: var(--text);
 }
-/* Light: the type tiles take the original's artifact tint, the 450 step at 10%
-   behind the same colour; the dark #fcfafb reads white on white, so All types
-   and Code take the text colour. */
+/* Light: the type tiles take the original's artifact tint, the 450 step at
+   10% behind the same colour (live claude.ai bundle, 2026-10-16,
+   shared-3-ClOVEo7e.js: yellow for a web page, blue for a document, violet
+   for the rest, each by the hue of its dark tile); the dark #fcfafb reads
+   white on white, so All types and Code take the text colour. */
 :root[data-theme="light"] .artifacts-type-all,
 :root[data-theme="light"] .artifacts-type-icon[data-type="code"] {
   color: var(--text);
@@ -391,7 +394,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* mb-10. */
+  /* mb-10 (live claude.ai, 2026-10-21). */
   margin-bottom: 40px;
 }
 .artifacts-make > h2 {
@@ -402,11 +405,11 @@
   font-weight: 500;
   color: var(--text-muted);
 }
-/*
- * The templates are one row that scrolls sideways. A hidden end fades out over
- * 56px and a round caret sits over it, 32px down, 6px past the edge (12px right
- * / 16px left from 768px); touch screens scroll by hand.
- */
+/* The templates are one row that scrolls sideways (live claude.ai,
+ * 2026-10-21, the Artifacts page: -m-2 p-2 gap-3 overflow-x-auto, no
+ * scrollbar, a 40px tail after the last tile). A hidden end fades out over
+ * 56px and a round caret sits over it, 32px down, 6px past the edge (12px
+ * right / 16px left from 768px); touch screens scroll by hand. */
 .artifacts-make-strip {
   position: relative;
 }
@@ -568,8 +571,9 @@
   align-items: center;
   height: 48px;
 }
-/* Hover, keyboard focus or an open menu fills the row with the ghost fill, 12px
-   past the list on both sides, at once. */
+/* Hover, keyboard focus or an open menu fills the row with the ghost fill,
+   12px past the list on both sides, at once (the original's list row,
+   desktop bundle 2.31226.1; it has no underline on the name). */
 .artifacts-row::before {
   content: "";
   position: absolute;
@@ -622,7 +626,7 @@
   color: var(--text);
   font-size: 14px;
 }
-/* text-caption text-muted, as the card's line. */
+/* text-caption text-muted, as the card's line (desktop 2.37337.1, c230724a2: Pi). */
 .artifacts-row-meta {
   display: inline-flex;
   align-items: center;
@@ -650,7 +654,7 @@
   background: var(--fill-ghost-hover);
 }
 /* The pin beside a row's time: hidden until the row is hovered or focused, an
-   accent pin while pinned. */
+   accent pin while pinned (desktop bundle 2.31226.1). */
 .artifacts-row-pin {
   display: grid;
   place-items: center;
@@ -730,9 +734,10 @@
   padding: 0;
   list-style: none;
 }
-/* A card squishes to 98% while pressed and back, both over 120ms on the default
-   curve, and its fill steps from the card surface to the one below on hover, at
-   once. */
+/* A card squishes to 98% while pressed and back, both over 120ms on the
+   default curve, and its fill steps from the card surface to the one below
+   on hover, at once (the original's gallery card: #1a1a19 to #151515 dark;
+   desktop bundle 2.31226.1). */
 .artifacts-card {
   position: relative;
   min-width: 0;
@@ -838,8 +843,8 @@
     linear-gradient(rgb(144 133 233 / 10%), rgb(144 133 233 / 10%)), #1a1a19;
   color: #9085e9;
 }
-/* Current gallery Slides chip: This is tied to the same real export
-   predicate as the artifact viewer. */
+/* Current gallery Slides chip: live official-artifacts.txt:10. This is
+   tied to the same real export predicate as the artifact viewer. */
 :root:not([data-theme="light"]) .artifacts-card-tile[data-presentation] {
   background: #1a1a19;
   color: #c98500;
@@ -873,11 +878,10 @@
   line-height: 17px;
   pointer-events: none;
 }
-/*
- * The time is one line that truncates (the original's whitespace-nowrap
- * text-ellipsis overflow-x-clip span): in a narrow card it must not wrap under
- * the name.
- */
+/* The time is one line that truncates (the original's whitespace-nowrap
+ * text-ellipsis overflow-x-clip span): in a narrow card it must not wrap
+ * under the name (owner, 2026-10-21: "已查看 17 小时前" wrapped onto two
+ * lines and the name sat on it). */
 .artifacts-card-time {
   overflow-x: clip;
   white-space: nowrap;
@@ -972,7 +976,7 @@
 }
 :root[data-theme="light"]
   .artifacts-tile.artifacts-card-tile[data-presentation] {
-  /* Yellow450 light / yellow350 dark. */
+  /* shared-3-ClOVEo7e.js:788: yellow450 light / yellow350 dark. */
   color: #a66a00;
 }
 :root[data-theme="light"] .artifacts-card-name {
@@ -987,7 +991,7 @@
   color: var(--text);
 }
 
-/* Loading: placeholders while the profile's notes are read. */
+/* Loading (R-0910): placeholders while the profile's notes are read. */
 .artifacts-skeleton-list {
   display: grid;
   padding-top: 20px;
@@ -1053,7 +1057,7 @@
   object-position: top;
 }
 
-/* Base / sm / md = one / two / three. */
+/* Captured gallery grid classes: base / sm / md = one / two / three. */
 @media (min-width: 640px) {
   .artifacts-page .artifacts-grid,
   .artifacts-skeleton-grid {

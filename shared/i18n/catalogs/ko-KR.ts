@@ -110,7 +110,7 @@ const catalog: Record<string, string> = {
   Max: "최대",
   "More models": "더 많은 모델",
   "Image generation": "이미지 생성",
-  "Image generation model": "이미지 생성 모델",
+  "Automatic selection": "자동 선택",
   "Select model": "모델 선택",
   "Incognito chats stay out of your history and search.":
     "시크릿 채팅은 기록과 검색에 표시되지 않습니다.",
@@ -1303,16 +1303,38 @@ const catalog: Record<string, string> = {
   "Review yesterday's commits and flag anything concerning.":
     "어제의 커밋을 검토하고 우려되는 부분을 표시합니다.",
   "System health check": "시스템 상태 점검",
+  "Monitor infrastructure and services for errors, outages, and performance issues.":
+    "인프라와 서비스의 오류, 장애, 성능 문제를 모니터링합니다.",
   "Issue triage": "이슈 분류",
+  "Review and categorize incoming issues, bugs, and feature requests.":
+    "들어오는 이슈, 버그, 기능 요청을 검토하고 분류합니다.",
   "PR review digest": "PR 리뷰 요약",
+  "Overview of open PRs, review status, and what needs attention.":
+    "열려 있는 PR, 리뷰 상태, 주의가 필요한 항목을 한눈에 보여 줍니다.",
   "Dependency update check": "의존성 업데이트 확인",
+  "Scan for outdated packages, security patches, and breaking changes.":
+    "오래된 패키지, 보안 패치, 호환성 문제를 일으키는 변경 사항을 검사합니다.",
   "Flaky test tracker": "불안정한 테스트 추적",
+  "Find tests that pass and fail intermittently across recent CI runs.":
+    "최근 CI 실행에서 성공과 실패가 번갈아 나타나는 테스트를 찾습니다.",
   "Daily briefing": "일일 브리핑",
+  "What needs your attention today across calendar, email, and messages.":
+    "캘린더, 이메일, 메시지 전반에서 오늘 주의가 필요한 사항입니다.",
   "Inbox triage": "받은편지함 분류",
+  "Categorize your inbox and draft replies to anything urgent.":
+    "받은편지함을 분류하고 급한 메일에 대한 답장 초안을 작성합니다.",
   "Meeting prep": "회의 준비",
+  "A short brief before each meeting on your calendar, covering attendees, context, and agenda.":
+    "캘린더의 각 회의 전에 참석자, 배경, 안건을 담은 간단한 브리핑을 제공합니다.",
   "Weekly review": "주간 리뷰",
+  "A Friday summary of what happened this week.":
+    "이번 주에 있었던 일을 금요일에 요약해 줍니다.",
   "Content ideas": "콘텐츠 아이디어",
+  "Draft a few post ideas each week from the latest news in your industry.":
+    "업계 최신 뉴스를 바탕으로 매주 게시물 아이디어 초안을 작성합니다.",
   "Monitor a topic": "주제 모니터링",
+  "Watch for news or mentions of a topic, competitor, or keyword.":
+    "주제, 경쟁사, 키워드에 대한 뉴스나 언급을 지켜봅니다.",
   Frequency: "빈도",
   "Add a model connection in Settings first.":
     "먼저 설정에서 모델 연결을 추가하세요.",
@@ -1424,6 +1446,7 @@ const catalog: Record<string, string> = {
   Write: "쓰기",
   "Thought for {n}s": "{n}초 동안 생각함",
   "Waiting for your response": "응답을 기다리는 중",
+  "ran a command": "명령을 실행함",
   "ran {n} commands": "명령 {n}개를 실행함",
   "read a file": "파일을 읽음",
   "read {n} files": "파일 {n}개를 읽음",
@@ -1433,6 +1456,7 @@ const catalog: Record<string, string> = {
   "created {n} files": "파일 {n}개를 만듦",
   "edited a file": "파일을 편집함",
   "edited {n} files": "파일 {n}개를 편집함",
+  "used a tool": "도구를 사용함",
   "used {n} tools": "도구 {n}개를 사용함",
   "searched the web": "웹을 검색함",
   "shared files": "파일을 공유함",
@@ -1584,6 +1608,7 @@ const catalog: Record<string, string> = {
   "Only you can open this link": "나만 이 링크를 열 수 있습니다",
   Copied: "복사됨",
   "Local workspace": "로컬 작업 공간",
+  "Starting up…": "시작하는 중…",
   "Started an agent": "에이전트를 시작함",
   "Messaged an agent": "에이전트에게 메시지를 보냄",
   "Resumed an agent": "에이전트를 다시 시작함",
@@ -1976,6 +2001,8 @@ const catalog: Record<string, string> = {
   "memory settings": "메모리 설정",
   "Claudex hasn't written any memory from your chats yet. Your reflection shows here once it has.":
     "Claudex가 아직 내 채팅에서 메모리를 작성하지 않았습니다. 작성되면 되돌아보기가 여기에 표시됩니다.",
+  "For this reflection to work, you'll need to enable memory in":
+    "이 되돌아보기가 작동하려면 다음에서 메모리를 사용하도록 설정해야 합니다:",
   "Based on your conversations in Claudex chat.":
     "Claudex 채팅에서의 대화를 바탕으로 합니다.",
   "Core skills library for Claudex Code: TDD, debugging, collaboration patterns, and proven techniques.":
@@ -2910,7 +2937,26 @@ const catalog: Record<string, string> = {
     "OpenAI 호환 클라이언트는 이 주소를, Anthropic 클라이언트는 /v1을 뺀 주소를 사용합니다.",
   Rate: "배율",
   "Click a model to copy its ID": "모델을 클릭하면 ID가 복사됩니다",
+  "ZecousAI users have all moved to the new Claudex":
+    "ZecousAI 사용자가 모두 새로운 Claudex로 이전되었습니다",
+  "Claudex is the fully upgraded ZecousAI platform, built to give you fuller and steadier service. Since September 4, OpenAI has been degrading and rate-limiting its models, and availability has dropped, so for ZecousAI users we have decided:":
+    "Claudex는 전면 업그레이드된 ZecousAI 플랫폼으로, 더 충실하고 안정적인 서비스를 제공합니다. 9월 4일부터 OpenAI에서 모델 성능 저하와 속도 제한이 이어지며 가용성이 떨어져, ZecousAI 사용자에 대해 다음과 같이 결정했습니다:",
+  "If you had any ZecousAI subscription on September 4, or started one after September 4, the subscription time you had left from September 4 on is turned into balance in proportion to its length and added to your Claudex balance.":
+    "9월 4일 기준 ZecousAI 구독이 있었거나 9월 4일 이후 구독을 시작한 경우, 9월 4일 이후 남은 구독 기간을 기간 비율에 따라 잔액으로 환산해 Claudex 잔액에 추가합니다.",
+  "If you had a ZecousAI balance on September 4, that day's balance is turned into balance and added to your Claudex balance (requests from September 4 on are not charged).":
+    "9월 4일 기준 ZecousAI 잔액이 있었던 경우, 9월 4일의 잔액을 환산해 Claudex 잔액에 추가합니다(9월 4일 이후의 요청은 과금되지 않습니다).",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's official 1:1, so what you can use does not change.":
+    "ZecousAI 잔액이 Claudex에서는 적어 보일 수 있습니다. Claudex는 ¥1 = $1의 새 비율로 충전하고 모델 배율도 ZecousAI의 공식 1:1보다 크게 낮아, 사용할 수 있는 양은 달라지지 않습니다.",
+  "Moving adds {amount} to your Claudex balance ({balance} from your balance, {subscription} from your subscriptions).":
+    "이전하면 Claudex 잔액에 {amount}이(가) 추가됩니다(잔액에서 {balance}, 구독에서 {subscription}).",
+  "Once you confirm, your ZecousAI subscription and balance are cleared and moved to Claudex. If you use the API, switch your request address and create new keys in the API tab at the top left.":
+    "이전을 확인하면 ZecousAI 구독과 잔액이 비워지고 Claudex로 옮겨집니다. API를 사용하신다면 왼쪽 위 API 탭에서 요청 주소를 바꾸고 새 키를 만드세요.",
+  "Confirm move": "이전 확인",
   "Moving…": "이전 중…",
+  "The move didn't go through. Try again.":
+    "이전하지 못했습니다. 다시 시도하세요.",
+  "Moved: {amount} added to your Claudex balance.":
+    "이전 완료: Claudex 잔액에 {amount}을(를) 추가했습니다.",
   "All changes": "모든 변경 사항",
   "1 file": "파일 1개",
   "Sync with the web": "웹과 동기화",
@@ -3745,7 +3791,7 @@ const catalog: Record<string, string> = {
   "Compare the alternatives": "대안 비교하기",
   "Set goals for the quarter": "분기 목표 세우기",
   "Plan a hard meeting": "어려운 회의 준비하기",
-  "Plan my week": "한 주 계획 세우기",
+  "Plan my week": "이번 주 계획 세우기",
   "Think through a choice": "선택을 차근차근 생각하기",
   "Plan meals and shopping": "식단과 장보기 계획",
   "Sketch a trip": "여행 스케치하기",
@@ -3753,6 +3799,7 @@ const catalog: Record<string, string> = {
   "Give me a puzzle": "퍼즐 하나 내 주세요",
   "Tell me something unexpected": "뜻밖의 이야기 들려주세요",
   "Debate a big question": "큰 질문으로 토론하기",
+  "Play a word game": "말놀이 하기",
   "Try a thought experiment": "사고 실험 해 보기",
   "Read my draft for clarity, tone and structure, then rewrite it so it flows while keeping my voice. Here it is:\n\n":
     "제 초안을 명확성, 어조, 구성 면에서 읽어 보고, 제 말투는 살리면서 자연스럽게 읽히도록 다시 써 주세요. 초안은 다음과 같습니다:\n\n",
@@ -4158,8 +4205,47 @@ const catalog: Record<string, string> = {
   "Refresh list": "목록 새로고침",
   "Couldn’t load branches.": "브랜치를 불러오지 못했습니다.",
   "No branches match": "일치하는 브랜치가 없습니다",
+  "Pick a task, any task": "아무 작업이나 골라 보세요",
+  "Tidy up and get organized": "깔끔하게 정리하기",
+  "Plan for what’s ahead": "앞으로의 일 계획하기",
+  "Turn messy data into action": "흩어진 데이터를 실행으로 바꾸기",
   "Customize with plugins": "플러그인으로 사용자 지정",
   "On {deviceName}": "{deviceName}에 있음",
+  "Optimize my week": "이번 주 일정 최적화",
+  "Help me plan and optimize my week. I have my Google Calendar open and ready for you to review and edit.\n\nFirst, review my calendar and show me a summary:\n- Total meetings\n- Busiest days\n- Where I have gaps of 2+ hours\n\nBefore proposing changes, ask me about:\n- What I’m trying to accomplish this week\n- How much focus time I need and for what\n- Any deadlines or commitments not on my calendar\n- Which types of meetings I should decline or shorten\n- Personal commitments or boundaries I want to protect\n\nThen show me your top 3-5 proposed changes with explanations:\n- Focus blocks to add\n- Meetings to decline or reschedule\n- Time conflicts to resolve\n\nStart with the highest-impact changes first. Once I approve each change, make the edits directly in my calendar one at a time.":
+    "이번 주 일정을 계획하고 최적화하도록 도와주세요. Google 캘린더를 열어 두었으니 검토하고 수정해 주세요.\n\n먼저 캘린더를 검토하고 요약을 보여 주세요:\n- 전체 회의 수\n- 가장 바쁜 날\n- 2시간 이상 비어 있는 시간\n\n변경을 제안하기 전에 다음을 물어봐 주세요:\n- 이번 주에 무엇을 이루려고 하는지\n- 집중 시간이 얼마나, 무엇을 위해 필요한지\n- 캘린더에 없는 마감이나 약속\n- 거절하거나 줄여야 할 회의 유형\n- 지키고 싶은 개인 일정이나 경계\n\n그런 다음 가장 중요한 변경 제안 3~5개를 이유와 함께 보여 주세요:\n- 추가할 집중 시간 블록\n- 거절하거나 일정을 바꿀 회의\n- 해결할 시간 충돌\n\n영향이 가장 큰 변경부터 시작해 주세요. 각 변경을 제가 승인하면 캘린더에서 하나씩 직접 수정해 주세요.",
+  "Organize my screenshots": "스크린샷 정리",
+  "Help me organize recent screenshots on my Desktop.\n\nFirst, scan my Desktop and count how many screenshots/images are there. Show me:\n- Total count\n- Date range (oldest to newest)\n\nThen, focus only on screenshots from the last 14 days. For each one:\n- Identify what it shows\n- Suggest a descriptive filename\n- Propose which folder it belongs in (or if it can be deleted)\n\nGroup similar screenshots together. Show me the plan before making any changes.\n\nAfter I approve, start by organizing just 10 files as a preview. If there are more than 10 files, check in with me before continuing with the rest.":
+    "바탕화면에 있는 최근 스크린샷을 정리하도록 도와주세요.\n\n먼저 바탕화면을 스캔해서 스크린샷/이미지가 몇 개인지 세어 주세요. 다음을 보여 주세요:\n- 전체 개수\n- 날짜 범위(가장 오래된 것부터 최신까지)\n\n그런 다음 최근 14일간의 스크린샷에만 집중해 주세요. 각각에 대해:\n- 무엇이 담겨 있는지 파악하기\n- 내용을 알 수 있는 파일 이름 제안하기\n- 어느 폴더에 넣어야 할지(또는 삭제해도 되는지) 제안하기\n\n비슷한 스크린샷은 함께 묶어 주세요. 변경하기 전에 계획을 보여 주세요.\n\n제가 승인하면 미리보기로 10개 파일만 먼저 정리해 주세요. 파일이 10개보다 많으면 나머지를 계속하기 전에 저에게 확인해 주세요.",
+  "Find insights in files": "파일에서 인사이트 찾기",
+  "Help me find patterns and insights across [my voice memos / meeting transcripts / documents / journal entries / specify folder]. I have messy, unstructured files and want to understand what themes are emerging.\n\nFirst, scan the folder and show me a summary:\n- Total files\n- Date range (oldest to newest)\n- Types of content\n\nBefore analyzing, ask me:\n- What I’m hoping to discover (recurring themes, contradictions, evolution of thinking, action items, or something else)\n- Whether certain files or time periods should be prioritized\n- What format would be most useful for the final analysis\n\nIf there are more than 20 files, start by analyzing just the 10 most recent files.\n\nShow me the top 3-5 patterns you found with 2-3 specific examples for each pattern. Once I confirm you’re on the right track, analyze the remaining files.":
+    "[음성 메모 / 회의 녹취록 / 문서 / 일기 / 폴더 지정]에서 패턴과 인사이트를 찾도록 도와주세요. 정리되지 않은 비정형 파일들이 있는데, 어떤 주제가 드러나는지 알고 싶어요.\n\n먼저 폴더를 스캔하고 요약을 보여 주세요:\n- 전체 파일 수\n- 날짜 범위(가장 오래된 것부터 최신까지)\n- 콘텐츠 유형\n\n분석하기 전에 다음을 물어봐 주세요:\n- 무엇을 발견하고 싶은지(반복되는 주제, 모순, 생각의 변화, 실행 항목 또는 기타)\n- 우선해야 할 파일이나 기간이 있는지\n- 최종 분석에 어떤 형식이 가장 유용한지\n\n파일이 20개를 넘으면 먼저 가장 최근 파일 10개만 분석해 주세요.\n\n찾은 주요 패턴 3~5개를 각각 구체적인 예 2~3개와 함께 보여 주세요. 방향이 맞다고 제가 확인하면 나머지 파일을 분석해 주세요.",
+  "Clean up my Downloads folder": "다운로드 폴더 정리",
+  "Help me organize my Downloads folder.\n\nFirst, scan and show me a summary:\n- Total files and total size\n- Files older than 30 days\n- Largest files taking up space\n\nBefore organizing, ask me:\n- What categories or folder structure would be most useful\n- Whether I want to delete or archive old files\n- If there are specific file types I want to prioritize (documents, images, installers, etc.)\n\nThen focus only on files older than 30 days first. Show me a proposed plan for these old files:\n- Categories to create\n- Files to delete (installers, duplicates, temp files)\n- Files to keep with where they should go\n\nAfter I approve, organize the first 15 old files as a preview. If there are more files, check in before continuing.":
+    "다운로드 폴더를 정리하도록 도와주세요.\n\n먼저 스캔해서 요약을 보여 주세요:\n- 전체 파일 수와 전체 크기\n- 30일이 지난 파일\n- 공간을 가장 많이 차지하는 파일\n\n정리하기 전에 다음을 물어봐 주세요:\n- 어떤 분류나 폴더 구조가 가장 유용한지\n- 오래된 파일을 삭제할지 보관할지\n- 우선 처리하고 싶은 파일 유형이 있는지(문서, 이미지, 설치 파일 등)\n\n그런 다음 30일이 지난 파일에 먼저 집중해 주세요. 이 오래된 파일들에 대한 정리 계획을 보여 주세요:\n- 만들 분류\n- 삭제할 파일(설치 파일, 중복 파일, 임시 파일)\n- 보관할 파일과 옮길 위치\n\n제가 승인하면 미리보기로 오래된 파일 15개를 먼저 정리해 주세요. 파일이 더 있으면 계속하기 전에 확인해 주세요.",
+  "Organize photos by event/date": "이벤트/날짜별로 사진 정리",
+  "Help me organize photos on my [Desktop/Downloads/specify location].\n\nFirst, scan the folder and show me a summary:\n- Total photos\n- Date range (oldest to newest)\n- Rough size breakdown\n\nBefore organizing, ask me:\n- How I’d like them organized (by date, by event, by person)\n- Whether there are specific events or time periods I should know about\n- What folder structure would work best\n- If any photos can be deleted (duplicates, blurry ones, screenshots)\n\nFocus only on photos from the last 3 months first. Show me a proposed plan with examples from 3-4 different groups so I can show you how I’d organize them.\n\nAfter I approve, organize just 20 photos as a preview. If there are more than 20, check in before continuing with the rest.":
+    "[바탕화면/다운로드/위치 지정]에 있는 사진을 정리하도록 도와주세요.\n\n먼저 폴더를 스캔하고 요약을 보여 주세요:\n- 전체 사진 수\n- 날짜 범위(가장 오래된 것부터 최신까지)\n- 대략적인 크기 분포\n\n정리하기 전에 다음을 물어봐 주세요:\n- 어떻게 정리하고 싶은지(날짜별, 이벤트별, 인물별)\n- 알아 두어야 할 특정 이벤트나 기간이 있는지\n- 어떤 폴더 구조가 가장 좋은지\n- 삭제해도 되는 사진이 있는지(중복, 흐린 사진, 스크린샷)\n\n먼저 최근 3개월간의 사진에만 집중해 주세요. 서로 다른 3~4개 그룹의 예시를 담은 정리 계획을 보여 주시면, 제가 어떻게 정리할지 알려 드릴게요.\n\n제가 승인하면 미리보기로 사진 20장만 먼저 정리해 주세요. 20장보다 많으면 나머지를 계속하기 전에 확인해 주세요.",
+  "Help me organize and clean up my email inbox.\n\nFirst, scan my inbox and show me a summary:\n- Total unread emails\n- Emails older than 30 days\n- The main senders or types of emails\n\nBefore organizing, ask me:\n- What categories or folders I want to create\n- Which types of emails I want to archive or delete\n- Whether there are specific senders I want to prioritize or filter\n- Any email patterns I want to address (newsletters, promotions, etc.)\n\nFocus only on emails older than 30 days first — these are easiest to clean up. Show me a proposed plan:\n- Which emails to archive\n- Which to delete\n- Which need action\n\nIf there are more than 50 old emails, start with a batch of 20 so I can check your approach. Once I approve, process that batch.":
+    "이메일 받은편지함을 정리하고 비우도록 도와주세요.\n\n먼저 받은편지함을 스캔하고 요약을 보여 주세요:\n- 읽지 않은 이메일 수\n- 30일이 지난 이메일\n- 주요 발신자나 이메일 유형\n\n정리하기 전에 다음을 물어봐 주세요:\n- 어떤 분류나 폴더를 만들고 싶은지\n- 어떤 유형의 이메일을 보관하거나 삭제하고 싶은지\n- 우선하거나 필터링하고 싶은 특정 발신자가 있는지\n- 처리하고 싶은 이메일 패턴(뉴스레터, 프로모션 등)\n\n먼저 30일이 지난 이메일에만 집중해 주세요. 이것들이 가장 정리하기 쉬워요. 정리 계획을 보여 주세요:\n- 보관할 이메일\n- 삭제할 이메일\n- 조치가 필요한 이메일\n\n오래된 이메일이 50통을 넘으면 제가 방식을 확인할 수 있도록 20통씩 한 묶음으로 시작해 주세요. 제가 승인하면 그 묶음을 처리해 주세요.",
+  "Prep for my next meeting": "다음 회의 준비",
+  "I have a meeting with [a company] [tomorrow].\n\nBefore researching, ask me:\n- What the meeting is about\n- What I already know about them\n- What I’m trying to accomplish\n- What would be most useful to know going in\n\nThen research them and show me what you found:\n- Company overview\n- Recent news (last 3 months)\n- Key people I’ll be meeting with\n- Their LinkedIn for recent updates\n\nShow me an outline of the one-pager with the 3-5 most important points before writing the full doc. Once I approve, create the final one-pager.":
+    "[내일] [한 회사]와 회의가 있어요.\n\n조사하기 전에 다음을 물어봐 주세요:\n- 회의의 주제\n- 제가 그들에 대해 이미 알고 있는 것\n- 제가 이루려는 것\n- 회의 전에 알아 두면 가장 유용한 것\n\n그런 다음 그들을 조사하고 찾은 내용을 보여 주세요:\n- 회사 개요\n- 최근 소식(최근 3개월)\n- 제가 만날 핵심 인물\n- 최근 소식을 볼 수 있는 그들의 LinkedIn\n\n전체 문서를 작성하기 전에 가장 중요한 요점 3~5개를 담은 한 장짜리 요약의 개요를 보여 주세요. 제가 승인하면 최종 한 장짜리 요약을 만들어 주세요.",
+  "Plan my next vacation": "다음 휴가 계획",
+  "Help me plan my next vacation.\n\nBefore researching, ask me:\n- Where I’m thinking of going (or if I’m open to suggestions)\n- When I want to travel and for how long\n- What my budget is\n- What kind of trip I’m looking for (relaxing, adventure, cultural, food-focused, etc.)\n\nThen research the top 3 destinations that fit my criteria and show me a comparison:\n- Estimated costs\n- Best time to visit\n- What makes each unique\n\nOnce I pick my top choice, research that destination in detail:\n- Check current flight prices\n- Find 3-4 accommodation options\n- Suggest a day-by-day outline\n\nShow me this proposed itinerary with estimated costs before creating the final trip plan.":
+    "다음 휴가 계획을 도와주세요.\n\n조사하기 전에 다음을 물어봐 주세요:\n- 어디로 가고 싶은지(또는 추천을 받을 의향이 있는지)\n- 언제, 얼마나 여행하고 싶은지\n- 예산이 얼마인지\n- 어떤 여행을 원하는지(휴식, 모험, 문화, 미식 등)\n\n그런 다음 제 조건에 맞는 상위 3개 여행지를 조사하고 비교해 주세요:\n- 예상 비용\n- 방문하기 가장 좋은 시기\n- 각 여행지만의 특징\n\n제가 최종 선택을 하면 그 여행지를 자세히 조사해 주세요:\n- 현재 항공권 가격 확인\n- 숙소 후보 3~4곳 찾기\n- 일자별 일정 개요 제안\n\n최종 여행 계획을 만들기 전에 예상 비용과 함께 이 일정 제안을 보여 주세요.",
+  "Prepare for a job interview": "취업 면접 준비",
+  "I have a job interview coming up for [role] at [company].\n\nBefore researching, ask me:\n- What the role is and what level\n- What I already know about the company\n- What I’m most nervous or uncertain about\n- If I have the job description or any interview details\n\nThen research the company and role, and show me what I found:\n- Company overview and recent news (last 6 months)\n- What this role typically involves\n- Common interview questions for this type of role\n- The interview team on LinkedIn (if you have names)\n\nShow me an outline covering these 3-5 topics before creating the full prep doc:\n- Key points about the company to mention\n- How my background connects to what they need\n- Questions I should ask them\n- 3-4 likely interview questions with suggested talking points\n\nOnce I approve, create a complete interview prep guide I can review before the interview.":
+    "곧 [회사]의 [직무] 면접이 있어요.\n\n조사하기 전에 다음을 물어봐 주세요:\n- 어떤 직무이고 어느 직급인지\n- 그 회사에 대해 제가 이미 알고 있는 것\n- 가장 긴장되거나 자신 없는 부분\n- 채용 공고나 면접 세부 정보가 있는지\n\n그런 다음 회사와 직무를 조사하고 찾은 내용을 보여 주세요:\n- 회사 개요와 최근 소식(최근 6개월)\n- 이 직무가 일반적으로 하는 일\n- 이런 직무의 흔한 면접 질문\n- LinkedIn에서 찾은 면접관(이름을 알고 있다면)\n\n전체 준비 문서를 만들기 전에 다음 3~5개 주제를 다루는 개요를 보여 주세요:\n- 언급할 만한 회사 관련 요점\n- 제 경력이 그들이 필요로 하는 것과 어떻게 연결되는지\n- 제가 그들에게 할 질문\n- 예상 면접 질문 3~4개와 답변 요점 제안\n\n제가 승인하면 면접 전에 검토할 수 있는 완성된 면접 준비 가이드를 만들어 주세요.",
+  "Catch me up on Slack": "Slack 소식 따라잡기",
+  "Help me catch up on what I’ve missed in Slack.\n\nBefore reading, ask me:\n- Which channels or DMs I should focus on (or check everything)\n- How far back to look (since yesterday, last week, specific date)\n- What I’m most concerned about missing (decisions, @mentions, urgent items, project updates)\n- Whether there are specific topics or people to prioritize\n\nThen scan those channels and show me a summary:\n- Total unread messages\n- Breakdown by channel\n\nFocus on messages that @mention me, contain decisions, or are marked urgent first.\n\nShow me the top 5 most important updates with context and links to the threads. If there are more than 30 unread messages total, start with these top 5 and ask if you should summarize more.":
+    "Slack에서 놓친 내용을 따라잡도록 도와주세요.\n\n읽기 전에 다음을 물어봐 주세요:\n- 어떤 채널이나 DM에 집중해야 하는지(또는 전부 확인할지)\n- 얼마나 거슬러 올라가 볼지(어제부터, 지난주, 특정 날짜)\n- 놓칠까 봐 가장 걱정되는 것(결정 사항, @멘션, 긴급 항목, 프로젝트 업데이트)\n- 우선해야 할 특정 주제나 사람이 있는지\n\n그런 다음 해당 채널을 스캔하고 요약을 보여 주세요:\n- 읽지 않은 메시지 수\n- 채널별 분류\n\n저를 @멘션했거나, 결정 사항이 담겨 있거나, 긴급으로 표시된 메시지에 먼저 집중해 주세요.\n\n가장 중요한 업데이트 5개를 맥락과 스레드 링크와 함께 보여 주세요. 읽지 않은 메시지가 모두 30개를 넘으면 이 5개부터 시작하고 더 요약할지 물어봐 주세요.",
+  "Turn voice memos into a doc": "음성 메모를 문서로 만들기",
+  "Help me turn my voice memos into an organized document. I have [voice memos / audio recordings] in [specify location] that I want transcribed and organized.\n\nFirst, scan the folder and show me:\n- How many audio files\n- Total duration\n- Date range\n\nBefore transcribing, ask me:\n- What these recordings are about\n- How I’d like them organized (chronologically, by topic, by theme)\n- Whether I want verbatim transcripts or cleaned-up summaries\n- What the final document should be (meeting notes, journal entries, ideas list, etc.)\n\nIf there are more than 5 recordings, start by transcribing just the 3 most recent ones. Show me the transcribed content and proposed organization structure.\n\nOnce I approve the approach, transcribe and organize the remaining recordings.":
+    "음성 메모를 정리된 문서로 만들도록 도와주세요. [위치 지정]에 [음성 메모 / 녹음 파일]이 있는데, 받아 적고 정리하고 싶어요.\n\n먼저 폴더를 스캔하고 다음을 보여 주세요:\n- 오디오 파일 수\n- 전체 길이\n- 날짜 범위\n\n받아 적기 전에 다음을 물어봐 주세요:\n- 이 녹음들이 무엇에 관한 것인지\n- 어떻게 정리하고 싶은지(시간순, 주제별, 테마별)\n- 그대로 받아 적은 기록과 다듬은 요약 중 무엇을 원하는지\n- 최종 문서가 무엇이어야 하는지(회의록, 일기, 아이디어 목록 등)\n\n녹음이 5개를 넘으면 먼저 가장 최근의 3개만 받아 적어 주세요. 받아 적은 내용과 제안하는 정리 구조를 보여 주세요.\n\n제가 이 방식을 승인하면 나머지 녹음도 받아 적고 정리해 주세요.",
+  "Pull data into a spreadsheet": "데이터를 스프레드시트로 가져오기",
+  "I’m on a page with [job listings / products / directory entries] I want to extract.\n\nFirst, scan the page and show me what you see:\n- How many items total\n- What fields are available (title, price, location, description, etc.)\n\nBefore extracting, ask me:\n- Which fields I want in the spreadsheet\n- If there are any I should skip\n\nThen show me a preview with the first 3-5 items extracted so I can confirm the format looks right.\n\nIf there are more than 20 items on this page, extract them in batches of 10. If there are multiple pages, just do the first page and check with you before continuing.":
+    "추출하고 싶은 [채용 공고 / 상품 / 디렉터리 항목]이 있는 페이지를 보고 있어요.\n\n먼저 페이지를 스캔하고 보이는 내용을 알려 주세요:\n- 전체 항목 수\n- 사용할 수 있는 필드(제목, 가격, 위치, 설명 등)\n\n추출하기 전에 다음을 물어봐 주세요:\n- 스프레드시트에 넣고 싶은 필드\n- 건너뛰어야 할 필드가 있는지\n\n그런 다음 처음 3~5개 항목을 추출한 미리보기를 보여 주어 형식이 맞는지 확인할 수 있게 해 주세요.\n\n이 페이지에 항목이 20개보다 많으면 10개씩 나누어 추출해 주세요. 페이지가 여러 개라면 첫 페이지만 처리하고 계속하기 전에 저에게 확인해 주세요.",
   "Show empty groups": "빈 그룹 표시",
   "Drag or move sessions here": "여기로 세션을 드래그하거나 이동하세요",
   "“{groupName}” will be removed. Nothing is in it.":
@@ -4521,6 +4607,7 @@ const catalog: Record<string, string> = {
   "Started Claudex Code": "Claudex Code 시작됨",
   "Start Claudex Code": "Claudex Code 시작",
   "In progress": "진행 중",
+  "Starting session…": "세션 시작 중…",
   "Unable to connect to repository": "저장소에 연결할 수 없음",
   "Claudex couldn’t reach GitHub to fetch your repository. Try again in a moment.":
     "Claudex가 GitHub에 연결하지 못해 저장소를 가져올 수 없습니다. 잠시 후 다시 시도하세요.",
@@ -4795,8 +4882,8 @@ const catalog: Record<string, string> = {
     "폴더는 프로젝트 지식에 추가할 수 없습니다.",
   "{name} can't be added: project files can be text files or PDFs.":
     "{name}을(를) 추가할 수 없습니다. 프로젝트 파일은 텍스트 파일 또는 PDF만 가능합니다.",
-  "{name} is too large. Project files can be up to 10 MB.":
-    "{name}이(가) 너무 큽니다. 프로젝트 파일은 최대 10MB까지 가능합니다.",
+  "{name} is too large. Project files can be up to {limit} MB.":
+    "{name}이(가) 너무 큽니다. 프로젝트 파일은 최대 {limit}MB까지 가능합니다.",
   "This project no longer exists.": "이 프로젝트는 더 이상 존재하지 않습니다.",
   "Trust this workspace?": "이 작업 공간을 신뢰하시겠습니까?",
   "Codex may read, write, or execute files in this folder. Only proceed if you trust this workspace.":
@@ -5164,6 +5251,8 @@ const catalog: Record<string, string> = {
   "When is your birthday?": "생일이 언제인가요?",
   "We’ll use this to verify your account": "계정 확인에 사용됩니다",
   "Enter your birthdate": "생년월일 입력",
+  "I agree to ZecousAI’s {terms} and {aup}.":
+    "ZecousAI의 {terms} 및 {aup}에 동의합니다.",
   "Terms of Service": "서비스 약관",
   "Acceptable Use Policy": "허용 가능한 사용 정책",
   "Enter your name to continue": "계속하려면 이름을 입력하세요",
@@ -6815,6 +6904,44 @@ const catalog: Record<string, string> = {
   "Create an interactive app that ": "다음 기능의 인터랙티브 앱을 만들어 줘: ",
   "Turn this idea into a diagram, chart, or visual: ":
     "이 아이디어를 다이어그램, 차트 또는 시각 자료로 만들어 줘: ",
+  "Template Creator": "템플릿 만들기",
+  "Deck Checker": "프레젠테이션 검사",
+  "DCF Valuation": "DCF 가치 평가",
+  "Earnings Analysis": "실적 분석",
+  "All Finance Skills": "모든 금융 스킬",
+  "Company Profile": "회사 개요",
+  "Pitch Deck": "피치 덱",
+  "Initiating Coverage": "신규 커버리지",
+  "Competitive Analysis": "경쟁 분석",
+  "3-Statement Model": "3대 재무제표 모델",
+  "Comps Analysis": "비교 기업 분석",
+  "Datapack Builder": "데이터 팩 만들기",
+  "Enable skill to continue": "계속하려면 스킬 활성화",
+  "The skill “{skillName}” needs to be enabled to use this prompt. Enable it now?":
+    "이 프롬프트를 사용하려면 “{skillName}” 스킬을 활성화해야 합니다. 지금 활성화할까요?",
+  "Enable skill": "스킬 활성화",
+  "Create a reusable skill from our firm's template using anthropic-ppt-template-creator. Extract layouts, placeholders, and formatting standards. [attach firm_brand_template.pptx]":
+    "anthropic-ppt-template-creator로 회사 템플릿에서 재사용 가능한 스킬을 만들어 줘. 레이아웃, 자리 표시자, 서식 기준을 추출해 줘. [firm_brand_template.pptx 첨부]",
+  "QC the attached management presentation using anthropic-fsi-deck-checker. Check for number consistency, data-narrative alignment, and formatting issues. [attach ProjectBravo_Mgmt_Presentation.pptx]":
+    "anthropic-fsi-deck-checker로 첨부한 경영진 프레젠테이션의 품질을 점검해 줘. 수치 일관성, 데이터와 설명의 일치, 서식 문제를 확인해 줘. [ProjectBravo_Mgmt_Presentation.pptx 첨부]",
+  "Create a DCF model for [ServiceNow] using anthropic-fsi-dcf-model-builder. Include 5-year projections, WACC calculation, terminal value via exit multiple, and sensitivity on discount rate and growth.":
+    "anthropic-fsi-dcf-model-builder로 [ServiceNow]의 DCF 모델을 만들어 줘. 5년 예측, WACC 계산, 엑시트 배수 기반 영구가치, 할인율과 성장률 민감도 분석을 포함해 줘.",
+  "Create an earnings update for [CrowdStrike]'s Q3 FY2025 results using anthropic-fsi-earnings-analysis. Cover beat/miss vs. consensus, key drivers, guidance changes, and updated thesis.":
+    "anthropic-fsi-earnings-analysis로 [CrowdStrike]의 FY2025 3분기 실적 업데이트를 작성해 줘. 컨센서스 대비 상회·하회, 핵심 요인, 가이던스 변경, 수정된 투자 논리를 다뤄 줘.",
+  "Create a single-slide strip profile for [Snowflake] using anthropic-fsi-strip-profile. Include business overview, key metrics, valuation multiples, stock chart, and top shareholders.":
+    "anthropic-fsi-strip-profile로 [Snowflake]의 단일 슬라이드 기업 프로필을 만들어 줘. 사업 개요, 핵심 지표, 가치 평가 배수, 주가 차트, 주요 주주를 포함해 줘.",
+  "Populate the attached pitch deck template with data from the Excel file using anthropic-fsi-pitch-deck. Map financials to appropriate slides and maintain formatting. [attach template.pptx and financials.xlsx]":
+    "anthropic-fsi-pitch-deck로 첨부한 피치 덱 템플릿에 Excel 데이터를 채워 줘. 재무 데이터를 적절한 슬라이드에 배치하고 서식을 유지해 줘. [template.pptx 및 financials.xlsx 첨부]",
+  "Creating company research on [MongoDB] using anthropic-fsi-initiating-coverage. Start with Task 1 covering business model, competitive positioning, and key investment thesis points.":
+    "anthropic-fsi-initiating-coverage로 [MongoDB] 기업 리서치를 작성해 줘. 사업 모델, 경쟁 포지셔닝, 주요 투자 논점을 다루는 작업 1부터 시작해 줘.",
+  "Create a competitive landscape analysis for [Datadog] using anthropic-fsi-competitive-analysis. Include a 2x2 positioning matrix against Splunk, Dynatrace, New Relic, and Elastic, with competitive moats and strategic implications.":
+    "anthropic-fsi-competitive-analysis로 [Datadog]의 경쟁 구도를 분석해 줘. Splunk, Dynatrace, New Relic, Elastic과 비교한 2x2 포지셔닝 매트릭스, 경쟁 우위, 전략적 시사점을 포함해 줘.",
+  "Build an integrated 3-statement model using anthropic-fsi-3-statements. Populate the attached template with [Salesforce]'s FY2022-2024 historicals from their 10-K and project through FY2027. [attach template.xlsx and CRM 10-K.pdf]":
+    "anthropic-fsi-3-statements로 통합 3대 재무제표 모델을 만들어 줘. [Salesforce]의 10-K에서 FY2022~2024 과거 실적을 첨부 템플릿에 채우고 FY2027까지 예측해 줘. [template.xlsx 및 CRM 10-K.pdf 첨부]",
+  "Build a comps analysis for [Shopify] using anthropic-fsi-comps-analysis. Include 10 peers with EV/Revenue, EV/EBITDA, and P/E on LTM and NTM basis, plus implied valuation ranges.":
+    "anthropic-fsi-comps-analysis로 [Shopify]의 비교 기업 분석을 만들어 줘. 10개 동종 기업의 LTM 및 NTM 기준 EV/매출, EV/EBITDA, P/E와 내재 가치 평가 범위를 포함해 줘.",
+  "Build a data pack for our IC using anthropic-fsi-datapack-builder. Standardize financials from the attached CIM including ARR growth, net retention, and rule of 40 metrics. [attach ProjectAlpha_CIM.pdf]":
+    "anthropic-fsi-datapack-builder로 투자위원회용 데이터 팩을 만들어 줘. 첨부 CIM의 재무 데이터를 표준화하고 ARR 성장률, 순 유지율, 40의 법칙 지표를 포함해 줘. [ProjectAlpha_CIM.pdf 첨부]",
   "Get this as a document you can edit and share.":
     "이 내용을 편집하고 공유할 수 있는 문서로 받아보세요.",
   "Create a document": "문서 만들기",
@@ -7284,11 +7411,546 @@ const catalog: Record<string, string> = {
   file: "파일",
   "Couldn’t fetch the file. This connector is no longer available.":
     "파일을 가져올 수 없습니다. 이 커넥터는 더 이상 사용할 수 없습니다.",
+  "Hey Claudex, could you {prompt}? Use any connector that would be helpful, and get started once you’ve gathered enough info.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Claudex, {prompt} 해 줄 수 있나요? 도움이 될 커넥터를 사용하고 정보가 충분히 모이면 시작해 주세요.\n\n적절하다면 시각 자료, 체크리스트, 인터랙티브 콘텐츠처럼 함께 살펴볼 수 있는 것을 만들어 주세요.",
+  "Hey Claudex, could you help me {prompt}? Start researching right away, and use any tools you think would help. Let me know if you need any other context.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Claudex, {prompt} 도와줄 수 있나요? 바로 조사를 시작하고 도움이 될 도구를 사용해 주세요. 다른 배경 정보가 필요하면 알려 주세요.\n\n적절하다면 시각 자료, 체크리스트, 인터랙티브 콘텐츠처럼 함께 살펴볼 수 있는 것을 만들어 주세요.",
+  "Hi Claudex! Could you {prompt}? If you need more information from me, ask me 1-2 key questions right away. If you think I should give you more context or upload anything to help you do a better job, let me know. Use any tools you have access to—like Google Drive, web search, etc.—if they’ll help.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive. Thanks for your help!":
+    "안녕 Claudex! {prompt} 해 줄 수 있나요? 정보가 더 필요하면 핵심 질문 1~2개를 바로 해 주세요. 더 잘하기 위해 배경 정보나 업로드가 필요하다면 알려 주세요. Google Drive나 웹 검색 등 사용할 수 있는 도구가 도움이 된다면 활용해 주세요.\n\n적절하다면 시각 자료, 체크리스트, 인터랙티브 콘텐츠처럼 함께 살펴볼 수 있는 것을 만들어 주세요. 도와줘서 고마워요!",
+  "Help me pick the right career for me": "나에게 맞는 직업 선택 돕기",
+  "Choose a career path based on my astrology":
+    "내 점성술에 따라 진로 선택하기",
+  "Give me a work persona based on my favorite books":
+    "좋아하는 책을 바탕으로 직장 페르소나 만들기",
+  "Help me role play a talk with my boss": "상사와의 대화 역할극 돕기",
+  "Give me pointers on being a better manager":
+    "더 좋은 관리자가 되는 조언 주기",
+  "Write a job description for my dream life":
+    "꿈꾸는 삶을 위한 직무 설명 쓰기",
+  "Update my resume or LinkedIn": "이력서 또는 LinkedIn 업데이트하기",
+  "Develop my professional skills": "전문 역량 개발하기",
+  "Navigate workplace challenges": "직장 내 도전 헤쳐 나가기",
+  "Plan my career growth": "경력 성장 계획하기",
+  "Improve my work-life balance": "일과 삶의 균형 개선하기",
+  "Network more effectively": "더 효과적으로 인맥 쌓기",
+  "Request a raise or promotion": "급여 인상이나 승진 요청하기",
+  "Create effective cover letters": "효과적인 자기소개서 만들기",
+  "Identify transferable skills": "전이 가능한 역량 파악하기",
+  "Analyze industry trends": "업계 동향 분석하기",
+  "Practice salary negotiations": "연봉 협상 연습하기",
+  "Build my personal brand": "개인 브랜드 구축하기",
+  "Handle difficult colleagues": "까다로운 동료 대하기",
+  "Develop leadership abilities": "리더십 역량 개발하기",
+  "Manage workplace stress": "직장 스트레스 관리하기",
+  "Explore career transitions": "경력 전환 탐색하기",
+  "Draft professional emails": "업무 이메일 초안 작성하기",
+  "Prepare presentations": "프레젠테이션 준비하기",
+  "Build team communication": "팀 소통 구축하기",
+  "Improve public speaking": "대중 연설 능력 개선하기",
+  "Track professional accomplishments": "직업적 성과 추적하기",
+  "Handle performance reviews": "성과 평가 대처하기",
+  "Understand workplace politics": "직장 정치 이해하기",
+  "Create workplace boundaries": "직장 경계 설정하기",
+  "Find mentorship opportunities": "멘토링 기회 찾기",
+  "Manage remote work": "원격 근무 관리하기",
+  "Develop executive presence": "경영진다운 존재감 개발하기",
+  "Handle workplace feedback": "직장 피드백 대처하기",
+  "Analyze job descriptions": "직무 설명 분석하기",
+  "Create professional goals": "직업 목표 만들기",
+  "Plan continuing education": "계속 교육 계획하기",
+  "Strengthen workplace relationships": "직장 내 관계 강화하기",
+  "Improve technical skills": "기술 역량 개선하기",
+  "Manage project timelines": "프로젝트 일정 관리하기",
+  "Handle workplace conflicts": "직장 갈등 다루기",
+  "Prepare for promotions": "승진 준비하기",
+  "Balance multiple projects": "여러 프로젝트 균형 맞추기",
+  "Summarize my top projects this quarter": "이번 분기 주요 프로젝트 요약하기",
+  "Analyze my writing style based on my docs": "내 문서로 문체 분석하기",
+  "Give me a TLDR on the new docs I’ve been given access to":
+    "새로 접근 권한을 받은 문서 간단히 요약하기",
+  "Identify what my top 3 priorities should be today":
+    "오늘의 최우선 과제 세 가지 파악하기",
+  "Find which of my ideas have gained the most traction at work":
+    "직장에서 가장 호응을 얻은 내 아이디어 찾기",
+  "Tell me how my project focus has evolved over time":
+    "프로젝트 초점의 변화 알려주기",
+  "Locate documents that represent pivotal moments in my thinking":
+    "내 사고의 전환점을 나타내는 문서 찾기",
+  "Surface unexpected connections across my different documents":
+    "서로 다른 문서 간 뜻밖의 연결 찾기",
+  "Identify and visualize my most brilliant moments from my documents":
+    "문서에서 내 가장 빛나는 순간 찾아 시각화하기",
+  "Look at my docs and tell me what kind of genre writer I could be":
+    "문서를 보고 어떤 장르 작가가 어울릴지 알려주기",
+  "Reveal blind spots in my knowledge base": "내 지식의 맹점 밝히기",
+  "What idea themes consistently appear across all my documents?":
+    "모든 문서에 반복되는 아이디어 주제 찾기",
+  "Look at how my calendar has shifted this month compared to last":
+    "이번 달과 지난달 일정 변화 살펴보기",
+  "Show me insights about my meeting attendance patterns":
+    "회의 참석 패턴에 대한 통찰 보여주기",
+  "Tell me which recurring meetings take up most of my time":
+    "시간을 가장 많이 차지하는 정기 회의 알려주기",
+  "Analyze if my actual meetings align with my stated priorities":
+    "실제 회의가 명시한 우선순위와 맞는지 분석하기",
+  "Analyze my calendar for meeting optimization":
+    "회의 최적화를 위해 일정 분석하기",
+  "Tell me what my calendar reveals about my work-life balance":
+    "일정이 보여주는 일과 삶의 균형 알려주기",
+  "Identify how my calendar habits reflect my personal priorities":
+    "일정 습관이 개인 우선순위를 어떻게 반영하는지 파악하기",
+  "Show me how my seasonal patterns affect my scheduling and energy":
+    "계절 패턴이 일정과 에너지에 미치는 영향 보여주기",
+  "Reflect on my calendar as if I was 100 years old looking back at this time":
+    "100살이 되어 지금을 돌아보듯 내 일정 성찰하기",
+  "Give me tips on how to organize my calendar": "일정 정리 팁 알려주기",
+  "Transform my calendar into a fantasy quest journal":
+    "일정을 판타지 모험 일지로 바꾸기",
+  "Turn my calendar events into a poetic ‘day in the life’ narrative":
+    "일정 이벤트를 시적인 일상 이야기로 바꾸기",
+  "Predict my next stress point by analyzing my calendar density patterns":
+    "일정 밀도 패턴으로 다음 스트레스 시점 예측하기",
+  "Create a visual guide for calendar management based on my ennegram":
+    "에니어그램에 따른 시각적 일정 관리 가이드 만들기",
+  "Visualize where my time truly goes each week":
+    "매주 시간이 실제로 어디에 쓰이는지 시각화하기",
+  "Analyze my email communication style": "내 이메일 소통 스타일 분석하기",
+  "Tell me how I can optimize my inbox": "받은편지함 최적화 방법 알려주기",
+  "Pull out important points from my latest work emails":
+    "최근 업무 이메일에서 중요 요점 추출하기",
+  "Tell me which emails I subscribe to usually go unread":
+    "구독하지만 보통 읽지 않는 이메일 알려주기",
+  "Tell me about my email organization habits": "내 이메일 정리 습관 알려주기",
+  "See what emotional themes emerge from my email conversations":
+    "이메일 대화의 감정적 주제 살펴보기",
+  "Let me know how I can be more persuasive in my emails":
+    "이메일의 설득력을 높이는 방법 알려주기",
+  "Show me any tricks that can help me manage email":
+    "이메일 관리에 유용한 요령 알려주기",
+  "Write a pretend 1-page newspaper based on my integrations?":
+    "연동 정보를 바탕으로 가상 한 페이지 신문 쓰기",
+  "If my email inbox was a reality TV show, who would be voted off the island first?":
+    "받은편지함이 리얼리티 쇼라면 누가 먼저 탈락할까?",
+  "Create a diplomatic response to my most challenging recent email thread":
+    "최근 가장 까다로운 이메일 스레드에 외교적 답변 작성하기",
+  "Generate a ‘personal brand statement’ based on how I communicate in email":
+    "이메일 소통 방식을 바탕으로 개인 브랜드 선언 만들기",
+  "Casually look through my work integrations to find people who seem to support my career growth":
+    "업무 연동을 가볍게 살펴 내 경력 성장을 돕는 사람 찾기",
+  "Look through my emails and tell me where I’m avoiding something important":
+    "이메일을 보고 중요한 일을 피하는 부분 알려주기",
+  "Create ‘missed connections’ personal ads based on my most interesting email exchanges":
+    "가장 흥미로운 이메일 대화로 ‘놓친 인연’ 개인 광고 만들기",
+  "Have a philosophical discussion": "철학 토론하기",
+  "Learn something unexpected": "뜻밖의 것 배우기",
+  "Solve an interesting problem": "흥미로운 문제 풀기",
+  "Discover a new perspective": "새로운 관점 발견하기",
+  "Play a word game together": "함께 단어 게임하기",
+  "Debate an ethical dilemma": "윤리적 딜레마 토론하기",
+  "Explore a fascinating concept": "매력적인 개념 탐구하기",
+  "Explore thought experiments": "사고 실험 탐구하기",
+  "Explore cognitive biases": "인지 편향 탐구하기",
+  "Explore language evolution": "언어 진화 탐구하기",
+  "Explore mathematical paradoxes": "수학적 역설 탐구하기",
+  "Explore psychological phenomena": "심리 현상 탐구하기",
+  "Explore architectural concepts": "건축 개념 탐구하기",
+  "Explore memory techniques": "기억 기법 탐구하기",
+  "Explore logical fallacies": "논리적 오류 탐구하기",
+  "Explore ancient wisdom": "고대의 지혜 탐구하기",
+  "Discuss future technologies": "미래 기술 토론하기",
+  "Discuss creative thinking techniques": "창의적 사고 기법 토론하기",
+  "Discuss art interpretation": "예술 해석 토론하기",
+  "Discuss space exploration questions": "우주 탐사 질문 토론하기",
+  "Discuss musical innovations": "음악 혁신 토론하기",
+  "Discuss food science": "식품 과학 토론하기",
+  "Discuss symbolic communication": "상징적 소통 토론하기",
+  "Discuss social dynamics": "사회 역학 토론하기",
+  "Analyze historical turning points": "역사적 전환점 분석하기",
+  "Analyze decision-making frameworks": "의사결정 체계 분석하기",
+  "Analyze literary themes": "문학 주제 분석하기",
+  "Analyze game theory applications": "게임 이론 응용 분석하기",
+  "Consider alternate histories": "대체 역사 생각하기",
+  "Consider economic theories": "경제 이론 생각하기",
+  "Consider environmental solutions": "환경 해결책 생각하기",
+  "Consider innovation patterns": "혁신 패턴 생각하기",
+  "Create a fictional scenario": "가상 시나리오 만들기",
+  "Investigate scientific mysteries": "과학의 미스터리 조사하기",
+  "Examine nature phenomena": "자연 현상 살펴보기",
+  "Help me reflect on an experience": "경험을 돌아보도록 돕기",
+  "Help me work through a decision": "결정을 숙고하도록 돕기",
+  "Transform my personal goals into an actionable plan":
+    "개인 목표를 실행 계획으로 바꾸기",
+  "Roleplay difficult conversations I need to prepare for":
+    "준비해야 할 어려운 대화 역할극 하기",
+  "Guide me through a decision-making framework for a life choice":
+    "삶의 선택을 위한 의사결정 틀 안내하기",
+  "Plan my day or week": "하루 또는 일주일 계획하기",
+  "Help with decision making": "의사결정 돕기",
+  "Generate gift or travel ideas": "선물 또는 여행 아이디어 내기",
+  "Improve my habits": "내 습관 개선하기",
+  "Manage my time better": "시간을 더 잘 관리하기",
+  "Organize my living space": "생활 공간 정리하기",
+  "Improve sleep habits": "수면 습관 개선하기",
+  "Build better relationships": "더 나은 관계 만들기",
+  "Manage personal stress": "개인 스트레스 관리하기",
+  "Explore productivity systems": "생산성 시스템 탐색하기",
+  "Improve communication skills": "의사소통 능력 개선하기",
+  "Handle difficult conversations": "어려운 대화 다루기",
+  "Organize digital files": "디지털 파일 정리하기",
+  "Balance social commitments": "사회적 약속 균형 맞추기",
+  "Track personal goals": "개인 목표 추적하기",
+  "Improve financial literacy": "금융 이해력 높이기",
+  "Manage household tasks": "집안일 관리하기",
+  "Improve time management": "시간 관리 개선하기",
+  "Create a routine for a goal": "목표를 위한 루틴 만들기",
+  "Create a personal development plan": "개인 발전 계획 만들기",
+  "Create a personal budget": "개인 예산 만들기",
+  "Create family activities": "가족 활동 만들기",
+  "Create reading lists": "독서 목록 만들기",
+  "Create cleaning routines": "청소 루틴 만들기",
+  "Create morning routines": "아침 루틴 만들기",
+  "Create family traditions": "가족 전통 만들기",
+  "Create personal boundaries": "개인적 경계 만들기",
+  "Develop exercise routines": "운동 루틴 개발하기",
+  "Develop mindfulness practices": "마음챙김 연습 개발하기",
+  "Develop personal hobbies": "개인 취미 개발하기",
+  "Develop self-care practices": "자기 돌봄 습관 개발하기",
+  "Develop parenting strategies": "양육 전략 개발하기",
+  "Plan healthy meals": "건강한 식사 계획하기",
+  "Plan special celebrations": "특별한 축하 행사 계획하기",
+  "Plan home improvements": "주택 개선 계획하기",
+  "Plan educational pursuits": "교육 활동 계획하기",
+  "Plan retirement activities": "은퇴 활동 계획하기",
+  "Help me identify my creative style": "내 창작 스타일 파악하기",
+  "Quiz me on how to give good design feedback in a crit":
+    "디자인 크리틱에서 좋은 피드백을 주는 법 퀴즈 내기",
+  "Design a chracter profile based on my creative super power":
+    "내 창의적 초능력에 기반한 캐릭터 프로필 설계하기",
+  "Generate a list of powerful words to use in a client presentation":
+    "고객 프레젠테이션에 쓸 강력한 단어 목록 만들기",
+  "Reimagine this everyday object for a radically different culture":
+    "완전히 다른 문화를 위해 이 일상 물건 재구상하기",
+  "Design an experience that changes how people perceive time":
+    "사람들의 시간 인식을 바꾸는 경험 설계하기",
+  "Create something inspired by the most beautiful mistake":
+    "가장 아름다운 실수에서 영감받아 창작하기",
+  "Design an interactive installation based on my personal values":
+    "내 가치관에 기반한 인터랙티브 설치물 설계하기",
+  "Create a visual language for emotions that have no names":
+    "이름 없는 감정을 위한 시각 언어 만들기",
+  "Design something that bridges ancient techniques and futuristic concepts":
+    "고대 기술과 미래적 개념을 잇는 것 설계하기",
+  "Design an experience that transforms digital connections into physical ones":
+    "디지털 연결을 물리적 연결로 바꾸는 경험 설계하기",
+  "Outline an ideation workshop that will blow away my creative team":
+    "창작 팀을 놀라게 할 발상 워크숍 구상하기",
+  "Help me design a creative offsite that will be legendary":
+    "전설이 될 창의적 워크숍 설계 돕기",
+  "Analyze my design aesthetic from examples": "예시로 내 디자인 미학 분석하기",
+  "Test my eye for detail with examples": "예시로 내 세부 관찰력 시험하기",
+  "Quiz me on design principles and theory": "디자인 원칙과 이론 퀴즈 내기",
+  "Transform my concept into a detailed design specification":
+    "내 개념을 상세 디자인 명세로 바꾸기",
+  "Help me make something more user-friendly":
+    "더 사용자 친화적으로 만들도록 돕기",
+  "Brainstorm creative concepts": "창의적 콘셉트 브레인스토밍하기",
+  "Generate design inspiration from history": "역사에서 디자인 영감 찾기",
+  "Translate a brief into design items": "브리프를 디자인 항목으로 바꾸기",
+  "Research good typography systems": "좋은 타이포그래피 시스템 조사하기",
+  "Generate illustration ideas": "일러스트 아이디어 생성하기",
+  "Generate packaging concepts": "패키지 콘셉트 생성하기",
+  "Generate animation concepts": "애니메이션 콘셉트 생성하기",
+  "Create a style guide": "스타일 가이드 만들기",
+  "Create on-trend color palettes": "트렌디한 색상 팔레트 만들기",
+  "Create mood boards": "무드 보드 만들기",
+  "Create logo variations": "로고 변형 만들기",
+  "Create social media templates": "소셜 미디어 템플릿 만들기",
+  "Create website structures": "웹사이트 구조 만들기",
+  "Create portfolio presentations": "포트폴리오 프레젠테이션 만들기",
+  "Create content strategies": "콘텐츠 전략 만들기",
+  "Develop brand personas": "브랜드 페르소나 개발하기",
+  "Develop storytelling frameworks": "스토리텔링 체계 개발하기",
+  "Develop naming conventions": "명명 규칙 개발하기",
+  "Develop marketing campaigns": "마케팅 캠페인 개발하기",
+  "Develop product narratives": "제품 스토리 개발하기",
+  "Develop editorial calendars": "편집 일정표 개발하기",
+  "Plan milestones for a creative project": "창작 프로젝트 이정표 계획하기",
+  "Plan friction-free user experience flows":
+    "매끄러운 사용자 경험 흐름 계획하기",
+  "Plan content calendars": "콘텐츠 일정표 계획하기",
+  "Plan a creative brainstorm with clients":
+    "고객과의 창의적 브레인스토밍 계획하기",
+  "Plan videogame storyboards": "비디오 게임 스토리보드 계획하기",
+  "Plan photography shoots": "사진 촬영 계획하기",
+  "Write a solid creative brief": "탄탄한 크리에이티브 브리프 작성하기",
+  "Write compelling copy": "매력적인 카피 작성하기",
+  "Write creative prompts for LLMs": "LLM용 창의적 프롬프트 작성하기",
+  "Design a presentation layout": "프레젠테이션 레이아웃 설계하기",
+  "Design email newsletters": "이메일 뉴스레터 설계하기",
+  "Design event materials": "행사 자료 설계하기",
+  "Generate character concepts for fiction": "소설 캐릭터 콘셉트 생성하기",
+  "Test my negotiation tactics with scenarios":
+    "시나리오로 내 협상 전술 시험하기",
+  "Quiz me on my business skills": "내 비즈니스 역량 퀴즈 내기",
+  "Help me develop and hone a strategy": "전략을 개발하고 다듬도록 돕기",
+  "Map the unexpected connections between unrelated market trends":
+    "무관한 시장 동향 간 뜻밖의 연결 찾기",
+  "Reimagine my business as if it were founded 100 years in the future":
+    "100년 후 창업한 것처럼 내 사업 재구상하기",
+  "Design a strategy game based on my business challenges":
+    "사업 과제를 바탕으로 전략 게임 설계하기",
+  "Develop a business ecosystem inspired by my personal passions":
+    "내 열정에서 영감받은 비즈니스 생태계 개발하기",
+  "Create a business model canvas that breaks every conventional rule":
+    "모든 관습을 깨는 비즈니스 모델 캔버스 만들기",
+  "Design a strategy inspired by patterns found in nature":
+    "자연 속 패턴에서 영감받은 전략 설계하기",
+  "Analyze market opportunities": "시장 기회 분석하기",
+  "Improve operational efficiency": "운영 효율 개선하기",
+  "Draft a pitch or proposal": "피치 또는 제안서 초안 작성하기",
+  "Build financial projections": "재무 전망 수립하기",
+  "Conduct competitor analysis": "경쟁사 분석하기",
+  "Analyze business metrics": "비즈니스 지표 분석하기",
+  "Analyze great investment pitches": "훌륭한 투자 피치 분석하기",
+  "Research top go-to-market strategies": "최고의 시장 진출 전략 조사하기",
+  "Develop a business plan": "사업 계획 개발하기",
+  "Develop pricing strategies": "가격 전략 개발하기",
+  "Develop KPI dashboards": "KPI 대시보드 개발하기",
+  "Develop stakeholder communications": "이해관계자 소통 개발하기",
+  "Develop risk assessments": "위험 평가 개발하기",
+  "Develop client proposals": "고객 제안서 개발하기",
+  "Develop brand positioning": "브랜드 포지셔닝 개발하기",
+  "Develop sustainability initiatives": "지속가능성 계획 개발하기",
+  "Develop distribution strategies": "유통 전략 개발하기",
+  "Create a marketing strategy": "마케팅 전략 만들기",
+  "Create customer personas": "고객 페르소나 만들기",
+  "Create sales presentations": "영업 프레젠테이션 만들기",
+  "Create business processes": "업무 프로세스 만들기",
+  "Create strategic partnerships": "전략적 파트너십 만들기",
+  "Create recruiting strategies": "채용 전략 만들기",
+  "Create vendor evaluations": "공급업체 평가 만들기",
+  "Create business pivots": "사업 전환안 만들기",
+  "Create revenue forecasts": "수익 전망 만들기",
+  "Create customer journeys": "고객 여정 만들기",
+  "Plan product launches": "제품 출시 계획하기",
+  "Plan market research": "시장 조사 계획하기",
+  "Plan organizational structure": "조직 구조 계획하기",
+  "Plan budget allocations": "예산 배분 계획하기",
+  "Plan business scaling strategies": "사업 확장 전략 계획하기",
+  "Plan expansion opportunities": "확장 기회 계획하기",
+  "Plan business acquisitions": "기업 인수 계획하기",
+  "Design growth frameworks": "성장 체계 설계하기",
+  "Craft a manifesto that captures the essence of my boldest ideas":
+    "가장 대담한 아이디어의 본질을 담은 선언문 쓰기",
+  "Help me develop my unique voice as a writer":
+    "작가로서 나만의 목소리 개발하기",
+  "Help me identify my writing weaknesses": "내 글의 약점 파악하기",
+  "Create a piece that blends two completely different writing styles":
+    "완전히 다른 두 문체를 섞은 글 만들기",
+  "Reimagine a piece of my writing as an edge-of-your-seat thriller":
+    "내 글을 손에 땀을 쥐는 스릴러로 바꾸기",
+  "Compare my writing style to famous authors":
+    "내 문체를 유명 작가와 비교하기",
+  "Craft something that reads differently depending on the reader’s mood":
+    "독자의 기분에 따라 다르게 읽히는 글 쓰기",
+  "Write something in the voice of my favorite historical figure":
+    "좋아하는 역사 인물의 목소리로 쓰기",
+  "Help me develop a unique voice for an audience":
+    "독자를 위한 나만의 목소리 개발하기",
+  "Edit my content": "내 콘텐츠 편집하기",
+  "Brainstorm creative ideas": "창의적인 아이디어 브레인스토밍하기",
+  "Research topics for my writing": "글을 위한 주제 조사하기",
+  "Improve my writing style": "내 문체 개선하기",
+  "Draft an outline for my project": "프로젝트 개요 작성하기",
+  "Create a content strategy": "콘텐츠 전략 만들기",
+  "Create engaging headlines": "매력적인 제목 만들기",
+  "Create social media posts": "소셜 미디어 게시물 만들기",
+  "Create blog article series": "블로그 연재물 만들기",
+  "Create interview questions": "인터뷰 질문 만들기",
+  "Create persuasive arguments": "설득력 있는 논거 만들기",
+  "Create user documentation": "사용자 문서 만들기",
+  "Create presentation scripts": "프레젠테이션 대본 만들기",
+  "Create FAQ resources": "FAQ 자료 만들기",
+  "Create technical explanations": "기술 설명 만들기",
+  "Develop character profiles": "인물 프로필 개발하기",
+  "Develop content calendars": "콘텐츠 일정표 개발하기",
+  "Develop brand voice guides": "브랜드 보이스 가이드 개발하기",
+  "Develop podcast scripts": "팟캐스트 대본 개발하기",
+  "Develop content templates": "콘텐츠 템플릿 개발하기",
+  "Develop content briefs": "콘텐츠 브리프 개발하기",
+  "Develop instructional content": "교육 콘텐츠 개발하기",
+  "Develop editorial guidelines": "편집 지침 개발하기",
+  "Draft email newsletters": "이메일 뉴스레터 작성하기",
+  "Write compelling CTAs": "매력적인 행동 유도 문구 작성하기",
+  "Write product descriptions": "제품 설명 작성하기",
+  "Write video scripts": "동영상 대본 작성하기",
+  "Write executive summaries": "경영진 요약 작성하기",
+  "Write case studies": "사례 연구 작성하기",
+  "Write speech drafts": "연설 초안 작성하기",
+  "Write marketing copy": "마케팅 문구 작성하기",
+  "Write grant proposals": "보조금 제안서 작성하기",
+  "Write event descriptions": "행사 설명 작성하기",
+  "Design a learning challenge that pushes my creative boundaries":
+    "창의력의 한계를 넓히는 학습 도전 설계하기",
+  "Explain a concept in simple terms": "개념을 쉬운 말로 설명하기",
+  "Help me understand a complex topic from scratch":
+    "복잡한 주제를 기초부터 이해하도록 돕기",
+  "Create a curriculum inspired by my favorite cultural movement":
+    "좋아하는 문화 운동에서 영감받은 교육과정 만들기",
+  "Develop a learning approach that embraces beautiful contradictions":
+    "아름다운 모순을 수용하는 학습법 개발하기",
+  "Transform a dry subject into something fascinating":
+    "지루한 과목을 흥미롭게 바꾸기",
+  "Develop a learning framework based on my personal heroes":
+    "존경하는 인물에 기반한 학습 체계 개발하기",
+  "Create a knowledge map that reveals surprising patterns in what I know":
+    "내 지식 속 의외의 패턴을 보여주는 지식 지도 만들기",
+  "Transform these notes into a structured summary":
+    "이 노트를 구조화된 요약으로 바꾸기",
+  "Help me make sense of these ideas": "이 아이디어들을 이해하도록 돕기",
+  "Find patterns in my research": "내 연구의 패턴 찾기",
+  "Explain a complex topic simply": "복잡한 주제를 쉽게 설명하기",
+  "Create a study plan": "학습 계획 만들기",
+  "Design a lesson or curriculum": "수업 또는 교육과정 설계하기",
+  "Compare learning resources": "학습 자료 비교하기",
+  "Find the best books on a subject": "주제에 관한 최고의 책 찾기",
+  "Prepare for an exam or interview": "시험이나 면접 준비하기",
+  "Create effective flashcards": "효과적인 암기 카드 만들기",
+  "Develop learning objectives": "학습 목표 개발하기",
+  "Summarize my academic papers": "내 학술 논문 요약하기",
+  "Create assessment questions": "평가 문제 만들기",
+  "Develop research methodologies": "연구 방법론 개발하기",
+  "Create learning timelines": "학습 일정표 만들기",
+  "Design educational activities": "교육 활동 설계하기",
+  "Develop concept maps": "개념도 개발하기",
+  "Create good lecture notes": "좋은 강의 노트 만들기",
+  "Design presentation visuals": "프레젠테이션 시각 자료 설계하기",
+  "Develop learning frameworks": "학습 체계 개발하기",
+  "Create annotated bibliographies": "주석 참고 문헌 만들기",
+  "Design learning journals": "학습 일지 설계하기",
+  "Develop discussion prompts": "토론 주제 개발하기",
+  "Create educational games": "교육 게임 만들기",
+  "Develop teaching strategies": "교수 전략 개발하기",
+  "Create educational rubrics": "교육 평가 기준 만들기",
+  "Design learning modules": "학습 모듈 설계하기",
+  "Develop critical analyses": "비판적 분석 개발하기",
+  "Design research questions": "연구 질문 설계하기",
+  "Develop reflection exercises": "성찰 연습 개발하기",
+  "Create study summaries": "학습 요약 만들기",
+  "Design learning portfolios": "학습 포트폴리오 설계하기",
+  "Create feedback for student work": "학생 과제에 피드백 만들기",
+  "Design learning challenges": "학습 도전 설계하기",
+  "Find credible sources for my research": "연구에 신뢰할 만한 출처 찾기",
+  "Provide evidence-based insights for my topic":
+    "내 주제에 근거 기반 통찰 제공하기",
+  "Look over my code and give me tips": "내 코드를 검토하고 조언하기",
+  "Vibe code with me": "함께 바이브 코딩하기",
+  "Quiz me on python code": "파이썬 코드 퀴즈 내기",
+  "Evaluate my coding style based on a snippet":
+    "코드 조각으로 내 코딩 스타일 평가하기",
+  "Tell me what programming paradigm suits my thinking style":
+    "내 사고방식에 맞는 프로그래밍 패러다임 찾기",
+  "Assess my approach to debugging problems": "내 디버깅 방식 평가하기",
+  "Challenge me with increasingly difficult coding puzzles":
+    "점점 어려운 코딩 퍼즐로 도전하기",
+  "Help me develop a personal learning roadmap for coding":
+    "나만의 코딩 학습 로드맵 만들기",
+  "Help me turn a screenshot into working code":
+    "스크린샷을 작동하는 코드로 만들기",
+  "Design a game that teaches coding concepts through storytelling":
+    "이야기로 코딩 개념을 가르치는 게임 설계하기",
+  "Invent a coding language based on my favorite hobby":
+    "내 취미를 바탕으로 코딩 언어 만들기",
+  "Design a digital pet that grows based on my coding habits":
+    "코딩 습관에 따라 자라는 디지털 펫 설계하기",
+  "Create a coding Easter egg that would make my team smile":
+    "팀이 웃을 만한 코드 이스터에그 만들기",
+  "Build an app based on my idea": "내 아이디어로 앱 만들기",
+  "Debug my code and give me tips": "내 코드를 디버깅하고 조언하기",
+  "Design a software architecture": "소프트웨어 아키텍처 설계하기",
+  "Explain a programming concept": "프로그래밍 개념 설명하기",
+  "Plan a development roadmap": "개발 로드맵 계획하기",
+  "Write unit test cases": "단위 테스트 작성하기",
+  "Create API documentation": "API 문서 만들기",
+  "Design database schemas": "데이터베이스 스키마 설계하기",
+  "Develop coding standards": "코딩 표준 만들기",
+  "Develop code reviews to speed me up": "효율을 높이는 코드 리뷰 만들기",
+  "Create technical specifications": "기술 명세 만들기",
+  "Design UI/UX wireframes": "UI/UX 와이어프레임 설계하기",
+  "Develop deployment strategies": "배포 전략 수립하기",
+  "Create refactoring plans": "리팩터링 계획 만들기",
+  "Design microservices": "마이크로서비스 설계하기",
+  "Develop algorithm solutions": "알고리즘 해법 개발하기",
+  "Create security protocols": "보안 프로토콜 만들기",
+  "Design feature flags": "기능 플래그 설계하기",
+  "Develop performance benchmarks": "성능 벤치마크 개발하기",
+  "Create debugging workflows": "디버깅 워크플로 만들기",
+  "Design data structures": "자료 구조 설계하기",
+  "Develop integration strategies": "통합 전략 수립하기",
+  "Create dependency maps": "의존성 맵 만들기",
+  "Design error handling": "오류 처리 설계하기",
+  "Develop CI/CD pipelines": "CI/CD 파이프라인 개발하기",
+  "Create technical diagrams": "기술 다이어그램 만들기",
+  "Design scalability plans": "확장성 계획 설계하기",
+  "Develop project estimates": "프로젝트 견적 산정하기",
+  "Create code snippets": "코드 조각 만들기",
+  "Design logging systems": "로깅 시스템 설계하기",
+  "Develop technical debt analysis": "기술 부채 분석하기",
+  "Create monitoring solutions": "모니터링 솔루션 만들기",
   "From Calendar": "캘린더에서",
   "From Gmail": "Gmail에서",
   "From Drive": "드라이브에서",
   Integration: "연동",
   "Choose a valid connector.": "유효한 커넥터를 선택하세요.",
+  "Research how to write documentation that people will actually want to read":
+    "읽고 싶은 문서 작성법 조사하기",
+  "Find the best way to explain our product to new users, use my docs as needed":
+    "필요하면 내 문서로 신규 사용자에게 제품을 설명할 최선의 방법 찾기",
+  "Navigate the maze of healthcare compliance requirements":
+    "복잡한 의료 규정 준수 요건 파악하기",
+  "Find the best tools for managing remote team communication":
+    "원격 팀 소통 관리에 가장 좋은 도구 찾기",
+  "Go deep on the secret behind companies with amazing customer service":
+    "고객 서비스가 뛰어난 기업의 비결 깊이 살펴보기",
+  "Discover fresh angles on my writing based on my docs":
+    "내 문서를 바탕으로 글의 새로운 관점 찾기",
+  "Dive deep on what travel trends will be for the next five years":
+    "향후 5년간 여행 트렌드 깊이 조사하기",
+  "Understand what’s happening with tariffs right now":
+    "현재 관세 상황 이해하기",
+  "Find the weird science behind everyday products people love":
+    "인기 일상 제품 뒤의 기묘한 과학 찾기",
+  "Research and deliver findings relevant to me as a time-traveler from 2050":
+    "2050년에서 온 시간 여행자인 나에게 유용한 조사 결과 제공하기",
+  "Find the most compelling stories about an important topic from my docs":
+    "내 문서에서 중요한 주제의 가장 흥미로운 이야기 찾기",
+  "Determine my main competitors based on my docs and show me what my competitors are doing differently this year":
+    "내 문서로 주요 경쟁사와 올해 달라진 전략 파악하기",
+  "Identify the most important performance differences between the latest accelerators from nvidia, google, and amazon?":
+    "엔비디아, 구글, 아마존 최신 가속기의 주요 성능 차이 파악하기",
+  "Extract the most actionable insights from my meeting notes that I’m not acting on":
+    "회의 노트에서 아직 실행하지 않은 가장 실용적인 통찰 추출하기",
+  "Come up with novel ideas for projects based on my docs":
+    "내 문서로 참신한 프로젝트 아이디어 내기",
+  "Map the evolution of sleep research in the past decade":
+    "지난 10년 수면 연구 발전 정리하기",
+  "Identify emerging patterns in human and machine relationships":
+    "인간과 기계 관계의 새로운 패턴 파악하기",
+  "Compare researchers’ disagreements about climate solutions":
+    "기후 해결책에 대한 연구자들의 견해 차이 비교하기",
+  "Examine how fermentation discoveries changed ancient diets":
+    "발효의 발견이 고대 식단을 어떻게 바꿨는지 조사하기",
+  "Find how humans realized teeth need cleaning":
+    "인류가 치아 청소의 필요성을 어떻게 깨달았는지 찾기",
+  "Explore why we even developed singing (is it just happy noises?)":
+    "왜 노래가 생겼는지 탐구하기 (그냥 즐거운 소리일까?)",
+  "Track invention of the idea of “free time” - when did that start?":
+    "‘여가 시간’ 개념은 언제 생겼는지 추적하기",
+  "Research how money became a thing": "돈의 기원 조사하기",
+  "Discover how humans figured out “those mushrooms = bad idea”":
+    "인류가 ‘저 버섯은 위험하다’를 어떻게 알았는지 찾기",
+  "Investigate when we realized trees could talk (chemically)":
+    "나무가 화학적으로 대화함을 언제 알았는지 조사하기",
   "Google Calendar": "Google 캘린더",
   Gmail: "Gmail",
   "Loading artifact…": "아티팩트 로딩 중…",
@@ -8406,6 +9068,8 @@ const catalog: Record<string, string> = {
   "Failed to check for updates: {error}": "업데이트 확인 실패: {error}",
   "Claudex is working in {count} sessions. Quitting now will interrupt that work.":
     "Claudex가 {count}개 세션에서 작업 중입니다. 지금 종료하면 작업이 중단됩니다.",
+  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking claudex.zecous.cn — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from claudex.zecous.cn.":
+    "Claudex가 업데이트 서버에 연결할 수 없습니다. 회사 네트워크를 사용 중이라면 방화벽이나 프록시가 claudex.zecous.cn을 차단하고 있을 수 있습니다. IT 팀에 허용을 요청하세요. 그렇지 않으면 연결을 확인하고 다시 시도하거나 claudex.zecous.cn에서 최신 버전을 다운로드하세요.",
   "Microsoft Office": "Microsoft Office",
   "Get the add-in": "추가 기능 가져오기",
   "Diagnostic Report": "진단 보고서",
@@ -8951,6 +9615,8 @@ const catalog: Record<string, string> = {
   "Claudex Serif": "Claudex Serif",
   "An independent desktop client.": "독립 데스크톱 클라이언트입니다.",
   "Internal only": "내부 전용",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's previous 1:1, so what you can use does not change.":
+    "ZecousAI 잔액이 Claudex에서는 적어 보일 수 있습니다. Claudex는 ¥1 = $1의 새 비율로 충전하고 모델 배율도 ZecousAI의 공식 1:1보다 크게 낮아, 사용할 수 있는 양은 달라지지 않습니다.",
   "Make sure you trust a plugin before installing or using it. Uploaded plugins are not controlled by Claudex, and Claudex cannot verify that they will work as intended. See each plugin’s homepage for more information.":
     "설치 또는 사용 전에 플러그인을 신뢰하는지 확인하세요. 업로드된 플러그인은 Claudex이 관리하지 않으며 의도대로 작동하는지 확인할 수 없습니다. 자세한 내용은 각 플러그인의 홈페이지를 참조하세요.",
   "Community marketplace": "커뮤니티 마켓플레이스",
@@ -9016,6 +9682,8 @@ const catalog: Record<string, string> = {
   "Remote Control is off": "원격 제어가 꺼져 있습니다",
   "Remote Control couldn’t turn off": "원격 제어를 끄지 못했습니다",
   "Remote Control couldn’t connect": "원격 제어에 연결하지 못했습니다",
+  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or claudex.zecous.cn.":
+    "세션을 지운 후 다시 연결되지 않았습니다. 휴대폰이나 claudex.zecous.cn에서 이 세션을 계속 사용하려면 다시 켜세요.",
   "Claudex Code stopped, so Remote Control turned off with it.":
     "Claudex Code가 중지되어 원격 제어도 꺼졌습니다.",
   "Sign in again. Remote Control retries with your next message.":
@@ -10061,6 +10729,7 @@ const catalog: Record<string, string> = {
   "This removes your feedback, including any conversation excerpt sent with it. It does not delete your chat.":
     "피드백과 함께 보낸 대화 발췌를 포함해 피드백이 삭제됩니다. 채팅은 삭제되지 않습니다.",
   "from {name}": "{name} 제공",
+  // Customize directory categories (2026-10-20).
   "Developer tools": "개발자 도구",
   Creativity: "창의성",
   "Education & research": "교육 및 연구",
@@ -10068,6 +10737,7 @@ const catalog: Record<string, string> = {
   Communication: "커뮤니케이션",
   "Scientific research": "과학 연구",
   Security: "보안",
+  // Usage popover (2026-10-20).
   "Balance and usage": "잔액 및 사용량",
   "Last 7 days": "최근 7일",
   "Turn on Allow bypass permissions mode in Settings to use it.":
@@ -10088,11 +10758,15 @@ const catalog: Record<string, string> = {
   "Delete {count}": "{count}개 삭제",
   "Ask your administrator for the installer.":
     "설치 파일은 관리자에게 문의하세요.",
+  // Add menu failure sentence (2026-10-20)
   "Design systems couldn’t be loaded. Refresh to try again.":
     "디자인 시스템을 불러오지 못했습니다. 새로고침한 후 다시 시도하세요.",
+  // Skip all approvals connector list (2026-10-20)
   "Already allowed": "이미 허용됨",
+  // Attachment drop notice (2026-10-20)
   "Folders can't be attached. Drop files instead.":
     "폴더는 첨부할 수 없습니다. 대신 파일을 놓아 주세요.",
+  // Attachment refusals, the live sentences (2026-10-20)
   "“{fileName}” is {fileSize}, over the {sizeLimit} MB limit. Choose a smaller file.":
     "“{fileName}” 파일은 {fileSize}로 {sizeLimit}MB 제한을 초과합니다. 더 작은 파일을 선택하세요.",
   "“{fileName}” can’t be attached in this chat yet — this file type isn’t supported here. You can paste its contents into the message instead.":
@@ -10103,6 +10777,7 @@ const catalog: Record<string, string> = {
     "{name} 파일을 첨부할 수 없습니다. 관리자가 이 파일 형식을 허용하지 않습니다.",
   "Your administrator has turned off attachments.":
     "관리자가 첨부 파일을 사용하지 않도록 설정했습니다.",
+  // /copy (2026-10-20)
   "Copy Claudex’s latest reply, or /copy 2 or higher for an earlier one":
     "Claudex의 최신 답변을 복사하거나, /copy 2 이상의 숫자로 이전 답변을 복사합니다",
   "Claudex is still replying. Send /copy when the reply is done.":
@@ -10111,6 +10786,7 @@ const catalog: Record<string, string> = {
   "Reply copied to clipboard.": "답변을 클립보드에 복사했습니다.",
   "Couldn’t copy the reply to the clipboard. Try again.":
     "답변을 클립보드에 복사하지 못했습니다. 다시 시도하세요.",
+  // Slash command notices (2026-10-20)
   "/{name} can't be run here.": "/{name}은(는) 여기서 실행할 수 없습니다.",
   "Plan mode is not available in this Windows permission menu.":
     "이 Windows 권한 메뉴에서는 계획 모드를 사용할 수 없습니다.",
@@ -10291,6 +10967,7 @@ const catalog: Record<string, string> = {
   "Rename chat": "채팅 이름 변경",
   "Rename task": "작업 이름 변경",
   "Project name is required": "프로젝트 이름은 필수입니다",
+  // Notices and focus reminders (menus-overlays toasts).
   "You’ve hit your limit for Claudex messages. Limits will reset at {time}.":
     "Claudex 메시지 한도에 도달했습니다. 한도는 {time}에 초기화됩니다.",
   "You’re sending messages too quickly. Try again at {time}.":
@@ -10307,6 +10984,7 @@ const catalog: Record<string, string> = {
   "It’s your quiet hours until {time}. You set this time limit in Settings → Time and focus.":
     "{time}까지는 방해 금지 시간입니다. 이 시간 제한은 '설정 → 시간과 집중'에서 설정하셨습니다.",
   "{x} hr": "{x}시간",
+  // Search palette (menus-overlays).
   "Past hour": "지난 1시간",
   "Search mode": "검색 모드",
   "Actions mode": "작업 모드",
@@ -10332,6 +11010,7 @@ const catalog: Record<string, string> = {
     "Claudex 메시지 한도에 도달했습니다. 한도는 {at}에 초기화됩니다.",
   "Too many requests right now. Try again at {at}.":
     "현재 요청이 너무 많습니다. {at}에 다시 시도하세요.",
+  // SSH connection banner (host in the sentence)
   "Connecting to {host}…": "{host}에 연결하는 중…",
   "Setting up Claudex on {host}…": "{host}에서 Claudex를 설정하는 중…",
   "Reconnecting to {host}…": "{host}에 다시 연결하는 중…",
@@ -10340,7 +11019,9 @@ const catalog: Record<string, string> = {
   "Can’t reach {host}: {reason}": "{host}에 연결할 수 없습니다: {reason}",
   "Not connected to {host}.": "{host}에 연결되어 있지 않습니다.",
   "this host": "이 호스트",
+  // Quick Entry input placeholder
   "What can I help you with today?": "오늘 무엇을 도와드릴까요?",
+  // Update menu, update dialogs and update notices
   "Check for Updates…": "업데이트 확인…",
   "Checking for Updates…": "업데이트 확인 중…",
   "Downloading Update…": "업데이트 다운로드 중…",
@@ -10373,6 +11054,7 @@ const catalog: Record<string, string> = {
     "관리자가 더 이상 이 버전을 지원하지 않습니다. Claudex {version}을(를) 설치하세요.",
   "Claudex {version} is available.":
     "Claudex {version}을(를) 사용할 수 있습니다.",
+  // What's new section titles
   "release-section|New": "새로운 기능",
   "release-section|Improved": "개선됨",
   "release-section|Fixed": "수정됨",
@@ -10591,6 +11273,8 @@ const catalog: Record<string, string> = {
     "이 초안은 너무 길어서 옮길 수 없습니다. 먼저 줄이거나 복사하세요.",
   "This artifact is being updated. Try again when the reply finishes.":
     "이 아티팩트를 업데이트하는 중입니다. 응답이 끝나면 다시 시도하세요.",
+  "This knowledge base can't be reached right now.":
+    "지금은 이 지식 베이스에 연결할 수 없습니다.",
   "Choose a PNG, JPEG, GIF or WebP image smaller than 1 MB.":
     "1MB보다 작은 PNG, JPEG, GIF 또는 WebP 이미지를 선택하세요.",
   "Voice mode needs dictation and a window that can read aloud.":
@@ -10842,192 +11526,8 @@ const catalog: Record<string, string> = {
   "Started preview": "미리보기를 시작함",
   "Couldn’t start preview": "미리보기를 시작할 수 없음",
   "status|Thinking": "생각 중",
-  "Compare the leading note-taking apps for a small team and recommend one":
-    "소규모 팀에 맞는 주요 노트 앱을 비교하고 하나를 추천해 줘",
-  "Find out what makes onboarding emails work and sum up the patterns":
-    "효과적인 온보딩 이메일의 공통점을 찾아 정리해 줘",
-  "Look into how other cities run successful bike-share programs":
-    "다른 도시들이 공공 자전거를 어떻게 성공적으로 운영하는지 알아봐 줘",
-  "Gather the latest evidence on four-day work weeks and weigh it up":
-    "주 4일 근무에 대한 최신 근거를 모아 따져 봐 줘",
-  "Survey open-source tools for monitoring a small web service":
-    "작은 웹 서비스를 모니터링할 오픈소스 도구를 조사해 줘",
-  "Research how to price a new subscription product fairly":
-    "새 구독 상품의 합리적인 가격을 정하는 방법을 조사해 줘",
-  "Explain how a hash map works and build a tiny one in Python":
-    "해시 맵의 원리를 설명하고 Python으로 작게 만들어 줘",
-  "Write a script that renames photos by the date they were taken":
-    "사진을 촬영 날짜로 이름을 바꾸는 스크립트를 작성해 줘",
-  "Review a function I paste for bugs and readability":
-    "내가 붙여 넣은 함수에 버그나 읽기 어려운 부분이 있는지 검토해 줘",
-  "Turn a messy shell one-liner into a readable, commented script":
-    "지저분한 셸 한 줄 명령을 주석이 달린 읽기 쉬운 스크립트로 바꿔 줘",
-  "Design a database schema for a small library app":
-    "작은 도서관 앱의 데이터베이스 스키마를 설계해 줘",
-  "Build a simple to-do list page with HTML, CSS and JavaScript":
-    "HTML, CSS, JavaScript로 간단한 할 일 목록 페이지를 만들어 줘",
-  "Teach me the basics of statistics with everyday examples":
-    "일상적인 예로 통계의 기초를 가르쳐 줘",
-  "Make a two-week plan for learning everyday Spanish phrases":
-    "일상 스페인어 표현을 배우는 2주 계획을 세워 줘",
-  "Quiz me on the main events of the French Revolution":
-    "프랑스 혁명의 주요 사건으로 퀴즈를 내 줘",
-  "Explain how vaccines train the immune system, step by step":
-    "백신이 면역 체계를 어떻게 훈련하는지 단계별로 설명해 줘",
-  "Help me understand compound interest with a worked example":
-    "계산 예시로 복리를 이해하도록 도와줘",
-  "Summarize a classic book I name, chapter by chapter":
-    "내가 고른 고전을 장별로 요약해 줘",
-  "Draft a friendly announcement for a team offsite":
-    "팀 워크숍 공지를 친근하게 작성해 줘",
-  "Tighten a paragraph I paste so it says more with fewer words":
-    "내가 붙여 넣은 문단을 더 적은 말로 더 많이 전하도록 다듬어 줘",
-  "Write three subject lines for a newsletter about our latest release":
-    "최신 릴리스를 소개하는 뉴스레터 제목 세 개를 써 줘",
-  "Outline a blog post about lessons from a project that failed":
-    "실패한 프로젝트에서 얻은 교훈에 관한 블로그 글의 개요를 잡아 줘",
-  "Turn my bullet points into a short, clear project update":
-    "내 요점을 짧고 명확한 프로젝트 업데이트로 정리해 줘",
-  "Write a thank-you note to a mentor": "멘토에게 감사 편지를 써 줘",
-  "Map the strengths and weaknesses of entering a new market":
-    "새 시장에 진출할 때의 강점과 약점을 정리해 줘",
-  "Build a simple pricing comparison against three competitors":
-    "경쟁사 세 곳과의 간단한 가격 비교표를 만들어 줘",
-  "Draft quarterly goals with measurable results for a small team":
-    "작은 팀을 위해 측정 가능한 결과가 담긴 분기 목표 초안을 써 줘",
-  "List the risks in a product launch plan and how to reduce them":
-    "제품 출시 계획의 위험 요소와 줄이는 방법을 정리해 줘",
-  "Sketch a one-page business plan for a neighborhood café":
-    "동네 카페의 한 장짜리 사업 계획을 그려 줘",
-  "Prepare talking points for a budget review meeting":
-    "예산 검토 회의를 위한 발언 요점을 준비해 줘",
-  "Suggest colors and fonts for a calm meditation app":
-    "차분한 명상 앱에 어울리는 색상과 글꼴을 추천해 줘",
-  "Brainstorm names and taglines for a home-baking business":
-    "홈 베이킹 사업의 이름과 슬로건을 떠올려 줘",
-  "Design a simple logo concept as an SVG":
-    "간단한 로고 시안을 SVG로 디자인해 줘",
-  "Plan a mood board for a beach-themed birthday party":
-    "해변 테마 생일 파티를 위한 무드 보드를 기획해 줘",
-  "Write a short story that starts with a lost umbrella":
-    "잃어버린 우산으로 시작하는 짧은 이야기를 써 줘",
-  "Lay out a poster for a community clean-up day":
-    "동네 대청소의 날 포스터 레이아웃을 짜 줘",
-  "Plan a week of quick, healthy dinners with a shopping list":
-    "빠르고 건강한 일주일 저녁 메뉴와 장보기 목록을 짜 줘",
-  "Help me make a monthly budget I can actually stick to":
-    "실제로 지킬 수 있는 월 예산을 세우도록 도와줘",
-  "Plan a relaxed three-day trip to a city I choose":
-    "내가 고른 도시로 여유로운 3일 여행을 계획해 줘",
-  "Suggest a beginner workout I can do at home":
-    "집에서 할 수 있는 초보자용 운동을 추천해 줘",
-  "Help me sort out a cluttered closet in one weekend":
-    "어수선한 옷장을 주말 동안 정리하도록 도와줘",
-  "Come up with gift ideas for a friend who loves hiking":
-    "등산을 좋아하는 친구에게 줄 선물 아이디어를 내 줘",
-  "Help me prepare answers to common interview questions":
-    "자주 나오는 면접 질문에 대한 답변을 준비하도록 도와줘",
-  "Review my resume summary and make it sharper":
-    "내 이력서 요약을 보고 더 날카롭게 다듬어 줘",
-  "Plan how to ask my manager for a raise":
-    "매니저에게 연봉 인상을 요청하는 방법을 계획해 줘",
-  "Explore careers for someone who loves both data and people":
-    "데이터와 사람 모두를 좋아하는 사람에게 맞는 직업을 찾아 줘",
-  "Draft a polite message turning down a job offer":
-    "입사 제안을 정중하게 거절하는 메시지를 써 줘",
-  "Set goals for my first 90 days in a new role":
-    "새 직무에서 첫 90일 동안의 목표를 세워 줘",
-  "Tell me something surprising about octopuses":
-    "문어에 관한 놀라운 사실을 알려 줘",
-  "Teach me a card trick I can learn in five minutes":
-    "5분 만에 배울 수 있는 카드 마술을 가르쳐 줘",
-  "Invent a game I can play with things around the house":
-    "집에 있는 물건으로 할 수 있는 게임을 만들어 줘",
-  "Explain a famous paradox in plain words":
-    "유명한 역설을 쉬운 말로 설명해 줘",
-  "Recommend a hobby after asking me a few questions":
-    "몇 가지 질문을 한 뒤 나에게 맞는 취미를 추천해 줘",
-  "Write a riddle and let me guess the answer":
-    "수수께끼를 내고 내가 답을 맞혀 보게 해 줘",
-  "Summarize the most recent document in my Drive":
-    "내 Drive에서 가장 최근 문서를 요약해 줘",
-  "Find my notes on an upcoming project in Drive and pull out the action items":
-    "Drive에서 곧 시작할 프로젝트 메모를 찾아 할 일을 뽑아 줘",
-  "Turn a spreadsheet in my Drive into a short written summary":
-    "내 Drive의 스프레드시트를 짧은 글 요약으로 바꿔 줘",
-  "Check my recent Drive documents for anything waiting on me":
-    "최근 Drive 문서 중 내 답을 기다리는 것이 있는지 확인해 줘",
-  "Look at my calendar and plan focus time for this week":
-    "내 캘린더를 보고 이번 주 집중 시간을 계획해 줘",
-  "Prepare me for my next meeting with a short briefing":
-    "다음 회의를 위한 짧은 브리핑으로 준비시켜 줘",
-  "Find an hour this week for a planning session":
-    "이번 주에 계획 세션을 위한 한 시간을 찾아 줘",
-  "Sum up how much of last week went to meetings":
-    "지난주 회의에 쓴 시간을 정리해 줘",
-  "Summarize the unread emails in my inbox":
-    "받은편지함의 읽지 않은 이메일을 요약해 줘",
-  "Draft replies to emails that have waited more than two days":
-    "이틀 넘게 기다린 이메일에 대한 답장 초안을 써 줘",
-  "Find emails about upcoming travel and list the details":
-    "다가오는 여행 관련 이메일을 찾아 세부 사항을 정리해 줘",
-  "Combine my email, calendar and Drive into a briefing for today":
-    "이메일, 캘린더, Drive를 모아 오늘의 브리핑을 만들어 줘",
-  "Hey Claudex, could you {prompt}? Use the connectors that help, and start once you have what you need.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Claudex, 부탁할게: {prompt}. 도움이 되는 커넥터를 쓰고, 필요한 정보가 모이면 시작해 줘.\n\n어울린다면 차트, 체크리스트, 작은 인터랙티브 페이지처럼 함께 볼 수 있는 것을 만들어 줘.",
-  "Hey Claudex, could you help me {prompt}? Start researching straight away with any tools that help, and tell me if you need more context.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Claudex, 조사를 도와줘: {prompt}. 도움이 되는 도구를 써서 바로 조사를 시작하고, 더 필요한 맥락이 있으면 알려 줘.\n\n어울린다면 차트, 체크리스트, 작은 인터랙티브 페이지처럼 함께 볼 수 있는 것을 만들어 줘.",
-  "Hi Claudex! Could you {prompt}? If something important is missing, ask me one or two questions first, and tell me if a file or more context would help. Use any tools you have, such as web search or connected files, when they help.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page. Thanks!":
-    "안녕하세요, Claudex! 부탁이 있어요: {prompt}. 중요한 정보가 빠졌다면 먼저 한두 가지 질문해 주세요. 파일이나 추가 맥락이 도움이 된다면 알려 주세요. 웹 검색이나 연결된 파일처럼 쓸 수 있는 도구는 도움이 될 때 사용해 주세요.\n\n어울린다면 차트, 체크리스트, 작은 인터랙티브 페이지처럼 함께 볼 수 있는 것을 만들어 주세요. 고마워요!",
-  "Start with something small": "작은 일부터 시작하기",
-  "Help me plan my week. Ask what is on my plate and what matters most, then lay out a day-by-day plan with time for focused work and room for surprises.":
-    "이번 주 계획을 도와줘. 내가 맡은 일과 가장 중요한 일을 물어본 뒤, 집중해서 일할 시간과 예상 밖의 일에 대비할 여유를 넣어 날짜별 계획을 짜 줘.",
-  "Sort my screenshots": "스크린샷 정리하기",
-  "Go through the screenshots in my selected folder and sort them into subfolders by topic. Propose the folder names and show me the plan before moving anything.":
-    "선택한 폴더의 스크린샷을 살펴보고 주제별 하위 폴더로 나눠 줘. 폴더 이름을 제안하고, 무엇이든 옮기기 전에 계획을 보여 줘.",
-  "Spot patterns in my files": "파일에서 패턴 찾기",
-  "Read the documents in my selected folder and tell me what stands out: recurring themes, open questions and anything that looks out of date. Fit it on one page.":
-    "선택한 폴더의 문서를 읽고 눈에 띄는 점을 알려 줘. 반복되는 주제, 해결되지 않은 질문, 오래돼 보이는 내용 등. 한 페이지로 정리해 줘.",
-  "Clear the clutter": "어수선함 정리하기",
-  "Tidy my Downloads folder": "다운로드 폴더 정리하기",
-  "Look through my Downloads folder and suggest what to keep, file away or delete. Group similar files, point out large or duplicate ones, and wait for my go-ahead before changing anything.":
-    "다운로드 폴더를 살펴보고 남길 것, 정리할 것, 지울 것을 제안해 줘. 비슷한 파일은 묶고 큰 파일이나 중복 파일을 짚어 주고, 내가 동의하기 전에는 아무것도 바꾸지 마.",
-  "Group photos by date": "날짜별로 사진 묶기",
-  "Organize the photos in my selected folder into folders by year and month, using the date each one was taken. Show me the plan first and never delete a photo.":
-    "선택한 폴더의 사진을 촬영 날짜에 따라 연도와 월별 폴더로 정리해 줘. 먼저 계획을 보여 주고, 사진은 절대 지우지 마.",
-  "Get my inbox under control": "받은편지함 정리하기",
-  "Help me get my inbox under control. Group what is waiting by urgency, draft short replies for the quick ones, and list what needs a decision from me.":
-    "받은편지함 정리를 도와줘. 기다리는 메일을 긴급도별로 묶고, 빨리 답할 수 있는 것은 짧은 답장 초안을 쓰고, 내가 결정해야 할 일을 목록으로 만들어 줘.",
-  "Get ready for what’s next": "다음 일을 준비하기",
-  "Prepare for my next meeting": "다음 회의 준비하기",
-  "Help me prepare for my next meeting. Ask who it is with and what it is about, then gather the relevant notes and files and give me a short briefing with questions to raise.":
-    "다음 회의 준비를 도와줘. 누구와 무엇에 관한 회의인지 물어본 뒤, 관련 메모와 파일을 모아 꺼낼 만한 질문을 담은 짧은 브리핑을 만들어 줘.",
-  "Plan a getaway": "짧은 여행 계획하기",
-  "Help me plan a short trip. Ask about my dates, budget and the kind of places I enjoy, then suggest a day-by-day plan and a packing list.":
-    "짧은 여행 계획을 도와줘. 날짜, 예산, 좋아하는 장소의 종류를 물어본 뒤 날짜별 일정과 짐 목록을 제안해 줘.",
-  "Get ready for an interview": "면접 준비하기",
-  "Help me get ready for a job interview. Ask about the role and the company, go over likely questions with me, help me shape my answers and suggest questions I can ask them.":
-    "취업 면접 준비를 도와줘. 직무와 회사에 대해 물어보고, 나올 만한 질문을 함께 살펴보며 답변을 다듬고, 내가 물어볼 수 있는 질문도 제안해 줘.",
-  "Make sense of scattered information": "흩어진 정보 정리하기",
-  "Catch me up on team chat": "팀 채팅 따라잡기",
-  "Catch me up on what I missed in my team’s chat. Summarize the main discussions and decisions, point out anything that mentions me, and list what I should reply to.":
-    "팀 채팅에서 놓친 내용을 따라잡게 해 줘. 주요 논의와 결정을 요약하고, 나를 언급한 부분을 짚어 주고, 내가 답해야 할 것을 목록으로 만들어 줘.",
-  "Turn voice notes into a document": "음성 메모를 문서로 만들기",
-  "Turn the voice notes in my selected folder into a tidy document. Transcribe them, group related points under headings and list any action items at the end.":
-    "선택한 폴더의 음성 메모를 깔끔한 문서로 만들어 줘. 받아 적은 뒤 관련된 내용을 제목별로 묶고, 마지막에 할 일을 정리해 줘.",
-  "Collect figures into a spreadsheet": "수치를 스프레드시트로 모으기",
-  "Pull the figures scattered across the files in my selected folder into one spreadsheet. Show me the columns you plan to use before you start, and note where each value came from.":
-    "선택한 폴더의 여러 파일에 흩어진 수치를 하나의 스프레드시트로 모아 줘. 시작하기 전에 쓸 열을 보여 주고, 각 값의 출처도 적어 줘.",
-  "Connect to a Claudex service": "Claudex 서비스에 연결",
-  "Enter the address of the service you sign in to.":
-    "로그인할 서비스의 주소를 입력하세요.",
-  "Service address": "서비스 주소",
-  "No Claudex service answered at this address. Check it and try again.":
-    "이 주소에서 응답하는 Claudex 서비스가 없습니다. 확인 후 다시 시도하세요.",
-  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking it — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from your Claudex service's website.":
-    "Claudex가 업데이트 서버에 연결할 수 없습니다. 회사 네트워크라면 방화벽이나 프록시가 차단하고 있을 수 있으니 IT 팀에 허용을 요청하세요. 그렇지 않다면 연결을 확인하고 다시 시도하거나, 사용하는 Claudex 서비스의 웹사이트에서 최신 버전을 다운로드하세요.",
-  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or the web.":
-    "세션을 지운 후 다시 연결되지 않았습니다. 휴대폰이나 웹에서 이 세션을 계속 사용하려면 다시 켜세요.",
-  "I agree to the {terms} and {aup}.": "{terms} 및 {aup}에 동의합니다.",
 };
+// Preserve the native error contract while reusing the translated recovery advice.
+catalog["The Claudex service is unreachable. Check your connection."] =
+  catalog["Couldn’t reach the service. Check your connection, then try again."];
 export default catalog;

@@ -113,7 +113,7 @@ test("pinned headings distinguish pinned-only from pinned and active", () => {
   assert.match(render([pinned]), /<h3>Pinned<\/h3>/);
   assert.match(
     render([{ ...pinned, turns: [{ status: "completed" } as Turn] }]),
-    /data-icon="Pin"/,
+    /data-anthropicon="Pin"/,
   );
   assert.match(
     render([pinned, conversation("active", { unread: true })]),

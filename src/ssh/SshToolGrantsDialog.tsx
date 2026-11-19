@@ -6,7 +6,7 @@ import { SettingsModal } from "../settings/controls";
 import { useApp } from "../app/AppContext";
 import "./tool-grants.css";
 
-// Shared allowed-sites card, no add field.
+// Shared allowed-sites card, no add field (live claude.ai bundle, 2026-10-14, c71860c77-BUhAcWeF.js Ta).
 export function SshToolGrantsDialog({ onClose }: { onClose: () => void }) {
   const app = useApp();
   const [grants, setGrants] = useState<SshToolGrant[]>([]);

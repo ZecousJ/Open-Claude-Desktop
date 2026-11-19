@@ -5,7 +5,7 @@ import { Button, Row, Section } from "../controls";
 
 const CodeAccountDialog = lazyPiece(() => import("./CodeAccountDialog"));
 
-/** Account rows; CLI OAuth tokens have no Claudex equivalent. */
+/** Account rows; CLI OAuth tokens have no Claudex equivalent (live claude.ai bundle, 2026-10-14, c71860c77-BUhAcWeF.js). */
 export default function CodeAccountSections({
   onError,
 }: {

@@ -1,3 +1,4 @@
+import { acceptanceTransportRecord } from "./acceptance-diagnostics";
 /**
  * JSON transport for the Claudex (Sub2API) service's user API. Sub2API wraps
  * successes as `{code:0, message, data}` and reports failures either as the
@@ -169,10 +170,13 @@ export interface RequestOptions {
   method?: string;
   token?: string;
   body?: unknown;
+  idempotencyKey?: string;
   /** This installation's id, for the panel requests that need it; never on the gateway. */
   deviceId?: string;
   /** The ETag of the copy the caller holds; the service may answer 304. */
   ifNoneMatch?: string;
+  /** Maximum successful JSON length for endpoints with larger replies. */
+  responseChars?: number;
   /** Who is asking (tests); by default this build. */
   client?: ClaudexClientInfo;
 }
@@ -199,7 +203,21 @@ export async function requestJsonResult(
   init: RequestOptions = {},
 ): Promise<JsonResult> {
   let response: Response;
+  const diagnostic = (stage: "begin" | "response" | "failure", error?: unknown, status?: number) => {
+    if (process.env.CLAUDEX_ACCEPTANCE_NETWORK_DIAGNOSTICS !== "1") return;
+    let target: URL;
+    try { target = new URL(url); } catch { return; }
+    if (target.pathname !== "/api/v1/settings/public" || target.search || init.token || init.body !== undefined) return;
+    const dispatcher = (globalThis as any)[Symbol.for("undici.globalDispatcher.1")];
+    console.info("[acceptance-public-transport]", JSON.stringify(acceptanceTransportRecord({
+      stage, error, status, globalFetch: fetchImpl === globalThis.fetch,
+      expectedService: target.origin === "https://claudex.zecous.cn", envProxy: process.env.NODE_USE_ENV_PROXY === "1",
+      hasProxy: !!(process.env.HTTPS_PROXY || process.env.https_proxy), hasExtraCa: !!process.env.NODE_EXTRA_CA_CERTS,
+      dispatcher: dispatcher?.constructor?.name,
+    })));
+  };
   try {
+    diagnostic("begin");
     response = await fetchImpl(url, {
       method: init.method ?? "GET",
       headers: {
@@ -209,13 +227,16 @@ export async function requestJsonResult(
           ? { "Content-Type": "application/json" }
           : {}),
         ...(init.token ? { Authorization: `Bearer ${init.token}` } : {}),
+        ...(init.idempotencyKey ? { "Idempotency-Key": init.idempotencyKey } : {}),
         ...(init.ifNoneMatch ? { "If-None-Match": init.ifNoneMatch } : {}),
       },
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
       signal: AbortSignal.timeout(requestTimeoutMs),
       redirect: "error",
     });
-  } catch {
+    diagnostic("response", undefined, response.status);
+  } catch (error) {
+    diagnostic("failure", error);
     throw new Sub2ApiError(
       0,
       "UNREACHABLE",
@@ -227,7 +248,8 @@ export async function requestJsonResult(
     await response.body?.cancel().catch(() => {});
     return { notModified: true, status: 304, ...(etag ? { etag } : {}) };
   }
-  const text = (await response.text()).slice(0, 2_000_000);
+  const maxChars = response.ok ? (init.responseChars ?? 2_000_000) : 2_000_000;
+  const text = (await response.text()).slice(0, maxChars);
   let body: unknown;
   try {
     body = text ? JSON.parse(text) : undefined;

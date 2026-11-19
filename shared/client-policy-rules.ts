@@ -117,10 +117,11 @@ export const extensionOf = (name: string) =>
   /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? "";
 
 /**
- * Why an attachment may not be sent, or undefined when it may. The sentences
- * are the live ones; a Code session says "session" where a chat says "chat".
- * They are English here and translated where they are shown (src/i18n
- * templates).
+ * Why an attachment may not be sent, or undefined when it may. The
+ * sentences are the live ones (live claude.ai bundle, 2026-10-16,
+ * shared-3-ClOVEo7e.js: YWOXlVMNcG, 44/WQKMU7g, DSeKlyj40U, vuNXLPzrDJ); a
+ * Code session says "session" where a chat says "chat". They are English
+ * here and translated where they are shown (src/i18n templates).
  */
 export function attachmentRefusal(
   name: string,

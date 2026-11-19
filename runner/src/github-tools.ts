@@ -1,24 +1,24 @@
 /**
- * GitHub tools of a cloud Code session: the model can push its commits, open a
- * pull request or an issue, comment, and read an issue or pull request of the
- * session's repository. The sandbox cannot reach GitHub and never sees a
- * credential:
+ * GitHub tools of a cloud Code session (owner, 2026-10-03): the model can
+ * push its commits, open a pull request or an issue, comment, and read an
+ * issue or pull request of the session's repository. The sandbox cannot
+ * reach GitHub and never sees a credential:
  *
  * - pushing runs here, outside the sandbox, with a credential the service
  *   leases for that one push (`github.push`). Git never runs inside the
  *   session's folder (its hooks and config are the model's to change): the
  *   branch is fetched from the folder into a fresh repository of our own and
- *   pushed from there, without force. A folder whose repository reaches outside
- *   it (a linked .git, objects or alternates) is refused;
+ *   pushed from there, without force. A folder whose repository reaches
+ *   outside it (a linked .git, objects or alternates) is refused;
  * - the other actions are made by the service with the user's own token
  *   (`github.api`);
- * - the repository is the session's: the address in the folder's .git/config
- *   must be the one its space was made for (the space id is the address's
- *   hash), so the model cannot point the tools elsewhere;
- * - a session with several repositories (Conversation.sessionRepositories, set
- *   by the runner) names another one with `repository` ("owner/name"): its
- *   checkout is the folder directly inside the session's whose origin is that
- *   repository (runner/src/code-workspace.ts extraRepositoryFolders).
+ * - the repository is the session's: the address in the folder's
+ *   .git/config must be the one its space was made for (the space id is the
+ *   address's hash), so the model cannot point the tools elsewhere;
+ * - a session with several repositories (Conversation.sessionRepositories,
+ *   set by the runner) names another one with `repository` ("owner/name"):
+ *   its checkout is the folder directly inside the session's whose origin is
+ *   that repository (runner/src/code-workspace.ts extraRepositoryFolders).
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -30,9 +30,22 @@ import type {
 } from "../../electron/engine/engine-extensions";
 import type { WorkingTreeHost } from "../../electron/git/working-tree";
 import { sessionRepositoryOf } from "../../shared/session-git";
-import type { Conversation, Turn } from "../../shared/types";
+import { displayPrompt } from "../../shared/pr-display";
+import type {
+  Conversation,
+  SessionPullRequest,
+  Settings,
+  Turn,
+} from "../../shared/types";
 import type { StoreTransport } from "./cloud-store";
 import { repositoryKey } from "./code-workspace";
+import { LinkRequestError } from "./control-link";
+import {
+  createGitHubPullRequest,
+  findOpenGitHubPullRequest,
+  gitHubPullRequestMetadata,
+  type GitHubPullRequestCoordinates,
+} from "./github-pull-requests";
 import {
   askpass,
   parseCloneGrant,
@@ -152,6 +165,15 @@ export interface GitHubToolsOptions {
    * its branch and git state after each turn (runner/src/session-git.ts).
    */
   workingTree?: () => WorkingTreeHost | undefined;
+  automaticPullRequests?: {
+    settings(
+      conversation: Conversation,
+    ): Pick<Settings, "prAutoCreate" | "prAutoCreateDraft">;
+    save(
+      conversation: Conversation,
+      pr: Omit<SessionPullRequest, "checkedAt">,
+    ): Promise<void>;
+  };
 }
 
 /**
@@ -241,9 +263,97 @@ export function autoPullRequestStep(
   };
 }
 
+function automaticPullRequestTitle(sessionTitle: string, branch: string) {
+  const title = sessionTitle?.replace(/\s+/g, " ").trim() || branch;
+  let result = "";
+  let bytes = 0;
+  for (const character of title) {
+    bytes += Buffer.byteLength(character);
+    if (bytes > 256) break;
+    result += character;
+  }
+  return result.trimEnd();
+}
+
 /** The extension that offers and answers the tools. */
 export function gitHubTools(options: GitHubToolsOptions): EngineExtension {
   const run = options.runGit ?? defaultRunGit;
+  const automatic = options.automaticPullRequests;
+  const github = (body: Record<string, unknown>) =>
+    options.transport.request("github.api", options.userId, body);
+  const afterPush = async (
+    { conversation, turn, changed }: DynamicToolCall,
+    coordinates: GitHubPullRequestCoordinates,
+  ) => {
+    const { head, base, headRepository } = coordinates;
+    const settings = automatic?.settings(conversation);
+    if (!automatic || settings?.prAutoCreate === undefined)
+      return autoPullRequestStep(
+        conversation.autoPullRequest,
+        head,
+        base || "main",
+      );
+    if (!settings.prAutoCreate || head === base) return {};
+    if (
+      turn &&
+      (turn.status !== "inProgress" ||
+        displayPrompt(turn.prompt) !== turn.prompt)
+    )
+      return {};
+    if (!base)
+      return {
+        pull_request_error: "GitHub did not report the default branch.",
+      };
+
+    const lookup = () => findOpenGitHubPullRequest(github, coordinates);
+    try {
+      let pr = await lookup();
+      let own = false;
+      if (!pr) {
+        const current = automatic.settings(conversation);
+        if (!current.prAutoCreate || (turn && turn.status !== "inProgress"))
+          return {};
+        try {
+          pr = await createGitHubPullRequest(github, coordinates, {
+            title: automaticPullRequestTitle(conversation.title, head),
+            body: "",
+            draft: current.prAutoCreateDraft ?? true,
+          });
+          own = true;
+        } catch (error) {
+          pr = await lookup().catch(() => undefined);
+          if (!pr) throw error;
+        }
+      }
+      const pull_request = {
+        url: pr.html_url,
+        number: pr.number,
+        draft: pr.draft,
+        created: own,
+      };
+      try {
+        await automatic.save(
+          conversation,
+          gitHubPullRequestMetadata(pr, headRepository, own),
+        );
+      } catch {
+        return {
+          pull_request,
+          pull_request_error:
+            "The pull request exists on GitHub, but its Code session link could not be confirmed.",
+        };
+      }
+      changed();
+      return { pull_request };
+    } catch (error) {
+      return {
+        pull_request_error:
+          error instanceof LinkRequestError
+            ? error.message
+            : "GitHub could not confirm the pull request.",
+      };
+    }
+  };
   const push = async (call: DynamicToolCall, args: Record<string, unknown>) => {
     const { url, cwd } = sessionRepository(call, text(args.repository));
     const git = ownRepository(cwd);
@@ -265,6 +375,7 @@ export function gitHubTools(options: GitHubToolsOptions): EngineExtension {
       path.join(options.tempRoot ?? os.tmpdir(), "claudex-push-"),
     );
     fs.chmodSync(temp, 0o700);
+    let pushedCommit: string | undefined;
     try {
       const helper = path.join(temp, "askpass.sh");
       fs.writeFileSync(helper, askpass, { mode: 0o700 });
@@ -322,36 +433,36 @@ export function gitHubTools(options: GitHubToolsOptions): EngineExtension {
           CLAUDEX_GIT_TOKEN: grant.token,
         },
       );
-      // Told to the session's lists: the folder's own remote-tracking refs do
-      // not move when the push runs outside the sandbox.
-      if (cwd === call.conversation.cwd) {
-        recordPush(call.conversation, branch, branchCommit(git, branch));
-        call.changed();
-      }
-      const web = grant.url.replace(/\.git$/, "");
-      const baseBranch = grant.defaultBranch || "main";
-      return {
-        pushed: `${branch} → ${grant.repository}:${target}`,
-        branch: target,
-        branch_url: `${web}/tree/${encodeURI(target)}`,
-        compare_url: `${web}/compare/${encodeURI(baseBranch)}...${encodeURI(target)}`,
-        ...autoPullRequestStep(
-          call.conversation.autoPullRequest,
-          target,
-          baseBranch,
-        ),
-      };
+      if (cwd === call.conversation.cwd)
+        pushedCommit = branchCommit(own, branch);
     } finally {
       fs.rmSync(temp, { recursive: true, force: true });
     }
+    // Told to the session's lists: the folder's own remote-tracking refs do
+    // not move when the push runs outside the sandbox.
+    if (cwd === call.conversation.cwd) {
+      recordPush(call.conversation, branch, pushedCommit);
+      call.changed();
+    }
+    const web = grant.url.replace(/\.git$/, "");
+    const baseBranch = grant.defaultBranch || "main";
+    return {
+      pushed: `${branch} → ${grant.repository}:${target}`,
+      branch: target,
+      branch_url: `${web}/tree/${encodeURI(target)}`,
+      compare_url: `${web}/compare/${encodeURI(baseBranch)}...${encodeURI(target)}`,
+      ...(await afterPush(call, {
+        url: grant.url,
+        head: target,
+        headRepository: grant.repository,
+        base: grant.defaultBranch,
+      })),
+    };
   };
   const api = async (call: DynamicToolCall, body: Record<string, unknown>) => {
     const args = call.arguments as Record<string, unknown> | undefined;
     const { url } = sessionRepository(call, text(args?.repository));
-    return options.transport.request("github.api", options.userId, {
-      url,
-      ...body,
-    });
+    return github({ url, ...body });
   };
   const refreshing = new Set<string>();
   /**

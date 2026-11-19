@@ -1,8 +1,10 @@
 /**
- * A file write the model has begun. Codex reports an apply_patch call only once
- * the model has written all of it; the gateway sees the call open in the
- * upstream stream and tells the main process, which shows the file change in
- * progress at once. Codex's own item has the call's id and replaces it.
+ * A file write the model has begun (owner, 2026-10-03: a large file showed
+ * nothing until it was written whole). Codex reports an apply_patch call
+ * only once the model has written all of it; the gateway sees the call open
+ * in the upstream stream and tells the main process, which shows the file
+ * change in progress at once. Codex's own item has the call's id and
+ * replaces it.
  */
 export interface ToolStartEvent {
   threadId: string;

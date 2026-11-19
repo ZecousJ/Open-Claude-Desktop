@@ -1,12 +1,15 @@
 package webhost
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 	"sync"
@@ -61,9 +64,32 @@ const (
 	deviceLinkLifetime    = time.Hour
 	deviceCallTimeout     = 60 * time.Second
 	deviceQueue           = 256
-	deviceEventBytes      = 4 << 20
 	deviceRequestLimit    = 16
+	// The largest answer or event a device may send (owner, 2026-10-31: 4 MB
+	// was too small, a big Code session's answer must get through). A larger
+	// message is read to its end and dropped; the link stays up and the call
+	// it answered gets a "too large" error.
+	deviceFrameBytes = 64 << 20
+	// Events go on to the account's tabs through the hub's ring (8 MB); a
+	// larger one is dropped, never the link.
+	deviceEventBytes = maxRingBytes
+	// Beyond this a message is not even drained: the link is closed.
+	deviceDrainBytes = 1 << 30
+	// A device answer slower or larger than this is logged.
+	deviceSlowCall  = 5 * time.Second
+	deviceLargeCall = 1 << 20
+	// Calls that timed out are remembered this long, so an answer that still
+	// arrives is logged with its method and how late it was.
+	deviceExpiredKeep = 10 * time.Minute
+	deviceExpiredMax  = 64
 )
+
+var errDeviceAnswerTooLarge = func(size int64) *webproto.RPCError {
+	return &webproto.RPCError{
+		Code:    "CLAUDEX_DEVICE_ANSWER_TOO_LARGE",
+		Message: fmt.Sprintf("The computer's answer is too large to relay (%.1f MB).", float64(size)/(1<<20)),
+	}
+}
 
 var (
 	errDeviceOffline = infraerrors.NotFound("CLAUDEX_DEVICE_OFFLINE", "This computer is not online.")
@@ -126,7 +152,17 @@ type deviceConn struct {
 	requests  chan struct{}
 
 	mu      sync.Mutex
-	pending map[string]chan DeviceFrame
+	pending map[string]*devicePending
+	expired map[string]devicePending
+	// Why the link ended, for the log line when it does.
+	reason string
+}
+
+// devicePending is a relayed call waiting for its result.
+type devicePending struct {
+	ch     chan DeviceFrame
+	method string
+	at     time.Time
 }
 
 func (d *deviceConn) send(frame any) bool {
@@ -148,13 +184,18 @@ func (d *deviceConn) send(frame any) bool {
 
 func (d *deviceConn) close(code websocket.StatusCode, reason string) {
 	d.closeOnce.Do(func() {
+		d.mu.Lock()
+		if d.reason == "" {
+			d.reason = fmt.Sprintf("closed by the server: %d %s", code, reason)
+		}
+		d.mu.Unlock()
 		close(d.done)
 		if d.killFn != nil {
 			d.killFn(code, reason)
 		}
 		d.mu.Lock()
-		for id, ch := range d.pending {
-			close(ch)
+		for id, p := range d.pending {
+			close(p.ch)
 			delete(d.pending, id)
 		}
 		d.mu.Unlock()
@@ -192,11 +233,16 @@ func (d *deviceConn) call(ctx context.Context, method string, args []json.RawMes
 		d.mu.Unlock()
 		return DeviceFrame{}, errDeviceOffline
 	}
-	d.pending[id] = ch
+	started := time.Now()
+	d.pending[id] = &devicePending{ch: ch, method: method, at: started}
 	d.mu.Unlock()
+	timedOut := false
 	defer func() {
 		d.mu.Lock()
 		delete(d.pending, id)
+		if timedOut {
+			d.rememberExpired(id, devicePending{method: method, at: started})
+		}
 		d.mu.Unlock()
 	}()
 	if !d.send(DeviceFrame{T: "call", ID: id, Method: method, Args: raw, DeadlineMs: timeout.Milliseconds()}) {
@@ -211,6 +257,7 @@ func (d *deviceConn) call(ctx context.Context, method string, args []json.RawMes
 		}
 		return res, nil
 	case <-timer.C:
+		timedOut = true
 		_ = d.send(DeviceFrame{T: "cancel", ID: id})
 		return DeviceFrame{}, errDeviceTimeout
 	case <-ctx.Done():
@@ -219,14 +266,114 @@ func (d *deviceConn) call(ctx context.Context, method string, args []json.RawMes
 	}
 }
 
-func (d *deviceConn) resolve(f DeviceFrame) {
+func (d *deviceConn) resolve(f DeviceFrame, size int) {
 	d.mu.Lock()
-	ch := d.pending[f.ID]
+	p := d.pending[f.ID]
 	delete(d.pending, f.ID)
+	late, wasLate := d.expired[f.ID]
+	delete(d.expired, f.ID)
 	d.mu.Unlock()
-	if ch != nil {
-		ch <- f
+	if p != nil {
+		p.ch <- f
+		return
 	}
+	// Diagnostics: an answer after Go gave up on it (the caller saw 504).
+	if wasLate {
+		slog.Warn("claudex webhost: device answered after the call timed out",
+			"user_id", d.userID, "device", d.info.ID, "version", d.info.Version,
+			"method", late.method, "after_ms", time.Since(late.at).Milliseconds(), "bytes", size)
+	} else {
+		slog.Info("claudex webhost: device answered an unknown call",
+			"user_id", d.userID, "device", d.info.ID, "id", clipRunes(f.ID, 40), "bytes", size)
+	}
+}
+
+// rememberExpired keeps a timed-out call for a while (d.mu held).
+func (d *deviceConn) rememberExpired(id string, p devicePending) {
+	if d.expired == nil {
+		d.expired = map[string]devicePending{}
+	}
+	for key, old := range d.expired {
+		if time.Since(old.at) > deviceExpiredKeep || len(d.expired) >= deviceExpiredMax {
+			delete(d.expired, key)
+		}
+	}
+	d.expired[id] = p
+}
+
+var (
+	frameTypeHead = regexp.MustCompile(`^\s*\{\s*"t"\s*:\s*"([a-z]{1,16})"`)
+	frameIDHead   = regexp.MustCompile(`"id"\s*:\s*"([A-Za-z0-9_-]{1,64})"`)
+)
+
+// tooLarge answers the call a dropped oversized result was for (its id is
+// near the start of the frame: the desktop writes t, id, ok, then value).
+func (d *deviceConn) tooLarge(head []byte, size int64) {
+	kind, id := "", ""
+	if m := frameTypeHead.FindSubmatch(head); m != nil {
+		kind = string(m[1])
+	}
+	if m := frameIDHead.FindSubmatch(head); m != nil {
+		id = string(m[1])
+	}
+	d.mu.Lock()
+	method := ""
+	if p := d.pending[id]; p != nil && kind != "event" {
+		method = p.method
+	}
+	d.mu.Unlock()
+	slog.Warn("claudex webhost: device sent a message too large to relay",
+		"user_id", d.userID, "device", d.info.ID, "version", d.info.Version,
+		"frame", kind, "method", method, "bytes", size, "limit", deviceFrameBytes)
+	// An event can carry ids of its own; anything else naming a waiting call
+	// is that call's answer, whatever order its fields came in.
+	if method != "" {
+		ok := false
+		d.resolve(DeviceFrame{T: "result", ID: id, OK: &ok, Error: errDeviceAnswerTooLarge(size)}, int(size))
+	}
+}
+
+// progressReader pushes the link's silence deadline back while bytes arrive.
+type progressReader struct {
+	r      io.Reader
+	idle   *time.Timer
+	silent time.Duration
+}
+
+func (p *progressReader) Read(b []byte) (int, error) {
+	n, err := p.r.Read(b)
+	if n > 0 {
+		p.idle.Reset(p.silent)
+	}
+	return n, err
+}
+
+// readDeviceFrame reads one message from a device. The link is silent only
+// while no bytes arrive, so a large answer on a slow uplink keeps it alive
+// as long as it moves. A message over deviceFrameBytes is read to its end
+// and dropped: big is true and data holds its first bytes.
+func readDeviceFrame(ctx context.Context, conn *websocket.Conn, silent time.Duration) (typ websocket.MessageType, data []byte, size int64, big bool, err error) {
+	rctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	idle := time.AfterFunc(silent, cancel)
+	defer idle.Stop()
+	typ, r, err := conn.Reader(rctx)
+	if err != nil {
+		return 0, nil, 0, false, err
+	}
+	pr := &progressReader{r: r, idle: idle, silent: silent}
+	var buf bytes.Buffer
+	n, err := io.Copy(&buf, io.LimitReader(pr, deviceFrameBytes+1))
+	if err != nil {
+		return typ, nil, n, false, err
+	}
+	if n <= deviceFrameBytes {
+		return typ, buf.Bytes(), n, false, nil
+	}
+	head := append([]byte(nil), buf.Bytes()[:4096]...)
+	buf = bytes.Buffer{}
+	rest, err := io.Copy(io.Discard, pr)
+	return typ, head, n + rest, true, err
 }
 
 // deviceSet holds the online devices of every user.
@@ -382,7 +529,8 @@ func (c *Component) deviceLink(g *gin.Context) {
 		refuse(conn, webproto.CloseBadTicket, webproto.ErrCodeBadTicket, "The events ticket is not valid. Request a new one.")
 		return
 	}
-	conn.SetReadLimit(deviceEventBytes + linkReadSlack)
+	// The hello is small; the limit grows once the link is admitted.
+	conn.SetReadLimit(64<<10 + linkReadSlack)
 	c.serveDevice(g.Request.Context(), conn, ticket)
 }
 
@@ -437,7 +585,7 @@ func (c *Component) serveDevice(ctx context.Context, conn *websocket.Conn, ticke
 		out:      make(chan []byte, deviceQueue),
 		done:     make(chan struct{}),
 		requests: make(chan struct{}, deviceRequestLimit),
-		pending:  map[string]chan DeviceFrame{},
+		pending:  map[string]*devicePending{},
 	}
 	for _, m := range hello.Methods {
 		d.methods[m] = true
@@ -455,7 +603,18 @@ func (c *Component) serveDevice(ctx context.Context, conn *websocket.Conn, ticke
 		replaced.close(webproto.CloseReplaced, tabCloseReplaced)
 	}
 	c.rememberDevice(userID, d.info)
+	conn.SetReadLimit(deviceDrainBytes)
+	linked := c.now()
 	defer func() {
+		d.mu.Lock()
+		reason := d.reason
+		d.mu.Unlock()
+		if reason == "" {
+			reason = "ended"
+		}
+		slog.Info("claudex webhost: device link closed",
+			"user_id", userID, "device", d.info.ID, "version", d.info.Version,
+			"after_s", int(c.now().Sub(linked).Seconds()), "reason", reason)
 		d.close(websocket.StatusNormalClosure, "")
 		if c.devices.remove(d) {
 			c.devices.mu.Lock()
@@ -480,11 +639,18 @@ func (c *Component) serveDevice(ctx context.Context, conn *websocket.Conn, ticke
 
 	silent := c.heartbeat * eventsSilentMult / 2
 	for {
-		rctx, rcancel := context.WithTimeout(ctx, silent)
-		typ, data, err := conn.Read(rctx)
-		rcancel()
+		typ, data, size, big, err := readDeviceFrame(ctx, conn, silent)
 		if err != nil {
+			d.mu.Lock()
+			if d.reason == "" {
+				d.reason = fmt.Sprintf("read failed after %d bytes: %v", size, err)
+			}
+			d.mu.Unlock()
 			return
+		}
+		if big {
+			d.tooLarge(data, size)
+			continue
 		}
 		if typ != websocket.MessageText {
 			d.close(webproto.CloseProtocolError, "binary frame")
@@ -517,9 +683,14 @@ func (c *Component) serveDevice(ctx context.Context, conn *websocket.Conn, ticke
 			if f.ID == "" || f.OK == nil {
 				continue
 			}
-			d.resolve(f)
+			d.resolve(f, int(size))
 		case "event":
-			if len(f.Event) == 0 || len(f.Event) > deviceEventBytes || requireEventType(f.Event) != nil {
+			if len(f.Event) > deviceEventBytes {
+				slog.Warn("claudex webhost: device event too large to relay",
+					"user_id", userID, "device", d.info.ID, "bytes", len(f.Event), "limit", deviceEventBytes)
+				continue
+			}
+			if len(f.Event) == 0 || requireEventType(f.Event) != nil {
 				continue
 			}
 			c.hubs.publish(userID, deviceEvent(d.info.ID, f.Event))
@@ -674,14 +845,35 @@ func (c *Component) deviceRPC(g *gin.Context) {
 		return
 	}
 	defer c.gate.leave(who.userID)
+	started := time.Now()
 	res, err := d.call(g.Request.Context(), method, req.Args, deviceCallTimeout)
+	took := time.Since(started).Milliseconds()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
+			slog.Info("claudex webhost: device call abandoned by the caller",
+				"user_id", who.userID, "device", d.info.ID, "method", method, "latency_ms", took)
 			g.Abort()
 			return
 		}
+		slog.Warn("claudex webhost: device call failed",
+			"user_id", who.userID, "device", d.info.ID, "version", d.info.Version,
+			"method", method, "error", err.Error(), "latency_ms", took)
 		rpcFail(g, err)
 		return
+	}
+	switch {
+	case res.OK != nil && !*res.OK:
+		message, code := "", ""
+		if res.Error != nil {
+			message, code = clipRunes(res.Error.Message, 200), res.Error.Code
+		}
+		slog.Info("claudex webhost: device refused a call",
+			"user_id", who.userID, "device", d.info.ID, "version", d.info.Version,
+			"method", method, "code", code, "message", message, "latency_ms", took)
+	case took >= deviceSlowCall.Milliseconds() || len(res.Value) >= deviceLargeCall:
+		slog.Info("claudex webhost: device call slow or large",
+			"user_id", who.userID, "device", d.info.ID, "version", d.info.Version,
+			"method", method, "bytes", len(res.Value), "latency_ms", took)
 	}
 	out := webproto.RPCResponse{OK: *res.OK, Value: res.Value, Error: res.Error}
 	if out.Validate() != nil {

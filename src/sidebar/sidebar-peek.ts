@@ -1,9 +1,10 @@
 /*
- * The collapsed sidebar's peek, as the original's desktop frame does it: with
- * the sidebar hidden, resting the pointer on the left edge or on the sidebar
- * toggle brings the whole sidebar up as a card over the page, and moving away
- * puts it back. These are the numbers and the pure decisions; useSidebarPeek.ts
- * wires them to the pointer, the keyboard and the timers.
+ * The collapsed sidebar's peek, as the original's desktop frame does it
+ * (source: desktop bundle 2.31226.1 static CSS/JS): with the sidebar hidden,
+ * resting the pointer on the left edge or on the sidebar toggle brings the
+ * whole sidebar up as a card over the page, and moving away puts it back.
+ * These are the numbers and the pure decisions; useSidebarPeek.ts wires them
+ * to the pointer, the keyboard and the timers.
  */
 
 /** Within this many pixels of the window's left edge the pointer opens the peek. */

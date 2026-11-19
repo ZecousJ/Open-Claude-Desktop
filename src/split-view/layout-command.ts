@@ -9,7 +9,7 @@ import { closePane, openInSplit } from "./split-actions";
 
 const openedBy = new Map<string, string>();
 
-// .
+// (live claude.ai bundle, 2026-10-14, c2189a16b-rZZ7YRPc.js).
 export async function runLayoutCommand(
   command: LayoutCommand,
   app: AppController,

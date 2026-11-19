@@ -2,6 +2,7 @@ import type { Provider } from "../../shared/types";
 import type { ModelCatalog } from "../../shared/model-catalog-api";
 import { catalogChoices } from "./model/code-model-choices";
 
+// (live claude.ai bundle, 2026-10-14, ca2ef848d, LI / RI)
 export function unsupportedModel(
   providers: Provider[],
   providerId: string,

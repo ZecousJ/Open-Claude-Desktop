@@ -3,12 +3,12 @@ import { X } from "../ui/glyphs";
 import "./file-viewer-panel.css";
 
 /**
- * Shown over the preview when its script throws, after the original's card: a
- * 300px card 20px in from the preview's bottom and left with a Dismiss X,
- * "Error running artifact", the sentence about it, the error in a monospace box
- * and a primary "Try fixing with Claude" (here Claudex). Try fixing asks the
- * agent in the artifact's conversation, and the button shows it is busy until
- * the message is sent.
+ * Shown over the preview when its script throws (R-1036), after the
+ * original's card (desktop bundle 2.31226.1): a 300px card 20px in from the
+ * preview's bottom and left with a Dismiss X, "Error running artifact", the
+ * sentence about it, the error in a monospace box and a primary "Try fixing
+ * with Claude" (here Claudex). Try fixing asks the agent in the artifact's
+ * conversation, and the button shows it is busy until the message is sent.
  */
 export function ArtifactRuntimeError({
   message,

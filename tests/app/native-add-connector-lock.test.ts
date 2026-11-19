@@ -11,7 +11,7 @@ import { parseHTML } from "linkedom";
 import ts from "typescript";
 import { ComposerAddMenu } from "../../src/composer/ComposerAddMenu";
 import { AppContext, type AppController } from "../../src/app/AppContext";
-import { fixtureSettings } from "../../scripts/preview/app-fixture";
+import { fixtureSettings } from "../../scripts/fidelity/app-fixture";
 import type { Conversation } from "../../shared/types";
 
 type Props = ComponentProps<typeof ComposerAddMenu>;

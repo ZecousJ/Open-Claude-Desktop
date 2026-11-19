@@ -1,7 +1,8 @@
 /**
- * An opened tool call in Chat's steps card: no frame of its own inside the
- * card, each argument a line "key: value" (the key in muted monospace, the
- * value in the row's text), then the result as text, in the row's 12px margins.
+ * An opened tool call in Chat's steps card (owner, 2026-10-08, after the
+ * live claude.ai "Ran page script ⌄"): no frame of its own inside the card,
+ * each argument a line "key: value" (the key in muted monospace, the value
+ * in the row's text), then the result as text, in the row's 12px margins.
  */
 export type ToolStepOutput =
   | { type: "text"; text: string }

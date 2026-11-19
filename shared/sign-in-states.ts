@@ -1,9 +1,9 @@
 /**
- * The sign-in refusals that get a page of their own: their fixed wording,
- * shared by the desktop main process and the window, and how a refusal is
- * recognised: by code where the error carries one (the web bridge), else by
- * that wording (an error crossing Electron's IPC keeps only its message). Not
- * part of the web app's first load.
+ * The sign-in refusals that get a page of their own (package LOGIN): their
+ * fixed wording, shared by the desktop main process and the window, and how
+ * a refusal is recognised: by code where the error carries one (the web
+ * bridge), else by that wording (an error crossing Electron's IPC keeps
+ * only its message). Not part of the web app's first load.
  */
 
 /** Fixed wording, shared by the main process and the window. */

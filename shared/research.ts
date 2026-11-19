@@ -16,6 +16,9 @@ import type { ModelCatalogItem } from "./model-catalog-api";
 import type { Conversation, Mode, Provider, Settings, Turn } from "./types";
 import { modelProtocol } from "./provider-routes";
 
+/** The original Web Research command requires a nonempty prompt. */
+export const isResearchCommand = (text: string) => /^\/deep-research \s*\S/.test(text);
+
 /** One page a web search returned. */
 export interface WebSource {
   url: string;
@@ -63,12 +66,23 @@ export interface ResearchState {
    * (`research/<conversation>/<file>.md`); the window reads it through
    * `readResearchReport`, never by path.
    */
-  report?: { title: string; path: string; bytes: number };
+  report?: { title: string; path: string; bytes: number; sha256?: string; markdown?: string };
   /**
    * How the report was made: "tool" when the model submitted it with
    * research_report, "reply" when its final reply stands in for one.
    */
   reportSource?: "tool" | "reply";
+}
+
+/** A completed edit of an owned Research report on the same Chat branch. */
+export interface ResearchReportRevision {
+  artifactId: string;
+  sourceItemId: string;
+  version: number;
+  title: string;
+  markdown: string;
+  bytes: number;
+  sha256: string;
 }
 
 /** Research turns that are over (the card stops its clock). */
@@ -100,7 +114,7 @@ export const researchUnavailableMessages: Record<ResearchUnavailable, string> =
     model: "Research isn't available for this model.",
   };
 
-/** Enabled MCP integrations count as Research sources. */
+/** Enabled MCP integrations count as Research sources (live claude.ai bundle, 2026-10-14, shared-5-DQt42NbL). */
 export function researchConnectorEnabled(
   settings: Pick<Settings, "mcpServers">,
   policy: ClientPolicy,

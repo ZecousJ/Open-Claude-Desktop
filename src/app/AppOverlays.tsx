@@ -205,8 +205,8 @@ class OverlayBoundary extends Component<
 }
 
 /**
- * An error the window reports: the original's corner notice, not a banner of
- * its own.
+ * An error the window reports: the original's corner notice (R-0127,
+ * R-0314 — the only global notice the captures show), not a banner of its own.
  */
 export function ErrorBanner() {
   const { error, setError } = useApp();
@@ -233,9 +233,11 @@ export function ErrorBanner() {
 }
 
 /**
- * The corner notice while the event stream is down and a reply is running. It
- * goes when the stream is back; closing it keeps it away until the next loss.
- * Its words are the live bundle's, which the capture cut off.
+ * The corner notice while the event stream is down and a reply is running
+ * (live claude.ai, 2026-09-29: an amber box at the bottom right, a warning
+ * triangle; the words partly cut off in the capture). It goes when the
+ * stream is back; closing it keeps it away until the next loss. Its words
+ * are the live bundle's (2026-10-12), which the capture cut off.
  */
 function ConnectionToast() {
   const { snapshot } = useApp();

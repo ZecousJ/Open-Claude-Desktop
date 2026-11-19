@@ -135,7 +135,7 @@ func (e *EasyPay) CreatePayment(ctx context.Context, req payment.CreatePaymentRe
 // mobileHosted reports a WeChat Pay or Alipay order placed from a phone
 // (CLAUDEX). A phone cannot scan a QR code shown on its own screen, so such an
 // order goes through the hosted page, which hands over to WeChat or Alipay
-// (H5), as Z-Pay checkouts do; a computer keeps the QR code.
+// (H5), as zecousAI's Z-Pay checkout does; a computer keeps the QR code.
 // Alipay joined when Z-Pay opened its Alipay channel (owner, 2026-10-06):
 // mapi.php answers it with a QR code too, which the apps show.
 func (e *EasyPay) mobileHosted(req payment.CreatePaymentRequest) bool {

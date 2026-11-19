@@ -8,6 +8,7 @@
  */
 import type { AppEvent, Conversation } from "../../shared/types";
 import { reachable } from "./device-methods";
+import { dispatchReceiptUnavailable, DispatchReceiptUnavailable } from "./dispatch-delivery";
 import {
   devicePaths,
   deviceMethods,
@@ -19,9 +20,7 @@ import {
 import {
   eventsSubprotocols,
   parseTicketResponse,
-  webAuthRoutes,
   webHeaders,
-  webPaths,
 } from "../../shared/web-protocol";
 import type { CloudSession } from "../cloud/cloud-client";
 import type { DeviceMethods } from "./device-methods";
@@ -44,9 +43,12 @@ export interface DeviceLinkOptions {
   trustStore?(): DeviceTrustStore | undefined;
   /** Persist actual relay registration/heartbeat activity, never a list read. */
   registrationObserved?(connected: boolean): void;
+  statusChanged?(): void;
+  onlineChanged?(): void;
   mobileNotifications?(): boolean;
   /** The Claudex service's origin; undefined while signed out. */
   baseUrl(): string | undefined;
+  /** The current activation's session object; undefined during retirement. */
   session(): CloudSession | undefined;
   /** The "Control from your phone" switch. */
   enabled(): boolean;
@@ -88,21 +90,60 @@ type Frame = {
   heartbeatMs?: number;
 };
 
+type LinkTarget = { origin: string; session: CloudSession };
+type LinkConnection = {
+  socket: LinkSocket;
+  target: LinkTarget;
+  cancelled: Set<string>;
+};
+
 export class DeviceLink {
   private cause?: "sign_in" | "network" | "retry" | "update";
+  private publishedStatus?: ReturnType<DeviceLink["status"]>;
   private notificationTurns = new Map<string, string>();
   status() {
     return {
       id: this.options.linkId(),
-      online: this.welcomed && !this.stopped,
+      online: this.connected,
       cause: this.cause,
     };
   }
+  remoteControlStatus() {
+    const capacity = this.options.methods.capacity();
+    return {
+      ...this.status(),
+      name: this.options.name(),
+      activeSessions: capacity.active,
+      capacity: capacity.max,
+      folders: this.options.methods.directories(),
+    };
+  }
+
+  private publishStatus() {
+    const next = this.status();
+    const previous = this.publishedStatus;
+    if (
+      previous?.id === next.id &&
+      previous.online === next.online &&
+      previous.cause === next.cause
+    )
+      return;
+    this.publishedStatus = next;
+    if ((previous?.online ?? false) !== next.online) {
+      try {
+        this.options.onlineChanged?.();
+      } catch {
+        this.options.log?.("device link: online state observer failed");
+      }
+    }
+    this.options.statusChanged?.();
+  }
+
   callLocal(method: string, args: unknown[]) {
     return this.options.methods.call(method, args);
   }
-  private socket?: LinkSocket;
-  private target?: string;
+  private connection?: LinkConnection;
+  private target?: LinkTarget;
   private retry = firstRetry;
   private retryTimer?: unknown;
   private pingTimer?: unknown;
@@ -111,7 +152,6 @@ export class DeviceLink {
   private welcomed = false;
   /** When the current socket opened, for the close's log line. */
   private openedAt = 0;
-  private stopped = true;
   private access?: boolean;
   /** Conversation id → the latest change not sent yet. */
   private readonly pendingTurns = new Map<string, Conversation>();
@@ -121,7 +161,6 @@ export class DeviceLink {
   private lastList = -Infinity;
   /** Conversation id → the turn ids a phone was last sent. */
   private readonly sentTurns = new Map<string, string[]>();
-  private readonly cancelled = new Set<string>();
 
   constructor(private readonly options: DeviceLinkOptions) {}
 
@@ -140,15 +179,20 @@ export class DeviceLink {
     return (this.options.now ?? Date.now)();
   }
 
-  private wanted() {
-    const base = this.options.baseUrl();
-    return base && this.options.enabled() && this.options.session()
-      ? new URL(base).origin
-      : undefined;
+  private ownsTarget(target = this.target) {
+    return (
+      target !== undefined &&
+      this.target === target &&
+      this.options.session() === target.session
+    );
+  }
+
+  private ownsConnection(connection: LinkConnection) {
+    return this.connection === connection && this.ownsTarget(connection.target);
   }
 
   get connected() {
-    return this.welcomed;
+    return this.welcomed && this.ownsTarget();
   }
 
   /**
@@ -156,17 +200,23 @@ export class DeviceLink {
    * (call after each of them changes).
    */
   refresh() {
-    const access = this.options.computerAccess?.() ?? false;
-    if (this.connected && access !== this.access) {
-      this.access = access;
-      this.write({ t: "status", computerAccess: access });
+    const base = this.options.baseUrl();
+    const session = this.options.session();
+    if (!base || !session || !this.options.enabled()) {
+      this.disconnect();
+      return;
     }
-    const target = this.wanted();
-    if (target && target === this.target && !this.stopped) return;
+    const origin = new URL(base).origin;
+    if (this.target?.origin === origin && this.target.session === session) {
+      const access = this.options.computerAccess?.() ?? false;
+      if (this.connected && access !== this.access) {
+        this.access = access;
+        this.write({ t: "status", computerAccess: access });
+      }
+      return;
+    }
     this.disconnect();
-    if (!target) return;
-    this.target = target;
-    this.stopped = false;
+    this.target = { origin, session };
     this.retry = firstRetry;
     void this.dial();
   }
@@ -174,18 +224,19 @@ export class DeviceLink {
   /** Signed out or switched off: closes the link and stays closed. */
   disconnect() {
     this.notificationTurns.clear();
-    this.stopped = true;
     this.target = undefined;
+    this.cause = undefined;
     if (this.retryTimer !== undefined) this.timers.clear(this.retryTimer);
     this.retryTimer = undefined;
     this.closeSocket(1000, "");
     this.options.methods.forget();
     this.sentTurns.clear();
+    this.publishStatus();
   }
 
   private closeSocket(code: number, reason: string) {
-    const socket = this.socket;
-    this.socket = undefined;
+    const socket = this.connection?.socket;
+    this.connection = undefined;
     this.welcomed = false;
     for (const t of [
       this.pingTimer,
@@ -212,7 +263,7 @@ export class DeviceLink {
   }
 
   private scheduleRetry(ms = this.retry) {
-    if (this.stopped) return;
+    if (!this.ownsTarget()) return;
     if (this.retryTimer !== undefined) this.timers.clear(this.retryTimer);
     // Jitter, so a service restart is not met by every computer at once.
     const wait = Math.round(ms * (0.8 + Math.random() * 0.4));
@@ -223,20 +274,16 @@ export class DeviceLink {
     this.retry = Math.min(lastRetry, this.retry * 2);
   }
 
-  private async ticket(origin: string, linkId: string) {
-    const session = this.options.session();
-    if (!session) throw new Error("Signed out.");
+  private async ticket({ origin, session }: LinkTarget, linkId: string) {
     const request = this.options.fetch ?? fetch;
     const send = async (token: string) => {
       const response = await request(
-        new URL(`${webPaths.auth}${webAuthRoutes.eventsTicket}`, origin),
+        new URL("/api/v1/claudex/mobile/events-ticket", origin),
         {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-            Origin: origin,
-            [webHeaders.web]: "1",
             [webHeaders.tab]: linkId,
           },
           body: JSON.stringify({ tabId: linkId }),
@@ -265,13 +312,14 @@ export class DeviceLink {
   }
 
   private async dial() {
-    const origin = this.target;
-    if (this.stopped || !origin || this.socket) return;
+    const target = this.target;
+    if (!target || !this.ownsTarget(target) || this.connection) return;
     const linkId = this.options.linkId();
     let ticket: string;
     try {
-      ticket = await this.ticket(origin, linkId);
+      ticket = await this.ticket(target, linkId);
     } catch (error) {
+      if (!this.ownsTarget(target) || this.connection) return;
       const status = (error as { status?: number }).status;
       this.cause =
         status === 401
@@ -282,14 +330,15 @@ export class DeviceLink {
               ? "retry"
               : "network";
       this.options.log?.(`device link: no ticket (${status ?? String(error)})`);
+      this.publishStatus();
       // Not allowed on the web, or signed out: try again much later.
       this.scheduleRetry(
         status === 403 || status === 401 ? lastRetry * 5 : this.retry,
       );
       return;
     }
-    if (this.stopped || this.target !== origin || this.socket) return;
-    const url = new URL(devicePaths.link, origin);
+    if (!this.ownsTarget(target) || this.connection) return;
+    const url = new URL(devicePaths.link, target.origin);
     url.protocol = url.protocol === "http:" ? "ws:" : "wss:";
     const open =
       this.options.openSocket ??
@@ -300,11 +349,14 @@ export class DeviceLink {
       socket = open(url.href, eventsSubprotocols(ticket));
     } catch {
       this.cause = "network";
+      this.publishStatus();
       this.scheduleRetry();
       return;
     }
-    this.socket = socket;
+    const connection: LinkConnection = { socket, target, cancelled: new Set() };
+    this.connection = connection;
     socket.onopen = () => {
+      if (!this.ownsConnection(connection)) return;
       this.openedAt = Date.now();
       this.write({
         t: "hello",
@@ -320,10 +372,12 @@ export class DeviceLink {
       });
       this.armSilence();
     };
-    socket.onmessage = (event) => this.receive(event.data);
+    socket.onmessage = (event) => {
+      if (this.ownsConnection(connection)) this.receive(event.data, connection);
+    };
     socket.onerror = () => {};
     socket.onclose = (event) => {
-      if (this.socket !== socket) return;
+      if (this.connection !== connection) return;
       this.options.log?.(
         `device link: closed ${event.code}${event.reason ? ` ${event.reason}` : ""}` +
           (this.openedAt
@@ -331,6 +385,7 @@ export class DeviceLink {
             : ""),
       );
       this.closeSocket(1000, "");
+      if (!this.ownsTarget(target)) return;
       if (event.code === signedOutCode) {
         this.cause = "sign_in";
         this.scheduleRetry(lastRetry * 5);
@@ -354,12 +409,14 @@ export class DeviceLink {
         this.cause = "network";
         this.scheduleRetry();
       }
+      this.publishStatus();
     };
   }
 
   private write(frame: object) {
-    const socket = this.socket;
-    if (!socket || socket.readyState !== OPEN) return false;
+    const socket = this.connection?.socket;
+    if (!this.ownsTarget() || !socket || socket.readyState !== OPEN)
+      return false;
     try {
       socket.send(JSON.stringify(frame));
       return true;
@@ -378,6 +435,7 @@ export class DeviceLink {
       );
       this.closeSocket(4000, "silent");
       this.cause = "network";
+      this.publishStatus();
       this.scheduleRetry();
     }, this.heartbeat * 2.5);
   }
@@ -390,7 +448,7 @@ export class DeviceLink {
     }, this.heartbeat);
   }
 
-  private receive(data: unknown) {
+  private receive(data: unknown, connection: LinkConnection) {
     if (typeof data !== "string") return;
     let frame: Frame;
     try {
@@ -401,9 +459,10 @@ export class DeviceLink {
     this.armSilence();
     switch (frame.t) {
       case "welcome":
-        this.options.registrationObserved?.(true);
         this.cause = undefined;
         this.welcomed = true;
+        this.options.registrationObserved?.(true);
+        this.publishStatus();
         this.retry = firstRetry;
         if (typeof frame.heartbeatMs === "number" && frame.heartbeatMs >= 1000)
           this.heartbeat = frame.heartbeatMs;
@@ -420,26 +479,30 @@ export class DeviceLink {
       case "call":
         if (typeof frame.id === "string" && typeof frame.method === "string")
           void this.answer(
+            connection,
             frame.id,
             frame.method,
             Array.isArray(frame.args) ? frame.args : [],
           );
         return;
       case "cancel":
-        if (typeof frame.id === "string") this.cancelled.add(frame.id);
+        if (typeof frame.id === "string") connection.cancelled.add(frame.id);
         return;
       default:
         return;
     }
   }
 
-  private async answer(id: string, method: string, args: unknown[]) {
-    const socket = this.socket;
-    const owner = this.options.trustStore?.();
+  private async answer(
+    connection: LinkConnection,
+    id: string,
+    method: string,
+    args: unknown[],
+  ) {
+    const trust = this.options.trustStore?.();
     const current = () =>
-      this.socket === socket && this.options.trustStore?.() === owner;
+      this.ownsConnection(connection) && this.options.trustStore?.() === trust;
     try {
-      const trust = owner;
       if (this.options.trustStore && !trust)
         throw new Error("Sign in to Claudex again.");
       if (method === "deviceTrustChallenge" || method === "deviceTrustEnroll") {
@@ -465,7 +528,13 @@ export class DeviceLink {
         return;
       }
       const accessRevision = trust?.accessRevision;
-      const value = await this.options.methods.call(method, args);
+      const deliveryCurrent = method === "deliverDispatch" || method === "officialCode"
+        ? () => this.options.session() === connection.target.session &&
+          this.options.trustStore?.() === trust && trust?.accessRevision === accessRevision
+        : undefined;
+      const value = deliveryCurrent
+        ? await this.options.methods.call(method, args, deliveryCurrent)
+        : await this.options.methods.call(method, args);
       if (!current()) return;
       if (accessRevision !== trust?.accessRevision)
         throw new Error("Device access changed. Verify this device again.");
@@ -476,22 +545,23 @@ export class DeviceLink {
           opened.conversation.turns.map((t) => t.id),
         );
       }
-      if (this.cancelled.delete(id)) return;
+      if (connection.cancelled.delete(id)) return;
       this.write({ t: "result", id, ok: true, value: value ?? null });
     } catch (error) {
       if (!current()) return;
-      if (this.cancelled.delete(id)) return;
+      if (connection.cancelled.delete(id)) return;
       const message =
         error instanceof Error && error.message
           ? error.message
           : "The computer couldn't do that.";
-      this.write({ t: "result", id, ok: false, error: { message } });
+      const code = error instanceof DispatchReceiptUnavailable ? dispatchReceiptUnavailable : undefined;
+      this.write({ t: "result", id, ok: false, error: { message, ...(code ? { code } : {}) } });
     }
   }
 
   /** A local event (main.ts push): what phones should know goes out. */
   observe(event: AppEvent) {
-    if (!this.welcomed) return;
+    if (!this.connected) return;
     if (event.type === "conversation" && reachable(event.conversation)) {
       const conversation = event.conversation;
       const turn = conversation.turns.at(-1);
@@ -503,6 +573,7 @@ export class DeviceLink {
         );
       if (
         this.options.mobileNotifications?.() &&
+        this.options.methods.notificationConversation(conversation.id) &&
         turn &&
         previous === `${turn.id}:inProgress` &&
         turn.status !== "inProgress"

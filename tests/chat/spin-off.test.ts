@@ -24,8 +24,8 @@ const clear = () => {
   for (const item of spinOffWindows()) closeSpinOff(item.id);
 };
 
-// Three windows at most; a fourth draft cannot open, but a started task's
-// window gives way.
+// Live claude.ai bundle, 2026-10-12 (shared-6 VB): three windows at most;
+// a fourth draft cannot open, but a started task's window gives way.
 test("three drafts fill the composer; a started task gives way", () => {
   clear();
   assert.equal(openSpinOff("c", "t1"), 0);

@@ -1,4 +1,4 @@
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { ChevronDown, X, Plus } from "../../ui/glyphs";
 import { IconButton } from "../../ui/Controls";
 import { PageSearchIcon } from "../../ui/icons";
@@ -87,7 +87,7 @@ export function CustomizeNav({
               aria-expanded={menu?.kind === "filter"}
               onClick={() => open("filter", filterAnchor.current)}
             >
-              <AppIcon name="Filter" size={20} />
+              <Anthropicon name="Filter" size={20} />
               {connectorFilterLabel}
               <ChevronDown size={16} />
             </button>
@@ -224,7 +224,7 @@ export function CustomizeNav({
                 expanded={menu?.kind === "filter"}
                 onClick={() => open("filter", filterAnchor.current)}
               >
-                <AppIcon name="Filter" size={20} />
+                <Anthropicon name="Filter" size={20} />
               </IconButton>
             </span>
           )}
@@ -238,7 +238,7 @@ export function CustomizeNav({
               expanded={menu?.kind === "sort"}
               onClick={() => open("sort", sortAnchor.current)}
             >
-              <AppIcon name="Sort" size={20} />
+              <Anthropicon name="Sort" size={20} />
             </IconButton>
           </span>
         )}

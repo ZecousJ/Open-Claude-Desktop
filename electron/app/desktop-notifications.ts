@@ -42,8 +42,8 @@ export function notify(this: DesktopIntegration, notice: Notice) {
   const respond = this.options.respond;
   const allowOnce = respond ? notice.allowOnce : undefined;
   const settings = this.options.settings();
-  // "Notification sound: None" quiets every banner; a finished turn is quiet
-  // anyway.
+  // "Notification sound: None" quiets every banner (live claude.ai
+  // bundle, 2026-10-12); a finished turn is quiet anyway.
   const silent =
     notice.silent ||
     (!!settings && preference(settings, "notificationSound") === "none");
@@ -92,58 +92,84 @@ export function supportsNotificationActions(this: DesktopIntegration) {
   return process.platform === "darwin" && Notification.isSupported();
 }
 
-/** Renderer actions carry an opaque token. */
+interface RendererNotificationContext {
+  current(): boolean;
+  activate(): void;
+  kind?: "permission" | "idle";
+  groupId?: string;
+  silent?: boolean;
+}
+
+/** Renderer actions carry an opaque token (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt, Csa). */
 export function showNotification(
   this: DesktopIntegration,
   input: DesktopNotificationInput,
   action: (event: NotificationActionEvent) => void,
+  context?: RendererNotificationContext,
 ) {
-  if (!Notification.isSupported()) return;
+  if (
+    !Notification.isSupported() ||
+    (context?.kind && !this.effect(context.kind).banner)
+  )
+    return;
   const actions = this.supportsNotificationActions()
     ? (input.actions ?? [])
     : [];
+  const settings = this.options.settings();
+  const silent =
+    context?.silent ||
+    (!!settings && preference(settings, "notificationSound") === "none");
+  const nativeIdLimit = process.platform === "win32" ? 64 : Infinity;
+  const groupId = context?.groupId;
   const notification = new Notification({
     title: input.title,
     body: input.body,
-    ...(input.tag ? { id: input.tag } : {}),
+    ...(input.tag && input.tag.length <= nativeIdLimit
+      ? { id: input.tag }
+      : {}),
+    ...(groupId && groupId.length <= nativeIdLimit ? { groupId } : {}),
+    ...(silent ? { silent: true } : {}),
     actions: actions.map((entry) => ({
       type: "button" as const,
       text: entry.title,
     })),
   });
-  const shownAt = performance.now();
+  let shownAt = performance.now();
   let handled = false;
   this.rendererNotifications.add(notification);
-  notification.on("close", () => {
+  const isLatest = () =>
+    !handled &&
+    this.rendererNotifications.has(notification) &&
+    (!input.tag || this.shown.get(input.tag)?.notification === notification);
+  const forget = () => {
     handled = true;
     this.rendererNotifications.delete(notification);
     if (input.tag && this.shown.get(input.tag)?.notification === notification)
       this.shown.delete(input.tag);
+  };
+  notification.on("close", forget);
+  notification.on("failed", forget);
+  notification.on("show", () => {
+    shownAt = performance.now();
   });
   notification.on("click", () => {
-    if (handled || !this.rendererNotifications.has(notification)) return;
+    if (!isLatest()) return;
     handled = true;
-    this.open(input.conversationId);
+    if (!context) this.open(input.conversationId);
+    else if (context.current()) context.activate();
   });
-  notification.on("action", (_event, index) => {
-    const selected = actions[index];
-    if (
-      handled ||
-      !this.rendererNotifications.has(notification) ||
-      !selected ||
-      !input.tag ||
-      !input.token
-    )
-      return;
-    if (this.shown.get(input.tag)?.notification !== notification) return;
+  notification.on("action", (event) => {
+    const selected = actions[event.actionIndex];
+    if (!isLatest() || !selected || !input.tag || !input.token) return;
     handled = true;
-    action({
-      type: "notification-action",
-      tag: input.tag,
-      token: input.token,
-      actionId: selected.id,
-      sinceShownMs: Math.max(0, performance.now() - shownAt),
-    });
+    if (context?.current() !== false)
+      action({
+        type: "notification-action",
+        tag: input.tag,
+        token: input.token,
+        actionId: selected.id,
+        sinceShownMs: Math.max(0, performance.now() - shownAt),
+      });
     notification.close();
   });
   if (input.tag) {
@@ -225,8 +251,8 @@ export function observeConversation(
     return;
   }
   // Chat's finished replies are "Response completions"; a Code or Cowork
-  // session's follow its "Task complete" level, a banner unless the person
-  // turned it off.
+  // session's follow its "Task complete" level, a banner unless the
+  // person turned it off (live claude.ai desktop bundle, 2026-10-12).
   const allowed =
     conversation.mode === "chat"
       ? preference(settings, "notifyResponses")
@@ -242,13 +268,14 @@ export function observeConversation(
 }
 
 /**
- * A tool approval or question is waiting in a conversation. The original Says
- * it whichever kind of conversation waits: Chat with "needs your approval"
- * while the window is in the background, under no switch; a Code or Cowork
- * permission with what it would do and an Allow once button, a question with
- * its text, each under its level (Permission requests, Questions). A session on
- * screen gets no banner. A waiting request counts in the Dock badge when its
- * level says so, whether or not a banner shows.
+ * A tool approval or question is waiting in a conversation. The original
+ * (live claude.ai desktop bundle, 2026-10-12) says it whichever kind of
+ * conversation waits: Chat with "needs your approval" while the window
+ * is in the background, under no switch; a Code or Cowork permission
+ * with what it would do and an Allow once button, a question with its
+ * text, each under its level (Permission requests, Questions). A session
+ * on screen gets no banner. A waiting request counts in the Dock badge
+ * when its level says so, whether or not a banner shows.
  */
 export function observeApproval(
   this: DesktopIntegration,
@@ -331,7 +358,7 @@ export function observeApproval(
       approvalNotice(approval, current, { repoName: this.options.repoName }),
     );
   };
-  // Cowork's permission preparation waits 300 ms; Code does not.
+  // Cowork's permission preparation waits 300 ms; Code does not (desktop 2.37337.1, index.chunk-BWk6pVUt).
   if (conversation.mode === "cowork" && kind === "permission")
     this.approvalTimers.set(approval.id, setTimeout(deliver, 300));
   else deliver();
@@ -347,14 +374,8 @@ export function observeApprovalResolved(
     if (notice.tag === entry?.tag) this.scheduledAttention.delete(key);
   this.waiting.delete(id);
   if (entry?.tag) this.withdraw(entry.tag);
-  this.updateBadge();
+  this.refreshNotificationSignals();
   this.refreshDockMenu();
-  // The bounce stops once no request that asked for it waits.
-  for (const { kind } of this.waiting.values()) {
-    const effect = kind && this.effect(kind);
-    if (effect && (effect.banner || effect.badge)) return;
-  }
-  this.stopAttention();
 }
 
 /**

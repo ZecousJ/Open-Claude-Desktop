@@ -14,8 +14,6 @@ import {
 } from "../github-api";
 import type { WebTransport } from "./transport";
 
-type Method = (...args: any[]) => Promise<unknown>;
-
 const json = (body: unknown = {}): RequestInit => ({
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -40,7 +38,7 @@ export function createGitHubMethods(transport: Pick<WebTransport, "json">): {
       | "githubReplyReviewThread"
       | "githubResolveReviewThread"
     >
-  ]: Method;
+  ]: GitHubAPI[K];
 } {
   // The issue and pull request reads load when a Code session first asks.
   const work = () =>
@@ -70,12 +68,12 @@ export function createGitHubMethods(transport: Pick<WebTransport, "json">): {
           .json(githubRoutes.status, { method: "DELETE" })
           .then(data),
       ),
-    githubRepositories: async (input?: { query?: string; page?: number }) =>
+    githubRepositories: async (input?: { query?: string; page?: number; perPage?: number }) =>
       parseGitHubRepositories(
         await transport
           .json(
             githubRoutes.repositories +
-              query({ query: input?.query?.trim(), page: input?.page }),
+              query({ query: input?.query?.trim(), page: input?.page, per_page: input?.perPage }),
           )
           .then(data),
       ),

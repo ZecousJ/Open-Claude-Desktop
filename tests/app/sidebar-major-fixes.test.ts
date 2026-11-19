@@ -193,8 +193,8 @@ test("Edit sidebar draws the sidebar's own glyphs and Dispatch has its Dispatch 
   assert.doesNotMatch(dialog, /BriefcaseIcon|ProjectsIcon|KeyIcon|PulseIcon/);
   assert.doesNotMatch(nav + dialog, /MobilePhone/);
   assert.equal((nav.match(/name="Dispatch"/g) ?? []).length, 2);
-  assert.match(dialog, /customize: <AppIcon name="Tool" \/>/);
-  assert.match(dialog, /dispatch: <AppIcon name="Dispatch" \/>/);
+  assert.match(dialog, /customize: <Anthropicon name="Tool" \/>/);
+  assert.match(dialog, /dispatch: <Anthropicon name="Dispatch" \/>/);
 });
 
 test("section and group headings use the CaretRight caret on every surface, pointing down while open", () => {
@@ -205,20 +205,20 @@ test("section and group headings use the CaretRight caret on every surface, poin
     "sidebar/GroupToggle.tsx",
   ]) {
     const source = read(file);
-    assert.match(source, /<AppIcon name="CaretRight" \/>/);
+    assert.match(source, /<Anthropicon name="CaretRight" \/>/);
     assert.doesNotMatch(source, /ChevronDownIcon/);
   }
   assert.match(
     css("sidebar/sidebar-list.css"),
-    /\.section-toggle > \.app-icon\s*\{[^}]*rotate: 90deg/s,
+    /\.section-toggle > \.anthropicon\s*\{[^}]*rotate: 90deg/s,
   );
   assert.match(
     css("sidebar/sidebar-list.css"),
-    /\.section-toggle\.collapsed > \.app-icon\s*\{\s*rotate: 0deg/,
+    /\.section-toggle\.collapsed > \.anthropicon\s*\{\s*rotate: 0deg/,
   );
   assert.match(
     css("sidebar/sidebar-groups.css"),
-    /\.group-toggle\[aria-expanded="false"\] > \.app-icon\s*\{\s*rotate: 0deg/,
+    /\.group-toggle\[aria-expanded="false"\] > \.anthropicon\s*\{\s*rotate: 0deg/,
   );
 });
 
@@ -271,7 +271,8 @@ test("the Recents filter button uses the icon font's Filter glyph on the desktop
         }),
       ),
     );
-    assert.ok(document.querySelector('[data-icon="Filter"]'));
+    assert.ok(document.querySelector('[data-anthropicon="Filter"]'));
+    assert.equal(document.querySelector("svg"), null);
   }
 });
 

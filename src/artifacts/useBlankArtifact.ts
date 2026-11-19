@@ -1,31 +1,69 @@
-import { registerBlankArtifactFlush } from "./blank-artifact-flush";
+import {
+  registerBlankArtifactFlush,
+  type BlankArtifactBridge,
+} from "./blank-artifact-flush";
 import {
   fileTransitionEvent,
   type FileTransition,
 } from "../files/file-transitions";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { BlankArtifactDocument } from "../../shared/blank-artifacts";
+import type { Turn } from "../../shared/types";
 import type { Artifact } from "../ui/ArtifactTypes";
 import { useApp } from "../app/AppContext";
+
+type ArtifactRead = { base: BlankArtifactDocument | undefined };
+
+function isDirty(value: {
+  document?: BlankArtifactDocument;
+  content?: string;
+}) {
+  return Boolean(value.document && value.content !== value.document.content);
+}
+
 export function useBlankArtifact(artifact: Artifact) {
-  const app = useApp(),
-    bridge = window.desktop,
-    descriptor = artifact.blankArtifact!;
+  const app = useApp();
+  return useBlankArtifactDocument({
+    accountId: app.accountId,
+    owner: app.controllerScope,
+    bridge: window.desktop,
+    conversationId: artifact.conversationId!,
+    artifactId: artifact.blankArtifact!.id,
+    updatedAt: artifact.updatedAt,
+    lastTurn: app.snapshot.conversations
+      .find((conversation) => conversation.id === artifact.conversationId)
+      ?.turns.at(-1),
+  });
+}
+export function useBlankArtifactDocument({
+  accountId,
+  owner,
+  bridge,
+  conversationId,
+  artifactId,
+  updatedAt,
+  lastTurn,
+  isCurrent,
+}: {
+  accountId: string;
+  owner?: object;
+  bridge: BlankArtifactBridge;
+  conversationId: string;
+  artifactId: string;
+  updatedAt?: number;
+  lastTurn?: Pick<Turn, "id" | "status">;
+  isCurrent?: () => boolean;
+}) {
   const scope = useMemo(
     () => ({
-      account: app.accountId,
-      owner: app.controllerScope,
+      account: accountId,
+      owner,
       bridge,
-      conversationId: artifact.conversationId!,
-      artifactId: descriptor.id,
+      conversationId,
+      artifactId,
+      isCurrent,
     }),
-    [
-      app.accountId,
-      app.controllerScope,
-      bridge,
-      artifact.conversationId,
-      descriptor.id,
-    ],
+    [accountId, owner, bridge, conversationId, artifactId, isCurrent],
   );
   const live = useRef(scope);
   live.current = scope;
@@ -36,8 +74,11 @@ export function useBlankArtifact(artifact: Artifact) {
     error?: unknown;
     conflict?: boolean;
     saving?: boolean;
+    completedRead?: ArtifactRead;
   }>({ scope });
   const value = state.scope === scope ? state : { scope };
+  const dirty = isDirty(value);
+  const agentWriting = lastTurn?.status === "inProgress";
   const latest = useRef(value);
   latest.current = value;
   const navigation = useRef<
@@ -45,41 +86,51 @@ export function useBlankArtifact(artifact: Artifact) {
   >(undefined);
   const [waiting, setWaiting] = useState(false);
   const [urgent, setUrgent] = useState(false);
+  const [reload, setReload] = useState(0);
+  const mounted = useRef<{ stamp?: string; read?: ArtifactRead } | undefined>(
+    undefined,
+  );
+  const reading = (current: typeof value) => {
+    const pending = mounted.current?.read;
+    return (
+      pending &&
+      pending !== current.completedRead &&
+      pending.base === current.document
+    );
+  };
   const saveLocks = useRef(new Set<{ scope: typeof scope }>());
   const [, setLockRevision] = useState(0);
   const flushWaiters = useRef(
     new Set<{ scope: typeof scope; resolve(saved: boolean): void }>(),
   );
   useLayoutEffect(() => {
-    const off = registerBlankArtifactFlush(
-      { ...scope, artifactId: scope.artifactId },
-      {
-        lock: () => {
-          const lock = { scope };
-          saveLocks.current.add(lock);
-          setLockRevision((n) => n + 1);
-          return () => {
-            if (!saveLocks.current.delete(lock)) return;
-            if (live.current === scope) setLockRevision((n) => n + 1);
-          };
-        },
-        revision: () => latest.current.document?.revision,
-        flush: () => {
-          const value = latest.current;
-          if (value.error || value.conflict) return Promise.resolve(false);
-          if (
-            value.document &&
-            value.content === value.document.content &&
-            !value.saving
-          )
-            return Promise.resolve(true);
-          setUrgent(true);
-          return new Promise<boolean>((resolve) =>
-            flushWaiters.current.add({ scope, resolve }),
-          );
-        },
+    const off = registerBlankArtifactFlush(scope, {
+      lock: () => {
+        const lock = { scope };
+        saveLocks.current.add(lock);
+        setLockRevision((n) => n + 1);
+        return () => {
+          if (!saveLocks.current.delete(lock)) return;
+          if (live.current === scope) setLockRevision((n) => n + 1);
+        };
       },
-    );
+      revision: () => latest.current.document?.revision,
+      flush: () => {
+        const value = latest.current;
+        if (value.error || value.conflict) return Promise.resolve(false);
+        if (
+          value.document &&
+          !isDirty(value) &&
+          !value.saving &&
+          !reading(value)
+        )
+          return Promise.resolve(true);
+        setUrgent(true);
+        return new Promise<boolean>((resolve) =>
+          flushWaiters.current.add({ scope, resolve }),
+        );
+      },
+    });
     return () => {
       off();
       for (const waiter of flushWaiters.current)
@@ -89,9 +140,6 @@ export function useBlankArtifact(artifact: Artifact) {
         }
     };
   }, [scope]);
-  const dirty = Boolean(
-    value.document && value.content !== value.document.content,
-  );
   const beforeLeave = (resume: () => void) => {
     if (!dirty && !value.saving) return resume();
     navigation.current = { scope, resume };
@@ -100,13 +148,7 @@ export function useBlankArtifact(artifact: Artifact) {
   useLayoutEffect(() => {
     const listener = (event: Event) => {
       const current = latest.current;
-      if (
-        event.defaultPrevented ||
-        !(
-          (current.document && current.content !== current.document.content) ||
-          current.saving
-        )
-      )
+      if (event.defaultPrevented || !(isDirty(current) || current.saving))
         return;
       event.preventDefault();
       navigation.current = {
@@ -118,10 +160,7 @@ export function useBlankArtifact(artifact: Artifact) {
     };
     const unload = (event: BeforeUnloadEvent) => {
       const current = latest.current;
-      if (
-        (current.document && current.content !== current.document.content) ||
-        current.saving
-      ) {
+      if (isDirty(current) || current.saving) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -146,7 +185,7 @@ export function useBlankArtifact(artifact: Artifact) {
     const settled = Boolean(
       value.error ||
       value.conflict ||
-      (value.document && !dirty && !value.saving),
+      (value.document && !dirty && !value.saving && !reading(value)),
     );
     if (!settled) return;
     for (const waiter of flushWaiters.current)
@@ -155,40 +194,78 @@ export function useBlankArtifact(artifact: Artifact) {
         waiter.resolve(!value.error && !value.conflict);
       }
     if (!flushWaiters.current.size) setUrgent(false);
-  }, [scope, dirty, value.document, value.saving, value.error, value.conflict]);
-  const [reload, setReload] = useState(0);
-  const mounted = useRef<object | undefined>(undefined);
-  useEffect(() => {
-    const lease = {};
-    mounted.current = lease;
-    let current = true;
-    setState({ scope });
+  }, [
+    scope,
+    dirty,
+    value.document,
+    value.saving,
+    value.error,
+    value.conflict,
+    value.completedRead,
+  ]);
+  useLayoutEffect(() => {
+    mounted.current = {};
+    return () => {
+      mounted.current = undefined;
+    };
+  }, [scope, reload]);
+  const stamp = agentWriting
+    ? ""
+    : `${lastTurn?.id ?? ""}:${lastTurn?.status ?? ""}:${updatedAt ?? ""}`;
+  useLayoutEffect(() => {
+    const lease = mounted.current;
+    if (!lease || scope.isCurrent?.() === false) return;
+    const reset = lease.stamp === undefined;
+    if (!reset) {
+      if (!stamp) {
+        lease.stamp = stamp;
+        return;
+      }
+      if (lease.stamp === stamp || dirty || value.saving) return;
+    }
+    lease.stamp = stamp;
+    if (reset) setState({ scope });
+    const base = latest.current.document;
+    const read = { base };
+    lease.read = read;
+    const accept = (
+      result: Pick<typeof state, "document" | "content" | "error">,
+    ) => {
+      if (
+        live.current !== scope ||
+        mounted.current !== lease ||
+        lease.read !== read ||
+        scope.isCurrent?.() === false
+      )
+        return;
+      setState((current) => {
+        if (current.scope !== scope) return current;
+        if (
+          !reset &&
+          (current.document !== base || isDirty(current) || current.saving)
+        )
+          return { ...current, completedRead: read };
+        return { scope, ...result, completedRead: read };
+      });
+    };
     void bridge
       .readBlankArtifact({
         conversationId: scope.conversationId,
         artifactId: scope.artifactId,
       })
       .then(
-        (document) => {
-          if (current && live.current === scope)
-            setState({ scope, document, content: document.content });
-        },
-        (error) => {
-          if (current && live.current === scope) setState({ scope, error });
-        },
+        (document) => accept({ document, content: document.content }),
+        (error) => accept({ error }),
       );
-    return () => {
-      current = false;
-      if (mounted.current === lease) mounted.current = undefined;
-    };
-  }, [scope, reload]);
-  // Writes are serialized. A newer edit waits for the prior real revision;
-  // a conflict leaves the local draft visible until the user reloads it.
-  useEffect(() => {
+  }, [scope, reload, stamp, dirty, value.saving]);
+  useLayoutEffect(() => {
+    const base = value.document,
+      content = value.content;
     if (
-      !value.document ||
-      value.content === undefined ||
-      value.content === value.document.content ||
+      agentWriting ||
+      !base ||
+      content === undefined ||
+      content === base.content ||
       value.saving ||
       value.error ||
       value.conflict
@@ -196,10 +273,9 @@ export function useBlankArtifact(artifact: Artifact) {
       return;
     const timer = setTimeout(
       () => {
-        const lease = mounted.current,
-          base = value.document!,
-          content = value.content!;
-        if (live.current !== scope || !lease) return;
+        const lease = mounted.current;
+        if (live.current !== scope || !lease || scope.isCurrent?.() === false)
+          return;
         setState((current) =>
           current.scope === scope ? { ...current, saving: true } : current,
         );
@@ -212,7 +288,12 @@ export function useBlankArtifact(artifact: Artifact) {
           })
           .then(
             (result) => {
-              if (live.current !== scope || mounted.current !== lease) return;
+              if (
+                live.current !== scope ||
+                mounted.current !== lease ||
+                scope.isCurrent?.() === false
+              )
+                return;
               setState((current) => {
                 if (current.scope !== scope) return current;
                 if (result.status === "saved")
@@ -237,7 +318,11 @@ export function useBlankArtifact(artifact: Artifact) {
               });
             },
             (error) => {
-              if (live.current === scope && mounted.current === lease)
+              if (
+                live.current === scope &&
+                mounted.current === lease &&
+                scope.isCurrent?.() !== false
+              )
                 setState((current) =>
                   current.scope === scope
                     ? { ...current, error, saving: false }
@@ -257,32 +342,8 @@ export function useBlankArtifact(artifact: Artifact) {
     value.error,
     value.conflict,
     urgent,
+    agentWriting,
   ]);
-  // A real agent file change is read once it settles. Never replace an
-  // unsaved local draft with an arriving conversation snapshot.
-  const last = app.snapshot.conversations
-    .find((c) => c.id === scope.conversationId)
-    ?.turns.at(-1);
-  const stamp = last ? `${last.id}:${last.status}:${artifact.updatedAt}` : "";
-  const previous = useRef({ scope, stamp });
-  useEffect(() => {
-    const before = previous.current;
-    previous.current = { scope, stamp };
-    if (
-      before.scope !== scope ||
-      before.stamp === stamp ||
-      !stamp ||
-      last?.status === "inProgress"
-    )
-      return;
-    const current = latest.current;
-    if (
-      current.document &&
-      current.content === current.document.content &&
-      !current.saving
-    )
-      setReload((n) => n + 1);
-  }, [scope, stamp]);
   return {
     ...value,
     waiting: waiting && navigation.current?.scope === scope,
@@ -294,10 +355,10 @@ export function useBlankArtifact(artifact: Artifact) {
       setWaiting(false);
     },
     loading: !value.document && !value.error,
-    dirty: Boolean(value.document && value.content !== value.document.content),
+    dirty,
     readOnly:
       !value.document?.writable ||
-      last?.status === "inProgress" ||
+      agentWriting ||
       [...saveLocks.current].some((lock) => lock.scope === scope),
     change: (content: string) => {
       if ([...saveLocks.current].some((lock) => lock.scope === scope)) return;

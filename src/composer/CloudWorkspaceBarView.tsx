@@ -13,7 +13,7 @@ import {
 } from "./CloudWorkspaceBar";
 import { formatText } from "../i18n";
 import { CloseIcon, PlusIcon } from "../ui/icons";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { Open } from "./CloudWorkspaceBar";
 import { GithubMark } from "../ui/GithubMark";
 import { GitBranch } from "../ui/glyphs";
@@ -191,8 +191,9 @@ export function cloudWorkspaceBarView(kit: CloudWorkspaceBarViewKit) {
             )
           }
         >
-          {/* The live chips' 16px glyphs: Cloud, then Folder for Repo. */}
-          <AppIcon name="Cloud" size={16} />
+          {/* The live chips' 16px glyphs (2026-10-20): Cloud, then Folder
+              for Repo. */}
+          <Anthropicon name="Cloud" size={16} />
           <span>{environmentName}</span>
         </button>
         {repositories.map((repository) => {
@@ -283,7 +284,7 @@ export function cloudWorkspaceBarView(kit: CloudWorkspaceBarViewKit) {
             {repositories.length ? (
               <PlusIcon />
             ) : (
-              <AppIcon name="Folder" size={16} />
+              <Anthropicon name="Folder" size={16} />
             )}
             {!repositories.length && <span>Repo</span>}
           </button>

@@ -44,7 +44,7 @@ export async function run(
   const askpass = this.options.askpass.session({
     hostId: this.host.id,
     interactive: attempt.interactive,
-    password: this.options.password?.(),
+    password: attempt.opening ? undefined : this.options.password?.(),
     onPrompt: (_prompt: SshPrompt) => {
       if (!attempt.interactive) {
         needsAuth = true;
@@ -73,7 +73,7 @@ export async function run(
         (stop) => {
           abort = stop;
         },
-        attempt.interactive,
+        attempt,
       );
       if (!master.ok) {
         if (cancelled || this.closing) return this.settleIdle();
@@ -86,6 +86,7 @@ export async function run(
     const result = await this.execWith(INPUT_PROBE_SCRIPT, askpass, {
       input: "claudex-stdin\n",
       timeoutMs: 60_000,
+      login: this.shares ? undefined : attempt.opening ? "opening" : "trace",
       onStart: (stop) => {
         abort = stop;
       },
@@ -148,7 +149,7 @@ export async function startMaster(
   askpass: AskpassSession,
   promptsOpen: () => boolean,
   setAbort: (stop: () => void) => void,
-  interactive: boolean,
+  attempt: Attempt,
 ): Promise<{ ok: true } | { ok: false; code: SshErrorCode; details?: string }> {
   const socket = this.controlPath;
   fs.mkdirSync(path.dirname(socket), { recursive: true, mode: 0o700 });
@@ -160,7 +161,7 @@ export async function startMaster(
   }
   const master = this.spawnSsh(
     [
-      ...baseSshArgs(this.host),
+      ...baseSshArgs(this.host, attempt.opening ? "opening" : "trace"),
       "-M",
       "-o",
       `ControlPath=${socket}`,
@@ -178,7 +179,7 @@ export async function startMaster(
   let stderr = "";
   master.stderr?.setEncoding("utf8");
   master.stderr?.on("data", (chunk: string) => {
-    if (stderr.length < 8192) stderr += chunk;
+    stderr = (stderr + chunk).slice(-16_384);
   });
   master.stdout?.resume();
   master.stdin?.on("error", () => {});
@@ -216,7 +217,7 @@ export async function startMaster(
       stderr,
       this.options.sshPath,
       this.host,
-      interactive,
+      attempt.interactive,
     ),
     details: stderr,
   };
@@ -288,9 +289,9 @@ export function execWith(
   this: SshConnection,
   script: string,
   askpass: AskpassSession,
-  options: ExecOptions & { onStart?: (stop: () => void) => void },
+  options: ExecOptions & { onStart?: (stop: () => void) => void; login?: "trace" | "opening" },
 ): Promise<ExecResult> {
-  const child = this.spawnSsh(this.commandArgs(remoteCommand(script)), askpass);
+  const child = this.spawnSsh(this.commandArgs(remoteCommand(script), [], options.login), askpass);
   options.onStart?.(() => child.kill());
   return collectOutput(child, options);
 }

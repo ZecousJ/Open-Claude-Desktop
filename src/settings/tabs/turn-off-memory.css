@@ -1,9 +1,11 @@
 /*
- * Turn off memory: two radio options, each a label over its explanation, in one
- * rounded surface-0 panel with 16px of padding and 8px between the options; an
- * option is a plain row, with no edge of its own. A keyboard focus ring goes
- * round the row and a disabled one dims to 40% and no longer reacts to the
- * pointer.
+ * Turn off memory: two radio options, each a label over its explanation, in
+ * one rounded surface-0 panel with 16px of padding and 8px between the
+ * options; an option is a plain row, with no edge of its own (live claude.ai
+ * bundle, 2026-10-16, c6bba3086 and shared-frame: "rounded-2xl bg-surface-0
+ * p-4", RadioGroup "flex flex-col gap-2"; surface-0 #0b0b0b dark, #f9f9f7
+ * light). A keyboard focus ring goes round the row and a disabled one dims to
+ * 40% and no longer reacts to the pointer.
  */
 .turn-off-memory {
   display: flex;

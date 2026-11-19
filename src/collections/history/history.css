@@ -1,8 +1,8 @@
 /*
- * "Chats and tasks" list: 52px rows over 1px #202020 rules spanning the content
- * width, 14px #f5f5f5 titles (a 212px title inks as the reference sans at
- * 14px), right-aligned #8e8d8b times. The hover field bleeds 12px past the
- * rules.
+ * "Chats and tasks" list (R-History-全部对话): 52px rows over 1px #202020
+ * rules spanning the content width, 14px #f5f5f5 titles (a 212px title inks
+ * as the reference sans at 14px), right-aligned #8e8d8b times. The hover
+ * field bleeds 12px past the rules.
  */
 .history-list ul {
   margin: 0;
@@ -14,8 +14,8 @@
 }
 /*
  * The row's ⋮ (Rename, Archive or Unarchive, Delete) takes the time's place
- * while the row is hovered or focused. * visual provisional, in the style of
- * the Customize row menus.
+ * while the row is hovered or focused. No capture of it exists (R-1164):
+ * visual provisional, in the style of the Customize row menus.
  */
 .history-more {
   position: absolute;
@@ -29,7 +29,8 @@
   color: var(--text-secondary);
   opacity: 0;
   transform: translateY(-50%);
-  /* Shown at once with the row's hover; only the button's own fill eases. */
+  /* Shown at once with the row's hover; only the button's own fill eases
+     (the original's row menu, desktop bundle 2.31226.1). */
   transition: background var(--motion-fast) var(--ease-out);
 }
 .history-list li:hover .history-more,
@@ -72,7 +73,8 @@
   text-align: left;
   font-size: 14px;
   color: var(--text);
-  /* The row's fill changes at once on hover, selection and focus. */
+  /* The row's fill changes at once on hover, selection and focus (the
+     original's list rows have no transition, desktop bundle 2.31226.1). */
   transition: none;
 }
 .history-item::after {
@@ -98,7 +100,8 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-/* The title line: the title does not fill the row, so a badge follows it. */
+/* The title line: the title does not fill the row, so a badge follows it
+   (flex min-w-0 items-center gap-1.5, live bundle 2026-10-16, c6a92a3ac). */
 .history-title-head {
   display: flex;
   align-items: center;
@@ -109,7 +112,7 @@
   flex: 0 1 auto;
   min-width: 0;
 }
-/* truncate text-footnote text-muted. */
+/* truncate text-footnote text-muted (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 .history-title-line,
 .history-snippet {
   display: block;
@@ -117,7 +120,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Row captions and attention. */
+/* Row captions and attention (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 .history-untitled {
   opacity: 0.6;
 }
@@ -143,7 +146,7 @@
   line-height: 1.1875rem;
   color: #898781;
 }
-/* Joined selection buttons. */
+/* Joined selection buttons (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0). */
 .history-selection-actions {
   position: relative;
   display: inline-flex;
@@ -212,7 +215,7 @@
   text-overflow: ellipsis;
   font-size: 13px;
 }
-/* Neutral CDS badge. */
+/* Neutral CDS badge (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0). */
 .history-tag {
   display: inline-flex;
   align-items: center;
@@ -302,9 +305,11 @@
 
 /*
  * The tab-style filter (Active, Shared, Archived; Code: Active, Archived) on
- * its own row under the title, the actions at its right end. They take the
- * Artifacts page's captured owner tabs (gallery.css), the same component in the
- * original; the hover fill is the bundle's ghost fill.
+ * its own row under the title, the actions at its right end (live
+ * claude.ai bundle, 2026-10-12: a page header with tabs wraps them 16px
+ * under the title). No capture of these tabs exists: they take the
+ * Artifacts page's captured owner tabs (gallery.css), the same component in
+ * the original; the hover fill is the bundle's ghost fill.
  */
 .collection-bar.with-tabs {
   margin-bottom: 28px;
@@ -313,9 +318,10 @@
   justify-content: space-between;
   margin-top: 24px;
 }
-/* Live claude.ai /recents: the title 24px over the tabs, the first row 28px
-   under them; the tabs touch, 12px in, 14/20 medium, the others' ink muted; the
-   chosen one's fill (white 7.5%, radius 8) stops 1px short of its end. */
+/* Live claude.ai /recents (2026-10-21, 1280 wide): the title 24px over the
+   tabs, the first row 28px under them; the tabs touch, 12px in, 14/20
+   medium, the others' ink muted; the chosen one's fill (white 7.5%, radius
+   8) stops 1px short of its end. */
 .history-tabs {
   display: flex;
   min-width: 0;
@@ -369,7 +375,7 @@
 :root[data-theme="light"] .history-tabs > button[aria-selected="true"]::before {
   background: var(--surface-hover);
 }
-/* Pressed ghost sort. */
+/* Pressed ghost sort (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0). */
 .history-view .collection-icon[aria-disabled="true"] {
   opacity: 0.4;
   cursor: default;

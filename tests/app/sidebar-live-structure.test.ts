@@ -189,8 +189,9 @@ test("#27 Code metadata is a separate full-width row; its place mark stays after
     ["feature/parity", "project"],
   );
   assert.ok(!line.textContent?.includes(" · "));
-  // A cloud session ends in the Cloud glyph; a group that names the place ends
-  // bare, and so does a session on this computer (cL drops "local").
+  // A cloud session ends in the Cloud glyph (live claude.ai, 2026-10-21:
+  // web Code rows end in where they run); a group that names the place
+  // ends bare, and so does a session on this computer (cL drops "local").
   assert.ok(
     document.querySelector('.row-status-trailing [data-env-glyph="cloud"]'),
   );

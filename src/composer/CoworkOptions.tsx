@@ -19,7 +19,7 @@ import {
 } from "../ui/icons";
 import { folderName, recentWorkFolders } from "./recentFolders";
 import { requestFolderAccess } from "../cowork/useFolderAccess";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { coworkPlaceRows, coworkPlaceUsage } from "./cowork-options-model";
 import "./cowork-options.css";
 import { ProjectPicker } from "./ProjectPicker";
@@ -29,14 +29,15 @@ import { useT } from "../i18n";
 type Open = "place" | undefined;
 
 /**
- * The project or folder picker under the home composer. The unified home has no
- * Output menu: Docs, Slides and Design are on by default and chosen from the
- * request. On the web there are no local folders, so the place is a project
- * ("Project", ref-web-chat-home) and its menu lists projects only.
+ * The project or folder picker under the home composer (R-0411–R-0413,
+ * R-0423, R-0426). The unified home has no Output menu: Docs, Slides and
+ * Design are on by default and chosen from the request (live claude.ai,
+ * 2026-10-12). On the web there are no local folders, so the place is a
+ * project ("Project", ref-web-chat-home) and its menu lists projects only.
  *
- * Chat's unified home is host aware: the web offers projects only; the desktop
- * also offers its real local folders (1016 shared-19 Yb/hW and shared-8 oD/ap).
- * A desktop Chat must not inherit the web-only picker.
+ * Chat's unified home is host aware: the web offers projects only; the
+ * desktop also offers its real local folders (1016 shared-19 Yb/hW and
+ * shared-8 oD/ap). A desktop Chat must not inherit the web-only picker.
  */
 export function CoworkOptions({
   variant = "cowork",
@@ -57,8 +58,10 @@ export function CoworkOptions({
   /** Incognito Chat keeps project context without exposing local folders. */
   projectsOnly?: boolean;
   /**
-   * A task window's composer: an icon-only trigger with a count badge once a
-   * project or folder is chosen, its menu opening above.
+   * A task window's composer: an icon-only trigger with a count badge
+   * once a project or folder is chosen, its menu opening above (live
+   * claude.ai bundle, 2026-10-12: the folder selector's isCollapsed and
+   * showCollapsedBadge, shared-8 iP).
    */
   collapsed?: boolean;
   platform: NodeJS.Platform;
@@ -137,8 +140,8 @@ export function CoworkOptions({
     close();
   };
   /**
-   * Cowork asks before it uses a folder of the person's: the choice applies
-   * once they allow it; Cancel keeps the previous choice.
+   * Cowork asks before it uses a folder of the person's (R11, S-0007): the
+   * choice applies once they allow it; Cancel keeps the previous choice.
    */
   const chooseFolder = (
     path: string | undefined,
@@ -190,9 +193,9 @@ export function CoworkOptions({
       : localFolders
         ? "Project or folder"
         : "Project";
-  // A chosen project or folder shows as a chip with its glyph and a chevron;
-  // Cowork's placeholder stays plain text, the Chat home's "Project" keeps its
-  // caret (the live chin's project slot).
+  // A chosen project or folder shows as a chip with its glyph and a
+  // chevron (R-0412); Cowork's placeholder stays plain text, the Chat
+  // home's "Project" keeps its caret (the live chin's project slot).
   const chosen = onProjectFolder
     ? "project"
     : cwd && localFolders
@@ -215,7 +218,7 @@ export function CoworkOptions({
           aria-label="Search projects"
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
-            // Enter picks the first match.
+            // Enter picks the first match (desktop bundle 2.31226.1).
             if (
               event.key !== "Enter" ||
               event.nativeEvent.isComposing ||
@@ -237,7 +240,7 @@ export function CoworkOptions({
               className="group"
               onClick={() => pickPlace(place)}
             >
-              <AppIcon name="Projects" size="md" animated />
+              <Anthropicon name="Projects" size="md" animated />
               <span className="cowork-menu-text">
                 <strong>{place.project.name}</strong>
               </span>

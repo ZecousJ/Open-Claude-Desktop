@@ -114,7 +114,7 @@ test("the hub sends event frames per user and drops frames over the limit", asyn
   const hub = new EventHub({
     sink: { send: (f) => (frames.push(f), true) },
     delayMs: 1,
-    maxFrameBytes: 400,
+    maxMessageBytes: 400,
     log: (m) => logs.push(m),
   });
   hub.publish(1, conv("a", "short"));

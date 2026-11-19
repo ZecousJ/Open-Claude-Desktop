@@ -135,6 +135,7 @@ func RegisterDescriber(d RefusalDescriber) {
 // Reset drops every registration. claudex.ProvideModule calls it before
 // building the components; tests call it to start clean.
 func Reset() {
+	knowledgeRelay.Store(nil)
 	registryMu.Lock()
 	defer registryMu.Unlock()
 	active.Store(nil)

@@ -1,0 +1,145 @@
+/* Layout for Claudex usage data; typography, controls and colors come from CDS. */
+.clx-usage-panel {
+  container: claudex-usage / inline-size;
+  min-width: 0;
+  color: var(--cds-text-primary);
+}
+.clx-usage-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--cds-gap-lg);
+  margin: 0;
+}
+.clx-usage-stats dd {
+  margin: var(--cds-gap-xs) 0;
+}
+.clx-usage-stats p {
+  margin: 0;
+}
+.clx-usage-heading-row,
+.clx-usage-chart-labels,
+.clx-usage-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--cds-gap-md);
+}
+.clx-usage-heading-row {
+  margin-bottom: var(--cds-gap-sm);
+}
+.clx-usage-heading-row > :first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.clx-usage-heading-row > :last-child {
+  flex-shrink: 0;
+}
+.clx-usage-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--cds-gap-md);
+  padding-bottom: var(--cds-pad-md);
+}
+.clx-usage-date {
+  display: grid;
+  gap: var(--cds-gap-xs);
+  width: 9.5rem;
+}
+.clx-usage-model-filter {
+  max-width: 14rem;
+}
+.clx-usage-token-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cds-gap-sm);
+}
+.clx-usage-token-values > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--cds-gap-xs);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.clx-usage-pager {
+  flex-wrap: wrap;
+  padding-top: var(--cds-pad-md);
+}
+.clx-usage-details {
+  margin: 0;
+}
+.clx-usage-details > div {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: var(--cds-gap-lg);
+  padding: var(--cds-pad-sm) 0;
+  border-bottom: 1px solid var(--cds-alpha-1);
+}
+.clx-usage-details > div:last-child {
+  border-bottom: 0;
+}
+.clx-usage-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.clx-usage-quota {
+  display: grid;
+  grid-template-columns: 5rem minmax(4rem, 1fr) auto;
+  align-items: center;
+  gap: var(--cds-gap-sm);
+  margin-top: var(--cds-gap-md);
+}
+.clx-usage-quota-reset {
+  grid-column: 2 / -1;
+}
+.clx-usage-chart {
+  display: flex;
+  height: 10rem;
+  gap: 2px;
+  margin-block: var(--cds-gap-md);
+  border-bottom: 1px solid var(--cds-alpha-2);
+}
+.clx-usage-bar {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column-reverse;
+  justify-content: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.clx-usage-bar > span {
+  width: 100%;
+  background: var(--cds-fill-accent);
+}
+.clx-usage-output {
+  opacity: 0.6;
+}
+.clx-usage-cache {
+  opacity: 0.3;
+}
+.clx-usage-bar:hover {
+  background: var(--cds-alpha-1);
+}
+.clx-usage-chart-detail {
+  min-height: 2lh;
+  margin: var(--cds-gap-sm) 0 0;
+}
+@container claudex-usage (max-width: 32rem) {
+  .clx-usage-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .clx-usage-details > div {
+    grid-template-columns: 7rem minmax(0, 1fr);
+  }
+  .clx-usage-quota {
+    grid-template-columns: 4rem minmax(3rem, 1fr) auto;
+  }
+}
+@container claudex-usage (max-width: 20rem) {
+  .clx-usage-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

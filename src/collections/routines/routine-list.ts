@@ -8,8 +8,9 @@ import {
 import { repeatOf } from "../../../shared/routine-labels";
 
 /**
- * The filter menu's groups, as the original's. Completed one-time tasks are not
- * a status: the sort menu's Include completed shows them.
+ * The filter menu's groups, as the original's (live claude.ai bundle,
+ * 2026-10-14, c0c89c77a: Runs on, Schedule, Status). Completed one-time
+ * tasks are not a status: the sort menu's Include completed shows them.
  */
 export interface RoutineFilter {
   source?: "all" | "chat" | "code";
@@ -218,7 +219,7 @@ export const runTime = (timestamp: number) =>
     minute: "2-digit",
   });
 
-/** Relative calendar dates. */
+/** Relative calendar dates (live claude.ai bundle, 2026-10-14, shared-2-ATjXCy8a.js). */
 export function cardRunTime(
   timestamp: number,
   now = Date.now(),
@@ -256,7 +257,7 @@ export function cardRunTime(
   });
 }
 
-/** Empty search/filter copy. */
+/** Empty search/filter copy (live claude.ai bundle, 2026-10-14, shared-16-CBfjFjLo.js). */
 export function noMatchText(
   searching: boolean,
   filtering: boolean,

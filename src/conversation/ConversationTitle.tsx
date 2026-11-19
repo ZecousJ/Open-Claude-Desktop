@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { surface } from "../../shared/host";
 import { formatText } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { Conversation, Project } from "../../shared/types";
 import { Menu, type MenuEntry, type MenuPosition } from "../ui/Menu";
 import { RenameField } from "../ui/RenameField";
@@ -27,8 +27,8 @@ export type TitleActions = {
   /**
    * Opens the Rename dialog instead of editing the title in place: the
    * original's title menu opens a "Rename chat" dialog over the open
-   * conversation, while the sidebar row edits in place. Absent, the title
-   * edits in place.
+   * conversation (R-0186-0187), while the sidebar row edits in place
+   * (R-0046-0048). Absent, the title edits in place.
    */
   onRenameDialog?: () => void;
   /** A project id, or null to take the conversation out of its project. */
@@ -90,10 +90,11 @@ export const codeMenuReasons = {
 } as const;
 
 /**
- * The header's project breadcrumb and title. Chat's title starts Rename; the
- * separate caret opens its menu, and a web Code session's the same with its
- * caret. The desktop's Code title keeps the combined menu button. Rename uses
- * the existing dialog or in-place field.
+ * The header's project breadcrumb and title. Chat's title starts Rename;
+ * the separate caret opens its menu (live 2026-10-16), and a web Code
+ * session's the same with its caret (2026-10-21). The desktop's Code title keeps
+ * the combined menu button. Rename uses the existing dialog or in-place
+ * field.
  */
 export function ConversationTitle({
   conversation: c,
@@ -114,8 +115,9 @@ export function ConversationTitle({
   // A Code session's title edits in place (the original's header passes
   // onRenameStart); Chat and Cowork open the Rename dialog where there is one.
   const code = c.mode === "code";
-  // The desktop's Code title is one menu button; on the web a Code session's
-  // title starts Rename and a separate caret opens the menu, as Chat's does.
+  // The desktop's Code title is one menu button; on the web a Code
+  // session's title starts Rename and a separate caret opens the menu, as
+  // Chat's does (live claude.ai Code, 2026-10-21).
   const combined = code && surface !== "web";
   const webChat = surface === "web" && !code;
   const webCode = surface === "web" && code;
@@ -129,8 +131,8 @@ export function ConversationTitle({
     if (menu) return setMenu(undefined);
     const box = trigger.current!.getBoundingClientRect();
     if (webCode) {
-      // the compact menu opens 5px before the caret and 2px under it, as wide
-      // as its rows.
+      // Live claude.ai Code, 2026-10-21: the compact menu opens 5px before
+      // the caret and 2px under it, as wide as its rows.
       setMenu({
         left: Math.max(8, Math.min(box.left - 5, window.innerWidth - 180)),
         top: box.bottom + 2,
@@ -147,8 +149,8 @@ export function ConversationTitle({
       return;
     }
     setMenu({
-      // The chat menu ends at the separate caret's right edge. Keep its frame
-      // inside either side of a narrow viewport.
+      // Live web 2026-10-16: the chat menu ends at the separate caret's
+      // right edge. Keep its frame inside either side of a narrow viewport.
       left: Math.max(
         8,
         Math.min(
@@ -179,7 +181,7 @@ export function ConversationTitle({
   return (
     <div className="thread-heading">
       {project && (
-        // The project name before the title leads back to Projects.
+        // R-0572: the project name before the title leads back to Projects.
         <>
           <button
             className="thread-project"
@@ -223,7 +225,7 @@ export function ConversationTitle({
         >
           <span>{shownTitle}</span>
           {/* The original's caret (its icon font, 16px). */}
-          <AppIcon name="CaretDownMedium" />
+          <Anthropicon name="CaretDownMedium" />
         </button>
       ) : (
         <div className="thread-title-split" data-mode={c.mode}>
@@ -248,7 +250,7 @@ export function ConversationTitle({
             data-open={Boolean(menu)}
             onClick={toggleMenu}
           >
-            <AppIcon name={code ? "CaretDown" : "CaretDownMedium"} />
+            <Anthropicon name={code ? "CaretDown" : "CaretDownMedium"} />
           </button>
         </div>
       )}
@@ -282,9 +284,9 @@ export function ConversationTitle({
 }
 
 /**
- * The same items as the conversation's sidebar menu: Code keeps Archive, Chat
- * and Cowork move between projects — "Change project" once the conversation
- * already belongs to one.
+ * The same items as the conversation's sidebar menu (R-0044-0083): Code keeps
+ * Archive, Chat and Cowork move between projects — "Change project" once the
+ * conversation already belongs to one (R-0553).
  */
 export function titleMenuEntries(
   c: Conversation,
@@ -300,7 +302,7 @@ export function titleMenuEntries(
     ...(chat
       ? {
           icon: (
-            <AppIcon name={c.pinned ? "PinSlash" : "Pin"} size={iconSize} />
+            <Anthropicon name={c.pinned ? "PinSlash" : "Pin"} size={iconSize} />
           ),
         }
       : {}),
@@ -309,24 +311,25 @@ export function titleMenuEntries(
   };
   const rename: MenuEntry = {
     label: "Rename",
-    ...(chat ? { icon: <AppIcon name="Edit" size={iconSize} /> } : {}),
+    ...(chat ? { icon: <Anthropicon name="Edit" size={iconSize} /> } : {}),
     hint: "R",
     onSelect: actions.onRename,
   };
   // A running conversation cannot be deleted, as in the header menu before.
   const removeEntry: MenuEntry = {
     label: "Delete",
-    ...(chat ? { icon: <AppIcon name="Trash" size={iconSize} /> } : {}),
+    ...(chat ? { icon: <Anthropicon name="Trash" size={iconSize} /> } : {}),
     hint: "D",
     danger: true,
     disabled: running,
     onSelect: actions.onDelete,
   };
   if (c.mode === "code") {
-    // Groups with a rule between them, in the order open (Open PR, Open in ▸),
-    // edit (Rename, Fork), share (Copy link, Export), settings (Transcript
-    // view, Output style, Keep computer awake) and remove (Archive, Delete).
-    // The header's menu has no Pin (canPin false). Rows Claudex cannot act on
+    // Live claude.ai bundle, 2026-10-14 (ce4f4374c, the session menu): groups
+    // with a rule between them, in the order open (Open PR, Open in ▸), edit
+    // (Rename, Fork), share (Copy link, Export), settings (Transcript view,
+    // Output style, Keep computer awake) and remove (Archive, Delete). The
+    // header's menu has no Pin (canPin false). Rows Claudex cannot act on
     // yet are greyed with the reason (UI first).
     const off = (label: string, title: string, hint?: string): MenuEntry => ({
       label,
@@ -358,8 +361,9 @@ export function titleMenuEntries(
           ]
         : []),
     ];
-    // A web session is a cloud one: no Fork, Export or Output style, which are
-    // a local session's; Edit cloud environment instead.
+    // A web session is a cloud one (live claude.ai, 2026-10-21): no Fork,
+    // Export or Output style, which are a local session's; Edit cloud
+    // environment instead.
     const cloud = surface === "web";
     const edit: MenuEntry[] = [
       rename,
@@ -431,23 +435,27 @@ export function titleMenuEntries(
   }
   return [
     pin,
-    // Pin, Mark as unread, Rename, Add to project, Move to group, a rule and
-    // Delete. An incognito chat is never kept, so it is not marked, grouped or
-    // put in a project.
+    // Live claude.ai, 2026-10-16 (official-details-menus-states): Pin, Mark
+    // as unread, Rename, Add to project, Move to group, a rule and Delete.
+    // An incognito chat is never kept, so it is not marked, grouped or put
+    // in a project.
     ...(actions.onToggleUnread && !c.incognito
       ? [
           {
             label: c.unread ? "Mark as read" : "Mark as unread",
             hint: "U",
             icon: (
-              <AppIcon name={c.unread ? "Eye" : "EyeSlash"} size={iconSize} />
+              <Anthropicon
+                name={c.unread ? "Eye" : "EyeSlash"}
+                size={iconSize}
+              />
             ),
             onSelect: actions.onToggleUnread,
           },
         ]
       : []),
     rename,
-    // The chat menu's project rows.
+    // Live claude.ai bundle (2026-10-12): the chat menu's project rows.
     ...(c.incognito
       ? []
       : projectEntries(c, projects, {
@@ -457,7 +465,7 @@ export function titleMenuEntries(
           "label" in entry && entry.label !== "Remove from project"
             ? {
                 ...entry,
-                icon: <AppIcon name="Projects" size={iconSize} />,
+                icon: <Anthropicon name="Projects" size={iconSize} />,
               }
             : entry,
         )),
@@ -466,7 +474,7 @@ export function titleMenuEntries(
       ? [
           {
             label: "Share session",
-            icon: <AppIcon name="Share" size={iconSize} />,
+            icon: <Anthropicon name="Share" size={iconSize} />,
             onSelect: actions.onShare,
           },
         ]
@@ -478,7 +486,7 @@ export function titleMenuEntries(
       ? [
           {
             label: "Copy link",
-            icon: <AppIcon name="Link" size={16} />,
+            icon: <Anthropicon name="Link" size={16} />,
             onSelect: actions.onCopyLink,
           },
         ]
@@ -489,8 +497,9 @@ export function titleMenuEntries(
 }
 
 /**
- * Transcript view ▸: the three views as radio rows, then, while the session
- * shows a view other than the default, a rule and "Make {mode} the default".
+ * Transcript view ▸ (live claude.ai bundle, 2026-10-12): the three views as
+ * radio rows, then, while the session shows a view other than the default,
+ * a rule and "Make {mode} the default".
  */
 export function transcriptViewEntries(menu: TranscriptViewMenu): MenuEntry[] {
   const rows: MenuEntry[] = transcriptViews.map((view) => ({
@@ -542,10 +551,11 @@ function outputStyleRow(
 }
 
 /**
- * Open in ▸ for a Code session: Split view and New window; then, under "Open
- * in", the installed editors, Terminal and the file manager; then, under
- * "Continue in", Cloud. The headings show only when Continue in has a row;
- * rules sit between the sections, and the first nine rows take the keys 1 to 9.
+ * Open in ▸ for a Code session (live claude.ai bundle, 2026-10-14,
+ * ce4f4374c): Split view and New window; then, under "Open in", the
+ * installed editors, Terminal and the file manager; then, under "Continue
+ * in", Cloud. The headings show only when Continue in has a row; rules sit
+ * between the sections, and the first nine rows take the keys 1 to 9.
  */
 export function codeOpenInEntries(
   actions: Pick<

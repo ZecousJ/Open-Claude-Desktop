@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-/** The web's phone width: below 640 CSS px. */
+/** The web's phone width: below 640 CSS px (live claude.ai's `sm`). */
 export const phoneQuery = "(max-width: 639.98px)";
 
 const media = (query: string) =>

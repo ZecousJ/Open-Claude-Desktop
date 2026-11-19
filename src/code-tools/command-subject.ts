@@ -1,10 +1,11 @@
 /**
- * A command's short form for its row ("Ran git status"), as the original words
- * a command without a description: the first line, leading `cd … &&` steps
- * dropped, at most four plain words, then "…" when anything was left out.
- * Commands whose programs the original does not know, substitutions, flags,
- * addresses and anything that looks like a secret are not shown: the row then
- * says "Ran a command".
+ * A command's short form for its row ("Ran git status"), as the original
+ * words a command without a description (live claude.ai bundle,
+ * 2026-10-14, the shell row's subject): the first line, leading `cd … &&`
+ * steps dropped, at most four plain words, then "…" when anything was left
+ * out. Commands whose programs the original does not know, substitutions,
+ * flags, addresses and anything that looks like a secret are not shown:
+ * the row then says "Ran a command".
  */
 const knownPrograms = new Set(
   [

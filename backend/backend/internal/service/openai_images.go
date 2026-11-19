@@ -190,6 +190,14 @@ func (r *OpenAIImagesRequest) StickySessionSeed() string {
 }
 
 func (s *OpenAIGatewayService) ParseOpenAIImagesRequest(c *gin.Context, body []byte) (*OpenAIImagesRequest, error) {
+	return parseOpenAIImagesRequest(c, body, true)
+}
+
+func (s *OpenAIGatewayService) ParseClaudexImagesRequest(c *gin.Context, body []byte) (*OpenAIImagesRequest, error) {
+	return parseOpenAIImagesRequest(c, body, false)
+}
+
+func parseOpenAIImagesRequest(c *gin.Context, body []byte, useBodyModel bool) (*OpenAIImagesRequest, error) {
 	if c == nil || c.Request == nil {
 		return nil, fmt.Errorf("missing request context")
 	}
@@ -220,7 +228,22 @@ func (s *OpenAIGatewayService) ParseOpenAIImagesRequest(c *gin.Context, body []b
 		if len(body) == 0 {
 			return nil, fmt.Errorf("request body is empty")
 		}
-		if !gjson.ValidBytes(body) {
+		if !useBodyModel {
+			var options map[string]json.RawMessage
+			if err := json.Unmarshal(body, &options); err != nil || options == nil {
+				return nil, fmt.Errorf("failed to parse request body")
+			}
+			for name := range options {
+				if strings.EqualFold(name, "model") {
+					delete(options, name)
+				}
+			}
+			body, err = json.Marshal(options)
+			if err != nil {
+				return nil, err
+			}
+			req.Body = body
+		} else if !gjson.ValidBytes(body) {
 			return nil, fmt.Errorf("failed to parse request body")
 		}
 		if parseErr := parseOpenAIImagesJSONRequest(body, req); parseErr != nil {
@@ -228,6 +251,12 @@ func (s *OpenAIGatewayService) ParseOpenAIImagesRequest(c *gin.Context, body []b
 		}
 	}
 
+	req.SizeTier = normalizeOpenAIImageSizeTier(req.Size)
+	if !useBodyModel {
+		req.Model = ""
+		req.ExplicitModel = false
+		return req, nil
+	}
 	applyOpenAIImagesDefaults(req)
 	// Composite middleware preserves multipart bodies, including their public
 	// alias. Validate and forward the resolved model without altering uploads.
@@ -239,9 +268,36 @@ func (s *OpenAIGatewayService) ParseOpenAIImagesRequest(c *gin.Context, body []b
 	if err := validateCompatibleImagesModel(req.Model); err != nil {
 		return nil, err
 	}
-	req.SizeTier = normalizeOpenAIImageSizeTier(req.Size)
 	req.RequiredCapability = classifyOpenAIImagesCapability(req)
 	return req, nil
+}
+
+func (req *OpenAIImagesRequest) WithSelectedModel(model string) (*OpenAIImagesRequest, error) {
+	if err := validateCompatibleImagesModel(model); err != nil {
+		return nil, err
+	}
+	selected := *req
+	selected.Model = model
+	selected.ExplicitModel = true
+	selected.RequiredCapability = classifyOpenAIImagesCapability(&selected)
+	return &selected, nil
+}
+
+func IsOpenAIImagesModelUnavailable(err *UpstreamFailoverError, account *Account) bool {
+	if account.CodexDraws() {
+		return false
+	}
+	switch err.StatusCode {
+	case http.StatusBadRequest:
+		return isOpenAICompatibleModelNotFound400(err.ResponseBody) ||
+			(isOpenAIOAuthAccount(account) && isOpenAICodexPlanGatedModelError(err.StatusCode, err.ResponseBody))
+	case http.StatusUnauthorized:
+		return account.Type == AccountTypeAPIKey && isOpenAICompatibleModelNotFoundBody(err.ResponseBody)
+	case http.StatusNotFound:
+		return isUpstreamModelNotFoundError(err.StatusCode, err.ResponseBody)
+	default:
+		return false
+	}
 }
 
 func parseOpenAIImagesJSONRequest(body []byte, req *OpenAIImagesRequest) error {
@@ -905,7 +961,6 @@ func rewriteOpenAIImagesMultipartModel(body []byte, contentType string, model st
 	reader := multipart.NewReader(bytes.NewReader(body), boundary)
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
-	modelWritten := false
 
 	for {
 		part, err := reader.NextPart()
@@ -917,6 +972,10 @@ func rewriteOpenAIImagesMultipartModel(body []byte, contentType string, model st
 		}
 
 		formName := strings.TrimSpace(part.FormName())
+		if strings.EqualFold(formName, "model") && part.FileName() == "" {
+			_ = part.Close()
+			continue
+		}
 		partHeader := cloneMultipartHeader(part.Header)
 		target, err := writer.CreatePart(partHeader)
 		if err != nil {
@@ -924,15 +983,6 @@ func rewriteOpenAIImagesMultipartModel(body []byte, contentType string, model st
 			return nil, "", fmt.Errorf("create multipart part: %w", err)
 		}
 
-		if formName == "model" && part.FileName() == "" {
-			if _, err := target.Write([]byte(model)); err != nil {
-				_ = part.Close()
-				return nil, "", fmt.Errorf("rewrite multipart model: %w", err)
-			}
-			modelWritten = true
-			_ = part.Close()
-			continue
-		}
 		if _, err := io.Copy(target, part); err != nil {
 			_ = part.Close()
 			return nil, "", fmt.Errorf("copy multipart part: %w", err)
@@ -940,10 +990,8 @@ func rewriteOpenAIImagesMultipartModel(body []byte, contentType string, model st
 		_ = part.Close()
 	}
 
-	if !modelWritten {
-		if err := writer.WriteField("model", model); err != nil {
-			return nil, "", fmt.Errorf("append multipart model field: %w", err)
-		}
+	if err := writer.WriteField("model", model); err != nil {
+		return nil, "", fmt.Errorf("append multipart model field: %w", err)
 	}
 	if err := writer.Close(); err != nil {
 		return nil, "", fmt.Errorf("finalize multipart body: %w", err)

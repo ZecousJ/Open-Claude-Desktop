@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useUsageActivity } from "./use-usage-activity";
 import { RotateCw } from "../../ui/glyphs";
 import type {
   UsageBreakdown,
@@ -6,6 +6,7 @@ import type {
   UsageProvider,
   UsageRange,
   UsageRecordPage,
+  UsageStatsAPI,
 } from "../../../shared/usage-stats-api";
 import { currentLocale, t, tf, useT } from "../../i18n";
 import type { TabProps } from "../context";
@@ -131,76 +132,18 @@ export const rate = (value: number) =>
  * the page's own type and bars. Renders nothing for an account without a
  * Claudex service.
  */
-export default function UsageActivity({ onError }: TabProps) {
+export type UsageActivityClient = Pick<UsageStatsAPI, "usageOverview" | "usageBreakdown" | "usageRecords">;
+export interface UsageActivityProps extends Pick<TabProps, "onError"> {
+  client?: UsageActivityClient;
+  /** Remount all private activity state when the host activation changes. */
+  accountKey?: string;
+}
+export default function UsageActivity(props: UsageActivityProps) {
+  return <UsageActivityContent key={props.accountKey ?? "legacy"} {...props} />;
+}
+function UsageActivityContent({ onError, client = window.desktop }: UsageActivityProps) {
   useT();
-  const [overview, setOverview] = useState<UsageOverview | null>();
-  const [range, setRange] = useState<UsageRange>(() => presetRange("7"));
-  const [breakdown, setBreakdown] = useState<UsageBreakdown>();
-  const [loadingRange, setLoadingRange] = useState(false);
-  const [page, setPage] = useState(1);
-  const [model, setModel] = useState("");
-  const [records, setRecords] = useState<UsageRecordPage>();
-  const [loadingRecords, setLoadingRecords] = useState(false);
-  const [loadingOverview, setLoadingOverview] = useState(false);
-  const staleRange = useRef(0);
-  const staleRecords = useRef(0);
-
-  const loadOverview = useCallback(() => {
-    setLoadingOverview(true);
-    return Promise.resolve()
-      .then(() => window.desktop.usageOverview())
-      .then(setOverview, (error: unknown) => {
-        setOverview(null);
-        onError(error);
-      })
-      .finally(() => setLoadingOverview(false));
-  }, [onError]);
-  useEffect(() => void loadOverview(), [loadOverview]);
-
-  useEffect(() => {
-    if (!overview) return;
-    const mine = ++staleRange.current;
-    setLoadingRange(true);
-    Promise.resolve()
-      .then(() => window.desktop.usageBreakdown(range))
-      .then(
-        (value) => mine === staleRange.current && setBreakdown(value),
-        (error: unknown) => mine === staleRange.current && onError(error),
-      )
-      .finally(() => mine === staleRange.current && setLoadingRange(false));
-  }, [
-    overview === null || overview === undefined,
-    range.start,
-    range.end,
-    range.granularity,
-  ]);
-
-  useEffect(() => {
-    if (!overview) return;
-    const mine = ++staleRecords.current;
-    setLoadingRecords(true);
-    Promise.resolve()
-      .then(() =>
-        window.desktop.usageRecords({
-          page,
-          pageSize: 10,
-          start: range.start,
-          end: range.end,
-          ...(model ? { model } : {}),
-        }),
-      )
-      .then(
-        (value) => mine === staleRecords.current && setRecords(value),
-        (error: unknown) => mine === staleRecords.current && onError(error),
-      )
-      .finally(() => mine === staleRecords.current && setLoadingRecords(false));
-  }, [
-    overview === null || overview === undefined,
-    page,
-    model,
-    range.start,
-    range.end,
-  ]);
+  const { overview, range, breakdown, loadingRange, page, model, records, loadingRecords, loadingOverview, loadOverview, setRevision, setPage, setRange, setModel } = useUsageActivity(client, onError);
 
   if (overview === null) return null;
   if (overview === undefined)
@@ -246,6 +189,7 @@ export default function UsageActivity({ onError }: TabProps) {
           disabled={loadingOverview || loadingRange}
           onClick={() => {
             void loadOverview();
+            setRevision((value) => value + 1);
             setPage(1);
             setRange({ ...range });
           }}

@@ -13,12 +13,12 @@ import {
 } from "../workspace-trust/trust-request";
 
 /**
- * Messages written while a conversation's turn runs. The composer first hands
- * one to the running turn (`turn/steer`, "steered"); when no turn can take it,
- * or the turn ends before the model read it, it waits here ("queued") and is
- * sent as the next message once the turn has finished. The queue lives for the
- * window's lifetime, per account and conversation, so switching conversations
- * keeps it.
+ * Messages written while a conversation's turn runs (R-0317, R-0832). The
+ * composer first hands one to the running turn (`turn/steer`, "steered");
+ * when no turn can take it, or the turn ends before the model read it, it
+ * waits here ("queued") and is sent as the next message once the turn has
+ * finished. The queue lives for the window's lifetime, per account and
+ * conversation, so switching conversations keeps it.
  */
 export interface QueuedMessage {
   id: string;
@@ -294,9 +294,10 @@ export function clearQueued(conversationId: string) {
 }
 
 /**
- * A queued message on one line, as the queued-message bar previews it: its
- * text, then each attached file as `@name` and each image as "[Image]", runs of
- * white space as one space, and "…" when nothing is left.
+ * A queued message on one line, as the queued-message bar previews it (live
+ * claude.ai bundle, 2026-10-12): its text, then each attached file as
+ * `@name` and each image as "[Image]", runs of white space as one space, and
+ * "…" when nothing is left.
  */
 export function queuedPreview(
   entry: Pick<QueuedMessage, "text" | "attachments">,

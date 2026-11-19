@@ -1,11 +1,12 @@
 import { bridgeMethods } from "./bridge-methods";
 
-export type ExtensionValue = string | number | boolean;
+export type ExtensionValue = string | number | boolean | string[];
 export interface DesktopExtensionField {
   key: string;
   title: string;
   description?: string;
-  type: "string" | "number" | "boolean";
+  type: "string" | "number" | "boolean" | "directory" | "file";
+  multiple?: boolean;
   required: boolean;
   sensitive: boolean;
   min?: number;

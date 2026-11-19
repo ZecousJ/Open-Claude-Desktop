@@ -11,14 +11,15 @@ export function instructionsTooLong(text: string, limit = instructionsLimit) {
   return trimmed.length > limit && Array.from(trimmed).length > limit;
 }
 
-/** How often the empty field shows the next suggestion. */
+/** How often the empty field shows the next suggestion (desktop bundle 2.31226.1). */
 const rotateMs = 6000;
 
 /**
- * Account → Instructions: a text box that keeps the typed text until it is
- * saved. Changing it shows Save changes and Discard; leaving the box saves it
- * too; Escape in a changed box does not close Settings; text over the limit
- * gets a warning. While empty, the placeholder cycles through `placeholders`.
+ * Account → Instructions (desktop bundle 2.31226.1): a text box that keeps
+ * the typed text until it is saved. Changing it shows Save changes and
+ * Discard; leaving the box saves it too; Escape in a changed box does not
+ * close Settings; text over the limit gets a warning. While empty, the
+ * placeholder cycles through `placeholders`.
  */
 export function InstructionsField({
   label,

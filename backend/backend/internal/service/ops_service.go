@@ -195,11 +195,16 @@ func (s *OpsService) RefreshRuntimeSettings(ctx context.Context) error {
 	s.runtimeSettingsMu.Lock()
 	defer s.runtimeSettingsMu.Unlock()
 
-	values, err := s.settingRepo.GetMultiple(ctx, []string{
+	refreshForwardedIP := !s.cfg.RunsControlPlane()
+	keys := []string{
 		SettingKeyOpsMonitoringEnabled,
 		SettingKeyOpsAdvancedSettings,
 		SettingKeyOpsRuntimeLogConfig,
-	})
+	}
+	if refreshForwardedIP {
+		keys = append(keys, SettingKeyAPIKeyACLTrustForwardedIP, SettingKeyForwardedClientIPHeaders)
+	}
+	values, err := s.settingRepo.GetMultiple(ctx, keys)
 	if err != nil {
 		return err
 	}
@@ -228,6 +233,11 @@ func (s *OpsService) RefreshRuntimeSettings(ctx context.Context) error {
 			}
 		}
 		s.systemLogSink.SetPersistAccessLogs(persistAccessLogs)
+	}
+	if refreshForwardedIP {
+		enabled, headers, err := resolveForwardedClientIPSettings(s.cfg, values)
+		s.cfg.SetForwardedClientIPSettings(enabled, headers)
+		return err
 	}
 	return nil
 }

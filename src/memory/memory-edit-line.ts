@@ -15,10 +15,12 @@ function names(removed: string[]) {
 }
 
 /**
- * The line that says how a Manage-memory change went, as the original words it.
- * The original names memory files; Claudex keeps statements, so it names the
- * statements that went (and counts them past three, as the original counts
- * files).
+ * The line that says how a Manage-memory change went, as the original words
+ * it (live claude.ai bundle 2026-10-12: Added to memory / Updated memory /
+ * Removed … / No changes were made.; Claude's refusal and the too-long edit).
+ * The original names memory files; Claudex keeps statements, so it names
+ * the statements that went (and counts them past three, as the original
+ * counts files).
  */
 export function memoryEditLine(outcome: MemoryEditOutcome): string {
   switch (outcome.kind) {

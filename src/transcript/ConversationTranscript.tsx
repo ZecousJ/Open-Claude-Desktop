@@ -10,7 +10,7 @@ import type {
 } from "react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { editLastMessageEvent } from "../composer/double-escape";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useTranscriptSlots } from "./transcript-slots";
 import type {
   Approval,
@@ -133,7 +133,7 @@ export function ScrollToLatest({
             <span className="scroll-bottom-label">Needs your input</span>
           </>
         )}
-        <AppIcon name={circular ? "ArrowDown" : "CaretDownSmall"} />
+        <Anthropicon name={circular ? "ArrowDown" : "CaretDownSmall"} />
         {Label && !needsInput && <Label />}
       </button>
     </div>
@@ -239,12 +239,12 @@ export function ConversationTranscript({
   ) => Promise<void>;
   onArtifact: (artifact: Artifact) => void;
   onOpenWorkflow: () => void;
-  /** Opens a single Agent's own transcript beside the conversation. */
+  /** Opens a single Agent's own transcript beside the conversation (S-0005). */
   onOpenAgent?: (target: AgentTarget) => void;
   onEditPrompt: (turnId: string, text: string) => Promise<boolean>;
   onRetryResponse: (turnId: string) => void;
   onDiscardTurn?: (turnId: string) => void;
-  /** Sends "Continue" after a reply stopped at the output limit. */
+  /** Sends "Continue" after a reply stopped at the output limit (R-0580). */
   onContinue: () => void;
   onSelectVersion: (turnId: string, versionId: string, prompt: boolean) => void;
   onError: (error: unknown) => void;
@@ -333,7 +333,9 @@ export function ConversationTranscript({
   );
   // Chat and Cowork fold failed replies in a row into one notice.
   const failed = mode === "code" ? undefined : failedRuns(conversation.turns);
-  // Prompts and replies follow Settings → Transcript text size in every mode.
+  // Prompts and replies follow Settings → Transcript text size in every mode
+  // (live claude.ai bundle, 2026-10-12: Code and Cowork messages carry
+  // data-text-size alike; Chat now shares Cowork's home).
   const textSize = messageTextSize(transcriptTextSize(app?.snapshot.settings));
   // The phones draw the official turn-edits card and reply actions (slots).
   const slots = useTranscriptSlots();

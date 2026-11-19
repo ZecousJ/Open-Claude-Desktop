@@ -6,7 +6,7 @@ export type MarkdownRendererProps = Options & {
   preset?: "reply" | "gfm";
 };
 
-// Empty while loading, as the lazy UI.
+// Empty while loading, as the lazy UI (live claude.ai bundle, 2026-10-14, shared-l-p-m-3-BFz2hGyh.js).
 const Renderer = lazyPiece(() => import("./MarkdownRendererContent"));
 
 export const preloadMarkdownRenderer = () => preloadPiece(Renderer);

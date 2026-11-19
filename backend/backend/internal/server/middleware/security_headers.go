@@ -4,7 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/Wei-Shaw/sub2api/internal/claudex/attachmentstore"
 	"log"
+	"net"
+	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
@@ -141,6 +145,9 @@ func SecurityHeaders(cfg config.CSPConfig, getFrameSrcOrigins func() []string) g
 		// root pages and the Go routes keep the configured policy.
 		if isWebAppZone(c) {
 			finalPolicy = WebAppCSPPolicy
+			if origin := attachmentstore.Origin(); origin != "" {
+				finalPolicy = addToDirective(finalPolicy, "connect-src", origin)
+			}
 			c.Header("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
 			c.Header("Permissions-Policy", WebAppPermissionsPolicy)
 			if cfg.Enabled {
@@ -162,6 +169,43 @@ func SecurityHeaders(cfg config.CSPConfig, getFrameSrcOrigins func() []string) g
 		}
 		c.Next()
 	}
+}
+
+var previewDNSHostname = regexp.MustCompile(`^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$`)
+
+func officialCodePreviewWildcard(previewOrigin string) string {
+	origin, err := url.Parse(previewOrigin)
+	if err != nil || origin.Scheme != "https" {
+		return ""
+	}
+	host := strings.ToLower(origin.Hostname())
+	if len(host) > 253 || net.ParseIP(host) != nil || strings.HasSuffix(host, ".localhost") ||
+		strings.HasSuffix(host, ".local") || !previewDNSHostname.MatchString(host) {
+		return ""
+	}
+	_, domain, found := strings.Cut(origin.Host, ".")
+	if !found {
+		return ""
+	}
+	return "https://*." + domain
+}
+
+// AllowOfficialWebFrame applies to the Web app's bundled iframe document.
+func AllowOfficialWebFrame(c *gin.Context, previewOrigin string) {
+	c.Header("X-Frame-Options", "SAMEORIGIN")
+	policy := c.Writer.Header().Get("Content-Security-Policy")
+	if policy == "" {
+		return
+	}
+	policy = strings.Replace(policy, "frame-ancestors 'none'", "frame-ancestors 'self'", 1)
+	if previewOrigin != "" {
+		policy = addToDirective(policy, "frame-src", previewOrigin)
+		if codePreview := officialCodePreviewWildcard(previewOrigin); codePreview != "" {
+			policy = addToDirective(policy, "frame-src", codePreview)
+			policy = addToDirective(policy, "connect-src", codePreview)
+		}
+	}
+	c.Header("Content-Security-Policy", policy)
 }
 
 // CLAUDEX: W-SITE web app zone headers (web plan decision 15: no inline

@@ -21,6 +21,7 @@ export interface DirectorySubmissionInput extends ConnectorUrlConfiguration {
   documentationUrl?: string;
   isAuthless?: boolean;
   tools: string[];
+  original?: Record<string, unknown>;
 }
 
 export interface DirectorySubmission extends DirectorySubmissionInput {
@@ -28,6 +29,8 @@ export interface DirectorySubmission extends DirectorySubmissionInput {
   status: "draft" | "submitted" | "in_review" | "approved" | "rejected";
   reviewerNote: string;
   updatedAt: number;
+  createdAt?: number;
+  publishedAt?: number;
 }
 
 export interface DirectoryCuration {

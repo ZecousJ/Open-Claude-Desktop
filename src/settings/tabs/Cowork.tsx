@@ -23,10 +23,12 @@ const CoworkMemoryFiles = lazyPiece(
 );
 
 /**
- * Cowork. The sandbox and effort Cowork tasks use, the instructions added to
- * every task, and where Claudex keeps their files. Trusted folders now live
- * under General → Tasks. The local and trusted device lists live in Account.
- * The storage folder is the account's own and cannot be moved.
+ * Cowork (R-1387, R-1384–R-1391). The sandbox and effort Cowork tasks use,
+ * the instructions added to every task, and where Claudex keeps their
+ * files. Trusted folders now live under General → Tasks (live claude.ai
+ * bundle, 2026-10-14, c0db37792-9AZ9M5rK). The
+ * local and trusted device lists live in Account. The storage folder is the account's own
+ * and cannot be moved.
  */
 export function CoworkTab({ settings, save, platform, onError }: TabProps) {
   const system = useLoaded(() => window.desktop.systemState(), onError);
@@ -104,10 +106,10 @@ export function CoworkTab({ settings, save, platform, onError }: TabProps) {
 }
 
 /**
- * Global instructions: a row with Edit that turns into a text box in the page,
- * with Cancel and Save ("Saving..." while it is kept). Over the limit it counts
- * the characters in red; a failed save says so and leaves the text for another
- * try.
+ * Global instructions (desktop bundle 2.31226.1): a row with Edit that turns
+ * into a text box in the page, with Cancel and Save ("Saving..." while it is
+ * kept). Over the limit it counts the characters in red; a failed save says
+ * so and leaves the text for another try.
  */
 export function GlobalInstructions({
   value,

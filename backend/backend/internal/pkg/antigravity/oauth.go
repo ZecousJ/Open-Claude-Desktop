@@ -24,8 +24,8 @@ const (
 	TokenURL     = "https://oauth2.googleapis.com/token"
 	UserInfoURL  = "https://www.googleapis.com/oauth2/v2/userinfo"
 
-	// AntigravityOAuthClientIDEnv 是 Antigravity OAuth client_id 的环境变量名。
-	AntigravityOAuthClientIDEnv = "ANTIGRAVITY_OAUTH_CLIENT_ID"
+	// Antigravity OAuth 客户端凭证
+	ClientID = "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com"
 
 	// AntigravityOAuthClientSecretEnv 是 Antigravity OAuth client_secret 的环境变量名。
 	AntigravityOAuthClientSecretEnv = "ANTIGRAVITY_OAUTH_CLIENT_SECRET"
@@ -69,12 +69,8 @@ var (
 	userAgentVersionResolver UserAgentVersionResolver
 )
 
-// ClientID 与 defaultClientSecret 来自环境变量 ANTIGRAVITY_OAUTH_CLIENT_ID / ANTIGRAVITY_OAUTH_CLIENT_SECRET。
-// CLAUDEX: the repository ships no Google client credentials.
-var (
-	ClientID            = strings.TrimSpace(os.Getenv(AntigravityOAuthClientIDEnv))
-	defaultClientSecret = ""
-)
+// defaultClientSecret 可通过环境变量 ANTIGRAVITY_OAUTH_CLIENT_SECRET 配置
+var defaultClientSecret = ""
 
 func init() {
 	// 从环境变量读取版本号，未设置则使用默认值
@@ -142,18 +138,7 @@ func GetUserAgent() string {
 	return GetUserAgentForContext(context.Background())
 }
 
-// CheckClientConfigured 在 client_id 或 client_secret 未配置时返回错误。
-// CLAUDEX: lets the authorization flow fail before sending the user to Google.
-func CheckClientConfigured() error {
-	_, err := getClientSecret()
-	return err
-}
-
 func getClientSecret() (string, error) {
-	// CLAUDEX: without a client id the secret is useless; report the client as not configured.
-	if strings.TrimSpace(ClientID) == "" {
-		return "", infraerrors.Newf(http.StatusBadRequest, "ANTIGRAVITY_OAUTH_CLIENT_SECRET_MISSING", "missing antigravity oauth client_id; set %s", AntigravityOAuthClientIDEnv)
-	}
 	if v := strings.TrimSpace(defaultClientSecret); v != "" {
 		return v, nil
 	}

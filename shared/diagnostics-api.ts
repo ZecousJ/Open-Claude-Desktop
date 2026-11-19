@@ -44,11 +44,12 @@ export interface ReplyFeedbackReport {
 }
 
 export interface DiagnosticsAPI {
-  /** Stores a reply's rating on this computer; null clears it. */
+  /** Stores a reply's rating with the conversation's account; null clears it. */
   setReplyFeedback(
     conversationId: string,
     turnId: string,
     rating: ReplyRating | null,
+    options?: { localOnly: true },
   ): Promise<Record<string, ReplyRating>>;
   /** null while the service has not said (local accounts, older services): report nothing. */
   reportingStatus(): Promise<ReportingStatus | null>;

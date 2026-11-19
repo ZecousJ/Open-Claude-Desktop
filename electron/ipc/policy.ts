@@ -1,8 +1,11 @@
 import { z } from "zod";
+import {
+  remoteAnnouncementsFrom,
+  sortServiceAnnouncements,
+} from "../../shared/announcements-api";
 import type { Announcement, ClientPolicy } from "../../shared/client-policy";
 import type { AppContext, IpcHandle } from "../app/app-context";
 import {
-  fromRemoteAnnouncements,
   LocalAnnouncementReads,
   localAnnouncements,
 } from "../account/client-policy";
@@ -17,20 +20,38 @@ export function registerPolicyHandlers(handle: IpcHandle, ctx: AppContext) {
     ctx.refreshPolicy();
     return ctx.policy();
   });
-  const list = async (): Promise<Announcement[]> => {
-    const account = remote();
+  const list = async (
+    account: ReturnType<typeof remote>,
+  ): Promise<Announcement[]> => {
     if (!account)
       return localAnnouncements(
         ctx.dataRoot,
         new LocalAnnouncementReads(ctx.store.root),
         Date.now(),
       );
-    const items = await account.session.authorized((token) =>
+    const answer = await account.session.authorized((token) =>
       account.accounts.client.announcements(token),
     );
-    return fromRemoteAnnouncements(items, Date.now());
+    if (!Array.isArray(answer)) return [];
+    const now = Date.now();
+    return sortServiceAnnouncements(
+      remoteAnnouncementsFrom(answer)
+        .slice(0, 50)
+        .filter(
+          ({ startsAt, endsAt }) =>
+            (startsAt === null || startsAt <= now) &&
+            (endsAt === null || endsAt > now),
+        ),
+    ).map(({ id, title, content, popup, createdAt, read }) => ({
+      id,
+      title,
+      content: content.slice(0, 20_000),
+      popup,
+      createdAt,
+      read,
+    }));
   };
-  handle("announcements", list);
+  handle("announcements", () => list(remote()));
   handle("markAnnouncementRead", async (raw: unknown) => {
     const id = z
       .string()
@@ -43,6 +64,6 @@ export function registerPolicyHandlers(handle: IpcHandle, ctx: AppContext) {
         account.accounts.client.markAnnouncementRead(token, Number(id)),
       );
     } else new LocalAnnouncementReads(ctx.store.root).mark(id);
-    return list();
+    return list(account);
   });
 }

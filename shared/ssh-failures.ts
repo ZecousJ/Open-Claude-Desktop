@@ -1,7 +1,8 @@
 /**
- * Why this computer's ssh failed before reaching the host. The original's two
- * "built-in SSH library" reasons are left out: Claudex always runs the system
- * OpenSSH, which handles ProxyJump and host key sources itself.
+ * Why this computer's ssh failed before reaching the host (desktop 2.37337.1,
+ * index.chunk-C4K_cFMc). The original's two "built-in SSH library" reasons
+ * are left out: Claudex always runs the system OpenSSH, which handles
+ * ProxyJump and host key sources itself.
  */
 export const sshLocalFailureMessages = {
   local_ssh_helper_blocked:
@@ -22,11 +23,11 @@ export function classifySshLocalFailure(failure: {
   stderr: string;
   interactive: boolean;
 }): SshLocalFailure | undefined {
-  // OpenSSH's own refusal.
+  // OpenSSH's own refusal (desktop 2.37337.1, index.chunk-ebNlMP2o).
   if (/^remote username contains invalid characters\r?$/m.test(failure.stderr))
     return "local_ssh_login_refused";
 
-  // The askpass helper could not be started.
+  // The askpass helper could not be started (desktop 2.37337.1, index.chunk-B-xuEAAj).
   if (
     failure.interactive &&
     /Permission denied \([^)]*\b(?:password|keyboard-interactive)\b[^)]*\)/i.test(

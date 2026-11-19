@@ -1,6 +1,6 @@
 /**
  * Builds a signed desktop interface pack from a `dist/` folder
- * (docs/releasing.md): `manifest.json` (version, bridge level,
+ * (docs/desktop-ui-hot-update.md): `manifest.json` (version, bridge level,
  * every file's SHA-256), `manifest.sig` (ed25519, base64) and the files
  * under `files/`. electron/ui-pack/verify.ts checks exactly this.
  */

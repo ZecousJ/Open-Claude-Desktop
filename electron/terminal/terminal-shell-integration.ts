@@ -3,20 +3,20 @@ import path from "node:path";
 
 /**
  * How a terminal tab knows a command is running in it: the shell is started
- * with a few hooks that print the standard prompt marks (OSC 133, as terminals
- * with shell integration use them) around every command, and the main process
- * reads the marks off the tab's output. The official Code terminal asks "Close
- * terminal?" only while a command is still running in the tab; Codex runs the
- * tab's shell for us, so its process tree is out of reach and the marks are
- * what tell.
+ * with a few hooks that print the standard prompt marks (OSC 133, as
+ * terminals with shell integration use them) around every command, and the
+ * main process reads the marks off the tab's output. The official Code
+ * terminal asks "Close terminal?" only while a command is still running in
+ * the tab (live claude.ai bundle, 2026-10-12); Codex runs the tab's shell
+ * for us, so its process tree is out of reach and the marks are what tell.
  *
- * - zsh: ZDOTDIR points at a folder whose .zshenv and .zshrc read the user's
- *   own files first, then add a preexec and a precmd hook.
- * - bash: --rcfile reads ~/.bashrc first, then PROMPT_COMMAND marks the prompt
- *   and PS0 (bash 4.4+) or a DEBUG trap (older bash) the command.
+ * - zsh: ZDOTDIR points at a folder whose .zshenv and .zshrc read the
+ *   user's own files first, then add a preexec and a precmd hook.
+ * - bash: --rcfile reads ~/.bashrc first, then PROMPT_COMMAND marks the
+ *   prompt and PS0 (bash 4.4+) or a DEBUG trap (older bash) the command.
  * - fish: --init-command adds fish_preexec and fish_postexec handlers.
- * - Command Prompt: PROMPT starts with the prompt mark, and a line entered at
- *   the prompt counts as a running command until the next prompt.
+ * - Command Prompt: PROMPT starts with the prompt mark, and a line entered
+ *   at the prompt counts as a running command until the next prompt.
  * - Any other shell prints no marks, and its tabs never ask.
  *
  * xterm ignores OSC 133, so the marks never show on screen.

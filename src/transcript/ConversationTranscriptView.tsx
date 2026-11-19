@@ -343,9 +343,9 @@ export function conversationTranscriptView(kit: ConversationTranscriptViewKit) {
                     sending={sending}
                     setEditRequest={setEditRequest}
                     turn={turn}
-                    // The title offer is a step of the reply it followed, above
-                    // its status line and end mark, not under them at the foot
-                    // of the transcript.
+                    // The title offer is a step of the reply it followed,
+                    // above its status line and end mark, not under them
+                    // at the foot of the transcript (owner, 2026-10-22).
                     beforeStatus={
                       mode === "code" &&
                       conversation.titleOffer &&
@@ -390,7 +390,8 @@ export function conversationTranscriptView(kit: ConversationTranscriptViewKit) {
                 )}
                 {reportsAt(turn.id)}
                 {/* The desktop's and web's Chat has no mark under a reply,
-                   streaming or done; the phone's keeps its own. */}
+                    streaming or done (owner, 2026-10-22: the logo is gone
+                    from conversations); the phone's keeps its own. */}
                 {chatPresentation &&
                   presentation !== "chat" &&
                   latest &&

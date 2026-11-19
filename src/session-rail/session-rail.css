@@ -1,19 +1,21 @@
-/* The Code session rail: a 280px column 12px in from the pane's end and 12px
-   down, cards 10px apart, each a 10px-radius 1px ring (white 10% dark, ink 10%
-   light) with 8px top and bottom; the heading row 8px in, 26px tall, its button
-   12px/15px medium with a 12px caret that turns when open and a muted summary
-   at the end; rows 26px with a 20px icon well in the secondary ink, 13px/19px
-   text, hover fill 7.5% white (5% ink). */
-/* The chat column ends where the rail begins, and the column's own gutters do
-   the rest: 24px at the start after the panel's 9px inset, 32px at the end
-   (--code-gutter-* in web-shell.css). At 1280 wide the prompt and the text run
-   321..956. */
+/* The Code session rail (live claude.ai bundle, 2026-10-14, values resolved
+   from its tokens at the default density): a 280px column 12px in from the
+   pane's end and 12px down, cards 10px apart, each a 10px-radius 1px ring
+   (white 10% dark, ink 10% light) with 8px top and bottom; the heading row
+   8px in, 26px tall, its button 12px/15px medium with a 12px caret that turns
+   when open and a muted summary at the end; rows 26px with a 20px icon well
+   in the secondary ink, 13px/19px text, hover fill 7.5% white (5% ink). */
+/* The chat column ends where the rail begins (live claude.ai Code,
+   2026-10-21: the column's end margin is the rail's end inset plus its
+   width), and the column's own gutters do the rest: 24px at the start
+   after the panel's 9px inset, 32px at the end (--code-gutter-* in
+   web-shell.css). At 1280 wide the prompt and the text run 321..956. */
 .chat-main.with-session-rail {
   padding-right: calc(var(--session-rail-w, 280px) + 12px);
 }
 /* The transcript still scrolls the whole pane, under the rail too, so its
-   scrollbar is at the window's end: the scroller gives back the column's end
-   room as its own padding. */
+   scrollbar is at the window's end (live desktop and web Code, 2026-10-21):
+   the scroller gives back the column's end room as its own padding. */
 .chat-main.code-main.has-conversation > .messages-scroll {
   scrollbar-width: thin;
 }
@@ -209,9 +211,10 @@
 .rail-meter-fill[data-severity="danger"] {
   background: #d03b3b;
 }
-/* Context (and Usage): "{percent} used" and the token summary over a 4px bar in
-   the chart's reference tint, then the auto-compact hint and an xs Compact this
-   session. */
+/* Context (and Usage): "{percent} used" and the token summary over a 4px
+   bar in the chart's reference tint, then the auto-compact hint and an xs
+   Compact this session (live bundle: flex flex-col gap-1 px-xs pt-1 pb-1.5;
+   the action row py-xs gap-sm min-h-[20px] text-footnote). */
 .rail-context-body {
   display: flex;
   flex-direction: column;
@@ -314,7 +317,9 @@
   )[data-state="failed"] {
   color: #8e2626;
 }
-/* The grip. */
+/* The grip (live bundle: an 80px strip at the heading row's end, 10px in,
+   showing on the row's hover in place of the summary; six 2px dots, 3px
+   apart, at 75%). */
 .rail-grip {
   position: absolute;
   top: 0;
@@ -382,8 +387,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Folder paths: min-w-0, truncate; the path shrinks before the name. The ghost
-   xs button resolves to 20px, radius 5px, a 12px Add icon. */
+/* Folder paths (live claude.ai bundle, 2026-10-14, cf74bc599 FO/PO):
+   min-w-0, truncate; the path shrinks before the name.
+   The ghost xs button resolves to 20px, radius 5px, a 12px Add icon. */
 .rail-folder-content {
   display: flex;
   min-width: 0;
@@ -418,8 +424,9 @@
   height: 20px;
   border-radius: 5px;
 }
-/* A row's action (Add folder, Edit cloud environment) ends at the row's edge;
-   the row's 4px end padding is the text's. */
+/* A row's action (Add folder, Edit cloud environment) ends at the row's
+   edge; the row's 4px end padding is the text's (live claude.ai,
+   2026-10-21: the 20px button at the 262px row's end). */
 .rail-row > .rail-folder-add:last-child {
   margin-right: -4px;
 }
@@ -552,8 +559,9 @@
   padding: 4px;
 }
 
-/* The session's earlier pull requests: a disclosure row, caret xs muted turning
-   when open, the count in text-secondary, "{count} merged" in muted footnote. */
+/* The session's earlier pull requests (live claude.ai bundle, 2026-10-15,
+   cb1afaa4b `To`): a disclosure row, caret xs muted turning when open, the
+   count in text-secondary, "{count} merged" in muted footnote. */
 .rail-earlier {
   display: flex;
   flex-direction: column;
@@ -634,10 +642,11 @@
   background: rgb(11 11 11 / 5%);
 }
 
-/* Raised over the conversation when the column has no room: 12px in from the
-   panel's end, from 12px under the title bar to 8px above the prompt, one card
-   (surface-1, 12px radius, a 1px border, the panel's medium shadow) whose
-   sections lie flat, a rule between each. */
+/* Raised over the conversation when the column has no room (live
+   claude.ai Code, 2026-10-21, 740 wide): 12px in from the panel's end, from
+   12px under the title bar to 8px above the prompt, one card (surface-1,
+   12px radius, a 1px border, the panel's medium shadow) whose sections lie
+   flat, a rule between each. */
 .session-rail.raised {
   z-index: 5;
   right: 12px;

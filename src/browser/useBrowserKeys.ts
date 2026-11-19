@@ -11,10 +11,12 @@ import type { BrowserBridge } from "./useBrowserState";
 const closedTabLimit = 10;
 
 /**
- * The Browser panel's keyboard commands. The window sends them as
- * `claudex:browser-command` events (ShellMenuHost.tsx); the panel marks the
- * ones it acted on. Tabs that close are remembered by address for the reopen
- * key.
+ * The Browser panel's keyboard commands (desktop bundle 2.31226.1: new
+ * tab ⌘T, reopen the closed tab ⇧⌘T, the address bar ⌘L, next and previous
+ * tab Ctrl+Tab and Ctrl+Shift+Tab, a tab by number ⌘1 to ⌘9). The window
+ * sends them as `claudex:browser-command` events (ShellMenuHost.tsx); the
+ * panel marks the ones it acted on. Tabs that close are remembered by
+ * address for the reopen key.
  */
 export function useBrowserKeys({
   conversationId,

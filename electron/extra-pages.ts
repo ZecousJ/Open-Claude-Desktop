@@ -7,7 +7,8 @@
 import path from "node:path";
 import type { WebContents, WebPreferences } from "electron";
 
-export type ExtraPage = "find.html" | "quick.html";
+export type ExtraPage = "find.html" | "quick.html" | "checkout.html";
+type ExtraPageFile = ExtraPage | "design.html";
 
 /** Sandboxed, isolated, with only the page's own preload. */
 export function extraPagePreferences(
@@ -29,14 +30,13 @@ export function setExtraPageUrl(next: typeof packUrl) {
   packUrl = next;
 }
 
-/** The page's address: the dev server's while developing, the interface pack's, else the build's file. */
 export function extraPageLocation(
-  page: ExtraPage,
+  page: ExtraPageFile,
   dirname: string,
   devUrl = process.env.CLAUDEX_DEV_URL,
 ): { url: string } | { file: string } {
   if (devUrl) return { url: new URL(page, devUrl).toString() };
-  const pack = packUrl?.(page);
+  const pack = page === "design.html" ? undefined : packUrl?.(page);
   if (pack) return { url: pack };
   return { file: path.join(dirname, "../dist", page) };
 }
@@ -49,7 +49,7 @@ type PageContents = Pick<
 /** Loads an extra page into its contents, which may not open or leave it. */
 export function loadExtraPage(
   contents: PageContents,
-  page: ExtraPage,
+  page: ExtraPageFile,
   dirname: string,
 ) {
   contents.setWindowOpenHandler(() => ({ action: "deny" }));

@@ -3,15 +3,16 @@
  * mode host: the signed-in account's services, the window, the policy and
  * the ways to tell the window or other domains that something happened.
  *
- * Domains read it and don't change its members. `electron/main.ts` builds one AppContext and
+ * Frozen after WP0b (docs/ui-workpackages.md): packages read it and never
+ * change its members. `electron/main.ts` builds one AppContext and
  * `electron/ipc/index.ts` hands the same one to every `register*` function.
  * Account members (store, engine, credentials, …) are only valid while an
  * account is signed in: every IPC call except sign-in ones is refused before
  * that, and handlers must not keep a member across a sign-out.
  *
- * It also holds the app windows registry, the calling window, the engine
- * registry, remote folders, optional service slots and the account lifecycle
- * callbacks.
+ * Round two (S0) added, and froze again: the app windows registry (R2), the
+ * calling window, the engine registry (R9), remote folders, optional service
+ * slots and the account lifecycle callbacks (see docs/ui-workpackages.md §9).
  */
 import type { BrowserWindow, WebContents, WebPreferences } from "electron";
 import type {
@@ -35,6 +36,7 @@ import type { DesktopIntegration } from "./desktop-integration";
 import type { Engine } from "../engine/engine";
 import type { EngineRegistry } from "../engine/engine-registry";
 import type { ProviderCredentials } from "../engine/provider-credentials";
+import type { CoworkAccountMemory } from "../memory/inject";
 import type { RemoteHost } from "../remote/host";
 import type { ReplyFeedback } from "../conversations/reply-feedback";
 import type { Scheduler } from "../routines/scheduler";
@@ -50,6 +52,7 @@ export interface ReplyRated {
   conversationId: string;
   turnId: string;
   rating: ReplyRating | null;
+  localOnly?: true;
 }
 
 /** What an app window shows: the main window, or one conversation (R2). */
@@ -172,6 +175,9 @@ export interface McpConfigLike {
   /** Re-reads the file after an edit made outside (the web has no file). */
   reload?(): void;
   update(servers: Record<string, unknown>): void;
+  readCatalog?(refreshName?: string): Promise<import("../../shared/settings-desktop-api").McpServers>;
+  commitToolPolicy?(servers: Record<string, unknown>, current: () => boolean): Promise<void>;
+  commitCustomConnector?(servers: Record<string, unknown>, assertCurrent: () => void): Promise<void>;
 }
 
 export interface ConnectorHost {
@@ -180,7 +186,7 @@ export interface ConnectorHost {
     resource: string,
     returnUrl: string,
   ): Promise<string>;
-  completeLogin?(state: string, code: string): Promise<string>;
+  completeLogin?(state: string, code: string, issuer?: string, expectedName?: string): Promise<string>;
   getToken?(name: string): string | undefined;
   fetch?: typeof fetch;
   /** Refuses an address the runner may not reach (not https, private, internal). */
@@ -196,11 +202,16 @@ export interface AppContext {
   };
   // The signed-in account and its services.
   readonly store: Store;
+  /** The desktop's current cloud project catalog, when syncing with the web. */
+  cloudProjectIds?(): ReadonlySet<string>;
+  officialCodeHelperCloud?(): Pick<import("../official-ui/api/desktop-cloud-code").DesktopCloudCode,
+    "available" | "listCloudEnvironments" | "startSideSession"> | undefined;
   /** The local engine. A conversation's own engine is `engineFor(id)` (R9). */
   readonly engine: Engine;
   /** Every engine of the signed-in account (local, and SSH hosts after R9-S3). */
   readonly engines: EngineRegistry;
   readonly activeAccount: PublicAccount | undefined;
+  readonly coworkAccountMemory?: CoworkAccountMemory;
   /** The Sub2API session, plan and device key; undefined for local accounts. */
   readonly remote: RemoteHost | undefined;
   readonly credentials: ProviderCredentials;
@@ -226,6 +237,7 @@ export interface AppContext {
    * `appWindows.main()` for the main window itself and `push` for events.
    */
   readonly window: BrowserWindow | undefined;
+  readonly organizationPluginsOnRunner?: boolean;
   /** The main window and the separate conversation windows (R2). */
   readonly appWindows: AppWindows;
   /** Optional services round-two packages share (R1–R11). */
@@ -301,6 +313,10 @@ export interface AppContext {
   settingsChanged(): void;
   /** Stops everything using the profile and signs out. */
   deactivate(): Promise<void>;
+  /** True until activation completes, and from the first synchronous teardown step. */
+  readonly accountRetiring: boolean;
+  /** Changes on retirement and reactivation, even when the account/store are reused. */
+  readonly accountActivationIdentity: unknown;
 
   /** The administrator's policy now; never waits for the network. */
   policy(): ClientPolicy;
@@ -308,8 +324,12 @@ export interface AppContext {
   refreshPolicy(): void;
   /** Sends an event to every app window (`window.desktop.onEvent`). */
   push(event: AppEvent): void;
+  notifyOfficialConnectorAuthentication?(name: string, state: string, error?: "access_denied" | "callback_failed"): boolean;
+  refreshOfficialConnector?(name: string): void;
   /** Runs `cb` each time an app window gains focus; returns the unsubscribe. */
   onWindowFocus(cb: () => void): () => void;
+  /** Account settings and services are ready for reads while history loads. */
+  onAccountPrepared?(cb: () => void): () => void;
   /**
    * Runs `cb` once an account is signed in and its store, engine and policy
    * are ready (sign-in, restore, account switch). A saved session is

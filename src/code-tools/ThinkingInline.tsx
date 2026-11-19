@@ -3,12 +3,12 @@ import { useContext, useEffect, useState } from "react";
 import { useConversationServices } from "../conversation/ConversationServices";
 import { AppContext } from "../app/AppContext";
 import { t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 
 /**
- * The thinking text as a Markdown quote, as the original copies it:
- * "**Thinking** (~N tok)" with N a quarter of its length, then every line
- * quoted.
+ * The thinking text as a Markdown quote, as the original copies it (live
+ * claude.ai bundle, 2026-10-14): "**Thinking** (~N tok)" with N a quarter of
+ * its length, then every line quoted.
  */
 export function thinkingQuote(text: string) {
   const lines = text
@@ -20,8 +20,8 @@ export function thinkingQuote(text: string) {
 
 /**
  * The Thinking and Verbose views' thinking: muted italic text after a rule,
- * with a ghost Copy as quote button at its top right that shows while the block
- * is hovered or focused.
+ * with a ghost Copy as quote button at its top right that shows while the
+ * block is hovered or focused (live claude.ai bundle, 2026-10-14).
  */
 export function ThinkingInline({ text }: { text: string }) {
   const services = useConversationServices();
@@ -55,7 +55,7 @@ export function ThinkingInline({ text }: { text: string }) {
           {copied ? (
             <Check size={16} aria-hidden="true" />
           ) : (
-            <AppIcon name="Copy" />
+            <Anthropicon name="Copy" />
           )}
         </button>
       </div>

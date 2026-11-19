@@ -80,13 +80,14 @@ export async function duplicate(
 }
 
 /**
- * Rename plugin: for a plugin in the personal marketplace under `home`. Its
- * files take the new name (see `renamePluginFiles`); an installed one is then
- * installed again under its new id (the old id uninstalled first, as live does)
- * and keeps its settings: the runtime's `[plugins."<id>"]` table, its on/off
- * state included, moves to the new id. Anything failing puts the old name,
- * install and settings back. A second rename of the same plugin while one runs
- * is refused with live's "Another change …" wording.
+ * Rename plugin (live claude.ai bundle, 2026-10-12): for a plugin in the
+ * personal marketplace under `home`. Its files take the new name (see
+ * `renamePluginFiles`); an installed one is then installed again under
+ * its new id (the old id uninstalled first, as live does) and keeps its
+ * settings: the runtime's `[plugins."<id>"]` table, its on/off state
+ * included, moves to the new id. Anything failing puts the old name,
+ * install and settings back. A second rename of the same plugin while
+ * one runs is refused with live's "Another change …" wording.
  */
 export async function rename(
   this: PluginService,

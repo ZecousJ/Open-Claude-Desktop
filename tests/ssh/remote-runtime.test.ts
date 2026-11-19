@@ -425,8 +425,8 @@ test(
     const home = temp("cxr-home-");
     const { shell, calls } = fakeHost(home);
     const probe = { ...(await probeOf(shell)), ...LINUX };
-    // Even with curl on the host, nothing is downloaded there: this computer's
-    // checked copy is uploaded.
+    // Even with curl on the host, nothing is downloaded there (owner,
+    // 2026-10-08): this computer's checked copy is uploaded.
     probe.tools = [...new Set([...probe.tools, "curl"])];
     const statuses: SshStatus[] = [];
     const clientId = clientIdFor("device-1");

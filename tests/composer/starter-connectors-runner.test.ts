@@ -15,7 +15,7 @@ test("the runner persists validated connector identities through the web MCP whi
   const settings = { mcpServers: {} as Record<string, unknown> };
   let changes = 0;
   const ctx = {
-    store: { settings, flush() {} },
+    store: { settings, flush() {}, assertConnectorSettingsWritable() {} },
     policy: () => openPolicy,
     connectorTokens: { keepOnly() {} },
     settingsChanged: () => changes++,
@@ -54,7 +54,7 @@ test("the runner retains display names and SSE transport but forgets tokens when
   };
   const forgotten: string[] = [];
   const ctx = {
-    store: { settings, flush() {} },
+    store: { settings, flush() {}, assertConnectorSettingsWritable() {} },
     policy: () => openPolicy,
     connectorTokens: {
       keepOnly() {},

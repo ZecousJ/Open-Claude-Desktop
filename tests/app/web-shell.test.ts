@@ -68,14 +68,14 @@ test("web navigation: browser-safe New hint, no window icon, no Routines", () =>
   const html = nav();
   assert.doesNotMatch(html, /main-nav-new-window/);
   assert.doesNotMatch(html, /⌘ N/);
-  assert.match(html, /<kbd>(⇧ ⌘ O|Ctrl+Shift+O)<\/kbd>/);
+  assert.match(html, /<kbd>(⇧ ⌘ O|Ctrl\+Shift\+O)<\/kbd>/);
   assert.match(html, />Projects</);
-  // Scheduled and Customize sit under More.
+  // Scheduled and Customize sit under More (owner, 2026-10-22).
   assert.match(html, />Artifacts</);
   assert.doesNotMatch(html, />Scheduled</);
   assert.doesNotMatch(html, />Customize</);
   assert.match(html, /href="\/projects"/);
-  // API and Service status sit on the sidebar.
+  // API and Service status sit on the sidebar (owner, 2026-10-20).
   assert.match(html, /href="\/api"[^]*>API</);
   assert.match(html, />Service status</);
   // Even with nothing hidden they stay in More.
@@ -138,7 +138,7 @@ test("sidebar head: toggle, serif product name and the switch when Code runs", (
 test("account row: search button, no update glyph, no Settings shortcut", () => {
   const html = renderToStaticMarkup(
     createElement(AccountMenu, {
-      name: "Ada",
+      name: "Zecous",
       plan: "Max",
       mode: "chat",
       onSearch: noop,

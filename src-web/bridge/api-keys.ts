@@ -10,64 +10,79 @@ import {
   keyUsageBatch,
   withKeyCosts,
   groupRatesFrom,
-  isDeviceKey,
   type ApiKey,
   type ApiKeyInput,
   type ApiKeysAPI,
 } from "../../shared/api-keys-api";
 import type { WebTransport } from "../../shared/web-client/transport";
 
-type Method = (...args: any[]) => Promise<unknown>;
-
-const json = (method: string, body?: unknown): RequestInit => ({
+const json = (
+  method: string,
+  body?: unknown,
+  headers?: Record<string, string>,
+): RequestInit => ({
   method,
-  headers: { "Content-Type": "application/json" },
+  headers: { "Content-Type": "application/json", ...headers },
   ...(body === undefined ? {} : { body: JSON.stringify(body) }),
 });
 
 /** The value of the service's `{code, data}` answer. */
 function data(body: unknown): unknown {
-  const wrapped = body as { data?: unknown } | undefined;
-  return wrapped && typeof wrapped === "object" && "data" in wrapped
-    ? wrapped.data
-    : body;
+  return body && typeof body === "object" && "data" in body ? body.data : body;
 }
 
 export function createApiKeyMethods(
-  transport: Pick<WebTransport, "json">,
+  transport: Pick<WebTransport, "json" | "captureActivation">,
 ): Pick<
-  { [K in keyof ApiKeysAPI]: Method },
+  ApiKeysAPI,
   "apiKeys" | "createApiKey" | "deleteApiKey" | "groupRates"
 > {
-  const list = async (): Promise<ApiKey[]> => {
+  const operation = () => {
+    const check = transport.captureActivation();
+    const request: WebTransport["json"] = async (path, init) => {
+      check();
+      const read = await transport.json(path, init);
+      check();
+      return read;
+    };
+    return { check, request };
+  };
+  const list = async (
+    { check, request }: ReturnType<typeof operation>,
+    details: boolean,
+  ): Promise<ApiKey[]> => {
     const groups = new Map<number, string>();
-    try {
-      const available = data(await transport.json("/api/v1/groups/available"));
-      if (Array.isArray(available))
-        for (const group of available)
-          if (
-            Number.isSafeInteger(group?.id) &&
-            typeof group?.name === "string"
-          )
-            groups.set(group.id, group.name);
-    } catch {
-      // Keys carry their own group; the names are a convenience.
+    if (details) {
+      try {
+        const available = data(await request("/api/v1/groups/available"));
+        if (Array.isArray(available))
+          for (const group of available)
+            if (
+              Number.isSafeInteger(group?.id) &&
+              typeof group?.name === "string"
+            )
+              groups.set(group.id, group.name);
+      } catch {
+        check();
+        // Keys carry their own group; the names are a convenience.
+      }
     }
     const items: unknown[] = [];
     for (let page = 1, pages = 1; page <= Math.min(pages, 50); page++) {
       const read = data(
-        await transport.json(`/api/v1/keys?page=${page}&page_size=100`),
+        await request(`/api/v1/keys?page=${page}&page_size=100`),
       ) as { items?: unknown; pages?: unknown } | undefined;
       if (Array.isArray(read?.items)) items.push(...read.items);
       pages = typeof read?.pages === "number" ? read.pages : 1;
     }
     const keys = apiKeysFrom(items, groups);
+    if (!details) return keys;
     // The charges are a convenience: the keys show without them.
     try {
       const stats: Record<string, unknown> = {};
       for (let at = 0; at < keys.length; at += keyUsageBatch) {
         const read = data(
-          await transport.json(
+          await request(
             "/api/v1/usage/dashboard/api-keys-usage",
             json("POST", {
               api_key_ids: keys
@@ -80,28 +95,42 @@ export function createApiKeyMethods(
       }
       return withKeyCosts(keys, stats);
     } catch {
+      check();
       return keys;
     }
   };
   return {
     groupRates: async () => {
+      const { check, request } = operation();
       const [available, own] = await Promise.all([
-        transport.json("/api/v1/groups/available").then(data),
-        transport.json("/api/v1/groups/rates").then(data, () => undefined),
+        request("/api/v1/groups/available").then(data),
+        request("/api/v1/groups/rates").then(data, () => undefined),
       ]);
+      check();
       return groupRatesFrom(available, own);
     },
-    apiKeys: list,
+    apiKeys: async () => {
+      const scope = operation();
+      const keys = await list(scope, true);
+      scope.check();
+      return keys;
+    },
     createApiKey: async (input: ApiKeyInput) => {
       const problem = apiKeyNameProblem(input.name);
       if (problem) throw new Error(problem);
+      const { check, request } = operation();
       const created = data(
-        await transport.json(
+        await request(
           "/api/v1/keys",
-          json("POST", { name: input.name.trim(), group_id: input.groupId }),
+          json(
+            "POST",
+            { name: input.name.trim(), group_id: input.groupId },
+            { "Idempotency-Key": crypto.randomUUID() },
+          ),
         ),
-      ) as { id?: number } | undefined;
-      const made = (await list()).find((key) => key.id === created?.id);
+      );
+      check();
+      const [made] = apiKeysFrom([created]);
       if (!made)
         throw new Error("The key was created but could not be read back.");
       return made;
@@ -109,11 +138,13 @@ export function createApiKeyMethods(
     deleteApiKey: async (id: number) => {
       // Only the account's own keys: a device key's deletion would cut the
       // web app off the service.
-      if (
-        !(await list()).some((key) => key.id === id && !isDeviceKey(key.name))
-      )
+      const scope = operation();
+      const keys = await list(scope, false);
+      scope.check();
+      if (!keys.some((key) => key.id === id))
         throw new Error("That key isn't in your list any more.");
-      await transport.json(`/api/v1/keys/${id}`, json("DELETE"));
+      await scope.request(`/api/v1/keys/${id}`, json("DELETE"));
+      scope.check();
     },
   };
 }

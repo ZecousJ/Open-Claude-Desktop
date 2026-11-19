@@ -118,7 +118,7 @@ func (c *Component) deleteNativeSession(g *gin.Context) {
 		response.ErrorFrom(g, errUnavailable)
 		return
 	}
-	c.dropFamilies(ctx, []string{family})
+	c.dropFamilies(ctx, uid, []string{family})
 	response.Success(g, gin.H{"id": id, "revoked": true})
 }
 
@@ -200,15 +200,28 @@ WHERE id = $1 AND user_id = $2 AND revoked_at IS NULL AND expires_at > $3 RETURN
 	return family, nil
 }
 
-// revokeAllNative ends every row of the user ("log out of all devices"; the
-// upstream revoke-all already ended the families themselves).
-func (s *store) revokeAllNative(ctx context.Context, userID int64, now time.Time) error {
-	_, err := s.db.ExecContext(ctx, `UPDATE claudex_native_sessions SET revoked_at = $2, revoked_reason = 'revoke_all'
-WHERE user_id = $1 AND revoked_at IS NULL`, userID, now)
+func (s *store) revokeAllNative(ctx context.Context, userID int64, now, revokedUntil time.Time) ([]string, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("claudex web: revoke native sessions: %w", err)
+		return nil, fmt.Errorf("claudex web: begin: %w", err)
 	}
-	return nil
+	defer func() { _ = tx.Rollback() }()
+	rows, err := tx.QueryContext(ctx, `UPDATE claudex_native_sessions SET revoked_at = $2, revoked_reason = 'revoke_all'
+WHERE user_id = $1 AND revoked_at IS NULL RETURNING family_id`, userID, now)
+	if err != nil {
+		return nil, fmt.Errorf("claudex web: revoke native sessions: %w", err)
+	}
+	families, err := scanFamilies(rows)
+	if err != nil {
+		return nil, err
+	}
+	if err := markFamiliesRevoked(ctx, tx, userID, families, now, revokedUntil); err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("claudex web: commit: %w", err)
+	}
+	return families, nil
 }
 
 // cleanupNative drops rows that expired or ended more than keep ago.

@@ -115,6 +115,21 @@ export function portInScript(script: string): number | undefined {
   return undefined;
 }
 
+export function portInPackageScript(scripts: Record<string, unknown>, name: string) {
+  const seen = new Set<string>();
+  let script = name;
+  while (Object.hasOwn(scripts, script) && !seen.has(script)) {
+    seen.add(script);
+    const command = scripts[script];
+    if (typeof command !== "string") return;
+    const port = portInScript(command);
+    if (port !== undefined) return port;
+    const nested = /^(?:npm|pnpm|yarn|bun)\s+run\s+([\w:.-]+)$/.exec(command.trim());
+    if (!nested) return;
+    script = nested[1];
+  }
+}
+
 /** The framework whose default port applies to a script, from the script and the dependencies. */
 export function frameworkFor(script: string, dependencies: string[]) {
   const inScript = frameworks.find((framework) => framework.match.test(script));
@@ -158,7 +173,7 @@ async function detectNode(
     ...Object.keys(data.devDependencies ?? {}),
   ];
   const framework = frameworkFor(script, dependencies);
-  const port = portInScript(script) ?? framework?.port;
+  const port = portInPackageScript(scripts, scriptName) ?? framework?.port;
   if (!port) return undefined;
   const manager = await packageManager(folder, root);
   const config: LaunchConfiguration = {

@@ -33,13 +33,18 @@ const SentPromptDialog = lazyPiece(
   "SentPromptDialog",
 );
 
-/** A prompt taller than this is clamped behind a fade with Show more. */
+/**
+ * A prompt taller than this is clamped behind a fade with Show more
+ * (transcript-states.css holds it to 200px: source: desktop bundle
+ * 2.31226.1, a collapse threshold of 300 and a collapsed height of the
+ * threshold less 100).
+ */
 export const userMessageClamp = 300;
 
 /**
  * What saving an edited prompt does, as the original words it for a
- * conversation with versions: the edit becomes a new version of the prompt and
- * its reply.
+ * conversation with versions (source: desktop bundle 2.31226.1 static JS):
+ * the edit becomes a new version of the prompt and its reply.
  */
 export const editNote =
   "Making changes creates a new branch in the conversation.";
@@ -88,7 +93,7 @@ export function UserMessage({
         ? canEdit
         : action.id === "retry"
           ? // A message that failed to send has Retry and Discard once, in its
-            // bubble's failed row.
+            // bubble's failed row (live claude.ai bundle, 2026-10-16, shared-2).
             !failedSend && (actionPolicy?.retry ?? true)
           : action.id === "versions"
             ? (actionPolicy?.versions ?? true)
@@ -183,7 +188,7 @@ export function UserMessage({
   const authors = conversation.sessionAuthors;
   const ownMessage =
     !authors || authors.viewerAccountUuid === authors.ownerAccountUuid;
-  // A prompt sent just now pops in; older ones do not.
+  // A prompt sent just now pops in (live claude.ai); older ones do not.
   const [entering] = useState(() => Date.now() - turn.createdAt < 1500);
   return (
     <>
@@ -231,7 +236,7 @@ export function UserMessage({
               )}
             </div>
             {comment && (
-              // A comment sent from an artifact ends with View thread.
+              // R-1022: a comment sent from an artifact ends with View thread.
               <button
                 type="button"
                 className="comment-message-thread"
@@ -433,14 +438,16 @@ export function UserMessage({
 }
 
 /**
- * A prompt as typed: Markdown stays literal, but `code` spans and web addresses
- * are styled, and an address opens like a link in a reply. Chat only: the Code
- * and Cowork captures show no styled prompts.
+ * A prompt as typed: Markdown stays literal (R-0598 shows **bold** and
+ * *italic* raw), but `code` spans and web addresses are styled, and an
+ * address opens like a link in a reply (R-0561, R-0598). Chat only: the
+ * Code and Cowork captures show no styled prompts.
  */
 function PromptText({ text }: { text: string }) {
   const openLink = useOpenLink();
-  // An empty line is a paragraph break of 8px, not a whole blank line (bubble
-  // line pitch 20px, across the break 28px); single line breaks stay as typed.
+  // R-0488: an empty line is a paragraph break of 8px, not a whole blank
+  // line (bubble line pitch 20px, across the break 28px); single line breaks
+  // stay as typed.
   return (
     <>
       {text.split(/\n[ \t]*\n/).map((block, at) => (

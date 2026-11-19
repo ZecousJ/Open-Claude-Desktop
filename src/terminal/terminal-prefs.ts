@@ -1,8 +1,11 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * The terminal's view settings and the default shell, kept per browser profile
- * as the original keeps them.
+ * The terminal's view settings (live claude.ai bundle, 2026-10-15,
+ * cccc2cf0a: the pane menu's Cursor style Block / Bar / Underline, Blink
+ * cursor, Copy on select, Scrollback 1,000 / 5,000 / 10,000 lines; defaults
+ * block, blinking, no copy on select, 10,000) and the default shell, kept
+ * per browser profile as the original keeps them.
  */
 export type CursorStyle = "block" | "bar" | "underline";
 export const cursorStyles: CursorStyle[] = ["block", "bar", "underline"];

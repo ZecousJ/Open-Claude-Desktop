@@ -1,9 +1,10 @@
 /*
  * Settings → Billing (package C5). The plan card is measured from
- * R-设置-Billing-顶部-深色 (2894×2126, 2.0 image px per CSS px): a 64px drawing 24px
- * from the page's left edge, 16px semibold name and a 14px line under it, 16px
- * between drawing and text. Everything below the card has no original capture
- * and reuses the Settings row styles.
+ * R-设置-Billing-顶部-深色 (2894×2126, 2.0 image px per CSS px): a 64px
+ * drawing 24px from the page's left edge, 16px semibold name and a 14px
+ * line under it, 16px between drawing and text. Everything below the card
+ * has no original capture and reuses the Settings row styles (provisional;
+ * see fidelity/observations/billing.md).
  */
 .billing-page {
   --billing-muted: #908f8d;
@@ -263,7 +264,8 @@
 :root[data-theme="light"] .billing-status.recharging {
   color: #9a6a12;
 }
-/* Adjust plan / Upgrade plan at the card's right, aligned to its top. */
+/* Adjust plan / Upgrade plan at the card's right, aligned to its top
+   (cbbbe68ed: flex h-full items-start). */
 .billing-plan-action {
   display: flex;
   align-self: flex-start;

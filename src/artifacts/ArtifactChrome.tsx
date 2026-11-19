@@ -10,7 +10,7 @@ import type { ArtifactComment } from "../../shared/artifact-notes";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Files } from "../ui/glyphs";
 import type { Artifact } from "../ui/ArtifactTypes";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { surface } from "../../shared/host";
 import { useArtifactReportsState } from "./ReportArtifactDialog";
 import { formatText, useLocale } from "../i18n";
@@ -50,7 +50,7 @@ export const ArtifactToolPermissions = lazyPiece(
 );
 
 export type Comment = ArtifactComment;
-/** The draft marker (33px), its gap and the 300px box. */
+/** The draft marker (33px), its gap and the 300px box (R-1017, W1202 at 1x). */
 export const draftReach = 39 + 300 + 12;
 export const draftHeight = 110;
 /** Why Open in web is greyed: the version shown has no public page. */
@@ -147,7 +147,7 @@ export function ArtifactChrome({
   onClose: () => void;
   onRefresh: () => void;
   onError: (e: unknown) => void;
-  /** Confirms a finished copy or download. */
+  /** Confirms a finished copy or download (R-1000, R-0955). */
   onNotify?: (message: string) => void;
   onComment?: (text: string) => Promise<void>;
   onAsk?: () => void;
@@ -162,16 +162,17 @@ export function ArtifactChrome({
   onPin?: (artifact: Artifact) => Promise<void>;
   onDelete?: (artifact: Artifact) => void;
   onPopOut?: () => Promise<void>;
-  /** Whether the conversation floats over the expanded artifact. */
+  /** Whether the conversation floats over the expanded artifact (R-1048). */
   chatFloating?: boolean;
   /**
-   * Floats the conversation over the expanded artifact, or puts it away.
-   * Absent where no conversation is beside the artifact.
+   * Floats the conversation over the expanded artifact, or puts it away
+   * (R-1047). Absent where no conversation is beside the artifact.
    */
   onToggleChatFloat?: () => void;
   /**
-   * The artifacts of this artifact's conversation, for Switch artifact. Called
-   * while the title menu is open.
+   * The artifacts of this artifact's conversation, for Switch artifact
+   * (R-1050 W1920: shown with their count when the conversation has more
+   * than one). Called while the title menu is open.
    */
   siblings?: () => Artifact[];
   onSwitch?: (artifact: Artifact) => void;
@@ -507,7 +508,7 @@ export function ArtifactChrome({
   return chromeView;
 }
 
-/** Frame switcher rows. */
+/** Frame switcher rows (live claude.ai bundle, 2026-10-14, c547ae5e3-GTYn8RRi.js:243,763). */
 export function SwitchArtifactRow({
   artifact,
   siblings,
@@ -534,7 +535,7 @@ export function SwitchArtifactRow({
           key: artifactIdentity(item),
           label: item.name,
           noTranslate: true,
-          icon: <AppIcon name="Artifacts" />,
+          icon: <Anthropicon name="Artifacts" />,
           title:
             kindLabel(item).toLowerCase() === item.name.trim().toLowerCase()
               ? undefined

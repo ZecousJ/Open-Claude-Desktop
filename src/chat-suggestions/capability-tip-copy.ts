@@ -1,6 +1,6 @@
 import type { CapabilityTip } from "../../shared/chat-suggestions";
 
-// Hn/Un.
+// Hn/Un (live claude.ai bundle, 2026-10-14, c0c371a67-DnJIbmz9.js:1167-1256).
 export const capabilityTipCopy: Record<
   CapabilityTip,
   { body: string; action?: string }

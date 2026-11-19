@@ -1,6 +1,6 @@
 /* Discover is shared by Settings and Customize. This stylesheet travels with
    the lazy plugin page; no global or first-screen stylesheet imports it.
-   Existing row/card geometry remains in plugins.css. */
+   Existing row/card geometry remains in plugins.css (official 1440x900 capture). */
 .plugin-catalog-discover > .plugin-discovery-section:first-child {
   margin-top: 16px;
 }

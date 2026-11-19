@@ -11,9 +11,10 @@ export function responseAnnouncement(streaming: boolean, userStopped: boolean) {
 }
 
 /**
- * A hidden status line that tells screen readers a reply started and that it
- * finished or was interrupted. It says nothing on arrival or when another
- * conversation opens, only when streaming changes.
+ * A hidden status line that tells screen readers a reply started and that
+ * it finished or was interrupted (live claude.ai bundle, 2026-10-12: the
+ * chat page's response-status announcer). It says nothing on arrival or
+ * when another conversation opens, only when streaming changes.
  */
 export function ResponseStatusAnnouncer({
   conversationId,

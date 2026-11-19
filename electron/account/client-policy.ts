@@ -24,14 +24,14 @@ import {
   policyFileName,
   type PolicyContext,
 } from "../../server/operator-policy";
-import type { PublicSettings, RemoteAnnouncement } from "../sub2api/client";
+import type { PublicSettings } from "../sub2api/client";
 
 type ServiceSettings = Pick<
   PublicSettings,
   "docUrl" | "purchaseUrl" | "menuItems"
 >;
 
-/** Custom menu labels that fill the account menu's entries. */
+/** Custom menu labels that fill the account menu's entries (R-0090). */
 const menuEntries = {
   help: "get help",
   plans: "view all plans",
@@ -60,28 +60,6 @@ export function serviceLinks(settings: ServiceSettings): ClientPolicy["links"] {
       .filter((item) => !reserved.has(item.label.toLowerCase()))
       .slice(0, 10),
   };
-}
-
-/** Sub2API notices as the renderer shows them; popup mode stays until read. */
-export function fromRemoteAnnouncements(
-  items: RemoteAnnouncement[],
-  now: number,
-): Announcement[] {
-  return items
-    .filter(
-      (item) =>
-        (item.startsAt === null || item.startsAt <= now) &&
-        (item.endsAt === null || item.endsAt > now),
-    )
-    .map((item) => ({
-      id: String(item.id),
-      title: item.title,
-      content: item.content,
-      popup: item.notifyMode === "popup",
-      createdAt: item.createdAt,
-      read: item.readAt !== null,
-    }))
-    .sort((a, b) => b.createdAt - a.createdAt);
 }
 
 /** Which of the policy file's notices a local account has read, kept in its profile. */
@@ -266,22 +244,11 @@ function clientPolicyOf(policy: ClaudexPolicy): ClientPolicy {
 }
 
 /**
- * A policy kept from an earlier run, until the service answers in this one:
- * computer use waits (the administrator may have turned it off since, and it
- * acts on this computer's apps); everything else applies as kept.
- */
-export function cachedPolicyInForce(policy: ClientPolicy): ClientPolicy {
-  return policy.computerUse?.enabled
-    ? { ...policy, computerUse: { ...policy.computerUse, enabled: false } }
-    : policy;
-}
-
-/**
  * A Claudex service's policy for the signed-in account (design 4.2 item 3):
  * the bootstrap's `policy` first, then `GET /claudex/policy` with its ETag
  * every five minutes, on window focus and after gateway refusals. Each
  * answer is also kept on disk. Without an answer in this run the cached
- * policy applies (computer use waiting, see cachedPolicyInForce), and
+ * policy applies, and
  * without one the offline policy, which only holds back
  * changing MCP servers (Bypass permissions stays the user's choice
  * everywhere, owner decision 3). A failed read keeps what is in force.
@@ -297,7 +264,7 @@ export class ServerPolicySource implements PolicySource {
   constructor(private options: ServerPolicyOptions) {
     const cached = options.cache.read();
     if (cached)
-      this.cached = cachedPolicyInForce(clientPolicyOf(cached.policy));
+      this.cached = clientPolicyOf(cached.policy);
     this.published = JSON.stringify(this.current());
   }
   private get now() {

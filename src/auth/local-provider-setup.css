@@ -1,0 +1,46 @@
+.signin-body:has(.local-provider-form) .signin-title {
+  margin-bottom: 22px;
+}
+.signin-body:has(.local-provider-form) .signin-card {
+  margin-top: 20px;
+}
+.local-provider-brand {
+  display: inline-flex;
+  align-items: center;
+  order: -1;
+  gap: 7px;
+  margin-bottom: 16px;
+  color: var(--auth-muted);
+  font: 500 13px/1.5 var(--auth-sans);
+}
+.local-provider-brand svg {
+  width: 19px;
+  height: 19px;
+  color: var(--auth-accent);
+}
+.local-provider-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-weight: 500;
+}
+.local-provider-form .signin-input {
+  height: 38px;
+  font-size: 14px;
+}
+.local-provider-model {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.local-provider-form .signin-primary { margin-top: 4px; }
+
+.local-provider-form select {
+  color-scheme: inherit;
+}
+
+@media (max-width: 380px) {
+  .local-provider-model {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

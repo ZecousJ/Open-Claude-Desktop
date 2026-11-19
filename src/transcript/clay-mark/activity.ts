@@ -1,7 +1,7 @@
 import type { Item, Turn } from "../../../shared/types";
 import { itemIsRunning } from "../../../shared/activity";
 
-/** What the working mark can show. */
+/** The bodies the working mark can show (sheets.ts). */
 export type MarkBody =
   | "default"
   | "think"
@@ -12,7 +12,8 @@ export type MarkBody =
   | "compose"
   | "blocked";
 
-// The words the original reads a tool's activity from.
+// The words the original reads a tool's activity from (live desktop
+// 2.42304.2, c77e464d3: et, tt, nt, J, rt).
 const readWords = new Set([
   "read",
   "view",

@@ -1,10 +1,10 @@
 /*
- * The image lightbox (Lightbox.tsx), after the original's: the window under 80%
- * black with a 40px blur; a close button at the top right over a fade; slides
- * 75vw wide and 32px apart, the picture at most 70% of the height with 16px
- * corners; neighbours at 40%, 70% on hover, 300ms; the pager centred 24px above
- * the bottom. Its colours are the original's always-black and always-white, the
- * same in both themes.
+ * The image lightbox (Lightbox.tsx), after the original's (desktop bundle
+ * 2.31226.1): the window under 80% black with a 40px blur; a close button at
+ * the top right over a fade; slides 75vw wide and 32px apart, the picture at
+ * most 70% of the height with 16px corners; neighbours at 40%, 70% on hover,
+ * 300ms; the pager centred 24px above the bottom. Its colours are the
+ * original's always-black and always-white, the same in both themes.
  */
 .lightbox {
   position: fixed;
@@ -97,8 +97,8 @@
   cursor: zoom-in;
   outline: none;
 }
-/* Zoomed: it rises over its neighbours, follows the pointer without a
-   transition, and takes touch for panning. */
+/* Zoomed (live bundle): it rises over its neighbours, follows the pointer
+   without a transition, and takes touch for panning. */
 .lightbox-slide[data-current] > img[data-zoomed] {
   position: relative;
   z-index: 10;
@@ -109,9 +109,9 @@
 .lightbox-slide[data-current] > img:focus-visible {
   box-shadow: 0 0 0 2px rgb(255 255 255 / 70%);
 }
-/* A caption: bottom left on the pager's row, over a fade max(128px, 10vh) tall
-   from clear to 80% black at 66.41%; on narrow windows it sits centred just
-   above that row. */
+/* A caption (live bundle's attribution slot): bottom left on the pager's
+   row, over a fade max(128px, 10vh) tall from clear to 80% black at 66.41%;
+   on narrow windows it sits centred just above that row. */
 .lightbox-bottom-fade {
   position: absolute;
   right: 0;

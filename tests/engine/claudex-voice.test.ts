@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { once } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -21,6 +22,9 @@ import { voiceMethods } from "../../shared/voice-api";
 import { PcmEncoder, chunkSamples, pcm16 } from "../../src/voice/pcm";
 import { withSpoken } from "../../src/voice/useDictationDraft";
 import { RealtimeTranscriptionMock } from "../support/realtime-transcription-mock";
+import { createOfficialDictation } from "../../electron/official-ui/native/dictation";
+import { startOfficialUiServer, cookieName } from "../../electron/official-ui/server";
+import { connectTranscriptionSocket } from "../../server/transcription-socket";
 
 let script = "";
 const roots: string[] = [];
@@ -368,6 +372,96 @@ test("a local model service gets the whole recording as a WAV upload", async () 
       await client.close();
     }
   } finally {
+    await mock.stop();
+  }
+});
+
+test("the original composer protocol relays microphone audio and delivers final text once", async () => {
+  const mock = await new RealtimeTranscriptionMock({ key: "f072-test-key" }).start();
+  const ctx = context(remoteProvider(mock.url), {
+    sessionKey: "f072-test-key",
+    voice: voiceSection(),
+  });
+  let current = true;
+  const dictation = createOfficialDictation(new DictationSessions(ctx), () => voiceAvailability(ctx), () => current);
+  const root = ctx.store.root;
+  fs.mkdirSync(path.join(root, "ui"));
+  fs.writeFileSync(path.join(root, "ui", "index.html"), "<!doctype html>");
+  const server = await startOfficialUiServer({ root, api: () => false, upgrade: dictation.upgrade });
+  try {
+    const credential = dictation.credential(server.origin);
+    assert.ok(credential);
+    assert.equal(credential.maxSeconds, 90);
+    const address = new URL(credential.url);
+    assert.equal(address.host, new URL(server.origin).host);
+    address.protocol = "http:";
+    address.searchParams.set("language", "en-US");
+    const headers = {
+      Origin: server.origin,
+      Cookie: `${cookieName}=${server.token}`,
+      "Sec-WebSocket-Protocol": `claude.dictation.v1, ticket.${credential.ticket}`,
+    };
+    const messages: unknown[] = [];
+    const events = new EventTarget();
+    const butForOrigin = { ...headers, Origin: "http://localhost:9" };
+    const handlers = {
+      onText: (text: string) => messages.push(JSON.parse(text)),
+      onClose: (code: number) => events.dispatchEvent(new CustomEvent("closed", { detail: code })),
+      onError: (error: Error) => events.dispatchEvent(new CustomEvent("closed", { detail: error })),
+    };
+    await assert.rejects(connectTranscriptionSocket(address.href, butForOrigin, handlers), { status: 403 });
+    const socket = await connectTranscriptionSocket(address.href, headers, handlers);
+    await assert.rejects(connectTranscriptionSocket(address.href, headers, handlers), { status: 403 });
+    const done = once(events, "closed");
+    socket.sendBinary(new Uint8Array(3200));
+    socket.sendBinary(new Uint8Array(6400));
+    socket.sendText(JSON.stringify({ type: "CloseStream" }));
+    assert.equal((await done)[0].detail, 1000);
+    assert.equal(mock.sessions.length, 1);
+    assert.equal(mock.sessions[0].audioBytes, 9600);
+    assert.equal(mock.sessions[0].start?.language, "en-US");
+    assert.deepEqual(messages, [
+      { type: "TranscriptText", data: "Hello from the microphone." },
+      { type: "TranscriptEndpoint" },
+    ]);
+    const browserMessages: unknown[] = [];
+    const originalWebSocket = await connectTranscriptionSocket(address.href, {
+      Cookie: headers.Cookie,
+      Origin: headers.Origin,
+    }, {
+      onText: (text) => browserMessages.push(JSON.parse(text)),
+      onClose: handlers.onClose,
+      onError: handlers.onError,
+    });
+    const browserDone = once(events, "closed");
+    originalWebSocket.sendBinary(new Uint8Array(3200));
+    originalWebSocket.sendText(JSON.stringify({ type: "CloseStream" }));
+    assert.equal((await browserDone)[0].detail, 1000);
+    assert.deepEqual(browserMessages, messages);
+    const native = dictation.nativeCredential(server.origin);
+    assert.ok(native);
+    assert.equal(native.baseURL, server.origin);
+    const nativeAddress = new URL(address.href);
+    nativeAddress.searchParams.set("sample_rate", "48000");
+    const nativeMessages: unknown[] = [];
+    const nativeSocket = await connectTranscriptionSocket(nativeAddress.href, { Cookie: native.cookie }, {
+      onText: (text) => nativeMessages.push(JSON.parse(text)),
+      onClose: handlers.onClose,
+      onError: handlers.onError,
+    });
+    const nativeDone = once(events, "closed");
+    nativeSocket.sendBinary(new Uint8Array(2000));
+    nativeSocket.sendBinary(new Uint8Array(7600));
+    nativeSocket.sendText(JSON.stringify({ type: "CloseStream" }));
+    assert.equal((await nativeDone)[0].detail, 1000);
+    assert.equal(mock.sessions[2].audioBytes, 3200);
+    assert.deepEqual(nativeMessages, messages);
+    current = false;
+    assert.equal(dictation.credential(server.origin), null);
+    assert.equal(dictation.nativeCredential(server.origin), null);
+  } finally {
+    dictation.close();
+    await server.close();
     await mock.stop();
   }
 });

@@ -9,7 +9,7 @@ import type { Conversation } from "../../shared/types";
 import { prependSkillDraft } from "./skill-tokens";
 import { useApp } from "../app/AppContext";
 import { useT } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { TooltipGroup, WithTooltip } from "../ui/Tooltip";
 import { maxAttachmentsFor } from "./attachment-limits";
 import { queuedGlyphs, type QueuedGlyphName } from "./queued-glyphs";
@@ -31,18 +31,19 @@ import "./queued-message-bar.css";
 import { QueuedList } from "./QueuedList";
 
 /**
- * The Code session's queued messages: the original's QueuedMessageBar, which
- * the owner chose over the transcript bubbles of R-0832.
+ * The Code session's queued messages: the original's QueuedMessageBar (live
+ * claude.ai bundle, 2026-10-12), which the owner chose over the transcript
+ * bubbles of R-0832.
  *
- * One message is a band: "1 message queued", the message on one line, then Send
- * now (↵), Edit in composer and Remove from queue. Two or more fold into a
- * button, "N messages queued · Next: …", that opens a card listing them: each
- * row shows the message on up to two lines with a drag handle (to change the
- * order they are sent in) and a ⋮ menu (Edit in composer, Send now, Remove from
- * queue), the same menu on a right-click, and the card ends in Clear all. A
- * message the running turn already took reads "✓ Sent" until the model reads
- * it; it can no longer be edited, removed or moved (Codex cannot take a steered
- * message back).
+ * One message is a band: "1 message queued", the message on one line, then
+ * Send now (↵), Edit in composer and Remove from queue. Two or more fold
+ * into a button, "N messages queued · Next: …", that opens a card listing
+ * them: each row shows the message on up to two lines with a drag handle
+ * (to change the order they are sent in) and a ⋮ menu (Edit in composer,
+ * Send now, Remove from queue), the same menu on a right-click, and the
+ * card ends in Clear all. A message the running turn already took reads
+ * "✓ Sent" until the model reads it; it can no longer be edited, removed or
+ * moved (Codex cannot take a steered message back).
  */
 export interface QueuedMessageBarProps {
   entries: QueuedMessage[];
@@ -59,15 +60,24 @@ export interface QueuedMessageBarProps {
   initiallyExpanded?: boolean;
   /**
    * The Transcript text size's message size: the bar's text follows the
-   * transcript's.
+   * transcript's (live claude.ai bundle, 2026-10-12).
    */
   textSize?: MessageTextSize;
 }
 
-/** A queued-bar glyph, 16px. */
+/** A glyph of the original's icon font, 16px. */
 export function Glyph({ name }: { name: QueuedGlyphName }) {
-  const Icon = queuedGlyphs[name];
-  return <Icon size={16} strokeWidth={1.75} aria-hidden="true" />;
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d={queuedGlyphs[name]} />
+    </svg>
+  );
 }
 
 /** Keeps the composer focused when one of the bar's buttons is pressed. */
@@ -220,7 +230,7 @@ function SingleBand({
       {!locked && onEdit && (
         <GhostButton
           label="Edit in composer"
-          icon={<AppIcon name="Edit" />}
+          icon={<Anthropicon name="Edit" />}
           disabled={busy}
           onClick={() => onEdit(entry.id)}
         />

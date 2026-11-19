@@ -105,7 +105,7 @@ B4 0020–0029、B5 0030–0039、B8 0040–0049、B7 0050–0059、R1 分享 00
   usage-rules、release、voice、feedback、general，均已实现；服务端没有对应组件（接口 404）时页面显示“此版本尚未提供”）。
   第二轮加 sharing（R1）与 memory（R3，`views/admin/claudex/memory/`），B-S 建的桩页如实显示“此版本尚未提供”，由功能包替换。
   公开分享页 `/s/<token>` 由 Go 渲染，不是 Vue 路由；不得新增 `/s/` 开头的前端路由。
-  部署与各页的用途见仓库根目录的 `docs/self-hosting.md`。
+  各页的用途见仓库根目录的 `docs/admin-backend.md` 第 4 节。
 - 接口：每个区域一个文件 `api/admin/claudex/<area>.ts`，由 `api/admin/claudex.ts` 聚合为 `adminAPI.claudex.<area>`。
 - 公共件在 `components/admin/claudex/common/`：`ClaudexPageShell`（页面框架）、`SaveBar` + `useClaudexSave`
   （保存状态，`CLAUDEX_*` 错误映射到 `admin.<page>.errors.<REASON>`）、`UrlInput`（只收 https）、`TagInput`、
@@ -120,7 +120,7 @@ B4 0020–0029、B5 0030–0039、B8 0040–0049、B7 0050–0059、R1 分享 00
 
 ### 网页版（W-*）
 
-网页版（类 claude.ai，挂在主域名根路径，控制台只挂 `/admin`）的整体说明见仓库根目录的 `docs/architecture.md`。按 origin/main
+网页版（类 claude.ai，挂在主域名根路径，控制台只挂 `/admin`）的整体说明见仓库根目录的 `docs/web.md`。按 origin/main
 `5b0e0544`，服务端只合并了协议契约：
 
 - `internal/claudex/webproto/`（W-PROTO）：浏览器 ⇄ Go 的 RPC 信封、事件帧、一次性票据，Go ⇄ runner 的 runner link 帧，

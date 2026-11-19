@@ -9,10 +9,13 @@
  * be tested without Electron.
  */
 import fs from "node:fs/promises";
+import { mainState } from "../app/main-state";
+import { draftBrowserIds, resetDraftBrowsers } from "./draft-sessions";
 import path from "node:path";
 import { previewLinkRouter } from "../artifacts/preview-link-routing";
 import { hostBlocked } from "../../shared/browser";
 import type { ChromeImport } from "./chrome-import";
+import { requestChromeImportPresence } from "./chrome-import-presence";
 import { PreviewPages } from "./preview-pages";
 import {
   app,
@@ -45,11 +48,13 @@ import {
   type ParkingWindow,
 } from "./browser-host";
 import { DevServers, type DevServerStartOptions } from "./dev-servers";
+import { browserToolsOn, wslPreviewServers } from "./browser-tools-registration";
 import {
   BrowserPartitions,
   partitionName,
   perSessionPrefix,
   previewPartitionName,
+  sshPreviewPartitionName,
 } from "./partitions";
 
 /**
@@ -60,8 +65,13 @@ import {
 export interface DevServersPort {
   list(conversationId: string): DevServerState[];
   launchConfig(conversationId: string): { path?: string; error?: string };
+  configurations(conversationId: string): import("../../shared/launch-config").LaunchEntry[];
   detect(conversationId: string): Promise<LaunchConfiguration[]>;
-  save(conversationId: string, config: LaunchConfiguration): Promise<void>;
+  save(
+    conversationId: string,
+    config: LaunchConfiguration,
+    addOnly?: boolean,
+  ): Promise<boolean | void>;
   /** The project's Auto-verify choice in launch.json, if it has one. */
   autoVerify?(conversationId: string): boolean | undefined;
   setAutoVerify?(conversationId: string, on: boolean): Promise<void>;
@@ -78,13 +88,14 @@ export interface DevServersPort {
   needsApproval?(conversationId: string, name: string): boolean;
   stop(conversationId: string, name: string): Promise<void>;
   logs(conversationId: string, name: string, lines?: number): Promise<string[]>;
+  logEntries?(conversationId:string,name:string,lines?:number):Promise<{line:string;stream:string;timestamp:string}[]>;
   /** Runs `cb` with the conversation whose servers changed; returns the unsubscribe. */
   onChange(cb: (conversationId: string) => void): () => void;
   /** Stops every server (sign-out). */
   dispose(): void | Promise<void>;
 }
 
-/** The administrator's Browser settings; missing means allowed. */
+/** The administrator's Browser settings (policy `browser`, package POL); missing means allowed. */
 export interface BrowserPolicy {
   enabled?: boolean;
   externalSites?: boolean;
@@ -95,6 +106,8 @@ export interface BrowserPolicy {
 
 export interface BrowserService {
   readonly host: BrowserHost;
+  /** Release native pages, parking window and dev servers at sign-out or quit. */
+  dispose?(): Promise<void>;
   /** Browser tools are on in Settings and allowed by the administrator. */
   toolsAvailable(): boolean;
   /** The administrator's Browser settings now. */
@@ -106,8 +119,8 @@ export interface BrowserService {
   /** Connects the dev servers (R8-B); returns the disconnect. */
   attachDevServers(port: DevServersPort): () => void;
   devServers(): DevServersPort | undefined;
-  /** Clear browsing data for the Keep cookies choice in use; open pages reload. */
-  clearBrowsingData(conversationId?: string): Promise<void>;
+  /** Clear the active cookie jar, reload open pages, and report whether the shared jar was cleared. */
+  clearBrowsingData(conversationId?: string): Promise<boolean>;
   clearPreviewData(): Promise<void>;
   clearCoworkBrowserData?(): Promise<boolean>;
   chromeImport?(): Promise<ChromeImport>;
@@ -160,6 +173,7 @@ function sharedPartitions(ctx: AppContext) {
     fromPartition: (name) => electronSession.fromPartition(name),
     partitionsDir: BrowserPartitions.folder(app.getPath("userData")),
     blockedDomains: () => browserPolicy(ctx).blockedDomains ?? [],
+    allowsPrivateRequest: (id, url, initiator) => host?.allowsPrivateRequest(id, url, initiator) === true,
     downloadRefused: (contents, filename) =>
       host?.noteDownloadRefused(contents, filename),
   });
@@ -181,22 +195,19 @@ function settingsOf(
   }
 }
 
-/** Settings → Claude Code → Browser → Browser tools (R8-E); on unless turned off. */
-export function browserToolsSetting(settings: Record<string, unknown>) {
-  return settings.browserTools !== false;
-}
-
 /**
  * Starts the Browser service of the signed-in account and sets
  * `ctx.services.browser`. It closes itself (pages, dev servers) when the
  * account signs out.
  */
 export function createBrowserFeature(ctx: AppContext): BrowserService {
+  if (mainState.quitting) throw Error("The application is shutting down.");
   const existing = ctx.services.browser;
   if (existing) return existing;
   const account = ctx.activeAccount;
   if (!account) throw new Error("Sign in to use the browser.");
   const profileRoot = ctx.store.root;
+  const accountStore = ctx.store;
   const jars = sharedPartitions(ctx);
   const keepCookies = () => keepCookiesOf(settingsOf(ctx).browserKeepCookies);
   const pages = new PreviewPages(app.getPath("userData"), account.id);
@@ -206,12 +217,13 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
   const platform: BrowserPlatform = {
     platform: process.platform,
     parking: () => parkingWindow(ctx) as unknown as ParkingWindow,
-    createView(partition) {
+    createView(partition, pdf) {
       jars.session(partition);
       const view = new WebContentsView({
         webPreferences: {
           partition,
           sandbox: true,
+          plugins: pdf === true,
           contextIsolation: true,
           nodeIntegration: false,
           nodeIntegrationInSubFrames: false,
@@ -230,9 +242,18 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
       // tab, the address bar, Terminal, Close Pane …): they go to the app
       // window instead of the page.
       view.webContents.on("before-input-event", (event, input) => {
+        if (
+          host?.handlePreviewInput(
+            event,
+            input,
+            view.webContents as unknown as import("./browser-host").HostContents,
+          )
+        )
+          return;
         if (input.type !== "keyDown") return;
-        // F5 reloads the page outside macOS; ⌘R and Ctrl+R are View ▸ Reload,
-        // which reloads the focused page (app-menu.ts).
+        // F5 reloads the page outside macOS ("Reload page in Browser": F5 or
+        // Ctrl+R, live claude.ai bundle, 2026-10-12); ⌘R and Ctrl+R are
+        // View ▸ Reload, which reloads the focused page (app-menu.ts).
         const reloading =
           process.platform !== "darwin" && pageReloadKey(input)
             ? host?.focusedConversation()
@@ -251,9 +272,12 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
       return view as unknown as HostView;
     },
   };
-  const toolsAvailable = () =>
-    browserToolsSetting(settingsOf(ctx)) &&
-    browserPolicy(ctx).enabled !== false;
+  const toolsAvailable = (id?: string) => browserToolsOn(
+    settingsOf(ctx), ctx.policy(),
+    ctx.store.conversations.find((row) => row.id === id)?.mode ?? "code",
+  );
+  const environmentFor = (id: string) =>
+    ctx.store.conversations.find((row) => row.id === id)?.environment;
   const workspaceFor = (id: string) => {
     const conversation = ctx.store.conversations.find(
       (conversation) => conversation.id === id,
@@ -263,13 +287,20 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
       ctx.store.projects.find(
         (project) => project.id === conversation?.projectId,
       )?.cwd;
-    return conversation?.environment?.kind === "ssh"
-      ? `${conversation.environment.hostId}\0${cwd ?? id}`
-      : cwd
-        ? path.resolve(cwd)
-        : id;
+    const environment = conversation?.environment;
+    if (environment?.kind === "wsl") return `${environment.distro}\0${cwd ?? id}`;
+    return cwd ? path.resolve(cwd) : id;
   };
   const browserHost = new BrowserHost({
+    previewEvent: (window, conversationId, previewId, event, ...args) =>
+      ctx.push({
+        type: "official-preview-event",
+        windowId: (window as unknown as BrowserWindow).id,
+        conversationId,
+        previewId,
+        event,
+        args,
+      }),
     routedLink: (url) => {
       void previewLinkRouter(ctx)
         .request(url)
@@ -279,6 +310,8 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
     },
     platform,
     partition: (conversationId) => {
+      if (environmentFor(conversationId)?.kind === "ssh")
+        return sshPreviewPartitionName(account.id, conversationId);
       if (
         ctx.store.conversations.find(
           (conversation) => conversation.id === conversationId,
@@ -293,24 +326,33 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
         conversationId,
       );
     },
-    savedPage: (id) =>
-      ctx.store.conversations.find((conversation) => conversation.id === id)
-        ?.incognito
-        ? undefined
-        : pages.get(id),
+    savedPage: (id) => {
+      const conversation = ctx.store.conversations.find((row) => row.id === id);
+      if (!conversation || conversation.incognito || conversation.environment?.kind === "ssh")
+        return undefined;
+      return pages.get(id);
+    },
     savePage: (id, page) => {
       const conversation = ctx.store.conversations.find(
         (conversation) => conversation.id === id,
       );
-      if (conversation && !conversation.incognito) pages.set(id, page);
+      if (conversation && !conversation.incognito && conversation.environment?.kind !== "ssh")
+        pages.set(id, page);
     },
     blockedDomains: () => browserPolicy(ctx).blockedDomains ?? [],
-    toolsAvailable,
+    publicHostsOnly: (id) => environmentFor(id)?.kind === "ssh",
+    toolsAvailable: (id) => toolsAvailable(id) && (environmentFor(id)?.kind !== "ssh" ||
+      (ctx.services.ssh?.allowed() === true && browserPolicy(ctx).externalSites !== false)),
     devServers: (conversationId) => {
+      const conversation = ctx.store.conversations.find((row) => row.id === conversationId);
+      if (conversation?.environment?.kind === "wsl")
+        return {
+          available: false,
+          servers: wslPreviewServers(ctx, conversationId)?.list(conversationId) ?? [],
+        };
       if (
-        ctx.store.conversations.find(
-          (conversation) => conversation.id === conversationId,
-        )?.mode === "cowork"
+        conversation?.mode === "cowork" ||
+        conversation?.environment?.kind === "ssh"
       )
         return { available: false, servers: [] };
       if (!devServers) return { available: false, servers: [] };
@@ -331,7 +373,10 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
   const sweep = () => {
     let known: Set<string>;
     try {
-      known = new Set(ctx.store.conversations.map((c) => c.id));
+      known = new Set([
+        ...ctx.store.conversations.map((c) => c.id),
+        ...draftBrowserIds(ctx.store),
+      ]);
     } catch {
       return;
     }
@@ -370,22 +415,26 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
   sweeper.unref?.();
 
   let lastKeep = keepCookies();
-  let lastTools = toolsAvailable();
+  const browserToolSettings = () => [settingsOf(ctx).browserTools, settingsOf(ctx).codeBrowserTools];
+  let lastTools = browserToolSettings();
   const offSettings = ctx.onSettingsChanged(() => {
     const keep = keepCookies();
     if (keep !== lastKeep) {
       lastKeep = keep;
       browserHost.repartition();
+      if (keep === "until-quit")
+        void jars.clearPreviews(account.id, true, true).catch((error) =>
+          console.error("Could not clear saved Code browser data", error),
+        );
     }
-    const tools = toolsAvailable();
-    if (tools !== lastTools) {
+    const tools = browserToolSettings();
+    if (tools.some((enabled, index) => enabled !== lastTools[index])) {
       lastTools = tools;
       browserHost.refresh();
     }
   });
   const offEvents = ctx.onEvent((event) => {
     if (event.type === "policy") {
-      lastTools = toolsAvailable();
       // The administrator turned the browser off: its pages close.
       if (browserPolicy(ctx).enabled === false)
         for (const id of browserHost.conversations()) browserHost.close(id);
@@ -466,55 +515,47 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
           touchId: () =>
             process.platform === "darwin" &&
             systemPreferences.canPromptTouchID(),
-          authorize: async (profile) => {
-            if (disposed) return false;
-            const translate = await nativeTranslator(
-              preference(ctx.store.settings, "locale"),
-            );
-            if (disposed) return false;
-            const reason = translate(
-              "list the sites you’re signed into in {browser}",
-            ).replace("{browser}", profile.browserName);
-            if (
-              process.platform === "darwin" &&
-              systemPreferences.canPromptTouchID()
-            ) {
-              // Two minutes to answer.
-              let timer: ReturnType<typeof setTimeout> | undefined;
-              try {
-                const answer = await Promise.race([
-                  systemPreferences.promptTouchID(reason).then(() => true),
-                  new Promise<"timeout">((resolve) => {
-                    timer = setTimeout(() => resolve("timeout"), 120_000);
-                  }),
-                ]);
-                return answer === "timeout" ? answer : !disposed;
-              } catch {
-                return false;
-              } finally {
-                clearTimeout(timer);
-              }
-            }
-            const options = {
-              type: "question" as const,
-              message: translate(
-                "Let Claudex read your {browser} logins?",
-              ).replace("{browser}", profile.browserName),
-              detail: translate(
-                profile.browser === "firefox"
-                  ? "Claudex will {reason}."
-                  : "Claudex will {reason}. macOS may also ask for your login password to unlock that browser’s saved data.",
-              ).replace("{reason}", reason),
-              buttons: [translate("Continue"), translate("Cancel")],
-              defaultId: 1,
-              cancelId: 1,
-            };
+          authorize: async (profile, lifetime) => {
             const parent = ctx.callerWindow();
-            const answer =
-              parent && !parent.isDestroyed()
-                ? await dialog.showMessageBox(parent, options)
-                : await dialog.showMessageBox(options);
-            return answer.response === 0 && !disposed;
+            if (lifetime.aborted || parent?.isDestroyed()) return "presence_left";
+            const owner = new AbortController();
+            const contents = parent?.webContents;
+            const close = () => owner.abort();
+            const current = AbortSignal.any([lifetime, owner.signal]);
+            contents?.once("destroyed", close);
+            try {
+              const translate = await nativeTranslator(
+                preference(ctx.store.settings, "locale"),
+              );
+              const reason = translate(
+                "list the sites you’re signed into in {browser}",
+              ).replace("{browser}", profile.browserName);
+              return await requestChromeImportPresence(async (signal) => {
+                if (process.platform === "darwin" && systemPreferences.canPromptTouchID()) {
+                  await systemPreferences.promptTouchID(reason);
+                  return true;
+                }
+                const options = {
+                  signal,
+                  type: "question" as const,
+                  message: translate("Let Claudex read your {browser} logins?").replace("{browser}", profile.browserName),
+                  detail: translate(
+                    profile.browser === "firefox"
+                      ? "Claudex will {reason}."
+                      : "Claudex will {reason}. macOS may also ask for your login password to unlock that browser’s saved data.",
+                  ).replace("{reason}", reason),
+                  buttons: [translate("Continue"), translate("Cancel")],
+                  defaultId: 1,
+                  cancelId: 1,
+                };
+                const answer = parent
+                  ? await dialog.showMessageBox(parent, options)
+                  : await dialog.showMessageBox(options);
+                return answer.response === 0;
+              }, current);
+            } finally {
+              if (contents && !contents.isDestroyed()) contents.off("destroyed", close);
+            }
           },
           target: async (id, keep) => {
             if (
@@ -581,7 +622,7 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
         await (await importer)?.clearPartition(partition);
         await jars.clear(partition);
         browserHost.reloadAll();
-        return;
+        return partition === partitionName("always", account.id, "");
       }
       await (await importer)?.clear();
       const conversations = (() => {
@@ -597,6 +638,7 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
           await jars.clearFor(mode, account.id, conversations);
       await jars.clearPreviews(account.id);
       browserHost.reloadAll();
+      return true;
     },
     defaultBrowserName() {
       const name = app.getApplicationNameForProtocol("https://");
@@ -635,7 +677,7 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
           ctx.store.projects.find((p) => p.id === conversation.projectId)?.cwd;
         return {
           cwd,
-          remote: conversation.environment?.kind === "ssh",
+          remote: conversation.environment?.kind === "ssh" || conversation.environment?.kind === "wsl",
         };
       },
       unattended: (conversationId) =>
@@ -645,8 +687,10 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
     }),
   );
 
-  const offDeactivating = ctx.onAccountDeactivating(async () => {
+  const dispose = async () => {
+    if (disposed) return;
     disposed = true;
+    resetDraftBrowsers(accountStore);
     void importer?.then((instance) => instance.dispose());
     offDeactivating();
     offSettings();
@@ -659,7 +703,9 @@ export function createBrowserFeature(ctx: AppContext): BrowserService {
     if (host === browserHost) host = undefined;
     if (ctx.services.browser === service) ctx.services.browser = undefined;
     await port?.dispose();
-  });
+  };
+  const offDeactivating = ctx.onAccountDeactivating(dispose);
+  service.dispose = dispose;
   return service;
 }
 

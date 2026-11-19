@@ -8,8 +8,8 @@ import { parseDeepLink } from "../../shared/deep-links";
 
 test("a cloud session's link is its own address, and the desktop link opens the same session", () => {
   assert.equal(
-    cloudSessionUrl("abc-123", "https://claudex.example.com"),
-    "https://claudex.example.com/code/abc-123",
+    cloudSessionUrl("abc-123", "https://claudex.zecous.cn"),
+    "https://claudex.zecous.cn/code/abc-123",
   );
   assert.deepEqual(parseDeepLink(desktopSessionLink("abc-123")), {
     kind: "conversation",

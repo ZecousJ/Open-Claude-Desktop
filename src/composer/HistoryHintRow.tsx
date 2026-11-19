@@ -2,11 +2,12 @@ import { formatText, t } from "../i18n";
 import type { HistoryHint } from "./prompt-history";
 
 /**
- * The composer's header while the prompt history is in use: "History
- * {index}/{total}" and, when a draft waits, "↓ to restore your draft"; while
- * searching, "Search history:" with the query and a blinking bar, red when
- * nothing matches, and the key hints "↑ ↓ cycle · esc cancel" fading in at the
- * end. A status line says the same to screen readers.
+ * The composer's header while the prompt history is in use (live claude.ai
+ * bundle, 2026-10-14): "History {index}/{total}" and, when a draft waits,
+ * "↓ to restore your draft"; while searching, "Search history:" with the
+ * query and a blinking bar, red when nothing matches, and the key hints
+ * "↑ ↓ cycle · esc cancel" fading in at the end. A status line says the
+ * same to screen readers.
  */
 export function HistoryHintRow({ hint }: { hint: HistoryHint }) {
   const spoken =

@@ -54,18 +54,18 @@ export function isCrashEntry(entry: SimulatorLogEntry) {
   );
 }
 
-/** Within this many pixels of the end the list follows new lines. */
+/** Within this many pixels of the end the list follows new lines (live bundle: 8). */
 const followSlop = 8;
 /** The drawer's least height, and the room it leaves the screen above. */
 const drawerMinPx = 96;
 const stageMinPx = 120;
 
 /**
- * Simulator logs: the device's log under the screen. The head has the Min level
- * menu, the filter, the line count, Full height, Clear view and Close logs; the
- * list has Time, Level, Scope and Message columns, follows new lines while it
- * is at the end and offers "Jump to latest" otherwise. A scope chip filters by
- * it.
+ * Simulator logs (live claude.ai bundle, 2026-10-12): the device's log
+ * under the screen. The head has the Min level menu, the filter, the
+ * line count, Full height, Clear view and Close logs; the list has Time,
+ * Level, Scope and Message columns, follows new lines while it is at the
+ * end and offers "Jump to latest" otherwise. A scope chip filters by it.
  */
 export function LogsDrawer({
   kind,
@@ -104,7 +104,7 @@ export function LogsDrawer({
   const latest = useRef(held);
   latest.current = held;
 
-  // The drawer's height: two fifths of the pane until dragged.
+  // The drawer's height: two fifths of the pane until dragged (live bundle).
   const drawer = useRef<HTMLElement>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -182,7 +182,7 @@ export function LogsDrawer({
     () => scopeColumnChars(shown.map((entry) => logScope(entry))),
     [shown],
   );
-  // The reference design.
+  // live claude.ai bundle, 2026-10-14, c49d37e5f-DgR6t8R5.js.
   const [scopeWidth, setScopeWidth] = useState<number | null>(null);
   const [scopeDragging, setScopeDragging] = useState(false);
   const scopeColumn = useRef<HTMLSpanElement>(null);

@@ -6,7 +6,7 @@ export interface PlanComment {
   comment: string;
 }
 
-/** Revision wire text. */
+/** Revision wire text (live claude.ai bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2.js). */
 export function planRevisionText(
   comments: readonly PlanComment[],
   feedback: string,

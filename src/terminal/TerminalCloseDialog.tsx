@@ -4,9 +4,10 @@ import { Modal } from "../ui/Controls";
 import type { PendingClose } from "./terminal-close";
 
 /**
- * The words of the question: the title, the sentence naming the tab (or
- * counting the other tabs) and the red confirming button. `name` is the tab's
- * label as shown, already in the window's language.
+ * The words of the question (live claude.ai bundle, 2026-10-12): the title,
+ * the sentence naming the tab (or counting the other tabs) and the red
+ * confirming button. `name` is the tab's label as shown, already in the
+ * window's language.
  */
 export function terminalCloseText(pending: PendingClose, name: string) {
   if (pending.kind === "close")

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-/** Expansion keys. */
+/** Expansion keys (live claude.ai bundle, 2026-10-14, c5220dfc1-NbozYvQv.js). */
 const expanded = new Map<string, boolean>();
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => {

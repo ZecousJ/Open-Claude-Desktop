@@ -8,11 +8,12 @@ import {
 } from "react";
 
 /**
- * The prompt history: ↑ in an empty prompt brings back the session's last
- * prompt, then the ones before it; ↓ walks forward and, past the newest,
- * restores the draft. Ctrl+R searches the prompts, newest first: typing
- * narrows, ↑ or Ctrl+R finds an older match, ↓ a newer one, Esc puts the draft
- * back, Enter, Tab, ← → Home and End keep the match. Typing or deleting while a
+ * The prompt history (live claude.ai bundle, 2026-10-14, the Code
+ * composer): ↑ in an empty prompt brings back the session's last prompt,
+ * then the ones before it; ↓ walks forward and, past the newest, restores
+ * the draft. Ctrl+R searches the prompts, newest first: typing narrows,
+ * ↑ or Ctrl+R finds an older match, ↓ a newer one, Esc puts the draft back,
+ * Enter, Tab, ← → Home and End keep the match. Typing or deleting while a
  * recalled prompt shows keeps it and leaves the history.
  */
 export type HistoryHint =

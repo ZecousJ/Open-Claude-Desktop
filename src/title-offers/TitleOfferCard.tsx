@@ -7,10 +7,11 @@ import {
 import { AppContext } from "../app/AppContext";
 import { api } from "../desktop-api";
 import { useT } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import "./title-offer.css";
 
-// Card structure and resolved rows. Its secret:* copy is not in the capture.
+// Card structure and resolved rows (live claude.ai bundle, 2026-10-14,
+// c1c1ec7b9-DdxFmCQ2.js, Xze). Its secret:* copy is not in the capture.
 export function TitleOfferCard({
   conversation,
   onError,
@@ -56,9 +57,10 @@ export function TitleOfferCard({
     const accepted =
       offer.state === "accepted" || conversation.title === offer.proposedTitle;
     const kept = offer.state === "kept" || offer.state === "suppressed";
-    // The live transcript's step row: "Renamed session" muted, the title in the
-    // primary ink, a 14px CaretRight at the row's end that turns when open;
-    // opening shows the old title and the new one.
+    // The live transcript's step row (claude.ai bundle, 2026-10-16,
+    // c1c1ec7b9 ASe + c425fb3cf): "Renamed session" muted, the title in
+    // the primary ink, a 14px CaretRight at the row's end that turns when
+    // open; opening shows the old title and the new one.
     return (
       <div className="title-offer-resolved">
         <button
@@ -81,7 +83,7 @@ export function TitleOfferCard({
               ? (offer.titleAtOffer ?? conversation.title)
               : offer.proposedTitle}
           </span>
-          <AppIcon
+          <Anthropicon
             name="CaretRight"
             size={14}
             className="title-offer-row-caret"

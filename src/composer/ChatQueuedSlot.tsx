@@ -8,7 +8,8 @@ const ChatQueuedMessagesHost = lazyPiece(() => import("./ChatQueuedMessages"));
 
 /**
  * Where the open Chat or Cowork conversation's queued messages show: in the
- * composer's dock, above the composer. The list stays mounted until its last
+ * composer's dock, above the composer (live claude.ai bundle, 2026-10-12:
+ * ChatComposerQueuedMessages). The list stays mounted until its last
  * message has faded out.
  */
 export function ChatQueuedSlot({

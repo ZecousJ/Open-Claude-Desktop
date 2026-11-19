@@ -8,6 +8,7 @@ export type DirectoryKind = "connector" | "desktop_extension" | "plugin";
 export type DirectoryReview =
   "verified" | "community" | "custom" | "organization";
 
+// (live claude.ai bundle, 2026-10-14, c109e6946-S_p1IpG2.js, cf6311cb2-bHHapivs.js)
 export const reviewTooltips = {
   verified:
     "Verified in the source directory. This is not a new Claudex security audit.",

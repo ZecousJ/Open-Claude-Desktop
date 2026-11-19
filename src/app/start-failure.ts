@@ -28,7 +28,8 @@ export function startFailureCategory(
 
 /**
  * "Your new session couldn’t start. Check your connection, then send your
- * prompt again.": the prompt stays in the composer to send again.
+ * prompt again." (live claude.ai bundle, 2026-10-14, cc43287c9 eZ with
+ * c3e34355f Et): the prompt stays in the composer to send again.
  */
 export function startFailureMessage(category: StartFailureCategory) {
   return formatText("{sentence} {hint}", {

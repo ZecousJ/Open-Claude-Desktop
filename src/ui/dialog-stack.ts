@@ -8,9 +8,10 @@ import {
 import { useExitPresence } from "./usePresence";
 
 /*
- * The open dialogs, oldest first. A dialog opened over another is "nested": its
- * backdrop stays clear so the window is shaded once, and the dialog under it is
- * "covered" and blurs. Dialogs register while mounted.
+ * The open dialogs, oldest first. A dialog opened over another is "nested":
+ * its backdrop stays clear so the window is shaded once, and the dialog
+ * under it is "covered" and blurs (desktop bundle 2.31226.1, the Dialog's
+ * nested state). Dialogs register while mounted.
  */
 let stack: readonly symbol[] = [];
 const listeners = new Set<() => void>();
@@ -49,7 +50,7 @@ export function useDialogLayer() {
   };
 }
 
-/** A dialog's exit: the Dialog popup's 200ms. */
+/** A dialog's exit: the Dialog popup's 200ms (desktop bundle 2.31226.1). */
 export const DIALOG_EXIT_MS = 200;
 
 /**
@@ -76,8 +77,9 @@ function focusedElement(): HTMLElement | null {
 
 /**
  * A dialog gives the focus back to what had it when it opened, as the
- * original's dialogs and popovers do. Only when the focus went with the dialog:
- * a dialog that sent it somewhere on purpose keeps that.
+ * original's dialogs and popovers do (live claude.ai bundle, 2026-10-12:
+ * Base UI's returned focus). Only when the focus went with the dialog: a
+ * dialog that sent it somewhere on purpose keeps that.
  */
 export function useFocusReturn() {
   const [opener] = useState(focusedElement);

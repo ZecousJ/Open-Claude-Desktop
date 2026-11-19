@@ -1,4 +1,4 @@
-// Work-function defaults.
+// Work-function defaults (live claude.ai bundle, 2026-10-14, cb7829751-IdU-cvhU.js:229).
 import type { WorkType } from "../../shared/settings-extras";
 
 export const starterWorkCategories: Record<WorkType, readonly string[]> = {

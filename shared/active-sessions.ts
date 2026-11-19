@@ -1,14 +1,14 @@
 /**
  * Settings → Account → Active sessions: the account's signed-in sessions,
- * merged from the service's three lists (the desktop app's devices, the web
- * app's browser sessions and the phone apps' sign-ins), and how a row names its
- * device.
+ * merged from the service's three lists (the desktop app's devices, the
+ * web app's browser sessions and the phone apps' sign-ins), and how a row
+ * names its device.
  *
- * The reference design lists every session of the account with its user agent,
- * location, creation and last update; a row's device reads "<browser> (<OS>)",
- * "Claude Desktop" standing in for Electron, and "Unknown device" when neither
- * is known. Claudex's desktop rows know the computer's name and platform
- * instead of a user agent.
+ * The live claude.ai bundle (2026-10-12) lists every session of the
+ * account with its user agent, location, creation and last update; a row's
+ * device reads "<browser> (<OS>)", "Claude Desktop" standing in for
+ * Electron, and "Unknown device" when neither is known. Claudex's desktop
+ * rows know the computer's name and platform instead of a user agent.
  */
 import type {
   ClaudexDeviceList,
@@ -19,7 +19,7 @@ import type { ActiveSession } from "./settings-api";
 /** The desktop app's name in a session row (the original's "Claude Desktop"). */
 export const desktopAppName = "Claudex Desktop";
 
-/** Location parts. */
+/** Location parts (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh). */
 export function sessionLocation(
   session: Pick<ActiveSession, "location">,
 ): string | null {

@@ -8,7 +8,10 @@ import { chatEffortLabels } from "../../../shared/chat-effort";
 import { ComposerSheetBack } from "../menu-sheet";
 import type { CodeModelChoice, ModelVendor } from "./code-model-choices";
 import type { Provider, ChatEffort } from "../../../shared/types";
-import type { ModelCatalog } from "../../../shared/model-catalog-api";
+import {
+  isConversationModel,
+  type ModelCatalog,
+} from "../../../shared/model-catalog-api";
 
 /** What modelMenuView needs from ModelMenu.tsx. */
 export interface ModelMenuViewKit {
@@ -106,6 +109,7 @@ export function modelMenuView(kit: ModelMenuViewKit) {
     usageHint,
     vendors,
   } = kit;
+  const currentModel = Boolean(model) && isConversationModel(model);
   const modelMenuViewView = (
     <div
       ref={root}
@@ -210,7 +214,7 @@ export function modelMenuView(kit: ModelMenuViewKit) {
               <button
                 className="model-menu-current"
                 role="menuitemradio"
-                aria-checked="true"
+                aria-checked={currentModel}
                 onMouseEnter={() => {
                   clearTimers();
                   setBranch(null);
@@ -219,11 +223,11 @@ export function modelMenuView(kit: ModelMenuViewKit) {
               >
                 <span>
                   <strong>
-                    {model ? modelLabel(catalog, model) : "Select model"}
+                    {currentModel ? modelLabel(catalog, model) : "Select model"}
                   </strong>
                   <small>{provider?.name || "No model available"}</small>
                 </span>
-                <Check size={16} />
+                {currentModel && <Check size={16} />}
               </button>
             )}
             <div
@@ -425,6 +429,7 @@ export function modelMenuView(kit: ModelMenuViewKit) {
                           .filter(
                             (name) =>
                               Boolean(name) &&
+                              isConversationModel(name) &&
                               (p.id !== providerId || name !== model),
                           )
                           .map((m) => (

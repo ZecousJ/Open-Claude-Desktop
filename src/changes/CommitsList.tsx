@@ -30,10 +30,11 @@ export function commitAge(at: number, now = Date.now()) {
 }
 
 /**
- * The Changes pane's Commits: All changes, Uncommitted changes while there are
- * any, then the branch's commits newest first — the subject (whole in a
- * tooltip) over "short SHA · author · age" — and how many older ones are left
- * out. A commit's right-click menu copies its SHA.
+ * The Changes pane's Commits (live claude.ai bundle, 2026-10-14): All
+ * changes, Uncommitted changes while there are any, then the branch's
+ * commits newest first — the subject (whole in a tooltip) over "short SHA ·
+ * author · age" — and how many older ones are left out. A commit's
+ * right-click menu copies its SHA.
  */
 export function CommitsList({
   commits,

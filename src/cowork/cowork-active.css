@@ -1,4 +1,4 @@
-/* Shared-23-RHw-hr47.js and; CDS tokens. */
+/* Live claude.ai bundle, 2026-10-14: shared-23-RHw-hr47.js and c1f04f7e1-BY11zgRA.js; CDS tokens. */
 .cowork-active,
 .cowork-tasks-panel {
   --task-primary: #f0efec;
@@ -214,7 +214,7 @@
   color: var(--task-danger);
   border-color: color-mix(in oklab, var(--task-danger) 30%, transparent);
 }
-/* The reference design. */
+/* Live claude.ai bundle, 2026-10-14, shared-styles-Jzuqcmd6.css. */
 .cowork-tile-dots {
   display: inline-flex;
   width: 12px;

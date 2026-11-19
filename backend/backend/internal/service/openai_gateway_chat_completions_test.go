@@ -48,6 +48,63 @@ func (r *openAIChatStreamReadErrorCloser) Read(p []byte) (int, error) {
 
 func (r *openAIChatStreamReadErrorCloser) Close() error { return nil }
 
+func TestOpenAIChatResponsesCompletionWithZeroUsage(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	for _, stream := range []bool{false, true} {
+		name := "buffered"
+		if stream {
+			name = "stream"
+		}
+		t.Run(name, func(t *testing.T) {
+			for _, tc := range []struct {
+				name, preceding, output string
+			}{
+				{name: "empty"},
+				{
+					name:      "earlier text",
+					preceding: "data: {\"type\":\"response.output_text.delta\",\"output_index\":0,\"content_index\":0,\"delta\":\"answer\"}\n\n",
+					output:    "answer",
+				},
+			} {
+				t.Run(tc.name, func(t *testing.T) {
+					rec := httptest.NewRecorder()
+					c, _ := gin.CreateTestContext(rec)
+					c.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+					resp := &http.Response{
+						StatusCode: http.StatusOK,
+						Header:     http.Header{"Content-Type": {"text/event-stream"}},
+						Body: io.NopCloser(strings.NewReader(
+							"data: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_test\",\"status\":\"in_progress\"}}\n\n" +
+								tc.preceding +
+								"data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_test\",\"status\":\"completed\",\"output\":[],\"usage\":{\"input_tokens\":0,\"output_tokens\":0}}}\n\n",
+						)),
+					}
+					svc := &OpenAIGatewayService{cfg: &config.Config{}}
+					account := &Account{ID: 1, Platform: PlatformOpenAI}
+					const model = "gpt-5.6-sol"
+					var result *OpenAIForwardResult
+					var err error
+					if stream {
+						result, err = svc.handleChatStreamingResponse(resp, c, account, model, model, model, time.Now(), 0)
+					} else {
+						result, err = svc.handleChatBufferedStreamingResponse(resp, c, account, model, model, model, time.Now())
+					}
+					if tc.output == "" {
+						var failover *UpstreamFailoverError
+						require.ErrorAs(t, err, &failover)
+						require.Nil(t, result)
+						require.False(t, c.Writer.Written())
+						return
+					}
+					require.NoError(t, err)
+					require.NotNil(t, result)
+					require.Contains(t, rec.Body.String(), tc.output)
+				})
+			}
+		})
+	}
+}
+
 func TestHandleChatStreamingResponse_ClassifiesHTTP2ReadError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -1077,13 +1134,10 @@ func TestForwardAsChatCompletions_DoneSentinelWithoutTerminalReturnsError(t *tes
 
 	result, err := svc.ForwardAsChatCompletions(context.Background(), c, account, body, "", "gpt-5.1")
 	require.Error(t, err)
-	// CLAUDEX: nothing reached the client yet, so the request fails over to
-	// another account instead of ending with "missing terminal event".
-	var failover *UpstreamFailoverError
-	require.ErrorAs(t, err, &failover)
-	require.Equal(t, http.StatusBadGateway, failover.StatusCode)
-	require.Nil(t, result)
-	require.False(t, c.Writer.Written())
+	require.Contains(t, err.Error(), "missing terminal event")
+	require.NotNil(t, result)
+	require.Zero(t, result.Usage.InputTokens)
+	require.Zero(t, result.Usage.OutputTokens)
 }
 
 func TestForwardAsChatCompletions_UpstreamRequestIgnoresClientCancel(t *testing.T) {

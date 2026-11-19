@@ -5,8 +5,8 @@
  *
  * macOS: the .app bundles in the Applications folders (bundle id and name
  * from Info.plist, read with plutil). Windows: the Start menu shortcuts
- * that point at a program (the id is the program name without ".exe", the
- * same name the driver lists).
+ * that point at a program and known system launchers. The id is the program
+ * name without ".exe", the same name the driver lists.
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -148,6 +148,18 @@ function windowsApps(): InstalledApp[] {
       platform: "win32",
       path: target,
     });
+  }
+  // Packaged Notepad can have no .lnk even though Windows still installs its launcher.
+  const windows = process.env.SystemRoot ?? process.env.WINDIR;
+  if (windows && path.isAbsolute(windows)) {
+    const launcher = path.join(windows, "System32", "notepad.exe");
+    if (fs.statSync(launcher, { throwIfNoEntry: false })?.isFile())
+      apps.push({
+        id: "notepad",
+        name: "Notepad",
+        platform: "win32",
+        path: launcher,
+      });
   }
   return apps;
 }

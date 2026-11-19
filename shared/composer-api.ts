@@ -1,6 +1,7 @@
 /**
- * Composer calls: attachments added by pasting or dropping, image thumbnails, @
- * file mentions, compact and steer. Handlers go in `electron/ipc/composer.ts`.
+ * Composer calls (package WP4a): attachments added by pasting or dropping,
+ * image thumbnails, @ file mentions, compact and steer. Handlers go in
+ * `electron/ipc/composer.ts`.
  */
 import type { Attachment, Conversation, EnvironmentRef } from "./types";
 import { bridgeMethods } from "./bridge-methods";
@@ -27,9 +28,9 @@ declare module "./types" {
     review?: ReviewTarget;
   }
   interface Attachment {
-    /** Long text pasted into the composer, kept as a text file. */
+    /** Long text pasted into the composer, kept as a text file (R-0284). */
     pasted?: boolean;
-    /** Lines in a text file, counted when it is added. */
+    /** Lines in a text file, counted when it is added (R-0243). */
     lines?: number;
   }
 }
@@ -60,7 +61,7 @@ export interface MentionFile {
 }
 
 /**
- * A slash command the person added: a Codex custom prompt
+ * A slash command the person added (R-0401): a Codex custom prompt
  * (`$CODEX_HOME/prompts/<name>.md`, "Personal") or an enabled skill.
  */
 export interface CustomSlashCommand {
@@ -117,7 +118,7 @@ export interface ComposerAPI {
    */
   forkConversation(
     conversationId: string,
-    options?: { turnId?: string; prompt?: string },
+    options?: { turnId?: string; prompt?: string; branchId?: string },
   ): Promise<Conversation>;
   /**
    * Hand off to a new session: a new Code session that starts from a note
@@ -217,6 +218,16 @@ export interface ComposerAPI {
   /** A `data:` URL of an attached image for its thumbnail; null for other files. */
   attachmentPreview(attachmentId: string): Promise<string | null>;
   /**
+   * A sent turn's attachment: its name, type and bytes, read only from this
+   * profile's attachment store and only when the conversation's turns refer
+   * to it; null once the file is gone. Lets another device of the account
+   * show the files of a conversation that runs in the cloud.
+   */
+  turnAttachment(
+    conversationId: string,
+    attachmentId: string,
+  ): Promise<{ name: string; mime: string; data: Uint8Array } | null>;
+  /**
    * Files and folders under the scope's folder whose path matches `query`
    * (at most 50). Never lists outside the folder: `..`, absolute paths and
    * links that leave it are refused.
@@ -227,7 +238,7 @@ export interface ComposerAPI {
    * Code slash palette. Prompt files over 64 KB, not UTF-8, or named so
    * they can't be typed after "/" are left out.
    */
-  listSlashCommands(scope: MentionScope): Promise<SlashCommandList>;
+  listSlashCommands(scope: MentionScope & { strictSources?: boolean }): Promise<SlashCommandList>;
   /** A custom prompt's body without its front matter; null once it is gone. */
   readCustomPrompt(name: string): Promise<string | null>;
 }
@@ -249,6 +260,7 @@ export const composerMethods = bridgeMethods<ComposerAPI>({
   steerTurn: true,
   addAttachmentData: true,
   attachmentPreview: true,
+  turnAttachment: true,
   mentionFiles: true,
   listSlashCommands: true,
   readCustomPrompt: true,

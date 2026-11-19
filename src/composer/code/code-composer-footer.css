@@ -1,7 +1,9 @@
-/* Code composer footer, measured against Claude's 1351 × 1063 Code home. */
+/* Code composer footer, measured against Claude's 1351 × 1063 Code home
+   (claude-code-permissions-footer-001, claude-code-effort-menu-001,
+   claude-code-model-picker-own-001 and the permission/add-menu recordings). */
 .code-composer {
-  /* 768px at most, 40px of air at each side when narrower (composer 540 in a
-     620 pane, 518 in a 600 one). */
+  /* R-0349 (W840, W1080, W1351) and R-0315 (W602): 768px at most, 40px of air at each
+     side when narrower (composer 540 in a 620 pane, 518 in a 600 one). */
   width: min(768px, calc(100% - 80px));
   padding-bottom: 8px;
 }
@@ -9,10 +11,11 @@
   padding-left: 11px;
   border-color: #363636;
 }
-/* The frame brightens while the prompt has focus. Hovered, it takes the same
-   strong rim, except while the pointer is on one of its buttons: the Chat
-   composer's hover ring (live-web/composer.css), as the original's one composer
-   card does on every surface. */
+/* The frame brightens while the prompt has focus (R-0338). Hovered, it takes
+   the same strong rim, except while the pointer is on one of its buttons: the
+   Chat composer's hover ring (live-web/composer.css), as the original's one
+   composer card does on every surface. Source: desktop bundle 2.31226.1
+   static CSS/JS. */
 .code-composer .composer:focus-within {
   border-color: #4d4d4d;
 }
@@ -28,9 +31,9 @@
 .code-composer .composer-input-row textarea::placeholder {
   color: #8d8d8d;
 }
-/* The row's controls are 18 to 24px tall: the row centres them all, so "+", the
-   microphone, the permission mode, the model and the ring share one centre
-   line. */
+/* The row's controls are 18 to 24px tall: the row centres them all, so
+   "+", the microphone, the permission mode, the model and the ring share
+   one centre line (owner, 2026-10-21: top-aligned they sat 3px apart). */
 .code-composer .composer-toolbar {
   height: 27px;
   padding: 7px 14px 0 8px;
@@ -57,9 +60,9 @@
   width: 15px;
   height: 15px;
 }
-/* The knowledge-base chip (Chat's research chip, 31px) at the footer's own icon
-   size, 18px with 5px corners and a 15px glyph, so it sits on the row between
-   "+" and the microphone. */
+/* The knowledge-base chip (Chat's research chip, 31px) at the footer's own
+   icon size, 18px with 5px corners and a 15px glyph, so it sits on the row
+   between "+" and the microphone (owner, 2026-10-09: it hung below them). */
 .code-composer .composer-left > .composer-chip-slot > .knowledge-chip {
   width: 18px;
   height: 18px;
@@ -128,7 +131,7 @@
 .code-voice-controls .dictation-button:focus-visible::before {
   background: #252525;
 }
-/* The ⌄ voice options sit 3px after the footer microphone. */
+/* R-0318: the ⌄ voice options sit 3px after the footer microphone. */
 .code-voice-controls.with-options {
   flex-basis: auto;
   width: auto;
@@ -167,8 +170,9 @@
   min-width: 0;
 }
 /* The web app's Code chin runs at the comfortable density: 24px pills, 13px
-   text, 6px radius, like Chat's chin. The desktop recordings above are the
-   compact 19px. */
+   text, 6px radius, like Chat's chin (docs/audit-live-2026-10-16/live/
+   official-code-web.txt: "Permissions: Auto" 42x24, "Model: Opus 5.5 Low"
+   97x24). The desktop recordings above are the compact 19px. */
 :root[data-surface="web"] .code-composer .code-permission-trigger,
 :root[data-surface="web"] .code-composer .model-button,
 :root[data-surface="web"] .code-composer .code-effort-trigger {
@@ -184,7 +188,7 @@
   background: #232323;
   color: #f2f2f2;
 }
-/* Context ring: 12px, 2px #2d2d2d track, blue arc from twelve o'clock. */
+/* Context ring (R-Code-Browser单面板, R-0331 at 2x): 12px, 2px #2d2d2d track, blue arc from twelve o'clock. */
 .code-composer .context-ring {
   display: inline-flex;
   box-sizing: border-box;
@@ -224,8 +228,9 @@
 :root[data-theme="light"] .context-ring-arc {
   stroke: #3a6cc0;
 }
-/* Following the plan: amber from 75%, red from 90%, in the popover meters'
-   colours (context-popover.css). */
+/* Following the plan (a composer with no session yet; live claude.ai
+   bundle, 2026-10-12): amber from 75%, red from 90%, in the popover
+   meters' colours (context-popover.css). */
 .context-ring-arc.warning,
 :root[data-theme="light"] .context-ring-arc.warning {
   stroke: #fab219;
@@ -260,7 +265,7 @@
 .code-composer .code-permission-trigger:focus-visible {
   background: #222;
 }
-/* Manual, which asks before every change, shows in amber. */
+/* Manual, which asks before every change, shows in amber (R-0346). */
 .code-composer .code-permission-trigger.mode-manual {
   color: #c3964c;
 }
@@ -268,8 +273,9 @@
   color: #a8701c;
 }
 /* The faces above (#232323, #252525, #222) are dark measurements; hovered or
-   focused in light the footer's controls take the original's ghost fill (ink
-   5%), as their open state does, rather than a dark chip. */
+   focused in light the footer's controls take the original's ghost fill
+   (ink 5%), as their open state does, rather than a dark chip. Source:
+   desktop bundle 2.31226.1 static CSS. */
 :root[data-theme="light"] .code-composer .model-button:hover,
 :root[data-theme="light"] .code-composer .code-effort-trigger:hover,
 :root[data-theme="light"]
@@ -298,8 +304,8 @@
 .code-composer .send-button {
   margin-right: 3px;
 }
-/* The return glyph is grey while empty and near-white once there is something
-   to send; typed text is #f4f4f4. */
+/* The return glyph is grey while empty and near-white once there is
+   something to send; typed text is #f4f4f4 (R-0338, R-0340). */
 .code-composer .send-button:not(.stop) {
   color: #f3f3f3;
 }
@@ -309,8 +315,8 @@
 }
 .code-composer .composer-input-row textarea {
   color: var(--text);
-  /* The box stops growing at 400 px (19 lines of 20 px plus 20 px of padding),
-     then scrolls inside. */
+  /* R-0379: the box stops growing at 400 px (19 lines of 20 px plus 20 px of
+     padding), then scrolls inside. */
   max-height: 380px;
 }
 .code-composer
@@ -331,9 +337,9 @@
   pointer-events: none;
 }
 
-/* An image card is as large as a file card (120 x 120, the picture centred
-   whole on the dark card) and the remove button is a 15px circle centred 2px
-   inside the card's top-right corner, shown on hover. */
+/* R-0380 (Windows, 1x): an image card is as large as a file card (120 x 120,
+   the picture centred whole on the dark card) and the remove button is a 15px
+   circle centred 2px inside the card's top-right corner, shown on hover. */
 .code-composer .attachment-thumbnail {
   width: 120px;
   height: 120px;
@@ -346,12 +352,14 @@
 .code-composer .attachment-thumbnail-open img {
   object-fit: contain;
 }
-/* The remove button is the shared 20px one, 8px past the corner. */
+/* The remove button is the shared 20px one, 8px past the corner (was 15px
+   at -6.5/-5.5 from R-0380; source: desktop bundle 2.31226.1 static CSS/JS). */
 
-/* Stop and Send in one cell: both faces sit in the same grid area at its right;
-   the hidden one keeps its place but is invisible. Leaving, a face fades out
-   over 80ms and is hidden at the end; coming, it fades in over 120ms after
-   80ms. */
+/* Stop and Send in one cell (live claude.ai bundle, 2026-10-12, the Code
+   prompt's send cell): both faces sit in the same grid area at its right;
+   the hidden one keeps its place but is invisible. Leaving, a face fades
+   out over 80ms and is hidden at the end; coming, it fades in over 120ms
+   after 80ms. */
 .composer-submit.code-submit-cell {
   display: grid;
   align-items: center;
@@ -395,15 +403,17 @@
   animation: none;
 }
 
-/* With a tall draft the send button stays at the box's bottom right, level with
-   the last line. */
+/* R-0379: with a tall draft the send button stays at the box's bottom right,
+   level with the last line. */
 .code-composer .composer-input-row > .composer-submit {
   align-self: flex-end;
 }
 
-/* A narrow composer: at 460px or less the environment and repository take the
-   first line, the permission mode starts the second with the model and usage at
-   its end, 6px below. */
+/* A narrow composer (live claude.ai Code, 2026-10-21: the footer row is
+   "@max-[28.75rem]:flex-wrap", its place group "basis-full"): at 460px or
+   less the environment and repository take the first line, the
+   permission mode starts the second with the model and usage at its end,
+   6px below. */
 .composer-wrap.code-composer {
   container: code-composer / inline-size;
 }

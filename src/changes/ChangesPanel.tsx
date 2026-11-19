@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { Spinner } from "../ui/Spinner";
 import type {
   Conversation,
@@ -77,17 +77,19 @@ export const sideMaxShare = 0.6;
 export const splitMinWidth = 640;
 
 /**
- * Code "Changes" side panel: one collapsible diff per file and, on the left
- * (the list toggle), the changed files as a tree above the conversation's
- * turns. "All changes" is the folder's working tree against its branch
- * (read-only git queries in the main process); where the folder is not a Git
- * repository it is every turn's own changes, and a turn shows what that turn
- * changed, from the conversation's file changes (turn-changes.ts).
+ * Code "Changes" side panel (R-0874): one collapsible diff per file and, on
+ * the left (the list toggle), the changed files as a tree above the
+ * conversation's turns. "All changes" is the folder's working tree against
+ * its branch (read-only git queries in the main process); where the folder
+ * is not a Git repository it is every turn's own changes, and a turn shows
+ * what that turn changed (owner, 2026-10-03), from the conversation's file
+ * changes (turn-changes.ts).
  *
- * In a repository the header's diff scope picks what "All changes" is: the
- * branch since it left its base branch (the default), only the uncommitted
- * changes, the branch against another base, or one of its commits. Loading, a
- * failed read and an empty answer show in the panel as the original's do.
+ * In a repository the header's diff scope (live claude.ai bundle,
+ * 2026-10-12) picks what "All changes" is: the branch since it left its base
+ * branch (the default), only the uncommitted changes, the branch against
+ * another base, or one of its commits. Loading, a failed read and an empty
+ * answer show in the panel as the original's do.
  */
 export function ChangesPanel({
   conversation,
@@ -105,8 +107,9 @@ export function ChangesPanel({
     rememberedScope(conversation.cwd),
   );
   const [context, setContext] = useState(3);
-  // The panel opens on the diffs; the list comes with "Show files", which is
-  // kept for the next time.
+  // The panel opens on the diffs; the list comes with "Show files", which
+  // is kept for the next time (live claude.ai bundle, 2026-10-21, cf3dc7910:
+  // epitaxy-diff-file-tree, off by default).
   const [showFiles, setShowFilesState] = useState(() => {
     try {
       return localStorage.getItem("changesShowFiles") === "true";
@@ -124,7 +127,8 @@ export function ChangesPanel({
       }
       return value;
     });
-  // The file list's width, kept for the next time.
+  // The file list's width (live claude.ai bundle, 2026-10-14: "Resize file
+  // list", dragged at its edge), kept for the next time.
   const [sideWidth, setSideWidth] = useState(() => {
     try {
       const saved = Number(localStorage.getItem("changesFileListWidth"));
@@ -142,15 +146,16 @@ export function ChangesPanel({
   usePaneExpandToggle("changes", () => setExpanded((value) => !value));
   const [selected, setSelected] = useState<string>();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  // The settings menu's display options.
+  // The settings menu's display options (desktop bundle 2.31226.1).
   const [byFolder, setByFolder] = useState(true);
-  // Separate test, build, and generated files: their sections start folded.
+  // Separate test, build, and generated files (live claude.ai bundle,
+  // 2026-10-14): their sections start folded.
   const [separate, setSeparate] = useState(true);
   const [openKinds, setOpenKinds] = useState<Set<SeparatedKind>>(new Set());
   const [words, setWords] = useState(true);
   const [ignoreSpace, setIgnoreSpace] = useState(false);
-  // Diff layout: Side by side needs a wider pane; a narrow one keeps one
-  // column. Word wrap breaks long lines.
+  // Diff layout (live claude.ai bundle, 2026-10-14): Side by side needs a
+  // wider pane; a narrow one keeps one column. Word wrap breaks long lines.
   const [sideBySide, setSideBySide] = useState(false);
   const [wrap, setWrap] = useState(false);
   const [wideEnough, setWideEnough] = useState(true);
@@ -259,7 +264,9 @@ export function ChangesPanel({
     setRetrying(true);
     void load().finally(() => setRetrying(false));
   };
-  // A failed read tries again on its own a few times, then offers Try again.
+  // A failed read tries again on its own a few times (live claude.ai
+  // bundle, 2026-10-14: "It will try again on its own."), then offers
+  // Try again.
   const [autoRetries, setAutoRetries] = useState(0);
   const autoRetrying = failed && autoRetries < 3;
   useEffect(() => {
@@ -395,7 +402,12 @@ export function ChangesPanel({
     </div>
   ) : broken ? (
     <div className="changes-state" role="alert">
-      <AppIcon name="Warning" size={20} strokeWidth={1.75} aria-hidden="true" />
+      <Anthropicon
+        name="Warning"
+        size={20}
+        strokeWidth={1.75}
+        aria-hidden="true"
+      />
       {autoRetrying ? (
         <span>Couldn’t load the changes. It will try again on its own.</span>
       ) : (

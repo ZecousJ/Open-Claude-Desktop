@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -39,18 +40,21 @@ type memScope struct {
 // memStore mirrors sqlStore's semantics in memory so the handlers can be
 // tested without a database; the SQL is covered by the integration tests.
 type memStore struct {
-	mu       sync.Mutex
-	now      func() time.Time
-	prefsBy  map[int64]*prefsRow
-	scopes   map[int64]map[string]*memScope
-	users    map[int64]bool
-	nextEdit int64
-	failWith error
+	mu        sync.Mutex
+	now       func() time.Time
+	prefsBy   map[int64]*prefsRow
+	scopes    map[int64]map[string]*memScope
+	users     map[int64]bool
+	nextEdit  int64
+	failWith  error
+	versions  map[int64]map[string]int64
+	resets    map[int64]map[string]int64
+	melangeBy map[int64]melangeRow
 }
 
 func newMemStore(now func() time.Time) *memStore {
-	return &memStore{now: now, prefsBy: map[int64]*prefsRow{}, scopes: map[int64]map[string]*memScope{},
-		users: map[int64]bool{7: true, 8: true}}
+	return &memStore{versions: map[int64]map[string]int64{}, resets: map[int64]map[string]int64{}, now: now, prefsBy: map[int64]*prefsRow{}, scopes: map[int64]map[string]*memScope{},
+		users: map[int64]bool{7: true, 8: true}, melangeBy: map[int64]melangeRow{}}
 }
 
 func (s *memStore) scope(userID int64, scope string, create bool) *memScope {
@@ -101,12 +105,51 @@ func (s *memStore) prefs(_ context.Context, userID int64) (*prefsRow, error) {
 	return nil, nil
 }
 
-func (s *memStore) setPrefs(_ context.Context, userID int64, search, generate bool) (prefsRow, error) {
+func (s *memStore) setPrefs(_ context.Context, userID int64, w prefsWrite) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p := prefsRow{SearchChats: search, Generate: generate, UpdatedAt: s.now()}
+	s.applyPrefs(userID, w)
+	return nil
+}
+
+func (s *memStore) applyPrefs(userID int64, w prefsWrite) {
+	p := prefsRow{SearchChats: w.DefaultOn, Generate: w.DefaultOn}
+	if existing := s.prefsBy[userID]; existing != nil {
+		p = *existing
+	}
+	if w.SearchChats != nil {
+		p.SearchChats = *w.SearchChats
+	}
+	if w.Generate != nil {
+		p.Generate = *w.Generate
+	}
+	p.UpdatedAt = s.now()
 	s.prefsBy[userID] = &p
-	return p, nil
+}
+
+func (s *memStore) melange(_ context.Context, userID int64) (melangeRow, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.melangeBy[userID], s.failWith
+}
+
+func (s *memStore) saveMelange(_ context.Context, userID int64, w melangeWrite) (int64, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.failWith != nil {
+		return 0, s.failWith
+	}
+	row := s.melangeBy[userID]
+	if row.Revision != w.BaseRevision {
+		return 0, &conflictError{Current: row.Revision}
+	}
+	row.Revision++
+	row.StateEnc = sql.NullString{String: w.StateEnc, Valid: true}
+	s.melangeBy[userID] = row
+	if w.Prefs.Generate != nil {
+		s.applyPrefs(userID, w.Prefs)
+	}
+	return row.Revision, nil
 }
 
 func (s *memStore) docs(_ context.Context, userID int64, scope string) ([]docRow, error) {
@@ -161,6 +204,14 @@ func (s *memStore) revisions(_ context.Context, userID int64) (map[string]int64,
 func (s *memStore) saveDoc(_ context.Context, userID int64, w docWrite) (docRow, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if prefs := s.prefsBy[userID]; w.RequireGenerate && prefs != nil && !prefs.Generate {
+		return docRow{}, disabledFor("generate")
+	}
+	if w.BaseControlsVersion != nil {
+		if err := s.checkControls(userID, w.Scope, *w.BaseControlsVersion); err != nil {
+			return docRow{}, err
+		}
+	}
 	var current int64
 	sc := s.scope(userID, w.Scope, false)
 	if sc != nil && sc.doc != nil {
@@ -190,6 +241,7 @@ func (s *memStore) saveDoc(_ context.Context, userID int64, w docWrite) (docRow,
 			}
 		}
 		sc.edits = kept
+		s.bump(userID, w.Scope, false)
 	}
 	return *d, nil
 }
@@ -197,6 +249,7 @@ func (s *memStore) saveDoc(_ context.Context, userID int64, w docWrite) (docRow,
 func (s *memStore) deleteScope(_ context.Context, userID int64, scope string) (int64, int64, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.bump(userID, scope, true)
 	sc := s.scope(userID, scope, false)
 	if sc == nil {
 		return 0, 0, nil
@@ -221,6 +274,12 @@ func (s *memStore) deleteAll(_ context.Context, userID int64) (int64, int64, err
 		edits += int64(len(sc.edits))
 	}
 	delete(s.scopes, userID)
+	s.bump(userID, "", true)
+	row := s.melangeBy[userID]
+	if row.StateEnc.Valid {
+		docs++
+	}
+	s.melangeBy[userID] = melangeRow{Revision: row.Revision + 1}
 	return docs, edits, nil
 }
 
@@ -238,6 +297,7 @@ func (s *memStore) addEdit(_ context.Context, userID int64, w editWrite) (editRo
 	s.nextEdit++
 	e := editRow{ID: s.nextEdit, Scope: w.Scope, TextEnc: w.TextEnc, TextBytes: w.TextBytes, DeviceID: w.DeviceID, CreatedAt: s.now()}
 	sc.edits = append(sc.edits, e)
+	s.bump(userID, w.Scope, false)
 	return e, nil
 }
 
@@ -248,6 +308,7 @@ func (s *memStore) deleteEdit(_ context.Context, userID, id int64) (bool, error)
 		for i, e := range sc.edits {
 			if e.ID == id {
 				sc.edits = append(sc.edits[:i], sc.edits[i+1:]...)
+				s.bump(userID, e.Scope, false)
 				s.cleanup(userID)
 				return true, nil
 			}
@@ -436,4 +497,83 @@ func keysOf(raw json.RawMessage, t *testing.T) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+func (s *memStore) bump(user int64, scope string, reset bool) {
+	if s.versions[user] == nil {
+		s.versions[user] = map[string]int64{}
+		s.resets[user] = map[string]int64{}
+	}
+	s.versions[user][scope]++
+	if reset {
+		s.resets[user][scope]++
+	}
+}
+func (s *memStore) version(user int64, scope string) string {
+	return fmt.Sprintf("v1:%d:%d:%d", s.versions[user][""], s.resets[user][scope], s.versions[user][scope])
+}
+func (s *memStore) checkControls(user int64, scope, base string) error {
+	current := s.version(user, scope)
+	if base == current {
+		return nil
+	}
+	a, b := strings.Split(base, ":"), strings.Split(current, ":")
+	return &controlsConflictError{Reset: len(a) != 4 || a[0] != "v1" || a[1] != b[1] || a[2] != b[2]}
+}
+func (s *memStore) snapshot(_ context.Context, user int64, scope string) (memoryRows, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.failWith != nil {
+		return memoryRows{}, s.failWith
+	}
+	out := memoryRows{Docs: []docRow{}, Edits: []editRow{}, Versions: map[string]string{}, EmptyVersion: fmt.Sprintf("v1:%d:0:0", s.versions[user][""])}
+	for name := range s.versions[user] {
+		if name != "" {
+			out.Versions[name] = s.version(user, name)
+		}
+	}
+	for name, sc := range s.scopes[user] {
+		if scope != "" && scope != name {
+			continue
+		}
+		if sc.doc != nil {
+			out.Docs = append(out.Docs, *sc.doc)
+		}
+		out.Edits = append(out.Edits, sc.edits...)
+	}
+	sort.Slice(out.Docs, func(i, j int) bool { return out.Docs[i].Scope < out.Docs[j].Scope })
+	sort.Slice(out.Edits, func(i, j int) bool {
+		if out.Edits[i].Scope != out.Edits[j].Scope {
+			return out.Edits[i].Scope < out.Edits[j].Scope
+		}
+		return out.Edits[i].ID < out.Edits[j].ID
+	})
+	return out, nil
+}
+func (s *memStore) replaceControls(_ context.Context, user int64, scope string, edits []editWrite, base string) ([]editRow, string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.failWith != nil {
+		return nil, "", s.failWith
+	}
+	if err := s.checkControls(user, scope, base); err != nil {
+		return nil, "", err
+	}
+	if len(edits) > MaxEditsPerScope {
+		return nil, "", errEditLimit
+	}
+	if len(edits) > 0 {
+		if err := s.roomFor(user, scope, MaxScopes); err != nil {
+			return nil, "", err
+		}
+	}
+	out := []editRow{}
+	for _, e := range edits {
+		s.nextEdit++
+		out = append(out, editRow{ID: s.nextEdit, Scope: scope, TextEnc: e.TextEnc, TextBytes: e.TextBytes, DeviceID: e.DeviceID, CreatedAt: s.now()})
+	}
+	s.scope(user, scope, true).edits = out
+	s.bump(user, scope, false)
+	s.cleanup(user)
+	return out, s.version(user, scope), nil
 }

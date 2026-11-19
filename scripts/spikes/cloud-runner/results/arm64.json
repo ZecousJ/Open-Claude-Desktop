@@ -1,0 +1,453 @@
+{
+  "generatedAt": "2026-09-26T11:10:00.969Z",
+  "arch": "arm64",
+  "kernel": "6.12.76-linuxkit",
+  "codex": "codex-cli 0.144.1",
+  "bwrap": "bubblewrap 0.12.0",
+  "runsc": "runsc version release-20260921.0",
+  "runscPlatform": "systrap",
+  "node": "v24.21.0",
+  "containerMemoryMiBAtStart": 58.2,
+  "launchers": {
+    "direct": {
+      "start": {
+        "ok": true,
+        "ms": 2773,
+        "userAgent": "claudex_runner_spike/0.144.1 (Alpine Linux 3.24.2; aarch64) unknown (claudex_runner_spike; 0.0.0)",
+        "codexHome": "/var/spike/run-hlkkDc/direct-a/codex-home"
+      },
+      "jsonRpc": {
+        "ok": true,
+        "threadId": "01a0dd68-7f04-76b3-af60-4f6aef1cf765",
+        "agentReply": "HELLO_direct",
+        "advertisedTools": [
+          "exec_command",
+          "write_stdin",
+          "update_plan",
+          "request_user_input",
+          "apply_patch",
+          "view_image",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "tool_search"
+        ]
+      },
+      "memoryIdle": {
+        "rssMiB": 102.5,
+        "pssMiB": 99.4,
+        "pssAnonMiB": 12.4,
+        "pssFileMiB": 87,
+        "pssShmemMiB": 0,
+        "pssByCommandMiB": {
+          "codex": 88.4,
+          "git": 3,
+          "git-remote-http": 8.1
+        },
+        "containerMiB": 157.6
+      },
+      "codexSandbox": {
+        "workspaceWrite": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_BLOCKED",
+            "NET_BLOCKED EPERM",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: 46f55c\nWall time: 2.6778 seconds\nProcess exited with code 0\nOriginal token count: 17\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_BLOCKED\nNET_BLOCKED EPERM\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "workspaceWriteWithNetwork": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_BLOCKED",
+            "NET_OPEN",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: f643e0\nWall time: 1.9821 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_BLOCKED\nNET_OPEN\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "dangerFullAccess": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_OK",
+            "NET_OPEN",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: 1ad35f\nWall time: 0.1327 seconds\nProcess exited with code 0\nOriginal token count: 14\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_OK\nNET_OPEN\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "stderr": [],
+        "verdict": "codex sandbox enforced (writes outside workspace and network blocked)"
+      },
+      "memoryNpmInstall": {
+        "peak": {
+          "rssMiB": 251.1,
+          "pssMiB": 226.4,
+          "pssAnonMiB": 126.5,
+          "pssFileMiB": 99.9,
+          "pssShmemMiB": 0,
+          "pssByCommandMiB": {
+            "codex": 79.5,
+            "npm install typ": 146.3
+          },
+          "samples": 193
+        },
+        "installed": true,
+        "output": "Chunk ID: dfd7e7\nWall time: 30.0631 seconds\nProcess running with session ID 65303\nOriginal token count: 0\nOutput:\n\nChunk ID: 1535b9\nWall time: 12.1400 seconds\nProcess exited with code 0\nOriginal token count: 4\nOutput:\nTS_OK\nEXIT=0\n"
+      },
+      "snapshot": {
+        "ok": true,
+        "bytes": 11484478
+      },
+      "resumeAfterRestore": {
+        "hostRoot": "/var/spike/run-hlkkDc/direct-b",
+        "restored": true,
+        "resumedTurns": 5,
+        "resumedPath": "/var/spike/run-hlkkDc/direct-a/codex-home/sessions/2026/09/26/rollout-2026-09-26T11-10-08-01a0dd68-7f04-76b3-af60-4f6aef1cf765.jsonl",
+        "previousContextSent": true,
+        "turnStatus": "completed",
+        "ok": true
+      }
+    },
+    "bwrap": {
+      "start": {
+        "ok": true,
+        "ms": 1860,
+        "userAgent": "claudex_runner_spike/0.144.1 (Alpine Linux 3.24.2; aarch64) unknown (claudex_runner_spike; 0.0.0)",
+        "codexHome": "/codex-home"
+      },
+      "jsonRpc": {
+        "ok": true,
+        "threadId": "01a0dd69-aa14-7d91-8504-00ceeeb5a584",
+        "agentReply": "HELLO_bwrap",
+        "advertisedTools": [
+          "exec_command",
+          "write_stdin",
+          "update_plan",
+          "request_user_input",
+          "apply_patch",
+          "view_image",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "tool_search"
+        ]
+      },
+      "memoryIdle": {
+        "rssMiB": 172.6,
+        "pssMiB": 143.7,
+        "pssAnonMiB": 35.2,
+        "pssFileMiB": 108.5,
+        "pssShmemMiB": 0,
+        "pssByCommandMiB": {
+          "codex": 94.4,
+          "git": 3.5,
+          "git-remote-http": 8,
+          "MainThread": 37.6
+        },
+        "containerMiB": 311.9
+      },
+      "codexSandbox": {
+        "workspaceWrite": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_BLOCKED",
+            "NET_BLOCKED EPERM",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: 47d172\nWall time: 1.2997 seconds\nProcess exited with code 0\nOriginal token count: 17\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_BLOCKED\nNET_BLOCKED EPERM\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "workspaceWriteWithNetwork": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_BLOCKED",
+            "NET_OPEN",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: 631cbc\nWall time: 1.1763 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_BLOCKED\nNET_OPEN\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "dangerFullAccess": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_OK",
+            "NET_OPEN",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: c2425f\nWall time: 0.0730 seconds\nProcess exited with code 0\nOriginal token count: 14\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_OK\nNET_OPEN\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "stderr": [],
+        "verdict": "codex sandbox enforced (writes outside workspace and network blocked)"
+      },
+      "memoryNpmInstall": {
+        "peak": {
+          "rssMiB": 364.3,
+          "pssMiB": 300.5,
+          "pssAnonMiB": 171.9,
+          "pssFileMiB": 128.6,
+          "pssShmemMiB": 0,
+          "pssByCommandMiB": {
+            "codex": 90.2,
+            "npm install typ": 141.9,
+            "git": 25.5,
+            "MainThread": 42.1
+          },
+          "samples": 133
+        },
+        "installed": true,
+        "output": "Chunk ID: 06123e\nWall time: 28.1339 seconds\nProcess exited with code 0\nOriginal token count: 4\nOutput:\nTS_OK\nEXIT=0\n"
+      },
+      "snapshot": {
+        "ok": true,
+        "bytes": 25386658
+      },
+      "resumeAfterRestore": {
+        "hostRoot": "/var/spike/run-hlkkDc/bwrap-b",
+        "restored": true,
+        "resumedTurns": 5,
+        "resumedPath": "/codex-home/sessions/2026/09/26/rollout-2026-09-26T11-11-24-01a0dd69-aa14-7d91-8504-00ceeeb5a584.jsonl",
+        "previousContextSent": true,
+        "turnStatus": "completed",
+        "ok": true
+      },
+      "egress": {
+        "git": {
+          "ok": true,
+          "code": 0,
+          "ms": 8932,
+          "output": ""
+        },
+        "npm": {
+          "ok": true,
+          "code": 0,
+          "ms": 11116,
+          "output": ""
+        },
+        "pip": {
+          "ok": true,
+          "code": 0,
+          "ms": 7853,
+          "output": "six-1.16.0-py2.py3-none-any.whl\n"
+        },
+        "blockedHost": {
+          "ok": true,
+          "code": 0,
+          "ms": 1327,
+          "output": "curl: (7) CONNECT tunnel failed, response 403\n000\n"
+        },
+        "bypassProxy": {
+          "ok": true,
+          "code": 0,
+          "ms": 420,
+          "output": "curl: (6) Could not resolve host: registry.npmjs.org (Could not contact DNS servers)\nNO_ROUTE\n"
+        },
+        "proxyLog": [
+          "connect github.com:443 allowed",
+          "connect registry.npmjs.org:443 allowed",
+          "connect pypi.org:443 allowed",
+          "connect files.pythonhosted.org:443 allowed",
+          "connect example.com:443 BLOCKED"
+        ]
+      }
+    },
+    "runsc": {
+      "start": {
+        "ok": true,
+        "ms": 16574,
+        "userAgent": "claudex_runner_spike/0.144.1 (Alpine Linux 3.24.2; aarch64) unknown (claudex_runner_spike; 0.0.0)",
+        "codexHome": "/codex-home"
+      },
+      "jsonRpc": {
+        "ok": true,
+        "threadId": "01a0dd6c-751a-7c43-8e32-8d2e5218aed8",
+        "agentReply": "HELLO_runsc",
+        "advertisedTools": [
+          "exec_command",
+          "write_stdin",
+          "update_plan",
+          "request_user_input",
+          "apply_patch",
+          "view_image",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "tool_search"
+        ]
+      },
+      "memoryIdle": {
+        "rssMiB": 972.5,
+        "pssMiB": 906.5,
+        "pssAnonMiB": 30.8,
+        "pssFileMiB": 776.5,
+        "pssShmemMiB": 99.1,
+        "pssByCommandMiB": {
+          "runsc": 12.8,
+          "gvisor_sentry": 872,
+          "exe": 21.7
+        },
+        "containerMiB": 870.1,
+        "runscStats": {
+          "usage": 413.6,
+          "swap": 0,
+          "kernel": 0,
+          "kernelTCP": 0
+        }
+      },
+      "codexSandbox": {
+        "workspaceWrite": {
+          "ran": true,
+          "markers": [],
+          "output": "Chunk ID: 125c0c\nWall time: 0.8849 seconds\nProcess exited with code 1\nOriginal token count: 14\nOutput:\nbwrap: loopback: Failed RTM_NEWADDR: No child process\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "workspaceWriteWithNetwork": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_BLOCKED",
+            "NET_OPEN",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: 1d15a4\nWall time: 3.0052 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_BLOCKED\nNET_OPEN\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "dangerFullAccess": {
+          "ran": true,
+          "markers": [
+            "WS_WRITE_OK",
+            "OUTSIDE_WRITE_OK",
+            "NET_OPEN",
+            "UID=1000",
+            "EXIT=0"
+          ],
+          "output": "Chunk ID: a32df9\nWall time: 3.3489 seconds\nProcess exited with code 0\nOriginal token count: 14\nOutput:\nWS_WRITE_OK\nOUTSIDE_WRITE_OK\nNET_OPEN\nUID=1000\nEXIT=0\n",
+          "finalReply": 2,
+          "status": "completed"
+        },
+        "stderr": [
+          "\u001b[2m2026-09-26T11:14:24.347048Z\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mcodex_app_server\u001b[0m\u001b[2m:\u001b[0m Codex's Linux sandbox uses bubblewrap and needs access to create user namespaces."
+        ],
+        "verdict": "codex sandbox broke the command: no markers"
+      },
+      "memoryNpmInstall": {
+        "peak": {
+          "rssMiB": 2163.2,
+          "pssMiB": 1717,
+          "pssAnonMiB": 46,
+          "pssFileMiB": 945.2,
+          "pssShmemMiB": 725.8,
+          "pssByCommandMiB": {
+            "runsc": 6.9,
+            "gvisor_sentry": 1697.3,
+            "exe": 12.8
+          },
+          "samples": 405
+        },
+        "installed": true,
+        "output": "Chunk ID: a073d4\nWall time: 30.0133 seconds\nProcess running with session ID 81771\nOriginal token count: 0\nOutput:\n\nChunk ID: 419b4d\nWall time: 30.0731 seconds\nProcess running with session ID 81771\nOriginal token count: 0\nOutput:\n\nChunk ID: 9904c0\nWall time: 19.6088 seconds\nProcess exited with code 0\nOriginal token count: 4\nOutput:\nTS_OK\nEXIT=0\n"
+      },
+      "snapshot": {
+        "ok": true,
+        "bytes": 11853631
+      },
+      "resumeAfterRestore": {
+        "hostRoot": "/var/spike/run-hlkkDc/runsc-b",
+        "restored": true,
+        "resumedTurns": 5,
+        "resumedPath": "/codex-home/sessions/2026/09/26/rollout-2026-09-26T11-14-27-01a0dd6c-751a-7c43-8e32-8d2e5218aed8.jsonl",
+        "previousContextSent": true,
+        "turnStatus": "completed",
+        "ok": true
+      },
+      "resumeBwrapSnapshotUnderRunsc": {
+        "hostRoot": "/var/spike/run-hlkkDc/runsc-from-bwrap",
+        "restored": true,
+        "resumedTurns": 5,
+        "resumedPath": "/codex-home/sessions/2026/09/26/rollout-2026-09-26T11-11-24-01a0dd69-aa14-7d91-8504-00ceeeb5a584.jsonl",
+        "previousContextSent": true,
+        "turnStatus": "completed",
+        "ok": true
+      },
+      "egress": {
+        "git": {
+          "ok": true,
+          "code": 0,
+          "ms": 12808,
+          "output": ""
+        },
+        "npm": {
+          "ok": true,
+          "code": 0,
+          "ms": 31747,
+          "output": ""
+        },
+        "pip": {
+          "ok": true,
+          "code": 0,
+          "ms": 20731,
+          "output": "six-1.16.0-py2.py3-none-any.whl\n"
+        },
+        "blockedHost": {
+          "ok": true,
+          "code": 0,
+          "ms": 2822,
+          "output": "curl: (7) CONNECT tunnel failed, response 403\n000\n"
+        },
+        "bypassProxy": {
+          "ok": true,
+          "code": 0,
+          "ms": 2949,
+          "output": "curl: (6) Could not resolve host: registry.npmjs.org (Could not contact DNS servers)\nNO_ROUTE\n"
+        },
+        "proxyLog": [
+          "connect github.com:443 allowed",
+          "connect registry.npmjs.org:443 allowed",
+          "connect pypi.org:443 allowed",
+          "connect files.pythonhosted.org:443 allowed",
+          "connect example.com:443 BLOCKED"
+        ]
+      }
+    }
+  },
+  "density": {
+    "bwrap": {
+      "sandboxes": 2,
+      "pssMiBEach": [58, 115.5],
+      "pssMiBTotal": 174,
+      "containerDeltaMiB": 81,
+      "containerDeltaMiBPerSandbox": 41
+    },
+    "runsc": {
+      "sandboxes": 2,
+      "pssMiBEach": [266.8, 861.8],
+      "pssMiBTotal": 1129,
+      "containerDeltaMiB": 208,
+      "containerDeltaMiBPerSandbox": 104
+    }
+  },
+  "containerMemoryMiBAtEnd": 1055
+}

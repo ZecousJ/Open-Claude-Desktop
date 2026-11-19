@@ -1,15 +1,19 @@
 import { MoonStar, Settings as Gear } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { ComponentType } from "react";
 import type { HostInfo } from "../../shared/host";
 import { usageAvailable } from "./usage-availability";
 
 type IconProps = { size?: number | string; strokeWidth?: number | string };
 
-/** A page's icon (AppIcon). */
-function glyphIcon(name: Parameters<typeof AppIcon>[0]["name"]) {
+/**
+ * A page's icon is the icon font's glyph the live Settings navigation names
+ * (live claude.ai bundle, 2026-10-16, shared-20-D4I32324.js: the icon of each
+ * page row).
+ */
+function glyphIcon(name: Parameters<typeof Anthropicon>[0]["name"]) {
   return function PageGlyph({ size = 20 }: IconProps) {
-    return <AppIcon name={name} size={size} />;
+    return <Anthropicon name={name} size={size} />;
   };
 }
 
@@ -29,7 +33,7 @@ const SkillsIcon = glyphIcon("Scroll");
 const SystemIcon = glyphIcon("Computer");
 const WrenchIcon = glyphIcon("Wrench");
 
-/** Reflect's glyph: a half sun on the horizon. */
+/** Reflect's glyph (live claude.ai): a half sun on the horizon. */
 function ReflectIcon({ size = 16, strokeWidth = 1.5 }: IconProps) {
   return (
     <svg
@@ -78,9 +82,10 @@ export type Tab = {
 };
 
 /**
- * The navigation column, in the original's order and grouping: the Settings
- * modal's four groups Account, Customize, Products and This computer. Customize
- * lists Skills, Connectors and Plugins, then Design systems (d4's order).
+ * The navigation column, in the original's order and grouping: the
+ * Settings modal's four groups Account, Customize, Products and This
+ * computer (live claude.ai bundle, 2026-10-14: G$ and EZ). Customize lists
+ * Skills, Connectors and Plugins, then Design systems (d4's order).
  */
 export const navGroups: { label: string; tabs: Tab[] }[] = [
   {
@@ -109,7 +114,7 @@ export const navGroups: { label: string; tabs: Tab[] }[] = [
     ],
   },
   // The group of pages about this computer: "This computer" in the live
-  // claude.ai bundle.
+  // claude.ai bundle (2026-10-14).
   {
     label: "This computer",
     tabs: [
@@ -133,8 +138,8 @@ const aliases: Record<string, TabId> = {
   desktop: "system",
   connections: "developer",
   cowork: "capabilities",
-  // The original's own page names in its addresses, so its links open the same
-  // page here.
+  // The original's own page names in its addresses (live claude.ai,
+  // 2026-10-21), so its links open the same page here.
   "data-privacy-controls": "privacy",
   "design-systems": "design",
   "time-limits": "time",

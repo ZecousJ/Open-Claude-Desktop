@@ -4,8 +4,9 @@
  * devices, System → Browser use, the Capabilities allowlist. Loaded with
  * those pages only, off the web build's first load.
  */
-/* Claude in Chrome: the illustration's top 17px under the page's scroll top,
-   the title centred 24px under it, the switch row's label centred 84px lower. */
+/* Claude in Chrome (R-1369 light 1x, R-设置-Claude-in-Chrome-顶部-深色 2x):
+   the illustration's top 17px under the page's scroll top, the title
+   centred 24px under it, the switch row's label centred 84px lower. */
 .chrome-settings-hero {
   margin: 17px 0 50px;
 }
@@ -174,8 +175,8 @@
   color: var(--code-string, #b7dfaa);
 }
 
-/* Cowork local devices: a table of Name / Platform / Added with 13px grey
-   headings over a hairline, 45px rows. */
+/* Cowork local devices (R-1385 at 1x): a table of Name / Platform / Added
+   with 13px grey headings over a hairline, 45px rows. */
 .cowork-devices {
   width: 100%;
   margin-top: 20px;
@@ -201,8 +202,9 @@
   color: #807f7d;
 }
 
-/* System → Browser use → Connected browsers: a framed strip 12px under the
-   description, 48px tall, the count on the left and Recheck on the right. */
+/* System → Browser use → Connected browsers (R-1400 at 1x): a framed
+   strip 12px under the description, 48px tall, the count on the left and
+   Recheck on the right. */
 /* The description sits 29px under the label here (23 in the other rows). */
 .settings-row[data-setting="Connected browsers"] .settings-row-text > p {
   margin-top: 8px;
@@ -212,8 +214,8 @@
   align-items: center;
   justify-content: space-between;
   height: 48px;
-  /* The strip's top edge 9px under the description's last glyph row (26 with
-     the row's 12px gap plus 12: 12 less 17). */
+  /* R-1400 1x light: the strip's top edge 9px under the description's
+     last glyph row (26 with the row's 12px gap plus 12: 12 less 17). */
   margin-top: -3px;
   padding: 0 12px;
   /* Dark: the settings callout's #242424, the cards' #2c2c2c rim. */
@@ -247,9 +249,9 @@
   margin-inline-end: -4px;
 }
 
-/* A 12px row wrapper, then a 24px padded alpha-1 card on an alpha-2 rim. The
-   191px outer combobox includes the trailing 8px padding; 183px is its inner
-   trigger, not the whole field. */
+/* 2026-10-16 live Capabilities: a 12px row wrapper, then a 24px padded
+   alpha-1 card on an alpha-2 rim. The 191px outer combobox includes the
+   trailing 8px padding; 183px is its inner trigger, not the whole field. */
 .capabilities-network {
   padding: 12px 0;
   border-top: 1px solid var(--settings-alpha-1);
@@ -333,7 +335,7 @@
   text-underline-offset: 3px;
   color: inherit;
 }
-/* The link reads dark blue, not the text colour. */
+/* R-1346 bottom: the link reads dark blue, not the text colour. */
 :root[data-theme="light"] .capabilities-moved > button {
   color: #2f5f9e;
 }
@@ -347,9 +349,10 @@
   font-size: 13px;
   color: var(--danger);
 }
-/* The added domains: a 10px card on alpha-2 with a 0.5px strong rim that
-   scrolls past 200px; rows px-3 py-2 on alpha-1, alpha-2 on hover, 14px text, a
-   small ghost trash button. */
+/* The added domains (live claude.ai bundle, 2026-10-14, c71860c77: Se,
+   xe): a 10px card on alpha-2 with a 0.5px strong rim that scrolls past
+   200px; rows px-3 py-2 on alpha-1, alpha-2 on hover, 14px text, a small
+   ghost trash button. */
 .capabilities-allowlist-domains {
   display: flex;
   flex-direction: column;
@@ -393,7 +396,8 @@
   border-color: var(--danger);
 }
 
-/* Worktree location: the custom folder under the select, in muted caption text. */
+/* Worktree location (live claude.ai bundle, 2026-10-14): the custom folder
+   under the select, in muted caption text. */
 .worktree-location {
   display: grid;
   justify-items: end;
@@ -428,8 +432,8 @@
   color: #8e2626;
 }
 
-/* The code execution row's description: the summary, then the security note,
-   6px apart. */
+/* The code execution row's description: the summary, then the security
+   note, 6px apart (live claude.ai bundle, 2026-10-14, c71860c77: gap-1.5). */
 .capabilities-description-stack {
   display: flex;
   flex-direction: column;

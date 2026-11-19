@@ -50,7 +50,7 @@ func (c *Component) chatDeviceRequest(ctx context.Context, userID int64, op stri
 		return nil, errBadRPC
 	}
 	switch input.Method {
-	case "chatDeviceImport", "chatDeviceSend", "chatDeviceOpen", "chatDeviceRelease", "chatDeviceBlob", "chatDeviceInterrupt", "chatDeviceApprove", "chatDeviceActivate", "deviceTrustChallenge", "deviceTrustEnroll":
+	case "chatDeviceImport", "chatDeviceSend", "chatDeviceOpen", "chatDeviceRelease", "chatDeviceBlob", "chatDeviceInterrupt", "chatDeviceInterruptExpected", "chatDeviceApprove", "chatDeviceActivate", "deviceTrustChallenge", "deviceTrustEnroll":
 	default:
 		return nil, errMethodUnavailable
 	}
@@ -104,6 +104,12 @@ func (c *Component) chatDeviceRequest(ctx context.Context, userID int64, op stri
 	var value any
 	if len(res.Value) == 0 {
 		return nil, nil
+	}
+	if input.Method == "deviceTrustChallenge" {
+		if !json.Valid(res.Value) {
+			return nil, errBadRPC
+		}
+		return res.Value, nil
 	}
 	if json.Unmarshal(res.Value, &value) != nil {
 		return nil, errBadRPC

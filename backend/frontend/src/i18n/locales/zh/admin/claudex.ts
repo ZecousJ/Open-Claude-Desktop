@@ -70,7 +70,21 @@ export default {
       title: '目录提交',
       description: '审核 Claudex 用户的提交。',
       notes: '审核者备注', approve: '批准', reject: '拒绝', empty: '暂无提交。',
-      status: { submitted: '已提交，等待审核', in_review: '审核中', approved: '已批准', rejected: '已拒绝' }
+      reviewChanged: '此提交已更改，请查看最新内容后再作决定。',
+      reviewFields: {
+        endpoints: '端点配置', testUrl: '测试服务器地址', testSetup: '测试设置说明',
+        testData: '测试数据准备情况', policies: '政策确认', confirmed: '已确认', unconfirmed: '未确认',
+        platforms: '支持的平台', collectsData: '收集用户数据', privacy: '隐私政策', terms: '服务条款', yes: '是', no: '否'
+      },
+      policies: {
+        readGuidelines: '已阅读开发者指南', firstPartyApi: '使用自有 API 或经授权的代理',
+        noFinancialTransactions: '不涉及金融资产转移', noAiMediaGeneration: '不使用 AI 生成媒体',
+        noPromptInjection: '工具描述不嵌入指令',
+        noConversationDataCollection: '仅收集服务器功能所需的对话数据',
+        publicDocsByPublishDate: '发布时提供公开文档'
+      },
+      platforms: { claude_code: 'Claudex Code', claude_cowork: 'Cowork' },
+      status: { submitted: '已提交，等待审核', in_review: '审核中', approved: '已批准', rejected: '已拒绝', published: '已发布' }
     }
   }
 }

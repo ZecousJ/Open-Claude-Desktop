@@ -1,6 +1,7 @@
 import { Info } from "../ui/glyphs";
 import "./extension-policy-notice.css";
 
+// (live claude.ai bundle, 2026-10-14, c71860c77-xHdlpCO8; shared-frame-B1JORnF0 gT)
 export function ExtensionPolicyNotice({
   message,
   icon = true,

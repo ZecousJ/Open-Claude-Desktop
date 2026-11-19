@@ -167,7 +167,7 @@ test("Code's retry line names the failure, and a plain dropped stream is the con
   );
 });
 
-test("Code's status labels: a plain Thinking however long it thinks", () => {
+test("Code's status labels: a plain Thinking however long it thinks (G-54, live desktop 2.42304.2)", () => {
   const t = turn({
     status: "inProgress",
     items: [{ id: "r", type: "reasoning", lifecycleStatus: "inProgress" }],
@@ -229,9 +229,9 @@ test("the status line drops its label while reply text streams (R-0808)", () => 
 
 test("a finished Code reply ends bare; earlier ones keep a hover toolbar (G-02, G-53, R-0638)", () => {
   const html = render(conversation("code", [turn({ id: "a" }), turn()]));
-  // The still mark after a finished reply is gone.
+  // The still mark after a finished reply is gone (owner, 2026-10-22).
   assert.doesNotMatch(html, /code-end-star/);
-  // Only an earlier reply keeps its toolbar, shown on hover.
+  // Only an earlier reply keeps its toolbar, shown on hover (R-0638).
   assert.equal((html.match(/code-reply-actions/g) ?? []).length, 1);
   const background = render(
     conversation("code", [turn({ items: [command("bg")] })]),

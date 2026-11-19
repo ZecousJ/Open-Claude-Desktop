@@ -1,12 +1,12 @@
 import { useCallback, type KeyboardEvent, type RefObject } from "react";
 
 /**
- * Keyboard travel between a collection page's search box and its result cards:
- * ArrowDown in the box moves to the first card, ArrowUp/ArrowDown move between
- * cards (the first card's ArrowUp and Escape in the results go back to the
- * box). A card is every element in the results marked `data-primary`.
- * `escapeInInput` is what Escape does in the box itself (the original just
- * leaves it).
+ * Keyboard travel between a collection page's search box and its result
+ * cards (desktop bundle 2.31226.1): ArrowDown in the box moves to the first
+ * card, ArrowUp/ArrowDown move between cards (the first card's ArrowUp and
+ * Escape in the results go back to the box). A card is every element in the
+ * results marked `data-primary`. `escapeInInput` is what Escape does in the
+ * box itself (the original just leaves it).
  */
 export function useResultsKeys(
   input: RefObject<HTMLInputElement | null>,

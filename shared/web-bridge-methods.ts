@@ -56,6 +56,7 @@ export const webCoreMethodKinds: {
   resumeSession: "remote-runner",
   // Web sign-in session (W-AUTH): Go endpoints under /api/v1/claudex/web/auth.
   authStatus: "remote-go",
+  setupLocalProvider: "absent",
   registerAccount: "remote-go",
   loginAccount: "remote-go",
   logoutAccount: "remote-go",
@@ -66,6 +67,7 @@ export const webCoreMethodKinds: {
   snapshot: "remote-runner",
   conversationTurns: "remote-runner",
   searchConversations: "remote-runner",
+  referenceFonts: "browser",
   copyText: "browser",
   copyImage: "browser",
   saveSettings: "remote-runner",
@@ -110,7 +112,20 @@ export const webCoreMethodKinds: {
 export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
   "privacy-data": { default: "remote-runner" },
   "desktop-extensions": { default: "absent" },
-  dispatch: { default: "remote-runner" },
+  dispatch: {
+    default: "remote-runner",
+    overrides: {
+      dispatchDirectories: "absent",
+      dispatchDeliver: "absent",
+      dispatchDetails: "absent",
+      dispatchFollowUp: "absent",
+      dispatchApprove: "absent",
+      dispatchInterrupt: "absent",
+      dispatchTrust: "absent",
+      dispatchRetry: "absent",
+      dispatchRemove: "absent",
+    },
+  },
   "settings-account": {
     default: "remote-runner",
     overrides: {
@@ -144,11 +159,13 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
       removeConnector: "remote-runner",
       setConnectorTool: "remote-runner",
       setConnectorToolPermission: "remote-runner",
+      setConnectorToolPermissions: "remote-runner",
       forgetConnectorApprovals: "remote-runner",
       connectConnector: "remote-runner",
       completeConnectorLogin: "remote-runner",
       listSkills: "remote-runner",
       saveSkill: "remote-runner",
+      editSkill: "remote-runner",
       setSkillEnabled: "remote-runner",
       deleteSkill: "remote-runner",
       duplicateSkill: "remote-runner",
@@ -281,6 +298,7 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
       addProjectKnowledgeDriveFiles: "remote-runner",
       addProjectKnowledge: "browser",
       addProjectKnowledgeFiles: "remote-runner",
+      confirmProjectKnowledgeUpload: "remote-runner",
       addProjectKnowledgeText: "remote-runner",
       removeProjectKnowledge: "remote-runner",
       readSkill: "remote-runner",
@@ -295,6 +313,7 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
       listApprovedDirectory: "remote-runner",
       saveDirectorySubmission: "remote-runner",
       deleteDirectorySubmission: "remote-runner",
+      publishDirectorySubmission: "remote-runner",
       verifyDirectorySubmissionTools: "remote-runner",
       readPlugin: "remote-runner",
       installPlugin: "remote-runner",
@@ -323,7 +342,14 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
     overrides: { openShare: "browser" },
   },
   windows: { default: "absent" },
-  memory: { default: "remote-runner" },
+  memory: {
+    default: "remote-runner",
+    overrides: {
+      memoryControlsState: "remote-runner",
+      replaceMemoryControls: "remote-runner",
+      synthesizeMemory: "remote-runner",
+    },
+  },
   research: {
     default: "remote-runner",
     overrides: { saveResearchReport: "browser" },
@@ -366,8 +392,6 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
       accountPasskeys: "browser",
       setUpPasskey: "browser",
       cancelGoogleSignIn: "browser",
-      // The web app is served by its service: there is no other to choose.
-      setServiceAddress: "absent",
     },
   },
   // The GitHub connection: the page calls Go endpoints under
@@ -392,6 +416,8 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
   // The first-run onboarding: the service's own endpoint, called from the
   // page with the session's token.
   onboarding: { default: "browser" },
+  // The one-time move from ZecousAI: the service's own endpoints.
+  "zecous-migration": { default: "browser" },
   // The account's activity (Settings → Usage): the service's usage endpoints, called
   // from the page with the session's token.
   "usage-stats": { default: "browser" },
@@ -400,6 +426,8 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
   // The account step after sign-up: the service's profile endpoint, called
   // from the page with the session's token.
   "account-profile": { default: "browser" },
+  // Knowledge bases: the service's list endpoint, called from the page.
+  knowledge: { default: "browser" },
   // Moving a desktop conversation to the cloud: the runner stores it.
   "cloud-sync": {
     default: "remote-runner",
@@ -414,7 +442,6 @@ export const webDomainRules: { [D in DomainName]-?: DomainRule<D> } = {
     overrides: {
       apiGroups: "remote-runner",
       setApiGroup: "remote-runner",
-      setImageModel: "remote-runner",
     },
   },
 };
@@ -435,6 +462,8 @@ export const webMethodNotes: Record<string, string> = {
   cancelAddAccount: "Clears the tab's adding mark.",
   forgetBrowserAccount:
     "POST auth/logout {account} without a bearer (its cookie only), then forgets the account in this browser.",
+  referenceFonts:
+    "Returns [] - the reference fonts come from a local Claude installation and are never served.",
   copyText:
     "navigator.clipboard.write with text/plain and text/html when rich text is given, else writeText.",
   copyImage:
@@ -520,6 +549,8 @@ export const webMethodNotes: Record<string, string> = {
   setConnectorTool: "Writes disabled_tools of the user's own connector.",
   setConnectorToolPermission:
     "Writes disabled_tools and the tool's approval_mode of the user's own connector; Always allow needs the policy's approvalsAlwaysAllow.",
+  setConnectorToolPermissions:
+    "Validates all tool choices before committing the user's connector policy once; the same grant policy as setConnectorToolPermission applies.",
   forgetConnectorApprovals:
     'Removes the approval_mode "approve" entries of the user\'s own connectors.',
   connectConnector:
@@ -530,6 +561,8 @@ export const webMethodNotes: Record<string, string> = {
   viewedImageSnapshot:
     "Takes a conversation id and a path: read only inside that conversation's own working folder.",
   attachmentPreview: "Attachment ids resolve only to this user's own uploads.",
+  turnAttachment:
+    "Reads only a file the user's own conversation refers to, and only from the profile's attachment store (realpath inside it).",
   loadRemoteImage:
     "Fetched from the runner host: the public-address check of electron/remote-image.ts (every hop) must stay on.",
   getFavicons: "As loadRemoteImage: public addresses only.",

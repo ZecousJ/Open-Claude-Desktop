@@ -1,12 +1,12 @@
 import { UsersRound, Square, ChevronRight } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { Item } from "../../../shared/types";
 import { itemIsRunning } from "../../../shared/activity";
 import { ActivityMark } from "../TurnActivity";
 import { AgentMessageAttribution } from "../agents/AgentMessageAttribution";
 import { formatText, t } from "../../i18n";
 
-/** Agent verbs. */
+/** Agent verbs (live claude.ai bundle, 2026-10-14, c52b02f3f-DyQysPJ4). */
 const labels: Record<string, string> = {
   spawnAgent: "Ran agent",
   sendInput: "Messaged an agent",
@@ -72,7 +72,7 @@ export function CollaborationToolView({
         {running ? (
           <ActivityMark phase="tools" />
         ) : failed ? (
-          <AppIcon name="WarningCircle" size={15} />
+          <Anthropicon name="WarningCircle" size={15} />
         ) : stopped ? (
           <Square size={13} />
         ) : (

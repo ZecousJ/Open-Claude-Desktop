@@ -2,8 +2,10 @@ import type { Project } from "./types";
 import { projectKind } from "./project-kind";
 
 /**
- * A project's folders. Claudex keeps the first folder in `Project.cwd`, where
- * Code and Cowork start, and the rest in `Project.additionalFolders`.
+ * A project's folders (live claude.ai bundle, 2026-10-12: a project binds
+ * up to 16 folders on a computer; "Add a folder" is off once it has 16).
+ * Claudex keeps the first folder in `Project.cwd`, where Code and Cowork
+ * start, and the rest in `Project.additionalFolders`.
  */
 export const projectFolderLimit = 16;
 

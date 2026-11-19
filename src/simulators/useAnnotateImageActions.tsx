@@ -313,7 +313,7 @@ export function useAnnotateImageActions(kit: UseAnnotateImageActionsKit) {
     setTool(next);
   };
 
-  /** A finished shape leaves its tool for Select, the mark chosen. */
+  /** Live bundle: a finished shape leaves its tool for Select, the mark chosen. */
   const toolDone = (mark: Mark | null) => {
     changeTool("select");
     if (mark && isSelectable(mark)) select(mark);

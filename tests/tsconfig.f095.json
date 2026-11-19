@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.f089.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/official-ui/native/code-transcript.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "official-ui-code-transcript.test.ts",
+    "official-ui-code-sessions.test.ts",
+    "code-history-pagination.test.ts",
+    "official-ui-code-history-original.test.ts",
+    "engine/native-history-pagination-chain.test.ts"
+  ]
+}

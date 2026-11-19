@@ -20,10 +20,11 @@ import "./onboarding.css";
 import { connected, Chip, StepPage } from "./OnboardingSteps";
 
 /**
- * "Connect your work tools": the person's connectors with Connect where one
- * needs signing in, "Browse all connectors" (Settings ▸ Connectors), and
- * Continue, which asks first when nothing is connected. Connect is the real
- * sign-in of Settings ▸ Connectors (the runtime's OAuth in the browser).
+ * "Connect your work tools" (c10bf8b47 `ss`, skippable): the person's
+ * connectors with Connect where one needs signing in, "Browse all
+ * connectors" (Settings ▸ Connectors), and Continue, which asks first when
+ * nothing is connected. Connect is the real sign-in of Settings ▸
+ * Connectors (the runtime's OAuth in the browser).
  */
 export function ConnectStep({
   onOpenConnectors,
@@ -205,10 +206,10 @@ export function ConnectStep({
 }
 
 /**
- * "How did you get here?": written as a reply under the star, the answers as
- * chips in a shuffled order with Other last; Other asks "Tell us more…" with an
- * arrow to send, Social media asks "Which one?". Continue with nothing chosen
- * skips the question.
+ * "How did you get here?" (c10bf8b47 `zo`): written as a reply under the
+ * star, the answers as chips in a shuffled order with Other last; Other asks
+ * "Tell us more…" with an arrow to send, Social media asks "Which one?".
+ * Continue with nothing chosen skips the question.
  */
 export function HearStep({
   onContinue,

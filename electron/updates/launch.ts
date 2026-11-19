@@ -1,10 +1,11 @@
 /**
- * The updater's two hooks in main.ts (docs/releasing.md):
+ * Package OTA's two hooks in main.ts (docs/ota.md):
  *
  * - `prepareLaunch()` runs first when the app is ready, before any account
  *   or window: it moves a misnamed macOS bundle to Claudex.app, installs a
- *   validates a staged update left at the last quit. When it returns true
- *   this process is exiting and main must not continue.
+ *   validates a staged update left at the last quit, and does the
+ *   first-run handoff from ZecousAI. When it returns true this process is
+ *   exiting and main must not continue.
  * - `startAppUpdates(ctx)` starts the updater: background checks, the
  *   `app-update` event, Relaunch to update and the install at quit.
  */
@@ -18,9 +19,14 @@ import type { LinuxPackage } from "../../shared/app-update";
 import os from "node:os";
 import type { AppContext } from "../app/app-context";
 import { defaultClaudexServiceUrl } from "../../shared/claudex-service";
+import {
+  clearSignInHint,
+  zecousHandoff,
+  zecousStoreFile,
+} from "./zecous-handoff";
 import { loadSub2ApiConfig } from "../../server/sub2api-config";
 import { Sub2ApiClient } from "../sub2api/client";
-import { startInstall } from "./apply";
+import { installTarget, startInstall } from "./apply";
 import { relocateBundle } from "./relocate";
 import {
   launchDecision,
@@ -29,6 +35,7 @@ import {
   updatesDir,
 } from "./staging";
 import { AppUpdater } from "./updater";
+import { discardWindowsAppPack } from "./windows-pack";
 import { keepDigest } from "./app-pack";
 import { preference } from "../../shared/settings-extras";
 import { ensureAppOwnership } from "./ownership-dialog";
@@ -55,7 +62,7 @@ const log = (message: string, error?: unknown) =>
 
 function serviceUrl(userData: string) {
   try {
-    return loadSub2ApiConfig(userData).baseUrl || undefined;
+    return loadSub2ApiConfig(userData).baseUrl;
   } catch {
     return undefined;
   }
@@ -66,6 +73,12 @@ export async function prepareLaunch(): Promise<boolean> {
   if (!app.isPackaged) return false;
   const userData = app.getPath("userData");
   const dir = updatesDir(userData);
+  // ZecousAI's updater installs this app as ZecousAI.app: that start is a
+  // ZecousAI user moving over, so the service is set up even without
+  // ZecousAI's store, and before the bundle is renamed and relaunched.
+  const fromZecousAI =
+    process.platform === "darwin" && /\/ZecousAI\.app\//.test(process.execPath);
+  if (fromZecousAI) handoff(userData, true);
   if (process.platform === "darwin") {
     const moved = relocateBundle({
       execPath: process.execPath,
@@ -83,7 +96,10 @@ export async function prepareLaunch(): Promise<boolean> {
   const result = readApplyResult(dir);
   if (result && !result.ok)
     log(`installing ${result.version} failed`, result.error);
-  launchDecision(dir, app.getVersion());
+  const previous = process.platform === "win32" ? readStaged(dir) : undefined;
+  const decision = launchDecision(dir, app.getVersion());
+  if (decision.action === "none" && previous?.kind === "win-app")
+    discardWindowsAppPack(installTarget(process.execPath), previous.prepared);
   try {
     updateSession = beginUpdateSession(
       userData,
@@ -102,7 +118,22 @@ export async function prepareLaunch(): Promise<boolean> {
   } catch (error) {
     log("running-instance sentinel unavailable", error);
   }
+  handoff(userData, false);
   return false;
+}
+
+function handoff(userData: string, fromZecousAI: boolean) {
+  try {
+    const result = zecousHandoff({
+      userData,
+      zecousStore: zecousStoreFile(process.platform, process.env, os.homedir()),
+      serviceUrl: defaultClaudexServiceUrl,
+      fromZecousAI,
+    });
+    if (result.configured) console.log("Claudex: set up from ZecousAI.");
+  } catch (error) {
+    log("the ZecousAI settings couldn't be read", error);
+  }
 }
 
 /**
@@ -137,9 +168,6 @@ let shipItFailureLogged = false;
 export function setUpdateQuitInProgress(value: boolean) {
   quitting = value;
 }
-
-/** Whether the quit under way is Relaunch to update (it installs, then reopens). */
-export const updateRelaunchRequested = () => relaunchAfterInstall;
 
 /** The running updater (undefined before startAppUpdates). */
 export const appUpdater = () => updater;
@@ -185,9 +213,6 @@ export function startAppUpdates(ctx: AppContext) {
       fs.existsSync(squirrelWindowsExecutable(process.execPath)));
   const updateBase =
     policy.updatesHost ?? serviceUrl(userData) ?? defaultClaudexServiceUrl;
-  // A build without a service checks for updates once one is chosen
-  // (setServiceAddress starts them again).
-  if (!updateBase) return undefined;
   updateEndpoints = [
     {
       url:
@@ -249,7 +274,11 @@ export function startAppUpdates(ctx: AppContext) {
     ui: Parameters<typeof import("../ui-pack/launch").offerUiPack>[0],
   ) =>
     void import("../ui-pack/launch")
-      .then(({ offerUiPack }) => offerUiPack(ui ?? null))
+      .then(async ({ offerUiPack }) => {
+        offerUiPack(ui);
+        const { offerOfficialRenderer } = await import("../ui-pack/official-launch");
+        offerOfficialRenderer(ui);
+      })
       .catch((error) => console.error("[ui-pack] offer failed:", error));
   let updaterConfig:
     import("../../shared/update-policy").DesktopUpdaterConfig | undefined;
@@ -333,6 +362,7 @@ export function startAppUpdates(ctx: AppContext) {
           // same Electron and has the same Codex files (app-pack.ts).
           ...(process.platform === "win32"
             ? {
+                windowsInstallDir: installTarget(process.execPath),
                 installed: async () => ({
                   runtime: process.versions.electron,
                   keep: await keepDigest(process.resourcesPath),
@@ -468,6 +498,14 @@ export function startAppUpdates(ctx: AppContext) {
     quitting = true;
     updater?.stop();
   });
+  // The suggested email is only for the first sign-in.
+  ctx.onAccountActivated(() => {
+    try {
+      clearSignInHint(userData);
+    } catch {
+      /* Shown again next time; harmless. */
+    }
+  });
   // Installed when Claudex quits, whether or not Relaunch was chosen.
   // The quit waits for the staged file's check and the helper's start, then
   // exits; the helper waits for this process to be gone.
@@ -478,10 +516,9 @@ export function startAppUpdates(ctx: AppContext) {
     // Linux asks for the system's authorization: only when Relaunch to
     // update was chosen, never at an ordinary quit.
     if (process.platform === "linux" && !relaunchAfterInstall) return;
-    const staged = current.staged();
-    if (!staged) return;
-    installing = true;
     if (current instanceof NativeAppUpdater) {
+      if (!current.staged()) return;
+      installing = true;
       try {
         if (relaunchAfterInstall) {
           event.preventDefault();
@@ -495,16 +532,20 @@ export function startAppUpdates(ctx: AppContext) {
       }
       return;
     }
+    const staged = current.staged();
+    if (!staged) return;
+    installing = true;
     event.preventDefault();
     const dir = updatesDir(userData);
     // Exits in any case: an install step that hangs can't hold Claudex open.
     const hold = setTimeout(() => app.exit(0), installHoldMs);
     void startInstall({
       dir,
-      staged: readStaged(dir) ?? current.staged()!,
+      staged,
       relaunch: relaunchAfterInstall,
       pid: process.pid,
       execPath: process.execPath,
+      currentVersion: app.getVersion(),
       background: backgroundInstall,
     })
       .catch((error) => {
@@ -534,8 +575,10 @@ export function relaunchToUpdate(options: { interrupt?: boolean } = {}) {
 }
 
 /**
- * The quit Relaunch to update started was called off (the running-task dialog's
- * Wait or Cancel): a later ordinary quit installs nothing and reopens nothing.
+ * The quit Relaunch to update started was called off (the running-task
+ * dialog's Wait or Cancel): a later ordinary quit installs nothing and
+ * reopens nothing (the original cancels its pending restart there,
+ * desktop bundle 2.37337.1, shared-6 JH: cancelPendingRestart).
  */
 export function cancelRelaunchToUpdate() {
   relaunchAfterInstall = false;

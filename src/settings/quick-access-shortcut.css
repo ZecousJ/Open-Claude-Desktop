@@ -1,4 +1,5 @@
-/* w-[220px] flex gap-4 flex-col justify-center. */
+/* w-[220px] flex gap-4 flex-col justify-center
+   (live claude.ai bundle, 2026-10-14, c71860c77-yHKjimoi). */
 .quick-access-shortcut {
   display: flex;
   flex-direction: column;

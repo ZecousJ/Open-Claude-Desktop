@@ -425,7 +425,8 @@
   background: #f3f3ef;
   border-color: #deded8;
 }
-/* The empty canvas's button is an ink fill with the secondary text. */
+/* The empty canvas's button is an ink fill with the secondary text (live
+   claude.ai bundle, 2026-10-16, rules.json: --cds-fill-control, --cds-text-secondary). */
 :root[data-theme="light"] .blank-canvas-empty button {
   background: var(--alpha-2);
   color: var(--text-secondary);

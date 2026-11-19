@@ -14,7 +14,7 @@ import { useHost } from "../host/HostContext";
 import { coworkAvailable } from "../home/home-mode";
 import { urlForState } from "../web/routes";
 import { CircledPlusIcon, PlusIcon } from "../ui/icons";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { AppContext } from "../app/AppContext";
 import { useDismiss } from "../ui/useDismiss";
 import { ShortcutPlatform, shortcutText, useTooltip } from "../ui/Tooltip";
@@ -36,8 +36,8 @@ import { NavCreateMenu } from "./NavCreateMenu";
 
 const web = surface === "web";
 /**
- * The More menu opens 120ms after the pointer rests on its row and closes 180ms
- * after it leaves.
+ * The More menu opens 120ms after the pointer rests on its row and closes
+ * 180ms after it leaves (live claude.ai bundle, 2026-10-16, shared-21-DI_JOKFI.js).
  */
 export const moreHoverOpenMs = 120;
 export const moreHoverCloseMs = 180;
@@ -54,35 +54,38 @@ function readNavItemIds(key: string): string[] {
   }
 }
 
-/** A web row's glyph in its 28px slot. */
+/** A web row's glyph in its 28px slot (live claude.ai, 2026-10-01). */
 const slot = (glyph: ReactNode, className = "") => (
   <span className={`nav-glyph ${className}`}>{glyph}</span>
 );
 
 /**
- * Both surfaces use the same glyphs. API and Service status, on the sidebar
- * beside them, take the same set's Key and Activity.
+ * Both surfaces use the same glyphs (live claude.ai bundle, 2026-10-14,
+ * shared-20-BCaQhdKH.js; Dispatch is its Dispatch glyph, shared-20-D4I32324.js
+ * 2026-10-16). API and Service status, on the sidebar beside them
+ * (owner, 2026-10-20), take the same set's Key and Activity.
  */
 const icons: Record<NavItemId, ReactNode> = web
   ? {
-      projects: slot(<AppIcon name="Projects" />),
-      artifacts: slot(<AppIcon name="Artifacts" />),
-      scheduled: slot(<AppIcon name="Clock" />),
-      customize: slot(<AppIcon name="Tool" />),
-      api: slot(<AppIcon name="Key" />),
-      status: slot(<AppIcon name="Activity" />),
-      dispatch: slot(<AppIcon name="Dispatch" />),
+      projects: slot(<Anthropicon name="Projects" />),
+      artifacts: slot(<Anthropicon name="Artifacts" />),
+      scheduled: slot(<Anthropicon name="Clock" />),
+      customize: slot(<Anthropicon name="Tool" />),
+      api: slot(<Anthropicon name="Key" />),
+      status: slot(<Anthropicon name="Activity" />),
+      dispatch: slot(<Anthropicon name="Dispatch" />),
     }
   : {
       // The desktop's glyphs sit in the same 24px slot as the web's, so every
-      // row's label starts at the same place.
-      projects: slot(<AppIcon name="Projects" />),
-      artifacts: slot(<AppIcon name="Artifacts" />),
-      scheduled: slot(<AppIcon name="Clock" />),
-      customize: slot(<AppIcon name="Tool" />),
-      api: slot(<AppIcon name="Key" />),
-      status: slot(<AppIcon name="Activity" />),
-      dispatch: slot(<AppIcon name="Dispatch" />),
+      // row's label starts at the same place (owner, 2026-10-20: New and
+      // More were 4px left of the rest).
+      projects: slot(<Anthropicon name="Projects" />),
+      artifacts: slot(<Anthropicon name="Artifacts" />),
+      scheduled: slot(<Anthropicon name="Clock" />),
+      customize: slot(<Anthropicon name="Tool" />),
+      api: slot(<Anthropicon name="Key" />),
+      status: slot(<Anthropicon name="Activity" />),
+      dispatch: slot(<Anthropicon name="Dispatch" />),
     };
 
 /**
@@ -158,8 +161,9 @@ function NavItem({
 }
 
 /**
- * The plus at the right end of the hovered Projects row: starts a new project.
- * A sibling of the row's button, at the New row's window icon's position.
+ * The plus at the right end of the hovered Projects row (R-0013 悬停, also
+ * while selected): starts a new project. A sibling of the row's button, at
+ * the New row's window icon's position.
  */
 function NewProjectPlus() {
   const app = useContext(AppContext);
@@ -179,7 +183,10 @@ function NewProjectPlus() {
   );
 }
 
-/** New navigates directly; collection rows have separate create menus. */
+/**
+ * New navigates directly; collection rows have separate create menus
+ * (live claude.ai bundle, 2026-10-14, shared-21-Cj1zQ-fC.js).
+ */
 export function MainNav({
   mode,
   page,
@@ -205,13 +212,13 @@ export function MainNav({
       <NavItem
         className={`new ${activeConversation ? "circled" : ""}`}
         current={!activeConversation && page === "chat"}
-        // While a conversation is open New shows a circled plus; the web's Add
-        // sits in a 22px disc that fills while one is open.
+        // While a conversation is open New shows a circled plus (R-0012);
+        // the web's Add sits in a 22px disc that fills while one is open.
         icon={
           web
             ? slot(
                 <span>
-                  <AppIcon name="Add" />
+                  <Anthropicon name="Add" />
                 </span>,
                 "add",
               )
@@ -375,9 +382,12 @@ export function MoreMenu({
           if (!open) openAt(event.currentTarget);
         }}
       >
-        {/* Chat's More is a caret, Code's three dots. */}
+        {/* Chat's More is a caret, Code's three dots (live claude.ai,
+            2026-10-20). */}
         {slot(
-          <AppIcon name={mode === "code" ? "DotsHorizontal" : "CaretRight"} />,
+          <Anthropicon
+            name={mode === "code" ? "DotsHorizontal" : "CaretRight"}
+          />,
         )}
         <span>{selected?.label ?? "More"}</span>
         {badge && <NavItemBadge badge={badge} />}

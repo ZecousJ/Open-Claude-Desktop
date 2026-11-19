@@ -1,6 +1,7 @@
 /* O16 shared-frame Hc/tP/cD:10620–10637; native menu
    c86ccec3d:1200–1230/1420–1450. Menus use lg density, radius card =
-   comfortable lg radius + 4px, CDS ease-out and .3s. */
+   comfortable lg radius + 4px, CDS ease-out and .3s
+   (c6a992d55:666/66894–66900/68209–68243). */
 [data-composer-sheet="true"][class],
 [data-composer-sheet-child="true"][class] {
   --composer-sheet-radius: calc(14px * var(--cds-rem-scale, 1));

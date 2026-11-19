@@ -1,5 +1,6 @@
-/* Transcript approval card, body and buttons; CDS tokens resolved by
-   audit/tokens.py. */
+/* Transcript approval card, body and buttons (live claude.ai bundle,
+   2026-10-14, c1c1ec7b9-DdxFmCQ2.js:69577, c2d1aeb56-B3vrEAHu.js:179,
+   shared-frame-B1JORnF0.js:3719); CDS tokens resolved by audit/tokens.py. */
 .title-offer {
   --offer-ink: #f0efec;
   --offer-secondary: #c3c2b7;
@@ -101,7 +102,9 @@
   opacity: 0.4;
 }
 .title-offer-actions button:focus-visible,
-/* The resolved offer as the live transcript's step row. */
+/* The resolved offer as the live transcript's step row (c425fb3cf "se":
+   flex, 3px apart, the label muted and brighter on hover; the title 15px in
+   the primary ink; a 14px CaretRight at the end, turned while open). */
 /* A step row among the reply's (code-transcript.css .code-command): the
    rows' 4px apart, under the reply's text with its paragraph gap. */
 .title-offer-resolved {

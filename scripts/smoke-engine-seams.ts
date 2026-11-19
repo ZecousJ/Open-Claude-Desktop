@@ -15,6 +15,7 @@ import { Store } from "../electron/store/store";
 import { resolveRuntime } from "../electron/engine/runtime";
 import { isSteeredMessage } from "../shared/agent-api";
 import type { Conversation } from "../shared/types";
+import { CodeSendStart } from "../electron/engine/code-send-start";
 
 type Json = Record<string, any>;
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-e0-smoke-"));
@@ -36,6 +37,7 @@ const requests: { model: string; text: string; compaction: boolean }[] = [];
 let inputTokens = 30;
 let holdNext = false;
 let release: (() => void) | undefined;
+let nextReply: string | undefined;
 function stream(res: http.ServerResponse, text: string, requested: string) {
   const n = requests.length;
   const message = {
@@ -98,19 +100,34 @@ const server = http.createServer(async (req, res) => {
     text.slice(-2000),
   );
   requests.push({ model: body.model, text, compaction });
-  if (holdNext) {
+  // Auxiliary title/intent requests have no tool catalog; hold only the
+  // app-server's actual running turn, which can accept turn/steer.
+  if (holdNext && (body.tools?.length || compaction)) {
     holdNext = false;
     await new Promise<void>((resolve) => (release = resolve));
   }
   stream(
     res,
-    compaction ? "E0_SUMMARY" : `E0_REPLY_${requests.length}`,
+    compaction ? "E0_SUMMARY" : (nextReply ?? `E0_REPLY_${requests.length}`),
     body.model,
   );
+  nextReply = undefined;
 });
 
 let engine: Engine | undefined;
 let store: Store | undefined;
+function openEngine(state: Store) {
+  const running = new Engine(
+    state,
+    resolveRuntime(process.env.CLAUDEX_RUNTIME_RESOURCES),
+    () => "local-smoke-key-not-a-real-credential",
+    () => {},
+    providerServiceScript,
+  );
+  running.sessionAssistance.afterTurn = async () => {};
+  running.titleOffers.afterTurn = async () => {};
+  return running;
+}
 const last = (id: string) => store!.conversation(id).turns.at(-1)!;
 async function settled(id: string) {
   await until(() => last(id).status !== "inProgress", "turn end");
@@ -153,13 +170,7 @@ try {
   store.settings.activeProviderId = "mock";
   store.settings.sandbox = "workspace-write";
   store.settings.codeSandbox = "read-only";
-  engine = new Engine(
-    store,
-    resolveRuntime(),
-    () => "local-smoke-key-not-a-real-credential",
-    () => {},
-    providerServiceScript,
-  );
+  engine = openEngine(store);
 
   // 1. The full ThreadTokenUsage reaches the conversation.
   const c: Conversation = await send("E0_HELLO");
@@ -176,8 +187,23 @@ try {
 
   // 2. /compact runs as its own turn and leaves the previous turn alone.
   const firstId = first.id;
-  await engine.compactConversation(c.id);
+  inputTokens = 40_000;
+  nextReply = "E0_OLD_ASSISTANT_HISTORY " + "long conversation detail ".repeat(12_000);
+  await send("E0_LONG_CONTEXT", c.id);
+  await settled(c.id);
+  const beforeCompact = store.conversation(c.id).tokenUsage!.last.totalTokens;
+  inputTokens = 30;
+  const compactNotifications: string[] = [];
+  const recordCompaction = (event: Json) => {
+    if (event.params?.threadId === c.threadId &&
+        ["turn/started", "item/started", "item/completed", "thread/tokenUsage/updated", "turn/completed"].includes(event.method))
+      compactNotifications.push(event.method);
+  };
+  engine.rpc!.on("notification", recordCompaction);
+  await engine.compactConversation(c.id, undefined, "E0_COMPACT_ID");
   const compaction = await settled(c.id);
+  engine.rpc!.off("notification", recordCompaction);
+  console.log("Compaction notifications " + JSON.stringify(compactNotifications));
   assert.equal(compaction.compaction, "manual");
   assert.equal(compaction.status, "completed", compaction.error);
   assert.notEqual(compaction.id, firstId);
@@ -190,9 +216,62 @@ try {
   assert(requests.at(-1)!.compaction, "summarization request reached the mock");
   usage = store.conversation(c.id).tokenUsage!;
   assert.equal(usage.last.inputTokens, 0);
+  assert(usage.last.totalTokens < beforeCompact, "the summarized context is smaller");
+  store.flush();
+  const reopened = new Store(root).conversation(c.id);
+  assert.equal(reopened.turns.at(-1)?.compactionRequestId, "E0_COMPACT_ID");
+  assert.deepEqual(reopened.tokenUsage, usage);
+  await engine.stop();
+  store.flush();
+  store = new Store(root);
+  engine = openEngine(store);
+  const attempts = requests.length;
+  await engine.compactConversation(c.id, undefined, "E0_COMPACT_ID");
+  assert.equal(requests.length, attempts, "the persisted request is not dispatched twice");
+  await send("E0_AFTER_RESTART", c.id);
+  await settled(c.id);
+  assert(requests.at(-1)!.text.includes("E0_SUMMARY"), "resumed app-server uses the persisted summary");
+  assert(!requests.at(-1)!.text.includes("E0_OLD_ASSISTANT_HISTORY"), "resumed app-server omits old assistant context");
   console.log(
-    `PASS /compact: turn ${compaction.id.slice(0, 8)}…, context after ${usage.last.totalTokens} tokens`,
+    `PASS /compact: context ${beforeCompact} to ${usage.last.totalTokens} tokens; summary and request identity survive restart`,
   );
+
+  const originalEnsureThread = engine.ensureThread;
+  let prepared = false;
+  let releasePreparation!: () => void;
+  const preparation = new Promise<void>((resolve) => { releasePreparation = resolve; });
+  engine.ensureThread = async (...args) => {
+    await originalEnsureThread.apply(engine!, args);
+    prepared = true;
+    await preparation;
+  };
+  const start = new CodeSendStart();
+  const preparing = engine.compactConversation(c.id, undefined, "E0_CANCEL_PREPARATION", start);
+  const cancelled = assert.rejects(preparing, /cancelled before dispatch/);
+  await until(() => prepared, "compaction preparation");
+  const requestsBeforeCancel = requests.length;
+  assert.equal((await start.stop()).status, "accepted");
+  releasePreparation();
+  await cancelled;
+  engine.ensureThread = originalEnsureThread;
+  assert.equal(requests.length, requestsBeforeCancel);
+  console.log("PASS /compact preparation stop: no model request dispatched");
+
+  holdNext = true;
+  await engine.compactConversation(c.id, undefined, "E0_CANCEL_STARTED");
+  await until(() => Boolean(release), "compaction request held");
+  assert.equal(last(c.id).compaction, "manual");
+  await engine.interrupt(c.id);
+  release!();
+  release = undefined;
+  const interruptedCompact = await settled(c.id);
+  assert.equal(interruptedCompact.status, "interrupted");
+  assert.equal(interruptedCompact.userStopped, true);
+  store.flush();
+  assert.equal(new Store(root).conversation(c.id).turns.at(-1)?.status, "interrupted");
+  await send("E0_AFTER_COMPACT_STOP", c.id);
+  assert.equal((await settled(c.id)).status, "completed");
+  console.log("PASS /compact running stop: interrupted status persists and next message completes");
 
   // 3. A steered message joins the running turn when the model reads it.
   holdNext = true;

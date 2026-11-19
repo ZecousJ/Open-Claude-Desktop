@@ -120,7 +120,10 @@ export const schemas = {
     .object({ expression: z.string().min(1).max(100_000), tabId })
     .strict(),
   preview_list: z.object({}).strict(),
-  preview_start: z.object({ name: serverName }).strict(),
+  preview_start: z.union([
+    z.object({ name: serverName }).strict(),
+    z.object({ url: z.url({ protocol: /^https?$/ }).max(8192) }).strict(),
+  ]),
   preview_stop: z.object({ name: serverName }).strict(),
   preview_logs: z
     .object({

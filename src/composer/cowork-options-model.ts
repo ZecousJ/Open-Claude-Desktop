@@ -84,8 +84,9 @@ export type CoworkPlaceRow =
   | { kind: "folder"; path: string; at: number };
 
 /**
- * The menu's rows once projects and folders are mixed by when they were last
- * used, newest first; a project goes before a folder used at the same time.
+ * The menu's rows once projects and folders are mixed by when they were
+ * last used (desktop bundle 2.31226.1 lists both in one recent list), newest
+ * first; a project goes before a folder used at the same time.
  */
 export function coworkPlaceRows(
   projects: Project[],

@@ -1,8 +1,9 @@
 /*
- * The Code review card at the end of /review: a title line ("Code review", "3
- * findings", Re-run review at the far end), then the findings grouped under
- * their file's name, 14px text with the file name semibold and a 12px ghost
- * button. Rows follow the transcript's tool rows (agent-tool-families.css).
+ * The Code review card at the end of /review (desktop bundle 2.31226.1's
+ * findings card): a title line ("Code review", "3 findings", Re-run review at
+ * the far end), then the findings grouped under their file's name, 14px text
+ * with the file name semibold and a 12px ghost button. Rows follow the
+ * transcript's tool rows (agent-tool-families.css).
  */
 .code-review {
   display: flex;

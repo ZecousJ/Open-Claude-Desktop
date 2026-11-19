@@ -11,7 +11,7 @@ import { t } from "../../i18n";
 import "../../composer/task-permission-notice.css";
 import "./routine-permission.css";
 
-/** Permission notices. */
+/** Permission notices (live claude.ai bundle, 2026-10-14, c97b955f1-DnH50wWB.js). */
 export function RoutinePermissionNotice({
   permission,
 }: {
@@ -44,7 +44,12 @@ export function RoutinePermissionNotice({
   );
 }
 
-/** A routine's permission mode in the original's words. */
+/**
+ * A routine's permission mode in the original's words (live claude.ai bundle,
+ * 2026-10-13: the Permissions row of the scheduled-task editor lists the
+ * modes of a hub session, shared-8 YA(): "Manually approve", "Automatically
+ * approve", "Skip all approvals", each with its description).
+ */
 export const permissionRows = taskPermissions.map((value) => ({
   value,
   label: windowPermissionText[value].label,
@@ -67,8 +72,9 @@ export const allowedLabel = (entry: RoutineAllowed) =>
 const shown = 3;
 
 /**
- * "Always allowed": the approvals kept for the routine's later runs, each with
- * "Remove approval".
+ * "Always allowed": the approvals kept for the routine's later runs, each
+ * with "Remove approval" (live bundle: cfc18e0f4 alwaysAllowed,
+ * alwaysAllowedEmpty and removeApproval; Android's Show all / Show less).
  */
 export function AlwaysAllowed({
   items,

@@ -197,7 +197,7 @@ test("the desktop keeps its shortcuts on the platform's own key", () => {
     "incognito",
   );
   assert.equal(commandForKey(press("i", { metaKey: true }), table), undefined);
-  // ⇧⌘O is File > Open Folder… on the desktop, not a new chat.
+  // ⇧⌘O is File > Open Folder… on the desktop (R-0136), not a new chat.
   assert.equal(
     commandForKey(press("o", { metaKey: true, shiftKey: true }), table),
     "open-folder",
@@ -236,7 +236,7 @@ test("the Code pane keys are the original's", () => {
   assert.equal(meta("D", true), "toggle-changes");
   assert.equal(ctrl("d", true), "toggle-changes");
   assert.equal(meta("B", true), "toggle-browser");
-  // ⇧⌘P is the app's second Browser key.
+  // ⇧⌘P is the app's second Browser key (live claude.ai bundle, 2026-10-12).
   assert.equal(meta("P", true), "toggle-browser");
   assert.equal(ctrl("p", true), "toggle-browser");
   // Side Chat: ⌘; (Ctrl+; elsewhere).
@@ -301,7 +301,7 @@ test("the web leaves the browser its shortcuts and uses ⇧⌘O for a new chat",
   const meta = (key: string, shiftKey = false) =>
     commandForKey(press(key, { metaKey: true, shiftKey }), mac);
   assert.equal(meta("k"), "search");
-  // ⇧⌘K opens the palette on Search.
+  // ⇧⌘K opens the palette on Search (live claude.ai bundle, 2026-10-12).
   assert.equal(meta("K", true), "search-palette");
   assert.equal(meta("b"), "toggle-sidebar");
   assert.equal(meta("/"), "shortcuts");

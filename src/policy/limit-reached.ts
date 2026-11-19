@@ -2,10 +2,11 @@ import { useEffect, useReducer, useState } from "react";
 import type { WeeklyUsageStatus } from "../../shared/types";
 
 /**
- * The limit-hit dialog: once a limit refuses requests and this account has a
- * way to keep working, a dialog says so once for that limit window. Its key
- * names the window; nothing when there is nothing to offer (the usage notice
- * already says the limit was hit).
+ * The limit-hit dialog (the original's OveragesOrUpgradeUpsellDialogBody,
+ * live claude.ai bundle 2026-10-14, c267d3c1f): once a limit refuses
+ * requests and this account has a way to keep working, a dialog says so
+ * once for that limit window. Its key names the window; nothing when there
+ * is nothing to offer (the usage notice already says the limit was hit).
  */
 export function limitDialogKey(
   status: WeeklyUsageStatus | null | undefined,

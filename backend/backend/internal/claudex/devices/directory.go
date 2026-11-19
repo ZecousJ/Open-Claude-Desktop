@@ -48,6 +48,10 @@ func (c *Component) Check(ctx context.Context, userID int64, issuedAt time.Time,
 	return verdict(state, issuedAt)
 }
 
+func (c *Component) InvalidateSession(userID int64, sessionID string) {
+	c.sessions.del(sessionKey{UserID: userID, SID: sessionID})
+}
+
 func verdict(s sessionState, issuedAt time.Time) claudexhook.SessionState {
 	if s.revokes(issuedAt) {
 		return claudexhook.Revoked

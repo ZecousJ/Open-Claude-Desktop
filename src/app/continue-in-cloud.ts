@@ -1,8 +1,11 @@
 /**
- * Continue in cloud's words and steps, and the run behind its button: save the
- * work, upload it, write the handoff note, start the cloud session on that work
- * with the note as its first message. The dialog is ContinueInCloudDialog.tsx;
- * the calls are shared/cloud-continue-api.ts.
+ * Continue in cloud's words and steps (live claude.ai bundle, 2026-10-12:
+ * "Move this session to the cloud?" with the snapshot move — "Saving your
+ * work", "Uploading your work" — its description, blocked states and
+ * upload errors), and the run behind its button: save the work, upload it,
+ * write the handoff note, start the cloud session on that work with the
+ * note as its first message. The dialog is ContinueInCloudDialog.tsx; the
+ * calls are shared/cloud-continue-api.ts.
  */
 import type {
   CloudContinuationPlan,
@@ -15,7 +18,11 @@ import { handOffPrompt } from "../../shared/hand-off";
 import type { Conversation, DesktopAPI } from "../../shared/types";
 import { formatText } from "../i18n";
 
-/** The steps, in the order Claudex runs them. */
+/**
+ * The steps, in the order Claudex runs them (the live desktop lists the
+ * summary last because it sends it after creating the session; Claudex's
+ * cloud session starts with it, so it is written first).
+ */
 export type ContinuationStep =
   "saving_work" | "uploading" | "generating_summary" | "creating_session";
 
@@ -242,7 +249,10 @@ export function canAskToPush(failure: ContinuationFailure) {
   );
 }
 
-/** What Claudex in this session is asked. */
+/**
+ * What Claudex in this session is asked (live desktop bundle, 2026-10-12;
+ * sent as the person's message, in English as there).
+ */
 export function askToPushPrompt(command: string) {
   return [
     "The desktop app couldn't upload my work for the move to the cloud.",
@@ -251,8 +261,9 @@ export function askToPushPrompt(command: string) {
 }
 
 /**
- * Pull and push: the remote has commits this branch lacks, so Claude is asked
- * to pull, then push, stopping at conflicts.
+ * Pull and push (live claude.ai bundle, 2026-10-15, caec4a2d4 `di`): the
+ * remote has commits this branch lacks, so Claude is asked to pull, then
+ * push, stopping at conflicts.
  */
 export const pullAndPushPrompt =
   "Pull the latest changes for the current branch from the remote and push. If there are merge conflicts, stop and tell me instead of resolving them.";

@@ -16,6 +16,23 @@ import { configurationUnavailable } from "./extension-lifecycle-support";
 import { text } from "./extension-lifecycle-support";
 import { object } from "./extension-lifecycle-support";
 import type { ExtensionLifecycle } from "./extension-lifecycle";
+import { extensionMcpTemplate } from "./extension-lifecycle-support";
+
+function matchesField(
+  field: DesktopExtensionDetails["fields"][number],
+  value: ExtensionValue,
+) {
+  if (field.multiple)
+    return (
+      Array.isArray(value) &&
+      value.every((item) => typeof item === "string" && item.length <= 8192)
+    );
+  const type =
+    field.type === "file" || field.type === "directory" ? "string" : field.type;
+  return (
+    typeof value === type && (typeof value !== "string" || value.length <= 8192)
+  );
+}
 
 export function details(
   this: ExtensionLifecycle,
@@ -51,7 +68,7 @@ export function details(
     };
   }
   const { manifest, hash } = record;
-  if (manifest.name !== id) throw Error(unavailable);
+  if (manifest.name !== (entry.claudex_extension_manifest_name ?? id)) throw Error(unavailable);
   const blockedReason = this.blocked(owner, id, entry);
   const { fields, supported } = this.fields(manifest);
   const configurable =
@@ -103,6 +120,7 @@ export function details(
     fields,
     values: publicValues,
     savedSecrets,
+    ...(readError ? { error: configurationUnavailable } : {}),
     ...(!configurable || readError ? { configurationUnavailable } : {}),
   };
 }
@@ -131,12 +149,18 @@ export function validate(
       continue;
     }
     if (
-      typeof value !== field.type ||
+      field.required &&
+      Array.isArray(value) &&
+      (value.length === 0 || value.some((item) => item === ""))
+    )
+      throw Error("Fill in all required extension settings.");
+    if (
+      !matchesField(field, value) ||
       (typeof value === "number" &&
         (!Number.isFinite(value) ||
           (field.min !== undefined && value < field.min) ||
           (field.max !== undefined && value > field.max))) ||
-      (typeof value === "string" && value.length > 8192)
+      (Array.isArray(value) && value.length > 256)
     )
       throw Error("An extension setting has an invalid value.");
     checked[field.key] = value;
@@ -152,18 +176,27 @@ export function expanded(
   manifest: Record<string, any>,
   values: Record<string, ExtensionValue>,
 ) {
-  const template = object(object(manifest.server).mcp_config);
+  const template = extensionMcpTemplate(manifest);
+  const dirs = this.options.systemDirs?.() ?? {};
   const expand = (value: unknown) => {
     if (typeof value !== "string" || value.length > 32768)
       throw Error(configurationUnavailable);
     return value.replace(/\$\{([^}]+)\}/g, (_, key: string) => {
       if (key === "__dirname") return directory;
-      if (key === "pathSeparator") return path.sep;
+      if (key === "pathSeparator" || key === "/") return path.sep;
+      if (["HOME", "DESKTOP", "DOCUMENTS", "DOWNLOADS"].includes(key)) {
+        if (typeof dirs[key] !== "string")
+          throw Error(configurationUnavailable);
+        return dirs[key];
+      }
       if (
         key.startsWith("user_config.") &&
         Object.hasOwn(values, key.slice(12))
-      )
+      ) {
+        if (Array.isArray(values[key.slice(12)]))
+          throw Error(configurationUnavailable);
         return String(values[key.slice(12)]);
+      }
       throw Error(configurationUnavailable);
     });
   };
@@ -177,7 +210,12 @@ export function expanded(
   );
   const result = {
     command: expand(template.command),
-    args: (template.args ?? []).map(expand),
+    args: (template.args ?? []).flatMap((value: unknown) => {
+      const match =
+        typeof value === "string" && /^\$\{user_config\.([^}]+)\}$/.exec(value);
+      const replacement = match && values[match[1]];
+      return Array.isArray(replacement) ? replacement : [expand(value)];
+    }),
     env,
   };
   if (
@@ -312,4 +350,80 @@ export async function uninstall(
     release?.();
     pending.delete(input.id);
   }
+}
+
+export function prepareUpgrade(
+  this: ExtensionLifecycle,
+  id: string,
+  manifest: Record<string, unknown>,
+  target: string,
+): { enabled: boolean; settings?: string | true; rollback(): void; retire(): void } {
+  const owner = this.options.owner();
+  const entry = this.entry(owner, id);
+  const oldDirectory = this.directory(owner, entry);
+  const oldManifest = this.manifest(oldDirectory).manifest;
+  const retire = () => {
+    const prefix = this.settingsPrefix(owner, id, entry.claudex_extension);
+    const settingsDirectory = path.dirname(this.settingsFile(owner, id, false, randomUUID(), entry.claudex_extension));
+    if (!fs.existsSync(settingsDirectory)) return;
+    for (const file of fs.readdirSync(settingsDirectory)) {
+      if (file.startsWith(`${prefix}-`) && /^[a-f0-9-]{36}\.enc$/.test(file.slice(prefix.length + 1)))
+        fs.rmSync(path.join(settingsDirectory, file), { force: true });
+    }
+  };
+  const oldFields = this.fields(oldManifest);
+  const nextFields = this.fields(manifest);
+  if (!oldFields.supported || !nextFields.supported)
+    throw Error(configurationUnavailable);
+  const saved = this.values(owner, id);
+  const kept: Record<string, ExtensionValue> = {};
+  for (const field of nextFields.fields) {
+    const before = oldFields.fields.find((item) => item.key === field.key);
+    const value = saved[field.key];
+    if (
+      before &&
+      before.type === field.type &&
+      before.multiple === field.multiple &&
+      before.sensitive === field.sensitive &&
+      value !== undefined &&
+      matchesField(field, value)
+    )
+      kept[field.key] = value;
+  }
+  let complete = true;
+  try {
+    const checked = this.validate(manifest, kept);
+    this.expanded(target, manifest, checked);
+  } catch {
+    complete = false;
+  }
+  if (!nextFields.fields.length)
+    return { enabled: entry.enabled !== false, rollback() {}, retire };
+  if (typeof entry.claudex_extension_settings !== "string")
+    return { enabled: false, settings: true, rollback() {}, retire };
+  if (!this.options.cipher.isEncryptionAvailable())
+    throw Error(configurationUnavailable);
+  const version = randomUUID();
+  const file = this.settingsFile(owner, id, true, version, target);
+  fs.writeFileSync(
+    file,
+    this.options.cipher.encryptString(
+      JSON.stringify({
+        version: 1,
+        id,
+        root: fs.realpathSync(owner.root),
+        package: target,
+        values: kept,
+      }),
+    ),
+    { mode: 0o600, flag: "wx" },
+  );
+  return {
+    enabled: entry.enabled !== false && complete,
+    settings: version,
+    retire,
+    rollback() {
+      fs.rmSync(file, { force: true });
+    },
+  };
 }

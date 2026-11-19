@@ -21,7 +21,8 @@ import {
 import type { ComputerUseBroker } from "./broker";
 import type { BrokerConversation, KnownApp } from "./broker";
 
-// Live preview is subscribed only while the activity card is expanded.
+// Live preview is subscribed only while the activity card is expanded
+// (live claude.ai bundle, 2026-10-14, cb34f9f5d-c8u0NVZO.js).
 export async function preview(
   this: ComputerUseBroker,
   conversationId: string,
@@ -142,6 +143,15 @@ export async function act(
         ? `${app.name} is granted view-only: clicks and typing are blocked.`
         : `${app.name} is granted click-only: typing, key presses, right clicks and dragging are blocked.`,
     );
+  const requireGrant = () => {
+    const current = this.grants.get(conversationId)?.get(appKey(app.id));
+    if (
+      !current ||
+      tierRank[current.tier] < tierRank[needs] ||
+      this.deniedBy(app)
+    )
+      throw new Refusal(`${app.name} is no longer granted for this action.`);
+  };
   const mode = this.mode(conversationId);
   if (mode === "background")
     this.setActivity({
@@ -165,7 +175,10 @@ export async function act(
   const header = `${app.name} · ${tool} · ${tierLabels[tier]}`;
 
   if (tool === "open_application") {
-    await this.exclusive(() => this.deps.openApp(app, mode === "background"));
+    await this.exclusive(() => {
+      requireGrant();
+      return this.deps.openApp(app, mode === "background");
+    });
     this.appCache = undefined;
     return { content: [text(`${header}\nOpened ${app.name}.`)] };
   }
@@ -279,6 +292,7 @@ export async function act(
     tool === "press_key" &&
     normalizeKey(String(driverArgs.key)).split("+").includes("escape");
   const result = await this.exclusive(async () => {
+    requireGrant();
     if (escape) this.ownEscapeUntil = Infinity;
     try {
       const work = () => this.deps.driver.call(driverTool, driverArgs, mode);
@@ -287,6 +301,7 @@ export async function act(
       if (escape) this.ownEscapeUntil = this.now() + 500;
     }
   });
+  requireGrant();
   return this.finish(conversationId, conversation, app, header, tool, result);
 }
 

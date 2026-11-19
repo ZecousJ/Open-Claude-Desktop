@@ -15,18 +15,25 @@ export function compact(value: number): string {
 }
 
 /**
- * Money as the service bills it: four places for small amounts, two above a
- * dollar and for nothing; "$", not the locale's "US$".
+ * Keep small request charges visible; zero remains distinct from a rounded amount.
  */
-export function cost(value: number): string {
-  const digits = Math.abs(value) >= 1 || value === 0 ? 2 : 4;
-  return new Intl.NumberFormat(currentLocale(), {
+export function cost(value: number, locale = currentLocale()): string {
+  const magnitude = Math.abs(value);
+  const tiny = magnitude > 0 && magnitude < 0.0001;
+  const digits = magnitude >= 1 || value === 0 ? 2 : tiny ? 8 : 4;
+  const formatter = new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "USD",
     currencyDisplay: "narrowSymbol",
-    minimumFractionDigits: digits,
+    minimumFractionDigits: tiny ? 0 : digits,
     maximumFractionDigits: digits,
-  }).format(value);
+  });
+  if (magnitude > 0 && magnitude < 0.00000001)
+    return (
+      (value > 0 ? "<" : ">") +
+      formatter.format(value > 0 ? 0.00000001 : -0.00000001)
+    );
+  return formatter.format(value);
 }
 
 /** 850 → "850 ms", 1,240 → "1.24 s", 75,000 → "1.3 min". */

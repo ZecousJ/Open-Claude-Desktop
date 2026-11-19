@@ -14,12 +14,14 @@ import { McpStdioCapture } from "./mcp-stdio-capture";
 import { mcpConfigText } from "./mcp-config-file";
 import { settingsRefusal } from "../../shared/client-policy";
 import { preference } from "../../shared/settings-extras";
+import { parseEnvFile } from "../../shared/env-file";
 
 interface NativeExtensionOptions {
   ctx: AppContext;
   cipher: StorageCipher;
   helperPath: string;
   node: { executable: string; electron: boolean };
+  systemDirs?(): Record<string, string>;
 }
 type Lease = {
   scope: object;
@@ -40,6 +42,7 @@ export class NativeExtensionHost {
     this.lifecycle = new ExtensionLifecycle({
       owner: () => this.owner(),
       cipher: options.cipher,
+      systemDirs: options.systemDirs,
       runtimeConfiguration: (entry) =>
         Boolean(this.capture?.ready && entry && this.canWrap(entry)),
       update: (servers) => {
@@ -92,37 +95,33 @@ export class NativeExtensionHost {
           /* An observer cannot undo publication. */
         }
       },
-      prepareUninstall: async (owner) => {
-        const lease = this.current();
-        if (owner.scope !== lease.scope || this.maintenance)
-          throw Error("The extension changed. Reload it and try again.");
-        const maintenance = {};
-        this.maintenance = maintenance;
-        const release = () => {
-          if (this.maintenance === maintenance) this.maintenance = undefined;
-        };
-        try {
-          const engines = ctx.engines.all();
-          if (engines.some((engine) => engine.ownBusy()))
-            throw Error(
-              "Wait for the current task to finish before uninstalling an extension.",
-            );
-          await Promise.all(engines.map((engine) => engine.quiesceMcp()));
-          this.current(lease);
-          if (
-            ctx.engines.all().some((engine) => engine.rpc || engine.ownBusy())
-          )
-            throw Error(
-              "Wait for the current task to finish before uninstalling an extension.",
-            );
-          return release;
-        } catch (error) {
-          release();
-          throw error;
-        }
-      },
+      prepareUninstall: (owner) => this.prepareMaintenance("uninstalling", owner.scope),
     });
     ctx.onAccountDeactivating(() => this.retire());
+  }
+  async prepareMaintenance(action: "installing" | "uninstalling", scope?: object) {
+    const ctx = this.options.ctx;
+    const lease = this.current();
+    if ((scope && scope !== lease.scope) || this.maintenance)
+      throw Error("The extension changed. Reload it and try again.");
+    const maintenance = {};
+    this.maintenance = maintenance;
+    const release = () => {
+      if (this.maintenance === maintenance) this.maintenance = undefined;
+    };
+    const busy = () => Error(`Wait for the current task to finish before ${action} an extension.`);
+    try {
+      const engines = ctx.engines.all();
+      if (engines.some((engine) => engine.ownBusy())) throw busy();
+      await Promise.all(engines.map((engine) => engine.quiesceMcp()));
+      this.current(lease);
+      if (ctx.engines.all().some((engine) => engine.rpc || engine.ownBusy()))
+        throw busy();
+      return release;
+    } catch (error) {
+      release();
+      throw error;
+    }
   }
   private configured: Record<string, unknown> = {};
   private current(expected = this.lease): Lease {
@@ -152,9 +151,19 @@ export class NativeExtensionHost {
     return (
       !this.options.node.electron ||
       typeof env?.ELECTRON_RUN_AS_NODE === "string" ||
+      this.runAsNodeAbsent() ||
       (entry.command === "node" &&
         preference(this.current().store.settings, "extensionBuiltInNode"))
     );
+  }
+  private runAsNodeAbsent() {
+    const { store, engine } = this.current();
+    return [
+      process.env,
+      parseEnvFile(store.settings.localEnvironmentVariables ?? ""),
+      engine.options.environmentVariables,
+      engine.extensions.processEnv(),
+    ].every((env) => env?.ELECTRON_RUN_AS_NODE === undefined);
   }
   async activate() {
     this.retire();
@@ -212,7 +221,9 @@ export class NativeExtensionHost {
       const proof =
         typeof env?.ELECTRON_RUN_AS_NODE === "string"
           ? { value: env.ELECTRON_RUN_AS_NODE }
-          : undefined;
+          : this.runAsNodeAbsent()
+            ? {}
+            : undefined;
       const wrapped = capture.launchWrapper(name, entry, proof);
       const raw = lease.store.settings.mcpServers[name] as
         Record<string, unknown> | undefined;

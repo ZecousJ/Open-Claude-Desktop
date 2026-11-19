@@ -2,9 +2,9 @@ import type { AgentPanelTarget } from "../conversation/ToolSidePanel";
 import type { AppController } from "./AppContext";
 
 /**
- * Opens a child Agent's transcript beside the conversation, as the original's
- * single Agent row does: no detour through the Background tasks list. For the
- * transcript's Agent rows.
+ * Opens a child Agent's transcript beside the conversation, as the
+ * original's single Agent row does (R-0786): no detour through the
+ * Background tasks list. For the transcript's Agent rows (WP5a).
  */
 export function openAgentTranscript(
   app: AppController,

@@ -1,8 +1,9 @@
 /**
- * Help ▸ Troubleshooting, as in the 2.37337.1 desktop: Copy Installation ID,
- * Generate Diagnostic Report, Record Net Log (30s), Disable Hardware
- * Acceleration (a checkbox with a restart prompt) and Reset App Data…. Cowork's
- * VM items and the Claude Code imports have no counterpart in Claudex.
+ * Help ▸ Troubleshooting, as in the 2.37337.1 desktop (index.chunk-BWk6pVUt.js
+ * REi): Copy Installation ID, Generate Diagnostic Report, Record Net Log
+ * (30s), Disable Hardware Acceleration (a checkbox with a restart prompt)
+ * and Reset App Data…. Cowork's VM items and the Claude Code imports have
+ * no counterpart in Claudex.
  */
 import crypto from "node:crypto";
 import fs from "node:fs";

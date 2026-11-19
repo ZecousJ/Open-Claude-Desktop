@@ -49,7 +49,8 @@ export function watchTrustedWorkspaces(
 /**
  * Settings → Claude Code → Trusted folders: the folders Code's "Trust this
  * workspace?" recorded in Codex's config, laid out as the Trusted Cowork
- * folders dialog. Hidden where the bridge has none (the web app).
+ * folders dialog (live claude.ai bundle, 2026-10-12, cabd7b1c1). Hidden
+ * where the bridge has none (the web app).
  */
 export function TrustedWorkspacesRow({
   onError,

@@ -43,8 +43,9 @@ const make = (patch: Partial<QueuedMessage> = {}): QueuedMessage => ({
   ...patch,
 });
 
-// A queued message is a right-aligned bubble with Send now, Edit in composer
-// and Remove from queue; one the running turn took reads Sent.
+// Live claude.ai bundle, 2026-10-12 (ChatComposerQueuedMessages): a queued
+// message is a right-aligned bubble with Send now, Edit in composer and
+// Remove from queue; one the running turn took reads Sent.
 test("a queued message is a bubble with its three actions", () => {
   const html = render([make()]);
   assert.match(html, /class="chat-queued-bubble"/);

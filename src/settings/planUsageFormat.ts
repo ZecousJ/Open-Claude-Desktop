@@ -1,6 +1,7 @@
 /**
- * Wording of Settings → Usage: row labels, reset times, the headline and "Last
- * updated". Pure, so the wording is unit tested.
+ * Wording of Settings → Usage (R-1304–R-1311, Windows 1x W1351): row
+ * labels, reset times, the headline and "Last updated". Pure, so the
+ * wording is unit tested.
  */
 import type { PlanUsageWindow } from "../../shared/types";
 import { bannerWindow } from "../../shared/plan-usage";
@@ -44,8 +45,9 @@ const sameDay = (a: number, b: number) =>
   new Date(a).toDateString() === new Date(b).toDateString();
 
 /**
- * "at 4:30 AM" the same day, "Monday 5:00 PM" within a week, "Oct 12, 9:00 AM"
- * a week or more away: the reset as a row's caption writes it.
+ * "at 4:30 AM" the same day, "Monday 5:00 PM" within a week, "Oct 12,
+ * 9:00 AM" a week or more away (live claude.ai bundle, 2026-10-14,
+ * shared-0 dN/LV): the reset as a row's caption writes it.
  */
 export function resetWhen(
   resetsAt: number,
@@ -102,9 +104,10 @@ export function rowLabel(window: PlanUsageWindow) {
 }
 
 /**
- * The line under the row: the reset, the session's with a short weekday; a
- * weekly per-model limit says it is separate ("Separate weekly limit for Opus ·
- * Resets Monday 5:00 PM"); a window that has not started says so.
+ * The line under the row (live claude.ai bundle, 2026-10-14, c71860c77
+ * fi): the reset, the session's with a short weekday; a weekly per-model
+ * limit says it is separate ("Separate weekly limit for Opus · Resets
+ * Monday 5:00 PM"); a window that has not started says so.
  */
 export function rowNote(window: PlanUsageWindow, now: number) {
   const reset =
@@ -148,22 +151,23 @@ export function money(value: number) {
   }).format(value);
 }
 
-/** The bar and its percent turn red at the limit. */
+/** The bar and its percent turn red at the limit (R-1308: 100% is red, 49% blue). */
 export function atLimit(window: PlanUsageWindow) {
   return window.exceeded || window.percent >= 100;
 }
 
 /**
- * A row's colour: amber from 75%, red from 90% and at the limit, as the
- * composer's ring.
+ * A row's colour: amber from 75%, red from 90% and at the limit (live
+ * claude.ai bundle, 2026-10-14, shared-8 iv/wV), as the composer's ring.
  */
 export function rowSeverity(window: PlanUsageWindow) {
   return atLimit(window) ? "critical" : usageSeverity(window.percent);
 }
 
 /**
- * "Last updated: just now", "… less than a minute ago", "… 5 minutes ago", then
- * the time it was read once an hour has gone by.
+ * "Last updated: just now", "… less than a minute ago", "… 5 minutes ago",
+ * then the time it was read once an hour has gone by (live claude.ai
+ * bundle, 2026-10-14, c71860c77 dr).
  */
 export function updatedText(updatedAt: number, now: number) {
   const seconds = (now - updatedAt) / 1000;
@@ -195,9 +199,10 @@ export type PaceState =
   "zero" | "fresh" | "early" | "on_track" | "heads_up" | "limit_hit";
 
 /**
- * Where the week stands: at the limit, unused, under 10%, or under half a day
- * in; past that, the pace so far run on to the reset either stays under the
- * limit or runs out first, and when.
+ * Where the week stands (live claude.ai bundle, 2026-10-14, shared-3 Xi):
+ * at the limit, unused, under 10%, or under half a day in; past that, the
+ * pace so far run on to the reset either stays under the limit or runs
+ * out first, and when.
  */
 export function weekPace(
   percent: number,
@@ -248,7 +253,7 @@ const partOf = (at: number) => {
           : "night";
 };
 
-/** "this afternoon", "tomorrow night", "Thursday morning". */
+/** "this afternoon", "tomorrow night", "Thursday morning" (c71860c77 ci). */
 function runOutWhen(at: number, now: number) {
   const part = partOf(at);
   const anchor = nightOf(at, now);
@@ -285,7 +290,7 @@ function runOutWhen(at: number, now: number) {
   );
 }
 
-/** The week's reset as the headline names it. */
+/** The week's reset as the headline names it (c71860c77 si). */
 function resetKind(resetsAt: number, now: number, runsOutAt?: number) {
   if (
     runsOutAt !== undefined &&
@@ -300,7 +305,7 @@ function resetKind(resetsAt: number, now: number, runsOutAt?: number) {
     : { kind: when, value: "" };
 }
 
-/** "Monday 5:00 PM PDT", "Oct 12, 5:00 PM PDT". */
+/** "Monday 5:00 PM PDT", "Oct 12, 5:00 PM PDT" (c71860c77 li). */
 function weekResets(resetsAt: number, now: number) {
   return new Intl.DateTimeFormat(currentLocale(), {
     ...(resetsAt - now >= 6 * day
@@ -391,10 +396,11 @@ function paceText(
 }
 
 /**
- * The page's headline and where the week stands: the weekly window over all
- * models by the original's pace states. A plan without a weekly window: a
- * refused window first ("You’ve hit your session limit. It resets at 9:30
- * AM."), else that window's use. Null with no window over all models.
+ * The page's headline and where the week stands (R-1304; live claude.ai
+ * bundle, 2026-10-14, c71860c77 ui): the weekly window over all models by
+ * the original's pace states. A plan without a weekly window: a refused
+ * window first ("You’ve hit your session limit. It resets at 9:30 AM."),
+ * else that window's use. Null with no window over all models.
  */
 export function pace(
   windows: PlanUsageWindow[],

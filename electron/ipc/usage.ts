@@ -19,6 +19,10 @@ import type { AppContext, IpcHandle } from "../app/app-context";
 import type { RemoteHost } from "../remote/host";
 import { remoteBannerPolicy } from "../account/remote-mode";
 import {
+  assertAccountOperationCurrent,
+  type AccountOperationCurrent,
+} from "../account/operation-lease";
+import {
   ClaudexUsageReader,
   fetchUsageStatus,
   planUsageFromStatus,
@@ -102,8 +106,8 @@ function heldBlock(refusal: TimedRefusal, now: number) {
 }
 
 /**
- * The banner's status with the window-wide limit notice and the Get notified
- * offer.
+ * The banner's status with the window-wide limit notice (R-0127) and the
+ * Get notified offer.
  */
 export async function currentWeeklyUsage(
   ctx: AppContext,
@@ -319,23 +323,32 @@ export function scheduleResetReminder(
 
 /**
  * After the account's balance or plan changed outside this app (the
- * a top-up on the web): the refusal held from the empty
+ * ZecousAI move, a top-up on the web): the refusal held from the empty
  * balance is dropped, the plan and its models are read again, and the
  * window hears of the new models and usage, so "Your balance is used up"
  * and "Model service unavailable" go away by themselves.
  */
 export async function refreshAccountState(ctx: AppContext) {
-  const remote = ctx.remote;
+  const { remote, accountActivationIdentity: activation } = ctx;
   if (!remote) return;
+  const current = () =>
+    ctx.remote === remote &&
+    ctx.accountActivationIdentity === activation &&
+    !ctx.accountRetiring;
+  assertAccountOperationCurrent(current);
   remote.clearRefusal();
   usageReader(ctx, remote).invalidate();
   await remote.refreshPlan();
+  assertAccountOperationCurrent(current);
   ctx.push({ type: "service-changed" });
-  await pushWeeklyUsage(ctx);
+  await pushWeeklyUsage(ctx, current);
 }
 
 /** Tells the window the banner's current state; an unreadable source hides it. */
-export async function pushWeeklyUsage(ctx: AppContext) {
+export async function pushWeeklyUsage(
+  ctx: AppContext,
+  current?: AccountOperationCurrent,
+) {
   let status: WeeklyUsageStatus | null = null;
   let unavailable = false;
   try {
@@ -344,6 +357,7 @@ export async function pushWeeklyUsage(ctx: AppContext) {
     // An unreadable policy, usage log or service hides the banner; files are left untouched.
     unavailable = true;
   }
+  assertAccountOperationCurrent(current);
   ctx.push({
     type: "weekly-usage",
     status,

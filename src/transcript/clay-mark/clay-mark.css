@@ -1,0 +1,29 @@
+/* The working mark: a 20px box holding one 48px-frame strip shown at the
+   box's size (live desktop 2.42304.2: the mark's 20px box; the sheets are
+   clay on transparent). Until the sheets are in, the single dot they grow
+   from stands in. */
+.clay-mark {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  overflow: clip;
+  user-select: none;
+}
+.clay-mark-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  max-width: none;
+  will-change: transform;
+}
+.clay-mark-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: var(--clay, #d97757);
+}

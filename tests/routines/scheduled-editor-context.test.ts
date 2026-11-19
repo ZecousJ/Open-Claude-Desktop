@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import {
   draftInput,
   editDraft,

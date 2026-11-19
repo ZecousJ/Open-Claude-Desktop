@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { Square, ChevronRight } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { Item } from "../../shared/types";
 import { itemIsRunning } from "../../shared/activity";
 import { ActivityMark } from "../transcript/TurnActivity";
@@ -71,7 +71,7 @@ export function ComputerUseToolView({ item }: { item: Item }) {
           {phase === "running" ? (
             <ActivityMark phase="tools" />
           ) : phase === "failed" ? (
-            <AppIcon name="WarningCircle" size={15} />
+            <Anthropicon name="WarningCircle" size={15} />
           ) : phase === "stopped" ? (
             <Square size={13} />
           ) : null}

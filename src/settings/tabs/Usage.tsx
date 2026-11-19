@@ -95,7 +95,12 @@ function LimitRow({
 
 const weekSeconds = 7 * 86_400;
 
-/** The rows, with a week's per-model limits folded under "This week". */
+/**
+ * The rows, with a week's per-model limits folded under "This week" (live
+ * claude.ai bundle, 2026-10-14, c71860c77 fi/mi: a CaretDown toggle on
+ * the week's label, the scoped rows under it named by their models,
+ * closed until opened).
+ */
 function LimitRows({
   windows,
   now,
@@ -174,12 +179,12 @@ function LimitRows({
 export const LimitRowsForTests = LimitRows;
 
 /**
- * Settings → Usage: the plan's session, weekly, per-model and other windows
- * from the Claudex service, a summary line worked out from them, the balance
- * for plans paid from it, when it was read and the administrator's Learn more
- * page. The original's Resets, Usage credits, Monthly spend limit and
- * usage-by-product blocks have no Claudex service data behind them and are not
- * shown.
+ * Settings → Usage (R-1304–R-1311): the plan's session, weekly, per-model
+ * and other windows from the Claudex service, a summary line worked out
+ * from them, the balance for plans paid from it, when it was read and the
+ * administrator's Learn more page. The original's Resets, Usage credits,
+ * Monthly spend limit and usage-by-product blocks have no Claudex service
+ * data behind them and are not shown.
  */
 export function UsageTab(props: TabProps) {
   const host = useHost();
@@ -201,14 +206,14 @@ function UsageContent(props: TabProps) {
   const { onError, email } = props;
   const inTab = useHost().kind === "web";
   const [usage, setUsage] = useState<PlanUsage | null>();
-  // Add funds from here too: the same checkout page as Billing, offered while
-  // the service takes payments.
+  // Add funds from here too (the owner, 2026-10-02): the same checkout page
+  // as Billing, offered while the service takes payments.
   const [checkout, setCheckout] = useState<BillingCheckout | null>(null);
   const [addingFunds, setAddingFunds] = useState(false);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
-  // The first read failed: the original's line in place of the limits, with Try
-  // again, not a skeleton forever.
+  // The first read failed: the original's line in place of the limits, with
+  // Try again (live claude.ai bundle, 2026-10-12), not a skeleton forever.
   const [loadFailed, setLoadFailed] = useState(false);
   const live = useRef(false);
   const generation = useRef(0);
@@ -251,7 +256,9 @@ function UsageContent(props: TabProps) {
     void load(false);
     // Keeps the reset times and "Last updated" current.
     const timer = setInterval(() => setNow(Date.now()), 30_000);
-    // Read again every 5 minutes and on coming back to the window.
+    // Read again every 5 minutes and on coming back to the window (live
+    // claude.ai bundle, 2026-10-14, c71860c77 Mi: refetchInterval 300000,
+    // refetchOnWindowFocus).
     const poll = setInterval(() => void load(true), 5 * 60_000);
     const focus = () => void load(true);
     window.addEventListener("focus", focus);

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Plus, X } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import {
   formatSize,
   historyRanges,
@@ -76,12 +76,13 @@ export function totalTally(tallies: (HistoryTally | null)[]): HistoryTally {
 type Phase = "review" | "importing" | "success" | "error";
 
 /**
- * Import from Claudex (Settings → Import): the locations to copy from, how far
- * back to go, and what that adds, then the result. The list and the wording
- * follow the original's local session import: a card per location with a
- * checkbox, "Added by you" and a remove button, a dashed "Add another
- * location…", and the note that a copy never duplicates. Claudex has no
- * location to look in by itself, so the list starts empty.
+ * Import from Claudex (Settings → Import): the locations to copy from, how
+ * far back to go, and what that adds, then the result. The list and the
+ * wording follow the original's local session import (desktop bundle
+ * 2.31226.1): a card per location with a checkbox, "Added by you" and a
+ * remove button, a dashed "Add another location…", and the note that a copy
+ * never duplicates. Claudex has no location to look in by itself, so the
+ * list starts empty.
  */
 export function ImportDialog({
   onClose,
@@ -197,7 +198,7 @@ export function ImportDialog({
       {phase === "error" && (
         <div className="import-failed">
           <h3>
-            <AppIcon name="Warning" size={18} aria-hidden="true" />
+            <Anthropicon name="Warning" size={18} aria-hidden="true" />
             {t("Import failed")}
           </h3>
           <p>{t("Nothing was imported. Try again from Settings → Import.")}</p>
@@ -313,7 +314,7 @@ export function ImportDialog({
           </div>
           {refusal && (
             <p className="import-refusal" role="alert">
-              <AppIcon name="Warning" size={16} aria-hidden="true" />
+              <Anthropicon name="Warning" size={16} aria-hidden="true" />
               {t(problemText(refusal.problem, refusal.kind))}
             </p>
           )}

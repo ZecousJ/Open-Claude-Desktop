@@ -33,9 +33,10 @@ const dockTitle = (text: string) =>
   text.replace(/\s+/g, " ").trim().slice(0, 80);
 
 /**
- * The Dock menu: New Chat; New Code Session, with the last three local folders
- * and Other… when there are any; Continue the latest session; then, under a
- * greyed "Needs Your Input", the sessions waiting for an answer.
+ * The Dock menu (desktop 2.37337.1 qqn/Yqn): New Chat; New Code Session,
+ * with the last three local folders and Other… when there are any;
+ * Continue the latest session; then, under a greyed "Needs Your Input",
+ * the sessions waiting for an answer.
  */
 export function dockMenuTemplate(input: {
   conversations: readonly Conversation[];
@@ -116,8 +117,9 @@ export function dockMenuTemplate(input: {
 }
 
 /**
- * The menu bar icon's menu: Show App, then the plan and usage as greyed lines
- * when there are any, then Quit. The original has no New Chat entry here.
+ * The menu bar icon's menu (source: desktop bundle 2.31226.1 static JS):
+ * Show App, then the plan and usage as greyed lines when there are any,
+ * then Quit. The original has no New Chat entry here.
  */
 export function trayMenuTemplate(options: {
   appName: string;
@@ -129,6 +131,7 @@ export function trayMenuTemplate(options: {
   const lines: MenuItemConstructorOptions[] = [];
   if (status?.plan)
     lines.push({ label: `${status.plan} plan`, enabled: false });
+  // (desktop 2.37337.1 COi: after the plan, before the percentage.)
   if (status?.usageUnavailable)
     lines.push({ label: "Usage unavailable", enabled: false });
   if (status?.usagePercent !== undefined)

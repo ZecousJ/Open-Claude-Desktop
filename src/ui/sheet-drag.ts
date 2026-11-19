@@ -2,10 +2,11 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 
 /**
  * On a phone the file viewer is a sheet over the lower part of the screen
- * (artifact-narrow.css). Like the iOS app's sheets it follows a finger dragging
- * it down, by its header or by content already scrolled to the top, and goes
- * away when let go far or fast enough; otherwise it springs back. A tap on the
- * dimmed conversation above closes it too.
+ * (artifact-narrow.css). Like the iOS app's sheets it follows a finger
+ * dragging it down, by its header or by content already scrolled to the
+ * top, and goes away when let go far or fast enough; otherwise it springs
+ * back. A tap on the dimmed conversation above closes it too (owner,
+ * 2026-10-05).
  */
 export function useSheetDrag(
   ref: RefObject<HTMLElement | null>,

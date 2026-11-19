@@ -3,7 +3,7 @@ import { PanelRight } from "../ui/glyphs";
 import type { Conversation, Mode } from "../../shared/types";
 import type { SidePanel } from "./ToolSidePanel";
 import { IconButton } from "../ui/Controls";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useRailToggle } from "../session-rail/rail-store";
 import { useCodePanes, type PaneSpec } from "../header/code-panes";
 import { useHost } from "../host/HostContext";
@@ -11,8 +11,10 @@ import { WithTooltip } from "../ui/Tooltip";
 import { useT } from "../i18n";
 
 /**
- * Show / Hide session rail, first in a Code session's bar and set off from the
- * panel toggles by a rule.
+ * Show / Hide session rail, first in a Code session's bar and set off from
+ * the panel toggles by a rule (live claude.ai bundle, 2026-10-14: the
+ * ListCard ghost button, its tooltip below, then "h-4 w-px shrink-0
+ * bg-border").
  */
 function SessionRailToggle({ sessionId }: { sessionId: string }) {
   const { onScreen, toggle } = useRailToggle(sessionId);
@@ -27,7 +29,7 @@ function SessionRailToggle({ sessionId }: { sessionId: string }) {
         placement="below"
         onClick={toggle}
       >
-        <AppIcon name="ListCard" />
+        <Anthropicon name="ListCard" />
       </IconButton>
       <span className="panel-toggle-rule" aria-hidden="true" />
     </>
@@ -136,7 +138,7 @@ function ActivityToggle({
             onClick={onToggle}
           >
             {web || mode === "chat" ? (
-              <AppIcon name="File" size={18} />
+              <Anthropicon name="File" size={18} />
             ) : (
               <PanelRight size={16} strokeWidth={1.6} />
             )}
@@ -157,12 +159,13 @@ function ActivityToggle({
 }
 
 /**
- * The conversation title bar's panel toggles. Code: Show / Hide session rail
- * and a rule, then the panes as ghost icon buttons with their shortcuts in the
- * tooltips: Terminal, Changes, Browser and the simulators. `panes` are the ones
- * still in the bar when it is narrow (ConversationHeader folds the rest into
- * View options); `railFolded` when the rail toggle went there too. Cowork has
- * the Progress toggle; unified Chat has Activity on both hosts.
+ * The conversation title bar's panel toggles. Code (live claude.ai bundle,
+ * 2026-10-14, the title bar): Show / Hide session rail and a rule, then the
+ * panes as ghost icon buttons with their shortcuts in the tooltips:
+ * Terminal, Changes, Browser and the simulators. `panes` are the ones still
+ * in the bar when it is narrow (ConversationHeader folds the rest into View
+ * options); `railFolded` when the rail toggle went there too. Cowork has
+ * the Progress toggle (S-0008); unified Chat has Activity on both hosts.
  */
 export function ConversationPanelButtons({
   conversation,

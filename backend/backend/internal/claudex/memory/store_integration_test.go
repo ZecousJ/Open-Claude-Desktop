@@ -9,8 +9,11 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -73,10 +76,12 @@ func openDB(t *testing.T, dsn string) *sql.DB {
 
 func applyMemoryMigration(t *testing.T, db *sql.DB) {
 	t.Helper()
-	raw, err := fs.ReadFile(migrations.FS, "claudex_0070_memory.sql")
-	require.NoError(t, err)
-	_, err = db.ExecContext(context.Background(), string(raw))
-	require.NoError(t, err)
+	for _, name := range []string{"claudex_0070_memory.sql", "claudex_0181_memory_controls_versions.sql", "claudex_0183_memory_melange.sql", "claudex_0184_memory_cowork.sql"} {
+		raw, err := fs.ReadFile(migrations.FS, name)
+		require.NoError(t, err)
+		_, err = db.ExecContext(context.Background(), string(raw))
+		require.NoError(t, err)
+	}
 }
 
 // freshDB creates an empty database with a minimal users table (and
@@ -145,13 +150,98 @@ func TestIntegrationMigration(t *testing.T) {
 	require.Error(t, err)
 
 	// Everything goes with the user.
-	_, err = s.setPrefs(ctx, 1, true, true)
+	on := true
+	err = s.setPrefs(ctx, 1, prefsWrite{SearchChats: &on, Generate: &on})
 	require.NoError(t, err)
 	_, err = db.Exec(`DELETE FROM users WHERE id = 1`)
 	require.NoError(t, err)
 	for _, table := range []string{"claudex_memory_prefs", "claudex_memory_docs", "claudex_memory_edits"} {
 		require.Zero(t, count(t, db, `SELECT COUNT(*) FROM `+table), table)
 	}
+}
+
+func TestIntegrationControls(t *testing.T) {
+	exerciseControls(t, newFixture(t, fixtureOptions{db: freshDB(t, false)}))
+}
+
+func TestIntegrationConcurrentControls(t *testing.T) {
+	db := freshDB(t, false)
+	s := &sqlStore{db: db}
+	ctx := context.Background()
+	initial, err := s.snapshot(ctx, 7, "")
+	require.NoError(t, err)
+	var wins atomic.Int64
+	var conflicts atomic.Int64
+	var wg sync.WaitGroup
+	for i := 0; i < 12; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, _, err := s.replaceControls(ctx, 7, "global", []editWrite{{TextEnc: "sealed", TextBytes: 6}}, initial.EmptyVersion)
+			var conflict *controlsConflictError
+			if err == nil {
+				wins.Add(1)
+			} else if errors.As(err, &conflict) {
+				conflicts.Add(1)
+			} else {
+				t.Errorf("unexpected: %v", err)
+			}
+		}()
+	}
+	wg.Wait()
+	require.EqualValues(t, 1, wins.Load())
+	require.EqualValues(t, 11, conflicts.Load())
+	require.Equal(t, 1, count(t, db, `SELECT COUNT(*) FROM claudex_memory_edits WHERE user_id=7`))
+}
+
+func TestIntegrationTypeScriptRemoteClient(t *testing.T) {
+	f := newFixture(t, fixtureOptions{db: freshDB(t, false)})
+	server := httptest.NewServer(f.router)
+	defer server.Close()
+	repo, err := filepath.Abs("../../../../..")
+	require.NoError(t, err)
+	cmd := exec.Command(filepath.Join(repo, "node_modules/.bin/tsx"), "tests/support/memory-remote-probe.ts", server.URL, t.TempDir())
+	cmd.Dir = repo
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, string(out))
+	t.Log(string(out))
+}
+
+func TestIntegrationGeneratedSaveAfterPause(t *testing.T) {
+	db := freshDB(t, false)
+	store := &sqlStore{db: db}
+	ctx := context.Background()
+	on, off := true, false
+	err := store.setPrefs(ctx, 7, prefsWrite{SearchChats: &on, Generate: &on})
+	require.NoError(t, err)
+	original, err := store.saveDoc(ctx, 7, docWrite{Scope: "global", ContentEnc: "previous", ContentBytes: 8, Source: SourceUser, MaxScopes: 1})
+	require.NoError(t, err)
+	err = store.setPrefs(ctx, 7, prefsWrite{Generate: &off})
+	require.NoError(t, err)
+	_, err = store.saveDoc(ctx, 7, docWrite{
+		Scope: "global", ContentEnc: "late answer", ContentBytes: 11, Source: SourceGenerated,
+		BaseRevision: original.Revision, RequireGenerate: true, MaxScopes: 1,
+	})
+	require.ErrorIs(t, err, ErrMemoryDisabled)
+	docs, err := store.docs(ctx, 7, "global")
+	require.NoError(t, err)
+	require.Equal(t, []docRow{original}, docs)
+}
+
+func TestIntegrationControlsRollback(t *testing.T) {
+	db := freshDB(t, false)
+	s := &sqlStore{db: db}
+	ctx := context.Background()
+	_, version, err := s.replaceControls(ctx, 7, "global", []editWrite{{TextEnc: "original", TextBytes: 8}}, "v1:0:0:0")
+	require.NoError(t, err)
+	// Fail after DELETE and the first INSERT, not just at input validation.
+	_, _, err = s.replaceControls(ctx, 7, "global", []editWrite{{TextEnc: "partial", TextBytes: 7}, {TextEnc: "invalid", TextBytes: -1}}, version)
+	require.Error(t, err)
+	after, err := s.snapshot(ctx, 7, "global")
+	require.NoError(t, err)
+	require.Equal(t, version, after.Versions["global"])
+	require.Len(t, after.Edits, 1)
+	require.Equal(t, "original", after.Edits[0].TextEnc)
 }
 
 func TestIntegrationStore(t *testing.T) {
@@ -162,9 +252,10 @@ func TestIntegrationStore(t *testing.T) {
 	p, err := s.prefs(ctx, 2)
 	require.NoError(t, err)
 	require.Nil(t, p)
-	_, err = s.setPrefs(ctx, 2, true, false)
+	on, off := true, false
+	err = s.setPrefs(ctx, 2, prefsWrite{SearchChats: &on, Generate: &off})
 	require.NoError(t, err)
-	_, err = s.setPrefs(ctx, 2, false, true)
+	err = s.setPrefs(ctx, 2, prefsWrite{SearchChats: &off, Generate: &on})
 	require.NoError(t, err)
 	p, err = s.prefs(ctx, 2)
 	require.NoError(t, err)

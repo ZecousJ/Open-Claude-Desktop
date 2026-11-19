@@ -92,6 +92,7 @@ export interface DevServersDeps {
   /** The administrator allows dev servers (policy `browser.devServers`). */
   allowed(): boolean;
   beforeStart?(conversationId: string, name: string): Promise<void>;
+  executionPath?(folder: string): string;
   /** App events, for local addresses printed in the Terminal panel. */
   onEvent?(cb: (event: AppEvent) => void): () => void;
   platform?: NodeJS.Platform;
@@ -163,6 +164,7 @@ export class DevServers {
   readonly timing: DevServerTiming;
   readonly platform: NodeJS.Platform;
   readonly records = new Map<string, Map<string, ServerRecord>>();
+  readonly startingPorts = new Map<number, ServerRecord>();
   /** Approved command keys, per conversation (this run of the app only). */
   readonly approvals = new Map<string, Set<string>>();
   readonly configs = new Map<string, ConfigCache>();
@@ -274,6 +276,12 @@ export class DevServers {
   async logs(conversationId: string, name: string, lines = 200) {
     const record = this.records.get(conversationId)?.get(lower(name));
     return record ? record.logs.tail(lines) : [];
+  }
+  async logEntries(conversationId: string, name: string, lines = 500) {
+    return (
+      this.records.get(conversationId)?.get(lower(name))?.logs.records(lines) ??
+      []
+    );
   }
 
   /** Stops every server (sign-out) and releases watchers and timers. */

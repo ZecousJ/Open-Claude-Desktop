@@ -5,7 +5,7 @@ const imageData = z
   .max(32_000_000)
   .regex(/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/);
 
-/** Native image copying. */
+/** Native image copying (desktop 2.37337.1, index.chunk-BWk6pVUt, 2026-10-14). */
 export async function copyNativeImage<Image extends { isEmpty(): boolean }>(
   raw: unknown,
   decode: (dataUrl: string) => Image,

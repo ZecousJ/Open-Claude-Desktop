@@ -26,13 +26,14 @@ const overlays =
   '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"]';
 
 /**
- * The side chat: a card at the conversation's lower right with its own short
- * list of questions and answers. "Ask on the side without touching the main
- * chat. Claude sees the full context, and nothing here is added to it." Each
- * answer has Copy and Branch to new chat. Escape closes it; in Chat so does a
- * click outside it, as the original's floating panel does. An answer shows as
- * it is written. Code's has Stop in the field's place while it writes (Escape
- * does the same instead of closing); the Chat one has none.
+ * The side chat (desktop bundle 2.31226.1, the Chat and Code side chat): a
+ * card at the conversation's lower right with its own short list of
+ * questions and answers. "Ask on the side without touching the main chat.
+ * Claude sees the full context, and nothing here is added to it." Each
+ * answer has Copy and Branch to new chat. Escape closes it; in Chat so does
+ * a click outside it, as the original's floating panel does. An answer shows
+ * as it is written. Code's has Stop in the field's place while it writes
+ * (Escape does the same instead of closing); the Chat one has none.
  */
 export function SideChatPanel({
   conversationId,
@@ -80,9 +81,9 @@ export function SideChatPanel({
   useEffect(() => {
     if (context) field.current?.focus({ preventScroll: true });
   }, [context]);
-  // Code: while an answer is written the field is disabled and the card itself
-  // holds the focus, so Escape reaches it and stops the answer. When it is
-  // done the field takes it back.
+  // Code: while an answer is written the field is disabled and the card
+  // itself holds the focus, so Escape reaches it and stops the answer
+  // (desktop bundle 2.31226.1). When it is done the field takes it back.
   useEffect(() => {
     const element = panel.current;
     const active = document.activeElement;

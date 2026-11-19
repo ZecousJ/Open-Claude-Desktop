@@ -3,7 +3,10 @@ import type { ComputerUseActivity } from "../../shared/computer-use-api";
 import { AccessCard } from "./AccessCard";
 import { useComputerUse } from "./useComputerUse";
 
-/** The strip's words while Claudex drives apps in this conversation. */
+/**
+ * The strip's words while Claudex drives apps in this conversation (live
+ * claude.ai bundle, 2026-10-14, c378379ec Q: one label for both modes).
+ */
 export function activityText(_activity: ComputerUseActivity) {
   return "Claudex is using your computer";
 }

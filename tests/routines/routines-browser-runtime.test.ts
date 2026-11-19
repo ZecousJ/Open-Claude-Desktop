@@ -382,6 +382,7 @@ test("registered native Browser service backs real routine API; cloud/SSH/Chat a
     policy: () => openPolicy,
     settingsChanged() {},
     engine: {
+      peerExtensions: [],
       extensions: {
         add(value: any) {
           extension = value;
@@ -630,6 +631,7 @@ test("account retirement during native Browser activation cannot install a late 
     store: { conversations: [], settings: {} },
     scheduler: {},
     engine: {
+      peerExtensions: [],
       extensions: {
         add() {
           installs++;

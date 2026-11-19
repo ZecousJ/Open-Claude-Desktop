@@ -1,7 +1,9 @@
 /**
- * What a cloud environment's custom access may list: a domain of two or more
- * labels, with a leading "*." to match its subdomains, localhost, or an IPv4
- * address.
+ * What a cloud environment's custom access may list (live claude.ai bundle,
+ * 2026-10-16, c512c69e9: "Invalid domain. Use example.com, *.example.com to
+ * match subdomains, or a local address like localhost or 127.0.0.1."): a
+ * domain of two or more labels, with a leading "*." to match its subdomains,
+ * localhost, or an IPv4 address.
  */
 const label = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i;
 const octet = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)";

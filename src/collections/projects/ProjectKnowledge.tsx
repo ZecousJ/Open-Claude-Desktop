@@ -58,8 +58,9 @@ export const KnowledgeEncodingDialog = lazyPiece(
 export { capacityReason, knowledgeFull };
 
 /**
- * Project context, grouped files and selection. Files stay on disk for project
- * chats to read when needed; nothing is pasted into the conversation.
+ * Project context, grouped files and selection (live claude.ai bundle,
+ * 2026-10-14, ca12e49f2-CABp0rxn.js). Files stay on disk for project chats
+ * to read when needed; nothing is pasted into the conversation.
  */
 export function ProjectKnowledge({
   projectId,
@@ -340,7 +341,8 @@ export function ProjectKnowledge({
       if (ownsOperation()) setBusy(false);
     }
   };
-  // Dropped files: sorted first, each refusal reported once, the rest uploaded.
+  // Dropped files (live claude.ai bundle, 2026-10-12, the knowledge drop
+  // zone): sorted first, each refusal reported once, the rest uploaded.
   const upload = (files: File[]) => {
     if (!knowledge || !ownsMutation()) return;
     const { accepted, notices } = sortKnowledgeDrop(
@@ -394,8 +396,8 @@ export function ProjectKnowledge({
   const [zoneElement, setZoneElement] = useState<HTMLElement | null>(null);
   useEffect(() => setZoneElement(dropZone?.current ?? null), [dropZone]);
   const used = knowledge?.bytes ?? 0;
-  // The local protocol supplies disk bytes, not the official maxKbTokens.
-  // Label this safeguard as storage.
+  // The local protocol supplies disk bytes, not the official maxKbTokens
+  // (1016 ca12e49f2-B8zRz5-9:1603). Label this safeguard as storage.
   const limit = knowledge?.limit ?? 1;
   const percent = Math.min(100, (used / limit) * 100);
   const scope = (knowledge?.files ?? [])

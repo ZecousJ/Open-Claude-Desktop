@@ -23,7 +23,7 @@ import {
 } from "../../shared/artifact-document";
 import "./file-viewer-panel.css";
 
-/** Document exports and host fallback. */
+/** Document exports and host fallback (live claude.ai bundle, 2026-10-14, c547ae5e3-GTYn8RRi.js:79,1065,1122). */
 export function ArtifactExportMenu({
   onDownload,
   nudge,
@@ -110,7 +110,7 @@ export function ArtifactExportMenu({
   );
 }
 
-/** Host versions submenu and rows. */
+/** Host versions submenu and rows (live claude.ai bundle, 2026-10-14, c547ae5e3-GTYn8RRi.js:896; c53f61dc1-DQXytLUJ.js:172). */
 export function ArtifactVersionMenu({
   count,
   shown,
@@ -177,7 +177,7 @@ export function ArtifactVersionMenu({
   );
 }
 
-/** Public-link export copy. */
+/** Public-link export copy (live claude.ai bundle, 2026-10-14, frame-shell-chrome-B45f-YAC). */
 export function ArtifactExportNudge({
   shared,
   busy,

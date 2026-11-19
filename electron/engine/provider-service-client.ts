@@ -28,6 +28,15 @@ export interface RemoteReply {
   models?: string[];
 }
 
+const unconfirmedWrites = new WeakSet<object>();
+function unconfirmedWrite(message: string) {
+  const error = Error(message); unconfirmedWrites.add(error); return error;
+}
+/** Identity-based main-process classification, never provider-supplied text. */
+export function isUnconfirmedProviderWrite(error: unknown): boolean {
+  return typeof error === "object" && error !== null && unconfirmedWrites.has(error);
+}
+
 type Reply = { id: number; ok: boolean; result?: unknown; error?: string };
 export class ProviderServiceClient {
   url = "";
@@ -41,6 +50,8 @@ export class ProviderServiceClient {
       resolve: (value: any) => void;
       reject: (error: Error) => void;
       timer: NodeJS.Timeout;
+      child: ChildProcess;
+      vaultWrite: boolean;
     }
   >();
   constructor(
@@ -97,6 +108,10 @@ export class ProviderServiceClient {
           const forwarded: GatewayRefusal & GatewayRefusalDetails = {
             status: refusal.status as number,
             code: refusal.code,
+            ...(typeof refusal.threadId === "string" && /^[\w.:-]{1,255}$/.test(refusal.threadId)
+              ? { threadId: refusal.threadId } : {}),
+            ...(typeof refusal.turnId === "string" && /^[\w.:-]{1,255}$/.test(refusal.turnId)
+              ? { turnId: refusal.turnId } : {}),
             ...(typeof refusal.reason === "string" &&
             refusalReason.test(refusal.reason)
               ? { reason: refusal.reason as GatewayRefusal["reason"] }
@@ -151,6 +166,15 @@ export class ProviderServiceClient {
           } catch {}
         return;
       }
+      if (signal.type === "imageRequest" && this.child === child) {
+        const event = (message as { event?: Record<string, unknown> }).event;
+        if (event && typeof event.id === "string" &&
+          (event.kind === "started" || event.kind === "finished") &&
+          (event.threadId === undefined || typeof event.threadId === "string")) {
+          this.observers.onImageRequest?.({ id: event.id, kind: event.kind, threadId: event.threadId });
+        }
+        return;
+      }
       if (signal.type === "agentPrompt") {
         if (
           typeof signal.parentThreadId === "string" &&
@@ -174,7 +198,10 @@ export class ProviderServiceClient {
       }
       const reply = message as Reply,
         request = this.pending.get(reply.id);
-      if (!request) return;
+      if (!request || request.child !== child) return;
+      if (request.vaultWrite && (typeof reply.ok !== "boolean" ||
+        (reply.ok && (!reply.result || typeof reply.result !== "object" || Array.isArray(reply.result) ||
+          Object.values(reply.result).some(value => typeof value !== "boolean"))))) return;
       this.pending.delete(reply.id);
       clearTimeout(request.timer);
       if (reply.ok) request.resolve(reply.result);
@@ -182,35 +209,56 @@ export class ProviderServiceClient {
     });
     child.on("exit", (code, signal) => {
       if (this.child === child) this.child = undefined;
-      for (const request of this.pending.values()) {
+      for (const [id, request] of this.pending) {
+        if (request.child !== child) continue;
+        this.pending.delete(id);
         clearTimeout(request.timer);
         request.reject(
           Error(`Provider service stopped (${code ?? signal ?? "unknown"}).`),
         );
       }
-      this.pending.clear();
+    });
+    child.on("error", error => {
+      for (const [id, request] of this.pending) {
+        if (request.child !== child) continue;
+        this.pending.delete(id); clearTimeout(request.timer);
+        request.reject(request.vaultWrite
+          ? unconfirmedWrite("The provider credential write process outcome is unknown.") : error);
+      }
+    });
+    child.on("disconnect", () => {
+      for (const [id, request] of this.pending) {
+        if (request.child !== child || !request.vaultWrite) continue;
+        this.pending.delete(id); clearTimeout(request.timer);
+        request.reject(unconfirmedWrite("The provider credential write disconnected before its outcome was confirmed."));
+      }
     });
   }
   private call<T>(
     type: string,
     extra: Record<string, unknown> = {},
     timeoutMs = 30000,
+    vaultWrite = false,
   ): Promise<T> {
     this.spawn();
+    const child = this.child!;
     const id = ++this.next;
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(Error("Provider service timed out."));
+        reject(vaultWrite ? unconfirmedWrite("The provider credential write outcome is unknown.") : Error("Provider service timed out."));
       }, timeoutMs);
-      this.pending.set(id, { resolve, reject, timer });
-      this.child!.send({ id, type, ...extra }, (error) => {
+      this.pending.set(id, { resolve, reject, timer, child, vaultWrite });
+      try { child.send({ id, type, ...extra }, (error) => {
         if (error) {
           clearTimeout(timer);
           this.pending.delete(id);
-          reject(error);
+          reject(vaultWrite ? unconfirmedWrite("The provider credential write could not confirm delivery.") : error);
         }
-      });
+      }); } catch (error) {
+        clearTimeout(timer); this.pending.delete(id);
+        reject(vaultWrite ? unconfirmedWrite("The provider credential write could not confirm delivery.") : error);
+      }
     });
   }
   async start() {
@@ -235,11 +283,35 @@ export class ProviderServiceClient {
     this.requestOptions = options;
     await this.call("requestOptions", { options }, 5000);
   }
+  async setProviderRouting(provider: Provider, refreshedKeys?: {
+    apiKey: string;
+    groupKeys: Record<string, string>;
+  }) {
+    if (provider.id !== this.provider.id)
+      throw Error("The active model provider changed.");
+    if (!this.child?.connected || this.closing)
+      throw Error("The model gateway is unavailable.");
+    const { id, protocol, model, models, routes } = provider;
+    await this.call("providerRouting", {
+      routing: { id, protocol, model, models, routes },
+      ...(refreshedKeys ? { refreshedKeys, vaultRoot: this.vaultRoot, vaultKey: this.vaultKey } : {}),
+    }, 5000);
+  }
   /** The product a thread's usage counts under (usage by product). */
   threadProduct(threadId: string, product: "code" | "cowork" | "chat") {
-    void this.call("threadProduct", { threadId, product }, 5000).catch(
-      () => {},
-    );
+    return this.call("threadProduct", { threadId, product }, 5000);
+  }
+  async openSidePath(): Promise<string> {
+    const pending = this.call<string>("openSidePath", {}, 5000);
+    const child = this.child;
+    const token = await pending;
+    if (!child || this.child !== child || !child.connected || !/^[a-f0-9]{64}$/.test(token))
+      throw Error("The side question gateway changed.");
+    return token;
+  }
+  async closeSidePath(token: string): Promise<void> {
+    if (!this.child?.connected || this.closing) return;
+    await this.call("closeSidePath", { sidePath: token }, 5000);
   }
   abortThread(threadId: string) {
     void this.call("abort", { threadId }, 5000).catch(() => {});
@@ -261,6 +333,13 @@ export class ProviderServiceClient {
       keys,
       allowedIds,
     });
+  }
+  /** Used only while the host holds the canonical vault-root write barrier.
+   * A timeout/disconnect/send failure is not proof that the child stopped writing. */
+  async setKeysConfirmed(keys: Record<string, string>, allowedIds: string[]) {
+    return await this.call<Record<string, boolean>>("keys", {
+      vaultRoot: this.vaultRoot, vaultKey: this.vaultKey, keys, allowedIds,
+    }, 30000, true);
   }
   async testProvider(provider: Provider, apiKey: string) {
     return await this.call<{ models: string[]; message: string }>(

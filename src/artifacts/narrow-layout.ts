@@ -1,9 +1,9 @@
 /**
- * How the file viewer fits a narrow window. At W969 the original keeps the
- * sidebar open and the panel covers the whole conversation column, with Close
- * and without Expand; at W602 the preview fills the window with no sidebar and
- * no chat. The exact breakpoints were not measured: both sit between the
- * captures.
+ * How the file viewer fits a narrow window (R-0981, R-0982, R-1029). At
+ * W969 the original keeps the sidebar open and the panel covers the whole
+ * conversation column, with Close and without Expand (R-0981, R-0963); at
+ * W602 the preview fills the window with no sidebar and no chat (R-1029).
+ * The exact breakpoints were not measured: both sit between the captures.
  */
 
 /**

@@ -6,22 +6,26 @@
  */
 
 /*
- * Every value below cited as "" was checked again
- * * unchanged unless a rule says otherwise.
+ * Every value below cited as "desktop bundle 2.31226.1" was checked again
+ * against the live claude.ai bundle, 2026-10-12, which the desktop app
+ * loads: unchanged unless a rule says otherwise (Code's room under the nav,
+ * Code's group headings, the drag copy's height;
+ * fidelity/observations/live-refresh-sidebar.md).
  *
- * Interaction states. The original's sidebar rows, section headings, nav rows
- * and account button are plain buttons with no transition: hover, selection,
- * the shortcut hint and a row's ⋮ change at once (the global button transition
- * in 00-foundation.css is the fill layer of its Button component, which only
+ * Interaction states (desktop bundle 2.31226.1 static CSS/JS). The
+ * original's sidebar rows, section headings, nav rows and account button
+ * are plain buttons with no transition: hover, selection, the shortcut hint
+ * and a row's ⋮ change at once (the global button transition in
+ * 00-foundation.css is the fill layer of its Button component, which only
  * its icon buttons use). Those icon buttons (title bar, section heading
- * buttons, ⋮) fade their fill in 60ms on the out curve and squish when pressed,
- * while their glyph colour changes at once. --sidebar-paint-transition is that:
- * the fill layer and the release spring.
+ * buttons, ⋮) fade their fill in 60ms on the out curve and squish when
+ * pressed, while their glyph colour changes at once.
+ * --sidebar-paint-transition is that: the fill layer and the release spring.
  *
  * A row's keyboard focus is an inset 1px accent ring with a faint 6px glow
- * (accent at 20%), not the page ring around the control, and the row takes the
- * hover fill while it is focused. Kept as an outline too, so forced colours
- * still draw a ring.
+ * (accent at 20%), not the page ring around the control, and the row takes
+ * the hover fill while it is focused. Kept as an outline too, so forced
+ * colours still draw a ring.
  */
 :root {
   --sidebar-paint-transition:
@@ -95,7 +99,7 @@
   border: 0;
 }
 
-/* Floating desktop card. */
+/* Floating desktop card (live claude.ai bundle, 2026-10-14, shared-styles-BDdb-EXC.css). */
 .app:not(.web) {
   --sidebar-chrome-height: 36px;
   --sidebar-controls-top: var(--sidebar-chrome-height);
@@ -140,8 +144,9 @@
   column-gap: 0;
   padding-inline-start: 8px;
 }
-/* macOS has no chrome bar and reserves 74px for traffic lights; the sidebar's
-   titlebar is h-11 with px-2 before that spacer. */
+/* macOS has no chrome bar and reserves 74px for traffic lights; the
+   sidebar's titlebar is h-11 with px-2 before that spacer (live claude.ai
+   bundle, 2026-10-14, shared-22-C5fbYFH4.js). */
 .app.darwin:not(.web) {
   --sidebar-chrome-height: 0px;
   --sidebar-controls-top: 10px;
@@ -180,8 +185,9 @@
   justify-content: flex-start;
 }
 /* The Chat | Code switch ends the sidebar's title bar on every platform and
-   surface: Windows' chrome lead spans the sidebar and its switcher is ms-auto
-   me-1. */
+   surface: Windows' chrome lead spans the sidebar and its switcher is
+   ms-auto me-1 (live claude.ai bundle, 2026-10-21, shared-22 and
+   .dframe-root[data-wco] .dframe-chrome-lead; owner, 2026-10-22). */
 .app:not(.web):not(.sidebar-hidden) .sidebar-chrome > .surface-switch {
   margin-inline-start: auto;
 }
@@ -198,9 +204,10 @@
 .app:not(.darwin) .collapsed-chrome {
   left: 8px;
 }
-/* macOS Chat and Code use the full-bleed frame, whose collapsed toggle sits at
-   the traffic-light spacer + 8px = 82px (the floating card keeps +16).
-   .dframe-root[data-variant=web]:not([data-web]) [data-collapsed]. */
+/* macOS Chat and Code use the full-bleed frame, whose collapsed toggle sits
+   at the traffic-light spacer + 8px = 82px (the floating card keeps +16).
+   shared-styles-DG9uV_so.css .dframe-root[data-variant=web]:not([data-web])
+   [data-collapsed] (live claude.ai bundle, 2026-10-16). */
 .app.darwin:not(.web):not(.full-screen) .collapsed-chrome {
   left: calc(var(--traffic-light-spacer) + 8px);
 }
@@ -211,8 +218,9 @@
   width: 24px;
   height: 28px;
   color: #c6c5c2;
-  /* The original's chrome button has no transition of its own: its ring and
-     glyph change at once and only the fill layer, the ::before below, fades. */
+  /* The original's chrome button (desktop bundle 2.31226.1 static CSS) has no
+     transition of its own: its ring and glyph change at once and only the
+     fill layer, the ::before below, fades. */
   transition: var(--press-release);
 }
 /* The hover square overhangs the 24px slot by 2px each side. */
@@ -236,9 +244,10 @@
 .collapsed-chrome > .icon-button:hover:not(:disabled)::before {
   background: var(--fill-ghost-hover);
 }
-/* The sidebar's own toggle rests at 70% and comes up to full while the sidebar
-   is hovered or a title-bar control has keyboard focus, over 120ms on the snap
-   curve. The fade stays under reduced motion. */
+/* The sidebar's own toggle rests at 70% and comes up to full while the
+   sidebar is hovered or a title-bar control has keyboard focus, over 120ms
+   on the snap curve (source: desktop bundle 2.31226.1 static CSS). The
+   fade stays under reduced motion. */
 .sidebar-chrome > .window-nav-toggle {
   opacity: 0.7;
   transition:
@@ -268,7 +277,8 @@
   border-radius: 7px;
   background: var(--cds-segmented-control-track);
 }
-/* Track, thumb and inset ring. SurfaceSwitch sets data-active. */
+/* Track, thumb and inset ring (live claude.ai bundle, 2026-10-14,
+   shared-frame-B1JORnF0.js). SurfaceSwitch sets data-active. */
 .surface-switch::before {
   content: "";
   position: absolute;
@@ -354,7 +364,9 @@
   gap: 8px;
   margin: 0;
   padding: 0 6px;
-  /* --df-radius-pill at the desktop's compact density. */
+  /* --df-radius-pill at the desktop's compact density (live claude.ai
+     bundle, 2026-10-14: .dframe-root 6px; rows 26px, 13px text, a 24px
+     leading slot 2px in and 4px before the label, as measured here). */
   border-radius: 6px;
   font-size: 13px;
   line-height: 1;
@@ -365,8 +377,9 @@
   flex-shrink: 0;
   color: #c7c6c4;
 }
-/* The desktop's rows: 6px in, a 24px slot holding the glyph (20px, or the New
-   row's 16px plus), 4px before the label, in Chat and Code alike. */
+/* The desktop's rows: 6px in, a 24px slot holding the glyph (20px, or the
+   New row's 16px plus), 4px before the label, in Chat and Code alike (live
+   desktop, 2026-10-20: labels 34px in; New and More had been 4px left). */
 .app:not(.web) .main-nav .nav-item,
 .app:not(.web) .main-nav-more > button {
   gap: 4px;
@@ -379,9 +392,9 @@
   width: 24px;
   height: 24px;
 }
-/* Hover fills without changing text colour. The measured #232323 hover and
-   #353535 current row on the #111 sidebar are the ghost fills, white at 7.5%
-   and 15% (00-foundation.css). */
+/* Hover fills without changing text colour (R-0011 to R-0017). The measured
+   #232323 hover and #353535 current row on the #111 sidebar are the ghost
+   fills, white at 7.5% and 15% (00-foundation.css). */
 @media (hover: hover) {
   .main-nav .nav-item:hover,
   .main-nav-more > button:hover {
@@ -412,7 +425,8 @@
 .main-nav-more > button.open {
   background: var(--fill-ghost-hover);
 }
-/* Neutral xs Badge and ready indicator. */
+/* Neutral xs Badge and ready indicator (live claude.ai bundle, 2026-10-14,
+   shared-frame-B1JORnF0.js; shared-18-C7CGav6q.js). */
 .main-nav .main-nav-badge,
 .main-nav-more-menu .main-nav-badge {
   display: inline-flex;
@@ -444,11 +458,11 @@
 }
 /* Shortcut hint follows the label and appears on hover. R-0011 hover (jpg,
    2.629 px/CSS): the "⌘" and "N" inks are 20 and 17 px wide against 23 and 20
-   at 12px (glyph height 21 against 23), the Windows crop's "Ctrl+N" about 11px;
-   the gap after the label is 10.3px and the space between ⌘ and N 6px between
-   inks (word-spacing makes up the difference); checked at 11px: inks 20 and 17
-   px wide, 166-186 tall, as in the capture. It appears and goes at once, as the
-   original's group-hover hint. */
+   at 12px (glyph height 21 against 23), the Windows crop's "Ctrl+N" about
+   11px; the gap after the label is 10.3px and the space between ⌘ and N
+   6px between inks (word-spacing makes up the difference); checked at 11px: inks 20 and 17 px
+   wide, 166-186 tall, as in the capture. It appears and goes at once, as
+   the original's group-hover hint (desktop bundle 2.31226.1). */
 .main-nav .nav-item kbd {
   margin-left: 0.1px;
   font: inherit;
@@ -506,7 +520,7 @@
   width: 15px;
   height: 15px;
 }
-/* Design: kept in the popup, dimmed, until Claudex has a Design surface. */
+/* Design (R-0018): kept in the popup, dimmed, until Claudex has a Design surface. */
 .main-nav-more-menu > button.main-nav-more-unavailable {
   cursor: default;
 }
@@ -522,9 +536,12 @@
 }
 
 /*
- * The desktop's sidebar now has the web's sizes: rows 32px, 2px in, a 28px
- * glyph slot (20px glyphs, New's 16px plus in a 22px disc) 8px before the 14/21
- * label, radius 8; the search 32px, radius 8, 14px text.
+ * The desktop's sidebar now has the web's sizes (live desktop, 2026-10-21:
+ * it runs the live web front-end; the owner's side-by-side showed rows
+ * 32.5px apart, the search 32px tall and labels 38px in from it): rows
+ * 32px, 2px in, a 28px glyph slot (20px glyphs, New's 16px plus in a 22px
+ * disc) 8px before the 14/21 label, radius 8; the search 32px, radius 8,
+ * 14px text.
  */
 .app:not(.web) .sidebar .main-nav .nav-item,
 .app:not(.web) .sidebar .main-nav-more > button {
@@ -541,7 +558,7 @@
   width: 28px;
   height: 28px;
 }
-.app:not(.web) .sidebar .main-nav .nav-glyph > svg.app-icon {
+.app:not(.web) .sidebar .main-nav .nav-glyph > svg.anthropicon {
   width: 20px;
   height: 20px;
 }

@@ -180,8 +180,10 @@ export function AnnouncementBody({ text }: { text: string }) {
 }
 
 /**
- * The newest unread popup-mode notice above the home composer, in the Chat or
- * Code banner frame. Read opens What's new; the cross marks it read.
+ * The newest unread popup-mode notice above the home composer, in the Chat
+ * or Code banner frame (R-0259; the service-status notice uses the same
+ * container).
+ * Read opens What's new; the cross marks it read.
  */
 export function AnnouncementBanner({ variant }: { variant: "chat" | "code" }) {
   const { unread, markRead, open } = useAnnouncements();

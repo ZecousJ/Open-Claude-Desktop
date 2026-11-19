@@ -10,7 +10,7 @@ import { ConversationHeader } from "../../src/conversation/ConversationHeader";
 import { ShareEmailCombobox } from "../../src/sharing/ShareEmailCombobox";
 import { useConversationSharingStatus } from "../../src/sharing/useConversationSharingStatus";
 import { routineDom } from "../support/routine-dom";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import { ConversationShareDialog } from "../../src/conversation/ConversationShareDialog";
 
 const noop = () => {};
@@ -144,7 +144,7 @@ test("the actual Header exposes ready/busy/lock/audience dialog semantics while 
     onOpen: noop,
   }).querySelector(".conversation-share-button")!;
   assert.equal(button.disabled, true);
-  assert.ok(button.querySelector("[data-icon]"));
+  assert.ok(button.querySelector("[data-anthropicon]"));
   assert.equal(
     render(undefined).querySelector<HTMLButtonElement>(
       ".conversation-share-button",

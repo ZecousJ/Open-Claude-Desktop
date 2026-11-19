@@ -1,3 +1,4 @@
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
 /**
  * The signed-in account's bootstrap (`GET /api/v1/claudex/bootstrap`,
  * design 2.10): plan, device, policy, model catalog, release, voice, usage
@@ -21,7 +22,8 @@ export class ClaudexBootstrapSource implements BootstrapSource {
   private etag?: string;
   private loading?: Promise<ClaudexBootstrap | undefined>;
   private listeners = new Set<Listener>();
-  constructor(private load: (etag?: string) => Promise<JsonResult>) {}
+  private loadingChecks?: Set<AccountOperationCurrent>;
+  constructor(private load: (etag?: string, current?: AccountOperationCurrent) => Promise<JsonResult>) {}
   current() {
     return this.value;
   }
@@ -37,14 +39,25 @@ export class ClaudexBootstrapSource implements BootstrapSource {
    * Asks the service now and rejects when it cannot answer (unreachable,
    * 5xx, a refused session, an answer outside the contract).
    */
-  fetch(): Promise<ClaudexBootstrap | undefined> {
-    this.loading ??= this.read().finally(() => {
-      this.loading = undefined;
+  fetch(current?: AccountOperationCurrent): Promise<ClaudexBootstrap | undefined> {
+    assertAccountOperationCurrent(current);
+    if (this.loading) {
+      if (current) this.loadingChecks?.add(current);
+      return this.loading;
+    }
+    const checks = new Set<AccountOperationCurrent>();
+    if (current) checks.add(current);
+    this.loadingChecks = checks;
+    const check = () => { for (const guard of checks) assertAccountOperationCurrent(guard); return true; };
+    this.loading = Promise.resolve().then(() => this.read(check)).finally(() => {
+      this.loading = undefined; this.loadingChecks = undefined;
     });
     return this.loading;
   }
-  private async read() {
-    const result = await this.load(this.etag);
+  private async read(current: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
+    const result = await this.load(this.etag, current);
+    assertAccountOperationCurrent(current);
     if (result.notModified) return this.value;
     const next = parseBootstrap(result.data);
     const raw =

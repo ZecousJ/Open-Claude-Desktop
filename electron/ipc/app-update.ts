@@ -1,9 +1,10 @@
 /**
- * Claudex's own updates. The updater lives in
- * electron/updates/.
+ * Claudex's own updates and the ZecousAI sign-in hint (package OTA,
+ * shared/app-update-api.ts). The updater lives in electron/updates/.
  */
 import type { AppContext, IpcHandle } from "../app/app-context";
 import type { AppUpdateStatus } from "../../shared/app-update-api";
+import { readSignInHint } from "../updates/zecous-handoff";
 import { z } from "zod";
 import os from "node:os";
 import {
@@ -40,5 +41,8 @@ export function registerAppUpdateHandlers(handle: IpcHandle, ctx: AppContext) {
   });
   handle("relaunchToUpdate", (options: unknown) =>
     relaunchToUpdate(relaunchOptions.parse(options ?? {})),
+  );
+  handle("signInEmailHint", () =>
+    ctx.activeAccount ? null : (readSignInHint(ctx.dataRoot) ?? null),
   );
 }

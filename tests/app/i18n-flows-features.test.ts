@@ -92,7 +92,8 @@ test("Last seen reads as when something was last there, for a device and a findi
     lines[id] = (await import(`../../shared/i18n/catalogs/${id}.ts`)).default[
       "Last seen"
     ];
-  // zh-CN tells a device's "Last seen" (最后在线, context key) from a finding's.
+  // zh-CN tells a device's "Last seen" (最后在线, context key) from a
+  // finding's (最近发现, the plain key: tests/artifacts/artifacts-zh-terms).
   const zh = (await import("../../shared/i18n/catalogs/zh-CN.ts")).default;
   assert.equal(zh["device|Last seen"], "最后在线");
   assert.equal(lines["zh-CN"], "最近发现");

@@ -1,10 +1,20 @@
-import { ChevronRight, Square, Trash2 } from "lucide-react";
-
-/** The Background tasks panel's glyphs (Lucide): Trash at 16px, Stop and CaretRight at 12px. */
+/**
+ * The Background tasks panel's glyphs (live claude.ai bundle, 2026-10-15:
+ * the icon font's Trash at 16px, Stop and CaretRight at the xs size, 12px, 533.3).
+ */
 const glyphs = {
-  Trash: [Trash2, 16],
-  Stop: [Square, 12],
-  CaretRight: [ChevronRight, 12],
+  Trash: {
+    size: 16,
+    d: "m2 4.17q-.24 0-.41-.16q-.16-.17-.16-.41q0-.24.16-.41q.17-.16.41-.16h1.42q.23 0 .39.16q.16.15.18.35l.91 9.68q.02.1.08.15q.06.06.16.06h5.74q.08 0 .15-.06q.06-.06.07-.15l.87-9.05h-1.46q-.36 0-.52-.33l-.7-1.53q-.06-.14-.2-.14h-2.18q-.14 0-.2.14l-.33.72h4.13q.23 0 .4.16q.17.17.17.41q0 .24-.17.41q-.17.16-.4.16h-5.02q-.2 0-.36-.12q-.15-.13-.2-.31q-.05-.19.04-.38l.7-1.52q.17-.37.51-.59q.33-.22.73-.22h2.18q.4 0 .73.22q.34.22.51.59l.55 1.19h1.7q.26 0 .42.18q.16.18.14.45l-.91 9.67q-.05.52-.44.88q-.38.36-.91.36h-5.74q-.55 0-.93-.36q-.39-.36-.44-.88l-.87-9.16zm12-1.14q.24 0 .41.16q.16.17.16.41q0 .24-.16.41q-.17.16-.41.16h-1.42v-1.14zm-7.77 3.77q0-.24.16-.41q.17-.16.41-.16q.24 0 .41.16q.16.17.16.41v4q0 .24-.16.41q-.17.16-.41.16q-.24 0-.41-.16q-.16-.17-.16-.41zm2.4 0q0-.24.16-.41q.17-.16.41-.16q.24 0 .41.16q.16.17.16.41v4q0 .24-.16.41q-.17.16-.41.16q-.24 0-.41-.16q-.16-.17-.16-.41zm-5.21-2.63v-1.14h2.07v1.14z",
+  },
+  Stop: {
+    size: 12,
+    d: "m2.7 1.67h6.6q.29 0 .52.14q.23.14.37.37q.14.23.14.52v6.6q0 .29-.14.52q-.14.23-.37.37q-.23.14-.52.14h-6.6q-.29 0-.52-.14q-.23-.14-.37-.37q-.14-.23-.14-.52v-6.6q0-.29.14-.52q.14-.23.37-.37q.23-.14.52-.14zm0 .86q-.07 0-.12.05q-.05.05-.05.12v6.6q0 .07.05.12q.05.05.12.05h6.6q.07 0 .12-.05q.05-.05.05-.12v-6.6q0-.07-.05-.12q-.05-.05-.12-.05z",
+  },
+  CaretRight: {
+    size: 12,
+    d: "m4.5 10.2q-.12.13-.3.13q-.18 0-.3-.12q-.13-.13-.13-.31q0-.18.13-.3l3.59-3.6l-3.59-3.6q-.13-.12-.13-.3q0-.18.12-.3q.13-.13.31-.13q.18 0 .3.13l3.9 3.9q.13.12.13.3q0 .18-.13.3z",
+  },
 } as const;
 
 export function BackgroundGlyph({
@@ -14,13 +24,17 @@ export function BackgroundGlyph({
   name: keyof typeof glyphs;
   className?: string;
 }) {
-  const [Icon, size] = glyphs[name];
+  const { size, d } = glyphs[name];
   return (
-    <Icon
-      className={className ? `app-icon ${className}` : "app-icon"}
-      size={size}
-      strokeWidth={1.75}
+    <svg
+      className={className ? `anthropicon ${className}` : "anthropicon"}
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      fill="currentColor"
       aria-hidden="true"
-    />
+    >
+      <path d={d} />
+    </svg>
   );
 }

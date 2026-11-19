@@ -86,10 +86,10 @@ export function skillTree(paths: string[]): TreeFolder {
 }
 
 /**
- * A skill's page in Settings → Skills: back to the list, the skill's tile,
- * name, author and date with its switch and menu, then Overview (the
- * description and Created by) and Contents (its folder as a tree beside a
- * reader that previews Markdown or shows the source).
+ * A skill's page in Settings → Skills (R-1515–R-1520, R-1622): back to the
+ * list, the skill's tile, name, author and date with its switch and menu,
+ * then Overview (the description and Created by) and Contents (its folder
+ * as a tree beside a reader that previews Markdown or shows the source).
  */
 export function SkillPage({
   skill,

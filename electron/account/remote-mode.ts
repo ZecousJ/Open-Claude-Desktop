@@ -11,9 +11,20 @@ import { RemoteAccounts } from "../sub2api/identity";
 import { sub2apiProviderId } from "../sub2api/backend-support";
 import type { BannerPolicy } from "../sub2api/quota";
 
-/** Claudex account sign-in, always: there are no local accounts. */
-export function remoteAccountsFor(root: string, cipher: StorageCipher) {
-  return new RemoteAccounts(root, loadSub2ApiConfig(root).baseUrl, cipher);
+/** Claudex account sign-in, always: there are no local accounts (owner, 2026-10-02). */
+export function remoteAccountsFor(
+  root: string,
+  cipher: StorageCipher,
+  sessionRoot = root,
+) {
+  return new RemoteAccounts(
+    root,
+    loadSub2ApiConfig(root).baseUrl,
+    cipher,
+    undefined,
+    undefined,
+    sessionRoot,
+  );
 }
 
 /**

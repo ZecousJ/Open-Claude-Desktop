@@ -1,10 +1,11 @@
 /**
- * Windows draws the app windows' caption buttons (minimize, maximize, close)
- * itself: Electron's titleBarOverlay. A button of the page could not be clicked
- * in a conversation on Windows while every check on the page and on macOS found
- * it clickable; the system's own buttons answer the system's hit test, which no
- * app region of the page can cover. The buttons keep the page's 36px caption
- * row, and the page reports the colours under them (windowAction "caption").
+ * Windows draws the app windows' caption buttons (minimize, maximize,
+ * close) itself: Electron's titleBarOverlay. A button of the page could not
+ * be clicked in a conversation on Windows (user reports 2026-10-09 and
+ * 2026-10-14) while every check on the page and on macOS found it clickable;
+ * the system's own buttons answer the system's hit test, which no app region
+ * of the page can cover. The buttons keep the page's 36px caption row, and
+ * the page reports the colours under them (windowAction "caption").
  */
 export const captionHeight = 36;
 

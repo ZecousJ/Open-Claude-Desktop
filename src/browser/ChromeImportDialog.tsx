@@ -34,7 +34,7 @@ const sensitiveLabels = {
   identity: "Sign-in provider",
 } as const;
 
-/** What went wrong, in the original's words. */
+/** What went wrong, in the original's words (c887e9f0f Y). */
 function errorText(error: string, browser: string) {
   switch (error) {
     case "no_chrome":
@@ -51,6 +51,8 @@ function errorText(error: string, browser: string) {
       return t("That took a while. Confirm again.");
     case "presence_timed_out":
       return `${t("No confirmation within 2 minutes, so nothing was imported. Try again.")} ${t("If the pop-up is still open, close it first. It may be behind this window.")}`;
+    case "busy":
+      return t("If the pop-up is still open, close it first. It may be behind this window.");
     case "remove_failed":
       return t("Couldn’t remove that site. Try again.");
     case "invalid_sites":
@@ -62,7 +64,7 @@ function errorText(error: string, browser: string) {
   }
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, c887e9f0f-D29tVawB.js).
 export function ChromeImportDialog({
   conversationId,
   api,
@@ -413,7 +415,7 @@ export function ChromeImportDialog({
             {t("Look for a pop-up. It may be behind this window.")}
           </p>
         )}
-        {error && error !== "keychain_denied" && (
+        {error && !["keychain_denied", "presence_declined", "presence_left"].includes(error) && (
           <p role="alert" className="chrome-import-note">
             {errorText(error, profile?.browserName ?? "")}
           </p>

@@ -9,13 +9,13 @@ import { prefersReducedMotion } from "./usePresence";
 
 /*
  * A piece of a status line that changes in place, as the original's working
- * line does: when `morphKey` changes, the old text rises 3px while it fades
- * out, the new text rises into place from 3px below, and the slot's width
- * slides from the old width to the new one, all over 180ms on
- * cubic-bezier(.2,0,0,1). A null key is an empty slot, so a part that appears
- * or goes (a "·" separator, the token count) opens or closes its width the same
- * way. Children may change under the same key (a ticking timer) without a
- * morph. Under reduced motion the text is swapped at once.
+ * line does (desktop bundle 2.31226.1): when `morphKey` changes, the old text
+ * rises 3px while it fades out, the new text rises into place from 3px below,
+ * and the slot's width slides from the old width to the new one, all over
+ * 180ms on cubic-bezier(.2,0,0,1). A null key is an empty slot, so a part
+ * that appears or goes (a "·" separator, the token count) opens or closes
+ * its width the same way. Children may change under the same key (a ticking
+ * timer) without a morph. Under reduced motion the text is swapped at once.
  */
 export const MORPH_MS = 180;
 const MORPH_EASE = "cubic-bezier(0.2, 0, 0, 1)";

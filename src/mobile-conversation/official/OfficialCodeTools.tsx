@@ -34,7 +34,7 @@ import { generatedArtifact } from "../../artifacts/generatedArtifact";
 import { thoughtSeconds } from "../../transcript/CodeTurnStatus";
 import { thoughtLabel } from "../../transcript/thought-label";
 import { Markdown } from "../../ui/components";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { t, tf, useT } from "../../i18n";
 import { OfficialSheet, useSheetStack, type SheetPage } from "./OfficialSheet";
 import {
@@ -56,10 +56,10 @@ function callFailed(item: Item) {
 
 /**
  * One tool call's words on its row and in the Tool calls list: the verb and,
- * for a file, its name. The text is Claudex's own per-call wording, localised.
- * A failed call keeps its finished wording: the official app has no "Failed to
- * …" text (only `ccr_tool_status_failed` "Failed"), the row shows a failed
- * mark.
+ * for a file, its name (D/lex.java:2014 `m` words a lone call "verb
+ * subject"). The text is Claudex's own per-call wording, localised. A failed
+ * call keeps its finished wording: the official app has no "Failed to …" text
+ * (only `ccr_tool_status_failed` "Failed"), the row shows a failed mark.
  */
 function callLabel(item: Item, background: boolean): ReactNode {
   // A source control action reads as the official ccr rows do ("Created PR
@@ -110,7 +110,10 @@ function callLabel(item: Item, background: boolean): ReactNode {
   return toolSummary([item]);
 }
 
-/** The tool's name as the ToolCallDetail sheet titles itself. */
+/**
+ * The tool's name as the ToolCallDetail sheet titles itself (D/eqt.java:31
+ * `b`: the tool's own name, "Bash", "Edit", "Write", or a connector's).
+ */
 function toolTitle(item: Item) {
   if (item.type === "commandExecution") return shellTitle(item);
   if (item.type === "fileChange") {
@@ -140,8 +143,10 @@ const errorText = (item: Item) =>
 
 /**
  * The ToolCallDetail page. A command shows the official Command card with its
- * Output or Error; the model's own description heads the card. A file edit
- * shows its diff; any other call shows its Inputs and its Result or Error.
+ * Output or Error (D/cuw.java:397-412, `ccr_tool_command` / `ccr_tool_output`
+ * / `ccr_tool_error`); the model's own description heads the card (cuw.java
+ * `rao(description)`). A file edit shows its diff; any other call shows its
+ * Inputs and its Result or Error.
  */
 function ToolDetail({
   item,
@@ -270,10 +275,14 @@ function ToolDetail({
 }
 
 /**
- * Code's folded tool calls as the official app draws them. A lone call is
- * worded "verb subject"; several give the summary ("Read 2 files, ran a
+ * Code's folded tool calls as the official app draws them (the iix collapsed
+ * row, D/iix.java:194 and :686: 8 × 6 dp padding, 12 dp corners, the label in
+ * Sans 15 / Q on one line, 4 dp, the 16 dp caret). A lone call is worded
+ * "verb subject" (D/lex.java:2312 `r` gives a subject only when the group
+ * holds exactly one call); several give the summary ("Read 2 files, ran a
  * command"). A tap opens the call's own detail sheet when there is one call,
- * else the "Tool calls (N)" sheet listing them, each opening its detail.
+ * else the "Tool calls (N)" sheet listing them, each opening its detail
+ * (D/nf5.java:70-80).
  */
 export function OfficialCodeTools({
   items,
@@ -328,7 +337,7 @@ export function OfficialCodeTools({
                   <span className="official-step-mark">{t("Failed")}</span>
                 ) : (
                   <span className="official-step-caret" aria-hidden="true">
-                    <AppIcon name="CaretRight" />
+                    <Anthropicon name="CaretRight" />
                   </span>
                 )}
               </button>
@@ -363,11 +372,11 @@ export function OfficialCodeTools({
               role="img"
               aria-label={t("Failed")}
             >
-              <AppIcon name="Warning" />
+              <Anthropicon name="Warning" />
             </span>
           )}
           <span className="official-steps-caret" aria-hidden="true">
-            <AppIcon name="CaretRight" />
+            <Anthropicon name="CaretRight" />
           </span>
         </button>
       </div>
@@ -387,7 +396,9 @@ export function OfficialCodeTools({
 /**
  * A standalone thought in a Code turn: the same collapsed row, "Thought for
  * 12s" (or "Thought process"), opening the Thought process sheet with the
- * thinking itself. While it streams the row reads "Thinking…" and shimmers.
+ * thinking itself (`ViewThinking`, `ccr_thinking_thought_process`,
+ * D/CodeRemoteBottomSheetDestination.java). While it streams the row reads
+ * "Thinking…" and shimmers.
  */
 export function OfficialCodeThought({ item }: { item: Item }) {
   useT();
@@ -422,7 +433,7 @@ export function OfficialCodeThought({ item }: { item: Item }) {
                 : t("Thought process")}
           </span>
           <span className="official-steps-caret" aria-hidden="true">
-            <AppIcon name="CaretRight" />
+            <Anthropicon name="CaretRight" />
           </span>
         </button>
       </div>

@@ -21,10 +21,11 @@ const SideChatPanel = lazyPiece(
 const exitMs = 200;
 
 /**
- * The open conversation's side chat, beside it (Chat and Code; opened by View ▸
- * Side Chat or ⌘;). It renders nothing until opened. Branch to new chat puts
- * the side question and its answer in the composer to carry on from: in Chat a
- * new, empty chat; in Code a fork of the session.
+ * The open conversation's side chat, beside it (Chat and Code; opened by
+ * View ▸ Side Chat or ⌘;). It renders nothing until opened. Branch to new
+ * chat puts the side question and its answer in the composer to carry on
+ * from: in Chat a new, empty chat (the original only opens /new?q=…, live
+ * claude.ai bundle, 2026-10-16, shared-15 Yn); in Code a fork of the session.
  */
 export function SideChatHost({ active }: { active: Conversation }) {
   const app = useApp();

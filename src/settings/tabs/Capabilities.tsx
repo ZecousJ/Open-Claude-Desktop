@@ -109,8 +109,9 @@ function CapabilitiesControl({
           description="Controls how connector tools are loaded in new conversations."
         >
           {/* The original's ghost select with a described choice in a 22rem
-             list. The default for conversations without their own Tool access
-             choice, from their next message (shared/tool-search-mode.ts). */}
+              list (live claude.ai bundle, 2026-10-14, c71860c77: Ie). The
+              default for conversations without their own Tool access
+              choice, from their next message (shared/tool-search-mode.ts). */}
           <Dropdown<"needed" | "loaded">
             label="Tool access mode"
             value={preference(settings, "toolAccessMode")}
@@ -153,7 +154,7 @@ function CapabilitiesControl({
           label="Switch models when a message is flagged"
           description="When safeguards flag a message, automatically switch to a different model to keep chatting. When off, your chat will pause instead."
         >
-          {/* No confirmation toast, as the original. */}
+          {/* No confirmation toast, as the original (c71860c77: Re). */}
           <Toggle
             label="Switch models when a message is flagged"
             checked={preference(settings, "modelAutoFallback")}
@@ -167,7 +168,8 @@ function CapabilitiesControl({
           description={
             execution ? (
               // Locked on by code execution: a second muted line under the
-              // description says why.
+              // description says why (live claude.ai Settings, 2026-10-21:
+              // flex-col gap-xs inside the description).
               <span className="settings-row-notes">
                 <span>
                   {t(
@@ -250,8 +252,8 @@ function CapabilitiesControl({
                   ? "Claudex can execute code on a server and create and edit docs, spreadsheets, presentations, PDFs, and data reports. Required for skills."
                   : "Claudex can execute code and create and edit docs, spreadsheets, presentations, PDFs, and data reports. Required for skills."}
               </span>
-              {/* Shown where the network settings below are not offered, as in
-                 the original. */}
+              {/* Shown where the network settings below are not offered, as
+                  in the original (its egress-settings gate off). */}
               {!egressCeiling && (
                 <span>
                   <WithSecurityLink text="This feature gives Claudex network access to create and analyze files, which has <a>security risks</a>. Monitor chats closely when using this feature." />
@@ -310,10 +312,10 @@ const domainPattern =
   /^(\*\.)?([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i;
 
 /**
- * Allow network egress, Domain allowlist and Additional allowed domains On the
- * web, where a task runs in a sandbox on the server: the service's level is the
- * ceiling and these only narrow it (net-policy.ts `userNetworkPolicy`). "All
- * domains" needs a service that allows them.
+ * Allow network egress, Domain allowlist and Additional allowed domains
+ * (R-1346-bottom) on the web, where a task runs in a sandbox on the server:
+ * the service's level is the ceiling and these only narrow it (net-policy.ts
+ * `userNetworkPolicy`). "All domains" needs a service that allows them.
  */
 type NetworkEgressProps = {
   settings: TabProps["settings"];
@@ -340,8 +342,9 @@ function NetworkEgressControl({
   const [failure, setFailure] = useState<string>();
   const closed = ceiling === "none";
   const on = enabled && !closed;
-  // The original's rules: Add stays off for an empty, invalid or listed domain,
-  // and the invalid note shows once the field is left.
+  // The original's rules (live claude.ai bundle, 2026-10-14, c71860c77:
+  // Z): Add stays off for an empty, invalid or listed domain, and the
+  // invalid note shows once the field is left.
   const value = draft.trim().toLowerCase();
   const valid = value.length <= 253 && domainPattern.test(value);
   const listed = domains.includes(value);

@@ -31,11 +31,11 @@ const BrowserActionsDialog = lazyPiece(
 );
 
 /**
- * System. Login item, the Quick access shortcut, the menu bar (tray) icon,
- * keeping the computer awake while Claudex is open and the storage it uses,
- * then Computer use (R10) where the policy, this computer and the bundled
- * driver allow it. Browser actions use the built-in browser. Chrome account
- * pairing is not supported by Claudex.
+ * System (R-1399, R-1403–R-1425). Login item, the Quick access shortcut,
+ * the menu bar (tray) icon, keeping the computer awake while Claudex is
+ * open and the storage it uses, then Computer use (R10) where the policy,
+ * this computer and the bundled driver allow it. Browser actions use the
+ * built-in browser. Chrome account pairing is not supported by Claudex.
  */
 export function SystemTab({
   settings,
@@ -91,7 +91,7 @@ export function SystemTab({
           </Row>
         )}
         {state && platform !== "darwin" && (
-          // A recorder field with a clear button.
+          // R-1424: a recorder field with a clear button.
           <Row
             label="Quick Entry keyboard shortcut"
             description="Quickly open Claudex from anywhere."
@@ -100,8 +100,9 @@ export function SystemTab({
               label="Quick Entry keyboard shortcut"
               value={preference(settings, "quickAccessShortcut")}
               platform={platform}
-              // A shortcut another app holds can't be registered: the field
-              // says so instead of a toast.
+              // A shortcut another app holds can't be registered: the
+              // field says so instead of a toast (live claude.ai bundle,
+              // 2026-10-12).
               onChange={(quickAccessShortcut) =>
                 new Promise<void>((resolve, reject) => {
                   void Promise.resolve(
@@ -132,7 +133,8 @@ export function SystemTab({
             />
           </Row>
         )}
-        {/* The default, Custom… (a recorder) and No shortcut. */}
+        {/* R-1410, R-1411, R-1576: the default, Custom… (a recorder) and
+            No shortcut. */}
         <Row
           label="Dictation shortcut"
           description="Start or stop dictation in the chat you’re typing in."
@@ -152,9 +154,9 @@ export function SystemTab({
         <Row
           label={tray}
           // The window closing leaves Claudex running in the background on
-          // every platform; Windows says so. A Linux desktop without tray icons
-          // (no StatusNotifier host on the session bus) gets the original's
-          // note: closing quits there.
+          // every platform; Windows says so (desktop bundle 2.31226.1). A
+          // Linux desktop without tray icons (no StatusNotifier host on the
+          // session bus) gets the original's note: closing quits there.
           description={
             platform === "darwin"
               ? "Show Claudex in the menu bar."

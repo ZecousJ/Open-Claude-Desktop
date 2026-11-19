@@ -11,11 +11,11 @@ import { fetchRemoteImage } from "../workspace/remote-image";
 import { previewLinkRouter } from "../artifacts/preview-link-routing";
 
 /**
- * Leaving the app: links open in the system browser and remote Markdown images
- * load only as the administrator's policy allows. With external links off, the
- * pages the administrator named in the policy and hosts on its trusted domain
- * list still open; with an image domain list, images load only from those
- * hosts, redirects included.
+ * Leaving the app (package WP1): links open in the system browser and remote
+ * Markdown images load only as the administrator's policy allows. With
+ * external links off, the pages the administrator named in the policy and
+ * hosts on its trusted domain list still open; with an image domain list,
+ * images load only from those hosts, redirects included.
  */
 export function registerExternalLinkHandlers(
   handle: IpcHandle,

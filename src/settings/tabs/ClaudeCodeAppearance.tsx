@@ -43,7 +43,8 @@ export function ClaudeCodeAppearance({
           </>
         }
       >
-        {/* Applied at once. */}
+        {/* Applied at once (live claude.ai bundle, 2026-10-14:
+              interfaceFont, Anthropic Sans by default). */}
         <Segmented<InterfaceFont>
           label="Interface font"
           value={preference(settings, "interfaceFont")}

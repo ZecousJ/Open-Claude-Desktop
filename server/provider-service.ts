@@ -49,7 +49,10 @@ type Command = {
     | "remoteModels"
     | "remoteKeyUsage"
     | "sessionKey"
+    | "providerRouting"
     | "requestOptions"
+    | "openSidePath"
+    | "closeSidePath"
     | "threadProduct";
   /** threadProduct: the surface the thread belongs to (usage by product). */
   product?: string;
@@ -57,9 +60,12 @@ type Command = {
   vaultRoot?: string;
   vaultKey?: string;
   provider?: Provider;
+  routing?: Pick<Provider, "id" | "protocol" | "model" | "models" | "routes">;
+  refreshedKeys?: { apiKey: string; groupKeys: Record<string, string> };
   apiKey?: string;
   limits?: RequestLimits;
   threadId?: string;
+  sidePath?: string;
   keys?: Record<string, string>;
   /** In-memory keys of the account's other service groups, by vault entry (MG). */
   groupKeys?: Record<string, string>;
@@ -110,9 +116,9 @@ function groupKeysOf(value: unknown): Record<string, string> {
 /** Opens the encrypted key vault once, importing a one-time bootstrap key if present. */
 function getVault(command: Command) {
   if (vault) return vault;
-  if (!(command.vaultRoot ?? command.profileRoot) || !command.vaultKey)
+  const root = command.vaultRoot ?? command.profileRoot;
+  if (!root || !command.vaultKey)
     throw Error("Provider vault is not configured.");
-  const root = (command.vaultRoot ?? command.profileRoot)!;
   const loaded = new ProviderVault(root, command.vaultKey);
   const bootstrap = path.join(root, "backend", "bootstrap-secret.json");
   if (fs.existsSync(bootstrap)) {
@@ -190,12 +196,14 @@ async function startGateway(command: Command) {
   ledger = usage;
   limiter = createLimiter(usage, command.limits);
   gateway = new Gateway(
-    () => ({
-      provider,
-      apiKey: currentKey || vault?.get(provider.id) || "",
-      // A model of another service group goes out with that group's key (MG).
-      keyFor: (id: string) => currentGroupKeys[id] || vault?.get(id) || "",
-    }),
+    () => {
+      const keySnapshot = currentGroupKeys, vaultSnapshot = vault;
+      return {
+        provider: currentProvider ?? provider,
+        apiKey: currentKey || vaultSnapshot?.get(provider.id) || "",
+        keyFor: (id: string) => keySnapshot[id] || vaultSnapshot?.get(id) || "",
+      };
+    },
     (record) => {
       usage.record(record);
       if (record.usageKnown)
@@ -216,11 +224,12 @@ async function startGateway(command: Command) {
       // which saves it and shows it as the turn's Image card.
       onGeneratedImage: (event) =>
         process.send?.({ type: "generatedImage", event }),
+      onImageRequest: (event) => process.send?.({ type: "imageRequest", event }),
       // A file write the model has begun shows at once (shared/tool-start.ts).
       onToolStart: (event) => process.send?.({ type: "toolStart", event }),
     },
   );
-  const options = command.options && parseRequestOptions(command.options);
+  const options = parseRequestOptions(command.options);
   if (options) gateway.setRequestOptions(options);
   await gateway.start();
   return { url: gateway.url, token: gateway.token };
@@ -445,6 +454,20 @@ const handlers: Record<Command["type"], (command: Command) => unknown> = {
     currentGroupKeys = { ...currentGroupKeys, ...groupKeys };
     return true;
   },
+  providerRouting({ routing, refreshedKeys, vaultRoot, vaultKey }) {
+    if (!gateway || !currentProvider || !routing || currentProvider.id !== routing.id)
+      throw Error("The active model provider changed.");
+    if (refreshedKeys) {
+      if (!validApiKey(refreshedKeys.apiKey))
+        throw Error("Invalid provider key update.");
+      const groupKeys = groupKeysOf(refreshedKeys.groupKeys);
+      if (vaultRoot && vaultKey) vault = new ProviderVault(vaultRoot, vaultKey);
+      currentKey = refreshedKeys.apiKey;
+      currentGroupKeys = groupKeys;
+    }
+    currentProvider = { ...currentProvider, ...routing, routes: routing.routes };
+    return true;
+  },
   // Which product a thread's requests count under (usage by product).
   threadProduct(command) {
     if (
@@ -457,6 +480,16 @@ const handlers: Record<Command["type"], (command: Command) => unknown> = {
       command.threadId,
       command.product as "code" | "cowork" | "chat",
     );
+    return true;
+  },
+  openSidePath() {
+    if (!gateway) throw Error("The model gateway is unavailable.");
+    return gateway.openSidePath();
+  },
+  closeSidePath(command) {
+    if (!gateway || typeof command.sidePath !== "string" || !/^[a-f0-9]{64}$/.test(command.sidePath))
+      throw Error("Invalid side question path.");
+    gateway.closeSidePath(command.sidePath);
     return true;
   },
   // How the gateway rewrites requests (S1: shell descriptions, X search).

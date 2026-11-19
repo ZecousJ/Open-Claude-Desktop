@@ -23,7 +23,7 @@ const dependencies = new Map();
 const lock = JSON.parse(readFileSync("package-lock.json", "utf8")).packages;
 for (const file of files(out).filter((f) => f.endsWith(".map")))
   for (const source of JSON.parse(readFileSync(file, "utf8")).sources) {
-    const abs = path.resolve(path.dirname(file), source);
+    const abs = path.resolve(path.dirname(file), source.split("?", 1)[0]);
     const dependency = abs
       .replaceAll("\\", "/")
       .match(/(.*\/node_modules\/((?:@[^/]+\/)?[^/]+))\//);
@@ -43,8 +43,7 @@ for (const file of files(out).filter((f) => f.endsWith(".map")))
       abs.startsWith(root + path.sep) &&
       !posix(abs).includes("/node_modules/")
     )
-      // A module imported with a query (`?url`) is the file itself.
-      sources.add(posix(path.relative(root, abs)).replace(/\?.*$/, ""));
+      sources.add(posix(path.relative(root, abs)));
   }
 const required = [
   "src/transcript/ConversationTranscript.tsx",

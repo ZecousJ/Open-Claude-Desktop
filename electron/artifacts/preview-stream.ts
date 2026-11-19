@@ -14,7 +14,7 @@ export class PreviewStream<T> {
   ) {}
 
   setFps(fps: number) {
-    this.fps = Math.min(30, Math.max(1, Number.isFinite(fps) ? fps : 4));
+    this.fps = Math.min(30, Number.isFinite(fps) && fps > 0 ? fps : 4);
   }
 
   setSubscribed(on: boolean) {
@@ -49,7 +49,7 @@ export class PreviewStream<T> {
       if (this.subscribed)
         this.timer = setTimeout(
           () => void this.next(),
-          Math.max(0, 1000 / this.fps - (Date.now() - started)),
+          Math.min(2 ** 31 - 1, Math.max(0, 1000 / this.fps - (Date.now() - started))),
         );
     }
   }

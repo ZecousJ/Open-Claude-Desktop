@@ -1,8 +1,8 @@
 /**
- * "Download desktop app" under the web sign-in card: only when the
- * administrator published an installer for this computer in the release
- * settings (`GET /api/v1/claudex/release?platform=&arch=`, the same answer
- * /desktop-only uses). Phones and tablets get none.
+ * "Download desktop app" under the web sign-in card (package LOGIN): only
+ * when the administrator published an installer for this computer in the
+ * release settings (`GET /api/v1/claudex/release?platform=&arch=`, the same
+ * answer /desktop-only uses). Phones and tablets get none.
  */
 
 export type DesktopPlatform = "darwin" | "win32" | "linux";

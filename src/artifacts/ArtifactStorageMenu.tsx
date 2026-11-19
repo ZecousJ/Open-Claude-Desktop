@@ -8,7 +8,7 @@ import {
 import { ArtifactSubmenu } from "./ArtifactExportMenu";
 import { currentLocale, formatText, t } from "../i18n";
 
-/** Storage figures and notices. */
+/** Storage figures and notices (live claude.ai bundle, 2026-10-14, c547ae5e3-GTYn8RRi.js:123-234). */
 export function ArtifactStorageMenu({
   usage,
   onRequestLimit,

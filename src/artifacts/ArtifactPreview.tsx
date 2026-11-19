@@ -25,7 +25,7 @@ import {
 import { t } from "../i18n";
 import { useInlinedHtml } from "./useInlinedHtml";
 
-/** Delayed CDS md spinner; its label is not visible copy. */
+/** Delayed CDS md spinner; its label is not visible copy (live claude.ai bundle, 2026-10-14, c88cafe49-C1VMWCVV.js:1284; shared-frame-B1JORnF0.js:3073). */
 export function ArtifactFrameLoading() {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -111,8 +111,8 @@ function FramePreview({
   const [loadedKey, setLoadedKey] = useState<string>();
   const [runtimeError, setRuntimeError] = useState<string>();
   const [preview, setPreview] = useState<{ key: string; url: string }>();
-  // Refresh leaves the loaded page on screen, dimmed under the spinner, until
-  // the reloaded one is ready.
+  // Refresh leaves the loaded page on screen, dimmed under the spinner,
+  // until the reloaded one is ready (R-1006).
   const [stale, setStale] = useState<string>();
   const loadedPage = useRef<{ document: string; url: string }>(undefined);
   const staleUrl = useRef<string>(undefined);

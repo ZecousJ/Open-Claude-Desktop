@@ -32,7 +32,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font:
-    400 22px/1 "Claudex Serif",
+    400 22px/1 "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -46,11 +47,12 @@
   margin-left: auto;
 }
 
-/* Navigation: 32px rows on a 32.5px pitch, 272 wide from x 8, padding 0 2px and
-   radius 8; a 28px glyph slot (the icon font's glyphs at 20px), then 8px to the
-   14/21 label at x 38, #c3c2b7 (More #898781, its caret #c3c2b7; the open page
-   #f0efec). Hovered rows fill white 7.5% and keep their colour. New's 16px Add
-   sits in a 22px disc, #2c2c2a while a conversation is open; on the new-chat
+/* Navigation (live claude.ai, 2026-10-01, from its DOM): 32px rows on a
+   32.5px pitch, 272 wide from x 8, padding 0 2px and radius 8; a 28px glyph
+   slot (the icon font's glyphs at 20px), then 8px to the 14/21 label at
+   x 38, #c3c2b7 (More #898781, its caret #c3c2b7; the open page #f0efec).
+   Hovered rows fill white 7.5% and keep their colour. New's 16px Add sits
+   in a 22px disc, #2c2c2a while a conversation is open; on the new-chat
    page the row is #f0efec with no fill. */
 .app.web .main-nav {
   padding: 0;
@@ -96,7 +98,7 @@
   width: 20px;
   height: 20px;
 }
-.app.web .main-nav .nav-glyph > svg:not(.app-icon) {
+.app.web .main-nav .nav-glyph > svg:not(.anthropicon) {
   width: 18px;
   height: 18px;
 }
@@ -123,7 +125,7 @@
   background: #e6e5e1;
 }
 
-/* Comfortable footer density. */
+/* Comfortable footer density (live claude.ai bundle, 2026-10-14, shared-styles-BDdb-EXC.css; shared-19-BG_pM4_W.js). */
 .app.web .profile-wrap {
   gap: 6px;
   padding: 8px;
@@ -166,7 +168,7 @@
   font-size: 12px;
   line-height: 18px;
 }
-.app.web .profile > .app-icon {
+.app.web .profile > .anthropicon {
   flex-basis: 12px;
 }
 .app.web .profile-wrap > .icon-button {
@@ -191,7 +193,8 @@
 .app.web .web-home-corner > * {
   position: static;
 }
-/* The incognito button is a 32px square 8px from the corner, its glyph 20px. */
+/* Live claude.ai: the incognito button is a 32px square 8px from the corner,
+   its glyph 20px. */
 .app.web .web-home-corner .incognito-button svg {
   width: 20px;
   height: 20px;
@@ -211,13 +214,14 @@
   color: var(--text-secondary);
 }
 
-/* The body supplies the list's padding and gap; search stays in the footer. */
+/* The body supplies the list's padding and gap; search stays in the footer
+   (live claude.ai bundle, 2026-10-14, shared-22-C5fbYFH4.js). */
 .app.web .sidebar-scroll {
   margin-top: 0;
   padding-left: 0;
 }
-/* Chat's first section starts 12.5px under the last nav row, the next one 10px
-   under the pinned rows. */
+/* Chat's first section starts 12.5px under the last nav row, the next one
+   10px under the pinned rows (live claude.ai, 2026-10-20). */
 .app.web .sidebar-scroll:not([data-mode="code"]) {
   padding-top: 4.5px;
 }
@@ -225,7 +229,8 @@
 .app.web .sidebar-scroll:not([data-mode="code"]) .section-label + * {
   margin-top: 1px;
 }
-/* Code: 10px more under the nav rows. */
+/* Code: 10px more under the nav rows (live claude.ai bundle, 2026-10-12,
+   the Code sidebar's nav rows' bottom padding; sidebar.css). */
 .app.web .sidebar-scroll[data-mode="code"] {
   margin-top: 10px;
 }
@@ -234,15 +239,16 @@
   height: 32px;
   line-height: 32px;
 }
-/* The empty group line is a web row high, in the comfortable caption type. */
+/* The empty group line is a web row high, in the comfortable caption type
+   (12/17; live claude.ai bundle, 2026-10-12; sidebar.css). */
 .app.web .row-group-hint {
   min-height: 32px;
   font-size: 12px;
 }
-/* Section labels: a 24px button from x 10, padding 4px 0 4px 4px, radius 8; the
-   label 13/16 #898781 (#c3c2b7 hovered), then 4px to a 12px caret (the font's
-   CaretRight, turned a quarter while the section is open, 60ms) shown while it
-   is hovered. */
+/* Section labels (live claude.ai, 2026-10-01): a 24px button from x 10,
+   padding 4px 0 4px 4px, radius 8; the label 13/16 #898781 (#c3c2b7
+   hovered), then 4px to a 12px caret (the font's CaretRight, turned a
+   quarter while the section is open, 60ms) shown while it is hovered. */
 .app.web .section-label {
   min-height: 44px;
   padding: 16px 4px 4px 2px;
@@ -257,42 +263,43 @@
   line-height: 16px;
 }
 :root:not([data-theme="light"]) .app.web .section-label,
-:root:not([data-theme="light"]) .app.web .section-toggle > .app-icon {
+:root:not([data-theme="light"]) .app.web .section-toggle > .anthropicon {
   color: #898781;
 }
 :root:not([data-theme="light"]) .app.web .section-toggle:hover {
   color: #c3c2b7;
 }
-.app.web .section-toggle > .app-icon {
+.app.web .section-toggle > .anthropicon {
   width: 12px;
   height: 12px;
   rotate: 90deg;
   transform: none;
   transition: rotate 60ms var(--ease-standard);
 }
-.app.web .section-toggle.collapsed > .app-icon {
+.app.web .section-toggle.collapsed > .anthropicon {
   rotate: 0deg;
 }
 /* Code's group headings carry the same caret (sidebar.css .group-toggle). */
-:root:not([data-theme="light"]) .app.web .group-toggle > .app-icon {
+:root:not([data-theme="light"]) .app.web .group-toggle > .anthropicon {
   color: #898781;
 }
-.app.web .group-toggle > .app-icon {
+.app.web .group-toggle > .anthropicon {
   width: 12px;
   height: 12px;
   rotate: 90deg;
   transform: none;
   transition: rotate 60ms var(--ease-standard);
 }
-.app.web .group-toggle[aria-expanded="false"] > .app-icon {
+.app.web .group-toggle[aria-expanded="false"] > .anthropicon {
   rotate: 0deg;
 }
 .app.web .pinned-section {
   margin-bottom: 9px;
 }
-/* Rows: 8px round, hovered white 7.5%; the title 14/21 #c3c2b7 from x 46, the
-   dot centred 16px in; ⋮ a 24px square (6px round) 4px from the right, only
-   while the row is hovered. */
+/* Rows (live claude.ai, 2026-10-21: 32px rows 2px apart, the link the
+   whole 32px; 2026-09-29 read 33.5): 8px round, hovered white 7.5%; the
+   title 14/21 #c3c2b7 from x 46, the dot centred 16px in; ⋮ a 24px square
+   (6px round) 4px from the right, only while the row is hovered. */
 .app.web .conversation-row {
   height: 32px;
   margin-bottom: 2px;
@@ -316,12 +323,13 @@
   flex: 1;
   min-width: 0;
 }
-/* A row's status (the unread dot) fills the same 24px slot as More, 4px from
-   the row's end. It is the link's last flex item, so the row's centring aligns
-   it with the title and the link's 4px end padding places it; the title stops
-   the link's 8px gap before it. Under the pointer, keyboard focus or an open
-   menu it keeps its place, hidden, and More (an overlay outside the flow)
-   covers it. */
+/* A row's status (the unread dot) fills the same 24px slot as More, 4px
+   from the row's end (live claude.ai, 2026-10-21: --df-row-ctl-inset 4px,
+   size-[--df-row-ctl]). It is the link's last flex item, so the row's
+   centring aligns it with the title and the link's 4px end padding places
+   it; the title stops the link's 8px gap before it. Under the pointer,
+   keyboard focus or an open menu it keeps its place, hidden, and More
+   (an overlay outside the flow) covers it. */
 .app.web .row-status-trailing {
   position: static;
   display: flex;
@@ -413,11 +421,11 @@
   }
 }
 
-/* The account menu: 272 wide, #20201f, 12px round with a 1px white-10% inset
-   rim, 4px inside; the email 13/17 500 #898781 at 4px 10px; items 32 high, 6px
-   10px, 8px round, a 20px icon and 8px gap, 14/20 #f0efec; the Settings keys
-   13/17 #898781; rules 1px white 10%, 4px 10px. The submenu (Learn more) is the
-   same box. */
+/* The account menu (live claude.ai, 2026-10-17, dark): 272 wide, #20201f,
+   12px round with a 1px white-10% inset rim, 4px inside; the email 13/17
+   500 #898781 at 4px 10px; items 32 high, 6px 10px, 8px round, a 20px icon
+   and 8px gap, 14/20 #f0efec; the Settings keys 13/17 #898781; rules 1px
+   white 10%, 4px 10px. The submenu (Learn more) is the same box. */
 :root[data-surface="web"] .profile-popover {
   padding: 0;
   border: 0;
@@ -450,7 +458,7 @@
   line-height: 20px;
   color: #f0efec;
 }
-:root[data-surface="web"] .profile-menu-scroll > button > .app-icon {
+:root[data-surface="web"] .profile-menu-scroll > button > .anthropicon {
   color: #f0efec;
 }
 :root[data-surface="web"] .profile-popover kbd {
@@ -480,10 +488,11 @@
   background: rgb(0 0 0 / 10%);
 }
 
-/* The sidebar's More menu is the same menu box: 12px round, #20201f, a 1px
-   white-10% inset rim with the panel shadow, 4px inside; items 32 high, 6px
-   10px, 8px round, a 20px icon slot (kept empty on Edit sidebar…) and 8px gap,
-   14/20 #f0efec; the rule 1px white 10% at 4px 10px. */
+/* The sidebar's More menu (live claude.ai, 2026-10-20, dark) is the same
+   menu box: 12px round, #20201f, a 1px white-10% inset rim with the panel
+   shadow, 4px inside; items 32 high, 6px 10px, 8px round, a 20px icon slot
+   (kept empty on Edit sidebar…) and 8px gap, 14/20 #f0efec; the rule 1px
+   white 10% at 4px 10px. */
 :root[data-surface="web"] .main-nav-more-menu {
   padding: 4px;
   border: 0;
@@ -549,7 +558,8 @@
   background: rgb(0 0 0 / 10%);
 }
 
-/* Fields on white 5% with 8px corners and no border (textarea padding 8px
+/* Settings fields and row buttons on live claude.ai (2026-09-29, dark):
+   fields on white 5% with 8px corners and no border (textarea padding 8px
    12px), row buttons on white 10% with 7px corners and 10px padding. */
 :root[data-surface="web"]:not([data-theme="light"]) .settings-input,
 :root[data-surface="web"]:not([data-theme="light"]) .settings-textarea {
@@ -575,8 +585,8 @@
   border-radius: 7px;
 }
 
-/* Customize's title uses the web heading treatment. Header controls are shared
-   with desktop in customize/customize.css. */
+/* Customize's title uses the web heading treatment. Header controls are
+   shared with desktop in customize/customize.css (live Customize, 2026-10-16). */
 :root[data-surface="web"]:not([data-theme="light"]) .customize-title {
   font-weight: 500;
   color: #f0efec;
@@ -584,8 +594,8 @@
 
 /* Reduced motion: the chevron turns at once. */
 @media (prefers-reduced-motion: reduce) {
-  .app.web .section-toggle > .app-icon,
-  .app.web .group-toggle > .app-icon {
+  .app.web .section-toggle > .anthropicon,
+  .app.web .group-toggle > .anthropicon {
     transition: none;
   }
 }
@@ -613,7 +623,7 @@
   background: rgb(255 255 255 / 5%);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
 }
-.app.web .web-sidebar-search .app-icon {
+.app.web .web-sidebar-search .anthropicon {
   width: 16px;
   height: 16px;
 }
@@ -646,16 +656,16 @@
 .settings-platform-link:hover {
   background: var(--fill-ghost-hover);
 }
-:root[data-motion="reduced"] .app.web .section-toggle > .app-icon,
-:root[data-motion="reduced"] .app.web .group-toggle > .app-icon {
+:root[data-motion="reduced"] .app.web .section-toggle > .anthropicon,
+:root[data-motion="reduced"] .app.web .group-toggle > .anthropicon {
   transition: none;
 }
 
 /* A web Code session is a panel 9px in from the sidebar and 1px from the
-   window's end (its margins, so its border box is the panel), and its
-   transcript and prompt share one column: at most 768px of content, centred,
-   with 24px before it and 40px after it (24px while the panel is 560px or
-   narrower, 32px beside the session rail). Panel 297..739 at 740 wide and
+   window's end (its margins, so its border box is the panel), and its transcript and prompt share one column: at most
+   768px of content, centred, with 24px before it and 40px after it (24px
+   while the panel is 560px or narrower, 32px beside the session rail).
+   Live claude.ai Code, 2026-10-21: panel 297..739 at 740 wide and
    297..899 at 900, its column padded 24 / 24 and 24 / 40. */
 .app.web .chat-main.code-main.has-conversation {
   container: code-panel / inline-size;
@@ -673,7 +683,8 @@
    and the bar and the column keep their room past the tile's own end
    ("bleed": the bar's buttons 12px in, the column's end 40px); before a
    pane they give way ("shave": 4px and 28px, 12px in a card 560px or
-   narrower). */
+   narrower). Live claude.ai Code, 2026-10-21, at 1280 wide with and
+   without Files. */
 :root:not([data-theme="light"]) .app.web .code-chat-content,
 :root:not([data-theme="light"]) .app.web .code-tile > .work-panel {
   border: 0;
@@ -811,7 +822,8 @@
    screen, drawn out over the gap by its 4px or 6px padding, radius 6 or
    8) and a square caret of the same height beside it; the end buttons are
    26px ghost squares, radius 6 or 8, 4px apart, the session rail's rule 4px
-   from each neighbour. */
+   from each neighbour. Live claude.ai Code, 2026-10-21, at 740 (touch) and
+   1280 wide, docked and collapsed. */
 @media (min-width: 640px) {
   .app.web .chat-header.code-header {
     height: 32px;
@@ -875,7 +887,7 @@
 }
 /* Their 18px glyphs; a pressed one (a pane or the rail on screen) is the
    ghost selected fill with the primary ink, not the desktop's blue. */
-.app.web .chat-header.code-header .header-actions .icon-button > .app-icon {
+.app.web .chat-header.code-header .header-actions .icon-button > .anthropicon {
   width: 18px;
   height: 18px;
 }

@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/official-ui/code-command-permission-host.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "official-ui-code-command-permission.test.ts",
+    "official-ui-code-command-engine.test.ts",
+    "official-ui-code-sessions.test.ts",
+    "official-ui-mcp-permissions.test.ts"
+  ]
+}

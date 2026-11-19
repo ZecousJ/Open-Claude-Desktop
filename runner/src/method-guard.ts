@@ -1,3 +1,4 @@
+import { isGuardedSessionConnectorPreference } from "../../electron/ipc/session-connector-preference";
 /**
  * What the runner lets through from the network (web plan §9 risk 3, W-ARCH
  * §10.2). The desktop handlers were written for one trusted person on their
@@ -126,7 +127,13 @@ export function guardCall(
 ) {
   if (!runnerMethods.has(method))
     throw new GuardError(notAvailableOnWeb, webErrorCodes.methodUnavailable);
-  const where = localPathIn(args);
+  const preference = method === "updateConversation" && args.length === 2 &&
+    typeof args[0] === "string" && isGuardedSessionConnectorPreference(args[1]);
+  const submission = method === "saveDirectorySubmission" && args[0];
+  const checkedArgs = submission && typeof submission === "object" && "original" in submission
+    ? [{ ...submission, original: undefined }, ...args.slice(1)]
+    : args;
+  const where = preference ? undefined : localPathIn(checkedArgs);
   if (where)
     throw new GuardError(
       "Folders on the server can't be used from the web.",
@@ -197,7 +204,7 @@ export function webArguments(
 }
 
 /** Clears what an answer says about the host before it leaves the runner. */
-export function sanitizeResult(method: string, value: unknown): unknown {
+export function sanitizeResult(method: string, value: unknown, officialInventory = false): unknown {
   if (
     method === "mcpServers" &&
     value &&
@@ -209,7 +216,7 @@ export function sanitizeResult(method: string, value: unknown): unknown {
       configError: _error,
       ...rest
     } = value as Record<string, unknown>;
-    return { ...rest, configPath: "" };
+    return { ...rest, configPath: "", ...(officialInventory && _error ? { configError: "Connector inventory unavailable." } : {}) };
   }
   if (
     (method === "addAttachmentData" || method === "linkChatGitHubRepository") &&

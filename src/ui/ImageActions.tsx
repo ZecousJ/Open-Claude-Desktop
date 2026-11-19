@@ -9,7 +9,7 @@ import { lazyPiece } from "./lazy-piece";
 
 const ImageMenu = lazyPiece(() => import("./ImageMenu"));
 
-/** Image context actions. */
+/** Image context actions (live claude.ai bundle, 2026-10-14, cc44b66a7-BkfedQEp). */
 export function ImageActions({
   src,
   fileName,

@@ -8,8 +8,9 @@ import { fileChangeDiff, languageForPath } from "../diff/diff-model";
 import { permissionRows } from "./approval-model";
 
 /**
- * The file line under the title: relative to the working folder inside it, the
- * absolute path outside it.
+ * The file line under the title: relative to the working folder inside it
+ * ("app.js", R-0805), the absolute path outside it
+ * ("/tmp/claudex-ref-permission-probe.txt", R-0039).
  */
 export function displayPath(path: string, cwd?: string) {
   if (!cwd) return path;
@@ -18,7 +19,7 @@ export function displayPath(path: string, cwd?: string) {
   return inside ? path.slice(root.length + 1) : path;
 }
 
-/** Command approval: reason line and the command in a code box. */
+/** Command approval: reason line and the command in a code box (R-0805 node app.js). */
 export function CommandBody({ params }: { params: any }) {
   const network = params?.networkApprovalContext;
   return (
@@ -34,7 +35,7 @@ export function CommandBody({ params }: { params: any }) {
   );
 }
 
-/** File approval: name, full path, then each file's path over its diff. */
+/** File approval: name, full path, then each file's path over its diff (R-0805 app.js / utils.js). */
 export function FileChangeBody({
   approval,
   item,
@@ -63,7 +64,8 @@ export function FileChangeBody({
         <pre className="approval-code">{root ?? paths.join("\n")}</pre>
       )}
       {changes.map((change, index) => {
-        // Past 200,000 characters the change isn't drawn here.
+        // Past 200,000 characters the change isn't drawn here (live
+        // claude.ai bundle, 2026-10-15, c1c1ec7b9 `QP`).
         if ((change.diff?.length ?? 0) > approvalPreviewLimit)
           return (
             <div className="approval-file" key={`${change.path}:${index}`}>
@@ -98,7 +100,7 @@ export function FileChangeBody({
   );
 }
 
-/** Additional permissions as readable rows instead of the raw profile. */
+/** Additional permissions as readable rows instead of the raw profile (R-0619). */
 export function PermissionsBody({ params }: { params: any }) {
   const rows = permissionRows(params?.permissions);
   return (

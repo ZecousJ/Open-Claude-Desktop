@@ -2,10 +2,11 @@ import { useLayoutEffect, useRef } from "react";
 import { Star } from "./Star";
 
 /**
- * The star under a Chat reply while it writes: its frames step from a dot to
- * the full star and back in 720ms, in #d97757, at full opacity (no breathing,
- * the owner's review). As the text grows the star follows its end with a 220ms
- * critically damped glide. Drawn with Claudex's own star glyph.
+ * The star under a Chat reply while it writes (live claude.ai, recorded
+ * 2026-09-29): its frames step from a dot to the full star and back in
+ * 720ms, in #d97757, at full opacity (no breathing, the owner's review). As
+ * the text grows the star follows its end with a 220ms critically damped
+ * glide. Drawn with Claudex's own star glyph.
  */
 export function SparkMark({
   size = 32,

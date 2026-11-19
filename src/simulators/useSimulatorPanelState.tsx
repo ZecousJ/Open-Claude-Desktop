@@ -235,10 +235,10 @@ export function useSimulatorPanelState(kit: UseSimulatorPanelStateKit) {
       }
     : undefined;
   /**
-   * Annotate: a full-size screenshot in the annotation editor; Add to chat
-   * keeps the annotated picture as an attachment of this conversation's draft,
-   * under the name a saved screenshot would get. Offered while a composer can
-   * take it.
+   * Annotate (live claude.ai bundle, 2026-10-12): a full-size screenshot in
+   * the annotation editor; Add to chat keeps the annotated picture as an
+   * attachment of this conversation's draft, under the name a saved
+   * screenshot would get. Offered while a composer can take it.
    */
   const capturingForAnnotate = useRef(false);
   const {

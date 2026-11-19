@@ -80,6 +80,7 @@ test("web callbacks require the requesting tab proof, survive reload, and never 
   Object.assign(window, {
     desktop: {
       onEvent: () => () => {},
+      signInEmailHint: async () => "ada@example.com",
       sendSignInCode: async () => ({ countdown: 60 }),
       loginWithCode: async (...args: unknown[]) => {
         logins.push(args);
@@ -92,8 +93,6 @@ test("web callbacks require the requesting tab proof, survive reload, and never 
       removeEventListener() {},
     }),
   });
-  // React listens for input events only where the document has them.
-  (document as unknown as { oninput: null }).oninput = null;
   const { createRoot } = await import("react-dom/client");
   const { default: SignInPage } = await import("../../src/auth/SignInPage");
   const root = createRoot(document.querySelector("main")!);
@@ -124,18 +123,6 @@ test("web callbacks require the requesting tab proof, survive reload, and never 
   try {
     context.mock.timers.enable({ apis: ["setTimeout"] });
     await act(async () => render("sender"));
-    // Enter the email: the prototype's setter goes round React's value
-    // tracker, so the input event reads as a change.
-    await act(async () => {
-      const field = document.querySelector<HTMLInputElement>(
-        'input[type="email"]',
-      )!;
-      Object.getOwnPropertyDescriptor(
-        Object.getPrototypeOf(field),
-        "value",
-      )!.set!.call(field, "ada@example.com");
-      field.dispatchEvent(new window.Event("input", { bubbles: true }));
-    });
     await act(async () =>
       document
         .querySelector("form")!

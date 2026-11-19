@@ -202,7 +202,7 @@ test("Add to project becomes Change project, searchable with a create row, and R
     ).find((item) => item.label.endsWith("project"));
   const add = entry(conversation({}));
   assert.equal(add?.label, "Add to project");
-  // The search can create a project.
+  // Live claude.ai bundle (2026-10-12): the search can create a project.
   assert.equal(add?.searchable, "Search or create a project");
   assert.equal(add?.searchCreate?.typed, "Create project {name}");
   assert.deepEqual(outline(add!.submenu!), ["Docs", "Site"]);

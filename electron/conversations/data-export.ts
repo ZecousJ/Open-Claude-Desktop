@@ -22,14 +22,13 @@ export function conversationMarkdown(c: Conversation) {
   );
 }
 
-/** Profile files copied as they are; credentials (.enc) are never included. */
 const profileFiles = [
   "schedules.json",
   "artifact-library.json",
   "artifact-shares.json",
   "reply-feedback.json",
 ];
-const maxFileBytes = 20 * 1024 * 1024;
+const maxSkillFileBytes = 20 * 1024 * 1024;
 
 const secretName =
   /token|secret|password|passwd|api[-_]?key|auth|credential|cookie|bearer/i;
@@ -42,6 +41,9 @@ const redacted = "<redacted>";
  * password, query and fragment.
  */
 function exportedArg(value: string, previous: string): string {
+  const header = /^([\w-]+)\s*:/.exec(value);
+  if (previous === "--header" || previous === "-H")
+    return header ? `${header[1]}: ${redacted}` : redacted;
   if (
     /^-/.test(previous) &&
     !previous.includes("=") &&
@@ -50,14 +52,13 @@ function exportedArg(value: string, previous: string): string {
     return redacted;
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value))
     return exportedUrl(value) ?? redacted;
-  const header = /^([\w-]+)\s*:/.exec(value);
   if (header)
     return secretName.test(header[1]) ? `${header[1]}: ${redacted}` : value;
   const assignment = /^([^=]+)=([\s\S]*)$/.exec(value);
   if (assignment)
     return secretName.test(assignment[1])
       ? `${assignment[1]}=${redacted}`
-      : `${assignment[1]}=${exportedArg(assignment[2], "")}`;
+      : `${assignment[1]}=${exportedArg(assignment[2], assignment[1])}`;
   return /^bearer\s/i.test(value) ? redacted : value;
 }
 function exportedArgs(args: unknown) {
@@ -101,20 +102,16 @@ export function exportedMcpServers(servers: Record<string, unknown>) {
     }),
   );
 }
-/** Saved artifact links without the tokens that open them. */
-function exportedShares(data: Buffer) {
+function withoutShareTokens(data: Buffer) {
   const parsed: unknown = JSON.parse(data.toString("utf8"));
-  const strip = (value: unknown): unknown =>
-    Array.isArray(value)
-      ? value.map(strip)
-      : value && typeof value === "object"
-        ? Object.fromEntries(
-            Object.entries(value)
-              .filter(([key]) => key !== "token")
-              .map(([key, item]) => [key, strip(item)]),
-          )
-        : value;
-  return Buffer.from(JSON.stringify(strip(parsed), null, 2) + "\n");
+  return Buffer.from(
+    JSON.stringify(
+      parsed,
+      (key, value: unknown) =>
+        key === "token" || key === "sharedArtifactToken" ? undefined : value,
+      2,
+    ) + "\n",
+  );
 }
 
 /**
@@ -129,7 +126,10 @@ export function exportedMemory(root: string) {
     // An unreadable file is left out rather than exported as empty.
     if (!local.unreadable) snapshot = local.current();
   } else snapshot = readMemoryCache(root);
-  if (!snapshot || (!snapshot.docs.length && !snapshot.edits.length))
+  if (
+    !snapshot ||
+    (!snapshot.prefs && !snapshot.docs.length && !snapshot.edits.length)
+  )
     return undefined;
   const iso = (at: number) => new Date(at).toISOString();
   return {
@@ -152,8 +152,14 @@ export function exportedMemory(root: string) {
   };
 }
 
-const safeName = (value: string) =>
-  value.replace(/[\\/:*?"<>|\u0000-\u001f]/g, "_").slice(0, 80) || "Untitled";
+function safeName(value: string) {
+  const name =
+    value.replace(/[\\/:*?"<>|\u0000-\u001f]/g, "_").slice(0, 80) || "Untitled";
+  return /^(?:CON|PRN|AUX|NUL|(?:COM|LPT)[1-9¹²³]) *(?:\.|$)/iu.test(name)
+    ? `_${name}`
+    : name;
+}
+const extractionKey = (name: string) => name.normalize("NFC").toLowerCase();
 
 function skillFiles(folder: string, prefix: string, entries: ZipEntry[]) {
   if (!fs.existsSync(folder)) return;
@@ -162,27 +168,32 @@ function skillFiles(folder: string, prefix: string, entries: ZipEntry[]) {
     // Dot folders hold the runtime's own bundled skills.
     if (item.isSymbolicLink() || item.name.startsWith(".")) continue;
     if (item.isDirectory()) skillFiles(full, `${prefix}${item.name}/`, entries);
-    else if (item.isFile() && fs.statSync(full).size <= maxFileBytes)
+    else if (item.isFile() && fs.statSync(full).size <= maxSkillFileBytes)
       entries.push({ name: prefix + item.name, data: fs.readFileSync(full) });
   }
 }
 
 /**
- * Everything the account keeps on this computer that is its own data:
- * conversations (JSON and Markdown), projects, settings without service
- * details, schedules, saved artifacts, memory and user skills. Incognito chats,
- * keys, MCP server secrets, share tokens and caches are left out.
+ * A snapshot of the account's selected local history and profile data.
+ * Incognito chats, credentials, and share tokens are left out.
  */
 export function exportEntries(input: {
   root: string;
   conversations: Conversation[];
   projects: Project[];
   settings: Settings;
+  conversationRange?: { start?: number; end?: number };
   now?: Date;
 }): ZipEntry[] {
   const json = (value: unknown) =>
     Buffer.from(JSON.stringify(value, null, 2) + "\n");
-  const conversations = input.conversations.filter((c) => !c.incognito);
+  const { start, end } = input.conversationRange ?? {};
+  const conversations = input.conversations.filter(
+    (c) =>
+      !c.incognito &&
+      (start === undefined || c.createdAt >= start) &&
+      (end === undefined || c.createdAt < end),
+  );
   const { providers: _providers, ...settings } = input.settings;
   settings.mcpServers = exportedMcpServers(settings.mcpServers);
   const entries: ZipEntry[] = [
@@ -193,14 +204,19 @@ export function exportEntries(input: {
           "Claudex data export",
           `Created ${(input.now ?? new Date()).toISOString()}`,
           "",
-          "conversations.json  every saved conversation, with tool activity",
-          "conversations/      one Markdown file per conversation",
+          "conversations.json  saved conversations in the chosen date range",
+          "                    with tool activity",
+          "conversations/      one Markdown file per exported conversation",
           "projects.json       projects and their instructions",
           "settings.json       your preferences; MCP servers without their",
-          "                    environment variables, headers or tokens",
+          "                    environment variables or header values",
           "memory.json         what Claudex remembers about you (Settings > Memory)",
           "Other .json files   schedules, saved artifacts and reply ratings",
           "skills/             skills you created or uploaded",
+          "",
+          "This export contains data available on this computer. It does not",
+          "include incognito chats, cloud-only history, separate attachment",
+          "files, or workspace files.",
           "",
         ].join("\n"),
       ),
@@ -211,9 +227,10 @@ export function exportEntries(input: {
   ];
   const used = new Set<string>();
   conversations.forEach((c) => {
-    let name = safeName(c.title);
-    for (let n = 2; used.has(name); n++) name = `${safeName(c.title)} (${n})`;
-    used.add(name);
+    const stem = safeName(c.title);
+    let name = stem;
+    for (let n = 2; used.has(extractionKey(name)); n++) name = `${stem} (${n})`;
+    used.add(extractionKey(name));
     entries.push({
       name: `conversations/${name}.md`,
       data: Buffer.from(conversationMarkdown(c)),
@@ -222,15 +239,15 @@ export function exportEntries(input: {
   });
   for (const file of profileFiles) {
     const full = path.join(input.root, file);
-    if (!fs.existsSync(full) || fs.statSync(full).size > maxFileBytes) continue;
+    if (!fs.existsSync(full)) continue;
     const data = fs.readFileSync(full);
-    if (file !== "artifact-shares.json") entries.push({ name: file, data });
-    else
+    if (file === "artifact-shares.json" || file === "artifact-library.json") {
       try {
-        entries.push({ name: file, data: exportedShares(data) });
+        entries.push({ name: file, data: withoutShareTokens(data) });
       } catch {
-        // An unreadable list is left out rather than copied with its tokens.
+        // A file that cannot be redacted is not exported.
       }
+    } else entries.push({ name: file, data });
   }
   const memory = exportedMemory(input.root);
   if (memory) entries.push({ name: "memory.json", data: json(memory) });

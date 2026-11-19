@@ -1,11 +1,13 @@
 /*
- * Routines page and editor. The file keeps its old name so its place in
- * src/main.tsx's stylesheet order stays the same. Sizes are measured 1:1 from
- * the Windows 1x captures 32px page margins, compact 24px controls with 13px
- * text, two card columns 24px apart and a 696px editor column. Vertical
- * positions are relative to the page top, which matches the mac pages (the
- * Windows frame adds 36px above). This sheet loads before the global one, so
- * rules that meet the global input and button rules are one class stronger.
+ * Routines page and editor (src/collections/routines, package WP7). The
+ * file keeps its old name so its place in src/main.tsx's stylesheet order
+ * stays the same. Sizes are measured 1:1 from the Windows 1x captures
+ * R-1220–R-1282 (1200px viewport, 912px page): 32px page margins, compact
+ * 24px controls with 13px text, two card columns 24px apart and a 696px
+ * editor column (fidelity/observations/routines.md). Vertical positions
+ * are relative to the page top, which matches the mac pages (the Windows
+ * frame adds 36px above). This sheet loads before the global one, so rules
+ * that meet the global input and button rules are one class stronger.
  */
 .routines-view,
 .routine-editor-view {
@@ -22,7 +24,7 @@
 }
 .routines-title {
   margin: 0;
-  /* 24px/32px medium. */
+  /* 24px/32px medium (live claude.ai, 2026-10-16: h1 "Scheduled tasks"). */
   font:
     500 24px/32px "Claudex Serif",
     Georgia,
@@ -33,7 +35,8 @@
 }
 :root[data-reference-fonts="true"] .routines-title {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   font-optical-sizing: auto;
 }
 .routines-bar {
@@ -55,7 +58,7 @@
   font-size: 13px;
   color: #8d8d8b;
   /* The original's tabs change fill and ink at once; only their focus ring
-     eases. */
+     eases (desktop bundle 2.31226.1). */
   transition: none;
 }
 .routines-tabs > button:hover {
@@ -156,7 +159,7 @@
 .routines-tools > .routines-new svg {
   color: #6f6f6c;
 }
-/* Warning alert and monthly date label. */
+/* Warning alert and monthly date label (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js and c97b955f1-DnH50wWB.js). */
 .routine-model-warning {
   display: flex;
   align-items: center;
@@ -266,8 +269,9 @@
 .routines-load-error > button:hover {
   background: var(--fill-ghost-hover);
 }
-/* Couldn't load: a centred block, 64px above and below, the warning glyph over
-   the words and a secondary Retry. */
+/* Couldn't load: a centred block, 64px above and below, the warning glyph
+   over the words and a secondary Retry (live claude.ai bundle,
+   2026-10-14: IAxBhl6i8Q). */
 .routines-load-error {
   display: flex;
   flex-direction: column;
@@ -319,7 +323,9 @@
 }
 
 /* Cards: one column 12px apart, two 24px apart from 768px, rows of equal
-   height. Paused cards are not dimmed; the Paused chip says so. */
+   height (live claude.ai bundle, 2026-10-14: grid-cols-1 gap-3
+   md:grid-cols-2 md:gap-6 auto-rows-fr). Paused cards are not dimmed; the
+   Paused chip says so. */
 .routine-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -346,7 +352,7 @@
      colour transition); only the press eases back. */
   transition: var(--press-release);
 }
-/* Templates: hover bg-alpha-1. */
+/* Templates: hover bg-alpha-1 (live claude.ai bundle, 2026-10-14). */
 .routine-grid .routine-card:hover:not(:disabled),
 .routine-item.menu-open .routine-card {
   background: var(--alpha-1);
@@ -354,8 +360,9 @@
 .routine-grid .routine-card:disabled {
   opacity: 1;
 }
-/* A task's card: the surface with a 1px inset ring, 12px inside, 10px corners,
-   a column with 6px between its lines, the hover surface on hover. */
+/* A task's card (live claude.ai bundle, 2026-10-14, cdbc75b4b: Gn): the
+   surface with a 1px inset ring, 12px inside, 10px corners, a column with
+   6px between its lines, the hover surface on hover. */
 .routine-grid .routine-item .routine-card {
   height: 100%;
   padding: 12px;
@@ -395,7 +402,8 @@
   line-height: 20px;
   color: #fff;
 }
-/* A task's title: text-body, medium, primary. */
+/* A task's title: text-body, medium, primary (live claude.ai bundle,
+   2026-10-14, cdbc75b4b). */
 .routine-item .routine-card-name,
 .routine-item .routine-card-name strong {
   font-weight: 500;
@@ -423,7 +431,7 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
-/* A task's description: three lines in the secondary colour. */
+/* A task's description: three lines in the secondary colour (cdbc75b4b). */
 .routine-item .routine-card-description {
   color: var(--text-secondary);
   -webkit-line-clamp: 3;
@@ -455,7 +463,7 @@
   text-overflow: ellipsis;
   color: var(--danger);
 }
-/* Footer and run indicators. */
+/* Footer and run indicators (live claude.ai bundle, 2026-10-14, cdbc75b4b-1Ujhww_J.js). */
 .routine-item {
   --routine-secondary: #c3c2b7;
   --routine-danger: #ec7e7e;
@@ -495,7 +503,7 @@
 .routine-state.failed {
   color: var(--routine-danger);
 }
-/* On hold and Paused. */
+/* On hold and Paused (live claude.ai bundle, 2026-10-14, ccd3f68fe-Ch8U0gGS.js:1080). */
 .routine-state.routine-state-pill {
   gap: 6px;
   padding: 2px 6px;
@@ -851,9 +859,10 @@
   font-size: 13px;
   color: var(--danger);
 }
-/* A required field left empty, marked once Create is pressed: its field's 8px
-   gap under the input, a 16px WarningCircle 4px before 13/1.375 text in the
-   danger ink. */
+/* A required field left empty, marked once Create is pressed (live
+   claude.ai, 2026-10-21, the CDS field error): its field's 8px gap under
+   the input, a 16px WarningCircle 4px before 13/1.375 text in the danger
+   ink. */
 .routine-problem {
   display: flex;
   align-items: flex-start;
@@ -864,7 +873,7 @@
   font-weight: 400;
   overflow-wrap: break-word;
 }
-.routine-problem > .app-icon {
+.routine-problem > .anthropicon {
   flex: none;
   margin-top: 1px;
 }
@@ -943,7 +952,7 @@
   opacity: var(--opacity-disabled);
 }
 
-/* The model menu: a search field, then 24px rows. */
+/* The model menu: a search field, then 24px rows (R-1265). */
 .menu.routine-model-menu {
   width: 265px;
   padding: 4px;
@@ -1228,17 +1237,17 @@
 :root[data-theme="light"] .routine-model-none {
   color: #82817f;
 }
-/* A narrowing filter turns the button blue in light as in History. */
+/* A narrowing filter turns the button blue in light as in History (R-1317). */
 :root[data-theme="light"] .routines-tools .icon-button.routines-icon.filtered {
   background: #cce4fe;
   color: #47698e;
 }
 
-/* 48px title row, then 32px tabs/tools. Templates have their own 16px row gaps;
-   saved tasks keep 24px at md. */
+/* Scheduled list, live 2026-10-16: 48px title row, then 32px tabs/tools.
+   Templates have their own 16px row gaps; saved tasks keep 24px at md. */
 :root[data-surface="web"] .routines-view {
   padding-top: 48px;
-  /* 40px each side, as the other pages. */
+  /* 40px each side, as the other pages (live claude.ai, 2026-10-20). */
   padding-inline: 40px;
 }
 :root[data-surface="web"] .routines-head {
@@ -1340,7 +1349,9 @@
   .routines-sort[aria-expanded="true"] {
   background: rgb(255 255 255 / 14%);
 }
-/* The ghost icon buttons sit 4px apart and New task 12px after them. */
+/* The ghost icon buttons sit 4px apart and New task 12px after them (live
+   claude.ai, 2026-10-21: the toolbar's gap-2 less 4px between ghosts, plus
+   4px before a filled button). */
 :root[data-surface="web"] .routines-head .routines-tools > .routines-new {
   width: 106px;
   height: 32px;
@@ -1466,10 +1477,10 @@
   padding-right: 0;
 }
 
-/* The web's Create scheduled task dialog: 720 wide on #20201f with 12px corners
-   and 24px padding; fields on white 5% with 8px corners, the instructions box
-   157 high with its model row under a hairline, selects 32 high, Cancel on
-   white 10% and Save on white. */
+/* The web's Create scheduled task dialog (live claude.ai, 2026-09-29): 720
+   wide on #20201f with 12px corners and 24px padding; fields on white 5%
+   with 8px corners, the instructions box 157 high with its model row under
+   a hairline, selects 32 high, Cancel on white 10% and Save on white. */
 .modal.task-dialog {
   width: 720px;
   max-width: calc(100vw - 32px);
@@ -1757,7 +1768,9 @@
   color: #6b6a66;
 }
 
-/* Where a task runs. */
+/* Where a task runs (live claude.ai bundle, 2026-10-14, cdbc75b4b: an
+   18px chip, 6px across, rounded, neutral-30 fill, 12px secondary text,
+   4px after its icon, at most 8rem). */
 .routine-location-chip {
   display: inline-flex;
   flex-shrink: 0;
@@ -1825,7 +1838,7 @@
 }
 
 /* Saved web tasks use the live link card, not the template's icon tile.
-   cbb0b7045-2-BAqznk.js:40–111;. */
+   cbb0b7045-2-BAqznk.js:40–111; official-scheduled-task.txt:7–12. */
 .routine-grid .routine-item .routine-card.routine-card-web {
   position: relative;
   min-height: 97px;
@@ -1873,7 +1886,9 @@
   line-height: 20px;
   -webkit-line-clamp: 2;
 }
-/* Status, schedule and the rest 8px apart, the dot between the first two. */
+/* Status, schedule and the rest 8px apart, the dot between the first two
+   (live claude.ai, 2026-10-21: "flex min-w-0 items-center gap-2", the
+   schedule's before:me-2 before:content-['·']). */
 .routine-grid .routine-card-web .routine-card-footer {
   justify-content: flex-start;
   flex-wrap: wrap;
@@ -1909,7 +1924,7 @@
   height: 32px;
   border-radius: 8px;
 }
-.routine-grid .routine-web-item .routine-more > [data-icon] {
+.routine-grid .routine-web-item .routine-more > [data-anthropicon] {
   width: 20px;
   height: 20px;
 }

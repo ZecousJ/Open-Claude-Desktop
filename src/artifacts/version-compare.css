@@ -1,8 +1,8 @@
 /*
  * Compare with current (the version switcher): the dialog the original opens
  * for an earlier version against the current one is 3xl (768px) and as tall as
- * the window allows. The diff rows are the Changes panel's own (diff.css,
- * changes-panel.css); only the frame is set here.
+ * the window allows (desktop bundle 2.31226.1). The diff rows are the Changes
+ * panel's own (diff.css, changes-panel.css); only the frame is set here.
  */
 .modal.version-compare {
   display: flex;

@@ -8,10 +8,12 @@ import { PlanStatusIcon, type PlanStep } from "./PlanPanel";
 import { requestProgressSteps } from "../cowork/progress-request";
 
 /**
- * A task-list update in the Chat and Cowork transcripts. It is the Code row's
- * "Updated tasks ›" in the chat step-row style; Cowork opens its Progress panel
- * with the steps unfolded, Chat unfolds the list with the Plan panel's glyphs:
- * dashed ring, spinning arc, struck check.
+ * A task-list update in the Chat and Cowork transcripts (owner, 2026-10-02:
+ * the old bordered card with orange checks had no reference). It is the
+ * Code row's "Updated tasks ›" in the chat step-row style;
+ * Cowork opens its Progress panel (R-0857) with the steps unfolded, Chat
+ * unfolds the list with the Plan panel's glyphs (R-Code-Plan面板): dashed
+ * ring, spinning arc, struck check.
  */
 export function ChatPlanRow({ item }: { item: Item }) {
   const t = useT();

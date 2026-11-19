@@ -1,7 +1,8 @@
 import { formatText } from "../../i18n";
 
 /**
- * What the Upload a skill page shows under "Preview" once a file is chosen And
+ * What the Upload a skill page shows under "Preview" once a file is chosen
+ * (R-1153: the skill's name, and its description when the file has one) and
  * whether the file is a zip at all ("Invalid zip file"). Only a peek: the
  * installation itself (and its full checks) stays in the main process.
  */
@@ -126,14 +127,14 @@ export async function previewSkillFile(file: File): Promise<SkillPreview> {
   }
 }
 
-/** "54B", "1.2KB", "3.4MB": the size next to a chosen file's name. */
+/** "54B", "1.2KB", "3.4MB": the size next to a chosen file's name (R-1153 "54B"). */
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
 }
 
-/** What the page says when files are refused for their extension. */
+/** What the page says when files are refused for their extension (desktop bundle 2.31226.1). */
 export function leftOutMessage(refused: number, chosen: number) {
   if (chosen === 1)
     return "Skill files must have a .skill, .zip, or .md file extension.";

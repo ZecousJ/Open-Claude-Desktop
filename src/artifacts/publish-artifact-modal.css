@@ -151,9 +151,10 @@
   font-size: 11px;
   line-height: 17px;
 }
-/* Get embed code's entry under the published link: a full-width ghost button
-   after a hairline, 12px above and below the line. The button takes the Copy
-   link button's ghost look, the closest Claudex analogue. */
+/* Get embed code's entry under the published link: a full-width ghost
+   button after a hairline, 12px above and below the line ("mt-3 border-t
+   pt-3"; live claude.ai bundle, 2026-10-12). The button takes the Copy link
+   button's ghost look, the closest Claudex analogue. */
 .publish-artifact-embed-entry {
   margin-top: 12px;
   padding-top: 12px;

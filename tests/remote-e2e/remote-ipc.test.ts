@@ -260,8 +260,8 @@ test("remote mode over IPC: sign-in, policy, usage refusal, 426, revoke-all", as
       "the policy event",
     );
 
-    // A 5-hour session rule refuses the device key: the banner status carries
-    // the global limit notice.
+    // A 5-hour session rule refuses the device key: the banner status
+    // carries the global limit notice (R-0127).
     const resetsAt = new Date(Date.now() + 3 * 3600_000).toISOString();
     mock.options.refusal = {
       status: 429,

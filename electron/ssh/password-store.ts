@@ -1,10 +1,11 @@
 /**
- * Saved SSH passwords. Each is encrypted with AES-256-GCM under a key derived
- * from the app's vault key (itself kept by the OS keychain,
+ * Saved SSH passwords (owner, 2026-10-08: the Add SSH connection form takes
+ * a username and a password). Each is encrypted with AES-256-GCM under a key
+ * derived from the app's vault key (itself kept by the OS keychain,
  * provider-credentials.ts) in <dataRoot>/ssh-passwords.json, one entry per
- * saved host. Without OS encryption they live in memory until the app quits. A
- * password only ever reaches ssh through the askpass broker; the window learns
- * whether a host has one, never the password.
+ * saved host. Without OS encryption they live in memory until the app
+ * quits. A password only ever reaches ssh through the askpass broker; the
+ * window learns whether a host has one, never the password.
  */
 import {
   createCipheriv,

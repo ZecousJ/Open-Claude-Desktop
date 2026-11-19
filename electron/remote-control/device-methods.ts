@@ -11,7 +11,12 @@ import type {
   Attachment,
   Conversation,
 } from "../../shared/types";
-import type { DispatchReceipts } from "./dispatch-delivery";
+import {
+  dispatchDeliveryInput,
+  DispatchRejection,
+  type DispatchReceipts,
+} from "./dispatch-delivery";
+import { interruptTargetSchema } from "../../shared/interrupt-target";
 import { ChatDeviceMethods } from "./chat-device-methods";
 import {
   deviceWatchMs,
@@ -27,6 +32,7 @@ import {
 } from "../../shared/remote-devices";
 
 export interface DeviceHost {
+  officialCode?(request: unknown, current: () => boolean, capacity: () => { active: number; max: number }): Promise<unknown>;
   addAttachment?(name: string, data: Uint8Array): Promise<Attachment>;
   dispatchPreferences?(enabled?: boolean): Promise<boolean>;
   /** The signed-in account's local conversations. */
@@ -34,23 +40,32 @@ export interface DeviceHost {
   /** The local engines' approvals waiting for an answer. */
   approvals(): Approval[];
   /** The window's own `send`, `interrupt` and `approve` handlers. */
-  send(input: {
-    /** Missing: a new session in `cwd`. */
-    conversationId?: string;
-    cwd?: string;
-    text: string;
-    mode: "code" | "cowork" | "chat";
-    attachments: Attachment[];
-    providerId: string;
-    model: string;
-    effort?: import("../../shared/types").CodeEffort;
-    webSearch?: boolean;
-    research?: boolean;
-    thinkingMode?: "standard" | "extended";
-    connectorOverrides?: Record<string, boolean>;
-    connectorToolOverrides?: import("../../shared/conversation-tools").ConversationToolOverrides;
-  }): Promise<unknown>;
-  interrupt(conversationId: string): Promise<unknown>;
+  send(
+    input: {
+      /** Missing: a new session in `cwd`. */
+      conversationId?: string;
+      newConversationId?: string;
+      cwd?: string;
+      text: string;
+      mode: "code" | "cowork" | "chat";
+      attachments: Attachment[];
+      providerId: string;
+      model: string;
+      effort?: import("../../shared/types").CodeEffort;
+      webSearch?: boolean;
+      research?: boolean;
+      thinkingMode?: "standard" | "extended";
+      connectorOverrides?: Record<string, boolean>;
+      connectorToolOverrides?: import("../../shared/conversation-tools").ConversationToolOverrides;
+      knowledgeBases?: string[];
+    },
+    deliveryId?: string,
+    deliveryCurrent?: () => boolean,
+  ): Promise<unknown>;
+  interrupt(
+    conversationId: string,
+    expected?: import("../../shared/interrupt-target").InterruptTarget,
+  ): Promise<unknown>;
   approve(id: string | number, result: unknown): Promise<unknown>;
   /** The folders the person added for phones (Settings → General). */
   remoteFolders(): string[];
@@ -64,11 +79,13 @@ export interface DeviceHost {
   now(): number;
   computerAccess?(): boolean;
   codeEnabled?(): boolean;
+  accountGeneration?(): unknown;
   chatDevice?: {
     accountScope(): string | undefined;
     scope?(): object;
     save(conversation: Conversation): Promise<Conversation>;
     release(id: string): Promise<unknown>;
+    releaseCowork(conversation: Conversation): void;
     blob(digest: string): Promise<Uint8Array>;
   };
 }
@@ -86,8 +103,11 @@ const running = (c: Conversation) => c.turns.at(-1)?.status === "inProgress";
 const maxListed = 100;
 const maxText = 200_000;
 
-function fail(message: string): never {
-  throw new Error(message);
+function fail(
+  message: string,
+  code: "invalid" | "unavailable" = "unavailable",
+): never {
+  throw new DispatchRejection(code, message);
 }
 
 export class DeviceMethods {
@@ -118,16 +138,22 @@ export class DeviceMethods {
     return this.host
       .conversations()
       .find(
-        (conversation) => conversation.id === id && reachable(conversation),
+        (conversation) =>
+          conversation.id === id &&
+          reachable(conversation) &&
+          this.notificationsReachable(conversation),
       );
   }
 
-  private conversation(id: unknown) {
+  private conversation(id: unknown, dispatch = false) {
     if (typeof id !== "string" || !id || id.length > 500)
       fail("This conversation is not on this computer.");
     const found = this.host.conversations().find((c) => c.id === id);
     if (!reachable(found)) fail("This conversation is not on this computer.");
-    if (found.mode === "code" && this.host.codeEnabled?.() === false)
+    if (
+      this.host.codeEnabled?.() === false &&
+      (dispatch || found.mode === "code" || !found.linkedToComputer)
+    )
       fail("This conversation is not on this computer.");
     return found;
   }
@@ -144,7 +170,7 @@ export class DeviceMethods {
   private chosenModel(input: { providerId?: unknown; model?: unknown }) {
     const { providerId, model } = input ?? {};
     if (typeof providerId !== "string" || typeof model !== "string")
-      fail("Choose a model first.");
+      fail("Choose a model first.", "invalid");
     const offered = this.host
       .models()
       .models.some(
@@ -172,7 +198,13 @@ export class DeviceMethods {
   }
 
   /** A new Code session in one of the added folders (never any other path). */
-  private async newSession(raw: unknown): Promise<DeviceNewSessionResult> {
+  private async newSession(
+    raw: unknown,
+    deliveryId?: string,
+    deliveryCurrent?: () => boolean,
+  ): Promise<DeviceNewSessionResult> {
+    if (this.host.codeEnabled?.() === false)
+      fail("This computer can't do that.");
     const capacity = this.capacity();
     if (capacity.active >= capacity.max)
       fail(
@@ -180,13 +212,17 @@ export class DeviceMethods {
       );
     this.starting++;
     try {
-      return await this.createSession(raw);
+      return await this.createSession(raw, deliveryId, deliveryCurrent);
     } finally {
       this.starting--;
     }
   }
 
-  private async createSession(raw: unknown): Promise<DeviceNewSessionResult> {
+  private async createSession(
+    raw: unknown,
+    deliveryId?: string,
+    deliveryCurrent?: () => boolean,
+  ): Promise<DeviceNewSessionResult> {
     const input = raw as {
       cwd?: unknown;
       text?: unknown;
@@ -201,26 +237,35 @@ export class DeviceMethods {
       input.mode !== "code" &&
       input.mode !== "cowork"
     )
-      fail("This computer can't do that.");
+      fail("This computer can't do that.", "invalid");
     if (typeof cwd !== "string" || !remoteFolderValid(cwd))
-      fail("Choose a directory, not the filesystem root.");
+      fail("Choose a directory, not the filesystem root.", "invalid");
     if (!this.host.remoteFolders().includes(cwd))
       fail(
         "This folder isn't added for your phone. Add it in Settings on the computer.",
       );
+    if (input.mode === "cowork" && this.host.computerAccess?.() === false)
+      fail("Waiting for your computer");
     const text = input.text;
     if (typeof text !== "string" || !text.trim() || text.length > maxText)
-      fail("Write a message first.");
+      fail("Write a message first.", "invalid");
     let picked: { providerId: string; model: string };
     if (input.providerId === undefined && input.model === undefined) {
       const fallback = this.host.models().default;
       if (!fallback) fail("No model is available on this computer.");
       picked = { providerId: fallback.providerId, model: fallback.id };
     } else picked = this.chosenModel(input);
+    const account = this.host.accountGeneration?.();
+    const current = () =>
+      this.host.accountGeneration?.() === account &&
+      (!deliveryCurrent || deliveryCurrent()) &&
+      this.host.codeEnabled?.() !== false &&
+      this.host.remoteFolders().includes(cwd) &&
+      (input.mode !== "cowork" || this.host.computerAccess?.() !== false);
     const attachments: Attachment[] = [];
     if (input.attachments !== undefined) {
       if (!Array.isArray(input.attachments) || input.attachments.length > 12)
-        fail("This file can't be attached.");
+        fail("This file can't be attached.", "invalid");
       let total = 0;
       for (const file of input.attachments) {
         if (
@@ -233,28 +278,79 @@ export class DeviceMethods {
           !/^[A-Za-z0-9+/]*={0,2}$/.test(file.data) ||
           !this.host.addAttachment
         )
-          fail("This file can't be attached.");
+          fail("This file can't be attached.", "invalid");
         const data = Buffer.from(file.data, "base64");
         total += data.byteLength;
-        if (total > 64 * 1024 * 1024) fail("This file can't be attached.");
+        if (total > 64 * 1024 * 1024)
+          fail("This file can't be attached.", "invalid");
         attachments.push(await this.host.addAttachment(file.name, data));
+        if (!current()) fail("Device access changed. Try again.");
       }
     }
-    const created = (await this.host.send({
-      cwd,
-      text,
-      mode: input.mode === "cowork" ? "cowork" : "code",
-      attachments,
-      providerId: picked.providerId,
-      model: picked.model,
-    })) as Conversation | undefined;
+    const created = (await this.host.send(
+      {
+        cwd,
+        text,
+        ...(deliveryId ? { newConversationId: deliveryId } : {}),
+        mode: input.mode === "cowork" ? "cowork" : "code",
+        attachments,
+        providerId: picked.providerId,
+        model: picked.model,
+      },
+      deliveryId,
+      current,
+    )) as Conversation | undefined;
     if (!created?.id) fail("This computer couldn't start the session.");
     this.watched.set(created.id, this.host.now() + deviceWatchMs);
     return { conversationId: created.id };
   }
 
+  private async send(
+    raw: unknown,
+    deliveryId?: string,
+    deliveryCurrent?: () => boolean,
+  ): Promise<null> {
+    const input = raw as { conversationId?: unknown; text?: unknown };
+    const conversation = this.conversation(
+      input?.conversationId,
+      deliveryId !== undefined,
+    );
+    if (deliveryId && conversation.archived)
+      fail("This task is archived. Reopen it on your computer before sending.");
+    if (
+      conversation.mode === "cowork" &&
+      this.host.computerAccess?.() === false
+    )
+      fail("Waiting for your computer");
+    const text = input?.text;
+    if (typeof text !== "string" || !text.trim() || text.length > maxText)
+      fail("Write a message first.", "invalid");
+    const current = () =>
+      (!deliveryCurrent || deliveryCurrent()) &&
+      this.host.codeEnabled?.() !== false &&
+      this.host.conversations().includes(conversation) &&
+      reachable(conversation) &&
+      !conversation.archived &&
+      (conversation.mode !== "cowork" ||
+        this.host.computerAccess?.() !== false);
+    this.watched.set(conversation.id, this.host.now() + deviceWatchMs);
+    await this.host.send(
+      {
+        conversationId: conversation.id,
+        text,
+        mode: conversation.mode as "code" | "cowork",
+        attachments: [],
+        providerId: conversation.providerId,
+        model: conversation.model,
+      },
+      deliveryId,
+      deliveryId ? current : undefined,
+    );
+    return null;
+  }
+
   summaries(dispatch = false): DeviceConversationSummary[] {
-    if (!dispatch && this.host.codeEnabled?.() === false) return [];
+    if (this.host.codeEnabled?.() === false) return [];
     const waiting = new Map<string, number>();
     for (const a of this.host.approvals())
       waiting.set(a.conversationId, (waiting.get(a.conversationId) ?? 0) + 1);
@@ -287,7 +383,11 @@ export class DeviceMethods {
   }
 
   /** Runs one relayed call. */
-  async call(method: string, args: unknown[]): Promise<unknown> {
+  async call(
+    method: string,
+    args: unknown[],
+    deliveryCurrent?: () => boolean,
+  ): Promise<unknown> {
     if (method.startsWith("chatDevice"))
       return this.chatDevices.call(method, args[0]);
     if (
@@ -302,6 +402,14 @@ export class DeviceMethods {
     )
       fail("This computer can't do that.");
     switch (method as DeviceMethod) {
+      case "officialCode": {
+        const generation = this.host.accountGeneration?.();
+        const current = () => this.host.accountGeneration?.() === generation &&
+          this.host.codeEnabled?.() !== false && (deliveryCurrent?.() ?? true);
+        if (!this.host.officialCode || !current())
+          return { status: 403, value: { error: { message: "Remote Control is off." } } };
+        return this.host.officialCode(args[0], current, () => this.capacity());
+      }
       case "dispatchPreferences":
         if (
           !this.host.dispatchPreferences ||
@@ -310,23 +418,27 @@ export class DeviceMethods {
           fail("This computer can't do that.");
         return this.host.dispatchPreferences(args[0] as boolean | undefined);
       case "deliverDispatch": {
-        const input = args[0] as {
-          id?: unknown;
-          method?: unknown;
-          args?: unknown;
-        };
-        if (
-          !this.receipts ||
-          typeof input?.id !== "string" ||
-          !/^[a-f0-9-]{36}$/.test(input.id) ||
-          (input.method !== "newSession" && input.method !== "send") ||
-          !Array.isArray(input.args) ||
-          input.args.length !== 1
-        )
-          fail("This computer can't do that.");
-        return this.receipts.run(input.id, () =>
-          this.call(input.method as string, input.args as unknown[]),
-        );
+        const parsed = dispatchDeliveryInput.safeParse(args[0]);
+        if (!parsed.success || args.length !== 1)
+          return {
+            status: "rejected",
+            code: "invalid",
+            message: "This delivery is invalid.",
+          };
+        if (!this.receipts)
+          return {
+            status: "rejected",
+            code: "unavailable",
+            message: "Dispatch is unavailable on this computer.",
+          };
+        const delivery = parsed.data;
+        return this.receipts.run(delivery, async () => {
+          if (deliveryCurrent && !deliveryCurrent())
+            fail("Device access changed. Try again.");
+          return delivery.method === "newSession"
+            ? this.newSession(delivery.args[0], delivery.id, deliveryCurrent)
+            : this.send(delivery.args[0], delivery.id, deliveryCurrent);
+        });
       }
       case "listDispatchTasks":
         return this.summaries(true);
@@ -335,7 +447,7 @@ export class DeviceMethods {
       case "remoteControlCapacity":
         return this.capacity();
       case "openConversation": {
-        const conversation = this.conversation(args[0]);
+        const conversation = this.conversation(args[0], args[1] === "dispatch");
         this.watched.set(conversation.id, this.host.now() + deviceWatchMs);
         const answer: DeviceConversation = {
           conversation,
@@ -345,28 +457,8 @@ export class DeviceMethods {
         };
         return answer;
       }
-      case "send": {
-        const input = args[0] as { conversationId?: unknown; text?: unknown };
-        const conversation = this.conversation(input?.conversationId);
-        if (
-          conversation.mode === "cowork" &&
-          this.host.computerAccess?.() === false
-        )
-          fail("Waiting for your computer");
-        const text = input?.text;
-        if (typeof text !== "string" || !text.trim() || text.length > maxText)
-          fail("Write a message first.");
-        this.watched.set(conversation.id, this.host.now() + deviceWatchMs);
-        await this.host.send({
-          conversationId: conversation.id,
-          text,
-          mode: conversation.mode as "code" | "cowork",
-          attachments: [],
-          providerId: conversation.providerId,
-          model: conversation.model,
-        });
-        return null;
-      }
+      case "send":
+        return this.send(args[0]);
       case "listDirectories":
         return this.directories();
       case "newSession":
@@ -395,21 +487,41 @@ export class DeviceMethods {
         return null;
       }
       case "interrupt": {
-        const conversation = this.conversation(args[0]);
+        const dispatch = args[2] === "dispatch";
+        const conversation = this.conversation(
+          args[0],
+          dispatch || args[1] !== undefined,
+        );
+        if (args[1] !== undefined && !(dispatch && args[1] === null))
+          return this.host.interrupt(
+            conversation.id,
+            interruptTargetSchema.parse(args[1]),
+          );
         await this.host.interrupt(conversation.id);
         return null;
       }
       case "approve": {
         const id = args[0];
         const approval = this.host.approvals().find((a) => a.id === id);
-        if (!approval) fail("This request was already answered.");
-        this.conversation(approval.conversationId);
+        if (
+          !approval ||
+          (args[2] !== undefined && args[2] !== approval.conversationId)
+        )
+          fail("This request was already answered.");
+        this.conversation(approval.conversationId, args[2] !== undefined);
         await this.host.approve(approval.id, args[1]);
         return null;
       }
       default:
         fail("This computer can't do that.");
     }
+  }
+
+  private notificationsReachable(c: Conversation) {
+    return (
+      this.host.codeEnabled?.() !== false ||
+      (c.mode === "cowork" && c.linkedToComputer)
+    );
   }
 
   /**
@@ -420,11 +532,7 @@ export class DeviceMethods {
     switch (event.type) {
       case "conversation": {
         const c = event.conversation;
-        if (
-          !reachable(c) ||
-          (c.mode === "code" && this.host.codeEnabled?.() === false)
-        )
-          return [];
+        if (!reachable(c) || !this.notificationsReachable(c)) return [];
         const out: DeviceAppEvent[] = [{ type: "device-conversations" }];
         if (this.isWatched(c.id))
           out.push({ type: "conversation", conversation: c });
@@ -434,8 +542,7 @@ export class DeviceMethods {
         const c = this.host
           .conversations()
           .find((item) => item.id === event.approval.conversationId);
-        return reachable(c) &&
-          (c.mode !== "code" || this.host.codeEnabled?.() !== false)
+        return reachable(c) && this.notificationsReachable(c)
           ? [
               { type: "approval", approval: event.approval },
               { type: "device-conversations" },

@@ -43,9 +43,9 @@ export interface WeeklyUsageStatus {
   /** Which limit refused requests, when the service said so. */
   reason?: LimitReason;
   /**
-   * The window-wide notice at the bottom right: the 5-hour session limit or the
-   * service's request rate limit refused the last request. Absent otherwise;
-   * the status is then about the banner only.
+   * The window-wide notice at the bottom right (R-0127): the 5-hour session
+   * limit or the service's request rate limit refused the last request.
+   * Absent otherwise; the status is then about the banner only.
    */
   globalLimit?: GlobalLimitNotice;
   /**
@@ -56,7 +56,7 @@ export interface WeeklyUsageStatus {
   resetNotification?: "available" | "scheduled";
 }
 
-/** Which limit, and when it resets (null when unknown). */
+/** R-0127's notice: which limit, and when it resets (null when unknown). */
 export interface GlobalLimitNotice {
   kind: "session" | "rate-limit";
   resetsAt: number | null;

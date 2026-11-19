@@ -1,9 +1,10 @@
 /**
- * Windows app packs: a release's resources/ folder less Codex, applied over an
- * install on the same Electron whose Codex files are the ones the pack was
- * built next to. `keepDigest` is how both sides name those files: the SHA-256
- * of each one's path (relative, forward slashes, sorted) and its own SHA-256,
- * one per line. No Electron imports: the release script uses it too.
+ * Windows app packs (shared/claudex-contract.ts ClaudexAppPack): a release's
+ * resources/ folder less Codex, applied over an install on the same Electron
+ * whose Codex files are the ones the pack was built next to. `keepDigest` is
+ * how both sides name those files: the SHA-256 of each one's path (relative,
+ * forward slashes, sorted) and its own SHA-256, one per line. No Electron
+ * imports: the release script uses it too.
  */
 import crypto from "node:crypto";
 import fs from "node:fs";

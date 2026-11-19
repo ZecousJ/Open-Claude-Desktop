@@ -81,7 +81,7 @@ func (s *GatewayService) ForwardAsResponses(
 		return nil, err
 	}
 	responsesReq.Model = mappedModel
-	anthropicReq, err := apicompat.ResponsesToAnthropicRequest(&responsesReq)
+	anthropicReq, err := apicompat.ResponsesToAnthropicRequestWithReasoningCache(&responsesReq, privateAnthropicThinkingCache(c, s.cache).get)
 	if err != nil {
 		if claude.IsOpus55(mappedModel) {
 			writeResponsesError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
@@ -461,7 +461,7 @@ func (s *GatewayService) handleResponsesBufferedStreamingResponse(
 	if claude.IsOpus55(mappedModel) {
 		finalResp.Model = mappedModel
 	}
-	responsesResp := apicompat.AnthropicToResponsesResponse(finalResp)
+	responsesResp := apicompat.AnthropicToResponsesResponseWithReasoningCache(finalResp, privateAnthropicThinkingCache(c, s.cache).set)
 	responsesResp.Model = originalModel // Use original model name
 
 	if s.responseHeaderFilter != nil {
@@ -521,6 +521,7 @@ func (s *GatewayService) handleResponsesStreamingResponse(
 	state := apicompat.NewAnthropicEventToResponsesState()
 	state.Model = originalModel
 	state.PreserveThinkingSignatures = claude.IsOpus55(mappedModel)
+	state.CachePrivateReasoning = privateAnthropicThinkingCache(c, s.cache).set
 	clientToolRestorer := apicompat.NewResponsesClientToolStreamRestorer(clientToolMapping)
 	var usage ClaudeUsage
 	var firstTokenMs *int

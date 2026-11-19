@@ -1,18 +1,21 @@
 /**
- * GitHub for a Code session that works in a folder on this computer: the
- * Import GitHub issue list, an imported issue's text, a pull request's state
- * and checks, and the branch row's changes to it. The original asks GitHub
- * through the machine's own GitHub CLI sign-in; so does this, with `gh api`
- * (REST and GraphQL) and `gh pr` as the user, never a token of ours. Without
- * `gh`, or without a sign-in, the answer names the problem and the window says
- * what to do ("Set up the GitHub CLI…").
+ * GitHub for a Code session that works in a folder on this computer
+ * (desktop bundle 2.31226.1): the Import GitHub issue list, an imported
+ * issue's text, a pull request's state and checks, and the branch row's
+ * changes to it (merge, auto-merge, ready for review, back to draft; live
+ * claude.ai bundle, 2026-10-12). The original asks GitHub through the
+ * machine's own GitHub CLI sign-in; so does this, with `gh api` (REST and
+ * GraphQL) and `gh pr` as the user, never a token of ours. Without `gh`, or
+ * without a sign-in, the answer names the problem and the window says what
+ * to do ("Set up the GitHub CLI…").
  *
- * Arguments go to `gh` as an array (no shell), and the repository is checked as
- * "owner/name" before it becomes part of a path.
+ * Arguments go to `gh` as an array (no shell), and the repository is checked
+ * as "owner/name" before it becomes part of a path.
  */
 import { execFile } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
+import { z } from "zod";
 import { validRepositoryName } from "../../shared/github-parse";
 import {
   type GitHubIssue,
@@ -275,10 +278,11 @@ export async function getIssue(
 }
 
 /**
- * One GraphQL read gives what the branch row shows: the lifecycle, the review
- * decision, conflicts and GitHub's merge state, auto-merge and the merge queue,
- * the head commit's checks, and what a merge from here may do (the account's
- * access, the methods the repository allows).
+ * One GraphQL read gives what the branch row shows (live claude.ai bundle,
+ * 2026-10-12): the lifecycle, the review decision, conflicts and GitHub's
+ * merge state, auto-merge and the merge queue, the head commit's checks,
+ * and what a merge from here may do (the account's access, the methods the
+ * repository allows).
  */
 export const pullRequestQuery = `query($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
@@ -289,7 +293,8 @@ export const pullRequestQuery = `query($owner: String!, $name: String!, $number:
     rebaseMergeAllowed
     viewerDefaultMergeMethod
     pullRequest(number: $number) {
-      number url title body state isDraft merged viewerDidAuthor
+      number url title body state isDraft merged viewerDidAuthor createdAt
+      headRepository { nameWithOwner }
       mergeable mergeStateStatus reviewDecision
       isInMergeQueue isMergeQueueEnabled
       additions deletions baseRefName headRefName headRefOid
@@ -404,6 +409,7 @@ export function pullRequestFromGraphQL(
     .sort((a, b) => b - a)[0];
   const additions = lineCount(pull.additions);
   const deletions = lineCount(pull.deletions);
+  const createdAt = typeof pull.createdAt === "string" ? Date.parse(pull.createdAt) : NaN;
   return {
     number: pull.number,
     url: pull.url,
@@ -415,6 +421,10 @@ export function pullRequestFromGraphQL(
     ...(counts ? { checkCounts: counts } : {}),
     baseRef: typeof pull.baseRefName === "string" ? pull.baseRefName : "",
     headRef: typeof pull.headRefName === "string" ? pull.headRefName : "",
+    ...(typeof pull.headRepository?.nameWithOwner === "string"
+      ? { headRepository: pull.headRepository.nameWithOwner }
+      : {}),
+    ...(Number.isFinite(createdAt) ? { createdAt } : {}),
     ...(headSha ? { headSha } : {}),
     ...(review ? { review } : {}),
     conflicting: pull.mergeable === "CONFLICTING" || mergeState === "dirty",
@@ -476,6 +486,240 @@ export async function getPullRequest(
   } catch {
     return { pullRequest: null, problem: "unavailable" };
   }
+}
+
+const prCheckHead = z.object({
+  state: z.enum(["open", "closed"]),
+  merged: z.boolean().optional(),
+  mergeable: z.boolean().nullish(),
+  mergeable_state: z.string().optional(),
+  auto_merge: z.unknown(),
+  base: z.object({ ref: z.string() }).optional(),
+  head: z.object({
+    sha: z.string().regex(/^[0-9a-f]{40}$/i),
+    repo: z.object({ full_name: z.string() }).nullish(),
+  }),
+});
+const prCheckRuns = z.array(
+  z.object({
+    check_runs: z.array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        status: z.string(),
+        conclusion: z.string().nullish(),
+        details_url: z.string().nullish(),
+        started_at: z.string().nullish(),
+        completed_at: z.string().nullish(),
+        app: z.object({ slug: z.string().nullish() }).nullish(),
+        check_suite: z.object({ id: z.number() }).nullish(),
+      }),
+    ),
+  }),
+);
+const prCommitStatuses = z.array(
+  z.object({
+    statuses: z.array(
+      z.object({
+        context: z.string(),
+        state: z.string(),
+        target_url: z.string().nullish(),
+      }),
+    ),
+  }),
+);
+const prWorkflowRuns = z.array(
+  z.object({
+    workflow_runs: z.array(
+      z.object({
+        check_suite_id: z.number().nullish(),
+        workflow_id: z.number().nullish(),
+        event: z.string().nullish(),
+        name: z.string().nullish(),
+        head_repository: z.object({ full_name: z.string() }).nullish(),
+      }),
+    ),
+  }),
+);
+
+type PrChecksFailure = { success: false; error: string; transient?: boolean };
+
+async function readPrCheckData<S extends z.ZodType>(
+  run: GhRunner,
+  endpoint: string,
+  schema: S,
+  fields?: string[],
+): Promise<PrChecksFailure | { success: true; data: z.infer<S> }> {
+  const reply = await run([
+    "api",
+    "--hostname",
+    "github.com",
+    "--method",
+    "GET",
+    ...(fields
+      ? ["--paginate", "--slurp", "-f", "per_page=100", ...fields]
+      : []),
+    endpoint,
+  ]);
+  if (reply.code !== 0) {
+    const problem = problemOf(reply);
+    const error =
+      problem === "cli-missing"
+        ? "gh CLI not found in PATH"
+        : problem === "cli-signed-out"
+          ? "gh is not authenticated. Run gh auth login."
+          : reply.stderr.trim() || "Could not fetch PR checks.";
+    return {
+      success: false,
+      error,
+      transient:
+        problem === "network" ||
+        problem === "rate-limited" ||
+        /HTTP 5\d\d/.test(error),
+    };
+  }
+  try {
+    const value: unknown = JSON.parse(reply.stdout);
+    const parsed = schema.safeParse(value);
+    if (parsed.success) return { success: true, data: parsed.data };
+  } catch {
+    return { success: false, error: "Could not parse PR checks." };
+  }
+  return { success: false, error: "Could not parse PR checks." };
+}
+
+const checkRunBuckets = new Map([
+  ["SUCCESS", "pass"],
+  ["SKIPPED", "skipping"],
+  ["NEUTRAL", "skipping"],
+  ["CANCELLED", "cancel"],
+  ["FAILURE", "fail"],
+  ["TIMED_OUT", "fail"],
+  ["ACTION_REQUIRED", "fail"],
+  ["STARTUP_FAILURE", "fail"],
+]);
+
+export async function readPullRequestChecks(
+  repository: string,
+  number: number,
+  run: GhRunner = runGh,
+) {
+  if (!Number.isSafeInteger(number) || number < 1)
+    return {
+      success: false,
+      error: "Invalid PR number.",
+    } satisfies PrChecksFailure;
+  if (!validRepositoryName(repository))
+    return {
+      success: false,
+      error: `Invalid repo slug "${repository}"`,
+    } satisfies PrChecksFailure;
+  const repo = `repos/${repository}`;
+  const pull = await readPrCheckData(
+    run,
+    `${repo}/pulls/${number}`,
+    prCheckHead,
+  );
+  if (!pull.success) return pull;
+  const { head, base, merged, state, mergeable, mergeable_state, auto_merge } =
+    pull.data;
+  const commit = `${repo}/commits/${head.sha}`;
+  const [runs, statuses] = await Promise.all([
+    readPrCheckData(run, `${commit}/check-runs`, prCheckRuns, []),
+    readPrCheckData(run, `${commit}/status`, prCommitStatuses, []),
+  ]);
+  if (!runs.success) return runs;
+  if (!statuses.success) return statuses;
+  const checkRuns = runs.data.flatMap((page) => page.check_runs);
+  const workflows = new Map<number, { identity: string; name?: string }>();
+  if (checkRuns.some((run) => run.app?.slug === "github-actions")) {
+    const result = await readPrCheckData(
+      run,
+      `${repo}/actions/runs`,
+      prWorkflowRuns,
+      ["-f", `head_sha=${head.sha}`],
+    );
+    if (result.success) {
+      const sources = new Set([
+        repository.toLowerCase(),
+        head.repo?.full_name.toLowerCase(),
+      ]);
+      for (const page of result.data) {
+        for (const workflow of page.workflow_runs) {
+          const source = workflow.head_repository?.full_name.toLowerCase();
+          if (
+            workflow.check_suite_id != null &&
+            source &&
+            sources.has(source)
+          ) {
+            workflows.set(workflow.check_suite_id, {
+              identity:
+                workflow.workflow_id == null
+                  ? String(workflow.check_suite_id)
+                  : `${workflow.workflow_id}\0${workflow.event ?? ""}`,
+              name: workflow.name ?? undefined,
+            });
+          }
+        }
+      }
+    }
+  }
+  const latest = new Map<string, (typeof checkRuns)[number]>();
+  for (const check of checkRuns) {
+    const suite = check.check_suite?.id;
+    const workflow = suite !== undefined ? workflows.get(suite) : undefined;
+    if (check.app?.slug === "github-actions" && !workflow) continue;
+    const key = `${check.app?.slug ?? ""}\0${workflow?.identity ?? suite ?? ""}\0${check.name}`;
+    if ((latest.get(key)?.id ?? -1) < check.id) latest.set(key, check);
+  }
+  return {
+    success: true as const,
+    headSha: head.sha,
+    baseRef: base?.ref,
+    prState: merged ? "MERGED" : state.toUpperCase(),
+    mergeable:
+      mergeable == null ? undefined : mergeable ? "MERGEABLE" : "CONFLICTING",
+    mergeStateStatus: mergeable_state?.toUpperCase(),
+    autoMergeEnabled: auto_merge != null,
+    checks: [
+      ...Array.from(latest.values(), (check) => {
+        const status = check.status.toUpperCase();
+        const conclusion = check.conclusion?.toUpperCase();
+        return {
+          name: check.name,
+          state: conclusion || status,
+          bucket:
+            status === "COMPLETED"
+              ? (checkRunBuckets.get(conclusion ?? "") ?? "pending")
+              : "pending",
+          url: check.details_url ?? undefined,
+          checkRunId: check.id,
+          startedAt: check.started_at ?? undefined,
+          completedAt: check.completed_at ?? undefined,
+          appSlug: check.app?.slug ?? undefined,
+          workflowName: check.check_suite
+            ? workflows.get(check.check_suite.id)?.name
+            : undefined,
+        };
+      }),
+      ...statuses.data.flatMap((page) =>
+        page.statuses.map((check) => {
+          const state = check.state.toUpperCase();
+          return {
+            name: check.context,
+            state,
+            bucket:
+              state === "SUCCESS"
+                ? "pass"
+                : state === "FAILURE" || state === "ERROR"
+                  ? "fail"
+                  : "pending",
+            url: check.target_url ?? undefined,
+          };
+        }),
+      ),
+    ],
+  };
 }
 
 export interface PullRequestActionInput {
@@ -551,12 +795,22 @@ export async function pullRequestForBranch(
   repository: string,
   branch: string,
   run: GhRunner = runGh,
+  state: "open" | "all" = "open",
 ): Promise<GitHubPullRequest | null> {
+  return (await readGitHubPullRequestForBranch(repository, branch, run, state)).pullRequest;
+}
+
+export async function readGitHubPullRequestForBranch(
+  repository: string,
+  branch: string,
+  run: GhRunner = runGh,
+  state: "open" | "all" = "open",
+): Promise<GitHubPullRequestResult> {
   if (
     !validRepositoryName(repository) ||
     !/^[A-Za-z0-9_][A-Za-z0-9._/-]{0,199}$/.test(branch)
   )
-    return null;
+    return { pullRequest: null };
   const list = await run([
     "pr",
     "list",
@@ -565,19 +819,22 @@ export async function pullRequestForBranch(
     "--head",
     branch,
     "--state",
-    "open",
+    state,
     "--json",
     "number",
     "--limit",
     "1",
   ]);
-  if (list.code !== 0) return null;
+  if (list.code !== 0) {
+    const problem = problemOf(list);
+    return problem === "not-found" ? { pullRequest: null } : { pullRequest: null, problem };
+  }
   let number: unknown;
   try {
     number = JSON.parse(list.stdout)?.[0]?.number;
   } catch {
-    return null;
+    return { pullRequest: null, problem: "unavailable" };
   }
-  if (typeof number !== "number") return null;
-  return (await getPullRequest(repository, number, run)).pullRequest;
+  if (typeof number !== "number") return { pullRequest: null };
+  return getPullRequest(repository, number, run);
 }

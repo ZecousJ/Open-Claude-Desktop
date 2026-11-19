@@ -33,7 +33,7 @@ export function squirrelWindowsExecutable(execPath: string) {
   return path.win32.resolve(path.win32.dirname(execPath), "..", "Update.exe");
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, F$r / s1r).
 export class NativeAppUpdater {
   private current: AppUpdateStatus;
   private pending?: { version: string; stagedAt: number; attempts: number };

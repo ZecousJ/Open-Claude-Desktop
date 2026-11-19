@@ -4,7 +4,7 @@ import { act, createElement, useRef, useState, type ReactNode } from "react";
 import { parseHTML } from "linkedom";
 import type { Conversation } from "../../shared/types";
 import { hostFor } from "../../shared/host";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { openArtifact, viewerProps } from "../../src/app/ArtifactHost";
 import { ShellMenuHost } from "../../src/app/ShellMenuHost";

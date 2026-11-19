@@ -97,11 +97,9 @@
   line-height: 17px;
   color: var(--text-muted, #898781);
 }
-/*
- * Live Yours: the section count is an 18px round counter (11/17/500 secondary
- * on white 5%); rows from a publisher read "from Anthropic · …" with the dot
- * padded 8px.
- */
+/* Live Yours (claude.ai, 2026-10-19): the section count is an 18px round
+ * counter (11/17/500 secondary on white 5%); rows from a publisher read
+ * "from Anthropic · …" with the dot padded 8px. */
 .customize-yours .customize-section > h3 > .customize-section-count {
   display: inline-flex;
   align-items: center;
@@ -152,7 +150,7 @@
   }
 }
 
-/* Yours filtered-empty recovery. */
+/* c27f32a39-DlngGgoC:1188–1217: Yours filtered-empty recovery. */
 .customize-filter-empty {
   display: flex;
   flex-direction: column;

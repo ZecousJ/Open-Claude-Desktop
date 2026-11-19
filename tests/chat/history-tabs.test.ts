@@ -1,6 +1,6 @@
 /**
- * The Chats and tasks page's tab-style filter: Active, Shared and Archived;
- * Code has no Shared tab.
+ * The Chats and tasks page's tab-style filter (live claude.ai bundle,
+ * 2026-10-14, c03be4f3b): Active, Shared and Archived; Code has no Shared tab.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

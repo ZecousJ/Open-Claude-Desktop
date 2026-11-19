@@ -5,10 +5,11 @@ import { usePresence } from "../ui/usePresence";
 const chipExitMs = 125;
 
 /**
- * A toolbar indicator chip (Research, knowledge bases) arriving and leaving the
- * way the original's do: after 50ms it fades in over 75ms, and when its mode is
- * turned off it stays for the same fade out. `children` is the chip, or nothing
- * while its mode is off; the last chip shown is kept for the exit.
+ * A toolbar indicator chip (Research, knowledge bases) arriving and leaving
+ * the way the original's do (desktop bundle 2.31226.1): after 50ms it fades
+ * in over 75ms, and when its mode is turned off it stays for the same fade
+ * out. `children` is the chip, or nothing while its mode is off; the last
+ * chip shown is kept for the exit.
  */
 export function ChipPresence({ children }: { children: ReactNode }) {
   const shown = Boolean(children);

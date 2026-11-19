@@ -1,5 +1,5 @@
 import type { Conversation } from "../../shared/types";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { currentLocale, t } from "../i18n";
 import { codePlace, type CodeListView } from "./code-list-view";
 import { shownFolder } from "../../shared/session-folder";
@@ -66,7 +66,7 @@ export function CodeRowMetadata({
         style={{ display: "flex", alignItems: "center", gap: 4, flex: "none" }}
       >
         {"branch" in line && line.branch && (
-          <AppIcon name="GitBranch" size={12} />
+          <Anthropicon name="GitBranch" size={12} />
         )}
         <bdi style={{ flex: "none" }}>{line.parts[0]}</bdi>
       </span>
@@ -79,9 +79,10 @@ export function CodeRowMetadata({
   );
 }
 /**
- * The glyph that ends a Code row: where the session runs. Cloud and self-hosted
- * runners show Cloud, SSH CommandLine, Remote Control Laptop (LaptopSlash while
- * the computer is offline); a session on this computer shows none (cL drops
+ * The glyph that ends a Code row: where the session runs (live claude.ai,
+ * 2026-10-21, shared-20: Dy and He). Cloud and self-hosted runners show
+ * Cloud, SSH CommandLine, Remote Control Laptop (LaptopSlash while the
+ * computer is offline); a session on this computer shows none (cL drops
  * "local"), which is why the desktop's own sessions end bare.
  */
 export function codeEnvironmentGlyph(c: Conversation) {
@@ -105,7 +106,7 @@ export function CodeEnvironmentMark({
   if (!name) return null;
   return (
     <span className="row-status code-row-environment" aria-hidden="true">
-      <AppIcon name={name} size={16} data-env-glyph={codePlace(c).kind} />
+      <Anthropicon name={name} size={16} data-env-glyph={codePlace(c).kind} />
     </span>
   );
 }

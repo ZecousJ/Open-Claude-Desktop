@@ -22,12 +22,10 @@ function dataFeature(entries: PluginEntry[]) {
       entry.marketplace === "knowledge-work-plugins",
   );
 }
-/**
- * Source c6a2a31c4:8434–8580 renders authoritative home blocks and category
+/** Source c6a2a31c4:8434–8580 renders authoritative home blocks and category
  * links. The blocks (featured, New, Most installed) come from the Claudex
- * directory's curation; without any, the marketplaces' plugins show as
- * Available, never as an invented New or Popular list.
- */
+ * directory's curation (plugin-curation.ts); without any, the marketplaces'
+ * plugins show as Available, never as an invented New or Popular list. */
 export function PluginDiscover({
   entries,
   noun = "plugins",

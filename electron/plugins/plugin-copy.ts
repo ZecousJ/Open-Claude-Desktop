@@ -12,11 +12,12 @@ import {
 import { copyFolderFiles } from "../skills/skill-folder";
 
 /**
- * Duplicate plugin's files. The agent runtime reads a personal marketplace at
- * ~/.agents/plugins/marketplace.json whose plugins sit in ~/plugins/<name> (its
- * plugin-creator's convention: marketplace "personal", entries with a local
- * source, an AVAILABLE policy and a category), so the copy goes there and the
- * runtime lists and installs it like any other.
+ * Duplicate plugin's files (live claude.ai bundle, 2026-10-12: "The copy is
+ * added to your personal plugins."). The agent runtime reads a personal
+ * marketplace at ~/.agents/plugins/marketplace.json whose plugins sit in
+ * ~/plugins/<name> (its plugin-creator's convention: marketplace "personal",
+ * entries with a local source, an AVAILABLE policy and a category), so the
+ * copy goes there and the runtime lists and installs it like any other.
  */
 
 /** Where the personal marketplace keeps its file and its plugins. */
@@ -231,11 +232,12 @@ export function duplicatePluginFiles(
 }
 
 /**
- * Rename plugin's files. The plugin's entry in the personal marketplace and its
- * manifests take the new name (and display name, when given); a folder at
- * ~/plugins/<old name> moves to ~/plugins/<new name>, as Duplicate would have
- * placed it. A folder kept elsewhere stays where it is. Answers how to put
- * everything back (used when reinstalling under the new id fails).
+ * Rename plugin's files (live claude.ai bundle, 2026-10-12: Rename for the
+ * person's own plugins). The plugin's entry in the personal marketplace and
+ * its manifests take the new name (and display name, when given); a folder
+ * at ~/plugins/<old name> moves to ~/plugins/<new name>, as Duplicate would
+ * have placed it. A folder kept elsewhere stays where it is. Answers how to
+ * put everything back (used when reinstalling under the new id fails).
  */
 export function renamePluginFiles(
   plugin: { name: string; folder: string },

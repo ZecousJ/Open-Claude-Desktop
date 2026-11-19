@@ -26,5 +26,5 @@ test("a code block's copy tooltip and Open button are in the chosen language", (
     }),
   );
   assert.match(html, /role="tooltip"[^>]*>复制<\/span>/);
-  assert.match(html, /<\/(span|svg)>打开<\/button>/);
+  assert.match(html, /<\/span>打开<\/button>/);
 });

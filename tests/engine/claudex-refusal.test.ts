@@ -946,3 +946,11 @@ test("a changed password signs the device out with its own reason", () => {
   ])
     assert.equal(refreshRefusalReason(code), "session-expired");
 });
+
+test("only explicit safeguard codes from eligible responses become model refusals", () => {
+  const error = { code: "content_policy_violation", message: "Fixture upstream text" };
+  assert.equal(describeSub2ApiRefusal(400, JSON.stringify({ error }))?.code, "content_policy_violation");
+  assert.equal(describeStreamRefusal(error)?.code, "content_policy_violation");
+  assert.equal(describeSub2ApiRefusal(500, JSON.stringify({ error })), undefined);
+  assert.equal(describeSub2ApiRefusal(400, JSON.stringify({ error: { message: "A safeguard was mentioned" } })), undefined);
+});

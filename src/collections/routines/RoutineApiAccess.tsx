@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { t } from "../../i18n";
 import { routineFirePath } from "../../../shared/routine-triggers";
 import { RoutineApiTokenDialog } from "./RoutineApiTokenDialog";
 
 /**
- * A saved task's API trigger: the fire address with Active or Inactive and its
- * copy button; the token's last characters (or "Generate a token to activate
- * API access.") with Generate token or Regenerate and, while there is one,
- * Delete token; then the example request, folded, with its copy button. A new
- * token is shown once ("Token generated").
+ * A saved task's API trigger (live claude.ai bundle, 2026-10-21, c29d48294
+ * Pa): the fire address with Active or Inactive and its copy button; the
+ * token's last characters (or "Generate a token to activate API access.")
+ * with Generate token or Regenerate and, while there is one, Delete token;
+ * then the example request, folded, with its copy button. A new token is
+ * shown once ("Token generated").
  */
 export function RoutineApiAccess({
   triggerId,
@@ -74,7 +75,7 @@ export function RoutineApiAccess({
           title={copied === "url" ? t("Copied") : t("Copy")}
           onClick={() => copy("url")}
         >
-          <AppIcon name={copied === "url" ? "Check" : "Copy"} size={16} />
+          <Anthropicon name={copied === "url" ? "Check" : "Copy"} size={16} />
         </button>
       </div>
       <span className="routine-api-label">{t("Token")}</span>
@@ -105,7 +106,7 @@ export function RoutineApiAccess({
             aria-busy={busy === "delete" || undefined}
             onClick={() => void act("delete")}
           >
-            <AppIcon name="Trash" size={16} />
+            <Anthropicon name="Trash" size={16} />
           </button>
         )}
       </div>
@@ -128,7 +129,7 @@ export function RoutineApiAccess({
           aria-expanded={example}
           onClick={() => setExample(!example)}
         >
-          <AppIcon
+          <Anthropicon
             name="CaretRight"
             size={16}
             style={{ transform: example ? "rotate(90deg)" : undefined }}
@@ -142,7 +143,7 @@ export function RoutineApiAccess({
           title={copied === "curl" ? t("Copied") : t("Copy curl")}
           onClick={() => copy("curl")}
         >
-          <AppIcon name={copied === "curl" ? "Check" : "Copy"} size={16} />
+          <Anthropicon name={copied === "curl" ? "Check" : "Copy"} size={16} />
         </button>
       </div>
       {example && (

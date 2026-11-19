@@ -17,9 +17,9 @@ const SettingKey = "claudex_voice"
 // ReasonInvalid is the 400 reason of a rejected settings document.
 const ReasonInvalid = "CLAUDEX_VOICE_INVALID"
 
-// DefaultUpstreamURL is the realtime transcription service an unset
-// setting uses: none, until the administrator enters one.
-const DefaultUpstreamURL = ""
+// DefaultUpstreamURL is the realtime transcription service the owner chose
+// (owner decision 18).
+const DefaultUpstreamURL = "wss://hiwonder.cc/v1/audio/realtime/transcriptions"
 
 // Audio format of the realtime endpoint: 16 kHz mono signed 16-bit
 // little-endian PCM, so one second of audio is 32000 bytes. Sessions are
@@ -99,11 +99,8 @@ func normalize(s *Settings) {
 
 func validate(s *Settings) error {
 	t := &s.Transcription
-	// No service yet is allowed while dictation is off.
-	if t.UpstreamURL != "" || t.Enabled {
-		if err := validateUpstreamURL(t.UpstreamURL); err != nil {
-			return err
-		}
+	if err := validateUpstreamURL(t.UpstreamURL); err != nil {
+		return err
 	}
 	if t.MaxSessionSeconds < MinMaxSessionSeconds || t.MaxSessionSeconds > MaxMaxSessionSeconds {
 		return invalid("transcription.max_session_seconds", "range",

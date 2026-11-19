@@ -6,16 +6,14 @@ import type {
 } from "../../../shared/settings-desktop-api";
 
 /**
- * The words of Settings → System → Storage and its cleanups, one English
- * sentence per count form so each translates whole.
+ * The words of Settings → System → Storage and its cleanups (live
+ * claude.ai bundle, 2026-10-12), one English sentence per count form so
+ * each translates whole.
  */
 
 const units = ["byte", "kilobyte", "megabyte", "gigabyte"] as const;
 
-/**
- * A size as the storage dialog writes it ("1.2 GB", "0 bytes"): decimal units,
- * one decimal.
- */
+/** A size as the storage dialog writes it ("1.2 GB", "0 bytes"): decimal units, one decimal (Ag in the live bundle). */
 export function storageSize(bytes: number, locale = currentLocale()): string {
   const step = 1000;
   const index =

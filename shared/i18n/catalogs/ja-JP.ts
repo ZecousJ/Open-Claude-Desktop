@@ -110,7 +110,7 @@ const catalog: Record<string, string> = {
   Max: "最大",
   "More models": "その他のモデル",
   "Image generation": "画像生成",
-  "Image generation model": "画像生成モデル",
+  "Automatic selection": "自動選択",
   "Select model": "モデルを選択",
   "Incognito chats stay out of your history and search.":
     "シークレットチャットは履歴や検索に表示されません。",
@@ -1329,16 +1329,38 @@ const catalog: Record<string, string> = {
   "Review yesterday's commits and flag anything concerning.":
     "昨日のコミットをレビューし、気になる点があれば指摘します。",
   "System health check": "システムヘルスチェック",
+  "Monitor infrastructure and services for errors, outages, and performance issues.":
+    "インフラとサービスのエラー、障害、パフォーマンスの問題を監視します。",
   "Issue triage": "Issueのトリアージ",
+  "Review and categorize incoming issues, bugs, and feature requests.":
+    "受信したIssue、バグ、機能リクエストを確認して分類します。",
   "PR review digest": "PRレビューダイジェスト",
+  "Overview of open PRs, review status, and what needs attention.":
+    "オープンなPRの概要、レビュー状況、対応が必要な項目をまとめます。",
   "Dependency update check": "依存関係の更新チェック",
+  "Scan for outdated packages, security patches, and breaking changes.":
+    "古いパッケージ、セキュリティパッチ、互換性を損なう変更をスキャンします。",
   "Flaky test tracker": "不安定なテストの追跡",
+  "Find tests that pass and fail intermittently across recent CI runs.":
+    "最近のCI実行で、成功と失敗が不定期に入れ替わるテストを見つけます。",
   "Daily briefing": "毎日のブリーフィング",
+  "What needs your attention today across calendar, email, and messages.":
+    "カレンダー、メール、メッセージから、今日対応が必要なことをまとめます。",
   "Inbox triage": "受信トレイのトリアージ",
+  "Categorize your inbox and draft replies to anything urgent.":
+    "受信トレイを分類し、緊急のものには返信の下書きを作成します。",
   "Meeting prep": "会議の準備",
+  "A short brief before each meeting on your calendar, covering attendees, context, and agenda.":
+    "カレンダー上の各会議の前に、参加者、背景、議題をまとめた短いブリーフを作成します。",
   "Weekly review": "週次レビュー",
+  "A Friday summary of what happened this week.":
+    "金曜日に、その週に起きたことをまとめます。",
   "Content ideas": "コンテンツのアイデア",
+  "Draft a few post ideas each week from the latest news in your industry.":
+    "業界の最新ニュースから、毎週いくつか投稿のアイデアを下書きします。",
   "Monitor a topic": "トピックを監視",
+  "Watch for news or mentions of a topic, competitor, or keyword.":
+    "トピック、競合他社、キーワードに関するニュースや言及を監視します。",
   Frequency: "頻度",
   "Add a model connection in Settings first.":
     "先に設定でモデル接続を追加してください。",
@@ -1450,6 +1472,7 @@ const catalog: Record<string, string> = {
   Write: "書き込み",
   "Thought for {n}s": "{n}秒間思考しました",
   "Waiting for your response": "返答を待っています",
+  "ran a command": "コマンドを実行しました",
   "ran {n} commands": "{n}個のコマンドを実行しました",
   "read a file": "ファイルを読み取りました",
   "read {n} files": "{n}個のファイルを読み取りました",
@@ -1459,6 +1482,7 @@ const catalog: Record<string, string> = {
   "created {n} files": "{n}個のファイルを作成しました",
   "edited a file": "ファイルを編集しました",
   "edited {n} files": "{n}個のファイルを編集しました",
+  "used a tool": "ツールを使用しました",
   "used {n} tools": "{n}個のツールを使用しました",
   "searched the web": "ウェブを検索しました",
   "shared files": "ファイルを共有しました",
@@ -1612,6 +1636,7 @@ const catalog: Record<string, string> = {
   "Only you can open this link": "このリンクを開けるのは自分だけです",
   Copied: "コピーしました",
   "Local workspace": "ローカルワークスペース",
+  "Starting up…": "起動中…",
   "Started an agent": "エージェントを開始しました",
   "Messaged an agent": "エージェントにメッセージを送りました",
   "Resumed an agent": "エージェントを再開しました",
@@ -2006,6 +2031,8 @@ const catalog: Record<string, string> = {
   "memory settings": "メモリ設定",
   "Claudex hasn't written any memory from your chats yet. Your reflection shows here once it has.":
     "Claudexはまだチャットからメモリを作成していません。作成されると、振り返りがここに表示されます。",
+  "For this reflection to work, you'll need to enable memory in":
+    "この振り返りを作成するには、次でメモリを有効にする必要があります：",
   "Based on your conversations in Claudex chat.":
     "Claudexチャットでの会話に基づいています。",
   "Core skills library for Claudex Code: TDD, debugging, collaboration patterns, and proven techniques.":
@@ -2957,7 +2984,26 @@ const catalog: Record<string, string> = {
     "OpenAI 互換クライアントはこのアドレスを、Anthropic クライアントは /v1 を除いたアドレスを使います。",
   Rate: "倍率",
   "Click a model to copy its ID": "モデルをクリックすると ID をコピーします",
+  "ZecousAI users have all moved to the new Claudex":
+    "ZecousAI のユーザーは新しい Claudex にすべて移行しました",
+  "Claudex is the fully upgraded ZecousAI platform, built to give you fuller and steadier service. Since September 4, OpenAI has been degrading and rate-limiting its models, and availability has dropped, so for ZecousAI users we have decided:":
+    "Claudex は全面的にアップグレードされた ZecousAI プラットフォームで、より充実した安定したサービスを提供します。9 月 4 日以降、OpenAI でモデルの性能低下やレート制限が進み、可用性が下がったため、ZecousAI のユーザーについて次のとおり決定しました：",
+  "If you had any ZecousAI subscription on September 4, or started one after September 4, the subscription time you had left from September 4 on is turned into balance in proportion to its length and added to your Claudex balance.":
+    "9 月 4 日時点で ZecousAI のサブスクリプションをお持ちだった方、または 9 月 4 日以降に開始した方は、9 月 4 日以降の残りのサブスクリプション期間を日数に応じて残高に換算し、Claudex の残高に追加します。",
+  "If you had a ZecousAI balance on September 4, that day's balance is turned into balance and added to your Claudex balance (requests from September 4 on are not charged).":
+    "9 月 4 日時点で ZecousAI の残高をお持ちだった方は、9 月 4 日の残高を換算して Claudex の残高に追加します（9 月 4 日以降のリクエストは課金されません）。",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's official 1:1, so what you can use does not change.":
+    "ZecousAI の残高は Claudex では少なく見えることがあります。Claudex は ¥1 = $1 の新しいレートでチャージし、モデルの倍率も ZecousAI の公式 1:1 より大幅に低いため、利用できる量は変わりません。",
+  "Moving adds {amount} to your Claudex balance ({balance} from your balance, {subscription} from your subscriptions).":
+    "移行すると Claudex の残高に {amount} が追加されます（残高から {balance}、サブスクリプションから {subscription}）。",
+  "Once you confirm, your ZecousAI subscription and balance are cleared and moved to Claudex. If you use the API, switch your request address and create new keys in the API tab at the top left.":
+    "移行を確定すると、ZecousAI のサブスクリプションと残高はクリアされ、Claudex に移されます。API をご利用の方は、左上の API タブでリクエスト先を切り替え、新しいキーを作成してください。",
+  "Confirm move": "移行を確定",
   "Moving…": "移行中…",
+  "The move didn't go through. Try again.":
+    "移行できませんでした。もう一度お試しください。",
+  "Moved: {amount} added to your Claudex balance.":
+    "移行しました：Claudex の残高に {amount} を追加しました。",
   "All changes": "すべての変更",
   "1 file": "1 ファイル",
   "Sync with the web": "ウェブと同期",
@@ -3812,7 +3858,7 @@ const catalog: Record<string, string> = {
   "Compare the alternatives": "代替案を比較する",
   "Set goals for the quarter": "四半期の目標を立てる",
   "Plan a hard meeting": "難しい会議の準備をする",
-  "Plan my week": "1週間の計画を立てる",
+  "Plan my week": "今週の計画を立てる",
   "Think through a choice": "選択肢をじっくり考える",
   "Plan meals and shopping": "食事の計画と買い物リスト",
   "Sketch a trip": "旅行の案を描く",
@@ -3820,6 +3866,7 @@ const catalog: Record<string, string> = {
   "Give me a puzzle": "パズルを出して",
   "Tell me something unexpected": "意外なことを教えて",
   "Debate a big question": "大きな問いで議論する",
+  "Play a word game": "言葉遊びをする",
   "Try a thought experiment": "思考実験を試す",
   "Read my draft for clarity, tone and structure, then rewrite it so it flows while keeping my voice. Here it is:\n\n":
     "私の下書きを、わかりやすさ・トーン・構成の観点で読み、私らしい文体を保ったまま、読みやすく流れるように書き直してください。下書きはこちらです:\n\n",
@@ -4233,8 +4280,47 @@ const catalog: Record<string, string> = {
   "Refresh list": "リストを更新",
   "Couldn’t load branches.": "ブランチを読み込めませんでした。",
   "No branches match": "一致するブランチはありません",
+  "Pick a task, any task": "どれでもいいのでタスクを選んでください",
+  "Tidy up and get organized": "片付けて整理する",
+  "Plan for what’s ahead": "この先の予定に備える",
+  "Turn messy data into action": "散らかったデータを行動につなげる",
   "Customize with plugins": "プラグインでカスタマイズ",
   "On {deviceName}": "{deviceName} 上",
+  "Optimize my week": "今週の予定を最適化",
+  "Help me plan and optimize my week. I have my Google Calendar open and ready for you to review and edit.\n\nFirst, review my calendar and show me a summary:\n- Total meetings\n- Busiest days\n- Where I have gaps of 2+ hours\n\nBefore proposing changes, ask me about:\n- What I’m trying to accomplish this week\n- How much focus time I need and for what\n- Any deadlines or commitments not on my calendar\n- Which types of meetings I should decline or shorten\n- Personal commitments or boundaries I want to protect\n\nThen show me your top 3-5 proposed changes with explanations:\n- Focus blocks to add\n- Meetings to decline or reschedule\n- Time conflicts to resolve\n\nStart with the highest-impact changes first. Once I approve each change, make the edits directly in my calendar one at a time.":
+    "今週の計画を立てて最適化するのを手伝ってください。Google カレンダーを開いてあるので、確認して編集してください。\n\nまず、カレンダーを確認して概要を見せてください：\n- 会議の合計数\n- 最も忙しい日\n- 2 時間以上の空きがある時間帯\n\n変更を提案する前に、次のことを聞いてください：\n- 今週何を達成したいか\n- 集中する時間がどれくらい、何のために必要か\n- カレンダーに入っていない締め切りや予定\n- 断るべき、または短くすべき会議の種類\n- 守りたい個人的な予定や境界線\n\nそのうえで、変更案の上位 3〜5 件を理由とともに見せてください：\n- 追加する集中時間のブロック\n- 断る、またはリスケジュールする会議\n- 解消すべき時間の重複\n\n効果の大きい変更から始めてください。それぞれの変更を私が承認したら、カレンダーを直接 1 件ずつ編集してください。",
+  "Organize my screenshots": "スクリーンショットを整理",
+  "Help me organize recent screenshots on my Desktop.\n\nFirst, scan my Desktop and count how many screenshots/images are there. Show me:\n- Total count\n- Date range (oldest to newest)\n\nThen, focus only on screenshots from the last 14 days. For each one:\n- Identify what it shows\n- Suggest a descriptive filename\n- Propose which folder it belongs in (or if it can be deleted)\n\nGroup similar screenshots together. Show me the plan before making any changes.\n\nAfter I approve, start by organizing just 10 files as a preview. If there are more than 10 files, check in with me before continuing with the rest.":
+    "デスクトップにある最近のスクリーンショットを整理するのを手伝ってください。\n\nまず、デスクトップをスキャンして、スクリーンショット/画像がいくつあるか数えてください。次の内容を見せてください：\n- 合計数\n- 日付の範囲（最も古いものから最新のものまで）\n\n次に、過去 14 日間のスクリーンショットだけに絞ってください。それぞれについて：\n- 何が写っているかを特定する\n- 内容がわかるファイル名を提案する\n- どのフォルダに入れるべきか（または削除してよいか）を提案する\n\n似たスクリーンショットはまとめてください。変更を加える前に計画を見せてください。\n\n承認したら、まずプレビューとして 10 ファイルだけ整理してください。10 ファイルより多い場合は、残りを続ける前に確認してください。",
+  "Find insights in files": "ファイルからインサイトを見つける",
+  "Help me find patterns and insights across [my voice memos / meeting transcripts / documents / journal entries / specify folder]. I have messy, unstructured files and want to understand what themes are emerging.\n\nFirst, scan the folder and show me a summary:\n- Total files\n- Date range (oldest to newest)\n- Types of content\n\nBefore analyzing, ask me:\n- What I’m hoping to discover (recurring themes, contradictions, evolution of thinking, action items, or something else)\n- Whether certain files or time periods should be prioritized\n- What format would be most useful for the final analysis\n\nIf there are more than 20 files, start by analyzing just the 10 most recent files.\n\nShow me the top 3-5 patterns you found with 2-3 specific examples for each pattern. Once I confirm you’re on the right track, analyze the remaining files.":
+    "[ボイスメモ / 会議の文字起こし / ドキュメント / 日記 / フォルダを指定]から、パターンやインサイトを見つけるのを手伝ってください。雑然とした構造のないファイルがあり、どんなテーマが浮かび上がっているのかを知りたいです。\n\nまず、フォルダをスキャンして概要を見せてください：\n- ファイルの合計数\n- 日付の範囲（最も古いものから最新のものまで）\n- コンテンツの種類\n\n分析する前に、次のことを聞いてください：\n- 何を見つけたいか（繰り返し出てくるテーマ、矛盾、考えの変化、アクションアイテム、その他）\n- 優先すべきファイルや期間があるか\n- 最終的な分析にはどの形式が最も役立つか\n\nファイルが 20 個を超える場合は、まず最新の 10 個だけを分析してください。\n\n見つかった主なパターンを 3〜5 個、それぞれ具体例を 2〜3 個添えて見せてください。方向性が合っていると私が確認したら、残りのファイルを分析してください。",
+  "Clean up my Downloads folder": "ダウンロードフォルダを片付ける",
+  "Help me organize my Downloads folder.\n\nFirst, scan and show me a summary:\n- Total files and total size\n- Files older than 30 days\n- Largest files taking up space\n\nBefore organizing, ask me:\n- What categories or folder structure would be most useful\n- Whether I want to delete or archive old files\n- If there are specific file types I want to prioritize (documents, images, installers, etc.)\n\nThen focus only on files older than 30 days first. Show me a proposed plan for these old files:\n- Categories to create\n- Files to delete (installers, duplicates, temp files)\n- Files to keep with where they should go\n\nAfter I approve, organize the first 15 old files as a preview. If there are more files, check in before continuing.":
+    "ダウンロードフォルダを整理するのを手伝ってください。\n\nまず、スキャンして概要を見せてください：\n- ファイルの合計数と合計サイズ\n- 30 日より古いファイル\n- 容量を最も使っているファイル\n\n整理する前に、次のことを聞いてください：\n- どんなカテゴリやフォルダ構成が最も役立つか\n- 古いファイルを削除したいか、アーカイブしたいか\n- 優先したいファイルの種類があるか（ドキュメント、画像、インストーラなど）\n\nそのうえで、まず 30 日より古いファイルだけに絞ってください。これらの古いファイルについて整理案を見せてください：\n- 作成するカテゴリ\n- 削除するファイル（インストーラ、重複ファイル、一時ファイル）\n- 残すファイルとその置き場所\n\n承認したら、プレビューとして古いファイルの最初の 15 個を整理してください。さらにファイルがある場合は、続ける前に確認してください。",
+  "Organize photos by event/date": "写真をイベント/日付で整理",
+  "Help me organize photos on my [Desktop/Downloads/specify location].\n\nFirst, scan the folder and show me a summary:\n- Total photos\n- Date range (oldest to newest)\n- Rough size breakdown\n\nBefore organizing, ask me:\n- How I’d like them organized (by date, by event, by person)\n- Whether there are specific events or time periods I should know about\n- What folder structure would work best\n- If any photos can be deleted (duplicates, blurry ones, screenshots)\n\nFocus only on photos from the last 3 months first. Show me a proposed plan with examples from 3-4 different groups so I can show you how I’d organize them.\n\nAfter I approve, organize just 20 photos as a preview. If there are more than 20, check in before continuing with the rest.":
+    "[デスクトップ/ダウンロード/場所を指定]にある写真を整理するのを手伝ってください。\n\nまず、フォルダをスキャンして概要を見せてください：\n- 写真の合計数\n- 日付の範囲（最も古いものから最新のものまで）\n- おおよそのサイズの内訳\n\n整理する前に、次のことを聞いてください：\n- どのように整理したいか（日付ごと、イベントごと、人ごと）\n- 知っておくべき特定のイベントや期間があるか\n- どんなフォルダ構成が最適か\n- 削除してよい写真があるか（重複、ぶれた写真、スクリーンショット）\n\nまず過去 3 か月の写真だけに絞ってください。3〜4 つの異なるグループから例を挙げた整理案を見せてください。私ならどう整理するかをお伝えします。\n\n承認したら、まずプレビューとして写真を 20 枚だけ整理してください。20 枚より多い場合は、残りを続ける前に確認してください。",
+  "Help me organize and clean up my email inbox.\n\nFirst, scan my inbox and show me a summary:\n- Total unread emails\n- Emails older than 30 days\n- The main senders or types of emails\n\nBefore organizing, ask me:\n- What categories or folders I want to create\n- Which types of emails I want to archive or delete\n- Whether there are specific senders I want to prioritize or filter\n- Any email patterns I want to address (newsletters, promotions, etc.)\n\nFocus only on emails older than 30 days first — these are easiest to clean up. Show me a proposed plan:\n- Which emails to archive\n- Which to delete\n- Which need action\n\nIf there are more than 50 old emails, start with a batch of 20 so I can check your approach. Once I approve, process that batch.":
+    "メールの受信トレイを整理して片付けるのを手伝ってください。\n\nまず、受信トレイをスキャンして概要を見せてください：\n- 未読メールの合計数\n- 30 日より古いメール\n- 主な送信者やメールの種類\n\n整理する前に、次のことを聞いてください：\n- どんなカテゴリやフォルダを作りたいか\n- どの種類のメールをアーカイブまたは削除したいか\n- 優先したい、またはフィルタしたい特定の送信者がいるか\n- 対処したいメールのパターン（ニュースレター、プロモーションなど）\n\nまず 30 日より古いメールだけに絞ってください。これらが最も片付けやすいものです。整理案を見せてください：\n- アーカイブするメール\n- 削除するメール\n- 対応が必要なメール\n\n古いメールが 50 通を超える場合は、やり方を確認できるよう、まず 20 通を 1 バッチとして始めてください。承認したら、そのバッチを処理してください。",
+  "Prep for my next meeting": "次の会議の準備をする",
+  "I have a meeting with [a company] [tomorrow].\n\nBefore researching, ask me:\n- What the meeting is about\n- What I already know about them\n- What I’m trying to accomplish\n- What would be most useful to know going in\n\nThen research them and show me what you found:\n- Company overview\n- Recent news (last 3 months)\n- Key people I’ll be meeting with\n- Their LinkedIn for recent updates\n\nShow me an outline of the one-pager with the 3-5 most important points before writing the full doc. Once I approve, create the final one-pager.":
+    "[明日][ある会社]と会議があります。\n\n調べる前に、次のことを聞いてください：\n- 会議の内容\n- 相手についてすでに知っていること\n- 何を達成したいか\n- 会議に臨む前に知っておくと最も役立つこと\n\nそのうえで相手について調べ、わかったことを見せてください：\n- 会社の概要\n- 最近のニュース（過去 3 か月）\n- 会う予定の主要人物\n- 最近の動向がわかる相手の LinkedIn\n\nドキュメント全体を書く前に、最も重要なポイント 3〜5 個を含む 1 ページ資料のアウトラインを見せてください。承認したら、最終的な 1 ページ資料を作成してください。",
+  "Plan my next vacation": "次の休暇を計画する",
+  "Help me plan my next vacation.\n\nBefore researching, ask me:\n- Where I’m thinking of going (or if I’m open to suggestions)\n- When I want to travel and for how long\n- What my budget is\n- What kind of trip I’m looking for (relaxing, adventure, cultural, food-focused, etc.)\n\nThen research the top 3 destinations that fit my criteria and show me a comparison:\n- Estimated costs\n- Best time to visit\n- What makes each unique\n\nOnce I pick my top choice, research that destination in detail:\n- Check current flight prices\n- Find 3-4 accommodation options\n- Suggest a day-by-day outline\n\nShow me this proposed itinerary with estimated costs before creating the final trip plan.":
+    "次の休暇の計画を手伝ってください。\n\n調べる前に、次のことを聞いてください：\n- 行きたい場所（または提案を受け入れるか）\n- いつ、どれくらいの期間旅行したいか\n- 予算はいくらか\n- どんな旅を求めているか（リラックス、アドベンチャー、文化、グルメなど）\n\nそのうえで、条件に合う上位 3 つの目的地を調べ、比較を見せてください：\n- 費用の見積もり\n- 訪れるのに最適な時期\n- それぞれの特徴\n\n第一候補を選んだら、その目的地を詳しく調べてください：\n- 現在の航空券の価格を確認する\n- 宿泊先の候補を 3〜4 件見つける\n- 日ごとの行程の概要を提案する\n\n最終的な旅行プランを作る前に、費用の見積もりとともにこの行程案を見せてください。",
+  "Prepare for a job interview": "就職面接の準備をする",
+  "I have a job interview coming up for [role] at [company].\n\nBefore researching, ask me:\n- What the role is and what level\n- What I already know about the company\n- What I’m most nervous or uncertain about\n- If I have the job description or any interview details\n\nThen research the company and role, and show me what I found:\n- Company overview and recent news (last 6 months)\n- What this role typically involves\n- Common interview questions for this type of role\n- The interview team on LinkedIn (if you have names)\n\nShow me an outline covering these 3-5 topics before creating the full prep doc:\n- Key points about the company to mention\n- How my background connects to what they need\n- Questions I should ask them\n- 3-4 likely interview questions with suggested talking points\n\nOnce I approve, create a complete interview prep guide I can review before the interview.":
+    "[会社]の[職種]の就職面接が近づいています。\n\n調べる前に、次のことを聞いてください：\n- どんな職種で、どのレベルか\n- その会社についてすでに知っていること\n- 最も不安な点や自信がない点\n- 求人票や面接の詳細があるか\n\nそのうえで会社と職種について調べ、わかったことを見せてください：\n- 会社の概要と最近のニュース（過去 6 か月）\n- この職種の一般的な業務内容\n- この種の職種でよくある面接の質問\n- LinkedIn 上の面接担当者（名前がわかる場合）\n\n準備用ドキュメント全体を作る前に、次の 3〜5 つのトピックをカバーするアウトラインを見せてください：\n- 面接で触れるべき会社の要点\n- 私の経歴が相手のニーズにどうつながるか\n- 相手にすべき質問\n- 想定される面接の質問 3〜4 個と、話すポイントの提案\n\n承認したら、面接前に見直せる完全な面接準備ガイドを作成してください。",
+  "Catch me up on Slack": "Slack の動きに追いつく",
+  "Help me catch up on what I’ve missed in Slack.\n\nBefore reading, ask me:\n- Which channels or DMs I should focus on (or check everything)\n- How far back to look (since yesterday, last week, specific date)\n- What I’m most concerned about missing (decisions, @mentions, urgent items, project updates)\n- Whether there are specific topics or people to prioritize\n\nThen scan those channels and show me a summary:\n- Total unread messages\n- Breakdown by channel\n\nFocus on messages that @mention me, contain decisions, or are marked urgent first.\n\nShow me the top 5 most important updates with context and links to the threads. If there are more than 30 unread messages total, start with these top 5 and ask if you should summarize more.":
+    "Slack で見逃した内容に追いつくのを手伝ってください。\n\n読む前に、次のことを聞いてください：\n- どのチャンネルや DM に注目すべきか（またはすべて確認するか）\n- どこまでさかのぼるか（昨日から、先週から、特定の日付から）\n- 見逃して最も困るものは何か（決定事項、@メンション、緊急の項目、プロジェクトの更新）\n- 優先すべき特定のトピックや人がいるか\n\nそのうえでそれらのチャンネルをスキャンして概要を見せてください：\n- 未読メッセージの合計数\n- チャンネルごとの内訳\n\nまず、私への @メンション、決定事項を含むもの、緊急とされているメッセージに注目してください。\n\n最も重要な更新を 5 件、背景とスレッドへのリンクを添えて見せてください。未読メッセージが合計 30 件を超える場合は、まずこの 5 件から始めて、さらに要約するか聞いてください。",
+  "Turn voice memos into a doc": "ボイスメモをドキュメントにする",
+  "Help me turn my voice memos into an organized document. I have [voice memos / audio recordings] in [specify location] that I want transcribed and organized.\n\nFirst, scan the folder and show me:\n- How many audio files\n- Total duration\n- Date range\n\nBefore transcribing, ask me:\n- What these recordings are about\n- How I’d like them organized (chronologically, by topic, by theme)\n- Whether I want verbatim transcripts or cleaned-up summaries\n- What the final document should be (meeting notes, journal entries, ideas list, etc.)\n\nIf there are more than 5 recordings, start by transcribing just the 3 most recent ones. Show me the transcribed content and proposed organization structure.\n\nOnce I approve the approach, transcribe and organize the remaining recordings.":
+    "ボイスメモを整理されたドキュメントにまとめるのを手伝ってください。[場所を指定]に[ボイスメモ / 録音]があり、文字起こしして整理したいです。\n\nまず、フォルダをスキャンして次の内容を見せてください：\n- 音声ファイルの数\n- 合計時間\n- 日付の範囲\n\n文字起こしする前に、次のことを聞いてください：\n- これらの録音が何についてのものか\n- どのように整理したいか（時系列、話題ごと、テーマごと）\n- 逐語の文字起こしと、整えた要約のどちらがよいか\n- 最終的なドキュメントを何にするか（会議メモ、日記、アイデアリストなど）\n\n録音が 5 件を超える場合は、まず最新の 3 件だけを文字起こししてください。文字起こしした内容と整理の構成案を見せてください。\n\nその進め方を承認したら、残りの録音を文字起こしして整理してください。",
+  "Pull data into a spreadsheet": "データをスプレッドシートに取り込む",
+  "I’m on a page with [job listings / products / directory entries] I want to extract.\n\nFirst, scan the page and show me what you see:\n- How many items total\n- What fields are available (title, price, location, description, etc.)\n\nBefore extracting, ask me:\n- Which fields I want in the spreadsheet\n- If there are any I should skip\n\nThen show me a preview with the first 3-5 items extracted so I can confirm the format looks right.\n\nIf there are more than 20 items on this page, extract them in batches of 10. If there are multiple pages, just do the first page and check with you before continuing.":
+    "抽出したい[求人情報 / 商品 / ディレクトリの項目]があるページを開いています。\n\nまず、ページをスキャンして見えている内容を教えてください：\n- 項目の合計数\n- 利用できるフィールド（タイトル、価格、場所、説明など）\n\n抽出する前に、次のことを聞いてください：\n- スプレッドシートに入れたいフィールド\n- 省くべきフィールドがあるか\n\nそのうえで、最初の 3〜5 項目を抽出したプレビューを見せて、形式が正しいか確認させてください。\n\nこのページに 20 項目より多くある場合は、10 項目ずつ抽出してください。複数ページある場合は最初のページだけを処理し、続ける前に確認してください。",
   "Show empty groups": "空のグループを表示",
   "Drag or move sessions here": "ここにセッションをドラッグまたは移動",
   "“{groupName}” will be removed. Nothing is in it.":
@@ -4608,6 +4694,7 @@ const catalog: Record<string, string> = {
   "Started Claudex Code": "Claudex Code を起動しました",
   "Start Claudex Code": "Claudex Code を起動",
   "In progress": "進行中",
+  "Starting session…": "セッションを開始しています…",
   "Unable to connect to repository": "リポジトリに接続できません",
   "Claudex couldn’t reach GitHub to fetch your repository. Try again in a moment.":
     "Claudex が GitHub に接続できず、リポジトリを取得できませんでした。しばらくしてからもう一度お試しください。",
@@ -4888,8 +4975,8 @@ const catalog: Record<string, string> = {
     "フォルダはプロジェクトのナレッジに追加できません。",
   "{name} can't be added: project files can be text files or PDFs.":
     "{name} は追加できません。プロジェクトのファイルはテキストファイルか PDF のみです。",
-  "{name} is too large. Project files can be up to 10 MB.":
-    "{name} は大きすぎます。プロジェクトのファイルは 10 MB までです。",
+  "{name} is too large. Project files can be up to {limit} MB.":
+    "{name} は大きすぎます。プロジェクトのファイルは {limit} MB までです。",
   "This project no longer exists.": "このプロジェクトはもう存在しません。",
   "Trust this workspace?": "このワークスペースを信頼しますか？",
   "Codex may read, write, or execute files in this folder. Only proceed if you trust this workspace.":
@@ -5261,6 +5348,8 @@ const catalog: Record<string, string> = {
   "When is your birthday?": "誕生日はいつですか？",
   "We’ll use this to verify your account": "アカウントの確認に使用します",
   "Enter your birthdate": "生年月日を入力",
+  "I agree to ZecousAI’s {terms} and {aup}.":
+    "ZecousAI の{terms}および{aup}に同意します。",
   "Terms of Service": "利用規約",
   "Acceptable Use Policy": "利用ポリシー",
   "Enter your name to continue": "続行するには名前を入力してください",
@@ -6956,6 +7045,44 @@ const catalog: Record<string, string> = {
     "次の機能を持つインタラクティブなアプリを作成して：",
   "Turn this idea into a diagram, chart, or visual: ":
     "このアイデアを図やグラフにして：",
+  "Template Creator": "テンプレート作成",
+  "Deck Checker": "スライドチェック",
+  "DCF Valuation": "DCF 評価",
+  "Earnings Analysis": "決算分析",
+  "All Finance Skills": "すべての金融スキル",
+  "Company Profile": "企業概要",
+  "Pitch Deck": "ピッチ資料",
+  "Initiating Coverage": "新規カバレッジ",
+  "Competitive Analysis": "競合分析",
+  "3-Statement Model": "財務三表モデル",
+  "Comps Analysis": "類似企業分析",
+  "Datapack Builder": "データパック作成",
+  "Enable skill to continue": "続行するにはスキルを有効化",
+  "The skill “{skillName}” needs to be enabled to use this prompt. Enable it now?":
+    "このプロンプトには「{skillName}」スキルの有効化が必要です。今すぐ有効にしますか？",
+  "Enable skill": "スキルを有効化",
+  "Create a reusable skill from our firm's template using anthropic-ppt-template-creator. Extract layouts, placeholders, and formatting standards. [attach firm_brand_template.pptx]":
+    "anthropic-ppt-template-creator を使い、当社のテンプレートから再利用可能なスキルを作成して。レイアウト、プレースホルダー、書式の基準を抽出して。[firm_brand_template.pptx を添付]",
+  "QC the attached management presentation using anthropic-fsi-deck-checker. Check for number consistency, data-narrative alignment, and formatting issues. [attach ProjectBravo_Mgmt_Presentation.pptx]":
+    "anthropic-fsi-deck-checker で添付の経営陣向けプレゼンテーションを品質チェックして。数値の整合性、データと説明の一致、書式の問題を確認して。[ProjectBravo_Mgmt_Presentation.pptx を添付]",
+  "Create a DCF model for [ServiceNow] using anthropic-fsi-dcf-model-builder. Include 5-year projections, WACC calculation, terminal value via exit multiple, and sensitivity on discount rate and growth.":
+    "anthropic-fsi-dcf-model-builder で [ServiceNow] の DCF モデルを作成して。5年間の予測、WACC 計算、イグジットマルチプルによる継続価値、割引率と成長率の感応度分析を含めて。",
+  "Create an earnings update for [CrowdStrike]'s Q3 FY2025 results using anthropic-fsi-earnings-analysis. Cover beat/miss vs. consensus, key drivers, guidance changes, and updated thesis.":
+    "anthropic-fsi-earnings-analysis で [CrowdStrike] の2025年度第3四半期の決算アップデートを作成して。市場予想との差、主な要因、業績見通しの変更、投資仮説の更新を扱って。",
+  "Create a single-slide strip profile for [Snowflake] using anthropic-fsi-strip-profile. Include business overview, key metrics, valuation multiples, stock chart, and top shareholders.":
+    "anthropic-fsi-strip-profile で [Snowflake] の1枚スライドの企業概要を作成して。事業概要、主要指標、評価倍率、株価チャート、主要株主を含めて。",
+  "Populate the attached pitch deck template with data from the Excel file using anthropic-fsi-pitch-deck. Map financials to appropriate slides and maintain formatting. [attach template.pptx and financials.xlsx]":
+    "anthropic-fsi-pitch-deck で添付のピッチ資料テンプレートに Excel のデータを入力して。財務データを適切なスライドに対応させ、書式を維持して。[template.pptx と financials.xlsx を添付]",
+  "Creating company research on [MongoDB] using anthropic-fsi-initiating-coverage. Start with Task 1 covering business model, competitive positioning, and key investment thesis points.":
+    "anthropic-fsi-initiating-coverage で [MongoDB] の企業調査を作成。事業モデル、競争上の位置づけ、主要な投資仮説を扱うタスク1から始めて。",
+  "Create a competitive landscape analysis for [Datadog] using anthropic-fsi-competitive-analysis. Include a 2x2 positioning matrix against Splunk, Dynatrace, New Relic, and Elastic, with competitive moats and strategic implications.":
+    "anthropic-fsi-competitive-analysis で [Datadog] の競争環境を分析して。Splunk、Dynatrace、New Relic、Elastic と比較する2x2ポジショニングマトリクス、競争優位性、戦略的示唆を含めて。",
+  "Build an integrated 3-statement model using anthropic-fsi-3-statements. Populate the attached template with [Salesforce]'s FY2022-2024 historicals from their 10-K and project through FY2027. [attach template.xlsx and CRM 10-K.pdf]":
+    "anthropic-fsi-3-statements で統合財務三表モデルを構築して。[Salesforce] の10-Kから2022～2024年度の実績を添付テンプレートに入力し、2027年度まで予測して。[template.xlsx と CRM 10-K.pdf を添付]",
+  "Build a comps analysis for [Shopify] using anthropic-fsi-comps-analysis. Include 10 peers with EV/Revenue, EV/EBITDA, and P/E on LTM and NTM basis, plus implied valuation ranges.":
+    "anthropic-fsi-comps-analysis で [Shopify] の類似企業分析を作成して。10社の LTM・NTM ベースの EV/売上高、EV/EBITDA、PER と、示唆される評価範囲を含めて。",
+  "Build a data pack for our IC using anthropic-fsi-datapack-builder. Standardize financials from the attached CIM including ARR growth, net retention, and rule of 40 metrics. [attach ProjectAlpha_CIM.pdf]":
+    "anthropic-fsi-datapack-builder で投資委員会向けのデータパックを作成して。添付 CIM の財務情報を標準化し、ARR 成長率、純継続率、40の法則の指標を含めて。[ProjectAlpha_CIM.pdf を添付]",
   "Get this as a document you can edit and share.":
     "編集や共有ができるドキュメントとして取得できます。",
   "Create a document": "ドキュメントを作成",
@@ -7432,11 +7559,544 @@ const catalog: Record<string, string> = {
   file: "ファイル",
   "Couldn’t fetch the file. This connector is no longer available.":
     "ファイルを取得できませんでした。このコネクタは利用できなくなりました。",
+  "Hey Claudex, could you {prompt}? Use any connector that would be helpful, and get started once you’ve gathered enough info.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Claudex、{prompt}をお願いできますか？役立つコネクターを使い、十分な情報が集まったら始めてください。\n\nよければ、一緒に見られるビジュアル、チェックリスト、対話型のものなどを作ってください。",
+  "Hey Claudex, could you help me {prompt}? Start researching right away, and use any tools you think would help. Let me know if you need any other context.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Claudex、{prompt}を手伝ってもらえますか？すぐに調査を始め、役立つツールを使ってください。他に背景情報が必要なら教えてください。\n\nよければ、一緒に見られるビジュアル、チェックリスト、対話型のものなどを作ってください。",
+  "Hi Claudex! Could you {prompt}? If you need more information from me, ask me 1-2 key questions right away. If you think I should give you more context or upload anything to help you do a better job, let me know. Use any tools you have access to—like Google Drive, web search, etc.—if they’ll help.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive. Thanks for your help!":
+    "こんにちは、Claudex！{prompt}をお願いできますか？情報が足りなければ、すぐに重要な質問を1〜2個してください。より良い結果のために背景情報やファイルのアップロードが必要なら教えてください。Googleドライブやウェブ検索など、利用できる役立つツールを使ってください。\n\nよければ、一緒に見られるビジュアル、チェックリスト、対話型のものなどを作ってください。 ご協力ありがとうございます！",
+  "Help me pick the right career for me": "自分に合う仕事を選ぶのを助ける",
+  "Choose a career path based on my astrology": "占星術に基づきキャリアを選ぶ",
+  "Give me a work persona based on my favorite books":
+    "好きな本を基に仕事のペルソナを作る",
+  "Help me role play a talk with my boss": "上司との会話をロールプレイする",
+  "Give me pointers on being a better manager":
+    "より良い管理職になるコツを教える",
+  "Write a job description for my dream life": "理想の人生の職務内容を書く",
+  "Update my resume or LinkedIn": "履歴書やLinkedInを更新する",
+  "Develop my professional skills": "仕事のスキルを伸ばす",
+  "Navigate workplace challenges": "職場の課題に対応する",
+  "Plan my career growth": "キャリアの成長を計画する",
+  "Improve my work-life balance": "仕事と生活のバランスを改善する",
+  "Network more effectively": "効果的に人脈を広げる",
+  "Request a raise or promotion": "昇給や昇進を申し出る",
+  "Create effective cover letters": "効果的な応募書状を作る",
+  "Identify transferable skills": "応用できるスキルを特定する",
+  "Analyze industry trends": "業界の動向を分析する",
+  "Practice salary negotiations": "給与交渉を練習する",
+  "Build my personal brand": "個人ブランドを築く",
+  "Handle difficult colleagues": "難しい同僚に対応する",
+  "Develop leadership abilities": "リーダーシップを育てる",
+  "Manage workplace stress": "職場のストレスに対処する",
+  "Explore career transitions": "キャリアチェンジを探る",
+  "Draft professional emails": "仕事のメールを下書きする",
+  "Prepare presentations": "プレゼンを準備する",
+  "Build team communication": "チームの連絡を築く",
+  "Improve public speaking": "人前で話す力を高める",
+  "Track professional accomplishments": "仕事の成果を記録する",
+  "Handle performance reviews": "人事評価に対応する",
+  "Understand workplace politics": "職場の政治を理解する",
+  "Create workplace boundaries": "職場で境界線を引く",
+  "Find mentorship opportunities": "メンターを見つける機会を探す",
+  "Manage remote work": "リモートワークを管理する",
+  "Develop executive presence": "経営者らしい存在感を育てる",
+  "Handle workplace feedback": "職場のフィードバックに対応する",
+  "Analyze job descriptions": "求人内容を分析する",
+  "Create professional goals": "仕事の目標を作る",
+  "Plan continuing education": "継続教育を計画する",
+  "Strengthen workplace relationships": "職場の関係を強める",
+  "Improve technical skills": "技術的なスキルを高める",
+  "Manage project timelines": "プロジェクトの日程を管理する",
+  "Handle workplace conflicts": "職場の対立に対応する",
+  "Prepare for promotions": "昇進に備える",
+  "Balance multiple projects": "複数プロジェクトを両立する",
+  "Summarize my top projects this quarter":
+    "今四半期の主要プロジェクトを要約する",
+  "Analyze my writing style based on my docs": "資料から私の文体を分析する",
+  "Give me a TLDR on the new docs I’ve been given access to":
+    "新たに閲覧可能になった資料を手短に要約する",
+  "Identify what my top 3 priorities should be today":
+    "今日の最優先事項を3つ特定する",
+  "Find which of my ideas have gained the most traction at work":
+    "職場で最も支持を集めた私の案を探す",
+  "Tell me how my project focus has evolved over time":
+    "プロジェクトの重点の変化を教える",
+  "Locate documents that represent pivotal moments in my thinking":
+    "考え方の転機を表す資料を探す",
+  "Surface unexpected connections across my different documents":
+    "異なる資料の意外なつながりを見つける",
+  "Identify and visualize my most brilliant moments from my documents":
+    "資料から最も輝いた瞬間を特定し可視化する",
+  "Look at my docs and tell me what kind of genre writer I could be":
+    "資料を見てどんなジャンルの作家に向くか教える",
+  "Reveal blind spots in my knowledge base": "私の知識の盲点を明かす",
+  "What idea themes consistently appear across all my documents?":
+    "全資料に繰り返し現れるテーマを探す",
+  "Look at how my calendar has shifted this month compared to last":
+    "今月と先月の予定の変化を比較する",
+  "Show me insights about my meeting attendance patterns":
+    "会議への参加パターンから気づきを示す",
+  "Tell me which recurring meetings take up most of my time":
+    "最も時間を取る定例会議を教える",
+  "Analyze if my actual meetings align with my stated priorities":
+    "実際の会議が掲げた優先事項に沿うか分析する",
+  "Analyze my calendar for meeting optimization":
+    "予定表を分析して会議を最適化する",
+  "Tell me what my calendar reveals about my work-life balance":
+    "予定表から仕事と生活のバランスを読み取る",
+  "Identify how my calendar habits reflect my personal priorities":
+    "予定の習慣が個人の優先事項をどう表すか示す",
+  "Show me how my seasonal patterns affect my scheduling and energy":
+    "季節のパターンが予定と活力に及ぼす影響を示す",
+  "Reflect on my calendar as if I was 100 years old looking back at this time":
+    "100歳の自分が今を振り返るつもりで予定表を考察する",
+  "Give me tips on how to organize my calendar": "予定表の整理のコツを教える",
+  "Transform my calendar into a fantasy quest journal":
+    "予定表をファンタジーの冒険日誌にする",
+  "Turn my calendar events into a poetic ‘day in the life’ narrative":
+    "予定を詩的な「ある一日」の物語にする",
+  "Predict my next stress point by analyzing my calendar density patterns":
+    "予定の密度から次のストレス時期を予測する",
+  "Create a visual guide for calendar management based on my ennegram":
+    "エニアグラムに基づく予定管理の図解を作る",
+  "Visualize where my time truly goes each week":
+    "毎週何に時間を使っているか可視化する",
+  "Analyze my email communication style":
+    "メールでのコミュニケーションスタイルを分析する",
+  "Tell me how I can optimize my inbox": "受信箱の最適化を教える",
+  "Pull out important points from my latest work emails":
+    "最近の仕事メールから要点を抜き出す",
+  "Tell me which emails I subscribe to usually go unread":
+    "購読していても読まないメールを教える",
+  "Tell me about my email organization habits": "メール整理の習慣を教える",
+  "See what emotional themes emerge from my email conversations":
+    "メールのやり取りの感情的なテーマを探す",
+  "Let me know how I can be more persuasive in my emails":
+    "メールの説得力を高める方法を教える",
+  "Show me any tricks that can help me manage email":
+    "メール管理に役立つコツを教える",
+  "Write a pretend 1-page newspaper based on my integrations?":
+    "連携情報を基に架空の1ページ新聞を書く",
+  "If my email inbox was a reality TV show, who would be voted off the island first?":
+    "受信箱がリアリティ番組なら誰が最初に脱落する？",
+  "Create a diplomatic response to my most challenging recent email thread":
+    "最近最も難しいメールのやり取りに外交的な返信を作る",
+  "Generate a ‘personal brand statement’ based on how I communicate in email":
+    "メールの伝え方から個人ブランドの声明を作る",
+  "Casually look through my work integrations to find people who seem to support my career growth":
+    "仕事の連携情報を気軽に見てキャリアを支える人を探す",
+  "Look through my emails and tell me where I’m avoiding something important":
+    "メールを見て重要なことを避けている点を教える",
+  "Create ‘missed connections’ personal ads based on my most interesting email exchanges":
+    "最も面白いメールのやり取りから「すれ違いの出会い」広告を作る",
+  "Have a philosophical discussion": "哲学的な話をする",
+  "Learn something unexpected": "意外なことを学ぶ",
+  "Solve an interesting problem": "面白い問題を解く",
+  "Discover a new perspective": "新しい視点を見つける",
+  "Play a word game together": "一緒に言葉のゲームをする",
+  "Debate an ethical dilemma": "倫理的なジレンマを討論する",
+  "Explore a fascinating concept": "魅力的な概念を探る",
+  "Explore thought experiments": "思考実験を探る",
+  "Explore cognitive biases": "認知バイアスを探る",
+  "Explore language evolution": "言語の進化を探る",
+  "Explore mathematical paradoxes": "数学のパラドックスを探る",
+  "Explore psychological phenomena": "心理現象を探る",
+  "Explore architectural concepts": "建築の概念を探る",
+  "Explore memory techniques": "記憶術を探る",
+  "Explore logical fallacies": "論理的誤謬を探る",
+  "Explore ancient wisdom": "古代の知恵を探る",
+  "Discuss future technologies": "未来の技術を議論する",
+  "Discuss creative thinking techniques": "創造的思考の技法を議論する",
+  "Discuss art interpretation": "芸術の解釈を議論する",
+  "Discuss space exploration questions": "宇宙探査の疑問を議論する",
+  "Discuss musical innovations": "音楽の革新を議論する",
+  "Discuss food science": "食品科学を議論する",
+  "Discuss symbolic communication": "象徴による伝達を議論する",
+  "Discuss social dynamics": "社会の力学を議論する",
+  "Analyze historical turning points": "歴史の転換点を分析する",
+  "Analyze decision-making frameworks": "意思決定の枠組みを分析する",
+  "Analyze literary themes": "文学の主題を分析する",
+  "Analyze game theory applications": "ゲーム理論の応用を分析する",
+  "Consider alternate histories": "別の歴史を考える",
+  "Consider economic theories": "経済理論を考える",
+  "Consider environmental solutions": "環境対策を考える",
+  "Consider innovation patterns": "革新のパターンを考える",
+  "Create a fictional scenario": "架空のシナリオを作る",
+  "Investigate scientific mysteries": "科学の謎を調べる",
+  "Examine nature phenomena": "自然現象を調べる",
+  "Help me reflect on an experience": "経験を振り返るのを助ける",
+  "Help me work through a decision": "決断を考え抜くのを助ける",
+  "Transform my personal goals into an actionable plan":
+    "個人目標を実行可能な計画にする",
+  "Roleplay difficult conversations I need to prepare for":
+    "準備が必要な難しい会話をロールプレイする",
+  "Guide me through a decision-making framework for a life choice":
+    "人生の選択を意思決定の枠組みで導く",
+  "Plan my day or week": "一日や一週間を計画する",
+  "Help with decision making": "意思決定を助ける",
+  "Generate gift or travel ideas": "贈り物や旅行の案を出す",
+  "Improve my habits": "習慣を改善する",
+  "Manage my time better": "時間をもっと上手に管理する",
+  "Organize my living space": "住まいを整理する",
+  "Improve sleep habits": "睡眠習慣を改善する",
+  "Build better relationships": "より良い人間関係を築く",
+  "Manage personal stress": "個人的なストレスに対処する",
+  "Explore productivity systems": "生産性向上の仕組みを探る",
+  "Improve communication skills": "コミュニケーション能力を高める",
+  "Handle difficult conversations": "難しい会話に対応する",
+  "Organize digital files": "デジタルファイルを整理する",
+  "Balance social commitments": "社交の予定を調整する",
+  "Track personal goals": "個人の目標を追跡する",
+  "Improve financial literacy": "金融リテラシーを高める",
+  "Manage household tasks": "家事を管理する",
+  "Improve time management": "時間管理を改善する",
+  "Create a routine for a goal": "目標に向けた日課を作る",
+  "Create a personal development plan": "自己成長の計画を作る",
+  "Create a personal budget": "個人の予算を作る",
+  "Create family activities": "家族の活動を作る",
+  "Create reading lists": "読書リストを作る",
+  "Create cleaning routines": "掃除の日課を作る",
+  "Create morning routines": "朝の日課を作る",
+  "Create family traditions": "家族の伝統を作る",
+  "Create personal boundaries": "自分の境界線を作る",
+  "Develop exercise routines": "運動の日課を考案する",
+  "Develop mindfulness practices": "マインドフルネスの実践を考案する",
+  "Develop personal hobbies": "個人の趣味を考案する",
+  "Develop self-care practices": "セルフケアの実践を考案する",
+  "Develop parenting strategies": "子育ての戦略を考案する",
+  "Plan healthy meals": "健康的な食事を計画する",
+  "Plan special celebrations": "特別なお祝いを計画する",
+  "Plan home improvements": "住まいの改善を計画する",
+  "Plan educational pursuits": "学びの取り組みを計画する",
+  "Plan retirement activities": "退職後の活動を計画する",
+  "Help me identify my creative style": "自分の創作スタイルを見つける",
+  "Quiz me on how to give good design feedback in a crit":
+    "講評で良いデザイン評価をする方法を出題する",
+  "Design a chracter profile based on my creative super power":
+    "創造力の超能力を基にキャラクターを設定する",
+  "Generate a list of powerful words to use in a client presentation":
+    "顧客向けプレゼン用の力強い言葉を列挙する",
+  "Reimagine this everyday object for a radically different culture":
+    "全く異なる文化向けにこの日用品を再構想する",
+  "Design an experience that changes how people perceive time":
+    "時間の捉え方を変える体験を設計する",
+  "Create something inspired by the most beautiful mistake":
+    "最も美しい失敗に着想を得たものを作る",
+  "Design an interactive installation based on my personal values":
+    "個人の価値観を基に参加型の展示を設計する",
+  "Create a visual language for emotions that have no names":
+    "名前のない感情の視覚言語を作る",
+  "Design something that bridges ancient techniques and futuristic concepts":
+    "古代の技術と未来の概念をつなぐものを設計する",
+  "Design an experience that transforms digital connections into physical ones":
+    "デジタルのつながりを物理的なものにする体験を設計する",
+  "Outline an ideation workshop that will blow away my creative team":
+    "創作チームを驚かせる発想ワークショップの概要を作る",
+  "Help me design a creative offsite that will be legendary":
+    "伝説になる創作合宿を企画するのを助ける",
+  "Analyze my design aesthetic from examples":
+    "作例から私のデザイン美学を分析する",
+  "Test my eye for detail with examples": "作例で細部への観察力を試す",
+  "Quiz me on design principles and theory": "デザイン原則と理論を出題する",
+  "Transform my concept into a detailed design specification":
+    "私の構想を詳細なデザイン仕様にする",
+  "Help me make something more user-friendly": "もっと使いやすくするのを助ける",
+  "Brainstorm creative concepts": "創造的なコンセプトを発想する",
+  "Generate design inspiration from history": "歴史からデザインの着想を得る",
+  "Translate a brief into design items": "概要書をデザイン項目に落とし込む",
+  "Research good typography systems": "優れた文字組みの体系を調べる",
+  "Generate illustration ideas": "イラストの案を出す",
+  "Generate packaging concepts": "パッケージの案を出す",
+  "Generate animation concepts": "アニメーションの案を出す",
+  "Create a style guide": "スタイルガイドを作る",
+  "Create on-trend color palettes": "流行の配色を作る",
+  "Create mood boards": "ムードボードを作る",
+  "Create logo variations": "ロゴのバリエーションを作る",
+  "Create social media templates": "SNSテンプレートを作る",
+  "Create website structures": "ウェブサイト構造を作る",
+  "Create portfolio presentations": "ポートフォリオのプレゼンを作る",
+  "Create content strategies": "コンテンツ戦略を作る",
+  "Develop brand personas": "ブランドペルソナを考案する",
+  "Develop storytelling frameworks": "物語の枠組みを考案する",
+  "Develop naming conventions": "命名規則を考案する",
+  "Develop marketing campaigns": "マーケティングキャンペーンを考案する",
+  "Develop product narratives": "製品の物語を考案する",
+  "Develop editorial calendars": "編集カレンダーを考案する",
+  "Plan milestones for a creative project": "創作プロジェクトの節目を計画する",
+  "Plan friction-free user experience flows":
+    "滑らかなユーザー体験の流れを計画する",
+  "Plan content calendars": "コンテンツカレンダーを計画する",
+  "Plan a creative brainstorm with clients": "顧客との発想会議を計画する",
+  "Plan videogame storyboards": "ゲームの絵コンテを計画する",
+  "Plan photography shoots": "写真撮影を計画する",
+  "Write a solid creative brief": "しっかりしたクリエイティブブリーフを書く",
+  "Write compelling copy": "魅力的なコピーを書く",
+  "Write creative prompts for LLMs": "LLM用の創造的なプロンプトを書く",
+  "Design a presentation layout": "プレゼンのレイアウトを設計する",
+  "Design email newsletters": "メールニュースレターを設計する",
+  "Design event materials": "イベント資料を設計する",
+  "Generate character concepts for fiction":
+    "フィクションのキャラクター案を出す",
+  "Test my negotiation tactics with scenarios": "状況設定で交渉術を試す",
+  "Quiz me on my business skills": "ビジネススキルを出題する",
+  "Help me develop and hone a strategy": "戦略の立案と改善を助ける",
+  "Map the unexpected connections between unrelated market trends":
+    "無関係な市場トレンドの意外なつながりを示す",
+  "Reimagine my business as if it were founded 100 years in the future":
+    "100年後に創業した企業として私の事業を再考する",
+  "Design a strategy game based on my business challenges":
+    "事業課題を基に戦略ゲームを設計する",
+  "Develop a business ecosystem inspired by my personal passions":
+    "個人的な情熱を基にビジネス生態系を考案する",
+  "Create a business model canvas that breaks every conventional rule":
+    "常識を覆すビジネスモデルキャンバスを作る",
+  "Design a strategy inspired by patterns found in nature":
+    "自然のパターンに着想を得た戦略を設計する",
+  "Analyze market opportunities": "市場機会を分析する",
+  "Improve operational efficiency": "業務効率を改善する",
+  "Draft a pitch or proposal": "売り込みや提案を下書きする",
+  "Build financial projections": "財務予測を作る",
+  "Conduct competitor analysis": "競合を分析する",
+  "Analyze business metrics": "事業指標を分析する",
+  "Analyze great investment pitches": "優れた投資ピッチを分析する",
+  "Research top go-to-market strategies": "優れた市場投入戦略を調べる",
+  "Develop a business plan": "事業計画を考案する",
+  "Develop pricing strategies": "価格戦略を考案する",
+  "Develop KPI dashboards": "KPIダッシュボードを考案する",
+  "Develop stakeholder communications": "関係者との連絡方法を考案する",
+  "Develop risk assessments": "リスク評価を考案する",
+  "Develop client proposals": "顧客向け提案を考案する",
+  "Develop brand positioning": "ブランドの位置づけを考案する",
+  "Develop sustainability initiatives": "持続可能性への取り組みを考案する",
+  "Develop distribution strategies": "流通戦略を考案する",
+  "Create a marketing strategy": "マーケティング戦略を作る",
+  "Create customer personas": "顧客ペルソナを作る",
+  "Create sales presentations": "営業プレゼンを作る",
+  "Create business processes": "業務プロセスを作る",
+  "Create strategic partnerships": "戦略的提携を作る",
+  "Create recruiting strategies": "採用戦略を作る",
+  "Create vendor evaluations": "取引先評価を作る",
+  "Create business pivots": "事業転換案を作る",
+  "Create revenue forecasts": "収益予測を作る",
+  "Create customer journeys": "カスタマージャーニーを作る",
+  "Plan product launches": "製品発売を計画する",
+  "Plan market research": "市場調査を計画する",
+  "Plan organizational structure": "組織構造を計画する",
+  "Plan budget allocations": "予算配分を計画する",
+  "Plan business scaling strategies": "事業拡大戦略を計画する",
+  "Plan expansion opportunities": "事業拡大の機会を計画する",
+  "Plan business acquisitions": "企業買収を計画する",
+  "Design growth frameworks": "成長の枠組みを設計する",
+  "Craft a manifesto that captures the essence of my boldest ideas":
+    "大胆なアイデアの本質を表す宣言を書く",
+  "Help me develop my unique voice as a writer": "作家として独自の文体を育てる",
+  "Help me identify my writing weaknesses": "文章の弱点を見つけるのを助ける",
+  "Create a piece that blends two completely different writing styles":
+    "全く違う二つの文体を融合した作品を作る",
+  "Reimagine a piece of my writing as an edge-of-your-seat thriller":
+    "自分の文章を手に汗握るスリラーにする",
+  "Compare my writing style to famous authors":
+    "自分の文体を有名作家と比較する",
+  "Craft something that reads differently depending on the reader’s mood":
+    "読者の気分で読み方が変わる作品を書く",
+  "Write something in the voice of my favorite historical figure":
+    "好きな歴史上の人物の声で書く",
+  "Help me develop a unique voice for an audience":
+    "読者に合う独自の文体を育てる",
+  "Edit my content": "私のコンテンツを編集する",
+  "Brainstorm creative ideas": "創造的な案を出す",
+  "Research topics for my writing": "執筆のテーマを調べる",
+  "Improve my writing style": "私の文体を改善する",
+  "Draft an outline for my project": "プロジェクトの概要を下書きする",
+  "Create a content strategy": "コンテンツ戦略を作る",
+  "Create engaging headlines": "魅力的な見出しを作る",
+  "Create social media posts": "SNSの投稿を作る",
+  "Create blog article series": "ブログ記事シリーズを作る",
+  "Create interview questions": "インタビューの質問を作る",
+  "Create persuasive arguments": "説得力ある論拠を作る",
+  "Create user documentation": "ユーザー向け文書を作る",
+  "Create presentation scripts": "プレゼンの台本を作る",
+  "Create FAQ resources": "FAQ資料を作る",
+  "Create technical explanations": "技術的な説明を作る",
+  "Develop character profiles": "キャラクター設定を考案する",
+  "Develop content calendars": "コンテンツカレンダーを考案する",
+  "Develop brand voice guides": "ブランドの文体ガイドを考案する",
+  "Develop podcast scripts": "ポッドキャストの台本を考案する",
+  "Develop content templates": "コンテンツテンプレートを考案する",
+  "Develop content briefs": "コンテンツの概要書を考案する",
+  "Develop instructional content": "教材を考案する",
+  "Develop editorial guidelines": "編集ガイドラインを考案する",
+  "Draft email newsletters": "メールニュースレターを書く",
+  "Write compelling CTAs": "魅力的な行動喚起を書く",
+  "Write product descriptions": "商品説明を書く",
+  "Write video scripts": "動画の台本を書く",
+  "Write executive summaries": "エグゼクティブサマリーを書く",
+  "Write case studies": "ケーススタディを書く",
+  "Write speech drafts": "スピーチの草稿を書く",
+  "Write marketing copy": "マーケティングコピーを書く",
+  "Write grant proposals": "助成金の申請書を書く",
+  "Write event descriptions": "イベントの説明を書く",
+  "Design a learning challenge that pushes my creative boundaries":
+    "創造性の限界を広げる学習課題を設計する",
+  "Explain a concept in simple terms": "概念を簡単な言葉で説明する",
+  "Help me understand a complex topic from scratch":
+    "複雑な話題をゼロから理解するのを助ける",
+  "Create a curriculum inspired by my favorite cultural movement":
+    "好きな文化運動に着想を得たカリキュラムを作る",
+  "Develop a learning approach that embraces beautiful contradictions":
+    "美しい矛盾を受け入れる学習法を考える",
+  "Transform a dry subject into something fascinating":
+    "退屈な科目を魅力的にする",
+  "Develop a learning framework based on my personal heroes":
+    "尊敬する人物を基に学習の枠組みを作る",
+  "Create a knowledge map that reveals surprising patterns in what I know":
+    "自分の知識の意外なパターンを示す知識マップを作る",
+  "Transform these notes into a structured summary":
+    "メモを構造化した要約にする",
+  "Help me make sense of these ideas": "これらのアイデアを理解するのを助ける",
+  "Find patterns in my research": "私の研究のパターンを見つける",
+  "Explain a complex topic simply": "複雑な話題を簡単に説明する",
+  "Create a study plan": "学習計画を作る",
+  "Design a lesson or curriculum": "授業やカリキュラムを設計する",
+  "Compare learning resources": "学習資料を比較する",
+  "Find the best books on a subject": "テーマに合う最良の本を探す",
+  "Prepare for an exam or interview": "試験や面接に備える",
+  "Create effective flashcards": "効果的な暗記カードを作る",
+  "Develop learning objectives": "学習目標を立てる",
+  "Summarize my academic papers": "私の学術論文を要約する",
+  "Create assessment questions": "評価用の問題を作る",
+  "Develop research methodologies": "研究手法を考える",
+  "Create learning timelines": "学習の予定表を作る",
+  "Design educational activities": "教育活動を設計する",
+  "Develop concept maps": "概念マップを作る",
+  "Create good lecture notes": "良い講義ノートを作る",
+  "Design presentation visuals": "プレゼン用のビジュアルを設計する",
+  "Develop learning frameworks": "学習の枠組みを作る",
+  "Create annotated bibliographies": "注釈付き参考文献を作る",
+  "Design learning journals": "学習日誌を設計する",
+  "Develop discussion prompts": "議論のきっかけを作る",
+  "Create educational games": "教育ゲームを作る",
+  "Develop teaching strategies": "指導戦略を考える",
+  "Create educational rubrics": "教育用の評価基準を作る",
+  "Design learning modules": "学習モジュールを設計する",
+  "Develop critical analyses": "批判的分析を行う",
+  "Design research questions": "研究上の問いを設計する",
+  "Develop reflection exercises": "振り返りの練習を考える",
+  "Create study summaries": "学習の要約を作る",
+  "Design learning portfolios": "学習ポートフォリオを設計する",
+  "Create feedback for student work": "生徒の課題にフィードバックを作る",
+  "Design learning challenges": "学習課題を設計する",
+  "Find credible sources for my research": "研究の信頼できる情報源を探す",
+  "Provide evidence-based insights for my topic":
+    "テーマに根拠に基づく知見を示す",
+  "Look over my code and give me tips": "コードを見て助言する",
+  "Vibe code with me": "一緒にバイブコーディングする",
+  "Quiz me on python code": "Pythonのコードを出題する",
+  "Evaluate my coding style based on a snippet":
+    "コード断片から私のスタイルを評価する",
+  "Tell me what programming paradigm suits my thinking style":
+    "私の思考に合うプログラミングパラダイムを教える",
+  "Assess my approach to debugging problems": "私のデバッグ方法を評価する",
+  "Challenge me with increasingly difficult coding puzzles":
+    "徐々に難しくなるコーディング問題を出す",
+  "Help me develop a personal learning roadmap for coding":
+    "個人用のコーディング学習計画を作る",
+  "Help me turn a screenshot into working code":
+    "スクリーンショットを動くコードにする",
+  "Design a game that teaches coding concepts through storytelling":
+    "物語でプログラミングを教えるゲームを設計する",
+  "Invent a coding language based on my favorite hobby":
+    "好きな趣味を基にプログラミング言語を発明する",
+  "Design a digital pet that grows based on my coding habits":
+    "コーディング習慣で育つデジタルペットを設計する",
+  "Create a coding Easter egg that would make my team smile":
+    "チームを笑顔にするコードの隠し要素を作る",
+  "Build an app based on my idea": "私のアイデアからアプリを作る",
+  "Debug my code and give me tips": "コードをデバッグして助言する",
+  "Design a software architecture": "ソフトウェア構成を設計する",
+  "Explain a programming concept": "プログラミング概念を説明する",
+  "Plan a development roadmap": "開発計画を立てる",
+  "Write unit test cases": "ユニットテストを書く",
+  "Create API documentation": "APIドキュメントを作る",
+  "Design database schemas": "データベースのスキーマを設計する",
+  "Develop coding standards": "コーディング規約を作る",
+  "Develop code reviews to speed me up": "効率を高めるコードレビューを考える",
+  "Create technical specifications": "技術仕様を作る",
+  "Design UI/UX wireframes": "UI/UXのワイヤーフレームを設計する",
+  "Develop deployment strategies": "デプロイ戦略を立てる",
+  "Create refactoring plans": "リファクタリング計画を作る",
+  "Design microservices": "マイクロサービスを設計する",
+  "Develop algorithm solutions": "アルゴリズムの解法を考える",
+  "Create security protocols": "セキュリティ手順を作る",
+  "Design feature flags": "機能フラグを設計する",
+  "Develop performance benchmarks": "性能ベンチマークを作る",
+  "Create debugging workflows": "デバッグ手順を作る",
+  "Design data structures": "データ構造を設計する",
+  "Develop integration strategies": "連携戦略を立てる",
+  "Create dependency maps": "依存関係図を作る",
+  "Design error handling": "エラー処理を設計する",
+  "Develop CI/CD pipelines": "CI/CDパイプラインを作る",
+  "Create technical diagrams": "技術図を作る",
+  "Design scalability plans": "スケーラビリティ計画を設計する",
+  "Develop project estimates": "プロジェクトを見積もる",
+  "Create code snippets": "コードスニペットを作る",
+  "Design logging systems": "ログシステムを設計する",
+  "Develop technical debt analysis": "技術的負債を分析する",
+  "Create monitoring solutions": "監視ソリューションを作る",
   "From Calendar": "カレンダーから",
   "From Gmail": "Gmail から",
   "From Drive": "ドライブから",
   Integration: "連携",
   "Choose a valid connector.": "有効なコネクターを選んでください。",
+  "Research how to write documentation that people will actually want to read":
+    "読みたくなる文書の書き方を調べる",
+  "Find the best way to explain our product to new users, use my docs as needed":
+    "必要に応じて資料を使い、新規ユーザーに製品を説明する最適な方法を探す",
+  "Navigate the maze of healthcare compliance requirements":
+    "複雑な医療コンプライアンス要件を整理する",
+  "Find the best tools for managing remote team communication":
+    "リモートチームの連絡を管理する最適なツールを探す",
+  "Go deep on the secret behind companies with amazing customer service":
+    "顧客サービスが優れた企業の秘密を深掘りする",
+  "Discover fresh angles on my writing based on my docs":
+    "資料を基に執筆の新たな切り口を見つける",
+  "Dive deep on what travel trends will be for the next five years":
+    "今後5年間の旅行トレンドを深掘りする",
+  "Understand what’s happening with tariffs right now":
+    "現在の関税を巡る動きを理解する",
+  "Find the weird science behind everyday products people love":
+    "愛される日用品の不思議な科学を探る",
+  "Research and deliver findings relevant to me as a time-traveler from 2050":
+    "2050年から来た時間旅行者の私に役立つ調査結果をまとめる",
+  "Find the most compelling stories about an important topic from my docs":
+    "資料から重要な話題の最も魅力的な物語を探す",
+  "Determine my main competitors based on my docs and show me what my competitors are doing differently this year":
+    "資料から主な競合を特定し、今年の新しい取り組みを示す",
+  "Identify the most important performance differences between the latest accelerators from nvidia, google, and amazon?":
+    "NVIDIA、Google、Amazonの最新アクセラレータの主要な性能差を特定する",
+  "Extract the most actionable insights from my meeting notes that I’m not acting on":
+    "会議メモからまだ実行していない最も実用的な気づきを抽出する",
+  "Come up with novel ideas for projects based on my docs":
+    "資料を基に新しいプロジェクトの案を出す",
+  "Map the evolution of sleep research in the past decade":
+    "過去10年間の睡眠研究の進展を整理する",
+  "Identify emerging patterns in human and machine relationships":
+    "人と機械の関係の新たなパターンを特定する",
+  "Compare researchers’ disagreements about climate solutions":
+    "気候対策を巡る研究者の意見の相違を比較する",
+  "Examine how fermentation discoveries changed ancient diets":
+    "発酵の発見が古代の食生活をどう変えたか調べる",
+  "Find how humans realized teeth need cleaning":
+    "歯の清掃が必要と人類がどう気づいたか探る",
+  "Explore why we even developed singing (is it just happy noises?)":
+    "なぜ歌うようになったのか探る（単なる楽しい音？）",
+  "Track invention of the idea of “free time” - when did that start?":
+    "「自由時間」の概念がいつ生まれたか調べる",
+  "Research how money became a thing": "お金の起源を調べる",
+  "Discover how humans figured out “those mushrooms = bad idea”":
+    "「そのキノコは危険」と人類がどう学んだか探る",
+  "Investigate when we realized trees could talk (chemically)":
+    "木が化学的に会話するといつ気づいたか調べる",
   "Google Calendar": "Google カレンダー",
   Gmail: "Gmail",
   "Loading artifact…": "アーティファクトを読み込み中…",
@@ -8570,6 +9230,8 @@ const catalog: Record<string, string> = {
     "アップデートを確認できませんでした: {error}",
   "Claudex is working in {count} sessions. Quitting now will interrupt that work.":
     "Claudex は {count} 件のセッションで作業中です。今終了すると作業が中断されます。",
+  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking claudex.zecous.cn — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from claudex.zecous.cn.":
+    "Claudex は更新サーバーに接続できませんでした。職場のネットワークを使用している場合、ファイアウォールまたはプロキシが claudex.zecous.cn をブロックしている可能性があります。IT チームに許可を依頼してください。それ以外の場合は接続を確認して再試行するか、claudex.zecous.cn から最新版をダウンロードしてください。",
   "Microsoft Office": "Microsoft Office",
   "Get the add-in": "アドインを入手",
   "Diagnostic Report": "診断レポート",
@@ -9142,6 +9804,8 @@ const catalog: Record<string, string> = {
   "Claudex Serif": "Claudex Serif",
   "An independent desktop client.": "独立したデスクトップクライアント。",
   "Internal only": "内部のみ",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's previous 1:1, so what you can use does not change.":
+    "ZecousAI の残高は Claudex では少なく見えることがあります。Claudex は ¥1 = $1 の新しいレートでチャージし、モデルの倍率も ZecousAI の公式 1:1 より大幅に低いため、利用できる量は変わりません。",
   "Make sure you trust a plugin before installing or using it. Uploaded plugins are not controlled by Claudex, and Claudex cannot verify that they will work as intended. See each plugin’s homepage for more information.":
     "インストールや使用の前にプラグインが信頼できることを確認してください。アップロードされたプラグインはClaudexの管理下になく、意図どおり動作するか確認できません。詳細は各プラグインのホームページをご覧ください。",
   "Community marketplace": "コミュニティマーケットプレイス",
@@ -9191,6 +9855,8 @@ const catalog: Record<string, string> = {
     "リモートコントロールをオフにできませんでした",
   "Remote Control couldn’t connect":
     "リモートコントロールに接続できませんでした",
+  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or claudex.zecous.cn.":
+    "セッションのクリア後に再接続できませんでした。スマートフォンや claudex.zecous.cn からこのセッションを使い続けるには、もう一度オンにしてください。",
   "Claudex Code stopped, so Remote Control turned off with it.":
     "Claudex Code が停止したため、リモートコントロールもオフになりました。",
   "Sign in again. Remote Control retries with your next message.":
@@ -10253,6 +10919,7 @@ const catalog: Record<string, string> = {
   "This removes your feedback, including any conversation excerpt sent with it. It does not delete your chat.":
     "フィードバックと、一緒に送信した会話の抜粋が削除されます。チャットは削除されません。",
   "from {name}": "{name} 提供",
+  // Customize directory categories (2026-10-20).
   "Developer tools": "開発者ツール",
   Creativity: "クリエイティブ",
   "Education & research": "教育・研究",
@@ -10260,6 +10927,7 @@ const catalog: Record<string, string> = {
   Communication: "コミュニケーション",
   "Scientific research": "科学研究",
   Security: "セキュリティ",
+  // Usage popover (2026-10-20).
   "Balance and usage": "残高と使用量",
   "Last 7 days": "過去7日間",
   "Turn on Allow bypass permissions mode in Settings to use it.":
@@ -10280,11 +10948,15 @@ const catalog: Record<string, string> = {
   "Delete {count}": "{count} 件を削除",
   "Ask your administrator for the installer.":
     "インストーラーについては管理者にお問い合わせください。",
+  // Add menu failure sentence (2026-10-20)
   "Design systems couldn’t be loaded. Refresh to try again.":
     "デザインシステムを読み込めませんでした。更新してもう一度お試しください。",
+  // Skip all approvals connector list (2026-10-20)
   "Already allowed": "許可済み",
+  // Attachment drop notice (2026-10-20)
   "Folders can't be attached. Drop files instead.":
     "フォルダは添付できません。代わりにファイルをドロップしてください。",
+  // Attachment refusals, the live sentences (2026-10-20)
   "“{fileName}” is {fileSize}, over the {sizeLimit} MB limit. Choose a smaller file.":
     "「{fileName}」は {fileSize} で、{sizeLimit} MB の上限を超えています。より小さいファイルを選んでください。",
   "“{fileName}” can’t be attached in this chat yet — this file type isn’t supported here. You can paste its contents into the message instead.":
@@ -10295,6 +10967,7 @@ const catalog: Record<string, string> = {
     "{name} は添付できません。管理者がこのファイル形式を許可していません。",
   "Your administrator has turned off attachments.":
     "管理者が添付ファイルをオフにしています。",
+  // /copy (2026-10-20)
   "Copy Claudex’s latest reply, or /copy 2 or higher for an earlier one":
     "Claudex の最新の返信をコピーします。以前の返信は /copy 2 以上の数字で指定します",
   "Claudex is still replying. Send /copy when the reply is done.":
@@ -10303,6 +10976,7 @@ const catalog: Record<string, string> = {
   "Reply copied to clipboard.": "返信をクリップボードにコピーしました。",
   "Couldn’t copy the reply to the clipboard. Try again.":
     "返信をクリップボードにコピーできませんでした。もう一度お試しください。",
+  // Slash command notices (2026-10-20)
   "/{name} can't be run here.": "/{name} はここでは実行できません。",
   "Plan mode is not available in this Windows permission menu.":
     "この Windows の権限メニューではプランモードを使用できません。",
@@ -10493,6 +11167,7 @@ const catalog: Record<string, string> = {
   "Rename chat": "チャット名を変更",
   "Rename task": "タスク名を変更",
   "Project name is required": "プロジェクト名は必須です",
+  // Notices and focus reminders (menus-overlays toasts).
   "You’ve hit your limit for Claudex messages. Limits will reset at {time}.":
     "Claudexのメッセージの上限に達しました。上限は{time}にリセットされます。",
   "You’re sending messages too quickly. Try again at {time}.":
@@ -10509,6 +11184,7 @@ const catalog: Record<string, string> = {
   "It’s your quiet hours until {time}. You set this time limit in Settings → Time and focus.":
     "{time}まではお休み時間です。この時間制限は「設定 → 時間と集中」で設定したものです。",
   "{x} hr": "{x}時間",
+  // Search palette (menus-overlays).
   "Past hour": "過去1時間",
   "Search mode": "検索モード",
   "Actions mode": "アクションモード",
@@ -10534,6 +11210,7 @@ const catalog: Record<string, string> = {
     "Claudexのメッセージの上限に達しました。上限は{at}にリセットされます。",
   "Too many requests right now. Try again at {at}.":
     "現在リクエストが多すぎます。{at}にもう一度お試しください。",
+  // SSH connection banner (host in the sentence)
   "Connecting to {host}…": "{host}に接続中…",
   "Setting up Claudex on {host}…": "{host}でClaudexをセットアップ中…",
   "Reconnecting to {host}…": "{host}に再接続中…",
@@ -10542,7 +11219,9 @@ const catalog: Record<string, string> = {
   "Can’t reach {host}: {reason}": "{host}に接続できません: {reason}",
   "Not connected to {host}.": "{host}に接続されていません。",
   "this host": "このホスト",
+  // Quick Entry input placeholder
   "What can I help you with today?": "今日は何をお手伝いしましょうか？",
+  // Update menu, update dialogs and update notices
   "Check for Updates…": "アップデートを確認…",
   "Checking for Updates…": "アップデートを確認中…",
   "Downloading Update…": "アップデートをダウンロード中…",
@@ -10574,6 +11253,7 @@ const catalog: Record<string, string> = {
   "Your administrator no longer supports this version. Install Claudex {version}.":
     "管理者はこのバージョンのサポートを終了しました。Claudex {version}をインストールしてください。",
   "Claudex {version} is available.": "Claudex {version}が利用可能です。",
+  // What's new section titles
   "release-section|New": "新機能",
   "release-section|Improved": "改善",
   "release-section|Fixed": "修正",
@@ -10796,6 +11476,8 @@ const catalog: Record<string, string> = {
     "この下書きは長すぎて移動できません。短くするか、先にコピーしてください。",
   "This artifact is being updated. Try again when the reply finishes.":
     "このアーティファクトは更新中です。返信が完了してからもう一度お試しください。",
+  "This knowledge base can't be reached right now.":
+    "現在、この知識ベースに接続できません。",
   "Choose a PNG, JPEG, GIF or WebP image smaller than 1 MB.":
     "1 MB 未満の PNG、JPEG、GIF、または WebP 画像を選択してください。",
   "Voice mode needs dictation and a window that can read aloud.":
@@ -11051,190 +11733,8 @@ const catalog: Record<string, string> = {
   "Started preview": "プレビューを起動しました",
   "Couldn’t start preview": "プレビューを起動できませんでした",
   "status|Thinking": "思考中",
-  "Compare the leading note-taking apps for a small team and recommend one":
-    "小規模チーム向けの主要なノートアプリを比較して、1つ勧めて",
-  "Find out what makes onboarding emails work and sum up the patterns":
-    "効果的なオンボーディングメールに共通する点を調べてまとめて",
-  "Look into how other cities run successful bike-share programs":
-    "他の都市がシェアサイクルをどう成功させているか調べて",
-  "Gather the latest evidence on four-day work weeks and weigh it up":
-    "週休3日制に関する最新のエビデンスを集めて評価して",
-  "Survey open-source tools for monitoring a small web service":
-    "小さなWebサービスの監視に使えるオープンソースツールを調査して",
-  "Research how to price a new subscription product fairly":
-    "新しいサブスクリプション商品の適正な価格設定を調べて",
-  "Explain how a hash map works and build a tiny one in Python":
-    "ハッシュマップの仕組みを説明して、Pythonで小さく実装して",
-  "Write a script that renames photos by the date they were taken":
-    "撮影日で写真の名前を変えるスクリプトを書いて",
-  "Review a function I paste for bugs and readability":
-    "貼り付けた関数にバグや読みにくい点がないかレビューして",
-  "Turn a messy shell one-liner into a readable, commented script":
-    "ごちゃごちゃしたシェルのワンライナーを、コメント付きの読みやすいスクリプトにして",
-  "Design a database schema for a small library app":
-    "小さな図書館アプリのデータベーススキーマを設計して",
-  "Build a simple to-do list page with HTML, CSS and JavaScript":
-    "HTML、CSS、JavaScriptで簡単なToDoリストのページを作って",
-  "Teach me the basics of statistics with everyday examples":
-    "身近な例で統計の基本を教えて",
-  "Make a two-week plan for learning everyday Spanish phrases":
-    "日常のスペイン語フレーズを学ぶ2週間の計画を立てて",
-  "Quiz me on the main events of the French Revolution":
-    "フランス革命の主な出来事についてクイズを出して",
-  "Explain how vaccines train the immune system, step by step":
-    "ワクチンが免疫系をどう鍛えるのか、順を追って説明して",
-  "Help me understand compound interest with a worked example":
-    "計算例を使って複利を理解できるように手伝って",
-  "Summarize a classic book I name, chapter by chapter":
-    "私が挙げる古典作品を章ごとに要約して",
-  "Draft a friendly announcement for a team offsite":
-    "チームのオフサイトのお知らせを親しみやすく下書きして",
-  "Tighten a paragraph I paste so it says more with fewer words":
-    "貼り付けた段落を、少ない言葉でより多くを伝えるように引き締めて",
-  "Write three subject lines for a newsletter about our latest release":
-    "最新リリースを紹介するニュースレターの件名を3つ書いて",
-  "Outline a blog post about lessons from a project that failed":
-    "失敗したプロジェクトからの教訓についてのブログ記事の構成を考えて",
-  "Turn my bullet points into a short, clear project update":
-    "箇条書きを短くわかりやすいプロジェクト報告にまとめて",
-  "Write a thank-you note to a mentor": "メンターへのお礼状を書いて",
-  "Map the strengths and weaknesses of entering a new market":
-    "新しい市場に参入する際の強みと弱みを整理して",
-  "Build a simple pricing comparison against three competitors":
-    "競合3社との簡単な価格比較表を作って",
-  "Draft quarterly goals with measurable results for a small team":
-    "小さなチーム向けに、測定可能な成果を含む四半期目標を下書きして",
-  "List the risks in a product launch plan and how to reduce them":
-    "製品ローンチ計画のリスクと、その減らし方を挙げて",
-  "Sketch a one-page business plan for a neighborhood café":
-    "地域のカフェ向けに1ページの事業計画をざっくり作って",
-  "Prepare talking points for a budget review meeting":
-    "予算レビュー会議のための話のポイントを準備して",
-  "Suggest colors and fonts for a calm meditation app":
-    "落ち着いた瞑想アプリに合う配色とフォントを提案して",
-  "Brainstorm names and taglines for a home-baking business":
-    "自宅のお菓子づくりビジネスの名前とキャッチコピーを考えて",
-  "Design a simple logo concept as an SVG":
-    "シンプルなロゴ案をSVGでデザインして",
-  "Plan a mood board for a beach-themed birthday party":
-    "ビーチがテーマの誕生日パーティー用のムードボードを企画して",
-  "Write a short story that starts with a lost umbrella":
-    "なくした傘から始まる短編小説を書いて",
-  "Lay out a poster for a community clean-up day":
-    "地域の清掃デーのポスターをレイアウトして",
-  "Plan a week of quick, healthy dinners with a shopping list":
-    "手早く作れるヘルシーな1週間分の夕食と買い物リストを考えて",
-  "Help me make a monthly budget I can actually stick to":
-    "無理なく続けられる月の予算づくりを手伝って",
-  "Plan a relaxed three-day trip to a city I choose":
-    "私が選ぶ街でのゆったりした3日間の旅行を計画して",
-  "Suggest a beginner workout I can do at home":
-    "自宅でできる初心者向けの運動メニューを提案して",
-  "Help me sort out a cluttered closet in one weekend":
-    "散らかったクローゼットを週末で片付けるのを手伝って",
-  "Come up with gift ideas for a friend who loves hiking":
-    "ハイキング好きの友人へのプレゼントのアイデアを出して",
-  "Help me prepare answers to common interview questions":
-    "よくある面接の質問への答えを準備するのを手伝って",
-  "Review my resume summary and make it sharper":
-    "履歴書の要約を見て、もっと鋭くして",
-  "Plan how to ask my manager for a raise": "上司に昇給を頼む方法を計画して",
-  "Explore careers for someone who loves both data and people":
-    "データも人と関わることも好きな人に合う職業を探して",
-  "Draft a polite message turning down a job offer":
-    "内定を丁寧に辞退するメッセージを下書きして",
-  "Set goals for my first 90 days in a new role":
-    "新しい職場での最初の90日間の目標を立てて",
-  "Tell me something surprising about octopuses":
-    "タコについての意外な事実を教えて",
-  "Teach me a card trick I can learn in five minutes":
-    "5分で覚えられるトランプのマジックを教えて",
-  "Invent a game I can play with things around the house":
-    "家にあるもので遊べるゲームを考えて",
-  "Explain a famous paradox in plain words":
-    "有名なパラドックスをやさしい言葉で説明して",
-  "Recommend a hobby after asking me a few questions":
-    "いくつか質問してから、私に合う趣味を勧めて",
-  "Write a riddle and let me guess the answer":
-    "なぞなぞを出して、答えを当てさせて",
-  "Summarize the most recent document in my Drive":
-    "Driveにある最新のドキュメントを要約して",
-  "Find my notes on an upcoming project in Drive and pull out the action items":
-    "Driveから今度のプロジェクトのメモを探して、やることを抜き出して",
-  "Turn a spreadsheet in my Drive into a short written summary":
-    "Driveにあるスプレッドシートを短い文章の要約にして",
-  "Check my recent Drive documents for anything waiting on me":
-    "最近のDriveのドキュメントに私の対応待ちのものがないか確認して",
-  "Look at my calendar and plan focus time for this week":
-    "カレンダーを見て、今週の集中時間を計画して",
-  "Prepare me for my next meeting with a short briefing":
-    "次の会議に向けて短いブリーフィングで準備させて",
-  "Find an hour this week for a planning session":
-    "今週、計画のための1時間を見つけて",
-  "Sum up how much of last week went to meetings":
-    "先週どれくらいの時間を会議に使ったかまとめて",
-  "Summarize the unread emails in my inbox": "受信トレイの未読メールを要約して",
-  "Draft replies to emails that have waited more than two days":
-    "2日以上返信を待っているメールへの返信を下書きして",
-  "Find emails about upcoming travel and list the details":
-    "今度の旅行に関するメールを探して詳細を一覧にして",
-  "Combine my email, calendar and Drive into a briefing for today":
-    "メール、カレンダー、Driveをまとめて今日のブリーフィングを作って",
-  "Hey Claudex, could you {prompt}? Use the connectors that help, and start once you have what you need.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Claudex、お願い：{prompt}。役立つコネクタを使って、必要な情報がそろったら始めて。\n\n合いそうなら、図、チェックリスト、小さなインタラクティブなページなど、一緒に見られるものを作って。",
-  "Hey Claudex, could you help me {prompt}? Start researching straight away with any tools that help, and tell me if you need more context.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Claudex、調べものを手伝って：{prompt}。役立つツールを使ってすぐに調べ始めて、もっと情報が必要なら教えて。\n\n合いそうなら、図、チェックリスト、小さなインタラクティブなページなど、一緒に見られるものを作って。",
-  "Hi Claudex! Could you {prompt}? If something important is missing, ask me one or two questions first, and tell me if a file or more context would help. Use any tools you have, such as web search or connected files, when they help.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page. Thanks!":
-    "こんにちは、Claudex！お願いがあります：{prompt}。大事な情報が足りなければ、まず1〜2個質問してください。ファイルや追加の情報が役立つなら教えてください。Web検索や接続済みのファイルなど、使えるツールは役立つときに使ってください。\n\n合いそうなら、図、チェックリスト、小さなインタラクティブなページなど、一緒に見られるものを作ってください。よろしくお願いします！",
-  "Start with something small": "小さなことから始める",
-  "Help me plan my week. Ask what is on my plate and what matters most, then lay out a day-by-day plan with time for focused work and room for surprises.":
-    "今週の計画を手伝って。抱えていることと一番大事なことを聞いてから、集中して作業する時間と予定外のことへの余裕を入れて、日ごとの計画を立てて。",
-  "Sort my screenshots": "スクリーンショットを整理する",
-  "Go through the screenshots in my selected folder and sort them into subfolders by topic. Propose the folder names and show me the plan before moving anything.":
-    "選んだフォルダ内のスクリーンショットを見て、トピックごとにサブフォルダへ分けて。フォルダ名を提案して、何かを移動する前に計画を見せて。",
-  "Spot patterns in my files": "ファイルの傾向を見つける",
-  "Read the documents in my selected folder and tell me what stands out: recurring themes, open questions and anything that looks out of date. Fit it on one page.":
-    "選んだフォルダ内のドキュメントを読んで、目立つ点を教えて。繰り返し出てくるテーマ、未解決の問題、古くなっていそうな内容など。1ページに収めて。",
-  "Clear the clutter": "散らかりを片付ける",
-  "Tidy my Downloads folder": "ダウンロードフォルダを片付ける",
-  "Look through my Downloads folder and suggest what to keep, file away or delete. Group similar files, point out large or duplicate ones, and wait for my go-ahead before changing anything.":
-    "ダウンロードフォルダを見て、残すもの、整理するもの、削除するものを提案して。似たファイルをまとめ、大きいファイルや重複を指摘し、私が了承するまで何も変更しないで。",
-  "Group photos by date": "写真を日付でまとめる",
-  "Organize the photos in my selected folder into folders by year and month, using the date each one was taken. Show me the plan first and never delete a photo.":
-    "選んだフォルダ内の写真を、撮影日をもとに年と月のフォルダに整理して。まず計画を見せて、写真は絶対に削除しないで。",
-  "Get my inbox under control": "受信トレイを整理する",
-  "Help me get my inbox under control. Group what is waiting by urgency, draft short replies for the quick ones, and list what needs a decision from me.":
-    "受信トレイを整理するのを手伝って。待っているメールを緊急度で分け、すぐ返せるものには短い返信を下書きし、私が判断すべきことを一覧にして。",
-  "Get ready for what’s next": "次に備える",
-  "Prepare for my next meeting": "次の会議の準備をする",
-  "Help me prepare for my next meeting. Ask who it is with and what it is about, then gather the relevant notes and files and give me a short briefing with questions to raise.":
-    "次の会議の準備を手伝って。誰と何について話すのかを聞いてから、関連するメモやファイルを集めて、確認したい質問を添えた短いブリーフィングを作って。",
-  "Plan a getaway": "小旅行を計画する",
-  "Help me plan a short trip. Ask about my dates, budget and the kind of places I enjoy, then suggest a day-by-day plan and a packing list.":
-    "短い旅行の計画を手伝って。日程、予算、好きな場所のタイプを聞いてから、日ごとのプランと持ち物リストを提案して。",
-  "Get ready for an interview": "面接の準備をする",
-  "Help me get ready for a job interview. Ask about the role and the company, go over likely questions with me, help me shape my answers and suggest questions I can ask them.":
-    "就職面接の準備を手伝って。職種と会社について聞いて、聞かれそうな質問を一緒に確認し、答えを磨いて、こちらからできる質問も提案して。",
-  "Make sense of scattered information": "散らばった情報を整理する",
-  "Catch me up on team chat": "チームのチャットに追いつく",
-  "Catch me up on what I missed in my team’s chat. Summarize the main discussions and decisions, point out anything that mentions me, and list what I should reply to.":
-    "チームのチャットで見逃した内容に追いつかせて。主な議論と決定事項をまとめ、私に触れているところを指摘し、返信すべきものを一覧にして。",
-  "Turn voice notes into a document": "ボイスメモを文書にする",
-  "Turn the voice notes in my selected folder into a tidy document. Transcribe them, group related points under headings and list any action items at the end.":
-    "選んだフォルダ内のボイスメモを、読みやすい文書にまとめて。文字起こしをして、関連する点を見出しごとにまとめ、最後にやることを一覧にして。",
-  "Collect figures into a spreadsheet": "数値を表にまとめる",
-  "Pull the figures scattered across the files in my selected folder into one spreadsheet. Show me the columns you plan to use before you start, and note where each value came from.":
-    "選んだフォルダ内のファイルに散らばっている数値を、1つのスプレッドシートにまとめて。始める前に使う予定の列を見せて、各値の出どころも記して。",
-  "Connect to a Claudex service": "Claudex サービスに接続",
-  "Enter the address of the service you sign in to.":
-    "サインインするサービスのアドレスを入力してください。",
-  "Service address": "サービスのアドレス",
-  "No Claudex service answered at this address. Check it and try again.":
-    "このアドレスでは Claudex サービスが応答しませんでした。確認してもう一度お試しください。",
-  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking it — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from your Claudex service's website.":
-    "Claudex は更新サーバーに接続できませんでした。職場のネットワークでは、ファイアウォールやプロキシがブロックしている可能性があります。IT チームに許可を依頼してください。そうでなければ接続を確認して再試行するか、ご利用の Claudex サービスの Web サイトから最新版をダウンロードしてください。",
-  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or the web.":
-    "セッションのクリア後に再接続できませんでした。スマートフォンや Web からこのセッションを使い続けるには、もう一度オンにしてください。",
-  "I agree to the {terms} and {aup}.": "{terms}および{aup}に同意します。",
 };
+// Preserve the native error contract while reusing the translated recovery advice.
+catalog["The Claudex service is unreachable. Check your connection."] =
+  catalog["Couldn’t reach the service. Check your connection, then try again."];
 export default catalog;

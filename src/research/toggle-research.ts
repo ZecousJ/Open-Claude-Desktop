@@ -2,7 +2,7 @@ import type { AppController } from "../app/AppContext";
 import { api } from "../desktop-api";
 import { setDraftResearch } from "./useResearchDraft";
 
-/** Research auto-enables web search. */
+/** Research auto-enables web search (live claude.ai bundle, 2026-10-14, shared-5-DQt42NbL). */
 export async function toggleResearch(
   app: Pick<
     AppController,

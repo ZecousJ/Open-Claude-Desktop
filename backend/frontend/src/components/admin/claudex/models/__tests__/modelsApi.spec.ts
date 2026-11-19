@@ -29,8 +29,7 @@ const body: models.ClaudexModelMetaInput = {
   context_window: null,
   auto_compact_tokens: null,
   fast_tier: null,
-  usage_hint: '',
-  minimum_desktop_version: ''
+  usage_hint: ''
 }
 
 describe('model catalog admin API', () => {

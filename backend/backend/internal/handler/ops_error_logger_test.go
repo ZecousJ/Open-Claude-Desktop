@@ -331,6 +331,39 @@ func TestOpsErrorLoggerMiddleware_OrdinaryPermissionStillRecords(t *testing.T) {
 	require.Equal(t, http.StatusForbidden, job.entry.StatusCode)
 }
 
+func TestOpsErrorLoggerMiddleware_ResponsesHTTPErrorAfterHeartbeatIsFailure(t *testing.T) {
+	setupOpsErrorLogTestQueue(t, 4)
+	gin.SetMode(gin.TestMode)
+	ops := service.NewOpsService(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	router := gin.New()
+	router.Use(OpsErrorLoggerMiddleware(ops))
+	router.POST("/v1/responses", func(c *gin.Context) {
+		setOpsRequestContext(c, "gpt-6-astra", true)
+		c.Set(service.OpsUpstreamErrorsKey, []*service.OpsUpstreamErrorEvent{
+			{UpstreamStatusCode: 504, Message: "first output timeout", AccountName: "first"},
+			{UpstreamStatusCode: 400, Message: "original tool item is unavailable", AccountName: "second"},
+		})
+		service.SetOpsUpstreamError(c, 400, "original tool item is unavailable", "")
+		c.Header("Content-Type", "text/event-stream")
+		_, err := c.Writer.WriteString(": keepalive\n\n")
+		require.NoError(t, err)
+		c.Writer.Flush()
+		service.WriteOpenAIUpstreamClientError(c, 400, []byte(`{"error":{"type":"invalid_request_error","code":"invalid_request","message":"original tool item is unavailable"}}`), "original tool item is unavailable")
+	})
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, "/v1/responses", nil))
+	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, int64(1), OpsErrorLogQueueLength())
+	job := <-opsErrorLogQueue
+	require.Equal(t, http.StatusBadRequest, job.entry.StatusCode)
+	require.Equal(t, "original tool item is unavailable", job.entry.ErrorMessage)
+	require.NotContains(t, job.entry.ErrorMessage, "Recovered")
+	require.NotNil(t, job.entry.UpstreamErrorsJSON)
+	attempts, err := service.ParseOpsUpstreamErrors(*job.entry.UpstreamErrorsJSON)
+	require.NoError(t, err)
+	require.Len(t, attempts, 2)
+}
+
 func TestOpsErrorLoggerMiddleware_RecordsRecoveredUpstreamTelemetryOutsideFailureSLA(t *testing.T) {
 	setupOpsErrorLogTestQueue(t, 2)
 	gin.SetMode(gin.TestMode)
@@ -2167,4 +2200,27 @@ func TestNormalizeOpsErrorType_KeepsGeminiInBandSignalTypes(t *testing.T) {
 	} {
 		require.Equal(t, errType, normalizeOpsErrorType(errType, "PROHIBITED_CONTENT"), errType)
 	}
+}
+
+func TestOpsErrorLoggerMiddleware_ResponsesFailoverCompletedAfterHeartbeat(t *testing.T) {
+	setupOpsErrorLogTestQueue(t, 2)
+	gin.SetMode(gin.TestMode)
+	ops := service.NewOpsService(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	router := gin.New()
+	router.Use(OpsErrorLoggerMiddleware(ops))
+	router.POST("/v1/responses", func(c *gin.Context) {
+		setOpsRequestContext(c, "gpt-6-astra", true)
+		c.Set(service.OpsUpstreamErrorsKey, []*service.OpsUpstreamErrorEvent{{UpstreamStatusCode: 504, Message: "first output timeout"}})
+		c.Header("Content-Type", "text/event-stream")
+		_, _ = c.Writer.WriteString(": keepalive\n\n")
+		c.Writer.Flush()
+		_, _ = c.Writer.WriteString("event: response.completed\ndata: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\",\"output\":[]}}\n\n")
+	})
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/v1/responses", nil))
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Equal(t, int64(1), OpsErrorLogQueueLength())
+	job := <-opsErrorLogQueue
+	require.Equal(t, http.StatusOK, job.entry.StatusCode)
+	require.Contains(t, job.entry.ErrorMessage, "Recovered upstream error 504")
 }

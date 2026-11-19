@@ -13,7 +13,8 @@ export interface TitleOfferResponse {
   action: "accept" | "keep" | "suppress";
 }
 
-// Pending only while the original title still matches.
+// Pending only while the original title still matches (live claude.ai
+// bundle, 2026-10-14, c5220dfc1-NbozYvQv.js, Pp).
 export function pendingTitleOffer(conversation: Conversation) {
   const offer = conversation.titleOffer;
   return Boolean(

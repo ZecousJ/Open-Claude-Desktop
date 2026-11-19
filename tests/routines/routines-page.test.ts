@@ -121,11 +121,11 @@ test("a template opens as a draft and a draft becomes what the scheduler is sent
   const template = routineTemplates.find((t) => t.id === "pr-review-digest")!;
   const draft = newDraft(NOW, template);
   assert.equal(draft.name, "PR review digest");
-  // The template's time: weekdays at 09:30.
+  // The original's time: weekdays at 17:49 (c3fc267c0: Xr).
   assert.equal(draft.kind, "weekdays");
   assert.equal(draft.mode, "code");
   const input = draftInput(draft, settings, NOW);
-  assert.deepEqual(input.repeat, { kind: "weekdays", time: "09:30" });
+  assert.deepEqual(input.repeat, { kind: "weekdays", time: "17:49" });
   assert.match(repeatLabel(input.repeat!), /^Weekdays at /);
   assert.equal(
     input.defaultModel,
@@ -134,8 +134,8 @@ test("a template opens as a draft and a draft becomes what the scheduler is sent
   );
   assert.equal(input.providerId, "p2");
   assert.equal(input.model, "c");
-  // Friday noon: 09:30 has passed, so Monday morning.
-  assert.equal(input.nextRunAt, new Date(2026, 8, 28, 9, 30).getTime());
+  // Friday noon: the same evening.
+  assert.equal(input.nextRunAt, new Date(2026, 8, 25, 17, 49).getTime());
   const chosen = draftInput(
     { ...draft, model: { providerId: "p1", model: "b" }, kind: "manual" },
     settings,

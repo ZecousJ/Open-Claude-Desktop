@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 /**
  * The Research switch and reports over IPC (R45c): who may turn Research
  * on, what turning it on changes, reading a report only from the account's
@@ -64,6 +65,7 @@ function setup(
   let noActiveCalls = 0;
   const engine = {
     extensions: new EngineExtensions(),
+    peerExtensions: [] as { id: string }[],
     searchCapabilities: (() => undefined) as any,
     stop: async () => {
       stops++;
@@ -83,6 +85,10 @@ function setup(
     store,
     engine,
     engineFor: () => engine,
+    engines: { running: () => engine },
+    activeAccount: { id: "research-fixture" },
+    accountActivationIdentity: {},
+    accountRetiring: false,
     remote: { modelCatalog: () => catalog },
     policy: () => policy,
     push: (event: AppEvent) => events.push(event),
@@ -127,7 +133,7 @@ test("turning Research on brings web search with it and reloads the agent once",
     assert.equal(updated.research, true);
     assert.equal(updated.webSearch, true);
     assert.equal(env.stops, 1);
-    assert.equal(env.noActiveCalls, 1);
+    assert.equal(env.noActiveCalls, 2);
     assert.equal(env.store.conversations[0].research, true);
     const pushed = env.events.find((event) => event.type === "conversation");
     assert.equal(
@@ -257,6 +263,15 @@ test("a report is read only from the account's reports folder", async () => {
       title: "Report",
       markdown: "# Report\n\nBody",
     });
+    conversation.turns[0].research!.report!.markdown = "# Report\n\nBody";
+    fs.unlinkSync(path.join(env.root, stored.path));
+    assert.deepEqual(await env.call("readResearchReport", "c-1", "turn-1"), {
+      title: "Report", markdown: "# Report\n\nBody",
+    });
+    conversation.turns[0].research!.report!.markdown = "# Report\n\nFake";
+    await assert.rejects(env.call("readResearchReport", "c-1", "turn-1"));
+    delete conversation.turns[0].research!.report!.markdown;
+    reports.write("c-1", "turn-1", "# Report\n\nBody");
     await assert.rejects(
       env.call("readResearchReport", "c-1", "other"),
       /isn't available/,
@@ -317,7 +332,7 @@ test("report files are private, named by turn, and never outside the folder", ()
     const odd = reports.write("c-1", "../../evil", "r");
     assert.match(odd.path, /^research\/c-1\/[0-9a-f-]{36}\.md$/);
     const stored = reports.write("c-1", "t-1", "héllo");
-    assert.deepEqual(stored, { path: "research/c-1/t-1.md", bytes: 6 });
+    assert.deepEqual(stored, { path: "research/c-1/t-1.md", bytes: 6, sha256: createHash("sha256").update("héllo", "utf8").digest("hex") });
     if (process.platform !== "win32") {
       assert.equal(
         fs.statSync(path.join(root, "research", "c-1")).mode & 0o777,
@@ -366,11 +381,14 @@ test("signing in adds the extension, binds X search to the catalog, settles and 
     reports.write("deleted-chat", "t", "old");
     reports.write("c-1", "t", "kept");
     assert.equal(env.engine.extensions.has("research"), true);
+    assert.deepEqual(env.engine.peerExtensions.map(extension => extension.id), ["research"]);
     assert.deepEqual(env.engine.searchCapabilities("claudex", "grok-4"), {
       xSearch: true,
+      webSearch: "native",
     });
     assert.deepEqual(env.engine.searchCapabilities("claudex", "gpt-5"), {
       xSearch: false,
+      webSearch: "native",
     });
     assert.equal(env.engine.searchCapabilities("claudex", "other"), undefined);
     assert.equal(env.engine.searchCapabilities("local", "grok-4"), undefined);
@@ -384,6 +402,7 @@ test("signing in adds the extension, binds X search to the catalog, settles and 
     assert.equal(fs.existsSync(path.join(env.root, "research", "c-1")), true);
     env.deactivate();
     assert.equal(env.engine.extensions.has("research"), false);
+    assert.deepEqual(env.engine.peerExtensions, []);
   } finally {
     env.close();
   }
@@ -415,3 +434,4 @@ test("settling leaves running and finished Research turns alone", () => {
   );
   assert.equal(settleResearchTurns(conversations), false);
 });
+

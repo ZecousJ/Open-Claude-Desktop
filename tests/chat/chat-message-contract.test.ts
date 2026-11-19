@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createElement, createRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { parseHTML } from "linkedom";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import type { Conversation } from "../../shared/types";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { ConversationTranscript } from "../../src/transcript/ConversationTranscript";

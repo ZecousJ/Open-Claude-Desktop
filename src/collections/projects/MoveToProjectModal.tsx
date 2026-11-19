@@ -1,10 +1,9 @@
-import { FolderInput } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Users } from "../../ui/glyphs";
 import type { Conversation, Project } from "../../../shared/types";
 import { Modal } from "../../ui/Controls";
 import { Skeleton } from "../../ui/Skeleton";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { formatText, t } from "../../i18n";
 import { useApp } from "../../app/AppContext";
 import {
@@ -32,7 +31,7 @@ export function moveTargets(
     .slice(0, 30);
 }
 
-/** Search, create and list states. */
+/** Search, create and list states (live claude.ai bundle, 2026-10-14, c9d22852b-BCr1HnjD). */
 export function ProjectMoveList({
   projects,
   query,
@@ -96,7 +95,7 @@ export function ProjectMoveList({
               : project.name
           }
         >
-          <AppIcon name="Projects" />
+          <Anthropicon name="Projects" />
           <span>{project.name}</span>
           {project.isPrivate === false && (
             <small>
@@ -119,11 +118,11 @@ export function ProjectMoveList({
           })}
           onClick={() => onCreate(query)}
         >
-          <AppIcon name="Plus" />
+          <Anthropicon name="Plus" />
           <span>
             {t("Create")}{" "}
             <small>
-              <AppIcon name="Projects" />
+              <Anthropicon name="Projects" />
               {query}
             </small>
           </span>
@@ -251,7 +250,7 @@ export function MoveToProjectModal({
         }}
       >
         <label className="project-move-search">
-          <AppIcon name="Search" />
+          <Anthropicon name="Search" />
           <input
             autoFocus
             value={query}
@@ -342,14 +341,62 @@ export function ProjectMoveOverlay() {
   );
 }
 
-/** While the project is created: a folder with a line dropping into it. */
+/** Creating animation (live claude.ai bundle, 2026-10-14, c9d22852b-BCr1HnjD, Qr). */
 function CreatingProjectIcon() {
   return (
-    <FolderInput
-      size={32}
-      strokeWidth={1.5}
+    <svg
+      width={32}
+      height={32}
+      viewBox="0 0 20 20"
+      fill="currentColor"
       aria-hidden="true"
       className="project-move-animation"
-    />
+    >
+      <path d="M15.8198 7C16.6885 7.00025 17.3624 7.73158 17.3178 8.57617L17.2993 8.74707L16.1332 15.7471C16.0126 16.4699 15.3865 16.9996 14.6538 17H5.34711C4.6142 16.9998 3.98833 16.47 3.86762 15.7471L2.7016 8.74707C2.54922 7.83277 3.25418 7 4.18109 7H15.8198ZM4.18109 8C3.87216 8 3.63722 8.27731 3.68793 8.58203L4.85394 15.582C4.89413 15.8229 5.10291 15.9998 5.34711 16H14.6538C14.8978 15.9996 15.1068 15.8228 15.1469 15.582L16.3129 8.58203L16.3188 8.46973C16.3036 8.21259 16.0899 8.00023 15.8198 8H4.18109Z" />
+      {[
+        {
+          path: "M16.0004 5.5C16.0004 5.224 15.7764 5.00024 15.5004 5H4.50043C4.22428 5 4.00043 5.22386 4.00043 5.5C4.00043 5.77614 4.22428 6 4.50043 6H15.5004C15.7764 5.99976 16.0004 5.776 16.0004 5.5Z",
+          translate: "0,-5; 0,-1; 0,1.5; 0,1.5",
+          rotate: "6 10 5.5; 0 10 5.5; 0 10 5.5; 0 10 5.5",
+          begin: "0s",
+        },
+        {
+          path: "M14.5004 3.5C14.5004 3.224 14.2764 3.00024 14.0004 3H6.00043C5.72428 3 5.50043 3.22386 5.50043 3.5C5.50043 3.77614 5.72428 4 6.00043 4H14.0004C14.2764 3.99976 14.5004 3.776 14.5004 3.5Z",
+          translate: "2,-5; 0,-1; 0,3.5; 0,3.5",
+          rotate: "10 10 3.5; 0 10 3.5; 0 10 3.5; 0 10 3.5",
+          begin: "0.5s",
+        },
+      ].map((line) => (
+        <g key={line.begin} transform="translate(10, 10)">
+          <path d={line.path} transform="translate(-10, -10)">
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              values={line.translate}
+              dur="2s"
+              begin={line.begin}
+              repeatCount="indefinite"
+              additive="sum"
+            />
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              values={line.rotate}
+              dur="2s"
+              begin={line.begin}
+              repeatCount="indefinite"
+              additive="sum"
+            />
+            <animate
+              attributeName="opacity"
+              values="0;0.7;0"
+              dur="2s"
+              begin={line.begin}
+              repeatCount="indefinite"
+            />
+          </path>
+        </g>
+      ))}
+    </svg>
   );
 }

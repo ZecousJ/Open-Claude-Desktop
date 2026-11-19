@@ -7,8 +7,8 @@ const focusable =
 
 /**
  * Scrolling dialog with a title bar, as used by the original's Keyboard
- * shortcuts and What's new: a 54px header on a lighter band, a hairline, then
- * the scrolling body.
+ * shortcuts and What's new (R-0126, R-0006): a 54px header on a lighter
+ * band, a hairline, then the scrolling body.
  */
 export function Sheet({
   title,

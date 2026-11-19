@@ -1,4 +1,14 @@
-import type { Conversation, Item } from "./types";
+import type { Conversation, Item, Turn } from "./types";
+export function agentItems(turns: Turn[]): Item[] {
+  return turns.flatMap((turn) =>
+    turn.items.flatMap((item) => [
+      item,
+      ...Object.values(item.agentThreads ?? {}).flatMap((thread) =>
+        agentItems(thread.turns),
+      ),
+    ]),
+  );
+}
 /** Child agent thread IDs that a native collaboration or sub-agent item refers to. */
 export function agentThreadIds(item: Item): string[] {
   if (item.type === "subAgentActivity")
@@ -23,16 +33,15 @@ export function applyAgentUsage(
 ): boolean {
   if (!Number.isSafeInteger(totalTokens) || totalTokens < 0) return false;
   let changed = false;
-  for (const turn of conversation.turns)
-    for (const item of turn.items) {
-      if (!ownsWorkflowAgent(item, agentId)) continue;
-      const previous = item.agentTokenUsage?.[agentId];
-      if (typeof previous === "number" && previous >= totalTokens) continue;
-      item.agentTokenUsage = {
-        ...item.agentTokenUsage,
-        [agentId]: totalTokens,
-      };
-      changed = true;
-    }
+  for (const item of agentItems(conversation.turns)) {
+    if (!ownsWorkflowAgent(item, agentId)) continue;
+    const previous = item.agentTokenUsage?.[agentId];
+    if (typeof previous === "number" && previous >= totalTokens) continue;
+    item.agentTokenUsage = {
+      ...item.agentTokenUsage,
+      [agentId]: totalTokens,
+    };
+    changed = true;
+  }
   return changed;
 }

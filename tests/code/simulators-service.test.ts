@@ -183,11 +183,11 @@ test("the first use of a device asks, names it, and remembers Allow", async () =
   assert.equal(asked.length, 1);
 });
 
-test("Cancel stops Claudex, and it is not asked again for ten minutes", async () => {
+test("Cancel stops Claude, and it is not asked again for ten minutes", async () => {
   const { service, asked, advance, driver } = setup({ answer: "cancel" });
   const first = await control(service, { action: "screenshot" });
   assert.equal(first.success, false);
-  assert.match(textOf(first), /declined to let Claudex use iPhone 17/);
+  assert.match(textOf(first), /declined to let Claude use iPhone 17/);
   const second = await control(service, { action: "tap", x: 1, y: 1 });
   assert.equal(second.success, false);
   assert.equal(asked.length, 1);

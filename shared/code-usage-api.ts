@@ -1,7 +1,7 @@
 /**
- * The Code home: the usage card (the local usage log, and for a Sub2API account
- * the service's usage dashboard) and the working folder's Git branch and
- * remotes.
+ * The Code home (package WP4b): the usage card (the local usage log, and for
+ * a Sub2API account the service's usage dashboard) and the working folder's
+ * Git branch and remotes.
  */
 import type { EnvironmentRef, UsageRange, UsageSummary } from "./types";
 import { bridgeMethods } from "./bridge-methods";

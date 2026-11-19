@@ -1,4 +1,9 @@
 import { z } from "zod";
+const historySearchPage = z.strictObject({
+  offset: z.number().int().min(0).max(100000),
+  archive: z.enum(["all", "active", "archived"]),
+  starredOnly: z.boolean().optional(),
+});
 export const historySearchInput = z
   .object({
     query: z
@@ -12,6 +17,7 @@ export const historySearchInput = z
     projectId: z.string().min(1).max(100).optional(),
     includeArchived: z.boolean().default(false),
     limit: z.number().int().min(1).max(50).default(20),
+    page: historySearchPage.optional(),
   })
   .strict();
 export const historySearchResult = z.object({
@@ -36,4 +42,5 @@ export type HistorySearchOptions = {
   projectId?: string;
   includeArchived?: boolean;
   limit?: number;
+  page?: z.infer<typeof historySearchPage>;
 };

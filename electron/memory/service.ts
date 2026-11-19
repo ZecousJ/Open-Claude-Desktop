@@ -22,6 +22,7 @@ import type {
 } from "../../shared/memory-api";
 import {
   MemoryConflictError,
+  MemoryControlsConflictError,
   MemoryOfflineError,
   MemoryUnsupportedError,
   type MemoryStore,
@@ -38,11 +39,14 @@ import {
   type MemorySnapshot,
   type MemorySource,
 } from "./types";
+import { cleanControls } from "./controls";
+import { RemoteMemoryStore } from "./remote-store";
 
 declare module "../app/app-context" {
   interface MemorySlot {
     /** The signed-in account's memory service. */
     service: MemoryService;
+    onMelangeEnabled?(): void;
   }
 }
 
@@ -126,6 +130,10 @@ export class MemoryService {
       this.loading = undefined;
     });
     return this.loading;
+  }
+  async refreshAfterWrite() {
+    await this.loading;
+    await this.refresh();
   }
   /** Reads again unless the last read is more recent than `minAgeMs`. */
   refreshIfOlder(minAgeMs: number) {
@@ -244,6 +252,26 @@ export class MemoryService {
   setRunState(read: (() => MemoryRunState) | undefined) {
     this.runState = read;
   }
+  canRegenerate(): boolean {
+    return (
+      !this.closed &&
+      this.state === "ready" &&
+      !this.options.policy().pending &&
+      this.runState !== undefined &&
+      this.effective().generate
+    );
+  }
+  preferenceActions(): MemoryPrefs {
+    if (this.closed || this.state !== "ready" || this.options.policy().pending) return { ...off };
+    const status = this.status();
+    return {
+      generate: status.available && status.allowed.generate,
+      searchChats: (status.available || status.reason === "server") && status.allowed.searchChats,
+    };
+  }
+  get synthesizing(): boolean {
+    return this.runState?.().synthesizing === true;
+  }
   /** Tells the windows something about memory changed (a summary started or ended). */
   announce() {
     if (!this.closed) this.options.changed();
@@ -285,12 +313,52 @@ export class MemoryService {
       ...(run?.lastRun ? { lastRun: run.lastRun } : {}),
     };
   }
+  async readSettings(): Promise<MemoryStatus> {
+    if (!(this.store instanceof RemoteMemoryStore) || !this.supported ||
+        this.options.policy().pending) return this.status();
+    const current = await this.store.read();
+    const policy = this.policyMemory();
+    if (!policy || !this.supported || this.options.policy().pending)
+      return this.status();
+    const reason = policy.enabled ? current.reason : "policy";
+    const status = this.status();
+    const global = this.docView("global", current);
+    return {
+      ...status,
+      global: global ?? undefined,
+      available: !reason && current.available,
+      reason,
+      allowed: this.allowed(policy, current),
+      prefs: this.prefs(policy, current),
+    };
+  }
+  async readControlsState(scope: MemoryScope) {
+    let snapshot: MemorySnapshot | undefined;
+    if (this.store instanceof RemoteMemoryStore) {
+      const checkPolicy = () => {
+        const { memory, pending } = this.options.policy();
+        if (pending) throw new Error(memoryMessages.pending);
+        if (!memory) throw new Error(memoryMessages.unsupported);
+        if (!memory.enabled) throw new Error(memoryMessages.disabled);
+      };
+      checkPolicy();
+      snapshot = await this.store.read();
+      checkPolicy();
+      if (!snapshot.available) throw new Error(memoryMessages.disabled);
+    } else {
+      if (!this.status().available) throw new Error(memoryMessages.disabled);
+      snapshot = this.snapshot();
+    }
+    return {
+      doc: this.docView(scope, snapshot),
+      version: this.controlsVersion(scope, snapshot) ?? null,
+    };
+  }
   /** A scope's document and edits as the engine and the tools read them. */
-  memoryFor(scope: MemoryScope): {
+  memoryFor(scope: MemoryScope, snapshot = this.snapshot()): {
     doc?: MemoryDocRecord;
     edits: MemoryEditRecord[];
   } {
-    const snapshot = this.snapshot();
     const doc = snapshot?.docs.find((item) => item.scope === scope);
     const edits = (snapshot?.edits ?? [])
       .filter((edit) => edit.scope === scope && edit.text !== null)
@@ -303,16 +371,43 @@ export class MemoryService {
       );
     return { ...(doc ? { doc } : {}), edits };
   }
+  controlsVersion(scope: MemoryScope, snapshot = this.snapshot()): string | undefined {
+    return (
+      snapshot?.controlsVersions?.[scope] ?? snapshot?.emptyControlsVersion
+    );
+  }
+  async replaceControls(
+    scope: MemoryScope,
+    raw: string[],
+    baseVersion: string,
+    options?: { nonGenerating?: boolean },
+  ): Promise<MemoryDocView> {
+    if (options?.nonGenerating) this.assertWritable("write");
+    else await this.prepare("write");
+    if (options?.nonGenerating ? !this.status().allowed.generate : !this.effective().generate)
+      throw new Error(memoryMessages.off);
+    const controls = cleanControls(raw, this.limits());
+    await this.change(() =>
+      this.options.store.replaceControls(scope, controls, baseVersion),
+      { skipConflictRefresh: options?.nonGenerating },
+    );
+    return (
+      this.docView(scope) ?? {
+        ...emptyDocView,
+        controlsVersion: this.controlsVersion(scope),
+      }
+    );
+  }
   /** A scope's memory as the window shows it; null when there is none. */
-  docView(scope: MemoryScope): MemoryDocView | null {
-    const { doc, edits } = this.memoryFor(scope);
+  docView(scope: MemoryScope, snapshot = this.snapshot()): MemoryDocView | null {
+    const { doc, edits } = this.memoryFor(scope, snapshot);
     if (!doc && !edits.length) return null;
     const views: MemoryEditView[] = edits.map((edit) => ({
       id: edit.id,
       text: edit.text ?? "",
       createdAt: edit.createdAt,
     }));
-    const limits = this.limits();
+    const limits = snapshot?.limits ?? memoryLimits;
     const editLimits = {
       edits: limits.editsPerScope,
       editChars: limits.editChars,
@@ -325,6 +420,7 @@ export class MemoryService {
         revision: 0,
         edits: views,
         limits: editLimits,
+        controlsVersion: this.controlsVersion(scope, snapshot),
       };
     return {
       content: doc.content ?? "",
@@ -336,6 +432,7 @@ export class MemoryService {
       revision: doc.revision,
       edits: views,
       limits: editLimits,
+      controlsVersion: this.controlsVersion(scope, snapshot),
     };
   }
   /**
@@ -343,9 +440,9 @@ export class MemoryService {
    * (at most every few seconds), then the change must be one memory can
    * take now.
    */
-  private async prepare(kind: "prefs" | "write" | "delete") {
+  private async prepare(kind: "prefs" | "write" | "delete", retryOffline = false) {
     if (this.options.store.kind === "remote" && this.state === "offline")
-      await this.refreshIfOlder(5_000);
+      await this.refreshIfOlder(retryOffline ? 0 : 5_000);
     this.assertWritable(kind);
   }
   /**
@@ -353,6 +450,7 @@ export class MemoryService {
    * works while the administrator has memory turned off, like the server.
    */
   private assertWritable(kind: "prefs" | "write" | "delete") {
+    if (this.closed) throw new Error("Memory account changed.");
     const policy = this.policyMemory();
     if (!policy || this.state === "unsupported")
       throw new Error(memoryMessages.unsupported);
@@ -372,12 +470,26 @@ export class MemoryService {
     return value;
   }
   /** Runs a change; a conflict reads memory again before it is reported. */
-  private async change<T>(run: () => Promise<T>): Promise<T> {
+  private async change<T>(
+    run: () => Promise<T>,
+    options?: { skipConflictRefresh?: boolean; keepReadStateOnOffline?: boolean },
+  ): Promise<T> {
     try {
-      return this.done(await run());
+      if (this.closed) throw new Error("Memory account changed.");
+      const result = await run();
+      if (this.closed) throw new Error("Memory account changed.");
+      return this.done(result);
     } catch (error) {
-      if (error instanceof MemoryConflictError) await this.refresh();
-      else if (error instanceof MemoryOfflineError) {
+      if (
+        !options?.skipConflictRefresh &&
+        (error instanceof MemoryConflictError ||
+          error instanceof MemoryControlsConflictError)
+      )
+        await this.refresh();
+      else if (
+        error instanceof MemoryOfflineError &&
+        !options?.keepReadStateOnOffline
+      ) {
         this.state = "offline";
         this.options.changed();
       } else if (error instanceof MemoryUnsupportedError) {
@@ -387,7 +499,27 @@ export class MemoryService {
       throw error;
     }
   }
-  async setPrefs(next: Partial<MemoryPrefs>): Promise<MemoryStatus> {
+  async setPrefs(next: Partial<MemoryPrefs>, options?: {disableOnly?: boolean}): Promise<MemoryStatus> {
+    if (options?.disableOnly) {
+      if (Object.keys(next).length !== 1 || next.generate !== false)
+        throw new Error("Only disabling future memory generation is supported.");
+      // Explicit user action only. Never refresh/ready, discover external enablement,
+      // or overwrite the independently stored search preference.
+      this.assertWritable("prefs");
+      const status = this.status();
+      if (!status.available || !status.allowed.generate)
+        throw new Error(memoryMessages.switchDisabled);
+      // Defaults are fallback only: the local store rereads disk before
+      // deciding whether another writer already made an independent choice.
+      const change: Partial<MemoryPrefs> = { generate: false };
+      await this.change(
+        () => this.store.kind === "local"
+          ? this.store.setPrefs(change, status.prefs)
+          : this.store.setPrefs(change),
+        { skipConflictRefresh: true, keepReadStateOnOffline: true },
+      );
+      return this.status();
+    }
     await this.prepare("prefs");
     const status = this.status();
     const change: Partial<MemoryPrefs> = {};
@@ -399,10 +531,14 @@ export class MemoryService {
       change[key] = value;
     }
     if (!Object.keys(change).length) return status;
-    // A local account stores both switches, so the default becomes a choice.
-    if (this.options.store.kind === "local")
-      Object.assign(change, { ...status.prefs, ...change });
-    await this.change(() => this.options.store.setPrefs(change));
+    // Never send stale implicit choices as part of the user's patch. Only a
+    // local file still lacking prefs after rereading disk needs these defaults.
+    await this.change(
+      () => this.store.kind === "local"
+        ? this.store.setPrefs(change, status.prefs)
+        : this.store.setPrefs(change),
+      { keepReadStateOnOffline: true },
+    );
     return this.status();
   }
   async saveDoc(
@@ -429,6 +565,8 @@ export class MemoryService {
     content: string,
     baseRevision: number,
     editsUpto?: string,
+    baseControlsVersion?: string,
+    checkBeforeWrite?: () => void,
   ): Promise<MemoryDocView> {
     await this.prepare("write");
     if (!this.effective().generate)
@@ -440,12 +578,17 @@ export class MemoryService {
     if (utf8Bytes(content) > this.limits().docBytes)
       throw new Error(memoryMessages.tooLarge);
     await this.change(() =>
-      this.options.store.saveDoc(scope, {
-        content,
-        source: "generated",
-        baseRevision,
-        ...(editsUpto !== undefined ? { editsUpto } : {}),
-      }),
+      this.options.store.saveDoc(
+        scope,
+        {
+          content,
+          source: "generated",
+          baseRevision,
+          ...(editsUpto !== undefined ? { editsUpto } : {}),
+          ...(baseControlsVersion !== undefined ? { baseControlsVersion } : {}),
+        },
+        checkBeforeWrite,
+      ),
     );
     return this.docView(scope)!;
   }
@@ -525,8 +668,8 @@ export class MemoryService {
     await this.change(() => this.options.store.removeEdit(id));
     return this.status();
   }
-  async reset(scope?: MemoryScope): Promise<MemoryStatus> {
-    await this.prepare("delete");
+  async reset(scope?: MemoryScope, options?: { retryOffline?: boolean }): Promise<MemoryStatus> {
+    await this.prepare("delete", options?.retryOffline);
     await this.change(() => this.options.store.reset(scope));
     return this.status();
   }

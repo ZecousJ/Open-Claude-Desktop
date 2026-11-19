@@ -37,12 +37,31 @@ import { OfficialTurnChanges } from "./official/OfficialTurnChanges";
 import { OfficialTurnActivity } from "./official/OfficialTurnActivity";
 import { SourcesChip } from "./official/SourcesChip";
 import { Star } from "../ui/Star";
+import { AnthropiconGlyph } from "../ui/AnthropiconGlyph";
+import { t, tc } from "../i18n";
+import { ReplyBanner, waitingForResponse } from "../transcript/ReplyBanner";
 
-/** The reference rows the phones draw in Chat; web and desktop keep theirs. */
+/**
+ * The official Claude Android rows the phones draw in Chat
+ * (fidelity/mobile-official/chat-transcript.md); web and desktop keep theirs.
+ */
 const officialSlots: TranscriptSlotsValue = {
   StepsGroup: OfficialStepsRow,
   TurnActivity: OfficialTurnActivity,
   ReplyActionsEnd: SourcesChip,
+  StoppedReply: ({ busy, onRetry }) => (
+    <div className="official-stopped-reply">
+      <ReplyBanner
+        mode="chat"
+        actionAlign="center"
+        icon={<AnthropiconGlyph name="Info" size={20} />}
+        buttons={onRetry ? [{ label: t("Try again"), onClick: onRetry }] : []}
+        disabledReason={busy ? waitingForResponse : undefined}
+      >
+        {tc("mobile-stop", "Claudex’s response was interrupted.")}
+      </ReplyBanner>
+    </div>
+  ),
 };
 
 /** Code and Cowork end on the same upright mark as Chat. */
@@ -50,9 +69,9 @@ const PhoneEndMark = () => <Star size={28} />;
 const otherModeSlots: TranscriptSlotsValue = { CodeEndMark: PhoneEndMark };
 
 /**
- * The reference Code session rows the phones draw in Code (the folded tool-call
- * row and its sheets, the turn-edits card, the scroll pill); Cowork keeps the
- * shared rows.
+ * The official Claude Android Code session rows the phones draw in Code
+ * (the folded tool-call row and its sheets, the turn-edits card, the scroll
+ * pill); Cowork keeps the shared rows.
  */
 export const codeSlots: TranscriptSlotsValue = {
   CodeEndMark: PhoneEndMark,

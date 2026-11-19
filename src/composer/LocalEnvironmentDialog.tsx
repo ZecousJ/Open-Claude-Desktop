@@ -6,7 +6,7 @@ import { envFileLimit, envFileProblem } from "../../shared/env-file";
 import { formatText, t } from "../i18n";
 import "./local-environment.css";
 
-/** The example the original's empty editor shows as its placeholder. */
+/** The example the original's empty editor shows as its placeholder (R-0386). */
 const example = [
   "NODE_ENV=production",
   "GIT_AUTHOR_NAME=Your Name",
@@ -20,10 +20,10 @@ const envFormatUrl =
   "https://github.com/motdotla/dotenv#what-rules-are-there-for-the-syntax-of-env-files";
 
 /**
- * Local ▾ → Edit local environment: one Environment variables field in .env
- * format. The variables reach the agent runtime the next time it starts
- * (electron/engine.ts), so Code sessions on this computer see them. Save
- * changes is always white, as in the cloud editor's capture.
+ * Local ▾ → Edit local environment (R-0386): one Environment variables
+ * field in .env format. The variables reach the agent runtime the next
+ * time it starts (electron/engine.ts), so Code sessions on this computer
+ * see them. Save changes is always white, as in the cloud editor's capture.
  */
 export function LocalEnvironmentDialog({
   value,

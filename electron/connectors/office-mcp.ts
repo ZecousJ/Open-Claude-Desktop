@@ -67,11 +67,9 @@ export async function callOfficeMcp(
   throw new Error("The request failed.");
 }
 
-/**
- * The add-in's document channel is exposed as an account-local MCP server.
- * Official desktop also ships a separate Graph/MSAL server; this bridge never
- * impersonates that client.
- */
+/** The add-in's document channel is exposed as an account-local MCP server.
+ * Official desktop also ships a separate Graph/MSAL server (desktop 2.37337.1,
+ * index.chunk-BWk6pVUt.js:61695,61719); this bridge never impersonates that client. */
 export async function startOfficeMcp(
   ctx: AppContext,
   bridge: OfficeAddinBridge,

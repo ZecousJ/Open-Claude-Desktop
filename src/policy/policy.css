@@ -1,6 +1,6 @@
 /*
- * Account menu additions: Learn more carries a grey 16px chevron at the right
- * edge; its submenu reuses the account menu frame.
+ * Account menu additions (R-个人菜单-展开-深色, 2x): Learn more carries a grey
+ * 16px chevron at the right edge; its submenu reuses the account menu frame.
  */
 .profile-popover > button > .profile-submenu-chevron,
 .profile-menu-scroll > button > .profile-submenu-chevron {
@@ -39,10 +39,10 @@
 }
 
 /*
- * The account-area download glyph: 10×10 ink at #c7c8c2, as bright as the
- * account name. A required update keeps the glyph and adds the blue attention
- * dot the collapsed sidebar's toggle carries (the original's size-1.5
- * bg-fill-accent indicator, #2a78d6, 6px).
+ * The account-area download glyph (R-0056; R-Chat/R-Cowork home, S-0006,
+ * S-0008 at 2x): 10×10 ink at #c7c8c2, as bright as the account name. A
+ * required update (no capture) keeps the glyph and adds the blue attention dot
+ * the collapsed sidebar's toggle carries (the original's size-1.5 bg-fill-accent indicator, #2a78d6, 6px).
  */
 .profile-wrap > .icon-button.account-apps,
 .profile-wrap > .icon-button.account-update {
@@ -69,8 +69,8 @@
 }
 
 /*
- * Update notice above the account button: account menu colours, 10px radius
- * frame, 13px title over 12px grey detail.
+ * Update notice above the account button (R-0111 has no capture): account
+ * menu colours, 10px radius frame, 13px title over 12px grey detail.
  */
 .update-notice {
   position: relative;
@@ -179,19 +179,19 @@
   color: #141414;
 }
 
-/* Administrator notice above the composer: the Chat banner frame. */
+/* Administrator notice above the composer: the Chat banner frame (R-0259). */
 .usage-banner.announcement .usage-banner-title {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /*
- * What's new. The frame is the shared 520px Sheet; inside, What's new is a size
- * smaller than the Keyboard shortcuts sheet: a 47px header (0.5px #555 rule)
- * with a 14px semibold title 9px in and a small close cross, 14px semibold
- * dates, an 18px version pill with 11px text, 11px grey category labels and
- * 13px/19px items 12px in. Scoped with :has() so the other sheets keep their
- * look.
+ * What's new (R-0358, Code home, 2x; R-0006-0007 for structure). The frame is
+ * the shared 520px Sheet; inside, What's new is a size smaller than the
+ * Keyboard shortcuts sheet: a 47px header (0.5px #555 rule) with a 14px
+ * semibold title 9px in and a small close cross, 14px semibold dates, an 18px
+ * version pill with 11px text, 11px grey category labels and 13px/19px items
+ * 12px in. Scoped with :has() so the other sheets keep their look.
  */
 .sheet:has(.release-notes-version) > header {
   height: 47px;
@@ -219,7 +219,7 @@
 .sheet .release-notes-version > header {
   margin: 3px 0 8px;
 }
-/* A 1px #383836 rule ~17px under the last item, ~27px above the next date. */
+/* A 1px #383836 rule ~17px under the last item, ~27px above the next date (R-0358 scroll captures). */
 .sheet .release-notes-version + .release-notes-version {
   margin-top: 11px;
   padding-top: 24px;

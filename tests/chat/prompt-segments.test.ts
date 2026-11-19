@@ -11,7 +11,7 @@ test("prompts keep Markdown literal but mark code spans and web addresses", () =
       { kind: "text", text: "含**粗体**、" },
       { kind: "code", text: "inline code" },
       { kind: "text", text: " 和 " },
-      // The link runs to the next whitespace, through CJK text.
+      // R-0561: the link runs to the next whitespace, through CJK text.
       { kind: "link", text: "https://example.com/a?b=1。后文" },
     ],
   );

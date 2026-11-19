@@ -1,8 +1,9 @@
 /**
  * The main window's size, position and zoom, remembered across runs in
  * `main-window.json` (geometry and zoom only). The original keeps its main
- * window's position, size, maximized and full-screen state and opens at 1200 x
- * 800 the first time; its minimum is 600 x 400.
+ * window's position, size, maximized and full-screen state and opens at
+ * 1200 x 800 the first time (source: desktop bundle 2.31226.1 static JS:
+ * default size, window state manager); its minimum is 600 x 400.
  *
  * The file functions and the clamping are plain Node, so they run under the
  * unit tests; `trackMainWindow` only needs the window methods it names.
@@ -16,7 +17,7 @@ import { zoomLimits } from "./window-zoom";
 
 /** The size the main window opens at when nothing is remembered. */
 export const defaultMainWindowSize = { width: 1200, height: 800 };
-/** The smallest the main window goes. */
+/** The smallest the main window goes (W602 captures narrow it to ~600). */
 export const minMainWindowSize = { width: 600, height: 400 };
 
 const stateSchema = z.object({

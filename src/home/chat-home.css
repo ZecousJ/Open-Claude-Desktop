@@ -1,8 +1,9 @@
 /* Chat and Cowork home, measured against Claude's 1351 × 1063 Actual Size dark-theme screenshots
    (claude-chat-home-main-001, claude-cowork-home-main-001). Colors are the brightest glyph pixel of each label. */
 
-/* Greeting: Anthropic Serif Display, wght 300, sized by the web's clamp, no
-   longer the 38px of the old 1351 × 1063 screenshots. */
+/* Greeting: Anthropic Serif Display, wght 300, sized by the web's clamp (24px
+   to 32px, 32px at 1440; live claude.ai /new, 2026-10-16, official-new.txt:29),
+   no longer the 38px of the old 1351 × 1063 screenshots. */
 :root:not([data-theme="light"]) .chat-home > h1 {
   color: #f8f8f6;
 }
@@ -21,13 +22,13 @@
   }
 }
 
-/* Current web home, including incognito, uses the compact greeting layout. The
-   column starts below its 48px header; then come viewport headroom, the
-   greeting's 12px top margin, and a 24px gap before the composer. Keep this in
-   the eager stylesheet so loading the composer chunk cannot move the home.
-   Js:4353-4416; measured at 1440x900 (composer y419.492) and 1440x700
-   (y327.492). Its rem values use a 16px root, while Claudex uses 14px, so
-   retain their actual px sizes. */
+/* Current web home, including incognito, uses the compact greeting layout. The column starts
+   below its 48px header; then come viewport headroom, the greeting's 12px
+   top margin, and a 24px gap before the composer. Keep this in the eager
+   stylesheet so loading the composer chunk cannot move the home.
+   Source: live 2026-10-16, shared-19-B3wmJeb_.js:4353-4416; measured at
+   1440x900 (composer y419.492) and 1440x700 (y327.492). Its rem values use
+   a 16px root, while Claudex uses 14px, so retain their actual px sizes. */
 @media (min-width: 640px) {
   .app.web .chat-main .chat-home {
     /* Between sm and md: pane sides 8px, column sides 12px and composer
@@ -112,7 +113,7 @@
 .model-effort-pill .model-button-effort {
   flex-shrink: 0;
 }
-/* The warning glyph 4px after "Max", in the menu badge's amber. */
+/* R-0311: the warning glyph 4px after "Max", in the menu badge's amber. */
 .model-button-warning {
   margin: 0 0 -1px 4px;
   color: #d69c44;
@@ -126,7 +127,8 @@
 /* Hover shows the same rounded fill as the open menu (claude.ai). */
 :root:not([data-theme="light"]) .model-effort-pill:hover,
 :root:not([data-theme="light"]) .model-effort-pill[aria-expanded="true"] {
-  /* The original's ghost hover, white 7.5%. */
+  /* The original's ghost hover, white 7.5% (was #262626 from a capture
+     frame; source: desktop bundle 2.31226.1 static CSS/JS). */
   background: var(--fill-ghost-hover);
 }
 :root[data-theme="light"] .model-effort-pill .model-button-name {
@@ -175,14 +177,13 @@
   width: 18px;
   height: 18px;
 }
-/* Home toolbar spacing: the Cowork microphone segment takes the place of Chat's
-   voice segment. The model is no longer beside it: it sits in the row under the
-   frame. */
+/* Home toolbar spacing: the Cowork microphone segment takes the place of Chat's voice segment. The model is
+   no longer beside it: it sits in the row under the frame (live claude.ai bundle, 2026-10-12; live-web/composer.css). */
 .chat-home .cowork-voice-controls {
   margin-right: -8px;
 }
-/* The ⌄ sits 17.5px after the microphone's centre, 2.5px nearer than the 15px
-   segment alone puts it. */
+/* The ⌄ sits 17.5px after the microphone's centre (R-Cowork-首页-新建: 1690 → 1725 at 2x), 2.5px nearer than the
+   15px segment alone puts it. */
 .chat-home
   .cowork-voice-controls:not(.code-voice-controls)
   .cowork-voice-options {
@@ -194,9 +195,8 @@
   top: 15px;
 }
 
-/* Add button in the home composer: Claude draws its hover/open face as a 31.5 ×
-   30px rounded square centered on the plus; while the menu is open it is
-   #313131 with a soft drop shadow. */
+/* Add button in the home composer: Claude draws its hover/open face as a 31.5 × 30px rounded square
+   centered on the plus; while the menu is open it is #313131 with a soft drop shadow (claude-chat-add-menu-main-001). */
 .chat-home .composer-left > .popover-anchor > .icon-button {
   position: relative;
   isolation: isolate;
@@ -217,8 +217,8 @@
   transform: translate(-50%, -50%);
   border-radius: 8px;
   pointer-events: none;
-  /* The face is the original's button fill layer: colour and shadow follow the
-     pointer in 60ms. */
+  /* The face is the original's button fill layer: colour and shadow follow
+     the pointer in 60ms (desktop bundle 2.31226.1 static CSS). */
   transition:
     background-color var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-fast) var(--ease-out);
@@ -246,9 +246,8 @@
   box-shadow: 0 1px 4px #0000001f;
 }
 
-/* The conversation-only 4px content offset for a hidden sidebar does not apply
-   to the empty home: Claude's collapsed Chat home composer spans 711-1991
-   device px, exactly like Cowork. */
+/* The conversation-only 4px content offset for a hidden sidebar does not apply to the empty home:
+   Claude's collapsed Chat home composer spans 711-1991 device px, exactly like Cowork (claude-chat-mic-idle-001). */
 .sidebar-hidden.mode-chat .chat-layout:has(> .chat-main.empty-chat) {
   padding-left: 0;
 }
@@ -258,7 +257,9 @@
   cursor: default;
 }
 
-/* A greeting that changes while the home is open fades in over 350ms. */
+/* A greeting that changes while the home is open fades in over 350ms
+   (ChatHome.tsx; the original's greeting-fade-in, desktop bundle 2.31226.1
+   static CSS/JS). */
 .chat-home > h1.greeting-fade {
   animation: greeting-fade-in 350ms ease-in-out;
 }
@@ -276,9 +277,11 @@
   animation: none;
 }
 
-/* The greeting's mark sits on the text like the live claude.ai one, so its
-   middle is half a capital above the baseline whatever the font, size or
-   script, not the middle of the serif's tall line box. */
+/* The greeting's mark sits on the text like the live claude.ai one
+   (2026-10-13: an inline-block 1cap square on the baseline, the drawing
+   scaled 1.4 about its middle, 0.45em before the words), so its middle is
+   half a capital above the baseline whatever the font, size or script,
+   not the middle of the serif's tall line box. */
 :root .chat-home > h1 {
   display: block;
   text-align: center;
@@ -300,7 +303,9 @@
 }
 
 /* The home's permission button keeps only its glyph while the composer is
-   narrower than 480px. A conversation's composer keeps its word. */
+   narrower than 480px (live claude.ai /new, 2026-10-21: "Manual" at a
+   480px composer, the Hand / Fastforward glyph alone at 479). A
+   conversation's composer keeps its word. */
 .chat-home > .composer-wrap:not(.code-composer) {
   container: home-composer / inline-size;
 }

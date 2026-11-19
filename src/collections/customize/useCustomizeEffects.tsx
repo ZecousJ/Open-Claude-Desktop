@@ -485,7 +485,7 @@ export function useCustomizeEffects(kit: UseCustomizeEffectsKit) {
       setBusy(undefined);
     }
   }
-  // Upload skill opens the Upload a skill page.
+  // Upload skill opens the Upload a skill page (R-1130).
   const [uploading, setUploading] = useState(false);
   const upload = () => setUploading(true);
   async function setEnabled(skill: CustomizeSkill, enabled: boolean) {

@@ -40,7 +40,7 @@ export type KnowledgeSnapshot = Knowledge & {
   uploadCapabilities?: KnowledgeUploadCapabilities;
 };
 
-// File rows and picking.
+// File rows and picking (live claude.ai bundle, 2026-10-14, ca12e49f2-CABp0rxn.js, c5512639f-DFhfJjZE.js).
 export function KnowledgeList({
   files,
   pending = [],
@@ -387,7 +387,7 @@ function KnowledgeRow({
 export function knowledgeSourceLabel(
   source: NonNullable<KnowledgeFile["source"]>,
 ) {
-  // 12e49f2-B8zRz5-9:493,1242 distinguishes inaccessible from failed.
+  // 1016 ca12e49f2-B8zRz5-9:493,1242 distinguishes inaccessible from failed.
   switch (source.failure) {
     case "reconnect":
       return "Reconnect source to sync";
@@ -407,8 +407,9 @@ export function knowledgeSourceLabel(
 }
 
 /**
- * The context list's search field and capacity row open to their height and
- * fade over 300ms on the original's knowledge-expand curve, and close back.
+ * The context list's search field and capacity row open to their height
+ * and fade over 300ms on the original's knowledge-expand curve, and close
+ * back (desktop bundle 2.31226.1; .prj-knowledge-expand).
  */
 export const KNOWLEDGE_EXPAND_MS = 300;
 
@@ -419,7 +420,7 @@ export function sourceNames(value: unknown): string[] {
     : [];
 }
 
-/** "18.2kB", "2.4MB", "12B", as the original's context cards. */
+/** "18.2kB", "2.4MB", "12B", as the original's context cards (R-1314). */
 export function formatSize(bytes: number) {
   if (bytes >= 1000 * 1000)
     return `${(bytes / 1000 / 1000).toFixed(1).replace(/\.0$/, "")}MB`;
@@ -428,7 +429,7 @@ export function formatSize(bytes: number) {
   return `${bytes}B`;
 }
 
-// The reference design: Progress tone thresholds.
+// Live claude.ai bundle, 2026-10-14, ca12e49f2-CABp0rxn.js (Ze): Progress tone thresholds.
 export function capacityVariant(percent: number) {
   return percent >= 100 ? "danger" : percent > 80 ? "warning" : "accent";
 }

@@ -3,7 +3,7 @@ import { artifactsIn, type Artifact } from "../ui/ArtifactTypes";
 import { ProgressPanel } from "./ProgressPanel";
 import "./activity-panel.css";
 import { IconButton } from "../ui/Controls";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { ActivityIllustration } from "./ActivityIllustration";
 
 /** Keep existing files, tools and research actionable; a plain reply alone
@@ -48,7 +48,7 @@ export function ActivityPanel({
             className="session-activity-close"
             onClick={onClose}
           >
-            <AppIcon name="XBase" size={16} />
+            <Anthropicon name="XBase" size={16} />
           </IconButton>
         )}
         <div className="session-activity-empty">

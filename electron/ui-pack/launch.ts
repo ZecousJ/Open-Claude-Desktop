@@ -1,5 +1,5 @@
 /**
- * Interface packs in the running app (docs/releasing.md):
+ * Interface packs in the running app (docs/desktop-ui-hot-update.md):
  *
  * - The windows load `claudex-app://ui/<version>/<page>`: `<version>` is a
  *   verified pack under `<userData>/ui-packs/` or `bundled` (the installer's
@@ -39,7 +39,7 @@ import {
 } from "../../shared/ui-pack";
 import { downloadVerified } from "../updates/download";
 import { UiPackStore } from "./store";
-import { uiPackPublicKey, verifyPack } from "./verify";
+import { verifyPack } from "./verify";
 
 /** The scheme's privileges (registered with the others before `ready`). */
 export const uiSchemePrivileges = {
@@ -64,14 +64,10 @@ let store: UiPackStore | undefined;
 let protocolBroken = false;
 const log = (...args: unknown[]) => console.log("[ui-pack]", ...args);
 
-/**
- * Packaged builds with a release key only; `CLAUDEX_DISABLE_UI_PACKS=1` turns
- * packs off.
- */
+/** Packaged builds only; `CLAUDEX_DISABLE_UI_PACKS=1` turns packs off. */
 export function uiPacksAvailable() {
   return (
     app.isPackaged &&
-    !!uiPackPublicKey &&
     !process.env.CLAUDEX_DEV_URL &&
     process.env.CLAUDEX_DISABLE_UI_PACKS !== "1"
   );
@@ -114,7 +110,7 @@ async function serve(request: Request): Promise<Response> {
     return notFound();
   }
   if (!safePackPath(rel)) return notFound();
-  if (["index.html", "find.html", "quick.html"].includes(rel)) {
+  if (["index.html", "find.html", "quick.html", "checkout.html"].includes(rel)) {
     const version = store.pageVersion();
     if (version !== segments[0])
       return Response.redirect(withVersion(request.url, version));
@@ -151,7 +147,7 @@ export function startUiPacks(options: {
 
 /** The address of a page of the interface the windows run now. */
 export function uiPageUrl(
-  file: "index.html" | "find.html" | "quick.html",
+  file: "index.html" | "find.html" | "quick.html" | "checkout.html",
   query?: Record<string, string>,
 ) {
   const version = store?.pageVersion() ?? bundledUi;

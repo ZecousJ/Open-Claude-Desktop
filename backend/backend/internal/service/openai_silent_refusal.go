@@ -14,9 +14,9 @@ import (
 const (
 	openAISilentRefusalMinRequestBodyBytes = 64 * 1024
 	openAISilentRefusalErrorCode           = "openai_silent_refusal"
-	openAISilentRefusalUpstreamMessage     = "OpenAI upstream returned an empty completion stream with finish_reason=stop and no usage"
+	openAISilentRefusalUpstreamMessage     = "OpenAI upstream returned an empty completion without output or token usage"
 	openAISilentRefusalClientMessage       = "Upstream returned an empty completion without usage; no fallback account was available"
-	openAIResponsesEmptyCompletedMessage   = "OpenAI upstream returned an empty response.completed stream with no output and no usage"
+	openAIResponsesEmptyCompletedMessage   = "OpenAI upstream completed without output or token usage"
 )
 
 type openAIChatSilentRefusalDetector struct {
@@ -39,19 +39,6 @@ func newOpenAIChatSilentRefusalDetector(requestBodyLen int) *openAIChatSilentRef
 
 func (d *openAIChatSilentRefusalDetector) Enabled() bool {
 	return d != nil && d.enabled
-}
-
-func (d *openAIChatSilentRefusalDetector) ObserveSSELine(line string) {
-	if d == nil {
-		return
-	}
-	if eventType, ok := extractOpenAISSEEventLine(line); ok {
-		d.observeEventType(eventType)
-		return
-	}
-	if payload, ok := extractOpenAISSEDataLine(line); ok {
-		d.ObservePayload([]byte(payload))
-	}
 }
 
 func (d *openAIChatSilentRefusalDetector) ObservePayload(payload []byte) {
@@ -277,11 +264,6 @@ func newOpenAISilentRefusalFailoverError(c *gin.Context, account *Account, upstr
 	}
 }
 
-// newOpenAIResponsesEmptyCompletedFailoverError marks an empty
-// response.completed terminal event as a retryable upstream anomaly. OpenAI
-// Responses streams that deliver only response.created + response.completed
-// with no output, no usage and no error are treated as silent upstream
-// refusals rather than successful empty replies (issue #5009).
 func newOpenAIResponsesEmptyCompletedFailoverError(c *gin.Context, account *Account, upstreamRequestID string) *UpstreamFailoverError {
 	accountID := int64(0)
 	accountName := ""
@@ -325,7 +307,7 @@ func openAISilentRefusalErrorBody() []byte {
 		},
 	})
 	if err != nil {
-		return []byte(`{"error":{"type":"upstream_error","code":"openai_silent_refusal","message":"OpenAI upstream returned an empty completion stream with finish_reason=stop and no usage"}}`)
+		return []byte(`{"error":{"type":"upstream_error","code":"` + openAISilentRefusalErrorCode + `","message":"` + openAISilentRefusalUpstreamMessage + `"}}`)
 	}
 	return body
 }

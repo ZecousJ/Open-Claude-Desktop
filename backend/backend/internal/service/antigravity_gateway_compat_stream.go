@@ -73,9 +73,10 @@ type antigravityResponsesStreamAdapter struct {
 	anthropicState *apicompat.AnthropicEventToResponsesState
 }
 
-func newAntigravityResponsesStreamAdapter(model string) *antigravityResponsesStreamAdapter {
+func newAntigravityResponsesStreamAdapter(model string, cachePrivateReasoning apicompat.CachePrivateReasoning) *antigravityResponsesStreamAdapter {
 	state := apicompat.NewAnthropicEventToResponsesState()
 	state.Model = model
+	state.CachePrivateReasoning = cachePrivateReasoning
 	return &antigravityResponsesStreamAdapter{anthropicState: state}
 }
 
@@ -468,7 +469,7 @@ func (s *AntigravityGatewayService) handleResponsesStreamingFromAntigravity(
 		resp,
 		startTime,
 		originalModel,
-		newAntigravityResponsesStreamAdapter(originalModel),
+		newAntigravityResponsesStreamAdapter(originalModel, privateAnthropicThinkingCache(c, s.cache).set),
 		"antigravity responses stream",
 	)
 }

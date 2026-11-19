@@ -20,15 +20,15 @@ export function bannerVisible(status: WeeklyUsageStatus | null | undefined) {
 }
 
 /**
- * Banner wording. Code names the limit and the reset; Chat and Cowork Give the
- * percent used. Once the limit is reached both say so plainly and give the
- * reset time, since requests are refused until then.
+ * Banner wording. Code (R-0338) names the limit and the reset; Chat and Cowork
+ * (R-Chat/R-Cowork home) give the percent used. Once the limit is reached both
+ * say so plainly and give the reset time, since requests are refused until then.
  */
 export function bannerText(status: WeeklyUsageStatus, variant: BannerVariant) {
   const reset = formatText("Resets {when}", {
     when: formatReset(status.resetsAt),
   });
-  // Sub2API refusals other than the weekly window.
+  // Sub2API refusals other than the weekly window (no capture; plain wording).
   const reason = status.state === "exceeded" ? status.reason : undefined;
   if (reason === "daily" || reason === "monthly") {
     const period = reason === "daily" ? "daily" : "monthly";

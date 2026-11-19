@@ -1,4 +1,5 @@
-/* */
+/* Live claude.ai bundle, 2026-10-14: cccc2cf0a-ClzhdM48.js (marks),
+   c1c1ec7b9-DdxFmCQ2.js (list), cb1afaa4b-BvLfaAzp.js and cdf69fdd3-DpoW_Yf7.js (editor). */
 .plan-comment-editor,
 .plan-comment-list,
 .plan-comment-hint {
@@ -119,7 +120,11 @@
     0 8px 24px rgb(0 0 0 / 32%),
     0 2px 6px rgb(0 0 0 / 20%);
   overflow-wrap: anywhere;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 }
 :root[data-theme="light"] .plan-comment-editor {
   box-shadow:

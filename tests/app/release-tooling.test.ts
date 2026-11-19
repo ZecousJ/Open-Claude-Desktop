@@ -1,15 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  bridgeArtifacts,
   claudexArtifacts,
   claudexReleasePayload,
   encodeKeyPath,
   publicUrl,
   r2Credentials,
   signV4,
+  zecousRows,
 } from "../../scripts/release/release-lib";
 
-test("Claudex builds map to platform keys under the downloads prefix", () => {
+test("Claudex builds map to platform keys under zecous/downloads", () => {
   const { version, artifacts } = claudexArtifacts([
     "release/Claudex-0.0.2-arm64-mac.zip",
     "release/Claudex-0.0.2-x64-mac.zip",
@@ -23,13 +25,13 @@ test("Claudex builds map to platform keys under the downloads prefix", () => {
     [
       [
         "darwin-arm64",
-        "claudex/downloads/claudex/0.0.2/Claudex-0.0.2-arm64-mac.zip",
+        "zecous/downloads/claudex/0.0.2/Claudex-0.0.2-arm64-mac.zip",
       ],
       [
         "darwin-x64",
-        "claudex/downloads/claudex/0.0.2/Claudex-0.0.2-x64-mac.zip",
+        "zecous/downloads/claudex/0.0.2/Claudex-0.0.2-x64-mac.zip",
       ],
-      ["win32-x64", "claudex/downloads/claudex/0.0.2/Claudex-Setup-0.0.2.exe"],
+      ["win32-x64", "zecous/downloads/claudex/0.0.2/Claudex-Setup-0.0.2.exe"],
     ],
   );
   assert.throws(
@@ -43,12 +45,36 @@ test("Claudex builds map to platform keys under the downloads prefix", () => {
   assert.throws(() => claudexArtifacts(["other.zip"]), /No Claudex build/);
 });
 
+test("the bridge's feed and exe share one folder (ZecousAI derives the feed from it)", () => {
+  const artifacts = bridgeArtifacts(
+    [
+      "out/squirrel/RELEASES",
+      "out/squirrel/ZecousAI-1.0.31-full.nupkg",
+      "out/ZecousAI-Setup-1.0.31.exe",
+      "out/x",
+    ],
+    "1.0.31",
+  );
+  assert.deepEqual(
+    artifacts.map((item) => item.key),
+    [
+      "zecous/downloads/zecousai/1.0.31/RELEASES",
+      "zecous/downloads/zecousai/1.0.31/ZecousAI-1.0.31-full.nupkg",
+      "zecous/downloads/zecousai/1.0.31/ZecousAI-Setup-1.0.31.exe",
+    ],
+  );
+  assert.throws(
+    () => bridgeArtifacts(["out/squirrel/RELEASES"], "1.0.31"),
+    /nupkg/,
+  );
+});
+
 test("the admin payloads", () => {
   const release = claudexReleasePayload({
     version: "0.0.2",
     downloads: {
       "darwin-arm64": {
-        url: "https://downloads.example.com/a.zip",
+        url: "https://all.zecous.cn/a.zip",
         sha256: "a".repeat(64),
       },
     },
@@ -57,8 +83,36 @@ test("the admin payloads", () => {
   assert.equal(release.channels.stable.latest_version, "0.0.2");
   assert.equal(release.enforce_minimum_on_gateway, false);
   assert.equal(
-    publicUrl("https://downloads.example.com/", "claudex/downloads/a b.exe"),
-    "https://downloads.example.com/claudex/downloads/a%20b.exe",
+    publicUrl("https://all.zecous.cn/", "zecous/downloads/a b.exe"),
+    "https://all.zecous.cn/zecous/downloads/a%20b.exe",
+  );
+  const rows = zecousRows({
+    bridgeVersion: "1.0.31",
+    winPackageUrl:
+      "https://all.zecous.cn/zecous/downloads/zecousai/1.0.31/ZecousAI-Setup-1.0.31.exe",
+    macPackageUrl:
+      "https://all.zecous.cn/zecous/downloads/claudex/0.0.2/Claudex-0.0.2-arm64-mac.zip",
+    id: () => "00000000-0000-4000-8000-000000000001",
+  });
+  assert.deepEqual(
+    rows.api.map((row) => [row.platform, row.arch]),
+    [
+      ["win32", "x64"],
+      ["darwin", "arm64"],
+    ],
+  );
+  assert.match(rows.api[0].changelog, /Claudex/);
+  assert.match(
+    rows.sql,
+    /^INSERT INTO desktop_update_releases .*'win32', 'x64'.*TRUE, NOW\(\), NOW\(\), NOW\(\)\);$/m,
+  );
+  assert.equal(
+    zecousRows({
+      bridgeVersion: "1.0.31",
+      winPackageUrl: "https://x/a.exe",
+      changelog: "it's",
+    }).sql.includes("it''s"),
+    true,
   );
 });
 
@@ -93,7 +147,7 @@ test("R2 credentials come only from the environment", () => {
     R2_ACCOUNT_ID: "0123456789abcdef0123456789abcdef",
     R2_ACCESS_KEY_ID: "id",
     R2_SECRET_ACCESS_KEY: "secret",
-    R2_BUCKET: "claudex",
+    R2_BUCKET: "zecous",
   });
   assert.equal(
     credentials.host,
@@ -102,19 +156,16 @@ test("R2 credentials come only from the environment", () => {
 });
 
 test("Claudex downloads its installers from the Claudex server's /downloads/", async () => {
-  const { claudexDownloadUrl } =
+  const { claudexDownloadUrl, defaultDownloadBase } =
     await import("../../scripts/release/release-lib");
   assert.equal(
     claudexDownloadUrl(
-      "https://claudex.example.com/downloads",
-      "claudex/downloads/claudex/0.0.4/Claudex-Setup-0.0.4.exe",
+      defaultDownloadBase,
+      "zecous/downloads/claudex/0.0.4/Claudex-Setup-0.0.4.exe",
     ),
-    "https://claudex.example.com/downloads/claudex/0.0.4/Claudex-Setup-0.0.4.exe",
+    "https://claudex.zecous.cn/downloads/claudex/0.0.4/Claudex-Setup-0.0.4.exe",
   );
   assert.throws(() =>
-    claudexDownloadUrl(
-      "https://claudex.example.com/downloads",
-      "claudex/downloads/other/x.exe",
-    ),
+    claudexDownloadUrl(defaultDownloadBase, "zecous/downloads/other/x.exe"),
   );
 });

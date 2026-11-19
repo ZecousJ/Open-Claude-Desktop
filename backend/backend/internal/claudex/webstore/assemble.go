@@ -28,10 +28,14 @@ func (c *Component) loadConversation(ctx context.Context, userID int64, id strin
 	if row == nil {
 		return nil, notFound("conversation")
 	}
+	return c.assembleConversation(ctx, userID, id, row.Doc)
+}
+
+func (c *Component) assembleConversation(ctx context.Context, userID int64, id string, raw json.RawMessage) (*fullConversation, error) {
 	var doc struct {
 		Conversation map[string]json.RawMessage `json:"conversation"`
 	}
-	if err := json.Unmarshal(row.Doc, &doc); err != nil || doc.Conversation == nil {
+	if err := json.Unmarshal(raw, &doc); err != nil || doc.Conversation == nil {
 		return nil, failed(err)
 	}
 	out := &fullConversation{fields: doc.Conversation, branches: map[string][]json.RawMessage{}}

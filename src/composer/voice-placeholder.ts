@@ -1,6 +1,7 @@
 import type { VoicePhase } from "../voice/useVoiceMode";
 
-// Dictation takes priority over the owning voice session.
+// Dictation takes priority over the owning voice session (live claude.ai
+// bundle, 2026-10-14, shared-7-CO8eplZ3.js).
 export function voicePlaceholder(dictation: string, voice: VoicePhase) {
   if (dictation === "requesting") return "Connecting...";
   if (dictation === "recording") return "Listening...";

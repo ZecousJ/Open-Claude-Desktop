@@ -1,6 +1,6 @@
 import type { Conversation } from "./types";
 
-/** Hosted export envelope. */
+/** Hosted export envelope (live claude.ai bundle, 2026-10-14, c7c83e720-D0f-geTp). */
 export function sessionExport(conversation: Conversation, now = Date.now()) {
   return {
     exportedAt: new Date(now).toISOString(),

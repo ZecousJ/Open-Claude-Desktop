@@ -7,7 +7,7 @@ import type {
 } from "./search-filters";
 import { X } from "../../ui/glyphs";
 import { surface } from "../../../shared/host";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Spinner } from "../../ui/Spinner";
 import type { SearchEntrypoint } from "./palette-events";
 import type { SearchRow } from "./search-model";
@@ -79,21 +79,22 @@ export function SearchPaletteHead({
 }: SearchPaletteHeadProps) {
   return (
     <div className="search-palette-head" data-entrypoint={entrypoint}>
-      {/* Search mode: the Search glyph alone; Actions mode: a bordered chip with
-         the Keyboard glyph and the clear cross. */}
+      {/* Search mode: the Search glyph alone; Actions mode: a bordered chip
+          with the Keyboard glyph and the clear cross (live claude.ai bundle,
+          2026-10-16, c2771e1f6-B2qqRLkw Qp). */}
       {entrypoint === "search" && (
         <span
           className="search-mode-glyph"
           aria-label={t("Search mode")}
           role="img"
         >
-          <AppIcon name="Search" size={20} />
+          <Anthropicon name="Search" size={20} />
         </span>
       )}
       {entrypoint === "actions" && (
         <div className="search-mode-chip">
           <span aria-label={t("Actions mode")} role="img">
-            <AppIcon name="Keyboard" size={20} />
+            <Anthropicon name="Keyboard" size={20} />
           </span>
           <button
             type="button"
@@ -177,7 +178,7 @@ export function SearchPaletteHead({
         </span>
       )}
       <button type="button" aria-label="Close" onClick={onClose}>
-        {/* The web's 20px X. */}
+        {/* The web's 20px X (live claude.ai search, 2026-10-21). */}
         <X size={surface === "web" ? 20 : 18} strokeWidth={1.5} />
       </button>
     </div>

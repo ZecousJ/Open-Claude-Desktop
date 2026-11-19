@@ -8,8 +8,10 @@ import { filesPaneAvailable } from "../files/files-model";
 import { requestFileOpen } from "../files/file-open-request";
 
 /**
- * A file the transcript asks the Changes panel to open. The panel may not be
- * mounted yet, so the request waits here until it has the file in its list.
+ * A file the transcript asks the Changes panel to open (live claude.ai
+ * bundle, 2026-10-16, c1c1ec7b9 N0: a file row calls back with the file's
+ * path and the diff pane shows that file). The panel may not be mounted yet,
+ * so the request waits here until it has the file in its list.
  */
 const event = "claudex:diff-file";
 let pending: { conversationId: string; path: string; at: number } | undefined;
@@ -49,7 +51,10 @@ function inFolder(conversation: Conversation, path: string) {
 
 /**
  * A changed file a transcript row or card names, opened where the original
- * opens it. Without a file pane it is the Changes panel either way.
+ * opens it (live desktop 2.42304.2, c856385e2 In: preferDiff tries the diff
+ * opener, which only takes a file when the session's folder is a git
+ * repository; otherwise the file opens in the file pane). Without a file
+ * pane it is the Changes panel either way.
  */
 export function openChangedFile(
   conversation: Conversation,

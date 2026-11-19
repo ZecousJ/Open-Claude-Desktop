@@ -117,7 +117,7 @@ const fixtureChecks: Record<string, (name: string) => void> = {
   "devices.register-request": (name) =>
     assert.deepEqual(
       deviceRegistrationBody({
-        deviceName: "Ada's MacBook Pro",
+        deviceName: "Zecous's MacBook Pro",
         platform: "darwin",
         arch: "arm64",
         appVersion: "1.3.2",
@@ -291,7 +291,6 @@ test("the policy fixture becomes the client's policy, Bypass never among the mod
     sshRemote: true,
     codexRuntimeMirror: "https://registry.npmmirror.com/",
     computerUse: {
-      enabled: false,
       allowFullControl: true,
       deniedApps: ["com.apple.Terminal"],
       maxActionsPerTurn: null,
@@ -420,7 +419,7 @@ test("the round-2 policy blocks are optional, complete when sent, and never loos
     ssh_remote: false,
     codex_runtime_mirror: "http://mirror.example.com/",
     computer_use: {
-      enabled: true,
+      enabled: false,
       allow_full_control: false,
       denied_apps: [" com.apple.Terminal ", "rm -rf /;", "cmd.exe"],
       max_actions_per_turn: 5000,
@@ -449,7 +448,6 @@ test("the round-2 policy blocks are optional, complete when sent, and never loos
   assert.equal(policy.sshRemote, false);
   assert.equal(policy.codexRuntimeMirror, null, "only an https mirror is used");
   assert.deepEqual(policy.computerUse, {
-    enabled: true,
     allowFullControl: false,
     deniedApps: ["com.apple.Terminal", "cmd.exe"],
     maxActionsPerTurn: 1000,
@@ -458,6 +456,9 @@ test("the round-2 policy blocks are optional, complete when sent, and never loos
 
 test("catalog, registration, usage, release and checkout fixtures map field by field", () => {
   const catalog = parseModelCatalog(data("models.group"));
+  const ultra = parseModelCatalog({ default_model: "gpt-6", items: [{ id: "gpt-6", efforts: ["low", "ultra"], default_effort: "ultra" }] });
+  assert.deepEqual(ultra.items[0].efforts, ["low", "ultra"]);
+  assert.equal(ultra.items[0].defaultEffort, "ultra");
   assert.equal(catalog.defaultModel, "gpt-5.5");
   assert.deepEqual(catalog.items[0], {
     id: "gpt-5.5",
@@ -1643,7 +1644,7 @@ test("device registration is idempotent, limited, throttled and never adopts a l
   mock.options.groups = [];
   mock.options.deviceKeys = true;
   mock.options.deviceLimit = 5;
-  // Balance only: no plan group still registers.
+  // Balance only (owner decision, 2026-10-12): no plan group still registers.
   const planless = await register("33333333-3333-4333-8333-333333333333");
   assert.equal(planless.apiKey, null);
   assert.deepEqual(planless.apiKeys, []);

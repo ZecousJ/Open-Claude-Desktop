@@ -1,9 +1,12 @@
 /**
- * Tooltip placements:
- * - "below": centred under the anchor;
- * - "below-before": ending 4px before the anchor's left edge;
- * - "below-end": right edges aligned, for buttons near the window's right edge;
- * - "above": centred over the anchor;
+ * Tooltip placements (published for the other packages; they pick a
+ * placement and, where their capture needs it, a gap, and do not change
+ * the component):
+ * - "below": centred under the anchor (R-0001 / R-0003 chrome buttons);
+ * - "below-before": ending 4px before the anchor's left edge (R-0001 incognito);
+ * - "below-end": right edges aligned, for buttons near the window's right
+ *   edge (R-0656 Clear finished tasks shows it clamped there);
+ * - "above": centred over the anchor (R-0344 the composer's Add);
  * - "right": beside the anchor, vertically centred;
  * - "left": the same on the anchor's left (the login page's "Last used").
  */
@@ -20,16 +23,16 @@ type Box = { left: number; top: number; right: number; bottom: number };
 type Size = { width: number; height: number };
 
 /**
- * Gap between the button and its tooltip: the original Tooltip's sideOffset of
- * 4.
+ * Gap between the button and its tooltip: the original Tooltip's
+ * sideOffset of 4 (desktop bundle 2.31226.1; R-0001 / R-0003 read 1.5px).
  */
 export const tooltipGap = 4;
 /** Closest a tooltip comes to the window edge. */
 export const tooltipMargin = 8;
 /**
  * How near the window's edge a tooltip may sit before it flips to the other
- * side of its anchor: the original's collisionPadding of 5, with side and align
- * both "flip".
+ * side of its anchor: the original's collisionPadding of 5, with side and
+ * align both "flip" (live claude.ai bundle, 2026-10-16, vendor-frame-G1rQD-pP).
  */
 export const tooltipCollisionPadding = 5;
 

@@ -68,7 +68,7 @@ test("rows say what the browser did, in three tenses", () => {
     browserTitle("navigate", args, "failed"),
     "Failed to open localhost:5173",
   );
-  // The original's words.
+  // The original's words (R-0815, R-0816).
   assert.equal(browserTitle("preview_list", {}, "running"), "Listing previews");
   assert.equal(browserTitle("preview_list", {}, "done"), "Listed previews");
   assert.equal(

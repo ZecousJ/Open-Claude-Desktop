@@ -1,10 +1,11 @@
 import type { Conversation } from "../../shared/types";
 
 /**
- * The Code home's Next steps. At most three rows, in the original's order; rows
- * of one kind fold into the first with "and # more". Each can be dismissed: a
- * dismissal holds until what it was about changes (its stamp), and is
- * remembered in this browser.
+ * The Code home's Next steps (live claude.ai bundle, 2026-10-14: the start
+ * card's suggestion list under the composer). At most three rows, in the
+ * original's order; rows of one kind fold into the first with "and # more".
+ * Each can be dismissed: a dismissal holds until what it was about changes
+ * (its stamp), and is remembered in this browser.
  */
 export type NextStep =
   | {

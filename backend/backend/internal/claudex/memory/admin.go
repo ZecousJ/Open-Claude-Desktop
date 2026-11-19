@@ -99,9 +99,8 @@ func (c *Component) adminUser(g *gin.Context) {
 	response.Success(g, out)
 }
 
-// DELETE /api/v1/admin/claudex/memory/users/:id (step-up): clears every
-// document and edit of the user. The user's switches stay, so memory starts
-// again from nothing if they keep it on.
+// DELETE /api/v1/admin/claudex/memory/users/:id (step-up): clears the user's
+// stored memory and keeps their preferences.
 func (c *Component) adminClear(g *gin.Context) {
 	userID, ok := c.adminUserID(g)
 	if !ok {

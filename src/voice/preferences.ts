@@ -1,8 +1,8 @@
 /**
- * The microphone menu's two choices: which input device dictation records from
- * and "Hold to record". Device ids only mean something on this computer and
- * profile, so both are kept in the page's own storage rather than in the
- * account's settings; the page works without it.
+ * The microphone menu's two choices (R-0404 Code, R-0286 Chat): which input
+ * device dictation records from and "Hold to record". Device ids only mean
+ * something on this computer and profile, so both are kept in the page's own
+ * storage rather than in the account's settings; the page works without it.
  */
 import { useSyncExternalStore } from "react";
 
@@ -34,7 +34,7 @@ export const microphoneDeviceId = () => {
   const id = get(deviceKey);
   return id && id !== "default" ? id : undefined;
 };
-/** "Hold to record" is on unless it was turned off. */
+/** "Hold to record" is on unless it was turned off (the capture shows it on). */
 export const holdToRecord = () => get(holdKey) !== "off";
 
 export const setMicrophoneDevice = (id: string) => write(deviceKey, id);

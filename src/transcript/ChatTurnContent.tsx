@@ -79,7 +79,7 @@ export const isTool = (segment: { activity: boolean; items: Item[] }) =>
   segment.items.length === 1 &&
   TOOL_TYPES.includes(segment.items[0].type);
 
-/** Chat, or Cowork, which uses Chat's light rows in a timeline. */
+/** Chat, or Cowork, which uses Chat's light rows (S-0008) in a timeline. */
 export type ChatVariant = "chat" | "cowork";
 
 /**
@@ -103,8 +103,8 @@ export function thoughtTitle(items: Item[], fallback = "Contemplating") {
 }
 
 /**
- * How a row joins Cowork's timeline (the original's timeline block entrance):
- * 430ms from transparent,
+ * How a row joins Cowork's timeline (the original's timeline block entrance;
+ * source: desktop bundle 2.31226.1 static CSS/JS): 430ms from transparent,
  * blurred 4px, 5px down and at 90% about its left edge; the move settles in
  * the first 30% on cubic-bezier(0.22, 1, 0.36, 1), then the fade and the
  * blur finish, ease-out.

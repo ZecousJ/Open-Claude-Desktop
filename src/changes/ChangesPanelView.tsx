@@ -188,8 +188,10 @@ export function changesPanelView(kit: ChangesPanelViewKit) {
     wrap,
     listOnRight,
   } = kit;
-  // The list's toggle leads the bar, or comes before its end buttons when the
-  // list is on the right. It shows with nothing to list too.
+  // The list's toggle leads the bar, or comes before its end buttons when
+  // the list is on the right (live claude.ai Code, 2026-10-21).
+  // It shows with nothing to list too (live claude.ai Code, 2026-10-21:
+  // "Show files" beside "No changes to show").
   const listToggle = (
     <WithTooltip
       label={showFiles ? "Hide files" : "Show files"}

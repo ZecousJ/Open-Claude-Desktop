@@ -1,4 +1,5 @@
-/* CLI import is one low-priority row of the start card's suggestion list (P5),
+/* Source cc43287c9-Dxed_hEI.js (live claude.ai bundle, 2026-10-16): the CLI
+   import is one low-priority row of the start card's suggestion list (P5),
    listed only while nothing else wants a row. */
 .next-steps:has(> li:not(.native-cli-import-card)) > .native-cli-import-card {
   display: none;

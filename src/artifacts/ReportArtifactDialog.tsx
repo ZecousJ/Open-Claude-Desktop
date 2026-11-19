@@ -11,7 +11,10 @@ import type {
   ArtifactReportsState,
 } from "../../shared/sharing-api";
 
-/** The reasons offered, in the original's order. */
+/**
+ * The reasons offered, in the original's order (desktop bundle 2.31226.1;
+ * unchanged in the live claude.ai bundle, 2026-10-12).
+ */
 export const reportReasons = [
   "Copyright infringement",
   "Trademark infringement",
@@ -31,8 +34,9 @@ export const reportReasons = [
 export type ReportReason = (typeof reportReasons)[number];
 
 /**
- * Each reason's category as the live report form sends it and the Claudex
- * service stores it.
+ * Each reason's category as the live report form sends it (its enum keys,
+ * lower-cased; live claude.ai bundle, 2026-10-12) and the Claudex service
+ * stores it.
  */
 export const reportCategoryIds: Record<ReportReason, string> = {
   "Copyright infringement": "copyright_infringement",
@@ -99,13 +103,16 @@ export interface ReportAnswer {
  * The original's report form in the publish dialog's frame (512 wide, 20
  * inset): "Why are you reporting this?" with a reason list, then Your name,
  * Your email and Additional information (all optional), or for copyright,
- * trademark, private information and court orders a sentence that asks for a
- * different form instead; Close and Report.
+ * trademark, private information and court orders a sentence that asks for
+ * a different form instead; Close and Report.
  *
- * With `optOut` the form also has the live "Opt out of training on this report"
- * switch, off until the reporter turns it on. Without `submit` nothing receives
- * reports: Report stays disabled with the reason. With it, Close and Report
- * show once a reason the form takes is chosen, as in the live form.
+ * With `optOut` the form also has the live "Opt out of training on this
+ * report" switch, off until the reporter turns it on (live claude.ai bundle,
+ * 2026-10-12: chat, session, project and published-artifact reports show
+ * it; the artifact viewer's report hides it). Without `submit` nothing
+ * receives reports: Report stays disabled with the reason. With it, Close
+ * and Report show once a reason the form takes is chosen, as in the live
+ * form.
  */
 export function ReportDialog({
   title,
@@ -479,11 +486,12 @@ export function useArtifactReportsState(
 }
 
 /**
- * Title menu → Report artifact: the live artifact viewer's report, which has
- * no training opt-out. It goes to the administrator of the account's Claudex
- * service with a copy of the artifact (`reportArtifact`); `onSent` gets the
- * toast's message. Without the artifact, on a local account, or with reports
- * turned off, Report stays disabled with the reason.
+ * Title menu → Report artifact (R-1055): the live artifact viewer's report
+ * (live claude.ai bundle, 2026-10-12), which has no training opt-out. It
+ * goes to the administrator of the account's Claudex service with a copy
+ * of the artifact (`reportArtifact`); `onSent` gets the toast's message.
+ * Without the artifact, on a local account, or with reports turned off,
+ * Report stays disabled with the reason.
  */
 export function ReportArtifactDialog({
   artifact,

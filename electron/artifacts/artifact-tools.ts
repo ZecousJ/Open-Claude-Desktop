@@ -12,6 +12,7 @@ import type {
 import { connectorAllowed } from "../../shared/client-policy-rules";
 import { McpStdioClient } from "../computer-use/driver-host";
 import { openSseConnector } from "../connectors/connector-sse";
+import { savedConnectorHeaders } from "../connectors/connector-clients";
 import { embeddedWidget, widgetDomains, widgetUri } from "../../shared/widget";
 import {
   resourceLinks,
@@ -37,6 +38,23 @@ const callSchema = z
 const identitySchema = z.string().min(1).max(3_000_000);
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
+
+const connectorRpcError = z.object({
+  code: z.number(),
+  message: z.string(),
+  data: z.unknown().optional(),
+});
+
+export class ArtifactConnectorRpcError extends Error {
+  constructor(readonly rpc: z.infer<typeof connectorRpcError>) {
+    super("The request failed.");
+  }
+}
+
+function requestError(error: unknown) {
+  const parsed = connectorRpcError.safeParse(error);
+  return parsed.success ? new ArtifactConnectorRpcError(parsed.data) : fail();
+}
 
 export async function readMcpResponse(
   response: Response,
@@ -70,7 +88,7 @@ export async function readMcpResponse(
       } else if (part.done) messages = [JSON.parse(body)];
       for (const message of messages)
         if (message.id === id) {
-          if (message.error) throw fail();
+          if (message.error) throw requestError(message.error);
           return message.result;
         }
       if (part.done) throw fail();
@@ -84,8 +102,17 @@ export async function withArtifactConnector<Result>(
   config: Record<string, unknown>,
   run: (
     request: (method: string, params: unknown) => Promise<any>,
+    capabilities?: unknown,
+    initialized?: unknown,
   ) => Promise<Result>,
-  options: { fetch?: typeof fetch; token?: string; remoteOnly?: boolean } = {},
+  options: {
+    fetch?: typeof fetch;
+    token?: string;
+    headers?: Record<string, string>;
+    remoteOnly?: boolean;
+    clientCapabilities?: Record<string, unknown>;
+    resourceResponseLimit?: number;
+  } = {},
 ): Promise<Result> {
   let child: ReturnType<typeof spawn> | undefined;
   let session: string | null = null;
@@ -94,21 +121,29 @@ export async function withArtifactConnector<Result>(
   let request: (method: string, params: unknown) => Promise<any>;
   let notify: (method: string) => Promise<void>;
   let close = async () => {};
-  if (config.claudex_transport === "sse" && typeof config.url === "string") {
-    const headers = {
-      ...((config.http_headers ?? {}) as Record<string, string>),
-    };
+  const remoteHeaders = () => {
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(
+      (config.http_headers ?? {}) as Record<string, unknown>,
+    ))
+      if (typeof value === "string") headers.set(key, value);
+    if (!options.remoteOnly)
+      for (const [key, variable] of Object.entries(
+        (config.env_http_headers ?? {}) as Record<string, unknown>,
+      ))
+        if (typeof variable === "string" && process.env[variable])
+          headers.set(key, process.env[variable]!);
+    for (const [key, value] of Object.entries(options.headers ?? {}))
+      headers.set(key, value);
     const token =
       options.token ??
       (!options.remoteOnly && typeof config.bearer_token_env_var === "string"
         ? process.env[config.bearer_token_env_var]
         : undefined);
-    if (token) headers.Authorization = `Bearer ${token}`;
-    if (!options.remoteOnly)
-      for (const [name, variable] of Object.entries(
-        (config.env_http_headers ?? {}) as Record<string, string>,
-      ))
-        if (process.env[variable]) headers[name] = process.env[variable]!;
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    return headers;
+  };
+  if (config.claudex_transport === "sse" && typeof config.url === "string") {
     const pending = new Map<
       number,
       {
@@ -120,7 +155,7 @@ export async function withArtifactConnector<Result>(
     const transport = await openSseConnector(
       config.url,
       options.fetch ?? fetch,
-      headers,
+      remoteHeaders(),
       (raw) => {
         const message = raw as {
           id?: number;
@@ -134,7 +169,7 @@ export async function withArtifactConnector<Result>(
         if (!waiting) return;
         pending.delete(message.id!);
         clearTimeout(waiting.timer);
-        if (message.error) waiting.reject(fail());
+        if (message.error) waiting.reject(requestError(message.error));
         else waiting.resolve(message.result);
       },
     );
@@ -180,26 +215,17 @@ export async function withArtifactConnector<Result>(
         ))
     )
       throw fail();
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json, text/event-stream",
+    const headers = remoteHeaders();
+    if (!headers.has("Content-Type"))
+      headers.set("Content-Type", "application/json");
+    if (!headers.has("Accept"))
+      headers.set("Accept", "application/json, text/event-stream");
+    const requestHeaders = () => {
+      const request = new Headers(headers);
+      if (session) request.set("Mcp-Session-Id", session);
+      if (protocol) request.set("MCP-Protocol-Version", protocol);
+      return request;
     };
-    for (const [key, value] of Object.entries(
-      (config.http_headers ?? {}) as Record<string, unknown>,
-    ))
-      if (typeof value === "string") headers[key] = value;
-    if (!options.remoteOnly)
-      for (const [key, variable] of Object.entries(
-        (config.env_http_headers ?? {}) as Record<string, unknown>,
-      ))
-        if (typeof variable === "string" && process.env[variable])
-          headers[key] = process.env[variable]!;
-    const token =
-      options.token ??
-      (!options.remoteOnly && typeof config.bearer_token_env_var === "string"
-        ? process.env[config.bearer_token_env_var]
-        : undefined);
-    if (token) headers.Authorization = `Bearer ${token}`;
     const send = (method: string, params?: unknown, id?: number) =>
       (options.fetch ?? fetch)(url.href, {
         method: "POST",
@@ -207,11 +233,7 @@ export async function withArtifactConnector<Result>(
         signal: AbortSignal.timeout(
           method === "resources/read" ? 30_000 : 60_000,
         ),
-        headers: {
-          ...headers,
-          ...(session ? { "Mcp-Session-Id": session } : {}),
-          ...(protocol ? { "MCP-Protocol-Version": protocol } : {}),
-        },
+        headers: requestHeaders(),
         body: JSON.stringify({
           jsonrpc: "2.0",
           ...(id === undefined ? {} : { id }),
@@ -226,7 +248,9 @@ export async function withArtifactConnector<Result>(
       const result = await readMcpResponse(
         response,
         id,
-        method === "resources/read" ? 150_000_000 : undefined,
+        method === "resources/read"
+          ? (options.resourceResponseLimit ?? 150_000_000)
+          : undefined,
       );
       if (method === "initialize")
         protocol =
@@ -246,11 +270,7 @@ export async function withArtifactConnector<Result>(
         method: "DELETE",
         redirect: "error",
         signal: AbortSignal.timeout(5000),
-        headers: {
-          ...headers,
-          "Mcp-Session-Id": session,
-          ...(protocol ? { "MCP-Protocol-Version": protocol } : {}),
-        },
+        headers: requestHeaders(),
       }).catch(() => undefined);
       await response?.body?.cancel();
     };
@@ -279,13 +299,13 @@ export async function withArtifactConnector<Result>(
     notify = async (method) => client.notify(method);
   }
   try {
-    await request("initialize", {
+    const initialized = await request("initialize", {
       protocolVersion: "2025-03-26",
-      capabilities: {},
+      capabilities: options.clientCapabilities ?? {},
       clientInfo: { name: "Claudex", version: "1" },
     });
     await notify("notifications/initialized");
-    return await run(request);
+    return await run(request, initialized?.capabilities, initialized);
   } finally {
     child?.kill();
     await close();
@@ -378,6 +398,7 @@ export function registerArtifactToolHandlers(
     return withArtifactConnector(value, run, {
       fetch: ctx.connectors?.fetch,
       token: ctx.connectors?.getToken?.(server),
+      headers: savedConnectorHeaders(ctx.store.root, server, value.url),
       remoteOnly: Boolean(ctx.connectors),
     });
   };

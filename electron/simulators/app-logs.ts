@@ -1,9 +1,11 @@
 /**
- * Claude's app logs. Capture starts when Claude's 'launch' starts an app, or
- * when 'read' names the bundle id of an app that is already running: `simctl
- * spawn <udid> log stream` for that app's process only. A crash report is the
- * newest .ips file in ~/Library/Logs/DiagnosticReports for the app written
- * since its launch: its header and the crashed thread's backtrace.
+ * Claude's app logs (live claude.ai bundle, 2026-10-15: the iOS Simulator
+ * server's `logs` tool, `read` and `crash_report`). Capture starts when
+ * Claude's 'launch' starts an app, or when 'read' names the bundle id of
+ * an app that is already running: `simctl spawn <udid> log stream` for
+ * that app's process only. A crash report is the newest .ips file in
+ * ~/Library/Logs/DiagnosticReports for the app written since its launch:
+ * its header and the crashed thread's backtrace.
  */
 import fs from "node:fs";
 import os from "node:os";

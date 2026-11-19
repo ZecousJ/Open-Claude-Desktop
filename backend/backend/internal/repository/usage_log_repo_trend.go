@@ -270,15 +270,14 @@ func (r *usageLogRepository) GetUserModelStats(ctx context.Context, userID int64
 
 // GetUsageTrendWithFilters returns usage trend data with optional filters
 func (r *usageLogRepository) GetUsageTrendWithFilters(ctx context.Context, startTime, endTime time.Time, granularity string, userID, apiKeyID, accountID, groupID int64, model string, requestType *int16, stream *bool, billingType *int8) (results []TrendDataPoint, err error) {
-	return r.getUsageTrendWithFilters(ctx, startTime, endTime, granularity, userID, apiKeyID, accountID, groupID, model, "", requestType, stream, billingType, "", nil, nil, false)
+	return r.GetUsageTrendWithUsageFilters(ctx, startTime, endTime, granularity, UsageLogFilters{
+		UserID: userID, APIKeyID: apiKeyID, AccountID: accountID, GroupID: groupID,
+		Model: model, RequestType: requestType, Stream: stream, BillingType: billingType,
+	})
 }
 
 func (r *usageLogRepository) GetUsageTrendWithUsageFilters(ctx context.Context, startTime, endTime time.Time, granularity string, filters UsageLogFilters) (results []TrendDataPoint, err error) {
-	return r.getUsageTrendWithFilters(ctx, startTime, endTime, granularity, filters.UserID, filters.APIKeyID, filters.AccountID, filters.GroupID, filters.Model, filters.ModelFilterSource, filters.RequestType, filters.Stream, filters.BillingType, filters.BillingMode, filters.UpstreamModelMismatch, filters.NativeCompactionV2, filters.ExcludeAdmins)
-}
-
-func (r *usageLogRepository) getUsageTrendWithFilters(ctx context.Context, startTime, endTime time.Time, granularity string, userID, apiKeyID, accountID, groupID int64, model string, modelSource string, requestType *int16, stream *bool, billingType *int8, billingMode string, upstreamModelMismatch *bool, nativeCompactionV2 *bool, excludeAdmins bool) (results []TrendDataPoint, err error) {
-	if !excludeAdmins && shouldUsePreaggregatedTrend(granularity, userID, apiKeyID, accountID, groupID, model, requestType, stream, billingType, billingMode, upstreamModelMismatch, nativeCompactionV2) {
+	if shouldUsePreaggregatedTrend(granularity, filters) {
 		aggregated, aggregatedErr := r.getUsageTrendFromAggregates(ctx, startTime, endTime, granularity)
 		if aggregatedErr == nil && len(aggregated) > 0 {
 			return aggregated, nil
@@ -286,10 +285,16 @@ func (r *usageLogRepository) getUsageTrendWithFilters(ctx context.Context, start
 	}
 
 	dateFormat := safeDateFormat(granularity)
+	args := []any{startTime, endTime}
+	bucketTime := "created_at"
+	if filters.TrendTimezone != "" {
+		bucketTime = "created_at AT TIME ZONE $3"
+		args = append(args, filters.TrendTimezone)
+	}
 
 	query := fmt.Sprintf(`
 		SELECT
-			TO_CHAR(created_at, '%s') as date,
+			TO_CHAR(%s, '%s') as date,
 			COUNT(*) as requests,
 			COALESCE(SUM(input_tokens), 0) as input_tokens,
 			COALESCE(SUM(output_tokens), 0) as output_tokens,
@@ -300,37 +305,36 @@ func (r *usageLogRepository) getUsageTrendWithFilters(ctx context.Context, start
 			COALESCE(SUM(actual_cost), 0) as actual_cost
 		FROM usage_logs
 		WHERE created_at >= $1 AND created_at < $2
-	`, dateFormat)
+	`, bucketTime, dateFormat)
 
-	args := []any{startTime, endTime}
-	if userID > 0 {
+	if filters.UserID > 0 {
 		query += fmt.Sprintf(" AND user_id = $%d", len(args)+1)
-		args = append(args, userID)
+		args = append(args, filters.UserID)
 	}
-	if apiKeyID > 0 {
+	if filters.APIKeyID > 0 {
 		query += fmt.Sprintf(" AND api_key_id = $%d", len(args)+1)
-		args = append(args, apiKeyID)
+		args = append(args, filters.APIKeyID)
 	}
-	if accountID > 0 {
+	if filters.AccountID > 0 {
 		query += fmt.Sprintf(" AND account_id = $%d", len(args)+1)
-		args = append(args, accountID)
+		args = append(args, filters.AccountID)
 	}
-	if groupID > 0 {
+	if filters.GroupID > 0 {
 		query += fmt.Sprintf(" AND group_id = $%d", len(args)+1)
-		args = append(args, groupID)
+		args = append(args, filters.GroupID)
 	}
-	query, args = appendUsageLogModelQueryFilter(query, args, model, modelSource)
-	query, args = appendRequestTypeOrStreamQueryFilter(query, args, requestType, stream)
-	query, args = appendNativeCompactionV2QueryFilter(query, args, nativeCompactionV2, "")
-	if billingType != nil {
+	query, args = appendUsageLogModelQueryFilter(query, args, filters.Model, filters.ModelFilterSource)
+	query, args = appendRequestTypeOrStreamQueryFilter(query, args, filters.RequestType, filters.Stream)
+	query, args = appendNativeCompactionV2QueryFilter(query, args, filters.NativeCompactionV2, "")
+	if filters.BillingType != nil {
 		query += fmt.Sprintf(" AND billing_type = $%d", len(args)+1)
-		args = append(args, int16(*billingType))
+		args = append(args, int16(*filters.BillingType))
 	}
-	query, args = appendUsageLogBillingModeQueryFilter(query, args, billingMode, "")
-	if upstreamModelMismatch != nil {
-		query += " AND " + upstreamModelMismatchCondition("upstream_model_mismatch", *upstreamModelMismatch)
+	query, args = appendUsageLogBillingModeQueryFilter(query, args, filters.BillingMode, "")
+	if filters.UpstreamModelMismatch != nil {
+		query += " AND " + upstreamModelMismatchCondition("upstream_model_mismatch", *filters.UpstreamModelMismatch)
 	}
-	if excludeAdmins {
+	if filters.ExcludeAdmins {
 		query += " AND " + usageLogExcludeAdminsCondition("")
 	}
 	query += " GROUP BY date ORDER BY date ASC"
@@ -355,21 +359,15 @@ func (r *usageLogRepository) getUsageTrendWithFilters(ctx context.Context, start
 	return results, nil
 }
 
-func shouldUsePreaggregatedTrend(granularity string, userID, apiKeyID, accountID, groupID int64, model string, requestType *int16, stream *bool, billingType *int8, billingMode string, upstreamModelMismatch *bool, nativeCompactionV2 *bool) bool {
+func shouldUsePreaggregatedTrend(granularity string, filters UsageLogFilters) bool {
 	if granularity != "day" && granularity != "hour" {
 		return false
 	}
-	return userID == 0 &&
-		apiKeyID == 0 &&
-		accountID == 0 &&
-		groupID == 0 &&
-		model == "" &&
-		requestType == nil &&
-		stream == nil &&
-		billingType == nil &&
-		billingMode == "" &&
-		upstreamModelMismatch == nil &&
-		nativeCompactionV2 == nil
+	return !filters.ExcludeAdmins && filters.TrendTimezone == "" &&
+		filters.UserID == 0 && filters.APIKeyID == 0 && filters.AccountID == 0 && filters.GroupID == 0 &&
+		filters.Model == "" && filters.RequestType == nil && filters.Stream == nil &&
+		filters.BillingType == nil && filters.BillingMode == "" &&
+		filters.UpstreamModelMismatch == nil && filters.NativeCompactionV2 == nil
 }
 
 func (r *usageLogRepository) getUsageTrendFromAggregates(ctx context.Context, startTime, endTime time.Time, granularity string) (results []TrendDataPoint, err error) {

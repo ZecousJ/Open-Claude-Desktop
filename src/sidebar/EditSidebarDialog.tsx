@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { Mode } from "../../shared/types";
 import { Modal } from "../ui/Controls";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import {
   isFixedNavItem,
   sidebarNav,
@@ -14,21 +14,21 @@ import "./edit-sidebar.css";
 
 /** The rows' glyphs, the same as the sidebar draws them (MainNav.tsx). */
 const glyphs: Record<NavItemId, ReactNode> = {
-  projects: <AppIcon name="Projects" />,
-  artifacts: <AppIcon name="Artifacts" />,
-  scheduled: <AppIcon name="Clock" />,
-  customize: <AppIcon name="Tool" />,
-  api: <AppIcon name="Key" />,
-  status: <AppIcon name="Activity" />,
-  dispatch: <AppIcon name="Dispatch" />,
+  projects: <Anthropicon name="Projects" />,
+  artifacts: <Anthropicon name="Artifacts" />,
+  scheduled: <Anthropicon name="Clock" />,
+  customize: <Anthropicon name="Tool" />,
+  api: <Anthropicon name="Key" />,
+  status: <Anthropicon name="Activity" />,
+  dispatch: <Anthropicon name="Dispatch" />,
 };
 
 /**
- * Edit sidebar… from More: choose which collection rows stay in the sidebar;
- * hidden ones are reached from More. Saved with the settings, so the choice
- * follows the account. The dialog is the original's: the line "Choose which
- * items appear in your sidebar.", a checkbox row per item with its glyph, and a
- * primary Done at the right.
+ * Edit sidebar… from More (R-0018): choose which collection rows stay in the
+ * sidebar; hidden ones are reached from More. Saved with the settings, so the
+ * choice follows the account. The dialog is the original's (desktop bundle
+ * 2.31226.1): the line "Choose which items appear in your sidebar.", a
+ * checkbox row per item with its glyph, and a primary Done at the right.
  */
 export function EditSidebarDialog({
   mode,

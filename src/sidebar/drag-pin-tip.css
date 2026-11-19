@@ -1,11 +1,11 @@
-/* The Pinned heading's drag tip: the reference design accent coach mark. A blue
-   card (the accent fill, blue-450 #2a78d6 in both themes) with white text, 10px
-   radius (the card radius: 6px + 4px), 12px padding, at most 280px wide, 13/19
-   body text, lifted by two drop shadows in the shadow colour (8% ink in light,
-   black 24% in dark) that also take in the arrow. Inside, the hand glyph and
-   the words sit 8px apart in a row at least 13rem wide, and the × sits in a
-   line-high slot 8px after them. It fades and grows from 97% over 200ms on the
-   "out" curve, both ways. */
+/* The Pinned heading's drag tip: the live claude.ai bundle's accent coach
+   mark (2026-10-12). A blue card (the accent fill, blue-450 #2a78d6 in both
+   themes) with white text, 10px radius (the card radius: 6px + 4px), 12px
+   padding, at most 280px wide, 13/19 body text, lifted by two drop shadows
+   in the shadow colour (8% ink in light, black 24% in dark) that also take
+   in the arrow. Inside, the hand glyph and the words sit 8px apart in a row
+   at least 13rem wide, and the × sits in a line-high slot 8px after them. It
+   fades and grows from 97% over 200ms on the "out" curve, both ways. */
 .drag-pin-tip {
   --drag-pin-tip-fill: #2a78d6;
   --drag-pin-tip-shadow: #0000003d;

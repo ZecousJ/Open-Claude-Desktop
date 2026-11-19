@@ -20,13 +20,33 @@ const ManageMemoryDialog = lazyPiece(
 );
 
 /**
- * * "Memory" with the "Only you" pill and, once the project has memory, an Edit
- *   memory pencil; then the memory, or "Project memory will show here after a
- *   few chats." (muted) while there is none, or "Couldn't load project memory."
- *   with Try again when the read failed; and "Last updated …" under memory that
- *   has a date. Shown only while memory is usable and Generate is on.
+ * A project page's Memory section, as the live claude.ai bundle draws it
+ * (2026-10-12, project rail `rr`): "Memory" with the "Only you" pill and,
+ * once the project has memory, an Edit memory pencil; then the memory, or
+ * "Project memory will show here after a few chats." (muted) while there is
+ * none, or "Couldn't load project memory." with Try again when the read
+ * failed; and "Last updated …" under memory that has a date. Shown only
+ * while memory is usable and Generate is on.
  */
 export function ProjectMemory({
+  projectId,
+  onError,
+}: {
+  projectId: string;
+  onError: (error: unknown) => void;
+}) {
+  // A project owns its document, retry state and open editor. Remount before
+  // rendering a different scope, rather than clearing old content in an effect.
+  return (
+    <ProjectMemoryScope
+      key={projectId}
+      projectId={projectId}
+      onError={onError}
+    />
+  );
+}
+
+function ProjectMemoryScope({
   projectId,
   onError,
 }: {
@@ -45,20 +65,23 @@ export function ProjectMemory({
   useEffect(() => {
     if (!shows) return;
     let live = true;
-    const read = () =>
+    let latest = 0;
+    const read = () => {
+      const request = ++latest;
       void window.desktop
         .memoryDoc({ kind: "project", projectId })
         .then((value) => {
-          if (!live) return;
+          if (!live || request !== latest) return;
           setDoc(value);
           setFailed(false);
         })
         .catch(() => {
-          if (live) setFailed(true);
+          if (live && request === latest) setFailed(true);
         })
         .finally(() => {
-          if (live) setRetrying(false);
+          if (live && request === latest) setRetrying(false);
         });
+    };
     read();
     const off = window.desktop.onEvent((event) => {
       if (event.type === "memory-changed") read();

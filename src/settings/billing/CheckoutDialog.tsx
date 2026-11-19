@@ -185,6 +185,7 @@ export function CheckoutDialog({
   const cancelOrder = async () => {
     if (!order) return;
     setBusy(true);
+    setError("");
     try {
       setOrder(await window.desktop.cancelOrder(order.id));
       onSettled();
@@ -207,6 +208,9 @@ export function CheckoutDialog({
     const currency = order.currency || method.currency;
     const charged = money(order.payAmount, currency);
     const done = order.status === "COMPLETED";
+    const retryQr =
+      started.kind === "qr" &&
+      (order.status === "EXPIRED" || order.status === "CANCELLED");
     return (
       <CheckoutPage
         merchant={merchant}
@@ -317,13 +321,28 @@ export function CheckoutDialog({
                 </button>
               </>
             ) : (
-              <button
-                type="button"
-                className="checkout-submit"
-                onClick={onClose}
-              >
-                {open ? "Close" : "Done"}
-              </button>
+              <>
+                {retryQr && (
+                  <button
+                    type="button"
+                    className="checkout-submit"
+                    onClick={() => {
+                      setStarted(undefined);
+                      setOrder(undefined);
+                      setError("");
+                    }}
+                  >
+                    Try again
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={retryQr ? "checkout-secondary" : "checkout-submit"}
+                  onClick={onClose}
+                >
+                  {open ? "Close" : "Done"}
+                </button>
+              </>
             )}
           </div>
         </div>

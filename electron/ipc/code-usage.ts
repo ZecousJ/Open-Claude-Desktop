@@ -81,9 +81,9 @@ export function dashboardFrom(data: unknown): CodeUsageDashboard {
 }
 
 /**
- * The Code home: the local usage log; for a Sub2API account the service's
- * `/api/v1/usage/dashboard/snapshot-v2` through the signed-in session; and the
- * chosen folder's Git branch and remotes.
+ * The Code home (package WP4b): the local usage log; for a Sub2API account
+ * the service's `/api/v1/usage/dashboard/snapshot-v2` through the signed-in
+ * session; and the chosen folder's Git branch and remotes.
  */
 export function registerCodeUsageHandlers(handle: IpcHandle, ctx: AppContext) {
   // Worktree sessions can merge their base branch in (sync_with_base_branch).

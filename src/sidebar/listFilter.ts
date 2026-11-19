@@ -18,19 +18,21 @@ export type ListFilter = {
   sort: "activity" | "created" | "name";
   groupBy: GroupBy;
   /**
-   * Code only: sessions on this computer or on SSH hosts (R9). Cloud, Remote
-   * Control and Slack have no Claudex counterpart; with two environments one
-   * choice covers every combination.
+   * Code only (R-Code-Recents筛选-Environment): sessions on this computer or
+   * on SSH hosts (R9). Cloud, Remote Control and Slack have no Claudex
+   * counterpart; with two environments one choice covers every combination.
    */
   environment: "all" | "local" | "ssh";
   /**
-   * Code's sidebar, grouped by custom group: headings of groups with nothing in
-   * the list are shown too. Absent means off.
+   * Code's sidebar, grouped by custom group: headings of groups with nothing
+   * in the list are shown too (live claude.ai bundle, 2026-10-12: Show empty
+   * groups, off by default). Absent means off.
    */
   showEmptyGroups?: boolean;
   /**
-   * Code's sidebar: a session with a pull request shows its state (the glyph
-   * and "#12 · Approved") in place of the idle dot. Absent means on.
+   * Code's sidebar: a session with a pull request shows its state (the
+   * glyph and "#12 · Approved") in place of the idle dot (live claude.ai
+   * bundle, 2026-10-12: Show PR status, on by default). Absent means on.
    */
   showPrStatus?: boolean;
 };
@@ -162,8 +164,9 @@ export function pinnedRows(conversations: Conversation[], mode: Mode) {
 }
 
 /**
- * Rows a sidebar section shows at first, and how many more each "Show N more"
- * reveals.
+ * Rows a sidebar section shows at first, and how many more each "Show N
+ * more" reveals (live claude.ai bundle, 2026-10-12: pinned and Code's
+ * recents truncate at 20; Chat's recents are capped at 20).
  */
 export const sidebarRowBatch = 20;
 

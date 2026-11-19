@@ -1,13 +1,27 @@
 import type { AppContext } from "../app/app-context";
 import { localGit, type Git } from "./code-worktree";
-import type { EngineExtension } from "../engine/engine-extensions";
+import type {
+  DynamicToolCall,
+  EngineExtension,
+} from "../engine/engine-extensions";
 import fs from "node:fs";
 import path from "node:path";
-import type { SessionWorktree } from "../../shared/types";
-import { sessionPullRequest } from "../../shared/pull-request";
+import type {
+  Conversation,
+  SessionPullRequest,
+  SessionWorktree,
+} from "../../shared/types";
+import { validRepositoryName } from "../../shared/github-parse";
 import {
+  parsePullRequestUrl,
+  sessionPullRequest,
+  type PullRequestRef,
+} from "../../shared/pull-request";
+import {
+  bindPrTool,
   prMonitorQuestion,
   setPrMonitorTool,
+  unbindPrTool,
   cleanUpWorktreesTool,
   discardKeptWorktreeTool,
   syncBaseNamespace,
@@ -24,12 +38,17 @@ import {
   cleanUpWorktrees,
 } from "./worktree-tools";
 import { result } from "./worktree-tools";
+import { githubRepositoryName } from "./git-branch";
+import { getPullRequest, runGh, type GhRunner } from "./github-cli";
 
 /**
- * Merge the base branch into a worktree session's branch. The base is the
- * repository's default branch on origin when it has one (fetched first), else
- * the branch the main checkout is on. Conflicts stay in the worktree for Claude
- * to resolve; `abort` abandons a merge in progress.
+ * Merge the base branch into a worktree session's branch (live claude.ai
+ * bundle, 2026-10-15: the host tool sync_with_base_branch, rows "Merged base
+ * branch", "Merge left conflicts to resolve", "Branch already up to date",
+ * "Abandoned merge", "No merge to abandon"). The base is the repository's
+ * default branch on origin when it has one (fetched first), else the branch
+ * the main checkout is on. Conflicts stay in the worktree for Claude to
+ * resolve; `abort` abandons a merge in progress.
  */
 
 export const syncBaseExtensionId = "sync-base-branch";
@@ -165,9 +184,217 @@ export async function syncWithBaseBranch(
   }
 }
 
+const localCode = (c: Conversation) =>
+  c.mode === "code" &&
+  !c.cloudHosted &&
+  !c.cloudEnvironmentId &&
+  !c.linkedToComputer &&
+  (!c.environment || c.environment.kind === "local");
+
+const canChangePr = (c: Conversation) =>
+  localCode(c) &&
+  !c.incognito &&
+  !c.archived &&
+  c.worktree?.state !== "deleted";
+
+const prChangeCurrent = (call: DynamicToolCall, deps: HostToolsDeps) => {
+  const c = call.conversation;
+  const previous = c.pullRequests;
+  return () =>
+    canChangePr(c) &&
+    deps.conversations().includes(c) &&
+    (!call.turn || call.turn.status === "inProgress") &&
+    c.pullRequests === previous;
+};
+
+function githubPullRequestRef(url: unknown) {
+  if (typeof url !== "string") return undefined;
+  const ref = parsePullRequestUrl(url);
+  return ref?.host === "github.com" &&
+    validRepositoryName(ref.repository) &&
+    Number.isSafeInteger(ref.number) &&
+    ref.number > 0 &&
+    /^https:\/\/github\.com\/[^/]+\/[^/]+\/pull\/\d+(?:[/?#]|$)/i.test(ref.url)
+    ? ref
+    : undefined;
+}
+
+const sameRepository = (a: string, b: string) =>
+  a.toLowerCase() === b.toLowerCase();
+
+const samePullRequest = (a: PullRequestRef, b: PullRequestRef) =>
+  a.host === b.host &&
+  a.number === b.number &&
+  sameRepository(a.repository, b.repository);
+
+const isOpenPr = (pr: Pick<SessionPullRequest, "state">) =>
+  pr.state !== "merged" && pr.state !== "closed";
+
+const bindingMatches = (
+  binding: SessionPullRequest,
+  target: PullRequestRef,
+) => {
+  const ref = githubPullRequestRef(binding.url);
+  return !!ref && samePullRequest(ref, target);
+};
+
+async function repoHeldBySessions(
+  c: Conversation,
+  repository: string,
+  sessions: Conversation[],
+  git: Git,
+) {
+  if (
+    sessions.some(
+      (session) =>
+        localCode(session) &&
+        !session.incognito &&
+        session.pullRequests?.some(
+          (row) =>
+            githubPullRequestRef(row.url) &&
+            sameRepository(row.repository, repository),
+        ),
+    )
+  )
+    return true;
+  const folders = new Set([
+    c.worktree?.path ?? c.cwd,
+    ...(c.additionalFolders ?? []),
+    ...(c.additionalWorktrees ?? []).flatMap((tree) =>
+      tree.folders.map((folder) => folder.cwd),
+    ),
+  ]);
+  const origins = await Promise.all(
+    [...folders].flatMap((cwd) =>
+      cwd ? [quiet(git, cwd, ["remote", "get-url", "origin"])] : [],
+    ),
+  );
+  return origins.some((origin) => {
+    const name = origin && githubRepositoryName(origin);
+    return !!name && sameRepository(name, repository);
+  });
+}
+
+const prUrlField = {
+  type: "string",
+  description:
+    "The pull request URL, e.g. https://github.com/owner/repo/pull/123.",
+};
+
+const prUrlInput = {
+  type: "object",
+  properties: { url: prUrlField },
+  required: ["url"],
+  additionalProperties: false,
+};
+
+async function changePrBinding(
+  call: DynamicToolCall,
+  url: unknown,
+  deps: HostToolsDeps,
+  git: Git,
+  run: GhRunner,
+) {
+  const c = call.conversation;
+  const previous = c.pullRequests ?? [];
+  const current = prChangeCurrent(call, deps);
+  const unavailable =
+    "The Code session or its pull requests changed. Try again.";
+  if (!current()) return result(unavailable, false);
+  const target = githubPullRequestRef(url);
+  if (!target) return result("Pass a github.com pull request URL.", false);
+  const binding = previous.find((row) => bindingMatches(row, target));
+  const name = `${target.repository}#${target.number}`;
+  if (call.tool === unbindPrTool) {
+    if (!binding || binding.dismissed)
+      return result(`${name} is not bound to this session.`, false);
+    const reply = await deps.ask(
+      c.id,
+      askOnce(`Dismiss ${name} from this session's pull requests?`),
+    );
+    if (reply?.action !== "accept")
+      return result("The user didn't allow the change.", false);
+    if (!current()) return result(unavailable, false);
+    c.pullRequests = previous.map((row) =>
+      row === binding ? { ...row, dismissed: true } : row,
+    );
+    call.changed();
+    return result(
+      `Dismissed ${name}. The app will stop watching it in this session. Use bind_pr to restore it.`,
+      true,
+    );
+  }
+  if (
+    !(await repoHeldBySessions(c, target.repository, deps.conversations(), git))
+  )
+    return result(
+      `${target.repository} must be the origin of a checkout in this session or have a pull request already bound in your sessions.`,
+      false,
+    );
+  if (!current()) return result(unavailable, false);
+  if (binding && !binding.dismissed)
+    return result(`${name} is already bound to this session.`, true);
+
+  const { pullRequest } = await getPullRequest(
+    target.repository,
+    target.number,
+    (args, limit) => run([...args, "--hostname", "github.com"], limit),
+  );
+  const verified = githubPullRequestRef(pullRequest?.url);
+  if (!current()) return result(unavailable, false);
+  if (
+    !pullRequest ||
+    !verified ||
+    !samePullRequest(verified, target) ||
+    pullRequest.number !== target.number ||
+    !pullRequest.headRef ||
+    (pullRequest.state !== "open" && pullRequest.state !== "draft")
+  )
+    return result(
+      `Could not read ${name} as an open pull request with the local GitHub sign-in.`,
+      false,
+    );
+
+  const action = binding?.dismissed ? "Restore" : "Bind";
+  const reply = await deps.ask(
+    c.id,
+    askOnce(`${action} ${name} in this session's pull requests?`),
+  );
+  if (reply?.action !== "accept")
+    return result("The user didn't allow the change.", false);
+  if (!current()) return result(unavailable, false);
+  const next: SessionPullRequest = {
+    ...binding,
+    repository: verified.repository,
+    number: pullRequest.number,
+    url: pullRequest.url,
+    title: pullRequest.title,
+    headRef: pullRequest.headRef,
+    headRepository: pullRequest.headRepository,
+    baseRef: pullRequest.baseRef,
+    own: pullRequest.viewerIsAuthor,
+    createdAt: pullRequest.createdAt,
+    state: pullRequest.state,
+    checkedAt: Date.now(),
+    ...(binding && {
+      dismissed: false,
+      autoFix: { ...binding.autoFix, ci: false, comments: false },
+    }),
+  };
+  c.pullRequests = binding
+    ? previous.map((row) => (row === binding ? next : row))
+    : [...previous, next];
+  call.changed();
+  return result(
+    `${binding ? "Restored" : "Bound"} ${name} to this session.`,
+    true,
+  );
+}
+
 export function syncBaseExtension(
   git: Git = localGit,
   deps?: HostToolsDeps,
+  run: GhRunner = runGh,
 ): EngineExtension {
   return {
     id: syncBaseExtensionId,
@@ -218,6 +445,7 @@ export function syncBaseExtension(
               properties: {
                 auto_fix: { type: "boolean" },
                 auto_archive: { type: "boolean" },
+                url: prUrlField,
               },
               additionalProperties: false,
             },
@@ -257,6 +485,23 @@ export function syncBaseExtension(
             },
           },
         );
+      if (deps && canChangePr(ctx.conversation))
+        tools.push(
+          {
+            type: "function",
+            name: bindPrTool,
+            description:
+              "Bind an open github.com pull request to this session by URL or restore a dismissed one. Its repository must be this session's checkout origin or already have a pull request bound in your sessions. Asks the user first.",
+            inputSchema: prUrlInput,
+          },
+          {
+            type: "function",
+            name: unbindPrTool,
+            description:
+              "Dismiss a bound pull request by URL and stop monitoring it in this session. Asks the user first.",
+            inputSchema: prUrlInput,
+          },
+        );
       if (!ctx.conversation.worktree && !tools.length) return undefined;
       return [
         {
@@ -293,6 +538,8 @@ export function syncBaseExtension(
     async handleDynamicTool(call) {
       if (call.namespace !== syncBaseNamespace) return undefined;
       const args0 = (call.arguments ?? {}) as Record<string, unknown>;
+      if (deps && (call.tool === bindPrTool || call.tool === unbindPrTool))
+        return changePrBinding(call, args0.url, deps, git, run);
       if (call.tool === setupQuestionTool && deps) {
         const suggested =
           typeof args0.suggested === "string" &&
@@ -357,9 +604,35 @@ export function syncBaseExtension(
         }
       }
       if (call.tool === setPrMonitorTool && deps) {
-        const pr = sessionPullRequest(call.conversation);
-        if (!pr)
-          return result("This session hasn't opened a pull request.", false);
+        const c = call.conversation;
+        const previous = c.pullRequests ?? [];
+        const current = prChangeCurrent(call, deps);
+        if (!current())
+          return result("The Code session is no longer available.", false);
+        const legacy = sessionPullRequest(c);
+        const target =
+          args0.url === undefined ? legacy : githubPullRequestRef(args0.url);
+        if (args0.url !== undefined && !target)
+          return result("Pass a github.com pull request URL.", false);
+        const selected =
+          target && previous.find((row) => bindingMatches(row, target));
+        const visible = previous.filter(
+          (row) => !row.dismissed && githubPullRequestRef(row.url),
+        );
+        const binding =
+          selected ??
+          (args0.url === undefined
+            ? (visible.filter(isOpenPr).at(-1) ?? visible.at(-1))
+            : undefined);
+        const legacyMatches =
+          legacy && target && samePullRequest(legacy, target);
+        const pr =
+          binding ?? (!previous.length && legacyMatches ? legacy : undefined);
+        if (!pr || binding?.dismissed)
+          return result(
+            "No matching pull request is bound to this session.",
+            false,
+          );
         const autoFix =
           typeof args0.auto_fix === "boolean" ? args0.auto_fix : undefined;
         const autoArchive =
@@ -368,20 +641,50 @@ export function syncBaseExtension(
             : undefined;
         if (autoFix === undefined && autoArchive === undefined)
           return result("Pass auto_fix, auto_archive or both.", false);
+        const taggedBinding =
+          binding && legacy && bindingMatches(binding, legacy);
+        const watch =
+          binding?.autoFix ?? (taggedBinding ? c.prAutoFix : undefined);
+        const openedHere =
+          binding?.own && (binding.openedBySession || taggedBinding);
+        if (
+          autoFix &&
+          binding &&
+          (!isOpenPr(binding) || (!watch?.ci && !openedHere))
+        )
+          return result(
+            "Auto-fix can only be enabled here for an open pull request this session opened.",
+            false,
+          );
         const reply = await deps.ask(
-          call.conversation.id,
+          c.id,
           askOnce(prMonitorQuestion(pr.number, { autoFix, autoArchive })),
         );
         if (reply?.action !== "accept")
           return result("The user didn't allow the change.", false);
-        if (autoFix !== undefined)
-          call.conversation.prAutoFix = {
-            ...(call.conversation.prAutoFix ?? {}),
-            ci: autoFix,
-            comments: autoFix,
-          };
-        if (autoArchive !== undefined)
-          call.conversation.prAutoArchive = autoArchive;
+        if (!current())
+          return result(
+            "The Code session or its pull requests changed. Try again.",
+            false,
+          );
+        if (autoFix !== undefined) {
+          if (binding) {
+            c.pullRequests = previous.map((row) =>
+              row === binding
+                ? {
+                    ...row,
+                    autoFix: { ...watch, ci: autoFix, comments: autoFix },
+                  }
+                : row,
+            );
+          } else {
+            c.prAutoFix = { ...c.prAutoFix, ci: autoFix, comments: autoFix };
+          }
+        }
+        if (autoArchive !== undefined) {
+          c.prAutoArchive = autoArchive;
+          if (autoArchive) delete c.codeAutoArchiveExempt;
+        }
         call.changed();
         return result(
           `Done: ${[
@@ -441,24 +744,36 @@ export function syncBaseExtension(
 export function registerSyncBaseExtension(
   ctx: Pick<
     AppContext,
-    "engine" | "onAccountActivated" | "onAccountDeactivating" | "store"
+    | "engine"
+    | "onAccountActivated"
+    | "onAccountDeactivating"
+    | "store"
+    | "accountActivationIdentity"
+    | "accountRetiring"
   >,
 ) {
   let remove: (() => void) | undefined;
-  ctx.onAccountActivated?.(() => {
+  ctx.onAccountActivated?.((account) => {
     remove?.();
-    remove = ctx.engine.extensions.has(syncBaseExtensionId)
+    const { store, engine, accountActivationIdentity } = ctx;
+    const current = () =>
+      !ctx.accountRetiring &&
+      ctx.accountActivationIdentity === accountActivationIdentity;
+    remove = engine.extensions.has(syncBaseExtensionId)
       ? undefined
-      : ctx.engine.extensions.add(
+      : engine.extensions.add(
           syncBaseExtension(localGit, {
-            conversations: () => {
-              try {
-                return ctx.store.conversations;
-              } catch {
-                return [];
-              }
-            },
-            ask: (id, params) => ctx.engine.requestAppApproval(id, params),
+            conversations: () =>
+              current()
+                ? store.conversations.filter(
+                    (c) =>
+                      !c.sessionAuthors ||
+                      (c.sessionAuthors.ownerAccountUuid === account.id &&
+                        c.sessionAuthors.viewerAccountUuid === account.id),
+                  )
+                : [],
+            ask: async (id, params) =>
+              current() ? engine.requestAppApproval(id, params) : undefined,
           }),
         );
   });

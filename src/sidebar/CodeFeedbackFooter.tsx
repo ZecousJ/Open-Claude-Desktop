@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import type { Conversation } from "../../shared/types";
 import type { ReportingStatus } from "../../shared/diagnostics-api";
 import { IconButton } from "../ui/Controls";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { lazyPiece } from "../ui/lazy-piece";
 import { t } from "../i18n";
 import { codeFeedbackEvent } from "../code-feedback/feedback-request";
@@ -95,7 +95,7 @@ export function CodeFeedbackFooter({
         }
         onClick={start}
       >
-        <AppIcon name="Ant" size={20} />
+        <Anthropicon name="Ant" size={20} />
       </IconButton>
       {report &&
         report.accountId === accountId &&

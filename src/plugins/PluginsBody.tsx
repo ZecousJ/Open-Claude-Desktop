@@ -275,11 +275,14 @@ export function PluginsBody({
   );
 }
 
-/** The names' widths. */
+/** The names' widths (live claude.ai bundle, 2026-10-16: w-28 w-36 w-24 w-32 w-40 w-28 w-32 w-24). */
 const skeletonNames = [112, 144, 96, 128, 160, 112, 128, 96];
 
 /**
- * Customize's Discover while its catalog loads: no words, the cards' shapes.
+ * Customize's Discover while its catalog loads: no words, the cards'
+ * shapes (live claude.ai bundle, 2026-10-16, "discover-results-skeleton":
+ * a heading bar, then two columns of cards, each a 48px tile, the name and
+ * two description lines at 11/12 and 3/5).
  */
 function DiscoverSkeleton({ label }: { label: string }) {
   return (

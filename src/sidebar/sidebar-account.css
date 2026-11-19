@@ -56,7 +56,7 @@
   font-size: 13px;
   color: var(--text-muted);
 }
-.profile > .app-icon {
+.profile > .anthropicon {
   flex: 0 0 12px;
   margin-left: 0;
   color: var(--text-muted);
@@ -106,7 +106,7 @@
 }
 /* #313131 and #3e3e3e on the #202020 menu: the ghost fills. A row reached by
    keyboard is highlighted with the hover fill and no ring, as the original's
-   menu items. */
+   menu items (data-highlighted; desktop bundle 2.31226.1). */
 .profile-popover > button:hover:not(:disabled),
 .profile-popover > button:focus-visible,
 .profile-menu-scroll > button:hover:not(:disabled),
@@ -125,8 +125,8 @@
 .profile-menu-scroll > button:active {
   background: var(--fill-ghost-selected);
 }
-.profile-popover > button > .app-icon,
-.profile-menu-scroll > button > .app-icon {
+.profile-popover > button > .anthropicon,
+.profile-menu-scroll > button > .anthropicon {
   flex: none;
   color: #f3f3f3;
 }
@@ -143,12 +143,12 @@
 }
 
 /* Resize handle on the sidebar's right edge: a 12px grab area centred on the
-   edge with a 3×48px pill in it, as the panel dividers
-   (src/ui/ResizeHandle.tsx, resize-handle.css) and the original's ResizeHandle.
-   Hover fades the pill in over 200ms after a 200ms wait, in the muted text
-   colour; dragging turns it the secondary colour over 120ms; keyboard focus
-   draws it in the accent colour along the whole edge with no wait and rings the
-   grab area. */
+   edge with a 3×48px pill in it, as the panel dividers (src/ui/ResizeHandle.tsx,
+   resize-handle.css) and the original's ResizeHandle (desktop bundle
+   2.31226.1). Hover fades the pill in over 200ms after a 200ms wait, in the
+   muted text colour; dragging turns it the secondary colour over 120ms;
+   keyboard focus draws it in the accent colour along the whole edge with no
+   wait and rings the grab area. */
 .sidebar-resize-handle {
   position: absolute;
   z-index: 6;
@@ -222,20 +222,24 @@
 }
 
 /*
- * Dragging a row, as the original's sidebar drag: the dragged row's place stays
- * laid out but empty, and the other rows slide by whole rows with a transform
- * over 120ms on the ease-out curve, only while the pointer is down
- * (useConversationDrag sets data-pin-dragging and the transforms). The copy
- * under the pointer is the row's own markup on a pill with the floating shadow
- * at 90%; a release that would unpin fades it to "Release to unpin" over a red
- * fill, the pill narrowing to the words. The copy is the row as it stands, on
- * the sidebar's fill with the row's corners and a hairline ring.
+ * Dragging a row, as the original's sidebar drag (desktop bundle 2.31226.1):
+ * the dragged row's place stays laid out but empty, and the other rows slide
+ * by whole rows with a transform over 120ms on the ease-out curve, only
+ * while the pointer is down (useConversationDrag sets data-pin-dragging and
+ * the transforms). The copy under the pointer is the row's own markup on a
+ * pill with the floating shadow at 90%; a release that would unpin fades it
+ * to "Release to unpin" over a red fill, the pill narrowing to the words.
+ * The copy is the row as it stands, on the sidebar's fill with the row's
+ * corners and a hairline ring (live claude.ai bundle, 2026-10-21,
+ * shared-19: the ghost's sidebar background, shadow-float, opacity 90%,
+ * ring-1 ring-alpha-2 in dark; owner's comparison recording 2026-10-21).
  */
 .sidebar-scroll[data-pin-dragging] [data-drag-shift] {
   transition: transform var(--motion-snap) ease-out;
 }
-/* The sections clip only to open and fold; while a drag slides rows down, the
-   last one moves past its section's end and must still show. */
+/* The sections clip only to open and fold; while a drag slides rows down,
+   the last one moves past its section's end and must still show (owner,
+   2026-10-21: the bottom pinned row vanished when a drag made room). */
 .sidebar-scroll[data-pin-dragging] .pinned-section,
 .sidebar-scroll[data-pin-dragging]
   .u-expand-rows:is([data-open=""], [data-open="true"])

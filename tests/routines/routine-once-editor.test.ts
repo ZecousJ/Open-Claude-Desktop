@@ -42,7 +42,7 @@ test("the desktop editor offers One-time with a Run at date-time field and a Per
   assert.match(html, /aria-label="Run at"/);
   assert.match(html, /Runs once on /);
   assert.match(html, /Permissions/);
-  // A new task starts on Auto.
+  // A new task starts on Auto (live claude.ai bundle, 2026-10-21, c97b955f1: ef).
   assert.match(html, /Automatically approve/);
   // A moment that has passed shows the original's note.
   const past = render(RoutineEditor, {

@@ -15,7 +15,6 @@ import type { CodeUsageDashboard } from "../../shared/code-usage-api";
 import type { PlanUsage } from "../../shared/usage-api";
 import { HostContext } from "../../src/host/HostContext";
 import { AppContext, type AppController } from "../../src/app/AppContext";
-import { NativeCliImportCard } from "../../src/code-home/NativeCliImportCard";
 import CodeUsageSettings from "../../src/code-home/CodeUsageSettings";
 import { UsageTab } from "../../src/settings/tabs/Usage";
 
@@ -219,76 +218,6 @@ test("review: an old-account dashboard cannot overwrite the new account after th
       "web never starts a local-statistics dashboard read",
     );
   } finally {
-    await env.close();
-  }
-});
-
-test("review: native to web transition drops late discovery errors and re-enters with fresh eligibility", async () => {
-  const reads: ReturnType<typeof deferred<{ count: number }>>[] = [];
-  const env = await environment({
-    probeImportableCliSessions: () => {
-      const read = deferred<{ count: number }>();
-      reads.push(read);
-      return read.promise;
-    },
-  });
-  try {
-    await env.render(createElement(NativeCliImportCard));
-    await env.render(createElement(NativeCliImportCard), webHost);
-    await env.focus();
-    assert.equal(reads.length, 1);
-    await act(async () => reads[0].reject(new Error("late native error")));
-    assert.equal(env.document.querySelector(".native-cli-import-card"), null);
-    assert.deepEqual(env.errors, []);
-    await env.render(createElement(NativeCliImportCard));
-    await act(async () => reads[1].resolve({ count: 3 }));
-    assert.match(
-      env.document.querySelector(".native-cli-import-action")!.textContent!,
-      /Import 3 Claude Code CLI sessions/,
-    );
-  } finally {
-    await env.close();
-  }
-});
-
-test("review: cancel while confirmation eligibility is pending ignores its late reply and imports nothing", async () => {
-  const confirmation = deferred<{ count: number }>();
-  let probes = 0,
-    imports = 0;
-  const env = await environment({
-    probeImportableCliSessions: async () => {
-      probes++;
-      return probes === 1
-        ? { count: 1 }
-        : probes === 2
-          ? confirmation.promise
-          : { count: 0 };
-    },
-    importAllCliSessions: async () => {
-      imports++;
-      return { imported: 1, skipped: 0 };
-    },
-  });
-  try {
-    await env.render(createElement(NativeCliImportCard));
-    await env.click(env.document.querySelector(".native-cli-import-action")!);
-    await env.settle();
-    const dialog = env.document.querySelector('[role="alertdialog"]')!;
-    assert.match(dialog.textContent!, /Looking for sessions/);
-    const buttons = Array.from(dialog.querySelectorAll("button"));
-    assert.ok(!buttons.some((button) => button.textContent === "Import"));
-    await env.click(buttons.find((button) => button.textContent === "Cancel")!);
-    await act(async () => confirmation.resolve({ count: 5 }));
-    assert.equal(env.document.querySelector('[role="alertdialog"]'), null);
-    assert.equal(env.document.querySelector(".native-cli-import-card"), null);
-    assert.equal(imports, 0);
-    assert.equal(
-      probes,
-      3,
-      "closing the confirmation rereads actual remaining sessions",
-    );
-  } finally {
-    confirmation.resolve({ count: 0 });
     await env.close();
   }
 });

@@ -35,9 +35,9 @@ export const fieldBase = [
 
 /**
  * Cells of a track `width` px wide. The lattice is anchored to the track's
- * right end: cell centres sit 3.5px + 4k in from it, which gives x = 4k + 3 on
- * the 196px macOS track and 4k + 1.1 on the 197.6px Windows one (2097af56).
- * Each cell gets a base colour index into `fieldBase`.
+ * right end: cell centres sit 3.5px + 4k in from it, which gives x = 4k + 3
+ * on the 196px macOS track (R-0330) and 4k + 1.1 on the 197.6px Windows one
+ * (2097af56). Each cell gets a base colour index into `fieldBase`.
  */
 export function fieldCells(width: number, seed: number) {
   const random = seededRandom(seed);

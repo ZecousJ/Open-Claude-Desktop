@@ -5,7 +5,7 @@ import { api } from "../desktop-api";
 import { formatText } from "../i18n";
 import "./linear.css";
 
-// Issue attachment uses Wr, not an uploaded file.
+// Issue attachment uses Wr, not an uploaded file (live claude.ai bundle, 2026-10-14, cc4a5adb7-mJKUf9Bm.js).
 export default function LinearIssuePill({
   issue,
   onRemove,

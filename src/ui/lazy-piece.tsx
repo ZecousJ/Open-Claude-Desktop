@@ -16,17 +16,19 @@ import {
 } from "../app/chunk-recovery";
 
 /**
- * A lazily loaded piece of the interface that shows its own load failure in its
- * place, as each lazily loaded component does in the original: "Couldn’t load
- * this." with Retry, "Claudex was updated. Reload to continue." when a newer
- * build replaced its script, "Couldn’t load this. Reload the page to continue."
- * with Reload once retrying cannot help, and "You’re offline." while the
- * network is gone. While it loads or retries on its own it suspends, so the
- * caller's Suspense fallback shows, as React.lazy does. A failure that is not a
- * load failure goes to the nearest error boundary.
+ * A lazily loaded piece of the interface that shows its own load failure in
+ * its place, as each lazily loaded component does in the original (live
+ * claude.ai bundle, 2026-10-12, shared-l-p-m-3 `xb` with shared-l-p-m-6
+ * `AV`/`PV`): "Couldn’t load this." with Retry, "Claudex was updated.
+ * Reload to continue." when a newer build replaced its script, "Couldn’t
+ * load this. Reload the page to continue." with Reload once retrying cannot
+ * help, and "You’re offline." while the network is gone. While it loads or
+ * retries on its own it suspends, so the caller's Suspense fallback shows,
+ * as React.lazy does. A failure that is not a load failure goes to the
+ * nearest error boundary.
  *
- * `lazyPiece( => import("./Thing"))` takes the default export; `lazyPiece( =>
- * import("./things"), "Thing")` a named one.
+ * `lazyPiece(() => import("./Thing"))` takes the default export;
+ * `lazyPiece(() => import("./things"), "Thing")` a named one.
  */
 export interface LazyPieceOptions {
   /**

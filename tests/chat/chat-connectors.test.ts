@@ -397,15 +397,15 @@ test("shell54 URL copy Check appears only after successful clipboard write and r
     )!;
     t.mock.timers.enable({ apis: ["setTimeout"] });
     await e.event(button, "click");
-    assert.equal(button.querySelector('[data-icon="Check"]'), null);
+    assert.equal(button.querySelector('[data-anthropicon="Check"]'), null);
     await act(async () => resolve());
-    assert.ok(button.querySelector('[data-icon="Check"]'));
+    assert.ok(button.querySelector('[data-anthropicon="Check"]'));
     assert.equal(currentToasts().length, 0, "URL copying uses inline feedback");
     await act(async () => t.mock.timers.tick(1999));
-    assert.ok(button.querySelector('[data-icon="Check"]'));
+    assert.ok(button.querySelector('[data-anthropicon="Check"]'));
     await act(async () => t.mock.timers.tick(1));
-    assert.equal(button.querySelector('[data-icon="Check"]'), null);
-    assert.ok(button.querySelector('[data-icon="Copy"]'));
+    assert.equal(button.querySelector('[data-anthropicon="Check"]'), null);
+    assert.ok(button.querySelector('[data-anthropicon="Copy"]'));
   } finally {
     t.mock.timers.reset();
     await e.clean();
@@ -493,7 +493,7 @@ for (const outcome of ["success", "failure"] as const)
       });
       assert.equal(
         e.document.querySelector(
-          '[aria-label="Copy server URL"] [data-icon="Check"]',
+          '[aria-label="Copy server URL"] [data-anthropicon="Check"]',
         ),
         null,
       );
@@ -727,7 +727,7 @@ test("shell54 category landing uses its dedicated header and real nested taxonom
     assert.equal(titleStyle.fontSize, "24px");
     assert.equal(titleStyle.lineHeight, "32px");
     assert.equal(titleStyle.fontWeight, "500");
-    assert.ok(titleStyle.fontFamily.includes("Claudex Serif"));
+    assert.ok(titleStyle.fontFamily.includes("Claudex Reference Serif"));
     const hiddenHeading = e.document.querySelector(
       ".customize-connector-category-results h2",
     )!;

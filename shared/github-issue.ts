@@ -1,9 +1,10 @@
 /**
- * An imported GitHub issue: the issue becomes an attachment of the next
- * message, a text file holding the issue inside a `<github_issue>` block, which
- * Claude reads as the original reads the block it builds. The block keeps what
- * the model needs (repository, number, title, address, author, labels, text)
- * and cuts a long text at 16,000 characters with a pointer to the full issue.
+ * An imported GitHub issue (Import GitHub issue, desktop bundle 2.31226.1):
+ * the issue becomes an attachment of the next message, a text file holding
+ * the issue inside a `<github_issue>` block, which Claude reads as the
+ * original reads the block it builds. The block keeps what the model needs
+ * (repository, number, title, address, author, labels, text) and cuts a long
+ * text at 16,000 characters with a pointer to the full issue.
  */
 import type { GitHubIssue, GitHubIssueDetail } from "./github-api";
 

@@ -1,14 +1,22 @@
 /* Window-only preferences set on :root by useAppearance. */
 
-/* Chat font. Serif (the default) is the chat transcript's own stack, Anthropic
-   Serif when a local Claude installation lends it. */
+/* Chat font (live claude.ai bundle, 2026-10-14: serif --font-serif, sans
+   --font-ui, system --font-system, dyslexia --font-dyslexia). Serif (the
+   default) is the chat transcript's own stack, Anthropic Serif when a local
+   Claude installation lends it. */
 :root[data-reference-fonts="true"][data-chat-font="serif"]
   .mode-chat
   .markdown {
-  font-family: "Claudex Serif", Georgia, "PingFang SC", serif;
+  font-family:
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC", serif;
 }
 :root[data-chat-font="sans"] .mode-chat .markdown {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 :root[data-chat-font="system"] .mode-chat .markdown {
   font-family: system-ui, sans-serif;
@@ -50,9 +58,10 @@
     "PingFang SC", "Microsoft YaHei", serif;
 }
 
-/* Transcript width: Code's transcript and composer columns are 768px at most
-   (Narrow, the default), 960px (Medium) or 1280px (Wide). The transcript keeps
-   its 24px of padding at each side around the column. */
+/* Transcript width (live claude.ai bundle, 2026-10-14): Code's transcript
+   and composer columns are 768px at most (Narrow, the default), 960px
+   (Medium) or 1280px (Wide). The transcript keeps its 24px of padding at
+   each side around the column. */
 :root[data-transcript-width="m"] .mode-code .messages {
   width: min(1008px, 100%);
 }
@@ -99,15 +108,18 @@
   }
 }
 
-/* Interface font. Anthropic Sans is the reference face when a local Claude
-   installation lends it, else the system's (93-reference-responsive.css, which
-   loads later: the doubled attribute outranks it). */
+/* Interface font (live claude.ai bundle, 2026-10-14: interfaceFont,
+   --font-ui, --font-system, --font-ui-dyslexic). Anthropic Sans is the
+   reference face when a local Claude installation lends it, else the
+   system's (93-reference-responsive.css, which loads later: the doubled
+   attribute outranks it). */
 :root[data-interface-font="system"][data-interface-font] {
   font-family: system-ui, sans-serif;
 }
 :root[data-interface-font="dyslexic"][data-interface-font] {
   font-family:
     OpenDyslexic,
+    "Claudex Reference Sans",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",

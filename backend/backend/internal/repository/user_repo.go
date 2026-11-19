@@ -38,6 +38,10 @@ func NewUserRepository(client *dbent.Client, sqlDB *sql.DB) service.UserReposito
 	return newUserRepositoryWithSQL(client, sqlDB)
 }
 
+func NewMigrationBalanceRepository(client *dbent.Client) service.MigrationBalanceRepository {
+	return newUserRepositoryWithSQL(client, nil)
+}
+
 func newUserRepositoryWithSQL(client *dbent.Client, sqlq sqlExecutor) *userRepository {
 	return &userRepository{client: client, sql: sqlq}
 }
@@ -835,6 +839,18 @@ func (r *userRepository) UpdateBalance(ctx context.Context, id int64, amount flo
 		update = update.AddTotalRecharged(amount)
 	}
 	n, err := update.Save(ctx)
+	if err != nil {
+		return translatePersistenceError(err, service.ErrUserNotFound, nil)
+	}
+	if n == 0 {
+		return service.ErrUserNotFound
+	}
+	return nil
+}
+
+func (r *userRepository) CreditMigrationBalance(ctx context.Context, id int64, amount float64) error {
+	client := clientFromContext(ctx, r.client)
+	n, err := client.User.Update().Where(dbuser.IDEQ(id), dbuser.DeletedAtIsNil()).AddBalance(amount).Save(ctx)
 	if err != nil {
 		return translatePersistenceError(err, service.ErrUserNotFound, nil)
 	}

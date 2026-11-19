@@ -46,8 +46,10 @@ const mac =
 /**
  * The first-run onboarding, shown once to a new account after sign-up (and
  * after the profile step, which hands over to it): a full window of its own,
- * one question at a time. Every answer is saved on the service as it is given;
- * the last step finishes it there, so no device shows it again.
+ * one question at a time (live claude.ai bundle, 2026-10-12, the onboarding
+ * route c10bf8b47; the page frame is its `F` in c7967290f). Every answer is
+ * saved on the service as it is given; the last step finishes it there, so
+ * no device shows it again.
  */
 export default function OnboardingFlow({
   accountId,
@@ -205,9 +207,9 @@ export default function OnboardingFlow({
 }
 
 /**
- * The page every step sits in: the window's drag strip on the desktop, the
- * wordmark centred 40px from the top, then the step centred in the rest of the
- * window.
+ * The page every step sits in (c7967290f `F`): the window's drag strip on
+ * the desktop, the wordmark centred 40px from the top, then the step centred
+ * in the rest of the window.
  */
 function OnboardingFrame({
   main,

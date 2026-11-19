@@ -2,7 +2,7 @@ import { RoutineBrowserPermissions } from "./RoutineBrowserPermissions";
 import { useContext, useState } from "react";
 import { AppContext } from "../../app/AppContext";
 import { Play, ChevronLeft, Trash2 } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { IconButton } from "../../ui/Controls";
 import {
   routineDispatchAt,
@@ -22,7 +22,7 @@ import { ConnectionHold } from "./ConnectionHold";
 import { WebRoutineDetail } from "./WebRoutineDetail";
 import { AutoDisabledRoutineNotice } from "./AutoDisabledRoutineNotice";
 
-/** Local task details. */
+/** Local task details (live claude.ai bundle, 2026-10-14, cfc18e0f4-Bw3JAvQY.js). */
 export interface RoutineDetailProps {
   /** Main Scheduled pages use the shared frame on web and desktop.
    * The separate local Epitaxy view must be requested explicitly. */
@@ -98,11 +98,12 @@ function DesktopRoutineDetail({
           <h1 dir="auto" data-no-translate>
             {routine.name}
           </h1>
-          {/* Edit and Delete as icons, then the primary Run now, disabled with
-             its reason while on hold. */}
+          {/* Edit and Delete as icons, then the primary Run now, disabled
+              with its reason while on hold (live claude.ai bundle,
+              2026-10-14, cfc18e0f4). */}
           <div className="routine-detail-actions">
             <IconButton label="Edit" onClick={onEdit}>
-              <AppIcon name="Edit" />
+              <Anthropicon name="Edit" />
             </IconButton>
             <IconButton label="Delete" onClick={onDelete}>
               <Trash2 size={16} />

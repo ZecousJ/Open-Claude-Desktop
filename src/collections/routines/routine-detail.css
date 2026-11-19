@@ -1,4 +1,5 @@
-/* Local detail sections. */
+/* Local detail sections (live claude.ai bundle, 2026-10-14,
+   cfc18e0f4-Bw3JAvQY.js:98–150,834; c9e1458cd-nP2pbH75.js:168–186). */
 .routine-detail {
   --routine-primary: #f0efec;
   --routine-secondary: #c3c2b7;
@@ -167,7 +168,7 @@
   color: var(--routine-secondary);
 }
 
-/* Warning banner. */
+/* Warning banner (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js: gT). */
 .routine-connection-hold {
   display: flex;
   gap: 4px;
@@ -206,9 +207,9 @@
   box-shadow: inset 0 0 0 1px #eda100;
 }
 
-/* Secondary Run now only when the compact unified header did not take the
-   primary action. The current frame keeps its labelled primary in the header,
-   so it has no duplicate. */
+/* ccd3f68fe-CamBxzX6:3040–3068: secondary Run now only when the
+   compact unified header did not take the primary action. The current
+   frame keeps its labelled primary in the header, so it has no duplicate. */
 .routine-detail .routine-history-empty {
   display: flex;
   flex-direction: column;

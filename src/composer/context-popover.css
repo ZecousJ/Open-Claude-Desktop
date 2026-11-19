@@ -1,11 +1,12 @@
-/* The context ring's popover. Layout from Footnote
- 12/15px, body 13/19px, heading 14/18px medium; pad xs 4px, sm 6px, lg 12px;
- gap xs 6px, sm 8px, md 12px; alpha-1 5%, alpha-2 10%, alpha-3 20%): a 360px
- panel (312px for the Usage panel) 8px above the ring with 6px above and below
- its rows. The box (border, fill, radius, shadow) is the effort panel's
- (.code-effort-panel), the text greys and the bar's track and fill are the
- ring's own. Meter colours: the ring's blue, the effort panel's warning amber
- and the original's danger fill (src/ui/menu.css). */
+/* The context ring's popover. Layout from the live claude.ai bundle,
+   2026-10-12 (default density: footnote 12/15px, body 13/19px, heading
+   14/18px medium; pad xs 4px, sm 6px, lg 12px; gap xs 6px, sm 8px, md 12px;
+   alpha-1 5%, alpha-2 10%, alpha-3 20%): a 360px panel (312px for the Usage
+   panel) 8px above the ring with 6px above and below its rows. The box
+   (border, fill, radius, shadow) is the effort panel's (.code-effort-panel),
+   the text greys and the bar's track and fill are the ring's own. Meter
+   colours: the ring's blue, the effort panel's warning amber and the
+   original's danger fill (src/ui/menu.css). */
 .context-popover {
   position: absolute;
   z-index: 40;
@@ -14,8 +15,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  /* The live usage panel: 360px, radius 10, #20201f inside a 1px white-10%
-     ring, the menu shadows; 6px above and below. */
+  /* The live usage panel (claude.ai, 2026-10-20): 360px, radius 10, #20201f
+     inside a 1px white-10% ring, the menu shadows; 6px above and below. */
   width: 360px;
   max-width: calc(100vw - 32px);
   padding: 6px 0;
@@ -29,13 +30,15 @@
     0 2px 6px rgb(0 0 0 / 20%);
   color: var(--text);
   font:
-    12px/15px -apple-system,
+    12px/15px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   --context-muted: #898781;
   --context-secondary: #c3c2b7;
   --context-fill: #2a78d6;
-  /* Fill-warning, yellow-200 in both themes. */
+  /* fill-warning, yellow-200 in both themes (live claude.ai bundle,
+     2026-10-16, c6a992d55). */
   --context-warning: #fab219;
   --context-danger: #d03b3b;
   --context-ghost-hover: color-mix(in srgb, var(--alpha-ink) 7.5%, transparent);
@@ -101,7 +104,8 @@
   min-height: 20px;
   padding: 4px 12px;
 }
-/* The reason compaction waits, in the row left of the button. */
+/* The reason compaction waits, in the row left of the button (live bundle,
+   2026-10-16, c2d611398 se: flex-1 min-w-0 truncate text-secondary). */
 .context-popover-hint {
   flex: 1;
   min-width: 0;
@@ -118,8 +122,9 @@
   height: 24px;
   padding: 0 8px;
   border-radius: 6px;
-  /* The original's secondary button: white 10% that steps to 14% on hover; in
-     light, white 10% inside a hairline ring that steps to ink 5%. */
+  /* The original's secondary button (desktop bundle 2.31226.1 static CSS):
+     white 10% that steps to 14% on hover; in light, white 10% inside a
+     hairline ring that steps to ink 5%. */
   background: var(--alpha-2);
   color: var(--text);
   font: inherit;
@@ -133,8 +138,9 @@
   margin: 6px 12px;
   background: var(--alpha-2);
 }
-/* "View usage in Settings": a 12px arrow with 4px around it, pulled back into
- the row; text-muted-as-secondary, text-primary on hover. */
+/* "View usage in Settings": a 12px arrow with 4px around it, pulled back
+   into the row; text-muted-as-secondary, text-primary on hover (live
+   claude.ai bundle, 2026-10-16, c2d611398 df-link-card). */
 .context-popover-link {
   display: grid;
   flex: none;
@@ -194,7 +200,7 @@
   background: rgb(255 255 255 / 10%);
 }
 /* The Usage panel's 8px meter: round, on white 10%, and
- never thinner than its height once something is used. */
+   never thinner than its height once something is used. */
 .context-meter.tall {
   height: 8px;
   margin-top: 0;
@@ -276,7 +282,8 @@
 }
 
 /* The light theme's tokens: surface-3 white, text-primary #0b0b0b, secondary
- #52514e, muted #898781, accent fill #2a78d6, a ring of the ink at 10%. */
+   #52514e, muted #898781, accent fill #2a78d6, a ring of the ink at 10% (live
+   claude.ai bundle, 2026-10-16, c6a992d55). */
 :root[data-theme="light"] .context-popover {
   background: #fff;
   box-shadow:

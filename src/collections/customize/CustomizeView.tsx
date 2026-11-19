@@ -1,5 +1,5 @@
 import { Link } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { t, formatText } from "../../i18n";
 import { Suspense } from "react";
 import {
@@ -342,7 +342,7 @@ export function customizeView(kit: CustomizeViewKit) {
                   closeConnectorDirectory();
                 }}
               >
-                <AppIcon name="CaretLeft" size={16} />
+                <Anthropicon name="CaretLeft" size={16} />
                 Connectors
               </a>
               <div className="customize-connector-category-title">

@@ -1,4 +1,4 @@
-/* Metadata grid. */
+/* Metadata grid (live claude.ai bundle, 2026-10-14, c86c18ff2-DZs4-mW1.js). */
 .connector-detail-metadata {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -262,7 +262,7 @@
   }
 }
 
-/* Published names are neutral chips, without list markers. */
+/* O16 cc141fa17 Qt: published names are neutral chips, without list markers. */
 .connector-published-tools > .connector-published-tool-names {
   margin: 0;
   padding: 0;

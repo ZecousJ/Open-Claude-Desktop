@@ -6,7 +6,7 @@ import { requestProject } from "../collections/open-requests";
 import { api } from "../desktop-api";
 import { formatText } from "../i18n";
 import { Menu, type MenuPosition } from "../ui/Menu";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { formatWebRoute } from "../web/routes";
 
 export function PinnedProjects({
@@ -88,7 +88,7 @@ function PinnedProject({
             open();
           }}
         >
-          <AppIcon name="Projects" size={16} />
+          <Anthropicon name="Projects" size={16} />
           <span className="row-title-slot" data-no-translate>
             {project.name}
           </span>
@@ -101,7 +101,7 @@ function PinnedProject({
           aria-expanded={expanded}
           onClick={() => setExpanded(!expanded)}
         >
-          <AppIcon name={expanded ? "CaretDown" : "CaretRight"} size={12} />
+          <Anthropicon name={expanded ? "CaretDown" : "CaretRight"} size={12} />
         </button>
         <button
           ref={anchor}
@@ -118,7 +118,7 @@ function PinnedProject({
             );
           }}
         >
-          <AppIcon name="DotsVertical" size={16} />
+          <Anthropicon name="DotsVertical" size={16} />
         </button>
       </div>
       {expanded && (

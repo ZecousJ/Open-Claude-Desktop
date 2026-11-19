@@ -32,6 +32,10 @@ func encodeAnthropicThinking(block AnthropicContentBlock) string {
 // Responses API response. This is the reverse of ResponsesToAnthropic and
 // enables Anthropic upstream responses to be returned in OpenAI Responses format.
 func AnthropicToResponsesResponse(resp *AnthropicResponse) *ResponsesResponse {
+	return AnthropicToResponsesResponseWithReasoningCache(resp, nil)
+}
+
+func AnthropicToResponsesResponseWithReasoningCache(resp *AnthropicResponse, cachePrivateReasoning CachePrivateReasoning) *ResponsesResponse {
 	id := resp.ID
 	if id == "" {
 		id = generateResponsesID()
@@ -80,23 +84,11 @@ func AnthropicToResponsesResponse(resp *AnthropicResponse) *ResponsesResponse {
 			pendingServer[block.ID] = serverCall{name: block.Name, input: input}
 			serverOrder = append(serverOrder, block.ID)
 		case "thinking", "redacted_thinking":
-			if claude.IsOpus55(resp.Model) && (block.Signature != "" || block.Data != "") {
-				item := ResponsesOutput{Type: "reasoning", ID: generateItemID(), EncryptedContent: encodeAnthropicThinking(block)}
-				if block.Thinking != "" {
-					item.Summary = []ResponsesSummary{{Type: "summary_text", Text: block.Thinking}}
-				}
+			preserveSignature := claude.IsOpus55(resp.Model) && (block.Signature != "" || block.Data != "")
+			if preserveSignature || block.Thinking != "" {
+				item := ResponsesOutput{Type: "reasoning", ID: generateItemID()}
+				setAnthropicReasoning(&item, block, preserveSignature, cachePrivateReasoning)
 				outputs = append(outputs, item)
-				continue
-			}
-			if block.Thinking != "" {
-				outputs = append(outputs, ResponsesOutput{
-					Type: "reasoning",
-					ID:   generateItemID(),
-					Summary: []ResponsesSummary{{
-						Type: "summary_text",
-						Text: block.Thinking,
-					}},
-				})
 			}
 		case "text":
 			annotations := citationAnnotations(block.Text, block.Citations)
@@ -188,6 +180,20 @@ func AnthropicToResponsesResponse(resp *AnthropicResponse) *ResponsesResponse {
 	return out
 }
 
+func setAnthropicReasoning(item *ResponsesOutput, block AnthropicContentBlock, preserveSignature bool, cachePrivateReasoning CachePrivateReasoning) {
+	item.Summary = cachePrivateReasoning.summary(block.Thinking)
+	if !preserveSignature || block.Signature == "" && block.Data == "" {
+		return
+	}
+	envelope := encodeAnthropicThinking(block)
+	if cachePrivateReasoning != nil {
+		cachePrivateReasoning(item.ID, envelope)
+		item.EncryptedContent = cachePrivateReasoning.replayReference(item.ID)
+	} else {
+		item.EncryptedContent = envelope
+	}
+}
+
 // anthropicStopReasonToResponsesStatus maps Anthropic stop_reason to Responses status.
 func anthropicStopReasonToResponsesStatus(stopReason string, blocks []AnthropicContentBlock) string {
 	switch stopReason {
@@ -235,9 +241,9 @@ type AnthropicEventToResponsesState struct {
 	// Content of the currently open item, folded into Outputs when it closes.
 	CurrentContent             []ResponsesContentPart // message
 	CurrentArgs                string                 // function_call
-	CurrentSummary             string                 // reasoning
 	CurrentThinking            AnthropicContentBlock
 	PreserveThinkingSignatures bool
+	CachePrivateReasoning      CachePrivateReasoning
 
 	// CLAUDEX: Claude's server tool calls, open from their server_tool_use
 	// block until their result block (Claude may start several before any
@@ -395,7 +401,6 @@ func anthToResHandleContentBlockStart(evt *AnthropicStreamEvent, state *Anthropi
 		state.CurrentItemID = generateItemID()
 		state.CurrentItemType = "reasoning"
 		state.CurrentThinking = *evt.ContentBlock
-		state.CurrentSummary = evt.ContentBlock.Thinking
 		state.ContentIndex = 0
 
 		events = append(events, makeResponsesEvent(state, "response.output_item.added", &ResponsesStreamEvent{
@@ -536,7 +541,10 @@ func anthToResHandleContentBlockDelta(evt *AnthropicStreamEvent, state *Anthropi
 		if evt.Delta.Thinking == "" {
 			return nil
 		}
-		state.CurrentSummary += evt.Delta.Thinking
+		state.CurrentThinking.Thinking += evt.Delta.Thinking
+		if state.CachePrivateReasoning != nil {
+			return nil
+		}
 		return []ResponsesStreamEvent{makeResponsesEvent(state, "response.reasoning_summary_text.delta", &ResponsesStreamEvent{
 			OutputIndex:  state.OutputIndex,
 			SummaryIndex: 0,
@@ -590,6 +598,9 @@ func anthToResHandleContentBlockStop(evt *AnthropicStreamEvent, state *Anthropic
 	}
 	switch state.CurrentItemType {
 	case "reasoning":
+		if state.CachePrivateReasoning != nil {
+			return closeCurrentResponsesItem(state)
+		}
 		// Emit reasoning summary done + output item done
 		events := []ResponsesStreamEvent{
 			makeResponsesEvent(state, "response.reasoning_summary_text.done", &ResponsesStreamEvent{
@@ -762,13 +773,7 @@ func closeCurrentResponsesItem(state *AnthropicEventToResponsesState) []Response
 		}
 		item.Arguments = args
 	case "reasoning":
-		if state.PreserveThinkingSignatures && (state.CurrentThinking.Signature != "" || state.CurrentThinking.Data != "") {
-			state.CurrentThinking.Thinking = state.CurrentSummary
-			item.EncryptedContent = encodeAnthropicThinking(state.CurrentThinking)
-		}
-		if state.CurrentSummary != "" {
-			item.Summary = []ResponsesSummary{{Type: "summary_text", Text: state.CurrentSummary}}
-		}
+		setAnthropicReasoning(&item, state.CurrentThinking, state.PreserveThinkingSignatures, state.CachePrivateReasoning)
 	}
 	state.Outputs = append(state.Outputs, item)
 
@@ -779,7 +784,6 @@ func closeCurrentResponsesItem(state *AnthropicEventToResponsesState) []Response
 	state.CurrentName = ""
 	state.CurrentContent = nil
 	state.CurrentArgs = ""
-	state.CurrentSummary = ""
 	state.CurrentThinking = AnthropicContentBlock{}
 	state.TextAccum = ""
 	state.CurrentCitations = nil

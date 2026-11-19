@@ -1,16 +1,18 @@
 /*
- * Share chat popover (src/ChatSharePopover.tsx), measured on live claude.ai:
- * 480px wide, 12px corners, 11px from the right edge and 46px from the top.
- * Title 15/20 weight 580 at 20px in and 16 down with a 28px close button at
- * 12px; the note under it 13/17 muted; the invite field 32px high from 28px in
- * with a 61px Invite button; "Who has access" 13/17 muted; the access row
- * 456×44 with a 20px icon and 14px weight-500 text; the owner row a 32px
- * avatar, 14/20 name, 12/17 email and "Owner" on the right; the usage note
- * 12/17 muted; a 32px settings button and a 106×32 Copy link filled with the
- * primary ink. The surface is ringed by a 1px shadow (outside in light, inset
- * in dark), not a border; Invite, the settings button and Back are filled
- * chips; the access icon sits in a 32px round chip; a hairline runs above the
- * actions; the settings view has Back and Save at its foot.
+ * Share chat popover (src/ChatSharePopover.tsx), measured on live claude.ai
+ * (2026-09-30, light, viewport 1636): 480px wide, 12px corners, 11px from the
+ * right edge and 46px from the top. Title 15/20 weight 580 at 20px in and 16
+ * down with a 28px close button at 12px; the note under it 13/17 muted; the
+ * invite field 32px high from 28px in with a 61px Invite button; "Who
+ * has access" 13/17 muted; the access row 456×44 with a 20px icon and 14px
+ * weight-500 text; the owner row a 32px avatar, 14/20 name, 12/17 email and
+ * "Owner" on the right; the usage note 12/17 muted; a 32px settings button
+ * and a 106×32 Copy link filled with the primary ink.
+ * Dark and the chips measured again on 2026-09-30 in both themes: the
+ * surface is ringed by a 1px shadow (outside in light, inset in dark), not a
+ * border; Invite, the settings button and Back are filled chips; the access
+ * icon sits in a 32px round chip; a hairline runs above the actions; the
+ * settings view has Back and Save at its foot.
  */
 .chat-share {
   position: fixed;
@@ -22,7 +24,8 @@
   max-width: calc(100vw - 24px);
   padding: 0 0 16px;
   border-radius: 12px;
-  /* The panel takes focus when it opens but draws no ring. */
+  /* The panel takes focus when it opens but draws no ring (live claude.ai,
+     2026-10-20: outline-style none). */
   outline: none;
   background: var(--surface-raised);
   color: var(--text);
@@ -570,11 +573,11 @@
   color: var(--text-muted);
 }
 
-/* The web's own inks for the popover. Light: a white surface ringed at 10% of
-   #0a0a0a outside, 0 8 24 at 12% and 0 2 6 at 8%, Copy link #0b0b0b on white.
-   Dark: #20201f ringed by white at 10% inside, 0 8 24 at 32% and 0 2 6 at 20%;
-   text #f0efec, muted #898781, the access icon #c3c2b7, Copy link white with
-   #0b0b0b ink, the policy link #6da7ec. */
+/* The web's own inks for the popover (claude.ai, 2026-09-30). Light: a white
+   surface ringed at 10% of #0a0a0a outside, 0 8 24 at 12% and 0 2 6 at 8%,
+   Copy link #0b0b0b on white. Dark: #20201f ringed by white at 10% inside,
+   0 8 24 at 32% and 0 2 6 at 20%; text #f0efec, muted #898781, the access
+   icon #c3c2b7, Copy link white with #0b0b0b ink, the policy link #6da7ec. */
 :root[data-surface="web"] .chat-share {
   background: #fff;
   box-shadow:

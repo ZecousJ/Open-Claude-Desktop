@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// Folder memory editor.
+// Folder memory editor (live claude.ai bundle, 2026-10-14, ce5658dc8-Dez48Sxz.js).
 export function readFolderInstructions(root: string): string {
   const file = path.join(fs.realpathSync(root), "CLAUDE.md");
   try {

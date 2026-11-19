@@ -171,7 +171,7 @@ export function TranscriptHost({ active }: { active: Conversation }) {
               setArtifact(undefined);
             }}
             // Undo on a turn's changes asks Claude in a new message, sent at
-            // once like a spoken one.
+            // once like a spoken one (live claude.ai bundle, 2026-10-12).
             onUndoChanges={
               active.mode === "code"
                 ? (prompt) => void sendSpoken(app, prompt)

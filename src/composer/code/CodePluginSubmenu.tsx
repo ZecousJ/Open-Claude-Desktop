@@ -3,7 +3,8 @@ import { Plug, Wrench, Plus } from "../../ui/glyphs";
 import type { PluginEntry } from "../../../shared/collections-api";
 
 /**
- * The Code + menu's Plugins: the enabled plugins, a rule, then Manage plugins
+ * The Code + menu's Plugins (live claude.ai bundle, 2026-10-14, the
+ * composer's plugin rows): the enabled plugins, a rule, then Manage plugins
  * and Browse plugins. A plugin's row opens it in Settings → Plugins.
  */
 export function CodePluginSubmenu({

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { McpServerState } from "../../../shared/settings-desktop-api";
 import { formatText, useT } from "../../i18n";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import "../../composer/auth-issue.css";
 import "./connector-attention.css";
 
@@ -24,7 +24,9 @@ function readHidden() {
   }
 }
 
-// The warning Banner with its icon, a View action and a dismiss.
+// The warning Banner with its icon, a View action and a dismiss (live
+// claude.ai bundle, 2026-10-16, c40525e86-BZls6jI2.js: Zi; the Banner is the
+// auth-issue one, auth-issue.css).
 export default function ConnectorAttention({
   servers,
   editable,
@@ -58,7 +60,7 @@ export default function ConnectorAttention({
         data-variant="warning"
       >
         <span className="auth-issue-icon">
-          <AppIcon name="Warning" />
+          <Anthropicon name="Warning" />
         </span>
         <span className="auth-issue-copy">
           {formatText(
@@ -107,7 +109,7 @@ export default function ConnectorAttention({
               }
             }}
           >
-            <AppIcon name="X" />
+            <Anthropicon name="X" />
           </button>
         </span>
       </div>

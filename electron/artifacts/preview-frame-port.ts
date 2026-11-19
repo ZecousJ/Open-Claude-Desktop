@@ -8,7 +8,7 @@ const accounts = new WeakMap<
 >();
 const generations = new WeakMap<AppContext, number>();
 
-// Transferable frame channel.
+// Transferable frame channel (desktop 2.37337.1, mainView.js:2698).
 export async function requestPreviewFramePort(
   ctx: AppContext,
   window: BrowserWindow,

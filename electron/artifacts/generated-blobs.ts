@@ -58,10 +58,11 @@ export class GeneratedBlobs {
     return resolved.startsWith(folder + path.sep) ? folder : undefined;
   }
   /**
-   * Snapshots a picture the image tool saved, so the transcript's thumbnail and
-   * the file viewer read it by digest like other generated files. Only regular
-   * PNG, JPEG or WebP files up to 10 MB inside the image folder are taken,
-   * whatever path the conversation recorded; null when the file is gone.
+   * Snapshots a picture the image tool saved (R-0776), so the transcript's
+   * thumbnail and the file viewer read it by digest like other generated
+   * files. Only regular PNG, JPEG or WebP files up to 10 MB inside the
+   * image folder are taken, whatever path the conversation recorded; null
+   * when the file is gone.
    */
   snapshotImage(savedPath: string): GeneratedImage | null {
     // Checked by name first, so paths elsewhere are never looked at.
@@ -93,7 +94,7 @@ export class GeneratedBlobs {
   /**
    * Snapshots a picture the agent viewed (an `imageView` item's path) when it
    * is inside one of `folders` (the conversation's working folders), for the
-   * transcript's thumbnail. Same size and type limits as above.
+   * transcript's thumbnail (R-0873). Same size and type limits as above.
    */
   snapshotViewedImage(file: string, folders: string[]): GeneratedImage | null {
     let real: string;

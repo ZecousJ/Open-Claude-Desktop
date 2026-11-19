@@ -117,6 +117,6 @@ func (c *Component) deleteSession(g *gin.Context) {
 		response.ErrorFrom(g, errUnavailable)
 		return
 	}
-	c.dropFamilies(ctx, []string{sess.FamilyID})
+	c.dropFamilies(ctx, uid, []string{sess.FamilyID})
 	response.Success(g, gin.H{"id": sess.ID, "revoked": true})
 }

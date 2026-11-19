@@ -46,6 +46,7 @@ const pull = {
             {
               databaseId: 9,
               viewerDidAuthor: false,
+              authorAssociation: "COLLABORATOR",
               body: "Rename <this>",
               path: "a.ts",
               line: 4,
@@ -96,7 +97,7 @@ test("hosted auto-fix checks the account connection and stops pending wakes on s
     ],
   } as unknown as Conversation;
   const ctx = {
-    store: { conversations: [conversation], flush() {} },
+    store: { conversations: [conversation], settings: { prAutoFix: false }, flush() {} },
     services: {
       readPullRequestAutoFix: async () => {
         reads++;
@@ -116,6 +117,7 @@ test("hosted auto-fix checks the account connection and stops pending wakes on s
     throw new Error("must not use local gh");
   });
   const pending = tick();
+  await Promise.resolve();
   assert.equal(reads, 1);
   stop();
   release!(autoFixFacts(pull));

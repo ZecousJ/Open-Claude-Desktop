@@ -23,16 +23,19 @@ test("the shaped Chat home suppresses only the old chips surface", () => {
   assert.equal(legacyHomeStartersAllowed(), true);
 });
 
-test("shape selection takes priority over overrides and a low count", () => {
-  for (const override of [undefined, "show", "hide"] as const)
-    assert.equal(
-      starterPromptsVisible({
-        hideStarterChips: !legacyHomeStartersAllowed(true, "chat"),
-        conversationCount: 0,
-        override,
-      }),
-      false,
-    );
+test("shape selection takes priority over forced chips, overrides and a low count", () => {
+  for (const force of [false, true])
+    for (const override of [undefined, "show", "hide"] as const)
+      assert.equal(
+        starterPromptsVisible({
+          hideStarterChips: !legacyHomeStartersAllowed(true, "chat"),
+          conversationCount: 0,
+          accountEmail: "staff@anthropic.com",
+          force,
+          override,
+        }),
+        false,
+      );
   assert.equal(starterPromptsVisible({ conversationCount: 24 }), true);
   assert.equal(starterPromptsVisible({ conversationCount: 25 }), false);
 });
@@ -65,15 +68,16 @@ function render(
   );
 }
 
-test("the compact home retains its independent checklist without generic chips", () => {
+test("the compact home retains its independent checklist without generic or finance chips", () => {
   const html = render(true, {
     chipsOverride: "show",
+    claudeai_fsi_skill_chips: true,
     prosumer_checklist_v2: { setup_project: true, explore_skills: true },
   });
   assert.match(html, /class="home-checklist"/);
   assert.match(html, /Set up a project with files and context/);
   assert.match(html, /Teach Claudex your workflows with skills/);
-  assert.doesNotMatch(html, /class="starter-prompts"/);
+  assert.doesNotMatch(html, /class="starter-prompts"|class="finance-starters"/);
   assert.equal(render(true, { chipsOverride: "show" }), "");
 });
 
@@ -99,7 +103,15 @@ test("the visible web Chat home passes its shape explicitly and scopes the dark 
     /<StarterPrompts\s+homeShaped=\{web\}\s+targetKind="chat"/,
   );
   const starters = readFileSync("src/starter-prompts/HomeStarters.tsx", "utf8");
+  assert.match(
+    starters,
+    /chipsAllowed &&\s*!blocked &&\s*!forced &&\s*skillSurface/,
+  );
   assert.match(starters, /hideStarterChips: !chipsAllowed/);
+  assert.match(
+    starters,
+    /const enabled = chipsAllowed && !!config\.claudeai_fsi_skill_chips/,
+  );
   const css = readFileSync("src/home/chat-home.css", "utf8");
   assert.match(
     css,

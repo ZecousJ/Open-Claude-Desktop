@@ -5,6 +5,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -218,6 +219,8 @@ func TestForwardResponses_ChatFallbackRejectsInvalidToolArgumentsAtOutputLimit(t
 	require.NotContains(t, rec.Body.String(), "response.function_call_arguments.done")
 	require.NotContains(t, rec.Body.String(), "response.output_item.done")
 	require.NotContains(t, rec.Body.String(), "data: [DONE]")
+	require.Equal(t, 1, strings.Count(rec.Body.String(), "event: response.failed"))
+	require.NotContains(t, rec.Body.String(), "event: response.completed")
 }
 
 func TestForwardResponses_DeepSeekReasoningOnlyStreamProducesVisibleText(t *testing.T) {
@@ -262,17 +265,18 @@ func TestForwardResponses_DeepSeekReasoningOnlyStreamProducesVisibleText(t *test
 func TestForwardResponses_AutoSupportedAccountStillUsesResponsesEndpoint(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	body := []byte(`{"model":"gpt-5.4","input":"hello","stream":false}`)
+	body := []byte(`{"model":"gpt-5.4","input":[{"type":"reasoning","summary":[],"encrypted_content":"claudex-reasoning-v1:item_private"},{"type":"reasoning","summary":[],"encrypted_content":"native ciphertext"},{"type":"message","role":"user","content":"hello"}],"stream":false}`)
 	rec := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(rec)
 	c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", bytes.NewReader(body))
 	c.Request.Header.Set("Content-Type", "application/json")
+	c.Request.Header.Set("X-Claudex-Product", "code")
 
 	upstream := &httpUpstreamRecorder{resp: &http.Response{
 		StatusCode: http.StatusOK,
 		Header:     http.Header{"Content-Type": []string{"application/json"}, "x-request-id": []string{"rid_resp_native"}},
 		Body: io.NopCloser(strings.NewReader(
-			`{"id":"resp_native","object":"response","model":"gpt-5.4","status":"completed","output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"ok"}],"status":"completed"}],"usage":{"input_tokens":5,"output_tokens":2,"total_tokens":7}}`,
+			`{"id":"resp_native","object":"response","model":"gpt-5.4","status":"completed","output":[{"type":"reasoning","id":"rs_native","summary":[{"type":"summary_text","text":"public summary"}]},{"type":"message","role":"assistant","content":[{"type":"output_text","text":"ok"}],"status":"completed"}],"usage":{"input_tokens":5,"output_tokens":2,"total_tokens":7}}`,
 		)),
 	}}
 	svc := &OpenAIGatewayService{
@@ -289,9 +293,42 @@ func TestForwardResponses_AutoSupportedAccountStillUsesResponsesEndpoint(t *test
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "http://upstream.example/v1/responses", upstream.lastReq.URL.String())
-	require.True(t, gjson.GetBytes(upstream.lastBody, "input").Exists())
+	require.Len(t, gjson.GetBytes(upstream.lastBody, "input").Array(), 2)
+	require.Equal(t, "native ciphertext", gjson.GetBytes(upstream.lastBody, "input.0.encrypted_content").String())
+	require.Equal(t, "hello", gjson.GetBytes(upstream.lastBody, "input.1.content").String())
 	require.False(t, gjson.GetBytes(upstream.lastBody, "messages").Exists())
-	require.Equal(t, "ok", gjson.Get(rec.Body.String(), "output.0.content.0.text").String())
+	require.Equal(t, "public summary", gjson.Get(rec.Body.String(), "output.0.summary.0.text").String())
+	require.Equal(t, "ok", gjson.Get(rec.Body.String(), "output.1.content.0.text").String())
+}
+
+func TestForwardResponses_CodeNativeStreamKeepsPublicSummary(t *testing.T) {
+	body := []byte(`{"model":"gpt-5.4","input":"hello","stream":true}`)
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", bytes.NewReader(body))
+	c.Request.Header.Set("X-Claudex-Product", "code")
+	upstreamBody := strings.Join([]string{
+		`data: {"type":"response.created","response":{"id":"resp_native","status":"in_progress","output":[]}}`,
+		`data: {"type":"response.reasoning_summary_part.added","item_id":"rs_native","summary_index":0,"part":{"type":"summary_text","text":""}}`,
+		`data: {"type":"response.reasoning_summary_text.delta","item_id":"rs_native","summary_index":0,"delta":"public summary"}`,
+		`data: {"type":"response.output_text.delta","item_id":"msg_native","delta":"answer"}`,
+		`data: {"type":"response.completed","response":{"id":"resp_native","status":"completed","output":[{"type":"reasoning","id":"rs_native","summary":[{"type":"summary_text","text":"public summary"}]},{"type":"message","role":"assistant","content":[{"type":"output_text","text":"answer"}]}],"usage":{"input_tokens":3,"output_tokens":2,"total_tokens":5}}}`,
+	}, "\n\n") + "\n\n"
+	upstream := &httpUpstreamRecorder{resp: &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     http.Header{"Content-Type": []string{"text/event-stream"}},
+		Body:       io.NopCloser(strings.NewReader(upstreamBody)),
+	}}
+	svc := &OpenAIGatewayService{cfg: rawChatCompletionsTestConfig(), httpUpstream: upstream}
+	account := rawChatCompletionsTestAccount()
+	account.Extra = map[string]any{openai_compat.ExtraKeyResponsesSupported: true}
+	_, err := svc.Forward(context.Background(), c, account, body)
+	require.NoError(t, err)
+	require.Equal(t, "/v1/responses", upstream.lastReq.URL.Path)
+	require.Contains(t, rec.Body.String(), `"type":"response.reasoning_summary_part.added"`)
+	require.Contains(t, rec.Body.String(), `"delta":"public summary"`)
+	require.Contains(t, rec.Body.String(), `"text":"public summary"`)
+	require.Contains(t, rec.Body.String(), `"delta":"answer"`)
 }
 
 func forceChatResponsesFallbackAccount() *Account {
@@ -321,10 +358,103 @@ func (c *reasoningRecordingCache) SetReasoningContent(_ context.Context, itemID 
 }
 
 func (c *reasoningRecordingCache) GetReasoningContent(_ context.Context, itemID string) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if v, ok := c.sets[itemID]; ok {
+		return v, nil
+	}
 	if v, ok := c.getResp[itemID]; ok {
 		return v, nil
 	}
 	return "", ErrReasoningContentNotFound
+}
+
+func TestForwardResponses_CodeChatFallbackKeepsRawReasoningPrivate(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	const raw = "internal reasoning"
+	for _, stream := range []bool{false, true} {
+		for _, reasoningOnly := range []bool{false, true} {
+			t.Run(fmt.Sprintf("stream=%t/reasoningOnly=%t", stream, reasoningOnly), func(t *testing.T) {
+				contentType := "application/json"
+				upstreamBody := `{"choices":[{"message":{"role":"assistant","reasoning":"internal reasoning","content":"answer","tool_calls":[{"id":"call_a","type":"function","function":{"name":"get_value","arguments":"{}"}}]},"finish_reason":"tool_calls"}]}`
+				if reasoningOnly {
+					upstreamBody = `{"choices":[{"message":{"role":"assistant","reasoning_content":"internal reasoning"},"finish_reason":"length"}]}`
+				}
+				if stream {
+					contentType = "text/event-stream"
+					upstreamBody = "data: " + `{"choices":[{"delta":{"reasoning":"internal reasoning"}}]}` + "\n\n"
+					if reasoningOnly {
+						upstreamBody = "data: " + `{"choices":[{"delta":{"reasoning_content":"internal reasoning"},"finish_reason":"length"}]}` + "\n\n"
+					} else {
+						upstreamBody += "data: " + `{"choices":[{"delta":{"content":"answer","tool_calls":[{"index":0,"id":"call_a","type":"function","function":{"name":"get_value","arguments":"{}"}}]},"finish_reason":"tool_calls"}]}` + "\n\n"
+					}
+					upstreamBody += "data: [DONE]\n\n"
+				}
+				upstream := &httpUpstreamRecorder{responses: []*http.Response{
+					{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": []string{contentType}}, Body: io.NopCloser(strings.NewReader(upstreamBody))},
+					{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"choices":[{"message":{"role":"assistant","content":"continued"},"finish_reason":"stop"}]}`))},
+				}}
+				svc := &OpenAIGatewayService{
+					cfg: rawChatCompletionsTestConfig(), httpUpstream: upstream, cache: &reasoningRecordingCache{},
+				}
+				account := forceChatResponsesFallbackAccount()
+				forward := func(body string) string {
+					t.Helper()
+					rec := httptest.NewRecorder()
+					c, _ := gin.CreateTestContext(rec)
+					c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", strings.NewReader(body))
+					c.Request.Header.Set("Content-Type", "application/json")
+					c.Request.Header.Set("X-Claudex-Product", "code")
+					_, err := svc.Forward(context.Background(), c, account, []byte(body))
+					require.NoError(t, err)
+					require.Equal(t, http.StatusOK, rec.Code)
+					require.Equal(t, "/v1/chat/completions", upstream.lastReq.URL.Path)
+					return rec.Body.String()
+				}
+				wire := forward(fmt.Sprintf(`{"model":"deepseek-reasoner","input":"hello","stream":%t}`, stream))
+				require.NotContains(t, wire, raw)
+				require.NotContains(t, wire, "response.reasoning_summary_")
+				result := gjson.Parse(wire)
+				if stream {
+					var done gjson.Result
+					for _, line := range strings.Split(wire, "\n") {
+						payload, ok := strings.CutPrefix(line, "data: ")
+						if !ok {
+							continue
+						}
+						event := gjson.Parse(payload)
+						if event.Get("type").String() == "response.output_item.done" && event.Get("item.type").String() == "reasoning" {
+							done = event.Get("item")
+						}
+						if event.Get("type").String() == "response.completed" {
+							result = event.Get("response")
+						}
+					}
+					require.NotEmpty(t, done.Get("id").String())
+					require.Equal(t, done.Get("id").String(), result.Get("output.0.id").String())
+					require.Equal(t, done.Get("encrypted_content").String(), result.Get("output.0.encrypted_content").String())
+				}
+				reasoning := result.Get("output.0")
+				require.Equal(t, "reasoning", reasoning.Get("type").String())
+				require.NotEmpty(t, reasoning.Get("id").String())
+				require.JSONEq(t, `[]`, reasoning.Get("summary").Raw)
+				replayRef := reasoning.Get("encrypted_content").String()
+				require.NotEmpty(t, replayRef)
+				if reasoningOnly {
+					require.Equal(t, "incomplete", result.Get("status").String())
+					require.Empty(t, result.Get("output.1.content.0.text").String())
+					return
+				}
+				require.Equal(t, "answer", result.Get("output.1.content.0.text").String())
+				tool := result.Get("output.2")
+				require.Equal(t, "call_a", tool.Get("call_id").String())
+				continued := forward(fmt.Sprintf(`{"model":"deepseek-reasoner","input":[{"type":"reasoning","summary":[],"content":null,"encrypted_content":%q},%s,%s,{"type":"function_call_output","call_id":"call_a","output":"ok"}]}`, replayRef, result.Get("output.1").Raw, tool.Raw))
+				require.Contains(t, continued, "continued")
+				require.Equal(t, raw, gjson.GetBytes(upstream.lastBody, "messages.0.reasoning_content").String())
+			})
+		}
+	}
 }
 
 func (c *reasoningRecordingCache) snapshotSets() map[string]string {

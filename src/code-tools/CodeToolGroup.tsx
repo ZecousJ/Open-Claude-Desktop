@@ -11,8 +11,9 @@ import {
 } from "../transcript-view/transcript-view-store";
 
 /**
- * One or more consecutive tool calls in a Code turn. A single command keeps its
- * own disclosure; several fold into one summary row whose body lists each call.
+ * One or more consecutive tool calls in a Code turn. A single command keeps
+ * its own disclosure; several fold into one summary row whose body lists
+ * each call (R-0730, R-0794, "Read 2 files" in R-0805's recording).
  */
 export function CodeToolGroup({
   items,
@@ -56,7 +57,7 @@ export function CodeToolGroup({
     );
   if (normalized.length === 1) return row(normalized[0]);
   const running = normalized.some(itemIsRunning);
-  // The summary ends with the lines the group's edits added and removed.
+  // R-0794: the summary ends with the lines the group's edits added and removed.
   const stat = itemsDiffTotals(normalized);
   return (
     <details className="code-command code-tool-group" open={verboseOpen(view)}>

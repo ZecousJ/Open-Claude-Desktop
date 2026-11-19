@@ -1,8 +1,10 @@
-/* Chat's voice-mode split button after the microphone. While voice mode runs
-   the waveform is lit like a recording microphone (dictation.css: red mark and
-   pulse) and a note in the tooltip's own style says what it is doing. Greyed
-   like an unavailable microphone (chat-home.css) where it cannot run; the ⌄
-   next to it opens the microphone menu. */
+/* Chat's voice-mode split button after the microphone (R-0258, R-0311,
+   R-0546; sizes from the pre-WP4a styles measured on
+   claude-chat-voice-hover-001). While voice mode runs the waveform is lit
+   like a recording microphone (dictation.css: red mark and pulse) and a note
+   in the tooltip's own style says what it is doing. Greyed like an
+   unavailable microphone (chat-home.css) where it cannot run; the ⌄ next to
+   it opens the microphone menu. */
 .voice-mode-button {
   display: flex;
   width: 47px;
@@ -20,7 +22,7 @@
   background: none;
   color: #878787;
 }
-/* The ⌄ opens the microphone menu, lit while it is open. */
+/* The ⌄ opens the microphone menu (R-0286), lit while it is open. */
 .voice-mode-button > .voice-mode-chevron.open,
 .cowork-voice-options.open {
   color: #f0f0f0;
@@ -29,8 +31,12 @@
   width: 32px;
   color: var(--text);
 }
-/* Hover and keyboard focus: the whole split button takes the ghost fill and the
-   segment under the pointer a second step on top of it. Colours move in 200ms. */
+/* Hover and keyboard focus (claude-chat-voice-hover-001; the original's
+   dictation group, desktop bundle 2.31226.1 static CSS/JS): the whole split
+   button takes the ghost fill (white 7.5% dark, ink 5% light; the capture's
+   #2f2f2f) and the segment under the pointer a second step on top of it
+   (the waveform #3e3e3e in the capture, the ⌄ alpha-2). Colours move in
+   200ms. */
 .voice-mode-button {
   border-radius: 8px;
   transition: background-color var(--motion-base) var(--ease-standard);
@@ -70,7 +76,7 @@
 .voice-mode-button > .voice-mode-chevron.open {
   background: var(--alpha-2);
 }
-/* Incognito: only the chevron follows the microphone. */
+/* Incognito: only the chevron follows the microphone (R-0003). */
 .voice-mode-button.chevron-only {
   width: 15px;
 }
@@ -87,7 +93,9 @@
 .voice-mode-button > .voice-mode-main {
   position: relative;
 }
-/* Lit while voice mode runs: text-accent on bg-accent. */
+/* Lit while voice mode runs: text-accent on bg-accent (live claude.ai bundle,
+   2026-10-16, shared-8-kIxzyY2S; --cds-bg-accent #257de01f, --cds-text-accent
+   #6aabf1 dark / #1757ac light). */
 :root .voice-mode-button > .voice-mode-main.active:not(:disabled) {
   background: #257de01f;
   color: #6aabf1;

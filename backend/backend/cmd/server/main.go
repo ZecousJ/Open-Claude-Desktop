@@ -67,6 +67,17 @@ func main() {
 		return
 	}
 
+	needsSetup := setup.NeedsSetup()
+	if *setupMode || needsSetup {
+		cfg, err := config.LoadForBootstrap()
+		if err != nil {
+			log.Fatalf("Failed to load config: %v", err)
+		}
+		if !cfg.RunsControlPlane() {
+			log.Fatal("The model gateway requires a provisioned Claudex installation")
+		}
+	}
+
 	// CLI setup mode
 	if *setupMode {
 		if err := setup.RunCLI(); err != nil {
@@ -76,7 +87,7 @@ func main() {
 	}
 
 	// Check if setup is needed
-	if setup.NeedsSetup() {
+	if needsSetup {
 		// Check if auto-setup is enabled (for Docker deployment)
 		if setup.AutoSetupEnabled() {
 			log.Println("Auto setup mode enabled...")

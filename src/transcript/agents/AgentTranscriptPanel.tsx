@@ -19,9 +19,9 @@ import { useAgentTranscript } from "./useAgentTranscript";
 import { usePaneExpandToggle } from "../../app/pane-expand";
 
 /**
- * A child Agent's own conversation in the Background tasks rail: opened from
- * the task list's View transcript, or straight from the Agent's row in the
- * conversation. Back leads to the task list.
+ * A child Agent's own conversation in the Background tasks rail (R-0786,
+ * S-0005): opened from the task list's View transcript, or straight from
+ * the Agent's row in the conversation. Back leads to the task list.
  */
 export function AgentTranscriptPanel({
   conversationId,
@@ -75,7 +75,8 @@ export function AgentTranscriptPanel({
         <button aria-label="Back to background tasks" onClick={onBack}>
           <ChevronLeft size={17} />
         </button>
-        {/* The subagent's description; "Running subagent" while it has none. */}
+        {/* The subagent's description; "Running subagent" while it has none
+            (live claude.ai bundle, 2026-10-15). */}
         <strong title={title}>{title.trim() || "Running subagent"}</strong>
         <div>
           <button
@@ -92,7 +93,7 @@ export function AgentTranscriptPanel({
         </div>
       </header>
       <div className="agent-transcript-scroll">
-        {/* Loading is a blank panel, as the code file panel's is. */}
+        {/* Loading is a blank panel, as the code file panel's is (R-1082). */}
         {!transcript && !error && (
           <p className="agent-transcript-loading" role="status">
             Loading transcript…

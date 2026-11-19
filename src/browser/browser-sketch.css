@@ -1,10 +1,11 @@
 /*
- * Sketch mode on the Browser's page (BrowserSketch.tsx), after the live The
- * layer covers the page; the still of the page sits at its own size from the
- * top, centred and clipped; under it a strip as tall as a control plus its
- * padding and 1.25rem (2rem + 2 × 0.25rem + 1.25rem = 60px) holds the sketch
- * bar 10px above the bottom (bottom-2.5). The bar itself is the Annotate
- * editor's (annotate-image.css).
+ * Sketch mode on the Browser's page (BrowserSketch.tsx), after the live
+ * claude.ai bundle, 2026-10-12 (the preview pane's sketch layer): the layer
+ * covers the page; the still of the page sits at its own size from the top,
+ * centred and clipped; under it a strip as tall as a control plus its
+ * padding and 1.25rem (2rem + 2 × 0.25rem + 1.25rem = 60px) holds the
+ * sketch bar 10px above the bottom (bottom-2.5). The bar itself is the
+ * Annotate editor's (annotate-image.css).
  */
 .browser-sketch {
   position: absolute;

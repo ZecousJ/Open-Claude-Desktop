@@ -3,7 +3,7 @@ import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import type { SshToolGrant } from "../../shared/ssh-api";
 
-// Host-scoped connector grants.
+// Host-scoped connector grants (desktop 2.37337.1, index.chunk-BolytlRP.js, Jz–eB).
 export function sshServerKey(server: Record<string, unknown>) {
   const { tools, ...config } = server;
   return createHash("sha256").update(JSON.stringify(config)).digest("hex");

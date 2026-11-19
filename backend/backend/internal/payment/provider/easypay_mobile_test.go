@@ -10,7 +10,7 @@ import (
 
 // CLAUDEX: a phone cannot scan a QR code on its own screen, so WeChat Pay
 // and Alipay from a phone go through the hosted page (submit.php) like
-// a Z-Pay checkout; a computer keeps the mapi.php QR code.
+// zecousAI's Z-Pay checkout; a computer keeps the mapi.php QR code.
 func TestEasyPayMobileWechatUsesTheHostedPage(t *testing.T) {
 	t.Parallel()
 

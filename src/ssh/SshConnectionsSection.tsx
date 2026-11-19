@@ -3,7 +3,7 @@ import { Button, Row, Section } from "../settings/controls";
 import { openSshDialog } from "./dialogs";
 import { useSshHosts } from "./useSshHosts";
 
-// Settings only manages grants.
+// Settings only manages grants (live claude.ai bundle, 2026-10-14, c71860c77-BUhAcWeF.js Oa).
 export function SshConnectionsSection({
   onError,
 }: {

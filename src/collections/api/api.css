@@ -33,7 +33,8 @@
   width: 480px;
 }
 /* The white dialog's buttons, as the scheduled task dialog draws them: the
-   primary fill is #0b0b0b with white text. */
+   primary fill is #0b0b0b with white text (--cds-fill-primary; live claude.ai
+   bundle, 2026-10-16, rules.json). */
 :root[data-theme="light"] .modal.task-dialog.key-dialog .task-save {
   background: #0b0b0b;
   color: #fff;
@@ -74,7 +75,9 @@
   padding-right: 0;
 }
 .api-group-select {
-  /* The name, its rate badge and the chevron on one centre line. */
+  /* The name, its rate badge and the chevron on one centre line (the
+     desktop has no .routines-sort rule, so they sat on the text's
+     baseline and the chevron rode high; owner, 2026-10-22). */
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
@@ -82,6 +85,11 @@
 }
 .api-group-select > svg {
   flex: none;
+}
+.api-group-status {
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 /* The web's .routines-sort already spaces it 4px (its gap). */
 :root:not([data-surface="web"]) .api-group-select > svg {
@@ -105,9 +113,10 @@
   background: transparent;
 }
 
-/* A group's rate multiplier, a badge beside the group's name as Sub2API marks
-   it, white like the page's New key button: white with dark text in the dark
-   theme, and, as that button does, #0b0b0b with white text in the light one. */
+/* A group's rate multiplier, a badge beside the group's name as Sub2API
+   marks it (owner's capture: 18px high, 5px corners, 12px), white like the
+   page's New key button: white with dark text in the dark theme, and, as
+   that button does, #0b0b0b with white text in the light one. */
 .rate-badge {
   display: inline-flex;
   flex: none;
@@ -146,10 +155,11 @@
 }
 
 /*
- * The keys as a list: a muted header row, then one row per key — the name over
- * the masked key, the group with its rate, when it was made and last used, what
- * it has cost in all, its menu — with hairlines between. Phones keep the key,
- * the group and the menu.
+ * The keys as a list (owner, 2026-10-02, after their console reference):
+ * a muted header row, then one row per key — the name over the masked key,
+ * the group with its rate, when it was made and last used, what it has cost
+ * in all (owner, 2026-10-09: the dollars actually deducted), its menu — with
+ * hairlines between. Phones keep the key, the group and the menu.
  */
 .api-key-table {
   margin-top: 8px;

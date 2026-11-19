@@ -1,16 +1,17 @@
 /**
- * The first-run onboarding: a new account answers a few questions once, after
- * sign-up. The service keeps whether it is still to do and the answers (backend
- * internal/claudex/onboarding): the sign-up writes it as pending, each answer
- * is saved as it is given, and the last step finishes it, after which no device
- * shows it again. Accounts made before it are never asked.
+ * The first-run onboarding (live claude.ai bundle, 2026-10-12, the onboarding
+ * route c10bf8b47): a new account answers a few questions once, after
+ * sign-up. The service keeps whether it is still to do and the answers
+ * (backend internal/claudex/onboarding): the sign-up writes it as pending,
+ * each answer is saved as it is given, and the last step finishes it, after
+ * which no device shows it again. Accounts made before it are never asked.
  */
 import { bridgeMethods } from "./bridge-methods";
 import { normalizeWorkType, type WorkType } from "./settings-extras";
 
 /**
- * "How did you get here?". The original shuffles the list for each person and
- * keeps Other last.
+ * "How did you get here?" (c10bf8b47 `Fo`, labels `Ro`). The original
+ * shuffles the list for each person and keeps Other last.
  */
 export const hearAboutSources = [
   { value: "word_of_mouth", label: "Friend or family" },
@@ -27,7 +28,7 @@ export const hearAboutSources = [
 ] as const;
 export type HearAboutSource = (typeof hearAboutSources)[number]["value"];
 
-/** "Which one?" after Social media. */
+/** "Which one?" after Social media (c10bf8b47 `Io`, labels `Lo`). */
 export const hearAboutPlatforms = [
   { value: "x_twitter", label: "X / Twitter" },
   { value: "reddit", label: "Reddit" },
@@ -58,7 +59,10 @@ export interface OnboardingAnswers {
   scienceFields?: ScienceField[];
 }
 
-/** The fields of "What kind of science do you do? (optional)", in its order. */
+/**
+ * The fields of "What kind of science do you do? (optional)" (live
+ * claude.ai bundle, 2026-10-14, c10bf8b47 Dc), in its order.
+ */
 export const scienceFields = [
   { value: "biology", label: "Biology" },
   { value: "chemistry", label: "Chemistry" },

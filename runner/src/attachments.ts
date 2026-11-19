@@ -15,11 +15,14 @@
  *   days, so the runner's disk does not fill up with abandoned drafts.
  */
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import type { Conversation } from "../../shared/types";
 import { webErrorCodes } from "../../shared/web-protocol";
 import { decodeWireValue } from "../../shared/web-wire";
+import { isSteeredMessage } from "../../shared/agent-api";
 import { type WebRunnerOp } from "../../shared/web-runner-frames";
+import { attachmentObjectURL, readAttachmentObject } from "../../shared/attachment-object";
 
 export interface UploadTransport {
   request(op: WebRunnerOp, userId: number, body?: unknown): Promise<unknown>;
@@ -60,40 +63,84 @@ export async function readUpload(
   let size = -1;
   let offset = 0;
   const pieces: Uint8Array[] = [];
-  while (size < 0 || offset < size) {
-    const answer = decodeWireValue(
-      await transport.request("store.files.get", userId, {
-        id,
-        offset,
-        length: uploadPieceBytes,
-      }),
-    ) as { size?: unknown; bytes?: unknown };
-    if (
-      !answer ||
-      typeof answer.size !== "number" ||
-      !Number.isSafeInteger(answer.size) ||
-      answer.size < 0 ||
-      !(answer.bytes instanceof Uint8Array)
-    )
-      throw new Error("The Claudex service sent an invalid upload.");
-    if (answer.size > maxBytes) throw refused("This file is too large.");
-    if (size >= 0 && answer.size !== size)
-      throw new Error("The upload changed while it was read.");
-    size = answer.size;
-    if (answer.bytes.byteLength === 0 && offset < size)
-      throw new Error("The Claudex service sent an incomplete upload.");
-    if (offset + answer.bytes.byteLength > size)
-      throw new Error("The Claudex service sent an invalid upload.");
-    pieces.push(answer.bytes);
-    offset += answer.bytes.byteLength;
+  try {
+    while (size < 0 || offset < size) {
+      const query = { id, offset, length: uploadPieceBytes };
+      const direct = offset === 0 && !id.startsWith("private_");
+      let value: unknown;
+      try {
+        value = await transport.request("store.files.get", userId,
+          direct ? { ...query, direct: true } : query);
+      } catch (error) {
+        if (!direct || !error || typeof error !== "object" || !("code" in error) ||
+            error.code !== webErrorCodes.badRequest) throw error;
+        value = await transport.request("store.files.get", userId, query);
+      }
+      const answer = decodeWireValue(value) as { size?: unknown; bytes?: unknown; url?: unknown };
+      if (
+        !answer ||
+        typeof answer.size !== "number" ||
+        !Number.isSafeInteger(answer.size) ||
+        answer.size < 0
+      )
+        throw new Error("The Claudex service sent an invalid upload.");
+      if (answer.size > maxBytes) throw refused("This file is too large.");
+      if (offset === 0 && typeof answer.url === "string")
+        return await readAttachmentObject(answer.url, answer.size);
+      if (!(answer.bytes instanceof Uint8Array))
+        throw new Error("The Claudex service sent an invalid upload.");
+      if (size >= 0 && answer.size !== size)
+        throw new Error("The upload changed while it was read.");
+      size = answer.size;
+      if (answer.bytes.byteLength === 0 && offset < size)
+        throw new Error("The Claudex service sent an incomplete upload.");
+      if (offset + answer.bytes.byteLength > size)
+        throw new Error("The Claudex service sent an invalid upload.");
+      pieces.push(answer.bytes);
+      offset += answer.bytes.byteLength;
+    }
+    const out = new Uint8Array(size);
+    let at = 0;
+    for (const piece of pieces) {
+      out.set(piece, at);
+      at += piece.byteLength;
+    }
+    return out;
+  } finally {
+    if (id.startsWith("private_")) await transport.request("store.files.delete", userId, { id }).catch(() => {});
   }
-  const out = new Uint8Array(size);
-  let at = 0;
-  for (const piece of pieces) {
-    out.set(piece, at);
-    at += piece.byteLength;
-  }
-  return out;
+}
+
+export async function publishAttachmentObject(
+  transport: UploadTransport,
+  userId: number,
+  file: { name: string; mime: string; bytes: Uint8Array },
+  signal?: AbortSignal,
+) {
+  const size = file.bytes.byteLength;
+  const sha = createHash("sha256").update(file.bytes).digest("hex");
+  const start = await transport.request("store.files.put", userId, {
+    name: file.name, mime: file.mime, size, snapshotSha: sha,
+  });
+  if (!start || typeof start !== "object") return undefined;
+  if ("url" in start && typeof start.url === "string")
+    return { url: attachmentObjectURL(start.url), size };
+  if (!("id" in start) || start.id !== sha || !("upload" in start) ||
+      !start.upload || typeof start.upload !== "object" ||
+      !("url" in start.upload) || typeof start.upload.url !== "string")
+    return undefined;
+  const response = await fetch(attachmentObjectURL(start.upload.url), {
+    method: "PUT", credentials: "omit", redirect: "error",
+    headers: { "If-None-Match": "*", "X-Amz-Content-Sha256": sha },
+    body: file.bytes as Uint8Array<ArrayBuffer>,
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000),
+  });
+  await response.body?.cancel();
+  if (!response.ok && response.status !== 412) return undefined;
+  const completed = await transport.request("store.files.put", userId, { id: sha, complete: true });
+  if (!completed || typeof completed !== "object" || !("url" in completed) || typeof completed.url !== "string")
+    throw Error("The attachment was not committed.");
+  return { url: attachmentObjectURL(completed.url), size };
 }
 
 /**
@@ -190,10 +237,16 @@ export function pruneAttachments(
   for (const conversation of conversations)
     for (const turn of [
       conversation.turns,
+      conversation.officialCodeQueuedTurns ?? [],
       ...(conversation.savedBranches ?? []).map((branch) => branch.turns),
-    ].flat())
+    ].flat()) {
       for (const attachment of turn.attachments ?? [])
         referenced.add(attachment.id);
+      for (const item of turn.items ?? [])
+        if (isSteeredMessage(item))
+          for (const attachment of item.attachments ?? [])
+            referenced.add(attachment.id);
+    }
   const removed: string[] = [];
   for (const name of names) {
     if (referenced.has(name)) continue;

@@ -3,7 +3,7 @@ import { Suspense, useContext, useRef, useState } from "react";
 import { Link } from "../../ui/glyphs";
 import type { PluginEntry } from "../../../shared/collections-api";
 import { IconButton } from "../../ui/Controls";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { PageMenu, type PageMenuEntry } from "../../collections/PageMenu";
 import { Segmented } from "../controls";
 import { PluginsBody } from "../../plugins/PluginsBody";
@@ -66,10 +66,10 @@ export { pluginsLabels as searchLabels } from "./desktop-labels";
 type View = "yours" | "discover";
 
 /**
- * Plugins. Yours lists the plugins installed in the agent runtime; Discover
- * lists what the account's marketplaces offer, with search and a marketplace or
- * category filter, and Add marketplace syncs a GitHub repository or Git address
- * (Anthropic's is one click).
+ * Plugins (R-1104, R-1461–R-1466). Yours lists the plugins installed in the
+ * agent runtime; Discover lists what the account's marketplaces offer, with
+ * search and a marketplace or category filter, and Add marketplace syncs a
+ * GitHub repository or Git address (Anthropic's is one click).
  */
 export function PluginsTab({
   initialView = "yours",
@@ -113,6 +113,7 @@ export function PluginsTab({
     setMenu(menu === name ? undefined : name);
   const list = plugins.catalog?.plugins ?? [];
   const menus: Record<"add" | "filter" | "sort", PageMenuEntry[]> = {
+    // (live claude.ai bundle, 2026-10-14, c6a2a31c4-kqWKJyeH)
     add: pluginAddMenu({
       connector: mcpPluginMenuEntry(
         customConnectors,
@@ -195,7 +196,7 @@ export function PluginsTab({
         </div>
         <div className="plugins-settings-tools">
           <label className="settings-page-search">
-            <AppIcon name="Search" size={16} />
+            <Anthropicon name="Search" size={16} />
             <input
               type="search"
               placeholder="Search"
@@ -218,7 +219,7 @@ export function PluginsTab({
                   expanded={menu === "filter"}
                   onClick={() => toggle("filter")}
                 >
-                  <AppIcon name="Filter" size={20} />
+                  <Anthropicon name="Filter" size={20} />
                 </IconButton>
               </span>
               <span ref={sortButton} className="settings-page-anchor">
@@ -230,7 +231,7 @@ export function PluginsTab({
                   expanded={menu === "sort"}
                   onClick={() => toggle("sort")}
                 >
-                  <AppIcon name="Sort" size={20} />
+                  <Anthropicon name="Sort" size={20} />
                 </IconButton>
               </span>
             </div>
@@ -244,9 +245,9 @@ export function PluginsTab({
             aria-expanded={menu === "add"}
             onClick={() => toggle("add")}
           >
-            <AppIcon name="Add" size={20} />
+            <Anthropicon name="Add" size={20} />
             Add
-            <AppIcon name="CaretDown" size={16} />
+            <Anthropicon name="CaretDown" size={16} />
           </button>
         </div>
       </header>

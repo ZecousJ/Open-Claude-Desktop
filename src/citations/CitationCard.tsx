@@ -6,9 +6,10 @@ import { SiteIcon } from "./SiteIcon";
 const titled = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
 
 /**
- * The card a citation pill shows on hover or focus: one link for every page the
- * pill cites, each with its title (medium, up to two lines) and the site's icon
- * and name under it. Everything shown is text from the web, rendered as text.
+ * The card a citation pill shows on hover or focus (live claude.ai,
+ * 2026-09-30): one link for every page the pill cites, each with its title
+ * (medium, up to two lines) and the site's icon and name under it. Everything
+ * shown is text from the web, rendered as text.
  */
 export function CitationCard({
   group,

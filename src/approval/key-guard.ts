@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-/**
- * How long after a card appears, or the window regains focus, its keys stay
- * inert.
- */
+/** How long after a card appears, or the window regains focus, its keys stay inert (desktop bundle 2.31226.1: armGraceMs 400). */
 export const ARM_GRACE_MS = 400;
 
 /** When the things that make a decision key suspect last happened (ms, Date.now()). */
@@ -33,12 +30,12 @@ function focusBelongsToCard(target: EventTarget | null) {
 }
 
 /**
- * Whether a key that would answer the card may do so now, or is swallowed: a
- * held key never acts (a repeat that outlives one card must not answer the
- * next), nothing acts within 400ms of the card appearing or the window
- * regaining focus, and ⌘↩ does not act within 400ms of the last keystroke
- * outside the card or while focus sits in a field outside the card and the
- * composer.
+ * Whether a key that would answer the card may do so now, or is swallowed
+ * (desktop bundle 2.31226.1, approval hotkey hook): a held key never acts
+ * (a repeat that outlives one card must not answer the next), nothing acts
+ * within 400ms of the card appearing or the window regaining focus, and ⌘↩
+ * does not act within 400ms of the last keystroke outside the card or while
+ * focus sits in a field outside the card and the composer.
  */
 export function guardApprovalKey(
   event: Pick<

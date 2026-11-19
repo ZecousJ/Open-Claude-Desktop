@@ -1,20 +1,20 @@
 /*
- * Privacy → Shared chats / Shared artifacts. The page gives way to the list: a
- * ghost "← Privacy" on its own 56px line, the title as a section title with its
- * description under it, then a table (Name, Date …, Location, and the trash at
- * the right). Sizes follow Claudex's closest analogues: the skill page's back
- * link, the section title, and the Cowork local devices table (13px, grey
- * headings over a hairline, 44px rows).
+ * Privacy → Shared chats / Shared artifacts (live claude.ai bundle,
+ * 2026-10-12: Privacy subpages). The page gives way to the list: a ghost
+ * "← Privacy" on its own 56px line, the title as a section title with its
+ * description under it, then a table (Name, Date …, Location, and the
+ * trash at the right). Sizes follow Claudex's closest analogues: the skill
+ * page's back link, the section title, and the Cowork local devices table
+ * (13px, grey headings over a hairline, 44px rows).
  */
 .privacy-subpage {
   display: flex;
   flex-direction: column;
 }
-/*
- * Live Privacy subpages: "← Privacy" 28px, 14px, 0 10px padding, r7, 6px gap,
- * on the dialog's top line; the title 18px under it (15/20/580), the
- * description 12px under that (14/20 secondary), the table 16px further.
- */
+/* Live Privacy subpages (claude.ai, 2026-10-19, Uploaded files): "← Privacy"
+ * 28px, 14px, 0 10px padding, r7, 6px gap, on the dialog's top line; the
+ * title 18px under it (15/20/580), the description 12px under that
+ * (14/20 secondary), the table 16px further. */
 .privacy-subpage-back {
   display: flex;
   align-items: center;

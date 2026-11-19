@@ -1,3 +1,4 @@
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
 /**
  * This device's key. On a Claudex service the service issues it
  * (`POST /api/v1/claudex/devices`, design 2.5): one key per account and
@@ -50,7 +51,9 @@ export function registerDevice(
   session: RemoteSession,
   device: string,
   groupId?: number | null,
+  current?: AccountOperationCurrent,
 ): Promise<ClaudexDeviceRegistration> {
+  assertAccountOperationCurrent(current);
   const info = claudexClientInfo();
   return session.authorized((token) =>
     client.registerDevice(token, device, {
@@ -59,7 +62,7 @@ export function registerDevice(
       arch: info.arch ?? "",
       appVersion: info.version ?? "",
       groupId: groupId ?? null,
-    }),
+    }), current,
   );
 }
 
@@ -91,11 +94,14 @@ export interface PlanChoice {
 export async function choosePlan(
   client: Sub2ApiClient,
   session: RemoteSession,
+  current?: AccountOperationCurrent,
 ): Promise<PlanChoice> {
+  assertAccountOperationCurrent(current);
   const [subscriptions, groups] = await Promise.all([
-    session.authorized((token) => client.activeSubscriptions(token)),
-    session.authorized((token) => client.availableGroups(token)),
+    session.authorized((token) => client.activeSubscriptions(token), current),
+    session.authorized((token) => client.availableGroups(token), current),
   ]);
+  assertAccountOperationCurrent(current);
   const byId = new Map(groups.map((group) => [group.id, group]));
   const active = subscriptions
     .filter((item) => item.status === "active" || !item.status)
@@ -140,13 +146,16 @@ export async function provisionDeviceKey(
   session: RemoteSession,
   device: string,
   plan: PlanChoice,
+  current?: AccountOperationCurrent,
 ): Promise<RemoteKey> {
+  assertAccountOperationCurrent(current);
   const name = deviceKeyName(device);
   const matches: RemoteKey[] = [];
   for (let page = 1; page <= maxPages; page++) {
     const result = await session.authorized((token) =>
-      client.listKeys(token, name, page),
+      client.listKeys(token, name, page), current,
     );
+    assertAccountOperationCurrent(current);
     matches.push(...result.items.filter((item) => item.name === name));
     if (page >= result.pages) break;
   }
@@ -154,10 +163,10 @@ export async function provisionDeviceKey(
   if (inPlan) return inPlan;
   if (matches[0])
     return await session.authorized((token) =>
-      client.moveKey(token, matches[0].id, plan.groupId),
+      client.moveKey(token, matches[0].id, plan.groupId), current,
     );
   return await session.authorized((token) =>
-    client.createKey(token, name, plan.groupId),
+    client.createKey(token, name, plan.groupId), current,
   );
 }
 
@@ -169,10 +178,13 @@ export async function legacyProvision(
   client: Sub2ApiClient,
   session: RemoteSession,
   device: string,
+  current?: AccountOperationCurrent,
 ): Promise<{ plan: PlanChoice; key: RemoteKey }> {
-  const plan = await choosePlan(client, session);
+  assertAccountOperationCurrent(current);
+  const plan = await choosePlan(client, session, current);
+  assertAccountOperationCurrent(current);
   return {
     plan,
-    key: await provisionDeviceKey(client, session, device, plan),
+    key: await provisionDeviceKey(client, session, device, plan, current),
   };
 }

@@ -98,6 +98,15 @@ export const webDevDeny = [
   "**/work/**",
   "**/secrets/**",
   "**/backend/**",
+  "**/.runtime/**",
+  "**/.restore/**",
+];
+
+/** Local acceptance profiles and restored source archives are not Web sources. */
+export const webDevWatchIgnored = [
+  "**/backend/**",
+  "**/.runtime/**",
+  "**/.restore/**",
 ];
 
 /** Packages the web build replaces: they only serve desktop-only features. */
@@ -262,7 +271,7 @@ export default defineConfig({
     port: 5174,
     strictPort: true,
     // backend/ is the vendored Sub2API fork with its own Vue toolchain.
-    watch: { ignored: ["**/backend/**"] },
+    watch: { ignored: webDevWatchIgnored },
     // The dev server serves any file under the repository root; keep the
     // local secrets (work/: dev-stack credentials, service keys) and env
     // files out of reach. The first four are Vite's defaults.
@@ -335,9 +344,6 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
     __CLAUDEX_SURFACE__: JSON.stringify("web"),
-    __CLAUDEX_SERVICE_URL__: JSON.stringify(
-      process.env.CLAUDEX_SERVICE_URL ?? "",
-    ),
   },
   build: {
     outDir: "dist-web",

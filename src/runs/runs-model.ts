@@ -6,7 +6,8 @@ export interface SessionRuns {
   runs: RoutineRun[];
 }
 
-/** Local runs are sessions of the same scheduled task. */
+/** Local runs are sessions of the same scheduled task (live claude.ai bundle,
+ * 2026-10-14, cccc2cf0a-ClzhdM48.js, fT). */
 export async function sessionRuns(
   conversationId: string,
   api: {

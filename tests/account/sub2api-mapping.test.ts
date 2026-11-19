@@ -323,7 +323,9 @@ test("subscription progress parses both response shapes", () => {
     });
     assert.equal(entry.daily, undefined);
   }
-  assert.deepEqual(parseProgress({}), []);
+  // A malformed collection must no longer masquerade as zero reported windows.
+  assert.throws(() => parseProgress({}), /unexpected response/);
+  assert.deepEqual(parseProgress([]), []);
 });
 
 test("weekly status in USD, from the plan window or the key's 7d cap", () => {
@@ -503,7 +505,7 @@ test("the desktop opens on its welcome screen, then a short heading", () => {
     emailDomains: [],
   };
   const status = { hasAccounts: true, remote: policy };
-  // Each desktop sign-in opens on it.
+  // live claude.ai bundle, 2026-10-12: each desktop sign-in opens on it.
   assert.equal(opensOnWelcome(status, "desktop"), true);
   assert.equal(opensOnWelcome({ hasAccounts: false }, "desktop"), true);
   assert.equal(opensOnWelcome(status, "web"), false);

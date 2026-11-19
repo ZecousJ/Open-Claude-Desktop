@@ -116,14 +116,16 @@ export function Choice<T extends string>({
 }
 
 /**
- * The web's "Create scheduled task": name, instructions with the model under
- * them, and the frequency with its time. Tasks here run as Cowork tasks in the
- * runner's sandbox. A new task's Permissions row starts on Auto, or on Manually
- * approve where the administrator turned Auto off; Auto lets the reviewer
- * decide. Create stays enabled while the name or instructions are empty:
- * pressing it marks what is missing and focuses the first such field. One-time
- * runs once at the chosen moment. Optional context follows the selected source
- * and executing host; ordinary captured edits retain their UI.
+ * The web's "Create scheduled task" (live claude.ai, 2026-09-29): name,
+ * instructions with the model under them, and the frequency with its time.
+ * Tasks here run as Cowork tasks in the runner's sandbox. A new task's
+ * Permissions row starts on Auto, or on Manually approve where the
+ * administrator turned Auto off (live claude.ai bundle, 2026-10-21,
+ * c97b955f1: ef); Auto lets the reviewer decide. Create stays enabled while
+ * the name or instructions are empty: pressing it marks what is missing and
+ * focuses the first such field (c97b955f1: Tc, Dc, kc).
+ * One-time runs once at the chosen moment. Optional context follows the
+ * selected source and executing host; ordinary captured edits retain their UI.
  */
 export function ScheduledTaskDialog({
   draft,
@@ -221,7 +223,8 @@ export function ScheduledTaskDialog({
     settings.providers[0];
   // The default's name as the composer shows it (the catalog's, kept).
   const defaultName = active ? rememberedModelLabel(active.model) : undefined;
-  // A cloud Code task names the default it runs on.
+  // A cloud Code task names the default it runs on (live claude.ai,
+  // 2026-10-21: "Default · Opus 5.5").
   const modelLabel = draft.model.default
     ? web && draft.mode === "code" && defaultName
       ? formatText("Default · {model}", { model: defaultName })

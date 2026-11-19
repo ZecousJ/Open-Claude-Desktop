@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -6,6 +7,7 @@ import test from "node:test";
 import {
   parseCloneGrant,
   pinnedRef,
+  runGit,
   withGitHubClone,
   type GitRun,
 } from "../../runner/src/github-workspace";
@@ -148,6 +150,44 @@ test("a ref clone can't check out is fetched after it, on the branch it names", 
   assert.throws(() =>
     parseRepository({ url: "https://github.com/octo/hello", branch: "x" }),
   );
+});
+
+test("an output branch uses its pinned source commit", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "gh-ws-outcome-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const source = path.join(root, "source");
+  const git = (cwd: string, ...args: string[]) =>
+    execFileSync("git", ["-C", cwd, ...args], { encoding: "utf8" }).trim();
+  fs.mkdirSync(source);
+  git(source, "init", "--quiet", "--initial-branch=main");
+  git(source, "config", "user.email", "fixture@example.invalid");
+  git(source, "config", "user.name", "Fixture");
+  git(source, "commit", "--quiet", "--allow-empty", "-m", "Selected commit");
+  const ref = git(source, "rev-parse", "HEAD");
+  git(source, "commit", "--quiet", "--allow-empty", "-m", "Later commit");
+
+  const grant = grantAnswer({ ref });
+  const hook = withGitHubClone({
+    transport: { request: async () => grant },
+    base: async () => ({ cwd: path.join(root, "target") }),
+    runGit: (run) =>
+      runGit({
+        ...run,
+        argv: run.argv.map((argument) =>
+          argument === grant.url ? source : argument,
+        ),
+      }),
+  });
+  const { cwd } = await hook(
+    { userId: 7 },
+    {
+      url: "https://github.com/octo/hello",
+      ref,
+      outcome: { kind: "create", branch: "custom/selected" },
+    },
+  );
+  assert.equal(git(cwd, "branch", "--show-current"), "custom/selected");
+  assert.equal(git(cwd, "rev-parse", "HEAD"), ref);
 });
 
 test("a failed clone says why without the token, and still cleans up", async () => {

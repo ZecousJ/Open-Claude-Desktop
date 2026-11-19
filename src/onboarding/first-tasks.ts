@@ -1,7 +1,9 @@
 /**
- * The onboarding's first task: starter tasks for each work type. The original
- * keeps five per role and shows three picked at random; Claudex keeps the first
- * three of each and shows them in that order.
+ * The onboarding's first task: starter tasks for each work type (live
+ * claude.ai bundle, 2026-10-12: c10bf8b47 `Ec`, titles and prompts from its
+ * message table `Q`; ids and icons as there). The original keeps five per
+ * role and shows three picked at random; Claudex keeps the first three of
+ * each and shows them in that order.
  */
 import type { WorkType } from "../../shared/settings-extras";
 

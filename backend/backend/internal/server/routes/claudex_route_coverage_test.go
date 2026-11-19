@@ -246,9 +246,10 @@ var claudexPublicRoutes = map[string]bool{
 	// W-RELAY: routes with their own credential: the events socket (one-time
 	// ticket in Sec-WebSocket-Protocol), the runner link (runner token) and
 	// artifact previews (short-lived signature; an iframe sends no bearer).
-	"GET /api/v1/claudex/web/events":      true,
-	"GET /api/v1/claudex/web/runner/link": true,
-	"GET /api/v1/claudex/web/preview/:id": true,
+	"GET /api/v1/claudex/web/events":        true,
+	"GET /api/v1/claudex/web/runner/link":   true,
+	"GET /api/v1/claudex/web/preview/:id":   true,
+	"POST /api/v1/claudex/web/code-preview": true,
 	// W-GITHUB: GitHub redirects the browser here after the user approves
 	// the app; the single-use state ties it to the user who started the flow.
 	"GET /api/v1/claudex/web/github/callback": true,
@@ -259,23 +260,6 @@ var claudexPublicRoutes = map[string]bool{
 	"POST /api/v1/claudex/auth/email-code/login":     true,
 	"POST /api/v1/claudex/web/auth/email-code/send":  true,
 	"POST /api/v1/claudex/web/auth/email-code/login": true,
-	// LOGIN-GOOGLE: the Google ID token is the credential.
-	"POST /api/v1/claudex/auth/google/login":     true,
-	"POST /api/v1/claudex/web/auth/google/login": true,
-	// The phones' link to the account's computers: a one-time ticket
-	// authenticates the socket.
-	"GET /api/v1/claudex/web/device/link": true,
-	// The public downloads page lists the published apps.
-	"GET /api/v1/claudex/apps": true,
-}
-
-// claudexOwnTokenRoutes check a bearer token of their own instead of a user
-// JWT, so they answer 401 to both a missing and a user token.
-var claudexOwnTokenRoutes = map[string]bool{
-	// A scheduled task's API trigger.
-	"POST /api/v1/claudex/routines/:id/fire": true,
-	// A scheduled task's GitHub webhook, signed with the trigger's secret.
-	"POST /api/v1/claudex/github/hooks/:id": true,
 }
 
 // TestClaudexWebAuthRoutesAreCSRFGuarded: the public web auth routes refuse
@@ -300,7 +284,7 @@ func TestClaudexWebAuthRoutesAreCSRFGuarded(t *testing.T) {
 		require.Equal(t, http.StatusForbidden, rec.Code, "%s: %s", label, rec.Body.String())
 		require.NotContains(t, rec.Header().Get("Set-Cookie"), "claudex_web_rt=", label)
 	}
-	require.Equal(t, 18, n)
+	require.Equal(t, 17, n)
 }
 
 func TestClaudexUserRoutesRequireAJWT(t *testing.T) {
@@ -321,9 +305,6 @@ func TestClaudexUserRoutesRequireAJWT(t *testing.T) {
 		label := route.Method + " " + route.Path
 		if label == "GET /api/v1/claudex/release" {
 			releaseRoutes++
-		}
-		if claudexOwnTokenRoutes[label] {
-			continue
 		}
 		rec := serveRoute(router, route.Method, concretePath(route.Path), nil, `{}`)
 		if claudexPublicRoutes[label] {
@@ -577,8 +558,6 @@ var claudexPublicPages = map[string]bool{
 	"GET /s/:token/a/:n":        true,
 	"GET /s/:token/raw/:n":      true,
 	"POST /s/:token/report":     true,
-	"GET /s/:token/screenshot":  true,
-	"GET /s/:token/embed":       true,
 	"GET /s/_assets/*path":      true,
 	"GET /s/coverage-probe/:id": true,
 }

@@ -68,7 +68,7 @@ export function useComposerDraft(kit: UseComposerDraftKit) {
   // A home suggestion pointed at shows its prompt in place of the draft.
   const promptPreview = usePromptPreview();
   const previewShown = Boolean(promptPreview) && !active && mode !== "code";
-  /** The model menus' Model service opens the API page. */
+  /** The model menus' Model service opens the API page (owner, 2026-10-03). */
   const openModelService = () => {
     setModelMenu(false);
     if (appContext) appContext.setPage("api");
@@ -79,8 +79,8 @@ export function useComposerDraft(kit: UseComposerDraftKit) {
   const [slashSelected, setSlashSelected] = useState(0),
     [slashDismissed, setSlashDismissed] = useState(false),
     [pendingSlash, setPendingSlash] = useState<string | null>(null),
-    // Backspace on a bare command token first drops its [argument] placeholder,
-    // then selects the token, then deletes it.
+    // Backspace on a bare command token first drops its [argument]
+    // placeholder, then selects the token, then deletes it (R-0366).
     [slashPlaceholderGone, setSlashPlaceholderGone] = useState(false),
     [slashTokenSelected, setSlashTokenSelected] = useState(false);
   const [effortOpenRequest, setEffortOpenRequest] = useState(0),
@@ -179,7 +179,8 @@ export function useComposerDraft(kit: UseComposerDraftKit) {
     resetKey: active?.id,
   });
   // A recalled or searched prompt is not typed: its "/" and "@" open nothing
-  // and Enter sends it.
+  // and Enter sends it (live claude.ai bundle, 2026-10-16, c1958b152 Zp:
+  // slash and mention suggestions are disabled while historyNav).
   const historyActive = history.hint !== null;
   const slashMatch =
     mode === "code" && !pendingSlash && !bash && !historyActive
@@ -216,8 +217,8 @@ export function useComposerDraft(kit: UseComposerDraftKit) {
       (!appContext?.windowRole || appContext.windowRole.kind === "main") &&
       (typeof window === "undefined" || !("ClaudexConversation" in window)));
   const webReplyVoice = webChat && Boolean(active) && incognitoControls;
-  // Current native and web Code homes share the field/chin composition. Opened
-  // sessions retain their own controls.
+  // Current native and web Code homes share the field/chin composition.
+  // Opened sessions retain their own controls (cc43287c9-Dxed_hEI.js).
   const codeHomeDraft = mode === "code" && !active;
   const remoteCodeEnvironment = useRemoteEnvironment();
   const artifactOutput =

@@ -1,8 +1,12 @@
 import type { Turn } from "./types";
 
 /**
- * Rewind with code restore. The code is the file edits Claude made from the
- * message on, undone newest first (electron/rewind-files.ts).
+ * Rewind with code restore (live claude.ai bundle, 2026-10-15, cc43287c9
+ * `Aae`: "Rewind to this message?", Restore: Code and conversation,
+ * Conversation only, Code only; "{count} files · +a −d"; "Changes made
+ * through shell commands aren’t reverted. Commits stay in place."). The code
+ * is the file edits Claude made from the message on, undone newest first
+ * (electron/rewind-files.ts).
  */
 
 export type RewindScope = "both" | "conversation" | "code";

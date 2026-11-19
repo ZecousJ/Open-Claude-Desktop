@@ -17,7 +17,8 @@ const moves = {
   bottom: "Move to bottom",
 };
 
-/** Pane header actions. */
+/** Pane header actions (live claude.ai bundle, 2026-10-14,
+ * c4db265df-DALs-XY0.js, Je). */
 export function PaneHeaderControls({
   root,
   layout,

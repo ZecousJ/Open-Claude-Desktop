@@ -1,3 +1,4 @@
+import { readConfirmedUploadReceipt } from "./upload-receipts";
 /**
  * The desktop's cloud conversations (docs/cloud-sync.md P4): the cloud
  * client (P3) while a Claudex account is signed in and sync is on
@@ -7,20 +8,24 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { app, BrowserWindow, powerMonitor, shell } from "electron";
-import type { AppEvent, Attachment } from "../../shared/types";
+import type { AppEvent, Attachment, Conversation } from "../../shared/types";
 import { CloudClient, type CloudSession } from "./cloud-client";
 import { RoutineMigrationRegistry } from "./routine-migration-registry";
 import { CloudRouter } from "./cloud-router";
-import { moveToCloud, type MoveDeps } from "./migrate";
+import { moveToCloud, readMoved, type MoveDeps } from "./migrate";
 import { githubRoutes } from "../../shared/github-api";
 import type { ChatGitHubRead } from "../../shared/chat-github";
 import { deviceLinkId, deviceName } from "../remote-control/device-identity";
+import { officialUiReadMaxBytes, type OfficialUiReadRequest, type OfficialUiReadResponse } from "../../shared/official-ui-web";
+import type { CodeSettingsPatch } from "../../shared/official-code-settings";
+import type { CloudEnvironmentsAPI } from "../../shared/cloud-environments-api";
+import { createCloudCodeSettings } from "./cloud-code-settings";
 
 export interface CloudSyncOptions {
   /** The Claudex service's address; undefined while signed out. */
   baseUrl(): string | undefined;
   /** The signed-in account's session; undefined while signed out. */
-  session(): CloudSession | undefined;
+  session(): (CloudSession & { userId: number }) | undefined;
   /** The person's "sync with the web" switch. */
   enabled(): boolean;
   push(event: AppEvent): void;
@@ -28,6 +33,7 @@ export interface CloudSyncOptions {
   attachment(id: string): Attachment | undefined;
   /** The signed-in profile's store (its conversations move to the cloud). */
   localStore(): MoveDeps["store"] | undefined;
+  applyCodeSettings(store: MoveDeps["store"], patch: CodeSettingsPatch): void;
   /** The Chat permission mode this computer's picker shows. */
   taskPermission?(): "default" | "auto" | "bypass" | undefined;
 }
@@ -162,12 +168,48 @@ export function createCloudSync(options: CloudSyncOptions) {
       onVisibility: (listener) => visibility.add(listener),
       onOnline: (listener) => online.add(listener),
     });
-    unsubscribe = client.onEvent((event) => router.cloudEvent(event));
-    client.start();
-    return client;
+    const opened = client;
+    unsubscribe = opened.onEvent((event) => {
+      if (event.type === "settings") {
+        const lease = captureCodeSettings();
+        if (lease?.client === opened) codeSettings.receive(lease, event.settings);
+      } else if ((event.type === "resync" || event.type === "stream-connection" && event.connected) && client === opened) {
+        void codeSettings.refresh().catch(() => {});
+      }
+      router.cloudEvent(event);
+    });
+    opened.start();
+    return opened;
   };
 
+  function captureCodeSettings() {
+    if (!options.enabled()) return undefined;
+    const opened = active(), store = options.localStore(), session = options.session();
+    const affinity = options.baseUrl(), lease = clientLease;
+    if (!opened || !store || !session || !affinity || !lease) return undefined;
+    const current = () => client === opened && clientLease === lease && options.enabled() &&
+      options.localStore() === store && options.session() === session && options.baseUrl() === affinity;
+    return {
+      client: opened,
+      userId: session.userId,
+      current,
+      apply: (patch: CodeSettingsPatch) => {
+        if (current()) options.applyCodeSettings(store, patch);
+      },
+    };
+  }
+  const codeSettings = createCloudCodeSettings(captureCodeSettings);
+
+  const receiptScope = () => {
+    const capturedClient = active(), store = options.localStore(), session = options.session();
+    const service = options.baseUrl(), lease = clientLease;
+    if (!capturedClient || !store || !session || !service || !lease) return undefined;
+    return { root: store.root, service, attachment: options.attachment,
+      current: () => client === capturedClient && clientLease === lease && options.localStore() === store &&
+        options.session() === session && options.baseUrl() === service && options.enabled() };
+  };
   const router = new CloudRouter({
+    receiptScope,
     client: active,
     push: options.push,
     attachmentBytes: async (id) => {
@@ -177,6 +219,10 @@ export function createCloudSync(options: CloudSyncOptions) {
       return { name: attachment.name, data: new Uint8Array(data) };
     },
     onCloudSnapshot: move,
+    migratedConversations: () => {
+      const root = options.localStore()?.root;
+      return root ? readMoved(root) : undefined;
+    },
     routineMigration: () => {
       const root = options.localStore()?.root;
       const serviceId = options.baseUrl();
@@ -197,6 +243,7 @@ export function createCloudSync(options: CloudSyncOptions) {
       };
     },
     claims: linkClaims(() => options.localStore()?.root),
+    localProject: (id) => !!options.localStore()?.projects.some((project) => project.id === id),
     taskPermission: () => options.taskPermission?.(),
     device: () => ({
       id: deviceLinkId(app.getPath("userData")),
@@ -204,8 +251,59 @@ export function createCloudSync(options: CloudSyncOptions) {
     }),
   });
 
+  async function forwardOfficial(
+    request: OfficialUiReadRequest,
+    action: boolean,
+    current = active(),
+  ) {
+    if (!current || active() !== current) return undefined;
+    const answer = (await current.call(
+      action ? "officialUiAction" : "officialUiRead",
+      [request],
+    )) as OfficialUiReadResponse;
+    if (
+      active() !== current ||
+      !(answer?.body instanceof Uint8Array) ||
+      answer.body.length > officialUiReadMaxBytes
+    )
+      return undefined;
+    return answer;
+  }
   return {
     router,
+    officialCode: {
+      available: () => !!active() && router.last?.host?.capabilities.cloudCode === true,
+      capture() {
+        const session = options.session();
+        const opened = active();
+        if (!session || !opened) return undefined;
+        return {
+          identity: opened,
+          userId: session.userId,
+          current: () => active() === opened,
+          connected: () => opened.connected,
+          read: (request: OfficialUiReadRequest) => forwardOfficial(request, false, opened),
+          action: (request: OfficialUiReadRequest) => forwardOfficial(request, true, opened),
+          environment: <Name extends keyof CloudEnvironmentsAPI>(
+            method: Name, args: Parameters<CloudEnvironmentsAPI[Name]>,
+          ) => opened.call(method, args) as ReturnType<CloudEnvironmentsAPI[Name]>,
+          json: opened.json.bind(opened),
+          onEvent: opened.onEvent.bind(opened),
+        };
+      },
+    },
+    codeSettings,
+    codeSettingsLinked: () => !!options.baseUrl() && !!options.session() && options.enabled(),
+    readWorkspaceDownload: (request: OfficialUiReadRequest) =>
+      forwardOfficial(request, false),
+    forwardOfficialCodeTrigger: (request: OfficialUiReadRequest) =>
+      forwardOfficial(request, request.method !== "GET"),
+    confirmedUploadReceipt(conversation: Conversation, rowId: string, current: () => boolean) {
+      const scope = receiptScope();
+      if (!scope) return undefined;
+      const ownCurrent = scope.current;
+      return readConfirmedUploadReceipt({ ...scope, current: () => current() === true && ownCurrent() }, conversation, rowId);
+    },
     localEvent: (event: AppEvent) => router.localEvent(event),
     readChatGitHub(input: ChatGitHubRead): Promise<unknown> | undefined {
       return active()

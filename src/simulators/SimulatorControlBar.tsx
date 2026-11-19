@@ -65,7 +65,7 @@ function BarButton({
   );
 }
 
-/** "00:07" in red with a dot while a recording runs. */
+/** "00:07" in red with a dot while a recording runs (live bundle: "Recording time"). */
 export function RecordingTimer({ startedAt }: { startedAt: number }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -88,16 +88,17 @@ export function RecordingTimer({ startedAt }: { startedAt: number }) {
 }
 
 /**
- * The control bar under the screen: the recording time while one runs; Back
- * (Android), Home, Recents (Android) and Lock; a divider; Save screenshot and
- * Record video (iOS) or Stop recording; a divider; Show logs or Hide logs.
+ * The control bar under the screen (live claude.ai bundle, 2026-10-12,
+ * `SimulatorControlBar`): the recording time while one runs; Back (Android),
+ * Home, Recents (Android) and Lock; a divider; Save screenshot and Record
+ * video (iOS) or Stop recording; a divider; Show logs or Hide logs.
  *
- * Annotate opens the annotation editor with a screenshot, where a composer can
- * take the result: on Android before Save screenshot, on iOS after the second
- * divider (the original's order).
+ * Annotate opens the annotation editor with a screenshot, where a composer
+ * can take the result: on Android before Save screenshot, on iOS after the
+ * second divider (the original's order).
  *
- * Rotate is iOS-only; Back and Recents are Android-only. Lock and volume use
- * the unframed pane.
+ * Rotate is iOS-only; Back and Recents are Android-only (live claude.ai
+ * bundle, 2026-10-14, c49d37e5f). Lock and volume use the unframed pane.
  */
 export function ControlBar({
   kind,

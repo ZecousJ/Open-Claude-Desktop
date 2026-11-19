@@ -1,7 +1,11 @@
 /*
- * Settings → Account → Active sessions. The table keeps Cowork local devices'
- * header and 44px rows, the cells take the Settings rows' label and description
- * colours, and rows are divided like Settings rows.
+ * Settings → Account → Active sessions (live claude.ai bundle, 2026-10-12:
+ * a flush DataTable 8px under the section title — Device (min 160px),
+ * Location (min 100px), Created and Updated (170px each, one line),
+ * a 48px actions column whose ⋮ shows on row hover — 10 rows a page).
+ * No owner capture yet: the table keeps Cowork local devices' header and
+ * 44px rows (R-1385, .cowork-devices), the cells take the Settings rows'
+ * label and description colours, and rows are divided like Settings rows.
  */
 .active-sessions {
   padding-top: 8px;
@@ -80,7 +84,8 @@
 .active-sessions .session-updated-head {
   cursor: help;
 }
-/* The row's ⋮: hidden until the row is hovered or focused, or its menu is open. */
+/* The row's ⋮ (as the Settings rows' more buttons, .desktop-row-more):
+   hidden until the row is hovered or focused, or its menu is open. */
 .active-sessions .session-more {
   display: inline-flex;
   align-items: center;

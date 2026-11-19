@@ -1,3 +1,4 @@
+import type { TranscriptSlotsValue } from "./transcript-slots";
 import type { Mode, Turn } from "../../shared/types";
 import { retryCauseHeadlines, type RetryCause } from "../../shared/turn-errors";
 import { ReplyBanner, waitingForResponse } from "./ReplyBanner";
@@ -50,11 +51,12 @@ function unexplainedEmptyFailure(turn: Turn) {
 }
 
 /**
- * Failed replies shown as one notice: in a run of two or more turns in a row
- * whose replies failed with nothing written and no known reason, only the last
- * says how many did not load; the ones before it show no notice. The map gives
- * the run's length for its last turn and 0 for the others; a turn in no such
- * run is absent.
+ * Failed replies shown as one notice (live claude.ai bundle, 2026-10-12:
+ * "{count} responses didn’t load.", and "This response didn’t load." for
+ * one): in a run of two or more turns in a row whose replies failed with
+ * nothing written and no known reason, only the last says how many did not
+ * load; the ones before it show no notice. The map gives the run's length
+ * for its last turn and 0 for the others; a turn in no such run is absent.
  */
 export function failedRuns(turns: readonly Turn[]): Map<string, number> {
   const runs = new Map<string, number>();
@@ -83,6 +85,7 @@ export function failedRuns(turns: readonly Turn[]): Map<string, number> {
  * send path; Edit prompt reopens the prompt in its editor.
  */
 export function TurnOutcome({
+  StoppedReply,
   turn,
   mode = "chat",
   latest,
@@ -97,6 +100,7 @@ export function TurnOutcome({
   effortRecommended = false,
   canRewind,
 }: {
+  StoppedReply?: TranscriptSlotsValue["StoppedReply"];
   turn: Turn;
   mode?: Mode;
   latest: boolean;
@@ -118,9 +122,9 @@ export function TurnOutcome({
   effortRecommended?: boolean;
   canRewind?: boolean;
 }) {
-  // The line is plain grey text; the status line's star is already the activity
-  // mark, so no second spinner. Code's status line says it ("Connection lost ·
-  // Retrying (2/5)").
+  // The line is plain grey text (R-0654 analogue); the status line's star is
+  // already the activity mark, so no second spinner (R-0833, R-0861: no capture).
+  // Code's status line says it ("Connection lost · Retrying (2/5)").
   if (turn.status === "inProgress")
     return turn.reconnecting && mode !== "code" ? (
       <p className="turn-reconnecting" role="status">
@@ -145,7 +149,10 @@ export function TurnOutcome({
       </Suspense>
     );
   if (turn.status === "interrupted") {
-    // Code's process_interrupted.
+    if (mode === "chat" && turn.userStopped && StoppedReply && (latest || !replyIsEmpty(turn)))
+      return <StoppedReply busy={busy} onRetry={retryable ? onRetry : undefined} />;
+    // Code's process_interrupted (live claude.ai bundle, 2026-10-14,
+    // shared-14-CbvrJQ0P.js).
     if (mode === "code")
       return (
         <Suspense fallback={null}>
@@ -168,9 +175,10 @@ export function TurnOutcome({
           Claudex closed before this response finished
         </p>
       );
-    // After Stop the original keeps the cut-off text and shows no "Interrupted"
-    // line. When nothing at all was written the reply would be blank, so the
-    // original says so.
+    // R-0812: after Stop the original keeps the cut-off text and shows no
+    // "Interrupted" line. When nothing at all was written the reply would be
+    // blank, so the original says so (desktop bundle 2.31226.1: "Claude’s
+    // response was interrupted." with Edit prompt and Try again).
     if (mode !== "chat" || !replyIsEmpty(turn)) return null;
     return (
       <ReplyBanner
@@ -212,7 +220,7 @@ export function TurnOutcome({
         {t("This chat is full. Start a new chat to keep going.")}
       </ReplyBanner>
     );
-  // Limit notices.
+  // Limit notices (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js).
   if (turn.stopReason === "length" || turn.stopReason === "tool_use_limit")
     return (
       <ReplyBanner
@@ -244,7 +252,8 @@ export function TurnOutcome({
       </Suspense>
     );
   // The session no longer fits the context window, so Try again and Continue
-  // would fail the same way: the way on is a new session.
+  // would fail the same way: the way on is a new session (desktop bundle
+  // 2.31226.1: "This session is full. Start a new session to keep going.").
   if (
     mode === "code" &&
     onHandOff &&
@@ -270,8 +279,8 @@ export function TurnOutcome({
         This session is full. Start a new session to keep going.
       </ReplyBanner>
     );
-  // A Code turn's failure is the Code session's own card: a headline and what
-  // to do, not Chat's sentence.
+  // A Code turn's failure is the Code session's own card: a headline and
+  // what to do (live claude.ai bundle, 2026-10-12), not Chat's sentence.
   if (mode === "code")
     return (
       <Suspense fallback={null}>
@@ -294,7 +303,8 @@ export function TurnOutcome({
   const folded = failedRun;
   if (folded === 0) return null;
   // The reason in the original's words, never the engine's own text; Continue
-  // carries on where the reply stopped, the clearer way out of an interruption.
+  // carries on where the reply stopped (owner, 2026-10-03), the clearer way
+  // out of an interruption.
   return (
     <ReplyBanner
       mode={mode}
@@ -316,7 +326,10 @@ export function TurnOutcome({
   );
 }
 
-/** "Rate limit reached. Retrying now (attempt 2 of 5)". */
+/**
+ * "Rate limit reached. Retrying now (attempt 2 of 5)" (live claude.ai
+ * bundle, 2026-10-14, shared-17 rP: the cause, else "Request failed").
+ */
 export function retryingText(attempt: string, cause?: RetryCause) {
   const [current, total] = attempt.split("/");
   return formatText(

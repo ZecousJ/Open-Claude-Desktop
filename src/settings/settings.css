@@ -1,4 +1,7 @@
-/* Settings modal, on desktop and phone widths. */
+/*
+ * Settings modal: 2026-10-16 live desktop and phone measurements.
+ * See docs/audit-live-2026-10-16/live/official-settings-general.txt.
+ */
 :root {
   --settings-panel: #1a1a19;
   --settings-rail: #151515;
@@ -28,7 +31,8 @@
   --settings-alpha-1: rgb(11 11 11 / 5%);
   --settings-alpha-2: rgb(11 11 11 / 10%);
   --settings-alpha-3: rgb(11 11 11 / 20%);
-  /* The switch track a step up in light: alpha-3, alpha-4 on hover. */
+  /* The switch track a step up in light: alpha-3, alpha-4 on hover (live
+     claude.ai bundle, 2026-10-16, c6a992d55 --cds-switch-track). */
   --settings-switch-track: rgb(11 11 11 / 20%);
   --settings-switch-hover: rgb(11 11 11 / 35%);
   --settings-ghost-hover: rgb(11 11 11 / 5%);
@@ -49,8 +53,9 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  /* The dialog backdrop and motion of .overlay: 50% black in dark, 40% in
-     light, no blur, fading in and out over 200ms with the frame. */
+  /* The dialog backdrop and motion of .overlay (80-dialogs-responsive.css,
+     desktop bundle 2.31226.1): 50% black in dark, 40% in light, no blur,
+     fading in and out over 200ms with the frame. */
   background: #00000080;
   animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
 }
@@ -103,18 +108,20 @@
   animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
   transition: filter var(--motion-base, 200ms) var(--ease-out, ease-out);
 }
-/* Focused on open, with no ring. */
+/* Focused on open, with no ring (R-1567). */
 .settings-dialog:focus {
   outline: none;
 }
-/* Keyboard focus: a 1px blue ring on the control's own edge. */
+/* Keyboard focus: a 1px blue ring on the control's own edge (R-1570 page
+   tab, R-1610 theme segment, R-1574 Close). */
 .settings-dialog button:focus-visible,
 .settings-dialog a:focus-visible {
   outline: 1px solid var(--focus);
   outline-offset: 0;
 }
-/* The Memory page's title carries 4px above it, so its rows start 4px lower
-   than other pages'. */
+/* The Memory page's title carries 4px above it (the original's pt-1 on that
+   page's h2, live claude.ai Settings 2026-10-21), so its rows start 4px
+   lower than other pages'. */
 .settings-section > h2[data-setting="Memory"] {
   padding-top: 4px;
 }
@@ -125,7 +132,7 @@
   flex-direction: column;
   gap: 8px;
 }
-/* The title and tab row of a narrow window only. */
+/* The title and tab row of a narrow window only (R-1571). */
 .settings-narrow-title {
   display: none;
 }
@@ -159,7 +166,7 @@
 .settings-search > svg {
   flex: 0 0 auto;
 }
-/* Focused: the field's own edge turns blue. */
+/* Focused: the field's own edge turns blue (R-1539, R-1565, R-1572). */
 :root .settings-search:focus-within {
   box-shadow: inset 0 0 0 1px var(--focus);
 }
@@ -179,7 +186,7 @@
 .settings-search > input::placeholder {
   color: var(--settings-muted);
 }
-/* The focused search field takes the blue rim. */
+/* R-1540 (light): the focused search field takes the blue rim. */
 .settings-search:hover:not(:focus-within) {
   box-shadow: inset 0 0 0 1px var(--settings-alpha-3);
 }
@@ -209,8 +216,8 @@
   text-align: left;
   white-space: nowrap;
   color: var(--settings-secondary);
-  /* The original's page rows carry no transition: the fill and the ink change
-     at once. */
+  /* The original's page rows carry no transition: the fill and the ink
+     change at once (desktop bundle 2.31226.1). */
   transition: none;
 }
 .settings-nav-group > button > svg,
@@ -218,15 +225,15 @@
   flex: 0 0 auto;
   color: var(--settings-secondary);
 }
-/* Hover: the ghost fill and the ink steps from secondary to primary, the open
-   page already reads primary. */
+/* Hover: the ghost fill and the ink steps from secondary to primary, the
+   open page already reads primary (desktop bundle 2.31226.1). */
 .settings-nav-group > button:hover {
   background: var(--settings-ghost-hover);
 }
 .settings-nav-group > button:not([aria-current="page"]):hover {
   color: var(--settings-primary);
 }
-/* The open page reads medium weight. */
+/* The open page reads medium weight (R-设置-General-浅色-W1164, Voice-style-菜单). */
 .settings-nav-group > button[aria-current="page"] {
   background: var(--settings-ghost-selected);
   font-weight: 500;
@@ -263,7 +270,8 @@
 .settings-nav {
   scrollbar-width: thin;
 }
-/* Close: centred in the 56px top row, 12px in from the frame's inner edge. */
+/* Close: centred in the 56px top row, 12px in from the frame's inner edge
+   (live claude.ai at 1200 wide, 2026-10-21: 1067..1099 in a 88..1112 frame). */
 .settings-close {
   position: absolute;
   top: 12px;
@@ -288,8 +296,8 @@
 .settings-section + .settings-section.tight-above {
   margin-top: 28px;
 }
-/* Require trusted devices is a row of the Account group, not a block of its
-   own. */
+/* Require trusted devices is a row of the Account group (live Settings,
+   2026-10-16: h3 Account holds it, then h3 Local devices), not a block of its own. */
 .settings-section + .settings-section.joins-above {
   margin-top: 0;
 }
@@ -301,13 +309,16 @@
   line-height: 20px;
   color: var(--settings-primary);
 }
-/* Page introduction under a section title. */
+/* Page introduction under a section title (R-设置-Privacy-顶部: lighter than
+   row descriptions, 32.5px below the title's top). */
 .settings-section-note {
   margin: -4px 0 13px;
   color: var(--settings-secondary);
 }
-/* A section's own description, right under its title. 13px: the same string is
-   0.928 as wide as at 14px in R-1368 (591 vs 637px), R-1384 and R-1400. */
+/* A section's own description, right under its title (R-1369: title
+   centred at 334, note at 357; R-1385 and R-1400 the same). 13px: the
+   same string is 0.928 as wide as at 14px in R-1368 (591 vs 637px),
+   R-1384 and R-1400. */
 .settings-section-note.tight {
   margin-top: -14px;
   margin-bottom: 14px;
@@ -328,7 +339,8 @@
 .settings-row + .settings-row {
   border-top: 1px solid var(--settings-alpha-1);
 }
-/* A row that opens a page. */
+/* A row that opens a page (R-1503/R-1509: 45px pitch, grey chevron at the
+   right edge). */
 .settings-link-row {
   min-height: 44px;
   padding: 0;
@@ -347,8 +359,8 @@
   margin-right: 2px;
   color: var(--settings-muted);
 }
-/* The first row centred 48px under the introduction's last line, the next title
-   55px under the last row's centre. */
+/* R-1503 (W602): the first row centred 48px under the introduction's last
+   line, the next title 55px under the last row's centre. */
 .settings-section-note + .settings-link-row {
   margin-top: 16px;
 }
@@ -381,7 +393,8 @@
   align-items: center;
   gap: 8px;
 }
-/* Telemetry boolean row and conditional warning. */
+/* Telemetry boolean row and conditional warning (live claude.ai bundle,
+   2026-10-14, c6f6cf4c2-Dbp5GpN7.js:13174,13437). */
 .nonessential-services-row {
   --nonessential-switch-track: rgb(255 255 255 / 10%);
   --nonessential-switch-hover: rgb(255 255 255 / 20%);
@@ -436,7 +449,8 @@
   align-items: center;
   flex-shrink: 0;
 }
-/* CDS Switch; resolved CDS switch/fill/shadow tokens. */
+/* CDS Switch (live claude.ai bundle, 2026-10-14,
+   shared-frame-B1JORnF0.js:17285); resolved CDS switch/fill/shadow tokens. */
 :root[data-theme="light"] .nonessential-services-row {
   --nonessential-switch-track: rgb(11 11 11 / 20%);
   --nonessential-switch-hover: rgb(11 11 11 / 35%);
@@ -464,7 +478,7 @@
 .nonessential-services-row > .settings-toggle > span {
   box-shadow: var(--nonessential-switch-shadow);
 }
-/* 5px more below the Instructions field than below a row. */
+/* R-设置-Account-顶部: 5px more below the Instructions field than below a row. */
 .settings-row-stacked {
   flex-direction: column;
   align-items: stretch;
@@ -476,7 +490,7 @@
 }
 
 /* Switch: 36×20 track, 16px knob. The track changes colour at once: the
-   original's switch transitions only the knob. */
+   original's switch transitions only the knob (desktop bundle 2.31226.1). */
 .settings-toggle {
   position: relative;
   width: 36px;
@@ -485,7 +499,7 @@
   border-radius: 10px;
   background: var(--settings-switch-track, var(--settings-alpha-2));
   /* No track transition: the original's switch changes its track at once and
-     only the knob moves, over 120ms. */
+     only the knob moves, over 120ms (desktop bundle 2.31226.1). */
   transition: none;
 }
 .settings-toggle > span {
@@ -548,7 +562,7 @@
   line-height: 20px;
   color: var(--settings-secondary);
   /* Only the focus ring eases (60ms); the ink changes at once on hover and
-     selection. */
+     selection (the original's segments, desktop bundle 2.31226.1). */
   transition: box-shadow var(--motion-fast) var(--ease-standard);
 }
 .settings-segmented > button.icon {
@@ -565,8 +579,8 @@
 }
 
 /* Dropdown: value and chevron, a 32px hover field; list 6px below. */
-/* The open "Normal" trigger is 176 image px wide, its chevron glyph ending 13px
-   from the right edge. */
+/* R-设置-General-Voice-speed-菜单: the open "Normal" trigger is 176 image px
+   wide, its chevron glyph ending 13px from the right edge. */
 .settings-dropdown {
   display: flex;
   align-items: center;
@@ -575,8 +589,8 @@
   padding: 0 10px 0 8px;
   border-radius: 8px;
   color: var(--settings-primary);
-  /* The original's choice field eases every property over 60ms on the standard
-     curve. */
+  /* The original's choice field eases every property over 60ms on the
+     standard curve (desktop bundle 2.31226.1). */
   transition: var(--field-transition);
 }
 .settings-dropdown > svg {
@@ -608,7 +622,8 @@
   background: var(--settings-popup);
   box-shadow: var(--settings-popup-shadow);
   outline: none;
-  /* No open or close motion, as the original's popups. */
+  /* No open or close motion, as the original's popups (desktop bundle
+     2.31226.1). */
 }
 .settings-dropdown-menu > [role="option"] {
   display: flex;
@@ -627,8 +642,9 @@
 .settings-dropdown-menu > [role="option"].active {
   background: var(--settings-ghost-hover);
 }
-/* A choice with a description: the label over a muted footnote that wraps, 2px
-   apart. */
+/* A choice with a description (live claude.ai bundle, 2026-10-14,
+   c71860c77: Tool access mode's renderItem): the label over a muted
+   footnote that wraps, 2px apart. */
 .settings-dropdown-menu > [role="option"].has-description {
   height: auto;
   min-height: 32px;
@@ -681,10 +697,10 @@
   margin-right: 2px;
   color: var(--settings-primary);
 }
-/* Voice → Style's preview cell: a 24px cell at the row's end holds the voice
-   mark, shown on the lit row and while playing (text-accent then,
-   text-secondary otherwise), and the chosen voice's check in its place
-   otherwise. */
+/* Voice → Style's preview cell (live claude.ai bundle, 2026-10-14): a
+   24px cell at the row's end holds the voice mark, shown on the lit row
+   and while playing (text-accent then, text-secondary otherwise), and the
+   chosen voice's check in its place otherwise. */
 .voice-preview-cell {
   display: grid;
   flex: 0 0 auto;
@@ -743,7 +759,8 @@
   }
 }
 
-/* Bordered choice field. */
+/* Bordered choice field (System shortcuts, R-1399: 220×32, #3b3b3b rim,
+   #262626 fill, radius 8, text 8px in, chevron 10px from the right). */
 .settings-select {
   display: flex;
   align-items: center;
@@ -794,8 +811,8 @@
   font-size: 14px;
   color: var(--settings-primary);
 }
-/* Text 12.5px from the field's outer edge, the Instructions placeholder 11.5px
-   below the rim. */
+/* R-设置-Account-顶部: text 12.5px from the field's outer edge, the
+   Instructions placeholder 11.5px below the rim. */
 .settings-input {
   width: 224px;
   height: 32px;
@@ -848,7 +865,8 @@
   box-shadow: inset 0 0 0 1px var(--settings-alpha-3);
 }
 /* Invalid: the danger fill #d03b3b as the edge, with the focus glow in the
-   danger colour when focused. */
+   danger colour when focused (--cds-focus-shadow-danger, desktop bundle
+   2.31226.1: red-600 at 60% in dark, red-100 in light). */
 .settings-input[aria-invalid="true"],
 .settings-textarea[aria-invalid="true"] {
   box-shadow: inset 0 0 0 1px var(--focus-danger);
@@ -883,7 +901,9 @@
     var(--button-fill-transition),
     scale var(--motion-fast) ease-out;
 }
-/* size="regular": 32 tall, 12px padding, radius 8. */
+/* size="regular" (R-设置-Privacy-顶部 Export data 202×64 and Manage 153×64
+   image px; R-设置-Account-顶部 Delete account): 32 tall, 12px padding,
+   radius 8. */
 .settings-button.regular {
   height: 32px;
   padding: 0 12px;
@@ -893,10 +913,11 @@
   background: #fff;
   color: #141414;
 }
-/* White on red: the global `.danger` (red text, !important) would leave pink
-   text on the red fill, and red on red in the light theme. The fill is the
-   original's red-450 and lightens to red-400 under the pointer, the same in
-   both themes; dark had a derived #b3413b / #c24a43, which no capture backs. */
+/* White on red: the global `.danger` (red text, !important) would leave
+   pink text on the red fill, and red on red in the light theme. The fill is
+   the original's red-450 and lightens to red-400 under the pointer, the same
+   in both themes (--cds-fill-danger and its hover, desktop bundle 2.31226.1);
+   dark had a derived #b3413b / #c24a43, which no capture backs. */
 .settings-button.danger {
   background: #d03b3b;
   color: #fff !important;
@@ -920,8 +941,9 @@
   background: #31302e;
   color: var(--text);
 }
-/* Avatar button: hovered or focused, the picture fades to 40%, blurs 3px and
-   grows to 1.15, and a shuffle icon shows over it. */
+/* Avatar button (desktop bundle 2.31226.1): hovered or focused, the
+   picture fades to 40%, blurs 3px and grows to 1.15, and a shuffle icon
+   shows over it. */
 .settings-avatar-button {
   position: relative;
   display: block;
@@ -958,7 +980,8 @@
 .settings-avatar-button:focus-visible > svg {
   opacity: 1;
 }
-/* Avatar controls. CDS surface-popover, alpha-2, fill-ghost-hover and dur-fast. */
+/* Avatar controls (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh).
+   CDS surface-popover, alpha-2, fill-ghost-hover and dur-fast. */
 .settings-avatar-group {
   position: relative;
   width: fit-content;
@@ -1106,9 +1129,9 @@
   box-shadow: none;
   color: var(--settings-primary);
 }
-/* "Add your first …": a 16px card on the 5% fill, radius 12; a 15/20 title at
-   580, the sentence 8px under it in the secondary ink, and a white 32px button
-   16px lower. */
+/* "Add your first …" (live claude.ai Settings → Skills, 2026-10-21): a
+   16px card on the 5% fill, radius 12; a 15/20 title at 580, the sentence
+   8px under it in the secondary ink, and a white 32px button 16px lower. */
 .settings-callout {
   padding: 16px;
   border-radius: 12px;
@@ -1131,8 +1154,9 @@
   margin-top: 16px;
   font-weight: 500;
 }
-/* A list group's title and count: 15/20 at weight 580 in a 28px row, then 8px
-   over an 18px round count, 11/17 weight 500, on the 5% fill. */
+/* A list group's title and count (live claude.ai Settings → Skills,
+   2026-10-21): 15/20 at weight 580 in a 28px row, then 8px over an 18px
+   round count, 11/17 weight 500, on the 5% fill. */
 .settings-list-title {
   display: flex;
   align-items: center;
@@ -1232,9 +1256,9 @@
   color: var(--settings-secondary);
 }
 
-/* Light theme. */
-/* Light: no inner border; a faint dark ring just outside the 1024×800 frame, so
-   the content starts 1px further up and left. */
+/* Light theme (R-设置-*-浅色). */
+/* Light (R-设置-*-浅色-W1164): no inner border; a faint dark ring just
+   outside the 1024×800 frame, so the content starts 1px further up and left. */
 :root[data-theme="light"] .settings-dialog {
   border: 0;
   box-shadow:
@@ -1267,11 +1291,11 @@
 :root[data-theme="light"] .voice-preview-cell.selected > .voice-mark {
   color: #184f95;
 }
-/* The search glyph is grey like the placeholder. */
+/* The search glyph is grey like the placeholder (R-1513, R-1318). */
 :root[data-theme="light"] .settings-page-search > input::placeholder {
   color: var(--settings-muted);
 }
-/* White buttons with a #e6e6e6 rim, #e6e6e6 avatar. */
+/* R-设置-Account-浅色-W1164: white buttons with a #e6e6e6 rim, #e6e6e6 avatar. */
 :root[data-theme="light"] .settings-button {
   background: #fff;
   box-shadow: inset 0 0 0 1px #e6e6e6;
@@ -1295,8 +1319,9 @@
   box-shadow: none;
   color: #fff;
 }
-/* The light fills' hover, after the fills above (which would otherwise hold the
-   colour): the primary goes to neutral-750, the danger lightens to red-400. */
+/* The light fills' hover, after the fills above (which would otherwise hold
+   the colour): the primary goes to neutral-750, the danger lightens to
+   red-400 (live claude.ai bundle, 2026-10-16, c6a992d55 --cds-fill-*-hover). */
 :root[data-theme="light"] .settings-button.primary:hover:not(:disabled) {
   background: #2c2c2a;
 }
@@ -1308,7 +1333,7 @@
   border-color: #efefef;
 }
 
-/* Account → work type before a choice. */
+/* Account → work type before a choice (R-设置-Account-顶部: dimmed "Select"). */
 .settings-placeholder {
   color: var(--settings-muted);
 }
@@ -1380,8 +1405,7 @@
 .settings-search-pop .match {
   color: var(--link-text);
 }
-/* A row listed under its page, and the "+N more" line: indented past the page
-   icon. */
+/* A row listed under its page, and the "+N more" line: indented past the page icon (desktop bundle 2.31226.1). */
 .settings-search-pop > button.child,
 .settings-search-pop > button.more {
   padding-left: 36px;
@@ -1455,12 +1479,13 @@
   font-weight: 400;
 }
 
-/* Narrow windows: a plain #20201f sheet, at most 720 wide, 16px from every
-   window edge, no rim. Its title, page tabs and page scroll as one column with
-   24px padding (p-xl): the 22/28 title (weight 580), Close 32px at 16/16 from
-   the corner, a row of 32px pill tabs 12px under the title (selected: ghost
-   fill, radius 8; others muted), and the page 12px under them. No rail, no
-   search, no divider. */
+/* Narrow windows (below md, 768px; live claude.ai 2026-10-21 at 390, 740
+   and 767 wide): a plain #20201f sheet, at most 720 wide, 16px from every
+   window edge, no rim. Its title, page tabs and page scroll as one column
+   with 24px padding (p-xl): the 22/28 title (weight 580), Close 32px at
+   16/16 from the corner, a row of 32px pill tabs 12px under the title
+   (selected: ghost fill, radius 8; others muted), and the page 12px under
+   them. No rail, no search, no divider. */
 @media (max-width: 767.98px) {
   .settings-dialog,
   :root[data-surface="web"]:not([data-theme="light"]) .settings-dialog {
@@ -1626,8 +1651,9 @@
   }
 }
 
-/* List pages in a narrow window: the page runs 20px from the sheet's edge (the
-   sheet pads 24), its title row is not pinned and has no fill, 12px under the
+/* List pages in a narrow window (live claude.ai Settings → Skills at 740
+   wide, 2026-10-21): the page runs 20px from the sheet's edge (the sheet
+   pads 24), its title row is not pinned and has no fill, 12px under the
    tabs' 4px, and the search is a 32px icon until it is used. */
 @media (max-width: 767.98px) {
   .settings-page:has(.settings-list-page) {
@@ -1693,9 +1719,9 @@
   transition: none;
 }
 
-/* A Settings page whose data did not load: a footnote line in the secondary ink
-   over Try again, 8px apart, 8px above and below, in the Usage page's muted
-   colours. */
+/* A Settings page whose data did not load (Usage, Billing; live claude.ai
+   bundle, 2026-10-12): a footnote line in the secondary ink over Try again,
+   8px apart, 8px above and below, in the Usage page's muted colours. */
 .settings-load-error {
   display: flex;
   flex-direction: column;
@@ -1715,10 +1741,10 @@
   padding-inline-start: 24px;
 }
 
-/* Current web settings nav: w-53, measured 212px, from the md breakpoint up
-   like the rest of the two-column frame; below 768px the narrow single column
-   above applies (it used to start at 701px, which squeezed the page into the
-   212px column between 701 and 767). */
+/* Current web settings nav: w-53, measured 212px (2026-10-17), from the
+   md breakpoint up like the rest of the two-column frame; below 768px the
+   narrow single column above applies (it used to start at 701px, which
+   squeezed the page into the 212px column between 701 and 767). */
 @media (min-width: 768px) {
   :root[data-surface="web"] .settings-dialog {
     grid-template-columns: 212px minmax(0, 1fr);

@@ -68,11 +68,12 @@
     visibility: visible;
   }
 }
-/* The time beside the icons shows with the pointer or focus on the reply. Under
-   the newest reply's always-shown row it fades like a row does: in over 120ms
-   after the wait (focus: no wait), out over 60ms. Under an older reply the row
-   does the fading and the time follows it without a fade of its own: it goes
-   60ms late, the time the row takes to go, and comes at once. */
+/* The time beside the icons shows with the pointer or focus on the reply.
+   Under the newest reply's always-shown row it fades like a row does: in
+   over 120ms after the wait (focus: no wait), out over 60ms. Under an older
+   reply the row does the fading and the time follows it without a fade of
+   its own: it goes 60ms late, the time the row takes to go, and comes at
+   once (the original's reveal-on-hover child; desktop bundle 2.31226.1). */
 .mode-chat
   .assistant-message:is(:hover, :focus-within)
   .message-actions
@@ -130,7 +131,7 @@
   width: 32px;
   height: 32px;
 }
-/* 1.5s cycle, full 0–17%, back to the dot ring by 33%, out again from 87%. */
+/* S-0006: 1.5s cycle, full 0–17%, back to the dot ring by 33%, out again from 87%. */
 .chat-spinner path {
   stroke-width: 2.4;
   animation: chat-spoke 1.5s linear infinite;

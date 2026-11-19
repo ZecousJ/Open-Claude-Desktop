@@ -129,6 +129,9 @@ function fixture(t: test.TestContext) {
     setPolicy(value: typeof openPolicy) {
       policy = value;
     },
+    setStartupStatus(name: string, status: string) {
+      engine.mcpStartup.set(name, { status });
+    },
     setRpc(call: (method: string, params: unknown) => Promise<any>) {
       engine = { ...engine, state: { state: "ready" }, rpc: { call } };
     },
@@ -150,6 +153,111 @@ function fixture(t: test.TestContext) {
     },
   };
 }
+
+test("permission acknowledgement retries only the status read across engine restart", async (t) => {
+  const f = fixture(t);
+  f.stores[0].settings.mcpServers = { fixture: { command: "node" } };
+  let reads = 0,
+    writes = 0;
+  const update = f.configs[0].update.bind(f.configs[0]);
+  f.configs[0].update = (value) => {
+    writes++;
+    update(value);
+  };
+  f.setRpc(async () => {
+    if (++reads < 3) throw Error("The Codex engine is not connected.");
+    return { data: [{ name: "fixture", tools: { probe: { name: "probe" } } }] };
+  });
+  const result = await f.call(
+    "setConnectorToolPermission",
+    "fixture",
+    "probe",
+    "block",
+  );
+  assert.equal(writes, 1);
+  assert.equal(reads, 3);
+  assert.equal(
+    result.servers[0].toolList.find((x: any) => x.name === "probe").enabled,
+    false,
+  );
+});
+
+test("permission read retry cannot return another account's connector inventory", async (t) => {
+  const f = fixture(t);
+  f.stores[0].settings.mcpServers = { fixture: { command: "node" } };
+  const pending = deferred<any>();
+  f.setRpc(() => pending.promise);
+  const result = f.call(
+    "setConnectorToolPermission",
+    "fixture",
+    "probe",
+    "block",
+  );
+  const rejected = assert.rejects(
+    result,
+    /account changed|retired account|configuration or account changed/,
+  );
+  await f.switchAccount();
+  pending.reject(Error("The Codex engine is not connected."));
+  await rejected;
+  assert.deepEqual(f.stores[1].settings.mcpServers, {});
+});
+
+test("batch tool permissions commit all choices once and reject invalid batches atomically", async (t) => {
+  const f = fixture(t);
+  f.stores[0].settings.mcpServers = { fixture: { url: input.url } };
+  const file = f.configs[0],
+    update = file.update.bind(file);
+  let commits = 0;
+  file.update = (value) => {
+    commits++;
+    update(value);
+  };
+  await f.call("setConnectorToolPermissions", [
+    { name: "fixture", tool: "one", permission: "block" },
+    { name: "fixture", tool: "two", permission: "block" },
+    { name: "fixture", tool: "three", permission: "ask" },
+  ]);
+  assert.equal(commits, 1, "one menu action causes one config commit/restart");
+  assert.deepEqual(
+    (f.stores[0].settings.mcpServers.fixture as any).disabled_tools,
+    ["one", "two"],
+  );
+  const before = structuredClone(f.stores[0].settings.mcpServers);
+  for (const invalid of [
+    [
+      { name: "fixture", tool: "one", permission: "ask" },
+      { name: "missing", tool: "two", permission: "block" },
+    ],
+    [
+      { name: "fixture", tool: "one", permission: "ask" },
+      { name: "fixture", tool: "two", permission: "bogus" },
+    ],
+  ]) {
+    await assert.rejects(f.call("setConnectorToolPermissions", invalid));
+    assert.deepEqual(f.stores[0].settings.mcpServers, before);
+    assert.equal(commits, 1);
+  }
+  f.setPolicy({ ...openPolicy, approvalsAlwaysAllow: false });
+  await assert.rejects(
+    f.call("setConnectorToolPermissions", [
+      { name: "fixture", tool: "one", permission: "ask" },
+      { name: "fixture", tool: "two", permission: "allow" },
+    ]),
+    /administrator/,
+  );
+  assert.deepEqual(f.stores[0].settings.mcpServers, before);
+  assert.equal(commits, 1);
+  await f.switchAccount();
+  await assert.rejects(
+    f.call("setConnectorToolPermissions", [
+      { name: "fixture", tool: "one", permission: "ask" },
+    ]),
+    /no longer exists/,
+  );
+  assert.deepEqual(f.stores[0].settings.mcpServers, before);
+  assert.deepEqual(f.stores[1].settings.mcpServers, {});
+});
 
 test("actual add IPC rejects delayed account switch before credentials, config or tokens are written", async (t) => {
   const f = fixture(t),
@@ -189,6 +297,142 @@ test("actual add IPC permits same-owner commit with private clients and real per
   assert.match(config, /fixture.invalid/);
   assert.doesNotMatch(config, /synthetic-secret|synthetic-client/);
   assert.deepEqual(f.stores[1].settings.mcpServers, {});
+});
+
+test("static headers stay private across reads, renames, URL replacement, and removal", async (t) => {
+  const f = fixture(t);
+  const { name, url, displayName } = input;
+  const credentials = () => new ConnectorClients(f.stores[0].root);
+  const headers = {
+    authorization: "Key private-static",
+    "x-tenant-id": "private-tenant",
+  };
+  const added = await f.call("addCustomConnector", {
+    name,
+    url,
+    displayName,
+    staticAuth: true,
+    headers,
+  });
+  assert.doesNotMatch(JSON.stringify(added), /private-static|private-tenant/);
+  assert.doesNotMatch(
+    fs.readFileSync(f.configs[0].path, "utf8"),
+    /private-static|private-tenant/,
+  );
+  assert.deepEqual(credentials().get(name, url)?.headers, headers);
+  assert.equal(
+    fs.statSync(path.join(f.stores[0].root, "connector-clients.json")).mode &
+      0o777,
+    0o600,
+  );
+  assert.equal(
+    new ConnectorClients(f.stores[1].root).get(name, url),
+    undefined,
+  );
+  await assert.rejects(
+    f.call("connectConnector", name, "https://site.invalid/return"),
+    /uses request headers/,
+  );
+  await f.call("addCustomConnector", {
+    replaceName: name,
+    name,
+    url,
+    displayName: "Renamed",
+  });
+  assert.deepEqual(credentials().get(name, url)?.headers, headers);
+  const newUrl = "https://elsewhere.invalid/mcp";
+  await f.call("addCustomConnector", {
+    replaceName: name,
+    name,
+    url: newUrl,
+    displayName,
+  });
+  assert.equal(credentials().get(name, url), undefined);
+  assert.equal(credentials().get(name, newUrl), undefined);
+  await f.call("removeConnector", name);
+  await f.call("addCustomConnector", {
+    name,
+    url,
+    displayName,
+    staticAuth: true,
+    headers,
+  });
+  await f.call("removeConnector", name);
+  assert.equal(credentials().get(name, url), undefined);
+});
+
+test("rolling back a rejected connector add keeps another connector's saved headers", async (t) => {
+  const f = fixture(t);
+  const config = f.configs[0];
+  const firstStarted = deferred<void>();
+  const firstCommit = deferred<void>();
+  Object.defineProperty(config, "commitCustomConnector", {
+    value: async (next: Record<string, unknown>, assertCurrent: () => void) => {
+      if (Object.hasOwn(next, "first")) {
+        firstStarted.resolve();
+        return firstCommit.promise;
+      }
+      assertCurrent();
+      config.update(next);
+    },
+  });
+  const first = f.call("addCustomConnector", {
+    name: "first",
+    url: input.url,
+    staticAuth: true,
+    headers: { "x-api-key": "first-secret" },
+  });
+  await firstStarted.promise;
+  await f.call("addCustomConnector", {
+    name: "second",
+    url: input.url,
+    staticAuth: true,
+    headers: { "x-api-key": "second-secret" },
+  });
+  firstCommit.reject(Error("Save rejected"));
+  await assert.rejects(first, /Save rejected/);
+  const saved = new ConnectorClients(f.stores[0].root);
+  assert.equal(saved.get("first", input.url), undefined);
+  assert.equal(
+    saved.get("second", input.url)?.headers?.["x-api-key"],
+    "second-secret",
+  );
+});
+
+test("an older failed add cannot erase the same staged credential of a newer add", async (t) => {
+  const f = fixture(t);
+  const config = f.configs[0];
+  const started = [deferred<void>(), deferred<void>()];
+  const commits = [deferred<void>(), deferred<void>()];
+  let index = 0;
+  Object.defineProperty(config, "commitCustomConnector", {
+    value: async (next: Record<string, unknown>, assertCurrent: () => void) => {
+      const attempt = index++;
+      started[attempt].resolve();
+      await commits[attempt].promise;
+      assertCurrent();
+      config.update(next);
+    },
+  });
+  const credentials = {
+    name: input.name,
+    url: input.url,
+    staticAuth: true,
+    headers: { "x-api-key": "same-secret" },
+  };
+  const first = f.call("addCustomConnector", credentials);
+  await started[0].promise;
+  const second = f.call("addCustomConnector", credentials);
+  await started[1].promise;
+  commits[0].reject(Error("First save rejected"));
+  await assert.rejects(first, /retired/);
+  commits[1].resolve();
+  await second;
+  assert.equal(
+    new ConnectorClients(f.stores[0].root).get(input.name, input.url)
+      ?.headers?.["x-api-key"],
+    "same-secret",
+  );
 });
 
 test("actual add IPC detects same-profile ABA deactivation and late private rejection", async (t) => {
@@ -455,4 +699,26 @@ test("actual probe IPC cannot publish a delayed authentication challenge to a re
     }),
   );
   await assert.rejects(result, /retired/);
+});
+
+test("native refresh re-reads the app-server inventory and reports a failed connection", async (t) => {
+  const f = fixture(t);
+  const { name, url } = input;
+  f.stores[0].settings.mcpServers = { [name]: { url } };
+  let tool = "old";
+  let available = true;
+  f.setRpc(async (method) => {
+    assert.equal(method, "mcpServerStatus/list");
+    return { data: [{ name, serverInfo: available ? { name } : null,
+      authStatus: "unsupported", tools: available ? { [tool]: { name: tool } } : {} }] };
+  });
+  assert.deepEqual((await f.call("mcpServers")).servers[0].toolList.map((item: { name: string }) => item.name), ["old"]);
+  tool = "fresh";
+  f.setStartupStatus(name, "failed");
+  assert.equal(await f.call("refreshConnectorTools", name), true);
+  assert.equal((await f.call("mcpServers")).servers[0].state, "ready");
+  assert.deepEqual((await f.call("mcpServers")).servers[0].toolList.map((item: { name: string }) => item.name), ["fresh"]);
+  available = false;
+  await assert.rejects(f.call("refreshConnectorTools", name), /tools are unavailable/);
+  assert.deepEqual(f.tokenCalls, []);
 });

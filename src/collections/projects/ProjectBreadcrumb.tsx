@@ -3,7 +3,7 @@ import type { Project } from "../../../shared/types";
 import { formatText, t, useLocale } from "../../i18n";
 import { isEditEndKey } from "../../ui/ime";
 
-/** Entity crumb and inline edit. */
+/** Entity crumb and inline edit (live claude.ai bundle, 2026-10-14, c05e9d5d1 / shared-18). */
 export function ProjectBreadcrumb({
   project,
   onBack,

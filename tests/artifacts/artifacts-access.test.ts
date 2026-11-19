@@ -449,8 +449,8 @@ test("41: actual toolbar retains source order/geometry and Design is drawn only 
       ".artifacts-tools button",
     ),
   ];
-  // Search, Group by, List view, Filter, then New at the end (Design only with
-  // a destination).
+  // Live claude.ai, 2026-10-21: Search, Group by, List view, Filter, then
+  // New at the end (Design only with a destination).
   assert.deepEqual(
     all.map((button) => button.getAttribute("aria-label")),
     [

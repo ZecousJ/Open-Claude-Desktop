@@ -8,9 +8,10 @@ import "./knowledge-mcp.css";
 const looksLikeUrl = (value: string) => /^[a-z][\w+.-]*:\/\/\S+$/i.test(value);
 
 /**
- * A connected MCP server's resources for the project's knowledge: "Search
- * resources or paste URL"; a pasted URL is resolved through the server; picking
- * one adds it as a synced file.
+ * A connected MCP server's resources for the project's knowledge (live
+ * claude.ai bundle, 2026-10-14, cdeaafbfc Hn/Un/Nn): "Search resources or
+ * paste URL"; a pasted URL is resolved through the server; picking one adds
+ * it as a synced file.
  */
 export function KnowledgeMcpDialog({
   projectId,

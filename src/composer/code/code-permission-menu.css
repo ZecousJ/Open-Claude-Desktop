@@ -9,7 +9,8 @@
   padding: 0 6px;
   border-radius: 5px;
 }
-/* The mode's glyph and the muted 12px caret. */
+/* The mode's glyph and the muted 12px caret (live claude.ai bundle,
+   2026-10-14: CaretDown customSize 12, text-muted). */
 .code-permission-glyph {
   flex: none;
 }
@@ -39,7 +40,8 @@
   box-shadow: 0 12px 28px #0006;
   color: var(--text);
   font:
-    13px/17px -apple-system,
+    13px/17px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   outline: none;
@@ -50,7 +52,8 @@
   padding: 1px 0 0 8px;
   color: #8c8c8b;
   font:
-    12px/20px -apple-system,
+    12px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -68,7 +71,7 @@
   color: inherit;
   text-align: left;
   /* Rows appear highlighted at once and have no pressed look: the original's
-     menu rows. */
+     menu rows (desktop bundle 2.31226.1 static CSS/JS). */
   transition: none;
 }
 .code-permission-menu button:hover,
@@ -85,7 +88,8 @@
 }
 .code-permission-text strong {
   font:
-    400 13px/17px -apple-system,
+    400 13px/17px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   white-space: nowrap;
@@ -93,7 +97,8 @@
 .code-permission-text small {
   color: #908f8c;
   font:
-    12px/17px -apple-system,
+    12px/17px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   white-space: nowrap;

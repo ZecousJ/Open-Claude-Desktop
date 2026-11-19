@@ -12,8 +12,8 @@
   -webkit-app-region: drag;
   pointer-events: none;
 }
-/* Windows caption buttons: 46 wide, 36 tall, thin 10px glyphs; What's new sits
-   23px left of them. */
+/* Windows caption buttons: 46 wide, 36 tall, thin 10px glyphs (R-1289,
+   R-0004, Windows 1x); What's new sits 23px left of them. */
 .window-controls {
   position: fixed;
   z-index: 10;
@@ -40,19 +40,19 @@
 .window-controls button {
   color: var(--text);
 }
-.window-controls svg:not([data-icon]) {
+.window-controls svg:not([data-anthropicon]) {
   fill: none;
   stroke: currentColor;
   stroke-width: 1;
 }
-/* The link's line is centred with the buttons, 18px down. */
+/* R-0004 (Windows): the link's line is centred with the buttons, 18px down. */
 .app:not(.darwin) .whats-new {
   top: 9px;
   right: 161px;
 }
-/* Use incognito: the ghost's 16px glyph is centred 164.5px from the right edge
-   (10.5px clear of the three caption buttons) and 17.5px from the top, in the
-   caption row. */
+/* Use incognito (R-0001, R-0002 at W1802, 1x): the ghost's 16px glyph is
+   centred 164.5px from the right edge (10.5px clear of the three caption
+   buttons) and 17.5px from the top, in the caption row. */
 .app:not(.darwin):not(.web) .incognito-button {
   top: 1.5px;
   right: 148.5px;

@@ -1,11 +1,12 @@
 /*
- * "Trust this workspace?": the confirmation dialog's title, description and
- * buttons are Claudex's `.modal.confirm`; under the description a scrolling
- * details block whose parts are 12px apart (mt-3): the folder in the
- * interface's monospace at the code size, then 12/15px muted footnotes, then
- * "Execution allowed by:" with the files on a 5%-ink plate (bg-alpha-1), 5px
- * corners, 6px padding (p-sm), at most 128px tall (max-h-32), lines 3px apart
- * (gap-0.75). Sizes: --cds-font-size-footnote .75rem / --cds-leading-footnote
+ * "Trust this workspace?" (live claude.ai bundle, 2026-10-12, c165c93f1):
+ * the confirmation dialog's title, description and buttons are Claudex's
+ * `.modal.confirm`; under the description a scrolling details block whose
+ * parts are 12px apart (mt-3): the folder in the interface's monospace at
+ * the code size, then 12/15px muted footnotes, then "Execution allowed by:"
+ * with the files on a 5%-ink plate (bg-alpha-1), 5px corners, 6px padding
+ * (p-sm), at most 128px tall (max-h-32), lines 3px apart (gap-0.75).
+ * Sizes: --cds-font-size-footnote .75rem / --cds-leading-footnote
  * .9375rem, --cds-font-size-code .75rem / --cds-leading-code 1.0625rem.
  */
 /* -mx-pad-xl px-xl: the focus ring spans the dialog's width. */
@@ -45,7 +46,7 @@
 .workspace-trust-note {
   overflow-wrap: anywhere;
 }
-/* "on {host}": mt-1, a muted footnote, break-all. */
+/* "on {host}" (c165c93f1 :270-283): mt-1, a muted footnote, break-all. */
 .workspace-trust-host {
   margin: 4px 0 0;
   color: var(--text-muted);

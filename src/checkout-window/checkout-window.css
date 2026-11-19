@@ -1,0 +1,45 @@
+/*
+ * The top-up window's page: the app's sans stack and its error colour for
+ * the checkout (checkout-page.css draws the page itself).
+ */
+:root {
+  --danger: #ec7e7e;
+  color-scheme: dark;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+:root[data-theme="light"] {
+  --danger: #8e2626;
+  color-scheme: light;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #151515;
+}
+:root[data-theme="light"] body {
+  background: #ffffff;
+}
+.error-text {
+  color: var(--danger);
+}
+.checkout-window-message {
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  color: #898781;
+  font-size: 14px;
+}

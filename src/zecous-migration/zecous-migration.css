@@ -1,0 +1,190 @@
+/*
+ * The ZecousAI move dialog (ZecousMigrationDialog.tsx), measured on the
+ * owner's capture of claude.ai's gift dialog (dark, 2x): a 520px card with
+ * 15px corners and 24px padding on the popover surface; the gift 46×56 in
+ * the top left, the close button 31px from the top right; a 25/32 serif
+ * title; text at 15/22 in #c2c0b6; numbered points 36px apart with 24px
+ * rings (#582619, ink #e17456) 16px before the text; the fine print at 13/18
+ * in #8f8d86; a hairline above one white 32px button with 8px corners at the
+ * bottom right.
+ */
+.zecous-migration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 50%);
+  backdrop-filter: blur(2px);
+  /* Motion: the dialog's (80-dialogs-responsive.css, desktop bundle
+     2.31226.1), 200ms in and out. */
+  animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.zecous-migration-overlay > .zecous-migration {
+  animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
+}
+.zecous-migration {
+  position: relative;
+  box-sizing: border-box;
+  width: 520px;
+  max-width: 100%;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 28px 24px 24px;
+  border-radius: 15px;
+  background: #262624;
+  color: var(--text);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 10%),
+    0 12px 40px rgb(0 0 0 / 40%);
+}
+.zecous-migration-gift {
+  display: block;
+  color: var(--text);
+}
+.zecous-migration-gift .shade {
+  fill: #4a4a47;
+}
+.zecous-migration-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: #c2c0b6;
+}
+.zecous-migration-close:hover:not(:disabled) {
+  background: rgb(255 255 255 / 8%);
+  color: #f0efec;
+}
+.zecous-migration h2 {
+  margin: 34px 0 12px;
+  font:
+    500 25px/32px "Claudex Reference Serif",
+    ui-serif,
+    "Claudex Serif",
+    Georgia,
+    "Songti SC",
+    serif;
+  letter-spacing: -0.2px;
+}
+.zecous-migration-text,
+.zecous-migration-amount {
+  margin: 0 0 16px;
+  color: #c2c0b6;
+  font-size: 15px;
+  line-height: 22px;
+}
+.zecous-migration-amount {
+  color: #f0efec;
+}
+.zecous-migration-points {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.zecous-migration-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  color: #f0efec;
+  font-size: 15px;
+  line-height: 22px;
+}
+.zecous-migration-number {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: -1px;
+  border-radius: 50%;
+  background: #582619;
+  color: #e17456;
+  font-size: 13px;
+  line-height: 1;
+}
+.zecous-migration-note {
+  margin: 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  color: #8f8d86;
+  font-size: 13px;
+  line-height: 18px;
+}
+.zecous-migration-error {
+  margin: 12px 0 0;
+  color: #e5866b;
+  font-size: 13px;
+  line-height: 18px;
+}
+.zecous-migration-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.zecous-migration-confirm {
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  color: #141413;
+  font-size: 14px;
+  font-weight: 500;
+}
+.zecous-migration-confirm:hover:not(:disabled) {
+  background: #e8e6df;
+}
+.zecous-migration-confirm:disabled {
+  opacity: 0.6;
+}
+:root[data-theme="light"] .zecous-migration {
+  background: #fff;
+  color: #141413;
+  box-shadow:
+    0 0 0 1px rgb(10 10 10 / 10%),
+    0 12px 40px rgb(0 0 0 / 24%);
+}
+:root[data-theme="light"] .zecous-migration-gift {
+  color: #141413;
+}
+:root[data-theme="light"] .zecous-migration-gift .shade {
+  fill: #d8d6cf;
+}
+:root[data-theme="light"] :is(.zecous-migration-text, .zecous-migration-close) {
+  color: #5e5d59;
+}
+:root[data-theme="light"]
+  :is(.zecous-migration-amount, .zecous-migration-points li) {
+  color: #141413;
+}
+:root[data-theme="light"] .zecous-migration-number {
+  background: #fbe3d9;
+  color: #c2552f;
+}
+:root[data-theme="light"] .zecous-migration-note {
+  border-bottom-color: rgb(10 10 10 / 10%);
+  color: #73726c;
+}
+:root[data-theme="light"] .zecous-migration-confirm {
+  background: #141413;
+  color: #fff;
+}
+@media (max-width: 640px) {
+  .zecous-migration {
+    padding: 22px 18px 18px;
+  }
+  .zecous-migration h2 {
+    font-size: 22px;
+    line-height: 28px;
+  }
+}

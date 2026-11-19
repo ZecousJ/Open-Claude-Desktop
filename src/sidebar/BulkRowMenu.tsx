@@ -1,7 +1,7 @@
 import { useContext, type RefObject } from "react";
 import { AppContext } from "../app/AppContext";
 import { formatText } from "../i18n";
-import { AppIcon, type AppIconName } from "../ui/app-icon";
+import { Anthropicon, type AnthropiconName } from "../ui/anthropicons";
 import type { Conversation } from "../../shared/types";
 import { Menu, type MenuEntry, type MenuPosition } from "../ui/Menu";
 import { rowMenuWidth } from "./RowMenu";
@@ -15,11 +15,12 @@ import {
 } from "./grouping";
 
 /**
- * The actions a menu over several selected rows offers: each runs on the rows
- * it applies to and says how many, so a mixed selection offers both halves: Pin
- * {count} and Unpin {count}, Mark {count} as read and Mark {count} as unread,
- * then Archive {count} and Delete {count}. The single-key hints (P, U, A, D)
- * belong to the first of each pair.
+ * The actions a menu over several selected rows offers (live claude.ai
+ * bundle, 2026-10-16, cf259e6ae-BIEifsgs.js): each runs on the rows it
+ * applies to and says how many, so a mixed selection offers both halves:
+ * Pin {count} and Unpin {count}, Mark {count} as read and Mark {count} as
+ * unread, then Archive {count} and Delete {count}. The single-key hints
+ * (P, U, A, D) belong to the first of each pair.
  */
 export function bulkEntries(
   rows: readonly Conversation[],
@@ -56,7 +57,7 @@ export function bulkEntries(
   const entry = (
     list: Conversation[],
     label: string,
-    icon: AppIconName,
+    icon: AnthropiconName,
     act: (c: Conversation) => void,
     hint?: string,
     danger?: boolean,
@@ -66,7 +67,7 @@ export function bulkEntries(
           {
             label: formatText(label, { count: list.length }),
             noTranslate: true,
-            icon: <AppIcon name={icon} size={20} />,
+            icon: <Anthropicon name={icon} size={20} />,
             ...(hint ? { hint } : {}),
             ...(danger ? { danger } : {}),
             onSelect: run(list, act),
@@ -127,7 +128,7 @@ export function bulkEntries(
             noTranslate: true,
             danger: true,
             hint: "D",
-            icon: <AppIcon name="Trash" size={20} />,
+            icon: <Anthropicon name="Trash" size={20} />,
             onSelect: () => {
               actions.onDeleteMany!(rows.map((c) => c.id));
               done();
@@ -139,8 +140,9 @@ export function bulkEntries(
 }
 
 /**
- * Move {count} to group: a row per group, checked when every selected row is in
- * it, then Ungrouped when any of them is in one, then New group… (a rule before
+ * Move {count} to group (live claude.ai bundle, 2026-10-14, shared-18
+ * moveCountTo): a row per group, checked when every selected row is in it,
+ * then Ungrouped when any of them is in one, then New group… (a rule before
  * it only when Ungrouped is not shown), as a single row's submenu.
  */
 function moveToGroups(
@@ -250,7 +252,7 @@ export default function BulkRowMenu({
   return (
     <Menu
       label={`Options for ${rows.length} selected`}
-      // The web shows the single-key hints too.
+      // The web shows the single-key hints too (live claude.ai, 2026-10-20).
       showRootHints
       className="row-menu"
       entries={entries}

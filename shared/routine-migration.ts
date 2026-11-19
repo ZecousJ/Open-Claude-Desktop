@@ -162,12 +162,12 @@ export function routineMigrationReasons(
     reasons.push("pattern_approvals");
   const repeat = repeatOf(task);
   if (repeat.kind === "cron") {
-    const minute = repeat.expression.trim().split(/\s+/)[0];
-    if (minute && /[*/,-]/.test(minute)) reasons.push("sub_hourly");
+    const fields = repeat.expression.trim().split(/\s+/);
+    if (/^(?:CRON_TZ|TZ)=/.test(fields[0])) reasons.push("custom_cron");
+    else if (/[*/,-]/.test(fields[0])) reasons.push("sub_hourly");
     else if (cronProblem(repeat.expression)) reasons.push("custom_cron");
     else {
       const parsed = parseCron(repeat.expression);
-      const fields = repeat.expression.trim().split(/\s+/);
       const monthDays = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
       if (
         (fields[2] !== "*" && fields[4] !== "*") ||

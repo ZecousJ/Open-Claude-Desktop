@@ -8,8 +8,9 @@ const conversational = new Set(["agentMessage", "reasoning", "userMessage"]);
 
 /**
  * Whether a task has been done here yet: until then every request is the
- * session's first task, never a new one, so a greeting answered with a question
- * never brings the offer.
+ * session's first task, never a new one (desktop 2.37337.1: scope
+ * "first_task" until a task is wrapped up here), so a greeting answered
+ * with a question never brings the offer (owner, 2026-10-21).
  */
 export function workDone(conversation: Conversation) {
   return conversation.turns.some(
@@ -19,8 +20,8 @@ export function workDone(conversation: Conversation) {
   );
 }
 
-// Claude offering more work, or asking the person: never a prompt they would
-// send.
+// Claude offering more work, or asking the person: never a prompt they
+// would send (owner, 2026-10-21: "需要我再调整…吗？" was suggested).
 const offerPattern =
   /(需要我|要不要我|要我|我可以|我来|我再|是否需要|需不需要)[^。！]*[吗？?]\s*$|^\s*(do you want me|want me to|would you like me|should i|shall i|let me know)\b/i;
 
@@ -43,7 +44,7 @@ export function inPersonsVoice(prompt: string, reply: string) {
   return !(said.length >= 8 && squeeze(reply).includes(said));
 }
 
-/** Session state and next-prompt bindings. */
+/** Session state and next-prompt bindings (live claude.ai bundle, 2026-10-14, c71860c77-BUhAcWeF.js). */
 export class CodeSessionAssistance {
   private pending = new Map<string, AbortController>();
   private checking = new Set<string>();
@@ -56,7 +57,7 @@ export class CodeSessionAssistance {
     private changed: (conversation: Conversation) => void,
   ) {}
 
-  /** Conservative new_task scope. */
+  /** Conservative new_task scope (desktop 2.37337.1, index.chunk-DPv6qSYD.js). */
   async unrelatedTask(conversation: Conversation, text: string) {
     if (
       conversation.mode !== "code" ||

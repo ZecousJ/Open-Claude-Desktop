@@ -8,7 +8,7 @@ import { Modal } from "../ui/Controls";
 import { attachIssue } from "./attach-issue";
 import "./import-issue.css";
 
-/** The search waits this long after typing. */
+/** The search waits this long after typing (desktop bundle 2.31226.1). */
 const searchDelay = 300;
 
 /**
@@ -28,9 +28,10 @@ const problems: Record<GitHubProblem, string> = {
 };
 
 /**
- * Import GitHub issue: a dialog with a search box and the repository's open
- * issues, the ones the person is involved with until they type. Choosing one
- * hands it to the composer, which attaches it to the next message.
+ * Import GitHub issue (desktop bundle 2.31226.1): a dialog with a search box
+ * and the repository's open issues, the ones the person is involved with
+ * until they type. Choosing one hands it to the composer, which attaches
+ * it to the next message.
  */
 export default function ImportIssueDialog({
   repository,

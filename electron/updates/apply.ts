@@ -1,10 +1,10 @@
 /**
- * Starts the helper that installs the staged update once this process has
- * exited. The staged file is verified again first; nothing unverified is ever
- * installed. No Electron imports.
+ * Starts the helper that installs the staged update once this process exits.
+ * App packs were already extracted and validated during staging.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { macAppBundle } from "../../shared/app-update";
 import { fileSha256 } from "./download";
@@ -21,9 +21,11 @@ import {
   macApplyScript,
   windowsApplyCommand,
   windowsApplyScript,
+  windowsHiddenCommand,
   windowsAppPackScript,
   windowsTaskLaunchCommand,
 } from "./scripts";
+import { preparedWindowsAppPack } from "./windows-pack";
 
 export interface InstallOptions {
   /** The updates folder the staged file is in. */
@@ -36,6 +38,7 @@ export interface InstallOptions {
   pid: number;
   /** process.execPath of the running app. */
   execPath: string;
+  currentVersion?: string;
   platform?: NodeJS.Platform;
   env?: NodeJS.ProcessEnv;
   spawnImpl?: typeof spawn;
@@ -56,24 +59,30 @@ export function installTarget(
 }
 
 /**
- * Checks the staged file, counts the attempt and starts the detached helper.
- * Throws (and starts nothing) when the file changed or the app's folder
- * can't be written; the attempt is counted in the second case.
+ * Checks the staged payload and starts the detached helper.
+ * The Windows app pack helper counts attempts once it owns the target.
  */
 export async function startInstall(options: InstallOptions) {
   const { dir, staged } = options;
   const platform = options.platform ?? process.platform;
-  if ((await fileSha256(staged.file)) !== staged.sha256)
-    throw new Error(
-      "The downloaded update changed on disk; it won't be installed.",
-    );
   const target = installTarget(options.execPath, platform);
-  // The attempt counts before the folder is checked: an install that cannot
-  // even start still shows "Relaunch to retry update" at the next start.
-  writeStaged(dir, { ...staged, attempts: staged.attempts + 1 });
-  if (platform === "darwin")
-    fs.accessSync(path.dirname(target), fs.constants.W_OK);
-  fs.rmSync(applyResultFile(dir), { force: true });
+  if (staged.kind === "win-app") {
+    if (
+      !staged.prepared ||
+      staged.sourceVersion !== options.currentVersion ||
+      !preparedWindowsAppPack(target, staged.prepared)
+    )
+      throw new Error("The app pack isn't ready to install.");
+  } else {
+    if ((await fileSha256(staged.file)) !== staged.sha256)
+      throw new Error(
+        "The downloaded update changed on disk; it won't be installed.",
+      );
+    writeStaged(dir, { ...staged, attempts: staged.attempts + 1 });
+    if (platform === "darwin")
+      fs.accessSync(path.dirname(target), fs.constants.W_OK);
+    fs.rmSync(applyResultFile(dir), { force: true });
+  }
   const args = {
     pid: options.pid,
     file: staged.file,
@@ -84,8 +93,13 @@ export async function startInstall(options: InstallOptions) {
     version: staged.version,
     stagedRecord: stagedRecordFile(dir),
     exeName: path.win32.basename(options.execPath),
+    prepared: staged.kind === "win-app" ? staged.prepared : undefined,
+    currentVersion: options.currentVersion,
   };
   let command: { command: string; args: string[] };
+  const windows = staged.kind === "win-nsis" || staged.kind === "win-app";
+  const unique = windows ? randomUUID() : undefined;
+  const systemRoot = (options.env ?? process.env).SystemRoot;
   if (staged.kind === "mac-zip") {
     const script = path.join(dir, "install-update.sh");
     fs.writeFileSync(script, macApplyScript, { mode: 0o700 });
@@ -99,16 +113,12 @@ export async function startInstall(options: InstallOptions) {
       exePath: options.execPath,
     });
   } else {
-    const script = path.join(dir, "install-update.ps1");
+    const script = path.join(dir, `install-update-${unique}.ps1`);
     fs.writeFileSync(
       script,
       staged.kind === "win-app" ? windowsAppPackScript : windowsApplyScript,
     );
-    command = windowsApplyCommand(
-      script,
-      args,
-      (options.env ?? process.env).SystemRoot,
-    );
+    command = windowsApplyCommand(script, args, systemRoot);
   }
   const stderr = fs.openSync(
     path.join(dir, "install-update.stderr.log"),
@@ -118,21 +128,24 @@ export async function startInstall(options: InstallOptions) {
   // Windows: through a scheduled task, so the helper outlives Claudex's job
   // (scripts.ts windowsTaskLaunchCommand); started directly only when the
   // Task Scheduler can't take it.
-  if (staged.kind === "win-nsis" || staged.kind === "win-app") {
+  if (windows) {
     const launch = windowsTaskLaunchCommand(
       command,
-      `Claudex Update ${options.pid}`,
-      (options.env ?? process.env).SystemRoot,
+      `Claudex Update ${options.pid} ${unique}`,
+      systemRoot,
     );
     try {
       const code = await new Promise<number | null>((resolve, reject) => {
         const child = (options.spawnImpl ?? spawn)(
           launch.command,
           launch.args,
-          { stdio: ["ignore", "ignore", stderr], windowsHide: true },
+          { stdio: ["ignore", "ignore", "pipe"], windowsHide: true },
+        );
+        child.stderr?.on("data", (chunk: Buffer) =>
+          fs.writeSync(stderr, chunk),
         );
         child.once("error", reject);
-        child.once("exit", resolve);
+        child.once("close", resolve);
       });
       if (code === 0) {
         fs.closeSync(stderr);
@@ -141,6 +154,7 @@ export async function startInstall(options: InstallOptions) {
     } catch {
       // Started directly below.
     }
+    command = windowsHiddenCommand(command, systemRoot);
   }
   try {
     const child = (options.spawnImpl ?? spawn)(command.command, command.args, {

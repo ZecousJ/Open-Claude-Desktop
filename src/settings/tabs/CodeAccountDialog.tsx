@@ -3,7 +3,7 @@ import { api } from "../../desktop-api";
 import { Spinner } from "../../ui/Spinner";
 import { Button, Row, SettingsModal, Toggle } from "../controls";
 
-/** Confirmation and account toggles. */
+/** Confirmation and account toggles (live claude.ai bundle, 2026-10-14, c71860c77-BUhAcWeF.js). */
 export default function CodeAccountDialog({
   kind,
   onClose,

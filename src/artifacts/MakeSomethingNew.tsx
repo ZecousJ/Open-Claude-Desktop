@@ -1,12 +1,13 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { ArtifactOutputKind } from "../../shared/artifact-output";
 import { t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { IconButton } from "../ui/Controls";
 import { reducedMotion } from "../ui/page-fade";
 import { TemplateArtwork } from "./TemplateArtwork";
 
-/** The new artifact kinds, with the New menu's glyphs. */
+/** The new artifact kinds, with the New menu's glyphs (live claude.ai,
+ * 2026-10-21: File, Slides, Palette, ChartLine). */
 export const makeTemplates = [
   {
     kind: "docs" as const,
@@ -40,8 +41,9 @@ export const makeTemplates = [
 const templates = makeTemplates;
 
 /**
- * Which ends of the template strip are scrolled out of view: a fade covers each
- * hidden end and a round caret sits over it.
+ * Which ends of the template strip are scrolled out of view (live claude.ai,
+ * 2026-10-21, the Artifacts page's template row): a fade covers each hidden
+ * end and a round caret sits over it.
  */
 function useStripOverflow(row: React.RefObject<HTMLUListElement | null>) {
   const [ends, setEnds] = useState({ left: false, right: false });
@@ -141,14 +143,14 @@ export function MakeSomethingNew({
         {ends.left && (
           <span className="artifacts-make-scroll left">
             <IconButton label="Scroll left" onClick={() => step(-1)}>
-              <AppIcon name="CaretLeft" size={20} />
+              <Anthropicon name="CaretLeft" size={20} />
             </IconButton>
           </span>
         )}
         {ends.right && (
           <span className="artifacts-make-scroll right">
             <IconButton label="Scroll right" onClick={() => step(1)}>
-              <AppIcon name="CaretRight" size={20} />
+              <Anthropicon name="CaretRight" size={20} />
             </IconButton>
           </span>
         )}

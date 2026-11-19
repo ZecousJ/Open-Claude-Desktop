@@ -3,43 +3,59 @@
  * requests to the service's announcement endpoints with the session's token.
  */
 import {
-  announcementsFrom,
-  type AnnouncementAction,
+  pendingAnnouncementsFrom,
+  popupAnnouncementsPath,
+  serviceAnnouncementsFrom,
+  serviceAnnouncementsPath,
   type AnnouncementsAPI,
+  type OfficialAnnouncements,
 } from "../../shared/announcements-api";
+import { apiValue } from "../../shared/web-client/errors";
 import type { WebTransport } from "../../shared/web-client/transport";
 
-type Method = (...args: any[]) => Promise<unknown>;
-
-/** The value of the service's `{code, data}` answer. */
-function data(body: unknown): unknown {
-  const wrapped = body as { data?: unknown } | undefined;
-  return wrapped && typeof wrapped === "object" && "data" in wrapped
-    ? wrapped.data
-    : body;
-}
+const servicePath = `/api/v1${serviceAnnouncementsPath}`;
+const popupPath = `/api/v1${popupAnnouncementsPath}`;
+type AnnouncementTransport = Pick<WebTransport, "json">;
 
 export function createAnnouncementMethods(
-  transport: Pick<WebTransport, "json">,
-): { [K in keyof AnnouncementsAPI]: Method } {
+  transport: AnnouncementTransport,
+): AnnouncementsAPI {
+  const { pending, close } = createOfficialAnnouncements(transport);
   return {
-    pendingAnnouncements: async () => {
-      try {
-        const answer = data(
-          await transport.json("/api/v1/claudex/announcements/pending"),
-        ) as { items?: unknown } | undefined;
-        return announcementsFrom(answer?.items);
-      } catch {
-        // The pop-up is a courtesy: a service that can't answer shows none.
-        return [];
-      }
+    pendingAnnouncements: () => pending().catch(() => []),
+    closeAnnouncement: close,
+  };
+}
+
+export function createOfficialAnnouncements(
+  transport: AnnouncementTransport,
+): OfficialAnnouncements {
+  return {
+    notices: async () => {
+      const body = apiValue(200, await transport.json(servicePath));
+      return serviceAnnouncementsFrom(body);
     },
-    closeAnnouncement: async (id: number, action: AnnouncementAction) => {
-      await transport.json(`/api/v1/claudex/announcements/${id}/read`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
-      });
+    pending: async () => {
+      const body = apiValue(200, await transport.json(`${popupPath}/pending`));
+      return pendingAnnouncementsFrom(body);
+    },
+    markRead: async (id) => {
+      apiValue(
+        200,
+        await transport.json(`${servicePath}/${encodeURIComponent(id)}/read`, {
+          method: "POST",
+        }),
+      );
+    },
+    close: async (id, action) => {
+      apiValue(
+        200,
+        await transport.json(`${popupPath}/${id}/read`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        }),
+      );
     },
   };
 }

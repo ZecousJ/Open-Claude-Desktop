@@ -80,6 +80,9 @@ function setup(t: any) {
   };
   const conversations: Handlers = new Map();
   registerConversationHandlers((name, fn) => conversations.set(name, fn), {
+    accountActivationIdentity: {},
+    accountRetiring: false,
+    activeAccount: { id: "inert-account" },
     store,
     engine: engine as never,
     replyFeedback: { deleteConversation() {} } as never,

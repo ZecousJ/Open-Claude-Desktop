@@ -1,5 +1,5 @@
 import { Square, ChevronRight } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { Item } from "../../../shared/types";
 import { itemIsRunning } from "../../../shared/activity";
 import { ActivityMark } from "../TurnActivity";
@@ -28,6 +28,9 @@ import {
   codeExecutionLabel,
 } from "../../composer/code/code-execution-label";
 import { McpResourceLinks } from "./McpResourceLinks";
+import { isMemoryTool } from "./memory-tool-kind";
+
+const MemoryToolView = lazyPiece(() => import("./MemoryToolView"), "MemoryToolView");
 
 type Content =
   | { type: "text"; text: string }
@@ -96,6 +99,12 @@ export function McpToolView({
   if (needsInput)
     return <GenericMcpToolView item={item} step={step} needsInput />;
   if (isWebFetch(item)) return <WebFetchRow item={item} />;
+  if (isMemoryTool(item))
+    return (
+      <Suspense fallback={null}>
+        <MemoryToolView item={item} />
+      </Suspense>
+    );
   // Claudex's own computer-use server has its own rows (R10).
   if (item.server === computerUseServerName)
     return <ComputerUseToolView item={item} />;
@@ -128,7 +137,7 @@ function GenericMcpToolView({
       : undefined;
   const name = [item.server, item.tool].filter(Boolean).join(" · ") || "Tool";
   // A finished call is a plain grey row, "Used Claude Docs: Edit doc ›", with
-  // no icon.
+  // no icon (single-agent-user-activity-001, R-0718).
   const title = needsInput
     ? t("Needs your input")
     : running
@@ -159,7 +168,7 @@ function GenericMcpToolView({
           {running ? (
             <ActivityMark phase="tools" />
           ) : failed ? (
-            <AppIcon name="WarningCircle" size={15} />
+            <Anthropicon name="WarningCircle" size={15} />
           ) : stopped ? (
             <Square size={13} />
           ) : null}

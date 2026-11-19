@@ -74,9 +74,9 @@ export class DeviceTrustStore {
         !saved.clients.every((client) => this.validSavedClient(client))
       )
         throw new Error("Invalid saved device access policy.");
-      // A renewed link id: the policy carries over, the trusted devices do not
-      // (they verified the old id), so each one is approved again rather than
-      // every call failing.
+      // A renewed link id (device-identity.ts): the policy carries over, the
+      // trusted devices do not (they verified the old id), so each one is
+      // approved again rather than every call failing.
       if (saved.deviceId !== deviceId)
         saved = { ...saved, deviceId, clients: [] };
     } catch (error) {

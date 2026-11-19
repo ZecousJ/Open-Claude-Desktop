@@ -4,7 +4,7 @@ import { api } from "../../desktop-api";
 import { AppContext } from "../../app/AppContext";
 import { GithubMark } from "../../ui/GithubMark";
 import { chooseCodeRepository } from "../../composer/code-repository";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { notifyGitHubConnectionChanged } from "../../github/connection-events";
 import { useHost } from "../../host/HostContext";
 import { formatText, useT } from "../../i18n";
@@ -140,7 +140,7 @@ export function GitHubConnectionDetail({ onBack }: { onBack: () => void }) {
         <div className="github-connection-account">
           <div className="github-connection-account-identity">
             {status.connected && (
-              <AppIcon
+              <Anthropicon
                 name="CheckCircleFilled"
                 size={24}
                 className="github-connection-success"

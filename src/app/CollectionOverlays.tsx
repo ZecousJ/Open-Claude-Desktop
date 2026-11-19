@@ -27,9 +27,9 @@ const SearchPalette = lazyPiece(
 );
 
 /**
- * ⌘K: search over conversations, projects, routines and artifacts, and Compose,
- * which starts a new chat, task or session through the composer's own send once
- * the new draft holds the message.
+ * ⌘K: search over conversations, projects, routines and artifacts, and
+ * Compose, which starts a new chat, task or session through the composer's
+ * own send (WP4a's `sendDraft`) once the new draft holds the message.
  */
 export function SearchOverlay() {
   const app = useApp();
@@ -74,8 +74,9 @@ export function SearchOverlay() {
     }),
     [app.listed, snapshot.projects, snapshot.approvals, artifacts],
   );
-  // What is typed between ⌘K and the palette's first paint (its code loads the
-  // first time) goes into its search field, not where the focus was.
+  // What is typed between ⌘K and the palette's first paint (its code loads
+  // the first time) goes into its search field, not where the focus was
+  // (live claude.ai bundle, 2026-10-12: the palette's pre-open buffer).
   const open = search !== null;
   useEffect(() => {
     if (!open) return;
@@ -311,8 +312,8 @@ export function ProjectEditorOverlay() {
           if (assignee) {
             await moveProjectChats(app, [assignee], saved);
           }
-          // A new project opens once it is made; an edited one stays where it
-          // is.
+          // A new project opens once it is made (live claude.ai: Create
+          // project goes to /project/<id>); an edited one stays where it is.
           if (!existed && !assignee) {
             requestProject(saved.id);
             app.setPage("projects");

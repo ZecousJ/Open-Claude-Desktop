@@ -1,8 +1,9 @@
 import type { HostInfo } from "../../shared/host";
 
 /**
- * The web app's sidebar width before the account's setting is known (the first
- * paint, src/boot): the default width, 288px.
+ * The web app's sidebar width before the account's setting is known (the
+ * first paint, src/boot): the default width, 288px (the live claude.ai
+ * bundle's sidebar default; the reference measured 285 CSS px at s = 1.142).
  */
 export const webSidebarWidth = 288;
 
@@ -17,10 +18,10 @@ export function hostClasses(host: HostInfo, platform: string): string {
 }
 
 /**
- * The sidebar width in px: the setting, or a drag preview of the resize handle.
- * The web follows it too, as claude.ai's web sidebar resizes and the collapse
- * line follows the width; it was fixed at 288 while its handle saved a width
- * nothing used.
+ * The sidebar width in px: the setting, or a drag preview of the resize
+ * handle. The web follows it too, as claude.ai's web sidebar resizes and the
+ * collapse line follows the width (live claude.ai bundle, 2026-10-12); it
+ * was fixed at 288 while its handle saved a width nothing used.
  */
 export function sidebarWidth(
   _host: HostInfo,

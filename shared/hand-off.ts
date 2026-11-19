@@ -2,7 +2,7 @@ import type { Turn } from "./types";
 import "./agent-api";
 
 /**
- * Hand off to a new session. In the reference design Claude moves
+ * Hand off to a new session. In the desktop bundle (2.31226.1) Claude moves
  * the task it is in the middle of into a session of its own
  * (`hand_off_to_session`: a title and what is left to do, "Handing off");
  * Claudex's agent has no such tool, so the person asks for it (the context

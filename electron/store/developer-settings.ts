@@ -59,6 +59,7 @@ export interface DeveloperModeDialog {
   cancelId?: number;
 }
 
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt)
 export async function enableDeveloperSettings(options: {
   file: string;
   allowed: () => boolean;
@@ -105,7 +106,9 @@ export async function enableDeveloperSettings(options: {
   } finally {
     try {
       fs.rmSync(temporary, { force: true });
-    } catch {}
+    } catch {
+      // (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt)
+    }
   }
   options.restart();
 }

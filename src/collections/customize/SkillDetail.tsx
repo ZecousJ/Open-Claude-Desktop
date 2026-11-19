@@ -34,10 +34,10 @@ const size = (bytes: number) =>
       : `${bytes} B`;
 
 /**
- * A skill's details. A starter from Discover shows its instructions and Add; an
- * installed skill shows its SKILL.md rendered, the files in its folder, where
- * it comes from, and Turn on/off, Show in folder and (for the person's own
- * skills) Remove.
+ * A skill's details (R-1114 not captured: provisional). A starter from
+ * Discover shows its instructions and Add; an installed skill shows its
+ * SKILL.md rendered, the files in its folder, where it comes from, and
+ * Turn on/off, Show in folder and (for the person's own skills) Remove.
  */
 export function SkillDetail({
   skill,

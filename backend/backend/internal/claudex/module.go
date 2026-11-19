@@ -22,10 +22,12 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/claudex/gatewayhook"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/ghconn"
 	claudexhook "github.com/Wei-Shaw/sub2api/internal/claudex/hook"
+	"github.com/Wei-Shaw/sub2api/internal/claudex/knowledge"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/memory"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/onboarding"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/payment"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/policy"
+	"github.com/Wei-Shaw/sub2api/internal/claudex/productfeedback"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/profile"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/refusal"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/release"
@@ -41,6 +43,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webhost"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/websearchguard"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webstore"
+	"github.com/Wei-Shaw/sub2api/internal/claudex/zmigrate"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 
 	"github.com/google/wire"
@@ -116,6 +119,7 @@ func ProvideModule(deps Deps) *Module {
 		refusal.New(env),
 		voice.New(env),
 		feedback.New(env),
+		productfeedback.New(env),
 		memory.New(env), // R3 (design R3 2.1: after feedback, before bootstrap)
 		bootstrap.New(env),
 		payment.New(env),
@@ -130,7 +134,9 @@ func ProvideModule(deps Deps) *Module {
 		webusage.New(env),     // W-KEY: web usage links, runner usage, run capacity (after devices: KeyMarker order)
 		signin.New(env),       // LOGIN: sign-in options, sign in with an email code
 		announce.New(env),     // announcements: pop-up notices and e-mail notices
+		zmigrate.New(env),     // ZecousAI accounts moved to Claudex
 		status.New(env),       // service status: channel uptime and incidents
+		knowledge.New(env),    // knowledge bases relayed to the agents as MCP
 		accountguard.New(env), // failing upstream accounts paused, probed back
 		profile.New(env),      // the account step after sign-up: name, birthday, terms
 		onboarding.New(env),   // first-run onboarding answers, shown once per account
@@ -346,11 +352,14 @@ func runUsageObserver(ctx context.Context, o core.UsageObserver, ev claudexhook.
 	o.OnUsageApplied(ctx, ev)
 }
 
-// start calls Start on every Starter with a context cancelled on SIGINT or
-// SIGTERM (the server's own shutdown signals).
+// start gives each worker a context cancelled on the server's shutdown signals.
 func (m *Module) start() {
 	var starters []core.Starter
+	runsControlPlane := m.deps.Config.RunsControlPlane()
 	for _, f := range m.features {
+		if !runsControlPlane && f.Name() != core.NameUsage && f.Name() != webusage.Name {
+			continue
+		}
 		if s, ok := f.(core.Starter); ok {
 			starters = append(starters, s)
 		}

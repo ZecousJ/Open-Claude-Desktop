@@ -58,8 +58,10 @@ export interface SshServiceApi {
 }
 
 /**
- * The runtimes fetched ahead of time: the Linux hosts most connections go to. A
- * host of another kind gets its package fetched the moment it is probed.
+ * The runtimes fetched ahead of time (owner, 2026-10-08: the environment is
+ * ready on this computer and sent over as soon as a host connects): the
+ * Linux hosts most connections go to. A host of another kind gets its
+ * package fetched the moment it is probed.
  */
 const PREFETCHED_TRIPLES = [
   "x86_64-unknown-linux-musl",

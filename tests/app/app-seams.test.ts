@@ -1,3 +1,9 @@
+import ts from "typescript";
+import {
+  internalIpcMethods,
+  internalIpcOwners,
+  isInternalIpcMethod,
+} from "../../electron/app/internal-ipc";
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -39,14 +45,32 @@ function registrations() {
     for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
       const file = path.join(folder, entry.name);
       if (entry.isDirectory()) walk(file);
-      else if (file.endsWith(".ts"))
-        for (const match of fs
-          .readFileSync(file, "utf8")
-          .matchAll(/\bhandle\(\s*"([A-Za-z]+)"/g))
-          found.set(match[1], [
-            ...(found.get(match[1]) ?? []),
-            path.relative(electron, file).split(path.sep).join("/"),
-          ]);
+      else if (file.endsWith(".ts")) {
+        const source = ts.createSourceFile(
+          file,
+          fs.readFileSync(file, "utf8"),
+          ts.ScriptTarget.Latest,
+          true,
+        );
+        const visit = (node: ts.Node) => {
+          // Only the injected bare IPC registrar; not ses.protocol.handle("https", ...).
+          if (
+            ts.isCallExpression(node) &&
+            ts.isIdentifier(node.expression) &&
+            node.expression.text === "handle" &&
+            node.arguments[0] &&
+            ts.isStringLiteral(node.arguments[0])
+          ) {
+            const name = node.arguments[0].text;
+            found.set(name, [
+              ...(found.get(name) ?? []),
+              path.relative(electron, file).split(path.sep).join("/"),
+            ]);
+          }
+          ts.forEachChild(node, visit);
+        };
+        visit(source);
+      }
     }
   };
   walk(electron);
@@ -117,9 +141,11 @@ const domainFiles: Record<keyof typeof domainMethods, string[]> = {
   "api-keys": ["ipc/api-keys.ts"],
   announcements: ["ipc/announcements.ts"],
   onboarding: ["ipc/onboarding.ts"],
+  "zecous-migration": ["ipc/zecous-migration.ts"],
   "account-profile": ["ipc/account-profile.ts"],
   "usage-stats": ["ipc/usage-stats.ts"],
   "service-status": ["ipc/service-status.ts"],
+  knowledge: ["ipc/knowledge.ts"],
   "cloud-sync": ["ipc/cloud-sync.ts"],
   "cloud-environments": ["ipc/cloud-environments.ts"],
   "cloud-continue": ["ipc/cloud-continue.ts"],
@@ -132,7 +158,22 @@ test("every bridge call has one handler, in the file of the domain that owns it"
   assert.equal(new Set(desktopMethods).size, desktopMethods.length);
   const found = registrations();
   for (const name of found.keys())
-    assert.ok(desktopMethods.includes(name), `${name} has no bridge entry`);
+    assert.ok(
+      desktopMethods.includes(name) || isInternalIpcMethod(name),
+      `${name} has no bridge entry or explicit private classification`,
+    );
+  for (const name of internalIpcMethods) {
+    assert.equal(
+      desktopMethods.includes(name),
+      false,
+      `${name} must not be exposed to the renderer`,
+    );
+    assert.deepEqual(
+      found.get(name),
+      [internalIpcOwners[name as keyof typeof internalIpcOwners]],
+      `${name} must have exactly its private owner registration`,
+    );
+  }
   for (const name of coreMethods) {
     const files = found.get(name) ?? [];
     assert.ok(files.length, `${name} has no handler`);
@@ -356,7 +397,7 @@ test("the remote host hands a reissued device key to the running provider child 
   assert.equal(cleared.length, 1);
 });
 
-test("the remote host lists the models of the service group in use for each provider and follows a switch", () => {
+test("the remote host lists the models of the service group in use for each provider and follows a switch", async () => {
   const item = (id: string, groupId: number) => ({
     id,
     displayName: id,
@@ -368,8 +409,10 @@ test("the remote host lists the models of the service group in use for each prov
     usageHint: "",
     groupId,
   });
+  const provider = { id: "sub2api", model: "gpt-5" };
   const preferred: (readonly number[])[] = [];
   const backend = {
+    provider,
     preferGroups: (ids: readonly number[]) => void preferred.push(ids),
     catalog: {
       defaultModel: "gpt-5",
@@ -402,7 +445,6 @@ test("the remote host lists the models of the service group in use for each prov
       },
     ],
   };
-  const provider = { id: "sub2api", model: "gpt-5" };
   const settings = { apiGroups: {}, providers: [provider] } as {
     apiGroups: Record<string, number>;
     providers: (typeof provider)[];
@@ -411,7 +453,17 @@ test("the remote host lists the models of the service group in use for each prov
   let announced = 0;
   const host = new RemoteHost(
     fakeContext({
-      store: { settings, flush: () => void flushed++ },
+      store: {
+        settings,
+        persistApiPreferences: async (update: (value: typeof settings) => Partial<typeof settings>) => {
+          Object.assign(settings, update(settings));
+          flushed++;
+        },
+      },
+      get remote() { return host; },
+      engine: {},
+      accountRetiring: false,
+      accountActivationIdentity: {},
       settingsChanged: () => void announced++,
     } as never),
     backend as never,
@@ -425,7 +477,7 @@ test("the remote host lists the models of the service group in use for each prov
       host.apiGroups().providers.map((entry) => [entry.id, entry.selected]),
     );
   assert.equal(selected().openai, 2);
-  const groups = host.useGroup("openai", 4);
+  const groups = await host.useGroup("openai", 4);
   assert.equal(groups.providers[0]?.selected, 4);
   assert.deepEqual(
     host.modelCatalog()?.items.map((entry) => entry.id),
@@ -438,9 +490,9 @@ test("the remote host lists the models of the service group in use for each prov
   assert.deepEqual(preferred, [[4, 3]]);
   assert.equal(flushed, 1);
   assert.equal(announced, 1);
-  assert.throws(() => host.useGroup("openai", 99), /isn't available/);
+  await assert.rejects(host.useGroup("openai", 99), /isn't available/);
   // A group of another provider cannot be chosen for this one.
-  assert.throws(() => host.useGroup("openai", 3), /isn't available/);
+  await assert.rejects(host.useGroup("openai", 3), /isn't available/);
 });
 
 test("the usage banner offers Get more usage only when the policy lets the page open", () => {

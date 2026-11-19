@@ -1,6 +1,9 @@
 import type { MemoryDocView, MemoryStatus } from "../../shared/memory-api";
 
-/** The project page's Memory section text when the project has none yet. */
+/**
+ * The project page's Memory section text when the project has none yet
+ * (live claude.ai bundle, 2026-10-12: `memoryAfterAFew`).
+ */
 export const projectMemoryEmpty =
   "Project memory will show here after a few chats.";
 
@@ -13,7 +16,8 @@ export const showsProjectMemory = (status: MemoryStatus | undefined) =>
 
 /**
  * The memory as one plain line: headings dropped, list marks, emphasis, code
- * ticks and links reduced to their words, line breaks to spaces.
+ * ticks and links reduced to their words, line breaks to spaces (live
+ * claude.ai bundle, 2026-10-16, cdeaafbfc: `_n`).
  */
 export function flattenMemory(text: string | undefined) {
   if (!text) return "";

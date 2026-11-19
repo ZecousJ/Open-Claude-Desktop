@@ -8,14 +8,14 @@ import {
 
 const day = 86_400_000;
 
-/** Scoped Code search covers titles only. */
+/** Scoped Code search covers titles only (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 export function matchesHistoryTitle(conversation: Conversation, query: string) {
   return conversation.title
     .toLocaleLowerCase()
     .includes(query.trim().toLocaleLowerCase());
 }
 
-/** Local sessions fall back to their folder name. */
+/** Local sessions fall back to their folder name (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo). */
 export function historyRepositoryName(
   conversation: Conversation,
   repository?: string,
@@ -27,7 +27,7 @@ export function historyRepositoryName(
   );
 }
 
-/** The row's attention dot. */
+/** The row's attention dot (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN). */
 export function historyNeedsAttention(
   conversation: Conversation,
   awaiting: boolean,
@@ -49,7 +49,7 @@ export function historyNeedsAttention(
   );
 }
 
-/** Matched message context. */
+/** Matched message context (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 export function historySnippet(conversation: Conversation, query: string) {
   const needle = query.trim().toLocaleLowerCase();
   if (!needle) return undefined;
@@ -148,10 +148,10 @@ export function rangeSelection(
 }
 
 /**
- * The hub's tab-style filter: Active, Shared and Archived for chats and tasks;
- * Code's sessions page has Active and Archived. All (Active) is what is not
- * archived; Shared is the chats with a live link, archived or not; Archived is
- * the archive.
+ * The hub's tab-style filter (live claude.ai bundle, 2026-10-14, c03be4f3b): Active,
+ * Shared and Archived for chats and tasks; Code's sessions page has Active
+ * and Archived. All (Active) is what is not archived; Shared is the chats
+ * with a live link, archived or not; Archived is the archive.
  */
 export type HistoryTab = "all" | "shared" | "archived";
 
@@ -203,7 +203,7 @@ export function historyTabRows(
   return tab === "shared" ? rows.filter((c) => shared.has(c.id)) : rows;
 }
 
-/** The page's search sort: Type or Date. */
+/** The page's search sort (live claude.ai bundle, 2026-10-15, c03be4f3b): Type or Date. */
 export type HistorySearchSort = "type" | "date";
 
 /**
@@ -229,22 +229,23 @@ export function sortSearchResults(
   return [...titled, ...rest];
 }
 
-/** What an empty tab says. */
+/** What an empty tab says (live claude.ai bundle, 2026-10-12). */
 export function historyTabEmptyText(
   mode: Mode,
   tab: HistoryTab,
   filtered = false,
 ) {
   if (tab === "shared") return "Links you share will show up here.";
-  // Chat and Cowork's archive with nothing narrowing it: "No archived tasks."
+  // Chat and Cowork's archive with nothing narrowing it (live claude.ai
+  // bundle, 2026-10-14): "No archived tasks."
   if (tab === "archived" && mode !== "code" && !filtered)
     return "No archived tasks.";
   return historyEmptyText(mode, tab === "archived");
 }
 
 /**
- * What an empty list says: Code's sessions, or Chat and Cowork's activity, and
- * the archive's own line.
+ * What an empty list says (desktop bundle 2.31226.1): Code's sessions, or
+ * Chat and Cowork's activity, and the archive's own line.
  */
 export function historyEmptyText(mode: Mode, archived: boolean) {
   if (mode === "code")

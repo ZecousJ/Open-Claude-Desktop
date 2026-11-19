@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { ShieldCheck, SquareArrowOutUpRight, Check } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { Conversation } from "../../shared/types";
 import { useConversationShare } from "../sharing/useConversationShare";
 export { useConversationShare } from "../sharing/useConversationShare";
@@ -63,7 +63,8 @@ export function publicDescription(
     return "Your administrator has turned off sharing for your account.";
   if (!share && !status.conversations)
     return "Your administrator has turned off sharing.";
-  // Account → Require repository access.
+  // Account → Require repository access (live claude.ai bundle, 2026-10-16,
+  // c50a441b7: enforceRepoCheck).
   return requireRepositoryAccess
     ? "Anyone with repository access and the link can view"
     : "Anyone with the link can view";
@@ -109,7 +110,7 @@ export function ConversationShareView({
   state: ShareDialogState;
   onPublic: () => void;
   onPrivate: () => void;
-  /** Kept for callers; Private stops the link at once. */
+  /** Kept for callers; Private stops the link at once (live claude.ai). */
   onStop?: () => void;
   onCancelStop?: () => void;
   onCopy: () => void;
@@ -167,8 +168,8 @@ export function ConversationShareView({
     </button>
   );
   const policy = status.usagePolicyUrl;
-  // One sentence with the link inside it, so each language orders it its own
-  // way.
+  // One sentence with the link inside it (live claude.ai bundle, 2026-10-16,
+  // c50a441b7: labGRGZTTn), so each language orders it its own way.
   const [policyBefore, policyAfter] = t(
     "Don’t share personal information or third-party content without permission, and see our {usagePolicy}.",
   ).split("{usagePolicy}");
@@ -229,7 +230,7 @@ export function ConversationShareView({
             </p>
           )}
           {/* The link opens in a new tab; Copy link is primary, then Copied
-             secondary. */}
+              secondary (live claude.ai bundle, 2026-10-16, c50a441b7). */}
           <div className="share-link-row">
             <button
               type="button"
@@ -282,13 +283,13 @@ export function ConversationShareView({
       )}
       {state.secrets && (
         <div className="share-warning" role="status">
-          <AppIcon name="Warning" size={15} strokeWidth={1.7} />
+          <Anthropicon name="Warning" size={15} strokeWidth={1.7} />
           <span>{t("This session may include secure credentials.")}</span>
         </div>
       )}
       {repository && (
         <div className="share-warning" role="note">
-          <AppIcon name="Warning" size={15} strokeWidth={1.7} />
+          <Anthropicon name="Warning" size={15} strokeWidth={1.7} />
           <span>
             This session is from a local repository. Sharing may expose code to
             anyone with the link.
@@ -343,7 +344,7 @@ export function ConversationShareDialog({
     secrets,
     requireRepositoryAccess,
   };
-  // Chat shares from a popover under the header.
+  // Chat shares from a popover under the header (live claude.ai).
   if (conversation.mode !== "code")
     return (
       <Suspense fallback={null}>

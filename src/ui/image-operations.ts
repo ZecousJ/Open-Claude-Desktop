@@ -1,6 +1,6 @@
 import { surface } from "../../shared/host";
 
-/** PNG clipboard conversion and original-byte saving. */
+/** PNG clipboard conversion and original-byte saving (live claude.ai bundle, 2026-10-14, cc44b66a7-BkfedQEp). */
 export async function imageBlob(src: string) {
   const response = await fetch(src);
   if (!response.ok) throw new Error(`Failed to load image: ${response.status}`);

@@ -1,7 +1,7 @@
 /**
- * Leaving the app: external links, remote Markdown images and the update's
- * download page, all checked against the administrator's policy in
- * `electron/external-links.ts`.
+ * Leaving the app (package WP1): external links, remote Markdown images and
+ * the update's download page, all checked against the administrator's
+ * policy in `electron/external-links.ts`.
  */
 import { bridgeMethods } from "./bridge-methods";
 

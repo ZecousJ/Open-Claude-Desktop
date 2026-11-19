@@ -1,15 +1,17 @@
 /*
- * The menu's keyboard and pointer rules, kept apart from the component so they
- * can be tested: arrows loop, Home/End jump to the ends, typing a row's first
- * letters moves to it, and a pointer heading diagonally for an open submenu
- * does not switch rows on the way.
+ * The menu's keyboard and pointer rules, kept apart from the component so
+ * they can be tested: arrows loop, Home/End jump to the ends, typing a
+ * row's first letters moves to it, and a pointer heading diagonally for an
+ * open submenu does not switch rows on the way (the original's Base UI
+ * menu, desktop bundle 2.31226.1: a 100ms submenu open delay and a
+ * pointer safe polygon).
  */
 
 /** Hovering a submenu row opens its submenu after this long. */
 export const SUBMENU_OPEN_DELAY_MS = 100;
 /**
- * Typed letters are forgotten after this pause: the original's menu root sets
- * `resetMs: 500` over Base UI's 750 default.
+ * Typed letters are forgotten after this pause: the original's menu root
+ * sets `resetMs: 500` over Base UI's 750 default (desktop bundle 2.31226.1).
  */
 export const TYPEAHEAD_RESET_MS = 500;
 
@@ -92,9 +94,10 @@ export function headingForSubmenu(
 }
 
 /**
- * A row's accessible role. A row with no `checked` is a plain menu item; one
- * that has it is a checkbox, or, in a submenu list that chooses one value, a
- * radio, and then reports aria-checked.
+ * A row's accessible role. A row with no `checked` is a plain menu item;
+ * one that has it is a checkbox, or, in a submenu list that chooses one
+ * value, a radio, and then reports aria-checked (the original's menu item,
+ * desktop bundle 2.31226.1).
  */
 export function itemRole(
   checked: boolean | undefined,

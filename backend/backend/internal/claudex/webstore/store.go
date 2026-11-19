@@ -1,6 +1,7 @@
 package webstore
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -9,6 +10,8 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webproto"
+
+	"github.com/lib/pq"
 )
 
 // Tenant isolation: every statement below takes the user id as its first
@@ -51,7 +54,7 @@ func (s *store) tx(ctx context.Context, userID int64, fn func(tx *sql.Tx) error)
 			_ = tx.Rollback()
 		}
 	}()
-	if _, err = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended('claudex_web_store', $1))`, userID); err != nil {
+	if err = lockUserStorage(ctx, tx, userID); err != nil {
 		return failed(err)
 	}
 	if err = fn(tx); err != nil {
@@ -61,6 +64,11 @@ func (s *store) tx(ctx context.Context, userID int64, fn func(tx *sql.Tx) error)
 		return failed(err)
 	}
 	return nil
+}
+
+func lockUserStorage(ctx context.Context, tx *sql.Tx, userID int64) error {
+	_, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended('claudex_web_store', $1))`, userID)
+	return err
 }
 
 // Usage is what a user stores.
@@ -197,7 +205,8 @@ func (s *store) listProjects(ctx context.Context, userID int64, cursor string) (
 		return nil, "", badRequest("The cursor is not valid.")
 	}
 	rows, err := s.db.QueryContext(ctx, `SELECT position, id, doc, bytes FROM claudex_web_projects
-WHERE user_id = $1 AND (position, id) > ($2, $3) ORDER BY position, id LIMIT $4`, userID, after.P, after.ID, pageRows+1)
+WHERE user_id = $1 AND organization_id IS NULL AND (position, id) > ($2, $3)
+ORDER BY position, id LIMIT $4`, userID, after.P, after.ID, pageRows+1)
 	if err != nil {
 		return nil, "", failed(err)
 	}
@@ -230,9 +239,16 @@ func (s *store) putProject(ctx context.Context, userID int64, id string, positio
 	doc = jsonbSafe(doc)
 	size := int64(len(doc))
 	return s.tx(ctx, userID, func(tx *sql.Tx) error {
-		old, exists, err := oldBytes(ctx, tx, `SELECT bytes FROM claudex_web_projects WHERE user_id = $1 AND id = $2`, userID, id)
-		if err != nil {
-			return err
+		var old int64
+		var shared bool
+		err := tx.QueryRowContext(ctx, `SELECT bytes, organization_id IS NOT NULL
+FROM claudex_web_projects WHERE user_id = $1 AND id = $2`, userID, id).Scan(&old, &shared)
+		exists := err == nil
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return failed(err)
+		}
+		if shared {
+			return badRequest("Organization projects cannot be saved as personal projects.")
 		}
 		mode := quotaStrict
 		if exists {
@@ -250,18 +266,37 @@ ON CONFLICT (user_id, id) DO UPDATE SET position = EXCLUDED.position, doc = EXCL
 	})
 }
 
-func (s *store) deleteProject(ctx context.Context, userID int64, id string) error {
-	return s.tx(ctx, userID, func(tx *sql.Tx) error {
+func (s *store) deleteProject(ctx context.Context, userID int64, id string, deleteChats bool) ([]string, error) {
+	deleted := []string{}
+	err := s.tx(ctx, userID, func(tx *sql.Tx) error {
 		var n int64
-		err := tx.QueryRowContext(ctx, `DELETE FROM claudex_web_projects WHERE user_id = $1 AND id = $2 RETURNING bytes`, userID, id).Scan(&n)
+		err := tx.QueryRowContext(ctx, `DELETE FROM claudex_web_projects
+WHERE user_id = $1 AND id = $2 AND organization_id IS NULL RETURNING bytes`, userID, id).Scan(&n)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil // already gone: deletes are idempotent
 		}
 		if err != nil {
 			return failed(err)
 		}
+		if deleteChats {
+			if err := tx.QueryRowContext(ctx, `SELECT COALESCE(array_agg(id ORDER BY id), '{}') FROM claudex_web_conversations
+WHERE user_id = $1 AND project_id = $2 AND doc #>> '{conversation,projectId}' = $2
+  AND doc #>> '{conversation,projectOrganizationId}' IS NULL
+  AND mode IN ('chat', 'cowork')`, userID, id).Scan(pq.Array(&deleted)); err != nil {
+				return failed(err)
+			}
+			if err := deleteConversations(ctx, tx, userID, deleted); err != nil {
+				return err
+			}
+			freed, err := detachProjectConversations(ctx, tx, userID, id)
+			if err != nil {
+				return err
+			}
+			n += freed
+		}
 		return failedIf(addUsage(ctx, tx, userID, -n, 0))
 	})
+	return deleted, err
 }
 
 // ---------------------------------------------------------------------------
@@ -271,6 +306,46 @@ func (s *store) deleteProject(ctx context.Context, userID int64, id string) erro
 type ConversationRow struct {
 	Doc      json.RawMessage `json:"doc"`
 	Position int             `json:"position"`
+}
+
+func detachProjectConversations(ctx context.Context, tx *sql.Tx, userID int64, projectID string) (int64, error) {
+	rows, err := tx.QueryContext(ctx, `SELECT id, bytes, doc #- '{conversation,projectId}' FROM claudex_web_conversations
+WHERE user_id = $1 AND project_id = $2 AND doc #>> '{conversation,projectId}' = $2 AND mode = 'code'`, userID, projectID)
+	if err != nil {
+		return 0, failed(err)
+	}
+	defer func() { _ = rows.Close() }()
+	type conversation struct {
+		id  string
+		doc string
+	}
+	var detached []conversation
+	var freed int64
+	for rows.Next() {
+		var id string
+		var oldBytes int64
+		var raw []byte
+		if err := rows.Scan(&id, &oldBytes, &raw); err != nil {
+			return 0, failed(err)
+		}
+		var doc bytes.Buffer
+		if err := json.Compact(&doc, raw); err != nil {
+			return 0, failed(err)
+		}
+		freed += oldBytes - int64(doc.Len())
+		detached = append(detached, conversation{id: id, doc: doc.String()})
+	}
+	if err := rows.Err(); err != nil {
+		return 0, failed(err)
+	}
+	for _, c := range detached {
+		if _, err := tx.ExecContext(ctx, `UPDATE claudex_web_conversations
+SET project_id = '', doc = $3::jsonb, bytes = $4, revision = revision + 1, updated_at = NOW()
+WHERE user_id = $1 AND id = $2`, userID, c.id, c.doc, len(c.doc)); err != nil {
+			return 0, failed(err)
+		}
+	}
+	return freed, nil
 }
 
 func (s *store) listConversations(ctx context.Context, userID int64, cursor string) ([]ConversationRow, string, error) {
@@ -346,22 +421,31 @@ func int64Or(p *int64) int64 {
 }
 
 func (s *store) putConversation(ctx context.Context, userID int64, raw json.RawMessage, meta webproto.ConversationMeta, position int, lim Limits) (int64, error) {
-	raw = jsonbSafe(raw)
-	size := int64(len(raw))
 	var revision int64
 	err := s.tx(ctx, userID, func(tx *sql.Tx) error {
-		old, exists, err := oldBytes(ctx, tx, `SELECT bytes FROM claudex_web_conversations WHERE user_id = $1 AND id = $2`, userID, meta.ID)
-		if err != nil {
-			return err
-		}
-		mode := quotaStrict
-		if exists {
-			mode = quotaGrace
-		}
-		if err := checkQuota(ctx, tx, userID, size-old, lim, mode); err != nil {
-			return err
-		}
-		err = tx.QueryRowContext(ctx, `INSERT INTO claudex_web_conversations
+		var err error
+		revision, err = putConversationRow(ctx, tx, userID, raw, meta, position, lim)
+		return err
+	})
+	return revision, err
+}
+
+func putConversationRow(ctx context.Context, tx *sql.Tx, userID int64, raw json.RawMessage, meta webproto.ConversationMeta, position int, lim Limits) (int64, error) {
+	raw = jsonbSafe(raw)
+	size := int64(len(raw))
+	old, exists, err := oldBytes(ctx, tx, `SELECT bytes FROM claudex_web_conversations WHERE user_id = $1 AND id = $2`, userID, meta.ID)
+	if err != nil {
+		return 0, err
+	}
+	mode := quotaStrict
+	if exists {
+		mode = quotaGrace
+	}
+	if err := checkQuota(ctx, tx, userID, size-old, lim, mode); err != nil {
+		return 0, err
+	}
+	var revision int64
+	err = tx.QueryRowContext(ctx, `INSERT INTO claudex_web_conversations
     (user_id, id, position, mode, project_id, title, model, pinned, archived, doc, bytes, created_ms, updated_ms)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13)
 ON CONFLICT (user_id, id) DO UPDATE SET position = EXCLUDED.position, mode = EXCLUDED.mode,
@@ -369,40 +453,85 @@ ON CONFLICT (user_id, id) DO UPDATE SET position = EXCLUDED.position, mode = EXC
     archived = EXCLUDED.archived, doc = EXCLUDED.doc, bytes = EXCLUDED.bytes, created_ms = EXCLUDED.created_ms,
     updated_ms = EXCLUDED.updated_ms, revision = claudex_web_conversations.revision + 1, updated_at = NOW()
 RETURNING revision`,
-			userID, meta.ID, position, meta.Mode, truncateUTF8(clean(meta.ProjectID), 128),
-			clean(strOr(meta.Title)), truncateUTF8(clean(strOr(meta.Model)), 256),
-			boolOr(meta.Pinned), boolOr(meta.Archived), string(raw), size,
-			int64Or(meta.CreatedAt), int64Or(meta.UpdatedAt)).Scan(&revision)
+		userID, meta.ID, position, meta.Mode, truncateUTF8(clean(meta.ProjectID), 128),
+		clean(strOr(meta.Title)), truncateUTF8(clean(strOr(meta.Model)), 256),
+		boolOr(meta.Pinned), boolOr(meta.Archived), string(raw), size,
+		int64Or(meta.CreatedAt), int64Or(meta.UpdatedAt)).Scan(&revision)
+	if err != nil {
+		return 0, failed(err)
+	}
+	return revision, failedIf(addUsage(ctx, tx, userID, size-old, 0))
+}
+
+func (s *store) rewindCodeConversation(ctx context.Context, userID int64, raw json.RawMessage, meta webproto.ConversationMeta, position, keep int, targetTurnID string, retained *turnRow, lim Limits) (int64, error) {
+	var revision int64
+	err := s.tx(ctx, userID, func(tx *sql.Tx) error {
+		var turnID string
+		err := tx.QueryRowContext(ctx, `SELECT t.turn_id FROM claudex_web_conversations c
+JOIN claudex_web_turns t ON t.user_id = c.user_id AND t.conversation_id = c.id
+WHERE c.user_id = $1 AND c.id = $2 AND c.mode = 'code' AND NOT c.archived
+    AND c.created_ms = $3 AND t.branch_id = '' AND t.ordinal = $4 AND t.turn_id = $5`,
+			userID, meta.ID, int64Or(meta.CreatedAt), keep, targetTurnID).Scan(&turnID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return notFound("Code rewind boundary")
+		}
 		if err != nil {
 			return failed(err)
 		}
-		return failedIf(addUsage(ctx, tx, userID, size-old, 0))
+		var freed int64
+		if err := tx.QueryRowContext(ctx, `WITH removed AS (
+    DELETE FROM claudex_web_turns WHERE user_id = $1 AND conversation_id = $2 AND branch_id = '' AND ordinal >= $3
+    RETURNING bytes
+) SELECT COALESCE(SUM(bytes), 0) FROM removed`, userID, meta.ID, keep).Scan(&freed); err != nil {
+			return failed(err)
+		}
+		if retained != nil {
+			freed -= int64(len(retained.raw))
+			if err := checkQuota(ctx, tx, userID, -freed, lim, quotaGrace); err != nil {
+				return err
+			}
+			if err := putTurnRow(ctx, tx, userID, *retained); err != nil {
+				return err
+			}
+		}
+		if err := addUsage(ctx, tx, userID, -freed, 0); err != nil {
+			return failed(err)
+		}
+		revision, err = putConversationRow(ctx, tx, userID, raw, meta, position, lim)
+		return err
 	})
 	return revision, err
 }
 
-// deleteConversation removes a conversation, its turns and its artifacts.
 func (s *store) deleteConversation(ctx context.Context, userID int64, id string) error {
 	return s.tx(ctx, userID, func(tx *sql.Tx) error {
-		var freed int64
-		if err := tx.QueryRowContext(ctx, `SELECT
-    COALESCE((SELECT bytes FROM claudex_web_conversations WHERE user_id = $1 AND id = $2), 0)
-  + COALESCE((SELECT SUM(bytes) FROM claudex_web_turns WHERE user_id = $1 AND conversation_id = $2), 0)
+		return deleteConversations(ctx, tx, userID, []string{id})
+	})
+}
+
+func deleteConversations(ctx context.Context, tx *sql.Tx, userID int64, ids []string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	keys := pq.Array(ids)
+	var freed int64
+	if err := tx.QueryRowContext(ctx, `SELECT
+    COALESCE((SELECT SUM(bytes) FROM claudex_web_conversations WHERE user_id = $1 AND id = ANY($2::varchar[])), 0)
+  + COALESCE((SELECT SUM(bytes) FROM claudex_web_turns WHERE user_id = $1 AND conversation_id = ANY($2::varchar[])), 0)
   + COALESCE((SELECT SUM(v.bytes) FROM claudex_web_artifact_versions v JOIN claudex_web_artifacts a
         ON a.user_id = v.user_id AND a.id = v.artifact_id
-      WHERE a.user_id = $1 AND a.conversation_id = $2), 0)
-  + COALESCE((SELECT SUM(bytes) FROM claudex_web_artifacts WHERE user_id = $1 AND conversation_id = $2), 0)`,
-			userID, id).Scan(&freed); err != nil {
-			return failed(err)
-		}
-		if _, err := tx.ExecContext(ctx, `DELETE FROM claudex_web_artifacts WHERE user_id = $1 AND conversation_id = $2`, userID, id); err != nil {
-			return failed(err)
-		}
-		if _, err := tx.ExecContext(ctx, `DELETE FROM claudex_web_conversations WHERE user_id = $1 AND id = $2`, userID, id); err != nil {
-			return failed(err)
-		}
-		return failedIf(addUsage(ctx, tx, userID, -freed, 0))
-	})
+      WHERE a.user_id = $1 AND a.conversation_id = ANY($2::varchar[])), 0)
+  + COALESCE((SELECT SUM(bytes) FROM claudex_web_artifacts WHERE user_id = $1 AND conversation_id = ANY($2::varchar[])), 0)`,
+		userID, keys).Scan(&freed); err != nil {
+		return failed(err)
+	}
+	if _, err := tx.ExecContext(ctx, `DELETE FROM claudex_web_artifacts WHERE user_id = $1 AND conversation_id = ANY($2::varchar[])`, userID, keys); err != nil {
+		return failed(err)
+	}
+	if _, err := tx.ExecContext(ctx, `DELETE FROM claudex_web_conversations WHERE user_id = $1 AND id = ANY($2::varchar[])`, userID, keys); err != nil {
+		return failed(err)
+	}
+	return failedIf(addUsage(ctx, tx, userID, -freed, 0))
 }
 
 // ---------------------------------------------------------------------------
@@ -523,15 +652,8 @@ WHERE user_id = $1 AND conversation_id = $2 AND branch_id = $3 AND turn_id = $4`
 			return err
 		}
 		for _, t := range turns {
-			if _, err := tx.ExecContext(ctx, `INSERT INTO claudex_web_turns
-    (user_id, conversation_id, branch_id, turn_id, ordinal, status, doc, bytes, search_text, created_ms)
-VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10)
-ON CONFLICT (user_id, conversation_id, branch_id, turn_id) DO UPDATE SET ordinal = EXCLUDED.ordinal,
-    status = EXCLUDED.status, doc = EXCLUDED.doc, bytes = EXCLUDED.bytes, search_text = EXCLUDED.search_text,
-    created_ms = EXCLUDED.created_ms, updated_at = NOW()`,
-				userID, t.doc.ConversationID, t.branch, t.doc.TurnID, t.doc.Ordinal, t.head.Status,
-				string(t.raw), len(t.raw), searchText(t.doc.Turn), int64Or(t.head.CreatedAt)); err != nil {
-				return failed(err)
+			if err := putTurnRow(ctx, tx, userID, t); err != nil {
+				return err
 			}
 		}
 		for id := range revisions {
@@ -545,6 +667,18 @@ WHERE user_id = $1 AND id = $2 RETURNING revision`, userID, id).Scan(&rev); err 
 		return failedIf(addUsage(ctx, tx, userID, grow, 0))
 	})
 	return revisions, err
+}
+
+func putTurnRow(ctx context.Context, tx *sql.Tx, userID int64, t turnRow) error {
+	_, err := tx.ExecContext(ctx, `INSERT INTO claudex_web_turns
+    (user_id, conversation_id, branch_id, turn_id, ordinal, status, doc, bytes, search_text, created_ms)
+VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10)
+ON CONFLICT (user_id, conversation_id, branch_id, turn_id) DO UPDATE SET ordinal = EXCLUDED.ordinal,
+    status = EXCLUDED.status, doc = EXCLUDED.doc, bytes = EXCLUDED.bytes, search_text = EXCLUDED.search_text,
+    created_ms = EXCLUDED.created_ms, updated_at = NOW()`,
+		userID, t.doc.ConversationID, t.branch, t.doc.TurnID, t.doc.Ordinal, t.head.Status,
+		string(t.raw), len(t.raw), searchText(t.doc.Turn), int64Or(t.head.CreatedAt))
+	return failedIf(err)
 }
 
 // TurnKey names one turn of a conversation (BranchID nil: live transcript).

@@ -1,8 +1,9 @@
 /*
- * The first-run onboarding (src/onboarding/OnboardingFlow.tsx), loaded with its
- * lazy chunk. The page frame `F`, the steps of the onboarding route; colours
- * are the app's own tokens (the original's surface-1 page, surface-2 and
- * surface-3 fields and cards).
+ * The first-run onboarding (src/onboarding/OnboardingFlow.tsx), loaded with
+ * its lazy chunk. Measures from the live claude.ai bundle, 2026-10-12: the
+ * page frame `F` (c7967290f), the steps of the onboarding route (c10bf8b47);
+ * colours are the app's own tokens (the original's surface-1 page, surface-2
+ * and surface-3 fields and cards).
  */
 .onboarding {
   position: fixed;
@@ -43,7 +44,8 @@
 .onboarding-brand span {
   color: var(--text);
   font:
-    400 21px/1 "Claudex Serif",
+    400 21px/1 "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -54,7 +56,8 @@
 :root[data-reference-fonts="true"] .onboarding-head h1,
 :root[data-reference-fonts="true"] .onboarding-question {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
 }
 /* The step, centred in the rest of the window: px-4 py-10. */
 .onboarding-main {
@@ -85,7 +88,8 @@
 .onboarding-head h1 {
   margin: 0;
   font:
-    500 28px/1.3 "Claudex Serif",
+    500 28px/1.3 "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -300,7 +304,8 @@
 .onboarding-question {
   margin: 0;
   font:
-    400 20px/1.4 "Claudex Serif",
+    400 20px/1.4 "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -452,7 +457,8 @@
 .onboarding-main:has(.onboarding-chat) {
   justify-content: flex-start;
 }
-/* Cr's max-w-lg, text-3xl/serif/mb-8, mt-9/gap-2 and mt-20/gap-4. */
+/* Cr's max-w-lg, text-3xl/serif/mb-8, mt-9/gap-2 and mt-20/gap-4
+   (live claude.ai bundle, 2026-10-14, cc20c35ef-BQMTespy, c9104b074-Cz2M6-Yx). */
 .onboarding:has(.onboarding-quick-entry) {
   background: #0b0b0b;
 }
@@ -472,7 +478,8 @@
   margin: 0 0 32px;
   color: var(--text);
   font:
-    500 30px/36px "Claudex Serif",
+    500 30px/36px "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -498,41 +505,9 @@
   margin-top: 36px;
   gap: 8px;
 }
-.onboarding-quick-keys {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 222px;
-  height: 129px;
-  border: 1.5px solid rgb(255 255 255 / 10%);
-  border-radius: 6px;
+.onboarding-quick-illustrations img:last-child {
   background: #20201f;
-}
-.onboarding-quick-keys kbd {
-  display: flex;
-  align-items: flex-end;
-  min-width: 44px;
-  height: 44px;
-  padding: 0 8px 6px;
-  border: 1px solid rgb(255 255 255 / 14%);
-  border-bottom-width: 3px;
-  border-radius: 6px;
-  background: #2b2b29;
-  color: #e5e4df;
-  font: 500 12px/1 inherit;
-}
-.onboarding-quick-keys kbd[data-wide="true"] {
-  min-width: 72px;
-}
-:root[data-theme="light"] .onboarding-quick-keys {
-  border-color: rgb(0 0 0 / 10%);
-  background: #f5f4ef;
-}
-:root[data-theme="light"] .onboarding-quick-keys kbd {
-  border-color: rgb(0 0 0 / 14%);
-  background: #fff;
-  color: #3d3d3a;
+  border: 1.5px solid rgb(255 255 255 / 10%);
 }
 .onboarding-quick-actions {
   display: flex;
@@ -565,7 +540,8 @@
 }
 :root[data-reference-fonts="true"] .onboarding-quick-entry h1 {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
 }
 :root[data-theme="light"] .onboarding:has(.onboarding-quick-entry) {
   background: #f9f9f7;
@@ -595,8 +571,9 @@
   background: rgb(11 11 11 / 5%);
 }
 
-/* "What kind of science do you do?": the field label above a lg multiple select
-   laid out as the role field; the placeholder in the muted colour. */
+/* "What kind of science do you do?" (live claude.ai bundle, 2026-10-14,
+   c10bf8b47 Dc): the field label above a lg multiple select laid out as
+   the role field; the placeholder in the muted colour. */
 .onboarding-science {
   display: flex;
   flex-direction: column;

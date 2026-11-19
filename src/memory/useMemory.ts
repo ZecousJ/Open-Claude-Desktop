@@ -57,48 +57,104 @@ export const globalScope: MemoryScopeRef = { kind: "global" };
 export function useMemory(onError: (error: unknown) => void) {
   const [status, setStatus] = useState<MemoryStatus>();
   const [failed, setFailed] = useState(false);
-  // A reply to an older read must not replace a newer state.
+  const confirmed = useRef<MemoryStatus | undefined>(undefined);
+  const pending = useRef<Partial<MemoryPrefs>[]>([]);
+  const writing = useRef(false);
+  const live = useRef(false);
+  const lifetime = useRef(0);
+  const errors = useRef(onError);
+  errors.current = onError;
+  // Reads cannot replace newer saves. Pending choices overlay confirmed state,
+  // so a refresh or a failed earlier save cannot erase a later switch click.
   const reads = useRef(0);
+  const publish = () => {
+    const value = confirmed.current;
+    if (!value) return;
+    setStatus({
+      ...value,
+      prefs: Object.assign({}, value.prefs, ...pending.current),
+    });
+  };
   const reload = () => {
     const read = ++reads.current;
+    const generation = lifetime.current;
     return window.desktop
       .memoryStatus()
       .then((value) => {
-        if (read !== reads.current) return;
-        setStatus(value);
+        if (
+          !live.current ||
+          generation !== lifetime.current ||
+          read !== reads.current
+        )
+          return;
+        confirmed.current = value;
+        publish();
         setFailed(false);
       })
       .catch((error) => {
-        if (read !== reads.current) return;
+        if (
+          !live.current ||
+          generation !== lifetime.current ||
+          read !== reads.current
+        )
+          return;
         setFailed(true);
-        onError(error);
+        errors.current(error);
       });
   };
   useEffect(() => {
+    live.current = true;
+    lifetime.current++;
     void reload();
-    return window.desktop.onEvent((event) => {
+    const off = window.desktop.onEvent((event) => {
       if (event.type === "memory-changed") void reload();
     });
+    return () => {
+      live.current = false;
+      lifetime.current++;
+      reads.current++;
+      pending.current = [];
+      writing.current = false;
+      off();
+    };
   }, []);
+  const save = async () => {
+    if (writing.current) return;
+    writing.current = true;
+    const generation = lifetime.current;
+    const current = () => live.current && generation === lifetime.current;
+    while (current() && pending.current.length) {
+      const change = pending.current[0];
+      try {
+        const value = await window.desktop.setMemoryPrefs(change);
+        if (!current()) return;
+        confirmed.current = value;
+        setFailed(false);
+      } catch (error) {
+        if (!current()) return;
+        errors.current(error);
+      }
+      if (!current()) return;
+      reads.current++;
+      pending.current.shift();
+      publish();
+    }
+    if (current()) writing.current = false;
+  };
   const setPrefs = (change: Partial<MemoryPrefs>) => {
-    if (!status) return;
-    const before = status;
-    const read = ++reads.current;
-    setStatus({ ...status, prefs: { ...status.prefs, ...change } });
-    void window.desktop
-      .setMemoryPrefs(change)
-      .then((value) => {
-        if (read === reads.current) setStatus(value);
-      })
-      .catch((error) => {
-        if (read === reads.current) setStatus(before);
-        onError(error);
-      });
+    if (!confirmed.current || !live.current) return;
+    reads.current++;
+    pending.current.push({ ...change });
+    publish();
+    void save();
   };
   /** A status a dialog's change returned. */
   const update = (value: MemoryStatus) => {
+    if (!live.current) return;
     reads.current++;
-    setStatus(value);
+    confirmed.current = value;
+    publish();
+    setFailed(false);
   };
   return { status, failed, reload, setPrefs, update };
 }

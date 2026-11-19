@@ -25,7 +25,7 @@ const badges: Record<Mode, string | undefined> = {
 const reportVisibility = (visible: boolean) =>
   window.desktop.reportWindowVisibility(visible);
 
-/** Return to the main window: a window with an arrow to its lower left. */
+/** Return to the main window: a window with an arrow to its lower left (R-1005). */
 function ReturnIcon() {
   return (
     <svg
@@ -46,10 +46,10 @@ function ReturnIcon() {
 }
 
 /**
- * A separate conversation window's title bar: the environment icon, the title
- * with its menu and, for Code and Cowork, the badge on the left; Share, Return
- * to the main window and Keep on top on the right. No panel toggles,
- * conversation menu or sidebar controls.
+ * A separate conversation window's title bar (R2, S-0002 at 900–1800 wide):
+ * the environment icon, the title with its menu and, for Code and Cowork,
+ * the badge on the left; Share, Return to the main window and Keep on top on
+ * the right. No panel toggles, conversation menu or sidebar controls.
  */
 export function ConversationWindowHeader({ active }: { active: Conversation }) {
   const app = useApp();

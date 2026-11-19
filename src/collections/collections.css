@@ -1,7 +1,7 @@
 /*
- * Collection pages (History for now). Geometry is measured 1:1 from the 40px
- * side margins, the 32px header line centred 72px from the top, 14px list and
- * button text.
+ * Collection pages (History for now). Geometry is measured 1:1 from the
+ * 1164px dark 2x capture R-History-全部对话: 40px side margins, the 32px
+ * header line centred 72px from the top, 14px list and button text.
  */
 .collection-view {
   box-sizing: border-box;
@@ -43,7 +43,8 @@
 }
 :root[data-reference-fonts="true"] .collection-bar h1 {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   font-optical-sizing: auto;
 }
 .collection-bar-actions {
@@ -69,8 +70,8 @@
 .collection-icon.open {
   background: #262626;
 }
-/* Pressed: the ghost button keeps its hover fill and squishes; the original has
-   no darker pressed fill. */
+/* Pressed: the ghost button keeps its hover fill and squishes; the original
+   has no darker pressed fill (desktop bundle 2.31226.1). */
 .collection-icon:active:not(:disabled) {
   scale: var(--press-scale);
   transition:
@@ -170,8 +171,8 @@
   }
 }
 
-/* "Nothing matches “…”": 13px, its line centred 110px under the header's
-   centre, so 84px under the header. */
+/* "Nothing matches “…”" (R-1317, 1x Windows light): 13px, its line centred
+   110px under the header's centre, so 84px under the header. */
 .collection-empty-note {
   margin: 0;
   padding: 84px 0 56px;
@@ -297,13 +298,14 @@
 }
 
 /*
- * Page menus (src/collections/PageMenu.tsx), from the Customize Add menu R-1110
- * and filter/sort menus R-1137/R-1139: 32px rows, 14px text, icons 12px from
- * the row edge, a 4px frame and a 12px radius.
+ * Page menus (src/collections/PageMenu.tsx), from the Customize Add menu
+ * R-1110 and filter/sort menus R-1137/R-1139: 32px rows, 14px text, icons
+ * 12px from the row edge (18px glyph boxes, 16px of ink: R-1189, R-1110), a
+ * 4px frame and a 12px radius.
  */
-/* The menu popup: the popover surface inside a 1px white-10% ring, 0 8px 24px
-   black 32% and 0 2px 6px black 20%, 4px inside with a transparent 1px under
-   the rows. */
+/* The menu popup (live claude.ai, 2026-10-21): the popover surface inside a
+   1px white-10% ring, 0 8px 24px black 32% and 0 2px 6px black 20%, 4px
+   inside with a transparent 1px under the rows. */
 .page-menu {
   position: fixed;
   z-index: 200;
@@ -318,7 +320,8 @@
     0 8px 24px rgb(0 0 0 / 32%),
     0 2px 6px rgb(0 0 0 / 20%);
   outline: none;
-  /* No open or close motion, as the original's menu popup. */
+  /* No open or close motion, as the original's menu popup (desktop bundle
+     2.31226.1). */
 }
 .page-menu > button {
   display: flex;
@@ -333,9 +336,9 @@
   white-space: nowrap;
   color: var(--text);
 }
-/* A row with an icon has 10px either side: the icon's ink starts 16px and the
-   text 42px from the menu's outer edge, the text ending 15px short of the other
-   edge. */
+/* R-1189, R-1110 (1x): a row with an icon has 10px either side: the icon's
+   ink starts 16px and the text 42px from the menu's outer edge, the text
+   ending 15px short of the other edge. */
 .page-menu > button:has(> svg:first-child) {
   padding-inline: 10px;
 }
@@ -359,8 +362,8 @@
 .page-menu > button > .page-menu-check {
   color: var(--link-text);
 }
-/* A row's single-key hint, as the original's conversation menu; the sidebar
-   menu's kbd. */
+/* A row's single-key hint, as the original's conversation menu (live bundle
+   2026-10-16, shared-16: shortcut p, u, r, a, d); the sidebar menu's kbd. */
 .page-menu > button > kbd {
   font: inherit;
   color: #8a8a88;
@@ -391,8 +394,8 @@
   color: #141413;
 }
 :root[data-theme="light"] .page-menu > button > svg {
-  /* The icons are drawn 16px across (an 18px glyph box) in the text's own
-     near-black. */
+  /* R-1189, R-1110 (1x light): the icons are drawn 16px across (an 18px
+     glyph box) in the text's own near-black. */
   color: #141413;
 }
 :root[data-theme="light"] .page-menu > button > kbd {
@@ -401,7 +404,7 @@
 :root[data-theme="light"] .page-menu > button.active {
   background: #f0f0ee;
 }
-/* The captured light menus keep the blue check. */
+/* The captured light menus keep the blue check (R-1290). */
 :root[data-theme="light"] .page-menu > button > .page-menu-check {
   color: #4d80d0;
 }
@@ -417,8 +420,9 @@
 :root[data-theme="light"] .page-menu > hr {
   background: #ececea;
 }
-/* A filter that narrows the list fills its button #cce4fe with a #47698e glyph
-   (light). The menus' #7dacec check on the selected-row tint. */
+/* R-1317: a filter that narrows the list fills its button #cce4fe with a
+   #47698e glyph (light). Dark has no capture: the menus' #7dacec check on
+   the selected-row tint. */
 .collection-icon.filtered {
   background: #22324a;
   color: #7dacec;

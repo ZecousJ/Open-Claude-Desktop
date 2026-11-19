@@ -19,7 +19,7 @@ import {
   verboseOpen,
 } from "../transcript-view/transcript-view-store";
 import { WithTooltip } from "../ui/Tooltip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { FileTypeIcon } from "./FileTypeIcon";
 import { sameDiffFile, useOpenDiffFile } from "../changes/diff-file-request";
 import { isSessionFolder } from "../composer/recentFolders";
@@ -36,7 +36,7 @@ import {
 const basename = (path: string) =>
   path.split(/[\\/]/).filter(Boolean).at(-1) ?? path;
 
-/** The verb and, for one file, its name: "Editing" "app.js". */
+/** The verb and, for one file, its name: "Editing" "app.js" (R-0805 recording). */
 export function fileChangeParts(item: Item): { verb: string; name?: string } {
   const changes = item.changes ?? [];
   const running = itemIsRunning(item);
@@ -70,7 +70,7 @@ export function fileChangeParts(item: Item): { verb: string; name?: string } {
   };
 }
 
-/** "Editing app.js" while Codex applies the patch, "Edited app.js" after. */
+/** "Editing app.js" while Codex applies the patch, "Edited app.js" after (R-0805 recording). */
 export function fileChangeLabel(item: Item) {
   const { verb, name } = fileChangeParts(item);
   return name ? `${verb} ${name}` : verb;
@@ -78,8 +78,9 @@ export function fileChangeLabel(item: Item) {
 
 /**
  * "+2 −1" for a file row or a group summary; hidden while the edit is still
- * running. A row's is the original's pill (its DiffIndicator's default
- * variant): the two counts on their own tinted halves of one chip.
+ * running (R-0794). A row's is the live desktop's pill (2.42304.2, the
+ * DiffIndicator's default variant): the two counts on their own tinted
+ * halves of one chip.
  */
 export function DiffStat({
   additions,
@@ -114,9 +115,9 @@ export function itemsDiffTotals(items: Item[]) {
 }
 
 /**
- * A write that did not happen: "Failed to write <file>" ("Failed to edit" for
- * changes to existing files) and why, shown in red when the row opens. Declined
- * edits say the person declined them.
+ * A write that did not happen (R-0823): "Failed to write <file>" ("Failed to
+ * edit" for changes to existing files) and why, shown in red when the row
+ * opens. Declined edits say the person declined them.
  */
 export function fileChangeFailure(item: Item) {
   const declined = item.status === "declined";
@@ -153,7 +154,8 @@ export function fileChangeFailure(item: Item) {
 
 /**
  * A path as the diff block shows it: from the profile's workspace down for a
- * chat without a folder, else whole.
+ * chat without a folder (owner, 2026-10-09: the whole Application Support
+ * path ran off the card), else whole.
  */
 export function shownPath(path: string) {
   const match = /^.*[\\/]profiles[\\/][^\\/]+[\\/]workspace[\\/](.+)$/.exec(
@@ -169,11 +171,12 @@ export function FileDiffBlock({
   following = false,
 }: {
   file: DiffFile;
-  /** Opens the written file in the file panel. */
+  /** Opens the written file in the file panel (R-1075). */
   onOpen?: () => void;
   /**
-   * The file is still being written: its box keeps to the newest lines as they
-   * arrive, until the person scrolls up to read.
+   * The file is still being written: its box keeps to the newest lines as
+   * they arrive, until the person scrolls up to read (live desktop: the
+   * streaming write's box scrolls with it; owner, 2026-10-22).
    */
   following?: boolean;
 }) {
@@ -186,7 +189,8 @@ export function FileDiffBlock({
     element.scrollTop = element.scrollHeight;
   }, [following, lines.length, lines.at(-1)?.text]);
   // The whole path on one line, its middle giving way to an ellipsis so the
-  // file's name stays, and a copy button at the end.
+  // file's name stays, and a copy button at the end (live desktop
+  // 2.42304.2: "/Users/…/scratch-workspaces/88434fec…pelican-bike.html").
   const slash = Math.max(
     file.path.lastIndexOf("/"),
     file.path.lastIndexOf("\\"),
@@ -242,7 +246,7 @@ export function FileDiffBlock({
   );
 }
 
-/** Code-mode file edit row; expanding it shows the numbered diff. */
+/** Code-mode file edit row; expanding it shows the numbered diff (R-0737). */
 export function CodeFileChange({
   item,
   onArtifact,
@@ -290,7 +294,7 @@ export function CodeFileChange({
               {" "}
               {openDiffFile && !running && changedPaths.length === 1 ? (
                 // A filename on an Edited or Wrote row opens that file in the
-                // diff pane.
+                // diff pane (live bundle, 2026-10-16, c1c1ec7b9 sw fileRef).
                 <button
                   type="button"
                   className="code-file-name code-file-link"
@@ -407,9 +411,10 @@ function TurnFileCards({
 const FIRST_FILES = 3;
 
 /**
- * What Undo sends: the original asks Claude in a new message to put the turn's
- * files back, naming each one in backticks. Backticks and line breaks in a path
- * are dropped so the name stays one code span.
+ * What Undo sends: the original asks Claude in a new message to put the
+ * turn's files back, naming each one in backticks (live claude.ai bundle,
+ * 2026-10-12, turn edits card). Backticks and line breaks in a path are
+ * dropped so the name stays one code span.
  */
 export function undoChangesPrompt(paths: string[]) {
   const names = paths.map(
@@ -425,8 +430,8 @@ export function undoChangesPrompt(paths: string[]) {
 
 /**
  * The names a row shows beside a file whose name another file of the turn
- * shares: the shortest end of its folder that tells them apart; none for a
- * unique name.
+ * shares: the shortest end of its folder that tells them apart (live
+ * claude.ai bundle, 2026-10-13, turn edits card); none for a unique name.
  */
 function folderHints(paths: string[]) {
   const parts = paths.map((path) => path.split(/[\\/]/).filter(Boolean));
@@ -508,11 +513,12 @@ function TurnEditsRow({
 }
 
 /**
- * * a bordered card whose header, "Edited N files" with the changes glyph,
- *   opens the turn's changes; then each file with its type icon, three before
- *   "Show N more"; each row ends in its line counts and a caret. One file is
- *   its own row, without the header. On the latest turn Undo asks Claude in a
- *   new message to put the files back.
+ * After a Code turn that changed files, the turn edits card of live
+ * claude.ai (2026-10-13): a bordered card whose header, "Edited N files"
+ * with the changes glyph, opens the turn's changes; then each file with its
+ * type icon, three before "Show N more"; each row ends in its line counts
+ * and a caret. One file is its own row, without the header. On the latest
+ * turn Undo asks Claude in a new message to put the files back.
  */
 export function CodeTurnChanges({
   turn,
@@ -520,7 +526,7 @@ export function CodeTurnChanges({
   onUndo,
 }: {
   turn: Turn;
-  /** Opens the turn's changes, on one file when a file row asks. */
+  /** Opens the turn's changes, on one file when a file row asks (live bundle, 2026-10-16, c1c1ec7b9 N0). */
   onOpen: (path?: string) => void;
   /** Latest turn only: sends the Undo message. */
   onUndo?: (prompt: string) => void;
@@ -531,9 +537,10 @@ export function CodeTurnChanges({
   const files = turnChangedFiles(turn);
   const totals = diffTotals(files);
   if (!totals.files) return null;
-  // A session started without a folder has nothing to undo against: its files
-  // are file cards that open the file; a folder keeps the edits card,
-  // repository or not.
+  // A session started without a folder has nothing to undo against: its
+  // files are file cards that open the file (live desktop, owner's
+  // capture 2026-10-22: "HTML pelican-bike.html 20.8KB"); a folder keeps
+  // the edits card, repository or not (owner's WonderAgent capture).
   if (
     conversation?.mode === "code" &&
     conversation.cwd &&
@@ -580,10 +587,10 @@ export function CodeTurnChanges({
         <ul className="turn-edits-list">{fileRow(files[0], 0, undo)}</ul>
       </div>
     );
-  // Several files: "Edited N files" over a rule with Undo at its end, three
-  // files, then a last row with the turn's totals: "See all" opens the turn's
-  // changes, or past three files lists the rest in place ("Show less" folds
-  // them).
+  // Several files (live desktop, 2026-10-22, pye's see-all form): "Edited
+  // N files" over a rule with Undo at its end, three files, then a last
+  // row with the turn's totals: "See all" opens the turn's changes, or
+  // past three files lists the rest in place ("Show less" folds them).
   const more = files.length > FIRST_FILES;
   const shown = all || !more ? files : files.slice(0, FIRST_FILES);
   return (

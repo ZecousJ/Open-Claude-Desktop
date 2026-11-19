@@ -372,10 +372,11 @@ export function ConversationHeaderHost({
                 )
             : undefined,
           // Native Chat uses only an existing service link. A local chat
-          // without one keeps this conditional entry absent, never an export or
-          // an invented claude.ai/deep link. Web Chat keeps its popover. A web
-          // Code session is a cloud one: its link is its own address, and it
-          // opens in the desktop app and edits its cloud environment from here.
+          // without one keeps this conditional entry absent, never an export
+          // or an invented claude.ai/deep link. Web Chat keeps its popover.
+          // A web Code session is a cloud one: its link is its own address
+          // (live claude.ai, 2026-10-21), and it opens in the desktop app
+          // and edits its cloud environment from here.
           ...(code && host.kind === "web"
             ? {
                 onOpenInDesktop: () => openSessionInDesktopApp(active.id),

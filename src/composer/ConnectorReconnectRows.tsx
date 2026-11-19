@@ -83,7 +83,8 @@ export function ConnectorReconnectRows({
       setSnapshot({ key: owner.key, servers: readConnectorServers(result) });
     } catch (reason) {
       if (!operation.current()) return;
-      // The raw failure is for the log; the menu says the fixed sentence.
+      // The raw failure is for the log; the menu says the fixed sentence
+      // (live claude.ai bundle, 2026-10-16, c752b32f8 Co).
       console.error("Connector status did not load:", reason);
       setError({ key: owner.key, message: t("Couldn’t load connectors") });
     } finally {
@@ -207,8 +208,9 @@ export function ConnectorReconnectRows({
           </button>
         );
       })}
-      {/* While the list is read: the live menu's loading row, and only where no
-         connector row shows yet. */}
+      {/* While the list is read: the live menu's loading row (live claude.ai
+          bundle, 2026-10-16: a 20px block and a 96×16 bar, no words), and
+          only where no connector row shows yet. */}
       {reading === owner.key &&
         snapshot?.key !== owner.key &&
         entries.length === 0 && (

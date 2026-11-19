@@ -2,9 +2,9 @@ import { X } from "../ui/glyphs";
 import { formatText } from "../i18n";
 
 /**
- * Long pasted text kept as an attachment: a 120px card with the text's first
- * lines faded out and a PASTED label. The remove button shows on hover and
- * keyboard focus.
+ * Long pasted text kept as an attachment (R-0284): a 120px card with the
+ * text's first lines faded out and a PASTED label. The remove button shows
+ * on hover and keyboard focus.
  */
 export function PastedCard({
   text,

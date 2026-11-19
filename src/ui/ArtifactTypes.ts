@@ -22,10 +22,11 @@ export interface Artifact {
   bytes?: number;
   /**
    * The file is past what a snapshot keeps: `content` is empty, `bytes` its
-   * size when known. The viewer shows its too-large card.
+   * size when known. The viewer shows its too-large card (live claude.ai
+   * bundle, 2026-10-13: contentsOmitted).
    */
   contentOmitted?: boolean;
-  /** The agent is rewriting the file: the panel shows its generating state. */
+  /** The agent is rewriting the file: the panel shows its generating state (R-1027). */
   generating?: boolean;
   /**
    * An earlier version picked in the version switcher: what the panel

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -39,6 +41,11 @@ func SetupRouter(
 	redisClient *redis.Client,
 ) *gin.Engine {
 	middleware2.SetIngressRejectRecorder(opsService)
+	runsControlPlane := cfg.RunsControlPlane()
+	if !runsControlPlane {
+		r.RedirectTrailingSlash = false
+		r.Use(modelGatewayRequests)
+	}
 	// 缓存 iframe 页面的 origin 列表，用于动态注入 CSP frame-src
 	var cachedFrameOrigins atomic.Pointer[[]string]
 	emptyOrigins := []string{}
@@ -54,7 +61,9 @@ func SetupRouter(
 		}
 		cachedFrameOrigins.Store(&origins)
 	}
-	refreshFrameOrigins() // 启动时初始化
+	if runsControlPlane {
+		refreshFrameOrigins()
+	}
 
 	// 应用中间件
 	r.Use(middleware2.RequestLogger())
@@ -71,14 +80,21 @@ func SetupRouter(
 	}))
 	r.Use(middleware2.ServerTiming(cfg.Server.EnableServerTiming))
 
+	if !runsControlPlane {
+		routes.RegisterCommonRoutes(r)
+		routes.RegisterGatewayRoutes(r, handlers, apiKeyAuth, apiKeyService, subscriptionService, opsService, settingService, compositeResolver, cfg)
+		return r
+	}
+
 	// CLAUDEX: W-SITE one SiteServer serves the console (/admin, its root
 	// public pages, legacy 302s) and the web app (everything else); it
 	// replaces the upstream FrontendServer. Without any frontend (no embed,
 	// no claudex.web.app_dir) only the Go routes answer.
 	site, err := web.NewSiteServer(web.SiteOptions{
-		Settings: settingService,
-		WebApp:   handlers.Claudex.WebApp(),
-		AppDir:   cfg.Claudex.Web.AppDir,
+		Settings:          settingService,
+		WebApp:            handlers.Claudex.WebApp(),
+		AppDir:            cfg.Claudex.Web.AppDir,
+		UserContentOrigin: cfg.Claudex.Web.UserContentOrigin,
 	})
 	if err != nil {
 		if !errors.Is(err, web.ErrNoFrontend) {
@@ -98,6 +114,32 @@ func SetupRouter(
 	registerRoutes(r, handlers, jwtAuth, optionalJWTAuth, adminAuth, apiKeyAuth, auditLog, stepUpAuth, apiKeyService, subscriptionService, opsService, settingService, compositeResolver, cfg, redisClient)
 
 	return r
+}
+
+func modelGatewayRequests(c *gin.Context) {
+	method := c.Request.Method
+	if method == http.MethodOptions {
+		method = c.GetHeader("Access-Control-Request-Method")
+	}
+	path := c.Request.URL.Path
+	switch method {
+	case http.MethodGet:
+		switch path {
+		case "/health", "/v1/responses", "/responses", "/backend-api/codex/responses":
+			return
+		}
+	case http.MethodPost:
+		switch path {
+		case "/v1/messages", "/v1/chat/completions", "/chat/completions":
+			return
+		}
+		for _, base := range []string{"/v1/responses", "/responses", "/backend-api/codex/responses"} {
+			if path == base || strings.HasPrefix(path, base+"/") {
+				return
+			}
+		}
+	}
+	c.AbortWithStatus(http.StatusNotFound)
 }
 
 // registerRoutes 注册所有 HTTP 路由

@@ -47,6 +47,10 @@ func (r compatibleImagesAccounts) ListSchedulableByGroupIDAndPlatform(context.Co
 	return r.accounts, nil
 }
 
+func (r compatibleImagesAccounts) ListSchedulableByGroupID(context.Context, int64) ([]service.Account, error) {
+	return r.accounts, nil
+}
+
 func (r compatibleImagesAccounts) ListModelAvailabilityCandidates(context.Context, *int64, []string, bool) ([]service.Account, error) {
 	return r.accounts, nil
 }

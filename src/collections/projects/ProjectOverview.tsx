@@ -72,8 +72,10 @@ function useDeviceName(wanted: boolean) {
 }
 
 /**
- * The project's description under its name: up to three lines, its own line
- * breaks kept, no Show more.
+ * The project's description under its name (live claude.ai, 2026-10-21,
+ * c71dee58b: "mt-1 text-body text-secondary whitespace-pre-line
+ * line-clamp-3 break-words", 4px under the heading's column gap): up to
+ * three lines, its own line breaks kept, no Show more.
  */
 export function ProjectDescription({ description }: { description: string }) {
   return (
@@ -84,10 +86,11 @@ export function ProjectDescription({ description }: { description: string }) {
 }
 
 /**
- * A project's page: "Projects / name" at the top left; the name in the page
- * serif with Pin and ⋮; the composer, which starts a chat in the project, over
- * its Recents (or the knowledge line when there are none); and at the right one
- * card with Instructions, Context, Folder and Scheduled, each with its +.
+ * A project's page (R-1202–R-1214): "Projects / name" at the top left; the
+ * name in the page serif with Pin and ⋮; the composer, which starts a chat
+ * in the project, over its Recents (or the knowledge line when there are
+ * none); and at the right one card with Instructions, Context, Folder and
+ * Scheduled, each with its +.
  */
 export function ProjectOverview({
   project,

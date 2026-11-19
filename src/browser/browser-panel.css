@@ -67,7 +67,8 @@
   flex: none;
   color: #8e8e8c;
 }
-/* Several tabs: the open one bright, the others grey, each with a small ×. */
+/* Several tabs (not captured): the open one bright, the others grey, each
+   with a small ×. */
 .browser-tab.several {
   margin-left: 4px;
   padding-right: 2px;
@@ -176,11 +177,12 @@
   background: #0b1f40;
   color: #83a3d7;
 }
-/* The address field, after the original's: at rest an overlay shows the host
-   and, muted, the path, centred between two growing spacers, and the input
-   under it is clear. Focused, the left spacer collapses over 150ms so the text
-   slides to the start; then the overlay fades out and the input in (50ms, after
-   150ms). The rim deepens on hover (150ms); the caret is the accent. */
+/* The address field, after the original's (desktop bundle 2.31226.1): at
+   rest an overlay shows the host and, muted, the path, centred between two
+   growing spacers, and the input under it is clear. Focused, the left
+   spacer collapses over 150ms so the text slides to the start; then the
+   overlay fades out and the input in (50ms, after 150ms). The rim deepens
+   on hover (150ms); the caret is the accent. */
 .browser-address-field {
   position: relative;
   flex: 1;
@@ -386,9 +388,10 @@
   line-height: 15.5px;
   color: #8e8e8c;
 }
-/* The start page, the notices and the dev server cards: centred in the page
-   area at p-lg (12px), text-disabled glyphs, body (13/19) primary titles,
-   footnote (12/15) muted lines, alpha-1 rows. */
+/* The start page, the notices and the dev server cards (live claude.ai
+   bundle, 2026-10-15, cf580efe9 Er / kr / wr and c3069a14e): centred in
+   the page area at p-lg (12px), text-disabled glyphs, body (13/19) primary
+   titles, footnote (12/15) muted lines, alpha-1 rows. */
 .preview-start,
 .preview-card-wrap,
 .preview-notice,
@@ -601,7 +604,7 @@
   font-size: 11px;
   line-height: 17px;
 }
-/* Bi. */
+/* Bi (live claude.ai bundle, 2026-10-14, cf580efe9-gW7kJXTJ.js). */
 .preview-last-frame {
   position: relative;
   width: 100%;
@@ -807,7 +810,7 @@
   gap: 8px;
   margin-top: 16px;
 }
-/* Light theme. */
+/* Light theme (not captured). */
 :root[data-theme="light"] .work-panel.browser-panel {
   background: #fff;
   border-color: #e4e4e2;
@@ -879,10 +882,11 @@
   background: #dce7f8;
   color: #2f5ea8;
 }
-/* The dev server logs drawer: under the page, 200px tall (80px to 60%), an 8px
-   drag strip on its top edge; the header pt-md pe-xs ps-lg with the source in
-   caption (11/17) muted; the output px-lg pb-lg in code (12/17) secondary,
-   errors in text-danger, warnings in text-warning. */
+/* The dev server logs drawer (cf580efe9 `co`): under the page, 200px tall
+   (80px to 60%), an 8px drag strip on its top edge; the header pt-md pe-xs
+   ps-lg with the source in caption (11/17) muted; the output px-lg pb-lg
+   in code (12/17) secondary, errors in text-danger, warnings in
+   text-warning. */
 .browser-logs-drawer {
   position: relative;
   display: flex;
@@ -959,7 +963,7 @@
 :root[data-theme="light"] .browser-logs-body > [data-tone="warn"] {
   color: var(--warning);
 }
-/* A blocked site's strip: text-warning on bg-warning. */
+/* A blocked site's strip (cf580efe9 `Zi`): text-warning on bg-warning. */
 .browser-blocked {
   display: flex;
   flex-shrink: 0;
@@ -978,7 +982,8 @@
   min-width: 0;
 }
 
-/* h-control, gap-[4px], rounded, bg-fill-field, px-xs, shadow-field-ring. */
+/* h-control, gap-[4px], rounded, bg-fill-field, px-xs, shadow-field-ring
+   (live claude.ai bundle, 2026-10-14, cf550b864-BrIZWG9O.js). */
 .browser-address-shell {
   --browser-field: rgb(255 255 255 / 5%);
   --browser-field-ring: rgb(255 255 255 / 10%);

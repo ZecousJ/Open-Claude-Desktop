@@ -5,7 +5,7 @@ import { desktopHost, type HostInfo } from "../../shared/host";
 import { openPolicy } from "../../shared/client-policy";
 import type { AppEvent, Conversation } from "../../shared/types";
 import type { Routine } from "../../shared/routines";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { HostContext } from "../../src/host/HostContext";
 import { TasksPanelOverlay } from "../../src/app/AppOverlays";

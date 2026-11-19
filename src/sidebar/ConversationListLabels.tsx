@@ -1,5 +1,5 @@
 import { type ReactNode, type RefObject } from "react";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { GroupToggle } from "./GroupToggle";
 
 /**
@@ -83,7 +83,7 @@ export function SectionLabel({
         onClick={onToggle}
       >
         <span>{label}</span>
-        <AppIcon name="CaretRight" />
+        <Anthropicon name="CaretRight" />
       </button>
       {children && <div>{children}</div>}
     </div>

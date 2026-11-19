@@ -147,7 +147,7 @@ export function listedAllowed(
   });
 }
 
-/** Dedicated removal. */
+/** Dedicated removal (desktop 2.37337.1, index.chunk-BWk6pVUt.js:241847). */
 export function removeAllowed(
   this: Scheduler,
   id: string,

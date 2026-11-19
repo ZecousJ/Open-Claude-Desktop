@@ -1,6 +1,7 @@
 /**
- * Runs inside the sandboxed preview frame. The renderer compiles the artifact
- * to a CommonJS factory; this mounts its default export.
+ * Runs inside the sandboxed preview frame (bundled by the preview-runtimes
+ * Vite plugin as `ClaudexReact`). The renderer compiles the artifact to a
+ * CommonJS factory; this mounts its default export.
  */
 import * as React from "react";
 import * as ReactDOM from "react-dom";

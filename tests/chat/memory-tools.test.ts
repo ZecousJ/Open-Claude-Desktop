@@ -31,6 +31,7 @@ import { openPolicy, type ClientPolicy } from "../../shared/client-policy";
 import type { Conversation, Item, Mode } from "../../shared/types";
 import {
   MemoryToolView,
+  isMemoryTool,
   pastChatsTitle,
 } from "../../src/transcript/tools/MemoryToolView";
 import { parsePastChats } from "../../src/memory/chat-results";
@@ -387,6 +388,27 @@ test("the search row reads like the captured web search row and lists the chats"
   assert.match(
     failed,
     /Past chats couldn&#x27;t be searched|Past chats couldn't be searched/,
+  );
+});
+
+test("chat history MCP results use the same past-chat rows as stored dynamic calls", () => {
+  const original = item();
+  const { contentItems, ...row } = original;
+  const mcp: Item = {
+    ...row,
+    type: "mcpToolCall",
+    server: "claudex_chat_history",
+    result: { content: [{ type: "text", text: contentItems[0].text }] },
+  };
+  assert.equal(isMemoryTool(mcp), true);
+  assert.equal(isMemoryTool({ ...mcp, server: "other" }), false);
+  assert.equal(
+    renderToStaticMarkup(createElement(MemoryToolView, { item: mcp })),
+    renderToStaticMarkup(createElement(MemoryToolView, { item: original })),
+  );
+  assert.equal(
+    pastChatsTitle({ ...mcp, result: { isError: true } }),
+    "Past chats couldn't be searched",
   );
 });
 

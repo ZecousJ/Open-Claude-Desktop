@@ -87,6 +87,34 @@ test("a context's report replaces the user's time; nothing due cancels the wake"
   wakes.stop();
 });
 
+test("a Code archive wake survives an unloaded account without scheduled tasks", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  const dir = state({ "12": undefined });
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const initial = new RoutineWakes({
+    stateDir: dir,
+    wake: async () => assert.fail("the earlier Runner has stopped"),
+  });
+  initial.setCodeArchive(12, 2000);
+  initial.stop();
+  const woken: number[] = [];
+  const restarted = new RoutineWakes({
+    stateDir: dir,
+    wake: async (id) => {
+      woken.push(id);
+      restarted.setCodeArchive(id, undefined);
+    },
+  });
+  t.after(() => restarted.stop());
+  restarted.scan();
+  assert.equal(restarted.dueAt(12), 2000);
+  t.mock.timers.tick(1000);
+  await Promise.resolve();
+  assert.deepEqual(woken, [12]);
+  restarted.scan();
+  assert.equal(restarted.dueAt(12), undefined);
+});
+
 test("a wake that fails is tried again; a wake that leaves the task due looks again", async () => {
   assert.equal(wakeRetryMs, 120_000);
   let calls = 0;

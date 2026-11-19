@@ -5,7 +5,7 @@ import type {
 } from "../../../shared/model-catalog-api";
 import { chatEffortLevels } from "../../../shared/chat-effort";
 import { onForgetAccountData } from "../../app/forget-account-data";
-import { isDrawingModel } from "../../../shared/model-catalog-api";
+import { isConversationModel } from "../../../shared/model-catalog-api";
 import { compareVersions } from "../../../shared/client-policy-rules";
 
 export type CodeModelChoice = {
@@ -18,13 +18,10 @@ export type CodeModelChoice = {
   updateRequired?: boolean;
 };
 
-/**
- * Model ids a provider offers, its default first. Picture models are not the
- * model menus'.
- */
+/** Conversation models a provider offers, its default first. */
 const providerModels = (provider: Provider) =>
   [...new Set([provider.model, ...provider.models])].filter(
-    (id) => id && !isDrawingModel(id),
+    (id) => id && isConversationModel(id),
   );
 
 /**
@@ -80,7 +77,7 @@ export function catalogChoices(
   };
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, shared-0-zITS2T2K.js, h5).
 export function desktopModelUpdateRequired(current?: string, minimum?: string) {
   if (!current || !minimum) return false;
   const valid = /^\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?$/;
@@ -101,7 +98,7 @@ export function codeModelChoices(
   catalog?: ModelCatalog | null,
 ) {
   const cataloguedChoices = catalogChoices(providers, catalog);
-  // The selected model remains enabled.
+  // The selected model remains enabled (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN.js).
   const selectable = (choice: CodeModelChoice) =>
     choice.providerId === providerId && choice.name === model
       ? { ...choice, updateRequired: false }
@@ -113,9 +110,10 @@ export function codeModelChoices(
     a.providerId === b.providerId && a.name === b.name;
   const current = { providerId, name: model };
   if (catalogued) {
-    // The catalog decides: every model the administrator put in the main menu
-    // is listed there, in its order, the rest under More models. A current
-    // choice from More models is shown first so the checked row stays visible.
+    // The catalog decides: every model the administrator put in the main
+    // menu is listed there, in its order (owner, 2026-10-02: no four-model
+    // cap), the rest under More models. A current choice from More models
+    // is shown first so the checked row stays visible.
     const all = [...listed, ...more];
     const chosen = all.find((c) => same(c, current));
     const quick =
@@ -132,7 +130,8 @@ export function codeModelChoices(
 
 /**
  * The names the last catalog gave, kept in this browser: before the catalog
- * arrives the button shows the name, not the id.
+ * arrives the button shows the name, not the id (owner, 2026-10-03:
+ * "gpt-6.1-sol" turned into "GPT-6.1 Sol" a moment after the page opened).
  */
 const labelsKey = "claudex.modelLabels";
 let knownLabels: Record<string, string> | undefined;

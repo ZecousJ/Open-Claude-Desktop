@@ -45,7 +45,10 @@ async function fixture(bridge: Partial<Window["desktop"]> = {}) {
       linearStatus: async () => ({ connected: false }),
       listApprovedDirectory: async () => [entry],
       mcpServers: async () => ({ servers: configured, configPath: "" }),
-      probeConnector: async () => ({ authRequired: true }),
+      probeConnector: async () => ({
+        authRequired: true,
+        transport: "streamable-http",
+      }),
       addCustomConnector: async (input) => {
         configured = [{ ...runtime, name: input.name, url: input.url }];
         return { servers: configured, configPath: "" };

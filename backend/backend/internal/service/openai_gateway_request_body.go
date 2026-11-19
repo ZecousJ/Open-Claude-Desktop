@@ -2563,6 +2563,9 @@ func supportsOpenAIReasoningEffortMax(model string) bool {
 	normalized := strings.ToLower(lastOpenAIModelSegment(model))
 	normalized = strings.ReplaceAll(normalized, "_", "-")
 	switch {
+	case normalized == "gpt-6.2-sol", strings.HasPrefix(normalized, "gpt-6.2-sol-"),
+		normalized == "gpt-6.2-astra", strings.HasPrefix(normalized, "gpt-6.2-astra-"):
+		return true
 	case strings.HasPrefix(normalized, "deepseek-v4"), strings.HasPrefix(normalized, "deepseek-flash"):
 		// deepseek-flash（= DeepSeek-V4.1-Flash）与 v4 系同为 low/high/max 档位。
 		return true

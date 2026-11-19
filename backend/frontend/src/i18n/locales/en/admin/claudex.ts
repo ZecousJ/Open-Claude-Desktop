@@ -72,7 +72,21 @@ export default {
       title: 'Directory submissions',
       description: 'Review submissions from Claudex users.',
       notes: 'Reviewer notes', approve: 'Approve', reject: 'Reject', empty: 'No submissions.',
-      status: { submitted: 'Submitted and pending review', in_review: 'In review', approved: 'Approved', rejected: 'Rejected' }
+      reviewChanged: 'This submission changed. Review the latest details before deciding.',
+      reviewFields: {
+        endpoints: 'Endpoint configuration', testUrl: 'Test server URL', testSetup: 'Test setup instructions',
+        testData: 'Test data availability', policies: 'Policy acknowledgements', confirmed: 'Confirmed', unconfirmed: 'Unconfirmed',
+        platforms: 'Supported platforms', collectsData: 'Collects user data', privacy: 'Privacy policy', terms: 'Terms of service', yes: 'Yes', no: 'No'
+      },
+      policies: {
+        readGuidelines: 'Read the developer guidelines', firstPartyApi: 'Uses first-party APIs or authorized proxies',
+        noFinancialTransactions: 'No financial transfers', noAiMediaGeneration: 'No AI media generation',
+        noPromptInjection: 'No embedded instructions in tool descriptions',
+        noConversationDataCollection: 'Collects only conversation data required for server functions',
+        publicDocsByPublishDate: 'Public documentation available by publication'
+      },
+      platforms: { claude_code: 'Claudex Code', claude_cowork: 'Cowork' },
+      status: { submitted: 'Submitted and pending review', in_review: 'In review', approved: 'Approved', rejected: 'Rejected', published: 'Published' }
     }
   }
 }

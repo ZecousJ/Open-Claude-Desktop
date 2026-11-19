@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { t, useT } from "../../i18n";
 
 /** One page of a sheet: its title and body. */
@@ -18,9 +18,9 @@ export interface SheetPage {
 
 /** The event a native shell sends for the system Back (closes one page). */
 export const CLOSE_SHEET_EVENT = "claudex-close-sheet";
-/** Dragging the sheet down this far closes it. */
+/** Dragging the sheet down this far closes it (g3r.c = 160 dp, D/d3r.java:38). */
 const DISMISS_DRAG = 160;
-/** How long the sheet takes to leave. */
+/** How long the sheet takes to leave (the standard fade out, D/qd6.java). */
 const EXIT_MS = 150;
 
 /**
@@ -43,11 +43,12 @@ export function useSheetStack() {
 }
 
 /**
- * The official modal bottom sheet: raised fill, 44 dp top corners, the 36 × 5
- * dp grabber, a 16 dp header with the page title and, below the first page,
- * Back. The 32 % black scrim, a tap on it, a drag down past 160 dp, Escape or
- * the shell's Back event close it (Back a page at a time). It is drawn over the
- * transcript only; the native composer stays below.
+ * The official modal bottom sheet (design-system.md §7.3; the Collapsed Tools
+ * sheet colours, chat-transcript.md §4.5): raised fill, 44 dp top corners,
+ * the 36 × 5 dp grabber, a 16 dp header with the page title and, below the
+ * first page, Back. The 32 % black scrim, a tap on it, a drag down past
+ * 160 dp, Escape or the shell's Back event close it (Back a page at a time).
+ * It is drawn over the transcript only; the native composer stays below.
  */
 export function OfficialSheet({
   pages,
@@ -150,7 +151,7 @@ export function OfficialSheet({
               aria-label={t("Back")}
               onClick={onBack}
             >
-              <AppIcon name="CaretRight" />
+              <Anthropicon name="CaretRight" />
             </button>
           ) : (
             <span className="official-sheet-header-spacer" />

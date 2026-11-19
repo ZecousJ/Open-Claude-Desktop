@@ -1,4 +1,4 @@
-/** Connection notices. */
+/** Connection notices (live claude.ai bundle, 2026-10-14, cbe8e060f-DhHWKiDJ.js). */
 export type RemoteControlCause =
   "sign_in" | "update" | "network" | "process_stopped" | "retry";
 export type RemoteControlNotice =
@@ -13,7 +13,7 @@ export function remoteControlCopy(notice: RemoteControlNotice) {
   if (notice.kind === "reconnect_failed")
     return {
       title: "Remote Control is off",
-      body: "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or the web.",
+      body: "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or claudex.zecous.cn.",
       warning: false,
     };
   if (notice.kind === "disconnect_failed")

@@ -43,11 +43,12 @@ export function thumbFrames(from: Place, to: Place) {
 
 /**
  * A segmented control (a radio group drawn as joined buttons), after the
- * original's SegmentedControl: the chosen segment sits on a thumb with an inner
- * ring and a 0 1px 2px shadow, and a new choice slides and stretches the thumb
- * across (translateX + scaleX over --motion-base on --ease-snap). Arrows, Home
- * and End move the choice, as in any radio group. Consumers style it through
- * their own class and the --segmented-* properties (segmented-control.css).
+ * original's SegmentedControl (desktop bundle 2.31226.1): the chosen
+ * segment sits on a thumb with an inner ring and a 0 1px 2px shadow, and a
+ * new choice slides and stretches the thumb across (translateX + scaleX
+ * over --motion-base on --ease-snap). Arrows, Home and End move the choice,
+ * as in any radio group. Consumers style it through their own class and
+ * the --segmented-* properties (segmented-control.css).
  */
 export function SegmentedControl<T extends string | boolean>({
   label,

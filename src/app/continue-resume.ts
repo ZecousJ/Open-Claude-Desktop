@@ -1,8 +1,10 @@
 /**
- * Continue in cloud's way back: the dialog's Ask Claudex to push sends this
- * session the push to run and arms a resume; when that turn ends, the session's
- * header opens the dialog again and it goes on as if the work were uploaded.
- * Kept apart from continue-in-cloud.ts so the header loads only this much.
+ * Continue in cloud's way back (live claude.ai bundle, 2026-10-12: "Asked
+ * Claude to push your work. This comes back when the turn is done."): the
+ * dialog's Ask Claudex to push sends this session the push to run and
+ * arms a resume; when that turn ends, the session's header opens the
+ * dialog again and it goes on as if the work were uploaded. Kept apart
+ * from continue-in-cloud.ts so the header loads only this much.
  */
 import type { Conversation } from "../../shared/types";
 
@@ -62,8 +64,9 @@ export function canContinueInCloud(
 }
 
 /**
- * The dialog's other ways in: asks the session's header, which owns the dialog,
- * to open it.
+ * The dialog's other ways in (live claude.ai bundle, 2026-10-12: the sleep
+ * band's Continue in cloud): asks the session's header, which owns the
+ * dialog, to open it.
  */
 const openers = new Set<(conversationId: string) => void>();
 export function requestContinueInCloud(conversationId: string) {

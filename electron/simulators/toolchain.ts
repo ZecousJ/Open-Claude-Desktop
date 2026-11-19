@@ -1,8 +1,9 @@
 /**
- * Finds the tools simulators need and checks the setup. A Dock launch has no
- * shell PATH, so Homebrew's and the SDK's folders are tried by name. The checks
- * answer true, false or undefined (could not tell), and the setup screens show
- * a step as done only on true.
+ * Finds the tools simulators need and checks the setup (desktop bundle
+ * 2.31226.1: `checkSimulatorSetup` and `checkAndroidSetup`). A Dock launch
+ * has no shell PATH, so Homebrew's and the SDK's folders are tried by name.
+ * The checks answer true, false or undefined (could not tell), and the
+ * setup screens show a step as done only on true.
  */
 import path from "node:path";
 import type {

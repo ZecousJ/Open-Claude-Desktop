@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ChevronDown } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Spinner } from "../../ui/Spinner";
 import type { Project, Settings } from "../../../shared/types";
 import { cronProblem, cronProblemMessages } from "../../../shared/cron";
@@ -59,10 +59,9 @@ const kindLabels: Record<Exclude<RepeatKind, "cron">, string> = {
   custom: "Custom",
 };
 
-/**
- * Local task dialog. Create stays enabled while a required field is empty:
- * pressing it marks each one and focuses the first.
- */
+/** Local task dialog (live claude.ai bundle, 2026-10-14, c97b955f1-DnH50wWB.js).
+ * Create stays enabled while a required field is empty: pressing it marks
+ * each one and focuses the first (live bundle, 2026-10-21, c97b955f1: Tc). */
 export function RoutineEditor({
   draft,
   settings,
@@ -217,7 +216,7 @@ export function RoutineEditor({
           />
           {unavailable && (
             <p className="routine-model-warning" role="status">
-              <AppIcon name="Warning" size={16} aria-hidden="true" />
+              <Anthropicon name="Warning" size={16} aria-hidden="true" />
               {unavailableRoutineModel.local}
             </p>
           )}

@@ -8,18 +8,16 @@ import {
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useDismiss } from "../ui/useDismiss";
 import { useT } from "../i18n";
 import { isEditEndKey } from "../ui/ime";
 import { dropdownPlacement } from "./controls";
 import "./code-theme-select.css";
 
-/**
- * Source c71860c77:2292 select-mode combobox; current popup has a search
- * combobox and 32px options inside a 12px-radius dialog. Only genuinely
- * supported, persisted renderer palettes are supplied.
- */
+/** Source c71860c77:2292 select-mode combobox; current popup has a search
+ * combobox and 32px options inside a 12px-radius dialog (Oct 17 capture).
+ * Only genuinely supported, persisted renderer palettes are supplied. */
 export function CodeThemeSelect<T extends string>({
   label,
   value,
@@ -159,7 +157,7 @@ export function CodeThemeSelect<T extends string>({
           }}
         >
           <span>{t(shown)}</span>
-          <AppIcon name="CaretDown" size={16} />
+          <Anthropicon name="CaretDown" size={16} />
         </button>
       </div>
       {open &&
@@ -211,7 +209,9 @@ export function CodeThemeSelect<T extends string>({
                   onClick={() => choose(index)}
                 >
                   <span>{t(option.label)}</span>
-                  {option.value === value && <AppIcon name="Check" size={16} />}
+                  {option.value === value && (
+                    <Anthropicon name="Check" size={16} />
+                  )}
                 </div>
               ))}
               {!filtered.length && <p role="status">{t("No results")}</p>}

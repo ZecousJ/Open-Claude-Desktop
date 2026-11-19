@@ -7,7 +7,10 @@ import path from "node:path";
 import type { WebContents } from "electron";
 import type { LayoutCommand, OpenLayout } from "../../shared/window-layout";
 import { WindowLayoutCommands } from "../../electron/app/window-layout";
-import { SessionPopouts } from "../../electron/app/session-popouts";
+import {
+  clampOfficialLayoutToDisplays,
+  SessionPopouts,
+} from "../../electron/app/session-popouts";
 
 function contents() {
   return Object.assign(new EventEmitter(), {
@@ -112,6 +115,162 @@ test("whole layouts are claimed once, retain unhandled panes/projects, and expir
   expiring.report({ popouts: [], panes: [] });
   now += 600001;
   assert.equal(expiring.take(), null);
+});
+
+test("a replacement document claims the latest layout once and drops expired carry", (context) => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "claudex-layout-reoffer-"),
+  );
+  context.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const file = path.join(root, "session-popouts.json");
+  let now = 1000000;
+  const sessions = new SessionPopouts(
+    () => file,
+    () => now,
+  );
+  const original = {
+    popouts: [{ sessionId: "original", sessionType: "local" }],
+    panes: [],
+    projects: [],
+  };
+  const latest = {
+    popouts: [],
+    panes: [],
+    projects: [{ projectId: "replacement", alwaysOnTop: true }],
+  };
+  sessions.report(original);
+  sessions.reoffer();
+  sessions.report({ popouts: [], panes: [] });
+  assert.deepEqual(sessions.take(), original);
+  sessions.report(latest);
+  assert.equal(sessions.take(), null);
+  assert.deepEqual(new SessionPopouts(() => file).take(), {
+    ...latest,
+    popouts: original.popouts,
+  });
+  now += 600001;
+  sessions.reoffer();
+  assert.deepEqual(sessions.take(), latest);
+  assert.equal(sessions.take(), null);
+  assert.deepEqual(new SessionPopouts(() => file).take(), latest);
+});
+
+test("discard retires the old activation without touching another account", (context) => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "claudex-layout-discard-"),
+  );
+  context.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const file = path.join(root, "account-a.json");
+  const otherFile = path.join(root, "account-b.json");
+  const layout = {
+    popouts: [{ sessionId: "existing", sessionType: "local" }],
+    panes: [],
+    projects: [],
+  };
+  const oldActivation = new SessionPopouts(() => file);
+  oldActivation.report(layout);
+  oldActivation.reoffer();
+  assert.deepEqual(oldActivation.take(), layout);
+  new SessionPopouts(() => otherFile).report(layout);
+
+  oldActivation.discard();
+  oldActivation.report(layout);
+  oldActivation.reoffer();
+  assert.equal(oldActivation.take(), null);
+  assert.equal(new SessionPopouts(() => file).take(), null);
+  assert.deepEqual(new SessionPopouts(() => otherFile).take(), layout);
+
+  new SessionPopouts(() => file).report(layout);
+  oldActivation.discard();
+  assert.deepEqual(new SessionPopouts(() => file).take(), layout);
+});
+
+test("a legacy layout with more than 50 windows in one group still restores", (context) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-layout-legacy-"));
+  context.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const file = path.join(root, "session-popouts.json");
+  const geometry = {
+    bounds: { x: 10, y: 20, width: 800, height: 600 },
+    alwaysOnTop: true,
+  };
+  fs.writeFileSync(
+    file,
+    JSON.stringify({
+      version: 1,
+      windows: [
+        ...Array.from({ length: 51 }, (_, index) => ({
+          conversationId: `c-${index}`,
+          ...geometry,
+        })),
+        { conversationId: "c-0", pane: "browser", ...geometry },
+      ],
+    }),
+  );
+  const layout = new SessionPopouts(() => file).take();
+  assert.equal(layout?.popouts.length, 50);
+  assert.deepEqual(layout.popouts[0], {
+    sessionId: "c-0",
+    sessionType: "code",
+    ...geometry,
+  });
+  assert.deepEqual(layout.panes, [
+    {
+      sessionId: "c-0",
+      sessionType: "code",
+      paneTileId: "browser",
+      ...geometry,
+    },
+  ]);
+});
+
+test("official pop-outs can span displays, and displaced windows cascade on return", () => {
+  const left = { x: 0, y: 20, width: 1000, height: 700 };
+  const right = { x: 1000, y: 20, width: 1000, height: 700 };
+  const spanning = { x: 936, y: 100, width: 1100, height: 450 };
+  const layout = clampOfficialLayoutToDisplays(
+    {
+      popouts: [
+        { sessionId: "spanning", sessionType: "local", bounds: spanning },
+        {
+          sessionId: "barely-visible",
+          sessionType: "local",
+          bounds: { x: 1980, y: 100, width: 500, height: 400 },
+        },
+      ],
+      panes: [
+        {
+          sessionId: "off-screen",
+          sessionType: "local",
+          paneTileId: "browser",
+          bounds: { x: 3000, y: 150, width: 500, height: 400 },
+        },
+      ],
+      projects: [
+        {
+          projectId: "oversized",
+          bounds: { x: -500, y: 0, width: 2600, height: 690 },
+        },
+      ],
+    },
+    [left, right],
+    (bounds) => (bounds.x >= right.x ? right : left),
+  );
+  assert.deepEqual(
+    layout.popouts.map(({ bounds }) => bounds),
+    [spanning, { x: 1250, y: 170, width: 500, height: 400 }],
+  );
+  assert.deepEqual(layout.panes[0].bounds, {
+    x: 1282,
+    y: 202,
+    width: 500,
+    height: 400,
+  });
+  assert.deepEqual(layout.projects?.[0].bounds, {
+    x: 0,
+    y: 30,
+    width: 2000,
+    height: 690,
+  });
 });
 
 test("an unreadable or unsupported layout is not overwritten", (context) => {

@@ -3,9 +3,10 @@ import { itemIsRunning } from "../../shared/activity";
 import { fileChangeDiff, type DiffFile } from "../diff/diff-model";
 
 /**
- * A conversation's own record of what it changed. Every applied file change of
- * a turn carries its diff; a turn's changes are those, and "All changes" is
- * every turn's in order.
+ * A conversation's own record of what it changed (owner, 2026-10-03: the
+ * Changes panel shows diffs also where the folder is not a Git repository).
+ * Every applied file change of a turn carries its diff; a turn's changes are
+ * those, and "All changes" is every turn's in order.
  */
 export interface TurnChanges {
   turnId: string;
@@ -70,7 +71,8 @@ const slashes = (value: string) =>
   value.replace(/\\/g, "/").replace(/\/+$/, "");
 
 /**
- * The folder the tree starts at: the conversation's folder, or else the
+ * The folder the tree starts at (owner, 2026-10-09: the tree showed a
+ * chat's files from /Users down): the conversation's folder, or else the
  * profile's own workspace a chat without a folder works in.
  */
 export function changesRoot(files: DiffFile[], cwd?: string) {

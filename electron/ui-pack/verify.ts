@@ -1,5 +1,5 @@
 /**
- * Checks a downloaded interface pack (docs/releasing.md): a zip
+ * Checks a downloaded interface pack (docs/desktop-ui-hot-update.md): a zip
  * with `manifest.json`, its ed25519 signature `manifest.sig` (base64) and
  * the files the manifest lists, each with its SHA-256. Only a pack signed by
  * the release key (kept off every server) is ever loaded: the window's code
@@ -9,16 +9,9 @@ import crypto from "node:crypto";
 import JSZip from "jszip";
 import { parseUiManifest, type UiManifest } from "../../shared/ui-pack";
 
-declare const __CLAUDEX_UI_PACK_PUBLIC_KEY__: string | undefined;
-
-/**
- * The release key's public half (SPKI, DER, base64), set at build time from
- * CLAUDEX_UI_PACK_PUBLIC_KEY. A build without one never loads a pack.
- */
+/** The release key's public half (SPKI, DER, base64). */
 export const uiPackPublicKey =
-  typeof __CLAUDEX_UI_PACK_PUBLIC_KEY__ === "string"
-    ? __CLAUDEX_UI_PACK_PUBLIC_KEY__
-    : "";
+  "MCowBQYDK2VwAyEAL5Gm2BZwViQkVWmZ4ie4w4x2Z5k+j6FSS3KfulbHdX8=";
 
 /** The largest pack accepted, unpacked. */
 export const maxPackBytes = 200 * 1024 * 1024;
@@ -57,7 +50,7 @@ export function manifestSigned(
 /** Unpacks and checks a pack; throws with the reason when anything is off. */
 export async function verifyPack(
   zip: Buffer,
-  options: { publicKey?: string; expectVersion?: string } = {},
+  options: { publicKey?: string; expectVersion?: string; maxBytes?: number } = {},
 ): Promise<VerifiedPack> {
   const archive = await JSZip.loadAsync(zip);
   const manifestFile = archive.file("manifest.json");
@@ -80,7 +73,7 @@ export async function verifyPack(
     if (!entry) throw new Error(`The interface pack is missing ${name}.`);
     const data = await entry.async("nodebuffer");
     total += data.length;
-    if (total > maxPackBytes)
+    if (total > (options.maxBytes ?? maxPackBytes))
       throw new Error("The interface pack is too large.");
     if (sha256(data) !== hash)
       throw new Error(

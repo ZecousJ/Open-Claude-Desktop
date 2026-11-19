@@ -114,7 +114,13 @@ export function readConnectorServers(
     "stopped",
     "disabled",
   ]);
-  const auth = new Set(["unsupported", "notLoggedIn", "bearerToken", "oAuth"]);
+  const auth = new Set([
+    "unsupported",
+    "notLoggedIn",
+    "bearerToken",
+    "oAuth",
+    "staticHeaders",
+  ]);
   if (
     !Array.isArray(rows) ||
     new Set(rows.map((row) => row?.name)).size !== rows.length ||

@@ -1,6 +1,6 @@
 import AppKit
 
-// optionDoubleTapped.
+// optionDoubleTapped (desktop bundle 2.37337.1, index.chunk-BWk6pVUt).
 let application = NSApplication.shared
 application.setActivationPolicy(.prohibited)
 var pressed = false

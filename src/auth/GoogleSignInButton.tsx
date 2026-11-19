@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { surface } from "../../shared/host";
 
 /**
- * Continue with Google (LOGIN-GOOGLE), as the live claude.ai login page draws
- * it: a large secondary button the card's width with Google's "G". On the
- * desktop the main process opens Google in the browser. On the web the click
- * runs Google Identity Services' code client in a popup (prepared on mount,
- * since the popup must open in the click) and hands the page the code for the
- * service to exchange; if Google's script can't load (Google unreachable)
- * nothing shows.
+ * Continue with Google (LOGIN-GOOGLE), as the live claude.ai login page
+ * draws it (2026-10-15, c029a409d): a large secondary button the card's
+ * width with Google's "G". On the desktop the main process opens Google in
+ * the browser. On the web the click runs Google Identity Services' code
+ * client in a popup (prepared on mount, since the popup must open in the
+ * click) and hands the page the code for the service to exchange; if
+ * Google's script can't load (Google unreachable) nothing shows.
  */
 
 type CodeClient = { requestCode(): void };
@@ -51,7 +51,7 @@ function loadGoogleOAuth(): Promise<GoogleOAuth> {
   return loading;
 }
 
-/** Google's "G". */
+/** Google's "G" (the live claude.ai login page's, 20px). */
 export function GoogleMark({ size = 20 }: { size?: number }) {
   return (
     <svg

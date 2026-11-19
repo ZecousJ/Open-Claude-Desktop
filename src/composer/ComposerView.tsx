@@ -98,6 +98,7 @@ export interface ComposerFrameKit {
   inputRow: React.RefObject<HTMLDivElement | null>;
   interrupt: () => Promise<void>;
   issuesOpen: boolean;
+  knowledgeChip: React.JSX.Element;
   linearIssuesOpen: boolean;
   mention: MentionMatch | null;
   mentionOpen: boolean;
@@ -259,6 +260,7 @@ export function composerFrame(kit: ComposerFrameKit) {
     inputRow,
     interrupt,
     issuesOpen,
+    knowledgeChip,
     linearIssuesOpen,
     mention,
     mentionOpen,
@@ -535,10 +537,12 @@ export function composerFrame(kit: ComposerFrameKit) {
         trailingControls={trailingControls}
         unifiedChat={unifiedChat}
       />
-      {/* The row under a Chat or Cowork frame. In a conversation: "+", the chips
-         and the microphone at the left, the disclaimer centred, the model at
-         the right. On the home: the project (Chat) or the project or folder and
-         Output (Cowork) at the left, the model at the right. */}
+      {/* The row under a Chat or Cowork frame (live claude.ai bundle,
+          2026-10-12: the composer's chin). In a conversation: "+", the
+          chips and the microphone at the left, the disclaimer centred, the
+          model at the right. On the home: the project (Chat) or the
+          project or folder and Output (Cowork) at the left, the model at
+          the right. */}
       {conversation && (
         <div
           className="composer-chin conversation-footer"
@@ -547,13 +551,17 @@ export function composerFrame(kit: ComposerFrameKit) {
           <div className="composer-dictation-target" ref={dictationTarget} />
           <div className="composer-chin-leading">
             {attachmentPicker}
-            {/* A Chat conversation adds a folder from "+". Tasks now open in
-               Chat too, and the live chin of a task chat has no folder button;
-               only a task's own window keeps it. */}
+            {/* A Chat conversation adds a folder from "+" (live claude.ai
+                bundle, 2026-10-16, c1958b152: "Add folder" among the add
+                menu's rows). Tasks now open in Chat too, and the live chin
+                of a task chat has no folder button (2026-10-21: "+",
+                Dictate, voice, model, permission); only a task's own
+                window keeps it. */}
             {active && coworkTask && !unifiedChat && (
               <CoworkTaskFolderButton conversation={active} />
             )}
             {mode === "chat" && researchChip}
+            {knowledgeChip}
             {chinVoice}
           </div>
           <ChinDisclaimer
@@ -573,9 +581,9 @@ export function composerFrame(kit: ComposerFrameKit) {
           />
           <div className="composer-chin-trailing">
             {modelPicker}
-            {/* A scheduled task's run always has full access, so it shows no
-               permission mode; nor does a task from an outside prompt, which
-               always asks first. */}
+            {/* A scheduled task's run always has full access (owner,
+                2026-10-12), so it shows no permission mode; nor does a
+                task from an outside prompt, which always asks first. */}
             {incognitoControls &&
               !active?.scheduledRun &&
               !active?.asksFirst &&

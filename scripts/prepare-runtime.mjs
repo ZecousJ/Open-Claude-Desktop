@@ -20,7 +20,9 @@ if (positional.length > 2)
 const platform = positional[0] || process.platform;
 const arch = positional[1] || process.arch;
 const downloadOnly = args.includes("--download-only");
-const version = "0.144.1";
+// 0.150.0 enables unified exec on Windows and terminates its command Job on Stop.
+const version = platform === "win32" ? "0.150.0" :
+  JSON.parse(fs.readFileSync(path.join(project, "package.json"), "utf8")).devDependencies["@openai/codex"];
 const packageVersion = `${version}-${platform}-${arch}`;
 const target = {
   "darwin-arm64": "aarch64-apple-darwin",
@@ -43,13 +45,14 @@ const usable = (base) => {
     return false;
   }
 };
-function run(command, commandArgs) {
+function run(command, commandArgs, env = process.env) {
   // Passing argv directly also handles Windows paths containing spaces; do not launch npm through cmd.exe.
   const result = spawnSync(command, commandArgs, {
     cwd: project,
     encoding: "utf8",
     windowsHide: true,
     maxBuffer: 16 * 1024 * 1024,
+    env,
   });
   if (result.error || result.status !== 0)
     throw new Error(
@@ -137,5 +140,12 @@ if (downloadOnly) {
   const destination = path.join(project, "build", "runtime");
   fs.rmSync(destination, { recursive: true, force: true });
   fs.cpSync(vendor, destination, { recursive: true });
+  if (platform === "win32")
+    for (const linuxArch of ["amd64", "arm64"])
+      run("go", [
+        "build", "-trimpath", "-ldflags=-s -w", "-o",
+        path.join(destination, `wsl-gateway-linux-${linuxArch}`),
+        "electron/wsl/gateway-relay.go",
+      ], { ...process.env, CGO_ENABLED: "0", GOOS: "linux", GOARCH: linuxArch });
   console.log(`Bundled Codex ${version} for ${target}`);
 }

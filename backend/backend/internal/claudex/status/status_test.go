@@ -1,6 +1,7 @@
 package status
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -172,6 +173,32 @@ func TestOpenIncidentRaisesItsProvider(t *testing.T) {
 	require.Equal(t, []int64{1}, o.Platforms[0].Days[0].Incidents)
 }
 
+func TestOverviewMatchesLegacyIncidentChannel(t *testing.T) {
+	now := time.Date(2026, 9, 30, 10, 0, 0, 0, time.UTC)
+	channels := []Channel{
+		{ID: 1, Name: "Astra 专用", Model: "one"},
+		{ID: 1, Name: "Astra 专用", Model: "two"},
+		{ID: 2, Name: "Cloud EU", Model: "one"},
+		{ID: 3, Name: "CLOUD EU", Model: "one"},
+	}
+	incidents := []Incident{
+		{ID: 1, Platform: "astra 专用", Impact: ImpactOutage, StartedAt: now},
+		{ID: 2, Platform: "cloud eu", Impact: ImpactOutage, StartedAt: now},
+		{ID: 3, Platform: "Cloud EU", Impact: ImpactDegraded, StartedAt: now},
+	}
+	o := BuildOverview(channels, nil, nil, incidents, dayWindow(now, now), time.UTC, now)
+	require.Equal(t, "Astra 专用", o.Incidents[0].Platform)
+	require.Equal(t, "astra 专用", incidents[0].Platform)
+	require.Equal(t, "cloud eu", o.Incidents[1].Platform)
+	require.Equal(t, "Cloud EU", o.Incidents[2].Platform)
+	require.Equal(t, []int64{1}, o.Platforms[0].Days[0].Incidents)
+	require.Equal(t, []int64{1}, o.Platforms[0].Components[1].Days[0].Incidents)
+	require.Equal(t, LevelOutage, o.Platforms[0].Level)
+	require.Equal(t, []int64{3}, o.Platforms[1].Days[0].Incidents)
+	require.Equal(t, LevelDegraded, o.Platforms[1].Level)
+	require.Empty(t, o.Platforms[2].Days[0].Incidents)
+}
+
 func TestDecide(t *testing.T) {
 	// Channel "openai" checks two models, "grok" one.
 	channels := []Channel{
@@ -207,13 +234,20 @@ func TestDecide(t *testing.T) {
 	require.Empty(t, decide(channels[:2], once, []Incident{{ID: 9, Platform: "openai", Auto: true}}))
 }
 
+func TestDecideDoesNotDuplicateLegacyIncident(t *testing.T) {
+	channels := []Channel{{ID: 1, Name: "Astra 专用", Model: "m"}}
+	down := map[key][]string{{1, "m"}: {"error", "failed"}}
+	open := []Incident{{ID: 1, Platform: "astra 专用"}}
+	require.Empty(t, decide(channels, down, open))
+}
+
 func TestIncidentInput(t *testing.T) {
 	_, err := IncidentInput{}.normalize(true)
 	require.Error(t, err, "a title is needed")
 	in, err := IncidentInput{Title: " API errors ", Platform: " OpenAI "}.normalize(true)
 	require.NoError(t, err)
 	require.Equal(t, "API errors", in.Title)
-	require.Equal(t, "openai", in.Platform)
+	require.Equal(t, "OpenAI", in.Platform)
 	require.Equal(t, ImpactDegraded, in.Impact)
 	require.Equal(t, StatusInvestigating, in.Status)
 	_, err = IncidentInput{Title: "x", Status: "fixed"}.normalize(true)
@@ -224,6 +258,15 @@ func TestIncidentInput(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, StatusMonitoring, partial.Status)
 	require.Equal(t, "", partial.Impact, "an update leaves the impact as it is")
+}
+
+func TestIncidentChannelNameLength(t *testing.T) {
+	name := "Astra " + strings.Repeat("专", 94)
+	input, err := (IncidentInput{Title: "Slow replies", Platform: name}).normalize(true)
+	require.NoError(t, err)
+	require.Equal(t, name, input.Platform)
+	_, err = (IncidentInput{Title: "Slow replies", Platform: name + "用"}).normalize(true)
+	require.Error(t, err)
 }
 
 func ptr[T any](v T) *T { return &v }

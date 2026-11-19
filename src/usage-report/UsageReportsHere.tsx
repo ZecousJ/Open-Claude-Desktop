@@ -17,8 +17,8 @@ const SessionInfoCard = lazyPiece(
 
 /**
  * Usage reports and Session info cards posted at this point of a Code
- * transcript: each is the "/usage" or "/status" prompt and its card under it,
- * as the live app's client rows show them.
+ * transcript (live claude.ai bundle): each is the "/usage" or "/status"
+ * prompt and its card under it, as the live app's client rows show them.
  */
 export function UsageReportsHere({
   conversation,

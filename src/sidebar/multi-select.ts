@@ -1,10 +1,11 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * The sidebar's multi-select: ⌘ or Ctrl-click toggles a row, Shift-click
- * selects the range from the last row clicked, and a plain click clears the
- * selection. A selection stays inside one domain (a section of the list): a
- * toggle or a range that starts in another domain starts over there.
+ * The sidebar's multi-select (live claude.ai bundle, 2026-10-14, shared-6
+ * `lrL`): ⌘ or Ctrl-click toggles a row, Shift-click selects the range from
+ * the last row clicked, and a plain click clears the selection. A selection
+ * stays inside one domain (a section of the list): a toggle or a range that
+ * starts in another domain starts over there.
  */
 export type SelectionState = {
   keys: ReadonlySet<string>;

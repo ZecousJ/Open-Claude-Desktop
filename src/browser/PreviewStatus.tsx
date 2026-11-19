@@ -4,9 +4,10 @@ import { t } from "../i18n";
 import { PreviewGlyph, type PreviewGlyphName } from "./preview-glyphs";
 
 /**
- * The pane's centred notice: an lg glyph drawn 28px in text-muted, the title in
- * body primary and the body in footnote muted (both 36ch, 4px apart), the
- * actions 4px apart, 12px gaps and padding.
+ * The pane's centred notice (live claude.ai bundle, 2026-10-15, c3069a14e
+ * `f`): an lg glyph drawn 28px in text-muted, the title in body primary and
+ * the body in footnote muted (both 36ch, 4px apart), the actions 4px apart,
+ * 12px gaps and padding.
  */
 export function PreviewNotice({
   icon,
@@ -90,11 +91,12 @@ export function lastLogLine(message: string) {
 }
 
 /**
- * Dev server failed to start: the Warning glyph at xl in text-disabled, the
- * title, the last line of the error in a row of its own (code muted on alpha-1)
- * with a Copy error log button that turns into Copied for 1.5s, and Try again.
- * The original adds "Error details were sent to Claude"; nothing is sent here,
- * so that line is left out.
+ * Dev server failed to start (c3069a14e's sibling, cf580efe9 `kr`): the
+ * Warning glyph at xl in text-disabled, the title, the last line of the
+ * error in a row of its own (code muted on alpha-1) with a Copy error log
+ * button that turns into Copied for 1.5s, and Try again. The original adds
+ * "Error details were sent to Claude"; nothing is sent here, so that line
+ * is left out.
  */
 export function DevServerFailedCard({
   message,
@@ -161,9 +163,9 @@ export function DevServerFailedCard({
 }
 
 /**
- * The page's dev server stopped: a row on alpha-1 with Cache, the server's name
- * in body secondary, "Stopped" in footnote muted and an xxs secondary Restart,
- * and under it the caption.
+ * The page's dev server stopped (cf580efe9 `wr`): a row on alpha-1 with
+ * Cache, the server's name in body secondary, "Stopped" in footnote muted
+ * and an xxs secondary Restart, and under it the caption.
  */
 export function DevServerStoppedCard({
   name,
@@ -201,7 +203,8 @@ export function DevServerStoppedCard({
   );
 }
 
-/** The last frame, not a running page. */
+/** The last frame, not a running page (live claude.ai bundle, 2026-10-14,
+ * cf580efe9-gW7kJXTJ.js, Bi / wr). */
 export function RestoredPreview({
   tab,
   busy,

@@ -34,6 +34,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/claudex/core"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webhost"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webproto"
+	"github.com/Wei-Shaw/sub2api/internal/claudex/webstore"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -63,7 +64,7 @@ func main() {
 	s := &smoke{mock: strings.TrimRight(*mock, "/"), driver: strings.TrimRight(*driver, "/"),
 		client: &http.Client{Timeout: 30 * time.Second}, users: map[string]int64{}, tickets: map[string]string{}}
 
-	c := webhost.NewWithBackends(&core.Env{}, webhost.Backends{
+	c := webhost.NewWithBackends(&core.Env{Components: []core.Feature{s}}, webhost.Backends{
 		ParseToken:   s.parseToken,
 		CheckAccess:  func(context.Context, int64, string, bool) error { return nil },
 		RedeemTicket: s.redeem,
@@ -72,6 +73,7 @@ func main() {
 		},
 		BackendMode:      func(context.Context) bool { return false },
 		Store:            storeOps{s},
+		Uploads:          uploadOps{s},
 		WebKey:           s.webKey,
 		LocalRunnerToken: *token,
 	})
@@ -99,6 +101,15 @@ func main() {
 	fmt.Printf("listening %s\n", ln.Addr().String())
 	srv := &http.Server{Handler: r, ReadHeaderTimeout: 10 * time.Second}
 	log.Fatal(srv.Serve(ln))
+}
+
+func (*smoke) Name() string { return "smoke-web-sessions" }
+
+func (*smoke) CheckWebCaller(_ context.Context, userID int64, session string, issuedAt time.Time) error {
+	if userID <= 0 || session != "smoke" || issuedAt.Before(time.Now().Add(-time.Hour)) {
+		return errors.New("session refused")
+	}
+	return nil
 }
 
 // parseToken asks the mock who the token belongs to.
@@ -210,6 +221,35 @@ func (s *smoke) webKey(ctx context.Context, req webhost.KeyRequest) (any, error)
 }
 
 type storeOps struct{ s *smoke }
+
+// Upload metadata and bytes share the test driver's account-owned file store.
+type uploadOps struct{ s *smoke }
+
+func (o uploadOps) call(ctx context.Context, userID int64, op string, body any) (webstore.FileInfo, error) {
+	raw, err := o.s.driverCall(ctx, "/upload", map[string]any{"userId": userID, "op": op, "body": body})
+	var info webstore.FileInfo
+	if err == nil {
+		err = json.Unmarshal(raw, &info)
+	}
+	return info, err
+}
+
+func (o uploadOps) BeginUpload(ctx context.Context, userID int64, name, mime string, size int64) (webstore.FileInfo, error) {
+	return o.call(ctx, userID, "begin", map[string]any{"name": name, "mime": mime, "size": size})
+}
+
+func (o uploadOps) WriteUpload(ctx context.Context, userID int64, id string, offset int64, data []byte) (webstore.FileInfo, error) {
+	return o.call(ctx, userID, "write", map[string]any{"id": id, "offset": offset, "data": data})
+}
+
+func (o uploadOps) File(ctx context.Context, userID int64, id string) (webstore.FileInfo, error) {
+	return o.call(ctx, userID, "file", map[string]any{"id": id})
+}
+
+func (o uploadOps) DeleteFile(ctx context.Context, userID int64, id string) error {
+	_, err := o.call(ctx, userID, "delete", map[string]any{"id": id})
+	return err
+}
 
 func (o storeOps) ServeRunnerOp(ctx context.Context, userID int64, op string, body json.RawMessage) (any, error) {
 	if len(body) == 0 {

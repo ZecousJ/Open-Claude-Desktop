@@ -8,11 +8,14 @@ import {
 import type { DragGhostSource } from "./useConversationDrag";
 
 /**
- * The dragged row's copy, after the original's: the row's own markup on a pill
- * with the floating shadow, held where it was grabbed and moved to the pointer
- * every frame. When a release would unpin, the copy fades out and "Release to
- * unpin" fades in over a red fill, and the pill narrows to the words and
- * centres on the pointer; all of it over 150ms on the ease-out curve.
+ * The dragged row's copy, after the original's (desktop bundle 2.31226.1,
+ * the sidebar drag ghost; unchanged in the live claude.ai bundle,
+ * 2026-10-12, but for its height, set in useConversationDrag): the row's own
+ * markup on a pill with the floating
+ * shadow, held where it was grabbed and moved to the pointer every frame.
+ * When a release would unpin, the copy fades out and "Release to unpin"
+ * fades in over a red fill, and the pill narrows to the words and centres
+ * on the pointer; all of it over 150ms on the ease-out curve.
  */
 export function DragGhost({
   ghost,

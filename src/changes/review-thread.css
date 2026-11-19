@@ -1,11 +1,16 @@
-/* Review threads in the Changes panel: px-md py-xs around a card with a rounded
-   (6px) border in the border colour, surface-3 behind and shadow-sm; the head
-   row min-h-7 (28px) with gap-1.5 at px-md pt-1, the author in body-medium
-   (13/19, 500), "Line N" in footnote (12/15) muted; segments at px-md pb-1.25
-   pt-xs; the foot border-top at px-sm py-xs. */
+/* Review threads in the Changes panel (live claude.ai bundle, 2026-10-15,
+   c44d00c7f `Qi`): px-md py-xs around a card with a rounded (6px) border
+   in the border colour, surface-3 behind and shadow-sm; the head row
+   min-h-7 (28px) with gap-1.5 at px-md pt-1, the author in body-medium
+   (13/19, 500), "Line N" in footnote (12/15) muted; segments at px-md
+   pb-1.25 pt-xs; the foot border-top at px-sm py-xs. */
 .review-thread-wrap {
   padding: 4px 8px;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   white-space: normal;
 }
 .review-thread {
@@ -222,7 +227,11 @@
   border-bottom: 1px solid rgb(255 255 255 / 10%);
   background: rgb(255 255 255 / 5%);
   color: #898781;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   font-size: 12px;
   line-height: 15px;
 }
@@ -280,9 +289,9 @@
 :root[data-theme="light"] .review-thread-error {
   color: #8e2626;
 }
-/* A review finding: body px-md pt-xs, pb-1.25 above the foot (pb-md without
-   one); the detail muted; the foot border-top px-sm py-xs with Fix this one at
-   the end. */
+/* A review finding (c44d00c7f `xa`): body px-md pt-xs, pb-1.25 above the
+   foot (pb-md without one); the detail muted; the foot border-top px-sm
+   py-xs with Fix this one at the end. */
 .review-finding-body {
   display: flex;
   flex-direction: column;

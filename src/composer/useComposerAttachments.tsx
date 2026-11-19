@@ -87,7 +87,8 @@ export function useComposerAttachments(kit: UseComposerAttachmentsKit) {
         setModelMenu(false);
         setAddMenu(false);
       }
-      // ⌘U alone.
+      // ⌘U alone (live claude.ai bundle, 2026-10-12: file_upload matches the
+      // exact chord and ignores a held key's repeats).
       if (
         event.key.toLowerCase() === "u" &&
         (platform === "darwin" ? event.metaKey : event.ctrlKey) &&
@@ -127,8 +128,10 @@ export function useComposerAttachments(kit: UseComposerAttachmentsKit) {
     window.addEventListener("claudex:composer-menu", listener);
     return () => window.removeEventListener("claudex:composer-menu", listener);
   }, [mode, codeHomeDraft]);
-  // ⌥⌘F (Ctrl+Alt+F elsewhere) turns Fast mode on or off where the model has a
-  // fast tier; otherwise it opens the model menu, whose Fast mode row says why.
+  // ⌥⌘F (Ctrl+Alt+F elsewhere) turns Fast mode on or off where the model
+  // has a fast tier; otherwise it opens the model menu, whose Fast mode row
+  // says why (live claude.ai bundle, 2026-10-12: toggleFastMode, which falls
+  // back to the model menu).
   const toggleFastKey = useRef(() => {});
   toggleFastKey.current = () => {
     const state = fastModeState(catalog, model);
@@ -138,15 +141,18 @@ export function useComposerAttachments(kit: UseComposerAttachmentsKit) {
       setModelMenu(true);
     }
   };
-  // ⇧⌘I opens Code's model menu, ⇧⌘E its effort selector and ⇧⌘M its permission
-  // mode menu. Heard before the window's own ⇧⌘I (Incognito) so that Code keeps
-  // the key; the web leaves Ctrl+Shift+I to the browser's developer tools.
+  // ⇧⌘I opens Code's model menu, ⇧⌘E its effort selector and ⇧⌘M its
+  // permission mode menu (desktop bundle 2.31226.1: openModelMenu,
+  // openEffortMenu, openModeMenu). Heard before the window's own
+  // ⇧⌘I (Incognito) so that Code keeps the key; the web leaves Ctrl+Shift+I
+  // to the browser's developer tools.
   useEffect(() => {
     if (mode !== "code") return;
     const listener = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
-      // ⇧⌘M (the app) or ⌥⌘M opens the permission mode menu. Read by the
-      // physical key: Option changes the letter.
+      // ⇧⌘M (the app) or ⌥⌘M opens the permission mode menu (live
+      // claude.ai bundle, 2026-10-12: openModeMenu; the web leaves ⇧⌘M to
+      // the browser). Read by the physical key: Option changes the letter.
       const modifier = platform === "darwin" ? event.metaKey : event.ctrlKey;
       if (
         event.code === "KeyF" &&
@@ -208,7 +214,9 @@ export function useComposerAttachments(kit: UseComposerAttachmentsKit) {
     return () => document.removeEventListener("keydown", listener, true);
   }, [mode, platform, codeHomeDraft]);
 
-  // ⇧⌘. opens or closes the Chat and Cowork model menu.
+  // ⇧⌘. opens or closes the Chat and Cowork model menu (live claude.ai
+  // bundle, 2026-10-12: model_selector, Period with Shift and Command, or
+  // Control elsewhere; a held key's repeats do nothing).
   useEffect(() => {
     if (mode === "code") return;
     const listener = (event: KeyboardEvent) => {
@@ -242,7 +250,8 @@ export function useComposerAttachments(kit: UseComposerAttachmentsKit) {
     const limit = maxAttachmentsFor(mode);
     const room = limit - attachments.length - pending.length;
     // A batch that would go over the limit is refused with the limit's
-    // sentence, whole, never trimmed in silence.
+    // sentence, whole, never trimmed in silence (live claude.ai bundle,
+    // 2026-10-16, shared-28: the upload count check returns false).
     if (
       room <= 0 ||
       files.length + (pastedText ? 1 : 0) > room ||
@@ -345,7 +354,8 @@ export function useComposerAttachments(kit: UseComposerAttachmentsKit) {
   const dropScope: FileDropScope = narrow ? "card" : "page";
   const dropState = useFileDrop(frame, {
     scope: dropScope,
-    // With attachments off the zone is not armed: no overlay, no drop.
+    // With attachments off the zone is not armed: no overlay, no drop (live
+    // claude.ai bundle, 2026-10-16, shared-9 y$/bF: disableFileAttachments).
     enabled: !updateRequired && attachmentsAllowed,
     onDrop: (data) => {
       // Folders arrive as empty files without a type; they can't be attached.

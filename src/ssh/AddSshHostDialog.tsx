@@ -72,13 +72,15 @@ export const hostKeyChangedText =
   "This host's identity changed since you last connected, for example because it was reinstalled. If you trust it, remove the old key and connect again.";
 
 /**
- * Add SSH connection / Edit connection. * Host IP (an address, or an alias from
- * ~/.ssh/config as suggested) and Port, Username and Password, Name; Identity
- * file and Default folder moved into Advanced with where Claudex keeps its
- * files on the host and a different ssh program. The password is saved
- * encrypted on this computer (electron/ssh/password-store.ts) and answers ssh's
- * password question. Test connection reaches the host with the values as typed;
- * Add or Save stores it.
+ * Add SSH connection / Edit connection (design 5.2; not captured, so the
+ * layout follows the app's other form dialogs, R-1289). Owner, 2026-10-08:
+ * Host IP (an address, or an alias from ~/.ssh/config as suggested) and
+ * Port, Username and Password, Name; Identity file and Default folder
+ * moved into Advanced with where Claudex keeps its files on the host and a
+ * different ssh program. The password is saved encrypted on this computer
+ * (electron/ssh/password-store.ts) and answers ssh's password question.
+ * Test connection reaches the host with the values as typed; Add or Save
+ * stores it.
  */
 export function AddSshHostDialog({
   host,

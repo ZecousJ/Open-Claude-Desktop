@@ -50,7 +50,7 @@ export function UsageOverview({
   const t = useT();
   const [tab, setTab] = useState<"overview" | "models">("overview");
   const [range, setRange] = useState<UsageRange>("all");
-  // The comparison names a random book, fixed for as long as the card is shown.
+  // The comparison names a random book, fixed for as long as the card is shown (R-0360).
   const [roll] = useState(() => Math.random());
   const dashboard = useUsageDashboard(range);
   const local = codeUsage(conversations, range);
@@ -59,7 +59,8 @@ export function UsageOverview({
   const busiest = Math.max(0, ...grid.map((cell) => cell.count));
   const comparison = tokenComparison(usage.tokens, roll);
   // A day's "Oct 3 — 12" shows in the app's tooltip above the tile, not the
-  // browser's native title. One tooltip serves every tile.
+  // browser's native title (live claude.ai bundle, 2026-10-12: the heatmap
+  // wraps each tile in its Tooltip). One tooltip serves every tile.
   const [dayTip, setDayTip] = useState("");
   const { props: tipProps, tooltip: dayTooltip } = useTooltip(dayTip, {
     placement: "above",

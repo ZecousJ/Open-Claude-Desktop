@@ -4,12 +4,13 @@
  * transitions stop and fades stay.
  */
 
-/* Press squish. A pressed control shrinks to 97.5% over --motion-fast and, on
-   release, springs back over --motion-slow, overshooting a little before it
-   settles (the original's .cds-btn-squish; a card shrinks to 99%). The shared
-   button classes take it without the class. The press-in curve is the CSS
-   ease-out keyword, as in the original. Static CSS. A component that sets its
-   own transition keeps the spring by listing var(--press-release) in it. */
+/* Press squish. A pressed control shrinks to 97.5% over --motion-fast and,
+   on release, springs back over --motion-slow, overshooting a little before
+   it settles (the original's .cds-btn-squish; a card shrinks to 99%). The
+   shared button classes take it without the class. The press-in curve is the
+   CSS ease-out keyword, as in the original. Source: desktop bundle 2.31226.1
+   static CSS. A component that sets its own transition keeps the spring by
+   listing var(--press-release) in it. */
 .u-press,
 .u-press-card {
   transition: var(--button-fill-transition), var(--press-release);
@@ -92,9 +93,12 @@
   }
 }
 
-/* The same fade across a horizontal scroller's start and end edges.
-   --scroll-fade-size is 28px as there; --scroll-fade-left / --scroll-fade-right
-   size one side. Items scrolled into view stop clear of the fade. */
+/* The same fade across a horizontal scroller's start and end edges (the
+   original's scroll-fade-x: setting navs that turn into a row on narrow
+   windows, tab strips, wide tables; desktop bundle 2.31226.1 static CSS).
+   --scroll-fade-size is 28px as there; --scroll-fade-left /
+   --scroll-fade-right size one side. Items scrolled into view stop clear of
+   the fade. */
 @property --u-fade-left {
   syntax: "<length>";
   inherits: false;

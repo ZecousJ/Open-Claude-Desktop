@@ -1,72 +1,75 @@
-// Native notification authorization status.
+// Native authorization (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt, getAuthorizationStatus).
 #import <UserNotifications/UserNotifications.h>
 #include <node_api.h>
-#include <string>
 
-struct AuthorizationRequest {
-  napi_deferred deferred;
-  napi_async_work work;
-  bool request;
-  bool failed;
-  std::string result;
-};
+static constexpr char interrupted[] = "NOTIFICATION_AUTHORIZATION_INTERRUPTED";
 
-static void ExecuteAuthorization(napi_env env, void *data) {
-  auto *request = static_cast<AuthorizationRequest *>(data);
-  @autoreleasepool {
-    @try {
-    auto semaphore = dispatch_semaphore_create(0);
-    auto center = [UNUserNotificationCenter currentNotificationCenter];
-    if (request->request) {
-      [center requestAuthorizationWithOptions:UNAuthorizationOptionAlert | UNAuthorizationOptionBadge | UNAuthorizationOptionSound
-                           completionHandler:^(BOOL granted, NSError *error) {
-        request->result = error ? "error" : granted ? "granted" : "denied";
-        dispatch_semaphore_signal(semaphore);
-      }];
-    } else {
-      [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
-        switch (settings.authorizationStatus) {
-          case UNAuthorizationStatusAuthorized: request->result = "authorized"; break;
-          case UNAuthorizationStatusDenied: request->result = "denied"; break;
-          case UNAuthorizationStatusProvisional: request->result = "provisional"; break;
-          default: request->result = "notDetermined"; break;
-        }
-        dispatch_semaphore_signal(semaphore);
-      }];
-    }
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-    } @catch (NSException *exception) {
-      request->failed = true;
-    }
-  }
+static void RejectAuthorization(napi_env env, napi_deferred deferred) {
+  napi_value message, error;
+  if (napi_create_string_utf8(env, interrupted, NAPI_AUTO_LENGTH, &message) == napi_ok &&
+      napi_create_error(env, nullptr, message, &error) == napi_ok)
+    napi_reject_deferred(env, deferred, error);
 }
 
-static void CompleteAuthorization(napi_env env, napi_status status, void *data) {
-  auto *request = static_cast<AuthorizationRequest *>(data);
+static void ResolveAuthorization(napi_env env, napi_value, void *context, void *data) {
+  if (!env) return;
+  auto deferred = static_cast<napi_deferred>(context);
   napi_value result;
-  if (status == napi_ok && !request->failed) {
-    napi_create_string_utf8(env, request->result.c_str(), NAPI_AUTO_LENGTH, &result);
-    napi_resolve_deferred(env, request->deferred, result);
-  } else {
-    napi_value message;
-    napi_create_string_utf8(env, "NOTIFICATION_AUTHORIZATION_INTERRUPTED", NAPI_AUTO_LENGTH, &message);
-    napi_create_error(env, nullptr, message, &result);
-    napi_reject_deferred(env, request->deferred, result);
-  }
-  napi_delete_async_work(env, request->work);
-  delete request;
+  if (napi_create_string_utf8(env, static_cast<const char *>(data), NAPI_AUTO_LENGTH, &result) == napi_ok)
+    napi_resolve_deferred(env, deferred, result);
+  else
+    RejectAuthorization(env, deferred);
+}
+
+static void DeliverAuthorization(napi_threadsafe_function callback, const char *result) {
+  // A closing queue releases this producer itself.
+  if (napi_call_threadsafe_function(callback, const_cast<char *>(result), napi_tsfn_nonblocking) == napi_ok)
+    napi_release_threadsafe_function(callback, napi_tsfn_release);
 }
 
 static napi_value Authorization(napi_env env, napi_callback_info info) {
   void *mode;
-  napi_get_cb_info(env, info, nullptr, nullptr, nullptr, &mode);
-  auto *request = new AuthorizationRequest{};
-  request->request = mode != nullptr;
   napi_value promise, name;
-  napi_create_promise(env, &request->deferred, &promise);
-  napi_create_string_utf8(env, "notification-authorization", NAPI_AUTO_LENGTH, &name);
-  napi_create_async_work(env, nullptr, name, ExecuteAuthorization, CompleteAuthorization, request, &request->work);
-  napi_queue_async_work(env, request->work);
+  napi_deferred deferred;
+  if (napi_get_cb_info(env, info, nullptr, nullptr, nullptr, &mode) != napi_ok ||
+      napi_create_string_utf8(env, "notification-authorization", NAPI_AUTO_LENGTH, &name) != napi_ok ||
+      napi_create_promise(env, &deferred, &promise) != napi_ok) {
+    napi_throw_error(env, nullptr, interrupted);
+    return nullptr;
+  }
+
+  napi_threadsafe_function callback;
+  if (napi_create_threadsafe_function(env, nullptr, nullptr, name, 0, 1, nullptr,
+                                      nullptr, deferred, ResolveAuthorization, &callback) != napi_ok) {
+    RejectAuthorization(env, deferred);
+    return promise;
+  }
+  napi_unref_threadsafe_function(env, callback);
+
+  @try {
+    auto center = [UNUserNotificationCenter currentNotificationCenter];
+    if (mode) {
+      [center requestAuthorizationWithOptions:UNAuthorizationOptionAlert | UNAuthorizationOptionBadge | UNAuthorizationOptionSound
+                           completionHandler:^(BOOL granted, NSError *error) {
+        if (error) NSLog(@"Claudex notification authorization failed (%@ %ld)", error.domain, (long)error.code);
+        DeliverAuthorization(callback, error ? "error" : granted ? "granted" : "denied");
+      }];
+    } else {
+      [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
+        const char *status;
+        switch (settings.authorizationStatus) {
+          case UNAuthorizationStatusAuthorized: status = "authorized"; break;
+          case UNAuthorizationStatusDenied: status = "denied"; break;
+          case UNAuthorizationStatusProvisional: status = "provisional"; break;
+          default: status = "notDetermined"; break;
+        }
+        DeliverAuthorization(callback, status);
+      }];
+    }
+  } @catch (NSException *exception) {
+    napi_release_threadsafe_function(callback, napi_tsfn_abort);
+    RejectAuthorization(env, deferred);
+  }
   return promise;
 }
 

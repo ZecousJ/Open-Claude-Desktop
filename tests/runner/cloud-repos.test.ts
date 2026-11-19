@@ -1,7 +1,8 @@
 /**
- * Several repositories per cloud Code session: a pill per repository with its
- * branch, a × once there are two, and the Add trigger; the choice is what the
- * next session sends and outlives the visit.
+ * Several repositories per cloud Code session (live claude.ai bundle,
+ * 2026-10-12): a pill per repository with its branch, a × once there are
+ * two, and the Add trigger; the choice is what the next session sends and
+ * outlives the visit.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

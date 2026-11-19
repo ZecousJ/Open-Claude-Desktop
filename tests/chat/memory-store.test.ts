@@ -6,6 +6,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { LocalMemoryStore } from "../../electron/memory/local-store";
@@ -15,6 +16,7 @@ import {
   RemoteMemoryStore,
 } from "../../electron/memory/remote-store";
 import { MemoryService } from "../../electron/memory/service";
+import { MemorySynthesizer } from "../../electron/memory/synthesizer";
 import {
   MemoryConflictError,
   MemoryOfflineError,
@@ -51,6 +53,12 @@ function tempRoot(t: test.TestContext) {
 }
 
 const mode = (file: string) => fs.statSync(file).mode & 0o777;
+
+function gate() {
+  let open!: () => void;
+  const promise = new Promise<void>((resolve) => (open = resolve));
+  return { open, promise };
+}
 
 // ---------------------------------------------------------------- helpers
 
@@ -185,6 +193,7 @@ function memoryService(
     reason?: string | null;
     allowed?: { search_chats: boolean; generate: boolean };
     missing?: boolean;
+    controlsVersion?: string;
   } = {},
 ) {
   const state = {
@@ -237,6 +246,7 @@ function memoryService(
     if (method === "GET" && route === "/memory")
       return envelope({
         ...status(),
+        empty_controls_version: options.controlsVersion,
         limits: {
           doc_bytes: 16384,
           edits_per_scope: 50,
@@ -384,6 +394,60 @@ test("the remote store reports conflicts, refusals and a service without memory"
 
   const old = remoteStore(tempRoot(t), memoryService({ missing: true }));
   await assert.rejects(old.load(), MemoryUnsupportedError);
+});
+
+test("regeneration skips a remote write cancelled during authorization and keeps a confirmed write if readback goes offline", async (t) => {
+  const root = tempRoot(t);
+  const backend = memoryService({ controlsVersion: "v1:0:0:0" });
+  backend.state.prefs.generate = true;
+  const authorization = gate(), authorize = gate();
+  let cancelWrite = true;
+  let modelCalls = 0;
+  const api = new ClaudexMemory("https://claudex.example.test", projectId, async (url, init) => {
+    const response = await backend.fetchImpl(url, init);
+    if (init?.method === "PUT") backend.state.online = false;
+    return response;
+  });
+  const store = new RemoteMemoryStore(api, async (call) => {
+    if (cancelWrite && backend.state.requests.length === 2) {
+      authorization.open();
+      await authorize.promise;
+    }
+    return call("access");
+  }, root);
+  const service = new MemoryService({ store, policy: () => withMemory({}), changed() {} });
+  const task = new MemorySynthesizer({
+    root,
+    service,
+    conversations: () => [],
+    complete: async () => {
+      modelCalls++;
+      return "## Work context\nUses metric.";
+    },
+  });
+  t.after(() => {
+    task.stop();
+    service.close();
+  });
+  const controller = new AbortController();
+  const pending = task.regenerate("global", controller.signal);
+  await authorization.promise;
+  controller.abort();
+  authorize.open();
+  assert.match((await pending).message ?? "", /cancelled/);
+  assert.equal(backend.state.requests.filter(({ method }) => method === "PUT").length, 0);
+  assert.equal(service.docView("global"), null);
+
+  cancelWrite = false;
+  assert.equal((await task.regenerate("global")).status, "done");
+  assert.equal(backend.state.requests.filter(({ method }) => method === "PUT").length, 1);
+  assert.equal(service.docView("global")?.content, "## Work context\nUses metric.");
+  assert.equal(service.docView("global")?.revision, 1);
+  assert.equal(backend.state.online, false);
+  assert.equal((await task.regenerate("global")).message, memoryMessages.offline);
+  assert.equal((await task.run()).message, memoryMessages.offline);
+  assert.equal(modelCalls, 2);
+  assert.equal(backend.state.requests.filter(({ method }) => method === "PUT").length, 1);
 });
 
 test("service answers outside the contract are refused", () => {
@@ -651,10 +715,11 @@ function fakeContext(root: string, policy: () => ClientPolicy) {
     store: {
       root,
       projects: [{ id: projectId, name: "P" }],
+      isProjectDeleting: () => false,
       conversations: [],
       settings: { providers: [], activeProviderId: "" },
     },
-    engine: { extensions, gatewayEndpoint: () => undefined },
+    engine: { extensions, peerExtensions: [], gatewayEndpoint: () => undefined },
     noActive: () => {},
     remote: undefined,
     services: {},
@@ -687,6 +752,7 @@ test("the IPC domain opens memory per account and validates what the window send
   env.activate();
   assert.ok(env.ctx.services.memory?.service);
   assert.equal(env.extensions.has(memoryExtensionId), true);
+  assert.deepEqual(env.ctx.engine.peerExtensions.map((entry: {id: string}) => entry.id), [memoryExtensionId]);
   assert.equal((await env.call("memoryStatus")).available, true);
   await env.call("setMemoryPrefs", { generate: true });
   await assert.rejects(env.call("setMemoryPrefs", { generate: "yes" }));
@@ -728,6 +794,43 @@ test("the IPC domain opens memory per account and validates what the window send
   await env.deactivate();
   assert.equal(env.ctx.services.memory, undefined);
   assert.equal(env.extensions.has(memoryExtensionId), false);
+  assert.equal(env.ctx.engine.peerExtensions.length, 0);
+});
+
+test("project regeneration refuses to publish a completed model response after the project is deleted", async (t) => {
+  const root = tempRoot(t);
+  const env = fakeContext(root, () => withMemory({}));
+  const requested = gate(), complete = gate();
+  const answer = { type: "response.completed", response: { output: [{ content: [{ type: "output_text", text: "## Work context\nModel answer." }] }] } };
+  const server = http.createServer((_req, res) => {
+    requested.open();
+    void complete.promise.then(() => {
+      res.writeHead(200, { "content-type": "text/event-stream" });
+      res.end(`data: ${JSON.stringify(answer)}\n\n`);
+    });
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(async () => {
+    complete.open();
+    await env.deactivate();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  });
+  const address = server.address();
+  assert.ok(address && typeof address === "object");
+  env.ctx.engine.gatewayEndpoint = () => ({ url: `http://127.0.0.1:${address.port}/v1`, token: "fixture" });
+  env.ctx.store.settings = { activeProviderId: "fixture", providers: [{ id: "fixture", model: "fixture" }] };
+  env.activate();
+  await env.call("setMemoryPrefs", { generate: true });
+  const scope = { kind: "project", projectId };
+  await env.call("saveMemoryDoc", scope, "## Work context\nOriginal.", 0);
+  const pending = env.call("synthesizeMemory", scope);
+  await requested.promise;
+  env.ctx.store.projects = [];
+  complete.open();
+  await assert.rejects(pending, /Project not found/);
+  const [doc] = new LocalMemoryStore(root).current().docs;
+  assert.equal(doc.content, "## Work context\nOriginal.");
+  assert.equal(doc.revision, 1);
 });
 
 test("Manage memory adds and removes a scope's edits through one call", async (t) => {
@@ -888,4 +991,18 @@ test("a secret the model tries to remember never reaches the service", async (t)
   // What is sent is the cleaned, one-line statement.
   await memory.addEdit("global", "Prefers\n  metric   units");
   assert.equal(service.state.edits[0].text, "Prefers metric units");
+});
+
+test("an older server without atomic controls retains its existing memory support", async (t) => {
+  const root = tempRoot(t);
+  const fake = memoryService();
+  const store = remoteStore(root, fake);
+  await store.load();
+  await assert.rejects(
+    store.replaceControls("global", ["New"], "v1:0:0:0"),
+    /does not support atomic memory controls/,
+  );
+  await store.load();
+  assert.equal(store.current()!.available, true);
+  assert.deepEqual(store.current()!.edits, []);
 });

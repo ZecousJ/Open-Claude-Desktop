@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.f088.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "../electron/ipc/code-read-state.ts",
+    "../shared/code-read-state.ts",
+    "official-ui-code-open.test.ts",
+    "official-ui-code-open-original.test.ts",
+    "code-read-state.test.ts",
+    "official-ui-code-sessions.test.ts"
+  ]
+}

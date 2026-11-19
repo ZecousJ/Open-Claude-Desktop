@@ -34,7 +34,7 @@ interface CommentSelection {
   entry?: PlanComment;
 }
 
-/** Selection opens the editor directly. */
+/** Selection opens the editor directly (live claude.ai bundle, 2026-10-14, cccc2cf0a-ClzhdM48.js). */
 export function PlanCommentText({
   planId: itemId,
   ...props

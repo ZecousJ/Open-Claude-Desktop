@@ -1,6 +1,7 @@
-/* Current native main Chat, R15 official-native-chat-activity.jpg: File18
-   toggle; a 20rem activity card below the header. Shared. The independent
-   embedded conversation and Code retain their own shells. */
+/* Current native main Chat, R15 official-native-chat-activity.jpg:
+   File18 toggle; a 20rem activity card below the header. Shared source:
+   shared-16-BiJCywSO:8183–8250, ce5658dc8-Wf0W7GyL:10820–10900.
+   The independent embedded conversation and Code retain their own shells. */
 .app.host-desktop.mode-chat
   .header-actions
   .icon-button.session-activity-toggle {

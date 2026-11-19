@@ -12,14 +12,16 @@ import { hasEscapeLayer } from "../ui/useDismiss";
 import { useHost } from "../host/HostContext";
 
 /**
- * The original's voice controls next to the microphone: Chat's voice-mode split
- * button and the ⌄ voice options after the microphone in Cowork and the Code
- * footer. Claudex has no spoken conversation service, so voice mode is made of
- * parts it has: dictation to listen, and the window's own speech synthesis to
- * read the reply (nothing extra is sent anywhere). The waveform starts and ends
- * it; while it runs it is lit and a note above it says what it is doing. It is
- * greyed, with the reason, where dictation is off or the window cannot speak.
- * The ⌄ opens the microphone menu.
+ * The original's voice controls next to the microphone: Chat's voice-mode
+ * split button (waveform and ⌄, R-0258, R-0311, R-0546) and the ⌄ voice
+ * options after the microphone in Cowork and the Code footer (R-0318,
+ * claude-cowork-voice-arrow-hover-001, ref-web-chat-home). Claudex has no
+ * spoken conversation service, so voice mode is made of parts it has:
+ * dictation to listen, and the window's own speech synthesis to read the
+ * reply (nothing extra is sent anywhere). The waveform starts and ends it;
+ * while it runs it is lit and a note above it says what it is doing. It is
+ * greyed, with the reason, where dictation is off or the window cannot
+ * speak. The ⌄ opens the microphone menu (R-0404, R-0286).
  */
 export const voiceModeUnavailable =
   "Voice mode needs dictation and a window that can read aloud.";
@@ -27,14 +29,15 @@ const phaseText: Record<VoicePhase, string> = {
   off: "Use voice mode",
   starting: "Connecting...",
   reconnecting: "Reconnecting...",
-  // The live voice bar's three states: "Listening...", "Processing...", "Claude
-  // is speaking..." (Claudex here).
+  // The live voice bar's three states (live claude.ai bundle, 2026-10-13):
+  // "Listening...", "Processing...", "Claude is speaking..." (Claudex here).
   listening: "Listening...",
   thinking: "Processing...",
   speaking: "Claudex is speaking...",
 };
 
-// Voice master16/master20 geometry.
+// Voice master16/master20 geometry (live claude.ai bundle, 2026-10-14,
+// shared-8-D8y0BqdN.js).
 function VoiceWaveIcon({ small = false }: { small?: boolean }) {
   return (
     <svg
@@ -101,8 +104,9 @@ export function VoiceModeButton({
   const off = reason ?? (canSpeak() && app ? undefined : voiceModeUnavailable);
   const mode = useVoiceMode(app!, maxSeconds, engine);
   const active = mode.phase !== "off";
-  // Available, the button says what it does in a bottom tooltip; unavailable,
-  // the reason.
+  // Available, the button says what it does in a bottom tooltip (live
+  // claude.ai bundle, 2026-10-16, shared-8 Yz: tooltip, side "bottom");
+  // unavailable, the reason.
   const { props, tooltip } = useTooltip(
     off ? t(off) : t(active ? "End voice mode" : "Use voice mode"),
     { size: off ? "wrap" : "line" },
@@ -117,8 +121,9 @@ export function VoiceModeButton({
     onPhase?.(mode.phase);
   }, [mode.phase, onPhase]);
   useEffect(() => () => onPhase?.("off"), [onPhase]);
-  // No sound or a muted microphone while listening, as a toast that stays until
-  // the sound returns or it is closed for this session.
+  // No sound or a muted microphone while listening (live claude.ai bundle,
+  // 2026-10-14, shared-7-CO8eplZ3: the mic_silence banner), as a toast that
+  // stays until the sound returns or it is closed for this session.
   const noticeToast = useRef<{ id: number; clearing: boolean }>(undefined);
   useEffect(() => {
     const shown = noticeToast.current;
@@ -208,7 +213,7 @@ export function VoiceModeButton({
   );
 }
 
-/** The microphone notices' words. */
+/** The microphone notices' words (shared-7-CO8eplZ3: p4ymvKXdF9, 16sn/LsQQg). */
 const micNoticeCopy = {
   muted:
     "Your device or browser has muted your microphone. Unmute it there so Claudex can hear you.",

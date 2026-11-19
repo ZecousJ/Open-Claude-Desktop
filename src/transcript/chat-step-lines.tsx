@@ -20,7 +20,7 @@ import { isWebFetch } from "../../shared/web-fetch-item";
 import { webFetchLabel } from "./tools/WebFetchRow";
 import { thoughtLine } from "./thought-line";
 import { thinkingQuote } from "../code-tools/ThinkingInline";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { Markdown } from "../ui/components";
 
 /** One step's line: its words, and the file it touched in brighter ink. */
@@ -131,9 +131,10 @@ export function stepLine(item: Item): { text: string; name?: string } {
 }
 
 /**
- * A thought's text in its opened step. Past 200px it is clamped behind a 40px
- * fade with Show more (shown on hover, always on touch screens); the clamp
- * opens to the text's height and closes back over 300ms.
+ * A thought's text in its opened step. Past 200px it is clamped behind a
+ * 40px fade with Show more (shown on hover, always on touch screens); the
+ * clamp opens to the text's height and closes back over 300ms (the
+ * original's timeline text; source: desktop bundle 2.31226.1 static JS).
  */
 export function ThinkingActions({ text }: { text: string }) {
   const services = useConversationServices();
@@ -177,7 +178,7 @@ export function ThinkingActions({ text }: { text: string }) {
         {copied ? (
           <Check size={16} aria-hidden="true" />
         ) : (
-          <AppIcon name="Copy" />
+          <Anthropicon name="Copy" />
         )}
       </button>
     </div>

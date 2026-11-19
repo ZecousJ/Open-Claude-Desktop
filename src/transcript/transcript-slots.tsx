@@ -14,8 +14,8 @@ export interface StepsGroupProps {
 /**
  * Pieces of the Chat transcript a host may draw its own way. The web and
  * desktop apps provide none, so they keep the shared rows; the phone apps'
- * renderer (src/mobile-conversation) draws the reference rows here without
- * pulling phone code into the web bundle.
+ * renderer (src/mobile-conversation) draws the official Claude Android rows
+ * here without pulling phone code into the web bundle.
  */
 export interface TranscriptSlotsValue {
   /** Chat's steps group (one collapsed "N steps" row on the phones). */
@@ -24,6 +24,10 @@ export interface TranscriptSlotsValue {
   TurnActivity?: ComponentType<{ turn: Turn; awaitingApproval: boolean }>;
   /** Drawn at the end of a finished Chat reply's action row. */
   ReplyActionsEnd?: ComponentType<{ turn: Turn }>;
+  StoppedReply?: ComponentType<{
+    busy: boolean;
+    onRetry?: () => void;
+  }>;
   /**
    * The still mark at the end of a finished Code reply (the desktop's Code
    * star otherwise; the phones show their upright Claudex mark in every mode).

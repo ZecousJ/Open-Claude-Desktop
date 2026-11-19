@@ -9,13 +9,14 @@ import { t, tf } from "../../i18n";
 import { surface } from "../../../shared/host";
 
 /**
- * 智商检测: every hour the service asks a model for an HTML page with an SVG
- * animation of a pelican riding a bicycle; each check is a card with the page
- * it wrote and when. The page runs sandboxed with its own scripts, only once
- * the card is on screen: on the desktop from createArtifactPreview
- * (claudex-preview:, its own policy), on the web as the frame's srcdoc (a
- * signed preview address stayed blank in a frame). The check runs in more than
- * one group; a segmented control in the head switches the records.
+ * 智商检测 (owner, 2026-10-06): every hour the service asks a model for an
+ * HTML page with an SVG animation of a pelican riding a bicycle; each check
+ * is a card with the page it wrote and when. The page runs sandboxed with
+ * its own scripts, only once the card is on screen: on the desktop from
+ * createArtifactPreview (claudex-preview:, its own policy), on the web as the
+ * frame's srcdoc (a signed preview address stayed blank in a frame).
+ * The check runs in more than one group (owner, 2026-10-14: codex and
+ * "Astra 专用"); a segmented control in the head switches the records.
  */
 export function IqChecks({
   checks,
@@ -88,7 +89,7 @@ export function IqChecks({
 
 /**
  * The page is asked for at 800×600 (4:3) and shown whole: laid out at that
- * size, scaled to the card, never scrolled.
+ * size, scaled to the card, never scrolled (owner, 2026-10-06).
  */
 const pageWidth = 800;
 const pageHeight = 600;

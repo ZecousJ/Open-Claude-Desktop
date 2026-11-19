@@ -1,4 +1,3 @@
-import { CalendarOff } from "lucide-react";
 import { t } from "../../i18n";
 import { RelativeTime } from "../../ui/RelativeTime";
 import { Spinner } from "../../ui/Spinner";
@@ -9,7 +8,7 @@ import { useHost } from "../../host/HostContext";
 import "./routine-history.css";
 import { skippedRunReason, HistoryTime } from "./RoutineHistory";
 
-/** Inline history. */
+/** Inline history (live claude.ai bundle, 2026-10-14, ccd3f68fe-Ch8U0gGS.js:4001). */
 export function RoutineRunRow({
   run,
   local,
@@ -59,7 +58,15 @@ export function RoutineRunRow({
           </span>
         ) : skipped ? (
           <span className="routine-history-state">
-            <CalendarOff size={16} aria-hidden="true" />
+            <svg
+              width={16}
+              height={16}
+              viewBox="0 0 256 256"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M53.92,34.62A8,8,0,0,0,48,32,16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a8,8,0,0,0,5.92-13.38ZM73.55,80H48V51.88ZM48,208V96H88.1L189.92,208ZM224,48V177.23a8,8,0,1,1-16,0V96H134.88a8,8,0,0,1,0-16H208V48H184v8a8,8,0,0,1-16,0V48H91.25a8,8,0,0,1,0-16H168V24a8,8,0,0,1,16,0v8h24A16,16,0,0,1,224,48Z" />
+            </svg>
             Skipped
             <span title={t(skippedRunReason(run))}>
               <CircleHelp size={12} />

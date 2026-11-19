@@ -1,4 +1,4 @@
-/** Toggle thinking. */
+/** Toggle thinking (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN). */
 export function thinkingShortcut(
   event: Pick<
     KeyboardEvent,

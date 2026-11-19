@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/official-ui/api/connectors.ts",
+    "../electron/official-ui/api/connector-inventory.ts",
+    "../electron/official-ui/native/session-connectors.ts",
+    "official-ui-f041-tool-permissions.test.ts",
+    "official-ui-f041-permission-original.test.ts"
+  ]
+}

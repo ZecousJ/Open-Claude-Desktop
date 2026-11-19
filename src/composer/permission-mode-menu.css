@@ -1,4 +1,5 @@
-/* The permission picker's menu draws its rows' 20px glyphs on every surface. */
+/* The permission picker's menu draws its rows' 20px glyphs on every surface
+   (live claude.ai bundle, 2026-10-14). */
 .menu.permission-mode-menu .menu-icon {
   display: grid;
   width: 20px;
@@ -6,9 +7,9 @@
   color: var(--text-secondary);
 }
 
-/* Current web Code: root p0; one scroll body with p4 and transparent 1px bottom
-   rim. Caption is 23px, each natural row 19+15+2.5+4 = 40.5px. Root live DOM,
-   2026-10-17. */
+/* Current web Code: root p0; one scroll body with p4 and transparent 1px
+   bottom rim. Caption is 23px, each natural row 19+15+2.5+4 = 40.5px.
+   Source shared-8-D8y0BqdN.js:20694–20777; root live DOM, 2026-10-17. */
 :root[data-surface="web"] .menu.web-code-permission-menu {
   padding: 0;
   border: 0;

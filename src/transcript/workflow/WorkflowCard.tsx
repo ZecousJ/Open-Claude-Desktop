@@ -21,8 +21,9 @@ export function WorkflowCard({
     return () => window.clearInterval(id);
   }, [workflow.status]);
   const running = workflow.status === "running";
-  // Before its first agent the run reads "Starting workflow"; planned phases no
-  // agent reached yet will start more.
+  // Before its first agent the run reads "Starting workflow" (live claude.ai
+  // bundle, 2026-10-15, c1c1ec7b9); planned phases no agent reached yet
+  // will start more.
   const starting = running && workflow.agents.length === 0;
   const moreAgents =
     running && workflow.phases.some((phase) => !phase.agents.length);

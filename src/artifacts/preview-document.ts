@@ -20,7 +20,7 @@ export function scriptJson(value: unknown) {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-/** Reports uncaught errors to the panel, which offers Try fixing. */
+/** Reports uncaught errors to the panel, which offers Try fixing (R-1036). */
 const errorBridge = inlineScript(
   `(()=>{const post=m=>{try{parent.postMessage({type:${scriptJson(previewMessageType)},message:String(m||"Unknown error").slice(0,4000)},"*")}catch(e){}};` +
     `addEventListener("error",e=>post(e.error&&e.error.stack&&e.error.message?e.error.name+": "+e.error.message:e.message));` +
@@ -133,12 +133,13 @@ export function officeDocument(
   dark: boolean,
 ) {
   const page = dark ? "#262624" : "#f0eee6";
-  // The workbook is the original's spreadsheet viewer: white in both themes; a
-  // 32px formula bar (monospace 12/24, an italic serif "fx" #888, the cell's
-  // reference behind a #ccc rule, a #d8d9e5 rule under it); sheet tabs on a
-  // 40px #f3f4f6 foot, each hanging from its #d1d5db rule (12px, padding 6 16,
-  // #6b7280; the open one white and black); all in a #d1d5db frame of radius 8.
-  // The cells' own rules are in runtime/office-runtime.ts.
+  // The workbook is the original's spreadsheet viewer ("Mondrian",
+  // claude.ai 2026-10-01): white in both themes; a 32px formula bar
+  // (monospace 12/24, an italic serif "fx" #888, the cell's reference
+  // behind a #ccc rule, a #d8d9e5 rule under it); sheet tabs on a 40px
+  // #f3f4f6 foot, each hanging from its #d1d5db rule (12px, padding 6 16,
+  // #6b7280; the open one white and black); all in a #d1d5db frame of
+  // radius 8. The cells' own rules are in runtime/office-runtime.ts.
   const sheetFont =
     'Calibri,Carlito,Candara,Segoe,"Segoe UI",Frutiger,"Frutiger Linotype","Dejavu Sans","Helvetica Neue",Helvetica,"Liberation Sans",Arial,"Arial Nova",sans-serif';
   const style =

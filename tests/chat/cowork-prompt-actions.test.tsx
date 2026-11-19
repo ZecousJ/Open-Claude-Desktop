@@ -1,7 +1,7 @@
 /**
- * Cowork's last prompt has Restart session from here and Edit: when they show,
- * and that they reach the transcript's retry and edit callbacks, which are the
- * engine's retryResponse and editPrompt.
+ * Cowork's last prompt has Restart session from here and Edit (desktop bundle
+ * 2.31226.1): when they show, and that they reach the transcript's retry and
+ * edit callbacks, which are the engine's retryResponse and editPrompt.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

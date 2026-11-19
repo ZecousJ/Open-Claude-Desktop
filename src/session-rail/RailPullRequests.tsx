@@ -94,7 +94,7 @@ export function PullRequestRailRow({ entry }: { entry: RailPullRequest }) {
   );
 }
 
-/** "{count} earlier pull requests" and "{count} merged", folded. */
+/** "{count} earlier pull requests" and "{count} merged", folded (cb1afaa4b `To`). */
 export function EarlierPullRequests({
   entries,
 }: {

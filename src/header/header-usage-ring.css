@@ -1,6 +1,7 @@
-/* The chat header's usage ring: a ghost button, ring then "{percent}% used" in
-   tabular figures; its panel is the 360px usage panel, p-lg with gap-md, the
-   title a muted footnote, and the buttons sharing a row. */
+/* The chat header's usage ring (live claude.ai bundle, 2026-10-14,
+   c146b936d): a ghost button, ring then "{percent}% used" in tabular
+   figures; its panel is the 360px usage panel, p-lg with gap-md, the title
+   a muted footnote, and the buttons sharing a row. */
 .header-usage-ring {
   display: inline-flex;
   flex-shrink: 0;

@@ -1,9 +1,20 @@
 import { ownsNativeBrowserExecution } from "../browser/execution-owner";
+import { hasOffHostCodeBrowser } from "../../shared/browser-execution-eligibility";
+import {
+  createDraftBrowser,
+  ownsDraftBrowser,
+  forgetDraftBrowser,
+} from "../browser/draft-sessions";
+import os from "node:os";
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { z } from "zod";
 import { tasksFromTurn } from "../../shared/workflow-model";
 import {
   browserColorSchemes,
   browserViewports,
+  fileAllowed,
   type BrowserColorScheme,
   type BrowserViewportPreset,
   hostBlocked,
@@ -12,6 +23,7 @@ import { parseAllowedSite, preference } from "../../shared/settings-extras";
 import { previewOrigin } from "../../shared/preview-origin";
 import type { AppContext, IpcHandle } from "../app/app-context";
 import type { BrowserService } from "../browser/index";
+import { officialPreviewTabLimit } from "../browser/browser-host-support";
 import type { HostWindow } from "../browser/browser-host";
 import { codeGitStatus } from "../git/code-git";
 import { workingTreeChanges } from "../git/working-tree";
@@ -23,8 +35,10 @@ import {
   contextSources,
 } from "../workspace/workspace-fs";
 import { watchRemoteGeneratedFiles } from "../ssh/remote-workspace-watch";
-import { registerBrowserTools } from "../browser/browser-tools-registration";
+import { registerBrowserTools, wslPreviewServers } from "../browser/browser-tools-registration";
+import { registerChromeExtensionTools } from "../browser/chrome-extension-registration";
 import { registerBrowserToolHandlers } from "./panels-browser-tools";
+import { importHostMatches } from "../browser/chrome-cookies";
 
 /**
  * What the Browser calls need from Electron: the account's Browser service
@@ -114,13 +128,13 @@ export const launchConfigurationSchema = z
   .strict();
 
 /**
- * The Code tool panels. Terminal and background terminal calls are registered
- * from `terminal.ts` and `background-terminals.ts`; the Changes panel's and the
- * Browser panel's calls (R8) are here.
+ * The Code tool panels (package WP5b). Terminal and background terminal calls
+ * are registered from `terminal.ts` and `background-terminals.ts`; the
+ * Changes panel's and the Browser panel's calls (R8) are here.
  *
- * A conversation on an SSH host (R9) has its folder there: the Changes panel
- * asks the host's `git` (electron/workspace-fs.ts), and the files its file
- * changes wrote are snapshotted from the host as they complete.
+ * A conversation on an SSH host (R9) has its folder there: the Changes
+ * panel asks the host's `git` (electron/workspace-fs.ts), and the files its
+ * file changes wrote are snapshotted from the host as they complete.
  */
 export function registerPanelHandlers(
   handle: IpcHandle,
@@ -254,8 +268,10 @@ export function registerPanelHandlers(
   // thread. Tests of the panel calls pass stand-in deps and skip it, and so
   // does claudex-runner (plain Node, no Browser panel): its web contexts
   // must not open a loopback MCP server per user.
-  if (browserDeps === electronDeps && process.versions.electron)
+  if (browserDeps === electronDeps && process.versions.electron) {
     registerBrowserTools(ctx);
+    registerChromeExtensionTools(ctx);
+  }
 }
 
 function registerBrowserHandlers(
@@ -263,6 +279,14 @@ function registerBrowserHandlers(
   ctx: AppContext,
   browserDeps: () => Promise<BrowserPanelDeps>,
 ) {
+  const inputWindows = new WeakSet<object>();
+  const watchPreviewInput = (owner: NonNullable<ReturnType<AppContext["callerWindow"]>>) => {
+    if (inputWindows.has(owner)) return;
+    inputWindows.add(owner);
+    owner.webContents.on("before-input-event", (event, input) => {
+      ctx.services.browser?.host.handlePreviewInput(event, input, owner as unknown as HostWindow);
+    });
+  };
   let deps: Promise<BrowserPanelDeps> | undefined;
   const loadDeps = () => (deps ??= browserDeps());
   const service = async () => (await loadDeps()).service(ctx);
@@ -318,15 +342,14 @@ function registerBrowserHandlers(
     return instance;
   };
   handle("getChromeImportAvailability", async () => {
-    const policy = (await service()).policy();
-    const instance = await chromeImport();
-    return {
-      available:
-        policy.enabled !== false &&
-        policy.externalSites !== false &&
-        (await instance.profiles()).length > 0,
-      touchId: instance.touchId(),
-    };
+    const browserService = await service();
+    const policy = browserService.policy();
+    if (policy.enabled === false || policy.externalSites === false)
+      return { available: false, reason: "gate_off" };
+    const instance = await browserService.chromeImport?.();
+    if (!instance || !(await instance.profiles()).length)
+      return { available: false, reason: "no_chrome" };
+    return { available: true, touchId: instance.touchId() };
   });
   handle("getCoworkChromeImportAvailability", async () => {
     const browserService = await service();
@@ -367,9 +390,37 @@ function registerBrowserHandlers(
     },
   );
   handle("listChromeImportSites", async (raw: unknown, rawProfile: unknown) => {
+    const callerId = ctx.callerWindow()?.webContents?.id;
     const profile = z.string().min(1).max(200).parse(rawProfile);
     const { id } = await browser(raw);
-    return (await chromeImport()).sites(id, profile);
+    return (await chromeImport()).sites(id, profile, callerId);
+  });
+  handle("officialListChromeImportSites", async (raw: unknown, rawProfile: unknown) => {
+    const callerId = ctx.callerWindow()?.webContents?.id;
+    const profile = z.string().min(1).max(200).optional().parse(rawProfile);
+    const { id, service: s } = await browser(raw);
+    if (s.policy().externalSites === false) return { ok: false, error: "gate_off" };
+    const instance = await chromeImport();
+    const result = await instance.sites(id, profile, callerId);
+    if (!result.ok) return result;
+    const host = URL.parse(s.host.activeUrl(id))?.hostname;
+    return {
+      ...result,
+      storageIsEphemeral: !s.host.activePartition(id).startsWith("persist:"),
+      sites: result.sites.map((site) => ({
+        ...site, suggested: !!host && importHostMatches(host, site.root),
+      })),
+    };
+  });
+  handle("officialChromeImportSharedOffer", async (raw: unknown, rawAnySite: unknown) => {
+    const anySite = z.boolean().optional().parse(rawAnySite);
+    const { id, service: s } = await browser(raw);
+    if (s.policy().externalSites === false) return { offer: false, sites: 0 };
+    const { roots } = await (await chromeImport()).sharedOffer(id);
+    const host = URL.parse(s.host.activeUrl(id))?.hostname;
+    const site = roots.find((root) => !!host && importHostMatches(host, root)) ?? (anySite ? roots[0] : undefined);
+    return site ? { offer: true, sites: roots.length, site, storageIsEphemeral: !s.host.activePartition(id).startsWith("persist:") }
+      : { offer: false, sites: 0 };
   });
   handle(
     "importChromeLogins",
@@ -379,6 +430,7 @@ function registerBrowserHandlers(
       rawRoots: unknown,
       rawKeep: unknown,
     ) => {
+      const callerId = ctx.callerWindow()?.webContents?.id;
       const ticket = z.string().uuid().parse(rawTicket);
       const roots = z
         .array(z.string().min(1).max(253))
@@ -387,12 +439,19 @@ function registerBrowserHandlers(
         .parse(rawRoots);
       const keep = z.boolean().parse(rawKeep);
       const { id } = await browser(raw);
-      return (await chromeImport()).import(id, ticket, roots, keep);
+      return (await chromeImport()).import(id, ticket, roots, keep, callerId);
     },
   );
   handle("listImportedChromeLogins", async (raw: unknown) => {
     const { id } = await browser(raw);
     return (await chromeImport()).list(id);
+  });
+  handle("officialRemoveImportedChromeLogins", async (raw: unknown, rawRoot: unknown) => {
+    const root = z.string().min(1).max(253).optional().parse(rawRoot);
+    const { id } = await browser(raw);
+    const instance = await chromeImport();
+    await instance.remove(id, root);
+    return instance.list(id);
   });
   handle(
     "removeImportedChromeLogins",
@@ -405,9 +464,10 @@ function registerBrowserHandlers(
   /** The Browser of a Code conversation that exists; anything else is refused. */
   const codeConversation = (raw: unknown) => {
     const id = conversationIdSchema.parse(raw);
+    if (ownsDraftBrowser(ctx.store, id, ctx.callerWindow())) return id;
     const conversation = ctx.store.conversations.find((c) => c.id === id);
     if (!conversation) throw new Error("This conversation doesn't exist.");
-    if (!ownsNativeBrowserExecution(ctx, id))
+    if (!hasOffHostCodeBrowser(conversation) && !ownsNativeBrowserExecution(ctx, id))
       throw new Error(
         "The browser is only in Code sessions or Cowork sessions running on this computer.",
       );
@@ -426,21 +486,17 @@ function registerBrowserHandlers(
     if (!window) throw new Error("No window to show the browser in.");
     return window as unknown as HostWindow;
   };
-  const devServers = async (raw: unknown) => {
+  const devServers = async (raw: unknown, runningOnly = false) => {
     const requested = conversationIdSchema.parse(raw);
-    if (
-      ctx.store.conversations.find((c) => c.id === requested)?.environment
-        ?.kind === "ssh"
-    )
-      throw new Error("Dev servers aren't available in SSH sessions.");
-    const { id, service: browserService } = await browser(raw);
-    // Dev servers run in this computer's folders; an SSH session's is on the host.
-    const conversation = ctx.store.conversations.find((c) => c.id === id);
-    if (conversation?.mode !== "code")
-      throw new Error("Dev servers aren't available here.");
+    const conversation = ctx.store.conversations.find((c) => c.id === requested);
     if (conversation?.environment?.kind === "ssh")
       throw new Error("Dev servers aren't available in SSH sessions.");
-    const port = browserService.devServers();
+    const { id, service: browserService } = await browser(requested);
+    if (conversation?.mode !== "code")
+      throw new Error("Dev servers aren't available here.");
+    const port = conversation.environment?.kind === "wsl"
+      ? runningOnly && wslPreviewServers(ctx, id)
+      : browserService.devServers();
     if (!port || browserService.policy().devServers === false)
       throw new Error("Dev servers aren't available here.");
     return { id, port };
@@ -449,6 +505,48 @@ function registerBrowserHandlers(
   handle("browserState", async (raw: unknown) => {
     const { id, service: s } = await browser(raw);
     return s.host.state(id);
+  });
+  handle("officialDraftBrowserStart", async (rawCwd: unknown) => {
+    const cwd = z.string().min(1).max(4096).optional().parse(rawCwd);
+    const folder =
+      cwd === "~" ? os.homedir() : (cwd ?? ctx.engine.defaultWorkspace);
+    if (
+      cwd &&
+      cwd !== "~" &&
+      path.resolve(cwd) !== path.resolve(ctx.engine.defaultWorkspace)
+    )
+      ctx.allowedFolder(cwd);
+    const owner = ctx.callerWindow();
+    if (!owner) throw Error("No browser window.");
+    const store = ctx.store,
+      s = await service();
+    if (ctx.store !== store || owner.isDestroyed())
+      throw Error("The browser account or window changed.");
+    if (s.policy().enabled === false)
+      throw Error("Your administrator has turned off the browser.");
+    const id = createDraftBrowser(store, owner, folder);
+    owner.once("closed", () => {
+      s.host.close(id);
+      forgetDraftBrowser(store, id);
+    });
+    return { ownerId: id, cwd: folder, state: s.host.state(id) };
+  });
+  const closeBrowserPreview = (id: string, s: BrowserService) => {
+    s.host.close(id);
+    forgetDraftBrowser(ctx.store, id);
+    return true;
+  };
+  handle("officialCloseBrowserPreview", async (raw: unknown) => {
+    const { id, service: s } = await browser(raw);
+    return closeBrowserPreview(id, s);
+  });
+  handle("officialDiscardPreviewFrame", async (raw: unknown) => {
+    const { id, service: s } = await browser(raw);
+    const session = s.host.session(id);
+    for (const tab of session.tabs) tab.state.restored = undefined;
+    s.host.deps.savePage?.(id, undefined);
+    s.host.refresh(id);
+    return true;
   });
   handle("browserOpen", async (raw: unknown) => {
     const { id, service: s } = await browser(raw);
@@ -459,10 +557,61 @@ function registerBrowserHandlers(
     const { id, service: s } = await browser(raw);
     s.host.hide(id, callerWindow());
   });
+  handle("officialHideBrowserPreview", async (raw: unknown, rawClaimant: unknown) => {
+    const claimant = z.string().optional().parse(rawClaimant);
+    const window = callerWindow();
+    const { id, service: s } = await browser(raw);
+    return s.host.hide(id, window, claimant);
+  });
+  handle("officialFocusBrowserPreview", async (raw: unknown) => {
+    const window = callerWindow();
+    const { id, service: s } = await browser(raw);
+    return s.host.focus(id, window);
+  });
+  handle(
+    "officialConfigurePreviewInput",
+    async (raw: unknown, rawPreview: unknown, rawPatch: unknown) => {
+      const preview = z.string().min(1).max(250).parse(rawPreview);
+      const patch = z
+        .object({
+          chromeFocused: z.boolean().optional(),
+          armed: z.boolean().optional(),
+        })
+        .strict()
+        .parse(rawPatch);
+      const owner = ctx.callerWindow();
+      if (!owner) throw Error("No preview window.");
+      const { id, service: s } = await browser(raw);
+      s.host.configurePreviewInput(
+        id,
+        owner as unknown as HostWindow,
+        preview,
+        patch,
+      );
+      watchPreviewInput(owner);
+      return true;
+    },
+  );
   handle("browserSetBounds", async (raw: unknown, rawBounds: unknown) => {
     const bounds = boundsSchema.parse(rawBounds);
     const { id, service: s } = await browser(raw);
     s.host.show(id, callerWindow(), bounds);
+  });
+  handle("officialShowBrowserPreview", async (raw: unknown, rawPreview: unknown, rawBounds: unknown, rawClaimant: unknown) => {
+    const preview = z.string().min(1).max(250).parse(rawPreview);
+    const bounds = boundsSchema.extend({
+      radius: z.number().min(0).max(1000).optional(),
+      parked: z.boolean().optional(),
+    }).parse(rawBounds);
+    const claimant = z.string().optional().parse(rawClaimant);
+    const owner = ctx.callerWindow();
+    if (!owner) return false;
+    const window = owner as unknown as HostWindow;
+    const { id, service: s } = await browser(raw);
+    if (!s.host.show(id, window, bounds, claimant)) return false;
+    s.host.configurePreviewInput(id, window, preview, {});
+    watchPreviewInput(owner);
+    return true;
   });
   handle("browserOcclude", async (raw: unknown, rawOn: unknown) => {
     const on = z.boolean().parse(rawOn);
@@ -475,20 +624,20 @@ function registerBrowserHandlers(
       const input = z.string().max(8192).parse(rawInput);
       const tabId = tabIdSchema.optional().parse(rawTab);
       const { id, service: s } = await browser(raw);
-      return s.host.navigate(id, input, tabId);
+      return s.host.navigate(id, input, tabId, true);
     },
   );
-  handle("browserBack", async (raw: unknown) => {
+  handle("browserBack", async (raw: unknown, rawTab?: unknown) => {
     const { id, service: s } = await browser(raw);
-    s.host.back(id);
+    return s.host.back(id, tabIdSchema.optional().parse(rawTab));
   });
-  handle("browserForward", async (raw: unknown) => {
+  handle("browserForward", async (raw: unknown, rawTab?: unknown) => {
     const { id, service: s } = await browser(raw);
-    s.host.forward(id);
+    return s.host.forward(id, tabIdSchema.optional().parse(rawTab));
   });
-  handle("browserReload", async (raw: unknown) => {
+  handle("browserReload", async (raw: unknown, rawTab?: unknown) => {
     const { id, service: s } = await browser(raw);
-    s.host.reload(id);
+    return s.host.reload(id, tabIdSchema.optional().parse(rawTab));
   });
   handle("browserStop", async (raw: unknown) => {
     const { id, service: s } = await browser(raw);
@@ -499,15 +648,64 @@ function registerBrowserHandlers(
     const { id, service: s } = await browser(raw);
     return s.host.newTab(id, url || undefined);
   });
+  handle("officialNewBrowserPreviewTab", async (raw: unknown) => {
+    const { id, service: s } = await browser(raw);
+    return s.host.session(id).tabs.length < officialPreviewTabLimit ? s.host.newTab(id) : null;
+  });
   handle("browserSelectTab", async (raw: unknown, rawTab: unknown) => {
     const tabId = tabIdSchema.parse(rawTab);
     const { id, service: s } = await browser(raw);
-    s.host.selectTab(id, tabId);
+    return s.host.selectTab(id, tabId);
   });
-  handle("browserCloseTab", async (raw: unknown, rawTab: unknown) => {
+  handle("officialSelectBrowserPreviewTab", async (raw: unknown, rawTab: unknown) => {
     const tabId = tabIdSchema.parse(rawTab);
     const { id, service: s } = await browser(raw);
-    s.host.closeTab(id, tabId);
+    return s.host.session(id).tabs.some((tab) => tab.id === tabId) &&
+      s.host.selectTab(id, tabId);
+  });
+  handle(
+    "browserCloseTab",
+    async (raw: unknown, rawTab: unknown, rawReopenable?: unknown) => {
+      const tabId = tabIdSchema.parse(rawTab);
+      const reopenable = z.boolean().optional().parse(rawReopenable);
+      const { id, service: s } = await browser(raw);
+      return s.host.closeTab(id, tabId, reopenable);
+    },
+  );
+  handle("officialCloseBrowserPreviewTab", async (raw: unknown, rawTab: unknown, rawReopenable: unknown) => {
+    const tabId = tabIdSchema.parse(rawTab);
+    const reopenable = z.boolean().optional().parse(rawReopenable);
+    const window = callerWindow();
+    const { id, service: s } = await browser(raw);
+    const session = s.host.sessions.get(id);
+    if (!session?.tabs.some((tab) => tab.id === tabId)) return false;
+    if (session.tabs.length > 1) return s.host.closeTab(id, tabId, reopenable);
+    if (session.shown && session.shown.window !== window) return false;
+    s.host.deps.savePage?.(id, undefined);
+    closeBrowserPreview(id, s);
+    return "destroyed";
+  });
+  handle("officialReopenBrowserTab", async (raw: unknown) => {
+    const { id, service: s } = await browser(raw);
+    return s.host.session(id).tabs.length < officialPreviewTabLimit ? s.host.reopenTab(id) : null;
+  });
+  handle(
+    "officialReorderBrowserTab",
+    async (raw: unknown, rawTab: unknown, rawIndex: unknown) => {
+      const tab = tabIdSchema.parse(rawTab),
+        index = z.number().int().min(0).max(10000).parse(rawIndex);
+      const { id, service: s } = await browser(raw);
+      const session = s.host.session(id);
+      return index < session.tabs.length && session.tabs.some((entry) => entry.id === tab) &&
+        s.host.reorderTab(id, tab, index);
+    },
+  );
+  handle("officialCloseAllBrowserTabs", async (raw: unknown) => {
+    const { id, service: s } = await browser(raw);
+    // Official kRi keeps the first tab and closes the remaining tabs.
+    for (const tab of [...s.host.session(id).tabs].slice(1))
+      s.host.closeTab(id, tab.id, false);
+    return true;
   });
   handle("browserCloseOtherTabs", async (raw: unknown, rawTab: unknown) => {
     const tabId = tabIdSchema.parse(rawTab);
@@ -519,10 +717,27 @@ function registerBrowserHandlers(
     const { id, service: s } = await browser(raw);
     await s.host.setViewport(id, viewport);
   });
+  handle("officialSetBrowserViewport", async (raw: unknown, rawViewport: unknown, rawTab: unknown) => {
+    const viewport = viewportSchema.parse(rawViewport);
+    const tab = tabIdSchema.optional().parse(rawTab);
+    const { id, service: s } = await browser(raw);
+    return s.host.setViewport(id, viewport, tab ?? s.host.session(id).activeTabId);
+  });
   handle("browserSetColorScheme", async (raw: unknown, rawScheme: unknown) => {
     const scheme = colorSchemeSchema.parse(rawScheme);
     const { id, service: s } = await browser(raw);
     await s.host.setColorScheme(id, scheme);
+  });
+  handle("officialSetBrowserColorScheme", async (raw: unknown, rawScheme: unknown, rawTab: unknown) => {
+    const scheme = colorSchemeSchema.parse(rawScheme);
+    const tab = tabIdSchema.optional().parse(rawTab);
+    const { id, service: s } = await browser(raw);
+    return s.host.setColorScheme(id, scheme, tab ?? s.host.session(id).activeTabId);
+  });
+  handle("officialMuteBrowserPreview", async (raw: unknown, rawMuted: unknown) => {
+    const muted = z.boolean().parse(rawMuted);
+    const { id, service: s } = await browser(raw);
+    return s.host.setMuted(id, muted);
   });
   handle("browserPickElement", async (raw: unknown) => {
     const { id, service: s } = await browser(raw);
@@ -532,12 +747,65 @@ function registerBrowserHandlers(
     const { id, service: s } = await browser(raw);
     s.host.cancelPick(id);
   });
+  handle("officialToggleBrowserSelection", async (raw: unknown, rawPreview: unknown, rawEnabled: unknown, rawTab: unknown) => {
+    const preview = z.string().min(1).max(250).parse(rawPreview);
+    const enabled = z.boolean().parse(rawEnabled);
+    const tabId = tabIdSchema.optional().parse(rawTab);
+    const window = callerWindow();
+    const { id, service: s } = await browser(raw);
+    const session = s.host.sessions.get(id);
+    const tab = session?.tabs.find((entry) => entry.id === (tabId ?? session.activeTabId));
+    if (!enabled) {
+      if (tab && session?.picking?.tab === tab) s.host.cancelPick(id);
+      return true;
+    }
+    if (!session || !tab?.driver || !tab.state.url || tab.state.error || tab.state.crashed)
+      return false;
+    const emit = (event: string, ...args: unknown[]) => {
+      if (!window.isDestroyed() && s.host.sessions.get(id) === session)
+        s.host.deps.previewEvent?.(window, id, preview, event, ...args);
+    };
+    void s.host.pickElement(id, tab.id).then((picked) => {
+      if (!picked) {
+        if (!session.picking) emit("selectionModeEnded");
+        return;
+      }
+      if (session.shown?.window === window && session.activeTabId === tab.id)
+        window.webContents.focus?.();
+      emit("elementSelected", {
+        tagName: picked.tag,
+        id: picked.id,
+        classes: picked.classes ?? [],
+        attributes: picked.attributes ?? {},
+        computedStyles: picked.styles,
+        boundingBox: picked.box,
+        screenshot: picked.screenshotPngBase64 ?? "",
+        innerText: picked.text,
+        parentPath: picked.selector,
+        outerHTML: picked.outerHTML,
+      });
+    }).catch(() => {
+      if (!session.picking) emit("selectionModeEnded");
+    });
+    return true;
+  });
   handle("browserCapture", async (raw: unknown) => {
     const { id, service: s } = await browser(raw);
     const png = await s.host.capture(id);
     return png ? { pngBase64: png.toString("base64") } : null;
   });
-  // Separate model-sized captures and console reads.
+  handle("officialCaptureBrowserPreview", async (raw: unknown, rawOptions: unknown) => {
+    const options = z.object({
+      tabId: tabIdSchema.optional(),
+      origin: z.string().optional(),
+      ifChanged: z.boolean().optional(),
+      force: z.boolean().optional(),
+    }).strict().parse(rawOptions);
+    const { id, service: s } = await browser(raw);
+    return s.host.capturePreview(id, options);
+  });
+  // Separate model-sized captures and console reads (desktop 2.37337.1,
+  // index.chunk-BWk6pVUt.js:232798; 232819).
   handle("browserConsoleLogs", async (raw: unknown, rawOptions: unknown) => {
     const options = z
       .object({
@@ -630,6 +898,8 @@ function registerBrowserHandlers(
   });
   handle("browserOpenHtmlFile", async (raw: unknown) => {
     const { id, service: s } = await browser(raw);
+    if (hasOffHostCodeBrowser(ctx.store.conversations.find((c) => c.id === id)))
+      throw Error("HTML file previews require a local workspace.");
     const file = await (await loadDeps()).chooseHtmlFile(ctx.callerWindow());
     if (!file) return false;
     if (!/\.html?$/i.test(file))
@@ -637,6 +907,96 @@ function registerBrowserHandlers(
     const result = s.host.openFile(id, file);
     if (!result.ok) throw new Error(result.message);
     return true;
+  });
+  handle("officialBrowserOpenFile", async (raw: unknown, rawPath: unknown) => {
+    const { id, service: s } = await browser(raw);
+    const c = ctx.store.conversation(id);
+    if (hasOffHostCodeBrowser(c))
+      throw Error("HTML file previews require a local workspace.");
+    if (!c.cwd) throw Error("Choose a working folder first.");
+    ctx.allowedFolder(c.cwd);
+    const root = fs.realpathSync(c.cwd);
+    const file = fs.realpathSync(z.string().min(1).max(4096).parse(rawPath));
+    const relative = path.relative(root, file);
+    if (
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    )
+      throw Error("The preview file is outside this session's folder.");
+    if (!/\.(?:html?|svg)$/i.test(file))
+      throw Error("Choose an HTML or SVG preview file.");
+    const result = s.host.openFile(id, file);
+    if (!result.ok) throw Error(result.message);
+    return s.host.state(id);
+  });
+  handle("officialPreviewWrittenFiles", async (id: string, paths: string[], current: () => boolean) => {
+    const store = ctx.store;
+    const { service: s } = await browser(id);
+    if (ctx.store !== store || !current()) return null;
+    const c = store.conversation(id);
+    if (c.mode !== "code" || c.archived || !c.cwd || !ownsNativeBrowserExecution(ctx, id))
+      return null;
+    const state = s.host.state(id);
+    if (!state.toolsAvailable) return null;
+    ctx.allowedFolder(c.cwd);
+    const workspace = c.cwd;
+    const root = fs.realpathSync(workspace);
+    const running = state.devServers.some(server =>
+      server.source === "launch.json" && (server.status === "running" || server.status === "starting"));
+    let opened = false;
+    for (const entry of new Set(paths)) {
+      if (!/\.(?:html?|svg|png|jpe?g|gif|webp|avif|pdf|mp4|webm|m4v|mov|ogv)$/i.test(entry) ||
+          /\.dc\.html$/i.test(entry) || (running && /\.html?$/i.test(entry))) continue;
+      const original = path.resolve(workspace, entry);
+      if (!fileAllowed(pathToFileURL(original), [path.resolve(workspace)])) continue;
+      let file: string;
+      let contents: Buffer;
+      try {
+        file = await fs.promises.realpath(original);
+        const relative = path.relative(root, file);
+        if (relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative) ||
+            !fileAllowed(pathToFileURL(file), [root]) ||
+            path.extname(file).toLowerCase() !== path.extname(entry).toLowerCase())
+          continue;
+        const fd = await fs.promises.open(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0) | fs.constants.O_NONBLOCK);
+        try {
+          const info = await fd.stat();
+          const limit = /\.(?:html?|svg)$/i.test(file) ? 512 * 1024 : 64 * 1024 * 1024;
+          if (!info.isFile() || info.nlink !== 1 || info.size > limit) continue;
+          const buffer = Buffer.alloc(info.size + 1);
+          let count = 0;
+          while (count < buffer.length) {
+            const { bytesRead } = await fd.read(buffer, count, buffer.length - count, count);
+            if (!bytesRead) break;
+            count += bytesRead;
+          }
+          if (count !== info.size) continue;
+          const after = await fs.promises.stat(file);
+          if (after.dev !== info.dev || after.ino !== info.ino || after.nlink !== 1 ||
+              after.size !== count || after.mtimeMs !== info.mtimeMs ||
+              await fs.promises.realpath(file) !== file) continue;
+          contents = buffer.subarray(0, count);
+        } finally {
+          await fd.close();
+        }
+      } catch { continue; }
+      if (ctx.store !== store || !current() ||
+          !store.conversations.some(item => item.id === id && !item.archived && item.cwd === workspace)) return null;
+      const before = s.host.state(id);
+      if (!before.toolsAvailable) return null;
+      const url = pathToFileURL(file);
+      const existing = before.tabs.find(tab => tab.url === url.href);
+      const blank = before.tabs.find(tab => !tab.url || tab.url === "about:blank");
+      if (!existing && !blank && before.tabs.length >= officialPreviewTabLimit) continue;
+      const tabId = existing?.id ?? blank?.id ?? s.host.newTab(id);
+      const result = s.host.openWrittenFile(id, file, tabId, contents);
+      if (result.ok) {
+        s.host.selectTab(id, tabId);
+        opened = true;
+      }
+    }
+    return opened ? s.host.state(id) : null;
   });
   handle("browserExportFile", async (raw: unknown) => {
     const { id, service: s } = await browser(raw);

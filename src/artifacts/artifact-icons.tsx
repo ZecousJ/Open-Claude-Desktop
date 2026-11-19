@@ -22,9 +22,9 @@ function Outline({ size = 16, children, ...props }: IconProps) {
 }
 
 /**
- * Two round speech bubbles: the front one on the upper left, the rear one lower
- * right. `filled` is the comment-mode form: both solid, the front one cut out
- * of the rear one by the button's own colour (`gap`).
+ * Two round speech bubbles: the front one on the upper left, the rear one
+ * lower right. `filled` is the comment-mode form (R-1016): both solid, the
+ * front one cut out of the rear one by the button's own colour (`gap`).
  */
 export function CommentBubblesIcon({
   filled,
@@ -82,12 +82,12 @@ const pinBody = (
   </g>
 );
 
-/** A push pin tilted with its head to the upper right. */
+/** A push pin tilted with its head to the upper right (R-1000 Pin). */
 export function TiltedPinIcon(props: IconProps) {
   return <Outline {...props}>{pinBody}</Outline>;
 }
 
-/** The tilted pin struck through from the upper left. */
+/** The tilted pin struck through from the upper left (R-1007 Unpin). */
 export function TiltedUnpinIcon(props: IconProps) {
   return (
     <Outline {...props}>
@@ -108,7 +108,10 @@ export function FilterSlidersIcon(props: IconProps) {
   );
 }
 
-/** Slides: a card behind another, on a 13px grid. */
+/**
+ * Slides: a card behind another (R-Cowork-Output菜单's Slides tile, the
+ * PPTX file card in R-0941), on a 13px grid.
+ */
 export function SlidesIcon({
   size = 13,
 }: {

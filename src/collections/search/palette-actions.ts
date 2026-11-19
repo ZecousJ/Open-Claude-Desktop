@@ -1,10 +1,8 @@
 import type { AppController } from "../../app/AppContext";
 import type { PaletteAction } from "./search-model";
 
-/**
- * Publish only commands backed by this window's actual controller. O16 Ls
- * derives availability from a registered executor.
- */
+/** Publish only commands backed by this window's actual controller. O16
+ * c2771e1f6-B2qqRLkw Ls derives availability from a registered executor. */
 export function controllerPaletteActions(
   app: AppController | null | undefined,
 ): PaletteAction[] {

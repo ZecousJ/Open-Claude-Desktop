@@ -58,13 +58,28 @@ function setup(turns: Turn[] = [turn("a"), turn("b")]) {
   );
   engine.policy = () => ({ ...pendingPolicy, update: undefined });
   engine.ensure = async () => {};
-  let forks = 0;
+  engine.gateway = {
+    url: "http://127.0.0.1:1234/v1",
+    openSidePath: async () => "a".repeat(64),
+    closeSidePath: async () => {},
+    abortThread: () => {},
+    close: async () => {},
+  } as any;
+  let forks = 0,
+    starts = 0;
+  const nativeTurns = new Map<string, string>();
   engine.rpc = {
     call: async (method: string, params: any) => {
       calls.push({ method, params });
+      if (method === "config/read")
+        return { config: { model_providers: { claudex: { base_url: "http://127.0.0.1:1234/v1" } } } };
       if (method === "thread/fork")
         return { thread: { id: `side-${++forks}` } };
-      if (method === "turn/start") return { turn: { id: `turn-${forks}` } };
+      if (method === "turn/start") {
+        const id = `turn-${++starts}`;
+        nativeTurns.set(params.threadId, id);
+        return { turn: { id } };
+      }
       return {};
     },
     async stop() {},
@@ -78,8 +93,20 @@ function setup(turns: Turn[] = [turn("a"), turn("b")]) {
   internals.loaded.add("main");
   internals.routes.set("main", "c");
   /** The agent says something on a thread, as the app-server notifies it. */
-  const notify = (threadId: string, method: string, params: object) =>
-    internals.notification({ method, params: { threadId, ...params } });
+  const notify = (threadId: string, method: string, params: any) =>
+    internals.notification({
+      method,
+      params: {
+        threadId,
+        ...(method.startsWith("item/")
+          ? { turnId: nativeTurns.get(threadId) }
+          : {}),
+        ...params,
+        ...(method === "turn/completed"
+          ? { turn: { id: nativeTurns.get(threadId), ...params.turn } }
+          : {}),
+      },
+    });
   /** Lets a started question reach turn/start. */
   const started = async () => {
     for (let i = 0; i < 20; i++) await Promise.resolve();
@@ -104,7 +131,6 @@ const say = (itemId: string, text: string) => ({
 });
 const finish = (status: string, error?: string) => ({
   turn: {
-    id: "turn-1",
     status,
     ...(error ? { error: { message: error } } : {}),
   },
@@ -126,6 +152,7 @@ test("a side question runs on an ephemeral read-only fork and leaves the convers
     assert.equal("dynamicTools" in fork.params, false);
     const start = env.calls.find((call) => call.method === "turn/start")!;
     assert.equal(start.params.threadId, "side-1");
+    assert.deepEqual(start.params.environments, []);
     assert.deepEqual(start.params.input, [
       { type: "text", text: "What did b say?", text_elements: [] },
     ]);
@@ -422,3 +449,198 @@ test("Stop before any text rejects as stopped; before the turn started, no turn 
     env.close();
   }
 });
+
+function deferredRpc(env: ReturnType<typeof setup>, delayedMethod: string) {
+  const rpc = env.engine.rpc!;
+  const call = rpc.call.bind(rpc);
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  rpc.call = async (method: string, params: any) => {
+    const result = await call(method, params);
+    if (method === delayedMethod) await held;
+    return result;
+  };
+  return release;
+}
+
+test("actual Engine Clear rejects immediately and releases a late fork", async () => {
+  const env = setup();
+  const release = deferredRpc(env, "thread/fork");
+  try {
+    let failure: Error | undefined;
+    const answer = env.engine.askSideChat("c", "s1", "Wait?").catch((error) => {
+      failure = error;
+    });
+    await env.started();
+    await env.engine.endSideChat("c", "s1");
+    await env.started();
+    assert.match(failure?.message ?? "still pending", /closed/);
+    release();
+    await answer;
+    await env.started();
+    assert.equal(
+      env.calls.filter((call) => call.method === "turn/start").length,
+      0,
+    );
+    assert.equal(
+      env.calls.filter(
+        (call) =>
+          call.method === "thread/unsubscribe" &&
+          call.params.threadId === "side-1",
+      ).length,
+      1,
+    );
+    assert.equal(env.engine.sides.chatOfThread("side-1"), undefined);
+  } finally {
+    release();
+    env.close();
+  }
+});
+
+test("actual Engine Clear during start interrupts only the late exact turn ID", async () => {
+  const env = setup();
+  const release = deferredRpc(env, "turn/start");
+  try {
+    const answer = env.engine.askSideChat("c", "s1", "Wait?");
+    const rejected = assert.rejects(answer, /closed/);
+    await env.started();
+    await env.engine.endSideChat("c", "s1");
+    assert.equal(
+      env.calls.filter((call) => call.method === "turn/interrupt").length,
+      0,
+    );
+    release();
+    await rejected;
+    await env.started();
+    assert.deepEqual(
+      env.calls
+        .filter((call) => call.method === "turn/interrupt")
+        .map((call) => call.params),
+      [{ threadId: "side-1", turnId: "turn-1" }],
+    );
+  } finally {
+    release();
+    env.close();
+  }
+});
+
+test("actual Engine ignores prior turn text and completion while a followup runs", async () => {
+  const env = setup();
+  try {
+    const first = env.engine.askSideChat("c", "s1", "First?");
+    await env.started();
+    env.notify("side-1", "item/completed", say("first", "First."));
+    env.notify("side-1", "turn/completed", finish("completed"));
+    await first;
+    const next = env.engine.askSideChat("c", "s1", "Next?");
+    let settled = false;
+    void next.then(() => {
+      settled = true;
+    });
+    await env.started();
+    env.notify("side-1", "item/agentMessage/delta", {
+      turnId: "turn-1",
+      itemId: "late",
+      delta: "old",
+    });
+    env.notify("side-1", "turn/completed", {
+      turn: { id: "turn-1", status: "completed" },
+    });
+    await env.started();
+    assert.equal(settled, false);
+    env.notify("side-1", "item/completed", say("next", "Next."));
+    env.notify("side-1", "turn/completed", finish("completed"));
+    assert.equal(await next, "Next.");
+    assert.equal(sideTexts(env.events).includes("old"), false);
+  } finally {
+    env.close();
+  }
+});
+
+test("actual Engine accepts a complete legitimate turn notified before start returns", async () => {
+  const env = setup();
+  const release = deferredRpc(env, "turn/start");
+  try {
+    const answer = env.engine.askSideChat("c", "s1", "Early?");
+    await env.started();
+    env.notify("side-1", "item/agentMessage/delta", {
+      itemId: "early",
+      delta: "Early.",
+    });
+    env.notify("side-1", "turn/completed", finish("completed"));
+    assert.deepEqual(sideTexts(env.events), []);
+    release();
+    assert.equal(await answer, "Early.");
+    assert.deepEqual(sideTexts(env.events), ["Early."]);
+  } finally {
+    release();
+    env.close();
+  }
+});
+
+for (const operation of [
+  "replace RPC",
+  "replace account Store",
+  "replace gateway",
+  "Clear",
+] as const) {
+  test(`actual Engine ${operation} during workspace warmup cannot resume or mutate the main thread`, async () => {
+    const env = setup();
+    const replacementAccount =
+      operation === "replace account Store" ? setup() : undefined;
+    const replacementBefore = replacementAccount
+      ? structuredClone(replacementAccount.c)
+      : undefined;
+    let release!: () => void;
+    const warmup = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    try {
+      env.engine.loaded.delete("main");
+      env.engine.trustEveryWorkspace = true;
+      env.engine.trustCodexProject = async () => {
+        await warmup;
+      };
+      const before = structuredClone(env.c);
+      const answer = env.engine.askSideChat("c", "s1", "Warmup?");
+      const rejected = assert.rejects(
+        answer,
+        operation === "Clear" ? /closed/ : /account or agent changed/,
+      );
+      await env.started();
+      const replacementCalls: unknown[] = [];
+      if (operation === "Clear") await env.engine.endSideChat("c", "s1");
+      else if (operation === "replace account Store")
+        env.engine.store = replacementAccount!.store;
+      else if (operation === "replace gateway")
+        env.engine.gateway = {
+          abortThread: (id: string) => replacementCalls.push(id),
+        } as any;
+      else
+        env.engine.rpc = {
+          call: async (...args: unknown[]) => {
+            replacementCalls.push(args);
+            return {};
+          },
+        } as any;
+      release();
+      await rejected;
+      await env.started();
+      assert.deepEqual(replacementCalls, []);
+      assert.equal(env.calls.length, 0);
+      assert.equal(env.engine.loaded.has("main"), false);
+      assert.equal(env.engine.threadLimits.has("main"), false);
+      assert.deepEqual(env.c, before);
+      if (replacementAccount) {
+        assert.equal(replacementAccount.calls.length, 0);
+        assert.deepEqual(replacementAccount.c, replacementBefore);
+      }
+    } finally {
+      release();
+      env.close();
+      replacementAccount?.close();
+    }
+  });
+}

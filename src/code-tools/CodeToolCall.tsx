@@ -23,15 +23,16 @@ import {
 } from "../transcript-view/transcript-view-store";
 
 /*
- * A connector or dynamic tool call in a Code turn: a grey row that opens
- * straight onto the result as plain 14px text, the way "Listed previews" opens
- * onto "[]"; a failed call is a red row with the error text in red, then each
- * argument as "name: value" ("expression: location.href", a monospace name over
- * a plain value). No "Input" / "Output" frames: those are the Chat and Cowork
- * rows. The capture words a row from the tool's own description ("Listed
- * previews", "Failed to run page script"); Codex reports only the server and
- * tool names, so the row reads "Used preview: preview_list" and "Failed to use
- * preview: preview_eval", the wording of R-0718 and of the failed Bash rows.
+ * A connector or dynamic tool call in a Code turn (R-0816, R-0837, capture
+ * R-0816-0837-Code-MCP完成与失败卡): a grey row that opens straight onto the
+ * result as plain 14px text, the way "Listed previews" opens onto "[]"; a
+ * failed call is a red row with the error text in red, then each argument as
+ * "name: value" ("expression: location.href", a monospace name over a plain
+ * value). No "Input" / "Output" frames: those are the Chat and Cowork rows.
+ * The capture words a row from the tool's own description ("Listed previews",
+ * "Failed to run page script"); Codex reports only the server and tool names,
+ * so the row reads "Used preview: preview_list" and "Failed to use preview:
+ * preview_eval", the wording of R-0718 and of the failed Bash rows.
  */
 function isObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -63,7 +64,11 @@ function imageSource(value: string) {
     : undefined;
 }
 
-/** The tool's own name as the row words it: "preview: preview list". */
+/**
+ * The tool's own name as the row words it: "preview: preview list" (live
+ * claude.ai bundle, 2026-10-14: the server, then the tool with its
+ * underscores as spaces).
+ */
 export function codeToolName(item: Item) {
   const owner = String(
     (item.type === "dynamicToolCall" ? item.namespace : item.server) ?? "",
@@ -111,7 +116,7 @@ export function codeToolCallLabel(item: Item, failedAsDone = false) {
     typeof app?.actionName === "string" && app.actionName.trim()
       ? app.actionName.trim()
       : undefined;
-  // Sync with base branch words its row from its answer.
+  // Sync with base branch words its row from its answer (c52b02f3f `$t`).
   if (item.namespace === syncBaseNamespace && item.tool === syncBaseTool) {
     if (itemIsRunning(item)) return syncBaseRunningVerb(item.arguments);
     const row = syncBaseRow(firstText(item));

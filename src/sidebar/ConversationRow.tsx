@@ -20,7 +20,7 @@ import { AppContext } from "../app/AppContext";
 import type { useConversationDrag } from "./useConversationDrag";
 import { TitleReveal } from "./TitleReveal";
 import { StatusDot } from "./StatusDot";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useJumpHint } from "./jump-hints";
 import { rowStatus, type RowPullRequest } from "./row-status";
 import { sessionPullRequest } from "../../shared/pull-request";
@@ -98,9 +98,10 @@ export { fileManagerName } from "./file-manager";
 const prPollMs = 5 * 60_000;
 
 /**
- * The pull request a Code row shows while Show PR status is on: the one the
- * session made, read through the window's shared store, so the branch row and
- * the sidebar agree.
+ * The pull request a Code row shows while Show PR status is on (live
+ * claude.ai bundle, 2026-10-12: not for an archived session): the one the
+ * session made, read through the window's shared store, so the branch row
+ * and the sidebar agree.
  */
 function useRowPullRequest(
   c: Conversation,
@@ -168,7 +169,7 @@ export function ConversationRow({
 }) {
   const [menu, setMenu] = useState<MenuPosition>();
   // The menu runs on every selected row when it opens over a selection of
-  // several.
+  // several (live claude.ai bundle, 2026-10-14, shared-21).
   const [bulk, setBulk] = useState<Conversation[]>();
   const picked = useSelected(c.id);
   const openMenu = (position: MenuPosition, single: boolean) => {
@@ -203,8 +204,8 @@ export function ConversationRow({
     },
     pr,
   );
-  // A long title shows whole in a tooltip to the right, only while it is cut
-  // off.
+  // A long title shows whole in a tooltip to the right, only while it is
+  // cut off (desktop bundle 2.31226.1: the title's truncation tooltip).
   const titleTip = useTooltip(c.title, { placement: "right" });
   const Row = surface === "web" ? "a" : "button";
   const metadata =
@@ -247,9 +248,10 @@ export function ConversationRow({
         aria-description="Control+Alt+P to pin or unpin."
         onKeyDown={onKeyboardPin}
         onClick={(event) => {
-          // Web rows keep a real link target, while the existing selection and
-          // drag gestures still intercept their ordinary click path. The live
-          // sidebar similarly handles modifiers on link rows.
+          // Web rows keep a real link target, while the existing selection
+          // and drag gestures still intercept their ordinary click path.
+          // The live sidebar similarly handles modifiers on link rows
+          // (shared-21-Cj1zQ-fC.js:19420–19438,20278–20317).
           if (surface === "web") event.preventDefault();
           if (dragControl.click(event)) return;
           const row = event.currentTarget;
@@ -270,7 +272,10 @@ export function ConversationRow({
             stable and place activity after the title. O16 shared-21:
             11579–11608,19763–19827,20164–20183. */}
         {c.pinned && (
-          <AppIcon name={c.mode === "code" ? "Code" : "ChatMode"} size={16} />
+          <Anthropicon
+            name={c.mode === "code" ? "Code" : "ChatMode"}
+            size={16}
+          />
         )}
         {/* A title is a name, not interface text. */}
         <span
@@ -295,8 +300,10 @@ export function ConversationRow({
           )}
         </span>
         {/* A status ends the row (unread, needs input, a pull request,
-           archived); otherwise an unpinned Code row ends in where it runs,
-           unless its group already names the place. */}
+            archived); otherwise an unpinned Code row ends in where it runs,
+            unless its group already names the place (live claude.ai,
+            2026-10-21, shared-21 CN: env hidden when pinned or grouped by
+            project or environment; ZJ: a status mark wins over the env). */}
         {(status.dot ||
           status.archived ||
           status.pr ||
@@ -347,7 +354,8 @@ export function ConversationRow({
           );
         }}
       >
-        {/* A Code row's ⋯ lies flat; a chat's ⋮ stands. */}
+        {/* A Code row's ⋯ lies flat; a chat's ⋮ stands (live claude.ai,
+            2026-10-21: DotsHorizontal on Code rows, DotsVertical on Chat). */}
         {codeView ? <Ellipsis size={16} /> : <EllipsisVertical size={16} />}
       </button>
       {menu && bulk && (
@@ -383,7 +391,7 @@ export function ConversationRow({
 
 /**
  * The row's number while ⌘ (or Ctrl+Shift) is held (src/sidebar/jump-hints.ts),
- * over its leading dot.
+ * over its leading dot (live claude.ai bundle, 2026-10-12: the jump hint).
  */
 function RowJumpHint({ id }: { id: string }) {
   const digit = useJumpHint(id);

@@ -95,7 +95,7 @@ const device = {
   id: 51,
   user_id: 123,
   user_email: 'a@example.com',
-  device_name: 'Ada’s MacBook Pro',
+  device_name: 'Zecous’s MacBook Pro',
   platform: 'darwin',
   arch: 'arm64',
   app_version: '1.3.2',

@@ -14,13 +14,14 @@ export function draftWebSearchDefault(
 }
 
 /**
- * The new conversation's composer options before the first send. App.tsx keeps
- * the state here so the defaults can change without editing App.tsx.
+ * The new conversation's composer options before the first send (package
+ * WP4b). App.tsx keeps the state here so the defaults can change without
+ * editing App.tsx.
  *
- * The window starts before the service's policy arrives (the pending policy has
- * web search off by default), so a draft the user has not touched follows the
- * policy's default when it arrives or changes; once they switch web search
- * themselves, their choice stands until the next new chat.
+ * The window starts before the service's policy arrives (the pending policy
+ * has web search off by default), so a draft the user has not touched follows
+ * the policy's default when it arrives or changes; once they switch web
+ * search themselves, their choice stands until the next new chat.
  */
 export function useComposerDraft(policy: ClientPolicy) {
   const fallback = draftWebSearchDefault(policy);
@@ -33,6 +34,8 @@ export function useComposerDraft(policy: ClientPolicy) {
     touched.current = true;
     setWebSearch(value);
   }, []);
+  // The new chat's knowledge bases (shared/knowledge-api.ts): off by default.
+  const [draftKnowledge, setDraftKnowledge] = useState<string[]>([]);
   const [draftLinearIssue, setDraftLinearIssue] = useState<LinearIssue>();
   const [draftArtifactOutput, setDraftArtifactOutput] =
     useState<ArtifactOutputKind>();
@@ -68,6 +71,7 @@ export function useComposerDraft(policy: ClientPolicy) {
   return {
     draftWebSearch,
     setDraftWebSearch,
+    draftKnowledge,
     draftLinearIssue,
     draftArtifactOutput,
     draftCodePermissionMode,
@@ -77,6 +81,7 @@ export function useComposerDraft(policy: ClientPolicy) {
     setDraftLinearIssue,
     draftAdditionalFolders,
     setDraftAdditionalFolders,
+    setDraftKnowledge,
     draftConnectorTools,
     setDraftConnectorTools,
     draftToolSearchMode,
@@ -89,6 +94,7 @@ export function useComposerDraft(policy: ClientPolicy) {
       setWebSearch(
         project?.tools?.webSearch && policy.webSearch ? true : fallback,
       );
+      setDraftKnowledge([]);
       setDraftConnectorTools({});
       setDraftToolSearchMode(undefined);
       setDraftLinearIssue(undefined);

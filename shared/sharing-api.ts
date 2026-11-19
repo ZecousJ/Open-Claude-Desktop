@@ -123,9 +123,9 @@ export interface SharedChatContent extends SharedChat {
 }
 
 /**
- * Report chat's answer. The category is one the form takes
- * (`reportFormCategories`); the administrator must not use a report that opts
- * out to train models.
+ * Report chat's answer (after the live claude.ai report form, 2026-10-12).
+ * The category is one the form takes (`reportFormCategories`); the
+ * administrator must not use a report that opts out to train models.
  */
 export interface SharedChatReport {
   category: string;
@@ -137,8 +137,10 @@ export interface SharedChatReport {
 }
 
 /**
- * What the service has of one version of an artifact. Each version published
- * gets its own public link; Unpublish removes every version's link.
+ * What the service has of one version of an artifact (Publish, after the
+ * live claude.ai bundle, 2026-10-12: the artifact pane's Publish button
+ * and Publish modal). Each version published gets its own public link;
+ * Unpublish removes every version's link.
  */
 export interface ArtifactPublication {
   /** This version's public link (active, or taken down by the administrator). */
@@ -153,8 +155,9 @@ export interface ArtifactPublication {
 }
 
 /**
- * Get embed code: the iframe address of a published artifact and the domains
- * allowed to embed it. An empty list lets any site embed it.
+ * Get embed code (live claude.ai bundle, 2026-10-12: the Publish dialog's
+ * embed settings): the iframe address of a published artifact and the
+ * domains allowed to embed it. An empty list lets any site embed it.
  */
 export interface ArtifactEmbed {
   /** The iframe's src: an absolute http(s) address. */
@@ -164,7 +167,8 @@ export interface ArtifactEmbed {
 }
 
 /**
- * Report artifact: the report form without the training opt-out, and a copy of
+ * Report artifact (the artifact viewer's title menu, live claude.ai bundle,
+ * 2026-10-12): the report form without the training opt-out, and a copy of
  * the artifact, since the artifact itself is not on the service.
  */
 export interface ArtifactReport {

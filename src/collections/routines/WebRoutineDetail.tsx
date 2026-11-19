@@ -7,7 +7,7 @@ import {
 } from "../../../shared/routines";
 import { repeatLabel, repeatOf } from "../../../shared/routine-labels";
 import { currentLocale, formatText, t, tc, useLocale } from "../../i18n";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Menu } from "../../ui/Menu";
 import { isEditEndKey } from "../../ui/ime";
 import {
@@ -24,10 +24,9 @@ import type { RoutineDetailProps } from "./RoutineDetail";
 import "./web-routine-detail.css";
 import { RoutineDetailResources } from "./RoutineDetailResources";
 
-/**
- * The shared unified detail. The separate Epitaxy local view is an explicit
- * presentation, not the default for every native-host task.
- */
+/** The shared unified detail (official-scheduled-task.txt, 2026-10-16;
+ * O16 ccd3f68fe). The separate Epitaxy local view is an explicit presentation,
+ * not the default for every native-host task. */
 export function WebRoutineDetail({
   routine,
   onClose,
@@ -223,7 +222,7 @@ export function WebRoutineDetail({
                 )
               }
             >
-              <AppIcon name="CaretDown" size={16} />
+              <Anthropicon name="CaretDown" size={16} />
             </button>
           </>
         )}
@@ -248,20 +247,20 @@ export function WebRoutineDetail({
           entries={[
             {
               label: "Rename",
-              icon: <AppIcon name="Edit" size={16} />,
+              icon: <Anthropicon name="Edit" size={16} />,
               disabled: !onRename || disabled,
               onSelect: startRename,
             },
             {
               label: "Edit",
-              icon: <AppIcon name="Settings" size={16} />,
+              icon: <Anthropicon name="Settings" size={16} />,
               disabled,
               onSelect: onEdit,
             },
             { separator: true },
             {
               label: "Delete",
-              icon: <AppIcon name="Trash" size={16} />,
+              icon: <Anthropicon name="Trash" size={16} />,
               danger: true,
               disabled,
               onSelect: onDelete,
@@ -294,7 +293,7 @@ export function WebRoutineDetail({
                 title={hold}
                 onClick={onRun}
               >
-                <AppIcon name="Play" size={20} />
+                <Anthropicon name="Play" size={20} />
                 {primaryInHeader && (progressing ? "In progress" : "Run now")}
               </button>
               <div className="scheduled-detail-status">
@@ -394,7 +393,7 @@ export function WebRoutineDetail({
                   onClick={onEdit}
                   disabled={disabled}
                 >
-                  <AppIcon name={permissionInfo.glyph} size={16} />
+                  <Anthropicon name={permissionInfo.glyph} size={16} />
                   <span>
                     <span>{permissionName}</span>
                     <small>{permissionDescription}</small>

@@ -3,14 +3,17 @@ import type { Attachment } from "../../shared/types";
 import { validSkillTokens, type SkillToken } from "./skill-tokens";
 
 /**
- * Unsent drafts, one per composer.
+ * Unsent drafts, one per composer (live claude.ai bundle, 2026-10-12: the
+ * composer keeps each conversation's draft under its own key, writes it as
+ * it changes and reads it back when that conversation opens again, so a
+ * draft survives moving to another conversation, the home and a reload).
  *
  * The text of a conversation's or a home's draft is kept in the browser's
- * storage for the account (at most `storedLimit` drafts, the oldest go first,
- * as the original keeps 50). Attached files stay for the window's lifetime
- * only: the service clears uploads that were never sent. An incognito chat's
- * draft and a split pane's new-session draft are never written to storage (the
- * original does not keep pane drafts either).
+ * storage for the account (at most `storedLimit` drafts, the oldest go
+ * first, as the original keeps 50). Attached files stay for the window's
+ * lifetime only: the service clears uploads that were never sent. An
+ * incognito chat's draft and a split pane's new-session draft are never
+ * written to storage (the original does not keep pane drafts either).
  */
 export interface Draft {
   text: string;

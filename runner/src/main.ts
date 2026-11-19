@@ -5,7 +5,7 @@
  *
  * Configuration (environment; the systemd unit reads an EnvironmentFile):
  *   CLAUDEX_RUNNER_SERVICE_URL   the Claudex service for the link, user APIs
- *                                and the /v1 gateway (e.g. http://127.0.0.1:8080)
+ *                                and the /v1 gateway (DC6: http://127.0.0.1:8080)
  *   CLAUDEX_RUNNER_PUBLIC_URL    the address browsers use, when it differs
  *                                (pages to open are made relative to it)
  *   CLAUDEX_RUNNER_TOKEN_FILE    file holding the runner token (0600), or
@@ -47,10 +47,11 @@
  *   CLAUDEX_RUNNER_MAX_USERS     user contexts at once (default 20)
  *   CLAUDEX_RUNNER_MEMORY_MB     memory limit of one sandbox (default 768)
  *   CLAUDEX_RUNNER_MODES         conversation modes offered (default chat)
+ *   CLAUDEX_RUNNER_OFFICIAL_UI_ROOT  opt-in assembled bundle for read-only official UI RPC
+ *   CLAUDEX_RUNNER_OFFICIAL_UI_MEMORY_CONTROLS  1: allow manual memory rule edits
  *   CLAUDEX_RUNNER_LABELS        k=v,k=v labels for the service's Runners page
  */
-import { RoutineWakes } from "./routine-wakes";
-import { connectorUrlGuard } from "./connectors";
+import { RoutineWakes, type AccountWake } from "./routine-wakes";
 import fs from "node:fs";
 import { cachePressure } from "../../electron/engine/codex-cache";
 import path from "node:path";
@@ -61,7 +62,7 @@ import type { PrepareWorkspace } from "./code-workspace";
 import { protectCoworkFolders } from "../../electron/workspace/cowork-folders-support";
 import { chatSandboxSpec } from "./sandbox/sandbox-setup";
 import { sandboxWorkingTree } from "./sandbox-git";
-import { captureSandboxArtifact } from "./artifact-screenshot";
+import { captureSandboxArtifact, decodeSandboxImage } from "./artifact-screenshot";
 import { userNetworkPolicy, type UserNetwork } from "./net-policy-compile";
 import { EgressProxy } from "./egress-proxy";
 import { egressSocketPath } from "./egress-support";
@@ -72,6 +73,8 @@ import { RunscDriver } from "./sandbox/runsc";
 import { createDiskQuota, type DiskQuota } from "./sandbox/quota";
 import { prepareUserVolume } from "./user-volume";
 import { ControlLink } from "./control-link";
+import { CodeRunCapacity } from "./code-run-capacity";
+import { codeRunCapacityMethod } from "../../shared/web-runner-frames";
 import { Dispatcher } from "./dispatcher";
 import { EventHub } from "./event-hub";
 import { setShimVersion } from "./electron-shim";
@@ -239,15 +242,16 @@ export async function startRunner(
       : policy;
   };
   let link: ControlLink;
+  const codeRunCapacity = new CodeRunCapacity((op, userId, body) => link.request(op, userId, body), log);
   const hub = new EventHub({
     sink: { send: (frame) => link.send(frame) },
     log,
   });
   // Scheduled tasks that come due while nobody has a page open.
-  let wakeUser: (userId: number) => Promise<void> = async () => {};
+  let wakeUser: (userId: number, due: AccountWake) => Promise<void> = async () => {};
   const wakes = new RoutineWakes({
     stateDir: config.stateDir,
-    wake: (userId) => wakeUser(userId),
+    wake: (userId, due) => wakeUser(userId, due),
     log,
   });
   // Each user's sandbox network listeners (the shared one and one per space).
@@ -257,8 +261,10 @@ export async function startRunner(
   ];
   const dispatcher = new Dispatcher({
     runtime: {
+      codeRunCapacity,
       wake: (userId, at) => wakes.set(userId, at),
-      connectorGuard: connectorUrlGuard(config.network),
+      wakeCodeArchive: (userId, at) => wakes.setCodeArchive(userId, at),
+      connectorNetwork: config.network,
       network: (userId, user) => {
         userNetworks.set(userId, user);
         for (const id of sandboxesOf(userId))
@@ -270,6 +276,7 @@ export async function startRunner(
         void egress?.close(sandboxId);
       },
       serviceUrl: config.serviceUrl,
+      publicUrl: config.publicUrl,
       stateDir: config.stateDir,
       cachePressure: (profile) => {
         const status = quota?.status(profile, config.diskMb);
@@ -303,6 +310,7 @@ export async function startRunner(
           throw new Error("Artifact screenshots require the sandbox driver.");
         return captureSandboxArtifact(driver, sandboxRoot, html);
       },
+      ...(driver ? { imageSize: (bytes: Buffer) => decodeSandboxImage(driver, sandboxRoot, bytes) } : {}),
       log,
       // The web app offers Cowork and Code only where this runner runs them.
       host: runnerHost(config),
@@ -315,24 +323,30 @@ export async function startRunner(
             workingTree: ({
               userId,
               storeRoot,
+              spaceId,
             }: {
               userId: number;
               storeRoot: string;
+              spaceId?: string;
             }) =>
               sandboxWorkingTree({
                 driver,
                 userId,
                 storeRoot,
+                spaceId,
                 stateRoot: sandboxRoot,
               }),
           }
         : {}),
       sandboxNetwork: driver?.name === "runsc",
+      sandboxDriver: driver?.name,
       codexBinary: ({
         userId,
         storeRoot,
         attachments,
         projects,
+        accountSkills,
+        organizationPluginSources,
         sandboxId,
         cloudEnvironment,
         codexCache,
@@ -364,7 +378,8 @@ export async function startRunner(
             codexRoot: config.codexRoot,
             pathDirs: config.pathDirs,
             egressSocket,
-            readOnly: [attachments, projects],
+            readOnly: [attachments, projects, ...(organizationPluginSources ? [organizationPluginSources] : [])],
+            accountSkills,
             limits: {
               memoryMb: config.memoryMb,
               pids: config.pids,
@@ -392,19 +407,24 @@ export async function startRunner(
     maxEngines: config.maxEngines,
     maxUsers: config.maxUsers,
     guard: { modes: config.modes },
+    officialUiRoot: config.officialUiRoot,
+    officialUiActions: config.officialUiActions,
+    officialUiMemoryControls: config.officialUiMemoryControls,
+    officialUiAppearanceSettings: config.officialUiAppearanceSettings,
     log,
   });
   link = new ControlLink({
     serviceUrl: config.serviceUrl,
     token: config.token,
     version: packageVersion,
-    methods: () => dispatcher.methods,
+    methods: () => [...dispatcher.methods, codeRunCapacityMethod],
     capacity: () => ({ engines: config.maxEngines, users: config.maxUsers }),
     labels: config.labels,
     load: () => dispatcher.load(),
     log,
     handlers: {
       welcome: (frame) => {
+        codeRunCapacity.welcome(frame.codeRunCapacity === true);
         log(`claudex-runner: linked as ${frame.runnerId}`);
         // The link is up: the users whose tasks are due can be woken now.
         wakes.scan();
@@ -414,10 +434,16 @@ export async function startRunner(
       presence: (frame) => dispatcher.presence(frame),
       signedOut: (frame) => void dispatcher.signedOut(frame),
       drain: () => dispatcher.drain(),
-      down: () => log("claudex-runner: the link dropped; dialling again"),
+      codeRunExpired: (frame) => codeRunCapacity.expire(frame.userId, frame.id),
+      down: () => {
+        codeRunCapacity.down();
+        dispatcher.abortRelayedCalls();
+        void dispatcher.closeBrowserTerminals();
+        log("claudex-runner: the link dropped; dialling again");
+      },
     },
   });
-  wakeUser = (userId) => dispatcher.wakeUser(userId);
+  wakeUser = (userId, due) => dispatcher.wakeUser(userId, due);
   dispatcher.start();
   link.start();
   return {

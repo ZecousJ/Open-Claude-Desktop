@@ -3,7 +3,7 @@ import { app, powerMonitor } from "electron";
 export type PresenceEvent =
   "suspend" | "resume" | "lock" | "unlock" | "session" | "focus";
 
-/** Shared power events and input-cleared lock latch. */
+/** Shared power events and input-cleared lock latch (desktop 2.37337.1, index.chunk-BWk6pVUt, pGe/gGe). */
 export class SystemPresence {
   private lockedAt?: number;
   private listeners = new Set<(event: PresenceEvent) => void>();

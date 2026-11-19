@@ -1,4 +1,5 @@
-/** Keep on top, shared by session and project pop-outs: Lucide's pin turned 45°. */
+/** Keep on top, shared by session and project pop-outs (live claude.ai bundle,
+ * 2026-10-14, cd377abb5-CcLsUcYo.js). */
 export function WindowPinIcon() {
   return (
     <svg

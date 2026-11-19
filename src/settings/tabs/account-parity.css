@@ -1,4 +1,5 @@
-/* Account profile and device composition: official 1016 Zt/Qt and. */
+/* Account profile and device composition: official 1016
+   c71860c77-Cowht9m3 Zt/Qt and official-settings-tabs.txt:6–19. */
 .settings-account .account-profile-field {
   margin: 0;
   padding: 0;
@@ -20,15 +21,15 @@
   background: var(--settings-alpha-2);
   color: var(--settings-primary);
 }
-/* Autosize, min-h-[5.5rem], max-h-40. */
+/* O16 c547d6690-Cz73vFOt Ut: autosize, min-h-[5.5rem], max-h-40. */
 .settings-account .settings-instructions > .settings-textarea {
   field-sizing: content;
   min-height: 88px;
   max-height: 160px;
   overflow-y: auto;
 }
-/* O16 H keeps an inactive warning sr-only, outside the flex flow. An empty
-   in-flow status would add a gap under the field. */
+/* O16 c41cfd62d-Bgm069Cp H keeps an inactive warning sr-only, outside
+   the flex flow. An empty in-flow status would add a gap under the field. */
 .settings-account .settings-instructions > [role="status"]:empty {
   position: absolute;
   width: 1px;

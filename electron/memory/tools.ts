@@ -1,6 +1,5 @@
 /**
- * Memory tools the model calls (R3 design 3.5), as Codex dynamic tools in
- * the `claudex_memory` namespace.
+ * Memory tools the model calls (R3 design 3.5).
  *
  * - `memory_edits`: the model views, adds, removes or replaces the
  *   "remember this" statements when the person asks it to remember or
@@ -10,8 +9,7 @@
  *   person's past chats on this computer (chat-search.ts). What comes back
  *   is wrapped as data, never as instructions.
  *
- * Tools are fixed when a thread starts, so the handler checks again that
- * memory is still on before it changes anything.
+ * Each call checks its current preference and policy.
  */
 import { z } from "zod";
 import type { DynamicToolSpec } from "../engine/engine-extensions";
@@ -100,6 +98,23 @@ const recentSchema = {
   additionalProperties: false,
 };
 
+export const pastChatSearchTools = [
+  {
+    type: "function" as const,
+    name: conversationSearchTool,
+    description:
+      "Search the user's past chats on this computer by keywords. Use it when the user refers to an earlier conversation, or when what they said before would help. Returns matching chats with short excerpts.",
+    inputSchema: searchSchema,
+  },
+  {
+    type: "function" as const,
+    name: recentChatsTool,
+    description:
+      "List the user's most recent past chats, optionally within a time range. Use it when the user asks what they discussed lately or to pick up where they left off.",
+    inputSchema: recentSchema,
+  },
+];
+
 export interface MemoryToolAvailability {
   /** memory_edits (Generate memory from chats). */
   edits: boolean;
@@ -120,23 +135,7 @@ export function memoryToolSpecs(
         'Save or change what you remember about the user across chats. Use it when the user asks you to remember something, to forget something, or to correct what you remember. Store only lasting facts and preferences about the user, never passwords, keys or other secrets. To forget something that is part of the memory summary, add a statement such as "Forget that …".',
       inputSchema: editsSchema,
     });
-  if (available.search)
-    tools.push(
-      {
-        type: "function",
-        name: conversationSearchTool,
-        description:
-          "Search the user's past chats on this computer by keywords. Use it when the user refers to an earlier conversation, or when what they said before would help. Returns matching chats with short excerpts.",
-        inputSchema: searchSchema,
-      },
-      {
-        type: "function",
-        name: recentChatsTool,
-        description:
-          "List the user's most recent past chats, optionally within a time range. Use it when the user asks what they discussed lately or to pick up where they left off.",
-        inputSchema: recentSchema,
-      },
-    );
+  if (available.search) tools.push(...pastChatSearchTools);
   return tools.length
     ? [
         {
@@ -151,7 +150,7 @@ export function memoryToolSpecs(
 
 const nullable = <T extends z.ZodTypeAny>(schema: T) =>
   schema.nullish().transform((value) => value ?? undefined);
-const editsArguments = z.object({
+export const editsArguments = z.object({
   command: z.enum(["view", "add", "remove", "replace"]),
   text: nullable(z.string().max(4_000)),
   line: nullable(z.number().int().min(1).max(1_000)),
@@ -171,7 +170,7 @@ const failure = (text: string): MemoryToolOutcome => ({
 });
 
 /** The statements as the model sees them: numbered, marked as data. */
-function listing(texts: string[]) {
+export function memoryEditsListing(texts: string[]) {
   if (!texts.length) return "There are no saved memory statements yet.";
   return [
     "<user_memory_edits>",
@@ -204,7 +203,11 @@ export async function runMemoryEdits(
   try {
     switch (args.command) {
       case "view":
-        return { text: listing(texts), success: true, changed: false };
+        return {
+          text: memoryEditsListing(texts),
+          success: true,
+          changed: false,
+        };
       case "add": {
         if (!args.text?.trim())
           return failure("add needs the text to remember.");

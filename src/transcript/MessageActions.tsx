@@ -1,6 +1,6 @@
 import { Fragment, useRef, useState, type ReactNode } from "react";
 import { Menu, type MenuPosition } from "../ui/Menu";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { ReplyToolbarButton } from "./ReplyToolbarButton";
 
 export interface MessageAction {
@@ -16,7 +16,7 @@ export interface MessageAction {
   onSelect?: () => void;
 }
 
-/** Keep the first eligible action. */
+/** Keep the first eligible action (live claude.ai bundle, 2026-10-14, shared-2-ATjXCy8a.js). */
 export function overflowActions(actions: MessageAction[], floating: boolean) {
   const extras = actions
     .filter(
@@ -59,7 +59,7 @@ export function MessageActions({
             );
           }}
         >
-          <AppIcon name="DotsHorizontal" />
+          <Anthropicon name="DotsHorizontal" />
         </ReplyToolbarButton>
         {menu && (
           <Menu

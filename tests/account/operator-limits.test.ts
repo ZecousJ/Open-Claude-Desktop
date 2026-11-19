@@ -7,6 +7,7 @@ import http from "node:http";
 import { spawnSync } from "node:child_process";
 import { Gateway } from "../../electron/engine/gateway";
 import { RequestLimiter } from "../../server/request-limiter";
+import { localDate } from "../../electron/conversations/usage-ledger";
 import {
   loadOperatorLimits,
   parseRequestLimits,
@@ -105,7 +106,7 @@ test("operator CLI changes account limits without placing credentials in the fil
 
 test("sliding request window, concurrency and reported-token threshold reset correctly", () => {
   let now = Date.UTC(2026, 8, 23, 0, 0, 0);
-  const day = "2026-09-23";
+  const day = localDate(now); // Quotas use the host-local day, not the UTC date.
   const limiter = new RequestLimiter(
     parseRequestLimits({
       maxConcurrent: 1,

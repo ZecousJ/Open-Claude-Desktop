@@ -4,6 +4,7 @@ package usage
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,17 +18,23 @@ import (
 )
 
 type fakeSpend struct {
-	limits map[int64]float64
-	spent  map[int64]float64
-	since  time.Time
-	reads  int
+	limits   map[int64]float64
+	spent    map[int64]float64
+	since    time.Time
+	spentErr error
 }
 
-func (f *fakeSpend) spendLimit(_ context.Context, userID int64) (*float64, error) {
-	if v, ok := f.limits[userID]; ok {
-		return &v, nil
+func (f *fakeSpend) readSpend(_ context.Context, userID int64, month, _ time.Time, includeUncapped bool) (spendSnapshot, error) {
+	var result spendSnapshot
+	if limit, ok := f.limits[userID]; ok {
+		result.limit = &limit
 	}
-	return nil, nil
+	if includeUncapped || result.limit != nil {
+		f.since = month
+		result.spent = f.spent[userID]
+		return result, f.spentErr
+	}
+	return result, nil
 }
 
 func (f *fakeSpend) setSpendLimit(_ context.Context, userID int64, limit *float64) error {
@@ -39,17 +46,12 @@ func (f *fakeSpend) setSpendLimit(_ context.Context, userID int64, limit *float6
 	return nil
 }
 
-func (f *fakeSpend) spentSince(_ context.Context, userID int64, since time.Time) (float64, error) {
-	f.reads++
-	f.since = since
-	return f.spent[userID], nil
-}
-
 func TestSpendLimitRefusesOnceTheMonthReachesIt(t *testing.T) {
-	c, fs, r := opusSetup(t)
-	_ = fs
-	spend := &fakeSpend{limits: map[int64]float64{12: 50}, spent: map[int64]float64{12: 50.4}}
+	c, _, r := opusSetup(t)
+	spend := &fakeSpend{limits: map[int64]float64{12: 50}, spent: map[int64]float64{12: 49.75}}
 	c.spend = spend
+	require.Equal(t, http.StatusOK, send(r, http.MethodPost, "/v1/chat/completions", "sk-other", `{"model":"gpt-5"}`).Code)
+	spend.spent[12] = 50
 	rec := send(r, http.MethodPost, "/v1/chat/completions", "sk-other", `{"model":"gpt-5"}`)
 	require.Equal(t, http.StatusTooManyRequests, rec.Code)
 	require.Contains(t, rec.Body.String(), `"code":"CLAUDEX_SPEND_LIMIT_MONTHLY_EXCEEDED"`)
@@ -57,24 +59,9 @@ func TestSpendLimitRefusesOnceTheMonthReachesIt(t *testing.T) {
 	require.Contains(t, rec.Body.String(), `"window":"30d"`)
 	require.Contains(t, rec.Body.String(), `"resets_at":"2026-10-01T00:00:00Z"`)
 	require.Equal(t, time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC), spend.since)
-	// Under the limit, or without one, requests pass.
-	spend.spent[12] = 10
-	c.spendEntries = nil
-	require.Equal(t, http.StatusOK, send(r, http.MethodPost, "/v1/chat/completions", "sk-other", `{"model":"gpt-5"}`).Code)
-	delete(spend.limits, 12)
-	c.spendEntries = nil
-	require.Equal(t, http.StatusOK, send(r, http.MethodPost, "/v1/chat/completions", "sk-other", `{"model":"gpt-5"}`).Code)
-	// The spend is read at most once per cache period.
-	reads := spend.reads
-	spend.limits[12] = 100
-	c.spendEntries = nil
-	send(r, http.MethodPost, "/v1/chat/completions", "sk-other", `{"model":"gpt-5"}`)
-	send(r, http.MethodPost, "/v1/chat/completions", "sk-other", `{"model":"gpt-5"}`)
-	require.Equal(t, reads+1, spend.reads)
-	// WebSocket turns are checked the same way.
-	spend.spent[12] = 100
-	c.spendEntries = nil
 	require.Error(t, c.PrecheckTurn(context.Background(), 12, 0, nil, []string{"gpt-5"}))
+	delete(spend.limits, 12)
+	require.Equal(t, http.StatusOK, send(r, http.MethodPost, "/v1/chat/completions", "sk-other", `{"model":"gpt-5"}`).Code)
 }
 
 func TestSpendLimitRoutes(t *testing.T) {
@@ -99,14 +86,31 @@ func TestSpendLimitRoutes(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Contains(t, w.Body.String(), `"limit_usd":null`)
 	require.Contains(t, w.Body.String(), `"used_usd":12.345`)
+	w = call(http.MethodPut, `{"limit_usd":1.005}`)
+	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+	require.Equal(t, 1.01, spend.limits[7])
 	w = call(http.MethodPut, `{"limit_usd":25.004}`)
 	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 	require.Contains(t, w.Body.String(), `"limit_usd":25`)
 	require.Equal(t, 25.0, spend.limits[7])
-	require.Equal(t, http.StatusBadRequest, call(http.MethodPut, `{"limit_usd":-1}`).Code)
-	require.Equal(t, http.StatusBadRequest, call(http.MethodPut, `{"limit_usd":200000}`).Code)
+	t.Run("invalid updates preserve the limit", func(t *testing.T) {
+		for _, body := range []string{`{}`, `{"limit_usd":"25"}`, `{"limit_usd":-1}`, `{"limit_usd":-0.001}`, `{"limit_usd":200000}`} {
+			require.Equal(t, http.StatusBadRequest, call(http.MethodPut, body).Code, body)
+			require.Equal(t, 25.0, spend.limits[7])
+		}
+	})
+	t.Run("failed spend read preserves the limit", func(t *testing.T) {
+		spend.spentErr = errors.New("ledger unavailable")
+		defer func() { spend.spentErr = nil }()
+		require.Equal(t, http.StatusServiceUnavailable, call(http.MethodPut, `{"limit_usd":35}`).Code)
+		require.Equal(t, 25.0, spend.limits[7])
+	})
 	w = call(http.MethodPut, `{"limit_usd":null}`)
 	require.Equal(t, http.StatusOK, w.Code)
 	_, set := spend.limits[7]
 	require.False(t, set)
+	t.Run("unlimited spend read returns the ledger error", func(t *testing.T) {
+		spend.spentErr = errors.New("ledger unavailable")
+		require.Equal(t, http.StatusServiceUnavailable, call(http.MethodGet, "").Code)
+	})
 }

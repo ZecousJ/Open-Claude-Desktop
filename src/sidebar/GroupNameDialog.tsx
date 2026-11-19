@@ -3,10 +3,13 @@ import { Modal } from "../ui/Controls";
 import "./code-section-dialog.css";
 
 /**
- * The name of a custom group, asked in a small dialog. Rename group takes the
- * same dialog with the current name. The dialog keeps the rename dialog's look
- * (collections.css .rename-form), and the primary button stays disabled until
- * there is a name that differs from the start.
+ * The name of a custom group, asked in a small dialog (desktop bundle
+ * 2.31226.1: New group with a "Group name" field, Cancel and the primary
+ * button; when the list is not showing Custom groups a line says it will
+ * switch, and the button says "Create and group by custom"). Rename group
+ * takes the same dialog with the current name. The dialog keeps the
+ * rename dialog's look (collections.css .rename-form), and the primary
+ * button stays disabled until there is a name that differs from the start.
  */
 export function GroupNameDialog({
   title,

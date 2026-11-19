@@ -109,6 +109,7 @@ func TestDocumentLifecycleAndConflicts(t *testing.T) {
 	require.Equal(t, http.StatusConflict, r.Status)
 
 	// Edits, then a generated write folding in the first two.
+	require.Equal(t, 200, f.do("PUT", "/api/v1/claudex/memory/prefs", `{"generate":true}`).Status)
 	for i := 1; i <= 3; i++ {
 		r = f.do(http.MethodPost, "/api/v1/claudex/memory/edits", fmt.Sprintf(`{"scope":"global","text":"Prefers tabs %d"}`, i))
 		require.Equal(t, http.StatusCreated, r.Status, r.Raw)
@@ -277,6 +278,17 @@ func TestEdits(t *testing.T) {
 	require.Equal(t, http.StatusOK, f.do(http.MethodDelete, fmt.Sprintf("/api/v1/claudex/memory/edits/%d", id), "").Status)
 	require.Equal(t, http.StatusNotFound, f.do(http.MethodDelete, fmt.Sprintf("/api/v1/claudex/memory/edits/%d", id), "").Status)
 	require.Equal(t, http.StatusNotFound, f.do(http.MethodDelete, "/api/v1/claudex/memory/edits/abc", "").Status)
+}
+
+func TestPausedGenerationKeepsPreviousDocument(t *testing.T) {
+	f := newFixture(t)
+	path := "/api/v1/claudex/memory/docs/global"
+	require.Equal(t, 200, f.do("PUT", path, `{"content":"Previous memory","source":"user","base_revision":0}`).Status)
+	require.Equal(t, 200, f.do("PUT", "/api/v1/claudex/memory/prefs", `{"generate":false}`).Status)
+	r := f.do("PUT", path, `{"content":"In-flight result","source":"generated","base_revision":1}`)
+	require.Equal(t, 403, r.Status)
+	require.Equal(t, "CLAUDEX_MEMORY_DISABLED", r.Reason)
+	require.Equal(t, "Previous memory", *f.memory().Docs[0].Content)
 }
 
 func TestPolicyOffKeepsReadsAndDeletes(t *testing.T) {

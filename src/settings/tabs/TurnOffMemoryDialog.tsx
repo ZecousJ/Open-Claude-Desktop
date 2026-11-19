@@ -21,10 +21,10 @@ const choices = [
 ] as const;
 
 /**
- * Turn off memory: turning "Generate memory from chats" off asks whether to
- * pause memory (keep what it has, stop using it) or reset it (delete it all).
- * Cancel leaves the switch on. Reset is offered only while the memory can be
- * reached.
+ * Turn off memory (desktop bundle 2.31226.1): turning "Generate memory from
+ * chats" off asks whether to pause memory (keep what it has, stop using it)
+ * or reset it (delete it all). Cancel leaves the switch on. Reset is
+ * offered only while the memory can be reached.
  */
 export function TurnOffMemoryDialog({
   canReset,

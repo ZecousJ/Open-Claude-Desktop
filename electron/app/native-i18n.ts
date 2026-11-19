@@ -1,3 +1,5 @@
+import { officialSimplifiedChineseLocale } from "../../shared/official-appearance-capability";
+
 const catalogs: Record<
   string,
   () => Promise<{ default: Record<string, string> }>
@@ -56,5 +58,6 @@ export function catalogTranslator(catalog: Record<string, string>) {
 }
 
 export async function nativeTranslator(locale: string) {
-  return catalogTranslator((await catalogs[locale]?.())?.default ?? {});
+  const catalogLocale = locale === officialSimplifiedChineseLocale ? "zh-CN" : locale;
+  return catalogTranslator((await catalogs[catalogLocale]?.())?.default ?? {});
 }

@@ -57,12 +57,33 @@ export function acceleratorFromPress(
   return [...parts, key].join("+");
 }
 
+const modifierAliases: Record<string, string> = {
+  Cmd: "Command",
+  Ctrl: "Control",
+  CmdOrCtrl: "CommandOrControl",
+  Option: "Alt",
+  Meta: "Super",
+};
+
+/** Electron accepts aliases and modifier order that describe the same key press. */
+export function normalizeAccelerator(value: string, platform?: string) {
+  const parts = value.split("+");
+  const key = parts.pop();
+  const modifiers = parts.map((part) => {
+    const name = modifierAliases[part] ?? part;
+    if (platform && name === "CommandOrControl")
+      return platform === "darwin" ? "Command" : "Control";
+    return name;
+  });
+  return [...new Set(modifiers)].sort().concat(key ?? "").join("+");
+}
+
 const acceleratorPattern =
-  /^((Command|Control|CommandOrControl|Alt|Option|Shift|Super)\+)+([A-Z0-9]|F([1-9]|1[0-9]|2[0-4])|Space|Up|Down|Left|Right|Return|Escape|Backspace|Delete|Tab|Home|End|PageUp|PageDown|[`\-=[\];',./\\])$|^F([1-9]|1[0-9]|2[0-4])$/;
+  /^((Command|Control|CommandOrControl|Alt|AltGr|Shift|Super)\+)+([A-Z0-9]|F([1-9]|1[0-9]|2[0-4])|Space|Up|Down|Left|Right|Return|Escape|Backspace|Delete|Tab|Home|End|PageUp|PageDown|[`\-=[\];',./\\])$|^F([1-9]|1[0-9]|2[0-4])$/;
 
 /** A shortcut this module could have made. */
 export function validAccelerator(value: string) {
-  return value.length <= 100 && acceleratorPattern.test(value);
+  return value.length <= 100 && acceleratorPattern.test(normalizeAccelerator(value));
 }
 
 /**
@@ -97,7 +118,7 @@ export function acceleratorLabel(value: string, platform: string) {
 export function pressMatches(press: KeyPress, value: string, platform: string) {
   if (!value) return false;
   const mac = platform === "darwin";
-  const parts = value.split("+");
+  const parts = normalizeAccelerator(value, platform).split("+");
   const key = parts.pop();
   const want = {
     meta:
@@ -120,8 +141,8 @@ export function pressMatches(press: KeyPress, value: string, platform: string) {
 
 /**
  * Combinations the shortcut fields refuse because they belong to common
- * actions: Command with Q, W, H, M, comma, N, O, T, S, C or V on macOS, and
- * Control with W, N, O, T, S, C or V.
+ * actions (desktop bundle 2.31226.1): Command with Q, W, H, M, comma, N,
+ * O, T, S, C or V on macOS, and Control with W, N, O, T, S, C or V.
  */
 export function reservedAccelerator(value: string, platform: string) {
   const parts = value.split("+");
@@ -138,7 +159,7 @@ export function reservedAccelerator(value: string, platform: string) {
 
 /** Whether an accelerator holds Command or Control (or the Windows key, which the original calls Cmd there). */
 export function hasPrimaryModifier(value: string) {
-  return value
+  return normalizeAccelerator(value)
     .split("+")
     .slice(0, -1)
     .some((part) =>

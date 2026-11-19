@@ -1,12 +1,13 @@
 /*
- * Spin off a new task windows (SpinOffWindows.tsx). Values are the live A row
- * 12px from the page's bottom and right edges, windows 12px apart, newest at
- * the right; a window 26rem wide (16rem collapsed, the width easing 150ms),
- * rounded 16px, a 0.5px strong rim on the raised surface, shadows 0 24px 60px
- * (18% black) and 0 4px 16px (8%); its header 6px 12px with 4px gaps; its body
- * opening and closing with its grid row over 150ms, 4px 8px 8px inside. Colours
- * are Claudex's tokens; the badge is Claudex's neutral badge
- * (.customize-badge).
+ * Spin off a new task windows (SpinOffWindows.tsx). Values are the live
+ * claude.ai bundle's Tailwind classes (2026-10-12: the row in shared-21,
+ * MiniComposeWindow in c6eb5f8cf): a row 12px from the page's bottom and
+ * right edges, windows 12px apart, newest at the right; a window 26rem wide
+ * (16rem collapsed, the width easing 150ms), rounded 16px, a 0.5px strong
+ * rim on the raised surface, shadows 0 24px 60px (18% black) and 0 4px 16px
+ * (8%); its header 6px 12px with 4px gaps; its body opening and closing
+ * with its grid row over 150ms, 4px 8px 8px inside. Colours are Claudex's
+ * tokens; the badge is Claudex's neutral badge (.customize-badge).
  */
 .spin-off-row {
   position: absolute;
@@ -155,8 +156,8 @@
   display: flex;
   flex: none;
 }
-.spin-off-icon > .app-icon,
-.spin-off-minus > .app-icon {
+.spin-off-icon > .anthropicon,
+.spin-off-minus > .anthropicon {
   display: block;
 }
 .spin-off-minus {
@@ -172,13 +173,14 @@
 }
 
 /*
- * The compact task composer: a 12px rounded field, 0.5px rim (strong while it
- * has the focus) on the raised surface; the words 10px in from the sides and
- * 12px from the top in the body size, at least 3.75rem tall; the row 10px in,
- * 4px over and 8px under, its controls 4px apart, the model and Send message at
- * its end. The caution band is the live one: the danger fill and ink, rounded
- * 12px at the top, 14px in, 8px over and 20px under, tucked 12px under the
- * field's edge.
+ * The compact task composer (MiniTaskComposer.tsx; live claude.ai bundle,
+ * 2026-10-12, c6eb5f8cf dn): a 12px rounded field, 0.5px rim (strong while
+ * it has the focus) on the raised surface; the words 10px in from the
+ * sides and 12px from the top in the body size, at least 3.75rem tall; the
+ * row 10px in, 4px over and 8px under, its controls 4px apart, the model
+ * and Send message at its end. The caution band is the live one: the danger
+ * fill and ink, rounded 12px at the top, 14px in, 8px over and 20px under,
+ * tucked 12px under the field's edge.
  */
 .mini-composer {
   position: relative;
@@ -209,10 +211,11 @@
   font-size: 12px;
   line-height: 16px;
 }
-.mini-composer-caution > .app-icon {
+.mini-composer-caution > .anthropicon {
   flex: none;
 }
-/* Compact files and upload indicators. */
+/* Compact files and upload indicators (live claude.ai bundle, 2026-10-14,
+ * c04e7453f-Cg2yRCdu.js; c6a992d55-D8h3Fpj5.css). */
 .mini-composer-attachments {
   display: flex;
   flex-wrap: wrap;
@@ -267,7 +270,7 @@
 :root[data-theme="light"] .mini-composer-file-remove:hover {
   color: #52514e;
 }
-.mini-composer-file-remove .app-icon {
+.mini-composer-file-remove .anthropicon {
   width: 12px;
   height: 12px;
 }
@@ -365,7 +368,8 @@
   color: var(--danger);
 }
 /* The icon-only picker's popup: no inline descriptions, so min-w-[200px]
-   max-w-[360px] by content. */
+   max-w-[360px] by content (live claude.ai bundle, 2026-10-16, shared-8
+   NQ). */
 .menu.task-permission-window {
   min-width: 200px;
   max-width: 360px;
@@ -429,10 +433,11 @@
 }
 
 /*
- * A started task's live view: at most 28rem tall; the messages scroll 8px in
- * from the window's sides; "Connecting…" fills 12rem; the status row 6px over
- * and under, 16px in at the start and 8px at the end, a 20px star 10px before
- * its footnote; the ended notice a 12px footnote 16px in.
+ * A started task's live view (MiniSessionView.tsx; live bundle bn with
+ * inCoworkWindowsRow): at most 28rem tall; the messages scroll 8px in from
+ * the window's sides; "Connecting…" fills 12rem; the status row 6px over
+ * and under, 16px in at the start and 8px at the end, a 20px star 10px
+ * before its footnote; the ended notice a 12px footnote 16px in.
  */
 .mini-session {
   display: flex;

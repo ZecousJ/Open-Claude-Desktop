@@ -1,9 +1,11 @@
 /**
- * The geometry of a sidebar row drag, after the original's: the rows are
- * measured once when the drag starts, the pointer is tested against those
- * measurements rather than against the moving rows, and the other rows slide by
- * whole row steps while the dragged row's own place stays, empty. The layout
- * never changes during a drag, so every motion is a transform.
+ * The geometry of a sidebar row drag, after the original's (desktop bundle
+ * 2.31226.1, the sidebar drag store; unchanged in the live claude.ai bundle,
+ * 2026-10-12): the rows are measured once when the
+ * drag starts, the pointer is tested against those measurements rather than
+ * against the moving rows, and the other rows slide by whole row steps while
+ * the dragged row's own place stays, empty. The layout never changes during
+ * a drag, so every motion is a transform.
  */
 
 /** A row as measured when the drag started (viewport px at that moment). */
@@ -56,11 +58,12 @@ export interface DragIntent {
 }
 
 /**
- * The custom group a release at `y` moves the row into. Undefined while the
- * pointer is over no zone that takes the row, so the pin logic decides; null
- * over the zone the row is already in, where a release does nothing (custom
- * groups keep no order of their own). A pinned row over Ungrouped is left to
- * the pin logic too, which unpins it there.
+ * The custom group a release at `y` moves the row into (live claude.ai
+ * bundle, 2026-10-12: the sidebar drag's group zones, `data-group-list`).
+ * Undefined while the pointer is over no zone that takes the row, so the
+ * pin logic decides; null over the zone the row is already in, where a
+ * release does nothing (custom groups keep no order of their own). A pinned
+ * row over Ungrouped is left to the pin logic too, which unpins it there.
  */
 export function groupDrop(
   zones: GroupZone[],

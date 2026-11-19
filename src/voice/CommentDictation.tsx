@@ -9,7 +9,7 @@ import { useDictationDraft } from "./useDictationDraft";
 import { useVoiceAvailability } from "./useVoiceAvailability";
 import "./comment-dictation.css";
 
-/** Pinned comment accessory. */
+/** Pinned comment accessory (live claude.ai bundle, 2026-10-14, ca929557b-CaUFEsYf). */
 export function CommentDictation({
   text,
   setText,

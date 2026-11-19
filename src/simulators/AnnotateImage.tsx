@@ -46,10 +46,10 @@ export const toolIcons: Record<SketchTool, ReactNode> = {
 };
 
 /*
- * Canvas cursors: Pen shows a filled pencil, dark with a white outline, its tip
- * on the pointer; Redact over a word it can cover shows a struck-out eye, dark
- * over a wide white stroke, centred. Drawn from the icons the toolbar uses
- * (lucide).
+ * Canvas cursors (live claude.ai bundle, 2026-10-12): Pen shows a filled
+ * pencil, dark with a white outline, its tip on the pointer; Redact over a
+ * word it can cover shows a struck-out eye, dark over a wide white stroke,
+ * centred. Drawn from the icons the toolbar uses (lucide).
  */
 const svgCursor = (svg: string, hotspot: string, fallback: string) =>
   `url("data:image/svg+xml,${encodeURIComponent(svg)}") ${hotspot}, ${fallback}`;
@@ -100,7 +100,7 @@ export interface Typing {
   editing: TextMark | null;
 }
 
-/** A drag counts only when it changed something that still has a size. */
+/** Live bundle: a drag counts only when it changed something that still has a size. */
 export const dragChanged = (drag: Drag) =>
   drag.moved &&
   (drag.dx !== 0 || drag.dy !== 0) &&
@@ -113,19 +113,20 @@ export const dragChanged = (drag: Drag) =>
   );
 
 /**
- * Annotate: the picture over 62.5% black, at most 40rem wide and the window's
- * height less 4rem, with the marks drawn on it; a floating bar 24px above the
- * bottom with the tools, the ink colours (or, for Redact, the redaction
- * styles), Undo, Redo, Clear all, Close and Add to chat. Closing with marks
- * asks "Discard your annotations?" first. Add to chat flattens the marks into
- * the picture.
+ * Annotate (live claude.ai bundle, 2026-10-12, the shared "Annotate image"
+ * editor the Simulator pane opens with a screenshot): the picture over
+ * 62.5% black, at most 40rem wide and the window's height less 4rem, with
+ * the marks drawn on it; a floating bar 24px above the bottom with the
+ * tools, the ink colours (or, for Redact, the redaction styles), Undo, Redo,
+ * Clear all, Close and Add to chat. Closing with marks asks "Discard your
+ * annotations?" first. Add to chat flattens the marks into the picture.
  *
- * A finished shape, line, arrow, text or redaction leaves its tool for Select
- * with the new mark chosen; clicking the chosen tool again does the same.
- * Select picks marks up (pen strokes stay put): drag to move, drag a handle to
- * resize or move an end, drag a line's middle handle to bend it, pick an ink or
- * style to change it, Delete removes it, Escape lets it go, and a double-click
- * edits text. With Redact, a click on a word covers it.
+ * A finished shape, line, arrow, text or redaction leaves its tool for
+ * Select with the new mark chosen; clicking the chosen tool again does the
+ * same. Select picks marks up (pen strokes stay put): drag to move, drag a
+ * handle to resize or move an end, drag a line's middle handle to bend it,
+ * pick an ink or style to change it, Delete removes it, Escape lets it go,
+ * and a double-click edits text. With Redact, a click on a word covers it.
  */
 export default function AnnotateImage({
   capture,

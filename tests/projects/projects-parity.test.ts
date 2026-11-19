@@ -37,7 +37,7 @@ test("desktop project menus open a real project pop-out", () => {
   assert.equal(opened, project.id);
 });
 
-test("a project's menu pins, edits, archives and deletes; the project page's own menu leaves Pin to its pin button", () => {
+test("a project's menu pins, edits, archives and deletes; the project page's own menu leaves Pin to its pin button (live claude.ai, 2026-10-21)", () => {
   const saved: Project[] = [];
   const edited: Project[] = [];
   const archived: Project[] = [];
@@ -153,8 +153,8 @@ test("project cards use the captured comfortable density without per-host card o
   assert.equal(card.padding, "var(--cds-pad-lg)");
   assert.equal(card.gap, "var(--cds-gap-xs)");
   assert.equal(card["min-height"], "112px");
-  // No fixed height for a described card: it grows with its text, and a row's
-  // cards stretch to its tallest.
+  // No fixed height for a described card: it grows with its text, and a
+  // row's cards stretch to its tallest (live claude.ai, 2026-10-21).
   assert.equal(style(".prj-card.has-description")["min-height"], undefined);
   assert.equal(style(".prj-grid > li")["align-items"], "stretch");
   assert.equal(style(".prj-view")["--cds-gap-xs"], "8px");

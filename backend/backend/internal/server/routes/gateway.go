@@ -192,6 +192,10 @@ func RegisterGatewayRoutes(
 	gateway.Use(gatewayhook.EnrichRefusals(), gatewayhook.BodyLimits()) // CLAUDEX: H6 structured refusals for device keys; audio body limits before auth
 	gateway.Use(gin.HandlerFunc(apiKeyAuth))
 	gateway.GET("/sub2api/billing", h.Gateway.KeyBillingInfo)
+	claudexKnowledgeRoutes(gateway) // CLAUDEX: knowledge-base MCP relay
+	claudexImages := h.OpenAIGateway.ClaudexImages(h.Gateway.ClaudexImageModelIDs, compositeResolver)
+	gateway.POST(gatewayhook.ClaudexImageGenerations, claudexImages)
+	gateway.POST(gatewayhook.ClaudexImageEdits, claudexImages)
 	gateway.Use(groupModelAllowlist)
 	gateway.Use(compositeTarget)
 	gateway.Use(requireGroupAnthropic)
@@ -687,4 +691,18 @@ func compositeRouteEndpointForPath(path string) string {
 	default:
 		return service.CompositeRouteEndpointAny
 	}
+}
+
+// claudexKnowledgeRoutes mounts the knowledge-base MCP relay
+// (internal/claudex/knowledge): the agents' MCP requests, relayed with the
+// base's own key. It sits before the model allowlist (an MCP body names no
+// model) and is not billed (gatewayhook.KnowledgeRoute).
+func claudexKnowledgeRoutes(gateway *gin.RouterGroup) {
+	knowledgeMCP := func(c *gin.Context) {
+		apiKey, _ := middleware.GetAPIKeyFromContext(c)
+		gatewayhook.ServeKnowledge(c, apiKey)
+	}
+	gateway.POST("/claudex/knowledge/:base/mcp", knowledgeMCP)
+	gateway.GET("/claudex/knowledge/:base/mcp", knowledgeMCP)
+	gateway.DELETE("/claudex/knowledge/:base/mcp", knowledgeMCP)
 }

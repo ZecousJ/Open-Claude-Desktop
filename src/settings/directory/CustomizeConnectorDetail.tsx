@@ -123,8 +123,8 @@ export function CustomizeConnectorDetail({
           showToast(t("Link copied"));
           return;
         }
-        // URL-only Check feedback lasts two seconds and is set after the
-        // clipboard succeeds.
+        // O16 cc09cdb56 Y + c15085319 COPY_SUCCEEDED: URL-only Check
+        // feedback lasts two seconds and is set after the clipboard succeeds.
         const copied = { scope, value };
         setCopiedUrl(copied);
         clearTimeout(copyTimer.current);

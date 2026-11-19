@@ -1,11 +1,13 @@
 /**
- * Mobile simulators in Code. The types and the pure rules both the window and
- * the main process use; the main process's commands are in
- * `electron/simulators/`.
+ * Mobile simulators in Code (desktop bundle 2.31226.1: Settings → Claude
+ * Code → Mobile simulators, the iOS Simulator and Android Emulator panes and
+ * the device tools Claude drives them with). The types and the pure rules
+ * both the window and the main process use; the main process's commands are
+ * in `electron/simulators/`.
  *
- * The iOS Simulator needs a Mac with Xcode; the Android Emulator runs on a Mac
- * or Windows with the Android SDK. Only emulators and simulators are supported,
- * never a physical phone.
+ * The iOS Simulator needs a Mac with Xcode; the Android Emulator runs on a
+ * Mac or Windows with the Android SDK. Only emulators and simulators are
+ * supported, never a physical phone.
  */
 
 export type SimulatorKind = "ios" | "android";
@@ -43,7 +45,7 @@ export interface SimulatorDevice {
   avd?: string;
 }
 
-/** What the iOS check found; undefined is unknown. */
+/** What the iOS check found (desktop bundle 2.31226.1, `checkSimulatorSetup`); undefined is unknown. */
 export interface IosSetupStatus {
   xcode?: boolean;
   xcodeVersion?: string;
@@ -200,7 +202,7 @@ export type SimulatorEditAction = (typeof simulatorEditActions)[number];
 /** The most characters one text input carries. */
 export const simulatorTextLimit = 2000;
 
-// -- The control bar and menus ------------
+// -- The control bar and menus (live claude.ai bundle, 2026-10-12) ------------
 
 /** Only the iOS Simulator records video (`simctl io recordVideo`; the original offers no Android recording). */
 export function canRecord(kind: SimulatorKind) {
@@ -261,7 +263,7 @@ export interface SimulatorAnnotateCapture {
   name: string;
 }
 
-/** The longer edge of a capture's corner thumbnail. */
+/** The longer edge of a capture's corner thumbnail (live bundle: 240). */
 export const captureThumbnailEdge = 240;
 
 /**
@@ -306,7 +308,7 @@ export const clipboardTextLimit = 1_000_000;
 export type SimulatorLogLevel =
   "debug" | "info" | "default" | "error" | "fault" | "crash";
 
-/** The levels in order, lowest first. */
+/** The levels in order, lowest first (live bundle: `vu`, `yu`). */
 export const simulatorLogLevels: readonly SimulatorLogLevel[] = [
   "debug",
   "info",
@@ -350,7 +352,7 @@ export interface SimulatorLogBatch {
   ended?: string;
 }
 
-/** The scope column: the subsystem's last part and the category. */
+/** The scope column: the subsystem's last part and the category (live bundle: `Yu`). */
 export function logScope(entry: {
   subsystem?: string;
   category?: string;
@@ -368,7 +370,7 @@ export function logScopeFull(entry: {
   return [entry.subsystem, entry.category].filter(Boolean).join(":");
 }
 
-/** Where the setup screens send the person. */
+/** Where the setup screens send the person (desktop bundle 2.31226.1). */
 export const xcodeStoreUrl = "https://apps.apple.com/app/xcode/id497799835";
 export const androidStudioUrl = "https://developer.android.com/studio";
 
@@ -408,9 +410,9 @@ function hiddenCharacter(code: number) {
 }
 
 /**
- * Why a new device name can't be used: empty, a hidden character, a leading
- * hyphen (simctl would read an option) or more than 64 characters; undefined
- * when fine.
+ * Why a new device name can't be used (live claude.ai bundle, 2026-10-15,
+ * c49d37e5f `Qn`): empty, a hidden character, a leading hyphen (simctl
+ * would read an option) or more than 64 characters; undefined when fine.
  */
 export function deviceNameProblem(name: string): string | undefined {
   if (name.trim() === "") return "Enter a name.";
@@ -461,7 +463,7 @@ export function consentText(kind: SimulatorKind, deviceLabel: string) {
   };
 }
 
-/** Updated tool consent. */
+/** Updated tool consent (desktop 2.37337.1, index.chunk-RqUKdgEy.js:417). */
 export function deviceToolsConsentText() {
   return {
     title: "Device tools access",

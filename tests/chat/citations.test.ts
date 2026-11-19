@@ -494,3 +494,30 @@ test("the pill's card lists every page it cites, each with its title and site na
 import { before as beforeChatSteps } from "node:test";
 import { preloadChatSteps } from "../../src/transcript/ChatTurnContent";
 beforeChatSteps(() => preloadChatSteps());
+
+
+test("Chat projects OpenAI reference markers in completed and streaming replies", () => {
+  const raw = "资料说明。\uE200cite\uE202turn485071view0\uE201";
+  const item: Item = { id: "reply", type: "agentMessage", text: raw };
+  const projected = citationRender(item);
+  assert.equal(projected?.text, "资料说明。");
+  assert.deepEqual(projected?.groups, []);
+  const withSource = citationRender({ ...item, citations: [{ url: "https://example.test/manual", start: 0, end: raw.length }] });
+  assert.ok(withSource);
+  assert.equal(withSource.groups[0].sources[0].url, "https://example.test/manual");
+  assert.ok(!withSource.text.includes("turn485071view0"));
+  assert.equal(item.text, raw);
+});
+
+
+test("Chat does not flash raw reference markers while a reply streams", () => {
+  const text = "资料说明。\uE200cite\uE202turn485071view0";
+  const html = renderToStaticMarkup(createElement(ChatTurnContent, {
+    turn: { id: "stream", prompt: "?", attachments: [], createdAt: 0, status: "inProgress",
+      items: [{ id: "reply", type: "agentMessage", text, lifecycleStatus: "inProgress" }] },
+    awaitingApproval: false,
+    onArtifact() {},
+  }));
+  assert.ok(!html.includes("turn485071view0"));
+  assert.ok(html.includes("资料说明。"));
+});

@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { envFileProblem, parseEnvFile } from "../../shared/env-file";
+import {
+  envFileProblem,
+  formatEnvFile,
+  parseEnvFile,
+} from "../../shared/env-file";
 
 test("parses the example the Local environment editor shows (R-0386)", () => {
   const text = [
@@ -30,6 +34,20 @@ test("never lets a line replace the variables Claudex sets", () => {
     parseEnvFile("CODEX_HOME=/x\nclaudex_gateway_token=t\nOK=1"),
     { OK: "1" },
   );
+});
+
+test("cloud environment variable maps round-trip as editor text", () => {
+  const values = {
+    SIMPLE: "word",
+    EMPTY: "",
+    SPACES: " leading and trailing ",
+    COMMENT: " value # with trailing backslash\\",
+    QUOTES: "\"double\", 'single' and `backtick`\nline two",
+    LINES: "line one\r\nline two\rline three\\n\\r",
+  };
+  const text = formatEnvFile(values);
+  assert.equal(envFileProblem(text), undefined);
+  assert.deepEqual(parseEnvFile(text), values);
 });
 
 test("the editor says what is wrong with a line, as the original does", () => {

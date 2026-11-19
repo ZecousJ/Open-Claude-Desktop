@@ -185,7 +185,7 @@ test("existing web gallery tabs filter real cards and all four templates dispatc
     assert.equal(galleryStyle().scrollbarGutter, "stable");
     assert.equal(
       titleStyle().fontFamily,
-      '"Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif',
+      '"Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif',
     );
     assert.deepEqual(
       [titleStyle().fontSize, titleStyle().lineHeight, titleStyle().fontWeight],
@@ -240,7 +240,10 @@ test("existing web gallery tabs filter real cards and all four templates dispatc
     assert.equal(galleryStyle().paddingInline, "");
     assert.equal(galleryStyle().scrollbarWidth, "auto");
     // The page title is the serif voice on the desktop too.
-    assert.equal(titleStyle().fontFamily.includes("Claudex Serif"), true);
+    assert.equal(
+      titleStyle().fontFamily.includes("Claudex Reference Serif"),
+      true,
+    );
   } finally {
     await env.clean();
   }

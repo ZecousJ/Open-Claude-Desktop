@@ -6,16 +6,16 @@
   overflow: auto;
   margin: 0;
   padding: 0;
-  /* Rows scrolled up fade out over the list's top 12px (.u-scroll-fade-y), and
-     the bar's room is kept so rows don't shift when it appears, as in the
-     original's sidebar. */
+  /* Rows scrolled up fade out over the list's top 12px (.u-scroll-fade-y),
+     and the bar's room is kept so rows don't shift when it appears, as in
+     the original's sidebar (source: desktop bundle 2.31226.1 static CSS). */
   --scroll-fade-top: 12px;
   --scroll-fade-bottom: 0px;
   scrollbar-gutter: stable;
 }
-/* Code's list starts 10px further down: the reference design gives the Code
-   sidebar's nav rows 10px of bottom padding, which the older build and the
-   captures did not have. */
+/* Code's list starts 10px further down: the live claude.ai bundle
+   (2026-10-12) gives the Code sidebar's nav rows 10px of bottom padding,
+   which the older build and the captures did not have. */
 .sidebar-scroll[data-mode="code"] {
   margin-top: 10px;
 }
@@ -70,10 +70,11 @@
   margin-left: -4px;
   padding-left: 4px;
 }
-/* The caret (CaretRight) turns over 60ms (Tailwind's transition-transform: the
-   default curve) and appears at once; the original sets no opacity transition.
-   Open it points down (rotate-90), collapsed it points right and stays shown. */
-.section-toggle > .app-icon {
+/* The caret (CaretRight) turns over 60ms (Tailwind's transition-transform:
+   the default curve) and appears at once; the original sets no opacity
+   transition. Open it points down (rotate-90), collapsed it points right
+   and stays shown (desktop bundle 2.37337.1, shared-18-DScmD_-G.js). */
+.section-toggle > .anthropicon {
   width: 12px;
   height: 12px;
   color: #878787;
@@ -83,19 +84,19 @@
 }
 /* Reduced motion: the caret turns at once (motion-reduce:transition-none). */
 @media (prefers-reduced-motion: reduce) {
-  .section-toggle > .app-icon {
+  .section-toggle > .anthropicon {
     transition: none;
   }
 }
-:root[data-motion="reduced"] .section-toggle > .app-icon {
+:root[data-motion="reduced"] .section-toggle > .anthropicon {
   transition: none;
 }
-.section-toggle.collapsed > .app-icon {
+.section-toggle.collapsed > .anthropicon {
   rotate: 0deg;
 }
-.section-label:hover .section-toggle > .app-icon,
-.section-toggle:focus-visible > .app-icon,
-.section-toggle.collapsed > .app-icon {
+.section-label:hover .section-toggle > .anthropicon,
+.section-toggle:focus-visible > .anthropicon,
+.section-toggle.collapsed > .anthropicon {
   opacity: 1;
 }
 .section-label > div {
@@ -119,7 +120,8 @@
   background: var(--fill-ghost-hover);
 }
 /* Nothing pinned: the section folds away, and opens again over 200ms when a
-   drag or the pin tip needs it. */
+   drag or the pin tip needs it (live claude.ai bundle, 2026-10-16:
+   df-pin-section-reveal, height and opacity on the out curve). */
 .pinned-section {
   interpolate-size: allow-keywords;
   overflow-y: clip;
@@ -136,10 +138,11 @@
 .pinned-section {
   margin-bottom: 8px;
 }
-/* A section's rows open and close over 150ms on the CSS ease-out curve (the
-   original's sidebar-group expand), and the Pinned rows open over 200ms on the
-   snap curve when the first one arrives or a drag brings one (its pin-section
-   reveal). .u-expand-rows (05-utilities.css) keeps only the fade under reduced
+/* A section's rows open and close over 150ms on the CSS ease-out curve
+   (the original's sidebar-group expand), and the Pinned rows open over
+   200ms on the snap curve when the first one arrives or a drag brings one
+   (its pin-section reveal). Source: desktop bundle 2.31226.1 static CSS.
+   .u-expand-rows (05-utilities.css) keeps only the fade under reduced
    motion. */
 .sidebar-group-rows {
   --expand-duration: 150ms;
@@ -161,7 +164,9 @@
   background-clip: content-box;
   cursor: default;
 }
-/* A session under its parent starts 20px in; the row's fill stays full width. */
+/* A session under its parent starts 20px in; the row's fill stays full width
+   (.df-session-list .df-accordion-guide { --df-row-indent: 20px }, live
+   claude.ai bundle, 2026-10-16, shared-styles-DG9uV_so.css). */
 .conversation-row[data-nested] > .conversation-link {
   margin-inline-start: 20px;
 }
@@ -179,7 +184,8 @@
 .conversation-row:has(:focus-visible) {
   background-color: var(--fill-ghost-hover);
 }
-/* A row picked with ⌘, Ctrl or Shift looks like the open one. */
+/* A row picked with ⌘, Ctrl or Shift looks like the open one (live
+   claude.ai bundle, 2026-10-14, shared-21: selected = picked || open). */
 .conversation-row.selected,
 .conversation-row.multi-selected {
   background-color: var(--fill-ghost-selected);
@@ -193,7 +199,8 @@
   height: 100%;
   padding: 0 1.5px 0 6px;
   border-radius: 6px;
-  /* The rows' titles are the nav rows' size. */
+  /* The rows' titles are the nav rows' size (owner's capture of the live
+     desktop, 2026-10-22: New, Customize and the sessions read alike). */
   font-size: 14px;
   text-align: left;
   text-decoration: none;
@@ -212,8 +219,9 @@
   color: var(--text);
 }
 /* A changed title (TitleReveal.tsx): the old one fades out and blurs over
-   200ms, then the new one sharpens in a character at a time, 90ms each on the
-   out-cubic curve, 30ms apart. Reduced motion swaps the text without either. */
+   200ms, then the new one sharpens in a character at a time, 90ms each on
+   the out-cubic curve, 30ms apart (source: desktop bundle 2.31226.1 static
+   CSS/JS). Reduced motion swaps the text without either. */
 .title-motion {
   display: inline-block;
   transition:
@@ -265,9 +273,10 @@
   border: 1px solid #505050;
   border-radius: 50%;
 }
-/* A running conversation's dot breathes, as the original's running dot: 1.2s
-   ease-in-out, opacity 0.3 → 1 → 0.3. ConversationRow starts each dot part-way
-   through with a negative delay, so every running dot rises and falls together. */
+/* A running conversation's dot breathes, as the original's running dot:
+   1.2s ease-in-out, opacity 0.3 → 1 → 0.3 (source: desktop bundle 2.31226.1
+   static CSS). ConversationRow starts each dot part-way through with a
+   negative delay, so every running dot rises and falls together. */
 .thread-dot.working {
   border: 0;
   background: #7b7b7b;
@@ -290,8 +299,8 @@
 :root[data-motion="reduced"] .thread-dot.working {
   animation: none;
 }
-/* Inline rename: the title becomes an input over the selected fill with a blue
-   rim; the dot stays visible through it. */
+/* Inline rename (R-0036/R-0046): the title becomes an input over the selected
+   fill with a blue rim; the dot stays visible through it. */
 .conversation-row.renaming {
   background-color: var(--fill-ghost-selected);
 }
@@ -343,9 +352,11 @@
   background: var(--fill-ghost-selected);
   color: #f4f4f4;
 }
-/* A touch screen has no hover to reveal them: the section's chevron and the
-   Projects plus show all the time, and the open row shows its ⋮ in place of its
-   status, its title leaving room for it. */
+/* A touch screen has no hover to reveal them: the section's chevron and
+   the Projects plus show all the time, and the open row shows its ⋮ in
+   place of its status, its title leaving room for it (the original's
+   touch:group-data-[touch-menu], set on the selected row; live claude.ai,
+   2026-10-21). */
 @media (pointer: coarse) {
   .conversation-row.selected .row-more,
   .section-toggle > svg,
@@ -357,10 +368,11 @@
     padding-right: 24px;
   }
 }
-/* View all and Show more are rows: under the pointer or focused they fill with
-   the ghost hover and the text goes from muted to secondary. The transparent
-   4px borders keep the old 9px of room above and below while the fill covers
-   the 26px of a row. */
+/* View all and Show more are rows: under the pointer or focused they fill
+   with the ghost hover and the text goes from muted to secondary (the
+   original's hover:bg + hover:text-secondary; no capture of either). The
+   transparent 4px borders keep the old 9px of room above and below while
+   the fill covers the 26px of a row. */
 .view-all {
   display: block;
   width: 100%;

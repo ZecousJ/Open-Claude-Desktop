@@ -954,6 +954,9 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 	completedTurns := atomic.Int32{}
 	turnLifecycle := newOpenAIWSPassthroughTurnLifecycle(true)
 	var acceptedTurnStartedAt atomic.Pointer[time.Time]
+	var turnGenerate atomic.Bool
+	var acceptedLaterTurn atomic.Bool
+	turnGenerate.Store(openAIWSPayloadBoolFromRaw(firstClientMessage, "generate", true))
 	clientFrameConn := &openAIWSClientFrameConn{
 		conn:                 clientConn,
 		controlCtx:           ctx,
@@ -1116,6 +1119,8 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 			//     service_tier 时按 default 处理，billing 应如实反映。
 			if policyErr == nil && blocked == nil && isResponseCreate {
 				usageMeta.updateFromResponseCreate(out, model, requestModelForThisFrame)
+				turnGenerate.Store(openAIWSPayloadBoolFromRaw(out, "generate", true))
+				acceptedLaterTurn.Store(true)
 				_, actualModel := usageMeta.turnModels(requestModelForThisFrame)
 				SetOpsUpstreamModel(c, actualModel)
 				responseCreateAtCopy := responseCreateAt
@@ -1171,6 +1176,9 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 		firstTurnStartedAt = hooks.InitialTurnStartedAt
 	}
 	failureAccountSideEffectsApplied := false
+	var completionUsage OpenAIUsage
+	semanticOutputSeen := false
+	var emptyCompletionErr error
 	relayResult, relayExit := openaiwsv2.RunEntry(openaiwsv2.EntryInput{
 		Ctx:                ctx,
 		ClientConn:         policyClientConn,
@@ -1207,6 +1215,9 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 				)
 			},
 			OnTurnComplete: func(turn openaiwsv2.RelayTurnResult) {
+				if emptyCompletionErr != nil {
+					return
+				}
 				turnNo := int(completedTurns.Add(1))
 				if hooks != nil && hooks.TurnStarted != nil && !turn.StartedAt.IsZero() {
 					hooks.TurnStarted(turnNo, turn.StartedAt)
@@ -1284,10 +1295,33 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 				_ = clientConn.CloseNow()
 			},
 			BeforeWriteClient: func(msgType coderws.MessageType, payload []byte, wroteDownstream bool) error {
-				if msgType != coderws.MessageText {
+				if msgType != coderws.MessageText && msgType != coderws.MessageBinary {
 					return nil
 				}
 				eventType, _, _ := parseOpenAIWSEventEnvelope(payload)
+				if account.Platform == PlatformOpenAI {
+					if openAIWSMessageShouldParseUsage(eventType, payload) {
+						parseOpenAIWSResponseUsageFromCompletedEvent(payload, &completionUsage)
+					}
+					if openAIWSCompletionIsEmpty(eventType, payload, &completionUsage, turnGenerate.Load(), semanticOutputSeen) {
+						if !acceptedLaterTurn.Load() && !wroteDownstream &&
+							requestPreviousResponseID == "" && !openAIWSRawPayloadHasToolCallOutput(firstClientMessage) {
+							emptyCompletionErr = newOpenAIResponsesEmptyCompletedFailoverError(c, account, handshakeHeaders.Get("x-request-id"))
+						} else {
+							emptyCompletionErr = openAIWSEmptyCompletionCloseError(c)
+						}
+						return emptyCompletionErr
+					}
+					if isOpenAIWSTerminalEvent(eventType) {
+						completionUsage = OpenAIUsage{}
+						semanticOutputSeen = false
+					} else {
+						semanticOutputSeen = semanticOutputSeen || openAIWSHasSemanticOutput(eventType, payload)
+					}
+				}
+				if msgType != coderws.MessageText {
+					return nil
+				}
 				if eventType == "response.created" {
 					failureAccountSideEffectsApplied = false
 				}
@@ -1337,6 +1371,9 @@ func (s *OpenAIGatewayService) proxyResponsesWebSocketV2Passthrough(
 			},
 		},
 	})
+	if relayExit == nil && emptyCompletionErr != nil {
+		relayExit = &openaiwsv2.RelayExit{Stage: "upstream_message", Err: emptyCompletionErr, WroteDownstream: relayResult.UpstreamToClientFrames > 0}
+	}
 	if cause := context.Cause(ctx); cause != nil {
 		if isOpenAIWSSessionPreempted(ctx) {
 			return errOpenAIWSSessionPreempted

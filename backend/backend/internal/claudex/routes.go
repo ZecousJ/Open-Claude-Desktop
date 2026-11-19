@@ -24,6 +24,7 @@ import (
 // body. Round 2 entries are listed before their components register the
 // routes (B-S), so R1-B and R3-S1 need not edit this file.
 var privateBodyRoutes = map[string]bool{
+	http.MethodPost + " /api/v1/claudex/product-feedback":            true,
 	http.MethodPost + " /api/v1/claudex/action-verification/confirm": true,
 	http.MethodPost + " /api/v1/claudex/skills/scan":                 true,
 	http.MethodPost + " /api/v1/claudex/directory/submissions":       true,
@@ -38,8 +39,11 @@ var privateBodyRoutes = map[string]bool{
 	http.MethodPost + " /api/v1/claudex/sharing/shared-with-me/:token/report":          true,
 	http.MethodPost + " /api/v1/claudex/sharing/shared-with-me/:token/artifact-access": true,
 	// R3 memory: memory documents and edits.
-	http.MethodPut + " /api/v1/claudex/memory/docs/:scope": true,
-	http.MethodPost + " /api/v1/claudex/memory/edits":      true,
+	http.MethodPut + " /api/v1/claudex/memory/docs/:scope":     true,
+	http.MethodPut + " /api/v1/claudex/memory/controls/:scope": true,
+	http.MethodPut + " /api/v1/claudex/memory/melange":         true,
+	http.MethodPut + " /api/v1/claudex/memory/cowork":          true,
+	http.MethodPost + " /api/v1/claudex/memory/edits":          true,
 	// Sign-up profile: the birthday.
 	http.MethodPut + " /api/v1/claudex/account-profile": true,
 	// First-run onboarding: the person's own "Other" answer.

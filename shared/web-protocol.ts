@@ -1,5 +1,5 @@
 /**
- * The web version's wire contract:
+ * The web version's wire contract (web plan §1.2, W-ARCH §3-4, W-RUN §7):
  *
  * 1. browser ⇄ Go: HTTPS RPC (`rpc/<method>`), the web sign-in endpoints and
  *    one events WebSocket per tab (one-time ticket in Sec-WebSocket-Protocol,
@@ -34,7 +34,7 @@ export const webPaths = {
   uploads: `${base}/uploads`,
   /** GET `${preview}<id>?k=<signature>`: an artifact preview document. */
   preview: `${base}/preview/`,
-  /** Web sign-in session; see webAuthRoutes. */
+  /** Web sign-in session (W-AUTH); see webAuthRoutes. */
   auth: `${base}/auth/`,
   /** Downloads Go builds from webstore (exports, generated files). */
   downloads: `${base}/downloads/`,
@@ -55,7 +55,7 @@ export const webAuthRoutes = {
   logout: "logout",
   revokeAll: "revoke-all",
   eventsTicket: "events-ticket",
-  /** The dictation socket's one-time ticket. */
+  /** The dictation socket's one-time ticket (W-VOICE). */
   voiceTicket: "voice-ticket",
   /** Sign in with a one-time code sent by email (LOGIN). */
   emailCodeSend: "email-code/send",
@@ -105,9 +105,10 @@ export const webHeaders = {
 
 export const webClientName = "web";
 /**
- * HttpOnly refresh cookie, Path limited to webPaths.auth. Each signed-in
- * account has its own, named `${webRefreshCookie}_<user id>`; the bare name is
- * read for a browser signed in before several accounts were possible.
+ * HttpOnly refresh cookie, Path limited to webPaths.auth (W-SRV §4.1). Each
+ * signed-in account has its own, named `${webRefreshCookie}_<user id>`; the
+ * bare name is read for a browser signed in before several accounts were
+ * possible.
  */
 export const webRefreshCookie = "__Secure-claudex_web_rt";
 /** Sub-protocol the events socket selects; the ticket rides beside it. */
@@ -122,6 +123,8 @@ export const webLimits = {
   uploadChunkBytes: 1024 * 1024,
   /** Largest single runner-link frame. */
   linkFrameBytes: 16 * 1024 * 1024,
+  /** Largest decoded runner-link result or event. */
+  linkMessageBytes: 64 * 1024 * 1024,
   /** Largest stored turn document (bigger tool output is truncated). */
   turnDocBytes: 4 * 1024 * 1024,
   ticketTtlMs: 30_000,
@@ -244,7 +247,7 @@ export interface WebRpcRequest {
 export interface WebRpcError {
   /** Plain English, shown as is (like bridgeErrorMessage on the desktop). */
   message: string;
-  /** A CLAUDEX_* code. */
+  /** A CLAUDEX_* code (webErrorCodes or shared/claudex-contract.ts). */
   code?: string;
   /** Structured details, e.g. GatewayRefusalDetails. */
   details?: unknown;
@@ -512,6 +515,8 @@ export function parseServerFrame(text: string | Json): ServerFrame {
 // Runner link frames (claudex-runner ⇄ Go)
 
 /** The user a relayed call or event belongs to (Sub2API user id). */
+export interface LinkWebSession { id: string; issuedAt: number }
+
 export interface LinkUser {
   id: number;
   /** The tab that made the call, when one did. */
@@ -521,4 +526,5 @@ export interface LinkUser {
    * APIs (WebRemoteHost). Held in memory only.
    */
   accessToken: string;
+  webSession?: LinkWebSession;
 }

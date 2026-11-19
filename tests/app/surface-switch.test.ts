@@ -1,7 +1,7 @@
 /**
- * The dot on the Chat | Code switch: the surface that is not shown says whether
- * one of its conversations runs (grey), waits for approval (amber) or finished
- * unread (blue), in that order of weight.
+ * The dot on the Chat | Code switch (R-0037, R-0154): the surface that is
+ * not shown says whether one of its conversations runs (grey), waits for
+ * approval (amber) or finished unread (blue), in that order of weight.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

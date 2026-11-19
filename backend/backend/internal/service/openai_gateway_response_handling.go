@@ -319,14 +319,17 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 			return
 		}
 		errorEventSent = true
-		// Responses error events use top-level code/message/param fields. A nested
-		// Chat Completions error envelope loses the classification in strict clients.
-		payload := `{"type":"error","sequence_number":0,"code":` + strconv.Quote(code) + `,"message":` + strconv.Quote(message) + `,"param":null}`
+		payload := []byte(`{"error":{"code":` + strconv.Quote(code) + `,"message":` + strconv.Quote(message) + `}}`)
+		status := http.StatusBadGateway
+		if code == "stream_timeout" {
+			status = http.StatusGatewayTimeout
+		}
+		MarkOpsStreamFailure(c, "upstream_error", code, message, status)
 		if err := flushBuffered(); err != nil {
 			clientDisconnected = true
 			return
 		}
-		if _, err := writePendingString("event: error\ndata: " + payload + "\n\n"); err != nil {
+		if _, err := writePendingString(buildOpenAIResponseFailedSSE(responseID, originalModel, payload, message)); err != nil {
 			clientDisconnected = true
 			return
 		}
@@ -594,8 +597,7 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 							// antigravity 先例），否则透传命中的 failed 在监控中不可见。
 							s.recordOpenAIStreamUpstreamError(c, account, false, upstreamRequestID, "http_error", dataBytes, failedMessage)
 							MarkResponseCommitted(c)
-							c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-							c.JSON(status, gin.H{
+							writeOpenAIErrorResponse(c, status, gin.H{
 								"error": gin.H{
 									"type":    errType,
 									"message": errMsg,
@@ -684,14 +686,11 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 			if startsClientOutput && !openAIStreamEventTypeIsTerminal(eventType) {
 				responsesSemanticOutputSeen = true
 			}
-			// OpenAI Responses streams that terminate with an empty
-			// response.completed (no output, no usage, no error, nothing sent
-			// to the client) are silent upstream refusals: fail over instead of
-			// recording a successful 0/0 usage turn (issue #5009).
+			s.parseSSEUsageBytesWithType(dataBytes, eventType, usage)
 			if account != nil && account.Platform == PlatformOpenAI &&
 				(eventType == "response.completed" || eventType == "response.done") &&
 				!sawFailedEvent && !responsesSemanticOutputSeen && !clientOutputStarted &&
-				openAIResponsesCompletedEventIsEmpty(dataBytes, usage) {
+				openAIResponsesCompletionIsEmpty(dataBytes, usage) {
 				sawTerminalEvent = true
 				streamEarlyErr = newOpenAIResponsesEmptyCompletedFailoverError(c, account, upstreamRequestID)
 				return
@@ -720,7 +719,6 @@ func (s *OpenAIGatewayService) handleStreamingResponseWithReasoning(ctx context.
 				firstTokenMs = &ms
 				stopFirstOutputTimer()
 			}
-			s.parseSSEUsageBytesWithType(dataBytes, eventType, usage)
 			return
 		}
 
@@ -1363,30 +1361,27 @@ func extractOpenAIUsageFromJSONBytes(body []byte) (OpenAIUsage, bool) {
 	return OpenAIUsage{}, false
 }
 
-// openAIResponsesCompletedEventIsEmpty reports whether a response.completed /
-// response.done SSE payload carries no usage, no error and no output items.
-// The accumulated usage is consulted too, because OpenAI may deliver usage on
-// an earlier event. An empty terminal event after a stream with no semantic
-// output is treated as a silent upstream refusal (issue #5009).
-func openAIResponsesCompletedEventIsEmpty(data []byte, usage *OpenAIUsage) bool {
-	if len(data) == 0 || !gjson.ValidBytes(data) {
+func openAIResponsesCompletionIsEmpty(data []byte, usage *OpenAIUsage) bool {
+	if openAIUsageHasTokens(usage) || !gjson.ValidBytes(data) {
 		return false
 	}
-	if usage != nil && (usage.InputTokens > 0 || usage.OutputTokens > 0 ||
-		usage.ImageInputTokens > 0 || usage.ImageOutputTokens > 0 ||
-		usage.CacheCreationInputTokens > 0 || usage.CacheReadInputTokens > 0) {
+	status := firstNonEmpty(gjson.GetBytes(data, "response.status").String(), gjson.GetBytes(data, "status").String())
+	if status != "" && status != "completed" {
 		return false
 	}
-	if gjson.GetBytes(data, "usage").Exists() || gjson.GetBytes(data, "response.usage").Exists() {
-		return false
-	}
-	if gjson.GetBytes(data, "error").Exists() || gjson.GetBytes(data, "response.error").Exists() {
-		return false
-	}
-	if output := gjson.GetBytes(data, "response.output"); output.Exists() && output.IsArray() && len(output.Array()) > 0 {
-		return false
-	}
-	return true
+	return gjson.GetBytes(data, "error").Type == gjson.Null &&
+		gjson.GetBytes(data, "response.error").Type == gjson.Null &&
+		gjson.GetBytes(data, "incomplete_details").Type == gjson.Null &&
+		gjson.GetBytes(data, "response.incomplete_details").Type == gjson.Null &&
+		gjson.GetBytes(data, "usage.total_tokens").Int() <= 0 &&
+		gjson.GetBytes(data, "response.usage.total_tokens").Int() <= 0 &&
+		gjson.GetBytes(data, "output.#").Int() == 0 &&
+		gjson.GetBytes(data, "response.output.#").Int() == 0
+}
+
+func isOpenAIResponsesBufferedCompletion(c *gin.Context, account *Account) bool {
+	return account != nil && account.Platform == PlatformOpenAI &&
+		openAIResponsesRequestPathSuffix(c) == "" && !isOpenAINativeCompactionV2(c)
 }
 
 func mergeHostedImageGenToolUsage(imageGen gjson.Result, usage *OpenAIUsage) {
@@ -1637,13 +1632,19 @@ func (s *OpenAIGatewayService) handleNonStreamingResponse(ctx context.Context, r
 	}
 
 	usageValue, usageOK := extractOpenAIUsageFromJSONBytes(body)
+	usage := &usageValue
+	if isOpenAIResponsesBufferedCompletion(c, account) && gjson.GetBytes(body, "status").String() == "completed" && gjson.ValidBytes(body) {
+		if openAIResponsesCompletionIsEmpty(body, usage) {
+			return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, resp.Header.Get("x-request-id"))
+		}
+		usageOK = true
+	}
 	if !usageOK {
 		if bodyLooksLikeSSE {
 			return s.handleSSEToJSON(resp, c, account, body, originalModel, mappedModel)
 		}
 		return nil, fmt.Errorf("parse response: invalid json response")
 	}
-	usage := &usageValue
 	logOpenAISuccessMissingUsage(ctx, c, account, resp, usage, "json", false)
 
 	// Replace model in response if needed
@@ -1730,9 +1731,7 @@ func (s *OpenAIGatewayService) handleSSEToJSON(resp *http.Response, c *gin.Conte
 
 	usage := s.parseSSEUsageFromBody(bodyText)
 	if ok {
-		if parsedUsage, parsed := extractOpenAIUsageFromJSONBytes(finalResponse); parsed {
-			*usage = parsedUsage
-		}
+		s.parseSSEUsageBytesWithType(finalResponse, "response.completed", usage)
 		// When the terminal event has an empty output array, reconstruct
 		// output from accumulated delta events so the client gets full content.
 		// gjson Array() returns empty slice for null, missing, or empty arrays.
@@ -1744,6 +1743,9 @@ func (s *OpenAIGatewayService) handleSSEToJSON(resp *http.Response, c *gin.Conte
 			}
 		}
 		finalResponse = supplementCompactionItemFromSSE(c, finalResponse, bodyText)
+		if isOpenAIResponsesBufferedCompletion(c, account) && openAIResponsesCompletionIsEmpty(finalResponse, usage) {
+			return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, resp.Header.Get("x-request-id"))
+		}
 		body = finalResponse
 		if originalModel != mappedModel {
 			body = s.replaceModelInResponseBody(body, mappedModel, originalModel)
@@ -1848,22 +1850,27 @@ func buildOpenAIResponseFailedSSE(responseID, model string, source []byte, fallb
 		message = "Upstream response failed"
 	}
 	errorBody := gin.H{"code": code, "message": message}
+	if param := gjson.GetBytes(source, "error.param").String(); param != "" {
+		errorBody["param"] = param
+	}
 	if errorType != "" {
 		errorBody["type"] = errorType
 	}
 	response := gin.H{
-		"id":     responseID,
-		"object": "response",
-		"status": "failed",
-		"output": []any{},
-		"error":  errorBody,
+		"id":         responseID,
+		"object":     "response",
+		"created_at": time.Now().Unix(),
+		"status":     "failed",
+		"output":     []any{},
+		"error":      errorBody,
 	}
 	if model = strings.TrimSpace(model); model != "" {
 		response["model"] = model
 	}
 	payload, err := marshalOpenAIUpstreamJSON(gin.H{
-		"type":     "response.failed",
-		"response": response,
+		"type":            "response.failed",
+		"sequence_number": 0,
+		"response":        response,
 	})
 	if err != nil {
 		// All values above are JSON primitives, so this is only a defensive fallback.

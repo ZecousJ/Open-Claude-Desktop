@@ -1,15 +1,17 @@
 /**
  * Quick Entry (shared/quick-entry.ts): a small frameless window that floats
- * above everything with one field. The Quick Entry shortcut brings it up (or
- * puts it away when it is up); a submission hides it and hands the prompt to
- * the main window, which starts a new chat with it; Escape, a click outside the
- * field's row or the window losing focus hides it. It opens again where it was
- * put away, also after a restart (the host keeps the position), and is pushed
- * back into the work area when it would run off its right or bottom edge.
+ * above everything with one field. The Quick Entry shortcut brings it up
+ * (or puts it away when it is up); a submission hides it and hands the
+ * prompt to the main window, which starts a new chat with it; Escape, a
+ * click outside the field's row or the window losing focus hides it. It
+ * opens again where it was put away, also after a restart (the host keeps
+ * the position), and is pushed back into the work area when it would run
+ * off its right or bottom edge (source: desktop bundle 2.31226.1 static JS:
+ * saved position, 30px gap).
  *
  * The class does not import Electron's runtime objects: `QuickWindowHost`
- * creates the window and delivers the prompt, so it runs under the unit tests
- * with a fake window.
+ * creates the window and delivers the prompt, so it runs under the unit
+ * tests with a fake window.
  */
 import {
   quickEntryChannels,

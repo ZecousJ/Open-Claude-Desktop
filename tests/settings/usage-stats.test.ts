@@ -184,6 +184,9 @@ test("numbers, money and durations are short", () => {
   assert.equal(compact(4_200_000), "4.2M");
   assert.equal(compact(2_500_000_000), "2.5B");
   assert.equal(cost(0.0421), "$0.0421");
+  assert.equal(cost(0), "$0.00");
+  assert.equal(cost(0.0000128), "$0.0000128");
+  assert.equal(cost(0.000000001), "<$0.00000001");
   assert.equal(cost(12.3456), "$12.35");
   assert.equal(duration(850), "850 ms");
   assert.equal(duration(1240), "1.24 sec");

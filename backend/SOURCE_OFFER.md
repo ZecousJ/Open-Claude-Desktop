@@ -12,7 +12,7 @@ Claudex 服务端是 Sub2API 的修改版，按 LGPL-3.0 发布（`LICENSE`；LG
 ## Corresponding source / 对应源码
 
 Every image or binary of the Claudex server is built from one commit of the Claudex repository
-(<https://github.com/ZecousJ/Open-Claude-Desktop>). Its corresponding source is:
+(<https://github.com/ZecousJ/claudex>). Its corresponding source is:
 
 - the `backend/` directory at that commit (Go server, Vue admin console, `docs/legal`, and these
   license files), and

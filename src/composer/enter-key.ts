@@ -1,5 +1,6 @@
 /**
- * Whether a plain Enter sends the draft. It does in the desktop app, on
+ * Whether a plain Enter sends the draft (live claude.ai bundle, 2026-10-12:
+ * the composer's submit-on-plain-Enter). It does in the desktop app, on
  * Windows, and wherever the screen is not a touch screen; on a phone or a
  * tablet Enter starts a new line, and Send (or ⌘/Ctrl+Enter on a keyboard)
  * sends.

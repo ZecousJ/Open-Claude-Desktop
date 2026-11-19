@@ -36,7 +36,7 @@ export function MemoryIcon(props: LucideProps) {
   );
 }
 
-/** Magnifier inside a ring. */
+/** Magnifier inside a ring (Settings search with no match, R-1565). */
 export function NoResultsIcon(props: LucideProps) {
   return (
     <Base {...props}>

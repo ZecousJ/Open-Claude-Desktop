@@ -1,6 +1,6 @@
 /**
  * The person's computer-use settings (Settings → System → Computer use),
- * kept per account in `<profile>/computer-use.json`. Off by default.
+ * kept per account in `<profile>/computer-use.json`.
  */
 import fs from "node:fs";
 import path from "node:path";

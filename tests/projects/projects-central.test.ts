@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { Store } from "../../electron/store/store";
 import { openPolicy } from "../../shared/client-policy";
-import type { Project } from "../../shared/types";
+import type { Conversation, Project } from "../../shared/types";
 import { useElectronShim } from "../runner/runner-core-support.test.ts";
 useElectronShim();
 const { registerWorkspaceHandlers } =
@@ -54,6 +54,77 @@ const input = () => ({
     ],
   },
 });
+const conversation = (id: string, mode: Conversation["mode"], projectId?: string): Conversation => ({
+  id, mode, projectId, title: id, providerId: "fixture", model: "fixture",
+  createdAt: 1, updatedAt: 1, pinned: false, archived: false, turns: [],
+});
+
+test("original project deletion removes its Chat and Cowork history and managed files across restart", async (t) => {
+  const s = setup(t);
+  const external = path.join(s.root, "workspace");
+  fs.mkdirSync(external);
+  const work = path.join(external, "work.txt");
+  fs.writeFileSync(work, "outside the project knowledge store");
+  await s.call("saveProject", project(), input());
+  s.store.projects[0].cwd = external;
+  const linkedCode = conversation("code", "code", "project");
+  s.store.conversations = [
+    conversation("chat", "chat", "project"),
+    conversation("cowork", "cowork", "project"),
+    linkedCode,
+    conversation("standalone", "chat"),
+  ];
+  s.store.flush();
+  await s.call("deleteProject", { id: "project", mode: "cascade" });
+  assert.equal(linkedCode.projectId, undefined);
+  const restored = new Store(s.root);
+  assert.deepEqual(restored.projects, []);
+  assert.deepEqual(restored.conversations.map(row => [row.id, row.projectId]), [
+    ["code", undefined], ["standalone", undefined],
+  ]);
+  assert.equal(fs.existsSync(path.join(s.root, "projects", "project")), false);
+  assert.equal(fs.readFileSync(work, "utf8"), "outside the project knowledge store");
+});
+
+test("failed local project deletion keeps the project, chats and files until retry", async (t) => {
+  const s = setup(t);
+  await s.call("saveProject", project(), input());
+  s.store.conversations = [conversation("chat", "chat", "project")];
+  s.store.flush();
+  const blockingPath = path.join(s.root, "projects.json.tmp");
+  fs.mkdirSync(blockingPath);
+  try {
+    await assert.rejects(() => s.call("deleteProject", { id: "project", mode: "cascade" }));
+    const restored = new Store(s.root);
+    assert.equal(restored.projects[0].id, "project");
+    assert.equal(restored.conversation("chat").projectId, "project");
+    assert.equal(fs.readFileSync(path.join(s.root, "projects", "project", "knowledge", "notes.txt"), "utf8"), "Real context");
+  } finally {
+    fs.rmdirSync(blockingPath);
+  }
+  await s.call("deleteProject", { id: "project", mode: "cascade" });
+  assert.deepEqual(new Store(s.root).conversations, []);
+});
+
+test("classic project deletion keeps linked history and unlinks it", (t) => {
+  const s = setup(t);
+  s.call("saveProject", project());
+  s.store.conversations = [conversation("chat", "chat", "project")];
+  s.call("deleteProject", "project");
+  assert.equal(new Store(s.root).conversation("chat").projectId, undefined);
+});
+
+test("reopening completes a recorded local project deletion after process interruption", (t) => {
+  const s = setup(t);
+  s.call("saveProject", project());
+  s.store.conversations = [conversation("chat", "chat", "project"), conversation("code", "code", "project")];
+  s.store.flush();
+  s.store.write("pending-project-deletion.json", "project");
+  const restored = new Store(s.root);
+  assert.deepEqual(restored.projects, []);
+  assert.deepEqual(restored.conversations.map(row => [row.id, row.projectId]), [["code", undefined]]);
+  assert.equal(fs.existsSync(path.join(s.root, "pending-project-deletion.json")), false);
+});
 test("authoritative private project reads and instruction rights cannot be forged by the renderer", (t) => {
   const s = setup(t);
   s.store.projects = [
@@ -90,11 +161,13 @@ test("authoritative private project reads and instruction rights cannot be forge
     false,
   );
 });
-test("real registered creation publishes validated context once, persists it and safely replays the same operation", (t) => {
+test("real registered creation publishes validated context once, persists it and safely replays the same operation", async (t) => {
   const s = setup(t);
-  const saved = s.call("saveProject", project(), input());
+  const staging = s.call("saveProject", project(), input());
+  s.call("saveProject", project("other"));
+  const saved = await staging;
   assert.notEqual(saved.kind, "local");
-  assert.equal(s.store.projects.length, 1);
+  assert.deepEqual(s.store.projects.map(({ id }) => id), ["other", "project"]);
   const target = path.join(
     s.root,
     "projects",
@@ -103,9 +176,9 @@ test("real registered creation publishes validated context once, persists it and
     "notes.txt",
   );
   assert.equal(fs.readFileSync(target, "utf8"), "Real context");
-  assert.equal(new Store(s.root).projects[0].id, "project");
+  assert.deepEqual(new Store(s.root).projects.map(({ id }) => id), ["other", "project"]);
   assert.deepEqual(s.call("saveProject", project(), input()), saved);
-  assert.equal(s.store.projects.length, 1);
+  assert.equal(s.store.projects.length, 2);
   assert.throws(
     () =>
       s.call("saveProject", project(), {
@@ -122,9 +195,9 @@ test("real registered creation publishes validated context once, persists it and
     /already exists/,
   );
 });
-test("invalid context and failed metadata persistence leave no published project or context", (t) => {
+test("invalid context and failed metadata persistence leave no published project or context", async (t) => {
   const s = setup(t);
-  assert.throws(
+  await assert.rejects(
     () =>
       s.call("saveProject", project(), {
         ...input(),
@@ -139,7 +212,7 @@ test("invalid context and failed metadata persistence leave no published project
     throw Error("disk unavailable");
   };
   try {
-    assert.throws(
+    await assert.rejects(
       () => s.call("saveProject", project(), input()),
       /disk unavailable/,
     );

@@ -3,9 +3,10 @@ import { execFile } from "node:child_process";
 /**
  * Whether this Linux desktop shows tray icons: a StatusNotifier host is
  * registered on the session bus (KDE, most others; GNOME only with an
- * AppIndicator extension). The original's Menu bar row says "Closing the window
- * quits Claude because your desktop doesn’t show tray icons." where it does
- * not. Without gdbus the answer is unknown and taken as yes.
+ * AppIndicator extension). The original's Menu bar row says "Closing the
+ * window quits Claude because your desktop doesn’t show tray icons." where
+ * it does not (live claude.ai bundle, 2026-10-14, c71860c77: trayIcon
+ * "unsupported"). Without gdbus the answer is unknown and taken as yes.
  */
 export function linuxTraySupported(
   run: typeof execFile = execFile,

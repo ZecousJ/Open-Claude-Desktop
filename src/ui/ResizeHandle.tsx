@@ -5,8 +5,9 @@ export const RESIZE_STEP_PX = 8;
 export const RESIZE_STEP_LARGE_PX = 32;
 
 /**
- * The step an arrow key moves a divider by, in pixels along its axis (positive:
- * right or down), or undefined for other keys. Shift takes the larger step.
+ * The step an arrow key moves a divider by, in pixels along its axis
+ * (positive: right or down), or undefined for other keys. Shift takes the
+ * larger step (desktop bundle 2.31226.1, the ResizeHandle: 8px and 32px).
  */
 export function resizeStep(
   key: string,
@@ -22,13 +23,14 @@ export function resizeStep(
 }
 
 /**
- * The divider every resizable panel uses, after the original's ResizeHandle: a
- * 12px grab area with a 3×48px pill in its middle. The pill fades in (200ms,
- * after 200ms of hover) in the muted text colour, turns the secondary colour
- * while dragged (120ms) and, on keyboard focus, the accent colour along the
- * whole edge at once. The arrows move it 8px (32px with Shift); Enter or Space
- * acts as a click on it. The caller does the dragging (pointer handlers through
- * `rest`) and positions the handle with its own class.
+ * The divider every resizable panel uses, after the original's
+ * ResizeHandle (desktop bundle 2.31226.1): a 12px grab area with a 3×48px
+ * pill in its middle. The pill fades in (200ms, after 200ms of hover) in
+ * the muted text colour, turns the secondary colour while dragged (120ms)
+ * and, on keyboard focus, the accent colour along the whole edge at once.
+ * The arrows move it 8px (32px with Shift); Enter or Space acts as a click
+ * on it. The caller does the dragging (pointer handlers through `rest`)
+ * and positions the handle with its own class.
  */
 export function ResizeHandle({
   label,

@@ -114,10 +114,8 @@ const pageKind = {
   connectors: "connector",
 } as const;
 
-/**
- * O16+: two Unicode letters/digits, then 200 code points. Trimming and
- * eligibility precede the server query cutoff.
- */
+/** O16 ccea1f474-D3CH0tgO:5290+: two Unicode letters/digits, then 200
+ * code points. Trimming and eligibility precede the server query cutoff. */
 export function customizeSearchQuery(query: string): string {
   const trimmed = query.trim();
   let meaningful = 0,
@@ -131,10 +129,8 @@ export function customizeSearchQuery(query: string): string {
   return meaningful >= 2 ? normalized : "";
 }
 
-/**
- * O16: name-only Fuse, threshold .25, ignore location, intersect whitespace
- * words, preserve source order.
- */
+/** O16 c39b69263-Dn16ZL0D:1–69: name-only Fuse, threshold .25,
+ * ignore location, intersect whitespace words, preserve source order. */
 function matchingHits(
   hits: CustomizeSearchHit[],
   query: string,

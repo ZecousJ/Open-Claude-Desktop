@@ -1,13 +1,14 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
 /**
- * The sidebar's row numbers: holding ⌘ (Ctrl outside macOS) on the desktop, or
- * Ctrl+Shift on any surface, for 200ms numbers the first nine rows the sidebar
- * shows, 1 to 9, on the rows' leading slots. ⌘1…9 then opens the numbered row,
- * and so does Ctrl+Shift+1…9. The numbers go when the keys are let go, another
+ * The sidebar's row numbers (live claude.ai bundle, 2026-10-12, the jump
+ * hints): holding ⌘ (Ctrl outside macOS) on the desktop, or Ctrl+Shift on
+ * any surface, for 200ms numbers the first nine rows the sidebar shows, 1
+ * to 9, on the rows' leading slots. ⌘1…9 then opens the numbered row, and
+ * so does Ctrl+Shift+1…9. The numbers go when the keys are let go, another
  * key is pressed, the pointer moves or clicks without the keys, the window
- * loses the focus or is hidden; they never show while a text field, select or
- * text area has the focus.
+ * loses the focus or is hidden; they never show while a text field, select
+ * or text area has the focus.
  */
 
 /** How long the keys are held before the numbers show. */

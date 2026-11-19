@@ -1,16 +1,17 @@
-/* Header title, chevron and project breadcrumb. chat-markdown-complete.png
-   (1x): the chevron's ink is 8 × 4px, 9px after the title — a 14px lucide
-   chevron 6px away. Its 1x peak (187 vs 211) is only antialiasing: in R-0189
-   (~3x) chevron and title both peak at 255, so the chevron takes the title's
-   colour. Provisional. */
+/* Header title, chevron and project breadcrumb (R-0189, R-0512, R-0572).
+   chat-markdown-complete.png (1x): the chevron's ink is 8 × 4px, 9px after
+   the title — a 14px lucide chevron 6px away. Its 1x peak (187 vs 211) is
+   only antialiasing: in R-0189 (~3x) chevron and title both peak at 255, so
+   the chevron takes the title's colour.
+   Hover, pressed and the breadcrumb have no capture yet: provisional. */
 .thread-heading {
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-/* Title 14/20 in a 28px control, then a separate 28px caret with a -6px join.
-   The title starts 16px after the open sidebar. */
+/* Live 2026-10-16: title 14/20 in a 28px control, then a separate 28px
+   caret with a -6px join. The title starts 16px after the open sidebar. */
 .thread-title-split {
   display: flex;
   align-items: center;
@@ -51,12 +52,12 @@
   padding: 0;
   cursor: pointer;
 }
-.thread-menu-trigger > .app-icon {
+.thread-menu-trigger > .anthropicon {
   width: 16px;
   height: 16px;
 }
-/* The popup's scroll layer reserves a transparent 1px bottom inner-ring border
-   after its 4px gutter (170×178 with five rows). */
+/* Live web 2026-10-16: the popup's scroll layer reserves a transparent
+   1px bottom inner-ring border after its 4px gutter (170×178 with five rows). */
 :root[data-surface="web"] body .menu.conversation-title-menu {
   border-bottom: 1px solid transparent;
 }
@@ -138,7 +139,7 @@
 .thread-crumb-sep {
   color: var(--text-muted);
 }
-/* In-place rename uses the sidebar row's measured focus ring. */
+/* In-place rename uses the sidebar row's measured focus ring (R-0046). */
 .thread-rename {
   width: min(480px, 42vw);
   height: 28px;
@@ -171,9 +172,10 @@
 }
 
 /*
- * A Code session's title: 13px medium text-primary, not selectable, the caret
- * in text-secondary; renamed in place in a field as wide as its text, with a
- * 1.5px accent outline 1px out and a 3px radius.
+ * A Code session's title (live claude.ai bundle, 2026-10-14): 13px medium
+ * text-primary, not selectable, the caret in text-secondary; renamed in
+ * place in a field as wide as its text, with a 1.5px accent outline 1px
+ * out and a 3px radius.
  */
 .chat-header .thread-title[data-mode="code"] {
   font-size: 13px;
@@ -199,11 +201,11 @@
   outline: 1.5px solid #2a78d6;
 }
 
-/* A web Code session's title menu and its submenus are the compact kind:
-   #20201f, radius 10, 4px inside, a 1px white-10% rim over 0 8px 24px black 32%
-   and 0 2px 6px black 20%; rows 24px, 2.5px 8px, radius 6, 13/19; the keys
-   12/15 #898781; a submenu's caret 16px muted, 4px into the row's end; rules
-   4px 8px. */
+/* A web Code session's title menu and its submenus are the compact kind
+   (live claude.ai Code, 2026-10-21): #20201f, radius 10, 4px inside, a
+   1px white-10% rim over 0 8px 24px black 32% and 0 2px 6px black 20%;
+   rows 24px, 2.5px 8px, radius 6, 13/19; the keys 12/15 #898781; a
+   submenu's caret 16px muted, 4px into the row's end; rules 4px 8px. */
 :root[data-surface="web"] body .menu.code-title-menu {
   padding: 4px;
   /* Its scroll layer's transparent 1px inner-ring border at the bottom. */

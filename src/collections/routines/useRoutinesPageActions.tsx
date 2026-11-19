@@ -233,7 +233,8 @@ export function useRoutinesPageActions(kit: UseRoutinesPageActionsKit) {
   const [apiToken, setApiToken] = useState<string>();
   async function runNow(routine: Routine) {
     setRunning(routine.id);
-    // The original's feedback.
+    // The original's feedback (live claude.ai bundle, 2026-10-14:
+    // T9HiOmwPMu and the start failure).
     try {
       await window.desktop.runSchedule(routine.id);
       showToast(formatText("“{name}” started.", { name: routine.name }));

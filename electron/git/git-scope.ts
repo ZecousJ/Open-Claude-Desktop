@@ -2,10 +2,10 @@ import type { GitCommit } from "../../shared/types";
 import { isTransportError, type GitRunner } from "./working-tree";
 
 /**
- * The Changes panel's "Diff scope" answers: which branch "All changes" is
- * measured from, the branches it can be compared against, and the branch's own
- * commits. Read-only `git` queries through the folder's host, like the rest of
- * the panel.
+ * The Changes panel's "Diff scope" answers (live claude.ai bundle,
+ * 2026-10-12): which branch "All changes" is measured from, the branches it
+ * can be compared against, and the branch's own commits. Read-only `git`
+ * queries through the folder's host, like the rest of the panel.
  */
 
 /** At most this many of the branch's commits are listed. */
@@ -97,6 +97,28 @@ export async function resolveBase(
   ])
     if (await ask(git, top, ["rev-parse", "--verify", "-q", ref])) return ref;
   return undefined;
+}
+
+export async function workingTreeBase(
+  git: GitRunner,
+  top: string,
+  base?: string,
+) {
+  const head = await ask(git, top, ["rev-parse", "--verify", "-q", "HEAD"]);
+  const branch = head
+    ? (await git(top, ["rev-parse", "--abbrev-ref", "HEAD"])).trim()
+    : await ask(git, top, ["symbolic-ref", "--short", "HEAD"]);
+  const named = branch && branch !== "HEAD" ? branch : undefined;
+  const remote = await mainRemote(git, top);
+  const defaultBase = await defaultBaseBranch(git, top, remote, named);
+  const baseName = validBranchName(base) ? base : defaultBase;
+  const baseRef = head
+    ? await resolveBase(git, top, remote, baseName)
+    : undefined;
+  const mergeBase = baseRef
+    ? await ask(git, top, ["merge-base", baseRef, "HEAD"])
+    : head;
+  return { head, named, defaultBase, baseName, baseRef, mergeBase };
 }
 
 /** The commits `git log` printed with `logFormat`, newest first. */

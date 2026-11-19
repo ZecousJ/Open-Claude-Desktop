@@ -3,9 +3,9 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 /**
  * The part of an approval card between its title and its buttons. The card
  * stops at 60% of the window's height and this part scrolls inside it, its
- * edges fading where there is more to see. Only while it scrolls is it a
- * keyboard stop of its own, "Request details", so the arrow keys can move
- * through a long diff.
+ * edges fading where there is more to see (desktop bundle 2.31226.1). Only
+ * while it scrolls is it a keyboard stop of its own, "Request details", so
+ * the arrow keys can move through a long diff.
  */
 export function RequestDetails({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);

@@ -42,7 +42,7 @@ vi.mock('@/components/auth/TotpStepUpDialog.vue', () => ({
   })
 }))
 
-const URL = 'wss://transcribe.example.com/v1/audio/realtime/transcriptions'
+const URL = 'wss://hiwonder.cc/v1/audio/realtime/transcriptions'
 
 const billing = {
   billed_model: 'realtime-transcription',

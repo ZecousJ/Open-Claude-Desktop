@@ -8,7 +8,7 @@ This folder contains marketing campaign briefs written for external agencies
 Tone: direct and professional, not chatty
 Keep deliverables and timelines in a table format`;
 
-// Memory editor.
+// Memory editor (live claude.ai bundle, 2026-10-14, ce5658dc8-Dez48Sxz.js).
 export function FolderInstructions({
   conversationId,
   onClose,

@@ -4,7 +4,7 @@ import type { Conversation, Settings, Turn } from "../../shared/types";
 /** Where accepting a plan can leave the session besides Accept edits. */
 export type PlanTarget = "auto" | "bypass";
 
-/** More accept options. */
+/** More accept options (live claude.ai bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2.js). */
 export function planAcceptTargets(
   settings: Pick<Settings, "allowBypassPermissions" | "bypassFolders">,
   cwd?: string,

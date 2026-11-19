@@ -10,10 +10,10 @@ import { t } from "../i18n";
 const maxQuotedSource = 100_000;
 
 /**
- * The message Try fixing sends to the artifact's conversation. A generated file
- * is named by path so the agent edits it; a code block's source is quoted
- * instead. The error text comes from the sandboxed preview, so it is fenced and
- * only ever sent when the person clicks.
+ * The message Try fixing sends to the artifact's conversation (R-1036). A
+ * generated file is named by path so the agent edits it; a code block's
+ * source is quoted instead. The error text comes from the sandboxed preview,
+ * so it is fenced and only ever sent when the person clicks.
  */
 export function fixRequest(artifact: Artifact, error: string) {
   const fence = markdownFence(error);
@@ -27,7 +27,7 @@ export function fixRequest(artifact: Artifact, error: string) {
   return `The artifact "${artifact.name}" shows this error in its preview:\n\n${fence}\n${error}\n${fence}\n\n${source}\n\nPlease fix it.`;
 }
 
-/** The toast after a download is saved: the file's own name. */
+/** The toast after a download is saved (R-0955): the file's own name. */
 export function savedMessage(path: string) {
   return `Saved ${path.split(/[\\/]/).at(-1) || path}`;
 }

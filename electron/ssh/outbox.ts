@@ -18,6 +18,7 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { inlineAttachmentDisplaysSchema, type InlineAttachmentDisplay } from "../../shared/inline-attachment-display";
 import type { Attachment, Mode, Turn } from "../../shared/types";
 
 export const OUTBOX_FILE = "ssh-outbox.json";
@@ -33,6 +34,7 @@ export interface OutboxEntry {
   hostId: string;
   text: string;
   attachments: Attachment[];
+  inlineAttachmentDisplays?: InlineAttachmentDisplay[];
   mode: Mode;
   providerId: string;
   model: string;
@@ -81,6 +83,7 @@ function valid(value: unknown): value is OutboxEntry {
     Array.isArray(e.attachments) &&
     e.attachments.length <= 12 &&
     e.attachments.every(validAttachment) &&
+    (e.inlineAttachmentDisplays === undefined || inlineAttachmentDisplaysSchema.safeParse(e.inlineAttachmentDisplays).success) &&
     (e.mode === "chat" || e.mode === "cowork" || e.mode === "code") &&
     typeof e.providerId === "string" &&
     e.providerId.length <= 500 &&

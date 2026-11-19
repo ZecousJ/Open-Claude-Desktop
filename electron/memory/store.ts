@@ -21,6 +21,7 @@ export interface SaveDocInput {
   baseRevision: number;
   /** Generated memory only: edits up to this id were folded in and go. */
   editsUpto?: string;
+  baseControlsVersion?: string;
 }
 
 export interface MemoryStore {
@@ -30,10 +31,20 @@ export interface MemoryStore {
   /** Reads everything again (the service for a Claudex account). */
   load(): Promise<MemorySnapshot>;
   /** Changes the given switches; the others keep their value. */
-  setPrefs(prefs: Partial<MemoryPrefs>): Promise<MemorySnapshot>;
+  /** Local stores use defaults only when the freshly read file has no choice. */
+  setPrefs(prefs: Partial<MemoryPrefs>, defaults?: MemoryPrefs): Promise<MemorySnapshot>;
   /** Writes a document; a stale `baseRevision` throws MemoryConflictError. */
-  saveDoc(scope: MemoryScope, input: SaveDocInput): Promise<MemoryDocRecord>;
+  saveDoc(
+    scope: MemoryScope,
+    input: SaveDocInput,
+    checkBeforeWrite?: () => void,
+  ): Promise<MemoryDocRecord>;
   addEdit(scope: MemoryScope, text: string): Promise<MemoryEditRecord>;
+  replaceControls(
+    scope: MemoryScope,
+    controls: string[],
+    baseVersion: string,
+  ): Promise<{ edits: MemoryEditRecord[]; version: string }>;
   /** Removing an edit that is already gone is not an error. */
   removeEdit(id: string): Promise<void>;
   /** Deletes one scope's document and edits, or everything (the switches stay). */
@@ -47,6 +58,24 @@ export class MemoryConflictError extends Error {
   constructor(readonly currentRevision: number) {
     super(memoryMessages.conflict);
     this.name = "MemoryConflictError";
+  }
+}
+
+export class MemoryControlsConflictError extends Error {
+  constructor(readonly reset = false) {
+    super(
+      reset
+        ? "Memory was reset. Reload it before saving."
+        : memoryMessages.conflict,
+    );
+    this.name = "MemoryControlsConflictError";
+  }
+}
+
+export class MemoryResetReadbackError extends Error {
+  constructor(cause: unknown) {
+    super("Memory was cleared. Reload memory to obtain its current state.", { cause });
+    this.name = "MemoryResetReadbackError";
   }
 }
 

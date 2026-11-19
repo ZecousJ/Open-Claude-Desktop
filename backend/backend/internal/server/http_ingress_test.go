@@ -15,6 +15,8 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/Wei-Shaw/sub2api/internal/handler"
+	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
@@ -29,6 +31,67 @@ func ingressTestConfig() *config.Config {
 			MaxRequestBodySize: 1024,
 		},
 		Gateway: config.GatewayConfig{MaxBodySize: 1024},
+	}
+}
+
+func TestModelGatewayHTTPRoutes(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Cleanup(func() { middleware.SetIngressRejectRecorder(nil) })
+	cfg := ingressTestConfig()
+	cfg.Server.Role = config.ServerRoleModelGateway
+	cfg.CORS.AllowedOrigins = []string{"https://app.example"}
+	handlers := &handler.Handlers{}
+	apiKeyAuth := middleware.NewAPIKeyAuthMiddleware(nil, nil, cfg)
+	router := SetupRouter(gin.New(), handlers, nil, nil, nil, apiKeyAuth, nil, nil, nil, nil, nil, nil, nil, cfg, nil)
+	server := ProvideHTTPServer(cfg, router)
+
+	for _, tc := range []struct {
+		method, path, preflight string
+		status                  int
+	}{
+		{http.MethodGet, "/health", "", http.StatusOK},
+		{http.MethodPost, "/v1/messages", "", http.StatusUnauthorized},
+		{http.MethodPost, "/v1/chat/completions", "", http.StatusUnauthorized},
+		{http.MethodPost, "/chat/completions", "", http.StatusUnauthorized},
+		{http.MethodGet, "/v1/responses?stream=true", "", http.StatusUnauthorized},
+		{http.MethodGet, "/responses", "", http.StatusUnauthorized},
+		{http.MethodGet, "/backend-api/codex/responses", "", http.StatusUnauthorized},
+		{http.MethodPost, "/v1/responses", "", http.StatusUnauthorized},
+		{http.MethodPost, "/responses", "", http.StatusUnauthorized},
+		{http.MethodPost, "/backend-api/codex/responses", "", http.StatusUnauthorized},
+		{http.MethodPost, "/v1/responses/input_tokens", "", http.StatusUnauthorized},
+		{http.MethodPost, "/responses/resp_123/cancel", "", http.StatusUnauthorized},
+		{http.MethodPost, "/backend-api/codex/responses/compact", "", http.StatusUnauthorized},
+		{http.MethodOptions, "/v1/responses", http.MethodPost, http.StatusNoContent},
+		{http.MethodGet, "/", "", http.StatusNotFound},
+		{http.MethodGet, "/setup/status", "", http.StatusNotFound},
+		{http.MethodGet, "/v1/models", "", http.StatusNotFound},
+		{http.MethodGet, "/backend-api/codex/models", "", http.StatusNotFound},
+		{http.MethodGet, "/v1/responses/resp_123", "", http.StatusNotFound},
+		{http.MethodGet, "/v1/responses/", "", http.StatusNotFound},
+		{http.MethodPost, "/v1/messages/count_tokens", "", http.StatusNotFound},
+		{http.MethodPost, "/v1/images/generations", "", http.StatusNotFound},
+		{http.MethodPost, "/v1/responses_extra", "", http.StatusNotFound},
+		{http.MethodPost, "/api/event_logging/batch", "", http.StatusNotFound},
+		{http.MethodPost, "/api/v1/auth/login", "", http.StatusNotFound},
+		{http.MethodGet, "/api/v1/claudex/web/runner/link", "", http.StatusNotFound},
+		{http.MethodPost, "/api/v1/claudex/web/rpc/snapshot", "", http.StatusNotFound},
+		{http.MethodOptions, "/api/v1/auth/login", http.MethodPost, http.StatusNotFound},
+		{http.MethodOptions, "/v1/responses", http.MethodDelete, http.StatusNotFound},
+	} {
+		t.Run(tc.method+" "+tc.path+" "+tc.preflight, func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.path, nil)
+			if tc.preflight != "" {
+				req.Header.Set("Origin", "https://app.example")
+				req.Header.Set("Access-Control-Request-Method", tc.preflight)
+			}
+			w := httptest.NewRecorder()
+			server.Handler.ServeHTTP(w, req)
+			require.Equal(t, tc.status, w.Code, w.Body.String())
+			if tc.status == http.StatusUnauthorized {
+				require.Contains(t, w.Body.String(), "API_KEY_REQUIRED")
+			}
+		})
 	}
 }
 

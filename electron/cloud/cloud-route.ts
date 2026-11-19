@@ -1,8 +1,12 @@
-import type { Conversation, Project } from "../../shared/types";
+import { z } from "zod";
+import { fileReadServiceStage } from "../official-ui/api/file-read-diagnostics";
+import type { CreateBlankArtifactInput } from "../../shared/blank-artifacts";
+import type { Attachment, Conversation, Project } from "../../shared/types";
 import { createGitHubMethods } from "../../shared/web-client/github";
 import { githubRoutes } from "../../shared/github-api";
 import { cloudEnvironmentsMethods } from "../../shared/cloud-environments-api";
 import { statusOf } from "../../shared/web-client/errors";
+import { historySearchInput, historySearchResult, type HistorySearchHit } from "../../shared/history-search";
 import { devicePaths } from "../../shared/remote-devices";
 import { serviceData } from "./cloud-router-support";
 import { githubConnectionCalls } from "./cloud-router-support";
@@ -24,11 +28,11 @@ export function route(
     return (...args) => this.cloud(name, args);
   if (name === "sendOnChatDevice")
     return async (input) => {
-      const client = this.client();
+      const client = this.client(), generation = this.snapshotGeneration;
       const attachments = await this.cloudAttachments(input.attachments ?? []);
-      if (this.deps.client() !== client)
+      if (this.deps.client() !== client || generation !== this.snapshotGeneration)
         throw new Error("The signed-in account changed. Try again.");
-      return this.cloud(name, [{ ...input, attachments }]);
+      return this.cloud(name, [{ ...input, attachments }], attachments);
     };
   if (name === "deleteStoredCodeSessions")
     return async () => {
@@ -88,13 +92,56 @@ export function route(
     };
   if (name === "snapshot")
     return async (...args) => this.merge(await local(...args));
+  if (name === "searchConversations")
+    return async (query: unknown, options: unknown = {}) => {
+      const client = this.deps.client();
+      if (!client || this.conversations.size === 0) return local(query, options);
+      const generation = this.snapshotGeneration;
+      const { query: text, page, ...filters } = historySearchInput.parse({
+        ...(options && typeof options === "object" && !Array.isArray(options) ? options : {}), query,
+      });
+      const offset = page?.offset ?? 0;
+      const archive = page?.archive ?? (filters.includeArchived ? "all" : "active");
+      const read = async (source: Handler, visible: (hit: HistorySearchHit) => boolean) => {
+        const found: HistorySearchHit[] = [];
+        const ids = new Set<string>();
+        for (let position = 0; position <= 100000 && found.length < offset + filters.limit;) {
+          const limit = page ? 50 : filters.limit;
+          const answer = historySearchResult.parse(await source(text, {
+            ...filters, limit, ...(page ? { page: { offset: position, archive, starredOnly: page.starredOnly } } : {}),
+          }));
+          if (client !== this.deps.client() || generation !== this.snapshotGeneration)
+            throw Error("The signed-in account changed. Search again.");
+          if (answer.results.length > limit || answer.results.some(hit => {
+            if (ids.has(hit.conversationId)) return true;
+            ids.add(hit.conversationId);
+            return false;
+          }))
+            throw Error("Search results changed. Search again.");
+          found.push(...answer.results.filter(visible));
+          if (!page || answer.results.length < limit) break;
+          position += answer.results.length;
+        }
+        return found;
+      };
+      const [localHits, cloudHits] = await Promise.all([
+        read(local, hit => !this.isCloudConversation(hit.conversationId) || this.localTasks.has(hit.conversationId)),
+        read((text, opts) => client.call(name, [text, opts]), hit =>
+          this.isCloudConversation(hit.conversationId) && !this.localTasks.has(hit.conversationId)),
+      ]);
+      const hits = new Map(localHits.map(hit => [hit.conversationId, hit]));
+      for (const hit of cloudHits) hits.set(hit.conversationId, hit);
+      return { results: [...hits.values()].sort((a, b) => b.updatedAt - a.updatedAt ||
+        (a.conversationId < b.conversationId ? -1 : a.conversationId === b.conversationId ? 0 : 1)).slice(offset, offset + filters.limit) };
+    };
   if (name === "send") return (input) => this.send(input, local);
   if (name === "createBlankArtifact")
-    return async (input) => {
+    return async (input: CreateBlankArtifactInput) => {
       const client = this.deps.client();
       if (!client) return local(input);
+      const { retryInFlight, ...request } = input;
       const scope = this.snapshotGeneration;
-      const result = (await client.call(name, [input])) as {
+      const result = (await client.call(name, [request])) as {
         conversation?: Conversation;
       };
       if (scope !== this.snapshotGeneration || client !== this.deps.client())
@@ -143,21 +190,60 @@ export function route(
       this.inCloudProject(project)
         ? this.cloud(name, [project, ...rest])
         : local(project, ...rest);
+  if (name === "turnAttachment")
+    return (id, ...rest) => {
+      const cloud = this.isCloudConversation(id);
+      fileReadServiceStage(cloud ? "route-cloud" : "route-local");
+      return cloud ? this.cloud(name, [id, ...rest]) : local(id, ...rest);
+    };
+  if (name === "editPrompt" || name === "retryResponse")
+    return async (...args) => {
+      if (!this.isCloudConversation(args[0])) return local(...args);
+      const client = this.client(), generation = this.snapshotGeneration;
+      const index = name === "editPrompt" ? 5 : 4;
+      const options = args[index];
+      let uploaded;
+      let displays = options?.inlineAttachmentDisplays;
+      if (displays === undefined) {
+        const history = z.object({ turns: z.array(z.object({ id: z.string(), inlineAttachmentDisplays: z.unknown().optional() })) }).parse(await client.call("conversationTurns", [args[0]]));
+        if (client !== this.deps.client() || generation !== this.snapshotGeneration) throw Error("The signed-in account changed. Try again.");
+        displays = history.turns.find(turn => turn.id === args[1])?.inlineAttachmentDisplays;
+      }
+      await this.requireInlineDisplaySupport(displays);
+      if (client !== this.deps.client() || generation !== this.snapshotGeneration) throw Error("The signed-in account changed. Try again.");
+      if (options && Array.isArray(options.attachments)) {
+        const bindings = new Map<string, Attachment>();
+        const attachments = await this.cloudAttachments(options.attachments, true, options.inlineAttachmentDisplays === undefined ? undefined : bindings);
+        uploaded = attachments;
+        if (client !== this.deps.client() || generation !== this.snapshotGeneration)
+          throw Error("The signed-in account changed. Try again.");
+        args[index] = { ...options, inlineAttachmentDisplays: this.remapInlineDisplays(options.inlineAttachmentDisplays, bindings), attachments: attachments.map(row => ({ id: row.id })) };
+      }
+      return this.cloud(name, args, uploaded);
+    };
   if (conversationCalls.has(name))
-    return (id, ...rest) =>
-      this.isCloudConversation(id)
+    return (id, ...rest) => {
+      const cloud = this.isCloudConversation(id);
+      const project = name === "updateConversation" ? rest[0]?.projectId : undefined;
+      if (project?.version === 1 && typeof project.target === "string" &&
+          cloud !== this.isCloudProject(project.target))
+        throw Error("Choose a project stored with this conversation.");
+      return cloud
         ? this.cloud(name, [id, ...rest])
         : local(id, ...rest);
+    };
   if (scopeCalls.has(name))
     return (scope: { conversationId?: string }, ...rest) =>
       this.isCloudConversation(scope?.conversationId)
         ? this.cloud(name, [scope, ...rest])
         : local(scope, ...rest);
   if (projectCalls.has(name))
-    return (id, ...rest) =>
-      this.isCloudProject(id)
+    return (id, ...rest) => {
+      const projectId = name === "deleteProject" && id && typeof id === "object" ? id.id : id;
+      return this.isCloudProject(projectId)
         ? this.cloud(name, [id, ...rest])
         : local(id, ...rest);
+    };
   // Continue in cloud: only with the cloud on; the upload's credential is
   // the service's lease for the one repository (shared/git-lease.ts).
   if (name === "cloudContinuationPlan")

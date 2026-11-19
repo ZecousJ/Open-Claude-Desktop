@@ -920,7 +920,7 @@ func (s *sqlStore) inviteRoles(ctx context.Context, id int64) (map[string]string
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = rows.Close() }()
+	defer rows.Close()
 	roles := map[string]string{}
 	for rows.Next() {
 		var email, role string

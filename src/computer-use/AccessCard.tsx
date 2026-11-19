@@ -2,7 +2,7 @@ import { currentLocale, formatText, t, useT } from "../i18n";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Modal } from "../ui/Controls";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type {
   ComputerUseAccessRequest,
   ComputerUsePermissions,
@@ -17,8 +17,9 @@ import { sentinelKind, sentinelWarnings } from "./sentinel";
 import { PermissionRow } from "./PermissionRow";
 
 /**
- * The title of an access request's card: one app is named, several are listed
- * below "wants to use:", and full control asks for the whole computer.
+ * The title of an access request's card (live claude.ai bundle, 2026-10-14,
+ * c0b9fcb09 at): one app is named, several are listed below "wants to use:",
+ * and full control asks for the whole computer.
  */
 export function accessTitle(request: ComputerUseAccessRequest) {
   if (request.kind === "permissions") return t("System permissions needed");
@@ -37,9 +38,9 @@ export function accessTitle(request: ComputerUseAccessRequest) {
 }
 
 /**
- * Full control asked for while Claudex works in the background: the apps it was
- * working in, or the preferred background mode, then whether to take over the
- * screen.
+ * Full control asked for while Claudex works in the background (live
+ * claude.ai bundle, 2026-10-14, c0b9fcb09 Ze): the apps it was working in,
+ * or the preferred background mode, then whether to take over the screen.
  */
 export function takeoverTitle(request: ComputerUseAccessRequest) {
   const names = request.apps.map((item) => item.app.name);
@@ -72,14 +73,15 @@ export function accessAnswer(request: ComputerUseAccessRequest): {
 }
 
 /**
- * Claudex asks, from a running turn, to use apps in this conversation or to
- * take control of the screen. Docked above the composer like Codex's requests,
- * with their keys (1 or Esc denies, 3 or ⌘↩ allows). Access lasts for this
- * conversation only; nothing is remembered across chats. As the original's
- * card: the Interactive glyph and title, then the apps in one bordered list,
- * each with its icon, name and the proposed level (no choosing per app), a
- * warning under apps that reach beyond themselves, how Claudex will work, and
- * Deny / Allow for this session.
+ * Claudex asks, from a running turn, to use apps in this conversation or
+ * to take control of the screen. Docked above the composer like Codex's
+ * requests, with their keys (1 or Esc denies, 3 or ⌘↩ allows). Access
+ * lasts for this conversation only; nothing is remembered across chats.
+ * As the original's card (live claude.ai bundle, 2026-10-14, c0b9fcb09
+ * rt): the Interactive glyph and title, then the apps in one bordered
+ * list, each with its icon, name and the proposed level (no choosing per
+ * app), a warning under apps that reach beyond themselves, how Claudex
+ * will work, and Deny / Allow for this session.
  */
 export function AccessCard({
   request,
@@ -174,7 +176,9 @@ function AppsCard({
 }) {
   const t = useT();
   const { busy, send } = useAnswer(request, onError);
-  // The first allow in background mode on a Mac explains it first.
+  // The first allow in background mode on a Mac explains it first (live
+  // claude.ai bundle, 2026-10-14, c0b9fcb09 We: "Background computer use",
+  // Not now / Continue; chicagoBackgroundIntroSeen).
   const [introducing, setIntroducing] = useState(false);
   const handlers: ApprovalHandlers = {
     deny: () => !busy && void send("deny"),
@@ -212,7 +216,7 @@ function AppsCard({
       aria-busy={busy || undefined}
     >
       <div className="cu-access-head">
-        <AppIcon name="Interactive" />
+        <Anthropicon name="Interactive" />
         <h3 data-no-translate className="cu-access-title">
           {title}
         </h3>
@@ -250,7 +254,7 @@ function AppsCard({
                   </div>
                   {kind && (
                     <div className="cu-access-warning">
-                      <AppIcon name="Warning" />
+                      <Anthropicon name="Warning" />
                       <span>{sentinelWarnings[kind]}</span>
                     </div>
                   )}
@@ -261,7 +265,7 @@ function AppsCard({
               <li>
                 <div className="cu-access-row">
                   <span className="cu-access-icon cu-access-icon-glyph">
-                    <AppIcon name="Clipboard" />
+                    <Anthropicon name="Clipboard" />
                   </span>
                   <span className="cu-access-name">Read your clipboard</span>
                 </div>
@@ -271,7 +275,7 @@ function AppsCard({
               <li>
                 <div className="cu-access-row">
                   <span className="cu-access-icon cu-access-icon-glyph">
-                    <AppIcon name="Copy" />
+                    <Anthropicon name="Copy" />
                   </span>
                   <span className="cu-access-name">
                     Write to your clipboard
@@ -310,8 +314,9 @@ function AppsCard({
 }
 
 /**
- * Full control asked for in background mode: the 16px Interactive glyph and the
- * question in semibold primary text, then Stay in background and Allow.
+ * Full control asked for in background mode (live claude.ai bundle,
+ * 2026-10-14, c0b9fcb09 Ze): the 16px Interactive glyph and the question
+ * in semibold primary text, then Stay in background and Allow.
  */
 function TakeoverCard({
   request,
@@ -339,7 +344,7 @@ function TakeoverCard({
       aria-busy={busy || undefined}
     >
       <div className="cu-takeover-head">
-        <AppIcon name="InteractiveSmall" />
+        <Anthropicon name="InteractiveSmall" />
         <p data-no-translate className="cu-takeover-title">
           {title}
         </p>
@@ -362,9 +367,9 @@ function TakeoverCard({
 }
 
 /**
- * The macOS permissions are missing: System permissions needed, the two
- * permissions with Open System Settings, and Deny; once both are granted, Ask
- * again.
+ * The macOS permissions are missing (live claude.ai bundle, 2026-10-14,
+ * c0b9fcb09 ot): System permissions needed, the two permissions with Open
+ * System Settings, and Deny; once both are granted, Ask again.
  */
 function PermissionsCard({
   request,
@@ -397,7 +402,7 @@ function PermissionsCard({
       aria-busy={busy || undefined}
     >
       <div className="cu-access-head">
-        <AppIcon name="Interactive" />
+        <Anthropicon name="Interactive" />
         <h3 className="cu-access-title">System permissions needed</h3>
       </div>
       <div className="cu-access-body">

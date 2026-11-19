@@ -1,6 +1,6 @@
 import type { Point, Bend, Mark, LineMark } from "./annotate-sketch";
 
-/** `strokeWidth: 4`, `textSize` 16, redactions `#000000` with 4px corners. */
+/** Live bundle: `strokeWidth: 4`, `textSize` 16, redactions `#000000` with 4px corners. */
 export const strokeWidth = 4;
 
 export const box = (from: Point, to: Point) => ({
@@ -71,7 +71,7 @@ export function onCurve(
   };
 }
 
-/** The dashed frame around selected text sits 4px out. */
+/** Live bundle: the dashed frame around selected text sits 4px out. */
 export const textFramePad = 4;
 
 /** How close a pointer must come to a stroke: 6px (14px by touch), or 3px past its edge. */
@@ -79,13 +79,13 @@ export function strokeReach(width: number, scale: number, coarse = false) {
   return Math.max((coarse ? 14 : 6) * scale, width / 2 + 3 * scale);
 }
 
-/** A side gets its middle handle (a line its bend handle) from 48px. */
+/** Live bundle: a side gets its middle handle (a line its bend handle) from 48px. */
 export const handleSpan = 48;
 
-/** A bend dragged back within 4px of the line's middle straightens it. */
+/** Live bundle: a bend dragged back within 4px of the line's middle straightens it. */
 export const straightenReach = 4;
 
-/** Text dragged by a corner grows or shrinks, down to 8px type. */
+/** Live bundle: text dragged by a corner grows or shrinks, down to 8px type. */
 export const minTextSize = 8;
 
 export const targetPad = 2;

@@ -55,6 +55,8 @@ func TestEveryGatewayPOSTRouteIsClassifiedForPromptAuditCoverage(t *testing.T) {
 		"/images/batches/:id/cancel": "control-plane cancellation with no user prompt",
 		"/stt":                       "speech transcription is not a text-generation prompt",
 		"/custom-voices":             "voice profile management has no model prompt",
+		// CLAUDEX: knowledge-base MCP relay (search and read requests, no model call).
+		"/claudex/knowledge/:base/mcp": "knowledge-base MCP relay; it does not execute a model request",
 	}
 
 	unclassified := make([]string, 0)

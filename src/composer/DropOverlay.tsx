@@ -4,15 +4,15 @@ import { usePresence } from "../ui/usePresence";
 import type { FileDropScope, FileDropState } from "./useFileDrop";
 import "./drop-overlay.css";
 
-/** The panel exits over 200ms. */
+/** The panel exits over 200ms (live claude.ai bundle, 2026-10-14, shared-5-DQt42NbL.js). */
 const cardExitMs = 200;
 
 /**
- * A card shows a dashed accent frame off-target and a solid ring with an inner
- * glow on-target. A page covers the window with its surface at 90% and the
- * document pictogram over "Drop files here" (shared-9 t5, the composer's
- * enableScreenDrop). With attachments off nothing is shown: the drop zone is
- * not armed.
+ * A card shows a dashed accent frame off-target and a solid ring with an
+ * inner glow on-target (live claude.ai bundle, 2026-10-16, shared-9 b6). A
+ * page covers the window with its surface at 90% and the document pictogram
+ * over "Drop files here" (shared-9 t5, the composer's enableScreenDrop).
+ * With attachments off nothing is shown: the drop zone is not armed.
  */
 export function DropOverlay({
   scope,

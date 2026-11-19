@@ -80,6 +80,16 @@ export class BridgeState {
       case "conversation":
         this.conversations.set(event.conversation.id, event.conversation);
         break;
+      case "code-read-state": {
+        const conversation = this.conversations.get(event.conversationId);
+        if (conversation?.mode === "code" && (conversation.readStateRevision ?? 0) < event.readStateRevision)
+          this.conversations.set(conversation.id, {
+            ...conversation,
+            unread: event.unread,
+            readStateRevision: event.readStateRevision,
+          });
+        break;
+      }
       case "conversation-turn": {
         const merged = mergeConversationTurn(
           this.conversations.get(event.conversationId),

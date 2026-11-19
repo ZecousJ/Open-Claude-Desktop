@@ -4,10 +4,8 @@ import { EmptyState } from "../../ui/EmptyState";
 import { CardsSkeleton, Skeleton, SkeletonGroup } from "../../ui/Skeleton";
 import type { ProjectDetailRead } from "./project-detail-read";
 
-/**
- * Eight two-column-aware placeholders, then a recoverable failed-read view,
- * never the genuine-empty CTA.
- */
+/** c17beaa76-C1HHrhad:4177–4207: eight two-column-aware placeholders,
+ * then a recoverable failed-read view, never the genuine-empty CTA. */
 export function ProjectReadState({ read }: { read: ProjectCatalogRead }) {
   if (read.status === "failed" || read.failed)
     return (
@@ -23,7 +21,8 @@ export function ProjectReadState({ read }: { read: ProjectCatalogRead }) {
       </div>
     );
   if (read.status !== "pending") return null;
-  // The label is for screen readers only, as in the original.
+  // The label is for screen readers only, as in the original (live claude.ai
+  // bundle, 2026-10-16, shared-19).
   if (read.cached)
     return (
       <p className="sr-only" role="status">
@@ -37,10 +36,8 @@ export function ProjectReadState({ read }: { read: ProjectCatalogRead }) {
   );
 }
 
-/**
- * An unresolved project is its own page, never the Projects list or its
- * genuine-empty creation surface.
- */
+/** An unresolved project is its own page, never the Projects list or its
+ * genuine-empty creation surface. Source c71dee58b-CHt5Ijkk:10768–10892. */
 export function ProjectDetailReadState({
   read,
   onBack,

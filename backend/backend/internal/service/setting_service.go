@@ -321,21 +321,10 @@ func (s *SettingService) LoadForwardedClientIPSettings(ctx context.Context) erro
 		return fmt.Errorf("get forwarded client ip settings: %w", err)
 	}
 
-	enabled := s.cfg.Security.TrustForwardedIPForAPIKeyACL
-	headers := s.cfg.ForwardedClientIPSettings().Headers
-	storedValue, hasStoredValue := values[SettingKeyAPIKeyACLTrustForwardedIP]
-	if hasStoredValue {
-		enabled = storedValue == "true"
-	}
-
-	var headersErr error
-	if storedHeaders, ok := values[SettingKeyForwardedClientIPHeaders]; ok {
-		headers, headersErr = parseForwardedClientIPHeadersSetting(storedHeaders)
-		if headersErr != nil {
-			enabled = false
-			headers = []string{}
-			headersErr = fmt.Errorf("load forwarded client ip headers: %w", headersErr)
-		}
+	enabled, headers, headersErr := resolveForwardedClientIPSettings(s.cfg, values)
+	if !s.cfg.RunsControlPlane() {
+		s.cfg.SetForwardedClientIPSettings(enabled, headers)
+		return headersErr
 	}
 
 	updates := make(map[string]string)
@@ -352,6 +341,7 @@ func (s *SettingService) LoadForwardedClientIPSettings(ctx context.Context) erro
 		updates[settingKeyForwardedClientIPModeV2] = "true"
 		// Before this migration, new installations persisted false by default.
 		// Restore compatibility only when no trusted-proxy policy was configured.
+		_, hasStoredValue := values[SettingKeyAPIKeyACLTrustForwardedIP]
 		if headersErr == nil && hasStoredValue && !enabled && !s.cfg.Server.TrustedProxiesConfigured {
 			enabled = true
 			updates[SettingKeyAPIKeyACLTrustForwardedIP] = "true"
@@ -366,6 +356,21 @@ func (s *SettingService) LoadForwardedClientIPSettings(ctx context.Context) erro
 
 	s.cfg.SetForwardedClientIPSettings(enabled, headers)
 	return headersErr
+}
+
+func resolveForwardedClientIPSettings(cfg *config.Config, values map[string]string) (bool, []string, error) {
+	enabled := cfg.Security.TrustForwardedIPForAPIKeyACL
+	if storedValue, ok := values[SettingKeyAPIKeyACLTrustForwardedIP]; ok {
+		enabled = storedValue == "true"
+	}
+	if storedHeaders, ok := values[SettingKeyForwardedClientIPHeaders]; ok {
+		headers, err := parseForwardedClientIPHeadersSetting(storedHeaders)
+		if err != nil {
+			return false, []string{}, fmt.Errorf("load forwarded client ip headers: %w", err)
+		}
+		return enabled, headers, nil
+	}
+	return enabled, cfg.ForwardedClientIPSettings().Headers, nil
 }
 
 // GetAllSettings 获取所有系统设置

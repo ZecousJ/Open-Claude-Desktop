@@ -29,7 +29,9 @@
   max-width: none;
   padding: 0 24px 18px;
 }
-/* A Code session's transcript starts 48px under the top of its scroller. */
+/* A Code session's transcript starts 48px under the top of its scroller
+   (live claude.ai Code, 2026-10-21: the transcript's top spacer, 48px on
+   the web and the desktop alike). */
 .chat-main.code-main.has-conversation > .messages-scroll > .messages {
   padding-top: 48px;
 }
@@ -86,12 +88,13 @@
   padding: 1px 4px;
   font-size: 12px;
 }
-/* Code mode, as live claude.ai/code renders a reply: the reply's text is
-   text-100 #f0efec, and inline code is the markdown "chip" (bg-text-200/5
-   border-0.5 border-border-300 text-danger-000 rounded-[0.4rem] px-1 py-px
-   text-[0.9rem], read from its bundle and measured: rgb(236 126 126) on 5% of
-   the text grey, a 0.5px 10% white rim, 6.4px corners, 14.4px mono). The light
-   theme keeps its own rules (light-main.css). */
+/* Code mode, as live claude.ai/code renders a reply (owner, 2026-10-08:
+   ours read dark and grey): the reply's text is text-100 #f0efec, and
+   inline code is the markdown "chip" (bg-text-200/5 border-0.5
+   border-border-300 text-danger-000 rounded-[0.4rem] px-1 py-px
+   text-[0.9rem], read from its bundle and measured: rgb(236 126 126) on
+   5% of the text grey, a 0.5px 10% white rim, 6.4px corners, 14.4px mono).
+   The light theme keeps its own rules (light-main.css). */
 .mode-code .assistant-content .markdown {
   color: var(--text);
 }

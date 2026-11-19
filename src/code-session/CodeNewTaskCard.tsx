@@ -7,7 +7,7 @@ import { Button } from "../settings/controls";
 import { Dropdown } from "../settings/Dropdown";
 import "./code-new-task.css";
 
-/** Linked-session offer. */
+/** Linked-session offer (live claude.ai bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2.js). */
 export default function CodeNewTaskCard({
   conversation,
   onStarted,

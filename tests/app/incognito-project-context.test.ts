@@ -13,7 +13,7 @@ import { openPolicy } from "../../shared/client-policy";
 import type { Conversation, Project } from "../../shared/types";
 import { readSource } from "../support/read-source";
 
-function setup(space = false) {
+async function setup(space = false) {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "claudex-incognito-project-"),
   );
@@ -29,7 +29,7 @@ function setup(space = false) {
     createdAt: 1,
   };
   store.projects.push(project);
-  new ProjectKnowledgeStore(root, () => store.projects).add(project.id, [
+  await new ProjectKnowledgeStore(root, () => store.projects).add(project.id, [
     {
       name: "reference.txt",
       data: Buffer.from("Reference content stays a project file."),
@@ -75,6 +75,10 @@ function setup(space = false) {
   registerConversationHandlers((name, handler) => handlers.set(name, handler), {
     store,
     engine,
+    accountActivationIdentity: {},
+    accountRetiring: false,
+    activeAccount: { id: "fixture" },
+    accountGeneration: () => 1,
     selectedAttachments: new Map(),
     replyFeedback: {} as never,
     allowedFolder(folder?: string) {
@@ -127,7 +131,7 @@ function setup(space = false) {
 
 test("incognito project context retains instructions and knowledge without inheriting its local working folder", async () => {
   for (const space of [false, true]) {
-    const env = setup(space);
+    const env = await setup(space);
     try {
       const chat = await env.send({ incognito: true });
       assert.equal(chat.projectId, env.project.id);
@@ -155,7 +159,7 @@ test("incognito project context retains instructions and knowledge without inher
       assert.equal(JSON.stringify(turn).includes(env.project.cwd!), false);
       env.finish(chat.id);
       env.project.cwd = path.join(env.root, "changed-private-folder");
-      env.update(chat.id, env.project.id);
+      await env.update(chat.id, env.project.id);
       assert.equal(env.store.conversation(chat.id).cwd, env.managed);
       assert.ok(
         env.folders.every((folder) => !folder),
@@ -180,7 +184,7 @@ test("normal project chats, Code and explicit authorized folders retain their ex
     { mode: "code", incognito: true },
     { mode: "chat", incognito: true, explicit: true },
   ]) {
-    const env = setup();
+    const env = await setup();
     try {
       const { explicit, ...extra } = input;
       const own = path.join(env.root, "explicit-authorized-folder");

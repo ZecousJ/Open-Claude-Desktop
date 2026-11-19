@@ -5,6 +5,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { EventEmitter } from "node:events";
+import { MessageChannel } from "node:worker_threads";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { buildSync } from "esbuild";
 import { NativeExtensionHost } from "../../electron/connectors/native-extension-host";
@@ -13,6 +15,8 @@ import { Engine } from "../../electron/engine/engine";
 import { Store } from "../../electron/store/store";
 import { openPolicy } from "../../shared/client-policy";
 import type { AppContext } from "../../electron/app/app-context";
+import type { MessagePortMain } from "electron";
+import { createDirectMcpBridge } from "../../electron/official-ui/native/direct-mcp";
 
 async function fixture(t: test.TestContext, electron = false) {
   const executable = electron
@@ -180,6 +184,55 @@ for (const electron of [false, true])
     assert.match(JSON.stringify(logs), /redacted/);
   });
 
+test("saved extension secrets survive unchanged settings and rotation through the MCP port", async (t) => {
+  const env = await fixture(t);
+  const entry = env.store.settings.mcpServers.demo as { claudex_extension: string };
+  fs.writeFileSync(path.join(entry.claudex_extension, "server.cjs"), `
+const readline = require('node:readline');
+readline.createInterface({ input: process.stdin }).on('line', line => {
+  const request = JSON.parse(line);
+  if (request.method === 'initialize') process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { generation: process.env.PRIVATE === 'synthetic-secret' ? 'first' : process.env.PRIVATE === 'synthetic-secret-2' ? 'second' : 'unexpected' } }) + '\\n');
+});
+`);
+  const before = env.invoke("desktopExtension", "demo");
+  let saved = env.invoke("saveDesktopExtension", {
+    id: "demo", revision: before.revision, enabled: true,
+    values: { token: "synthetic-secret" },
+  });
+  saved = env.invoke("saveDesktopExtension", {
+    id: "demo", revision: saved.revision, enabled: true, values: {},
+  });
+  const bridge = createDirectMcpBridge({
+    mcpConfig: () => env.engine.mcpConfig(),
+    isCurrent: () => true,
+  });
+  t.after(() => bridge.dispose());
+  const initialize = async () => {
+    const { port1, port2 } = new MessageChannel();
+    const hostPort = new EventEmitter() as EventEmitter & MessagePortMain;
+    hostPort.postMessage = (value) => port1.postMessage(value);
+    hostPort.start = () => port1.start();
+    hostPort.close = () => port1.close();
+    port1.on("message", (data) => hostPort.emit("message", { data }));
+    port1.on("close", () => hostPort.emit("close"));
+    t.after(() => { port1.close(); port2.close(); });
+    assert.ok(!env.engine.mcpConfig().includes("synthetic-secret"));
+    bridge.connect("demo", hostPort);
+    const response = new Promise<unknown>((resolve, reject) => {
+      const timer = setTimeout(() => reject(Error("MCP initialization timed out")), 5000);
+      port2.once("message", (message) => { clearTimeout(timer); resolve(message); });
+    });
+    port2.postMessage({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} });
+    return response;
+  };
+  assert.deepEqual(await initialize(), { jsonrpc: "2.0", id: 1, result: { generation: "first" } });
+  env.invoke("saveDesktopExtension", {
+    id: "demo", revision: saved.revision, enabled: true,
+    values: { token: "synthetic-secret-2" },
+  });
+  assert.deepEqual(await initialize(), { jsonrpc: "2.0", id: 1, result: { generation: "second" } });
+});
+
 test("native uninstall waits for actual engine shutdown while blocking new sends, then removes only its owned package", async (t) => {
   const env = await fixture(t);
   const detail = env.invoke("desktopExtension", "demo");
@@ -312,4 +365,25 @@ test("changing another extension secret does not retire an unchanged server or g
   const current = JSON.parse((env.engine as any).mcpConfig());
   assert.deepEqual(current.demo, original);
   assert.ok(current.other);
+});
+
+
+test("extension maintenance refuses a running task without stopping its engine and releases the lock", async (t) => {
+  const { host, engine } = await fixture(t);
+  const ownBusy = engine.ownBusy;
+  const quiesceMcp = engine.quiesceMcp;
+  let stopped = false;
+  engine.ownBusy = () => true;
+  engine.quiesceMcp = async () => { stopped = true; };
+  await assert.rejects(host.prepareMaintenance("installing"), /current task/);
+  assert.equal(stopped, false);
+  assert.equal(engine.mcpMaintenance?.(), false);
+  engine.ownBusy = () => false;
+  const release = await host.prepareMaintenance("installing");
+  assert.equal(stopped, true);
+  assert.equal(engine.mcpMaintenance?.(), true);
+  release();
+  assert.equal(engine.mcpMaintenance?.(), false);
+  engine.ownBusy = ownBusy;
+  engine.quiesceMcp = quiesceMcp;
 });

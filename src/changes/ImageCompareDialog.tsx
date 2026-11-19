@@ -62,9 +62,9 @@ export function Figure({
 }
 
 /**
- * View image: an image file's version before the change beside the one after —
- * "Deleted" alone for a removed file, "Added" alone for a new one — each with
- * its size, in a 320px frame.
+ * View image (live claude.ai bundle, 2026-10-14): an image file's version
+ * before the change beside the one after — "Deleted" alone for a removed
+ * file, "Added" alone for a new one — each with its size, in a 320px frame.
  */
 export default function ImageCompareDialog({
   conversationId,

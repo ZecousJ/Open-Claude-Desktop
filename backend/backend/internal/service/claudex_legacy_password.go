@@ -1,6 +1,6 @@
 // CLAUDEX: ZMIG — Claudex file in the upstream service package.
 //
-// Users imported from another service keep their passlib/werkzeug password hash until
+// Users migrated from ZecousAI keep their passlib/werkzeug password hash until
 // their first successful sign-in (see internal/claudex/legacypw). Login calls
 // claudexUpgradeLegacyPasswordHash right after the password check so the hash
 // is replaced by the standard bcrypt that every other path writes.

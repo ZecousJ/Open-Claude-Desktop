@@ -44,6 +44,7 @@ export const logLimits = { lines: 2000, lineChars: 2048 } as const;
  */
 export class LogBuffer {
   private lines: string[] = [];
+  private entries: { line: string; stream: string; timestamp: string }[] = [];
   private partial = new Map<string, string>();
   private decoders = new Map<string, StringDecoder>();
   constructor(private readonly max: number = logLimits.lines) {}
@@ -58,22 +59,22 @@ export class LogBuffer {
       (typeof chunk === "string" ? chunk : decoder.write(chunk));
     const parts = text.split("\n");
     this.partial.set(stream, parts.pop() ?? "");
-    for (const line of parts) this.push(line);
+    for (const line of parts) this.push(line, stream);
     const rest = this.partial.get(stream) ?? "";
     // A line that never ends (a progress bar) still stays bounded.
     if (rest.length > logLimits.lineChars * 4) {
-      this.push(rest);
+      this.push(rest, stream);
       this.partial.set(stream, "");
     }
   }
   /** A line from Claudex itself ("Exited with code 1"). */
   note(line: string) {
     this.flush();
-    this.push(line);
+    this.push(line, "system");
   }
   flush() {
     for (const [stream, rest] of this.partial) {
-      if (rest) this.push(rest);
+      if (rest) this.push(rest, stream);
       this.partial.set(stream, "");
     }
   }
@@ -88,13 +89,23 @@ export class LogBuffer {
     let text = line.endsWith("\r") ? line.slice(0, -1) : line;
     const cr = text.lastIndexOf("\r");
     if (cr >= 0) text = text.slice(cr + 1);
-    text = stripAnsi(text);
+    text = stripAnsi(text).replaceAll("\0", "");
     return text.length > logLimits.lineChars
       ? text.slice(0, logLimits.lineChars) + "…"
       : text;
   }
-  private push(line: string) {
+  records(count = this.max) {
+    return this.entries.slice(-count).map((row) => ({ ...row }));
+  }
+  private push(line: string, stream: string) {
     this.lines.push(this.clean(line));
+    this.entries.push({
+      line: this.clean(line),
+      stream,
+      timestamp: new Date().toISOString(),
+    });
+    if (this.entries.length > this.max)
+      this.entries.splice(0, this.entries.length - this.max);
     if (this.lines.length > this.max)
       this.lines.splice(0, this.lines.length - this.max);
   }

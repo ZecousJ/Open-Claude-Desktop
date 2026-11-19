@@ -8,7 +8,7 @@ import { LinearMark } from "./LinearMark";
 import "../github/import-issue.css";
 import "./linear.css";
 
-// Shared issue picker.
+// Shared issue picker (live claude.ai bundle, 2026-10-14, cc43287c9-79FKhdho.js).
 export default function ImportLinearIssueDialog({
   onSelect,
   onClose,

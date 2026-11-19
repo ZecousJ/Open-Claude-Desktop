@@ -1,8 +1,9 @@
 /**
- * Plan usage as the Code footer's ring and its popover show it: which window
- * the ring follows, how full reads as a colour, when a window resets, and token
- * counts as the usage report writes them. Pure, so the wording is unit tested;
- * the ring loads it with the footer, so it stays small.
+ * Plan usage as the Code footer's ring and its popover show it (live
+ * claude.ai bundle, 2026-10-12): which window the ring follows, how full
+ * reads as a colour, when a window resets, and token counts as the usage
+ * report writes them. Pure, so the wording is unit tested; the ring loads
+ * it with the footer, so it stays small.
  */
 import type { PlanUsage, PlanUsageWindow } from "../../shared/usage-api";
 import { currentLocale, formatText } from "../i18n";

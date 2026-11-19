@@ -54,10 +54,12 @@ export interface BrowserSettingsActions {
 }
 
 /**
- * The browser settings menu under ⋮: Open in <default browser> and Save
- * screenshot (greyed without a page), Open HTML file…; Open links in built-in
- * browser, Auto-verify changes, Manage allowed sites…; the Cookies group with
- * Keep cookies and Clear browsing data in red, and Import cookies…. A switch
+ * The browser settings menu under ⋮ (R-Code-Browser-settings菜单):
+ * Open in <default browser> and Save screenshot (greyed without a page),
+ * Open HTML file…; Open links in built-in browser, Auto-verify changes,
+ * Manage allowed sites…; the Cookies group with Keep cookies and Clear
+ * browsing data in red, and Import cookies… (live claude.ai bundle,
+ * 2026-10-14, ce22efec4-BhQAQTdP.js). A switch
  * whose preference this build does not have is left out, and the
  * Browser-tools-only rows need Browser tools.
  */

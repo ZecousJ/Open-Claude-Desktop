@@ -23,16 +23,17 @@ import {
 } from "./storage-usage";
 
 /**
- * Settings → System → Storage → Free up space… and Clean up inactive sessions…:
- * delete the conversations with no activity for 30, 60 or 90 days, with what
- * only they use. A preview lists them and hands out a token; running checks
- * each one again and leaves alone any that became active, got pinned, started
- * running or whose history changed on this computer since (copied or restored).
- * The person's own folders are never touched: Cowork's chosen folders, Code's
+ * Settings → System → Storage → Free up space… and Clean up inactive
+ * sessions… (live claude.ai bundle, 2026-10-12): delete the conversations
+ * with no activity for 30, 60 or 90 days, with what only they use. A
+ * preview lists them and hands out a token; running checks each one again
+ * and leaves alone any that became active, got pinned, started running or
+ * whose history changed on this computer since (copied or restored). The
+ * person's own folders are never touched: Cowork's chosen folders, Code's
  * project folders and the shared workspace stay as they are.
  */
 
-/** A preview can be confirmed for ten minutes. */
+/** A preview can be confirmed for ten minutes (F5i in the live bundle). */
 export const planLifetimeMs = 10 * 60 * 1000;
 /** Titles the preview lists, and how long each may be (I5i, L5i). */
 const exampleCount = 5;
@@ -72,7 +73,7 @@ export function exampleTitle(title: string): string {
     : text;
 }
 
-/** A failure because another program has the files open. */
+/** A failure because another program has the files open (j5i in the live bundle). */
 export const inUseMarker = "[conversation-files-in-use]";
 const inUseCodes = new Set(["EBUSY", "EPERM", "EACCES"]);
 

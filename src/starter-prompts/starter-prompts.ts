@@ -35,15 +35,15 @@ export interface StarterCategory {
   isHidden?: boolean;
 }
 
-// The three templates a starter idea is sent in; its label goes in
-// lowercased.
+// The three templates, including the lowercased label, follow the live
+// claude.ai bundle, 2026-10-14, c20089c17-CPX93L8m.js:17.
 export const starterPromptTemplates = {
   connector:
-    "Hey Claudex, could you {prompt}? Use the connectors that help, and start once you have what you need.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.",
+    "Hey Claudex, could you {prompt}? Use any connector that would be helpful, and get started once you’ve gathered enough info.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.",
   research:
-    "Hey Claudex, could you help me {prompt}? Start researching straight away with any tools that help, and tell me if you need more context.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.",
+    "Hey Claudex, could you help me {prompt}? Start researching right away, and use any tools you think would help. Let me know if you need any other context.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.",
   default:
-    "Hi Claudex! Could you {prompt}? If something important is missing, ask me one or two questions first, and tell me if a file or more context would help. Use any tools you have, such as web search or connected files, when they help.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page. Thanks!",
+    "Hi Claudex! Could you {prompt}? If you need more information from me, ask me 1-2 key questions right away. If you think I should give you more context or upload anything to help you do a better job, let me know. Use any tools you have access to—like Google Drive, web search, etc.—if they’ll help.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive. Thanks for your help!",
 };
 
 export function starterPromptTemplate(category: StarterCategory) {
@@ -58,7 +58,8 @@ export function starterTimeOfDay(hour: number): StarterTime {
   return hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 }
 
-// Seeded Fisher–Yates.
+// Seeded Fisher–Yates (live claude.ai bundle, 2026-10-14,
+// c7967290f-C-GWCv_D.js:128; c00a93a61-CqDD2kKQ.js:51).
 function starterRandom(seed: number) {
   let state = seed >>> 0;
   return () => {
@@ -125,8 +126,9 @@ export const homeChipOrder = [
 ] as const;
 const homeChipFill = ["career_chat", "life_stuff", "claudes_choice"] as const;
 
-// Keep the selector's five-chip arithmetic, deduplicating Research rather than
-// truncating the result.
+// Keep the selector's five-chip arithmetic, deduplicating Research rather
+// than truncating the result (live claude.ai bundle, 2026-10-14,
+// cb7829751-IdU-cvhU.js:252–299).
 export function homeStarterCategories(
   categories: readonly StarterCategory[] = starterCategories,
   options: StarterOptions = {},
@@ -158,7 +160,8 @@ export function homeStarterCategories(
 }
 
 // The home removes Research before rendering; its connector renderer orders
-// Drive, Calendar, Gmail and reserves their slots before fill chips.
+// Drive, Calendar, Gmail and reserves their slots before fill chips
+// (live claude.ai bundle, 2026-10-14, cb7829751-IdU-cvhU.js:314–412, 1726, 1814).
 export function visibleStarterCategories(
   categories: readonly StarterCategory[],
 ) {

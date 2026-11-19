@@ -16,10 +16,11 @@ const linkOrigins = () =>
 const addressWindows = new Map<string, number>();
 
 /**
- * The address's prompt (`/new?q=…`) on the Cowork home: a quick task window
- * with the words, marked as coming from outside, while there is room; the same
- * words again raise their window. Returns false when there is no room, and the
- * words go into the composer instead.
+ * The address's prompt (`/new?q=…`) on the Cowork home (live claude.ai
+ * bundle, 2026-10-12: shared-20, the "url" source): a quick task window
+ * with the words, marked as coming from outside, while there is room; the
+ * same words again raise their window. Returns false when there is no room,
+ * and the words go into the composer instead.
  */
 export function openAddressPrompt(prompt: string): boolean {
   const earlier = addressWindows.get(prompt);
@@ -39,16 +40,18 @@ export function openAddressPrompt(prompt: string): boolean {
   return true;
 }
 
-/** A link clicked twice in quick succession raises its window. */
+/** A link clicked twice in quick succession raises its window (live bundle: 5s). */
 const repeatMs = 5000;
 const recent = new Map<string, { at: number; windowId: number }>();
 
 /**
- * A prompt link clicked in an artifact opens a quick task window with its
- * words, marked as coming from outside, instead of leaving the page: on the
- * Cowork page, not incognito, only right after a click, and while there is
- * room. The same link again within five seconds raises its window. Returns
- * whether the link was taken; otherwise it opens as any other link.
+ * A prompt link clicked in an artifact (`/new?q=…&composer=mini`, live
+ * claude.ai bundle, 2026-10-12: shared-15 iN) opens a quick task window
+ * with its words, marked as coming from outside, instead of leaving the
+ * page: on the Cowork page, not incognito, only right after a click, and
+ * while there is room. The same link again within five seconds raises its
+ * window. Returns whether the link was taken; otherwise it opens as any
+ * other link.
  */
 export function takePromptLink(
   href: string,

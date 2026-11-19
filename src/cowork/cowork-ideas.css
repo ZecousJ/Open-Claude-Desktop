@@ -1,10 +1,10 @@
 /*
- * The Cowork home's ideas (CoworkIdeas.tsx), loaded with them. The block, rows,
- * illustrations and their colours are the measured ones the home had
- * (claude-cowork-home-main-001, chat-home-mode-reference-001; moved here from
- * styles/92-reference-pages.css, styles/93-reference-responsive.css and
- * chat-home.css). The shuffle heading and "Customize with plugins" follow the
- * live Cowork suggestions.
+ * The Cowork home's ideas (CoworkIdeas.tsx), loaded with them. The block,
+ * rows, illustrations and their colours are the measured ones the home had
+ * (claude-cowork-home-main-001, chat-home-mode-reference-001; moved here
+ * from styles/92-reference-pages.css, styles/93-reference-responsive.css
+ * and chat-home.css). The shuffle heading and "Customize with plugins"
+ * follow the live Cowork suggestions (live claude.ai bundle, 2026-10-12).
  */
 .cowork-ideas {
   width: 100%;
@@ -53,8 +53,9 @@
 .cowork-ideas-shuffle:hover {
   color: var(--text);
 }
-/* The X at the heading's right and the caret at a row's right show only while
-   the ideas are pointed at or focused. */
+/* The X at the heading's right and the caret at a row's right show only
+   while the ideas are pointed at or focused (desktop bundle 2.31226.1; the
+   live X is the same). */
 .cowork-ideas-hide {
   display: grid;
   place-items: center;
@@ -113,9 +114,10 @@
   visibility: visible;
 }
 
-/* Under the rows, the live ghost "Customize with plugins" button (4px below;
-   its text 4px right of the rows' content, as live's 12px button padding sits
-   beside the rows' 8px). Size and fill: the closest Claudex ghost button. */
+/* Under the rows, the live ghost "Customize with plugins" button (4px
+   below; its text 4px right of the rows' content, as live's 12px button
+   padding sits beside the rows' 8px). Size and fill: the closest Claudex
+   ghost button (security-findings.css .sec-button). */
 .cowork-ideas-plugins {
   min-height: 32px;
   margin: 4px 0 0 14.5px;
@@ -130,11 +132,49 @@
   }
 }
 
-/* Cowork idea glyphs (see CoworkIdeaIcons.tsx). */
+/* Cowork idea illustrations (see CoworkIdeaIcons.tsx). */
 .cowork-idea > .cowork-idea-icon {
   flex: 0 0 28px;
   margin: 0 -3px 0 -0.5px;
-  color: var(--text-secondary, inherit);
+  color: inherit;
+  transform: translateY(0.75px);
+}
+.cowork-idea-icon .idea-line {
+  stroke: #4f4f4f;
+}
+.cowork-idea-icon .idea-edge {
+  stroke: #565656;
+}
+.cowork-idea-icon .idea-soft {
+  stroke: #383838;
+}
+.cowork-idea-icon .idea-faint {
+  stroke: #2d2d2d;
+}
+.cowork-idea-icon .idea-fill {
+  fill: #424242;
+}
+.cowork-idea-icon .idea-cutout {
+  fill: var(--bg);
+}
+.cowork-idea-icon .idea-ink {
+  stroke: #c4c4c4;
+}
+:root[data-theme="light"] .cowork-idea-icon .idea-line {
+  stroke: #b4b1a9;
+}
+:root[data-theme="light"] .cowork-idea-icon .idea-edge {
+  stroke: #a9a69e;
+}
+:root[data-theme="light"] .cowork-idea-icon .idea-soft,
+:root[data-theme="light"] .cowork-idea-icon .idea-faint {
+  stroke: #cfccc4;
+}
+:root[data-theme="light"] .cowork-idea-icon .idea-fill {
+  fill: #dedbd3;
+}
+:root[data-theme="light"] .cowork-idea-icon .idea-ink {
+  stroke: #5f5c55;
 }
 
 /* Switching to Cowork: the Ideas slide down into place, from 12.5px high,

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 
 async function withTimer(
   check: (timers: { callback(): void; delay: number }[]) => Promise<void>,

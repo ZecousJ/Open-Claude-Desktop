@@ -7,7 +7,7 @@ export const shipItLabel = `${claudexBundleId}.ShipIt`;
 export const shipItDirectory = (home: string) =>
   path.join(home, "Library", "Caches", shipItLabel);
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, S$r / A$r).
 export function shipItStderr(home: string) {
   const dir = shipItDirectory(home);
   try {

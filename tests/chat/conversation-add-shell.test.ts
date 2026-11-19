@@ -187,7 +187,7 @@ test("native Add keeps the measured shell and reserves a 20px folder font glyph 
     "app host-desktop mode-chat",
   );
   const root = document.querySelector(".composer-add-native-chat")!;
-  const icon = root.querySelector('[data-icon="FolderPlus"]')!;
+  const icon = root.querySelector('[data-anthropicon="FolderPlus"]')!;
   assert.ok(icon);
   for (const sources of [
     [addCSS, nativeCSS],

@@ -204,7 +204,7 @@ func OpenableURL(u string) bool {
 // data (every op of v1). Such requests must carry userId, and Go serves
 // them only for a user it currently routes to the requesting runner.
 func IsUserOp(op string) bool {
-	return strings.HasPrefix(op, "store.") || strings.HasPrefix(op, "key.") || strings.HasPrefix(op, "location.") || strings.HasPrefix(op, "github.") || strings.HasPrefix(op, "routine.") || strings.HasPrefix(op, "device.")
+	return strings.HasPrefix(op, "store.") || strings.HasPrefix(op, "key.") || strings.HasPrefix(op, "location.") || strings.HasPrefix(op, "github.") || strings.HasPrefix(op, "routine.") || strings.HasPrefix(op, "device.") || strings.HasPrefix(op, "run.")
 }
 
 func validTarget(t string) bool { return t == "same-tab" || t == "new-tab" }
@@ -370,6 +370,13 @@ type RunnerFrame struct {
 	Engines  *int              `json:"engines,omitempty"`
 	Users    *int              `json:"users,omitempty"`
 	RSSMb    *int              `json:"rssMb,omitempty"`
+
+	Offset       *int      `json:"offset,omitempty"`
+	TotalBytes   int       `json:"totalBytes,omitempty"`
+	DecodedBytes int       `json:"decodedBytes,omitempty"`
+	Encoding     string    `json:"encoding,omitempty"`
+	Data         chunkData `json:"data,omitempty"`
+
 	// HubSeq (not on the wire): the user's last event number when Go took
 	// this result off the link. Events and results arrive in one ordered
 	// stream, so every event the runner sent before the result is at or
@@ -377,10 +384,35 @@ type RunnerFrame struct {
 	HubSeq int64 `json:"-"`
 }
 
+type chunkData []byte
+
+func (d *chunkData) UnmarshalJSON(raw []byte) error {
+	if len(raw) == 0 || raw[0] != '"' {
+		return fail("chunk.data must be a base64 string")
+	}
+	return json.Unmarshal(raw, (*[]byte)(d))
+}
+
 // DecodeRunnerFrame reads and validates a runner frame.
 func DecodeRunnerFrame(data []byte) (RunnerFrame, error) {
+	return decodeRunnerFrame(data, LinkFrameBytes)
+}
+
+// DecodeRunnerMessage reads the result or event reconstructed from chunk frames.
+func DecodeRunnerMessage(data []byte) (RunnerFrame, error) {
+	f, err := decodeRunnerFrame(data, LinkMessageBytes)
+	if err != nil {
+		return f, err
+	}
+	if f.T != "result" && f.T != "event" {
+		return f, fail("chunked frame must be a result or event")
+	}
+	return f, nil
+}
+
+func decodeRunnerFrame(data []byte, maxBytes int) (RunnerFrame, error) {
 	var f RunnerFrame
-	t, err := decodeFrame(data, LinkFrameBytes, &f)
+	t, err := decodeFrame(data, maxBytes, &f)
 	if err != nil {
 		return f, err
 	}
@@ -431,6 +463,24 @@ func DecodeRunnerFrame(data []byte) (RunnerFrame, error) {
 			*f.Engines < 0 || *f.Users < 0 || *f.RSSMb < 0 {
 			return f, fail("load needs engines, users and rssMb")
 		}
+	case "chunk":
+		if f.TotalBytes < 1 || f.TotalBytes > LinkMessageBytes ||
+			f.DecodedBytes < 1 || f.DecodedBytes > LinkMessageBytes {
+			return f, fail("chunk needs valid totalBytes and decodedBytes")
+		}
+		if f.Offset == nil || *f.Offset < 0 || *f.Offset >= f.TotalBytes ||
+			len(f.Data) == 0 || len(f.Data) > runnerChunkBytes || len(f.Data) > f.TotalBytes-*f.Offset {
+			return f, fail("chunk needs a valid offset and data")
+		}
+		switch f.Encoding {
+		case "gzip":
+		case "identity":
+			if f.DecodedBytes != f.TotalBytes {
+				return f, fail("identity chunk sizes differ")
+			}
+		default:
+			return f, fail("unknown chunk encoding %q", f.Encoding)
+		}
 	case "ping", "pong":
 	default:
 		return f, fail("unknown runner frame %q", t)
@@ -461,29 +511,38 @@ func validateMethods(methods []string) error {
 // LinkUser is who a relayed call belongs to. AccessToken is the user's
 // current access token for the runner's Sub2API user calls (memory only).
 type LinkUser struct {
-	ID          int64  `json:"id"`
-	TabID       string `json:"tabId,omitempty"`
-	AccessToken string `json:"accessToken"`
+	ID          int64           `json:"id"`
+	TabID       string          `json:"tabId,omitempty"`
+	AccessToken string          `json:"accessToken"`
+	WebSession  *LinkWebSession `json:"webSession,omitempty"`
+}
+
+// LinkWebSession identifies the browser session that authorized a capability.
+type LinkWebSession struct {
+	ID       string `json:"id"`
+	IssuedAt int64  `json:"issuedAt"` // Unix seconds
 }
 
 // GoFrame is a frame Go sends to claudex-runner.
 type GoFrame struct {
-	T           string          `json:"t"`
-	V           int             `json:"v,omitempty"`
-	RunnerID    string          `json:"runnerId,omitempty"`
-	HeartbeatMs int64           `json:"heartbeatMs,omitempty"`
-	ID          string          `json:"id,omitempty"`
-	User        *LinkUser       `json:"user,omitempty"`
-	Method      string          `json:"method,omitempty"`
-	Args        json.RawMessage `json:"args,omitempty"`
-	DeadlineMs  int64           `json:"deadlineMs,omitempty"`
-	OK          *bool           `json:"ok,omitempty"`
-	Value       json.RawMessage `json:"value,omitempty"`
-	Error       *RPCError       `json:"error,omitempty"`
-	UserID      int64           `json:"userId,omitempty"`
-	Tabs        *int            `json:"tabs,omitempty"`
-	Focused     *bool           `json:"focused,omitempty"`
-	Reason      string          `json:"reason,omitempty"`
+	T               string          `json:"t"`
+	V               int             `json:"v,omitempty"`
+	RunnerID        string          `json:"runnerId,omitempty"`
+	HeartbeatMs     int64           `json:"heartbeatMs,omitempty"`
+	CodeRunCapacity bool            `json:"codeRunCapacity,omitempty"`
+	ID              string          `json:"id,omitempty"`
+	User            *LinkUser       `json:"user,omitempty"`
+	Method          string          `json:"method,omitempty"`
+	Args            json.RawMessage `json:"args,omitempty"`
+	DeadlineMs      int64           `json:"deadlineMs,omitempty"`
+	OK              *bool           `json:"ok,omitempty"`
+	Value           json.RawMessage `json:"value,omitempty"`
+	Error           *RPCError       `json:"error,omitempty"`
+	UserID          int64           `json:"userId,omitempty"`
+	Tabs            *int            `json:"tabs,omitempty"`
+	Focused         *bool           `json:"focused,omitempty"`
+	DetachedTabID   string          `json:"detachedTabId,omitempty"`
+	Reason          string          `json:"reason,omitempty"`
 }
 
 // Reasons of a user-signed-out frame.
@@ -525,6 +584,10 @@ func (f GoFrame) Validate() error {
 			return fail("call.user.tabId has the wrong shape")
 		}
 		return requireArray(f.Args, "args")
+	case "code-run-expired":
+		if !idPattern.MatchString(f.ID) || f.UserID < 1 {
+			return fail("code-run-expired needs id and userId")
+		}
 	case "cancel":
 		if !idPattern.MatchString(f.ID) {
 			return fail("cancel needs id")
@@ -537,6 +600,9 @@ func (f GoFrame) Validate() error {
 	case "presence":
 		if f.UserID < 1 || f.Tabs == nil || *f.Tabs < 0 || f.Focused == nil {
 			return fail("presence needs userId, tabs and focused")
+		}
+		if f.DetachedTabID != "" && !ValidTabID(f.DetachedTabID) {
+			return fail("presence.detachedTabId has the wrong shape")
 		}
 	case "user-signed-out":
 		if f.UserID < 1 {

@@ -463,6 +463,47 @@ func migrationFiles(fsys fs.FS) ([]string, error) {
 	return files, nil
 }
 
+func verifyAppliedMigrations(ctx context.Context, db *sql.DB, fsys fs.FS) error {
+	files, err := migrationFiles(fsys)
+	if err != nil {
+		return err
+	}
+	rows, err := db.QueryContext(ctx, "SELECT filename, checksum FROM schema_migrations")
+	if err != nil {
+		return fmt.Errorf("read applied migrations: %w", err)
+	}
+	defer rows.Close()
+	applied := make(map[string]string, len(files))
+	for rows.Next() {
+		var name, checksum string
+		if err := rows.Scan(&name, &checksum); err != nil {
+			return err
+		}
+		applied[name] = checksum
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for _, name := range files {
+		content, err := fs.ReadFile(fsys, name)
+		if err != nil {
+			return err
+		}
+		if body := strings.TrimSpace(string(content)); body != "" {
+			sum := sha256.Sum256([]byte(body))
+			checksum := hex.EncodeToString(sum[:])
+			stored, ok := applied[name]
+			if !ok {
+				return fmt.Errorf("migration %s must be applied by the full server", name)
+			}
+			if stored != checksum && !isMigrationChecksumCompatible(name, stored, checksum) {
+				return fmt.Errorf("migration %s checksum mismatch", name)
+			}
+		}
+	}
+	return nil
+}
+
 func latestMigrationBaseline(fsys fs.FS) (string, string, string, error) {
 	files, err := migrationFiles(fsys)
 	if err != nil {

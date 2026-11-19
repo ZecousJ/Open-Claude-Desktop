@@ -3,7 +3,9 @@ import { Spinner } from "../ui/Spinner";
 import "./busy-label.css";
 
 /**
- * A button's content while it works. The label and the spinner share one grid
+ * A button's content while it works (live claude.ai bundle, 2026-10-16,
+ * shared-frame: the label stays and is made opacity-0 under a spinner; the
+ * busy label is only read aloud). The label and the spinner share one grid
  * cell, so the button keeps its width.
  */
 export function BusyLabel({

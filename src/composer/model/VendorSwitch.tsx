@@ -9,9 +9,9 @@ const ProviderLogo = lazyPiece(
 
 /**
  * The makers' switch at the top of the model menu: their marks alone on a
- * track, the chosen one on a thumb that slides to it. Drawn like the composer's
- * Chat/Cowork switch: a white 5% track 1px around 26px segments, the thumb
- * white 10% with a 1px white 10% ring.
+ * track (owner, 2026-10-03; the name is the button's label and tooltip), the chosen one on a thumb that slides to it. Drawn like the
+ * composer's Chat/Cowork switch (live claude.ai): a white 5% track 1px
+ * around 26px segments, the thumb white 10% with a 1px white 10% ring.
  */
 export function VendorSwitch({
   vendors,

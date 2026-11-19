@@ -6,12 +6,12 @@ import type { Project } from "../../shared/types";
 import { importableChatProjects } from "../../shared/project-import";
 import { api } from "../desktop-api";
 import { formatText, t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { MemoryIcon } from "../ui/SettingsIcons";
 import { WithTooltip } from "../ui/Tooltip";
 import type { ProjectCreation } from "./ProjectCreateDialog";
 
-/** Multi-project import. */
+/** Multi-project import (live claude.ai bundle, 2026-10-14, c17beaa76:1095–1391). */
 export function ProjectImportForm({
   project,
   projects,
@@ -116,7 +116,7 @@ export function ProjectImportForm({
             <label htmlFor={`${listId}-input`}>{t("Projects from Chat")}</label>
             {selected.map((value) => (
               <div className="prj-import-selected" key={value.id}>
-                <AppIcon name="Projects" />
+                <Anthropicon name="Projects" />
                 <span>{value.name}</span>
                 <button
                   type="button"
@@ -202,7 +202,7 @@ export function ProjectImportForm({
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => select(value)}
                       >
-                        <AppIcon name="Projects" />
+                        <Anthropicon name="Projects" />
                         <span>{value.name}</span>
                       </button>
                     ))

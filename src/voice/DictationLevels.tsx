@@ -7,7 +7,7 @@ export function frequencyLevel(data: Uint8Array) {
   return data.length ? Math.min(1, sum / data.length / 128) : 0;
 }
 
-/** Microphone menu meter. */
+/** Microphone menu meter (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN). */
 export function DictationLevels({ stream }: { stream?: MediaStream }) {
   const fill = useRef<HTMLSpanElement>(null);
   useEffect(() => {

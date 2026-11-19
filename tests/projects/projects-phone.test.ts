@@ -20,6 +20,7 @@ const css = (file: string) =>
   fs.readFileSync(new URL(`../../src/${file}`, import.meta.url), "utf8");
 const foundation = [
   "styles/00-foundation.css",
+  "ui/anthropicon.css",
   "styles/20-workspace.css",
   "styles/92-reference-pages.css",
   "home/chat-home.css",

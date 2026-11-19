@@ -1,4 +1,4 @@
-// Failure headings.
+// Failure headings (live claude.ai bundle, 2026-10-14, c99ed1520-PqlzH3ps.js).
 export function marketplaceFailure(error: string): string {
   if (
     /git.*(?:not found|ENOENT|not installed|is required)|spawn git ENOENT/i.test(

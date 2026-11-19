@@ -1,13 +1,14 @@
 /**
- * The account step after sign-up, after the original's "Let’s create your
- * account": the name Claudex calls the person, their birthday with the age
- * gate, and their acceptance of the Claudex Terms of Service. The service keeps
- * them (GET/PUT /api/v1/claudex/account-profile,
- * backend/backend/internal/claudex/profile); an account whose accepted terms
- * are not the current ones sees the step before the app.
+ * The account step after sign-up (owner, 2026-10-12), after the original's
+ * "Let’s create your account" (live claude.ai bundle, 2026-10-12): the name
+ * Claudex calls the person, their birthday with the age gate, and their
+ * acceptance of the Claudex Terms of Service. The service keeps them
+ * (GET/PUT /api/v1/claudex/account-profile,
+ * backend/backend/internal/claudex/profile); an account whose accepted
+ * terms are not the current ones sees the step before the app.
  *
- * The desktop asks from the main process with the session's token, the web app
- * from the page; both read the answer with `accountProfileFrom`.
+ * The desktop asks from the main process with the session's token, the web
+ * app from the page; both read the answer with `accountProfileFrom`.
  */
 import { bridgeMethods } from "./bridge-methods";
 import type { ActionVerificationResult } from "./action-verification";
@@ -22,7 +23,7 @@ export const termsPath = "/legal/terms";
 export const acceptableUseAnchor = "acceptable-use";
 /** The service's route, under the site root. */
 export const accountProfilePath = "/api/v1/claudex/account-profile";
-/** The original's minimum age when the service names none. */
+/** The original's minimum age when the service names none (live claude.ai bundle, 2026-10-12). */
 export const defaultMinimumAge = 18;
 
 export interface SignUpProfile {
@@ -103,7 +104,7 @@ export function accountProfileFrom(
   };
 }
 
-/** The original's earliest birthday. */
+/** The original's earliest birthday (live claude.ai bundle, 2026-10-12). */
 export const earliestBirthdate = "1900-01-01";
 
 /** Today as YYYY-MM-DD in the person's own time zone. */
@@ -114,7 +115,8 @@ export function isoToday(now = new Date()): string {
 
 /**
  * A birthday the field can hold: a real YYYY-MM-DD date from 1900-01-01 to
- * today.
+ * today (live claude.ai bundle, 2026-10-12: anything else is "Enter a valid
+ * date").
  */
 export function validBirthdate(value: string, today = isoToday()): boolean {
   if (!isoDate.test(value)) return false;

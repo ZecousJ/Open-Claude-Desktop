@@ -12,7 +12,7 @@ import {
   Check,
   EllipsisVertical,
 } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { PageSearchIcon, SearchIcon } from "../../ui/icons";
 import {
   rangeSelection,
@@ -238,7 +238,7 @@ export function historyPageView(kit: HistoryPageViewKit) {
                   )}
                   onClick={() => onMoveToProject(actions.movable, settle)}
                 >
-                  <AppIcon name="Projects" />
+                  <Anthropicon name="Projects" />
                 </button>
               )}
               <button
@@ -265,7 +265,8 @@ export function historyPageView(kit: HistoryPageViewKit) {
                 <Trash2 size={16} />
               </button>
             </div>
-            {/* A ghost X after the actions, not a main button. */}
+            {/* A ghost X after the actions, not a main button (live bundle
+                2026-10-16, c03be4f3b: iconOnly X ghost, aria-label Exit selection). */}
             <button
               type="button"
               className="collection-icon"
@@ -315,8 +316,9 @@ export function historyPageView(kit: HistoryPageViewKit) {
                 )}
               </label>
             )}
-            {/* Sort by: there while the search is open, greyed until something
-               is typed; Type or Date. */}
+            {/* Sort by (live claude.ai bundle, 2026-10-21, c03be4f3b: the
+                search field's expanded actions): there while the search is
+                open, greyed until something is typed; Type or Date. */}
             {query !== null && (
               <SearchSortButton
                 disabled={!query.trim()}
@@ -324,8 +326,8 @@ export function historyPageView(kit: HistoryPageViewKit) {
                 onChange={setSearchSort}
               />
             )}
-            {/* Beside the search field, not instead of it: the live branch only
-               asks for rows. */}
+            {/* Beside the search field, not instead of it: the live branch
+                only asks for rows (c03be4f3b: Mr.length > 0). */}
             {rows.length > 0 && (
               <button
                 type="button"

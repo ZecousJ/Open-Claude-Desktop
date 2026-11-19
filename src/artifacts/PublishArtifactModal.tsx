@@ -18,20 +18,23 @@ import {
 const ArtifactEditRequests = lazyPiece(() => import("./ArtifactEditRequests"));
 
 /**
- * Publish artifact. Before publishing: what publishing means, the artifact's
- * title, the usage note and "Publish & copy link". Published: the public link
- * of this version with Copy link, how many versions have links, and Unpublish,
+ * Publish artifact (live claude.ai bundle, 2026-10-12: the Publish modal
+ * the artifact pane's Publish button and the file panel's Publish artifact
+ * open). Before publishing: what publishing means, the artifact's title,
+ * the usage note and "Publish & copy link". Published: the public link of
+ * this version with Copy link, how many versions have links, and Unpublish,
  * which removes every version's link and closes the dialog. Each version
  * published keeps a link of its own on the Claudex service
- * (electron/hosted-shares.ts). A published version also offers Get embed code
- * when the service serves embeds: the allowed domains and the iframe code.
- * Screenshots are uploaded with the published version's snapshot.
+ * (electron/hosted-shares.ts). A published version also offers Get embed
+ * code when the service serves embeds: the allowed domains and the iframe
+ * code. Screenshots are uploaded with the published version's snapshot
+ * (live claude.ai bundle, 2026-10-14, c147e6f61-ChCPk4qx.js).
  */
 
 /** Where the dialog was opened: the file panel keeps "Publish artifact" as its title. */
 export type PublishSurface = "artifact" | "file";
 
-/** The dialog's title. */
+/** The dialog's title (live claude.ai bundle, 2026-10-12). */
 export function publishTitle(published: boolean, surface: PublishSurface) {
   return published && surface === "artifact"
     ? "Artifact published"
@@ -104,10 +107,10 @@ export function UsageNote({
 }
 
 /**
- * What Allowed domains shows and does for the text typed: while the field is
- * being edited nothing is checked; once it is left, the domains the check
- * refuses are named, and a list that differs from the saved one (as a set) and
- * has none of them is saved.
+ * What Allowed domains shows and does for the text typed (live claude.ai
+ * bundle, 2026-10-12): while the field is being edited nothing is checked;
+ * once it is left, the domains the check refuses are named, and a list
+ * that differs from the saved one (as a set) and has none of them is saved.
  */
 export function embedCodeState(
   text: string,

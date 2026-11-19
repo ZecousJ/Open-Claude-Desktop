@@ -133,6 +133,24 @@ test("judge never checks incognito, failed replies, or an empty eligible pool", 
   assert.equal(requests, 0);
 });
 
+test("a drawing reply does not send a second model request for a capability tip", async () => {
+  const turn = { ...reply(), items: [] };
+  const conversation = { ...base([turn]), model: "gpt-image-2.5" };
+  let requests = 0;
+  const judge = new CapabilityTipJudge(
+    () => async () => {
+      requests++;
+      return '{"feature":"scheduled_tasks","tier":2}';
+    },
+    () => conversation,
+    () => ["scheduled_tasks"],
+    () => {},
+  );
+  await judge.afterTurn(conversation, turn);
+  assert.equal(requests, 0);
+  assert.equal(conversation.capabilityTipChecks, undefined);
+});
+
 test("null classifications are capped at three checks and spaced three turns apart", async () => {
   const conversation = base();
   let requests = 0;

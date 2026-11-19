@@ -116,3 +116,48 @@ test("connector hosts stay reachable when the rest of the network is closed", ()
     "none",
   );
 });
+
+test("only explicitly listed MCP hosts may use the configured fake DNS range", async () => {
+  const policy = {
+    level: "trusted" as const,
+    fakeIpRanges: ["198.18.0.0/15", "10.0.0.0/8"],
+    customDomains: [
+      "mcp.example.com",
+      "private.example.com",
+      "denied.example.com",
+      "claudex.example",
+    ],
+    deniedHosts: ["claudex.example"],
+    deniedAddresses: ["198.18.1.42"],
+  };
+  const verify = connectorUrlGuard(
+    policy,
+    resolver({
+      "mcp.example.com": ["198.18.1.17"],
+      "other.example.com": ["198.18.1.17"],
+      "nested.mcp.example.com": ["198.18.1.17"],
+      "private.example.com": ["198.18.1.17", "10.0.0.5"],
+      "denied.example.com": ["198.18.1.42"],
+      "claudex.example": ["198.18.1.17"],
+    }),
+  );
+  await verify("https://mcp.example.com/mcp");
+  for (const host of [
+    "other.example.com",
+    "nested.mcp.example.com",
+    "private.example.com",
+    "denied.example.com",
+    "claudex.example",
+    "198.18.1.17",
+  ])
+    await assert.rejects(
+      verify("https://" + host + "/mcp"),
+      /can't be reached/,
+    );
+  await assert.rejects(
+    connectorUrlGuard({ ...policy, level: "none" })(
+      "https://mcp.example.com/mcp",
+    ),
+    /Network access is off/,
+  );
+});

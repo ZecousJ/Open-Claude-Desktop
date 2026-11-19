@@ -4,11 +4,13 @@ import type {
   BillingOrder,
   PaymentRequest,
   PaymentStarted,
+  RedeemResult,
 } from "../../shared/billing-api";
 import type { AppEvent } from "../../shared/types";
 import { ClaudexPayment } from "../sub2api/claudex-payment";
 import type { RedeemedCode, RemoteSubscription } from "../sub2api/client";
 import type { PlanChoice } from "../sub2api/provision";
+import { assertAccountOperationCurrent } from "./operation-lease";
 import {
   visibleMethod,
   checkoutFrom,
@@ -35,7 +37,7 @@ export function billingFrom(input: {
   return {
     plan: subscribed?.name ?? null,
     planExpiresAt: subscribed?.expiresAt ?? null,
-    balance: Math.round(input.balance * 100) / 100,
+    balance: input.balance,
     subscriptions: input.subscriptions
       .map((item) => ({
         id: item.id,
@@ -51,7 +53,7 @@ export function billingFrom(input: {
 const usd = (value: number) => `$${value.toFixed(2)}`;
 
 /** What a redeemed code did, in one sentence. */
-export function redeemMessage(code: RedeemedCode) {
+function redeemMessage(code: RedeemedCode) {
   switch (code.type) {
     case "balance":
       return `${usd(code.value)} was added to your balance.`;
@@ -112,7 +114,7 @@ export class BillingSession {
     });
   }
   private authorized<T>(call: (token: string) => Promise<T>) {
-    return this.host.backend.session.authorized(call);
+    return this.host.backend.session.authorized(call, this.deps.active);
   }
   /** Payment, desktop checkout and redeem as the service reports them. */
   async paymentFeatures(): Promise<PaymentFeatures> {
@@ -145,6 +147,14 @@ export class BillingSession {
       subscriptions,
       redeem: features?.redeem ?? true,
     });
+  }
+  async redeem(code: string): Promise<RedeemResult> {
+    const redeemed = await this.authorized((token) =>
+      this.host.backend.client.redeem(token, code),
+    );
+    assertAccountOperationCurrent(this.deps.active);
+    await this.host.refreshPlan().catch(() => {});
+    return { message: redeemMessage(redeemed), billing: await this.info() };
   }
   async checkout(): Promise<BillingCheckout | null> {
     const features = await this.paymentFeatures();
@@ -212,6 +222,7 @@ export class BillingSession {
       });
       page = this.payment.desktopPayUrl(link.token);
     }
+    assertAccountOperationCurrent(this.deps.active);
     this.watcher.watch(order.id, order.expiresAt);
     if (page) {
       this.pages.set(order.id, page);

@@ -6,7 +6,7 @@
  */
 .usage-overview {
   width: 480px;
-  /* Inset 10px from the title and the composer at 840, 1080 and 1351. */
+  /* Inset 10px from the title and the composer at 840, 1080 and 1351 (R-0349). */
   margin-left: 10px;
   max-width: calc(100% - 10px);
   box-sizing: border-box;
@@ -67,7 +67,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* The favourite model reads in regular weight, 2px higher than the numbers. */
+/* The favourite model reads in regular weight, 2px higher than the numbers
+   (R-1293 light 1x, the dark home reference). */
 .usage-grid > .usage-model strong {
   font-weight: 400;
   line-height: 15px;
@@ -88,10 +89,12 @@
 .usage-heatmap span:not([class]) {
   background: none;
 }
-/* A day's share of the busiest day in four steps of one blue, lighter for less,
-   in both themes. The dark card's #8bb1ed and #739ce0 sit on the first two
-   steps, light R-1293/R-1287's (100,146,226) and (40,100,212) on the second and
-   fourth; only Claudex's old reading of which step is which differed. */
+/* A day's share of the busiest day in four steps of one blue, lighter for
+   less, in both themes (live claude.ai bundle, 2026-10-12: hsl(217 70%)
+   at 72, 64, 56 and 48% lightness). The captured blues agree: the dark
+   card's #8bb1ed and #739ce0 sit on the first two steps, light
+   R-1293/R-1287's (100,146,226) and (40,100,212) on the second and fourth;
+   only Claudex's old reading of which step is which differed. */
 .usage-heatmap .heat-1 {
   background: hsl(217 70% 72%);
 }
@@ -151,8 +154,8 @@
 .usage-chart-day > span {
   flex-basis: 0;
 }
-/* A hovered day: the bar brightens and a chrome-style tooltip lists its tokens
-   per model. */
+/* A hovered day (R-0328 has no hover capture; provisional): the bar
+   brightens and a chrome-style tooltip lists its tokens per model. */
 .usage-chart-slot[data-hovered="true"] .usage-chart-day {
   filter: brightness(1.15);
 }
@@ -170,7 +173,8 @@
   background: #212121;
   color: var(--text);
   font:
-    12px/16px -apple-system,
+    12px/16px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   pointer-events: none;
@@ -317,7 +321,7 @@
 :root[data-theme="light"] .usage-legend small {
   color: var(--text-secondary);
 }
-/* The axis ticks and dates read (93,93,91) / (87,87,85). */
+/* R-1295 (light 1x): the axis ticks and dates read (93,93,91) / (87,87,85). */
 :root[data-theme="light"] .usage-chart-axis > span,
 :root[data-theme="light"] .usage-chart-dates {
   color: #5b5b59;

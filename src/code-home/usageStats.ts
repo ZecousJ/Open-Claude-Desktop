@@ -162,16 +162,22 @@ export function activityGrid(conversations: Conversation[], now = Date.now()) {
   });
 }
 
-/** A day's shade, 0 (none) to 4, against the busiest day of the window. */
+/**
+ * A day's shade, 0 (none) to 4, against the busiest day of the window
+ * (desktop bundle 2.31226.1: count / max in four steps).
+ */
 export function heatLevel(count: number, max: number) {
   return count > 0 && max > 0 ? Math.ceil((count / max) * 4) : 0;
 }
 
-/** A heatmap tile's tooltip: "Oct 3 — 12". */
+/** A heatmap tile's tooltip: "Oct 3 — 12" (live claude.ai bundle, 2026-10-12). */
 export const heatTip = (date: Date, count: number) =>
   `${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} — ${count.toLocaleString("en-US")}`;
 
-/** Compact token counts: 320.8k, 80.9M, 4k, 1.2B. */
+/**
+ * Compact token counts: 320.8k, 80.9M, 4k, 1.2B (desktop bundle 2.31226.1:
+ * a lower-case k, a trailing ".0" dropped, a step to the next unit at 1000).
+ */
 export function compactTokens(n: number) {
   const unit = (value: number, suffix: string) =>
     `${value.toFixed(1).replace(/\.0$/, "")}${suffix}`;
@@ -187,7 +193,7 @@ export function compactTokens(n: number) {
   return String(n);
 }
 
-/** The books the Overview compares a total with, by length in tokens. */
+/** The books the Overview compares a total with, by length in tokens (desktop bundle 2.31226.1). */
 const books = [
   { title: "The Little Prince", tokens: 22_000 },
   { title: "Animal Farm", tokens: 39_000 },

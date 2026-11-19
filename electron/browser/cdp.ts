@@ -79,6 +79,20 @@ export interface Screenshot {
 export type ClickTarget = { ref: string } | { x: number; y: number };
 
 export class CdpDriver {
+  private screenshotQueue: Promise<void> = Promise.resolve();
+
+  /** Chromium temporarily scales the page surface during clipped captures. */
+  captureScreenshot(params: object): Promise<{ data: string }> {
+    const capture = this.screenshotQueue.then(() =>
+      this.send<{ data: string }>("Page.captureScreenshot", params),
+    );
+    this.screenshotQueue = capture.then(
+      () => {},
+      () => {},
+    );
+    return capture;
+  }
+
   revision = 0;
   readonly console = new Ring<ConsoleEntry>();
   readonly network = new Ring<NetworkEntry>();
@@ -89,6 +103,7 @@ export class CdpDriver {
   domEnabled = false;
   dialogOpen = false;
   pick?: {
+    armed: boolean;
     resolve(backendNodeId: number | undefined): void;
   };
 
@@ -281,7 +296,7 @@ export class CdpDriver {
 
   /** Whether Select element is waiting for a click. */
   get picking() {
-    return !!this.pick;
+    return this.pick?.armed ?? false;
   }
 }
 

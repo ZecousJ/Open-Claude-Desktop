@@ -155,7 +155,7 @@ export class SitePermissions {
 
   constructor(private deps: SitePermissionsDeps) {}
 
-  /** New sessions keep their mode. */
+  /** New sessions keep their mode (live claude.ai bundle, 2026-10-14, c71860c77-yHKjimoi). */
   begin(conversationId: string) {
     if (!this.sessionAllowAll.has(conversationId))
       this.sessionAllowAll.set(

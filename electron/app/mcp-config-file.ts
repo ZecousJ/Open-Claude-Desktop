@@ -10,7 +10,7 @@ import { mainState } from "./main-state";
 import { policy, sendSettings, ctx } from "../main";
 
 /** Watches the account's MCP configuration file; edits made while the app was closed apply now. */
-export function openMcpConfigFile() {
+export async function openMcpConfigFile() {
   mainState.mcpConfig = new McpConfigFile(
     mainState.store.root,
     () => mainState.store.settings.mcpServers,
@@ -23,7 +23,7 @@ export function openMcpConfigFile() {
   );
   if (fs.existsSync(mainState.mcpConfig.path)) mainState.mcpConfig.reload();
   mainState.mcpConfig.ensure();
-  void resumeDesktopConnectorAuth(ctx).catch(() => {});
+  await resumeDesktopConnectorAuth(ctx).catch(() => {});
 }
 
 function applyMcpServers(servers: Record<string, unknown>) {

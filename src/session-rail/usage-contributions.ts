@@ -2,9 +2,10 @@ import type { Conversation } from "../../shared/types";
 import { workflowsIn } from "../../shared/workflow-model";
 
 /**
- * What's contributing (this session): what the session can attribute itself, by
- * category. Claudex knows each subagent's tokens and each MCP server's calls;
- * skills and plugins are not told apart from the session's own requests.
+ * What's contributing (this session) (live claude.ai bundle, 2026-10-15,
+ * c1c1ec7b9 `jJ`): what the session can attribute itself, by category.
+ * Claudex knows each subagent's tokens and each MCP server's calls; skills
+ * and plugins are not told apart from the session's own requests.
  */
 export interface Contribution {
   category: "Subagent" | "MCP";

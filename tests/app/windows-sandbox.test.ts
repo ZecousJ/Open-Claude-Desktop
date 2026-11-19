@@ -135,6 +135,23 @@ test("stale or malformed receipt cannot bypass setup", async (t) => {
   assert.throws(() => sandbox.assertReady());
 });
 
+test("only a ready administrator sandbox can accept a scoped write", async (t) => {
+  const root = temporary(t);
+  const rpc = new MockRPC();
+  const sandbox = new WindowsSandbox(root, "win32");
+  rpc.readiness = "updateRequired";
+  assert.equal(await sandbox.check(rpc, "elevated"), false);
+  assert.equal(sandbox.supportsScopedWrites, false);
+  await assert.rejects(sandbox.ensureReady(rpc, root), /Settings → Claudex Code/);
+  assert.deepEqual(rpc.calls, ["windowsSandbox/readiness"]);
+
+  rpc.readiness = "ready";
+  assert.equal(await sandbox.check(rpc, "elevated"), true);
+  assert.equal(sandbox.supportsScopedWrites, true);
+  sandbox.reset();
+  assert.equal(sandbox.supportsScopedWrites, false);
+});
+
 test("non-Windows platform never invokes native Windows setup", async (t) => {
   const root = temporary(t);
   const rpc = new MockRPC();

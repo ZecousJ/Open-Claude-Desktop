@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { setImmediate as nextTurn } from "node:timers/promises";
 import JSZip from "jszip";
 import type { Project } from "../../shared/types";
 import type { ProjectCapabilities } from "../../shared/project-access";
@@ -40,11 +41,26 @@ function fixture(context: test.TestContext) {
 }
 const legacy = Buffer.from([0x63, 0x61, 0x66, 0xe9]);
 
-test("17/22: actual owned storage remains editable regardless of archive/visibility; explicit readonly capabilities reject every context mutation", (context) => {
+async function livePending(
+  upload: ProjectKnowledgeUploads,
+  staging: ReturnType<ProjectKnowledgeUploads["stageFiles"]>,
+) {
+  let settled = false;
+  const finish = () => { settled = true; };
+  void staging.then(finish, finish);
+  while (!settled) {
+    const pending = upload.list("project").pending[0];
+    if (pending) return pending;
+    await nextTurn();
+  }
+  assert.fail("The pending file was never visible during extraction.");
+}
+
+test("17/22: actual owned storage remains editable regardless of archive/visibility; explicit readonly capabilities reject every context mutation", async (context) => {
   const env = fixture(context);
   env.project.archivedAt = 1;
   env.project.visibility = "unknown-sharing";
-  env.store.add("project", [
+  await env.store.add("project", [
     { name: "reference.txt", data: Buffer.from("Read-only reference") },
   ]);
   assert.equal(env.store.capabilities("project").canEditKnowledgeBase, true);
@@ -52,8 +68,8 @@ test("17/22: actual owned storage remains editable regardless of archive/visibil
     canEditInstructions: false,
     canEditKnowledgeBase: false,
   };
-  assert.equal(env.store.read("project", "reference.txt").kind, "text");
-  assert.throws(
+  assert.equal((await env.store.read("project", "reference.txt")).kind, "text");
+  await assert.rejects(
     () =>
       env.store.add("project", [{ name: "new.txt", data: Buffer.from("no") }]),
     /permission/,
@@ -91,10 +107,10 @@ test("20: invalid UTF8 is durably pending until explicit source-listed encoding 
   assert.equal(upload.previewEncoding("project", id, "utf-8").text, "caf�");
   const done = await upload.confirmEncoding("project", id, "windows-1252");
   assert.equal(done.pending.length, 0);
-  assert.equal(env.store.read("project", "legacy.txt").kind, "text");
-  const text = env.store.read("project", "legacy.txt");
+  const text = await env.store.read("project", "legacy.txt");
+  assert.equal(text.kind, "text");
   if (text.kind === "text") assert.equal(text.text, "café");
-  assert.equal(env.store.read("project", "native.pdf").kind, "pdf");
+  assert.equal((await env.store.read("project", "native.pdf")).kind, "pdf");
   assert.equal(fs.existsSync(path.join(env.pendingFolder, `${id}.bin`)), false);
   const record = JSON.parse(
     fs.readFileSync(path.join(env.pendingFolder, "records.json"), "utf8"),
@@ -107,6 +123,33 @@ test("20: invalid UTF8 is durably pending until explicit source-listed encoding 
     0,
     "same confirmation replay does not duplicate a file",
   );
+});
+
+test("Windows flushes the published pending and completed encoding journal before confirming", async (context) => {
+  const env = fixture(context);
+  const upload = env.create();
+  const journal = path.join(env.pendingFolder, "records.json");
+  const platform = process.platform;
+  Object.defineProperty(process, "platform", { value: "win32" });
+  context.after(() => {
+    Object.defineProperty(process, "platform", { value: platform });
+  });
+  const flushed: string[] = [];
+  const sync = fs.fsyncSync;
+  context.mock.method(fs, "fsyncSync", (descriptor: number) => {
+    sync(descriptor);
+    const published = fs.statSync(journal, { throwIfNoEntry: false });
+    const file = fs.fstatSync(descriptor);
+    if (published?.ino === file.ino && published.dev === file.dev) {
+      const value = JSON.parse(fs.readFileSync(journal, "utf8"));
+      flushed.push(value.records[0].status);
+    }
+  });
+  const staged = await upload.stageFiles("project", [{ name: "legacy.txt", data: legacy }]);
+  assert.deepEqual(flushed, ["encoding"]);
+  const confirmed = await upload.confirmEncoding("project", staged.pending[0].id, "windows-1252");
+  assert.deepEqual(flushed, ["encoding", "completed"]);
+  assert.equal(confirmed.pending.length, 0);
 });
 
 test("20/22: charset previews remain readable after edit rights change; confirm/remove require current project and cannot cross project boundaries", async (context) => {
@@ -152,7 +195,7 @@ test("20: actual bounded Office extraction writes real UTF8 text with a truthful
   ]);
   assert.equal(result.pending.length, 0);
   assert.ok(result.uploadCapabilities.documentExtraction);
-  const read = env.store.read("project", "slides.pptx.txt");
+  const read = await env.store.read("project", "slides.pptx.txt");
   assert.equal(read.kind, "text");
   if (read.kind === "text")
     assert.ok(read.text.includes("Extracted actual slide."));
@@ -189,7 +232,7 @@ test("20: damaged documents retain failed status/error and original bytes across
   assert.equal(upload.removePending("project", id).pending.length, 0);
 });
 
-test("20: only the twelve source charsets are accepted, previews are bounded, and invalid names/IDs/oversized bytes never enter context", async (context) => {
+test("20: only the twelve source charsets are accepted, previews are bounded, and invalid names and IDs never enter context", async (context) => {
   const env = fixture(context),
     upload = env.create();
   const big = Buffer.alloc(5000, 0xe9);
@@ -221,13 +264,24 @@ test("20: only the twelve source charsets are accepted, previews are bounded, an
     ]),
     /file name/,
   );
+  assert.equal(env.store.list("project").files.length, 0);
+});
+
+test("native project uploads accept 30 MiB and reject an oversized batch before copying", async (context) => {
+  const env = fixture(context), upload = env.create();
+  const limit = 31_457_280;
+  const data = Buffer.alloc(limit + 1, "name,1\n");
+  const allowed = data.subarray(0, limit);
   await assert.rejects(
     upload.stageFiles("project", [
-      { name: "too-big.txt", data: Buffer.alloc(10000001) },
+      { name: "allowed.csv", data: allowed },
+      { name: "oversize.csv", data },
     ]),
-    /10 MB/,
+    /30 MB/,
   );
-  assert.equal(env.store.list("project").files.length, 0);
+  assert.deepEqual(env.store.list("project").files, []);
+  await upload.stageFiles("project", [{ name: "allowed.csv", data: allowed }]);
+  assert.ok(fs.readFileSync(path.join(env.store.folder("project"), "allowed.csv")).equals(allowed));
 });
 
 test("20/22: pending metadata and blobs cannot follow symlinks outside the authenticated account/project", async (context) => {
@@ -246,7 +300,7 @@ test("20/22: pending metadata and blobs cannot follow symlinks outside the authe
   const contextFolder = env.store.folder("other");
   fs.mkdirSync(path.dirname(contextFolder), { recursive: true });
   fs.symlinkSync(env.root, contextFolder);
-  assert.throws(
+  await assert.rejects(
     () =>
       env.store.add("other", [{ name: "escape.txt", data: Buffer.from("no") }]),
     /cannot be used/,
@@ -266,7 +320,7 @@ test("21: actual disk byte quota stays separate from an unavailable token/contex
   assert.equal((knowledge as any).tokens, undefined);
 });
 
-test("17/22: malformed explicit stored capabilities deny editing while a missing legacy capability remains owned", (context) => {
+test("17/22: malformed explicit stored capabilities deny editing while a missing legacy capability remains owned", async (context) => {
   const env = fixture(context);
   for (const capabilities of [
     null,
@@ -278,7 +332,7 @@ test("17/22: malformed explicit stored capabilities deny editing while a missing
       canEditInstructions: false,
       canEditKnowledgeBase: false,
     });
-    assert.throws(
+    await assert.rejects(
       () =>
         env.store.add("project", [
           { name: "blocked.txt", data: Buffer.from("no") },
@@ -300,6 +354,7 @@ test("20/22: actual asynchronous Office extraction cannot commit after the accou
   );
   const data = await zip.generateAsync({ type: "nodebuffer" });
   const pending = upload.stageFiles("project", [{ name: "old.pptx", data }]);
+  await livePending(upload, pending);
   env.replaceOwner();
   await assert.rejects(pending, /account changed/);
   assert.equal(env.store.list("project").files.length, 0);
@@ -362,7 +417,7 @@ test("20: actual live extraction reports extracting until the parser finishes, t
   );
   const data = await zip.generateAsync({ type: "nodebuffer" });
   const work = upload.stageFiles("project", [{ name: "live.pptx", data }]);
-  const live = upload.list("project").pending[0];
+  const live = await livePending(upload, work);
   assert.equal(live.status, "extracting");
   assert.equal(live.error, undefined);
   const done = await work;

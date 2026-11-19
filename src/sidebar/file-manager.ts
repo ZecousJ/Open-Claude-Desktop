@@ -1,4 +1,4 @@
-/** The system file manager's name for Open in. */
+/** The system file manager's name for Open in (R-0083). */
 export const fileManagerName = (platform: string) =>
   platform === "darwin"
     ? "Finder"

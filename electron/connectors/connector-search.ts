@@ -3,7 +3,8 @@ import type { Settings } from "../../shared/types";
 import { connectors } from "../../shared/connectors-catalogue";
 import type { EngineExtension } from "../engine/engine-extensions";
 
-// Connector suggestions are on unless explicitly disabled.
+// Connector suggestions are on unless explicitly disabled (live claude.ai
+// bundle, 2026-10-14, c71860c77-BxbFlsvr.js).
 export function connectorSearchExtension(
   settings: () => Settings,
 ): EngineExtension {

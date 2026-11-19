@@ -1,3 +1,5 @@
+import { WebConnectorCatalog } from "./connector-catalog";
+import { mcpConnectionIdentity } from "../../shared/mcp-connection-identity";
 import { starterConnectorId } from "../../shared/starter-integrations";
 import { z } from "zod";
 import { settingsRefusal } from "../../shared/client-policy";
@@ -108,9 +110,18 @@ export class WebMcpConfig implements McpConfigLike {
   readonly path = "";
   error?: string;
   private restart?: NodeJS.Timeout;
-  constructor(private readonly ctx: WebAppContext) {}
+  private readonly catalog: WebConnectorCatalog;
+  constructor(private readonly ctx: WebAppContext) { this.catalog = new WebConnectorCatalog(ctx); }
+  readCatalog(name?: string) { return this.catalog.read(name); }
+  isAuthenticated(name: string, url: string) { return this.catalog.isAuthenticated(name, url); }
+  markAuthFailure(name: string) { this.catalog.markAuthFailure(name); }
+  clearAuthFailure(name: string) { this.catalog.clearAuthFailure(name); }
+  authorizationChanged() {
+    this.ctx.settingsChanged();
+    this.restartWhenIdle();
+  }
   ensure() {}
-  update(servers: Record<string, unknown>) {
+  private prepare(servers: Record<string, unknown>) {
     const ctx = this.ctx;
     const before = ctx.store.settings.mcpServers;
     const clean: Record<string, unknown> = {};
@@ -125,6 +136,8 @@ export class WebMcpConfig implements McpConfigLike {
         const kept: Record<string, unknown> = { url: server.url };
         const connectorId = starterConnectorId(server.connector_id);
         if (connectorId) kept.connector_id = connectorId;
+        if (server.claudex_directory_id !== undefined)
+          kept.claudex_directory_id = z.string().uuid().parse(server.claudex_directory_id);
         if (server.display_name !== undefined)
           kept.display_name = z
             .string()
@@ -161,16 +174,55 @@ export class WebMcpConfig implements McpConfigLike {
       ctx.policy(),
     );
     if (refusal) throw new Error(refusal);
-    for (const [name, server] of Object.entries(clean)) {
-      const previousUrl = (before[name] as { url?: string } | undefined)?.url;
-      if (previousUrl && previousUrl !== (server as { url?: string }).url)
-        ctx.connectorTokens.set(name, undefined);
-    }
+    return clean;
+  }
+  update(servers: Record<string, unknown>) {
+    const ctx = this.ctx;
+    const before = ctx.store.settings.mcpServers;
+    const clean = this.prepare(servers);
+    ctx.store.assertConnectorSettingsWritable();
     ctx.store.settings.mcpServers = clean;
     ctx.store.flush();
+    this.forgetReplacedAuthorizations(before, clean);
     ctx.connectorTokens.keepOnly(Object.keys(clean));
     ctx.settingsChanged();
     this.restartWhenIdle();
+  }
+  async commitToolPolicy(servers: Record<string, unknown>, current: () => boolean) {
+    const ctx = this.ctx;
+    const store = ctx.store;
+    const identity = ctx.officialSessionIdentity();
+    const clean = this.prepare(servers);
+    if (mcpConnectionIdentity(clean) !== mcpConnectionIdentity(store.settings.mcpServers))
+      throw Error("Tool preferences cannot replace a connector connection.");
+    const active = () => !ctx.closed && ctx.store === store &&
+      ctx.officialSessionIdentity() === identity && current();
+    await store.persistConnectorSettings(clean, active);
+    if (!active()) throw Error("The account changed before the connector save was confirmed.");
+    ctx.settingsChanged();
+    this.restartWhenIdle();
+  }
+  async commitCustomConnector(servers: Record<string, unknown>, assertCurrent: () => void) {
+    const ctx = this.ctx;
+    const store = ctx.store;
+    const before = store.settings.mcpServers;
+    const clean = this.prepare(servers);
+    await store.persistConnectorSettings(clean, () => {
+      assertCurrent();
+      return !ctx.closed && ctx.store === store;
+    });
+    this.forgetReplacedAuthorizations(before, clean);
+    ctx.settingsChanged();
+    this.restartWhenIdle();
+  }
+  private forgetReplacedAuthorizations(before: Record<string, unknown>, after: Record<string, unknown>) {
+    const { connectorOAuth, connectorTokens } = this.ctx;
+    for (const [name, entry] of Object.entries(before)) {
+      const previousUrl = (entry as { url?: string } | undefined)?.url;
+      if (!previousUrl || previousUrl === (after[name] as { url?: string } | undefined)?.url) continue;
+      connectorOAuth?.forget(name, previousUrl);
+      connectorTokens.set(name, undefined);
+    }
   }
   /** The agent restarts with the new servers once no turn is running. */
   private restartWhenIdle() {

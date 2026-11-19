@@ -1,11 +1,12 @@
 import fs from "node:fs";
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
 import path from "node:path";
 import type { StorageCipher } from "../engine/provider-credentials";
 import type { Sub2ApiClient, TokenPair } from "./client";
 import { claudexErrorCodes } from "../../shared/claudex-contract";
 import { Sub2ApiError } from "./http";
 
-/** What survives a restart: the rotating refresh token, encrypted by the OS. */
+/** What survives a restart: the rotating refresh token, encrypted by the host. */
 export interface SessionRecord {
   version: 1;
   baseUrl: string;
@@ -32,7 +33,7 @@ function validRecord(value: unknown): value is SessionRecord {
 }
 
 /**
- * `remote-session.enc` in the app data root. Without OS encryption nothing
+ * `remote-session.enc` in the credential directory. Without encryption nothing
  * is written, so the session lasts only while the app runs.
  */
 export class SessionFile {
@@ -83,7 +84,7 @@ export class SessionFile {
  * account, as the web keeps one session per account in its browser): each
  * one's session record, encrypted like the open account's, in
  * `remote-sessions/<account id>.enc`. The open account's session stays in
- * `remote-session.enc`; a switch moves records between the two. Without OS
+ * `remote-session.enc`; a switch moves records between the two. Without
  * encryption nothing is kept, so only the open account stays signed in.
  */
 export class ParkedSessions {
@@ -103,7 +104,7 @@ export class ParkedSessions {
       path.join(this.folder, `${accountId}.enc`),
     );
   }
-  /** Keeps a session for later; false without OS encryption. */
+  /** Keeps a session for later; false without encryption. */
   save(record: SessionRecord) {
     if (!this.cipher.isEncryptionAvailable()) return false;
     fs.mkdirSync(this.folder, { recursive: true, mode: 0o700 });
@@ -186,6 +187,7 @@ export class RemoteSession {
   private accessToken = "";
   private accessExpiresAt = 0;
   private refreshing?: Promise<void>;
+  private refreshChecks?: Set<AccountOperationCurrent>;
   constructor(
     private client: Sub2ApiClient,
     private file: SessionFile,
@@ -222,6 +224,7 @@ export class RemoteSession {
    */
   onSignedOut?: (reason: SessionEndReason) => void;
   private signedOut(reason: SessionEndReason) {
+    if (this.state !== "active") return;
     try {
       this.onSignedOut?.(reason);
     } catch (error) {
@@ -231,7 +234,7 @@ export class RemoteSession {
       );
     }
   }
-  private detached = false;
+  private state: "active" | "detached" | "ended" = "active";
   /**
    * Lets the session go without signing it out (a switch to another
    * account): waits for a refresh in flight, so the record holds the
@@ -239,21 +242,43 @@ export class RemoteSession {
    * that token behind the new holder's back (the service ends a family
    * whose spent token is used again). The access token is forgotten.
    */
-  async detach(): Promise<SessionRecord> {
-    this.detached = true;
+  async detach(current?: AccountOperationCurrent): Promise<SessionRecord> {
+    assertAccountOperationCurrent(current);
+    if (this.state !== "active") throw Error("This account is no longer open.");
+    if (current) this.refreshChecks?.add(current);
+    this.state = "detached";
     await this.refreshing?.catch(() => {});
+    assertAccountOperationCurrent(current);
+    if (this.state !== "detached") throw Error("This account is no longer open.");
     this.accessToken = "";
     this.accessExpiresAt = 0;
     return { ...this.record };
   }
   /** One refresh at a time; concurrent callers share it. */
-  refresh() {
-    if (this.detached)
+  refresh(current?: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
+    if (this.state !== "active")
       return Promise.reject(Error("This account is no longer open."));
-    this.refreshing ??= (async () => {
-      if (this.authUnavailable) this.onAuthIssue?.("retrying");
+    if (this.refreshing) {
+      if (current) this.refreshChecks?.add(current);
+      return this.refreshing;
+    }
+    const checks = new Set<AccountOperationCurrent>();
+    if (current) checks.add(current);
+    this.refreshChecks = checks;
+    const check = () => {
+      if (this.state === "ended") throw Error("This account is no longer open.");
+      for (const guard of checks) assertAccountOperationCurrent(guard);
+    };
+    // Install the shared promise before any callback can retire the guarded
+    // operation synchronously; a rejected preflight must not leave a sticky run.
+    this.refreshing = Promise.resolve().then(async () => {
       try {
+        check();
+        if (this.authUnavailable) this.onAuthIssue?.("retrying");
+        check();
         const next = await this.client.refresh(this.record.refreshToken);
+        check();
         const record = { ...this.record, refreshToken: next.refreshToken };
         if (this.file.persistent) this.file.save(record);
         this.accept(next);
@@ -262,6 +287,7 @@ export class RemoteSession {
           this.onAuthIssue?.(null);
         }
       } catch (error) {
+        check();
         if (error instanceof Sub2ApiError && error.status === 401)
           this.signedOut(refreshRefusalReason(error.code));
         else {
@@ -271,16 +297,21 @@ export class RemoteSession {
         throw error;
       } finally {
         this.refreshing = undefined;
+        if (this.refreshChecks === checks) this.refreshChecks = undefined;
       }
-    })();
+    });
     return this.refreshing;
   }
-  private async token() {
+  private async token(current?: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
+    if (this.state !== "active") throw Error("This account is no longer open.");
     if (
       !this.accessToken ||
       this.now() >= this.accessExpiresAt - refreshMarginMs
     )
-      await this.refresh();
+      await this.refresh(current);
+    assertAccountOperationCurrent(current);
+    if (this.state !== "active") throw Error("This account is no longer open.");
     return this.accessToken;
   }
   /** The access token, renewed when it is about to expire (cloud client). */
@@ -292,7 +323,9 @@ export class RemoteSession {
    * only when no other caller did already.
    */
   async renewed(stale: string) {
+    if (this.state !== "active") throw Error("This account is no longer open.");
     if (!this.accessToken || this.accessToken === stale) await this.refresh();
+    if (this.state !== "active") throw Error("This account is no longer open.");
     return this.accessToken;
   }
   /**
@@ -300,22 +333,30 @@ export class RemoteSession {
    * A revoked session (CLAUDEX_SESSION_REVOKED) is not refreshed: the
    * service signed this device out, so `onSignedOut` hears of it.
    */
-  async authorized<T>(call: (accessToken: string) => Promise<T>): Promise<T> {
+  async authorized<T>(call: (accessToken: string) => Promise<T>, current?: AccountOperationCurrent): Promise<T> {
     try {
-      const first = await this.token();
+      const first = await this.token(current);
+      assertAccountOperationCurrent(current);
       try {
-        return await call(first);
+        const answer = await call(first);
+        assertAccountOperationCurrent(current);
+        return answer;
       } catch (error) {
+        assertAccountOperationCurrent(current);
         if (
           !(error instanceof Sub2ApiError) ||
           error.status !== 401 ||
           !expiredCodes.has(error.code)
         )
           throw error;
-        if (this.accessToken === first) await this.refresh();
-        return await call(this.accessToken);
+        if (this.accessToken === first) await this.refresh(current);
+        assertAccountOperationCurrent(current);
+        const answer = await call(this.accessToken);
+        assertAccountOperationCurrent(current);
+        return answer;
       }
     } catch (error) {
+      assertAccountOperationCurrent(current);
       if (
         error instanceof Sub2ApiError &&
         error.status === 401 &&
@@ -326,18 +367,24 @@ export class RemoteSession {
     }
   }
   /** Revokes this device's refresh token; the local session ends even if the service is unreachable. */
-  async logout() {
+  async logout(current?: AccountOperationCurrent) {
+    const record = await this.detach(current);
     try {
-      await this.client.logout(this.record.refreshToken);
+      await this.client.logout(record.refreshToken);
     } finally {
+      assertAccountOperationCurrent(current);
       this.end();
     }
   }
-  async revokeAll() {
-    await this.authorized((token) => this.client.revokeAllSessions(token));
+  async revokeAll(current?: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
+    await this.authorized((token) => this.client.revokeAllSessions(token), current);
+    assertAccountOperationCurrent(current);
     this.end();
   }
   end() {
+    if (this.state === "ended") return;
+    this.state = "ended";
     this.accessToken = "";
     this.accessExpiresAt = 0;
     this.file.clear();

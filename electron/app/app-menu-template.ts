@@ -18,6 +18,9 @@ export interface AppMenuOptions {
    * the state of a window that has not reported yet.
    */
   state?: MenuState;
+  newCodeWindow?: boolean;
+  newSideChat?: boolean;
+  showReopenClosed?: boolean;
   /** Code surface and its Open File / Open Folder rollouts (both default on). */
   codeSurface?: {
     enabled: boolean;
@@ -25,10 +28,10 @@ export interface AppMenuOptions {
     openFolder: boolean;
   };
   /**
-   * The updates item while Claudex updates itself: "Checking for Updates…",
-   * "Downloading Update…" (both disabled), "Restart to Update to 1.2" or "Check
-   * for Updates…" with a disabled "Last Update Attempt Failed" line under it.
-   * Absent: updates are hidden.
+   * The updates item while Claudex updates itself (package OTA): "Checking
+   * for Updates…", "Downloading Update…" (both disabled), "Restart to Update
+   * to 1.2" or "Check for Updates…" with a disabled "Last Update Attempt
+   * Failed" line under it. Absent: updates are hidden.
    */
   updateItem?: { label: string; enabled: boolean; failed?: boolean };
   /** Help and Get Support: the administrator's help page, else Claudex's site. */
@@ -99,7 +102,8 @@ const cycleNames = { chat: "Chat", cowork: "Chat", code: "Session" } as const;
 /**
  * The application menu follows the 2.37337.1 desktop template. Its app-named
  * menu is present on every platform; macOS-only roles are omitted elsewhere.
- * File's Open actions follow the Code surface and rollout gates.
+ * File's Open actions follow the Code surface and rollout gates (live claude.ai bundle,
+ * 2026-10-14, index.chunk-BWk6pVUt.js; desktop 2.37337.1).
  */
 export function appMenuTemplate({
   editCommand,
@@ -127,6 +131,9 @@ export function appMenuTemplate({
   zoom,
   reload,
   fullScreen = false,
+  newCodeWindow = false,
+  newSideChat = false,
+  showReopenClosed = true,
   translate = (value) => value,
 }: AppMenuOptions): MenuItemConstructorOptions[] {
   const page = (
@@ -166,7 +173,10 @@ export function appMenuTemplate({
     enabled: false,
   });
   const fileManager = mac ? "Finder" : "File Explorer";
-  /** Shared shortcuts on every platform. */
+  /**
+   * Shared shortcuts on every platform (live claude.ai bundle, 2026-10-14,
+   * index.chunk-BWk6pVUt.js, desktop 2.37337.1).
+   */
   const findItem = (
     label: string,
     accelerator: string,
@@ -310,16 +320,16 @@ export function appMenuTemplate({
       submenu: [
         // New Chat, New Task or New Session follows the window's mode.
         page(newItemLabels[state.mode], "new-chat", "CmdOrCtrl+N"),
-        ...(mac || state.mode !== "code"
-          ? []
-          : [off("New Session in New Window")]),
+        ...(state.mode !== "code" ? [] : newCodeWindow
+          ? [{ label: translate("New Session in New Window"), click: () => run("new-code-window") }]
+          : mac ? [] : [off("New Session in New Window")]),
         // Code only, as the original; the shortcut is View ▸ Side Chat's.
         ...(state.mode === "code"
           ? [
               {
                 label: "New Side Chat",
-                enabled: state.sideChat.enabled && !state.sideChat.open,
-                click: () => run("toggle-side-chat"),
+                enabled: newSideChat || state.sideChat.enabled && !state.sideChat.open,
+                click: () => run(newSideChat ? "new-side-chat" : "toggle-side-chat"),
               },
             ]
           : []),
@@ -349,12 +359,12 @@ export function appMenuTemplate({
           visible: Boolean(state.closeTarget),
           acceleratorWorksWhenHidden: true,
         },
-        page(
+        ...(showReopenClosed ? [page(
           "Reopen Closed Session",
           "reopen-closed-session",
           "CmdOrCtrl+Shift+T",
           state.canReopenClosed,
-        ),
+        )] : []),
       ],
     },
     mac
@@ -419,13 +429,13 @@ export function appMenuTemplate({
       label: "View",
       submenu: [
         // R-0129 (Windows crop, macOS tree). Command Palette is the Search
-        // panel. Terminal, Changes and Browser toggle the Code panes of the
-        // open session (greyed outside Code, and where the pane is
-        // unavailable); Side Chat toggles the open conversation's side chat
-        // (Chat and Code, after its first reply). Split View is the window's
-        // sessions side by side (src/split-view): its items follow what the
-        // window reports. Files has no pane yet and stays greyed, as the
-        // original greys it outside a session too.
+        // panel (Ctrl/Cmd+K, R-0117). Terminal, Changes and Browser toggle
+        // the Code panes of the open session (greyed outside Code, and where
+        // the pane is unavailable); Side Chat toggles the open conversation's
+        // side chat (Chat and Code, after its first reply). Split View is the
+        // window's sessions side by side (src/split-view): its items follow
+        // what the window reports. Files has no pane yet and stays greyed, as
+        // the original greys it outside a session too.
         page("Command Palette…", "search", "CmdOrCtrl+K"),
         toggle(
           { show: "Show Sidebar", hide: "Hide Sidebar", name: "Sidebar" },
@@ -543,7 +553,8 @@ export function appMenuTemplate({
           accelerator: "Control+Command+F",
         },
         { type: "separator" },
-        // Reload.
+        // Reload (live claude.ai desktop shell, 2026-10-12: CmdOrCtrl+R
+        // reloads the focused Browser page first, else the window).
         reload
           ? {
               label: "Reload",

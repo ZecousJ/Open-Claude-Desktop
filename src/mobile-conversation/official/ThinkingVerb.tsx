@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { t, useT } from "../../i18n";
 
 /**
- * The official app's thinking verbs. Each is written through t so every
- * catalog carries it.
+ * The official app's thinking verbs (Claude Android 1.260923.20,
+ * R/values/arrays.xml `thinking_timeline_verbs`; chat-transcript.md §4.3).
+ * Each is written through t() so every catalog carries it.
  */
 export const OFFICIAL_THINKING_VERBS = [
   () => t("Thinking"),
@@ -25,7 +26,7 @@ export const OFFICIAL_THINKING_VERBS = [
   () => t("Untangling"),
 ] as const;
 
-/** A new verb every 8000 ms. */
+/** A new verb every 8000 ms (smali_classes3/pll.smali `0x1f40`). */
 export const THINKING_VERB_MS = 8000;
 
 /** A random verb index other than `previous` (the official picks a different one each time). */
@@ -37,9 +38,10 @@ export function nextVerb(previous: number | undefined, random = Math.random) {
 }
 
 /**
- * The live thinking label: a random first verb, then a different random one
- * every 8 s, swapped with AnimatedContent's default fade; drawn in the
- * transcript font with the 1500 ms shimmer. The accessible name is "Thinking…".
+ * The live thinking label (D/ogx.java, D/pu2.java): a random first verb, then
+ * a different random one every 8 s, swapped with AnimatedContent's default
+ * fade; drawn in the transcript font with the 1500 ms shimmer (D/ugx.java).
+ * The accessible name is "Thinking…".
  */
 export function ThinkingVerb() {
   useT();

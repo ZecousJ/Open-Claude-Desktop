@@ -1,8 +1,9 @@
 /*
- * The account step after sign-up (src/auth/ProfileStep.tsx) inside the sign-in
- * card. The form is left-aligned, 20px between its rows (gap-5), the checkbox
- * row puts 12px beside the box (gap-3). Type, colours and the field itself are
- * the sign-in card's own (sign-in.css: .signin-input, .signin-small,
+ * The account step after sign-up (src/auth/ProfileStep.tsx) inside the
+ * sign-in card. Live claude.ai bundle, 2026-10-12 (cb31f3802 `q`): the form
+ * is left-aligned, 20px between its rows (gap-5), the checkbox row puts
+ * 12px beside the box (gap-3). Type, colours and the field itself are the
+ * sign-in card's own (sign-in.css: .signin-input, .signin-small,
  * .signin-error); the box is the shared checkbox (src/ui/checkbox.css).
  */
 .signin-card form.profile-form {

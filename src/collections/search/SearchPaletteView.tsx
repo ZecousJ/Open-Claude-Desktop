@@ -9,7 +9,7 @@ import {
 } from "../../ui/glyphs";
 import { Spinner } from "../../ui/Spinner";
 import { Skeleton, SkeletonGroup } from "../../ui/Skeleton";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import {
   searchFilters,
   relativeBucket,
@@ -37,12 +37,13 @@ import type { ZoneDropState } from "../../composer/drop-zones";
 import { SearchCompose } from "./SearchCompose";
 import { SearchPaletteHead } from "./SearchPaletteHead";
 
-/** Widths of the placeholder titles, in turn. */
+/** Widths of the placeholder titles, in turn (live bundle `ir`, 2026-10-16, shared-19). */
 const skeletonWidths = [224, 176, 256, 200, 160, 240, 192];
 
 /**
  * The results while they load: 13 title rows, under a heading block, with no
- * words typed, 9 rows with a snippet line and a time block for a search.
+ * words typed, 9 rows with a snippet line and a time block for a search
+ * (live claude.ai bundle, 2026-10-16, c2771e1f6-B2qqRLkw Ig and shared-19 Ll).
  */
 export function ResultsSkeleton({ searching }: { searching: boolean }) {
   return (
@@ -210,7 +211,8 @@ export function searchPaletteView(kit: SearchPaletteViewKit) {
   } = kit;
   let index = -1;
   // Rows carry their time except in the plain default list (no words, no
-  // filters): the live bundle's timesHidden.
+  // filters): the live bundle's timesHidden (ce8be540f-Skpcbts3 kn,
+  // c2771e1f6-B2qqRLkw In, 2026-10-16).
   const timesHidden =
     entrypoint === "default" &&
     !query.trim() &&
@@ -378,7 +380,8 @@ export function searchPaletteView(kit: SearchPaletteViewKit) {
                             input.current?.focus();
                           }}
                         >
-                          {/* Plain text, no caret. */}
+                          {/* Plain text, no caret (live claude.ai,
+                              2026-10-20). */}
                           {t(section.title)}
                         </button>
                       ) : (
@@ -481,7 +484,7 @@ export function searchPaletteView(kit: SearchPaletteViewKit) {
                         {row.kind === "conversation" &&
                           row.conversation.archived && (
                             <span className="search-row-tag">
-                              <AppIcon name="Archive" size={12} />
+                              <Anthropicon name="Archive" size={12} />
                               {t("Archived")}
                             </span>
                           )}

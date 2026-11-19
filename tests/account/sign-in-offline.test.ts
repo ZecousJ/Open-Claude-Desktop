@@ -1,4 +1,7 @@
-/** Sign-in requests wait for the connection. */
+/**
+ * Sign-in requests wait for the connection (src/auth/whenOnline.ts; live
+ * claude.ai bundle, 2026-10-12: "You appear to be offline. …").
+ */
 import assert from "node:assert/strict";
 import test from "node:test";
 import {

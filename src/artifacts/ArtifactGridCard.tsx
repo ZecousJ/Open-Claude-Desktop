@@ -26,7 +26,7 @@ import { galleryTimeText, type GalleryType } from "./gallery";
 import { htmlDocument } from "./preview-document";
 import { RenameArtifactDialog } from "./RenameArtifactDialog";
 import { ArtifactOpenLink } from "./ArtifactOpenLink";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 
 export const galleryTypeIcons: Record<GalleryType, LucideIcon> = {
   web: Code2,
@@ -36,15 +36,15 @@ export const galleryTypeIcons: Record<GalleryType, LucideIcon> = {
   code: FileCode2,
 };
 
-/** Why Copy link is off until the artifact has a link. */
+/** Why Copy link is off until the artifact has a link (R-0901). */
 export const copyLinkUnavailable =
   "Share this artifact with a link first; it has no link to copy yet.";
 
 /**
- * Pages and SVGs preview live in the card. The frame gets no sandbox
- * permissions at all: no scripts, no forms, no navigation, and the preview
- * document's CSP blocks the network. Everything else shows an excerpt of its
- * text.
+ * Pages and SVGs preview live in the card (R-0896). The frame gets no
+ * sandbox permissions at all: no scripts, no forms, no navigation, and the
+ * preview document's CSP blocks the network. Everything else shows an
+ * excerpt of its text.
  */
 export function liveThumbnail(a: Artifact) {
   if (a.blob) return false;
@@ -58,7 +58,7 @@ export function shareLink(share?: ArtifactShareInfo) {
   return share.scope === "public" ? (share.publicUrl ?? share.url) : share.url;
 }
 
-/** The card's menu, in the reference's order, plus Download. */
+/** The card's menu, in the reference's order (R-0901), plus Download. */
 export function gridCardEntries(
   artifact: Artifact,
   link: string | undefined,
@@ -112,9 +112,9 @@ export interface GridCardActions {
 }
 
 /**
- * A grid card of the Artifacts page: a preview area with the type tile over its
- * bottom edge, a two-line name, access and time, and a ⋯ menu with Pin, Rename,
- * Duplicate, Copy link, Download and Delete.
+ * A grid card of the Artifacts page (R-0896, R-0901): a preview area with
+ * the type tile over its bottom edge, a two-line name, access and time, and
+ * a ⋯ menu with Pin, Rename, Duplicate, Copy link, Download and Delete.
  */
 export function ArtifactGridCard({
   artifact,
@@ -217,10 +217,11 @@ export function ArtifactGridCard({
           data-no-translate
         />
       ) : dashboard ? (
-        // A dashboard draws itself with scripts, which a thumbnail may not run:
-        // its type's tile stands in.
+        // A dashboard draws itself with scripts, which a thumbnail may not
+        // run: its type's tile stands in (live claude.ai, 2026-10-20: violet
+        // at 10% under a 24px ChartLine).
         <span className="artifacts-card-type-media" aria-hidden="true">
-          <AppIcon name="ChartLine" size={24} />
+          <Anthropicon name="ChartLine" size={24} />
         </span>
       ) : liveThumbnail(artifact) ? (
         <iframe
@@ -248,7 +249,7 @@ export function ArtifactGridCard({
         data-dashboard={dashboard || undefined}
       >
         {dashboard ? (
-          <AppIcon name="ChartLine" size={16} />
+          <Anthropicon name="ChartLine" size={16} />
         ) : (
           <Icon size={16} />
         )}
@@ -260,8 +261,8 @@ export function ArtifactGridCard({
       className="artifacts-card"
       role="listitem"
       onContextMenu={(event) => {
-        // The whole card opens its menu at the pointer; not a menu or dialog
-        // portaled out of it.
+        // The whole card opens its menu at the pointer (desktop bundle
+        // 2.31226.1); not a menu or dialog portaled out of it.
         if (!event.currentTarget.contains(event.target as Node)) return;
         event.preventDefault();
         setMenu({ left: event.clientX, top: event.clientY });
@@ -318,8 +319,8 @@ export function ArtifactGridCard({
 }
 
 /**
- * Placeholder rows while the profile's notes (names, open times) are read, so
- * the list doesn't show stale names and then reorder.
+ * Placeholder rows while the profile's notes (names, open times) are read,
+ * so the list doesn't show stale names and then reorder (R-0910).
  */
 export function ArtifactsSkeleton({ view }: { view: "list" | "grid" }) {
   const items = Array.from({ length: view === "grid" ? 6 : 5 });

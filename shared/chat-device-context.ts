@@ -15,6 +15,7 @@ export const chatDeviceOptionsInput = z
     thinkingMode: z.enum(["standard", "extended"]).optional(),
     connectorOverrides: z.record(z.string().max(200), z.boolean()).optional(),
     connectorToolOverrides: connectorToolOverridesInput.optional(),
+    knowledgeBases: z.array(z.string().max(200)).max(50).optional(),
   })
   .strict();
 export const chatDeviceScopeInput = z.object({

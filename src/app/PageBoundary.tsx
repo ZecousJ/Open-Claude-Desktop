@@ -9,13 +9,14 @@ const ChatLoadError = lazyPiece(
 );
 
 /**
- * Keeps a page's rendering error inside the page: the sidebar and the rest of
- * the window stay usable and the page shows a danger banner, "Something went
- * wrong loading this page.", with Try again. A second failure, or a script that
- * did not load, offers Reload instead: trying again would only repeat it. Chat
- * and Code surfaces show the live conversation load state with a chat/session
- * headline, offline guidance, and Try again. Moving to another page or
- * conversation clears the error.
+ * Keeps a page's rendering error inside the page (live claude.ai bundle,
+ * 2026-10-12, its route boundary): the sidebar and the rest of the window
+ * stay usable and the page shows a danger banner, "Something went wrong
+ * loading this page.", with Try again. A second failure, or a script that
+ * did not load, offers Reload instead: trying again would only repeat it.
+ * Chat and Code surfaces show the live conversation load state with a
+ * chat/session headline, offline guidance, and Try again. Moving to another
+ * page or conversation clears the error.
  */
 export class PageBoundary extends Component<
   {

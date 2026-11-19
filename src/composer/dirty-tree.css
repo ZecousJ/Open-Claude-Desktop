@@ -1,7 +1,8 @@
 /*
- * Uncommitted changes on {branch}: a 30rem confirmation; secondary lines in
- * text-secondary, the changed-file count with its +/- in the success and danger
- * text colours, Cancel at the start and the split button at the end.
+ * Uncommitted changes on {branch} (live claude.ai bundle, 2026-10-14): a
+ * 30rem confirmation; secondary lines in text-secondary, the changed-file
+ * count with its +/- in the success and danger text colours, Cancel at the
+ * start and the split button at the end.
  */
 .modal.dirty-tree {
   max-width: 30rem;

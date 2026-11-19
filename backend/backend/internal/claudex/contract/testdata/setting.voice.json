@@ -1,7 +1,7 @@
 {
   "transcription": {
     "enabled": false,
-    "upstream_url": "wss://transcribe.example.com/v1/audio/realtime/transcriptions",
+    "upstream_url": "wss://hiwonder.cc/v1/audio/realtime/transcriptions",
     "max_session_seconds": 300,
     "max_bytes": 9600000,
     "idle_timeout_seconds": 30

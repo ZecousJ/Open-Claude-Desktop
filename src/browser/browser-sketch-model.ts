@@ -1,6 +1,9 @@
 /**
- * Sketch mode's keys and names. The attachment is "preview-annotation.png" with
- * marks and "preview-screenshot.png" without.
+ * Sketch mode's keys and names (live claude.ai bundle, 2026-10-12: the
+ * shortcut table's sketchUndo ⌘Z, sketchRedo ⇧⌘Z and, outside macOS,
+ * Ctrl+Y, sketchDeleteSelection ⌫ / Delete and sketchDeselect Esc; ⌘ reads
+ * Ctrl outside macOS). The attachment is "preview-annotation.png" with marks
+ * and "preview-screenshot.png" without.
  */
 import { isMacPlatform } from "../host/keys";
 

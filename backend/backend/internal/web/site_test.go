@@ -17,6 +17,7 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -172,6 +173,91 @@ func TestSiteServerDispatch(t *testing.T) {
 	}
 }
 
+func TestOfficialWebFrameCanOnlyBeEmbeddedFromItsOwnApp(t *testing.T) {
+	const frame = `<html><script nonce="__CSP_NONCE_VALUE__">document.documentElement.dataset.theme = "dark"</script></html>`
+	app := testAppFS()
+	app["official-frame.html"] = &fstest.MapFile{Data: []byte(frame)}
+	app["official-frame-document.html"] = &fstest.MapFile{Data: []byte("<html>verified template</html>")}
+	for _, tc := range []struct {
+		name, host, origin, wildcard string
+		allowed                      bool
+	}{
+		{"production viewer", "https://app.example.test", "https://viewer.example.test", "https://*.example.test", true},
+		{"viewer with port", "https://app.example.test", "https://viewer.example.test:8443", "https://*.example.test:8443", true},
+		{"local viewer", "http://127.0.0.1:5000", "http://localhost:4350", "", true},
+		{"local HTTPS viewer", "https://app.example", "https://viewer.localhost:4350", "", true},
+		{"HTTPS viewer IP", "https://app.example", "https://192.0.2.1:8443", "", true},
+		{"invalid DNS hostname", "https://app.example", "https://viewer_name.example", "", true},
+		{"same host", "https://app.example", "https://app.example:443", "", false},
+		{"insecure viewer", "https://app.example", "http://viewer.example", "", false},
+		{"configured URL with path", "https://app.example", "https://viewer.example/view", "", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, err := newSiteServer(SiteOptions{UserContentOrigin: tc.origin}, testConsoleFS(), app, "", "")
+			require.NoError(t, err)
+			r := gin.New()
+			r.Use(middleware.SecurityHeaders(config.CSPConfig{Enabled: true}, nil), s.Middleware())
+			res := do(r, http.MethodGet, tc.host+"/official-frame.html")
+			require.Equal(t, http.StatusOK, res.Code)
+			assert.Equal(t, "SAMEORIGIN", res.Header().Get("X-Frame-Options"))
+			csp := res.Header().Get("Content-Security-Policy")
+			assert.Contains(t, csp, "frame-ancestors 'self'")
+			assert.NotContains(t, csp, "frame-ancestors 'none'")
+			_, scriptSources, found := strings.Cut(csp, "script-src 'self' 'nonce-")
+			require.True(t, found, csp)
+			nonce, _, found := strings.Cut(scriptSources, "'")
+			require.True(t, found, csp)
+			require.NotEmpty(t, nonce)
+			assert.Contains(t, res.Body.String(), `<script nonce="`+nonce+`">document.documentElement.dataset.theme = "dark"</script>`)
+			assert.Equal(t, tc.allowed, strings.Contains(csp, tc.origin))
+			if tc.wildcard == "" {
+				assert.NotContains(t, csp, "://*.")
+			} else {
+				for _, directive := range []string{"frame-src", "connect-src"} {
+					_, rest, _ := strings.Cut(csp, directive+" ")
+					sources, _, _ := strings.Cut(rest, ";")
+					assert.Contains(t, strings.Fields(sources), tc.wildcard, directive)
+				}
+			}
+			for _, path := range []string{"/projects", "/admin", "/official-frame-document.html"} {
+				other := do(r, http.MethodGet, tc.host+path)
+				assert.Equal(t, "DENY", other.Header().Get("X-Frame-Options"), path)
+				otherCSP := other.Header().Get("Content-Security-Policy")
+				assert.NotContains(t, otherCSP, tc.origin, path)
+				if tc.wildcard != "" {
+					assert.NotContains(t, otherCSP, tc.wildcard, path)
+				}
+			}
+		})
+	}
+}
+
+func TestMissingOfficialWebFrameDoesNotServeTheAppIndex(t *testing.T) {
+	s := newTestSite(t, SiteOptions{}, true)
+	r := gin.New()
+	r.Use(middleware.SecurityHeaders(config.CSPConfig{Enabled: true}, nil), s.Middleware())
+	res := do(r, http.MethodGet, "/official-frame.html")
+	assert.Equal(t, http.StatusNotFound, res.Code)
+	assert.Equal(t, "DENY", res.Header().Get("X-Frame-Options"))
+}
+
+func TestOfficialStatusPreviewHasItsOwnSandboxPolicy(t *testing.T) {
+	app := testAppFS()
+	app["official-status-preview.html"] = &fstest.MapFile{Data: []byte("<html>status preview</html>")}
+	s, err := newSiteServer(SiteOptions{}, testConsoleFS(), app, "", "")
+	require.NoError(t, err)
+	r := gin.New()
+	r.Use(middleware.SecurityHeaders(config.CSPConfig{Enabled: true}, nil), s.Middleware())
+	res := do(r, http.MethodGet, "/official-status-preview.html")
+	require.Equal(t, http.StatusOK, res.Code)
+	assert.Equal(t, "<html>status preview</html>", res.Body.String())
+	assert.Equal(t, "sandbox allow-scripts; frame-ancestors 'self'", res.Header().Get("Content-Security-Policy"))
+	assert.Equal(t, "SAMEORIGIN", res.Header().Get("X-Frame-Options"))
+	assert.Contains(t, do(r, http.MethodGet, "/projects").Header().Get("Content-Security-Policy"), "script-src 'self' 'nonce-")
+	delete(app, "official-status-preview.html")
+	assert.Equal(t, http.StatusNotFound, do(r, http.MethodGet, "/official-status-preview.html").Code)
+}
+
 func TestSiteServerCacheHeaders(t *testing.T) {
 	r := newTestRouter(newTestSite(t, SiteOptions{}, true))
 
@@ -183,8 +269,34 @@ func TestSiteServerCacheHeaders(t *testing.T) {
 	assert.Empty(t, w.Header().Get("Cache-Control"))
 	for _, target := range []string{"/admin/", "/chat/1", "/desktop-pay"} {
 		w = do(r, http.MethodGet, target)
-		assert.Equal(t, "no-cache", w.Header().Get("Cache-Control"), target)
+		assert.Equal(t, "no-store", w.Header().Get("Cache-Control"), target)
 		assert.Contains(t, w.Header().Get("Content-Type"), "text/html", target)
+	}
+}
+
+func TestSiteServerRefreshKeepsCSPNonceInSync(t *testing.T) {
+	settings := &countingSettings{settings: map[string]any{"site_name": "Acme"}}
+	s := newTestSite(t, SiteOptions{Settings: settings}, true)
+	r := gin.New()
+	r.Use(middleware.SecurityHeaders(config.CSPConfig{Enabled: true}, nil), s.Middleware())
+	for target, zone := range map[string]*spaZone{"/new": s.app, "/admin/": s.console} {
+		t.Run(target, func(t *testing.T) {
+			first := do(r, http.MethodGet, target)
+			require.Equal(t, http.StatusOK, first.Code)
+			// A browser can still revalidate a document cached by an older server.
+			tag := zone.cache.Get().ETag
+			second := do(r, http.MethodGet, target, "If-None-Match", tag)
+			require.Equal(t, http.StatusOK, second.Code)
+			assert.Equal(t, "no-store", second.Header().Get("Cache-Control"))
+			assert.Empty(t, second.Header().Get("ETag"))
+			policy := second.Header().Get("Content-Security-Policy")
+			_, rest, hasNonce := strings.Cut(policy, "'nonce-")
+			require.True(t, hasNonce)
+			nonce, _, _ := strings.Cut(rest, "'")
+			require.NotEmpty(t, nonce)
+			assert.Contains(t, second.Body.String(), `nonce="`+nonce+`"`)
+			assert.NotEqual(t, first.Header().Get("Content-Security-Policy"), policy)
+		})
 	}
 }
 
@@ -207,17 +319,11 @@ func TestSiteServerInjection(t *testing.T) {
 	assert.NotContains(t, body, "__APP_CONFIG__")
 	assert.NotContains(t, body, NonceHTMLPlaceholder)
 
-	assert.NotEmpty(t, console.Header().Get("ETag"))
-	assert.NotEmpty(t, app.Header().Get("ETag"))
-	assert.NotEqual(t, console.Header().Get("ETag"), app.Header().Get("ETag"))
-
-	// Cached: no new provider calls, 304 on a matching ETag.
+	// The templates are reused even though each response contains fresh HTML.
 	do(r, http.MethodGet, "/admin/users")
 	do(r, http.MethodGet, "/new")
 	assert.Equal(t, int32(1), settings.calls.Load())
 	assert.Equal(t, int32(1), webApp.calls.Load())
-	assert.Equal(t, http.StatusNotModified, do(r, http.MethodGet, "/admin/", "If-None-Match", console.Header().Get("ETag")).Code)
-	assert.Equal(t, http.StatusNotModified, do(r, http.MethodGet, "/", "If-None-Match", app.Header().Get("ETag")).Code)
 
 	// A settings update invalidates both pages.
 	s.InvalidateCache()
@@ -382,11 +488,13 @@ func TestSiteServerReloadsDiskAppIndex(t *testing.T) {
 	s, err := newSiteServer(SiteOptions{}, testConsoleFS(), os.DirFS(dir), "", "")
 	require.NoError(t, err)
 	s.app.diskIndex = index
-	r := newTestRouter(s)
+	r := gin.New()
+	r.Use(s.Middleware())
 
 	first := do(r, http.MethodGet, "/new")
 	require.Equal(t, http.StatusOK, first.Code)
 	assert.Contains(t, first.Body.String(), "webapp")
+	assert.Equal(t, http.StatusNotModified, do(r, http.MethodGet, "/new", "If-None-Match", first.Header().Get("ETag")).Code)
 
 	require.NoError(t, os.WriteFile(index, []byte(strings.Replace(testAppIndex, "webapp", "next build", 1)), 0o644))
 	s.app.indexMu.Lock()

@@ -2,11 +2,12 @@ import type { ComposerField } from "./composer-field";
 import { useEffect, type RefObject } from "react";
 
 /*
- * Type-to-focus. A character typed while nothing editable has the focus, and no
- * menu, list or dialog is open, goes into the composer at its caret and focuses
- * it; a paste in the same state pastes into the composer, files included. A
- * space on a button stays the button's, and whitespace alone never starts an
- * empty draft.
+ * Type-to-focus (live claude.ai bundle, 2026-10-12: the composer's global
+ * type and paste hooks). A character typed while nothing editable has the
+ * focus, and no menu, list or dialog is open, goes into the composer at its
+ * caret and focuses it; a paste in the same state pastes into the composer,
+ * files included. A space on a button stays the button's, and whitespace
+ * alone never starts an empty draft.
  */
 
 /** Open layers that keep their own keys (menus, lists, dialogs). */

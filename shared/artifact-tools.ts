@@ -29,7 +29,7 @@ export function artifactToolArguments(input: Record<string, unknown>) {
   );
 }
 
-// : AM, zM and BM.
+// (live claude.ai bundle, 2026-10-14, frame-shell-chrome-B45f-YAC.js): AM, zM and BM.
 export function artifactToolDisplay(value: string, limit?: number) {
   const escaped = value.replace(
     /[\p{Cc}\p{Cf}\p{Co}\p{Default_Ignorable_Code_Point}\u2028\u2029]/gu,

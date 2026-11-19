@@ -4,9 +4,9 @@ import { approvalKind } from "../approval/approval-model";
 import type { Question } from "../approval/QuestionsBody";
 
 /**
- * While the agent waits on its questions: "Asking <header> ⌄" in the
- * transcript's muted tool style with the question under it, one per question,
- * above the question card in the composer.
+ * While the agent waits on its questions (R-0811): "Asking <header> ⌄" in
+ * the transcript's muted tool style with the question under it, one per
+ * question, above the question card in the composer.
  */
 export function AskingRows({
   conversationId,

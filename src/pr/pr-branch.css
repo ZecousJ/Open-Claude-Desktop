@@ -1,5 +1,6 @@
-/* The branch chip as a menu button. Size and text stay .pr-chip's; the hover
-   fill is the row's other ghost controls' (.pr-diff). */
+/* The branch chip as a menu button (live claude.ai bundle, 2026-10-12: a
+   chip with a ghost hover). Size and text stay .pr-chip's; the hover fill
+   is the row's other ghost controls' (.pr-diff). */
 .pr-branch-button {
   border: 0;
   border-radius: 6px;

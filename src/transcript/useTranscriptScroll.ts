@@ -40,8 +40,10 @@ export function useTranscriptScroll(
 
   /**
    * Following, the transcript keeps its end in view: scrolled to the bottom,
-   * the latest output sits just above the composer, with no room reserved below
-   * it. A sent prompt glides there.
+   * the latest output sits just above the composer, with no room reserved
+   * below it (live claude.ai bundle, 2026-10-21: the transcript's sizer only
+   * holds a shrinking list, by at most 240px; "pinned" means following the
+   * tail). A sent prompt glides there (owner, 2026-10-03: it jumped).
    */
   function align(sent = false) {
     const el = viewport.current;
@@ -93,7 +95,7 @@ export function useTranscriptScroll(
   return {
     /** The end of the transcript is out of view, so the button shows. */
     away,
-    /** Scrolls to the end and resumes following new output. */
+    /** Scrolls to the end and resumes following new output (R-0486). */
     jumpToLatest() {
       const el = viewport.current;
       if (!el) return;

@@ -2,9 +2,10 @@ import { useSyncExternalStore } from "react";
 import { speak as speakText, type Speaking } from "../voice/speech";
 
 /**
- * Where a reply's Read aloud is. Loading is the wait for the window's voices
- * before the first words; the live app's "reconnecting" belongs to its streamed
- * audio, which Claudex does not have.
+ * Where a reply's Read aloud is (live claude.ai bundle, 2026-10-12: idle,
+ * loading, playing, paused). Loading is the wait for the window's voices
+ * before the first words; the live app's "reconnecting" belongs to its
+ * streamed audio, which Claudex does not have.
  */
 export type ReadAloudPhase = "idle" | "loading" | "playing" | "paused";
 

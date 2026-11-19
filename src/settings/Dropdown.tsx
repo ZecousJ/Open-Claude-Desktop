@@ -17,10 +17,11 @@ import type { Choice, ListPlace } from "./controls";
 
 /**
  * A setting's choice list. `Dropdown` is the borderless value-and-chevron
- * trigger of General and Account; `bordered` gives the framed field of System's
- * shortcuts. The list opens 6px below with its right edge on the trigger's
- * (above when it does not fit), starts on the current choice, and follows the
- * arrow keys, Home/End, a typed letter, Enter/Space and Escape.
+ * trigger of General and Account (R-1485, R-1487, R-1577); `bordered`
+ * gives the framed field of System's shortcuts (R-1576, 219×32). The list
+ * opens 6px below with its right edge on the trigger's (above when it does
+ * not fit), starts on the current choice, and follows the arrow keys,
+ * Home/End, a typed letter, Enter/Space and Escape.
  */
 export function Dropdown<T extends string>({
   label,
@@ -108,8 +109,8 @@ export function Dropdown<T extends string>({
     };
   }, [open]);
 
-  // A click opens the list with no row lit until the pointer moves over one;
-  // the keyboard opens it on the current choice.
+  // A click opens the list with no row lit until the pointer moves over
+  // one (R-1473, R-1486); the keyboard opens it on the current choice.
   const show = (byKeyboard = true) => {
     if (disabled) return;
     setActive(

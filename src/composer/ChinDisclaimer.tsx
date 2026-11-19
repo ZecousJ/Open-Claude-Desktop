@@ -6,11 +6,12 @@ import { ConversationDisclaimer } from "./ConversationDisclaimer";
 const GAP = 12;
 
 /**
- * The conversation chin's note. Centred on the chin when it fits; moved toward
- * the free space between the controls when only that fits; else shown above the
- * frame, its chin copy kept unseen to measure again when the chin widens. Phone
- * web keeps its own placement above the input (composer CSS), so it is never
- * moved there.
+ * The conversation chin's note (live claude.ai bundle, 2026-10-20: the
+ * chin measures its note against the controls at each side). Centred on the
+ * chin when it fits; moved toward the free space between the controls when
+ * only that fits; else shown above the frame, its chin copy kept unseen to
+ * measure again when the chin widens. Phone web keeps its own placement
+ * above the input (composer CSS), so it is never moved there.
  */
 export function ChinDisclaimer(
   props: ComponentProps<typeof ConversationDisclaimer>,

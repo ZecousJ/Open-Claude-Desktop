@@ -32,11 +32,12 @@ export function Skeleton({
 }
 
 /**
- * A group of placeholders (skeleton.css): it waits --placeholder-reveal-delay,
- * fades in, and moves as `motion` says (a wave unless told otherwise). A wave
- * group numbers its blocks in order; a page's own .sk-item takes
- * `skeletonIndex(i)` as its style. The region is announced as loading; the
- * blocks themselves are hidden.
+ * A group of placeholders (skeleton.css): it waits
+ * --placeholder-reveal-delay, fades in, and moves as `motion` says (a wave
+ * unless told otherwise). A wave group numbers its blocks in order; a page's
+ * own .sk-item takes `skeletonIndex(i)` as its style. The region is
+ * announced as loading; the blocks themselves are hidden.
+ * (live claude.ai bundle, 2026-10-16, shared-frame: the default is "wave")
  */
 export function SkeletonGroup({
   className = "",

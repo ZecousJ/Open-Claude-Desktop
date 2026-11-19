@@ -1,10 +1,11 @@
 /*
- * Share chat / Share session (R1-U1). Measured from R-Code-会话分享弹层-稳定态-深色.png
- * (2x, ÷2): a 512-wide dialog, 20px in, radius 12, #202020 with a #363636
- * border; 50px option rows 3px apart, the chosen one #414141; the note 13px
- * #8f8f8f; the repository warning #2d1b03 with a #443111 border and #cc9c5e
- * text. Light values, the public link row, the stale line and the stop
- * confirmation have no capture.
+ * Share chat / Share session (R1-U1). Measured from
+ * R-Code-会话分享弹层-稳定态-深色.png (2x, ÷2): a 512-wide dialog, 20px in,
+ * radius 12, #202020 with a #363636 border; 50px option rows 3px apart,
+ * the chosen one #414141; the note 13px #8f8f8f; the repository warning
+ * #2d1b03 with a #443111 border and #cc9c5e text. Light values, the public
+ * link row, the stale line and the stop confirmation have no capture
+ * (provisional, see fidelity/observations/sharing.md).
  */
 .modal:has(> .conversation-share) {
   width: 512px;
@@ -16,7 +17,8 @@
 .modal:has(> .conversation-share) > header {
   margin: 0 -7px 0 0;
 }
-/* "Share session" 131 wide → 20px. */
+/* Widths matched to the capture with the system font (Anthropic Sans there):
+   "Share session" 131 wide → 20px. */
 .modal:has(> .conversation-share) h2 {
   font-size: 20px;
 }
@@ -125,7 +127,7 @@
   flex: none;
   color: var(--share-blue);
 }
-/* While the link is read, both rows fade. */
+/* R-Code-会话分享弹层-初始禁用态: while the link is read, both rows fade. */
 .share-options.loading .share-option-text,
 .share-options.loading .share-option-icon,
 .share-option[aria-disabled="true"]:not(.selected) .share-option-text,
@@ -164,8 +166,10 @@
   flex: none;
   margin-top: 2px;
 }
-/* The public link: a rounded alpha-1 bar, the link as text that opens in a new
-   tab (its arrow shows on hover or focus) and Copy link, an xxs button. */
+/* The public link: a rounded alpha-1 bar, the link as text that opens in a
+   new tab (its arrow shows on hover or focus) and Copy link, an xxs button
+   (live claude.ai bundle, 2026-10-16, c50a441b7: "flex items-center gap-1.25
+   rounded-[5px] bg-alpha-1 p-xs ps-sm"). */
 .share-link {
   margin-top: 12px;
 }

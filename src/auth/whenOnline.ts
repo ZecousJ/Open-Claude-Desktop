@@ -1,7 +1,9 @@
 /**
- * Sign-in requests wait for the connection, as the original's do. Used on the
- * desktop and the web alike: both windows know `navigator.onLine` and its
- * events.
+ * Sign-in requests wait for the connection, as the original's do (live
+ * claude.ai bundle, 2026-10-12: its sign-in mutations pause while the
+ * browser is offline, the form says "You appear to be offline. …" and the
+ * request goes out when the connection returns). Used on the desktop and
+ * the web alike: both windows know `navigator.onLine` and its events.
  */
 import type { AuthStep } from "./signInView";
 

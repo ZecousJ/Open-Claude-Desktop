@@ -1,11 +1,12 @@
 /* The usage report card in a Code transcript (src/usage-report/
-   UsageReportCard.tsx). 360px at most, 8px round (radius-lg .5rem), a hairline
-   outline (the card outline: box-shadow 0 0 0 1px border), 16px around and 12px
-   on top, 24px between its parts; every text footnote (12/15px). Inside: gap md
-   12px, xs 6px, sm 8px, 0.75 = 3px, 1.25 = 5px, 2.5 = 10px; rules 0.5px of
-   alpha-3. Meter colours are the context popover's (context-popover.css: the
-   ring's blue, the effort panel's amber, the original's danger red); Lines'
-   colours are the pull request bar's git added / removed. */
+   UsageReportCard.tsx). Layout from the live claude.ai bundle, 2026-10-12:
+   360px at most, 8px round (radius-lg .5rem), a hairline outline (the card
+   outline: box-shadow 0 0 0 1px border), 16px around and 12px on top, 24px
+   between its parts; every text footnote (12/15px). Inside: gap md 12px,
+   xs 6px, sm 8px, 0.75 = 3px, 1.25 = 5px, 2.5 = 10px; rules 0.5px of
+   alpha-3. Meter colours are the context popover's (context-popover.css:
+   the ring's blue, the effort panel's amber, the original's danger red);
+   Lines' colours are the pull request bar's git added / removed. */
 /* A posted report sits after its turn as another turn would (.turn's 24px). */
 .usage-report-turn {
   margin-top: 24px;

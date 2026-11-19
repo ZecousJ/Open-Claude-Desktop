@@ -25,11 +25,13 @@ export {
   sameArtifact,
 };
 /**
- * An HTML or SVG artifact in the transcript. While the agent is still writing
- * it the card shows only the file's name, "Artifact" and Open/Hide; when the
- * change that was writing it failed or stopped it is muted, gives the reason
- * and has nothing to open. The card is the original's sheet card: a grey page
- * with the Artifacts glyph that draws a web page's marks when hovered.
+ * An HTML or SVG artifact in the transcript. While the agent is still
+ * writing it (`artifact.generating`, R-0935) the card shows only the file's
+ * name, "Artifact" and Open/Hide; when the change that was writing it failed
+ * or stopped (`failure`, R-0949, visual provisional) it is muted, gives the
+ * reason and has nothing to open. The card is the original's sheet card:
+ * a grey page with the Artifacts glyph that draws a web page's marks when
+ * hovered (live claude.ai, 2026-10-01).
  */
 export function ArtifactCard({
   artifact,
@@ -81,8 +83,8 @@ export function ArtifactCard({
       <>
         Artifact ·{" "}
         {share?.visibility === "link" && share.scope === "public" ? (
-          // The reach's glyph and words, as the share popover's General access
-          // tile draws them.
+          // R-0946 (no capture): the reach's glyph and words, as the share
+          // popover's General access tile draws them (R-0994).
           <>
             <Globe size={10} /> Anyone with the link
           </>

@@ -18,7 +18,7 @@ export interface UpdateDevice {
   channelUuid?: string;
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, y2t).
 export function updateDeviceQuery(device: UpdateDevice) {
   const query = new URLSearchParams({
     device_id: device.deviceId,
@@ -82,7 +82,7 @@ export interface DesktopUpdaterConfig {
   staged_peek_min_interval_minutes?: number;
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, RJ / c$r).
 export function updaterIntervals(config?: DesktopUpdaterConfig) {
   const ticks = config?.check_interval_ticks;
   const minutes = config?.staged_peek_min_interval_minutes;

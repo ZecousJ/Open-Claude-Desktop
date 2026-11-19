@@ -2,9 +2,10 @@ import { Modal } from "../ui/Controls";
 import { useDiscardDraftQuestion } from "./discard-draft";
 
 /**
- * "Discard draft?" when a split pane with an unsent draft is closed: Keep
- * editing first and focused, then Start session, then the red Discard. Laid out
- * as the closest captured analogue, Create a skill's "Discard this draft?".
+ * "Discard draft?" when a split pane with an unsent draft is closed (live
+ * claude.ai bundle, 2026-10-12): Keep editing first and focused, then Start
+ * session, then the red Discard. Laid out as the closest captured analogue,
+ * Create a skill's "Discard this draft?" (R-1583).
  */
 export function DiscardDraftDialog() {
   const question = useDiscardDraftQuestion();

@@ -11,7 +11,9 @@ export function scrollsSideways(box: {
 
 /**
  * A reply's table. One wider than its column scrolls sideways, so its scroll
- * area takes the keyboard's focus and is named for a screen reader.
+ * area takes the keyboard's focus and is named for a screen reader (live
+ * claude.ai bundle, 2026-10-16, c14df289b: tabIndex 0, role group,
+ * "Table, scrolls sideways").
  */
 export function MarkdownTable({ children }: { children?: ReactNode }) {
   const box = useRef<HTMLDivElement>(null);

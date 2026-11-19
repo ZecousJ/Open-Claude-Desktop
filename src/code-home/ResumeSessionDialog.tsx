@@ -13,7 +13,7 @@ import { SegmentedControl } from "../ui/SegmentedControl";
 import "./resume-session.css";
 import { useWorkspaceGit } from "./useWorkspaceGit";
 
-/** Native session picker and transcript preview. */
+/** Native session picker and transcript preview (live claude.ai bundle, 2026-10-14, cc43287c9). */
 export function ResumeSessionDialog({
   initialQuery,
   cwd,

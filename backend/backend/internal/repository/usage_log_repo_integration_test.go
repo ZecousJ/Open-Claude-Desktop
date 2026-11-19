@@ -889,10 +889,46 @@ func (s *UsageLogRepoSuite) TestGetUserDashboardStats() {
 
 	s.createUsageLog(user, apiKey, account, 10, 20, 0.5, time.Now())
 
-	stats, err := s.repo.GetUserDashboardStats(s.ctx, user.ID)
+	today := timezone.Today()
+	stats, err := s.repo.GetUserDashboardStats(s.ctx, user.ID, today, today.AddDate(0, 0, 1))
 	s.Require().NoError(err, "GetUserDashboardStats")
 	s.Require().Equal(int64(1), stats.TotalAPIKeys)
 	s.Require().Equal(int64(1), stats.TotalRequests)
+}
+
+func (s *UsageLogRepoSuite) TestDashboardCalendarInReportingTimezone() {
+	user := mustCreateUser(s.T(), s.client, &service.User{Email: "reporting-zone@example.com"})
+	apiKey := mustCreateApiKey(s.T(), s.client, &service.APIKey{UserID: user.ID, Key: "sk-reporting-zone", Name: "k"})
+	account := mustCreateAccount(s.T(), s.client, &service.Account{Name: "reporting-zone", Platform: service.PlatformOpenAI})
+	loc, err := time.LoadLocation("America/Los_Angeles")
+	s.Require().NoError(err)
+	today := time.Date(2026, time.March, 8, 0, 0, 0, 0, loc)
+	tomorrow := today.AddDate(0, 0, 1)
+	s.Require().Equal(23*time.Hour, tomorrow.Sub(today))
+	s.createUsageLog(user, apiKey, account, 10, 20, 1, today.Add(-time.Minute))
+	s.createUsageLog(user, apiKey, account, 10, 20, 2, today.Add(time.Minute))
+	s.createUsageLog(user, apiKey, account, 10, 20, 4, tomorrow.Add(-time.Minute))
+	s.createUsageLog(user, apiKey, account, 10, 20, 8, tomorrow)
+
+	stats, err := s.repo.GetUserDashboardStats(s.ctx, user.ID, today, tomorrow)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(4), stats.TotalRequests)
+	s.Require().Equal(int64(2), stats.TodayRequests)
+	s.Require().Equal(6.0, stats.TodayActualCost)
+	s.Require().Len(stats.ByPlatform, 1)
+	s.Require().Equal(6.0, stats.ByPlatform[0].TodayActualCost)
+
+	filters := usagestats.UsageLogFilters{UserID: user.ID, TrendTimezone: loc.String()}
+	trend, err := s.repo.GetUsageTrendWithUsageFilters(s.ctx, today, tomorrow, "day", filters)
+	s.Require().NoError(err)
+	s.Require().Len(trend, 1)
+	s.Require().Equal("2026-03-08", trend[0].Date)
+	s.Require().Equal(6.0, trend[0].ActualCost)
+	trend, err = s.repo.GetUsageTrendWithUsageFilters(s.ctx, today, tomorrow, "hour", filters)
+	s.Require().NoError(err)
+	s.Require().Len(trend, 2)
+	s.Require().Equal("2026-03-08 00:00", trend[0].Date)
+	s.Require().Equal("2026-03-08 23:00", trend[1].Date)
 }
 
 // --- GetAccountTodayStats ---

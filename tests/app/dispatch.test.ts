@@ -8,6 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import {
   DispatchReceipts,
+  type DispatchDeliveryInput,
   readDeliveries,
   writeDeliveries,
 } from "../../electron/remote-control/dispatch-delivery";
@@ -15,7 +16,7 @@ import {
 test("offline Dispatch deliveries persist and retry without repeating completed calls", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "dispatch-delivery-"));
   try {
-    const delivery = {
+    const delivery: DispatchDeliveryInput & { deviceId: string } = {
       id: "c4d69a88-f989-45dd-a7c6-9e765c639b30",
       deviceId: "desktop_123",
       method: "newSession" as const,
@@ -30,13 +31,13 @@ test("offline Dispatch deliveries persist and retry without repeating completed 
     };
     const receipts = new DispatchReceipts(() => root);
     await Promise.all([
-      receipts.run(delivery.id, execute),
-      receipts.run(delivery.id, execute),
+      receipts.run(delivery, execute),
+      receipts.run(delivery, execute),
     ]);
     assert.equal(calls, 1);
     assert.deepEqual(
-      await new DispatchReceipts(() => root).run(delivery.id, execute),
-      { conversationId: "created" },
+      await new DispatchReceipts(() => root).run(delivery, execute),
+      { status: "accepted", value: { conversationId: "created" } },
     );
     assert.equal(calls, 1);
   } finally {
@@ -170,7 +171,7 @@ test("Dispatch bridge serves local tasks without tokens and validates remote cal
     } as any,
   );
   const status = await handlers.get("dispatchStatus")!();
-  assert.equal(status.appLink, "");
+  assert.equal(status.appLink, "https://claudex.zecous.cn/downloads");
   assert.equal(status.paired, false);
   assert.equal(status.local.online, true);
   assert.equal((await handlers.get("dispatchTasks")!())[0].id, "one");
@@ -198,6 +199,7 @@ test("Dispatch retries persisted offline deliveries after the host is activated 
         call: async (method: string, args: unknown[]) => {
           if (!online) throw new Error("offline");
           delivered.push([method, args]);
+          return { status: "accepted", value: { conversationId: "created" } };
         },
       },
     },
@@ -306,7 +308,7 @@ test("Dispatch remembers authorized desktops and directories when a desktop goes
     );
     online = false;
     const status = await handlers.get("dispatchStatus")!();
-    assert.deepEqual(status.devices, [device]);
+    assert.deepEqual(status.devices, [{ ...device, online: false }]);
     assert.deepEqual(status.onlineDeviceIds, []);
     assert.deepEqual(
       await handlers.get("dispatchCall")!(device.id, "listDirectories", []),
@@ -315,5 +317,180 @@ test("Dispatch remembers authorized desktops and directories when a desktop goes
   } finally {
     globalThis.fetch = originalFetch;
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a disconnected Dispatch device cannot overtake its pending head", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "dispatch-order-"));
+  const handlers = new Map<string, (...args: any[]) => any>();
+  const calls: string[] = [];
+  let activate: () => void = () => {};
+  let deactivate: () => void = () => {};
+  writeDeliveries(root, [
+    {
+      id: "c4d69a88-f989-45dd-a7c6-9e765c639b30",
+      deviceId: "desktop_123",
+      method: "newSession",
+      args: [{ text: "first" }],
+    },
+    {
+      id: "c7d5ec20-176e-46b3-9908-e2eaaf5fbc57",
+      deviceId: "desktop_123",
+      method: "newSession",
+      args: [{ text: "second" }],
+    },
+  ]);
+  try {
+    registerDispatchHandlers((name, handler) => handlers.set(name, handler), {
+      store: { root },
+      services: {
+        dispatch: {
+          status: () => ({ id: "desktop_123", online: false }),
+          call: async (
+            _method: string,
+            [entry]: [{ args: [{ text: string }] }],
+          ) => {
+            calls.push(entry.args[0].text);
+            throw Object.assign(Error("Offline"), {
+              code: "CLAUDEX_DEVICE_OFFLINE",
+            });
+          },
+        },
+      },
+      onAccountActivated: (callback: () => void) => {
+        activate = callback;
+      },
+      onAccountDeactivating: (callback: () => void) => {
+        deactivate = callback;
+      },
+    } as any);
+    activate();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(calls, ["first"]);
+  } finally {
+    deactivate();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("receipt recovery uses the saved turn and never resends an uncertain turn", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "dispatch-prepare-"));
+  try {
+    const first: DispatchDeliveryInput = {
+      id: "c4d69a88-f989-45dd-a7c6-9e765c639b30",
+      method: "newSession",
+      args: [{ text: "start" }],
+    };
+    const second: DispatchDeliveryInput = {
+      id: "c7d5ec20-176e-46b3-9908-e2eaaf5fbc57",
+      method: "send",
+      args: [{ conversationId: first.id, text: "continue" }],
+    };
+    const legacy: DispatchDeliveryInput = {
+      id: "8d9388ca-6c98-4b05-9b66-b1983afa5f00",
+      method: "newSession",
+      args: [{ text: "previous" }],
+    };
+    fs.writeFileSync(
+      path.join(root, "dispatch-receipts.json"),
+      JSON.stringify({ [legacy.id]: { conversationId: "previous" } }),
+    );
+    const tmp = path.join(root, "dispatch-receipts.json.tmp");
+    const executeAgain = async (): Promise<never> =>
+      assert.fail("The receiver executed an existing delivery again");
+    const receipts = new DispatchReceipts(() => root);
+    assert.deepEqual(await receipts.run(legacy, executeAgain), {
+      status: "accepted",
+      value: { conversationId: "previous" },
+    });
+    await assert.rejects(
+      receipts.run(first, async () => {
+        fs.writeFileSync(
+          path.join(root, "conversations.json"),
+          JSON.stringify([
+            { id: "forked", turns: [{ dispatchDeliveryId: first.id }] },
+            { id: first.id, turns: [{ dispatchDeliveryId: first.id }] },
+          ]),
+        );
+        fs.mkdirSync(tmp);
+        return { conversationId: first.id };
+      }),
+      /receipt/,
+    );
+    fs.rmdirSync(tmp);
+    assert.deepEqual(
+      await new DispatchReceipts(() => root).run(first, executeAgain),
+      { status: "accepted", value: { conversationId: first.id } },
+    );
+    await assert.rejects(
+      receipts.run(second, async () => {
+        fs.mkdirSync(tmp);
+        return null;
+      }),
+      /receipt/,
+    );
+    fs.rmdirSync(tmp);
+    assert.equal(
+      (await new DispatchReceipts(() => root).run(second, executeAgain)).status,
+      "unknown",
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a retired account cannot cache the devices from its delayed status response", async () => {
+  const roots = [
+    fs.mkdtempSync(path.join(os.tmpdir(), "dispatch-account-a-")),
+    fs.mkdtempSync(path.join(os.tmpdir(), "dispatch-account-b-")),
+  ];
+  const handlers = new Map<string, (...args: any[]) => any>();
+  const originalFetch = globalThis.fetch;
+  let finish: (response: Response) => void = () => {};
+  const request = new Promise<Response>((resolve) => {
+    finish = resolve;
+  });
+  globalThis.fetch = (() => request) as typeof fetch;
+  const context = {
+    store: { root: roots[0] },
+    remote: {
+      ready: true,
+      accounts: { baseUrl: "https://service.example" },
+      session: {
+        authorized: (call: (token: string) => unknown) => call("account-a"),
+      },
+      backend: { client: { nativeSessions: async () => ({ items: [] }) } },
+    },
+    services: {},
+  };
+  try {
+    registerDispatchHandlers(
+      (name, handler) => handlers.set(name, handler),
+      context as any,
+    );
+    const response = handlers.get("dispatchStatus")!();
+    context.store = { root: roots[1] };
+    finish(
+      Response.json({
+        ok: true,
+        value: [
+          {
+            id: "desktop_123",
+            name: "Account A",
+            platform: "darwin",
+            version: "1",
+            connectedAt: "2026-10-16T00:00:00Z",
+          },
+        ],
+      }),
+    );
+    await assert.rejects(response, /account changed/);
+    assert.equal(
+      fs.existsSync(path.join(roots[1], "dispatch-devices.json")),
+      false,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const root of roots) fs.rmSync(root, { recursive: true, force: true });
   }
 });

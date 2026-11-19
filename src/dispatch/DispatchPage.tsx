@@ -16,12 +16,12 @@ import { Button, Toggle } from "../settings/controls";
 import { RemoteFoldersRow } from "../settings/tabs/RemoteFolders";
 import { dispatchGroups } from "./model";
 import { requestScheduleConfirmation } from "../collections/routines/schedule-request";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { showToast } from "../ui/toast-store";
 import { helpUrl } from "../../shared/help-links";
 import "./dispatch.css";
 
-/** Pairing and task sections. */
+/** Pairing and task sections (live claude.ai bundle, 2026-10-14, c1f04f7e1-BY11zgRA, fu/Yo/_s). */
 export function DispatchPage() {
   const app = useApp();
   const settings = app.snapshot.settings;
@@ -250,7 +250,7 @@ export function DispatchPage() {
                     "Use the mobile app to talk to Claudex while it works from your desktop. Scan the code to download it on your phone.",
                   )}
                 </p>
-                {/* The access warning under the pairing text. */}
+                {/* The access warning under the pairing text (live claude.ai bundle, 2026-10-16, c1f04f7e1: 5LrcsTyduj). */}
                 <p className="dispatch-note">
                   {t(
                     "Claudex will access your desktop (files, apps, and browser) to complete tasks you send from your phone. This may have security risks. Only pair devices that you own and trust.",
@@ -343,7 +343,7 @@ export function DispatchPage() {
                 ))}
               </select>
             )}
-            {/* A link the service refused for the sign-in. */}
+            {/* A link the service refused for the sign-in (live claude.ai bundle, 2026-10-16, c1f04f7e1: veGvlgBzmX). */}
             {status?.local?.cause === "sign_in" && (
               <div className="dispatch-offline" role="status">
                 {t(
@@ -483,7 +483,8 @@ export function DispatchPage() {
                     void Notification.requestPermission();
                   setMobileNotifications(value);
                   // Kept only once the desktop took it; a refusal puts the
-                  // switch back and says so.
+                  // switch back and says so (live claude.ai bundle,
+                  // 2026-10-16, c1f04f7e1: 25UPQz06h5).
                   void call("dispatchPreferences", [value])
                     .then(() => save({ dispatchMobileNotifications: value }))
                     .catch((error) => {
@@ -528,7 +529,7 @@ export function DispatchPage() {
                           app.setPage("scheduled");
                         }}
                       >
-                        <AppIcon name="Clock" />
+                        <Anthropicon name="Clock" />
                         <span>{task.name}</span>
                       </button>
                     ))}

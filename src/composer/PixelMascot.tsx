@@ -1,8 +1,8 @@
 /**
- * The pixel mascot standing on the Code composer, Claudex's own: two ears, a
- * body with short arms, two dark eyes and two feet on a 3px grid. Its native
- * artwork is 36 by 24; the web draft keeps the 80px animation slot, with
- * 36x24px visible art.
+ * The pixel mascot standing on the Code composer, Claudex's own (owner,
+ * 2026-10-03: no borrowed character): two ears, a body with short arms,
+ * two dark eyes and two feet on a 3px grid. Its native artwork is 36 by 24;
+ * the web draft keeps the 80px animation slot, with 36x24px visible art.
  */
 export function PixelMascot({ webDraft = false }: { webDraft?: boolean }) {
   return (

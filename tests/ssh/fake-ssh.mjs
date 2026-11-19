@@ -179,7 +179,9 @@ if (args[0] === "--forwarder") {
       );
       process.exit(255);
     }
-    if (remote && target) {
+    for (let i = 0; i < args.length - 1; i++) {
+      if (args[i] !== "-R") continue;
+      const target = Number(args[i + 1].split(":").at(-1));
       const port = await proxy(target);
       const level = (option("LogLevel") ?? "INFO").toUpperCase();
       if (!["QUIET", "FATAL", "ERROR"].includes(level))

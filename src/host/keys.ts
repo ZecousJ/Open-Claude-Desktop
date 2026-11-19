@@ -47,8 +47,8 @@ const binding = (
 
 /**
  * The desktop's shortcuts. The Code pane keys are shared with the built-in
- * browser's pages (shared/pane-keys.ts). Open File… is ⌘O and Go ▸ Search… ⇧⌘K
- * on macOS.
+ * browser's pages (shared/pane-keys.ts). Open File… is ⌘O and Go ▸ Search…
+ * ⇧⌘K on macOS (desktop bundle 2.31226.1 menus).
  */
 function desktopBindings(mac: boolean): readonly KeyBinding[] {
   return Object.freeze([
@@ -58,8 +58,8 @@ function desktopBindings(mac: boolean): readonly KeyBinding[] {
     binding(",", "settings"),
     binding("b", "toggle-sidebar"),
     binding("/", "shortcuts"),
-    // Back and Forward: ⌘[ and ⌘] on macOS, Alt+← and Alt+→ elsewhere; Ctrl+[
-    // and Ctrl+] keep working.
+    // Back and Forward: ⌘[ and ⌘] on macOS, Alt+← and Alt+→ elsewhere
+    // (desktop 2.37337.1 nav buttons); Ctrl+[ and Ctrl+] keep working.
     ...(mac
       ? []
       : [
@@ -75,9 +75,10 @@ function desktopBindings(mac: boolean): readonly KeyBinding[] {
     binding("]", "next-session", true),
     binding("i", "incognito", true),
     binding("o", "open-file"),
-    // File ▸ Open Folder… shows Ctrl/⌘+Shift+O.
+    // File ▸ Open Folder… shows Ctrl/⌘+Shift+O (R-0136).
     binding("o", "open-folder", true),
-    // Background tasks: Ctrl+B. Elsewhere Ctrl+B is already the sidebar's key.
+    // Background tasks: Ctrl+B (live claude.ai bundle, 2026-10-15,
+    // backgroundTasks). Elsewhere Ctrl+B is already the sidebar's key.
     ...(mac ? [binding("b", "toggle-background", false, "ctrl")] : []),
     ...paneKeys
       .filter((pane) => mac || !pane.macOnly)
@@ -113,7 +114,8 @@ export function keyTable(kind: HostSurface, platform?: string): KeyTable {
     skipComposing: true,
     bindings: [
       binding("k", "search"),
-      // ⇧⌘K opens the palette on Search.
+      // ⇧⌘K opens the palette on Search (live claude.ai bundle, 2026-10-12:
+      // search_palette).
       binding("k", "search-palette", true),
       binding("b", "toggle-sidebar"),
       binding("/", "shortcuts"),

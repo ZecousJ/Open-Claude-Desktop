@@ -1,14 +1,18 @@
 /**
- * Page zoom for the app windows (View ▸ Zoom In, Zoom Out, Actual Size). The
- * original zooms every window together in half steps, keeps the level across
- * runs, and moves the macOS traffic lights with the zoom so they stay centred
- * on the title bar (the button position is `round((base + 6) *
- * zoomFactor - 6)`).
+ * Page zoom for the app windows (View ▸ Zoom In, Zoom Out, Actual Size).
+ * The original zooms every window together in half steps, keeps the level
+ * across runs, and moves the macOS traffic lights with the zoom so they
+ * stay centred on the title bar (source: desktop bundle 2.31226.1 static
+ * JS: the button position is `round((base + 6) * zoomFactor - 6)`).
  */
 
 /** The step of Zoom In and Zoom Out, in Electron zoom levels. */
 export const zoomStep = 0.5;
-/** The factor is kept between 25% and 500%, which is these levels. */
+/**
+ * The factor is kept between 25% and 500%, which is these levels (desktop
+ * bundle 2.37337.1, index.chunk-BWk6pVUt.js: log(0.25)/log(1.2) and
+ * log(5)/log(1.2)).
+ */
 export const zoomLimits = {
   min: Math.log(0.25) / Math.log(1.2),
   max: Math.log(5) / Math.log(1.2),
@@ -24,9 +28,12 @@ export function steppedZoomLevel(level: number, delta: number) {
 export const zoomFactorOf = (level: number) => Math.pow(1.2, level);
 
 /**
- * Traffic light positions at 100%, before rounding: the original's are 33/2 on
- * both axes, which lands on (17, 17). With the original's 74px light spacer the
- * sidebar's controls start at x 84, as Claudex's do.
+ * Traffic light positions at 100%, before rounding: the original's are 33/2
+ * on both axes, which lands on (17, 17) (live claude.ai bundle, 2026-10-12:
+ * the desktop main process's window-button position; no macOS capture shows
+ * the lights, every one has the capture tool's pill over them). With the
+ * original's 74px light spacer the sidebar's controls start at x 84, as
+ * Claudex's do.
  */
 export const baseTrafficLights = { x: 33 / 2, y: 33 / 2 };
 const halfButton = 6;

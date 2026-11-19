@@ -50,7 +50,7 @@ export function GeneralAppearance({
       <Row label="Chat font">
         <Dropdown<ChatFont>
           label="Chat font"
-          // Mode=select, popupClassName=w-56.
+          // O16 c0db37792 gt: mode=select, popupClassName=w-56.
           menuWidth={224}
           highlightSelectedOnOpen
           value={settings.chatFont ?? "serif"}

@@ -2,12 +2,12 @@ import type { CSSProperties } from "react";
 import { sheetGlyphs, type SheetGlyph } from "./sheet-glyphs";
 
 /**
- * The sheet card's tile, as the original draws the artifact and file blocks: a
- * tinted page standing in a 56px square, cut by the card's lower edge, with the
- * kind's glyph; on a card that opens, a second sheet waits behind it and the
- * page carries the kind's marks. Hovering the card (data-sheet-kind on it)
- * lifts the page, swings the sheet behind it out and draws the marks
- * (sheet-card.css).
+ * The sheet card's tile, as the original draws the artifact and file
+ * blocks (claude.ai "sheet" card, 2026-10-01): a tinted page standing in a
+ * 56px square, cut by the card's lower edge, with the kind's glyph; on a
+ * card that opens, a second sheet waits behind it and the page carries the
+ * kind's marks. Hovering the card (data-sheet-kind on it) lifts the page,
+ * swings the sheet behind it out and draws the marks (sheet-card.css).
  */
 export type SheetKind =
   | "doc"
@@ -454,8 +454,17 @@ function MarkPart({ mark }: { mark: Mark }) {
 }
 
 export function SheetGlyphIcon({ glyph }: { glyph: SheetGlyph }) {
-  const Icon = sheetGlyphs[glyph];
-  return <Icon size={20} strokeWidth={1.5} aria-hidden="true" />;
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d={sheetGlyphs[glyph]} />
+    </svg>
+  );
 }
 
 /**

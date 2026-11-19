@@ -513,7 +513,7 @@ test("startup: the real synchronous caret keeps its node and geometry while voic
         1,
       );
       assert.ok(
-        control.querySelector('[data-icon="CaretDown"]'),
+        control.querySelector('[data-anthropicon="CaretDown"]'),
         "the real caret glyph is present instead of a loading placeholder",
       );
       const selectors = matchingGeometry(control);

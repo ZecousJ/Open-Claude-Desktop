@@ -4,15 +4,16 @@ import { Spinner } from "../ui/Spinner";
 import { openLightbox } from "../lightbox/open";
 import type { Artifact } from "../ui/ArtifactTypes";
 import { parseDelimited } from "./csv";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { formatText, t, useT } from "../i18n";
 import { useSnapshotUrl } from "./useGeneratedBytes";
 import "./file-viewer-panel.css";
 import { ImageActions } from "../ui/ImageActions";
 
 /**
- * Images fit the panel; clicking toggles actual size. The corner button shows
- * the picture full screen (the lightbox), grown out of the panel's copy.
+ * Images fit the panel; clicking toggles actual size (R-1034). The corner
+ * button shows the picture full screen (the lightbox), grown out of the
+ * panel's copy.
  */
 export function ImagePreview({ artifact }: { artifact: Artifact }) {
   const { url, error } = useSnapshotUrl(artifact);
@@ -109,8 +110,9 @@ export function CsvPreview({ text, name }: { text: string; name: string }) {
 }
 
 /**
- * Why a file is too large to show: its size in megabytes to one decimal, or the
- * plain sentence when the size is not known.
+ * Why a file is too large to show (live claude.ai bundle, 2026-10-13,
+ * shared-15 zk): its size in megabytes to one decimal, or the plain
+ * sentence when the size is not known.
  */
 export function tooLargeReason(sizeBytes: number | undefined) {
   return sizeBytes === undefined
@@ -121,10 +123,11 @@ export function tooLargeReason(sizeBytes: number | undefined) {
 }
 
 /**
- * A file the viewer cannot show: a round File badge, "No preview", why (the
- * file type by default, or its size when the contents were left out), and
- * Download file once there are bytes to download. Spreadsheets, slides and
- * archives land here; so does a file past the snapshot limits, which has no
+ * A file the viewer cannot show (live claude.ai bundle, 2026-10-13,
+ * c2eed10ca R): a round File badge, "No preview", why (the file type by
+ * default, or its size when the contents were left out), and Download file
+ * once there are bytes to download. Spreadsheets, slides and archives land
+ * here (R-0941); so does a file past the snapshot limits, which has no
  * bytes and so no Download.
  */
 export function FilePreviewCard({
@@ -139,7 +142,7 @@ export function FilePreviewCard({
   return (
     <div className="file-preview file-preview-none">
       <span className="file-preview-none-badge">
-        <AppIcon name="File" />
+        <Anthropicon name="File" />
       </span>
       <div className="file-preview-none-text">
         <span className="file-preview-none-title">{t("No preview")}</span>
@@ -151,7 +154,7 @@ export function FilePreviewCard({
       </div>
       {!omitted && (
         <button className="file-preview-none-download" onClick={onDownload}>
-          <AppIcon name="DownloadSmall" />
+          <Anthropicon name="DownloadSmall" />
           {t("Download file")}
         </button>
       )}

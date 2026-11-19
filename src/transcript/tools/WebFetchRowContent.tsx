@@ -11,7 +11,7 @@ import { t } from "../../i18n";
 import { WebFetchError } from "./WebFetchError";
 import { webFetchLabel } from "./web-fetch-label";
 
-/** Fetch cell. */
+/** Fetch cell (live claude.ai bundle, 2026-10-14, shared-17-DZw1BgLL.js). */
 export function WebFetchRow({ item }: { item: Item }) {
   const { url, title: pageTitle, hostname } = webFetchPage(item);
   const running = itemIsRunning(item);

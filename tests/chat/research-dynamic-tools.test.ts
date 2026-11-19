@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 /**
  * Research through the engine extension (R45c): what a Research thread and
  * turn get, the research_plan / research_report tools, the report file,
@@ -431,6 +432,8 @@ test("research_report saves the report as a private file and finishes the resear
       title: "Desktop Sidebar Density",
       path: "research/conv-1/turn-1.md",
       bytes: Buffer.byteLength(reportMarkdown),
+      markdown: reportMarkdown,
+      sha256: createHash("sha256").update(reportMarkdown, "utf8").digest("hex"),
     });
     const file = path.join(env.root, "research", "conv-1", "turn-1.md");
     assert.equal(fs.readFileSync(file, "utf8"), reportMarkdown);

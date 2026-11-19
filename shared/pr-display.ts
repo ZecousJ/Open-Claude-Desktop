@@ -1,7 +1,9 @@
 /**
- * How the transcript shows the pull request messages of a Code session. Kept
- * apart because the transcript loads with the window while the branch row,
- * which writes and reads those messages, loads with the first Code session.
+ * How the transcript shows the pull request messages of a Code session
+ * (desktop bundle 2.31226.1; the messages themselves are in
+ * shared/pull-request.ts). Kept apart because the transcript loads with the
+ * window while the branch row, which writes and reads those messages, loads
+ * with the first Code session.
  */
 
 /** Create PR's message is wrapped in this tag (shared/pull-request.ts writes it). */

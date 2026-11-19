@@ -120,8 +120,8 @@ test("one failed reply keeps its own sentence; Code never folds", () => {
     render("chat", [turn("a"), failed("b")]),
     /This response didn’t load\./,
   );
-  // Each failed Code turn has its own card: the headline, and the hint without
-  // Try again but the last.
+  // Each failed Code turn has its own card (live claude.ai bundle,
+  // 2026-10-12): the headline, and the hint without Try again but the last.
   const code = render("code", [failed("a"), failed("b")]);
   assert.equal(code.match(/Something went wrong/g)?.length, 2);
   assert.equal(code.match(/Try sending your message again\./g)?.length, 2);

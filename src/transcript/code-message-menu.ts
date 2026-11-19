@@ -3,9 +3,10 @@ import { notAvailable } from "../settings/unavailable";
 import { terminalShortcuts } from "../terminal/terminal-menu";
 
 /**
- * What Attach selection as context takes from a message: the selection once it
- * has two characters or more after trimming; a shorter one is ignored and the
- * whole message goes instead.
+ * What Attach selection as context takes from a message: the selection once
+ * it has two characters or more after trimming (live claude.ai bundle,
+ * 2026-10-13, c63275c0a jC: `t.length >= 2`); a shorter one is ignored and
+ * the whole message goes instead.
  */
 export function messageSelection(selection: string) {
   const text = selection.trim();
@@ -13,11 +14,12 @@ export function messageSelection(selection: string) {
 }
 
 /**
- * A Code prompt bubble's right-click menu, in the original's order: Copy
- * message, Copy message as Markdown, a separator, Attach selection / message as
- * context, Pin as chapter (greyed: Claudex has no chapters), a separator, then
- * Rewind to here and Fork from here. The attach item reads "selection" and
- * shows the terminal's ⇧⌘L only while the bubble has a selection.
+ * A Code prompt bubble's right-click menu, in the original's order (live
+ * claude.ai bundle, 2026-10-13, c63275c0a jC): Copy message, Copy message as
+ * Markdown, a separator, Attach selection / message as context, Pin as
+ * chapter (greyed: Claudex has no chapters), a separator, then Rewind to here
+ * and Fork from here. The attach item reads "selection" and shows the
+ * terminal's ⇧⌘L only while the bubble has a selection.
  */
 export function codeMessageMenu(options: {
   copy: () => void;

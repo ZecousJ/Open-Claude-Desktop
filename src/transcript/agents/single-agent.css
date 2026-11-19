@@ -77,7 +77,12 @@
 .single-agent-event {
   margin: 14px 0;
   color: var(--text-secondary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 .single-agent-event > summary {
   display: flex;
@@ -253,10 +258,10 @@
   font-size: 13px;
   line-height: 19px;
 }
-/* The child's thinking is inline, without a "Thought process" step: since the
-   reference design such thinking sits behind a 2px alpha-2 rule on its start
-   side with pad-md (0.5rem) before the text (border-s-2 border-alpha-2 ps-md).
-   Size and colour stay R-0786's. */
+/* The child's thinking is inline, without a "Thought process" step: since
+   the live claude.ai bundle (2026-10-12) such thinking sits behind a 2px
+   alpha-2 rule on its start side with pad-md (0.5rem) before the text
+   (border-s-2 border-alpha-2 ps-md). Size and colour stay R-0786's. */
 .agent-transcript-thinking {
   margin: 12px 0;
   padding-inline-start: 0.5rem;
@@ -279,7 +284,7 @@
   color: var(--text-muted);
   font-size: 13px;
 }
-/* The group summary is light grey, the rows under it dimmer. */
+/* R-0786 (2x): the group summary is light grey, the rows under it dimmer. */
 .agent-transcript-commands > summary {
   color: #c3c2bd;
   display: flex;
@@ -508,9 +513,9 @@
   color: #38342e;
 }
 
-/* A transcript that could not load: plain failure red like the failed write of
-   R-0823 (dark #e5877b, light #8f2d2a), with Retry as the grey chip of "Get
-   more usage". */
+/* A transcript that could not load (R-0691: no capture): plain failure red
+   like the failed write of R-0823 (dark #e5877b, light #8f2d2a), with Retry
+   as the grey chip of "Get more usage" (R-0654). */
 .agent-transcript-error {
   margin: 12px 0;
   color: var(--danger);
@@ -570,7 +575,8 @@
   color: #38342e;
 }
 
-/* Code: a background agent is one grey line, its title then its model. */
+/* Code: a background agent is one grey line, its title then its model
+   ("Checked greet against README Opus 5.5 ›", #8c8c8a, R-0786 / S-0005). */
 .code-agent-row {
   display: flex;
   align-items: center;
@@ -582,7 +588,8 @@
   background: none;
   color: #8c8c8a;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   text-align: left;

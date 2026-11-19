@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { Globe2, ChevronRight } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { Item } from "../../../shared/types";
 import type { WebSource } from "../../../shared/research";
 import { itemIsRunning } from "../../../shared/activity";
@@ -16,14 +16,14 @@ import { WebFetchRow } from "./WebFetchRow";
 import { formatText, t } from "../../i18n";
 
 /**
- * A web search the model ran (R5, design R45 §4.5): "Searching the web" and the
- * query while it runs; once done "Searched the web" and the query, which opens
- * to the pages it read (site icon, title, host; a click opens the page through
- * the app's external link confirmation). Consecutive searches share one row
- * with a result count and a shared list of sources. grok's X searches read
- * "Searched X". When the search service returned no page list (an older
- * transcript, or a service without it) the row lists the queries as before,
- * without a result count.
+ * A web search the model ran (R5, design R45 §4.5): "Searching the web" and
+ * the query while it runs; once done "Searched the web" and the query
+ * (R-0739; Code: "Searched web …", R-0813), which opens to the pages it read (site icon, title, host; a click opens the page
+ * through the app's external link confirmation). Consecutive searches share
+ * one row with a result count and a shared list of sources.
+ * grok's X searches read "Searched X". When the search service returned no
+ * page list (an older transcript, or a service without it) the row lists
+ * the queries as before, without a result count.
  */
 
 type WebSearchAction =
@@ -71,8 +71,9 @@ const failed = (item: Item) =>
   item.lifecycleStatus === "failed" || item.status === "failed";
 
 /**
- * Whether a search continues the previous one's row: both are searches of the
- * same kind (web or X) and neither failed.
+ * Whether a search continues the previous one's row: both are searches of
+ * the same kind (web or X) and neither failed (a failed search keeps its
+ * own row, R-0785).
  */
 export function searchesJoin(previous: Item | undefined, item: Item) {
   return (
@@ -186,8 +187,8 @@ export function ResultRows({ sources }: { sources: WebSource[] }) {
 }
 
 /**
- * One search, or a run of consecutive searches. The row is the first item's;
- * `items` defaults to it alone.
+ * One search, or a run of consecutive searches (`items`, R-0769). The row
+ * is the first item's; `items` defaults to it alone.
  */
 export function WebSearchView({
   item,
@@ -196,7 +197,7 @@ export function WebSearchView({
 }: {
   item: Item;
   items?: Item[];
-  /** Code says "Searched web …"; Chat "Searched the web …". */
+  /** Code says "Searched web …" (R-0813); Chat "Searched the web …" (R-0739). */
   code?: boolean;
 }) {
   if (isWebFetch(item)) return <WebFetchRow item={item} />;
@@ -225,7 +226,7 @@ export function WebSearchView({
         role="status"
       >
         <div className="web-search-summary">
-          <AppIcon name="Warning" size={15} />
+          <Anthropicon name="Warning" size={15} />
           <span>{x ? "X search failed" : "Failed to search the web"}</span>
         </div>
       </div>
@@ -241,7 +242,7 @@ export function WebSearchView({
     <details className="activity web-search-activity">
       <summary>
         {/* A running tool row carries the four-dot mark as commands and
-           connector calls do. */}
+            connector calls do (R-0721, R-0815). */}
         {running ? <ActivityMark phase="tools" /> : <Globe2 size={15} />}
         <span className="web-search-title">
           {running
@@ -252,7 +253,7 @@ export function WebSearchView({
                 : "Stopped searching the web"
               : `Searched ${where}`}
         </span>
-        {/* Result count. */}
+        {/* Result count (live claude.ai bundle, 2026-10-14, shared-12-BFzJn52f). */}
         {!listed && lastQuery ? (
           <small className="web-search-meta">{lastQuery}</small>
         ) : (

@@ -1,8 +1,8 @@
 /*
- * Bypass confirmation: a 400px dialog centred in the window over a darkened,
- * blurred app. 20px padding; 14px semibold title, 14px body, the folder in 12px
- * monospace, a 12px grey note with a blue link, and two 23px buttons with
- * Cancel focused.
+ * Bypass confirmation (R-0376, 2x capture at 1164 × 1049): a 400px dialog
+ * centred in the window over a darkened, blurred app. 20px padding; 14px
+ * semibold title, 14px body, the folder in 12px monospace, a 12px grey note
+ * with a blue link, and two 23px buttons with Cancel focused.
  */
 .bypass-backdrop {
   position: fixed;
@@ -12,7 +12,8 @@
   place-items: center;
   background: #0000007f;
   backdrop-filter: blur(3px);
-  /* Motion: the dialog's, 200ms in and out. */
+  /* Motion: the dialog's (80-dialogs-responsive.css, desktop bundle
+     2.31226.1), 200ms in and out. */
   animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
 }
 .bypass-backdrop > .bypass-dialog {

@@ -93,7 +93,7 @@ function StandardArtifactPanel({
   width?: number;
   onResize?: (width: number) => void;
   onComment?: (text: string) => Promise<void>;
-  /** Asks the agent in the artifact's conversation to fix a preview error. */
+  /** Asks the agent in the artifact's conversation to fix a preview error (R-1036). */
   onTryFix?: (error: string) => Promise<void>;
   authorName?: string;
   onShareRequestConsumed?: () => void;
@@ -102,22 +102,22 @@ function StandardArtifactPanel({
   onDelete?: (artifact: Artifact) => void;
   /**
    * Whether the artifact's conversation is on screen beside it, so that
-   * expanded it can float over the artifact.
+   * expanded it can float over the artifact (Pop out chat, R-1047/R-1048).
    */
   chatBeside?: boolean;
   /**
-   * Opened from the Artifacts gallery: the artifact takes the page, and Chat
-   * goes to its conversation (onChat) instead of docking.
+   * Opened from the Artifacts gallery (R-0903): the artifact takes the page,
+   * and Chat goes to its conversation (onChat) instead of docking.
    */
   fullPage?: boolean;
   onHome?: () => void;
   onChat?: () => void;
-  /** The conversation's artifacts, for the title menu's Switch artifact. */
+  /** The conversation's artifacts, for the title menu's Switch artifact (R-1050). */
   siblings?: () => Artifact[];
   onSwitch?: (artifact: Artifact) => void;
   /**
-   * An artifact's versions, oldest first: one per write of a generated file;
-   * none for anything else.
+   * An artifact's versions, oldest first: one per write of a generated
+   * file (artifacts/artifact-versions.ts); none for anything else.
    */
   versionsOf?: (artifact: Artifact) => Artifact[];
   onRestore?: (artifact: Artifact) => Promise<boolean>;
@@ -127,7 +127,7 @@ function StandardArtifactPanel({
   const collaboration = artifact.surface === "artifact" && !artifact.blob;
   const identity = `${artifact.libraryId ?? artifact.conversationId ?? ""}:${artifact.sourcePath ?? artifact.id}:${artifact.surface ?? "file"}`;
   const kind = artifactKind(artifact);
-  // A file from a Code session opens in the editor-style panel.
+  // A file from a Code session opens in the editor-style panel (R-1062–R-1082).
   const app = useContext(AppContext);
   const account = useContext(ArtifactAccountScope);
   const owner = app?.snapshot.conversations.find(
@@ -144,7 +144,7 @@ function StandardArtifactPanel({
   // Preview/Code and Expand belong to the file on screen: another file opens
   // in its own default view from its first frame, never in the last file's.
   const viewKey = `${app?.accountId ?? account.id}:${identity}:${views.preview}`;
-  // A Code session's file opens on its source, the eye previews it.
+  // A Code session's file opens on its source, the eye previews it (R-1075).
   const firstView = codeSession ? !views.source : views.preview;
   const [mode, setMode] = useState({ viewKey, preview: firstView });
   const preview = mode.viewKey === viewKey ? mode.preview : firstView;
@@ -288,8 +288,8 @@ function StandardArtifactPanel({
     void downloadArtifact(shown, filename)
       .then((saved) => saved && onNotify?.(savedMessage(saved)))
       .catch(onError);
-  // Copy to project: adds the version shown, as a text file, to the project its
-  // conversation belongs to.
+  // Copy to project (live claude.ai bundle, 2026-10-12): adds the version
+  // shown, as a text file, to the project its conversation belongs to.
   const projectId =
     collaboration && !codeSession ? owner?.projectId : undefined;
   const projectFile = artifactProjectFile(shown);
@@ -319,8 +319,8 @@ function StandardArtifactPanel({
   const showPreview = preview || !views.source;
   // The account's editable current frame retains its shell while writing.
   // Imported/view-only and pinned-version surfaces keep their own renderer.
-  // Keep the known title: source titlePending is an uncached metadata read, not
-  // the agent writing a file.
+  // Keep the known title: source titlePending is an uncached metadata read,
+  // not the agent writing a file (cca654f75:4061–4070).
   const pendingFrame =
     collaboration &&
     Boolean(artifact.generating) &&

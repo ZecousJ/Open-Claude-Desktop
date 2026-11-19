@@ -16,7 +16,7 @@ import {
 } from "./microphone-guidance";
 import "./microphone-guidance.css";
 
-/** Ql. */
+/** Ql (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN). */
 export function MicrophoneGuidance({
   anchor,
   platform,

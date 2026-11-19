@@ -21,8 +21,9 @@ import "./memory.css";
 
 /**
  * The prompt Import memory offers to copy into another assistant. The live
- * claude.ai app reads its prompt from runtime configuration, which the bundle
- * does not carry, so Claudex writes its own to the same end.
+ * claude.ai app reads its prompt from runtime configuration (live claude.ai
+ * bundle, 2026-10-12: claudeai_saffron_port_config.prompt), which the
+ * bundle does not carry, so Claudex writes its own to the same end.
  */
 export const memoryExportPrompt = `I'm moving to another AI assistant and want to bring along what you know about me. List every memory you have stored about me, and any context you've learned about me from our past conversations.
 
@@ -40,18 +41,19 @@ Don't summarize, group or leave anything out.`;
 type View = "import" | "result";
 
 /**
- * Import memory, as the reference design draws it. Step 1 offers a prompt to
- * copy into another AI assistant (click the box or Copy); step 2 takes what it
- * answered. Add to memory turns the dialog into Manage memory's view: the
- * memory box shows "Updating memory..." (the dialog cannot close meanwhile),
- * then the memory with the import merged in, its pencil and Manage edits. When
- * the import fails, the dialog returns to the pasted text.
+ * Import memory, as the live claude.ai bundle draws it (2026-10-12: the
+ * memory import modal). Step 1 offers a prompt to copy into another AI
+ * assistant (click the box or Copy); step 2 takes what it answered. Add
+ * to memory turns the dialog into Manage memory's view: the memory box
+ * shows "Updating memory..." (the dialog cannot close meanwhile), then the
+ * memory with the import merged in, its pencil and Manage edits. When the
+ * import fails, the dialog returns to the pasted text.
  *
  * The original files the pasted text as a memory edit and regenerates the
- * memory; Claudex's memory merges it in with the account's model and saves the
- * result (`previewMemoryImport`, then `saveMemoryDoc`). Step texts and the
- * button's label are fetched at run time by the original (gated messages, not
- * in the bundle); these are Claudex's.
+ * memory; Claudex's memory merges it in with the account's model and saves
+ * the result (`previewMemoryImport`, then `saveMemoryDoc`). Step texts and
+ * the button's label are fetched at run time by the original (gated
+ * messages, not in the bundle); these are Claudex's.
  */
 export function MemoryImportDialog({
   onClose,

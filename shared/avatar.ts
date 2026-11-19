@@ -27,7 +27,7 @@ export interface AvatarCrop {
   size: number;
 }
 
-// Crop bounds and zoom limits.
+// Crop bounds and zoom limits (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh).
 export function initialAvatarCrop(width: number, height: number): AvatarCrop {
   const size = Math.min(width, height);
   return { x: (width - size) / 2, y: (height - size) / 2, size };

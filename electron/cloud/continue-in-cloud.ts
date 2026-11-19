@@ -1,31 +1,34 @@
 /**
- * Continue in cloud. A local Code session on a GitHub checkout moves to a cloud
- * session with its work as it is, uncommitted changes included, without pushing
- * the person's branch:
+ * Continue in cloud (live claude.ai bundle, 2026-10-12: the session's
+ * "Continue in ▸ Cloud" row opens "Move this session to the cloud?";
+ * "Claude picks up where you left off in a new cloud session, with your
+ * work exactly as it is now."). A local Code session on a GitHub checkout
+ * moves to a cloud session with its work as it is, uncommitted changes
+ * included, without pushing the person's branch:
  *
- * 1. `readContinuationPlan` reads the folder's git state (read-only queries):
- *    origin's github.com repository, the branch, what changed, the untracked
- *    files that come along and those that stay (they look like secrets or are
- *    over 10 MB), and what blocks a move (a rebase or merge under way,
- *    conflicts, too many untracked files);
- * 2. `buildSnapshot` saves the work as a commit on top of HEAD, written with an
- *    index of its own in a private temp folder: the folder's own index,
- *    branches and files are untouched, and the commit is reachable from no ref
- *    of theirs ("Saving your work");
+ * 1. `readContinuationPlan` reads the folder's git state (read-only
+ *    queries): origin's github.com repository, the branch, what changed,
+ *    the untracked files that come along and those that stay (they look
+ *    like secrets or are over 10 MB), and what blocks a move (a rebase or
+ *    merge under way, conflicts, too many untracked files);
+ * 2. `buildSnapshot` saves the work as a commit on top of HEAD, written
+ *    with an index of its own in a private temp folder: the folder's own
+ *    index, branches and files are untouched, and the commit is reachable
+ *    from no ref of theirs ("Saving your work");
  * 3. `uploadForCloud` pushes that commit to a ref of the session's own on
- *    origin with the person's GitHub connection: the service leases a
- *    credential for the one push, POST /api/v1/claudex/web/github/push-grant
- *    ("Uploading your work");
- * 4. the window writes the handoff note (Engine.writeHandOffNote) and sends it
- *    as the first message of a cloud session that checks the commit out on the
- *    desktop's branch name (runner/src/github-workspace.ts).
+ *    origin (`refs/claudex-continue/…`, never a branch) with the person's
+ *    GitHub connection: the service leases a credential for the one push,
+ *    POST /api/v1/claudex/web/github/push-grant ("Uploading your work");
+ * 4. the window writes the handoff note (Engine.writeHandOffNote) and sends
+ *    it as the first message of a cloud session that checks the commit out
+ *    on the desktop's branch name (runner/src/github-workspace.ts).
  *
- * The upload never runs git in the person's folder with the credential: the
- * commit is fetched from the folder into a fresh repository of our own (outside
- * any config or hook of the folder's) and pushed from there, the way the
- * runner's GitHub tools push (runner/src/github-tools.ts). The credential
- * reaches that one git process through a throw-away askpass helper
- * (shared/git-lease.ts) and is dropped when the upload ends.
+ * The upload never runs git in the person's folder with the credential:
+ * the commit is fetched from the folder into a fresh repository of our own
+ * (outside any config or hook of the folder's) and pushed from there, the
+ * way the runner's GitHub tools push (runner/src/github-tools.ts). The
+ * credential reaches that one git process through a throw-away askpass
+ * helper (shared/git-lease.ts) and is dropped when the upload ends.
  */
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -69,16 +72,18 @@ export function fileUrl(folder: string) {
 }
 
 /**
- * The most untracked files a move carries, the largest file, and how many names
- * the dialog lists.
+ * The most untracked files a move carries, the largest file, and how many
+ * names the dialog lists (live claude.ai desktop bundle, 2026-10-12:
+ * 2,000 files, 10 MB, five names).
  */
 export const maxUntracked = 2000;
 export const maxFileBytes = 10 * 1024 * 1024;
 const listedNames = 5;
 
 /**
- * File names that look like secrets: they stay on this computer unless the
- * person stages them.
+ * File names that look like secrets: they stay on this computer unless
+ * the person stages them (the same kinds the live desktop bundle keeps
+ * back: env files, key and credential files, cloud and SSH folders).
  */
 const secretName =
   /^(?:\.env(?:\..+)?|\.envrc|\.npmrc|\.pypirc|\.netrc|_netrc|\.pgpass|\.git-credentials|\.htpasswd|\.s3cfg|\.boto|kubeconfig(?:\.ya?ml)?|(?:token|auth)\.json|(?:application_default_)?credentials(?:\.json|\.ya?ml|\.toml)?|secrets?\.(?:json|ya?ml|toml|env)|id_(?:rsa|dsa|ecdsa|ed25519)(?:_sk)?|.+\.(?:pem|key|p12|p8|pfx|jks|keystore|kdbx|ppk|asc)|terraform\.tfstate(?:\.backup)?|.+\.tfvars(?:\.json)?|service-account[^/]*\.json|client_secret[^/]*\.json)$/i;
@@ -302,7 +307,7 @@ const runPlumbing: PlumbingGit = (cwd, args, { env, stdin }) =>
     child.stdin?.end(stdin ?? "");
   });
 
-/** The snapshot commit's message. */
+/** The snapshot commit's message (live desktop bundle's words, Claudex's name). */
 export const snapshotSubject = "WIP: uncommitted changes, moved to the cloud";
 const snapshotMessage = `${snapshotSubject}
 

@@ -19,6 +19,7 @@ import {
   modelVendor,
 } from "../../src/composer/model/code-model-choices";
 import type { GeneratedImageEvent } from "../../server/image-observer";
+import type { Provider } from "../../shared/types";
 
 const png =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
@@ -214,16 +215,19 @@ test("a picture model's turn is answered with a picture from the drawing group",
   t.after(() => server.close());
   const base = `http://127.0.0.1:${(server.address() as { port: number }).port}/v1`;
   const images: GeneratedImageEvent[] = [];
-  const provider = {
+  const observations: Array<{ kind: string; id?: string }> = [];
+  const provider: Provider = {
     id: "sub2api",
     name: "Claudex",
     model: "gpt-6-sol",
     models: ["gpt-6-sol", "gpt-image-2.5"],
     baseUrl: base,
     protocol: "responses",
+    backend: "sub2api",
     routes: [
       {
         groupId: 2,
+        groupName: "Chat",
         keyId: "sub2api",
         primary: true,
         protocol: "responses",
@@ -231,8 +235,10 @@ test("a picture model's turn is answered with a picture from the drawing group",
       },
       {
         groupId: 5,
+        groupName: "Images",
         keyId: "sub2api:g5",
         primary: false,
+        drawing: true,
         protocol: "responses",
         models: ["gpt-image-2.5"],
       },
@@ -240,7 +246,7 @@ test("a picture model's turn is answered with a picture from the drawing group",
   };
   const gateway = new Gateway(
     () => ({
-      provider: provider as never,
+      provider,
       apiKey: "codex-key",
       keyFor: (keyId) => (keyId === "sub2api:g5" ? "drawing-key" : ""),
     }),
@@ -248,7 +254,13 @@ test("a picture model's turn is answered with a picture from the drawing group",
     undefined,
     undefined,
     undefined,
-    { onGeneratedImage: (event) => images.push(event) },
+    {
+      onGeneratedImage: (event) => {
+        images.push(event);
+        observations.push({ kind: "image", id: event.requestId });
+      },
+      onImageRequest: ({ kind, id }) => observations.push({ kind, id }),
+    },
   );
   await gateway.start();
   t.after(() => gateway.close());
@@ -286,7 +298,7 @@ test("a picture model's turn is answered with a picture from the drawing group",
   assert.equal(done.type, "image_generation_call");
   assert.equal(done.status, "completed");
   assert.equal(done.result, "");
-  assert.equal(seen.url, "/v1/images/generations");
+  assert.equal(seen.url, "/v1/claudex/images/generations");
   assert.equal(seen.auth, "Bearer drawing-key");
   assert.deepEqual(seen.body, {
     model: "gpt-image-2.5",
@@ -296,7 +308,31 @@ test("a picture model's turn is answered with a picture from the drawing group",
   assert.equal(images.length, 1);
   assert.equal(images[0]!.base64, png);
   assert.equal(images[0]!.threadId, "thread-1");
+  assert.equal(images[0]!.turnId, undefined);
   assert.equal(images[0]!.callId, done.id);
+  const directRequest = images[0]!.requestId;
+  assert.ok(directRequest);
+  assert.deepEqual(observations.splice(0), [
+    { kind: "started", id: directRequest },
+    { kind: "image", id: directRequest },
+    { kind: "finished", id: directRequest },
+  ]);
+
+  const withTurnIdentity = await fetch(`${gateway.url}/responses`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${gateway.token}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-image-2.5", stream: true,
+      client_metadata: { thread_id: "thread-1", turn_id: "turn-2" },
+      input: [{ role: "user", content: [{ type: "input_text", text: "A new picture" }] }],
+    }),
+  });
+  await withTurnIdentity.text();
+  assert.equal(images.at(-1)?.turnId, "turn-2");
+  assert.deepEqual(observations.splice(0), [{ kind: "image", id: undefined }]);
 
   // The skill's image requests also go out with the drawing group's key,
   // and their pictures reach the observers (the turn's Image card).
@@ -309,9 +345,16 @@ test("a picture model's turn is answered with a picture from the drawing group",
     body: JSON.stringify({ model: "gpt-image-2", prompt: "a fox" }),
   });
   assert.equal(seen.auth, "Bearer drawing-key");
-  assert.equal(images.length, 2);
-  assert.equal(images[1]!.base64, png);
-  assert.equal(images[1]!.threadId, undefined, "the running turn takes it");
+  assert.equal(images.length, 3);
+  assert.equal(images[2]!.base64, png);
+  assert.equal(images[2]!.threadId, undefined, "the running turn takes it");
+  const skillRequest = images[2]!.requestId;
+  assert.ok(skillRequest);
+  assert.deepEqual(observations, [
+    { kind: "started", id: skillRequest },
+    { kind: "image", id: skillRequest },
+    { kind: "finished", id: skillRequest },
+  ]);
 });
 
 test("a picture from the provider child is checked before it is saved", async () => {
@@ -320,11 +363,12 @@ test("a picture from the provider child is checked before it is saved", async ()
   assert.deepEqual(
     parseGeneratedImageSignal({
       threadId: "t",
+      turnId: "turn",
       callId: "ig_1",
       base64: png,
       format: "png",
     }),
-    { threadId: "t", callId: "ig_1", base64: png, format: "png" },
+    { threadId: "t", turnId: "turn", callId: "ig_1", base64: png, format: "png" },
   );
   assert.equal(
     parseGeneratedImageSignal({ callId: "ig_1", base64: png, format: "gif" }),
@@ -337,48 +381,7 @@ test("a picture from the provider child is checked before it is saved", async ()
   assert.equal(parseGeneratedImageSignal(null), undefined);
 });
 
-test("the image model chosen on the API page makes every picture", async () => {
-  const { withImageModel } =
-    await import("../../electron/engine/gateway-support");
-  const { imagesFor } = await import("../../electron/account/api-groups");
-  const { parseRequestOptions } = await import("../../shared/gateway-signals");
-
-  const json = await withImageModel(
-    Buffer.from(JSON.stringify({ model: "gpt-image-2", prompt: "a fox" })),
-    "application/json",
-    "gpt-image-2.5",
-  );
-  assert.deepEqual(
-    JSON.parse(new TextDecoder().decode(json.body as Uint8Array)),
-    {
-      model: "gpt-image-2.5",
-      prompt: "a fox",
-    },
-  );
-  const form = new FormData();
-  form.set("model", "gpt-image-2");
-  form.set("prompt", "make it blue");
-  form.set(
-    "image",
-    new Blob([new Uint8Array([1, 2, 3])], { type: "image/png" }),
-    "a.png",
-  );
-  const encoded = new Response(form);
-  const multipart = await withImageModel(
-    Buffer.from(await encoded.arrayBuffer()),
-    encoded.headers.get("content-type")!,
-    "gpt-image-2.5",
-  );
-  assert.ok(multipart.body instanceof FormData);
-  assert.equal((multipart.body as FormData).get("model"), "gpt-image-2.5");
-  assert.equal(((multipart.body as FormData).get("image") as File).size, 3);
-  const untouched = await withImageModel(
-    Buffer.from("x"),
-    "application/json",
-    undefined,
-  );
-  assert.equal(new TextDecoder().decode(untouched.body as Uint8Array), "x");
-
+test("the API page lists the drawing group models in catalog order", () => {
   const item = (id: string, groupId: number, sort: number) => ({
     id,
     groupId,
@@ -398,45 +401,16 @@ test("the image model chosen on the API page makes every picture", async () => {
       item("gpt-6-sol", 2, 0),
     ],
   };
-  assert.deepEqual(imagesFor(catalog, groups, undefined), {
+  assert.deepEqual(apiGroupsFor(catalog, groups, {}).images, {
     groupId: 5,
+    selected: "auto",
     models: [
       { id: "gpt-image-2.5", name: "GPT Image 2.5" },
       { id: "gpt-image-2", name: "GPT Image 2" },
     ],
-    selected: "gpt-image-2.5",
   });
   assert.equal(
-    imagesFor(catalog, groups, "gpt-image-2")?.selected,
-    "gpt-image-2",
-  );
-  assert.equal(
-    imagesFor(catalog, groups, "gpt-image-9")?.selected,
-    "gpt-image-2.5",
-  );
-  assert.equal(
-    imagesFor(
-      catalog,
-      groups.filter((g) => !g.drawing),
-      undefined,
-    ),
-    undefined,
-  );
-
-  assert.equal(
-    parseRequestOptions({
-      describeTools: true,
-      xSearchModels: [],
-      imageModel: "gpt-image-2.5",
-    })?.imageModel,
-    "gpt-image-2.5",
-  );
-  assert.equal(
-    parseRequestOptions({
-      describeTools: true,
-      xSearchModels: [],
-      imageModel: "bad model\n",
-    })?.imageModel,
+    apiGroupsFor(catalog, groups.filter((group) => !group.drawing), {}).images,
     undefined,
   );
 });

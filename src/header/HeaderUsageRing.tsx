@@ -19,11 +19,13 @@ const ringSize = 16;
 const refreshMs = 60_000;
 
 /**
- * The chat header's usage ring: a ghost button with a 16px ring in the success
- * colour and "{percent}% used" for the fullest limit; it opens the 360px "Your
- * usage limits · {plan}" panel with each window, and Buy credits, which is
- * Billing's Add funds here. Claudex has no plans to upgrade to, so there is no
- * Upgrade button. Only a Claudex service account with plan limits has it.
+ * The chat header's usage ring (live claude.ai bundle, 2026-10-14,
+ * c146b936d: A): a ghost button with a 16px ring in the success colour and
+ * "{percent}% used" for the fullest limit; it opens the 360px "Your usage
+ * limits · {plan}" panel with each window, and Buy credits, which is
+ * Billing's Add funds here. Claudex has no plans to upgrade to (accounts
+ * run on their balance; owner, 2026-10-12), so there is no Upgrade button.
+ * Only a Claudex service account with plan limits has it.
  */
 export function HeaderUsageRing({ running }: { running: boolean }) {
   useT();

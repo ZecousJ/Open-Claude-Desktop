@@ -181,7 +181,7 @@ export function SetupScreen({
 }
 
 /** The device list as a menu: Booted, then Available (will boot). */
-/** A device row's right-click actions. */
+/** A device row's right-click actions (live claude.ai bundle, 2026-10-15, c49d37e5f `Kn`). */
 export type DeviceAction = "shutdown" | "restart" | "start" | "rename";
 
 /** What a device in the middle of an action says instead of being chosen. */
@@ -315,7 +315,7 @@ export function AttachScreen({
             ? "Claudex will control this emulator and take screenshots of its entire screen."
             : "Claudex will control this simulator and take screenshots of its entire screen."}
         </p>
-        {/* An error or notice takes the hint's place. */}
+        {/* An error or notice takes the hint's place (live claude.ai bundle, 2026-10-12). */}
         {!failure && !notice && (
           <p className="sim-body">Shut-down devices boot automatically.</p>
         )}
@@ -484,9 +484,10 @@ export function PermissionScreen({
 }
 
 /**
- * Rename simulator: a small dialog with the name selected in its field, the
- * reason under it when the name can't be used (too long, a leading hyphen, a
- * hidden character), Cancel and Rename (off while the name can't be used). An
+ * Rename simulator (live claude.ai bundle, 2026-10-15, c49d37e5f `er`): a
+ * small dialog with the name selected in its field, the reason under it
+ * when the name can't be used (too long, a leading hyphen, a hidden
+ * character), Cancel and Rename (off while the name can't be used). An
  * unchanged name just closes.
  */
 export function RenameDeviceDialog({

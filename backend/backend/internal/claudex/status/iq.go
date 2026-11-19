@@ -412,14 +412,14 @@ func iqRequest(ctx context.Context, endpoint, secret string) (string, int, error
 			"content": []any{map[string]any{"type": "input_text", "text": iqPrompt}},
 		}},
 	})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body)) //nolint:gosec // G704: the endpoint is this server's own gateway, not request input
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return "", 0, err
 	}
 	req.Header.Set("Authorization", "Bearer "+secret)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
-	res, err := http.DefaultClient.Do(req) //nolint:gosec // G704: the endpoint is this server's own gateway, not request input
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", 0, err
 	}
@@ -470,13 +470,13 @@ func ReadResponsesText(r io.Reader) (string, error) {
 		}
 		switch ev.Type {
 		case "response.output_text.delta":
-			_, _ = deltas.WriteString(ev.Delta)
+			deltas.WriteString(ev.Delta)
 		case "response.completed", "response.done":
 			var b strings.Builder
 			for _, o := range ev.Response.Output {
 				for _, part := range o.Content {
 					if part.Type == "output_text" {
-						_, _ = b.WriteString(part.Text)
+						b.WriteString(part.Text)
 					}
 				}
 			}

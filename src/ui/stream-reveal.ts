@@ -1,19 +1,20 @@
 /**
- * How a streaming reply's words appear.
+ * How a streaming reply's words appear (the original's reveal scheduler, as
+ * its renderer times it; source: desktop bundle 2.31226.1 static JS).
  *
- * - "word": words are grouped into chunks of whole words, at most 16 characters
- *   while one delivery is laid out and up to 48 when later deliveries join a
- *   chunk that is still open. Each chunk fades in over 200ms, starting 2.5ms
- *   per character after the one before it, but never more than 600ms ahead of
- *   now.
- * - "phrase": everything that arrives within 100ms is one chunk, fading in over
- *   500ms with no stagger.
+ * - "word": words are grouped into chunks of whole words, at most 16
+ *   characters while one delivery is laid out and up to 48 when later
+ *   deliveries join a chunk that is still open. Each chunk fades in over
+ *   200ms, starting 2.5ms per character after the one before it, but never
+ *   more than 600ms ahead of now.
+ * - "phrase": everything that arrives within 100ms is one chunk, fading in
+ *   over 500ms with no stagger.
  *
- * A chunk closes once it is 100ms old and the next delivery starts a new word.
- * While text arrives faster than 1.6 characters a millisecond (over two 100ms
- * windows in a row; it stays fast until it has been slower for 400ms) there is
- * no stagger and chunks that would start at once appear without a fade: too
- * fast to fade.
+ * A chunk closes once it is 100ms old and the next delivery starts a new
+ * word. While text arrives faster than 1.6 characters a millisecond (over
+ * two 100ms windows in a row; it stays fast until it has been slower for
+ * 400ms) there is no stagger and chunks that would start at once appear
+ * without a fade: too fast to fade.
  */
 export type RevealMode = "word" | "phrase";
 

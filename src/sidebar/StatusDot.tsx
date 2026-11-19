@@ -13,9 +13,11 @@ const PrStateGlyph = lazyPiece(
 
 /**
  * A row's dot with its name: a labelled image (a status while the state is
- * live) whose tooltip shows after the usual delay, and for a Chat or Cowork row
- * a button that marks the conversation read or unread. It sits inside the row's
- * link, so a press on it neither opens the conversation nor starts a drag.
+ * live) whose tooltip shows after the usual delay, and for a Chat or Cowork
+ * row a button that marks the conversation read or unread (desktop bundle
+ * 2.31226.1: the status icon's label, a 500ms hoverable-off tooltip, and
+ * "Click to mark as read" as its detail). It sits inside the row's link, so
+ * a press on it neither opens the conversation nor starts a drag.
  */
 export function StatusDot({
   status,

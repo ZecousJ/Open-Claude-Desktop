@@ -15,9 +15,10 @@ export interface Confirmation {
 }
 
 /**
- * Confirmation dialog: title, explanation, then Cancel and the confirming
- * button on the right. While the action runs both buttons are disabled and
- * Escape and the backdrop do nothing.
+ * Confirmation dialog (R-1289 Delete project, R-1590): title, explanation,
+ * then Cancel and the confirming button on the right. While the action
+ * runs both buttons are disabled and Escape and the backdrop do nothing
+ * (live claude.ai bundle, 2026-10-16, shared-frame-6654oR3- E9).
  */
 export function ConfirmationDialog({
   confirmation,

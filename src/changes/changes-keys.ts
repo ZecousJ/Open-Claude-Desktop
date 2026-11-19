@@ -1,8 +1,9 @@
 /**
- * The Changes panel's keys and their models: toggleDiffFileList ⇧⌘Y in the
- * desktop app and Control+Shift+Y on the web; goToDiffFile ⌘P; nextDiffChange
- * F7 and, except on Linux, ⌥F5; prevDiffChange ⇧F7 and ⇧⌥F5. "cmd" reads Ctrl
- * outside macOS; "ctrl" is Control everywhere.
+ * The Changes panel's keys and their models (live claude.ai bundle,
+ * 2026-10-12, the shortcut table in shared-19): toggleDiffFileList ⇧⌘Y in
+ * the desktop app and Control+Shift+Y on the web; goToDiffFile ⌘P;
+ * nextDiffChange F7 and, except on Linux, ⌥F5; prevDiffChange ⇧F7 and
+ * ⇧⌥F5. "cmd" reads Ctrl outside macOS; "ctrl" is Control everywhere.
  */
 export type ChangesKeyCommand =
   "file-list" | "go-to-file" | "next-change" | "previous-change";

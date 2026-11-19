@@ -39,7 +39,7 @@ export function usageHoldMessage(
   );
 }
 
-// Usage-stop notices.
+// Usage-stop notices (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js).
 export function UsageHold({
   turn,
   mode,

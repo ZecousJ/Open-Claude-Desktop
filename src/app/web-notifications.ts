@@ -12,10 +12,10 @@ import type { Routine } from "../../shared/routines";
 
 /*
  * Response completions on the web: the browser's own notifications. On
- * claude.ai the switch asks the browser for permission when it is turned on and
- * a finished reply is announced unless its chat is on screen in a visible tab.
- * The desktop app's banners come from the main process instead
- * (electron/desktop-integration.ts).
+ * claude.ai the switch asks the browser for permission when it is turned on
+ * and a finished reply is announced unless its chat is on screen in a
+ * visible tab (live claude.ai bundle, 2026-10-12). The desktop app's banners
+ * come from the main process instead (electron/desktop-integration.ts).
  */
 
 /** What asking the browser gave. */
@@ -150,10 +150,16 @@ export function notifyCodeUpdate(
     return;
   const id = conversation.id;
   try {
+    const tag = `code-update-${id}`;
+    shown.get(tag)?.close();
     const notification = new Notification(
       conversation.title.trim() || t("Code session"),
-      { body: message, tag: `code-update-${id}` },
+      { body: message, tag },
     );
+    shown.set(tag, notification);
+    notification.onclose = () => {
+      if (shown.get(tag) === notification) shown.delete(tag);
+    };
     notification.onclick = () => {
       window.focus();
       notification.close();
@@ -168,8 +174,9 @@ export function notifyCodeUpdate(
  * Browser delivery for the runner's real approval events while this page is
  * open. A request in a scheduled task's run (`task`, found with
  * runningSchedule) is the task's, under Scheduled tasks and whatever the
- * session's mode: "Scheduled task needs your approval" with the task's name;
- * any other request is a Code permission request.
+ * session's mode: "Scheduled task needs your approval" with the task's name
+ * (live claude.ai bundle, 2026-10-16, c101fef3f); any other request is a Code
+ * permission request.
  */
 export function notifyCodePermission(
   approval: Approval,
@@ -219,6 +226,11 @@ export function notifyCodePermission(
       open(conversation.id);
     };
   } catch {}
+}
+
+export function clearWebNotifications() {
+  for (const notification of shown.values()) notification.close();
+  shown.clear();
 }
 
 export function withdrawCodePermission(id: Approval["id"]) {

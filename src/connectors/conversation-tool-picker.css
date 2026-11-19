@@ -1,5 +1,5 @@
-/* Only the lazy conversation tool picker loads this sheet. 500px scrolling tool
-   list, rounded surface card and compact switch rows. */
+/* Only the lazy conversation tool picker loads this sheet. O16 cdeaafbfc:
+   500px scrolling tool list, rounded surface card and compact switch rows. */
 .conversation-tool-picker-body {
   display: flex;
   flex-direction: column;

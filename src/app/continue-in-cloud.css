@@ -1,11 +1,12 @@
 /*
- * "Move this session to the cloud?" (ContinueInCloudDialog.tsx). The frame is
- * the confirmation dialog; what is inside follows the live dialog: the
- * description's sentences, then 12px below (`mt-3`) the step list, 3px between
- * rows (`gap-0.75`), each a 14px glyph 4px before its label in the secondary
- * ink (done: a check in the success colour; running: a spinner; waiting: a 10px
- * ring, its label muted), and after a refused upload "Git said:" over git's
- * words in a code block at most 128px tall.
+ * "Move this session to the cloud?" (ContinueInCloudDialog.tsx). The frame
+ * is the confirmation dialog (R-1289, 80-dialogs-responsive.css); what is
+ * inside follows the live dialog (live claude.ai bundle, 2026-10-12):
+ * the description's sentences, then 12px below (`mt-3`) the step list, 3px
+ * between rows (`gap-0.75`), each a 14px glyph 4px before its label in the
+ * secondary ink (done: a check in the success colour; running: a spinner;
+ * waiting: a 10px ring, its label muted), and after a refused upload "Git
+ * said:" over git's words in a code block at most 128px tall.
  */
 .modal.continue-cloud .confirm-body + .confirm-body {
   margin-top: 8px;

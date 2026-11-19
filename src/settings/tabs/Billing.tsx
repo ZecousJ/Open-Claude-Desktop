@@ -1,21 +1,22 @@
 import { useLocale } from "../../i18n";
 /**
- * Settings → Billing (package C5). The plan card follows R-设置-Billing-顶部 (a
- * 64px drawing, the plan's name and one line under it); balance, plans, redeem
- * codes and orders use the Settings rows and are provisional. The person's
- * orders show as the original's Invoices. Sub2API has no saved payment methods
- * or plan cancellation, so none are shown.
+ * Settings → Billing (package C5). The plan card follows
+ * R-设置-Billing-顶部 (a 64px drawing, the plan's name and one line under
+ * it); balance, plans, redeem codes and orders use the Settings rows and
+ * are provisional (no capture of the original shows them). The person's
+ * orders show as the original's Invoices. Sub2API has no saved payment
+ * methods or plan cancellation, so none are shown.
  */
 import { useEffect, useRef, useState } from "react";
 import type {
   BillingCheckout,
   BillingInfo,
-  BillingOrderPage,
+  BillingOrder,
   PlanOffer,
 } from "../../../shared/billing-api";
 import { CheckoutDialog, type Purchase } from "../billing/CheckoutDialog";
 import { PlanIcon } from "../billing/PlanIcon";
-import { Invoices } from "../billing/Invoices";
+import { Invoices, type InvoiceOrders } from "../billing/Invoices";
 import { SpendLimitBlock } from "../billing/SpendLimit";
 import { onRechargeRequest, takeRechargeRequest } from "../billing/recharge";
 import {
@@ -33,7 +34,11 @@ import { SettingsSkeleton } from "../../ui/Skeleton";
 
 export { searchLabels } from "../billing/search";
 
-/** The plan card. */
+/**
+ * The plan card (cbbbe68ed: the drawing, the plan's name and its line,
+ * and at the right Adjust plan, or Upgrade plan on pay-as-you-go, where
+ * the service sells plans: both go to the Plans below).
+ */
 function PlanCard({
   info,
   onPlans,
@@ -118,15 +123,21 @@ function PlanRow({
   );
 }
 
-export function BillingTab({ onError, email }: TabProps) {
+export function BillingTab({
+  onError,
+  email,
+}: Pick<TabProps, "onError" | "email">) {
   // The web app opens payment pages in its own tab (web plan Q8): there is
   // no system browser to hand them to.
   const inTab = useHost().kind === "web";
   useLocale();
   const [info, setInfo] = useState<BillingInfo | null>();
   const [checkout, setCheckout] = useState<BillingCheckout | null>(null);
-  const [orders, setOrders] = useState<BillingOrderPage>();
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [orders, setOrders] = useState<InvoiceOrders>({
+    kind: "loading",
+    page: 1,
+  });
+  const orderRequest = useRef(0);
   const [purchase, setPurchase] = useState<Purchase>();
   // The open checkout dialog reloads the page itself when its order settles.
   const purchaseOpen = useRef(false);
@@ -140,16 +151,40 @@ export function BillingTab({ onError, email }: TabProps) {
     error: boolean;
   }>();
 
-  const loadOrders = (page = 1) =>
-    window.desktop
-      .billingOrders(page)
-      .then((next) =>
-        setOrders((current) =>
-          page > 1 && current
-            ? { ...next, items: [...current.items, ...next.items] }
+  const loadOrders = async (page = 1) => {
+    const request = ++orderRequest.current;
+    setOrders((current) => ({ kind: "loading", page, data: current.data }));
+    try {
+      const next = await window.desktop.billingOrders(page);
+      if (request !== orderRequest.current) return;
+      setOrders((current) => ({
+        kind: "ready",
+        data:
+          page > 1 && current.data
+            ? { ...next, items: [...current.data.items, ...next.items] }
             : next,
-        ),
-      );
+      }));
+    } catch {
+      if (request === orderRequest.current)
+        setOrders((current) => ({ kind: "failed", page, data: current.data }));
+    }
+  };
+  const updateOrder = (
+    id: number,
+    update: (item: BillingOrder) => BillingOrder,
+  ) =>
+    setOrders((current) => {
+      if (!current.data) return current;
+      return {
+        ...current,
+        data: {
+          ...current.data,
+          items: current.data.items.map((item) =>
+            item.id === id ? update(item) : item,
+          ),
+        },
+      };
+    });
   const load = async () => {
     const value = await window.desktop.billingInfo();
     setInfo(value);
@@ -158,6 +193,7 @@ export function BillingTab({ onError, email }: TabProps) {
       takeRechargeRequest();
       return;
     }
+    const orderRead = loadOrders();
     const offer = await window.desktop.billingCheckout().catch((error) => {
       onError(error);
       return null;
@@ -167,11 +203,11 @@ export function BillingTab({ onError, email }: TabProps) {
     // Opened from the recharge entry (account menu, low-balance notice):
     // straight into Add funds when the service takes payments.
     if (takeRechargeRequest() && offer?.balance) setPurchase({ funds: true });
-    // Orders exist only on a service with payments.
-    if (offer) await loadOrders().catch(onError);
+    await orderRead;
   };
-  // The account's billing did not load: say so with Try again rather than the
-  // page for a service without billing.
+  // The account's billing did not load: say so with Try again (the
+  // original's "Unable to load data. Try again later." line, live claude.ai
+  // bundle, 2026-10-12) rather than the page for a service without billing.
   const [loadFailed, setLoadFailed] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const firstLoad = () =>
@@ -202,17 +238,10 @@ export function BillingTab({ onError, email }: TabProps) {
         // Paid after the checkout dialog was closed: show the new plan and balance.
         if (event.status === "COMPLETED" && !purchaseOpen.current)
           void load().catch(onError);
-        setOrders(
-          (current) =>
-            current && {
-              ...current,
-              items: current.items.map((item) =>
-                item.id === event.orderId
-                  ? { ...item, status: event.status }
-                  : item,
-              ),
-            },
-        );
+        updateOrder(event.orderId, (item) => ({
+          ...item,
+          status: event.status,
+        }));
       }),
     [],
   );
@@ -352,38 +381,20 @@ export function BillingTab({ onError, email }: TabProps) {
           )}
         </Section>
       )}
-      {checkout && orders && (
-        <Invoices
-          orders={orders}
-          plans={plans}
-          loadingMore={loadingMore}
-          onMore={() => {
-            setLoadingMore(true);
-            void loadOrders(orders.page + 1)
-              .catch(onError)
-              .finally(() => setLoadingMore(false));
-          }}
-          onPay={(order) =>
-            void window.desktop.reopenPayment(order.id).catch(onError)
-          }
-          onCancel={(order) =>
-            void window.desktop
-              .cancelOrder(order.id)
-              .then((next) =>
-                setOrders(
-                  (current) =>
-                    current && {
-                      ...current,
-                      items: current.items.map((item) =>
-                        item.id === next.id ? next : item,
-                      ),
-                    },
-                ),
-              )
-              .catch(onError)
-          }
-        />
-      )}
+      <Invoices
+        orders={orders}
+        plans={plans}
+        onPage={(page) => void loadOrders(page)}
+        onPay={(order) =>
+          void window.desktop.reopenPayment(order.id).catch(onError)
+        }
+        onCancel={(order) =>
+          void window.desktop
+            .cancelOrder(order.id)
+            .then((next) => updateOrder(next.id, () => next))
+            .catch(onError)
+        }
+      />
       {purchase && checkout && (
         <CheckoutDialog
           checkout={checkout}

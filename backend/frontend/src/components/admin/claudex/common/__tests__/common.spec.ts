@@ -297,8 +297,8 @@ describe('Claudex console page stubs', () => {
       sources[path]?.includes('Stub from the backend seam (B-S)')
   )
 
-  it('covers the fourteen console pages', () => {
-    expect(pages).toHaveLength(14)
+  it('covers the ten console pages', () => {
+    expect(pages).toHaveLength(10)
   })
 
   if (stubs.length > 0) it.each(stubs)(

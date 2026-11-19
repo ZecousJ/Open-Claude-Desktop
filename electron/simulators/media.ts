@@ -1,8 +1,10 @@
 /**
- * What the pane's control bar and menus do besides touch input:
+ * What the pane's control bar and menus do besides touch input (live
+ * claude.ai bundle, 2026-10-12, and the desktop shell's simulator service):
  *
  * - Save screenshot: a PNG of the screen on the Desktop, named as the
- *   original names it, with a small picture for the corner thumbnail.
+ *   original names it ("Simulator Screenshot - iPhone 17 - 2026-10-12 at
+ *   09.41.07.png"), with a small picture for the corner thumbnail.
  * - Record video (iOS): `simctl io recordVideo` into a private folder, moved
  *   to the Desktop when it stops ("Simulator Recording - … .mp4").
  * - A saved capture's menu: Show in Finder and Delete, only for files this

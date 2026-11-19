@@ -1,6 +1,6 @@
 import type { McpStdioLogSnapshot } from "./mcp-stdio-logs";
 import { bridgeMethods } from "./bridge-methods";
-/** Local MCP review selection limit. */
+/** O/c432d56b4-C0W2Yh4M.js:365–376: local MCP review selection limit. */
 export const localMcpImportLimit = 5;
 /** Settings28/34: bounded diagnostics and review of local, supported MCP configs. */
 export interface McpLogSnapshot {

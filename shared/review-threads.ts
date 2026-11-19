@@ -1,7 +1,8 @@
 /**
- * Review comments' text in the Changes panel's threads: plain text and
- * ```suggestion blocks, the reviewed lines a suggestion replaces (from the
- * comment's diff hunk), and the folded row's one-line summary.
+ * Review comments' text in the Changes panel's threads (live claude.ai
+ * bundle, 2026-10-15, c44d00c7f): plain text and ```suggestion blocks, the
+ * reviewed lines a suggestion replaces (from the comment's diff hunk), and
+ * the folded row's one-line summary.
  */
 
 export type CommentSegment =

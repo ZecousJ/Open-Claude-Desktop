@@ -1,10 +1,11 @@
 /*
- * Settings → Time and focus: rows with 16px above and below (a two-line row
- * 76px, the days row 125px with the circles 16px under the note), the hours and
- * minutes menus 84×32 on white 5% without a border, day circles 32px, 12px
- * apart, 12px 580 letters in #898781 on white 10%. The chosen state and the
- * From/To menus had no capture (opening them changes the account): a chosen day
- * is drawn like a chosen segment (primary ink on white 20%).
+ * Settings → Time and focus (live claude.ai, 2026-09-29): rows with 16px above
+ * and below (a two-line row 76px, the days row 125px with the circles 16px
+ * under the note), the hours and minutes menus 84×32 on white 5% without a
+ * border, day circles 32px, 12px apart, 12px 580 letters in #898781 on
+ * white 10%. The chosen state
+ * and the From/To menus had no capture (opening them changes the account):
+ * a chosen day is drawn like a chosen segment (primary ink on white 20%).
  */
 .focus-page .settings-row {
   padding: 16px 0;
@@ -85,9 +86,9 @@
   align-items: start;
 }
 
-/* Settings → Reflect: the empty state centred in the page, 48px above and
-   below, the 96px pictogram 16px over its sentence, 13/17 #c3c2b7 at most 320
-   wide, the link in #6da7ec. */
+/* Settings → Reflect (live claude.ai, 2026-10-21): the empty state centred
+   in the page, 48px above and below, the 96px pictogram 16px over its
+   sentence, 13/17 #c3c2b7 at most 320 wide, the link in #6da7ec. */
 .reflect-empty {
   display: flex;
   flex-direction: column;

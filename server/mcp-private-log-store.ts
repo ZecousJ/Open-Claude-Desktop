@@ -10,7 +10,8 @@ const safeFile = (directory: string, name: string) => {
   if (
     fs.realpathSync(directory) !== directory ||
     fs.lstatSync(directory).isSymbolicLink() ||
-    (fs.statSync(directory).mode & 0o077) !== 0
+    (process.platform !== "win32" &&
+      (fs.statSync(directory).mode & 0o077) !== 0)
   )
     throw Error("Private MCP log directory unavailable.");
   const file = path.join(directory, name);
@@ -19,7 +20,7 @@ const safeFile = (directory: string, name: string) => {
     if (
       !stat.isFile() ||
       stat.isSymbolicLink() ||
-      (stat.mode & 0o777) !== 0o600
+      (process.platform !== "win32" && (stat.mode & 0o777) !== 0o600)
     )
       throw Error("Private MCP log file unavailable.");
   } catch (error) {
@@ -49,7 +50,13 @@ export function liveMcpLease(
 }
 export function captureState(
   descriptor: McpStdioDescriptor,
-  state: "capturing" | "stopped" | "failed",
+  state:
+    | "capturing"
+    | "stopped"
+    | "failed"
+    | "crashed"
+    | "crashed-no-log"
+    | "spawn-failed",
 ) {
   if (!liveMcpLease(descriptor)) return;
   try {

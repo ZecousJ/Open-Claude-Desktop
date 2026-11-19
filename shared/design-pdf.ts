@@ -11,7 +11,7 @@ export interface DesignPdfBridge {
 }
 export const designPdfChannel = "claudex:design-pdf";
 
-// .
+// (desktop package 2.37337.1, designWindow.js; index.chunk-BWk6pVUt.js).
 export function designBridgeOrigin(url: string, localDocument?: string) {
   try {
     const value = new URL(url);

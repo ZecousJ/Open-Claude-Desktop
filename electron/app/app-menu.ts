@@ -1,4 +1,13 @@
-import { defaultClaudexServiceUrl } from "../../shared/claudex-service";
+import {
+  openOfficialWindowSettings,
+  officialSidebarMenuState,
+  toggleOfficialWindowSidebar,
+  onOfficialMenuState,
+  officialMenuHistory,
+  officialMenuAreas,
+  officialSessionMenuState,
+  runOfficialMenuNavigation,
+} from "../official-ui/native/app-menu";
 import {
   app,
   BrowserWindow,
@@ -72,10 +81,11 @@ let installedUpdateLabel: string | undefined;
 let installedUpdateFailed: boolean | undefined;
 /** View ▸ Zoom In, Zoom Out and Actual Size (main.ts applies the zoom to every window). */
 let zoomActions: AppMenuOptions["zoom"];
+let openOfficialSupportBundle: ((window: BrowserWindow | null | undefined) => boolean) | undefined;
 
 /**
- * The menu's language: the signed-in account's setting; signed out there is no
- * store, so English.
+ * The menu's language: the signed-in account's setting; signed out there is
+ * no store, so English (reading it then made startup fail, 2026-10-20).
  */
 export function menuLocale() {
   const store = context?.store;
@@ -152,15 +162,18 @@ export function installAppMenu(
   run: (command: AppCommand) => void,
   find?: AppMenuOptions["find"],
   zoom?: AppMenuOptions["zoom"],
+  onOfficialSupportBundle?: typeof openOfficialSupportBundle,
 ) {
   runCommand = run;
   findActions = find;
   zoomActions = zoom;
+  openOfficialSupportBundle = onOfficialSupportBundle;
   build();
   // The updates item follows the updater (checking, downloading, ready).
   onAppUpdateStatus(rebuild);
   // Item names and states follow the main window's report.
   onMenuState(build);
+  onOfficialMenuState(build);
   app.on("browser-window-focus", build);
   app.on("browser-window-blur", build);
   app.on("browser-window-created", (_event, window) => {
@@ -206,16 +219,12 @@ function helpPage() {
   }
 }
 
-/** Help and Get Support: the administrator's help page, else the service's help. */
+/** Claudex's own site, when the administrator names no help page. */
+const claudexSite = "https://claudex.zecous.cn";
+
+/** Help and Get Support: the administrator's help page, else Claudex's site. */
 function openHelp() {
-  const page =
-    helpPage() ??
-    (context?.remote?.accounts.baseUrl
-      ? new URL("/help", context.remote.accounts.baseUrl).href
-      : defaultClaudexServiceUrl
-        ? new URL("/help", defaultClaudexServiceUrl).href
-        : undefined);
-  if (page) void shell.openExternal(page).catch(() => {});
+  void shell.openExternal(helpPage() ?? claudexSite).catch(() => {});
 }
 
 function developerSettingsPath() {
@@ -226,6 +235,7 @@ function allowDeveloperMode() {
   return !!context && developerModeAllowed(context.policy());
 }
 
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt)
 async function enableDeveloperMode() {
   const locale = menuLocale();
   await enableDeveloperSettings({
@@ -261,13 +271,24 @@ function build() {
   );
   installedUpdateLabel = updateItem?.label;
   installedUpdateFailed = updateItem?.failed;
+  const officialAreas = officialMenuAreas(BrowserWindow.getFocusedWindow());
+  const officialSessionMenu = officialSessionMenuState(BrowserWindow.getFocusedWindow());
   Menu.setApplicationMenu(
     Menu.buildFromTemplate(
       appMenuTemplate({
         editCommand: routeEditCommand,
         mac: process.platform === "darwin",
         appName: app.name,
-        run: runCommand,
+        newCodeWindow: officialAreas?.mode === "code",
+        newSideChat: officialSessionMenu?.canStartSideChat,
+        showReopenClosed: officialSessionMenu?.canShowReopenClosed,
+        run: command => {
+          const window = BrowserWindow.getFocusedWindow();
+          if (command === "settings" && openOfficialWindowSettings(window)) return;
+          if (command === "toggle-sidebar" && toggleOfficialWindowSidebar(window)) return;
+          if (runOfficialMenuNavigation(window, command)) return;
+          runCommand?.(command);
+        },
         checkForUpdates: () =>
           void runUpdateMenuAction({
             status: updateStatus(),
@@ -277,17 +298,21 @@ function build() {
         showMainWindow: () => {
           if (context) appWindowTargets(context).showMain();
         },
-        state:
-          !context ||
-          BrowserWindow.getFocusedWindow() === context.appWindows.main()
+        state: {
+          ...(!context || BrowserWindow.getFocusedWindow() === context.appWindows.main()
             ? menuState()
-            : { ...menuState(), closeTarget: undefined, findInFiles: false },
+            : { ...menuState(), closeTarget: undefined, findInFiles: false }),
+          ...officialSidebarMenuState(BrowserWindow.getFocusedWindow()),
+          ...officialMenuHistory(BrowserWindow.getFocusedWindow()),
+          ...officialAreas,
+          ...officialSessionMenu,
+        },
         translate,
         fullScreen: BrowserWindow.getFocusedWindow()?.isFullScreen() ?? false,
         updateItem,
         zoom: zoomActions,
         openHelp,
-        // Help ▸ Troubleshooting and About (Windows and Linux).
+        // Help ▸ Troubleshooting (R-0139) and About (Windows and Linux).
         showLogs: () => void shell.openPath(app.getPath("logs")),
         clearCacheAndRestart: () => void clearCacheAndRestart().catch(() => {}),
         troubleshooting: {
@@ -295,6 +320,10 @@ function build() {
           generateDiagnosticReport: () => {
             const window =
               context?.appWindows.focused() ?? context?.appWindows.main();
+            if (
+              openOfficialSupportBundle?.(BrowserWindow.getFocusedWindow()) ||
+              openOfficialSupportBundle?.(window)
+            ) return;
             if (window)
               context?.appWindows.send(window, {
                 type: "support-bundle-requested",
@@ -360,7 +389,7 @@ function build() {
             locale,
             translate,
             icon: aboutIcon(),
-            openHelp: helpPage() ? openHelp : undefined,
+            openHelp,
           }),
         find: findActions,
         reload: (window) => void reloadFocused(window),
@@ -376,9 +405,11 @@ const browserPanelQuery =
   'document.activeElement?.closest?.("[data-browser-conversation]")?.getAttribute("data-browser-conversation") ?? ""';
 
 /**
- * View ▸ Reload: the Browser's page when it or the Browser panel around it
- * (address bar, tabs) has the keyboard focus, else the window. A window that
- * does not answer in time is reloaded.
+ * View ▸ Reload (live claude.ai desktop shell, 2026-10-12: the menu's
+ * Reload reloads the preview tab that has the focus, or whose pane chrome
+ * has it, and otherwise the window): the Browser's page when it or the
+ * Browser panel around it (address bar, tabs) has the keyboard focus, else
+ * the window. A window that does not answer in time is reloaded.
  */
 export async function reloadFocused(window?: BaseWindow) {
   const browser = context?.services.browser;
@@ -464,13 +495,14 @@ type ShowMessage = (
   options: Electron.MessageBoxOptions,
 ) => Promise<Electron.MessageBoxReturnValue>;
 
-/** Check for Updates… while Claudex updates itself. */
+/** Check for Updates… while Claudex updates itself (package OTA). */
 async function checkWithUpdater(show: ShowMessage) {
   const current = appUpdater()!.status();
   const status =
     current.phase === "ready" || current.phase === "downloading"
       ? current
       : await settled();
+  // (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js)
   if (status.phase === "ready" || status.phase === "downloading") {
     await show({
       type: "info",

@@ -1,4 +1,4 @@
-/* Marketplace status. */
+/* Marketplace status (live claude.ai bundle, 2026-10-14, c6a2a31c4-kqWKJyeH.js). */
 .marketplace-summary {
   display: flex;
   flex: 1;
@@ -39,7 +39,7 @@
 :root[data-theme="light"] .marketplace-error {
   border-color: rgb(11 11 11 / 20%);
 }
-/* . */
+/* (live claude.ai bundle, 2026-10-14, c6a2a31c4-kqWKJyeH: mu, hu). */
 .marketplace-management-description {
   margin: 0;
   font-size: 13px;

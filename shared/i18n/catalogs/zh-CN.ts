@@ -110,7 +110,7 @@ const catalog: Record<string, string> = {
   Max: "最高",
   "More models": "更多模型",
   "Image generation": "生图",
-  "Image generation model": "生图模型",
+  "Automatic selection": "自动选择",
   "Select model": "选择模型",
   "Incognito chats stay out of your history and search.":
     "无痕对话不会出现在你的历史记录和搜索中。",
@@ -1278,16 +1278,37 @@ const catalog: Record<string, string> = {
   "Review yesterday's commits and flag anything concerning.":
     "审查昨天的提交，并标出任何值得关注的问题。",
   "System health check": "系统健康检查",
+  "Monitor infrastructure and services for errors, outages, and performance issues.":
+    "监控基础设施和服务中的错误、故障和性能问题。",
   "Issue triage": "议题分诊",
+  "Review and categorize incoming issues, bugs, and feature requests.":
+    "审阅并分类新提交的议题、缺陷和功能请求。",
   "PR review digest": "PR 审查摘要",
+  "Overview of open PRs, review status, and what needs attention.":
+    "概览未合并的 PR、审查状态以及需要关注的事项。",
   "Dependency update check": "依赖更新检查",
+  "Scan for outdated packages, security patches, and breaking changes.":
+    "扫描过时的包、安全补丁和破坏性变更。",
   "Flaky test tracker": "不稳定测试追踪",
+  "Find tests that pass and fail intermittently across recent CI runs.":
+    "找出最近 CI 运行中时而通过、时而失败的测试。",
   "Daily briefing": "每日简报",
+  "What needs your attention today across calendar, email, and messages.":
+    "今天在日历、邮件和消息中需要你关注的事项。",
   "Inbox triage": "收件箱分诊",
+  "Categorize your inbox and draft replies to anything urgent.":
+    "为收件箱分类，并为紧急邮件起草回复。",
   "Meeting prep": "会议准备",
+  "A short brief before each meeting on your calendar, covering attendees, context, and agenda.":
+    "在日历上的每场会议前给出简短说明，包含参会人、背景和议程。",
   "Weekly review": "每周回顾",
+  "A Friday summary of what happened this week.": "每周五总结本周发生的事。",
   "Content ideas": "内容创意",
+  "Draft a few post ideas each week from the latest news in your industry.":
+    "每周根据行业最新动态起草几个内容选题。",
   "Monitor a topic": "关注某个话题",
+  "Watch for news or mentions of a topic, competitor, or keyword.":
+    "留意某个话题、竞争对手或关键词的新闻或提及。",
   Frequency: "频率",
   "Add a model connection in Settings first.": "请先在设置中添加模型连接。",
   "e.g. Every weekday at 8am, summarize what needs my attention today.":
@@ -1397,6 +1418,7 @@ const catalog: Record<string, string> = {
   Write: "撰写",
   "Thought for {n}s": "思考了 {n} 秒",
   "Waiting for your response": "等待你的回复",
+  "ran a command": "运行了一条命令",
   "ran {n} commands": "运行了 {n} 条命令",
   "read a file": "读取了一个文件",
   "read {n} files": "读取了 {n} 个文件",
@@ -1406,6 +1428,7 @@ const catalog: Record<string, string> = {
   "created {n} files": "创建了 {n} 个文件",
   "edited a file": "编辑了一个文件",
   "edited {n} files": "编辑了 {n} 个文件",
+  "used a tool": "使用了一个工具",
   "used {n} tools": "使用了 {n} 个工具",
   "searched the web": "搜索了网页",
   "shared files": "已分享的文件",
@@ -1540,6 +1563,10 @@ const catalog: Record<string, string> = {
   Total: "总耗时",
   "billing|Total": "合计",
   "Request ID": "请求 ID",
+  "Could not save the connection.": "无法保存连接配置。",
+  "Open workspace": "进入工作区",
+  "API protocol": "API 协议",
+  "Connect your model": "连接模型",
   "API key": "API 密钥",
   Endpoint: "端点",
   Streaming: "流式",
@@ -1624,6 +1651,7 @@ const catalog: Record<string, string> = {
   "Only you can open this link": "只有您可以打开此链接",
   Copied: "已复制",
   "Local workspace": "本地工作区",
+  "Starting up…": "正在启动…",
   "Started an agent": "已启动智能体",
   "Messaged an agent": "已向智能体发送消息",
   "Resumed an agent": "已恢复智能体",
@@ -2002,6 +2030,8 @@ const catalog: Record<string, string> = {
   "memory settings": "记忆设置",
   "Claudex hasn't written any memory from your chats yet. Your reflection shows here once it has.":
     "Claudex 尚未根据您的对话写入任何记忆。写入后，您的回顾将显示在这里。",
+  "For this reflection to work, you'll need to enable memory in":
+    "要使此回顾生效，您需要在以下位置启用记忆",
   "Based on your conversations in Claudex chat.":
     "基于您在 Claudex 对话中的会话内容。",
   "Core skills library for Claudex Code: TDD, debugging, collaboration patterns, and proven techniques.":
@@ -2825,7 +2855,25 @@ const catalog: Record<string, string> = {
     "OpenAI 兼容客户端使用此地址；Anthropic 客户端使用去掉 /v1 的地址。",
   Rate: "倍率",
   "Click a model to copy its ID": "点击模型可复制其 ID",
+  "ZecousAI users have all moved to the new Claudex":
+    "ZecousAI 用户已全部迁移至全新 Claudex",
+  "Claudex is the fully upgraded ZecousAI platform, built to give you fuller and steadier service. Since September 4, OpenAI has been degrading and rate-limiting its models, and availability has dropped, so for ZecousAI users we have decided:":
+    "Claudex 为全面升级的 ZecousAI 平台，致力于提供更全面、更稳定的服务。对于之前的 ZecousAI 用户，由于从9月4日开始，OpenAI 逐步出现降智、限流以致服务可用性下降，我们做出如下决定：",
+  "If you had any ZecousAI subscription on September 4, or started one after September 4, the subscription time you had left from September 4 on is turned into balance in proportion to its length and added to your Claudex balance.":
+    "对于截止9月4日拥有任意 ZecousAI 订阅，或在9月4日后开通任意 ZecousAI 订阅的用户，我们将您从9月4日起之后的所有剩余订阅按时长比例折算为余额添加至您的 Claudex 账户余额。",
+  "If you had a ZecousAI balance on September 4, that day's balance is turned into balance and added to your Claudex balance (requests from September 4 on are not charged).":
+    "对于截止9月4日起拥有 ZecousAI 余额的用户，我们将您在9月4日的账户余额折算为余额添加至您的 Claudex 账户余额（即9月4日起的所有请求不计费）。",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's official 1:1, so what you can use does not change.":
+    "您可能会发现，ZecousAI 的剩余余额折合至 Claudex 后会有所减少，这是由于 Claudex 将采用¥1兑换$1的新比例进行充值，且模型倍率相比 ZecousAI 的1:1官方大幅下降，因此您的用量将不会受到影响。",
+  "Moving adds {amount} to your Claudex balance ({balance} from your balance, {subscription} from your subscriptions).":
+    "确认迁移后，您的 Claudex 账户余额将增加 {amount}（余额折算 {balance}，订阅折算 {subscription}）。",
+  "Once you confirm, your ZecousAI subscription and balance are cleared and moved to Claudex. If you use the API, switch your request address and create new keys in the API tab at the top left.":
+    "在您确认迁移后，您在 ZecousAI 的订阅或余额将被清空，并转移至 Claudex。若您是 API 用户，请在左上角 API 选项卡中及时切换请求端点并创建新的密钥。",
+  "Confirm move": "确认迁移",
   "Moving…": "迁移中…",
+  "The move didn't go through. Try again.": "迁移未完成，请重试。",
+  "Moved: {amount} added to your Claudex balance.":
+    "迁移完成，已为您的 Claudex 账户增加 {amount}。",
   "All changes": "全部更改",
   "1 file": "1 个文件",
   "Sync with the web": "与网页同步",
@@ -2870,6 +2918,15 @@ const catalog: Record<string, string> = {
   "{n} note": "{n} 条笔记",
   "{n} notes": "{n} 条笔记",
   "Apps and extensions": "应用和扩展",
+  "No downloads are currently available.": "暂无可用下载。",
+  "Enable Computer Use in System Settings": "在系统设置中启用电脑操作",
+  "Grant Accessibility and Screen Recording in Settings → System → Computer use.":
+    "请前往「设置 → 系统 → 电脑操作」，授予辅助功能及屏幕录制权限。",
+  "Allow Claudex to take control of your screen?": "允许 Claudex 接管屏幕吗？",
+  "Allow Claudex to use these apps?": "允许 Claudex 使用这些应用吗？",
+  "Click-only": "仅可点击",
+  "Clipboard read access": "读取剪贴板",
+  "Clipboard write access": "写入剪贴板",
   "Do more with Claudex, everywhere you work": "随时随地，用 Claudex 做更多事",
   Desktop: "桌面版",
   "Chat, cowork, and code in one app. Claudex works with your files, apps, and browser tabs.":
@@ -3089,6 +3146,7 @@ const catalog: Record<string, string> = {
   "This file can't be previewed.": "无法预览此文件。",
   "Waiting for a previous response to finish...": "正在等待上一条回复完成...",
   "Claudex’s response was interrupted.": "Claudex 的回复被中断了。",
+  "mobile-stop|Claudex’s response was interrupted.": "Claudex 的回复已中断。",
   "Edit prompt": "编辑提示",
   "Claudex reached its max length for this message.":
     "Claudex 已达到此消息的最大长度。",
@@ -3630,6 +3688,7 @@ const catalog: Record<string, string> = {
   "Give me a puzzle": "给我出个谜题",
   "Tell me something unexpected": "告诉我一件意想不到的事",
   "Debate a big question": "辩论一个大问题",
+  "Play a word game": "玩个文字游戏",
   "Try a thought experiment": "试试思想实验",
   "Read my draft for clarity, tone and structure, then rewrite it so it flows while keeping my voice. Here it is:\n\n":
     "请从清晰度、语气和结构三方面通读我的草稿，然后在保留我个人风格的前提下改写，使其行文流畅。草稿如下：\n\n",
@@ -4021,8 +4080,47 @@ const catalog: Record<string, string> = {
   "Refresh list": "刷新列表",
   "Couldn’t load branches.": "无法加载分支。",
   "No branches match": "没有匹配的分支",
+  "Pick a task, any task": "随便挑一个任务",
+  "Tidy up and get organized": "整理归纳，井井有条",
+  "Plan for what’s ahead": "为接下来的事做好计划",
+  "Turn messy data into action": "把杂乱的数据变成行动",
   "Customize with plugins": "用插件自定义",
   "On {deviceName}": "在 {deviceName} 上",
+  "Optimize my week": "优化我这一周",
+  "Help me plan and optimize my week. I have my Google Calendar open and ready for you to review and edit.\n\nFirst, review my calendar and show me a summary:\n- Total meetings\n- Busiest days\n- Where I have gaps of 2+ hours\n\nBefore proposing changes, ask me about:\n- What I’m trying to accomplish this week\n- How much focus time I need and for what\n- Any deadlines or commitments not on my calendar\n- Which types of meetings I should decline or shorten\n- Personal commitments or boundaries I want to protect\n\nThen show me your top 3-5 proposed changes with explanations:\n- Focus blocks to add\n- Meetings to decline or reschedule\n- Time conflicts to resolve\n\nStart with the highest-impact changes first. Once I approve each change, make the edits directly in my calendar one at a time.":
+    "帮我规划并优化这一周。我已打开 Google 日历，你可以查看和编辑。\n\n首先，查看我的日历并给我一份概览：\n- 会议总数\n- 最忙的几天\n- 哪些时段有 2 小时以上的空档\n\n在提出修改之前，先问我：\n- 这周我想完成什么\n- 我需要多少专注时间，用来做什么\n- 有哪些截止日期或安排没写在日历上\n- 哪些类型的会议我应该拒绝或缩短\n- 我想守住哪些个人安排或边界\n\n然后给出你最重要的 3-5 项修改建议并说明理由：\n- 要添加的专注时间块\n- 要拒绝或改期的会议\n- 要解决的时间冲突\n\n先从影响最大的修改开始。每项修改经我同意后，再逐一直接在我的日历中进行编辑。",
+  "Organize my screenshots": "整理我的截图",
+  "Help me organize recent screenshots on my Desktop.\n\nFirst, scan my Desktop and count how many screenshots/images are there. Show me:\n- Total count\n- Date range (oldest to newest)\n\nThen, focus only on screenshots from the last 14 days. For each one:\n- Identify what it shows\n- Suggest a descriptive filename\n- Propose which folder it belongs in (or if it can be deleted)\n\nGroup similar screenshots together. Show me the plan before making any changes.\n\nAfter I approve, start by organizing just 10 files as a preview. If there are more than 10 files, check in with me before continuing with the rest.":
+    "帮我整理桌面上最近的截图。\n\n首先，扫描我的桌面，统计有多少截图/图片。告诉我：\n- 总数\n- 日期范围（从最早到最新）\n\n然后，只关注最近 14 天的截图。对每一张：\n- 识别它显示的内容\n- 建议一个描述性的文件名\n- 提议它应该归到哪个文件夹（或是否可以删除）\n\n把相似的截图归为一组。在做任何更改之前先给我看方案。\n\n我同意后，先只整理 10 个文件作为预览。如果超过 10 个文件，继续处理其余文件前先和我确认。",
+  "Find insights in files": "从文件中发现洞见",
+  "Help me find patterns and insights across [my voice memos / meeting transcripts / documents / journal entries / specify folder]. I have messy, unstructured files and want to understand what themes are emerging.\n\nFirst, scan the folder and show me a summary:\n- Total files\n- Date range (oldest to newest)\n- Types of content\n\nBefore analyzing, ask me:\n- What I’m hoping to discover (recurring themes, contradictions, evolution of thinking, action items, or something else)\n- Whether certain files or time periods should be prioritized\n- What format would be most useful for the final analysis\n\nIf there are more than 20 files, start by analyzing just the 10 most recent files.\n\nShow me the top 3-5 patterns you found with 2-3 specific examples for each pattern. Once I confirm you’re on the right track, analyze the remaining files.":
+    "帮我在[我的语音备忘录 / 会议记录 / 文档 / 日记 / 指定文件夹]中找出规律和洞见。我有一些杂乱、无结构的文件，想了解其中浮现出哪些主题。\n\n首先，扫描文件夹并给我一份概览：\n- 文件总数\n- 日期范围（从最早到最新）\n- 内容类型\n\n在分析之前，先问我：\n- 我希望发现什么（反复出现的主题、矛盾之处、想法的演变、待办事项或其他）\n- 是否应优先处理某些文件或时间段\n- 最终分析用什么格式最有用\n\n如果文件超过 20 个，先只分析最近的 10 个文件。\n\n给我看你发现的 3-5 个主要规律，每个规律附 2-3 个具体例子。在我确认方向正确后，再分析其余文件。",
+  "Clean up my Downloads folder": "清理我的“下载”文件夹",
+  "Help me organize my Downloads folder.\n\nFirst, scan and show me a summary:\n- Total files and total size\n- Files older than 30 days\n- Largest files taking up space\n\nBefore organizing, ask me:\n- What categories or folder structure would be most useful\n- Whether I want to delete or archive old files\n- If there are specific file types I want to prioritize (documents, images, installers, etc.)\n\nThen focus only on files older than 30 days first. Show me a proposed plan for these old files:\n- Categories to create\n- Files to delete (installers, duplicates, temp files)\n- Files to keep with where they should go\n\nAfter I approve, organize the first 15 old files as a preview. If there are more files, check in before continuing.":
+    "帮我整理“下载”文件夹。\n\n首先，扫描并给我一份概览：\n- 文件总数和总大小\n- 超过 30 天的文件\n- 占用空间最大的文件\n\n在整理之前，先问我：\n- 什么样的分类或文件夹结构最有用\n- 我想删除还是归档旧文件\n- 是否有我想优先处理的特定文件类型（文档、图片、安装包等）\n\n然后先只关注超过 30 天的文件。针对这些旧文件给我一份整理方案：\n- 要创建的分类\n- 要删除的文件（安装包、重复文件、临时文件）\n- 要保留的文件及其应放的位置\n\n我同意后，先整理前 15 个旧文件作为预览。如果还有更多文件，继续之前先和我确认。",
+  "Organize photos by event/date": "按活动/日期整理照片",
+  "Help me organize photos on my [Desktop/Downloads/specify location].\n\nFirst, scan the folder and show me a summary:\n- Total photos\n- Date range (oldest to newest)\n- Rough size breakdown\n\nBefore organizing, ask me:\n- How I’d like them organized (by date, by event, by person)\n- Whether there are specific events or time periods I should know about\n- What folder structure would work best\n- If any photos can be deleted (duplicates, blurry ones, screenshots)\n\nFocus only on photos from the last 3 months first. Show me a proposed plan with examples from 3-4 different groups so I can show you how I’d organize them.\n\nAfter I approve, organize just 20 photos as a preview. If there are more than 20, check in before continuing with the rest.":
+    "帮我整理[桌面/下载/指定位置]中的照片。\n\n首先，扫描文件夹并给我一份概览：\n- 照片总数\n- 日期范围（从最早到最新）\n- 大致的大小分布\n\n在整理之前，先问我：\n- 我希望怎样整理（按日期、按活动、按人物）\n- 是否有我应该了解的特定活动或时间段\n- 什么样的文件夹结构最合适\n- 是否有可以删除的照片（重复的、模糊的、截图）\n\n先只关注最近 3 个月的照片。给我一份整理方案，并从 3-4 个不同分组中各举几个例子，好让我告诉你我会怎么整理它们。\n\n我同意后，先只整理 20 张照片作为预览。如果超过 20 张，继续处理其余照片前先和我确认。",
+  "Help me organize and clean up my email inbox.\n\nFirst, scan my inbox and show me a summary:\n- Total unread emails\n- Emails older than 30 days\n- The main senders or types of emails\n\nBefore organizing, ask me:\n- What categories or folders I want to create\n- Which types of emails I want to archive or delete\n- Whether there are specific senders I want to prioritize or filter\n- Any email patterns I want to address (newsletters, promotions, etc.)\n\nFocus only on emails older than 30 days first — these are easiest to clean up. Show me a proposed plan:\n- Which emails to archive\n- Which to delete\n- Which need action\n\nIf there are more than 50 old emails, start with a batch of 20 so I can check your approach. Once I approve, process that batch.":
+    "帮我整理并清理电子邮件收件箱。\n\n首先，扫描我的收件箱并给我一份概览：\n- 未读邮件总数\n- 超过 30 天的邮件\n- 主要的发件人或邮件类型\n\n在整理之前，先问我：\n- 我想创建哪些分类或文件夹\n- 我想归档或删除哪些类型的邮件\n- 是否有我想优先处理或过滤的特定发件人\n- 我想处理的邮件模式（订阅通讯、促销邮件等）\n\n先只关注超过 30 天的邮件——这些最容易清理。给我一份整理方案：\n- 哪些邮件要归档\n- 哪些要删除\n- 哪些需要处理\n\n如果超过 30 天的邮件多于 50 封，先处理一批 20 封，让我检查你的做法。我同意后，再处理这一批。",
+  "Prep for my next meeting": "为我的下一场会议做准备",
+  "I have a meeting with [a company] [tomorrow].\n\nBefore researching, ask me:\n- What the meeting is about\n- What I already know about them\n- What I’m trying to accomplish\n- What would be most useful to know going in\n\nThen research them and show me what you found:\n- Company overview\n- Recent news (last 3 months)\n- Key people I’ll be meeting with\n- Their LinkedIn for recent updates\n\nShow me an outline of the one-pager with the 3-5 most important points before writing the full doc. Once I approve, create the final one-pager.":
+    "我[明天]要和[某公司]开会。\n\n在调研之前，先问我：\n- 会议的主题是什么\n- 我对他们已经了解多少\n- 我想达成什么目标\n- 开会前了解哪些信息最有用\n\n然后调研他们，并告诉我你的发现：\n- 公司概况\n- 近期新闻（最近 3 个月）\n- 我将会见的关键人物\n- 他们在 LinkedIn 上的近期动态\n\n在撰写完整文档之前，先给我看一页纸简报的大纲，列出 3-5 个最重要的要点。我同意后，再完成最终的一页纸简报。",
+  "Plan my next vacation": "规划我的下一次度假",
+  "Help me plan my next vacation.\n\nBefore researching, ask me:\n- Where I’m thinking of going (or if I’m open to suggestions)\n- When I want to travel and for how long\n- What my budget is\n- What kind of trip I’m looking for (relaxing, adventure, cultural, food-focused, etc.)\n\nThen research the top 3 destinations that fit my criteria and show me a comparison:\n- Estimated costs\n- Best time to visit\n- What makes each unique\n\nOnce I pick my top choice, research that destination in detail:\n- Check current flight prices\n- Find 3-4 accommodation options\n- Suggest a day-by-day outline\n\nShow me this proposed itinerary with estimated costs before creating the final trip plan.":
+    "帮我规划下一次度假。\n\n在调研之前，先问我：\n- 我想去哪里（或者我是否愿意听你的建议）\n- 我想什么时候出行、去多久\n- 我的预算是多少\n- 我想要什么样的旅行（放松、探险、文化、美食等）\n\n然后调研最符合我条件的 3 个目的地，并给我一份对比：\n- 预估费用\n- 最佳旅行时间\n- 各自的独特之处\n\n我选定首选后，再详细调研这个目的地：\n- 查看当前机票价格\n- 找 3-4 个住宿选择\n- 给出逐日行程概要\n\n在制定最终旅行计划之前，先给我看这份行程建议和预估费用。",
+  "Prepare for a job interview": "准备求职面试",
+  "I have a job interview coming up for [role] at [company].\n\nBefore researching, ask me:\n- What the role is and what level\n- What I already know about the company\n- What I’m most nervous or uncertain about\n- If I have the job description or any interview details\n\nThen research the company and role, and show me what I found:\n- Company overview and recent news (last 6 months)\n- What this role typically involves\n- Common interview questions for this type of role\n- The interview team on LinkedIn (if you have names)\n\nShow me an outline covering these 3-5 topics before creating the full prep doc:\n- Key points about the company to mention\n- How my background connects to what they need\n- Questions I should ask them\n- 3-4 likely interview questions with suggested talking points\n\nOnce I approve, create a complete interview prep guide I can review before the interview.":
+    "我即将参加[公司]的[职位]面试。\n\n在调研之前，先问我：\n- 这是什么职位、什么级别\n- 我对这家公司已经了解多少\n- 我最紧张或最没把握的是什么\n- 我是否有职位描述或任何面试细节\n\n然后调研这家公司和这个职位，并告诉我你的发现：\n- 公司概况和近期新闻（最近 6 个月）\n- 这个职位通常涉及哪些工作\n- 这类职位的常见面试问题\n- LinkedIn 上的面试团队成员（如果你有名字的话）\n\n在制作完整的准备文档之前，先给我看涵盖以下 3-5 个主题的大纲：\n- 可以提到的公司要点\n- 我的背景如何契合他们的需求\n- 我应该问他们的问题\n- 3-4 个可能的面试问题及建议的回答要点\n\n我同意后，再制作一份完整的面试准备指南，供我在面试前查看。",
+  "Catch me up on Slack": "帮我跟上 Slack 上的动态",
+  "Help me catch up on what I’ve missed in Slack.\n\nBefore reading, ask me:\n- Which channels or DMs I should focus on (or check everything)\n- How far back to look (since yesterday, last week, specific date)\n- What I’m most concerned about missing (decisions, @mentions, urgent items, project updates)\n- Whether there are specific topics or people to prioritize\n\nThen scan those channels and show me a summary:\n- Total unread messages\n- Breakdown by channel\n\nFocus on messages that @mention me, contain decisions, or are marked urgent first.\n\nShow me the top 5 most important updates with context and links to the threads. If there are more than 30 unread messages total, start with these top 5 and ask if you should summarize more.":
+    "帮我跟上 Slack 上我错过的内容。\n\n在阅读之前，先问我：\n- 我应该关注哪些频道或私信（或者全部查看）\n- 要往回看多久（从昨天起、上周、指定日期）\n- 我最担心错过什么（决定、@提及、紧急事项、项目更新）\n- 是否有需要优先关注的特定话题或人员\n\n然后扫描这些频道并给我一份概览：\n- 未读消息总数\n- 按频道细分\n\n先关注 @提及我、包含决定或标为紧急的消息。\n\n给我看最重要的 5 条更新，附上背景信息和讨论串链接。如果未读消息总数超过 30 条，先从这 5 条开始，并问我是否需要总结更多。",
+  "Turn voice memos into a doc": "把语音备忘录整理成文档",
+  "Help me turn my voice memos into an organized document. I have [voice memos / audio recordings] in [specify location] that I want transcribed and organized.\n\nFirst, scan the folder and show me:\n- How many audio files\n- Total duration\n- Date range\n\nBefore transcribing, ask me:\n- What these recordings are about\n- How I’d like them organized (chronologically, by topic, by theme)\n- Whether I want verbatim transcripts or cleaned-up summaries\n- What the final document should be (meeting notes, journal entries, ideas list, etc.)\n\nIf there are more than 5 recordings, start by transcribing just the 3 most recent ones. Show me the transcribed content and proposed organization structure.\n\nOnce I approve the approach, transcribe and organize the remaining recordings.":
+    "帮我把语音备忘录整理成一份有条理的文档。我在[指定位置]有一些[语音备忘录 / 录音]，想把它们转写并整理好。\n\n首先，扫描文件夹并告诉我：\n- 有多少个音频文件\n- 总时长\n- 日期范围\n\n在转写之前，先问我：\n- 这些录音是关于什么的\n- 我希望如何组织它们（按时间顺序、按话题、按主题）\n- 我想要逐字稿还是整理后的摘要\n- 最终文档应该是什么（会议记录、日记、想法清单等）\n\n如果录音超过 5 段，先只转写最近的 3 段。给我看转写内容和建议的组织结构。\n\n我同意这种做法后，再转写并整理其余录音。",
+  "Pull data into a spreadsheet": "把数据提取到电子表格",
+  "I’m on a page with [job listings / products / directory entries] I want to extract.\n\nFirst, scan the page and show me what you see:\n- How many items total\n- What fields are available (title, price, location, description, etc.)\n\nBefore extracting, ask me:\n- Which fields I want in the spreadsheet\n- If there are any I should skip\n\nThen show me a preview with the first 3-5 items extracted so I can confirm the format looks right.\n\nIf there are more than 20 items on this page, extract them in batches of 10. If there are multiple pages, just do the first page and check with you before continuing.":
+    "我正在一个页面上，上面有我想提取的[职位列表 / 商品 / 目录条目]。\n\n首先，扫描页面并告诉我你看到了什么：\n- 总共有多少条\n- 有哪些字段可用（标题、价格、地点、描述等）\n\n在提取之前，先问我：\n- 我想在电子表格中包含哪些字段\n- 是否有我应该跳过的字段\n\n然后给我看一份预览，提取前 3-5 条，让我确认格式是否合适。\n\n如果这个页面上超过 20 条，每批提取 10 条。如果有多个页面，只处理第一页，继续之前先和我确认。",
   "Show empty groups": "显示空分组",
   "Drag or move sessions here": "将会话拖动或移动到这里",
   "“{groupName}” will be removed. Nothing is in it.":
@@ -4359,6 +4457,7 @@ const catalog: Record<string, string> = {
   "Started Claudex Code": "已启动 Claudex Code",
   "Start Claudex Code": "启动 Claudex Code",
   "In progress": "进行中",
+  "Starting session…": "正在启动会话…",
   "Unable to connect to repository": "无法连接到仓库",
   "Claudex couldn’t reach GitHub to fetch your repository. Try again in a moment.":
     "Claudex 无法连接 GitHub 获取你的仓库。请稍后再试。",
@@ -4620,8 +4719,8 @@ const catalog: Record<string, string> = {
     "无法将文件夹添加到项目知识。",
   "{name} can't be added: project files can be text files or PDFs.":
     "无法添加 {name}：项目文件只能是文本文件或 PDF。",
-  "{name} is too large. Project files can be up to 10 MB.":
-    "{name} 太大。项目文件最大为 10 MB。",
+  "{name} is too large. Project files can be up to {limit} MB.":
+    "{name} 太大。项目文件最大为 {limit} MB。",
   "This project no longer exists.": "此项目已不存在。",
   "Trust this workspace?": "信任此工作区？",
   "Codex may read, write, or execute files in this folder. Only proceed if you trust this workspace.":
@@ -4984,6 +5083,8 @@ const catalog: Record<string, string> = {
   "When is your birthday?": "你的生日是哪天？",
   "We’ll use this to verify your account": "我们会用它来验证你的账号",
   "Enter your birthdate": "输入你的出生日期",
+  "I agree to ZecousAI’s {terms} and {aup}.":
+    "我同意 ZecousAI 的{terms}和{aup}。",
   "Terms of Service": "服务条款",
   "Acceptable Use Policy": "可接受使用政策",
   "Enter your name to continue": "请输入你的名字以继续",
@@ -6564,6 +6665,44 @@ const catalog: Record<string, string> = {
   "Create an interactive app that ": "创建一个交互式应用，用于",
   "Turn this idea into a diagram, chart, or visual: ":
     "将这个想法转化为图表或可视化内容：",
+  "Template Creator": "模板创建器",
+  "Deck Checker": "演示文稿检查器",
+  "DCF Valuation": "DCF 估值",
+  "Earnings Analysis": "财报分析",
+  "All Finance Skills": "全部金融技能",
+  "Company Profile": "公司简介",
+  "Pitch Deck": "路演演示文稿",
+  "Initiating Coverage": "首次覆盖报告",
+  "Competitive Analysis": "竞争分析",
+  "3-Statement Model": "三大财务报表模型",
+  "Comps Analysis": "可比公司分析",
+  "Datapack Builder": "数据包构建器",
+  "Enable skill to continue": "启用技能以继续",
+  "The skill “{skillName}” needs to be enabled to use this prompt. Enable it now?":
+    "使用此提示需要启用“{skillName}”技能。现在启用吗？",
+  "Enable skill": "启用技能",
+  "Create a reusable skill from our firm's template using anthropic-ppt-template-creator. Extract layouts, placeholders, and formatting standards. [attach firm_brand_template.pptx]":
+    "使用 anthropic-ppt-template-creator 从公司模板创建可复用的技能。提取布局、占位符和格式标准。[附加 firm_brand_template.pptx]",
+  "QC the attached management presentation using anthropic-fsi-deck-checker. Check for number consistency, data-narrative alignment, and formatting issues. [attach ProjectBravo_Mgmt_Presentation.pptx]":
+    "使用 anthropic-fsi-deck-checker 对附加的管理层演示文稿进行质量检查。检查数字一致性、数据与叙述的吻合度以及格式问题。[附加 ProjectBravo_Mgmt_Presentation.pptx]",
+  "Create a DCF model for [ServiceNow] using anthropic-fsi-dcf-model-builder. Include 5-year projections, WACC calculation, terminal value via exit multiple, and sensitivity on discount rate and growth.":
+    "使用 anthropic-fsi-dcf-model-builder 为 [ServiceNow] 创建 DCF 模型。包含五年预测、WACC 计算、基于退出倍数的终值以及折现率和增长率的敏感性分析。",
+  "Create an earnings update for [CrowdStrike]'s Q3 FY2025 results using anthropic-fsi-earnings-analysis. Cover beat/miss vs. consensus, key drivers, guidance changes, and updated thesis.":
+    "使用 anthropic-fsi-earnings-analysis 为 [CrowdStrike] 的 2025 财年第三季度业绩创建财报更新。涵盖相对市场预期的超出或不及、关键驱动因素、指引变化和更新后的投资逻辑。",
+  "Create a single-slide strip profile for [Snowflake] using anthropic-fsi-strip-profile. Include business overview, key metrics, valuation multiples, stock chart, and top shareholders.":
+    "使用 anthropic-fsi-strip-profile 为 [Snowflake] 创建单页条带式公司简介。包含业务概况、关键指标、估值倍数、股价走势图和主要股东。",
+  "Populate the attached pitch deck template with data from the Excel file using anthropic-fsi-pitch-deck. Map financials to appropriate slides and maintain formatting. [attach template.pptx and financials.xlsx]":
+    "使用 anthropic-fsi-pitch-deck 将 Excel 文件中的数据填入附加的路演演示文稿模板。将财务数据映射到相应幻灯片并保持格式。[附加 template.pptx 和 financials.xlsx]",
+  "Creating company research on [MongoDB] using anthropic-fsi-initiating-coverage. Start with Task 1 covering business model, competitive positioning, and key investment thesis points.":
+    "使用 anthropic-fsi-initiating-coverage 开展 [MongoDB] 公司研究。从任务 1 开始，涵盖商业模式、竞争定位和关键投资论点。",
+  "Create a competitive landscape analysis for [Datadog] using anthropic-fsi-competitive-analysis. Include a 2x2 positioning matrix against Splunk, Dynatrace, New Relic, and Elastic, with competitive moats and strategic implications.":
+    "使用 anthropic-fsi-competitive-analysis 为 [Datadog] 创建竞争格局分析。包含与 Splunk、Dynatrace、New Relic 和 Elastic 对比的 2x2 定位矩阵，以及竞争护城河和战略影响。",
+  "Build an integrated 3-statement model using anthropic-fsi-3-statements. Populate the attached template with [Salesforce]'s FY2022-2024 historicals from their 10-K and project through FY2027. [attach template.xlsx and CRM 10-K.pdf]":
+    "使用 anthropic-fsi-3-statements 构建一体化三表模型。将 [Salesforce] 10-K 中 2022–2024 财年的历史数据填入附加模板，并预测至 2027 财年。[附加 template.xlsx 和 CRM 10-K.pdf]",
+  "Build a comps analysis for [Shopify] using anthropic-fsi-comps-analysis. Include 10 peers with EV/Revenue, EV/EBITDA, and P/E on LTM and NTM basis, plus implied valuation ranges.":
+    "使用 anthropic-fsi-comps-analysis 为 [Shopify] 创建可比公司分析。包含 10 家同行在 LTM 和 NTM 基础上的 EV/收入、EV/EBITDA 和市盈率，以及隐含估值区间。",
+  "Build a data pack for our IC using anthropic-fsi-datapack-builder. Standardize financials from the attached CIM including ARR growth, net retention, and rule of 40 metrics. [attach ProjectAlpha_CIM.pdf]":
+    "使用 anthropic-fsi-datapack-builder 为我们的投资委员会构建数据包。将附加 CIM 中的财务数据标准化，包括 ARR 增长、净留存率和 40 法则指标。[附加 ProjectAlpha_CIM.pdf]",
   "Get this as a document you can edit and share.":
     "将此内容制作成可编辑和分享的文档。",
   "Create a document": "创建文档",
@@ -7008,11 +7147,529 @@ const catalog: Record<string, string> = {
   file: "文件",
   "Couldn’t fetch the file. This connector is no longer available.":
     "无法获取文件。此连接器已不可用。",
+  "Hey Claudex, could you {prompt}? Use any connector that would be helpful, and get started once you’ve gathered enough info.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "嘿 Claudex，可以帮我{prompt}吗？请使用任何有帮助的连接器，收集到足够信息后就开始。\n\n如果合适，请创建一些我们可以一起查看的内容，比如图示、清单或互动内容。",
+  "Hey Claudex, could you help me {prompt}? Start researching right away, and use any tools you think would help. Let me know if you need any other context.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "嘿 Claudex，可以帮我{prompt}吗？请立即开始研究，使用任何有帮助的工具。如果需要其他背景信息，请告诉我。\n\n如果合适，请创建一些我们可以一起查看的内容，比如图示、清单或互动内容。",
+  "Hi Claudex! Could you {prompt}? If you need more information from me, ask me 1-2 key questions right away. If you think I should give you more context or upload anything to help you do a better job, let me know. Use any tools you have access to—like Google Drive, web search, etc.—if they’ll help.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive. Thanks for your help!":
+    "你好 Claudex！可以帮我{prompt}吗？如果需要更多信息，请立即问我1-2个关键问题。如果我应该提供更多背景或上传资料以帮助你做得更好，请告诉我。请使用你能使用的任何有用工具，比如 Google Drive、网络搜索等。\n\n如果合适，请创建一些我们可以一起查看的内容，比如图示、清单或互动内容。 谢谢你的帮助！",
+  "Help me pick the right career for me": "帮我选择适合的职业",
+  "Choose a career path based on my astrology": "根据星座选择职业道路",
+  "Give me a work persona based on my favorite books":
+    "根据喜爱的书籍塑造职场人设",
+  "Help me role play a talk with my boss": "帮我模拟与老板的谈话",
+  "Give me pointers on being a better manager": "提供成为更好管理者的建议",
+  "Write a job description for my dream life": "为理想生活写一份职位描述",
+  "Update my resume or LinkedIn": "更新简历或 LinkedIn",
+  "Develop my professional skills": "发展职业技能",
+  "Navigate workplace challenges": "应对职场挑战",
+  "Plan my career growth": "规划职业发展",
+  "Improve my work-life balance": "改善工作与生活平衡",
+  "Network more effectively": "更有效地建立人脉",
+  "Request a raise or promotion": "请求加薪或晋升",
+  "Create effective cover letters": "撰写有效求职信",
+  "Identify transferable skills": "识别可迁移技能",
+  "Analyze industry trends": "分析行业趋势",
+  "Practice salary negotiations": "练习薪酬谈判",
+  "Build my personal brand": "打造个人品牌",
+  "Handle difficult colleagues": "应对难相处的同事",
+  "Develop leadership abilities": "提升领导能力",
+  "Manage workplace stress": "管理职场压力",
+  "Explore career transitions": "探索职业转型",
+  "Draft professional emails": "起草专业邮件",
+  "Prepare presentations": "准备演示",
+  "Build team communication": "建立团队沟通",
+  "Improve public speaking": "提升公开演讲能力",
+  "Track professional accomplishments": "记录职业成就",
+  "Handle performance reviews": "应对绩效评估",
+  "Understand workplace politics": "理解职场政治",
+  "Create workplace boundaries": "建立职场界限",
+  "Find mentorship opportunities": "寻找导师机会",
+  "Manage remote work": "管理远程工作",
+  "Develop executive presence": "培养高管气场",
+  "Handle workplace feedback": "应对职场反馈",
+  "Analyze job descriptions": "分析职位描述",
+  "Create professional goals": "制定职业目标",
+  "Plan continuing education": "规划继续教育",
+  "Strengthen workplace relationships": "加强职场关系",
+  "Improve technical skills": "提高技术能力",
+  "Manage project timelines": "管理项目时间线",
+  "Handle workplace conflicts": "处理职场冲突",
+  "Prepare for promotions": "为晋升做准备",
+  "Balance multiple projects": "平衡多个项目",
+  "Summarize my top projects this quarter": "总结我本季度的主要项目",
+  "Analyze my writing style based on my docs": "根据文档分析我的写作风格",
+  "Give me a TLDR on the new docs I’ve been given access to":
+    "简要总结最近获得访问权限的新文档",
+  "Identify what my top 3 priorities should be today":
+    "确定今天最重要的三项任务",
+  "Find which of my ideas have gained the most traction at work":
+    "找出工作中最受认可的想法",
+  "Tell me how my project focus has evolved over time":
+    "分析我的项目重点如何随时间变化",
+  "Locate documents that represent pivotal moments in my thinking":
+    "寻找体现我思维转折点的文档",
+  "Surface unexpected connections across my different documents":
+    "发现不同文档间意想不到的联系",
+  "Identify and visualize my most brilliant moments from my documents":
+    "从文档中找出并可视化我最出色的时刻",
+  "Look at my docs and tell me what kind of genre writer I could be":
+    "查看文档判断我适合写哪类作品",
+  "Reveal blind spots in my knowledge base": "发现我的知识盲点",
+  "What idea themes consistently appear across all my documents?":
+    "找出所有文档中反复出现的主题",
+  "Look at how my calendar has shifted this month compared to last":
+    "比较本月与上月日历的变化",
+  "Show me insights about my meeting attendance patterns":
+    "分析我的会议出席规律",
+  "Tell me which recurring meetings take up most of my time":
+    "找出最耗时的定期会议",
+  "Analyze if my actual meetings align with my stated priorities":
+    "分析实际会议是否符合我的优先事项",
+  "Analyze my calendar for meeting optimization": "分析日历以优化会议",
+  "Tell me what my calendar reveals about my work-life balance":
+    "分析日历反映的工作与生活平衡",
+  "Identify how my calendar habits reflect my personal priorities":
+    "找出日历习惯如何反映个人优先事项",
+  "Show me how my seasonal patterns affect my scheduling and energy":
+    "展示季节规律如何影响我的安排和精力",
+  "Reflect on my calendar as if I was 100 years old looking back at this time":
+    "假设百岁回望此刻，反思我的日历",
+  "Give me tips on how to organize my calendar": "给我整理日历的建议",
+  "Transform my calendar into a fantasy quest journal":
+    "把日历变成奇幻冒险日志",
+  "Turn my calendar events into a poetic ‘day in the life’ narrative":
+    "把日历事件写成诗意的日常叙事",
+  "Predict my next stress point by analyzing my calendar density patterns":
+    "分析日历密度规律预测下一处压力点",
+  "Create a visual guide for calendar management based on my ennegram":
+    "根据九型人格制作日历管理视觉指南",
+  "Visualize where my time truly goes each week": "可视化每周时间的真正去向",
+  "Analyze my email communication style": "分析我的电子邮件沟通风格",
+  "Tell me how I can optimize my inbox": "告诉我如何优化收件箱",
+  "Pull out important points from my latest work emails":
+    "提取最近工作邮件的要点",
+  "Tell me which emails I subscribe to usually go unread":
+    "找出我订阅但通常不看的邮件",
+  "Tell me about my email organization habits": "分析我的邮件整理习惯",
+  "See what emotional themes emerge from my email conversations":
+    "观察邮件对话中的情感主题",
+  "Let me know how I can be more persuasive in my emails":
+    "告诉我如何让邮件更有说服力",
+  "Show me any tricks that can help me manage email": "提供管理邮件的小技巧",
+  "Write a pretend 1-page newspaper based on my integrations?":
+    "根据集成信息写一页虚构报纸",
+  "If my email inbox was a reality TV show, who would be voted off the island first?":
+    "如果收件箱是真人秀，谁会最先被投票出局？",
+  "Create a diplomatic response to my most challenging recent email thread":
+    "为最近最棘手的邮件讨论写得体回复",
+  "Generate a ‘personal brand statement’ based on how I communicate in email":
+    "根据邮件沟通方式生成个人品牌宣言",
+  "Casually look through my work integrations to find people who seem to support my career growth":
+    "浏览工作集成，寻找支持我职业发展的人",
+  "Look through my emails and tell me where I’m avoiding something important":
+    "查看邮件，指出我在回避的重要事情",
+  "Create ‘missed connections’ personal ads based on my most interesting email exchanges":
+    "根据最有趣的邮件往来创作“错过的缘分”征友广告",
+  "Have a philosophical discussion": "展开哲学讨论",
+  "Learn something unexpected": "学习意想不到的知识",
+  "Solve an interesting problem": "解决有趣的问题",
+  "Discover a new perspective": "发现新视角",
+  "Play a word game together": "一起玩文字游戏",
+  "Debate an ethical dilemma": "辩论道德困境",
+  "Explore a fascinating concept": "探索引人入胜的概念",
+  "Explore thought experiments": "探索思想实验",
+  "Explore cognitive biases": "探索认知偏差",
+  "Explore language evolution": "探索语言演变",
+  "Explore mathematical paradoxes": "探索数学悖论",
+  "Explore psychological phenomena": "探索心理现象",
+  "Explore architectural concepts": "探索建筑概念",
+  "Explore memory techniques": "探索记忆技巧",
+  "Explore logical fallacies": "探索逻辑谬误",
+  "Explore ancient wisdom": "探索古代智慧",
+  "Discuss future technologies": "讨论未来科技",
+  "Discuss creative thinking techniques": "讨论创造性思维技巧",
+  "Discuss art interpretation": "讨论艺术解读",
+  "Discuss space exploration questions": "讨论太空探索问题",
+  "Discuss musical innovations": "讨论音乐创新",
+  "Discuss food science": "讨论食品科学",
+  "Discuss symbolic communication": "讨论符号沟通",
+  "Discuss social dynamics": "讨论社会动态",
+  "Analyze historical turning points": "分析历史转折点",
+  "Analyze decision-making frameworks": "分析决策框架",
+  "Analyze literary themes": "分析文学主题",
+  "Analyze game theory applications": "分析博弈论应用",
+  "Consider alternate histories": "思考架空历史",
+  "Consider economic theories": "思考经济理论",
+  "Consider environmental solutions": "思考环境解决方案",
+  "Consider innovation patterns": "思考创新模式",
+  "Create a fictional scenario": "制作虚构场景",
+  "Investigate scientific mysteries": "调查科学奥秘",
+  "Examine nature phenomena": "研究自然现象",
+  "Help me reflect on an experience": "帮我反思一段经历",
+  "Help me work through a decision": "帮我理清一个决定",
+  "Transform my personal goals into an actionable plan":
+    "把个人目标转化为行动计划",
+  "Roleplay difficult conversations I need to prepare for":
+    "角色扮演我需要准备的困难对话",
+  "Guide me through a decision-making framework for a life choice":
+    "引导我用决策框架做人生选择",
+  "Plan my day or week": "规划一天或一周",
+  "Help with decision making": "帮助做决定",
+  "Generate gift or travel ideas": "构思礼物或旅行点子",
+  "Improve my habits": "改善我的习惯",
+  "Manage my time better": "更好地管理时间",
+  "Organize my living space": "整理居住空间",
+  "Improve sleep habits": "改善睡眠习惯",
+  "Build better relationships": "建立更好的人际关系",
+  "Manage personal stress": "管理个人压力",
+  "Explore productivity systems": "探索生产力系统",
+  "Improve communication skills": "提升沟通技巧",
+  "Handle difficult conversations": "应对困难对话",
+  "Organize digital files": "整理数字文件",
+  "Balance social commitments": "平衡社交活动",
+  "Track personal goals": "追踪个人目标",
+  "Improve financial literacy": "提升金融素养",
+  "Manage household tasks": "管理家务",
+  "Improve time management": "改善时间管理",
+  "Create a routine for a goal": "制作实现目标的日常计划",
+  "Create a personal development plan": "制作个人发展计划",
+  "Create a personal budget": "制作个人预算",
+  "Create family activities": "制作家庭活动",
+  "Create reading lists": "制作阅读书单",
+  "Create cleaning routines": "制作清洁日程",
+  "Create morning routines": "制作晨间日程",
+  "Create family traditions": "制作家庭传统",
+  "Create personal boundaries": "制作个人界限",
+  "Develop exercise routines": "制定运动计划",
+  "Develop mindfulness practices": "制定正念练习",
+  "Develop personal hobbies": "制定个人爱好",
+  "Develop self-care practices": "制定自我关怀练习",
+  "Develop parenting strategies": "制定育儿策略",
+  "Plan healthy meals": "规划健康饮食",
+  "Plan special celebrations": "规划特别庆祝活动",
+  "Plan home improvements": "规划家居改造",
+  "Plan educational pursuits": "规划学习进修",
+  "Plan retirement activities": "规划退休活动",
+  "Help me identify my creative style": "帮我确定创意风格",
+  "Quiz me on how to give good design feedback in a crit":
+    "考考我如何在评审中提供良好设计反馈",
+  "Design a chracter profile based on my creative super power":
+    "根据我的创意超能力设计人物档案",
+  "Generate a list of powerful words to use in a client presentation":
+    "为客户演示列出有影响力的词语",
+  "Reimagine this everyday object for a radically different culture":
+    "为截然不同的文化重新设计日常物品",
+  "Design an experience that changes how people perceive time":
+    "设计改变人们时间感知的体验",
+  "Create something inspired by the most beautiful mistake":
+    "以最美丽的错误为灵感创作",
+  "Design an interactive installation based on my personal values":
+    "根据我的价值观设计互动装置",
+  "Create a visual language for emotions that have no names":
+    "为没有名字的情绪创造视觉语言",
+  "Design something that bridges ancient techniques and futuristic concepts":
+    "设计连接古老技术与未来理念的作品",
+  "Design an experience that transforms digital connections into physical ones":
+    "设计把数字连接转为现实连接的体验",
+  "Outline an ideation workshop that will blow away my creative team":
+    "规划让创意团队惊叹的构思工作坊",
+  "Help me design a creative offsite that will be legendary":
+    "帮我设计令人难忘的创意团建",
+  "Analyze my design aesthetic from examples": "从示例分析我的设计审美",
+  "Test my eye for detail with examples": "用示例测试我观察细节的能力",
+  "Quiz me on design principles and theory": "考考我的设计原理与理论",
+  "Transform my concept into a detailed design specification":
+    "把我的概念转化为详细设计规格",
+  "Help me make something more user-friendly": "帮我提升易用性",
+  "Brainstorm creative concepts": "集思广益构思创意概念",
+  "Generate design inspiration from history": "从历史中寻找设计灵感",
+  "Translate a brief into design items": "将简报转化为设计项目",
+  "Research good typography systems": "研究优秀的排版体系",
+  "Generate illustration ideas": "构思插画创意",
+  "Generate packaging concepts": "构思包装概念",
+  "Generate animation concepts": "构思动画概念",
+  "Create a style guide": "制作风格指南",
+  "Create on-trend color palettes": "制作时尚配色方案",
+  "Create mood boards": "制作情绪板",
+  "Create logo variations": "制作标志变体",
+  "Create social media templates": "制作社交媒体模板",
+  "Create website structures": "制作网站结构",
+  "Create portfolio presentations": "制作作品集演示",
+  "Create content strategies": "制作内容策略",
+  "Develop brand personas": "制定品牌人格",
+  "Develop storytelling frameworks": "制定叙事框架",
+  "Develop naming conventions": "制定命名规范",
+  "Develop marketing campaigns": "制定营销活动",
+  "Develop product narratives": "制定产品叙事",
+  "Develop editorial calendars": "制定编辑日历",
+  "Plan milestones for a creative project": "规划创意项目里程碑",
+  "Plan friction-free user experience flows": "规划顺畅的用户体验流程",
+  "Plan content calendars": "规划内容日历",
+  "Plan a creative brainstorm with clients": "规划与客户的创意头脑风暴",
+  "Plan videogame storyboards": "规划电子游戏分镜",
+  "Plan photography shoots": "规划摄影拍摄",
+  "Write a solid creative brief": "撰写扎实的创意简报",
+  "Write compelling copy": "撰写有吸引力的文案",
+  "Write creative prompts for LLMs": "撰写大语言模型创意提示词",
+  "Design a presentation layout": "设计演示布局",
+  "Design email newsletters": "设计电子邮件简报",
+  "Design event materials": "设计活动材料",
+  "Generate character concepts for fiction": "构思虚构人物",
+  "Test my negotiation tactics with scenarios": "通过情景测试我的谈判技巧",
+  "Quiz me on my business skills": "考考我的商业技能",
+  "Help me develop and hone a strategy": "帮我制定并完善策略",
+  "Map the unexpected connections between unrelated market trends":
+    "绘制看似无关的市场趋势间的意外联系",
+  "Reimagine my business as if it were founded 100 years in the future":
+    "想象我的企业创立于100年后",
+  "Design a strategy game based on my business challenges":
+    "根据商业挑战设计策略游戏",
+  "Develop a business ecosystem inspired by my personal passions":
+    "以我的热情为灵感开发商业生态系统",
+  "Create a business model canvas that breaks every conventional rule":
+    "制作打破所有常规的商业模式画布",
+  "Design a strategy inspired by patterns found in nature":
+    "从自然规律中汲取灵感设计策略",
+  "Analyze market opportunities": "分析市场机遇",
+  "Improve operational efficiency": "提高运营效率",
+  "Draft a pitch or proposal": "起草推介或提案",
+  "Build financial projections": "构建财务预测",
+  "Conduct competitor analysis": "开展竞争对手分析",
+  "Analyze business metrics": "分析业务指标",
+  "Analyze great investment pitches": "分析优秀的投资推介",
+  "Research top go-to-market strategies": "研究最佳市场进入策略",
+  "Develop a business plan": "制定商业计划",
+  "Develop pricing strategies": "制定定价策略",
+  "Develop KPI dashboards": "制定KPI 仪表板",
+  "Develop stakeholder communications": "制定利益相关方沟通方案",
+  "Develop risk assessments": "制定风险评估",
+  "Develop client proposals": "制定客户提案",
+  "Develop brand positioning": "制定品牌定位",
+  "Develop sustainability initiatives": "制定可持续发展举措",
+  "Develop distribution strategies": "制定分销策略",
+  "Create a marketing strategy": "制作营销策略",
+  "Create customer personas": "制作客户画像",
+  "Create sales presentations": "制作销售演示",
+  "Create business processes": "制作业务流程",
+  "Create strategic partnerships": "制作战略合作伙伴关系",
+  "Create recruiting strategies": "制作招聘策略",
+  "Create vendor evaluations": "制作供应商评估",
+  "Create business pivots": "制作业务转型方案",
+  "Create revenue forecasts": "制作收入预测",
+  "Create customer journeys": "制作客户旅程",
+  "Plan product launches": "规划产品发布",
+  "Plan market research": "规划市场研究",
+  "Plan organizational structure": "规划组织结构",
+  "Plan budget allocations": "规划预算分配",
+  "Plan business scaling strategies": "规划业务扩张策略",
+  "Plan expansion opportunities": "规划拓展机遇",
+  "Plan business acquisitions": "规划企业收购",
+  "Design growth frameworks": "设计增长框架",
+  "Craft a manifesto that captures the essence of my boldest ideas":
+    "撰写体现我最大胆想法精髓的宣言",
+  "Help me develop my unique voice as a writer": "帮我发展独特的作家风格",
+  "Help me identify my writing weaknesses": "帮我找出写作弱点",
+  "Create a piece that blends two completely different writing styles":
+    "创作融合两种截然不同写作风格的作品",
+  "Reimagine a piece of my writing as an edge-of-your-seat thriller":
+    "将我的作品改写为扣人心弦的惊悚故事",
+  "Compare my writing style to famous authors": "比较我的文风与著名作家",
+  "Craft something that reads differently depending on the reader’s mood":
+    "创作随读者心情呈现不同含义的作品",
+  "Write something in the voice of my favorite historical figure":
+    "以我最爱的历史人物口吻写作",
+  "Help me develop a unique voice for an audience":
+    "帮我为受众发展独特的写作声音",
+  "Edit my content": "编辑我的内容",
+  "Brainstorm creative ideas": "集思广益提出创意",
+  "Research topics for my writing": "为写作研究主题",
+  "Improve my writing style": "改进我的写作风格",
+  "Draft an outline for my project": "为项目拟定大纲",
+  "Create a content strategy": "制作内容策略",
+  "Create engaging headlines": "制作吸引人的标题",
+  "Create social media posts": "制作社交媒体帖子",
+  "Create blog article series": "制作博客文章系列",
+  "Create interview questions": "制作采访问题",
+  "Create persuasive arguments": "制作有说服力的论点",
+  "Create user documentation": "制作用户文档",
+  "Create presentation scripts": "制作演示脚本",
+  "Create FAQ resources": "制作常见问题资源",
+  "Create technical explanations": "制作技术说明",
+  "Develop character profiles": "制定人物档案",
+  "Develop content calendars": "制定内容日历",
+  "Develop brand voice guides": "制定品牌语调指南",
+  "Develop podcast scripts": "制定播客脚本",
+  "Develop content templates": "制定内容模板",
+  "Develop content briefs": "制定内容简报",
+  "Develop instructional content": "制定教学内容",
+  "Develop editorial guidelines": "制定编辑指南",
+  "Draft email newsletters": "撰写电子邮件简报",
+  "Write compelling CTAs": "撰写有吸引力的行动号召",
+  "Write product descriptions": "撰写产品描述",
+  "Write video scripts": "撰写视频脚本",
+  "Write executive summaries": "撰写执行摘要",
+  "Write case studies": "撰写案例研究",
+  "Write speech drafts": "撰写演讲草稿",
+  "Write marketing copy": "撰写营销文案",
+  "Write grant proposals": "撰写资助申请",
+  "Write event descriptions": "撰写活动描述",
+  "Design a learning challenge that pushes my creative boundaries":
+    "设计突破我创意边界的学习挑战",
+  "Explain a concept in simple terms": "用简单的语言解释概念",
+  "Help me understand a complex topic from scratch": "帮我从零理解复杂主题",
+  "Create a curriculum inspired by my favorite cultural movement":
+    "以我最爱的文化运动为灵感创建课程",
+  "Develop a learning approach that embraces beautiful contradictions":
+    "制定拥抱美好矛盾的学习方法",
+  "Transform a dry subject into something fascinating":
+    "把枯燥主题变得引人入胜",
+  "Develop a learning framework based on my personal heroes":
+    "以我崇拜的人为基础建立学习框架",
+  "Create a knowledge map that reveals surprising patterns in what I know":
+    "制作揭示我知识中意外规律的知识图谱",
+  "Transform these notes into a structured summary":
+    "把这些笔记整理成结构化摘要",
+  "Help me make sense of these ideas": "帮我理清这些想法",
+  "Find patterns in my research": "寻找我的研究中的规律",
+  "Explain a complex topic simply": "简单解释复杂主题",
+  "Create a study plan": "制定学习计划",
+  "Design a lesson or curriculum": "设计课程或教学大纲",
+  "Compare learning resources": "比较学习资源",
+  "Find the best books on a subject": "寻找某个主题的最佳书籍",
+  "Prepare for an exam or interview": "准备考试或面试",
+  "Create effective flashcards": "制作有效的记忆卡片",
+  "Develop learning objectives": "制定学习目标",
+  "Summarize my academic papers": "总结我的学术论文",
+  "Create assessment questions": "编写考核题目",
+  "Develop research methodologies": "制定研究方法",
+  "Create learning timelines": "制定学习时间线",
+  "Design educational activities": "设计教学活动",
+  "Develop concept maps": "制作概念图",
+  "Create good lecture notes": "制作优秀的课堂笔记",
+  "Design presentation visuals": "设计演示视觉素材",
+  "Develop learning frameworks": "建立学习框架",
+  "Create annotated bibliographies": "制作带注释的参考书目",
+  "Design learning journals": "设计学习日志",
+  "Develop discussion prompts": "提出讨论话题",
+  "Create educational games": "制作教育游戏",
+  "Develop teaching strategies": "制定教学策略",
+  "Create educational rubrics": "制定教育评价标准",
+  "Design learning modules": "设计学习模块",
+  "Develop critical analyses": "开展批判性分析",
+  "Design research questions": "设计研究问题",
+  "Develop reflection exercises": "制定反思练习",
+  "Create study summaries": "制作学习摘要",
+  "Design learning portfolios": "设计学习作品集",
+  "Create feedback for student work": "为学生作业提供反馈",
+  "Design learning challenges": "设计学习挑战",
+  "Find credible sources for my research": "为研究寻找可靠来源",
+  "Provide evidence-based insights for my topic": "为主题提供循证见解",
+  "Look over my code and give me tips": "检查我的代码并提出建议",
+  "Vibe code with me": "和我一起凭感觉编程",
+  "Quiz me on python code": "考考我的 Python 编程",
+  "Evaluate my coding style based on a snippet": "根据代码片段评估我的编程风格",
+  "Tell me what programming paradigm suits my thinking style":
+    "找出适合我思维方式的编程范式",
+  "Assess my approach to debugging problems": "评估我调试问题的方法",
+  "Challenge me with increasingly difficult coding puzzles":
+    "用难度递增的编程谜题挑战我",
+  "Help me develop a personal learning roadmap for coding":
+    "帮我制定个人编程学习路线",
+  "Help me turn a screenshot into working code": "帮我把截图转成可运行的代码",
+  "Design a game that teaches coding concepts through storytelling":
+    "设计通过故事教授编程概念的游戏",
+  "Invent a coding language based on my favorite hobby":
+    "以我最爱的爱好发明编程语言",
+  "Design a digital pet that grows based on my coding habits":
+    "设计随编程习惯成长的电子宠物",
+  "Create a coding Easter egg that would make my team smile":
+    "制作让团队会心一笑的代码彩蛋",
+  "Build an app based on my idea": "根据我的想法开发应用",
+  "Debug my code and give me tips": "调试我的代码并给出建议",
+  "Design a software architecture": "设计软件架构",
+  "Explain a programming concept": "解释编程概念",
+  "Plan a development roadmap": "规划开发路线",
+  "Write unit test cases": "编写单元测试用例",
+  "Create API documentation": "编写 API 文档",
+  "Design database schemas": "设计数据库模式",
+  "Develop coding standards": "制定编码规范",
+  "Develop code reviews to speed me up": "制定提高效率的代码审查",
+  "Create technical specifications": "编写技术规格",
+  "Design UI/UX wireframes": "设计 UI/UX 线框图",
+  "Develop deployment strategies": "制定部署策略",
+  "Create refactoring plans": "制定重构计划",
+  "Design microservices": "设计微服务",
+  "Develop algorithm solutions": "开发算法解决方案",
+  "Create security protocols": "制定安全协议",
+  "Design feature flags": "设计功能开关",
+  "Develop performance benchmarks": "制定性能基准",
+  "Create debugging workflows": "创建调试工作流",
+  "Design data structures": "设计数据结构",
+  "Develop integration strategies": "制定集成策略",
+  "Create dependency maps": "绘制依赖关系图",
+  "Design error handling": "设计错误处理",
+  "Develop CI/CD pipelines": "搭建 CI/CD 流水线",
+  "Create technical diagrams": "绘制技术图表",
+  "Design scalability plans": "设计扩展性计划",
+  "Develop project estimates": "制定项目估算",
+  "Create code snippets": "创建代码片段",
+  "Design logging systems": "设计日志系统",
+  "Develop technical debt analysis": "分析技术债务",
+  "Create monitoring solutions": "创建监控解决方案",
   "From Calendar": "来自日历",
   "From Gmail": "来自 Gmail",
   "From Drive": "来自云端硬盘",
   Integration: "集成",
   "Choose a valid connector.": "请选择有效的连接器。",
+  "Research how to write documentation that people will actually want to read":
+    "研究如何写出人们愿意阅读的文档",
+  "Find the best way to explain our product to new users, use my docs as needed":
+    "参考我的文档，寻找向新用户介绍产品的最佳方式",
+  "Navigate the maze of healthcare compliance requirements":
+    "梳理复杂的医疗合规要求",
+  "Find the best tools for managing remote team communication":
+    "寻找远程团队沟通管理的最佳工具",
+  "Go deep on the secret behind companies with amazing customer service":
+    "深入探究优质客户服务公司的秘诀",
+  "Discover fresh angles on my writing based on my docs":
+    "根据文档发现写作的新角度",
+  "Dive deep on what travel trends will be for the next five years":
+    "深入研究未来五年的旅游趋势",
+  "Understand what’s happening with tariffs right now": "了解当前的关税动态",
+  "Find the weird science behind everyday products people love":
+    "探索热门日用品背后的奇妙科学",
+  "Research and deliver findings relevant to me as a time-traveler from 2050":
+    "为来自2050年的时间旅行者研究并汇报相关发现",
+  "Find the most compelling stories about an important topic from my docs":
+    "从文档中找出重要主题最引人入胜的故事",
+  "Determine my main competitors based on my docs and show me what my competitors are doing differently this year":
+    "从文档确定主要竞争对手并展示其今年的不同做法",
+  "Identify the most important performance differences between the latest accelerators from nvidia, google, and amazon?":
+    "比较英伟达、谷歌和亚马逊最新加速器的主要性能差异",
+  "Extract the most actionable insights from my meeting notes that I’m not acting on":
+    "提取会议笔记中尚未落实的最有用见解",
+  "Come up with novel ideas for projects based on my docs":
+    "根据文档提出新颖的项目创意",
+  "Map the evolution of sleep research in the past decade":
+    "梳理过去十年睡眠研究的发展",
+  "Identify emerging patterns in human and machine relationships":
+    "识别人机关系的新兴模式",
+  "Compare researchers’ disagreements about climate solutions":
+    "比较研究者对气候解决方案的分歧",
+  "Examine how fermentation discoveries changed ancient diets":
+    "研究发酵的发现如何改变古代饮食",
+  "Find how humans realized teeth need cleaning":
+    "探索人类如何发现牙齿需要清洁",
+  "Explore why we even developed singing (is it just happy noises?)":
+    "探索为何出现歌唱（只是快乐的声音吗？）",
+  "Track invention of the idea of “free time” - when did that start?":
+    "追溯“闲暇时间”概念的起源",
+  "Research how money became a thing": "研究货币的起源",
+  "Discover how humans figured out “those mushrooms = bad idea”":
+    "探索人类如何发现“这些蘑菇不能吃”",
+  "Investigate when we realized trees could talk (chemically)":
+    "研究何时发现树木能通过化学信号交流",
   "Google Calendar": "Google 日历",
   Gmail: "Gmail",
   "Loading artifact…": "正在加载作品…",
@@ -7391,6 +8048,11 @@ const catalog: Record<string, string> = {
   "Let users turn on Developer Mode. When off, the app’s developer tools and the option to install an unpacked extension are unavailable.":
     "允许用户开启开发者模式。关闭后，应用开发者工具和安装解压扩展的选项将不可用。",
   "Install Extension?": "安装扩展？",
+  "Extension compatibility has not been verified. Check its runtime and platform requirements before installing.": "尚未核验扩展兼容性。安装前请检查其运行时和操作系统要求。",
+  "Choose the extension again in the system picker": "请在系统选择器中重新选择扩展",
+  "For your security, dropped and preview paths are not opened directly. Only the extension you select and confirm will be installed.": "为保障安全，不会直接打开拖入文件或预览提供的路径。只有您重新选择并确认的扩展才会被安装。",
+  "Choose the extension folder to install": "选择要安装的扩展文件夹",
+  "Choose the extension package to install": "选择要安装的扩展包",
   "Do you want to install {extensionName}?": "是否安装 {extensionName}？",
   "This desktop extension will be installed on your computer and made available to Claudex.":
     "此桌面扩展将安装到你的计算机上，供 Claudex 使用。",
@@ -8085,6 +8747,8 @@ const catalog: Record<string, string> = {
   "Failed to check for updates: {error}": "检查更新失败：{error}",
   "Claudex is working in {count} sessions. Quitting now will interrupt that work.":
     "Claudex 正在 {count} 个会话中工作。现在退出将中断该工作。",
+  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking claudex.zecous.cn — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from claudex.zecous.cn.":
+    "Claudex 无法连接更新服务器。如果你使用的是工作网络，防火墙或代理可能阻止了 claudex.zecous.cn，请让 IT 团队放行。否则，请检查网络连接后重试，或从 claudex.zecous.cn 下载最新版本。",
   "Microsoft Office": "Microsoft Office",
   "Get the add-in": "获取加载项",
   "Diagnostic Report": "诊断报告",
@@ -8620,6 +9284,8 @@ const catalog: Record<string, string> = {
   "Claudex Serif": "Claudex Serif",
   "An independent desktop client.": "独立的桌面客户端。",
   "Internal only": "仅限内部使用",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's previous 1:1, so what you can use does not change.":
+    "您可能会发现，ZecousAI 的剩余余额折合至 Claudex 后会有所减少，这是由于 Claudex 将采用¥1兑换$1的新比例进行充值，且模型倍率相比 ZecousAI 的1:1官方大幅下降，因此您的用量将不会受到影响。",
   "Make sure you trust a plugin before installing or using it. Uploaded plugins are not controlled by Claudex, and Claudex cannot verify that they will work as intended. See each plugin’s homepage for more information.":
     "安装或使用插件前，请确保你信任它。上传的插件不受 Claudex 控制，Claudex 无法验证它们是否按预期运行。更多信息请参阅各插件的主页。",
   "Community marketplace": "社区市场",
@@ -8664,6 +9330,8 @@ const catalog: Record<string, string> = {
   "Remote Control is off": "远程控制已关闭",
   "Remote Control couldn’t turn off": "无法关闭远程控制",
   "Remote Control couldn’t connect": "远程控制无法连接",
+  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or claudex.zecous.cn.":
+    "会话清除后未能重新连接。请重新开启，以继续通过手机或 claudex.zecous.cn 使用此会话。",
   "Claudex Code stopped, so Remote Control turned off with it.":
     "Claudex Code 已停止，因此远程控制也已关闭。",
   "Sign in again. Remote Control retries with your next message.":
@@ -9650,6 +10318,7 @@ const catalog: Record<string, string> = {
   "This removes your feedback, including any conversation excerpt sent with it. It does not delete your chat.":
     "这会删除你的反馈，包括随反馈发送的对话摘录。你的对话不会被删除。",
   "from {name}": "来自 {name}",
+  // Customize directory categories (2026-10-20).
   "Developer tools": "开发者工具",
   Creativity: "创意",
   "Education & research": "教育与研究",
@@ -9657,6 +10326,7 @@ const catalog: Record<string, string> = {
   Communication: "沟通",
   "Scientific research": "科学研究",
   Security: "安全",
+  // Usage popover (2026-10-20).
   "Balance and usage": "余额与用量",
   "Last 7 days": "近 7 天",
   "Turn on Allow bypass permissions mode in Settings to use it.":
@@ -9676,11 +10346,15 @@ const catalog: Record<string, string> = {
   "Unarchive {count}": "取消归档 {count} 项",
   "Delete {count}": "删除 {count} 项",
   "Ask your administrator for the installer.": "请向你的管理员索取安装程序。",
+  // Add menu failure sentence (2026-10-20)
   "Design systems couldn’t be loaded. Refresh to try again.":
     "无法加载设计系统。请刷新后重试。",
+  // Skip all approvals connector list (2026-10-20)
   "Already allowed": "已允许",
+  // Attachment drop notice (2026-10-20)
   "Folders can't be attached. Drop files instead.":
     "无法附加文件夹。请改为拖入文件。",
+  // Attachment refusals, the live sentences (2026-10-20)
   "“{fileName}” is {fileSize}, over the {sizeLimit} MB limit. Choose a smaller file.":
     "“{fileName}”大小为 {fileSize}，超过了 {sizeLimit} MB 的限制，请选择更小的文件。",
   "“{fileName}” can’t be attached in this chat yet — this file type isn’t supported here. You can paste its contents into the message instead.":
@@ -9691,6 +10365,7 @@ const catalog: Record<string, string> = {
     "无法附加 {name}：您的管理员不允许此文件类型。",
   "Your administrator has turned off attachments.":
     "您的管理员已关闭附件功能。",
+  // /copy (2026-10-20)
   "Copy Claudex’s latest reply, or /copy 2 or higher for an earlier one":
     "复制 Claudex 的最新回复，或用 /copy 2 及以上的数字复制更早的回复",
   "Claudex is still replying. Send /copy when the reply is done.":
@@ -9699,6 +10374,7 @@ const catalog: Record<string, string> = {
   "Reply copied to clipboard.": "回复已复制到剪贴板。",
   "Couldn’t copy the reply to the clipboard. Try again.":
     "无法将回复复制到剪贴板，请重试。",
+  // Slash command notices (2026-10-20)
   "/{name} can't be run here.": "/{name} 无法在此运行。",
   "Plan mode is not available in this Windows permission menu.":
     "此 Windows 权限菜单中没有计划模式。",
@@ -9872,6 +10548,7 @@ const catalog: Record<string, string> = {
   "Rename chat": "重命名对话",
   "Rename task": "重命名任务",
   "Project name is required": "项目名称为必填项",
+  // Notices and focus reminders (menus-overlays toasts).
   "You’ve hit your limit for Claudex messages. Limits will reset at {time}.":
     "你已达到 Claudex 消息的上限。上限将于 {time} 重置。",
   "You’re sending messages too quickly. Try again at {time}.":
@@ -9888,6 +10565,7 @@ const catalog: Record<string, string> = {
   "It’s your quiet hours until {time}. You set this time limit in Settings → Time and focus.":
     "现在是你的静音时段，持续到 {time}。你在“设置 → 时间与专注”中设置了这项时间限制。",
   "{x} hr": "{x} 小时",
+  // Search palette (menus-overlays).
   "Past hour": "过去一小时",
   "Search mode": "搜索模式",
   "Actions mode": "操作模式",
@@ -9912,6 +10590,7 @@ const catalog: Record<string, string> = {
     "你已达到 Claudex 消息的上限。上限将于 {at} 重置。",
   "Too many requests right now. Try again at {at}.":
     "当前请求过多。请在 {at} 再试。",
+  // SSH connection banner (host in the sentence)
   "Connecting to {host}…": "正在连接到 {host}…",
   "Setting up Claudex on {host}…": "正在 {host} 上设置 Claudex…",
   "Reconnecting to {host}…": "正在重新连接到 {host}…",
@@ -9920,7 +10599,9 @@ const catalog: Record<string, string> = {
   "Can’t reach {host}: {reason}": "无法连接到 {host}：{reason}",
   "Not connected to {host}.": "未连接到 {host}。",
   "this host": "此主机",
+  // Quick Entry input placeholder
   "What can I help you with today?": "今天有什么可以帮你？",
+  // Update menu, update dialogs and update notices
   "Check for Updates…": "检查更新…",
   "Checking for Updates…": "正在检查更新…",
   "Downloading Update…": "正在下载更新…",
@@ -9951,6 +10632,7 @@ const catalog: Record<string, string> = {
   "Your administrator no longer supports this version. Install Claudex {version}.":
     "你的管理员已不再支持此版本。请安装 Claudex {version}。",
   "Claudex {version} is available.": "Claudex {version} 已可用。",
+  // What's new section titles
   "release-section|New": "新增",
   "release-section|Improved": "已优化",
   "release-section|Fixed": "已修复",
@@ -10167,6 +10849,7 @@ const catalog: Record<string, string> = {
     "此草稿过长，无法移动。请先缩短或复制它。",
   "This artifact is being updated. Try again when the reply finishes.":
     "此作品正在更新。请在回复完成后重试。",
+  "This knowledge base can't be reached right now.": "目前无法连接到此知识库。",
   "Choose a PNG, JPEG, GIF or WebP image smaller than 1 MB.":
     "请选择小于 1 MB 的 PNG、JPEG、GIF 或 WebP 图片。",
   "Voice mode needs dictation and a window that can read aloud.":
@@ -10408,186 +11091,22 @@ const catalog: Record<string, string> = {
   "Started preview": "已启动预览",
   "Couldn’t start preview": "无法启动预览",
   "status|Thinking": "思考中",
-  "Compare the leading note-taking apps for a small team and recommend one":
-    "比较几款适合小团队的主流笔记应用，并推荐一款",
-  "Find out what makes onboarding emails work and sum up the patterns":
-    "找出好的新用户引导邮件有哪些共同点并总结出来",
-  "Look into how other cities run successful bike-share programs":
-    "了解其他城市是怎样把共享单车办好的",
-  "Gather the latest evidence on four-day work weeks and weigh it up":
-    "收集关于四天工作制的最新证据并加以权衡",
-  "Survey open-source tools for monitoring a small web service":
-    "调研适合监控小型网站服务的开源工具",
-  "Research how to price a new subscription product fairly":
-    "研究如何为一款新的订阅产品合理定价",
-  "Explain how a hash map works and build a tiny one in Python":
-    "讲解哈希表的原理，并用 Python 写一个简单的实现",
-  "Write a script that renames photos by the date they were taken":
-    "写一个按拍摄日期给照片重命名的脚本",
-  "Review a function I paste for bugs and readability":
-    "帮我检查我贴出的函数有没有错误、是否易读",
-  "Turn a messy shell one-liner into a readable, commented script":
-    "把一行杂乱的 shell 命令改写成带注释、易读的脚本",
-  "Design a database schema for a small library app":
-    "为一个小型图书馆应用设计数据库结构",
-  "Build a simple to-do list page with HTML, CSS and JavaScript":
-    "用 HTML、CSS 和 JavaScript 做一个简单的待办清单页面",
-  "Teach me the basics of statistics with everyday examples":
-    "用生活中的例子教我统计学基础",
-  "Make a two-week plan for learning everyday Spanish phrases":
-    "制定一个两周的计划，学习日常西班牙语短语",
-  "Quiz me on the main events of the French Revolution":
-    "就法国大革命的主要事件考考我",
-  "Explain how vaccines train the immune system, step by step":
-    "一步步解释疫苗是如何训练免疫系统的",
-  "Help me understand compound interest with a worked example":
-    "用一个算例帮我理解复利",
-  "Summarize a classic book I name, chapter by chapter":
-    "按章节总结一本我指定的经典书",
-  "Draft a friendly announcement for a team offsite":
-    "起草一份友好的团队外出活动通知",
-  "Tighten a paragraph I paste so it says more with fewer words":
-    "精简我贴出的一段文字，用更少的字说更多的事",
-  "Write three subject lines for a newsletter about our latest release":
-    "为介绍最新版本的简报写三个邮件标题",
-  "Outline a blog post about lessons from a project that failed":
-    "为一篇总结失败项目教训的博客列个提纲",
-  "Turn my bullet points into a short, clear project update":
-    "把我的要点整理成一份简短清晰的项目进展",
-  "Write a thank-you note to a mentor": "给导师写一封感谢信",
-  "Map the strengths and weaknesses of entering a new market":
-    "梳理进入一个新市场的优势和劣势",
-  "Build a simple pricing comparison against three competitors":
-    "做一份与三个竞争对手的简单价格对比",
-  "Draft quarterly goals with measurable results for a small team":
-    "为一个小团队起草带可衡量结果的季度目标",
-  "List the risks in a product launch plan and how to reduce them":
-    "列出产品发布计划中的风险以及如何降低它们",
-  "Sketch a one-page business plan for a neighborhood café":
-    "为一家社区咖啡馆勾勒一页纸的商业计划",
-  "Prepare talking points for a budget review meeting":
-    "为预算评审会议准备发言要点",
-  "Suggest colors and fonts for a calm meditation app":
-    "为一款舒缓的冥想应用推荐配色和字体",
-  "Brainstorm names and taglines for a home-baking business":
-    "为一家家庭烘焙小店想名字和标语",
-  "Design a simple logo concept as an SVG": "用 SVG 设计一个简单的标志草案",
-  "Plan a mood board for a beach-themed birthday party":
-    "为海滩主题的生日派对策划一个情绪板",
-  "Write a short story that starts with a lost umbrella":
-    "写一个以一把丢失的雨伞开头的短篇故事",
-  "Lay out a poster for a community clean-up day":
-    "为社区清洁日设计一张海报的版式",
-  "Plan a week of quick, healthy dinners with a shopping list":
-    "规划一周快捷健康的晚餐，并附上购物清单",
-  "Help me make a monthly budget I can actually stick to":
-    "帮我做一份真正坚持得下去的月度预算",
-  "Plan a relaxed three-day trip to a city I choose":
-    "为我选的城市安排一次轻松的三日游",
-  "Suggest a beginner workout I can do at home":
-    "推荐一套在家就能做的入门健身动作",
-  "Help me sort out a cluttered closet in one weekend":
-    "帮我在一个周末里整理好凌乱的衣柜",
-  "Come up with gift ideas for a friend who loves hiking":
-    "为一位热爱徒步的朋友想几个礼物点子",
-  "Help me prepare answers to common interview questions":
-    "帮我准备常见面试问题的回答",
-  "Review my resume summary and make it sharper":
-    "看看我的简历摘要，让它更有力",
-  "Plan how to ask my manager for a raise": "规划如何向经理提出加薪",
-  "Explore careers for someone who loves both data and people":
-    "为既喜欢数据又喜欢与人打交道的人探索职业方向",
-  "Draft a polite message turning down a job offer":
-    "起草一条礼貌地婉拒工作邀请的消息",
-  "Set goals for my first 90 days in a new role":
-    "为我在新岗位上的头 90 天设定目标",
-  "Tell me something surprising about octopuses":
-    "告诉我一件关于章鱼的惊人事实",
-  "Teach me a card trick I can learn in five minutes":
-    "教我一个五分钟就能学会的扑克牌魔术",
-  "Invent a game I can play with things around the house":
-    "发明一个用家里现有物品就能玩的游戏",
-  "Explain a famous paradox in plain words": "用通俗的话解释一个著名的悖论",
-  "Recommend a hobby after asking me a few questions":
-    "先问我几个问题，然后推荐一项爱好",
-  "Write a riddle and let me guess the answer": "出一个谜语，让我来猜答案",
-  "Summarize the most recent document in my Drive":
-    "总结我 Drive 中最新的一份文档",
-  "Find my notes on an upcoming project in Drive and pull out the action items":
-    "在 Drive 中找到我关于一个即将开始的项目的笔记，并提取待办事项",
-  "Turn a spreadsheet in my Drive into a short written summary":
-    "把我 Drive 中的一份表格整理成简短的文字总结",
-  "Check my recent Drive documents for anything waiting on me":
-    "检查我最近的 Drive 文档里有没有等我处理的事",
-  "Look at my calendar and plan focus time for this week":
-    "看看我的日历，为本周安排专注时间",
-  "Prepare me for my next meeting with a short briefing":
-    "用一份简短的简报帮我准备下一场会议",
-  "Find an hour this week for a planning session": "本周找出一个小时用来做计划",
-  "Sum up how much of last week went to meetings":
-    "总结一下上周有多少时间花在了会议上",
-  "Summarize the unread emails in my inbox": "总结我收件箱里的未读邮件",
-  "Draft replies to emails that have waited more than two days":
-    "为等待超过两天的邮件起草回复",
-  "Find emails about upcoming travel and list the details":
-    "找出与即将出行有关的邮件并列出细节",
-  "Combine my email, calendar and Drive into a briefing for today":
-    "把我的邮件、日历和 Drive 整合成一份今天的简报",
-  "Hey Claudex, could you {prompt}? Use the connectors that help, and start once you have what you need.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "嗨 Claudex，你能{prompt}吗？用上有帮助的连接器，信息够了就开始。\n\n如果合适，做一个我们可以一起看的东西，比如图表、清单或一个小的交互页面。",
-  "Hey Claudex, could you help me {prompt}? Start researching straight away with any tools that help, and tell me if you need more context.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "嗨 Claudex，你能帮我{prompt}吗？马上开始研究，用上任何有帮助的工具；如果需要更多背景信息，请告诉我。\n\n如果合适，做一个我们可以一起看的东西，比如图表、清单或一个小的交互页面。",
-  "Hi Claudex! Could you {prompt}? If something important is missing, ask me one or two questions first, and tell me if a file or more context would help. Use any tools you have, such as web search or connected files, when they help.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page. Thanks!":
-    "你好 Claudex！你能{prompt}吗？如果缺少关键信息，先问我一两个问题；如果某个文件或更多背景会有帮助，也请告诉我。需要时可以使用你拥有的任何工具，比如网页搜索或已连接的文件。\n\n如果合适，做一个我们可以一起看的东西，比如图表、清单或一个小的交互页面。谢谢！",
-  "Start with something small": "从小事做起",
-  "Help me plan my week. Ask what is on my plate and what matters most, then lay out a day-by-day plan with time for focused work and room for surprises.":
-    "帮我规划这一周。先问问我手头有哪些事、什么最重要，然后按天排出计划，留出专注工作的时间，也给意外情况留点余地。",
-  "Sort my screenshots": "整理我的截图",
-  "Go through the screenshots in my selected folder and sort them into subfolders by topic. Propose the folder names and show me the plan before moving anything.":
-    "查看我所选文件夹里的截图，按主题分到子文件夹里。先提出文件夹名称并给我看计划，再移动任何文件。",
-  "Spot patterns in my files": "找出文件里的规律",
-  "Read the documents in my selected folder and tell me what stands out: recurring themes, open questions and anything that looks out of date. Fit it on one page.":
-    "阅读我所选文件夹里的文档，告诉我有哪些值得注意的：反复出现的主题、悬而未决的问题，以及看起来已经过时的内容。控制在一页以内。",
-  "Clear the clutter": "清理杂乱",
-  "Tidy my Downloads folder": "整理我的下载文件夹",
-  "Look through my Downloads folder and suggest what to keep, file away or delete. Group similar files, point out large or duplicate ones, and wait for my go-ahead before changing anything.":
-    "查看我的下载文件夹，建议哪些该保留、归档或删除。把相似的文件归在一起，指出体积大或重复的文件，在我同意之前不要做任何改动。",
-  "Group photos by date": "按日期整理照片",
-  "Organize the photos in my selected folder into folders by year and month, using the date each one was taken. Show me the plan first and never delete a photo.":
-    "把我所选文件夹里的照片按拍摄日期分到“年/月”文件夹里。先给我看计划，并且绝不删除任何照片。",
-  "Get my inbox under control": "理清我的收件箱",
-  "Help me get my inbox under control. Group what is waiting by urgency, draft short replies for the quick ones, and list what needs a decision from me.":
-    "帮我理清收件箱。把待处理的邮件按紧急程度分组，为能快速回复的起草简短回复，并列出需要我做决定的事项。",
-  "Get ready for what’s next": "为接下来做好准备",
-  "Prepare for my next meeting": "准备我的下一场会议",
-  "Help me prepare for my next meeting. Ask who it is with and what it is about, then gather the relevant notes and files and give me a short briefing with questions to raise.":
-    "帮我准备下一场会议。先问清是和谁开、讨论什么，然后收集相关的笔记和文件，给我一份简短的简报，并列出可以提出的问题。",
-  "Plan a getaway": "规划一次短途旅行",
-  "Help me plan a short trip. Ask about my dates, budget and the kind of places I enjoy, then suggest a day-by-day plan and a packing list.":
-    "帮我规划一次短途旅行。先问我的日期、预算和喜欢的地方类型，然后给出按天的行程和一份行李清单。",
-  "Get ready for an interview": "准备一次面试",
-  "Help me get ready for a job interview. Ask about the role and the company, go over likely questions with me, help me shape my answers and suggest questions I can ask them.":
-    "帮我准备一次求职面试。先了解职位和公司，和我一起过一遍可能被问到的问题，帮我打磨回答，并建议我可以反问对方的问题。",
-  "Make sense of scattered information": "理清零散的信息",
-  "Catch me up on team chat": "帮我跟上团队聊天",
-  "Catch me up on what I missed in my team’s chat. Summarize the main discussions and decisions, point out anything that mentions me, and list what I should reply to.":
-    "帮我跟上我在团队聊天里错过的内容。总结主要讨论和决定，指出提到我的地方，并列出我需要回复的消息。",
-  "Turn voice notes into a document": "把语音笔记整理成文档",
-  "Turn the voice notes in my selected folder into a tidy document. Transcribe them, group related points under headings and list any action items at the end.":
-    "把我所选文件夹里的语音笔记整理成一份清晰的文档。先转写，再把相关要点归到各个小标题下，最后列出待办事项。",
-  "Collect figures into a spreadsheet": "把数字汇总到表格",
-  "Pull the figures scattered across the files in my selected folder into one spreadsheet. Show me the columns you plan to use before you start, and note where each value came from.":
-    "把散落在我所选文件夹各个文件里的数字汇总到一张表格里。开始前先给我看你打算使用的列，并注明每个数值的来源。",
-  "Connect to a Claudex service": "连接到 Claudex 服务",
-  "Enter the address of the service you sign in to.":
-    "输入你要登录的服务地址。",
-  "Service address": "服务地址",
-  "No Claudex service answered at this address. Check it and try again.":
-    "此地址没有 Claudex 服务响应。请检查后重试。",
-  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking it — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from your Claudex service's website.":
-    "Claudex 无法连接更新服务器。如果你使用的是工作网络，防火墙或代理可能阻止了它，请让 IT 团队放行。否则请检查网络后重试，或从你所用 Claudex 服务的网站下载最新版本。",
-  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or the web.":
-    "会话清除后未能重新连接。请重新开启，以继续通过手机或网页使用此会话。",
-  "I agree to the {terms} and {aup}.": "我同意{terms}和{aup}。",
+  "Account transition not confirmed": "账号切换尚未确认",
+  "The account transition has not finished. The previous interface remains locked. No account action has been retried.": "账号切换尚未完成，原界面保持锁定。系统没有重试任何账号操作。",
 };
+// Preserve the native error contract while reusing the translated recovery advice.
+catalog["The Claudex service is unreachable. Check your connection."] =
+  catalog["Couldn’t reach the service. Check your connection, then try again."];
+
+// Official Web appearance status uses the existing selected locale.
+catalog["The account activation changed. No appearance change was sent."] = "账号会话已变更，未发送外观修改。";
+catalog["Response font cannot be saved in this read-only Web entry. The previous font is retained."] = "此只读网页版入口不能保存回复字体，已保留原字体。";
+catalog["This response font or settings request is unsupported. The previous font is retained."] = "当前不支持该回复字体或设置请求，已保留原字体。";
+catalog["Response font saving is disabled by this Web host. The previous font is retained."] = "此网页版服务未启用回复字体保存，已保留原字体。";
+catalog["Appearance permission could not be verified. No change was sent."] = "无法核实外观设置权限，未发送修改。";
+catalog["The appearance outcome is unknown after account retirement. Reload settings; the frontend did not resend the change."] = "账号会话结束后，无法确认外观设置的保存结果。请重新加载设置核对；前端未重复发送修改。";
+catalog["Response font saved."] = "回复字体已保存。";
+catalog["The response font save could not be confirmed. Reload settings to check its value; the frontend did not resend the change."] = "无法确认回复字体是否保存。请重新加载设置核对当前值；前端未重复发送修改。";
+catalog["The appearance save outcome could not be confirmed. Reload settings before retrying."] = "无法确认外观设置的保存结果。请重新加载并核对后再重试。";
+catalog["Experimental frontend — response font changes require current server appearance permission. Other changes remain independently restricted."] = "实验性前端：修改回复字体需要服务端当前外观设置权限，其他修改仍受各自限制。";
 export default catalog;

@@ -1,0 +1,22 @@
+/*
+ * The Billing view: the settings page's column (its 24px sides) centred in
+ * the window, on the settings page's background, with the settings
+ * dialog's page title type.
+ */
+.billing-window {
+  min-height: 100vh;
+  background: var(--settings-page-bg);
+  color: var(--settings-primary);
+}
+.billing-window-page {
+  max-width: 672px;
+  margin: 0 auto;
+  padding: 36px 24px 32px;
+  overflow: visible;
+}
+.billing-window-title {
+  margin: 0 0 16px;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}

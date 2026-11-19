@@ -1,8 +1,10 @@
 # Third-party notices
 
-Claudex is an independent project whose interface is inspired by Claude's apps. It is not an Anthropic product and is not endorsed by Anthropic or OpenAI. Credentials and personal conversation data are not bundled.
+Claudex is an independent implementation inspired by the interaction design of Claude Desktop. It is not an Anthropic product and is not endorsed by Anthropic or OpenAI. Reference-derived UI data is identified below; credentials and personal conversation data are not bundled.
 
-## Desktop and web app
+## Owner-supplied UI reference artwork
+
+`src/collections/customize/spreadsheet-chart-frames.json` contains the ObjectSpreadsheetChart flipbook path data from the owner's October 14 Claude reference package (`cbffd8d38-DuFelw50.js`). Provenance, extraction method and checksum are recorded in `docs/audit-live-2026-10-16/acceptance-round12/data-art-reference.json`. The supplied file does not declare an upstream artwork licence; the project's Apache-2.0 statement does not grant a licence to this reference artwork.
 
 The application bundles **OpenAI Codex 0.144.1**, licensed under Apache License 2.0. Source: https://github.com/openai/codex . The package preserves the upstream runtime layout, code-mode host, ripgrep, and shell resources. Upstream third-party licensing information is in https://github.com/openai/codex/blob/main/NOTICE .
 
@@ -43,16 +45,16 @@ The `backend/` directory is the Claudex server, a fork of **Sub2API** (https://g
 - **Source offer:** `backend/SOURCE_OFFER.md` says what the corresponding source of a server image or binary is (the `backend/` directory and the build scripts at the commit recorded in `/app/SOURCE.txt`) and how to provide it when the server is distributed.
 - Server images carry `/app/LICENSE`, `/app/COPYING`, `/app/CLAUDEX_CHANGES.md`, `/app/SOURCE.txt` and the OCI label `org.opencontainers.image.licenses=LGPL-3.0-only`.
 - The server's own dependencies (Go modules in `backend/backend/go.mod`, npm packages in `backend/frontend/package.json`) keep their licenses, recorded in those manifests and their lock files.
-- **Note for operators:** the upstream README (`backend/README.md`, “Important Notice”; `backend/README_CN.md`) states that the Sub2API developers have never authorized any individual or organization to run a commercial operation based on the project, and that anyone who does so bears the resulting disputes and liabilities alone. It is recorded here as written, not as a legal assessment.
-- `backend/backend/internal/claudex/geoip/ip2region_v4.xdb` is the offline IP database of **ip2region** (Apache License 2.0, https://github.com/lionsoul2014/ip2region), embedded unchanged.
+- **Note for the owner:** the upstream README (`backend/README.md`, “Important Notice”; `backend/README_CN.md`) states that the Sub2API developers have never authorized any individual or organization to run a commercial operation based on the project, and that anyone who does so bears the resulting disputes and liabilities alone. It is recorded here as written, not as a legal assessment.
 
 The Claudex desktop application contains no code from `backend/`. It talks to the server over HTTP (HTTPS in production) only.
 
 ## License boundary
 
 - `backend/`: GNU Lesser General Public License v3.0 (`backend/LICENSE`, with `backend/COPYING`).
-- Everything else in this repository, including the Claudex desktop application, except the third-party software and assets identified here: Apache License 2.0; see LICENSE.
+- Everything else in this repository, including the Claudex desktop application, except separately identified third-party assets and reference artwork: Apache License 2.0; see LICENSE.
 
+The Claude mark used to reproduce the requested interface is sourced from Simple Icons (CC0-1.0), https://simpleicons.org/?q=claude . The mark is a trademark of Anthropic; application identity remains Claudex.
 
 ## api-image
 
@@ -70,7 +72,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 The OpenDyslexic chat font (`src/assets/fonts/OpenDyslexic-*.woff2`, version 2.001) is by Abelardo Gonzalez (https://opendyslexic.org), based on Bitstream Vera; the OpenDyslexic changes and additional glyphs are licensed under the Creative Commons Attribution 3.0 Unported License, and the original Bitstream Vera fonts are © Bitstream under the Bitstream Vera license.
 
-The Source Serif 4 interface serif (`src/assets/fonts/SourceSerif4Variable-Roman.ttf.woff2` and `-Italic`, version 4.005, https://github.com/adobe-fonts/source-serif) is © 2014-2023 Adobe, with Reserved Font Name "Source", and is licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).
+The Source Serif 4 interface serif (`src/assets/fonts/SourceSerif4Variable-Roman.ttf.woff2` and `-Italic`, version 4.005, https://github.com/adobe-fonts/source-serif) is © 2014-2023 Adobe, with Reserved Font Name "Source", and is licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org). It stands in for the original interface's private serif, which Claudex never bundles.
 
 
 ## highlight.js GitHub syntax palettes
@@ -106,6 +108,62 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## QuickJS workflow runtime
+
+Claudex bundles QuickJS and quickjs-emscripten for Workflow scripts.
+
+Packages: `quickjs-emscripten-core`, `@jitl/quickjs-ffi-types` and `@jitl/quickjs-singlefile-cjs-release-sync`.
+
+```text
+quickjs-emscripten:
+The MIT License
+
+quickjs-emscripten copyright (c) 2019-2024 Jake Teton-Landis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+quickjs:
+QuickJS Javascript Engine
+
+Copyright (c) 2017-2021 Fabrice Bellard
+Copyright (c) 2017-2021 Charlie Gordon
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
 
 ## CodeMirror and Lezer
 
@@ -215,9 +273,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
-
-## Phone apps
-
-- The iOS app bundles **Noto Serif** and **Noto Serif SC** (Copyright 2022 The Noto Project Authors) and **JetBrains Mono** (Copyright 2020 The JetBrains Mono Project Authors), all under the SIL Open Font License 1.1; the license text is in `mobile/ios/Claudex/Resources/Fonts/OFL.txt`. Its icons are the system's SF Symbols, which are not bundled.
-- The Android app bundles **JetBrains Mono** (SIL Open Font License 1.1, `mobile/android/app/src/main/assets/transcript-official/OFL.txt`). Its icons come from Material Icons (`material-icons-extended`, Apache License 2.0). Its other dependencies are fetched by Gradle and keep their own licenses.
-- Both apps carry the shared conversation bundle built from this repository, which includes KaTeX's fonts and Source Serif 4 under the licenses above.

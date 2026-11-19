@@ -15,7 +15,7 @@ import { IconButton } from "../ui/Controls";
 import { ConversationTitle, type TitleActions } from "./ConversationTitle";
 import { ConversationPanelButtons } from "./ConversationPanelButtons";
 import { FolderIcon } from "../ui/icons";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import "./conversation-header.css";
 import { lazyPiece } from "../ui/lazy-piece";
 import type { MenuPosition } from "../ui/Menu";
@@ -69,7 +69,7 @@ function ChatShareButton({ share }: { share: ConversationShareButton }) {
           {disabled &&
             share.disabledReason ===
               "Sharing is disabled by your organization." && (
-              <AppIcon name="Lock" />
+              <Anthropicon name="Lock" />
             )}
           Share
         </button>
@@ -85,7 +85,7 @@ const HeaderUsageRing = lazyPiece(
   "HeaderUsageRing",
 );
 
-// A Code session's View options, loaded when first opened.
+// A Code session's View options (R-0643), loaded when first opened.
 const CodeViewOptions = lazyPiece(
   () => import("../code-view-options/CodeViewOptions"),
 );
@@ -137,11 +137,13 @@ export function ConversationHeader({
   const more = useRef<HTMLButtonElement>(null);
   const bar = useRef<HTMLElement>(null);
   const railToggle = useRailToggle(conversation.id);
-  // The panes, and what folds into View options when the bar is narrow: the
-  // rail toggle first, then closed panes before open ones, at most seven.
+  // The panes, and what folds into View options when the bar is narrow
+  // (live claude.ai bundle, 2026-10-14): the rail toggle first, then closed
+  // panes before open ones, at most seven.
   const panes = useCodePanes(conversation, mode);
   const code = mode === "code" && !splitPane;
-  // The web's View options appears only once the bar folds.
+  // The web's View options appears only once the bar folds (live claude.ai
+  // Code, 2026-10-21: none at 1280px; Show session rail and Changes at 700).
   const web = useHost().kind === "web";
   const hidden = useHeaderFold(
     bar,
@@ -164,7 +166,8 @@ export function ConversationHeader({
     >
       <div>
         {/* A session on this computer leads with the laptop and names its
-           folder; a cloud session shows its title alone. */}
+            folder (R-0627); a cloud session shows its title alone (live
+            claude.ai Code, 2026-10-21: no glyph, no folder chip). */}
         {mode === "code" && !cloudSession && <Laptop size={15} />}
         <ConversationTitle
           conversation={conversation}
@@ -175,11 +178,11 @@ export function ConversationHeader({
         {mode !== "code" && (
           <ComputerLinkIndicator conversation={conversation} />
         )}
-        {/* A Code session names its folder in a grey chip; it shrinks to the
-           folder glyph when the header is narrow. */}
-        {/* No folder (a session's own scratch folder) shows no chip and no
-           stand-in either; "Developer" here was a placeholder from before the
-           captures. */}
+        {/* A Code session names its folder in a grey chip (R-0627); it
+            shrinks to the folder glyph when the header is narrow (R-0628). */}
+        {/* No folder (a session's own scratch folder) shows no chip and
+            no stand-in either; "Developer" here was a placeholder from
+            before the captures (owner, 2026-10-21). */}
         {mode === "code" && shownFolder(conversation.cwd) && !cloudSession && (
           <span className="thread-folder-chip" title={conversation.cwd}>
             <FolderIcon size={14} aria-hidden="true" />
@@ -188,8 +191,8 @@ export function ConversationHeader({
         )}
       </div>
       <div className="header-actions">
-        {/* Chat and Cowork show the plan's usage here; Code has its composer
-           ring. */}
+        {/* Chat and Cowork show the plan's usage here (live claude.ai
+            bundle, 2026-10-14, c146b936d); Code has its composer ring. */}
         {mode !== "code" && !conversation.incognito && (
           <Suspense fallback={null}>
             <HeaderUsageRing running={running} />
@@ -210,15 +213,16 @@ export function ConversationHeader({
             mode !== "code" ? (
               <ChatShareButton share={share} />
             ) : share.shared ? (
-              // Code, shared: a secondary button with the audience's glyph and
-              // "Shared", the audience in its tooltip.
+              // Code, shared (live claude.ai bundle, 2026-10-14): a secondary
+              // button with the audience's glyph and "Shared", the audience in
+              // its tooltip.
               <IconButton
                 label="Anyone with the link"
                 className="conversation-share-button text shared"
                 placement="below"
                 onClick={share.onOpen}
               >
-                <AppIcon name="Globe" />
+                <Anthropicon name="Globe" />
                 <span>Shared</span>
               </IconButton>
             ) : (
@@ -229,13 +233,14 @@ export function ConversationHeader({
                 placement="below"
                 onClick={share.onOpen}
               >
-                <AppIcon name="Share" />
+                <Anthropicon name="Share" />
               </IconButton>
             )
           ) : (
             mode !== "code" && (
-              // A Chat header always ends with Share; without hosted sharing it
-              // stays greyed and says why. The button reads "Share".
+              // R-0517, R-0546: a Chat header always ends with Share; without
+              // hosted sharing it stays greyed and says why.
+              // Live claude.ai (2026-09-29): the button reads "Share".
               <ChatShareButton
                 share={{
                   shared: false,
@@ -246,9 +251,9 @@ export function ConversationHeader({
               />
             )
           ))}
-        {/* Only a Code session has ⋮ (View options): the Chat header has none,
-           its title menu carries the actions, and a Cowork task's bar ends with
-           its panel toggle. */}
+        {/* Only a Code session has ⋮ (View options): the Chat header has none
+            (R-0517, R-0546, R-0606), its title menu carries the actions, and
+            a Cowork task's bar ends with its panel toggle (R-0645). */}
         {mode === "code" && (!web || railFolded || folded.length > 0) && (
           <IconButton
             ref={more}
@@ -266,7 +271,7 @@ export function ConversationHeader({
               });
             }}
           >
-            <AppIcon name="DotsVertical" />
+            <Anthropicon name="DotsVertical" />
           </IconButton>
         )}
         {menu && (

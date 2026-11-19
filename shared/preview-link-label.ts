@@ -1,4 +1,4 @@
-// The reference design.
+// live claude.ai bundle, 2026-10-14, c11959232-CiUz9ooX.js (fd/dd).
 export function previewLinkLabel(value: string, softWrap = true) {
   let label: string;
   try {

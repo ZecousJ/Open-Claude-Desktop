@@ -36,7 +36,7 @@ if [ "$commit" != unknown ] && [ -n "$(git -C "$ROOT" status --porcelain -- back
   commit="$commit-dirty"
 fi
 version="$base+claudex.$CLAUDEX_REV"
-source_url=${SOURCE_URL:-https://github.com/ZecousJ/Open-Claude-Desktop}
+source_url=${SOURCE_URL:-https://github.com/ZecousJ/claudex}
 
 tags=()
 if [ -n "$TAG" ]; then tags=(-t "$TAG"); else tags=(-t "claudex-server:${version//+/-}" -t claudex-server:latest); fi

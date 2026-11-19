@@ -1,8 +1,8 @@
 import { useId } from "react";
-import type { FormField, FormValues } from "./elicitation-form";
+import type { FormField, FormValues } from "../../shared/elicitation-form";
 import { SelectField } from "../settings/controls";
 
-/** Schema-driven inputs for an MCP elicitation form. */
+/** Schema-driven inputs for an MCP elicitation form (R-0633, R-0634). */
 export function ElicitationFields({
   fields,
   values,

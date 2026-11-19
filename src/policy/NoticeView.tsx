@@ -6,7 +6,7 @@ import {
   UsageGaugeIcon,
 } from "../ui/icons";
 import { DownloadTrayIcon } from "./policy-icons";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useT } from "../i18n";
 import type {
   ComposerNoticeVariant,
@@ -22,16 +22,17 @@ const icons = {
   info: InfoIcon,
   download: DownloadTrayIcon,
   coffee: ({ className }: { className?: string }) => (
-    <AppIcon name="CoffeeCup" className={className} />
+    <Anthropicon name="CoffeeCup" className={className} />
   ),
 };
 
 /**
  * One notice above the composer, in the frame of its surface and place
- * (usage-limit-banner.css): Chat and Cowork use the outlined box, which puts
- * its button on a second row without the icon when narrowed by a side panel;
- * Code uses the filled strip at home and, in a conversation, a card whose
- * button sits under the text.
+ * (usage-limit-banner.css): Chat and Cowork use the outlined box (R-Chat
+ * home, S-0006, S-0008), which puts its button on a second row without the
+ * icon when narrowed by a side panel (S-0006 progress panel); Code uses the
+ * filled strip at home (R-0338) and, in a conversation, a card whose button
+ * sits under the text (R-Code-会话行右键-Move-to-group, R-Code-Browser单面板).
  */
 export function NoticeView({
   content,
@@ -50,7 +51,9 @@ export function NoticeView({
 }) {
   const t = useT();
   const Icon = icons[content.icon];
-  // A side panel's narrow frame only once the column is too narrow for one row.
+  // A side panel's narrow frame (S-0006) only once the column is too narrow
+  // for one row (owner, 2026-10-03: Retry fell to a second row in a wide
+  // column).
   const box = useRef<HTMLDivElement>(null);
   const [roomy, setRoomy] = useState(false);
   useLayoutEffect(() => {
@@ -97,8 +100,8 @@ export function NoticeView({
         )}
       </span>
       <span className="usage-banner-actions">
-        {/* Continue, the primary button, sits right of Retry; other secondary
-           buttons come first. */}
+        {/* Continue, the primary button, sits right of Retry (owner,
+            2026-10-03); other secondary buttons come first. */}
         {!continueLast && secondary}
         {content.action && (
           <button

@@ -61,9 +61,9 @@ export const sharingErrorCodes = {
 } as const;
 
 /**
- * The categories of the live claude.ai report form that the form itself takes,
- * as the service stores them. Copyright, trademark, private information and
- * court orders point to a separate form instead.
+ * The categories of the live claude.ai report form (2026-10-12) that the
+ * form itself takes, as the service stores them. Copyright, trademark,
+ * private information and court orders point to a separate form instead.
  */
 export const reportFormCategories = [
   "child_safety",
@@ -177,9 +177,10 @@ export function parseSharingStatus(value: unknown): SharingStatus | null {
 }
 
 /**
- * One allowed embed domain as the live dialog checks it: host labels of
- * letters, digits and inner hyphens, a top-level label of 2-26 characters,
- * optionally "*." first. The service checks the same.
+ * One allowed embed domain as the live dialog checks it (live claude.ai
+ * bundle, 2026-10-12): host labels of letters, digits and inner hyphens, a
+ * top-level label of 2-26 characters, optionally "*." first. The service
+ * checks the same.
  */
 export const embedDomainPattern =
   /^(?:\*\.)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,24}[a-z0-9]$/;
@@ -206,8 +207,9 @@ export function invalidEmbedDomains(domains: string[]): string[] {
 }
 
 /**
- * The embed code of a published artifact: an iframe 100% wide and 600 high, its
- * title the artifact's (& and " escaped), "Claudex Artifact" when it has none.
+ * The embed code of a published artifact (live claude.ai bundle,
+ * 2026-10-12): an iframe 100% wide and 600 high, its title the artifact's
+ * (& and " escaped), "Claudex Artifact" when it has none.
  */
 export function embedCode(url: string, title: string): string {
   const escape = (value: string) =>

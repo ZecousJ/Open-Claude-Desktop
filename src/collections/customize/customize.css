@@ -1,14 +1,15 @@
 /*
- * Customize; also loaded by the Settings tabs and the Plugins body that share
- * its rows and cards. Sizes: the mac 2x capture R-Customize-主页-加载完成 (1164
- * window) for the header, Discover banner and cards; the Windows 1x crops
- * R-1102–R-1151 for Yours rows, the connector table and menus; R-1284/R-1285
- * (1920, light) for the 960px column and light colours. This sheet loads before
- * the global one, so rules that meet the global input and button rules are one
- * class stronger.
+ * Customize (src/collections/customize, package WP7); also loaded by the
+ * Settings tabs and the Plugins body that share its rows and cards.
+ * Sizes: the mac 2x capture R-Customize-主页-加载完成 (1164 window) for the
+ * header, Discover banner and cards; the Windows 1x crops R-1102–R-1151 for
+ * Yours rows, the connector table and menus; R-1284/R-1285 (1920, light)
+ * for the 960px column and light colours (fidelity/observations/customize.md).
+ * This sheet loads before the global one, so rules that meet the global
+ * input and button rules are one class stronger.
  */
-/* The title, tabs and tools stay put while the page scrolls under them; the
-   scrollbar starts below them. */
+/* The title, tabs and tools stay put while the page scrolls under them;
+   the scrollbar starts below them (R-1146 scroll captures at 602). */
 .customize-view {
   display: flex;
   flex-direction: column;
@@ -33,7 +34,7 @@
 }
 .customize-title {
   margin: 0;
-  /* 24px/32px medium. */
+  /* 24px/32px medium (live claude.ai, 2026-10-16: h1 "Customize"). */
   font:
     500 24px/32px "Claudex Serif",
     Georgia,
@@ -45,11 +46,12 @@
 :root[data-reference-fonts="true"] .customize-title,
 :root[data-reference-fonts="true"] .customize-feature h3 {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   font-optical-sizing: auto;
 }
-/* The section/view group wraps with an 8px row gap; tools wrap beneath it with
-   a 16px gap. */
+/* Live Customize, 2026-10-16: the section/view group wraps with an 8px
+   row gap; tools wrap beneath it with a 16px gap. */
 .customize-bar {
   display: flex;
   flex-wrap: wrap;
@@ -90,7 +92,7 @@
   font-weight: 500;
   white-space: nowrap;
   color: var(--text-muted);
-  /* 14/20px tabs and a 32px track. */
+  /* Live Customize header, 2026-10-16: 14/20px tabs and a 32px track. */
   transition: none;
 }
 .customize-tabs > button:hover,
@@ -161,7 +163,8 @@
 .customize-tools .icon-button.customize-icon.filtered {
   color: var(--link-text);
 }
-/* Search 256x32 on every tab. */
+/* Search 256x32 on every tab (live claude.ai Customize, 2026-10-21; it was
+   208 at the 2026-10-16 audit). */
 .customize-search {
   box-sizing: border-box;
   display: flex;
@@ -279,7 +282,7 @@
 }
 .customize-feature h3 {
   margin: 0;
-  /* 22px/28px regular. */
+  /* 22px/28px regular (live claude.ai, 2026-10-16: the hero carousel's h2). */
   font:
     400 22px/28px "Claudex Serif",
     Georgia,
@@ -305,8 +308,9 @@
   font-weight: 500;
   color: #0b0b0b;
 }
-/* The banner drawing: the table and chart badge, 1.72× the Settings size (a
-   105px table, 2.6px lines) with its right edge 77px inside the banner. */
+/* The banner drawing (R-1318, R-1104, dark R-1115): the table and chart
+   badge, 1.72× the Settings size (a 105px table, 2.6px lines) with its
+   right edge 77px inside the banner. */
 .customize-feature-art {
   display: block;
   flex-shrink: 0;
@@ -463,7 +467,7 @@
   line-height: 20px;
   color: var(--text);
 }
-/* Connector empty card heading and browse CTA. */
+/* 1016 c40525e86-BZls6jI2 In: connector empty card heading and browse CTA. */
 .customize-callout h3 {
   margin: 0;
   font-size: 15px;
@@ -494,9 +498,11 @@
   flex-shrink: 0;
   color: var(--text);
 }
-/* Plugins → Yours: "Build for the Claude Directory": white 5%, 24px in, the
-   title 14/20 at 580 over 14/20 secondary text, the buttons right (below the
-   text when the column is narrow). */
+/* Plugins → Yours: "Build for the Claude Directory" (live claude.ai,
+   2026-10-21: "flex flex-wrap items-center justify-between gap-md
+   rounded-card p-xl bg-neutral mt-xl", 40px under the callout): white 5%,
+   24px in, the title 14/20 at 580 over 14/20 secondary text, the buttons
+   right (below the text when the column is narrow). */
 .customize-build {
   display: flex;
   flex-wrap: wrap;
@@ -651,7 +657,7 @@
   margin-left: 0;
 }
 
-/* Connectors: Connector / Type / Status. */
+/* Connectors: Connector / Type / Status (R-1102). */
 .customize-table {
   width: calc(100% + 24px);
   margin: 32px -12px 0;
@@ -764,7 +770,7 @@
   }
 }
 
-/* Light theme. */
+/* Light theme (R-1284, R-1285). */
 :root[data-theme="light"] .customize-title {
   color: #141413;
 }
@@ -778,7 +784,7 @@
 :root[data-theme="light"] .customize-views > button:hover {
   color: #0b0b0b;
 }
-/* The hovered tab takes the selected pill's fill. */
+/* R-1587 hover: the hovered tab takes the selected pill's fill. */
 :root[data-theme="light"] .customize-tabs > button:hover:not(.selected) {
   background: rgb(11 11 11 / 5%);
 }
@@ -835,7 +841,8 @@
 :root[data-theme="light"] .customize-feature {
   background: #ced6bf;
 }
-/* Plugins → Discover's banner is blue in both themes; Skills' is green. */
+/* Plugins → Discover's banner is blue in both themes (R-1104 light #c5d3e0,
+   R-1104-1126 dark #032042); Skills' is green. */
 .customize-feature.plugin {
   background: #032042;
 }
@@ -945,9 +952,9 @@
   background: #f3f3f1;
   color: #3d3d3a;
 }
-/* Loading skills: the row's parts as #262626 blocks (the Customize card fill),
-   a title bar and a shorter description bar. The rows wait, fade in and breathe
-   in a wave with the shared skeleton (src/ui/skeleton.css). */
+/* Loading skills (R-1145): the row's parts as #262626 blocks (the Customize
+   card fill), a title bar and a shorter description bar. The rows wait, fade
+   in and breathe in a wave with the shared skeleton (src/ui/skeleton.css). */
 .customize-skeleton .customize-row-tile {
   background: #262626;
 }
@@ -970,7 +977,7 @@
   /* No Customize skeleton is captured; the blocks of R-1616's skeleton. */
   background: #f3f3f3;
 }
-/* A narrowing filter turns the button blue in light as in History. */
+/* A narrowing filter turns the button blue in light as in History (R-1317). */
 :root[data-theme="light"]
   .customize-tools
   .icon-button.customize-icon.filtered {

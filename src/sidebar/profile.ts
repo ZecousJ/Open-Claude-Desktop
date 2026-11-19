@@ -1,4 +1,4 @@
-/** Account trigger fallback. */
+/** Account trigger fallback (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js; shared-19-BG_pM4_W.js). */
 export function profileInitials(name: string) {
   const words = name.trim().split(/\s+/);
   const first = [...words[0]][0] ?? "";

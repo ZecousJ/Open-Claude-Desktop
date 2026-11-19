@@ -1,7 +1,8 @@
-/* A cloud Code session's start (SessionSetupSteps.tsx). The row is the Code
-   transcript's step row (.code-command); the steps below it follow the A column
-   3px apart (gap-0.75) after the chat item gap (pt-[var(--chat-item-gap)], 10px
-   in the Code transcript), each row a 14px mark 4px before its words (gap-1,
+/* A cloud Code session's start (SessionSetupSteps.tsx). The row is the
+   Code transcript's step row (.code-command); the steps below it follow the
+   live claude.ai bundle, 2026-10-12 (init checklist): a column 3px apart
+   (gap-0.75) after the chat item gap (pt-[var(--chat-item-gap)], 10px in
+   the Code transcript), each row a 14px mark 4px before its words (gap-1,
    size-[14px]), body text in the primary ink once done, the danger ink when
    failed and the secondary ink otherwise, and a failed step's words 22px in
    (ms-[22px]) in footnote type (12px on 15px lines). */

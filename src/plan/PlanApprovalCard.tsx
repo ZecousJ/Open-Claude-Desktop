@@ -27,14 +27,14 @@ const PlanCommentList = lazyPiece(
 );
 
 /**
- * The card under a finished plan, as the original's ExitPlanMode card:
- * "proposed a plan" with an Open plan link; Reject and Revise… (Esc) on the
- * left; on the right Accept (⇧⌘↩) and "Accept and allow edits" (⌘↩). Revise…
- * unfolds a feedback field with Back and Revise. Accepting leaves Plan mode and
- * starts the work; rejecting keeps planning; a revision goes back as the next
- * message, still in Plan mode. The accept button carries More accept options:
- * Accept and auto mode, and Accept and bypass permissions where the folder
- * allows it.
+ * The card under a finished plan, as the original's ExitPlanMode card
+ * (desktop bundle 2.31226.1): "proposed a plan" with an Open plan link;
+ * Reject and Revise… (Esc) on the left; on the right Accept (⇧⌘↩) and
+ * "Accept and allow edits" (⌘↩). Revise… unfolds a feedback field with Back
+ * and Revise. Accepting leaves Plan mode and starts the work; rejecting
+ * keeps planning; a revision goes back as the next message, still in Plan
+ * mode. The accept button carries More accept options: Accept and auto
+ * mode, and Accept and bypass permissions where the folder allows it.
  */
 export function PlanApprovalCard({
   conversation,

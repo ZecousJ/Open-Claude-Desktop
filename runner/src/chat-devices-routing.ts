@@ -9,6 +9,7 @@ import { approvalPrefix } from "./chat-devices-support";
 import { scopeOf } from "./chat-devices-support";
 import type { ChatDeviceController } from "./chat-devices";
 import type { Opened } from "./chat-devices";
+import { interruptTargetSchema } from "../../shared/interrupt-target";
 
 export async function migrate(
   this: ChatDeviceController,
@@ -144,12 +145,60 @@ export function route(
         thinkingMode: args[0].thinkingMode,
         connectorOverrides: args[0].connectorOverrides,
         connectorToolOverrides: args[0].connectorToolOverrides,
+        knowledgeBases: args[0].knowledgeBases,
       },
     });
-  if (name === "interrupt")
+  if (name === "interrupt") {
+    if (args[1] !== undefined) {
+      const parsed = interruptTargetSchema.safeParse(args[1]);
+      if (
+        !parsed.success ||
+        "kind" in parsed.data ||
+        parsed.data.threadId !== undefined
+      )
+        return Promise.reject(
+          new Error("The stop target cannot be confirmed on this computer."),
+        );
+      const expected = parsed.data;
+      const bound = { ...binding };
+      const check = () => {
+        const current = this.host.conversations().find((c) => c.id === id);
+        const currentBinding = current?.chatDeviceBinding;
+        const turn = current?.turns.at(-1);
+        if (
+          !currentBinding ||
+          currentBinding.revision !== bound.revision ||
+          currentBinding.deviceId !== bound.deviceId ||
+          currentBinding.remoteConversationId !== bound.remoteConversationId ||
+          currentBinding.accountScope !== bound.accountScope ||
+          currentBinding.organizationId !== bound.organizationId ||
+          current?.createdAt !== expected.conversationCreatedAt ||
+          turn?.id !== expected.turnId ||
+          turn.createdAt !== expected.turnCreatedAt
+        )
+          throw new Error(
+            "The Chat device or turn changed before Stop could be confirmed.",
+          );
+      };
+      try {
+        check();
+      } catch (error) {
+        return Promise.reject(error);
+      }
+      return this.call(
+        bound,
+        "chatDeviceInterruptExpected",
+        {
+          remoteConversationId: bound.remoteConversationId,
+          expected,
+        },
+        check,
+      );
+    }
     return this.call(binding, "chatDeviceInterrupt", {
       remoteConversationId: binding.remoteConversationId,
     });
+  }
   if (
     [
       "retryResponse",

@@ -326,12 +326,20 @@ export const elementDetails = `function () {
   const cs = getComputedStyle(el);
   const styles = {};
   for (const k of keys) styles[k] = cs.getPropertyValue(k);
+  const attributes = {};
+  for (const name of ["data-testid", "data-test-id", "aria-label", "name", "type", "href", "role", "placeholder", "title", "alt", "onclick", "value", "src"]) {
+    const value = el.getAttribute(name);
+    if (value) attributes[name] = value;
+  }
   const r = el.getBoundingClientRect();
   return {
     selector: path(el),
     tag: el.tagName.toLowerCase(),
+    id: el.id || undefined,
     text: ((el.innerText || el.textContent || "") + "").trim().slice(0, 500),
     outerHTML: el.outerHTML.slice(0, 4096),
+    attributes,
+    classes: [...el.classList],
     styles,
     box: { x: r.x, y: r.y, width: r.width, height: r.height },
   };

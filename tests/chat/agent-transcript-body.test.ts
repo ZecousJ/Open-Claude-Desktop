@@ -46,9 +46,9 @@ test("child transcript preserves model message and command chronology", () => {
       ],
     }),
   );
-  // The summary names what runs now, as Code's tool rows do (G-18).
+  // R-0786: the summary names what runs now, as Code's tool rows do (G-18).
   assert.match(running, /Running a command/);
-  // A running card shows no placeholder.
+  // A running card shows no placeholder (R-0791: Request and Running, no output).
   assert.doesNotMatch(running, /Waiting for output/);
   const families = renderToStaticMarkup(
     createElement(AgentTranscriptBody, {

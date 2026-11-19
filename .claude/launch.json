@@ -1,0 +1,95 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ui-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--import",
+        "tsx",
+        "scripts/fidelity/ui-preview.mts",
+        "5198"
+      ],
+      "port": 5198
+    },
+    {
+      "name": "fidelity",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "--port",
+        "5199",
+        "--strictPort"
+      ],
+      "port": 5199
+    },
+    {
+      "name": "fidelity-web",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "CLAUDEX_SURFACE=web",
+        "npx",
+        "vite",
+        "--port",
+        "5198",
+        "--strictPort"
+      ],
+      "port": 5198
+    },
+    {
+      "name": "web-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:web"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "web-dev-prod",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "CLAUDEX_WEB_API=https://claudex.zecous.cn",
+        "npm",
+        "run",
+        "dev:web"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "mobile-fixtures",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/mobile-conversation/serve-fixtures.mjs"
+      ],
+      "port": 5198
+    },
+    {
+      "name": "web-preview-live",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "CLAUDEX_WEB_API=https://claudex.zecous.cn",
+        "npx",
+        "vite",
+        "preview",
+        "-c",
+        "vite.web.config.ts",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "official-frontend",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/zecous/Developer/claude-frontend-4.4212.0 && FRONTEND_REPLAY_CONFIG=/Users/zecous/Developer/claude-frontend-4.4212.0/.local/replay.json npm run dev"
+      ],
+      "port": 5178
+    }
+  ]
+}

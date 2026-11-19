@@ -1,7 +1,9 @@
 /*
- * The reference Chat transcript on the phones. Only the phone renderer loads
- * this sheet. Chat (.mode-chat) takes the whole of it; Code takes only its last
- * section (the session rows); web, desktop and Cowork keep the shared look.
+ * The official Claude Android 1.260923.20 Chat transcript on the phones
+ * (fidelity/mobile-official/chat-transcript.md; section numbers are its).
+ * Only the phone renderer loads this sheet. Chat (.mode-chat) takes the whole
+ * of it; Code takes only its last section (the session rows); web, desktop
+ * and Cowork keep the shared look.
  *
  * Fonts: Anthropic Sans/Serif are proprietary and not used. The serif is the
  * open Noto Serif the apps ship (iOS serves it at /native-fonts/, Android has
@@ -24,31 +26,31 @@
   font-display: swap;
 }
 
-/* Colour tokens (light) highlight.js colours. */
+/* §1.1 colour tokens (light), §4.2 highlight.js colours (D/n58.java `c`, Atom One Light). */
 :root {
-  --oc-text: #131313; /* Zc6.O */
-  --oc-text2: #383835; /* Zc6.P */
-  --oc-text3: #7b7974; /* Zc6.Q */
-  --oc-raised: #ffffff; /* Zc6.p */
-  --oc-page: #f9f9f7; /* Zc6.q */
-  --oc-code-body: #f3f3f0; /* Zc6.r */
-  --oc-code-head: #f0efec; /* Zc6.s */
-  --oc-bubble: #f0efec; /* Zc6.w0 */
-  --oc-hair-strong: rgb(30 30 29 / 30%); /* Zc6.w */
-  --oc-hair: rgb(30 30 29 / 15%); /* Zc6.x */
-  --oc-link: #d97757; /* Zc6.c */
+  --oc-text: #131313; /* zc6.O */
+  --oc-text2: #383835; /* zc6.P */
+  --oc-text3: #7b7974; /* zc6.Q */
+  --oc-raised: #ffffff; /* zc6.p */
+  --oc-page: #f9f9f7; /* zc6.q */
+  --oc-code-body: #f3f3f0; /* zc6.r */
+  --oc-code-head: #f0efec; /* zc6.s */
+  --oc-bubble: #f0efec; /* zc6.w0 */
+  --oc-hair-strong: rgb(30 30 29 / 30%); /* zc6.w */
+  --oc-hair: rgb(30 30 29 / 15%); /* zc6.x */
+  --oc-link: #d97757; /* zc6.c */
   --oc-link-pressed: rgb(217 119 87 / 20%);
-  --oc-inline-code: #184f95; /* G74.w0 */
-  --oc-press: rgb(11 11 11 / 5%); /* G74.C0 */
-  --oc-bubble-code-head: #f9f9f7; /* G74.K */
-  --oc-bubble-code-body: #fcfcfb; /* G74.T */
-  --oc-verb: #0b0b0b; /* G74.o0 */
-  --oc-icon2: #52514e; /* G74.r0 */
-  --oc-ok: #006300; /* G74.G */
-  --oc-primary: #0b0b0b; /* G74.e0 */
-  --oc-primary-pressed: #2c2c2a; /* G74.m0 */
-  --oc-primary-text: #ffffff; /* G74.j0 */
-  --oc-scrim: rgb(0 0 0 / 32%); /* M3 scrim */
+  --oc-inline-code: #184f95; /* g74.w0() */
+  --oc-press: rgb(11 11 11 / 5%); /* g74.C0() */
+  --oc-bubble-code-head: #f9f9f7; /* g74.K() */
+  --oc-bubble-code-body: #fcfcfb; /* g74.T() */
+  --oc-verb: #0b0b0b; /* g74.o0() */
+  --oc-icon2: #52514e; /* g74.r0() */
+  --oc-ok: #006300; /* g74.G() */
+  --oc-primary: #0b0b0b; /* g74.e0() */
+  --oc-primary-pressed: #2c2c2a; /* g74.m0() */
+  --oc-primary-text: #ffffff; /* g74.j0() */
+  --oc-scrim: rgb(0 0 0 / 32%); /* M3 scrim (design-system.md G4) */
   --oc-hl-0: #383a42;
   --oc-hl-1: #a0a1a7;
   --oc-hl-2: #a626a4;
@@ -68,7 +70,7 @@
     "Claudex Code Mono", "JetBrains Mono", ui-monospace, Menlo, "PingFang SC",
     monospace;
 }
-/* Dark, and the highlight.js dark colours. */
+/* §1.1 dark, and the highlight.js dark colours (D/n58.java `b`, Atom One Dark). */
 :root[data-theme="dark"] {
   --oc-text: #f9f9f7;
   --oc-text2: #c3c2b7;
@@ -107,7 +109,7 @@
   color: var(--oc-text);
 }
 
-/* List geometry: no list padding; each item pads itself. 16 dp above a
+/* §2.1 list geometry: no list padding; each item pads itself. 16 dp above a
    user turn, 12 dp above each assistant block, the first item flush. */
 :root:root .app.mobile-conversation.mode-chat .messages-scroll {
   scrollbar-gutter: auto;
@@ -140,11 +142,11 @@
   margin-top: 12px;
 }
 
-/* User message: 36 + 8 dp from the start, 8 dp from the end, at most 652.8
-   dp; 12 dp corners, w0 fill, x hairline, 12 × 14 dp padding, Sans 15/1.4. The
-   official app has no buttons under it: its actions live in the long-press
-   menu, which the apps draw; the renderer's own buttons stay in the page,
-   hidden, for that menu. Version arrows stay. */
+/* §3 user message: 36 + 8 dp from the start, 8 dp from the end, at most
+   652.8 dp; 12 dp corners, w0 fill, x hairline, 12 × 14 dp padding, Sans
+   15/1.4. The official app has no buttons under it: its actions live in the
+   long-press menu (§6.1), which the apps draw; the renderer's own buttons
+   stay in the page, hidden, for that menu. Version arrows stay. */
 :root:root .app.mobile-conversation.mode-chat .user-message {
   box-sizing: border-box;
   width: fit-content;
@@ -189,7 +191,7 @@
   font: 400 13px/1.4 var(--oc-sans);
 }
 
-/* Assistant text: the transcript serif 17/1.5, paragraph spacing 8,
+/* §4.1 assistant text: the transcript serif 17/1.5, paragraph spacing 8,
    H1–H3 28/24/20 at 550 and 1.3, bold 550. */
 :root:root .app.mobile-conversation.mode-chat .markdown {
   color: var(--oc-text);
@@ -244,7 +246,7 @@
 :root:root .app.mobile-conversation.mode-chat .markdown :is(strong, b) {
   font-weight: 550;
 }
-/* Lists: marker indent 8, contents indent 4, item spacing 4. */
+/* Lists: marker indent 8, contents indent 4, item spacing 4 (D/cqg.java:45). */
 :root:root .app.mobile-conversation.mode-chat .markdown :is(ul, ol) {
   margin-left: 0;
   padding-left: 28px;
@@ -259,8 +261,8 @@
 :root:root .app.mobile-conversation.mode-chat .markdown li::marker {
   color: var(--oc-text);
 }
-/* Inline code: mono 15, blue w0, chip C0 with a 0.5 dp x border, 6.4 dp
-   corners, 4 × 1 dp padding. */
+/* Inline code: mono 15, blue w0(), chip C0() with a 0.5 dp x border, 6.4 dp
+   corners, 4 × 1 dp padding (D/bgo.java:9-13,52, D/mbf.java:57). */
 :root:root
   .app.mobile-conversation.mode-chat
   :is(.markdown, .user-message-text)
@@ -274,7 +276,7 @@
   font-family: var(--oc-mono);
   font-size: 15px;
 }
-/* Links: clay, underlined; 20 % clay behind while pressed. */
+/* Links: clay, underlined; 20 % clay behind while pressed (D/bgo.java:20,107). */
 :root:root
   .app.mobile-conversation.mode-chat
   :is(.markdown, .user-message-text)
@@ -291,7 +293,7 @@
   background: var(--oc-link-pressed);
 }
 
-/* Code block: 12 dp corners; a header at least 40 dp, 16 dp in, in s,
+/* §4.2 code block: 12 dp corners; a header at least 40 dp, 16 dp in, in s,
    the language in mono 13 P with its first letter capitalised and the copy
    button in P; the body in r, 16 dp padding, mono 15/1.5, no wrap. */
 :root:root .app.mobile-conversation.mode-chat .code-block {
@@ -382,9 +384,9 @@
 :root:root .app.mobile-conversation.mode-chat .user-message .code-block {
   background: var(--oc-bubble-code-body);
 }
-/* Highlight.js token colours as the official app maps them: compound scopes
-   take their first segment, and any other token keeps the base colour. Colour
-   only, no italics or bold. */
+/* highlight.js token colours as the official app maps them (token-highlight.js
+   types → D/n58.java slots): compound scopes take their first segment, and
+   any other token keeps the base colour. Colour only, no italics or bold. */
 :root:root .app.mobile-conversation.mode-chat .code-block pre [class*="hljs-"] {
   color: var(--oc-hl-0);
   font-style: normal;
@@ -498,7 +500,7 @@
   font-weight: 550;
 }
 
-/* The collapsed steps row: 8 × 12 dp padding inside the 20 dp inset,
+/* §4.4 the collapsed steps row: 8 × 12 dp padding inside the 20 dp inset,
    the tools' icon stack, 4 dp, the title in Sans 15/1.4 Q on one line, the
    16 dp caret in Q. */
 :root:root .app.mobile-conversation.mode-chat .official-steps {
@@ -548,8 +550,8 @@
   width: 16px;
   height: 16px;
 }
-/* The tools' icon stack, drawn as the reply row's favicon stack: 20 dp each, −8
-   dp overlap, a 2 dp ring in the page colour. */
+/* The tools' icon stack (D/qyw.java:990-1066), drawn as the reply row's
+   favicon stack: 20 dp each, −8 dp overlap, a 2 dp ring in the page colour. */
 .official-icon-stack {
   display: inline-flex;
   flex: none;
@@ -581,9 +583,9 @@
   border-radius: 50%;
 }
 
-/* The thinking verb: transcript font 15/1.6 in o0, shimmering — a band
-   25 % wide where the ink drops to 10 %, crossing in 1500 ms, linear — and
-   swapped with AnimatedContent's default fade. */
+/* §4.3 the thinking verb: transcript font 15/1.6 in o0(), shimmering — a
+   band 25 % wide where the ink drops to 10 %, crossing in 1500 ms, linear
+   (D/ugx.java:221-230) — and swapped with AnimatedContent's default fade. */
 .official-verb {
   display: inline-flex;
   min-width: 0;
@@ -633,7 +635,7 @@
     -webkit-text-fill-color: currentColor;
   }
 }
-/* The working row: 28 dp tall, the mark, 8 dp, the verb. */
+/* §4.9 the working row: 28 dp tall, the mark, 8 dp, the verb. */
 .official-activity {
   display: flex;
   align-items: center;
@@ -651,9 +653,9 @@
   font: 400 13px/1.4 var(--oc-sans);
 }
 
-/* The Collapsed Tools sheet: raised fill, 44 dp top corners, the 36 × 5 dp
-   x grabber 5.5 dp from the top, a header 16 dp in, the 32 % scrim; it rises in
-   and leaves with the standard fade. */
+/* §4.5 the Collapsed Tools sheet (design-system.md §7.3): raised fill, 44 dp
+   top corners, the 36 × 5 dp x grabber 5.5 dp from the top, a header 16 dp
+   in, the 32 % scrim; it rises in and leaves with the standard fade. */
 .official-sheet-layer {
   position: fixed;
   z-index: 70;
@@ -765,8 +767,8 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-/* Sheet rows: 20 × 12 dp, 12 dp apart, the icon in r0, the words Sans 15 in
-   o0(), the step's file in Q. */
+/* Sheet rows (grp.d, design-system.md §7.3): 20 × 12 dp, 12 dp apart, the
+   icon in r0(), the words Sans 15 in o0(), the step's file in Q. */
 .official-step-list,
 .official-source-list {
   margin: 0;
@@ -883,7 +885,7 @@ button.official-source:active {
   border-radius: 50%;
 }
 
-/* Reply actions: icons only, tint Q, Small borderless buttons (36 dp,
+/* §4.8 reply actions: icons only, tint Q, Small borderless buttons (36 dp,
    20 dp icon), circle pressed C0(); no time and no tooltips. The sources
    chip sits at the row's end. */
 :root:root .app.mobile-conversation.mode-chat .message-actions {
@@ -942,9 +944,9 @@ button.official-source:active {
   color: var(--oc-ok);
   transition: color 300ms;
 }
-/* The footer ends 8 dp from the screen and the chip 6 dp inside it: 14 dp, so 6
-   dp past the 20 dp text edge. On a narrow phone its count gives way before the
-   buttons do. */
+/* The footer ends 8 dp from the screen and the chip 6 dp inside it
+   (D/no1.java:214, D/rww.java:549): 14 dp, so 6 dp past the 20 dp text edge.
+   On a narrow phone its count gives way before the buttons do. */
 .official-sources-chip {
   display: inline-flex;
   flex: 0 1 auto;
@@ -966,7 +968,7 @@ button.official-source:active {
   background: var(--oc-press);
 }
 
-/* Notice card: 16 dp corners, page fill, 1 dp x border, 16/6/12/6 dp,
+/* §4.10 notice card: 16 dp corners, page fill, 1 dp x border, 16/6/12/6 dp,
    at least 48 dp, infoCircle 20 P, 12 dp gaps, Sans 15 P, then Small
    Secondary buttons (Continue keeps the Primary look). */
 :root:root .app.mobile-conversation.mode-chat .reply-banner {
@@ -1042,6 +1044,16 @@ button.official-source:active {
   opacity: 0.38;
 }
 
+:root:root .app.mobile-conversation .official-stopped-reply .reply-banner-action {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0.5px solid var(--oc-hair);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--oc-text);
+  font: 550 15px/1.4 var(--oc-sans);
+}
+
 /* No plumbing status on the phones (product rule): no reconnecting line and
    no connection notice. */
 :root:root .app.mobile-conversation .turn-reconnecting,
@@ -1049,7 +1061,7 @@ button.official-source:active {
   display: none;
 }
 
-/* Compaction divider: hairline · label 11/1.5 in w · hairline, 12 dp apart. */
+/* §4.11 compaction divider: hairline · label 11/1.5 in w · hairline, 12 dp apart. */
 :root:root .app.mobile-conversation.mode-chat .compaction-event {
   display: flex;
   align-items: center;
@@ -1066,7 +1078,7 @@ button.official-source:active {
   background: var(--oc-hair-strong);
 }
 
-/* The end-of-reply mark: Claudex's own mark (never Anthropic's spark),
+/* §4.9 the end-of-reply mark: Claudex's own mark (never Anthropic's spark),
    upright, in a 28 dp box on the reply's 20 dp text edge, 12 dp under it. */
 :root:root .app.mobile-conversation.mode-chat .turn > .response-end-mark,
 :root:root .app.mobile-conversation.mode-chat .turn > .response-stream-mark {
@@ -1109,7 +1121,7 @@ button.official-source:active {
   padding-left: 0;
 }
 
-/* File and artifact cards: r fill, w hairline, 12 dp corners, on the
+/* §4.6 file and artifact cards: r fill, w hairline, 12 dp corners, on the
    20 dp text edge. */
 :root:root
   .app.mobile-conversation.mode-chat
@@ -1129,7 +1141,7 @@ button.official-source:active {
   box-shadow: none;
 }
 
-/* Scroll to bottom: a 40 dp circle, p at 96 %, 0.5 dp x border, shadow
+/* §5 scroll to bottom: a 40 dp circle, p at 96 %, 0.5 dp x border, shadow
    8/2 at 10 %, the 16 dp arrow in O, 8 dp above the composer. */
 :root:root .app.mobile-conversation.mode-chat .scroll-bottom-dock {
   bottom: 8px;
@@ -1165,17 +1177,18 @@ button.official-source:active {
 }
 
 /* ---------------------------------------------------------------------------
-   Code sessions. Only the phone renderer loads this, and only Code (.mode-code)
-   takes it.
+   Code sessions (the official Claude Android remote-session thread; the rows
+   are in official/OfficialCodeTools.tsx and OfficialTurnChanges.tsx). Only
+   the phone renderer loads this, and only Code (.mode-code) takes it.
    --------------------------------------------------------------------------- */
 :root {
-  --oc-border10: rgb(11 11 11 / 10.2%); /* G74.x: card border, dividers */
-  --oc-muted: #898781; /* G74.v: folders, carets, "Show more" */
-  --oc-add: #1e9e3c; /* G74.F */
-  --oc-add-bg: rgb(30 158 60 / 20%); /* G74.a0 */
-  --oc-del: #cd2054; /* G74.e */
-  --oc-del-bg: rgb(205 32 84 / 20%); /* G74.p */
-  --oc-danger: #8e2626; /* G74.r */
+  --oc-border10: rgb(11 11 11 / 10.2%); /* g74.x(): card border, dividers */
+  --oc-muted: #898781; /* g74.v(): folders, carets, "Show more" */
+  --oc-add: #1e9e3c; /* g74.F() */
+  --oc-add-bg: rgb(30 158 60 / 20%); /* g74.a0() */
+  --oc-del: #cd2054; /* g74.e() */
+  --oc-del-bg: rgb(205 32 84 / 20%); /* g74.p() */
+  --oc-danger: #8e2626; /* g74.r() */
 }
 :root[data-theme="dark"] {
   --oc-border10: rgb(255 255 255 / 10.2%);
@@ -1186,8 +1199,10 @@ button.official-source:active {
   --oc-danger: #ec7e7e;
 }
 
-/* The folded tool-call row: the label in Sans 15 / 1.4 in Q on one line, a lone
-   file named in O. The row sits 8 dp out so its text lines up with the reply's. */
+/* The folded tool-call row (iix.b / iix.c, D/iix.java:194, :686; padding
+   z14.b = 8 × 6 dp, 12 dp corners, a 4 dp gap, the 16 dp caret): the label in
+   Sans 15 / 1.4 (je6.E) in Q on one line, a lone file named in O. The row sits
+   8 dp out so its text lines up with the reply's. */
 :root:root .app.mobile-conversation.mode-code .official-code-tools {
   margin: 0 -8px;
 }
@@ -1233,8 +1248,9 @@ button.official-source:active {
   height: 16px;
 }
 
-/* The tool-call sheets: the list's "Tool calls (N)" head in je6.I (13 / 550) Q,
-   a detail's Command, Output and Error cards. */
+/* The tool-call sheets: the list's "Tool calls (N)" head in je6.I (13 / 550) Q
+   (D/ur8.java), a detail's Command, Output and Error cards (D/euw.java:1573 `i`:
+   headings je6.H Q, red for an error; the boxes as the Chat Request page). */
 .official-code-list-title {
   margin: 0;
   padding: 0 20px 8px;
@@ -1287,8 +1303,9 @@ button.official-source:active {
   margin-top: 12px;
 }
 
-/* The turn-edits card: 12 dp corners, g74.K fill, a hairline in g74.x, a 4
-   dp 8 % shadow; the header 16 dp in, its title at least 48 dp tall. */
+/* The turn-edits card (D/qcx.java:130 `d`): 12 dp corners (ce6.f), g74.K()
+   fill, a hairline in g74.x(), a 4 dp 8 % shadow; the header 16 dp in, its
+   title at least 48 dp tall. */
 .official-turn-edits {
   box-sizing: border-box;
   width: 100%;
@@ -1361,8 +1378,8 @@ button.official-edits-title {
 .official-edits-review:active {
   background: var(--oc-code-head);
 }
-/* "+a −d": two chips in one pill, 11 / 550, 6 dp in, 18 dp tall, 4.5 dp
-   corners. */
+/* "+a −d": two chips in one pill (D/nix.java:17), 11 / 550, 6 dp in, 18 dp
+   tall, 4.5 dp corners. */
 .official-diff-pill {
   display: inline-flex;
   flex: none;
@@ -1464,9 +1481,9 @@ button.official-edits-title {
   color: var(--oc-text3);
 }
 
-/* Code's back-to-the-latest button is a pill: the arrow, 6 dp, then "Scroll to
-   bottom" in je6.H 13 sp, on Chat's raised fill, hairline and shadow, 36 dp
-   tall (a Small button), 12 dp in. */
+/* Code's back-to-the-latest button is a pill: the arrow, 6 dp, then
+   "Scroll to bottom" in je6.H 13 sp (D/yb8.java:725-760), on Chat's raised
+   fill, hairline and shadow (§5), 36 dp tall (a Small button), 12 dp in. */
 :root:root .app.mobile-conversation.mode-code .scroll-bottom-dock {
   bottom: 8px;
 }
@@ -1487,9 +1504,9 @@ button.official-edits-title {
   margin: 0;
 }
 
-/* The working row: 28 dp tall, the 28 dp mark, 8 dp, the text in je6.H (13 /
-   1.4) and r0(); the elapsed time and tokens run on in the same line as the
-   official " · " segments. */
+/* The working row (khx.c, chat-transcript.md §4.9): 28 dp tall, the 28 dp
+   mark, 8 dp, the text in je6.H (13 / 1.4) and r0(); the elapsed time and
+   tokens run on in the same line as the official " · " segments. */
 :root:root
   .app.mobile-conversation.mode-code
   .assistant-content

@@ -9,6 +9,7 @@ export interface ReconnectQueue {
 
 export const reconnectQueueKey = "claudex:connector-reconnect";
 
+// (live claude.ai bundle, 2026-10-14, c40525e86-Cikuv2d9.js)
 export function readReconnectQueue(
   raw: string | null,
   account: string,

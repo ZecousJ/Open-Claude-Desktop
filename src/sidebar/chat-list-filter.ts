@@ -8,10 +8,12 @@ import {
 import { defaultFilter, type ListFilter } from "./listFilter";
 
 /**
- * The Chat sidebar's type, status, activity, sort and grouping are kept for the
- * next start, as the original keeps recentsTypeFilter, recentsStatusFilter,
- * coworkActivityDays, sortByByMode and groupByByMode in dframe-store. Code's
- * own view is code-list-view.ts. Per account, in this browser or app.
+ * The Chat sidebar's type, status, activity, sort and grouping are kept for
+ * the next start, as the original keeps recentsTypeFilter,
+ * recentsStatusFilter, coworkActivityDays, sortByByMode and groupByByMode
+ * in dframe-store (live claude.ai bundle, 2026-10-16,
+ * shared-l-p-m-2-C2TM0VYn.js). Code's own view is code-list-view.ts. Per
+ * account, in this browser or app.
  */
 const keys = ["type", "status", "activity", "sort", "groupBy"] as const;
 type Kept = Pick<ListFilter, (typeof keys)[number]>;

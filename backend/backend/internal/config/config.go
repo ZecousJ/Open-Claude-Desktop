@@ -128,7 +128,8 @@ type ClaudexConfig struct {
 type ClaudexWebConfig struct {
 	// AppDir is a directory with a web app build (index.html, assets/) used
 	// instead of the embedded one (env CLAUDEX_WEB_APP_DIR).
-	AppDir string `mapstructure:"app_dir"`
+	AppDir            string `mapstructure:"app_dir"`
+	UserContentOrigin string `mapstructure:"usercontent_origin"`
 }
 
 type PluginConfig struct {
@@ -698,7 +699,16 @@ type PricingConfig struct {
 	HashCheckIntervalMinutes int `mapstructure:"hash_check_interval_minutes"`
 }
 
+type ServerRole string
+
+const (
+	ServerRoleFull         ServerRole = "full"
+	ServerRoleModelGateway ServerRole = "model-gateway"
+)
+
 type ServerConfig struct {
+	Role ServerRole `mapstructure:"role"`
+
 	Host                     string    `mapstructure:"host"`
 	Port                     int       `mapstructure:"port"`
 	Mode                     string    `mapstructure:"mode"`                  // debug/release
@@ -711,6 +721,10 @@ type ServerConfig struct {
 	TrustedProxiesConfigured bool      `mapstructure:"-" json:"-" yaml:"-"`   // 是否显式配置了可信代理列表
 	MaxRequestBodySize       int64     `mapstructure:"max_request_body_size"` // 全局最大请求体限制
 	H2C                      H2CConfig `mapstructure:"h2c"`                   // HTTP/2 Cleartext 配置
+}
+
+func (c *Config) RunsControlPlane() bool {
+	return c == nil || c.Server.Role != ServerRoleModelGateway
 }
 
 // H2CConfig HTTP/2 Cleartext 配置
@@ -1824,6 +1838,10 @@ func load(allowMissingJWTSecret bool) (*Config, error) {
 		return nil, fmt.Errorf("bind ENABLE_SERVER_TIMING: %w", err)
 	}
 
+	if err := viper.BindEnv("claudex.web.usercontent_origin", "CLAUDEX_USERCONTENT_ORIGIN"); err != nil {
+		return nil, fmt.Errorf("bind CLAUDEX_USERCONTENT_ORIGIN: %w", err)
+	}
+
 	// 默认值
 	setDefaults()
 
@@ -1866,6 +1884,10 @@ func load(allowMissingJWTSecret bool) (*Config, error) {
 	cfg.Server.Mode = strings.ToLower(strings.TrimSpace(cfg.Server.Mode))
 	if cfg.Server.Mode == "" {
 		cfg.Server.Mode = "debug"
+	}
+	cfg.Server.Role = ServerRole(strings.ToLower(strings.TrimSpace(string(cfg.Server.Role))))
+	if cfg.Server.Role == "" {
+		cfg.Server.Role = ServerRoleFull
 	}
 	cfg.Server.FrontendURL = strings.TrimSpace(cfg.Server.FrontendURL)
 	cfg.JWT.Secret = strings.TrimSpace(cfg.JWT.Secret)
@@ -2022,6 +2044,7 @@ func setDefaults() {
 	viper.SetDefault("server.host", "0.0.0.0")
 	viper.SetDefault("server.port", 8080)
 	viper.SetDefault("server.mode", "release")
+	viper.SetDefault("server.role", ServerRoleFull)
 	viper.SetDefault("server.enable_server_timing", false)
 	viper.SetDefault("server.frontend_url", "")
 	viper.SetDefault("server.read_header_timeout", 10) // 10秒读取请求头
@@ -2679,6 +2702,11 @@ func setEnvReachableDefaults() {
 }
 
 func (c *Config) Validate() error {
+	switch c.Server.Role {
+	case "", ServerRoleFull, ServerRoleModelGateway:
+	default:
+		return fmt.Errorf("server.role must be full or model-gateway")
+	}
 	forwardedClientIPHeaders, err := NormalizeForwardedClientIPHeaders(c.Security.ForwardedClientIPHeaders)
 	if err != nil {
 		return fmt.Errorf("security.forwarded_client_ip_headers: %w", err)

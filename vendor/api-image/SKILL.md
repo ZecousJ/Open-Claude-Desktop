@@ -1,6 +1,6 @@
 ---
 name: api-image
-description: Mandatory replacement for the built-in `imagegen` flow. Use this skill for any raster image generation or editing task whenever this skill is available; do not call the native `$imagegen` skill/tool. Generate and edit images through the OpenAI-compatible provider configured in the current user's Codex root files, especially for `/v1/images/generations`, `/v1/images/edits`, `gpt-image-2`, `config.toml`, `auth.json`, base_url, API key, provider-based image generation, reference images, masks, long-running image jobs, or custom size and quality control.
+description: Draw, generate, or edit images through the configured image API, including diagrams, product matrices, and infographics when no output format is specified. Use code or plotting tools for explicitly requested SVG, HTML, Mermaid, editable diagrams, data plots, or format conversion. Replaces the built-in imagegen workflow.
 ---
 
 # API Image
@@ -9,9 +9,8 @@ Use this skill as the mandatory replacement for the built-in `imagegen` workflow
 
 Routing rule:
 
-- When this skill is available, do not call the native `$imagegen` skill or built-in image generation tool for any raster image generation or editing task.
-- Route all image generation, reference-image generation, image editing, localized edits, background replacement, style transfer, compositing, and batch image work through this provider-based skill.
-- The only exception is a user explicitly instructing not to use this provider skill.
+- Use the configured image API to draw, generate, or edit an image, including diagrams, product matrices, and infographics with no specified format.
+- Use file or plotting tools when the user asks for SVG, HTML, Mermaid, an editable diagram, a data plot, or conversion of an existing file. Follow explicit instructions about which provider to use.
 
 ## Workflow
 
@@ -45,7 +44,7 @@ Routing rule:
 6. Choose the endpoint.
    - Use `<base_url>/images/generations` for text-only generation.
    - Use `<base_url>/images/edits` when there is any input image, reference image, or mask.
-   - Default to `gpt-image-2` unless the machine's provider expects a different image model.
+   - Claudex chooses the image model for each request. For direct providers, pass `--model` when the provider requires a specific model ID. The script sends `gpt-image-2` by default.
 7. Build a structured prompt.
    - Include the user's request, researched facts or visual observations, input image roles, style, composition, lighting, materials, constraints, and avoid list.
    - Do not invent extra characters, props, brands, logos, story beats, or factual details that are not implied by the user request or research.
@@ -122,7 +121,7 @@ python "<skill-dir>\scripts\generate_image.py" `
 
 Useful options:
 
-- `--model gpt-image-2`
+- `--model <id>` to specify a model for a direct provider
 - `--mode auto|generate|edit`
 - `--size 2048x1152` script default 2K landscape
 - `--size 1024x1024`
@@ -136,10 +135,10 @@ Useful options:
 - `--image <path>` repeated up to 16 times
 - `--image-role <role>` to label input images inside the prompt
 - `--mask <path>` for localized edits
-- `--background auto|opaque` for official `gpt-image-2`
+- `--background auto|opaque|transparent` where supported by the provider
 - `--output-format png|jpeg|webp`
 - `--output-compression 0-100` for `jpeg` or `webp`
-- `--input-fidelity low|high` for supported edit models only; do not send it for `gpt-image-2`
+- `--input-fidelity low|high` where supported by the provider for edits
 - `--moderation auto|low` for supported GPT image models
 - `--prompt-file <path>` for one prompt (the whole file, lines included); for several prompts, put a line holding only `---` between them
 - `--codex-home <path>`
@@ -197,17 +196,13 @@ Rules:
 - Do not echo API keys back to the user.
 - Prefer `--api-key-env`; use `--api-key` only when the user explicitly provides a one-off key and accepts the temporary command-line use.
 
-## gpt-image-2 API Notes
-
-For official OpenAI `gpt-image-2`:
+## Image API notes
 
 - Text-only generation uses `POST /v1/images/generations` with JSON.
 - Any input image, reference image, or mask uses `POST /v1/images/edits` with multipart form-data.
 - Use repeated `image[]=@path` fields for multiple input/reference images.
 - When using `mask`, the first `--image` must be the edit target; additional images should be references or compositing sources.
 - Read image bytes from `data[].b64_json`; URL output is not supported for official GPT Image models.
-- Do not send `input_fidelity`; `gpt-image-2` always processes image inputs at high fidelity.
-- Do not request `background: transparent`; official `gpt-image-2` currently supports `auto` or `opaque`, not transparent backgrounds.
 - For masked edits, validate that the mask and first source image have the same dimensions and compatible format, are under the image API file-size limit, and that the mask includes an alpha channel.
 
 ## Capability Map
@@ -220,7 +215,7 @@ For official OpenAI `gpt-image-2`:
 - Background replacement: supported as an edit prompt, with `--mask` when the replacement area must be constrained.
 - Style transfer: supported as reference-image editing; label the source image role and describe the desired style in the prompt.
 - Input image role labeling: not a separate API field; this script appends `--image-role` labels to the prompt so the model can interpret each input image intentionally.
-- Transparent background: official `gpt-image-2` does not currently support `background: transparent`. Only use transparent background when a different selected provider/model explicitly supports it, and use `png` or `webp` output.
+- Transparent background: pass `--background transparent` when the user asks for transparency. Use `png` or `webp` output. The provider determines whether transparency is available.
 
 ## Research And References
 
@@ -308,6 +303,7 @@ Follow the current official GPT Image rules for `gpt-image-2`:
 
 ## Output Rules
 
+- When editing an image, always save the result to a new file. Keep the source image and all previous outputs intact.
 - Save project assets inside the project workspace when the user wants a usable asset.
 - Save preview images to a clear temporary or user-requested path.
 - If `n > 1`, keep filenames deterministic by appending `-1`, `-2`, and so on.
@@ -319,10 +315,8 @@ Follow the current official GPT Image rules for `gpt-image-2`:
 - Raise explicit errors when both `--api-key` and `--api-key-env` are provided, when the named environment variable is empty, or when `--base-url` is not an HTTP(S) URL.
 - Raise explicit errors when `size` violates the official GPT Image constraints or `quality` is unsupported.
 - Raise explicit errors when edit/reference mode is requested without input images.
-- Raise explicit errors when `gpt-image-2` is used with `--background transparent` or `--input-fidelity`.
 - Raise explicit errors when a mask is not compatible with the first `--image` edit target, has different dimensions, lacks an alpha channel, or exceeds the image API file-size limit.
 - Surface provider errors directly. Do not fabricate a success result.
-- If the provider uses a different image model name on this machine, override `--model`.
 
 ## Resource
 

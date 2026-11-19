@@ -40,7 +40,8 @@ export function recentFolders(
 
 /**
  * Folders Cowork and Code tasks worked in on this computer, most recently
- * active first, for the Cowork project or folder menu.
+ * active first, for the Cowork project or folder menu (R-0413 lists both
+ * kinds of work; Cowork runs only locally, so SSH folders are left out).
  */
 export function recentWorkFolders(
   conversations: Conversation[],

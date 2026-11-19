@@ -1,6 +1,9 @@
 import os from "node:os";
 import { directorySubmissionInput } from "../../shared/directory-submissions-input";
 import { z } from "zod";
+import { Sub2ApiError } from "../sub2api/http";
+import { connectorAllowed } from "../../shared/client-policy-rules";
+import { assertAccountOperationCurrent } from "../account/operation-lease";
 import { connectorConfigurationError } from "../../shared/connector-url-configuration";
 import { id, defaultModelChoice } from "./collections";
 import type { AppContext, IpcHandle } from "../app/app-context";
@@ -12,62 +15,92 @@ export interface RegisterDirectoryHandlersKit {
   ctx: AppContext;
   handle: IpcHandle;
   plugins: PluginService;
+  activePlugins: () => PluginService;
   submissions: () => DirectorySubmissions;
 }
 
 export function registerDirectoryHandlers(kit: RegisterDirectoryHandlersKit) {
-  const { ctx, handle, plugins, submissions } = kit;
+  const { ctx, handle, plugins, activePlugins, submissions } = kit;
+  const verifyTools = async (name: string, endpoint?: string) => {
+    const { store, engine, mcpConfig, accountActivationIdentity } = ctx;
+    const config = store.settings.mcpServers[name];
+    if (!config || typeof config !== "object" || !("url" in config) ||
+        typeof config.url !== "string" || "command" in config ||
+        ("enabled" in config && config.enabled === false) ||
+        (endpoint !== undefined && config.url !== endpoint) ||
+        !connectorAllowed(ctx.policy(), name, config))
+      throw Error("The selected remote connector is unavailable.");
+    const current = () => !ctx.accountRetiring && ctx.store === store && ctx.engine === engine &&
+      ctx.mcpConfig === mcpConfig && ctx.accountActivationIdentity === accountActivationIdentity &&
+      store.settings.mcpServers[name] === config && connectorAllowed(ctx.policy(), name, config);
+    assertAccountOperationCurrent(current);
+    if (mcpConfig?.readCatalog) {
+      const result = await mcpConfig.readCatalog(name);
+      assertAccountOperationCurrent(current);
+      const server = result.servers.find(row => row.name === name && row.state === "ready" &&
+        row.authStatus !== "notLoggedIn");
+      return (server?.toolList ?? []).map(row => row.name);
+    }
+    const provider = store.settings.providers.find(entry => entry.id === store.settings.activeProviderId);
+    if (provider) await engine.ensure(provider);
+    assertAccountOperationCurrent(current);
+    const response = await engine.rpc?.call("mcpServerStatus/list", {});
+    assertAccountOperationCurrent(current);
+    const server = response?.data?.find((row: { name: string }) => row.name === name);
+    return server?.serverInfo && server.authStatus !== "notLoggedIn"
+      ? Object.keys(server.tools ?? {})
+      : [];
+  };
   handle("listApprovedDirectory", () => submissions().directory());
   handle("listDirectorySubmissions", () => submissions().list());
-  handle(
-    "saveDirectorySubmission",
-    async (raw: unknown, rawSubmit: unknown) => {
-      const root = ctx.store.root;
-      const input = directorySubmissionInput.parse(raw);
-      input.slug =
-        input.slug ||
-        input.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "");
-      const submit = z.boolean().parse(rawSubmit);
-      if (input.kind === "mcp" && submit) {
-        const configurationError = connectorConfigurationError(
-          input,
-          input.url,
-        );
-        if (configurationError) throw Error(configurationError);
-        const config = ctx.store.settings.mcpServers[input.serverName ?? ""] as
-          { url?: string } | undefined;
-        if (!config || config.url !== input.url)
-          throw new Error("Failed to submit. You can try again.");
-        const response = await ctx.engine.rpc?.call("mcpServerStatus/list", {});
-        const server = response?.data?.find(
-          (entry: { name: string }) => entry.name === input.serverName,
-        );
-        input.tools = Object.keys(server?.tools ?? {});
-        input.toolsVerified = input.toolsVerified && input.tools.length > 0;
-      }
-      if (root !== ctx.store.root)
-        throw new Error("That submission wasn’t found in this organization.");
-      return submissions().save(input, submit);
-    },
-  );
+  handle("saveDirectorySubmission", async (raw: unknown, rawSubmit: unknown) => {
+    const service = submissions();
+    const input = directorySubmissionInput.parse(raw);
+    const submit = z.boolean().parse(rawSubmit);
+    if (submit) input.slug ||= input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    if (input.kind === "mcp" && (submit || (input.original && input.serverName))) {
+      const configurationError = connectorConfigurationError(input, input.url);
+      if (configurationError) throw new Sub2ApiError(400, "DIRECTORY_CONNECTOR_INVALID", configurationError);
+      input.tools = await verifyTools(input.serverName ?? "", input.url);
+      if (!input.tools.length)
+        throw new Sub2ApiError(400, "DIRECTORY_TOOLS_UNAVAILABLE", "No tools were verified. Reconnect the MCP server and try again.");
+      input.toolsVerified = true;
+    } else if (input.kind === "mcp" && input.original) {
+      input.tools = [];
+      input.toolsVerified = false;
+    }
+    return service.save(input, submit);
+  });
   handle("deleteDirectorySubmission", (raw: unknown) =>
     submissions().delete(z.string().uuid().parse(raw)),
   );
-  handle("verifyDirectorySubmissionTools", async (raw: unknown) => {
-    const name = id.parse(raw);
-    const response = await ctx.engine.rpc?.call("mcpServerStatus/list", {});
-    const server = response?.data?.find(
-      (entry: { name: string }) => entry.name === name,
-    );
-    return Object.keys(server?.tools ?? {});
-  });
+  handle("publishDirectorySubmission", (raw: unknown) =>
+    submissions().publish(z.string().uuid().parse(raw)),
+  );
+  handle("verifyDirectorySubmissionTools", (raw: unknown) => verifyTools(id.parse(raw)));
   handle("readPlugin", (raw: unknown) => plugins.read(id.parse(raw)));
-  handle("installPlugin", (raw: unknown) => plugins.install(id.parse(raw)));
-  handle("uninstallPlugin", (raw: unknown) => plugins.uninstall(id.parse(raw)));
-  handle("addPluginMarketplace", (raw: unknown) => plugins.addMarketplace(raw));
+  handle("installPlugin", (raw: unknown) => activePlugins().install(id.parse(raw)));
+  handle("uninstallPlugin", (raw: unknown) => activePlugins().uninstall(id.parse(raw)));
+  handle("setNativePluginEnabled", (raw: unknown, enabled: unknown) =>
+    activePlugins().setEnabled(id.parse(raw), z.boolean().parse(enabled)));
+  handle("addPluginMarketplace", async (raw: unknown) => {
+    await activePlugins().addMarketplace(raw);
+  });
+  handle("addNativePluginMarketplace", (raw: unknown) => {
+    if (!ctx.window || ctx.engine.environment?.kind === "ssh")
+      throw Error("Adding this marketplace requires a local desktop runtime.");
+    return activePlugins().addMarketplace(raw);
+  });
+  handle("removeNativePluginMarketplace", (raw: unknown) => {
+    if (!ctx.window || ctx.engine.environment?.kind === "ssh")
+      throw Error("Removing this marketplace requires a local desktop runtime.");
+    return activePlugins().removeMarketplace(id.parse(raw), true);
+  });
+  handle("refreshNativePluginMarketplace", (raw: unknown) => {
+    if (!ctx.window || ctx.engine.environment?.kind === "ssh")
+      throw Error("Refreshing this marketplace requires a local desktop runtime.");
+    return activePlugins().upgradeMarketplaces(id.parse(raw), true);
+  });
   handle("removePluginMarketplace", (raw: unknown) =>
     plugins.removeMarketplace(id.parse(raw)),
   );

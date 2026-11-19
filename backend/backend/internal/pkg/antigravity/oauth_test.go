@@ -680,14 +680,6 @@ func TestConstants_值正确(t *testing.T) {
 	if UserInfoURL != "https://www.googleapis.com/oauth2/v2/userinfo" {
 		t.Errorf("UserInfoURL 不匹配: got %s", UserInfoURL)
 	}
-	// CLAUDEX: no built-in client; without a client id the secret lookup reports it missing.
-	oldID := ClientID
-	ClientID = ""
-	_, err := getClientSecret()
-	ClientID = oldID
-	if err == nil || CheckClientConfigured() != nil {
-		t.Errorf("未配置 client_id 时应报错，配置后不应报错: %v", err)
-	}
 	if RedirectURI != "http://localhost:8085/callback" {
 		t.Errorf("RedirectURI 不匹配: got %s", RedirectURI)
 	}

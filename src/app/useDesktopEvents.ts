@@ -175,11 +175,11 @@ export function useDesktopEvents({
         context.page === "chat" &&
         !context.settingsOpen &&
         (context.activeId === conversation.id || selectNext.current);
-      // A reply that finished in another conversation marks its row unread;
-      // the open one only goes out, even with the window in the background.
-      // Only the main window marks: it has the sidebar, and a separate window
-      // cannot see what the main window shows. A session in a split-view pane
-      // is on screen too.
+      // A reply that finished in another conversation marks its row unread
+      // (R-0038); the open one only goes out, even with the window in the
+      // background. Only the main window marks: it has the sidebar, and a
+      // separate window cannot see what the main window shows. A session in
+      // a split-view pane is on screen too.
       if (
         mainWindow &&
         finishedUnseen(
@@ -305,6 +305,13 @@ export function useDesktopEvents({
       } else if (event.type === "conversation") {
         turns.forget(event.conversation.id);
         conversationChanged(event.conversation);
+      } else if (event.type === "code-read-state") {
+        const conversation = latest.current?.conversations.find((c) => c.id === event.conversationId);
+        if (conversation?.mode === "code" && (conversation.readStateRevision ?? 0) < event.readStateRevision) {
+          const updated = { ...conversation, unread: event.unread, readStateRevision: event.readStateRevision };
+          upsert(updated);
+          arrivedDuringResync?.set(updated.id, updated);
+        }
       } else if (event.type === "conversation-turn") {
         const merged = turns.apply(
           latest.current?.conversations.find(
@@ -375,8 +382,8 @@ export function useDesktopEvents({
       else if (event.type === "command")
         runCommand.current(event.command, event.conversationId, event.folder);
       else if (event.type === "deep-link") runDeepLink?.current(event.link);
-      // Claude opened a page in this session's Browser: the panel opens beside
-      // it, as on the live desktop.
+      // Claude opened a page in this session's Browser: the panel opens
+      // beside it, as on the live desktop (owner, 2026-10-21).
       else if (event.type === "browser-reveal") {
         const shown = presentation.current;
         if (

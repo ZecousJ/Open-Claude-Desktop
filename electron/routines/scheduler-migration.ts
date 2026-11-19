@@ -53,7 +53,7 @@ export function assertMigrationIdle(this: Scheduler, task: Routine): void {
     );
 }
 
-/** O16 durable key per origin move. */
+/** O16 shared-1-CIETZ9si:4760–4790: one durable key per origin move. */
 export function beginMigration(
   this: Scheduler,
   input: RoutineMigrationBeginInput,
@@ -108,10 +108,8 @@ export function beginMigration(
   return { task: original };
 }
 
-/**
- * O16+: restore original settings/history, carrying back only the cloud
- * version's instructions.
- */
+/** O16 c97b955f1-CPIQCg2e:6549+: restore original settings/history,
+ * carrying back only the cloud version's instructions. */
 export function restoreMigration(
   this: Scheduler,
   input: RoutineMigrationRestoreInput,

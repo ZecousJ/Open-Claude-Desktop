@@ -8,14 +8,14 @@ import { formatText } from "../i18n";
 import { Modal } from "../ui/Controls";
 
 /**
- * "Compare with current" in the version switcher: what changed from an earlier
- * version to the one the file has now, as the Changes panel shows a file's
- * change (numbered rows, +/- counts, the changed words emphasised). After the
- * original's compare of an earlier version with the current one, which opens a
- * dialog with a sentence and the file's diff; its own sentences were not in the
- * package, so the lead here is ours, and its notes are the original's: "Too
- * large to compare" when the texts differ too much, "Line endings only" when no
- * line differs.
+ * "Compare with current" in the version switcher: what changed from an
+ * earlier version to the one the file has now, as the Changes panel shows a
+ * file's change (numbered rows, +/- counts, the changed words emphasised).
+ * After the original's compare of an earlier version with the current one
+ * (desktop bundle 2.31226.1), which opens a dialog with a sentence and the
+ * file's diff; its own sentences were not in the package, so the lead here is
+ * ours, and its notes are the original's: "Too large to compare" when the
+ * texts differ too much, "Line endings only" when no line differs.
  */
 export function VersionCompareDialog({
   name,

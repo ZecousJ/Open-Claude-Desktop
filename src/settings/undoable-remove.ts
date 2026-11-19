@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { dismissToast, showToast } from "../ui/toast-store";
 
-/** A name in a toast, cut at 32 characters. */
+/** A name in a toast, cut at 32 characters (live claude.ai bundle, 2026-10-12). */
 export function toastName(name: string, max = 32) {
   return name.length > max ? `${name.slice(0, max - 1)}…` : name;
 }
@@ -9,10 +9,12 @@ export function toastName(name: string, max = 32) {
 type Pending = { toast: number; settled: boolean };
 
 /**
- * The row leaves at once and a toast says it is going ("Unsharing “…”…") with
- * Undo; when the toast goes the removal is made and a second toast says it is
- * done ("Unshared “…”"), or the row comes back and the failure is reported.
- * Leaving the page makes every waiting removal at once.
+ * Privacy's removals, as the live claude.ai bundle makes them (2026-10-12,
+ * `useUndoableRemove`): the row leaves at once and a toast says it is going
+ * ("Unsharing “…”…") with Undo; when the toast goes the removal is made and
+ * a second toast says it is done ("Unshared “…”"), or the row comes back
+ * and the failure is reported. Leaving the page makes every waiting removal
+ * at once.
  */
 export function useUndoableRemove() {
   const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());

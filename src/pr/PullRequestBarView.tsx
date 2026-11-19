@@ -10,9 +10,8 @@ import {
 import { WithTooltip, ReasonTooltip } from "../ui/Tooltip";
 import { GitBranch, ChevronDown } from "../ui/glyphs";
 import { BranchChip, branchUrl, BehindCount } from "./BranchChip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { reviewTurn, ReviewTurnChip, ReviewCommentsChip } from "./ReviewChips";
-import { setSessionAutoArchive } from "./auto-archive";
 import { surface } from "../../shared/host";
 import { api } from "../desktop-api";
 import { Menu } from "../ui/Menu";
@@ -215,7 +214,7 @@ export function pullRequestBarView(kit: PullRequestBarViewKit) {
                 aria-label={problemWarning(problem)}
                 className="pr-warning"
               >
-                <AppIcon name="Warning" size={14} strokeWidth={1.75} />
+                <Anthropicon name="Warning" size={14} strokeWidth={1.75} />
               </span>
             )}
           </WithTooltip>
@@ -259,7 +258,6 @@ export function pullRequestBarView(kit: PullRequestBarViewKit) {
             onAutoMerge={(on) => void toggleAutoMerge(pr, on)}
             autoArchive={autoArchive}
             onAutoArchive={(on) => {
-              setSessionAutoArchive(conversation.id, on);
               void window.desktop
                 ?.updateConversation(conversation.id, { prAutoArchive: on })
                 .catch(() => undefined);
@@ -395,7 +393,7 @@ export function pullRequestBarView(kit: PullRequestBarViewKit) {
           </ReasonTooltip>
         )}
       </div>
-      {/* What a change did, for screen readers. */}
+      {/* What a change did, for screen readers (c219730b0's announcements). */}
       <span className="sr-only" role="status" aria-live="polite">
         {announcement}
       </span>

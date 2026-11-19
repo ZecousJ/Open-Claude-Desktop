@@ -105,7 +105,7 @@ export function loopCountdown(milliseconds: number) {
     .join(" ");
 }
 
-// Loop cards.
+// Loop cards (live claude.ai bundle, 2026-10-14, cccc2cf0a-ClzhdM48.js).
 function LoopValue({
   template,
   values,

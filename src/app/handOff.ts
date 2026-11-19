@@ -2,10 +2,11 @@ import { api } from "../desktop-api";
 import type { AppController } from "./AppContext";
 
 /**
- * Hand off to a new session (the context ring's button, `/handoff`, and the
- * notice under a reply that ran out of room): a new Code session that starts
- * from a note about the open one, opened at once. The note takes a moment to
- * write, so the composer stays busy until the new session is there. The open
+ * Hand off to a new session (the context ring's button, `/handoff`, and
+ * the notice under a reply that ran out of room): a new Code session that
+ * starts from a note about the open one, opened at once. The note takes a
+ * moment to write ("Writing the handoff note", desktop bundle 2.31226.1),
+ * so the composer stays busy until the new session is there. The open
  * session stays as it is.
  */
 export async function handOffConversation(app: AppController) {

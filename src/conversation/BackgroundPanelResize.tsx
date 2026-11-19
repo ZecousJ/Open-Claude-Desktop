@@ -26,9 +26,9 @@ const backgroundBounds: PanelWidthBounds = {
 };
 
 /**
- * The Code terminal card: 299px at rest. R-0887 (drag) was not captured, so the
- * stops reuse the Background rail's gesture with a narrower floor that still
- * fits the 34px header's controls.
+ * The Code terminal card: 299px at rest (R-0882, 1164px window). R-0887
+ * (drag) was not captured, so the stops reuse the Background rail's gesture
+ * with a narrower floor that still fits the 34px header's controls.
  */
 export const terminalPanelBounds: PanelWidthBounds = {
   min: 240,
@@ -92,8 +92,8 @@ export function useStoredPanelWidth(
 
 /**
  * The Background tasks rail's width, shared by the task list and an Agent
- * transcript opened beside the conversation: undefined keeps the default 282px;
- * a width set by dragging is kept per account.
+ * transcript opened beside the conversation: undefined keeps the default
+ * 282px (R-0646, R-0786); a width set by dragging is kept per account.
  */
 export function useBackgroundPanelWidth(accountId?: string) {
   return useStoredPanelWidth("background", accountId, backgroundBounds);

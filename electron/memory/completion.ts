@@ -19,6 +19,7 @@ export interface CompletionTarget {
 export interface CompletionOptions {
   signal?: AbortSignal;
   maxOutputTokens?: number;
+  checkBeforeSend?: () => void;
 }
 
 /** Sends a prompt, answers the model's text. Rejects with a plain-English reason. */
@@ -49,7 +50,7 @@ function errorMessage(body: unknown, status: number) {
 async function readAnswer(response: Response): Promise<string> {
   if (!response.body) throw new Error("The response was empty.");
   let text = "";
-  let completed = "";
+  let completed: string | undefined;
   for await (const event of readSSE(response.body)) {
     if (event?.type === "response.output_text.delta")
       text += String(event.delta ?? "");
@@ -59,7 +60,9 @@ async function readAnswer(response: Response): Promise<string> {
         .filter((part: any) => part?.type === "output_text")
         .map((part: any) => String(part.text ?? ""))
         .join("");
-    } else if (event?.type === "response.failed" || event?.type === "error")
+    } else if (event?.type === "response.incomplete")
+      throw new Error("The model response was incomplete.");
+    else if (event?.type === "response.failed" || event?.type === "error")
       throw new Error(
         errorMessage(
           event.response?.error ?? event.error ?? event,
@@ -67,6 +70,8 @@ async function readAnswer(response: Response): Promise<string> {
         ),
       );
   }
+  if (completed === undefined)
+    throw new Error("The model response ended before completion.");
   return (text || completed).trim();
 }
 
@@ -80,9 +85,12 @@ export function gatewayCompleter(
   fetchImpl: typeof fetch = fetch,
 ): Completer {
   return async (prompt, options = {}) => {
+    options.signal?.throwIfAborted();
     const where = await target();
     if (!where) throw new CompletionUnavailableError();
     const send = async (reasoning: boolean) => {
+      options.signal?.throwIfAborted();
+      options.checkBeforeSend?.();
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       const abort = () => controller.abort();

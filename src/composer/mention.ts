@@ -1,6 +1,7 @@
 /**
- * `@` file mentions in the Code composer: the query typed after an `@` at the
- * start of the text or after a space, and the text once a file is chosen.
+ * `@` file mentions in the Code composer (R-0382): the query typed after an
+ * `@` at the start of the text or after a space, and the text once a file
+ * is chosen.
  */
 export interface MentionMatch {
   /** Index of the `@`. */

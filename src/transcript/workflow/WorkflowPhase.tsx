@@ -89,7 +89,8 @@ export function WorkflowPhase({
           moreMayAppear={workflowRunning && !agents.length}
         />
       </button>
-      {/* A phase no agent ran in says why. */}
+      {/* A phase no agent ran in says why (live claude.ai bundle,
+          2026-10-14: the phase table's empty line, by the workflow's state). */}
       {open && !agents.length && taskStatus && (
         <p className="workflow-phase-empty">
           {

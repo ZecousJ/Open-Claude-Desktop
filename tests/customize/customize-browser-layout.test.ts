@@ -244,7 +244,8 @@ createRoot(document.getElementById('root')).render(<CustomizePage settings={${JS
         );
       assert.equal(measured.tabs.y, 112);
       assert.equal(measured.tabs.height, 32);
-      // // /tmp/claudex-b35-evidence/official-customize-{390,768}.png.
+      // Fresh 2026-10-19 owner captures of the same Skills Discover route:
+      // /tmp/claudex-b35-evidence/official-customize-{390,768}.png.
       if (width === 390 || width === 768) {
         assert.equal(measured.hero.height, 195);
         assert.equal(measured.heroTitle.x, width === 390 ? 48 : 64);
@@ -253,8 +254,8 @@ createRoot(document.getElementById('root')).render(<CustomizePage settings={${JS
         assert.equal(measured.heroTitle.line, "28px");
       }
       if (width === 390) assert.ok(measured.tools.y > measured.tabs.y);
-      // below 640px Try is a 28×28 icon, 12px before Add, both 14px inside a
-      // 342×105 card; wider it reads "Try".
+      // Live Customize 2026-10-19: below 640px Try is a 28×28 icon, 12px
+      // before Add, both 14px inside a 342×105 card; wider it reads "Try".
       if (width === 390) {
         assert.deepEqual(
           [measured.card.x, measured.card.width, measured.card.height],

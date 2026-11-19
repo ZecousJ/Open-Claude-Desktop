@@ -52,7 +52,8 @@ function privateDirectory(root: string, parts: string[]) {
       !fs.lstatSync(current).isDirectory() ||
       fs.lstatSync(current).isSymbolicLink() ||
       fs.realpathSync(current) !== current ||
-      (fs.statSync(current).mode & 0o077) !== 0
+      (process.platform !== "win32" &&
+        (fs.statSync(current).mode & 0o077) !== 0)
     )
       throw Error("Private MCP directory unavailable.");
   }
@@ -111,7 +112,7 @@ export class McpStdioCapture {
   }
   private async openBootstrap(): Promise<boolean> {
     const owner = this.current();
-    if (!owner || process.platform === "win32") return false;
+    if (!owner) return false;
     try {
       if (
         !path.isAbsolute(this.options.helperPath) ||
@@ -124,16 +125,19 @@ export class McpStdioCapture {
       return false;
     }
     const epoch = this.epoch;
-    const directory = fs.realpathSync(
-      fs.mkdtempSync(path.join(os.tmpdir(), "cx-mcp-")),
-    );
-    const socketPath = path.join(directory, "rpc.sock");
+    const directory =
+      process.platform === "win32"
+        ? undefined
+        : fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "cx-mcp-")));
+    const socketPath = directory
+      ? path.join(directory, "rpc.sock")
+      : `\\\\.\\pipe\\claudex-mcp-${randomUUID()}`;
     const cleanup = () => {
       try {
-        fs.rmSync(directory, { recursive: true });
+        if (directory) fs.rmSync(directory, { recursive: true });
       } catch {}
     };
-    if (Buffer.byteLength(socketPath) > 100) {
+    if (directory && Buffer.byteLength(socketPath) > 100) {
       cleanup();
       return false;
     }
@@ -191,7 +195,7 @@ export class McpStdioCapture {
       return false;
     }
     try {
-      fs.chmodSync(socketPath, 0o600);
+      if (directory) fs.chmodSync(socketPath, 0o600);
     } catch {
       server.close(cleanup);
       return false;
@@ -238,7 +242,6 @@ export class McpStdioCapture {
       !owner ||
       !this.server?.listening ||
       !this.socketPath ||
-      process.platform === "win32" ||
       !/^[a-zA-Z0-9_-]{1,64}$/.test(name) ||
       typeof entry.command !== "string" ||
       entry.url !== undefined ||
@@ -446,10 +449,17 @@ export class McpStdioCapture {
       }
       return {
         source: "stdio-stderr",
+        ...(state === "crashed" ||
+        state === "crashed-no-log" ||
+        state === "spawn-failed"
+          ? { failed: true }
+          : {}),
         availability:
-          state === "capturing" || state === "stopped"
+          state === "capturing" || state === "stopped" || state === "crashed"
             ? "available"
-            : state === "failed"
+            : state === "failed" ||
+                state === "crashed-no-log" ||
+                state === "spawn-failed"
               ? "unavailable"
               : "pending",
         ...readPrivateMcpTail(binding.directory),
@@ -495,7 +505,8 @@ export class McpStdioCapture {
     if (server && socketPath)
       server.close(() => {
         try {
-          fs.rmSync(path.dirname(socketPath), { recursive: true });
+          if (process.platform !== "win32")
+            fs.rmSync(path.dirname(socketPath), { recursive: true });
         } catch {}
       });
     for (const name of this.bindings.keys()) this.retireServer(name);

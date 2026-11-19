@@ -60,11 +60,12 @@ function promptPlaces(scroller: HTMLElement, conversation: Conversation) {
 }
 
 /**
- * A Code session's own keys: Ctrl+O cycles the transcript view, ⌥⌘↑ / ⌥⌘↓
- * (Alt+↑ / Alt+↓ outside macOS) jump to the previous and next prompt, landing
- * it 20px under the top with the jump flash. Only the focused pane answers;
- * nothing happens under a dialog. The jump keys are left to other text fields
- * (the composer keeps them), and a held key acts once.
+ * A Code session's own keys (live claude.ai bundle, 2026-10-12): Ctrl+O
+ * cycles the transcript view, ⌥⌘↑ / ⌥⌘↓ (Alt+↑ / Alt+↓ outside macOS)
+ * jump to the previous and next prompt, landing it 20px under the top with
+ * the jump flash. Only the focused pane answers; nothing happens under a
+ * dialog. The jump keys are left to other text fields (the composer keeps
+ * them), and a held key acts once.
  */
 export function useCodeSessionKeys({
   enabled,

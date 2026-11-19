@@ -45,7 +45,8 @@ export function FilesSettings({
       keepOpen: true,
       onSelect: () => onTreeChange(!treeOpen),
     },
-    // Where the tree sits, shared with the Changes pane's file list.
+    // Where the tree sits, shared with the Changes pane's file list (live
+    // claude.ai bundle, 2026-10-21, cccc2cf0a: _C("files")).
     {
       label: "File tree position",
       value: treePositionText(treePosition),

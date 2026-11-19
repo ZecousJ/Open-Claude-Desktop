@@ -1,7 +1,7 @@
 /**
- * The Browser panel's own glyphs: the dev servers button is a rounded box split
- * across the middle with a short stroke in its upper half (15px). The other
- * icons are lucide's.
+ * The Browser panel's own glyphs (R-Code-Browser单面板, 2x): the dev
+ * servers button is a rounded box split across the middle with a short
+ * stroke in its upper half (15px). The other icons are lucide's.
  */
 export function DevServersIcon() {
   return (

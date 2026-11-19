@@ -55,10 +55,12 @@ import { installMethods } from "./install-methods";
 const MAX_SOCKET_PATH = 100 - 17;
 
 /**
- * A private folder (0700) for the control sockets and the askpass socket. The
- * profile folder when its paths are short enough for a socket and have no white
- * space, else /tmp/claudex-<uid>, which must be a real folder owned by this
- * user and closed to others. ssh cuts `-o ControlPath=…` at a space.
+ * A private folder (0700) for the control sockets and the askpass socket.
+ * The profile folder when its paths are short enough for a socket and have
+ * no white space, else /tmp/claudex-<uid>, which must be a real folder owned
+ * by this user and closed to others. ssh cuts `-o ControlPath=…` at a space
+ * (owner report, 2026-10-08: every connection on macOS failed with "Can't
+ * reach", the profile being under "Application Support").
  */
 export function privateRuntimeDir(
   dataRoot: string,
@@ -142,12 +144,13 @@ export interface SshConnectionOptions {
 const defaultBackoff = (attempt: number) =>
   Math.min(60_000, 2_000 * 2 ** (attempt - 1));
 
-export type Attempt = { interactive: boolean };
+export type Attempt = { interactive: boolean; opening?: boolean };
 
 export class SshConnection {
   toolBinding: { endpointKey: string; hostKey: string } | undefined;
   current: SshStatus = { state: "idle" };
   private connecting: Promise<SshStatus> | undefined;
+  private rejectedKeyOpening: "owed" | "used" | undefined;
   master: ChildProcess | undefined;
   private children = new Set<ChildProcess>();
   reconnectTimer: NodeJS.Timeout | undefined;
@@ -188,9 +191,9 @@ export class SshConnection {
    * connection where there is one: options, "--", destination, command.
    * `extra` options go before "--" (R9-S3 adds its remote forward here).
    */
-  commandArgs(command: string, extra: string[] = []): string[] {
+  commandArgs(command: string, extra: string[] = [], login?: "trace" | "opening"): string[] {
     return [
-      ...baseSshArgs(this.host),
+      ...baseSshArgs(this.host, login),
       ...(this.shares
         ? ["-o", `ControlPath=${this.controlPath}`, "-o", "ControlMaster=no"]
         : ["-o", "ControlPath=none"]),
@@ -222,10 +225,26 @@ export class SshConnection {
     // Already connected (or R9-S2/S3 setting the host up on the connection):
     // starting again would close the live master.
     if (this.live()) return Promise.resolve(this.current);
-    this.connecting ??= this.run(attempt).finally(() => {
-      this.connecting = undefined;
-    });
+    const mayRecordRefusal = attempt.interactive || this.current.state === "reconnecting";
+    this.connecting ??= this.run(attempt)
+      .then((status) => {
+        if (status.state === "ready") this.rejectedKeyOpening = undefined;
+        else if (mayRecordRefusal && status.state === "error" && status.code === "auth-key-rejected")
+          this.rejectedKeyOpening ??= "owed";
+        return status;
+      })
+      .finally(() => {
+        this.connecting = undefined;
+      });
     return this.connecting;
+  }
+
+  tryForOpening(): Promise<SshStatus> | undefined {
+    const status = this.current;
+    if (this.connecting || this.closing || this.rejectedKeyOpening !== "owed" ||
+        status.state !== "error" || status.code !== "auth-key-rejected") return;
+    this.rejectedKeyOpening = "used";
+    return this.connect({ interactive: false, opening: true });
   }
 
   settleIdle(): SshStatus {
@@ -344,6 +363,7 @@ export interface TestHostOptions {
   askpass: AskpassSource;
   /** The password typed in the form, or the saved host's. */
   password?: string;
+  interactive?: boolean;
   spawn?: SpawnFn;
 }
 
@@ -363,7 +383,7 @@ export async function testSshHost(options: TestHostOptions): Promise<{
   let child: ChildProcess | undefined;
   const askpass = options.askpass.session({
     hostId: "",
-    interactive: true,
+    interactive: options.interactive !== false,
     password: options.password,
     onCancel: () => {
       cancelled = true;

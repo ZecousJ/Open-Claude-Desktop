@@ -18,6 +18,6 @@ export type DirectoryIcon =
   | "users"
   | "zap"
   | "globe"
-  /** The skill scroll, on the by-Anthropic skills. */
+  /** The skill scroll, on the by-Anthropic skills (R-1126). */
   | "scroll"
   | "linechart";

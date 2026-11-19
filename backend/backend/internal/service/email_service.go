@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"net"
 	"net/smtp"
+	"net/textproto"
 	"net/url"
 	"strconv"
 	"strings"
@@ -190,38 +191,49 @@ func (s *EmailService) SendEmail(ctx context.Context, to, subject, body string) 
 const smtpDialTimeout = 10 * time.Second
 const smtpIOTimeout = 20 * time.Second
 
+// SMTPNotAcceptedError means the message was not accepted by the SMTP server.
+type SMTPNotAcceptedError struct{ cause error }
+
+func (e *SMTPNotAcceptedError) Error() string { return e.cause.Error() }
+func (e *SMTPNotAcceptedError) Unwrap() error { return e.cause }
+
 // SendEmailWithConfig 使用指定配置发送邮件
 func (s *EmailService) SendEmailWithConfig(config *SMTPConfig, to, subject, body string) error {
 	message, err := buildSMTPMessage(config, to, subject, body)
 	if err != nil {
-		return err
+		return &SMTPNotAcceptedError{err}
 	}
 
 	client, err := s.connectSMTP(config)
 	if err != nil {
-		return err
+		return &SMTPNotAcceptedError{err}
 	}
 	defer func() { _ = client.Close() }()
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)
 	if err = client.Auth(auth); err != nil {
-		return fmt.Errorf("smtp auth: %w", err)
+		return &SMTPNotAcceptedError{fmt.Errorf("smtp auth: %w", err)}
 	}
 	if err = client.Mail(message.envelopeFrom); err != nil {
-		return fmt.Errorf("smtp mail: %w", err)
+		return &SMTPNotAcceptedError{fmt.Errorf("smtp mail: %w", err)}
 	}
 	if err = client.Rcpt(message.envelopeTo); err != nil {
-		return fmt.Errorf("smtp rcpt: %w", err)
+		return &SMTPNotAcceptedError{fmt.Errorf("smtp rcpt: %w", err)}
 	}
 	w, err := client.Data()
 	if err != nil {
-		return fmt.Errorf("smtp data: %w", err)
+		return &SMTPNotAcceptedError{fmt.Errorf("smtp data: %w", err)}
 	}
 	if _, err = w.Write(message.data); err != nil {
-		return fmt.Errorf("write msg: %w", err)
+		return &SMTPNotAcceptedError{fmt.Errorf("write msg: %w", err)}
 	}
 	if err = w.Close(); err != nil {
-		return fmt.Errorf("close writer: %w", err)
+		closeErr := fmt.Errorf("close writer: %w", err)
+		var reply *textproto.Error
+		if errors.As(err, &reply) && reply.Code >= 400 && reply.Code < 600 {
+			return &SMTPNotAcceptedError{closeErr}
+		}
+		return closeErr
 	}
 	// Email is sent successfully after w.Close(), ignore Quit errors
 	// Some SMTP servers return non-standard responses on QUIT

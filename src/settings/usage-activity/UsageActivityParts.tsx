@@ -190,7 +190,8 @@ export function Trend({
             style={{
               // At the hovered bar's centre, past the axis column; it opens
               // rightwards over the first bar and leftwards over the last, so
-              // it never leaves the page's scroll area.
+              // it never leaves the page's scroll area (owner, 2026-10-09:
+              // the first bars' tip was cut off).
               left: `calc(var(--ua-axis-width) + (100% - var(--ua-axis-width)) * ${((hover ?? 0) + 0.5) / chart.bars.length})`,
               transform: `translateX(-${((hover ?? 0) / Math.max(1, last)) * 100}%)`,
             }}
@@ -232,9 +233,10 @@ export function Trend({
 }
 
 /**
- * One request: the model with its key and time, the tokens in and out with the
- * cache under them, what it cost and at which rate, the time to the first token
- * and in all; it opens to every detail the service keeps.
+ * One request (owner, 2026-10-08, after the Sub2API dashboard's request
+ * table): the model with its key and time, the tokens in and out with the
+ * cache under them, what it cost and at which rate, the time to the first
+ * token and in all; it opens to every detail the service keeps.
  */
 function RequestRow({ record: r }: { record: UsageRecord }) {
   const details: [string, string][] = [

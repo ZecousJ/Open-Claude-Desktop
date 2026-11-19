@@ -6,6 +6,7 @@ import type { Conversation, Attachment, Project } from "../../shared/types";
 import type { AppController } from "../app/AppContext";
 import type { ComposerField } from "./composer-field";
 import type { HostInfo } from "../../shared/host";
+import type { KnowledgeProps } from "../knowledge/knowledge-props";
 import type { PendingAttachment } from "./Attachments";
 import type { SkillToken } from "./skill-tokens";
 
@@ -21,6 +22,7 @@ export interface UseComposerPickersPart1Props {
   host: HostInfo;
   incognito: boolean;
   incognitoControls: boolean;
+  knowledge: KnowledgeProps | undefined;
   mode: "chat" | "cowork";
   notify: (message: string) => void;
   onCreateProject: (name?: string | undefined) => void;
@@ -64,6 +66,7 @@ export function ComposerAddPicker({
   host,
   incognito,
   incognitoControls,
+  knowledge,
   mode,
   notify,
   onCreateProject,
@@ -154,6 +157,7 @@ export function ComposerAddPicker({
       onThinking={
         toggleThinking ? () => void toggleThinking().catch(report) : undefined
       }
+      knowledge={knowledge}
       onClose={() => setAddMenu(false)}
       onFiles={chooseFiles}
       onSkill={(skill) => {

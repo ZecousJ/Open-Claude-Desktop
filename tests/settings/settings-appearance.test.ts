@@ -17,6 +17,14 @@ test("the Settings navigation has the original's four groups in order", () => {
   );
 });
 
+test("Chat font names the Anthropic faces only when they are there", () => {
+  assert.deepEqual(chatFontLabels(true), {
+    serif: "Claudex Serif",
+    sans: "Claudex Sans",
+  });
+  assert.deepEqual(chatFontLabels(false), { serif: "Serif", sans: "Sans" });
+});
+
 test("the new appearance settings take only their own values", () => {
   assert.equal(preferenceFields.transcriptWidth.safeParse("l").success, true);
   assert.equal(

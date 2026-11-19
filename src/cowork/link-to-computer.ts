@@ -3,8 +3,9 @@ export const linkFailed = "Couldn’t link this task to this computer.";
 
 /**
  * Why linking a cloud task to this computer failed, in the words the linking
- * itself chose for each reason. Anything else is a technical error and stays
- * out of sight: the person is told it could not be linked.
+ * itself chose for each reason (live claude.ai bundle, 2026-10-16,
+ * c06fd35f9: lt and ut). Anything else is a technical error and stays out of
+ * sight: the person is told it could not be linked.
  */
 const reasons = [
   /^Sign in to Claudex again on this computer, then link this task\.$/,

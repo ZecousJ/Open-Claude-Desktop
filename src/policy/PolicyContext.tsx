@@ -70,8 +70,13 @@ export const firstAnswerMs = 250;
  * the answer replaces it when it comes; later changes arrive as "policy"
  * events. The window is never held blank.
  */
-export function PolicyProvider({ children }: { children: ReactNode }) {
-  const [policy, setPolicy] = useState<ClientPolicy>();
+export function PolicyProvider({
+  children,
+  startWithPending = false,
+}: { children: ReactNode; startWithPending?: boolean }) {
+  const [policy, setPolicy] = useState<ClientPolicy | undefined>(
+    startWithPending ? pendingPolicy : undefined,
+  );
   useEffect(() => {
     const stop = followPolicy(window.desktop, (update) =>
       setPolicy((current) => update(current ?? pendingPolicy)),

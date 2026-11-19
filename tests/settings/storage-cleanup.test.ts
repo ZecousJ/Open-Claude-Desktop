@@ -1,7 +1,8 @@
 /**
- * Settings → System → Storage: what each area measures, and Free up space… /
- * Clean up inactive sessions…, which delete only inactive conversations with
- * what only they use, after a preview, checking each one again.
+ * Settings → System → Storage (live claude.ai bundle, 2026-10-12): what each
+ * area measures, and Free up space… / Clean up inactive sessions…, which
+ * delete only inactive conversations with what only they use, after a
+ * preview, checking each one again.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

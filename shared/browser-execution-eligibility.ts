@@ -7,6 +7,8 @@ export type BrowserExecutionConversation = Pick<
   | "linkedToComputer"
   | "chatDeviceBinding"
   | "deviceChatOrigin"
+  | "cloudHosted"
+  | "cloudEnvironmentId"
 >;
 
 /** The native browser belongs to the machine executing this conversation.
@@ -19,8 +21,25 @@ export function hasLocalBrowserExecution(
     !!conversation &&
     (conversation.mode === "code" || conversation.mode === "cowork") &&
     (!conversation.environment || conversation.environment.kind === "local") &&
+    !conversation.cloudHosted &&
+    !conversation.cloudEnvironmentId &&
     !conversation.linkedToComputer &&
     !conversation.chatDeviceBinding &&
     conversation.deviceChatOrigin?.active !== false
+  );
+}
+
+export function hasOffHostCodeBrowser(
+  conversation: BrowserExecutionConversation | undefined,
+): boolean {
+  return (
+    conversation?.mode === "code" &&
+    (conversation.environment?.kind === "ssh" ||
+      conversation.environment?.kind === "wsl") &&
+    !conversation.cloudHosted &&
+    !conversation.cloudEnvironmentId &&
+    !conversation.linkedToComputer &&
+    !conversation.chatDeviceBinding &&
+    !conversation.deviceChatOrigin
   );
 }

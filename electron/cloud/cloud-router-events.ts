@@ -49,46 +49,68 @@ export async function merge(
     local.conversations.filter((c) => c.linkedToComputer).map((c) => c.id),
   );
   if (!client) return local;
+  const merged = (cloud: Snapshot | undefined, failed: boolean) =>
+    mergedSnapshot(local, cloud, failed, this.deps.migratedConversations?.());
+  if (this.snapshotRefreshPending) {
+    this.snapshotRefreshPending = false;
+    return merged(this.last, false);
+  }
   const inScope = () => {
     const active = this.deps.client();
     return generation === this.snapshotGeneration && active === client;
   };
   const current = () => inScope() && request === this.snapshotRead;
-  try {
-    const cloud = await this.withTimeout(client.snapshot());
+  let waiting = true;
+  const pending = Promise.resolve().then(() => client.snapshot());
+  const received = pending.then(async ({ snapshot: cloud }) => {
     // An old caller receives only its own local state, never another
     // account's cache. Its renderer also retires its pending snapshot.
     if (!inScope()) return local;
     // Another window may have read more recently. Return this caller's
     // real cloud result, while only the newest read may change shared state.
     if (request !== this.snapshotRead)
-      return mergedSnapshot(local, cloud, false);
+      return merged(cloud, false);
     this.timers.clear(this.retryTimer);
     this.retryTimer = undefined;
     this.retryMs = retryMinMs;
     this.last = cloud;
+    const previous = this.conversations;
     this.conversations = new Set(cloud.conversations.map((c) => c.id));
     this.projects = new Set((cloud.projects ?? []).map((p) => p.id));
+    if (waiting && local.conversations.some((c) => c.mode === "code" &&
+        !this.localTasks.has(c.id) && previous.has(c.id) !== this.conversations.has(c.id)))
+      this.deps.push({ type: "resync" });
     this.deps.onCloudSnapshot?.();
     if (!inScope()) return local;
     if (request !== this.snapshotRead)
-      return mergedSnapshot(local, cloud, false);
+      return merged(cloud, false);
     await this.recoverClaims(client, local, current);
     if (!inScope()) return local;
     if (request !== this.snapshotRead)
-      return mergedSnapshot(local, cloud, false);
-    return mergedSnapshot(local, this.last, false);
+      return merged(cloud, false);
+    if (!waiting) {
+      this.snapshotRefreshPending = true;
+      this.deps.push({ type: "resync" });
+    }
+    return merged(this.last, false);
+  });
+  try {
+    await this.withTimeout(pending);
+    return await received;
   } catch (error) {
+    void received.catch(() => {});
     if (!inScope()) return local;
     if (request !== this.snapshotRead)
-      return mergedSnapshot(local, this.last, true);
+      return merged(this.last, true);
     console.error(
       "Cloud conversations:",
       error instanceof Error ? error.message : String(error),
     );
     this.retryLater(generation, client);
     // The cloud's last answer stays listed while it is away.
-    return mergedSnapshot(local, this.last, true);
+    return merged(this.last, true);
+  } finally {
+    waiting = false;
   }
 }
 

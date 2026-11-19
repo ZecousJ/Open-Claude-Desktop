@@ -21,19 +21,21 @@ import {
 import "./profile-step.css";
 
 /**
- * The account step after sign-up, after the original's combined form: "Let’s
- * create your account" over "So Claudex knows what to call you.", the name
- * ("What is your name?", focused, prefilled from the account), the birthday
- * ("When is your birthday?" with its "We’ll use this to verify your account"
- * tip), the terms checkbox, and Create account. Every field is checked on
- * submit and each shows its own sentence, cleared as it is edited. Below the
- * card: the signed-in address and "Use a different email", which signs out.
+ * The account step after sign-up (owner, 2026-10-12), after the original's
+ * combined form (live claude.ai bundle, 2026-10-12: cb31f3802 `K`/`q`):
+ * "Let’s create your account" over "So Claudex knows what to call you.",
+ * the name ("What is your name?", focused, prefilled from the account), the
+ * birthday ("When is your birthday?" with its "We’ll use this to verify
+ * your account" tip), the terms checkbox, and Create account. Every field
+ * is checked on submit and each shows its own sentence, cleared as it is
+ * edited. Below the card: the signed-in address and "Use a different
+ * email", which signs out.
  *
- * Differences: the birthday is the browser's date field (the original's is its
- * own segmented field without a calendar); there is no privacy or marketing
- * checkbox (the original shows them only in some regions, and Claudex sends no
- * marketing); an account accepting new terms keeps its birthday and reads
- * "Updates to the Terms of Service" with Continue.
+ * Differences: the birthday is the browser's date field (the original's is
+ * its own segmented field without a calendar); there is no privacy or
+ * marketing checkbox (the original shows them only in some regions, and
+ * Claudex sends no marketing); an account accepting new terms keeps its
+ * birthday and reads "Updates to the Terms of Service" with Continue.
  */
 export function ProfileStep({
   profile,
@@ -102,7 +104,7 @@ export function ProfileStep({
     </a>
   );
   const agreement: ReactNode[] = splitTemplate(
-    t("I agree to the {terms} and {aup}."),
+    t("I agree to ZecousAI’s {terms} and {aup}."),
     (hole) =>
       hole === "terms"
         ? link(profile.termsUrl, "Terms of Service")

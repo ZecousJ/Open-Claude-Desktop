@@ -3,8 +3,9 @@ import { Maximize2, X } from "../ui/glyphs";
 import { IconButton } from "../ui/Controls";
 
 /**
- * A window with a smaller panel in its lower-left corner: the expanded Artifact
- * header's Pop out chat.
+ * A window with a smaller panel in its lower-left corner: the expanded
+ * Artifact header's Pop out chat (R-1047; R-1000 at W1202 and R-1047 at
+ * W1920, both 1x).
  */
 export function PopOutChatIcon({
   size = 16,
@@ -30,14 +31,14 @@ export function PopOutChatIcon({
 }
 
 /**
- * The frame of the conversation floating over an expanded Artifact: a card in
- * the lower-left corner of the window with Expand chat (back to the
- * conversation beside the Artifact) and Close chat (the Artifact stays full
- * size). The conversation inside is the page's own transcript and composer,
- * which floating-chat-panel.css lifts into this card while the Artifact panel
- * carries `data-chat-float`, so a message typed here is the same draft and goes
- * to the same conversation as in the split view. It is one window: nothing
- * opens outside it.
+ * The frame of the conversation floating over an expanded Artifact
+ * (R-1048): a card in the lower-left corner of the window with Expand chat
+ * (back to the conversation beside the Artifact) and Close chat (the
+ * Artifact stays full size). The conversation inside is the page's own
+ * transcript and composer, which floating-chat-panel.css lifts into this
+ * card while the Artifact panel carries `data-chat-float`, so a message
+ * typed here is the same draft and goes to the same conversation as in the
+ * split view. It is one window: nothing opens outside it.
  */
 export function FloatingChatPanel({
   onDock,

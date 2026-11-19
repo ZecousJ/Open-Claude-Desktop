@@ -1,8 +1,10 @@
 /**
- * claudex:// links: what each opens. The host may also be left out or be a
- * Claudex service's host, so claudex://new and
- * claudex://claudex.example.com/new are the same link. Settings links stay with
- * shared/connector-links.ts.
+ * claudex:// links (desktop 2.37337.1: claude://claude.ai/new?q=…,
+ * claude.ai/chat/{id}, claude.ai/project/{id}, code/new, code/continue,
+ * code/needs-input, cowork/new?q=…): what each opens. The host may also be
+ * left out or be Claudex's own site, so claudex://new and
+ * claudex://claudex.zecous.cn/new are the same link. Settings links stay
+ * with shared/connector-links.ts.
  */
 import { parseSshLink, type SshLinkTarget, sshLinkErrors } from "./ssh-links";
 import type { Conversation } from "./types";
@@ -19,28 +21,39 @@ export type DeepLink =
       folder?: string;
     }
   | { kind: "conversation"; id: string }
+  | { kind: "code-continue"; id: string }
   | { kind: "project"; id: string }
   /** The sessions waiting for an answer: one of them, or the window. */
   | { kind: "needs-input"; id?: string };
 
 /** Longest prompt a link fills in (as the web's /new?q=). */
 export const deepLinkPromptLimit = 10_000;
+const siteHosts = new Set(["claudex.zecous.cn", "claude.ai"]);
 const idPattern = /^[A-Za-z0-9_-]{1,128}$/;
 
+// (desktop 2.37337.1, index.chunk-BWk6pVUt.js, _Yn / vYn)
 export function codeEntryConversation(
-  link: Extract<DeepLink, { kind: "conversation" | "needs-input" }>,
+  link: Extract<
+    DeepLink,
+    { kind: "conversation" | "code-continue" | "needs-input" }
+  >,
   conversations: readonly Conversation[],
   waiting: ReadonlySet<string>,
 ) {
   const visible = conversations.filter(
     (conversation) => !conversation.archived && !conversation.incognito,
   );
-  if (link.kind === "conversation")
+  const matches = (conversation: Conversation) =>
+    conversation.id === link.id || `local_${conversation.id}` === link.id;
+  if (link.kind !== "needs-input")
     return link.id === "last"
       ? visible
           .filter((conversation) => conversation.mode === "code")
           .sort((first, second) => second.updatedAt - first.updatedAt)[0]
-      : visible.find((conversation) => conversation.id === link.id);
+      : visible.find(
+          (conversation) =>
+            conversation.mode === "code" && matches(conversation),
+        );
   const pending = visible
     .filter(
       (conversation) =>
@@ -48,9 +61,7 @@ export function codeEntryConversation(
         waiting.has(conversation.id),
     )
     .sort((first, second) => first.updatedAt - second.updatedAt);
-  return (
-    pending.find((conversation) => conversation.id === link.id) ?? pending[0]
-  );
+  return pending.find(matches) ?? pending[0];
 }
 
 export function parseDeepLink(href: string): DeepLink | undefined {
@@ -70,19 +81,25 @@ export function parseDeepLink(href: string): DeepLink | undefined {
   } catch {
     return undefined;
   }
-  // A host (it has a dot; no link path does) names the site: dropped.
-  if (parts[0]?.includes(".")) parts.shift();
+  if (siteHosts.has(parts[0] ?? "")) parts.shift();
   const query = url.searchParams;
-  const prompt = query.get("q")?.slice(0, deepLinkPromptLimit) || undefined;
+  const prompt =
+    (
+      query.get("q") ?? (parts[0] === "code" ? query.get("prompt") : null)
+    )?.slice(0, deepLinkPromptLimit) || undefined;
   const id = (value: string | null | undefined) =>
     value && idPattern.test(value) ? value : undefined;
   const [first, second] = parts;
   if (parts.length === 1 && first === "new")
-    return { kind: "new", mode: "chat", ...(prompt ? { prompt } : {}) };
+    return {
+      kind: "new",
+      mode: query.get("surface") === "cowork" ? "cowork" : "chat",
+      ...(prompt ? { prompt } : {}),
+    };
   if (first === "chat" && second === "new")
     return { kind: "new", mode: "chat", ...(prompt ? { prompt } : {}) };
   if (first === "cowork" && second === "new")
-    return { kind: "new", mode: "chat", ...(prompt ? { prompt } : {}) };
+    return { kind: "new", mode: "cowork", ...(prompt ? { prompt } : {}) };
   if (first === "cowork" && second === "project" && id(parts[2]))
     return { kind: "project", id: parts[2] };
   if ((first === "chat" || first === "conversation") && id(second))
@@ -105,7 +122,7 @@ export function parseDeepLink(href: string): DeepLink | undefined {
     }
     if (second === "continue") {
       const session = id(query.get("session"));
-      return session ? { kind: "conversation", id: session } : undefined;
+      return session ? { kind: "code-continue", id: session } : undefined;
     }
     if (second === "needs-input") {
       const session = id(query.get("session"));

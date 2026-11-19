@@ -66,6 +66,8 @@ func TestNormalizeOpenAIReasoningEffortForMaxCapableModels(t *testing.T) {
 	}{
 		{name: "Astra 保留 max", raw: "max", model: "gpt-6-astra", want: "max"},
 		{name: "Sol 保留 max", raw: "max", model: "gpt-5.6-sol", want: "max"},
+		{name: "GPT-6.2 Sol 保留 max", raw: "max", model: "gpt-6.2-sol", want: "max"},
+		{name: "GPT-6.2 Astra 供应商前缀保留 max", raw: "max", model: "openai/gpt-6.2-astra", want: "max"},
 		{name: "Terra 保留 max", raw: "max", model: "openai/gpt-5.6-terra", want: "max"},
 		{name: "Luna 后缀保留 max", raw: "max", model: "gpt-5.6-luna-2026-07-09", want: "max"},
 		{name: "DeepSeek V4 保留 max", raw: "max", model: "deepseek-v4-pro", want: "max"},

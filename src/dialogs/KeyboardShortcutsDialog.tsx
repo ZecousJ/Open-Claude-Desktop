@@ -10,8 +10,8 @@ type Shortcut = { action: string; keys: Keys[] };
 type Section = { title: string; shortcuts: Shortcut[] };
 
 /**
- * Which list the dialog shows: the reference design shows one for chats and
- * another on Code's routes.
+ * Which list the dialog shows: the live claude.ai bundle (2026-10-12,
+ * ShortcutsModalBody) shows one for chats and another on Code's routes.
  */
 export type ShortcutContext = "chat" | "code";
 
@@ -23,7 +23,8 @@ export interface ShortcutOptions {
 const general: Section = {
   title: "General",
   shortcuts: [
-    // ⌘K opens the palette with Search and Compose; ⇧⌘K opens it on Search.
+    // ⌘K opens the palette with Search and Compose; ⇧⌘K opens it on Search
+    // (live claude.ai bundle, 2026-10-12: command_palette, search_palette).
     { action: "Quick chat or search", keys: [["mod", "K"]] },
     { action: "Search", keys: [["shift", "mod", "K"]] },
     { action: "Incognito chat", keys: [["shift", "mod", "I"]] },
@@ -35,8 +36,8 @@ const general: Section = {
 };
 
 /**
- * Chat rows and order. Side chat belongs to Code's Panes section; pinning also
- * appears in chats.
+ * Chat rows and order (live claude.ai bundle, 2026-10-14, c518a31cc-Dvpyv79W.js).
+ * Side chat belongs to Code's Panes section; pinning also appears in chats.
  */
 const chatSection: Section = {
   title: "In chats",
@@ -60,12 +61,13 @@ const chatSection: Section = {
 };
 
 /**
- * The desktop's chat-switching keys after New chat. Close chat (⌘W) is listed
- * only with the desktop's chat tabs, which Claudex does not have.
+ * The desktop's chat-switching keys after New chat (live claude.ai bundle,
+ * 2026-10-12: Next chat, Previous chat, Jump to chat). Close chat (⌘W) is
+ * listed only with the desktop's chat tabs, which Claudex does not have.
  */
 /**
  * The sidebar's mode tabs, after Jump to chat and Jump to session on the
- * desktop.
+ * desktop (live claude.ai bundle, 2026-10-12: ⌘⌥→ / ⌘⌥←).
  */
 const sidebarTabRows: Shortcut[] = [
   { action: "Next sidebar tab", keys: [["mod", "alt", "right"]] },
@@ -103,7 +105,8 @@ function chatSections(desktop: boolean): Section[] {
         ...chatSwitchRows,
         ...general.shortcuts.slice(newChat + 1),
         { action: "Reopen closed session", keys: [["mod", "shift", "T"]] },
-        // A Cowork task's Activity panel.
+        // A Cowork task's Activity panel (live claude.ai bundle,
+        // 2026-10-14, c518a31cc: shown where the panel exists).
         { action: "Toggle activity sidebar", keys: [["mod", "shift", "S"]] },
       ],
     },
@@ -112,9 +115,10 @@ function chatSections(desktop: boolean): Section[] {
 }
 
 /*
- * General (the palette, the window, the sessions, the transcript), Panes and
- * Composer. Only keys Claudex implements are listed; the desktop app adds the
- * keys the web leaves to the browser.
+ * Code's list, as the live bundle's Code shortcuts (2026-10-12): General
+ * (the palette, the window, the sessions, the transcript), Panes and
+ * Composer. Only keys Claudex implements are listed; the desktop app adds
+ * the keys the web leaves to the browser.
  */
 
 /** Code's General: the window's keys come from the surface's key table. */
@@ -127,7 +131,7 @@ const codeGeneralCommands: { command: AppCommand; action: string }[] = [
   { command: "new-chat", action: "New session" },
 ];
 
-/** The session keys after the window's. */
+/** The session keys after the window's (live bundle order). */
 function codeSessionRows(mac: boolean, desktop: boolean): Shortcut[] {
   return [
     ...(desktop
@@ -149,7 +153,8 @@ function codeSessionRows(mac: boolean, desktop: boolean): Shortcut[] {
           },
           { action: "Jump to session", keys: [["mod", "1…9"]] },
           ...sidebarTabRows,
-          // Split view.
+          // Split view (desktop bundle 2.31226.1 and ion bundle: Control+
+          // Command on macOS, Control+Alt elsewhere; Ctrl+] and Ctrl+[ on both).
           { action: "Open session in split view", keys: [["alt", "click"]] },
           {
             action: "New session on the right",
@@ -250,7 +255,7 @@ function codePaneRows(
     },
     { action: "Close pane", keys: [["mod", "\\"]] },
     { action: "Expand or collapse pane", keys: [["mod", "shift", "\\"]] },
-    // View ▸ Side Chat.
+    // View ▸ Side Chat (desktop bundle 2.31226.1: "Toggle side chat").
     { action: "Toggle side chat", keys: [["mod", ";"]] },
   ];
 }
@@ -404,8 +409,8 @@ const otherKeys: Record<string, string> = {
 };
 
 /**
- * Modifiers in each platform's reading order: ⇧⌥⌘ on macOS, Ctrl Alt Shift
- * elsewhere ("Ctrl Shift K", "Ctrl Alt P").
+ * Modifiers in each platform's reading order (R-0126): ⇧⌥⌘ on macOS,
+ * Ctrl Alt Shift elsewhere ("Ctrl Shift K", "Ctrl Alt P").
  */
 function platformOrder(combo: Keys, mac: boolean): Keys {
   const order = mac

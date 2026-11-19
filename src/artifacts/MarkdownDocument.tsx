@@ -7,14 +7,15 @@ import { lazyPiece } from "../ui/lazy-piece";
 const MarkdownRail = lazyPiece(() => import("./MarkdownRail"));
 
 /**
- * A Markdown file in the viewer, laid out as in the reference design.
- * A conversation's Markdown artifact reads in a 768px column (16px
- * above and below, 24px before and 64px after the text; 24px and 44px from
- * 768px wide) with no contents rail. A document from a Code or Cowork session
- * reads in the document column (a 540px measure at the Medium transcript text
- * size, 504px or 576px at Small or Large, side padding growing with the panel
- * from 20px to 64px, 32–56px above and 96px below) and, once it has three
- * headings, gets the contents rail in its left margin (MarkdownRail.tsx).
+ * A Markdown file in the viewer, laid out as in the live claude.ai bundle,
+ * 2026-10-12. A conversation's Markdown artifact reads in a 768px column
+ * (16px above and below, 24px before and 64px after the text; 24px and
+ * 44px from 768px wide) with no contents rail. A document from a Code or
+ * Cowork session reads in the document column (a 540px measure at the
+ * Medium transcript text size, 504px or 576px at Small or Large, side
+ * padding growing with the panel from 20px to 64px, 32–56px above and
+ * 96px below) and, once it has three headings, gets the contents rail in
+ * its left margin (MarkdownRail.tsx).
  */
 export function MarkdownDocument({
   text,

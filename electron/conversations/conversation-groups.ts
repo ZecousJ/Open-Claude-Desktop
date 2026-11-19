@@ -89,8 +89,9 @@ export class ConversationGroupStore {
     };
   }
   /**
-   * Drops members whose conversation was deleted. A group stays when nothing is
-   * left in it.
+   * Drops members whose conversation was deleted. A group stays when nothing
+   * is left in it (live claude.ai bundle, 2026-10-12: a custom group lasts
+   * until Delete group; the sidebar decides whether an empty one is shown).
    */
   private prune(data: ConversationGroups) {
     const known = new Set(this.known());

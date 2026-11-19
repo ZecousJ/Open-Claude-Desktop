@@ -63,7 +63,7 @@ export function FilePreview({ file }: { file: CoworkFile }) {
   );
 }
 
-// Folder tree and preview.
+// Folder tree and preview (live claude.ai bundle, 2026-10-14, ce5658dc8-Dez48Sxz.js: yo).
 export default function CoworkFileBrowser({
   conversationId,
   folders,

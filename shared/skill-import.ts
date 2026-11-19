@@ -13,6 +13,7 @@ export type SkillImportOutcome =
   | { file: string; name: string; ok: true }
   | { file: string; message: string; ok: false };
 
+// (live claude.ai bundle, 2026-10-14, index.chunk-Cr5NCWCa)
 export function skillImportNotice(added: number, remaining: number) {
   const total = added + remaining;
   return {

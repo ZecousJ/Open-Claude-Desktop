@@ -1,3 +1,5 @@
+import { useContext } from "react";
+import { AppContext } from "../../app/AppContext";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { lazyPiece } from "../../ui/lazy-piece";
 import type { Settings } from "../../../shared/types";
@@ -35,12 +37,13 @@ export const TranscriptAppearance = lazyPiece(
 );
 const TasksSection = lazyPiece(() => import("./Tasks"), "TasksSection");
 
-// Each choice previews in its own face.
+// Each choice previews in its own face (live claude.ai bundle, 2026-10-14:
+// the Chat font list renders every item in its font variable).
 export const serif = {
-  fontFamily: 'Georgia, "Songti SC", serif',
+  fontFamily: '"Claudex Reference Serif", Georgia, "Songti SC", serif',
 };
 export const sans = {
-  fontFamily: '-apple-system, "Segoe UI", sans-serif',
+  fontFamily: '"Claudex Reference Sans", -apple-system, "Segoe UI", sans-serif',
 };
 export const system = { fontFamily: "system-ui, sans-serif" };
 export const dyslexia = {
@@ -53,7 +56,11 @@ export const dyslexia = {
  * (main.tsx loadReferenceFonts); without them the choices draw system
  * faces and say so by their plain names.
  */
-export const chatFontLabels = { serif: "Serif", sans: "Sans" };
+export function chatFontLabels(referenceFonts: boolean) {
+  return referenceFonts
+    ? { serif: "Claudex Serif", sans: "Claudex Sans" }
+    : { serif: "Serif", sans: "Sans" };
+}
 
 /** Rows Settings search finds on this page. */
 export const searchLabels = [
@@ -87,13 +94,17 @@ export const searchLabels = [
 ];
 
 /**
- * General. Appearance and the notifications the desktop integration sends. The
- * interface is English only. Voice sets how voice mode reads a reply aloud,
- * with this window's own speech synthesis: the choices are kept in this
- * browser, since the voices are the computer's.
+ * General (R-1480–R-1502). Appearance and the notifications the desktop
+ * integration sends. The interface is English only. Voice (as on claude.ai,
+ * 2026-09-29: Language, Style, Speed) sets how voice mode reads a reply
+ * aloud, with this window's own speech synthesis: the choices are kept in
+ * this browser, since the voices are the computer's.
  */
 export function GeneralTab({ settings, save, onError }: TabProps) {
-  const fontLabels = chatFontLabels;
+  const account = useContext(AppContext);
+  const fontLabels = chatFontLabels(
+    document.documentElement.dataset.referenceFonts === "true",
+  );
   return (
     <>
       <GeneralAppearance
@@ -106,7 +117,7 @@ export function GeneralTab({ settings, save, onError }: TabProps) {
       </Suspense>
       {canSpeak() && <VoiceSection />}
       <NotificationsSection settings={settings} save={save} />
-      {surface === "desktop" && (
+      {surface === "desktop" && account?.remoteAccount && (
         <SyncSection settings={settings} save={save} onError={onError} />
       )}
     </>
@@ -168,8 +179,8 @@ function currentSpeechPreferences() {
 }
 
 /**
- * Voice's Speed choices: Slow 0.8, Normal 1 and Fast 1.2. A rate kept from
- * before (1.5) shows as the nearest.
+ * Voice's Speed choices (live claude.ai bundle, 2026-10-12): Slow 0.8,
+ * Normal 1 and Fast 1.2. A rate kept from before (1.5) shows as the nearest.
  */
 export const speedChoices = [
   { rate: 0.8, label: "Slow" },
@@ -227,13 +238,13 @@ export function VoiceSection() {
   );
 }
 
-/** What a notification switch's failed save says. */
+/** What a notification switch's failed save says (live claude.ai bundle, 2026-10-14). */
 const saveFailure = "Couldn’t save your change. Try again.";
 
 /**
- * A notification switch: it moves at once and stays disabled until the change
- * is saved; a failed save puts it back with the error toast (SettingsDialog's
- * save).
+ * A notification switch (live claude.ai bundle, 2026-10-14): it moves at
+ * once and stays disabled until the change is saved; a failed save puts it
+ * back with the error toast (SettingsDialog's save).
  */
 /** Keep permission follow-ups on the bridge and owner that started them. */
 function notificationPermission(request: SettingsRequestScope) {
@@ -288,7 +299,7 @@ function ScopedSavingToggle({
   );
 }
 
-/** Notifications: sent while Claudex is in the background. */
+/** Notifications (R-1480–R-1482, R-1494–R-1497): sent while Claudex is in the background. */
 export function NotificationsSection({
   settings,
   save,
@@ -372,12 +383,12 @@ function ScopedNotificationsSection({
           label="Response completions"
           checked={preference(settings, "notifyResponses")}
           onChange={async (notifyResponses, request) => {
-            // On the web the browser shows them: turning the switch on asks for
-            // its permission first, and a refusal keeps it off with the
-            // original's explanation. The switch is Chat's alone now: the
-            // desktop's Code and Cowork banners follow the notification levels,
-            // which saving it stores as they stand
-            // (shared/notification-levels.ts).
+            // On the web the browser shows them: turning the switch on asks
+            // for its permission first, and a refusal keeps it off with the
+            // original's explanation (live claude.ai bundle, 2026-10-12).
+            // The switch is Chat's alone now: the desktop's Code and Cowork
+            // banners follow the notification levels, which saving it
+            // stores as they stand (shared/notification-levels.ts).
             const patch = { notifyResponses, ...freezeLevels(settings) };
             if (surface === "desktop" && notifyResponses) {
               try {
@@ -428,7 +439,8 @@ function ScopedNotificationsSection({
           }}
         />
       </Row>
-      {/* routines.enable_email; mailed through the service, to this account. */}
+      {/* routines.enable_email (live claude.ai bundle, 2026-10-14,
+          c0db37792 Yt); mailed through the service, to this account. */}
       {routineEmail && (
         <Row
           label="Scheduled tasks by email"
@@ -565,9 +577,10 @@ function ScopedNotificationsSection({
 }
 
 /**
- * The e-mails about shared artifacts: Mentions and replies, Comments on your
- * artifacts and Artifacts shared with you. The service keeps them, so they show
- * where the account has hosted sharing.
+ * The e-mails about shared artifacts (live claude.ai, 2026-10-21): Mentions
+ * and replies, Comments on your artifacts and Artifacts shared with you.
+ * The service keeps them, so they show where the account has hosted
+ * sharing.
  */
 function ArtifactMailRows({ scope }: { scope: SettingsScopeOwner }) {
   const [prefs, setPrefs] = useState<ArtifactMailPreferences | null>(null);

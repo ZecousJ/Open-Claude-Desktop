@@ -40,7 +40,12 @@ await build({
   external: ["electron"],
 });
 // The extra pages' preloads (electron/extra-pages.ts).
-for (const name of ["find-preload", "quick-preload", "design-pdf-preload"])
+for (const name of [
+  "find-preload",
+  "quick-preload",
+  "design-pdf-preload",
+  "design-window-preload",
+])
   await build({
     entryPoints: [`electron/${name}.ts`],
     bundle: true,

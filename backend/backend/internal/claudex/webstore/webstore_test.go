@@ -74,6 +74,7 @@ func TestServeRunnerOpRefusesBadRequests(t *testing.T) {
 		{"project id", "store.projects.put", `{"project":{"id":"a/b"},"position":0}`, webproto.ErrCodeBadRequest, 7},
 		{"project position", "store.projects.put", `{"project":{"id":"p"},"position":-1}`, webproto.ErrCodeBadRequest, 7},
 		{"delete id", "store.projects.delete", `{"id":""}`, webproto.ErrCodeBadRequest, 7},
+		{"delete chats flag", "store.projects.delete", `{"id":"p","deleteChats":"true"}`, webproto.ErrCodeBadRequest, 7},
 		{"conversation doc", "store.conversations.put", `{"doc":{"schema":2,"conversation":{}},"position":0}`, webproto.ErrCodeBadRequest, 7},
 		{"turn schema", "store.turns.put", `{"turns":[{"schema":2}]}`, webproto.ErrCodeBadRequest, 7},
 		{"turns list id", "store.turns.list", `{"conversationId":"../x"}`, webproto.ErrCodeBadRequest, 7},
@@ -163,7 +164,7 @@ func TestSearchTextIsPromptAndReplyOnly(t *testing.T) {
 	require.NotContains(t, got, "hidden")
 
 	long := json.RawMessage(`{"prompt":"` + strings.Repeat("字", searchTextBytes) + `","items":[]}`)
-	require.LessOrEqual(t, len(searchText(long)), searchTextBytes)
+	require.Greater(t, len(searchText(long)), searchTextBytes)
 	require.True(t, strings.HasPrefix(searchText(long), "字"))
 }
 

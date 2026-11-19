@@ -27,7 +27,7 @@ func TestClientFramesWithoutCompression(t *testing.T) {
 					serverDone <- err
 					return
 				}
-				defer func() { _ = conn.CloseNow() }()
+				defer conn.CloseNow()
 				for _, size := range []int{100, 800, 5000, 50000} {
 					if err := conn.Write(ctx, typ, bytes.Repeat([]byte("x"), size)); err != nil {
 						serverDone <- err
@@ -35,7 +35,7 @@ func TestClientFramesWithoutCompression(t *testing.T) {
 					}
 				}
 				serverDone <- nil
-				_ = conn.Close(websocket.StatusNormalClosure, "done")
+				conn.Close(websocket.StatusNormalClosure, "done")
 			}))
 			defer srv.Close()
 			conn, response, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http"), &websocket.DialOptions{
@@ -45,7 +45,7 @@ func TestClientFramesWithoutCompression(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer func() { _ = conn.CloseNow() }()
+			defer conn.CloseNow()
 			if extension := response.Header.Get("Sec-WebSocket-Extensions"); extension != "" {
 				t.Fatalf("server negotiated compression: %q", extension)
 			}
@@ -70,7 +70,7 @@ func TestCrossOriginStillRejected(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := websocket.Accept(w, r, AcceptOptions())
 		if err == nil {
-			_ = conn.CloseNow()
+			conn.CloseNow()
 		}
 	}))
 	defer srv.Close()
@@ -80,7 +80,7 @@ func TestCrossOriginStillRejected(t *testing.T) {
 		HTTPHeader: http.Header{"Origin": {"https://foreign.invalid"}},
 	})
 	if conn != nil {
-		_ = conn.CloseNow()
+		conn.CloseNow()
 	}
 	if err == nil || response == nil || response.StatusCode != http.StatusForbidden {
 		t.Fatalf("cross-origin handshake: response=%v error=%v", response, err)

@@ -1,10 +1,14 @@
 package webhost
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -42,7 +46,7 @@ const (
 
 // Methods a browser may never call even when a runner lists them: runner
 // internal calls Go makes itself.
-var internalMethods = map[string]bool{previewMethod: true, fireRoutineMethod: true}
+var internalMethods = map[string]bool{previewMethod: true, verifyDocumentPreviewTokenMethod: true, fireRoutineMethod: true, codeRunCapacityMethod: true}
 
 type linkLoad struct {
 	Engines int       `json:"engines"`
@@ -77,6 +81,10 @@ type runnerConn struct {
 	callers  map[string]int64
 	draining bool
 	load     linkLoad
+
+	codeRunsMu      sync.Mutex
+	codeRuns        map[string]*codeRun
+	codeRunCapacity bool
 }
 
 func (rc *runnerConn) isDraining() bool {
@@ -133,15 +141,12 @@ func (rc *runnerConn) signOut(userID int64, reason string) {
 	rc.send(webproto.GoFrame{T: "user-signed-out", UserID: userID, Reason: reason})
 }
 
-func (rc *runnerConn) presence(userID int64, tabs int, focused bool) {
-	rc.send(webproto.GoFrame{T: "presence", UserID: userID, Tabs: &tabs, Focused: &focused})
-}
-
 // close ends the link once: the pending calls fail, the runs on it end and
 // the registry forgets it.
 func (rc *runnerConn) close(code websocket.StatusCode, reason string) {
 	rc.closeOnce.Do(func() {
 		close(rc.done)
+		rc.closeCodeRuns()
 		go func() { _ = rc.conn.Close(code, reason) }()
 		if rc.c.reg.detach(rc) {
 			rc.c.runs.endRunner(rc.id)
@@ -310,11 +315,15 @@ func (c *Component) serveRunner(ctx context.Context, conn *websocket.Conn, who r
 		rc.capacity = *hello.Capacity
 	}
 	for _, m := range hello.Methods {
+		if m == codeRunCapacityMethod {
+			rc.codeRunCapacity = true
+		}
 		if !internalMethods[m] {
 			rc.methods[m] = true
 		}
 	}
 	rc.lastHeard.Store(c.now().UnixNano())
+	rc.send(webproto.GoFrame{T: "welcome", V: webproto.Version, RunnerID: rc.id, HeartbeatMs: c.heartbeat.Milliseconds(), CodeRunCapacity: rc.codeRunCapacity})
 	if old := c.reg.attach(rc); old != nil {
 		old.close(webproto.CloseReplaced, "replaced by a new link")
 	}
@@ -327,12 +336,8 @@ func (c *Component) serveRunner(ctx context.Context, conn *websocket.Conn, who r
 	}
 	slog.Info("claudex webhost: runner linked", "runner_id", rc.id, "version", rc.version, "methods", len(rc.methods))
 	go rc.writer()
-	rc.send(webproto.GoFrame{T: "welcome", V: webproto.Version, RunnerID: rc.id, HeartbeatMs: c.heartbeat.Milliseconds()})
 	go rc.pinger()
-	// The users this runner serves who have tabs open learn their presence.
-	for _, p := range c.hubs.presenceFor(rc.id) {
-		rc.presence(p.userID, p.tabs, p.focused)
-	}
+	c.hubs.runnerAttached(rc)
 	rc.reader(ctx)
 }
 
@@ -374,6 +379,7 @@ func (rc *runnerConn) pinger() {
 
 func (rc *runnerConn) reader(ctx context.Context) {
 	defer rc.close(websocket.StatusNormalClosure, "")
+	var chunks runnerChunks
 	for {
 		typ, data, err := rc.conn.Read(ctx)
 		if err != nil {
@@ -384,13 +390,82 @@ func (rc *runnerConn) reader(ctx context.Context) {
 			rc.close(webproto.CloseProtocolError, "binary frame")
 			return
 		}
-		f, err := webproto.DecodeRunnerFrame(data)
+		f, err := chunks.decode(data)
 		if err != nil {
 			slog.Warn("claudex webhost: bad runner frame", "runner_id", rc.id, "error", err)
 			rc.close(webproto.CloseProtocolError, "protocol error")
 			return
 		}
-		rc.handle(ctx, f)
+		if rc.closed() {
+			return
+		}
+		if f.T != "" {
+			rc.handle(ctx, f)
+		}
+	}
+}
+
+type runnerChunks struct {
+	data         []byte
+	decodedBytes int
+	encoding     string
+}
+
+func (c *runnerChunks) decode(data []byte) (webproto.RunnerFrame, error) {
+	f, err := webproto.DecodeRunnerFrame(data)
+	if err != nil {
+		return f, err
+	}
+	if f.T != "chunk" {
+		if c.data != nil {
+			return f, errors.New("runner frame interrupted chunk transfer")
+		}
+		return f, nil
+	}
+	if c.data == nil {
+		if *f.Offset != 0 {
+			return f, errors.New("runner chunk transfer did not start at offset zero")
+		}
+		c.data = make([]byte, 0, f.TotalBytes)
+		c.decodedBytes = f.DecodedBytes
+		c.encoding = f.Encoding
+	} else if *f.Offset != len(c.data) || f.TotalBytes != cap(c.data) ||
+		f.DecodedBytes != c.decodedBytes || f.Encoding != c.encoding {
+		return f, errors.New("runner chunk does not match transfer")
+	}
+	c.data = append(c.data, f.Data...)
+	if len(c.data) < f.TotalBytes {
+		return webproto.RunnerFrame{}, nil
+	}
+	payload := c.data
+	if c.encoding == "gzip" {
+		payload, err = inflateRunnerMessage(c.data, c.decodedBytes)
+		if err != nil {
+			return f, fmt.Errorf("runner chunk gzip: %w", err)
+		}
+	}
+	*c = runnerChunks{}
+	return webproto.DecodeRunnerMessage(payload)
+}
+
+func inflateRunnerMessage(data []byte, size int) ([]byte, error) {
+	reader, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	decoded := make([]byte, size)
+	if _, err := io.ReadFull(reader, decoded); err != nil {
+		return nil, err
+	}
+	var extra [1]byte
+	switch _, err := io.ReadFull(reader, extra[:]); err {
+	case io.EOF:
+		return decoded, nil
+	case nil:
+		return nil, errors.New("decoded size exceeds decodedBytes")
+	default:
+		return nil, err
 	}
 }
 
@@ -456,7 +531,7 @@ func (rc *runnerConn) serveRequest(ctx context.Context, f webproto.RunnerFrame) 
 	}()
 	rctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), linkRequestBudget)
 	defer cancel()
-	if webproto.IsUserOp(f.Op) && !c.reg.routed(rctx, f.UserID, rc.id) {
+	if f.Op != "run.finish" && webproto.IsUserOp(f.Op) && !c.reg.routed(rctx, f.UserID, rc.id) {
 		c.dropped.Add(1)
 		rc.respondError(f.ID, &webproto.RPCError{Code: webproto.ErrCodeNotAllowed, Message: "This runner does not serve that user."})
 		return
@@ -465,9 +540,18 @@ func (rc *runnerConn) serveRequest(ctx context.Context, f webproto.RunnerFrame) 
 	var value any
 	var err error
 	switch {
+	case f.Op == "run.acquire" || f.Op == "run.finish":
+		value, err = rc.codeRunRequest(rctx, f.UserID, f.Op, f.Body)
 	case f.Op == "device.list" || f.Op == "device.call":
 		value, err = c.chatDeviceRequest(rctx, f.UserID, f.Op, f.Body)
 	case strings.HasPrefix(f.Op, "store."):
+		if f.Op == "store.files.get" || f.Op == "store.files.delete" {
+			privateValue, handled, privateErr := c.privateUploads.serve(f.UserID, f.Op, f.Body)
+			if handled {
+				value, err = privateValue, privateErr
+				break
+			}
+		}
 		if b.Store == nil {
 			err = errRunnerUnavailable
 			break

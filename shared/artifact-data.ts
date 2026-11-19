@@ -15,7 +15,7 @@ export type ArtifactDataRequest = (
   | { method: "list"; prefix?: string }
 ) & { resource?: ArtifactStorageResource };
 
-/** Notice thresholds and optional asset line. */
+/** Notice thresholds and optional asset line (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js:14795,14826). */
 export function artifactStorageLines(usage: ArtifactDataUsage) {
   const line = (
     resource: ArtifactStorageResource,
@@ -67,7 +67,7 @@ export const artifactDataMessage = "claudex-artifact-data";
 export const artifactDataResult = "claudex-artifact-data-result";
 export const artifactDataChanged = "claudex-artifact-data-changed";
 
-/** Decimal storage figures. */
+/** Decimal storage figures (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js). */
 export function artifactDataSize(bytes: number, locale: string) {
   if (bytes < 1000) return `${bytes} B`;
   const [unit, divisor] =

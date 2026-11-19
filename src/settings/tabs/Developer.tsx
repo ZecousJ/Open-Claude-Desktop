@@ -2,7 +2,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { lazyPiece } from "../../ui/lazy-piece";
 import { createPortal } from "react-dom";
 import { ArrowUpRight, Code2, Trash2 } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { TabProps } from "../context";
 import "../developer.css";
 import { usePolicy } from "../../policy/PolicyContext";
@@ -86,10 +86,7 @@ export function useMcpServerList(onError: (error: unknown) => void) {
 export function useMcpServers(onError: (error: unknown) => void) {
   return useMcpServerList(onError).value;
 }
-/**
- * Hand-drawn monitor and pointer, traced at 100% from
- * claude-developer-modal-001.
- */
+/** Hand-drawn monitor and pointer, traced at 100% from claude-developer-modal-001 (captured at 110%). */
 function EmptyServersIllustration() {
   return (
     <svg
@@ -138,8 +135,10 @@ function serverConfig(config: unknown) {
 }
 
 /**
- * The configured servers: a list on the left (a failed one carries a warning)
- * and the chosen server's details on the right.
+ * The configured servers: a list on the left (a failed one carries a
+ * warning) and the chosen server's details on the right (desktop bundle
+ * 2.31226.1: name and state, Delete, Command, Arguments, Error, View logs,
+ * and the environment variables under Advanced options).
  */
 export function ServerPanel({
   servers,
@@ -172,7 +171,7 @@ export function ServerPanel({
             >
               <span>{item.name}</span>
               {item.state === "failed" && (
-                <AppIcon name="Warning" size={16} aria-hidden="true" />
+                <Anthropicon name="Warning" size={16} aria-hidden="true" />
               )}
             </button>
           </li>
@@ -318,12 +317,12 @@ function ServerDetail({
 }
 
 /**
- * Developer. Local MCP servers with the runtime's state for each; Edit config
- * opens the configuration file in the system editor (as the original does) and
- * saving the file applies it. With local MCP editing turned off by the
- * administrator, the list stays and the reason replaces the button. The page
- * exists only where the app runs local MCP servers (nav.tsx tabAvailable): the
- * web app has no Developer page.
+ * Developer (R-1427–R-1442). Local MCP servers with the runtime's state for
+ * each; Edit config opens the configuration file in the system editor (as
+ * the original does) and saving the file applies it. With local MCP
+ * editing turned off by the administrator, the list stays and the reason
+ * replaces the button. The page exists only where the app runs local MCP
+ * servers (nav.tsx tabAvailable): the web app has no Developer page.
  */
 export function DeveloperTab({ settings, engine, onError }: TabProps) {
   const policy = usePolicy();

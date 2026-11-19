@@ -55,9 +55,9 @@ function MenuTrigger({
 }
 
 /**
- * "Simulator menus": Edit, Device and View as small ghost buttons in a row
- * above the device picker, each opening its menu. A kind without a menu's items
- * has no button for it.
+ * "Simulator menus" (live claude.ai bundle, 2026-10-12): Edit, Device and
+ * View as small ghost buttons in a row above the device picker, each
+ * opening its menu. A kind without a menu's items has no button for it.
  */
 export function MenuRow({
   menus,

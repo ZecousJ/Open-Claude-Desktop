@@ -145,8 +145,8 @@ export function withoutSettingsConnector(address: string) {
 }
 
 /**
- * The names the original's addresses give these Settings pages; Claudex's own
- * names still open them.
+ * The names the original's addresses give these Settings pages (live
+ * claude.ai, 2026-10-21); Claudex's own names still open them.
  */
 const settingsAddresses: Record<string, string> = {
   privacy: "data-privacy-controls",

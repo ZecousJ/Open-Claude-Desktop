@@ -5,19 +5,20 @@ import {
   useRef,
   useState,
   type ErrorInfo,
+  type ComponentProps,
   type ReactNode,
 } from "react";
 import { surface } from "../../shared/host";
 import { configureHelpOrigin } from "../../shared/help-links";
 import type { AuthStatus } from "../../shared/types";
-import { App } from "./App";
+import type { App } from "./App";
 import { signedOutNotice, type SignedOutNotice } from "../auth/signedOut";
 import { resetLinkOf, startModeOf } from "../auth/startMode";
 import { PolicyProvider } from "../policy/PolicyContext";
 import { AnnouncementsProvider } from "../policy/Announcements";
 import { productName } from "../web/document-title";
 import { parseWebRoute } from "../web/routes";
-import { WebBoot } from "../boot/BootShell";
+import { BootShell, WebBoot } from "../boot/BootShell";
 import { BootErrorPage, FramelessControls } from "../boot/BootErrorPage";
 import { PageErrorBanner } from "./PageBoundary";
 import { writeBootHints } from "../boot/boot-hints";
@@ -29,13 +30,16 @@ import { lazyPiece } from "../ui/lazy-piece";
 import { Toaster } from "../ui/Toaster";
 
 const web = surface === "web";
+const officialDesktopSignIn = surface === "desktop" && typeof location !== "undefined" &&
+  new URLSearchParams(location.search).get("official-sign-in") === "1";
 
 /**
- * The signed-out pages and their stylesheet load on demand: a signed-in start
- * never fetches them, which keeps them out of the web app's first-load budget
- * (scripts/check-web-bundle.mjs).
+ * The signed-out pages and their stylesheet load on demand (package LOGIN):
+ * a signed-in start never fetches them, which keeps them out of the web
+ * app's first-load budget (scripts/check-web-bundle.mjs).
  */
 const SignInPage = lazyPiece(() => import("../auth/SignInPage"));
+const LocalProviderSetup = lazyPiece(() => import("../auth/LocalProviderSetup"), "LocalProviderSetup");
 
 /** The web app's sign-in page title (W-UI-design §6.2). */
 export const signInTitle = `Sign in - ${productName}`;
@@ -45,12 +49,13 @@ const ResetPasswordPage = lazyPiece(
   "ResetPasswordPage",
 );
 /**
- * A rendering error anywhere in the window: the original's page boundary for a
- * page that cannot render, its danger banner "Something went wrong loading this
- * page." with Reload. It is in the first-load bundle, so it shows even when
- * nothing more can be fetched (offline, or a deploy removed the scripts this
- * page names); the signed-out pages' error page loaded on demand and left a
- * blank window then.
+ * A rendering error anywhere in the window: the original's page boundary
+ * for a page that cannot render (live claude.ai bundle, 2026-10-12), its
+ * danger banner "Something went wrong loading this page." with Reload. It
+ * is in the first-load bundle, so it shows even when nothing more can be
+ * fetched (offline, or a deploy removed the scripts this page names); the
+ * signed-out pages' error page loaded on demand and left a blank window
+ * then.
  */
 class WindowBoundary extends Component<
   { children: ReactNode },
@@ -78,23 +83,39 @@ class WindowBoundary extends Component<
   }
 }
 
-export function AuthGate() {
+export type AuthenticatedAppProps = ComponentProps<typeof App>;
+export type AuthGateProps = {
+  renderApp: (props: AuthenticatedAppProps) => ReactNode;
+  startWithPendingPolicy?: boolean;
+  subscribeAccountSwitch?: (listener: () => void) => () => void;
+};
+export function AuthGate(props: AuthGateProps) {
   return (
     <WindowBoundary>
-      <Gate />
+      <Gate {...props} />
     </WindowBoundary>
   );
 }
 
-function Gate() {
+function Gate({ renderApp: RenderApp, startWithPendingPolicy, subscribeAccountSwitch }: AuthGateProps) {
   const [status, setStatus] = useState<AuthStatus>();
   // Why the account could not be read; the boot error page says so.
   const [error, setError] = useState<{ reason: unknown }>();
   // Remounts the form after sign-out so it starts from the new status.
   const [formKey, setFormKey] = useState(0);
+  const [accountMount, setAccountMount] = useState(0);
   // Why the service ended the session, shown on the sign-in card until the next sign-in.
   const [notice, setNotice] = useState<SignedOutNotice>();
   const cancelLoad = useRef<(() => void) | undefined>(undefined);
+  // Account-specific addresses belong to the account that opened them.
+  const lastAccount = useRef<string | undefined>(undefined);
+  if (status?.account) lastAccount.current = status.account.id;
+  function leavePreviousAccountRoute(accountId: string) {
+    if (!web || !lastAccount.current || accountId === lastAccount.current) return;
+    const kind = parseWebRoute(location.pathname, location.search).kind;
+    if (kind === "chat" || kind === "code-chat" || kind === "project")
+      history.replaceState(null, "", "/new");
+  }
   function load() {
     cancelLoad.current?.();
     let live = true;
@@ -105,6 +126,7 @@ function Gate() {
         if (live) {
           configureHelpOrigin(value.serviceOrigin);
           if (web) writeBootHints({ signedIn: Boolean(value.account) });
+          if (value.account) leavePreviousAccountRoute(value.account.id);
           setStatus(value);
           setFormKey((key) => key + 1);
         }
@@ -117,23 +139,34 @@ function Gate() {
     };
     return cancelLoad.current;
   }
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const unsubscribe = subscribeAccountSwitch?.(() => {
+      setStatus(undefined);
+      setNotice(undefined);
+      setAccountMount((mount) => mount + 1);
+      load();
+    });
+    return () => {
+      unsubscribe?.();
+      cancelLoad.current?.();
+    };
+  }, [subscribeAccountSwitch]);
   // The main process ended this device's session (all devices signed out,
   // this device removed, or the session expired): back to the sign-in card.
   useEffect(
     () =>
       window.desktop.onEvent?.((event) => {
         if (event.type !== "signed-out") return;
+        // Revoke the mounted account immediately; a delayed/failed refresh
+        // must never leave its old application visible.
+        setStatus(undefined);
         setNotice(signedOutNotice(event));
         load();
       }),
     [],
   );
   const signedIn = Boolean(status?.account);
-  // The account signed in last on this page: someone else signing in does not
-  // open its conversation or project address.
-  const lastAccount = useRef<string | undefined>(undefined);
-  if (status?.account) lastAccount.current = status.account.id;
   // The emailed reset link, kept while its page shows: signed in (maybe as
   // someone else) the link still sets the new password before the app shows.
   const [resetLink, setResetLink] = useState(() =>
@@ -182,28 +215,31 @@ function Gate() {
         />
       </Suspense>
     );
+  if (officialDesktopSignIn && signedIn) return <BootShell native />;
   if (status?.account) {
-    // Signing out forgets the account's unsent drafts and its choices kept on
-    // this device.
+    // Signing out forgets the account's unsent drafts and its choices kept
+    // on this device (forget-account-data.ts).
     const signOut = async () => {
       const next = await window.desktop.logoutAccount();
-      forgetAccountDrafts(status.account!.id);
-      forgetAccountLocalData();
+      if (!status.localSetup) {
+        forgetAccountDrafts(status.account!.id);
+        forgetAccountLocalData();
+      }
       signedOut(next);
     };
     return (
       <ProfileStepGate
-        key={status.account.id}
+        key={`${status.account.id}:${accountMount}`}
         accountId={status.account.id}
         email={status.account.email}
         remote={Boolean(status.account.remote)}
         onSignOut={signOut}
       >
-        <PolicyProvider key={status.account.id}>
+        <PolicyProvider key={status.account.id} startWithPending={startWithPendingPolicy}>
           <AnnouncementsProvider>
-            <App
+            <RenderApp
               accountId={status.account.id}
-              accountEmail={status.account.email}
+              accountEmail={status.localSetup ? undefined : status.account.email}
               accountPlan={status.account.plan}
               remoteAccount={Boolean(status.account.remote)}
               legacyArtifactOwner={Boolean(status.account.legacyArtifactOwner)}
@@ -225,9 +261,9 @@ function Gate() {
     );
   }
   // Keep the themed background until authentication has resolved.
-  if (web && !status && !error) return <WebBoot />;
-  // The account could not be read: the original's boot error page, Log out
-  // included while the service is down.
+  if (!status && !error) return web ? <WebBoot /> : <BootShell native />;
+  // The account could not be read: the original's boot error page (live
+  // claude.ai bundle, 2026-10-12), Log out included while the service is down.
   if (!status && error)
     return (
       <BootErrorPage
@@ -241,6 +277,12 @@ function Gate() {
         }
       />
     );
+  if (status?.localSetup)
+    return (
+      <Suspense fallback={<BootShell native />}>
+        <LocalProviderSetup theme={status.localSetupTheme} onConnected={setStatus} />
+      </Suspense>
+    );
   return (
     <>
       <Toaster />
@@ -248,7 +290,9 @@ function Gate() {
         <SignInPage
           key={formKey}
           status={status}
-          notice={notice}
+          notice={notice ?? (status?.signedOutReason
+            ? signedOutNotice({ reason: status.signedOutReason })
+            : undefined)}
           startMode={
             web ? startModeOf(location.pathname, location.search) : undefined
           }
@@ -259,14 +303,7 @@ function Gate() {
           }
           onSignedIn={(account) => {
             if (web) writeBootHints({ signedIn: true });
-            const kind = parseWebRoute(location.pathname, location.search).kind;
-            if (
-              web &&
-              lastAccount.current &&
-              lastAccount.current !== account.id &&
-              (kind === "chat" || kind === "code-chat" || kind === "project")
-            )
-              history.replaceState(null, "", "/new");
+            leavePreviousAccountRoute(account.id);
             setNotice(undefined);
             if (status) setStatus({ ...status, account });
           }}

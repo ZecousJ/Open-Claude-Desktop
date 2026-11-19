@@ -31,7 +31,10 @@ export interface SideChatState {
   context?: string;
 }
 
-/** How much of a selected passage a side chat takes along. */
+/**
+ * How much of a selected passage a side chat takes along (desktop bundle
+ * 2.31226.1: the selection is cut to 1500 characters before it is staged).
+ */
 export const sideChatContextLimit = 1500;
 
 /**
@@ -216,8 +219,9 @@ export function applySideChatText(
 }
 
 /**
- * Stop: the engine ends the answer where it is. What was written stays as the
- * answer; a question stopped before any text goes back into the field.
+ * Stop (the Code side chat's, desktop bundle 2.31226.1): the engine ends the
+ * answer where it is. What was written stays as the answer; a question
+ * stopped before any text goes back into the field.
  */
 export async function stopSideChat(id: string) {
   const state = states.get(id);

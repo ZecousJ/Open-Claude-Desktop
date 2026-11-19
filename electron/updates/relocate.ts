@@ -1,10 +1,11 @@
 /**
- * Moving a misnamed Claudex bundle into place: a copy that starts under
- * another name (an installer that kept its own, say) renames the bundle to
- * Claudex.app in the same folder
- * (replacing an older Claudex.app, or giving way to a newer one) and relaunches
- * from the new path. When the folder can't be changed Claudex keeps running
- * where it is and shows nothing. No Electron imports.
+ * Moving a misnamed Claudex bundle into place (package OTA, macOS only).
+ * ZecousAI's updater installs the first .app of our zip under its own name,
+ * /Applications/ZecousAI.app; the first start from there renames the bundle
+ * to Claudex.app in the same folder (replacing an older Claudex.app, or
+ * giving way to a newer one) and relaunches from the new path. When the
+ * folder can't be changed Claudex keeps running where it is and shows
+ * nothing. No Electron imports.
  */
 import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";

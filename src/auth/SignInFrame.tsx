@@ -90,10 +90,11 @@ function FrameHeader() {
 const frameClass = `signin${web ? " signin-web" : " signin-desktop"}${mac ? " signin-mac" : ""}`;
 
 /*
- * Motion, from claude.ai's own: the page rises in as its mobile menu's items do
- * (navbar-mobile-item-enter: 20px, 300ms, cubic-bezier(.22, 1, .36, 1), 40ms
- * apart; sign-in.css); a new step's heading and card content as a transcript
- * step does (cvc-tool-step-enter: 6px, --cds-dur-base 200ms, --cds-ease-out).
+ * Motion, from claude.ai's own (live page, 2026-10-02): the page rises in
+ * as its mobile menu's items do (navbar-mobile-item-enter: 20px, 300ms,
+ * cubic-bezier(.22, 1, .36, 1), 40ms apart; sign-in.css); a new step's
+ * heading and card content as a transcript step does (cvc-tool-step-enter:
+ * 6px, --cds-dur-base 200ms, --cds-ease-out).
  */
 const STEP_ENTER: Keyframe[] = [
   { opacity: 0, transform: "translateY(6px)" },
@@ -120,7 +121,7 @@ export function SignInFrame({
   step,
 }: {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   children: ReactNode;
   /** A line between the heading and the card. */
   lead?: ReactNode;
@@ -152,8 +153,8 @@ export function SignInFrame({
     <main className={frameClass}>
       <FrameHeader />
       <div className="signin-body" ref={body}>
-        {/* The web's hero, or the desktop's short heading: its subtitle only on
-           a state page. */}
+        {/* The web's hero, or the desktop's short heading (live claude.ai
+            bundle, 2026-10-12): its subtitle only on a state page. */}
         {title && <h1 className="signin-title">{title}</h1>}
         {subtitle && <p className="signin-subtitle">{subtitle}</p>}
         {lead}
@@ -165,9 +166,9 @@ export function SignInFrame({
 }
 
 /**
- * The desktop's welcome screen: the app icon, "Claudex for Mac" with an italic
- * "for", one line under it, and "Get started" at the bottom of the window,
- * which opens the sign-in card.
+ * The desktop's welcome screen (live claude.ai bundle, 2026-10-12): the app
+ * icon, "Claudex for Mac" with an italic "for", one line under it, and
+ * "Get started" at the bottom of the window, which opens the sign-in card.
  */
 export function Welcome({ onNext }: { onNext: () => void }) {
   const t = useT();
@@ -288,6 +289,7 @@ export function StateCard({
   );
 }
 
+// (live claude.ai bundle, 2026-10-14, c029a409d-B6xY2mgY.js)
 export function SignInFallback() {
   const t = useT();
   const [before, after] = t(signInFailed).split("{emailSupport}");
@@ -312,7 +314,10 @@ export function SignInFallback() {
   );
 }
 
-/** "Last used" beside the method this computer signed in with last time. */
+/**
+ * "Last used" beside the method this computer signed in with last time
+ * (live claude.ai bundle, 2026-10-14, c19e49841 Ie: a tooltip on its left).
+ */
 export function LastUsed({
   method,
   last,

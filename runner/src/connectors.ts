@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import https from "node:https";
 import { Readable } from "node:stream";
-import { normalizeHost, type NetPolicy } from "./net-policy";
+import { normalizeHost, ownAddresses, type NetPolicy } from "./net-policy";
 import {
   compilePolicy,
   denyMessage,
@@ -12,13 +12,18 @@ import {
   type Resolver,
 } from "./net-policy-compile";
 
-export function connectorFetch(
-  policy: NetPolicy,
-  guard = connectorUrlGuard(policy),
-): typeof fetch {
-  const lookup = publicLookup(
-    compilePolicy({ ...policy, level: "full", ports: [443] }),
-  );
+function connectorPolicies(policy: NetPolicy) {
+  const own = ownAddresses();
+  const base = { ...policy, ports: policy.ports ?? [443] };
+  const publicPolicy = compilePolicy({ ...base, level: policy.level === "none" ? "none" : "full" }, own);
+  const namedPolicy = compilePolicy({ ...base, level: policy.level === "none" ? "none" : "custom", trustedDomains: [] }, own);
+  const explicitlyNamed = new Set((policy.customDomains ?? []).map(normalizeHost));
+  return (host: string) => explicitlyNamed.has(normalizeHost(host)) ? namedPolicy : publicPolicy;
+}
+
+export function connectorFetch(policy: NetPolicy): typeof fetch {
+  const guard = connectorUrlGuard(policy);
+  const policyFor = connectorPolicies(policy);
   return (async (input, init) => {
     const url = new URL(
       typeof input === "string"
@@ -34,7 +39,7 @@ export function connectorFetch(
         {
           method: init?.method ?? "GET",
           headers: Object.fromEntries(new Headers(init?.headers).entries()),
-          lookup,
+          lookup: publicLookup(policyFor(url.hostname)),
           signal: init?.signal ?? undefined,
           agent: false,
         },
@@ -68,6 +73,15 @@ export function connectorFetch(
   }) as typeof fetch;
 }
 
+export class ConnectorAddressError extends Error {
+  constructor(
+    readonly reason: "denied" | "unresolved",
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 /**
  * Whether the runner may call a connector's address: https, on a name and to
  * addresses the sandbox's egress proxy would let through at its most open
@@ -79,25 +93,38 @@ export function connectorUrlGuard(
   policy: NetPolicy,
   resolver: Resolver = systemResolver,
 ) {
-  const open = compilePolicy({ ...policy, level: "full", ports: [443] });
+  const policyFor = connectorPolicies(policy);
   return async (address: string) => {
     let url: URL;
     try {
       url = new URL(address);
     } catch {
-      throw new Error(
+      throw new ConnectorAddressError(
+        "denied",
         "Enter the server's full address, starting with https://.",
       );
     }
     if (url.protocol !== "https:" || url.username || url.password)
-      throw new Error("The address must start with https://.");
+      throw new ConnectorAddressError(
+        "denied",
+        "The address must start with https://.",
+      );
     if (url.port && url.port !== "443")
-      throw new Error("Connectors must use the standard https port.");
+      throw new ConnectorAddressError(
+        "denied",
+        "Connectors must use the standard https port.",
+      );
     const host = normalizeHost(url.hostname);
-    if (!host) throw new Error("That isn't a usable server name.");
+    if (!host)
+      throw new ConnectorAddressError(
+        "denied",
+        "That isn't a usable server name.",
+      );
+    const open = policyFor(host);
     const named = open.checkHost(host, 443);
     if (!named.ok)
-      throw new Error(
+      throw new ConnectorAddressError(
+        "denied",
         denyMessage(named.reason, host, 443).replace(
           / is a private.*/,
           " can't be reached from Claudex.",
@@ -105,7 +132,8 @@ export function connectorUrlGuard(
       );
     const found = await resolveAllowed(open, named.host ?? host, resolver);
     if (!found.ok)
-      throw new Error(
+      throw new ConnectorAddressError(
+        found.reason === "unresolved" ? "unresolved" : "denied",
         found.reason === "unresolved"
           ? `${host} could not be found.`
           : `${host} can't be reached from Claudex.`,

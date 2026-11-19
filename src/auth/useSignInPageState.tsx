@@ -183,7 +183,7 @@ export function useSignInPageState(kit: UseSignInPageStateKit) {
     setCountdown(countdown || 60);
   }
   useEffect(() => {
-    // .
+    // (live claude.ai bundle, 2026-10-14, c7fe425d4-CifY-P9J.js: Nt, At).
     let channel: BroadcastChannel | undefined;
     async function complete(link: EmailLink) {
       const request = linkRequest.current;

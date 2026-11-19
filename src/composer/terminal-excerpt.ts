@@ -34,7 +34,10 @@ export async function attachTerminalSelection(
   draft.focus();
 }
 
-/** The longest an excerpt card's name runs. */
+/**
+ * The longest an excerpt card's name runs (live claude.ai bundle, 2026-10-13,
+ * c63275c0a Bg: 60 characters).
+ */
 const excerptLabelLimit = 60;
 
 /**

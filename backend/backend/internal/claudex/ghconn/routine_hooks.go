@@ -237,7 +237,7 @@ func signedBy(secret string, body []byte, header string) bool {
 		return false
 	}
 	mac := hmac.New(sha256.New, []byte(secret))
-	_, _ = mac.Write(body)
+	mac.Write(body)
 	want := hex.EncodeToString(mac.Sum(nil))
 	return hmac.Equal([]byte(got), []byte(want))
 }

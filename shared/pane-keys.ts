@@ -1,20 +1,23 @@
 /**
  * The Code pane shortcuts, one table for both sides: the window's key table
- * (src/host/keys.ts) and the built-in browser's pages, whose keys never reach
- * the window while a page has the focus (electron/browser/index.ts forwards
- * them).
+ * (src/host/keys.ts) and the built-in browser's pages, whose keys never
+ * reach the window while a page has the focus (electron/browser/index.ts
+ * forwards them).
  *
- * The keys are the original's: Terminal is ⌘J on macOS and Ctrl+` everywhere;
- * Changes ⇧⌘D; Browser ⇧⌘B; Side Chat ⌘;; Close Pane ⌘\; in the Browser, ⌘T a
- * new tab, ⌘L the address bar, Ctrl+Tab and Ctrl+Shift+Tab the next and
- * previous tab, ⌘1 to ⌘9 a tab by number. ⇧⌘T reopens what was closed last (the
- * Browser's closed tab, else File ▸ Reopen Closed Session). ⇧⌘\ expands or
- * restores the focused pane and ⇧⌘S starts Select element in the Browser. ⇧⌘X
- * sketches on the Browser's page (toggleSketchMode).
+ * The keys are the original's (source: desktop bundle 2.31226.1, the View
+ * menu and the session shortcut table): Terminal is ⌘J on macOS and Ctrl+`
+ * everywhere; Changes ⇧⌘D; Browser ⇧⌘B; Side Chat ⌘;; Close Pane ⌘\; in the
+ * Browser, ⌘T a new tab, ⌘L the address bar, Ctrl+Tab and Ctrl+Shift+Tab the next and
+ * previous tab, ⌘1 to ⌘9 a tab by number. ⇧⌘T reopens what was closed last
+ * (the Browser's closed tab, else File ▸ Reopen Closed Session). ⇧⌘\
+ * expands or restores the focused pane and ⇧⌘S starts Select element in
+ * the Browser (live claude.ai bundle, 2026-10-12: toggleExpandPane,
+ * toggleSelectionMode). ⇧⌘X sketches on the Browser's page
+ * (toggleSketchMode).
  *
- * Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 are the window's Next chat, Previous
- * chat and Jump to chat; they act on the Browser's tabs only while the focus is
- * in the Browser (src/app/session-cycle.ts chatKeyOwner).
+ * Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 are the window's Next chat,
+ * Previous chat and Jump to chat; they act on the Browser's tabs only while
+ * the focus is in the Browser (src/app/session-cycle.ts chatKeyOwner).
  */
 import type { AppCommand } from "./types";
 
@@ -56,13 +59,14 @@ export const paneKeys: readonly PaneKey[] = Object.freeze([
   key("toggle-browser", "b", true),
   key("toggle-files", "f", true),
   // The app's second Browser key, ⇧⌘P (Ctrl+Shift+P elsewhere); the menu and
-  // tooltips keep showing ⇧⌘B.
+  // tooltips keep showing ⇧⌘B (live claude.ai bundle, 2026-10-12).
   key("toggle-browser", "p", true),
   key("toggle-side-chat", ";"),
   key("close-pane", "\\"),
   key("toggle-expand-pane", "\\", true),
   key("browser-select-element", "s", true),
-  // ⇧⌘X: sketch on the Browser's page.
+  // ⇧⌘X: sketch on the Browser's page (live claude.ai bundle, 2026-10-12:
+  // toggleSketchMode, the desktop app only).
   key("browser-sketch", "x", true),
   key("new-browser-tab", "t"),
   key("reopen-closed-session", "t", true),
@@ -114,7 +118,9 @@ export function paneKeyCommand(
 }
 
 /**
- * F5 without modifiers: "Reload page in Browser" outside macOS, beside Ctrl+R.
+ * F5 without modifiers: "Reload page in Browser" outside macOS, beside
+ * Ctrl+R (live claude.ai bundle, 2026-10-12: the shortcuts list shows
+ * ["f5", "ctrl+r"] there and ⌘R on macOS, which View ▸ Reload carries).
  */
 export function pageReloadKey(press: PanePress) {
   const meta = press.metaKey ?? press.meta ?? false;

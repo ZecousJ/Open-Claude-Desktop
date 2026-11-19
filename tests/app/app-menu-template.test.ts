@@ -121,7 +121,7 @@ test("Find in Files follows the session report and dispatches a live command", (
   }
 });
 
-test("the shared Terminal accelerator and Enter/Exit Full Screen match the original", () => {
+test("the shared Terminal accelerator and Enter/Exit Full Screen match the desktop bundle", () => {
   for (const mac of [true, false]) {
     for (const fullScreen of [true, false]) {
       const view = top(

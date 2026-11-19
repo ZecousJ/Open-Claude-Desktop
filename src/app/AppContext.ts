@@ -144,7 +144,7 @@ export interface AppController {
   setAttachments: Setter<Attachment[]>;
   draftWebSearch: boolean;
   setDraftWebSearch: Setter<boolean>;
-  /** The new conversation's composer options. */
+  /** The new conversation's composer options (WP4b's useComposerDraft; it may add fields). */
   composerDraft: ReturnType<typeof useComposerDraft>;
   cwd?: string;
   setCwd: Setter<string | undefined>;
@@ -182,7 +182,7 @@ export interface AppController {
   activeTerminals: BackgroundTerminalInfo[];
   panel: SidePanel | null;
   setPanel: Setter<SidePanel | null>;
-  /** The tool panels' state. */
+  /** The tool panels' state (WP5b's useToolPanels; it may add fields). */
   toolPanels: ReturnType<typeof useToolPanels>;
   dismissPlan: (conversationId: string) => void;
   artifact?: Artifact;
@@ -214,7 +214,7 @@ export interface AppController {
   setProjectAssignee: Setter<string | undefined>;
   releaseNotes: boolean;
   setReleaseNotes: Setter<boolean>;
-  /** The current release notes have been opened. */
+  /** The current release notes have been opened (R-0008). */
   notesSeen: boolean;
   openReleaseNotes: () => void;
   editSidebar: boolean;

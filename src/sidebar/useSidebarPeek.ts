@@ -62,8 +62,9 @@ export function useSidebarPeek(
   const openRef = useRef(false);
   openRef.current = open;
   const toggle = useRef<HTMLElement | null>(null);
-  // Closed from the toggle under the pointer: hovering it again does not reopen
-  // the card until the pointer has left it.
+  // Closed from the toggle under the pointer: hovering it again does not
+  // reopen the card until the pointer has left it (live claude.ai bundle,
+  // 2026-10-12: peekSuppressedUntilLeave).
   const suppressed = useRef(false);
   const changed = useRef(onOpenChange);
   changed.current = onOpenChange;
@@ -165,7 +166,8 @@ export function useSidebarPeek(
       hide();
     };
     // A touch or pen press outside the card and its owners closes it, as
-    // nothing hovers there to.
+    // nothing hovers there to (live claude.ai bundle, 2026-10-12: the peek's
+    // outside press, which a menu opened from the card holds off).
     const press = (event: PointerEvent) => {
       if (event.pointerType === "mouse" || !openRef.current || menuOpen())
         return;

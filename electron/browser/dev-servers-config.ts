@@ -281,6 +281,7 @@ export async function save(
   this: DevServers,
   conversationId: string,
   config: LaunchConfiguration,
+  addOnly = false,
 ) {
   const current = this.readConfig(conversationId);
   if (!current.folder) throw new Error(current.folderError);
@@ -294,11 +295,22 @@ export async function save(
         `${current.result.error} Fix the file before adding a server.`,
       );
   }
+  if (
+    addOnly &&
+    (current.result.raw ?? current.result.configurations).some(
+      (entry) =>
+        entry && typeof entry === "object" && "name" in entry &&
+        typeof entry.name === "string" &&
+        lower(entry.name.trim()) === lower(config.name.trim()),
+    )
+  )
+    return false;
   this.writeConfig(
     conversationId,
     folder,
     upsertLaunchConfig(current.result, config),
   );
+  return true;
 }
 
 /** Saves the project's Auto-verify choice in `.claude/launch.json`. */

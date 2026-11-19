@@ -42,9 +42,9 @@ test("project footer orders date, folder and Local with the full accessible labe
   assert.match(html, /class="sr-only">\/Users\/ada\/Garden<\/span>/);
   assert.match(html, /aria-hidden="true">Local<\/span>/);
   assert.match(html, /class="sr-only">Runs on this computer<\/span>/);
-  assert.equal((html.match(/<svg[^>]*width="16"/g) ?? []).length, 2);
-  assert.match(html, /lucide-laptop/);
-  assert.match(html, /lucide-folder/);
+  assert.equal((html.match(/viewBox="0 0 16 16"/g) ?? []).length, 2);
+  assert.match(html, /d="m4.4 3.03h7.2/);
+  assert.match(html, /d="m4.4 5.77q/);
   assert.doesNotMatch(html, /title=/);
 });
 

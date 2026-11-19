@@ -10,7 +10,7 @@ import type { ChatDeviceDirectory } from "../../shared/chat-devices-api";
 import { chatDeviceUnavailable } from "../../shared/chat-devices-api";
 import type { DeviceInfo } from "../../shared/remote-devices";
 import { AppContext } from "../app/AppContext";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { t } from "../i18n";
 import { preference } from "../../shared/settings-extras";
 import { useAddMenuResource } from "./useAddMenuResource";
@@ -237,7 +237,7 @@ export function ChatDeviceMenu({
             }
             onClick={() => void choose(device)}
           >
-            <AppIcon name="Computer" size={20} />
+            <Anthropicon name="Computer" size={20} />
             <span className="composer-device-name">
               <span data-no-translate>{device.name}</span>
               {subtitle && <small>{subtitle}</small>}
@@ -247,7 +247,9 @@ export function ChatDeviceMenu({
                 <small>{t("Default")}</small>
               )}
               <span className="composer-device-check" aria-hidden="true">
-                {selected === device.id && <AppIcon name="Check" size={20} />}
+                {selected === device.id && (
+                  <Anthropicon name="Check" size={20} />
+                )}
               </span>
             </span>
           </button>
@@ -265,7 +267,7 @@ export function ChatDeviceMenu({
       )}
       <div className="composer-add-separator" role="separator" />
       <button role="menuitem" onClick={onSettings}>
-        <AppIcon name="Settings" size={20} />
+        <Anthropicon name="Settings" size={20} />
         <span>{t("Manage computers")}</span>
       </button>
     </>

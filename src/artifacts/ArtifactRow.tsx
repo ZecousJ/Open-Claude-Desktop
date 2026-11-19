@@ -79,8 +79,8 @@ export function ArtifactRow({
       className="artifacts-row"
       role="listitem"
       onContextMenu={(event) => {
-        // The whole row opens its menu at the pointer; not a menu or dialog
-        // portaled out of it.
+        // The whole row opens its menu at the pointer (desktop bundle
+        // 2.31226.1); not a menu or dialog portaled out of it.
         if (!event.currentTarget.contains(event.target as Node)) return;
         event.preventDefault();
         setMenu({ left: event.clientX, top: event.clientY });
@@ -162,7 +162,7 @@ export function ArtifactRow({
   );
 }
 
-/** The type filter: every type with how many artifacts it has. */
+/** The type filter: every type with how many artifacts it has (R-Artifacts-类型筛选). */
 export function TypeMenu({
   type,
   counts,

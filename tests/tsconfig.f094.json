@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.f090.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../shared/activity.ts",
+    "../shared/thinking-summaries.ts",
+    "../shared/code-thinking-preferences.ts",
+    "../electron/ipc/code-thinking-preferences.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "../electron/official-ui/native/code-transcript.ts",
+    "official-ui-code-thinking-preference.test.ts",
+    "official-ui-code-thinking-original.test.ts",
+    "official-ui-code-transcript.test.ts",
+    "thinking-summary-policy.test.ts",
+    "code-thinking-preferences.test.ts",
+    "reasoning-summary-events.test.ts",
+    "engine/native-thinking-summary-chain.test.ts"
+  ]
+}

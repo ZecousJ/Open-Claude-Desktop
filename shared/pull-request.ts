@@ -1,14 +1,15 @@
 /**
- * Pull requests of a Code session. The row's Create PR does not call GitHub
- * itself: for a session that works in a folder it sends Claude a prompt wrapped
- * in `<create-pr-command>` (shown in the transcript as `/create-pr`), and
- * Claude commits, pushes and opens the pull request, then names its address in
- * a `<pr-created>` tag. The row binds to that address and reads the request's
- * state from GitHub (shared/github-api.ts).
+ * Pull requests of a Code session (desktop bundle 2.31226.1, the branch row
+ * above the composer). The row's Create PR does not call GitHub itself: for
+ * a session that works in a folder it sends Claude a prompt wrapped in
+ * `<create-pr-command>` (shown in the transcript as `/create-pr`), and
+ * Claude commits, pushes and opens the pull request, then names its address
+ * in a `<pr-created>` tag. The row binds to that address and reads the
+ * request's state from GitHub (shared/github-api.ts).
  *
- * These are pure helpers shared by the window and the main process: the prompts
- * and finding the pull request a session made. How the transcript shows them is
- * shared/pr-display.ts.
+ * These are pure helpers shared by the window and the main process: the
+ * prompts and finding the pull request a session made. How the transcript
+ * shows them is shared/pr-display.ts.
  */
 import type { Conversation } from "./types";
 
@@ -51,7 +52,7 @@ const cloudReadyStep =
 const cloudDraftStep =
   "Open the PR with the github create_pull_request tool, with `draft` true: the user chose “Create draft PR” for this request, so keep it a draft.";
 
-/** The message Create PR sends. */
+/** The message Create PR sends (desktop bundle 2.31226.1, `<create-pr-command>`). */
 export function createPrPrompt(target: CreatePrTarget) {
   const kind = target.draft ? "as a draft" : "ready for review (not a draft)";
   const open = target.cloud

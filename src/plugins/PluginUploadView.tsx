@@ -1,4 +1,4 @@
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import {
   pluginTrustWarning,
   pluginArchiveTypes,
@@ -87,7 +87,7 @@ export function pluginUploadView(kit: PluginUploadViewKit) {
             : "Add a plugin to your workspace from a .zip or .plugin archive."}
         </p>
         <div className="plugin-upload-warning" role="note">
-          <AppIcon name="Warning" size={16} />
+          <Anthropicon name="Warning" size={16} />
           <span>{pluginTrustWarning}</span>
         </div>
         <UploadPageGroup

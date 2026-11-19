@@ -39,8 +39,9 @@ export const connectorFilterActive = (filter: ConnectorFilter) =>
   Boolean(filter.topic) || filter.type !== "all";
 
 /**
- * The directory's filter menu: All categories, Topic › with each topic's count,
- * then Type (All, New, Verified, Community) with counts.
+ * The directory's filter menu (R-1591, R-1592): All categories, Topic ›
+ * with each topic's count, then Type (All, New, Verified, Community) with
+ * counts (live claude.ai bundle, 2026-10-14, c8963aace-By1XAsKL.js).
  */
 export function ConnectorFilterButton({
   filter,
@@ -144,7 +145,7 @@ type ConnectorActions = {
   canConnect?: (entry: CatalogueConnector) => boolean;
 };
 
-/** Directory actions. */
+/** Directory actions (live claude.ai bundle, 2026-10-14, c86c18ff2-DZs4-mW1.js). */
 export function ConnectorCards({
   entries,
   onLinear,
@@ -255,7 +256,7 @@ export function ConnectorCards({
   );
 }
 
-/** Discover's front: Top connectors with its count and Show all. */
+/** Discover's front (R-1380): Top connectors with its count and Show all. */
 export function ConnectorDiscover({
   filter,
   onLinear,
@@ -399,7 +400,11 @@ export function connectorShelves(entries: CatalogueConnector[]) {
   ].filter((shelf) => shelf.entries.length > 0);
 }
 
-/** No entries for the filters: the magnifier, the line and Reset. */
+/**
+ * No entries for the filters (R-1381): the magnifier (lens 43px, a 12×45
+ * handle at 47°, traced from the 4x zoom of the 1x capture), the line and
+ * Reset.
+ */
 export function NothingMatches({
   onReset,
   message = "No connectors match your filters",

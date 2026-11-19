@@ -1,6 +1,6 @@
 import { api } from "../desktop-api";
 import type { AppController } from "../app/AppContext";
-import { parseReviewArguments } from "./review-target";
+import { parseReviewArguments } from "../../shared/code-review-target";
 
 /**
  * /review: Codex reviews the open session's changes (`review/start`). The

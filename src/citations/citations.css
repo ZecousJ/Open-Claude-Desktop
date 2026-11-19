@@ -1,8 +1,8 @@
-/* Inline citations and their hover card. Pill: 18 tall on the page's lightest
-   surface with a hairline, 6px sides, full radius, 12/17 secondary text, up to
-   180px. Card: 337 wide with 16px padding and 12px corners; each source a link
-   with 6px 8px padding and 6px corners, its title 14/20 medium over the site's
-   icon and name at 12/17. */
+/* Inline citations and their hover card (live claude.ai, 2026-09-30, light).
+   Pill: 18 tall on the page's lightest surface with a hairline, 6px sides,
+   full radius, 12/17 secondary text, up to 180px. Card: 337 wide with 16px
+   padding and 12px corners; each source a link with 6px 8px padding and 6px
+   corners, its title 14/20 medium over the site's icon and name at 12/17. */
 .citation-chip {
   /* An inline block, not inline-flex: text-overflow only ends a block's
      own line in "…" (in a flex box the title was cut mid-letter). */
@@ -17,7 +17,8 @@
   background: var(--surface-hover);
   color: var(--text-secondary);
   font:
-    400 12px/18px -apple-system,
+    400 12px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   vertical-align: 1px;
@@ -43,7 +44,8 @@
   background: var(--surface-raised);
   color: var(--text);
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   box-shadow: var(--shadow);

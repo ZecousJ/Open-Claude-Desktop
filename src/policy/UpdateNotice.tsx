@@ -71,11 +71,13 @@ export function openUpdateDownload(onError: (error: unknown) => void) {
 /**
  * Update prompt above the account button. An update that is only available,
  * with a download page, is the sidebar's one-line update strip: "Update
- * available", a click opens the download page, nothing to dismiss. A required
- * update, or one without a page, keeps its card: it says why and what to do.
- * This is the download fallback when the automatic updater cannot install this
- * release: the main process opens the administrator's https download page. Not
- * shown on the web, which has nothing to install.
+ * available", a click opens the download page, nothing to dismiss (live
+ * claude.ai bundle, 2026-10-14, desktop 2.37337.1 shared-21 Ek/xk: the
+ * "available" variant opens the download link). A required update, or one
+ * without a page, keeps its card: it says why and what to do. This is the
+ * download fallback when the automatic updater cannot install this release:
+ * the main process opens the administrator's https download page. Not shown
+ * on the web, which has nothing to install.
  */
 export function UpdateNotice({
   update,

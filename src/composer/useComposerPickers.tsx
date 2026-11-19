@@ -1,6 +1,6 @@
 import { IconButton } from "../ui/Controls";
 import { codeLiveLayout } from "./code-live-layout";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { surface } from "../../shared/host";
 import { Plus } from "../ui/glyphs";
 import { MenuSheetScrim } from "./MenuSheetScrim";
@@ -8,6 +8,7 @@ import { Suspense, useEffect } from "react";
 import { CodeAddMenu, bashRefusal, CodeModelMenu, ModelMenu } from "./Composer";
 import { ChipPresence } from "./ChipPresence";
 import { ResearchChip } from "../research/ResearchChip";
+import { KnowledgeChip } from "../knowledge/KnowledgeControls";
 import { useTooltip } from "../ui/Tooltip";
 import { CodeModelTrigger } from "./CodeModelTrigger";
 import { t } from "../i18n";
@@ -31,6 +32,7 @@ import type { AppController } from "../app/AppContext";
 import type { ModelCatalog } from "../../shared/model-catalog-api";
 import type { ComposerField } from "./composer-field";
 import type { HostInfo } from "../../shared/host";
+import type { KnowledgeProps } from "../knowledge/knowledge-props";
 import type { PendingAttachment } from "./Attachments";
 import type { RetiredModel } from "./retired-model";
 import type { ReviewComment } from "../changes/review-comments";
@@ -70,6 +72,7 @@ export interface UseComposerPickersKit {
   incognito: boolean;
   incognitoControls: boolean;
   interrupt: () => Promise<void>;
+  knowledge: KnowledgeProps | undefined;
   mode: Mode;
   model: string;
   modelMenu: boolean;
@@ -140,6 +143,7 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
     incognito,
     incognitoControls,
     interrupt,
+    knowledge,
     mode,
     model,
     modelMenu,
@@ -205,9 +209,9 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
         }}
       >
         {mode !== "code" ? (
-          <AppIcon name="ComposerAdd" />
+          <Anthropicon name="ComposerAdd" />
         ) : surface === "web" ? (
-          <AppIcon name="Plus" />
+          <Anthropicon name="Plus" />
         ) : (
           <Plus size={17} />
         )}
@@ -218,6 +222,7 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
           (mode === "code" ? (
             <CodeAddMenu
               platform={platform}
+              knowledge={knowledge}
               canAddFolder={!active || sessionFoldersChoosable(active)}
               connectors={settings.mcpServers}
               onClose={() => setAddMenu(false)}
@@ -272,6 +277,7 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
               host={host}
               incognito={incognito}
               incognitoControls={incognitoControls}
+              knowledge={knowledge}
               mode={mode}
               notify={notify}
               onCreateProject={onCreateProject}
@@ -307,12 +313,26 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
       </Suspense>
     </div>
   );
-  // Research's chip sits right of "+" while it is on; it turns Research off, as
-  // the menu row does.
+  // Research's chip sits right of "+" while it is on (R-0285); it turns
+  // Research off, as the menu row does.
   const researchChip = (
     <ChipPresence>
       {mode === "chat" && research && onResearch && (
         <ResearchChip onClick={onResearch} disabled={running || sending} />
+      )}
+    </ChipPresence>
+  );
+  // Knowledge bases on in this chat: a chip right of "+" that turns them off.
+  const knowledgeOn = knowledge
+    ? knowledge.bases.filter((b) => knowledge.active.includes(b.id))
+    : [];
+  const knowledgeChip = (
+    <ChipPresence>
+      {knowledge && knowledgeOn.length > 0 && (
+        <KnowledgeChip
+          names={knowledgeOn.map((b) => b.name)}
+          onClick={() => knowledgeOn.forEach((b) => knowledge.onToggle(b.id))}
+        />
       )}
     </ChipPresence>
   );
@@ -473,8 +493,10 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
     reviewNotes.length ||
     (!active && mode === "code" && appContext?.composerDraft.draftLinearIssue),
   );
-  // A Chat or Cowork conversation's frame draws Stop and Send as plain glyphs:
-  // the reply composer's ghost Send with the return arrow.
+  // A Chat or Cowork conversation's frame draws Stop and Send as plain
+  // glyphs: the reply composer's ghost Send with the return arrow (live
+  // claude.ai bundle, 2026-10-12: every reply form, not only Chat's; owner's
+  // capture 2026-10-12-chat-conversation-composer.png).
   const plainGlyphs = mode !== "code" && Boolean(active);
   // Stop asked for: the button spins until the turn ends (the original's
   // "stopping" Stop), from the same mark as Code's "Stopping…" status line.
@@ -483,9 +505,10 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
     .reverse()
     .find((turn) => turn.status === "inProgress");
   const stopping = useTurnStopping(runningTurn?.id ?? "") && running;
-  // Esc stops a running reply, as the Stop button does. An Escape that
-  // something else used (a menu, a palette, a dialog, an input method's
-  // composition, dictation) is left to that.
+  // Esc stops a running reply, as the Stop button does (desktop bundle
+  // 2.31226.1: a keydown listener on the document, `escapeStops` on by
+  // default). An Escape that something else used (a menu, a palette, a
+  // dialog, an input method's composition, dictation) is left to that.
   useEffect(() => {
     if (!running || stopping) return;
     const listener = (event: KeyboardEvent) => {
@@ -519,7 +542,8 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
     interrupt,
     report,
   ]);
-  // The Code prompt names its buttons "Stop" and "Send".
+  // The Code prompt names its buttons "Stop" and "Send" (live claude.ai
+  // bundle, 2026-10-12: the Code prompt's trailing controls).
   const stopLabel = mode === "code" ? "Stop" : "Stop response";
   const chatStopFace = (tip: Record<string, unknown> = {}) => (
     <button
@@ -533,7 +557,7 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
       {stopping ? (
         <Spinner inheritColor size={plainGlyphs ? 20 : 14} className="spin" />
       ) : (
-        <AppIcon
+        <Anthropicon
           name={plainGlyphs ? "StopCircle" : "Stop"}
           size={plainGlyphs ? 20 : 14}
         />
@@ -548,6 +572,7 @@ export function useComposerPickers(kit: UseComposerPickersKit) {
     hasDraft,
     attachmentPicker,
     researchChip,
+    knowledgeChip,
     modelPicker,
     effortPicker,
   } as const;

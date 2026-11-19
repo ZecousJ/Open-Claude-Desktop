@@ -1,9 +1,9 @@
 /*
- * Import GitHub issue: a search box 12px above a list of up to half the
- * window's height. Rows are 12px apart inside, 12px wide of padding and 10px
- * high, 8px radius, 4px between rows; the pointer and the arrow keys tint a row
- * with the ghost fills. A note (loading, empty, failed) is italic muted text
- * with 12px/5px padding.
+ * Import GitHub issue (desktop bundle 2.31226.1): a search box 12px above a
+ * list of up to half the window's height. Rows are 12px apart inside, 12px
+ * wide of padding and 10px high, 8px radius, 4px between rows; the pointer
+ * and the arrow keys tint a row with the ghost fills. A note (loading, empty,
+ * failed) is italic muted text with 12px/5px padding.
  */
 .modal.import-issue {
   display: flex;

@@ -3,11 +3,13 @@ import assert from "node:assert/strict";
 import { createElement as h, createRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { parseHTML } from "linkedom";
+import { referenceFonts } from "../../electron/app/reference-fonts";
+import { loadReferenceFonts } from "../../src/boot/reference-fonts";
 import { ConversationTranscript } from "../../src/transcript/ConversationTranscript";
 import { preloadChatSteps } from "../../src/transcript/ChatTurnContent";
 import { preloadMarkdownRenderer } from "../../src/ui/MarkdownRenderer";
 import { preloadCodeTurnError } from "../../src/transcript/TurnOutcome";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import type { Conversation } from "../../shared/types";
 
 const normalFonts = ["Sans", "Serif"].map((family) => ({
@@ -44,6 +46,79 @@ function fontEnvironment(failItalic = false) {
     Face: MockFace as unknown as typeof FontFace,
   };
 }
+
+test("font startup consumes real local font bytes and registers both normal display families", async (context) => {
+  const fonts = referenceFonts();
+  if (!fonts.length) return context.skip("No local Claude font installation");
+  const env = fontEnvironment();
+  await loadReferenceFonts(async () => fonts, env.document, env.Face);
+  assert.equal(env.document.documentElement.dataset.referenceFonts, "true");
+  assert.equal(env.added.length, fonts.length);
+  for (const [index, face] of env.added.entries()) {
+    assert.equal(face.family, fonts[index].family);
+    assert.equal(face.descriptors.style, fonts[index].style);
+    assert.equal(face.descriptors.weight, "300 800");
+    assert.deepEqual(new Uint8Array(face.source), fonts[index].data);
+    assert.ok(
+      face.source.byteLength > 10_000,
+      "Actual font, not a path or family label",
+    );
+    assert.deepEqual(
+      [...new Uint8Array(face.source).slice(0, 4)],
+      [0, 1, 0, 0],
+    );
+  }
+});
+
+test("normal body fonts become available after loading even if an italic fails", async () => {
+  const env = fontEnvironment(true);
+  env.document.documentElement.dataset.chatFont = "system";
+  let resolve!: (fonts: Awaited<ReturnType<typeof referenceFonts>>) => void;
+  const loading = loadReferenceFonts(
+    () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+    env.document,
+    env.Face,
+  );
+  assert.equal(env.document.documentElement.dataset.referenceFonts, undefined);
+  assert.equal(env.added.length, 0);
+  resolve([...normalFonts, { ...normalFonts[1], style: "italic" }]);
+  await loading;
+  assert.deepEqual(
+    env.added.map((font) => font.family),
+    normalFonts.map((font) => font.family),
+  );
+  assert.equal(env.document.documentElement.dataset.referenceFonts, "true");
+  assert.equal(env.document.documentElement.dataset.chatFont, "system");
+});
+
+test("empty browser delivery, missing normal families and failed reads never advertise loaded display fonts", async () => {
+  const env = fontEnvironment();
+  for (const fonts of [
+    [],
+    [normalFonts[0]],
+    normalFonts.map((font) => ({ ...font, style: "italic" as const })),
+  ]) {
+    env.document.documentElement.dataset.referenceFonts = "true";
+    await loadReferenceFonts(async () => fonts, env.document, env.Face);
+    assert.equal(
+      env.document.documentElement.dataset.referenceFonts,
+      undefined,
+    );
+  }
+  await loadReferenceFonts(
+    async () => {
+      throw new Error("Installation unavailable");
+    },
+    env.document,
+    env.Face,
+  );
+  assert.equal(env.document.documentElement.dataset.referenceFonts, undefined);
+  await loadReferenceFonts(undefined, env.document, env.Face);
+  assert.equal(env.document.documentElement.dataset.referenceFonts, undefined);
+});
 
 before(async () => {
   await Promise.all([
@@ -108,7 +183,8 @@ test("a stored Cowork execution uses current Chat message presentation while ret
       .querySelector(".assistant-message .message-summary")
       ?.textContent?.startsWith("Claudex responded:"),
   );
-  // Merged into Chat, its reply has Chat's actions.
+  // Merged into Chat, its reply has Chat's actions (live claude.ai,
+  // 2026-10-20: Copy, Read aloud, the two ratings, Retry).
   assert.equal(
     current.querySelector('.message-actions button[aria-label="More options"]'),
     null,

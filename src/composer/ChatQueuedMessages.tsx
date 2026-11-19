@@ -21,23 +21,22 @@ import "./chat-queued-messages.css";
 
 /**
  * Chat and Cowork's messages written while a reply runs, in the composer's
- * dock: the reference design ChatComposerQueuedMessages. Each message is the
- * user's bubble aligned to the right, its text muted; resting the pointer on a
- * row (or focusing into it) shows Send now (↵), Edit in composer and Remove
- * from queue. They sit to the right of the bubble, past the composer's edge,
- * when the column has room for them there, else to its left. The list scrolls
- * past min(40vh, 22rem); screen readers hear how many wait.
+ * dock: the live claude.ai bundle's ChatComposerQueuedMessages (2026-10-12,
+ * `ccff1868a` and its rows `cdf347a37`). Each message is the user's bubble
+ * aligned to the right, its text muted; resting the pointer on a row (or
+ * focusing into it) shows Send now (↵), Edit in composer and Remove from
+ * queue. They sit to the right of the bubble, past the composer's edge,
+ * when the column has room for them there, else to its left. The list
+ * scrolls past min(40vh, 22rem); screen readers hear how many wait.
  *
  * A message the running turn already took (Claudex hands a message to it,
- * `turn/steer`) has no actions; it reads "✓ Sent" there until the model reads
- * it, as the Code bar does.
+ * `turn/steer`) has no actions; it reads "✓ Sent" there until the model
+ * reads it, as the Code bar does.
  */
 
 /** A message that leaves fades down 6px over --motion-snap. */
 const EXIT_MS = 120;
-/**
- * One action's share of the gutter beside the bubble, and the gutter's edge.
- */
+/** One action's share of the gutter beside the bubble, and the gutter's edge (live bundle: 32 and 8). */
 const ACTION_STEP = 32;
 const GUTTER_EDGE = 8;
 const gutterFor = (actions: number) =>
@@ -45,7 +44,7 @@ const gutterFor = (actions: number) =>
 
 export type Placement = "end" | "start" | "none";
 
-/** The screen reader's count. */
+/** The screen reader's count (live bundle strings). */
 export function queuedStatus(count: number) {
   if (count === 0) return "";
   return count === 1
@@ -94,10 +93,19 @@ function useRoomAtEnd(element: HTMLElement | null, room: number) {
   return fits;
 }
 
-/** A queued-bar glyph, 16px. */
+/** A glyph of the original's icon font, 16px. */
 function Glyph({ name }: { name: QueuedGlyphName }) {
-  const Icon = queuedGlyphs[name];
-  return <Icon size={16} strokeWidth={1.75} aria-hidden="true" />;
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d={queuedGlyphs[name]} />
+    </svg>
+  );
 }
 
 /** Keeps the composer focused when an action is pressed. */
@@ -246,8 +254,9 @@ function QueuedRow({
   if (body === null && !hasTiles) return null;
   const sent = entry.state === "steered";
   const busy = Boolean(entry.steering);
-  // Beside the bubble at the start, the actions sit inside the bubble's box (to
-  // its left); the row keeps room for them there.
+  // Beside the bubble at the start, the actions sit inside the bubble's
+  // box (to its left); the row keeps room for them there (live bundle:
+  // --cds-queued-reserve, yielding 15% of the row to a long message).
   const inside = placement === "start" && body !== null;
   const band =
     placement === "none" ? null : (

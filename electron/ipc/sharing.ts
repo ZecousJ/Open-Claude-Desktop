@@ -112,8 +112,9 @@ export function sharingError(error: unknown, kind?: ShareKind): Error {
 }
 
 /**
- * What a failed Report artifact says: the live viewer's two toasts, and reports
- * turned off by the administrator.
+ * What a failed Report artifact says: the live viewer's two toasts (too
+ * many reports, anything else; live claude.ai bundle, 2026-10-12), and
+ * reports turned off by the administrator.
  */
 export function artifactReportError(error: unknown): Error {
   if (error instanceof Sub2ApiError) {
@@ -145,8 +146,9 @@ export interface ArtifactEmbedsService {
 }
 
 /**
- * What a failed Allowed domains save says: the live dialog's own message for
- * the domains the service refused, otherwise what any sharing failure says.
+ * What a failed Allowed domains save says: the live dialog's own message
+ * for the domains the service refused (live claude.ai bundle, 2026-10-12),
+ * otherwise what any sharing failure says.
  */
 export function embedDomainsError(error: unknown): Error {
   if (

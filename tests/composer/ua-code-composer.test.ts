@@ -130,7 +130,7 @@ test("The environment menu lists Local, Cloud, Remote Control and SSH like the c
   const titles = entries.map((entry) => "label" in entry && entry.title);
   assert.deepEqual(titles.slice(2), [undefined, environmentReasons.ssh]);
   assert.equal("label" in entries[0] && entries[0].checked, true);
-  // Cloud rows and creation are enabled.
+  // Cloud rows and creation are enabled (live claude.ai bundle, 2026-10-14, ca690a791).
   assert.equal(
     "label" in entries[0] && entries[0].settings?.label,
     "Edit local environment",

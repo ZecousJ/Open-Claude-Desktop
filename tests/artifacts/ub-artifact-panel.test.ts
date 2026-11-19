@@ -190,7 +190,7 @@ test("the page shows placeholders until the profile's notes are read", () => {
         onOpenArtifact() {},
         onCreate() {},
         onComment: noop,
-        authorName: "Ada",
+        authorName: "Zecous",
         onShareRequestConsumed() {},
         onDuplicate: noop,
         onPin: noop,

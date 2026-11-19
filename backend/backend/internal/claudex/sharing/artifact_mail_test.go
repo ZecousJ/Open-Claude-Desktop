@@ -104,9 +104,7 @@ func TestArtifactCommentMailsOwnerMentionsAndThread(t *testing.T) {
 
 func TestArtifactInviteMailFollowsSharesPreference(t *testing.T) {
 	f, mails := mailFixture(t)
-	prefs, ok := f.c.mailPrefs.(*memMailPrefs)
-	require.True(t, ok)
-	prefs.prefs[8] = artifactMailPatch{Shares: ptrBool(false)}
+	f.c.mailPrefs.(*memMailPrefs).prefs[8] = artifactMailPatch{Shares: ptrBool(false)}
 	res := f.do(http.MethodPost, "/api/v1/claudex/shares", artifactBody("quiet"))
 	var share ShareDTO
 	res.into(t, &share)

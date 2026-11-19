@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/ipc/memory.ts",
+    "../electron/official-ui/api/memory.ts",
+    "account/memory-read-isolation.test.ts",
+    "official-ui-f050-memory-reads.test.ts",
+    "f050-renderer-memory-lifecycle.test.tsx",
+    "../src/globals.d.ts",
+    "../src/memory/useMemory.ts",
+    "f051-renderer-memory-prefs.test.tsx",
+    "f051-memory-store-races.test.ts",
+    "account/f051-memory-prefs-isolation.test.ts",
+    "official-ui-f051-memory-settings.test.ts"
+  ]
+}

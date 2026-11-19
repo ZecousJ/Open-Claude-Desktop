@@ -325,6 +325,19 @@ test("older backend, unsupported model and source conditions refuse before creat
     assert.ok(reasons.includes(reason as never));
 });
 
+test("migration refuses a routine with a per-task time zone", (t) => {
+  const env = fixture(t);
+  const task = env.local.save(
+    input({
+      repeat: {
+        kind: "cron",
+        expression: "CRON_TZ=Asia/Shanghai 0 9 * * *",
+      },
+    }),
+  );
+  assert.deepEqual(routineMigrationReasons(task), ["custom_cron"]);
+});
+
 test("lost import reply and router recreation reuse durable key instead of creating duplicate remote tasks", async (t) => {
   const env = fixture(t);
   const task = env.local.save(input());

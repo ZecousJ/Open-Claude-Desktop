@@ -235,7 +235,7 @@ export function deniedBy(
   const settings = this.deps.settings();
   if (
     onDeniedList(app, this.deps.policy().deniedApps) ||
-    settings.deniedApps.some((denied) => appKey(denied.id) === appKey(app.id))
+    settings.deniedApps.some((denied) => denied.platform === app.platform && appKey(denied.id) === appKey(app.id))
   )
     return "denied";
   return undefined;

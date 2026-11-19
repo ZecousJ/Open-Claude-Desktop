@@ -139,7 +139,7 @@ export class HostedShares implements HostedArtifactLinks {
         const version =
           value.kind === "artifact" &&
           typeof value.version === "string" &&
-          /^[a-f0-9]{64}$/.test(value.version)
+          /^(?:[a-f0-9]{64}|[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})$/.test(value.version)
             ? value.version
             : undefined;
         if (
@@ -267,10 +267,19 @@ export class HostedShares implements HostedArtifactLinks {
       .filter((share) => !shareExpired(share, this.now()))
       .map((share) => this.present(share));
   }
+  async publishedArtifactVersions() {
+    await this.list("artifact");
+    return (this.listCache?.shares ?? []).flatMap((share) => {
+      const source = this.sources.get(share.sourceKey);
+      if (share.kind !== "artifact" || shareExpired(share, this.now()) ||
+          source?.kind !== "artifact" || source.sharing || !source.version) return [];
+      return [{ share: this.present(share), versionId: source.version }];
+    });
+  }
   /** A wire share as the window sees it: its source, and whether it is behind. */
-  present(share: HostedShare): HostedShare {
+  present(share: HostedShare, conversationId?: string): HostedShare {
     const known = this.sources.get(share.sourceKey);
-    const source = known?.kind === share.kind ? known.source : "";
+    const source = conversationId ?? (known?.kind === share.kind ? known.source : "");
     const shown: HostedShare = { ...share, sourceKey: source };
     if (share.kind === "conversation" && source) {
       const conversation = this.options.conversation(source);
@@ -455,6 +464,9 @@ export interface HostedShares {
   >;
   shareConversation: OmitThisParameter<
     typeof hostedSharesConversations.shareConversation
+  >;
+  publishConversationSnapshot: OmitThisParameter<
+    typeof hostedSharesConversations.publishConversationSnapshot
   >;
   setShareAccess: OmitThisParameter<
     typeof hostedSharesConversations.setShareAccess

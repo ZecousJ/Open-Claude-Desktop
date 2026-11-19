@@ -1,10 +1,11 @@
 /**
- * How a failed load is told apart, after the original's: its boot error page
- * says "temporarily unavailable" when the service answered with a 5xx or its
- * own error envelope, "You're offline" when the browser knows it has no
- * network, and "Can't reach" for any other failure on the way; its page
- * boundary offers Reload, not Try again, when a script failed to load (a retry
- * would ask React for the same failed import).
+ * How a failed load is told apart, after the original's (live claude.ai
+ * bundle, 2026-10-12): its boot error page says "temporarily unavailable"
+ * when the service answered with a 5xx or its own error envelope, "You're
+ * offline" when the browser knows it has no network, and "Can't reach" for
+ * any other failure on the way; its page boundary offers Reload, not Try
+ * again, when a script failed to load (a retry would ask React for the same
+ * failed import).
  */
 
 export type BootFailure = "unavailable" | "offline" | "unreachable";

@@ -218,7 +218,7 @@ describe("levels", () => {
   test("internal names, denied hosts and literal private addresses are refused at every level", () => {
     const c = policy({
       level: "full",
-      deniedHosts: ["claudex.example.com"],
+      deniedHosts: ["claudex.zecous.cn"],
       deniedAddresses: ["203.0.113.0/24", "198.51.100.7", "2a01:4f8::/32"],
     });
     for (const [host, reason] of [
@@ -227,8 +227,8 @@ describe("levels", () => {
       ["metadata.google.internal", "internal-name"],
       ["printer.local", "internal-name"],
       ["router.home.arpa", "internal-name"],
-      ["claudex.example.com", "denied-host"],
-      ["api.claudex.example.com", "denied-host"],
+      ["claudex.zecous.cn", "denied-host"],
+      ["api.claudex.zecous.cn", "denied-host"],
       ["127.0.0.1", "loopback"],
       ["[::1]", "loopback"],
       ["169.254.169.254", "metadata"],
@@ -395,15 +395,15 @@ describe("resolution", () => {
 describe("runner configuration", () => {
   test("defaults to trusted and denies the service by name", () => {
     const { policy, warnings } = parseNetConfig({}, "namespaces", [
-      "claudex.example.com",
+      "claudex.zecous.cn",
       "127.0.0.1",
     ]);
     assert.equal(policy.level, "trusted");
     assert.deepEqual(warnings, []);
-    assert.deepEqual(policy.deniedHosts, ["claudex.example.com"]);
+    assert.deepEqual(policy.deniedHosts, ["claudex.zecous.cn"]);
     assert.deepEqual(policy.deniedAddresses, ["127.0.0.1"]);
     const c = compilePolicy(policy);
-    assert.equal(c.checkHost("claudex.example.com", 443).ok, false);
+    assert.equal(c.checkHost("claudex.zecous.cn", 443).ok, false);
   });
 
   test("bwrap isolation caps the level at trusted", () => {

@@ -132,7 +132,8 @@ export function useComposerSetup(kit: UseComposerSetupKit) {
           }
         }
       : undefined;
-  // Capture owns this key in Chat/Cowork; Code retains its effort picker.
+  // Capture owns this key in Chat/Cowork; Code retains its effort picker
+  // (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN).
   useEffect(() => {
     if (!toggleThinking) return;
     const listener = (event: KeyboardEvent) => {
@@ -144,8 +145,9 @@ export function useComposerSetup(kit: UseComposerSetupKit) {
     document.addEventListener("keydown", listener, true);
     return () => document.removeEventListener("keydown", listener, true);
   }, [toggleThinking, platform, report]);
-  // A conversation whose model was retired replies with the default; the model
-  // button shows it and the menu says so at its head.
+  // A conversation whose model was retired replies with the default; the
+  // model button shows it and the menu says so at its head (live claude.ai
+  // bundle, 2026-10-12).
   const retired = retiredModel(
     active,
     settings.providers,
@@ -205,8 +207,8 @@ export function useComposerSetup(kit: UseComposerSetupKit) {
     setText(message);
     setAutoSend(message);
   };
-  // Text after / that matches no command shows no palette (the original has no
-  // "No commands found" state), so Enter sends it as typed.
+  // R-0375: text after / that matches no command shows no palette (the
+  // original has no "No commands found" state), so Enter sends it as typed.
   const slashOpen = Boolean(
     slashMatch && !slashDismissed && !addMenu && slashCommands.length,
   );

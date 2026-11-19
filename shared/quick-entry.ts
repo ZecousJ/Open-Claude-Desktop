@@ -2,8 +2,9 @@
  * Quick Entry (Settings ▸ System ▸ Quick Entry keyboard shortcut): the
  * shortcut, pressed anywhere, brings up a small floating composer; what is
  * submitted there starts a new chat in the main window, which comes forward
- * with it. Escape, a click outside or switching away puts it away. Values from
- * the original's quick entry window.
+ * with it. Escape, a click outside or switching away puts it away. Values
+ * from the original's quick entry window (source: desktop bundle 2.31226.1
+ * static JS/CSS).
  *
  * The composer is a page of its own (`quick.html`, preload
  * `electron/quick-preload.ts`) whose bridge is `window.quickEntry`.

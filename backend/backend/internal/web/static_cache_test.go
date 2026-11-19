@@ -4,6 +4,7 @@ package web
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,6 +45,32 @@ func TestIsFingerprintedEmbeddedAssetPath(t *testing.T) {
 
 func TestApplyStaticAssetCacheHeaders(t *testing.T) {
 	t.Parallel()
+	t.Run("bootstrap_catalog_requires_full_content_hash", func(t *testing.T) {
+		for _, valid := range []bool{true, false} {
+			header := make(http.Header)
+			hash := strings.Repeat("a", 64)
+			if !valid {
+				hash = "current"
+			}
+			applyStaticAssetCacheHeaders(header, "/assets/bootstrap-catalog-"+hash+".json")
+			assert.Equal(t, valid, header.Get("Cache-Control") == staticAssetsCacheControl)
+		}
+	})
+
+	t.Run("versioned_official_modules_are_immutable", func(t *testing.T) {
+		for _, asset := range []string{"shared.js", "font.woff2", "theme.css"} {
+			header := make(http.Header)
+			applyStaticAssetCacheHeaders(header, "assets/official-0123456789abcdef0123/"+asset)
+			assert.Equal(t, staticAssetsCacheControl, header.Get("Cache-Control"))
+		}
+	})
+
+	t.Run("revalidates_derived_vendor_asset_at_its_pinned_url", func(t *testing.T) {
+		t.Parallel()
+		header := make(http.Header)
+		applyStaticAssetCacheHeaders(header, "assets/v1/shared-19-DSOWNXOA.js")
+		assert.Equal(t, "no-cache", header.Get("Cache-Control"))
+	})
 
 	t.Run("sets_immutable_cache_for_fingerprinted_asset", func(t *testing.T) {
 		t.Parallel()

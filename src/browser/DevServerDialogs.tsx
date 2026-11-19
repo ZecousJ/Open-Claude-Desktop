@@ -6,8 +6,9 @@ import type { DevServerState } from "../../shared/browser";
 import { Modal } from "../ui/Controls";
 
 /**
- * Start dev server?. Starting a configuration from the panel asks once, showing
- * the command and where it runs; there is no "always".
+ * Start dev server? (R8 design 6.2; not captured: visual-provisional).
+ * Starting a configuration from the panel asks once, showing the command
+ * and where it runs; there is no "always".
  */
 export function StartServerDialog({
   server,
@@ -76,7 +77,7 @@ export function StartServerDialog({
   );
 }
 
-/** A log line's colour: errors red, warnings amber. */
+/** A log line's colour (cf580efe9 `ro`): errors red, warnings amber. */
 export function logLineTone(line: string): "error" | "warn" | undefined {
   const head = line.slice(0, 200).toUpperCase();
   if (["ERROR", "ERR!", "FATAL", "FAIL"].some((word) => head.includes(word)))
@@ -85,11 +86,12 @@ export function logLineTone(line: string): "error" | "warn" | undefined {
 }
 
 /**
- * The dev server logs drawer under the page: 200px tall (80px to 60%), its top
- * edge drags it taller or shorter; a header with "{name} · localhost:{port}" in
- * caption muted and a ghost X (Close dev server logs); the output in code
- * secondary, errors red and warnings amber, kept scrolled to the end while it
- * is at the end, "Waiting for output…" before there is any.
+ * The dev server logs drawer under the page (live claude.ai bundle,
+ * 2026-10-15, cf580efe9 `co`): 200px tall (80px to 60%), its top edge
+ * drags it taller or shorter; a header with "{name} · localhost:{port}"
+ * in caption muted and a ghost X (Close dev server logs); the output in
+ * code secondary, errors red and warnings amber, kept scrolled to the end
+ * while it is at the end, "Waiting for output…" before there is any.
  */
 export function DevServerLogsDrawer({
   server,
@@ -192,9 +194,10 @@ export function DevServerLogsDrawer({
 }
 
 /**
- * Closing a tab whose dev server runs: "Close {host}?" or "Close other tabs?",
- * that the server keeps running and how to come back, then Cancel on the left
- * and Stop server (red) and Keep running on the right.
+ * Closing a tab whose dev server runs (cf580efe9): "Close {host}?" or
+ * "Close other tabs?", that the server keeps running and how to come
+ * back, then Cancel on the left and Stop server (red) and Keep running on
+ * the right.
  */
 export function CloseRunningTabDialog({
   servers,

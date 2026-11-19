@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
+import { projectTemplateInput } from "../../shared/project-creation";
 import { projectToolsInput } from "../../shared/project-tools-input";
 import {
   maxRolloutBytes,
@@ -26,6 +27,7 @@ const importSchema = z.object({
       name: z.string().max(500),
       description: z.string().max(20_000),
       instructions: z.string().max(200_000),
+      template: projectTemplateInput.optional(),
       tools: projectToolsInput.optional(),
       icon: z.string().max(100).optional(),
       color: z.string().max(100).optional(),

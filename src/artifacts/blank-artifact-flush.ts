@@ -1,9 +1,13 @@
 import { blankArtifactCreateLease } from "./blank-artifact-request";
 import type { AppController } from "../app/AppContext";
+export type BlankArtifactBridge = Pick<
+  Window["desktop"],
+  "readBlankArtifact" | "saveBlankArtifact"
+>;
 interface Scope {
   account: string;
   owner: object | undefined;
-  bridge: Window["desktop"];
+  bridge: BlankArtifactBridge;
   conversationId: string;
   artifactId: string;
 }

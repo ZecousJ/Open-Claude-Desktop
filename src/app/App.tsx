@@ -572,9 +572,10 @@ export function App({
                           <ShellMenuHost />
                         </Suspense>
                         {/* Last: Electron reads app regions in document order,
-                           so a drag region later in the page (a conversation's
-                           title bar) took the caption buttons' place on Windows
-                           and they could not be clicked. */}
+                            so a drag region later in the page (a
+                            conversation's title bar) took the caption
+                            buttons' place on Windows and they could not be
+                            clicked (owner report, 2026-10-09). */}
                         {chrome.controls && <WindowControls />}
                         {/* The top layer: buttons over the pages' drag
                             regions (the collapsed sidebar's ≡, toggle, back

@@ -1,10 +1,11 @@
 /*
- * Customize → Discover's directory: 15px section heads with "Show all →" on the
- * right, 32px above a head; the cards are the Discover cards above them;
- * categories are 84px cards (three columns wide, two narrow) with a 56px tile,
- * a 15px label and the grey count on the right. Show all pages: "← Skills" over
- * the title in the Customize title's serif, and 66px rows with a category badge
- * and a framed Add.
+ * Customize → Discover's directory (R-1115/R-1146 wide lower, R-1518 at
+ * 1x): 15px section heads with "Show all →" on the right, 32px above a
+ * head; the cards are the Discover cards above them; categories are
+ * 84px cards (three columns wide, two narrow) with a 56px tile, a 15px
+ * label and the grey count on the right. Show all pages (R-1135): "←
+ * Skills" over the title in the Customize title's serif, and 66px rows
+ * with a category badge and a framed Add.
  */
 .customize-directory-head {
   display: flex;
@@ -19,9 +20,9 @@
   line-height: 20px;
   color: var(--text);
 }
-/* "Show all" 52px wide, then a 12×12 arrow 10px on, its ink ending 5px inside
-   the column's edge; R-1132's hover pill (28 tall) ends 5px outside the column,
-   10px past the arrow. */
+/* R-1518 (1x): "Show all" 52px wide, then a 12×12 arrow 10px on, its ink
+   ending 5px inside the column's edge; R-1132's hover pill (28 tall) ends
+   5px outside the column, 10px past the arrow. */
 .customize-directory-head > button {
   display: inline-flex;
   align-items: center;
@@ -88,10 +89,11 @@
   border-color: #3a3a3a;
   background: #1b1b1b;
 }
-/* Directory cards (Discover's and the categories): on hover the rim takes the
-   strong border colour and a soft 20px shadow (4% black) lifts the card, both
-   easing in over 150ms. The fill itself steps at once, as the original's card
-   fill does; only the press springs back. */
+/* Directory cards (Discover's and the categories): on hover the rim takes
+   the strong border colour and a soft 20px shadow (4% black) lifts the
+   card, both easing in over 150ms (the original's connector and plugin
+   directory cards, desktop bundle 2.31226.1). The fill itself steps at once,
+   as the original's card fill does; only the press springs back. */
 .customize-cards > li > .customize-card,
 .customize-categories > li > button {
   transition:
@@ -214,7 +216,7 @@
   color: #0b0b0b;
 }
 
-/* Light. */
+/* Light (R-1318, R-1146, R-1135 light captures). */
 :root[data-theme="light"] .customize-directory-head > h3 {
   color: #141413;
 }
@@ -256,8 +258,8 @@
   color: #6b6a66;
 }
 /*
- * Discover's search state: gap-lg, px-md py-xl, max-w-xs text-body
- * text-secondary.
+ * Discover's search state (live claude.ai bundle, 2026-10-14, ccea1f474):
+ * gap-lg, px-md py-xl, max-w-xs text-body text-secondary.
  */
 .customize-nothing {
   display: flex;
@@ -414,8 +416,9 @@
   font-size: 13px;
   line-height: 16px;
 }
-/* Try and +: 28px secondary buttons (white 10%) 12px apart; Try 10px in with
-   its 20px Chat glyph 6px before the 14/20 word. */
+/* Try and + (live claude.ai Customize, 2026-10-21): 28px secondary
+   buttons (white 10%) 12px apart; Try 10px in with its 20px Chat glyph 6px
+   before the 14/20 word. */
 .customize-catalogue-actions {
   position: absolute;
   top: 14px;
@@ -442,14 +445,14 @@
   padding: 0 10px;
 }
 /* Its leading glyph sits 4px into the padding, as the original's. */
-.customize-catalogue-actions > .customize-catalogue-try > .app-icon {
+.customize-catalogue-actions > .customize-catalogue-try > .anthropicon {
   margin-inline-start: -4px;
 }
 .customize-catalogue-actions > .customize-catalogue-add {
   width: 28px;
 }
-/* Live Customize at 390px: below the phone width Try is a 28×28 icon and the
-   two actions sit 12px apart (gap-sm). */
+/* Live Customize at 390px (2026-10-19): below the phone width Try is a
+   28×28 icon and the two actions sit 12px apart (gap-sm). */
 @media (max-width: 639.98px) {
   .customize-catalogue-actions > .customize-catalogue-try {
     width: 28px;

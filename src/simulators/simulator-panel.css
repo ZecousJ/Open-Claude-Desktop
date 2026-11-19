@@ -1,10 +1,11 @@
 /*
- * The iOS Simulator and Android Emulator panes of Code. Loaded with the panes
- * (a lazy chunk), not with the app. The setup, attach and permission screens
- * take their sizes from the original's: 48px above and 28px below a 24px
+ * The iOS Simulator and Android Emulator panes of Code. Loaded with the
+ * panes (a lazy chunk), not with the app. The setup, attach and permission
+ * screens take their sizes from the original's (desktop bundle 2.31226.1,
+ * `ion/assets/v1/c49d37e5f` stylesheet): 48px above and 28px below a 24px
  * gutter, a 22px title, 14px body, 12px-radius tiles with 14px padding 8px
- * apart, a 40px full-width button with 8px corners. Colours are the app's own
- * tokens, so both themes follow.
+ * apart, a 40px full-width button with 8px corners. Colours are the app's
+ * own tokens, so both themes follow.
  */
 .work-panel.simulator-panel {
   display: flex;
@@ -346,8 +347,9 @@
   flex: 1;
 }
 
-/* The attached device: a picker row, the screen and the control bar. The 40px
- tall, 12px side padding, 8px between the picker and the zoom buttons. */
+/* The attached device: a picker row, the screen and the control bar. The
+   picker row follows the live claude.ai bundle (2026-10-12): 40px tall,
+   12px side padding, 8px between the picker and the zoom buttons. */
 .sim-device {
   display: flex;
   flex: 1;
@@ -512,7 +514,7 @@
   border-radius: 22px;
 }
 /* Zoomed: the picture keeps its size and the stage scrolls; auto margins
- centre it while it is smaller than the stage. */
+   centre it while it is smaller than the stage. */
 .sim-stage.zoomed {
   align-items: flex-start;
   justify-content: flex-start;
@@ -551,7 +553,13 @@
   box-shadow: var(--shadow);
 }
 
-/* The control bar's dividers, recording time and Stop recording. */
+/*
+ * The control bar's dividers, recording time and Stop recording (live
+ * claude.ai bundle, 2026-10-12: the bar's separators between the device
+ * buttons, the captures and the inspection tools; "Recording time" is
+ * caption-free body text in the danger colour with an 8px dot, 8px before
+ * and 5px after; the stop button is the danger variant).
+ */
 .sim-pill-divider {
   align-self: stretch;
   width: 1px;
@@ -583,8 +591,9 @@
 }
 
 /*
- * Simulator menus: Edit, Device and View as small ghost buttons in a row,
- * styled as the device picker's button.
+ * Simulator menus: Edit, Device and View as small ghost buttons in a row
+ * (live bundle: 12px sides, 8px above, 5px below, 5px apart), styled as the
+ * device picker's button.
  */
 .sim-menus {
   display: flex;
@@ -637,10 +646,10 @@
 }
 
 /*
- * 16px from the stage's end and bottom, at most 240px (40% of the stage's
- * height, 60% of its width), a card's border, radius and shadow. It slides in
- * from 16px over 300ms (a screenshot flies from the screen over 400ms) and
- * fades the same way out.
+ * The capture thumbnail (live bundle): 16px from the stage's end and
+ * bottom, at most 240px (40% of the stage's height, 60% of its width), a
+ * card's border, radius and shadow. It slides in from 16px over 300ms (a
+ * screenshot flies from the screen over 400ms) and fades the same way out.
  */
 .sim-capture {
   position: absolute;
@@ -695,11 +704,11 @@
 }
 
 /*
- * Simulator logs: a drawer under the stage. The head (4px 8px, 4px apart): Min
- * level, the filter, the count, Full height, Clear view, Close logs. Columns of
- * 12ch time, 5ch level, the scope (widest label up to 28ch) and the message,
- * 8px apart in the caption size of the code font; levels take the muted,
- * secondary, primary or danger colour.
+ * Simulator logs (live bundle): a drawer under the stage. The head (4px 8px,
+ * 4px apart): Min level, the filter, the count, Full height, Clear view,
+ * Close logs. Columns of 12ch time, 5ch level, the scope (widest label up
+ * to 28ch) and the message, 8px apart in the caption size of the code
+ * font; levels take the muted, secondary, primary or danger colour.
  */
 .sim-logs {
   position: relative;
@@ -797,7 +806,7 @@
   color: var(--text-muted);
   user-select: none;
 }
-/* The reference design: inline-end handle. */
+/* live claude.ai bundle, 2026-10-14, shared-15-B3Xk4qB6.js: inline-end handle. */
 .sim-logs-scope-column {
   position: relative;
   min-width: 0;
@@ -921,7 +930,7 @@
 }
 
 /* In the dock a card that is not the focused one dims and shows its header
- buttons only while hovered, as the other cards do (app/tool-dock.css). */
+   buttons only while hovered, as the other cards do (app/tool-dock.css). */
 .tool-dock[data-split]:not([data-focus="ios-simulator"]) .ios-simulator-panel,
 .tool-dock[data-split]:not([data-focus="android-emulator"])
   .android-emulator-panel {
@@ -937,7 +946,7 @@
   button:not(:focus-visible) {
   opacity: 0;
 }
-/* Rename simulator: the field and the reason under it. */
+/* Rename simulator: the field and the reason under it (c49d37e5f `er`). */
 .sim-rename-field {
   box-sizing: border-box;
   width: 100%;
@@ -954,10 +963,11 @@
 :root[data-theme="light"] .sim-rename-error {
   color: #8e2626;
 }
-/* Inspect: over the picture, the hovered element ring-1 in fill-accent on 18%
- of it, the selected one ring-2 on 30%, both rounded; the hover chip in
- caption on fill-accent above the element; the comment card (w-72, padding sm)
- with the title row, the note field and Add to chat. */
+/* Inspect (live claude.ai bundle, 2026-10-15, c49d37e5f): over the
+   picture, the hovered element ring-1 in fill-accent on 18% of it, the
+   selected one ring-2 on 30%, both rounded; the hover chip in caption on
+   fill-accent above the element; the comment card (w-72, padding sm) with
+   the title row, the note field and Add to chat. */
 .sim-inspect-layer {
   position: absolute;
   z-index: 20;
@@ -1099,9 +1109,10 @@
 :root[data-theme="light"] .sim-inspect-card-title > strong {
   color: #0b0b0b;
 }
-/* Min(60%, clamp(320px, 45%, 400px)) wide; header px-md py-sm with "Inspect" in
- body-medium; tree rows in caption, the selected one bg-accent text-accent,
- the hovered one fill-ghost-hover; Properties under a rule). */
+/* The stage and, while inspecting, the Inspect panel beside it (c49d37e5f:
+   min(60%, clamp(320px, 45%, 400px)) wide; header px-md py-sm with "Inspect"
+   in body-medium; tree rows in caption, the selected one bg-accent
+   text-accent, the hovered one fill-ghost-hover; Properties under a rule). */
 .sim-stage-row {
   display: flex;
   flex: 1;
@@ -1273,14 +1284,14 @@
 :root[data-theme="light"] .sim-inspect-text-button {
   color: #52514e;
 }
-/* A foldable's hinge angle. */
+/* A foldable's hinge angle (c49d37e5f: an sm slider, 120px). */
 .sim-hinge {
   width: 120px;
   margin: 0;
   accent-color: #2a78d6;
 }
-/* Pt-[54px], mb-2.5, gap-sm, rounded-full, py-xs px-md, and a 5.5ch percentage
- readout. */
+/* Live claude.ai bundle, 2026-10-14, c49d37e5f: pt-[54px], mb-2.5,
+   gap-sm, rounded-full, py-xs px-md, and a 5.5ch percentage readout. */
 .sim-controls-hinge {
   padding-top: 54px;
 }
@@ -1313,8 +1324,8 @@
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
 }
-/* The log drawer's crash banner (danger) with Go to crash, and Load older lines
- as a ghost xs button in the note row. */
+/* The log drawer's crash banner (danger) with Go to crash, and Load older
+   lines as a ghost xs button in the note row (c49d37e5f). */
 .sim-logs-crash {
   display: flex;
   flex-shrink: 0;

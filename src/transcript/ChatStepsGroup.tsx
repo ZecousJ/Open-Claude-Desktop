@@ -107,17 +107,19 @@ function StepsList({
 }
 
 /**
- * Chat's steps group. While the reply works: the working dots, the latest
- * thought (or the running step), the elapsed time and ⌄, over an open card that
- * lists each step on one line — a command by its description, a file change as
- * "Created file.html", a thought by its summary — the running one shimmering.
- * Once a running group has three steps the card shows the latest two under "{n}
- * steps", which shows the rest (and then reads "Hide steps"); a new step opens
- * in at the bottom while the oldest folds away above it. When the reply is done
- * the dots stay a moment and fade (420ms), the row slides back to the text's
- * edge and, once they are gone, reads what the steps did ("Read a file, created
- * a file ›"), closed. The card opens and closes to its height. Pages the steps
- * wrote follow as artifact cards.
+ * Chat's steps group (live claude.ai, 2026-09-29). While the reply works:
+ * the working dots, the latest thought (or the running step), the elapsed
+ * time and ⌄, over an open card that lists each step on one line — a
+ * command by its description, a file change as "Created file.html", a
+ * thought by its summary — the running one shimmering. Once a running group
+ * has three steps the card shows the latest two under "{n} steps", which
+ * shows the rest (and then reads "Hide steps"); a new step opens in at the
+ * bottom while the oldest folds away above it (the original's timeline;
+ * source: desktop bundle 2.31226.1 static JS). When the reply is done the
+ * dots stay a moment and fade (420ms), the row slides back to the text's
+ * edge and, once they are gone, reads what the steps did ("Read a file,
+ * created a file ›"), closed. The card opens and closes to its height.
+ * Pages the steps wrote follow as artifact cards.
  */
 export function ChatStepsGroup({
   items,
@@ -161,8 +163,8 @@ export function ChatStepsGroup({
       item.type === "reasoning" && item.summary?.some((text) => text.trim()),
   );
   const current = normalized.filter(itemIsRunning).at(-1);
-  // The group with the turn's last command also names the files the turn handed
-  // over: "Ran a command, shared files".
+  // The group with the turn's last command also names the files the turn
+  // handed over: "Ran a command, shared files" (live claude.ai).
   const lastCommand = [...turn.items]
     .reverse()
     .find((item) => item.type === "commandExecution");
@@ -203,8 +205,8 @@ export function ChatStepsGroup({
       : failed(last)
         ? { word: t("Failed"), tone: "danger" }
         : undefined;
-  // One finished search reads as its own row ("Searched the web query"); its
-  // results open under it.
+  // One finished search reads as its own row ("Searched the web  query"); its
+  // results open under it (live claude.ai, 2026-09-30).
   const lone =
     !running &&
     steps.length === 1 &&
@@ -220,7 +222,8 @@ export function ChatStepsGroup({
   const shownSteps = windowed && !allSteps ? steps.slice(-STEP_WINDOW) : steps;
   const expandable = lone ? loneSources.length > 0 : steps.length > 0;
   // A finished group closes to its row; the thought steps inside open by
-  // default when it is opened.
+  // default when it is opened (live claude.ai bundle, 2026-10-14,
+  // c1c1ec7b9 zZ: a step's own open state, defaulting to true).
   const open = expandable && (userOpen ?? running);
   if (!running && steps.length === 1 && isWebFetch(steps[0]))
     return <WebFetchRow item={steps[0]} />;
@@ -313,8 +316,8 @@ export function ChatStepsGroup({
           </div>
         </Collapsible>
       </div>
-      {/* While a page is being written the row says so; its card comes when it
-         is done. */}
+      {/* While a page is being written the row says so; its card comes
+          when it is done (live claude.ai). */}
       {changes.length > 0 && !running && (
         <div className="chat-steps-files">
           <FileChangeCards items={changes} onArtifact={onArtifact} />

@@ -75,11 +75,10 @@ func TestDirectoryFeaturedMembersReviewAndPublish(t *testing.T) {
 			require.NoError(t, err)
 			metadata, err := json.Marshal(curation)
 			require.NoError(t, err)
-			columns := []string{"id", "user_id", "input", "status", "reviewer_note", "updated_at"}
-			mock.ExpectQuery(`input=CASE WHEN \$5::jsonb IS NULL THEN input ELSE jsonb_set`).WithArgs(id, "approved", "", int64(7), string(metadata)).WillReturnRows(sqlmock.NewRows(columns).AddRow(id, 7, curated, "approved", "", time.Now()))
+			mock.ExpectQuery(`input=CASE WHEN \$5::jsonb IS NULL THEN input ELSE jsonb_set`).WithArgs(id, "approved", "", int64(7), string(metadata), nil).WillReturnRows(directorySubmissionRows().AddRow(id, 7, curated, "approved", "", time.Now(), time.Now(), time.Now()))
 			response := directoryRequest(r, "PUT", "/admin/directory/submissions/"+id+"/review", `{"status":"approved","curation":`+string(metadata)+`}`)
 			require.Equal(t, 200, response.Code, response.Body.String())
-			mock.ExpectQuery(`WHERE status='approved' AND withdrawn_at IS NULL`).WillReturnRows(sqlmock.NewRows([]string{"id", "input", "updated_at"}).AddRow(id, curated, time.Now()))
+			mock.ExpectQuery(`WHERE status='approved' AND published_at IS NOT NULL AND withdrawn_at IS NULL`).WillReturnRows(sqlmock.NewRows([]string{"id", "input", "updated_at"}).AddRow(id, curated, time.Now()))
 			response = directoryRequest(r, "GET", "/user/directory", "")
 			require.Equal(t, 200, response.Code, response.Body.String())
 			var published struct {

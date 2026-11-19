@@ -1,4 +1,4 @@
-// : zu, the 500ms decision-surface guard.
+// (live claude.ai bundle, 2026-10-14, frame-shell-chrome-B45f-YAC.js): zu, the 500ms decision-surface guard.
 export function artifactToolReadiness(
   document: Document,
   update: (ready: boolean) => void,

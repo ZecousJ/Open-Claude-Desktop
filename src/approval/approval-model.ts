@@ -42,9 +42,9 @@ export function allowsAlways(
 }
 
 /**
- * Why Always allow is greyed rather than left out: the administrator's policy
- * turned remembered approvals off, or a connector tool offers no choice that
- * outlives the request.
+ * Why Always allow is greyed rather than left out (live claude.ai bundle,
+ * 2026-10-14): the administrator's policy turned remembered approvals off,
+ * or a connector tool offers no choice that outlives the request.
  */
 export function alwaysDisabledReason(
   approval: Approval,
@@ -92,10 +92,11 @@ export interface BrowserApproval {
 const claudex = (text: string) => text.replace(/\bClaude\b/g, "Claudex");
 
 /**
- * A question from the Browser tools as a card: the form the tools send is one
- * optional choice, which the card shows as its buttons instead of a form. The
- * tools' words name "Claude"; the app says Claudex (see the other cards'
- * titles). Undefined for any other elicitation.
+ * A question from the Browser tools as a card: the form the tools send is
+ * one optional choice ("Allow once" / "Always allow for this website", live claude.ai 2026-10-12, c10d34dcd), which the
+ * card shows as its buttons instead of a form. The tools' words name
+ * "Claude"; the app says Claudex (see the other cards' titles). Undefined
+ * for any other elicitation.
  */
 export function browserApproval(
   approval: Approval,

@@ -13,10 +13,8 @@ const ArtifactScheduledTaskDialog = lazyPiece(
   "ArtifactScheduledTaskDialog",
 );
 
-/**
- * Gesture, consent, and shown-version checks. Dispatch uses the same scheduler
- * as Scheduled.
- */
+/** Gesture, consent, and shown-version checks (desktop 2.37337.1,
+ * index.chunk-BWk6pVUt.js:245031). Dispatch uses the same scheduler as Scheduled. */
 export function useArtifactScheduledTasks(
   frame: RefObject<HTMLIFrameElement | null>,
   identity: string,

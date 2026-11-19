@@ -36,7 +36,7 @@ import "./code-effort-slider.css";
 // after one, two and three 30fps frames (2097af56).
 const snapEase = exponentialEasing(180, 35, 16);
 
-// No warning on Max.
+// No warning on Max (owner, 2026-10-23: take it out).
 const effortHelp = "Higher effort uses more time and tokens";
 
 export function CodeEffortSlider({
@@ -82,7 +82,7 @@ export function CodeEffortSlider({
     }
   }, [openRequest]);
   // /effort opens the panel with the slider ready for the arrow keys; the
-  // capture shows no focus ring on the track or the button.
+  // capture (R-0369) shows no focus ring on the track or the button.
   useEffect(() => {
     if (!open || !focusTrack.current) return;
     focusTrack.current = false;

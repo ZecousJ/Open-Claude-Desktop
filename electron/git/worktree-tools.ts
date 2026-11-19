@@ -61,8 +61,9 @@ export const setupQuestion = (suggested: string) => ({
 });
 
 /**
- * discard_kept_worktree: an archived session's worktree left on disk with its
- * uncommitted work is deleted after the person allows it; the branch stays.
+ * discard_kept_worktree (live claude.ai bundle, 2026-10-15, c1c1ec7b9): an
+ * archived session's worktree left on disk with its uncommitted work is
+ * deleted after the person allows it; the branch stays.
  */
 export async function discardKeptWorktree(
   deps: HostToolsDeps,
@@ -97,9 +98,9 @@ export async function discardKeptWorktree(
 }
 
 /**
- * clean_up_worktrees: removes the worktrees of Code sessions inactive for at
- * least `days` days (not running, not this session), discarding uncommitted
- * work in them, after the person allows it.
+ * clean_up_worktrees (c1c1ec7b9): removes the worktrees of Code sessions
+ * inactive for at least `days` days (not running, not this session),
+ * discarding uncommitted work in them, after the person allows it.
  */
 export async function cleanUpWorktrees(
   deps: HostToolsDeps,

@@ -76,7 +76,7 @@ export function SingleAgentTask({
         {running ? (
           <span>{agent.currentAction ?? "Working"}</span>
         ) : (
-          // The original's status word.
+          // The original's status word (live claude.ai bundle, 2026-10-15).
           <span data-status={task.status}>
             {task.status === "failed"
               ? "Failed"

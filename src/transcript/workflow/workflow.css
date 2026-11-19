@@ -32,7 +32,8 @@
   gap: 8px;
   min-width: 0;
   font:
-    14px/21px -apple-system,
+    14px/21px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   overflow: hidden;
@@ -51,7 +52,8 @@
   align-items: center;
   gap: 14px;
   font:
-    12px/17px -apple-system,
+    12px/17px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   color: #898781;
@@ -216,10 +218,11 @@
   color: #26221f;
 }
 
-/* Child agents as cells: 6px squares 2px apart. Done 20% ink, running the
-   accent breathing to 72% out of step with its neighbours, failed red, stopped
-   10% ink, queued an outline, and a ghost outline pulsing .25 ↔ .9 every 2.2s
-   when more agents are coming. */
+/* Child agents as cells (AgentStatusGrid.tsx; desktop bundle 2.31226.1):
+   6px squares 2px apart. Done 20% ink, running the accent breathing to 72%
+   out of step with its neighbours, failed red, stopped 10% ink, queued an
+   outline, and a ghost outline pulsing .25 ↔ .9 every 2.2s when more agents
+   are coming. */
 .agent-status-grid {
   display: flex;
   flex-wrap: nowrap;
@@ -335,7 +338,8 @@
   animation: none;
 }
 
-/* An open phase without agents. */
+/* An open phase without agents (live claude.ai bundle, 2026-10-14:
+   "ps-md text-footnote text-muted"). */
 .workflow-phase-empty {
   margin: 0;
   padding-inline-start: 8px;

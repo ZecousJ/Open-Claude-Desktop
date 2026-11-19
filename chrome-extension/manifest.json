@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Claudex in Chrome",
+  "version": "0.1.0",
+  "description": "Share the current tab with Claudex on this computer.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhaAShVgT46v6XZ/dOKkFinOHz/+JIiWj+/pVwtU9uRrn4873PURZr0fii5V3gyQif8aMYA2v6xs2cPGBUI0xOSvtPZV33pbvaz3jBOTnbunVufxl5V8Ov5dqqrLalWHrzHY1/Q/ta5RwrP+LETLycdyeEtok4sToMLydMJZlHZeq1ptXbZmoQl2BpDWyd9U4H700ppYsEuVG01UIFEUUTmUpYEP2QlFxNuehlRxK5jl7qkoKdYg65gRv7DJyndXiIiOCBNwnDTV4k8lG0rnFUZGIiWndS5r23vz0fzspzJ/tR/meoj18gByxuRGkr8PhjTwALlcPGP6o4SYcNtEekQIDAQAB",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "nativeMessaging"
+  ],
+  "incognito": "not_allowed",
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "action": {
+    "default_title": "Share this tab with Claudex"
+  }
+}

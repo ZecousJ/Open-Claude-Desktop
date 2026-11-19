@@ -6,6 +6,7 @@
  * sends its calls through `PanelsAPI` (`shared/panels-api.ts`).
  */
 import type { BrowserEventState } from "./types";
+import { previewOrigin } from "./preview-origin";
 
 /**
  * The page size the panel shows (the original's Viewport: Responsive, Mobile
@@ -69,6 +70,7 @@ export interface BrowserPageDialog {
 
 export interface BrowserTabState {
   canExportFile?: boolean;
+  toolAccessBlocked?: boolean;
   id: string;
   /** "" for a new tab that has not opened a page. */
   url: string;
@@ -81,6 +83,8 @@ export interface BrowserTabState {
   stalled: boolean;
   canGoBack: boolean;
   canGoForward: boolean;
+  viewport?: BrowserViewport;
+  audible?: boolean;
   error?: BrowserLoadError;
   /** The page's renderer process ended. */
   crashed?: boolean;
@@ -140,6 +144,7 @@ export interface BrowserState extends BrowserEventState {
   activeTabId?: string;
   viewport: BrowserViewport;
   colorScheme: BrowserColorScheme;
+  muted?: boolean;
   devServers: DevServerState[];
   /** Whether dev servers can be listed and started here (R8-B, and the administrator). */
   devServersAvailable: boolean;
@@ -166,9 +171,12 @@ export interface BrowserBounds {
 export interface ElementPick {
   selector: string;
   tag: string;
+  id?: string;
   text: string;
   outerHTML: string;
   styles: Record<string, string>;
+  attributes?: Record<string, string>;
+  classes?: string[];
   box: { x: number; y: number; width: number; height: number };
   screenshotPngBase64?: string;
   url: string;
@@ -397,6 +405,10 @@ export function pageOrigin(url: string) {
   } catch {
     return "";
   }
+}
+
+export function previewTabOrigin(url: string) {
+  return url.startsWith("file:") ? url : previewOrigin(url) ?? "";
 }
 
 /**

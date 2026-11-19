@@ -13,8 +13,8 @@ import type { RepositoryRef } from "../../shared/host";
 import { validBranch, fileUrl, snapshotSubject } from "./continue-in-cloud";
 
 /**
- * The note the cloud session's first message starts with: where its checkout
- * came from.
+ * The note the cloud session's first message starts with: where its
+ * checkout came from (live desktop bundle, 2026-10-12, Claudex's name).
  */
 export function transportPreamble(work: {
   branch: string;
@@ -85,7 +85,10 @@ export class CloudPushError extends Error {
   }
 }
 
-/** The upload failure's words. */
+/**
+ * The upload failure's words (live claude.ai bundle, 2026-10-12, the
+ * "move to the cloud" upload errors; Claudex's name for the app).
+ */
 export const uploadFailureMessages: Record<CloudPushFailure, string> = {
   auth: "The remote didn’t accept the upload from this app. Your terminal’s git may be signed in differently.",
   network:

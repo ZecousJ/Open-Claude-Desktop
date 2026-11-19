@@ -1,6 +1,6 @@
 import type { WebContents } from "electron";
 
-/** Per-renderer maximum and navigation cleanup. */
+/** Per-renderer maximum and navigation cleanup (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt, Psa). */
 export class ProjectPromptCounts {
   private counts = new Map<WebContents, number>();
   private registered = new WeakSet<WebContents>();

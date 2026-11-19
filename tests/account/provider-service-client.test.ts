@@ -65,6 +65,8 @@ test("separate localhost process forwards model requests and owns usage records"
   try {
     const url = await client.start();
     assert.match(url, /^http:\/\/127\.0\.0\.1:\d+\/v1$/);
+    const sidePath = await client.openSidePath();
+    assert.match(sidePath, /^[a-f0-9]{64}$/);
     const response = await fetch(`${url}/responses`, {
       method: "POST",
       headers: {
@@ -108,6 +110,16 @@ test("separate localhost process forwards model requests and owns usage records"
       child.exitCode !== null || child.signalCode !== null,
       "close must wait for the provider service process to exit",
     );
+    await client.closeSidePath(sidePath);
+    assert.equal((client as unknown as { child?: ChildProcess }).child, undefined,
+      "late side cleanup must not restart a closed provider service");
+    const restarted = await client.start();
+    const stale = await fetch(`${restarted}/side/${sidePath}/responses`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${client.token}`, "content-type": "application/json" },
+      body: "{}",
+    });
+    assert.equal(stale.status, 404, "a prior gateway's capability must not survive restart");
   } finally {
     await client.close();
     upstream.closeAllConnections();

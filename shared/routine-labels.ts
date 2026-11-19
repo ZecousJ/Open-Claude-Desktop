@@ -84,7 +84,7 @@ export function repeatLabel(repeat: RoutineRepeat, locale?: string): string {
         return `Every ${weekdayNames[days[0]]} at ${formatClock(repeat.time)}`;
       if (days.length === 5 && [1, 2, 3, 4, 5].every((d) => days.includes(d)))
         return `Weekdays at ${formatClock(repeat.time)}`;
-      // "At 01:49 AM, …".
+      // R-1231 writes this line's hour with two digits: "At 01:49 AM, …".
       return `At ${formatClock(repeat.time, true)}, ${listDays(days)}`;
     }
   }

@@ -71,13 +71,14 @@ export function NotificationLevelRows({
 }
 
 /**
- * Settings → Claude Code → Browser: Browser tools, Open links in built-in
- * browser, Keep cookies and Allowed sites. Allowed sites only matter while
- * Claude can use the Browser tools, so the row is hidden while they are off;
- * the other two rows apply to browsing by hand as well. The administrator's
- * policy can turn the browser off (`policy.browser.enabled`): the switch then
- * shows off and disabled with the reason, and the rows about the browser itself
- * are hidden because it does not open.
+ * Settings → Claude Code → Browser (R-1360-04, R8 design 4.11): Browser
+ * tools, Open links in built-in browser, Keep cookies and Allowed sites.
+ * Allowed sites only matter while Claude can use the Browser tools, so the
+ * row is hidden while they are off; the other two rows apply to browsing by
+ * hand as well. The administrator's policy can turn the browser off
+ * (`policy.browser.enabled`): the switch then shows off and disabled with
+ * the reason (a Claudex state the original has no capture of), and the
+ * rows about the browser itself are hidden because it does not open.
  */
 export function BrowserSection({
   settings,
@@ -102,7 +103,7 @@ export function BrowserSection({
           label="Browser tools"
           checked={tools}
           disabled={blocked}
-          onChange={(browserTools) => save({ browserTools })}
+          onChange={(codeBrowserTools) => save({ codeBrowserTools })}
         />
       </Row>
       {!blocked && (
@@ -172,11 +173,12 @@ export function BrowserSection({
 }
 
 /**
- * Local sandbox and Strict sandbox mode: both apply to new local Code sessions.
- * Off, commands run outside the sandbox but each untrusted one asks first;
- * strict refuses whatever can't run inside it (shared/sandbox-policy.ts). On
- * Windows, turning the sandbox on sets it up first, which asks for
- * administrator permission once.
+ * Local sandbox and Strict sandbox mode (live claude.ai bundle, 2026-10-14,
+ * c71860c77): both apply to new local Code sessions. Off, commands run
+ * outside the sandbox but each untrusted one asks first; strict refuses
+ * whatever can't run inside it (shared/sandbox-policy.ts). On Windows,
+ * turning the sandbox on sets it up first, which asks for administrator
+ * permission once.
  */
 export function LocalSandboxRows({
   settings,
@@ -251,8 +253,9 @@ export function LocalSandboxRows({
 }
 
 /**
- * Branch prefix: saved when the field is left; empty means "claude"; the reason
- * shows under it while it can't be used.
+ * Branch prefix (live claude.ai bundle, 2026-10-14): saved when the field
+ * is left; empty means "claude"; the reason shows under it while it can't
+ * be used.
  */
 export function BranchPrefixField({
   settings,
@@ -295,13 +298,15 @@ export function BranchPrefixField({
 }
 
 /**
- * A framed choice of the original's that Claudex cannot back yet, showing the
- * original's default.
+ * A framed choice of the original's that Claudex cannot back yet, showing
+ * the original's default (R-1364: Never and Default 160 wide, Inside
+ * project 220).
  */
 /**
- * The desktop's notification levels and sound. Permission requests and
- * Questions offer Off, Badge only and Banners; Task complete offers Off and
- * Banners. An unchosen level reads as Banners.
+ * The desktop's notification levels and sound (live claude.ai bundle,
+ * 2026-10-12: Claude Code settings, local sessions group). Permission
+ * requests and Questions offer Off, Badge only and Banners; Task complete
+ * offers Off and Banners. An unchosen level reads as Banners.
  */
 export const levelRows: {
   kind: NotificationKind;
@@ -338,5 +343,5 @@ export function browserSectionState(
   policy: Pick<ClientPolicy, "browser">,
 ) {
   const blocked = policy.browser?.enabled === false;
-  return { blocked, tools: !blocked && preference(settings, "browserTools") };
+  return { blocked, tools: !blocked && (settings.codeBrowserTools ?? preference(settings, "browserTools")) };
 }

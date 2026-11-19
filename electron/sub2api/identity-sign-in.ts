@@ -1,9 +1,10 @@
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
 import type { GoogleAuthorization } from "../account/google-sign-in";
 import type { PublicAccount, RegisterExtras } from "../../shared/types";
 import { type LoginResponse } from "./client";
 import { signInExpired } from "../../shared/sign-in-errors";
 import { Sub2ApiError } from "./http";
-import { RemoteSession } from "./session";
+import { refreshRefusalReason, RemoteSession } from "./session";
 import { remoteAccountId } from "./identity-support";
 import { pendingChallengeMs } from "./identity-support";
 import { signInError } from "./identity-support";
@@ -15,7 +16,9 @@ export async function finish(
   this: RemoteAccounts,
   response: LoginResponse,
   email: string,
+  current?: AccountOperationCurrent,
 ): Promise<SignIn> {
+  assertAccountOperationCurrent(current);
   if (response.kind === "twoFactor") {
     this.challenge = {
       tempToken: response.tempToken,
@@ -24,9 +27,10 @@ export async function finish(
     };
     return { kind: "twoFactor", maskedEmail: response.maskedEmail };
   }
-  this.challenge = undefined;
   const user =
     response.user ?? (await this.client.me(response.tokens.accessToken));
+  assertAccountOperationCurrent(current);
+  this.challenge = undefined;
   const accountId = this.remember(user);
   const session = new RemoteSession(
     this.client,
@@ -53,13 +57,17 @@ export async function login(
   this: RemoteAccounts,
   email: string,
   password: string,
+  current?: AccountOperationCurrent,
 ): Promise<SignIn> {
+  assertAccountOperationCurrent(current);
   try {
     return await this.finish(
       await this.client.login(email.trim(), password),
       email.trim(),
+      current,
     );
   } catch (error) {
+    assertAccountOperationCurrent(current);
     throw signInError(error);
   }
 }
@@ -67,7 +75,9 @@ export async function login(
 export async function completeTwoFactor(
   this: RemoteAccounts,
   code: string,
+  current?: AccountOperationCurrent,
 ): Promise<SignIn> {
+  assertAccountOperationCurrent(current);
   const challenge = this.challenge;
   if (!challenge || challenge.expiresAt <= this.now()) {
     this.challenge = undefined;
@@ -75,12 +85,15 @@ export async function completeTwoFactor(
   }
   if (!/^\d{6}$/.test(code))
     throw Error("Enter the 6-digit code from your authenticator app.");
+  const challengeCurrent = () => this.challenge === challenge && (!current || current());
   try {
     return await this.finish(
       await this.client.loginTwoFactor(challenge.tempToken, code),
       challenge.email,
+      challengeCurrent,
     );
   } catch (error) {
+    assertAccountOperationCurrent(challengeCurrent);
     const refusal = signInError(error, true);
     // The service forgot the step: only starting again helps.
     if (refusal.message === signInExpired) this.challenge = undefined;
@@ -129,15 +142,19 @@ export async function loginWithCode(
   email: string,
   code: string,
   request?: import("../../shared/email-link").EmailLinkRequest,
+  current?: AccountOperationCurrent,
 ): Promise<SignIn> {
+  assertAccountOperationCurrent(current);
   if (!/^\d{6}$/.test(code.trim()))
     throw Error("Enter the 6-digit code from the email.");
   try {
     return await this.finish(
       await this.client.loginWithCode(email.trim(), code.trim(), request),
       email.trim(),
+      current,
     );
   } catch (error) {
+    assertAccountOperationCurrent(current);
     throw signInError(error);
   }
 }
@@ -150,19 +167,25 @@ export async function loginWithCode(
 export async function loginWithGoogle(
   this: RemoteAccounts,
   authorize: (clientId: string) => Promise<GoogleAuthorization>,
+  current?: AccountOperationCurrent,
 ): Promise<SignIn> {
+  assertAccountOperationCurrent(current);
   const options = await this.client.signInOptions();
+  assertAccountOperationCurrent(current);
   if (!options.googleDesktopClientId)
     throw Error(
       "Signing in with Google is not available on this Claudex service.",
     );
   const authorization = await authorize(options.googleDesktopClientId);
+  assertAccountOperationCurrent(current);
   try {
     return await this.finish(
       await this.client.loginWithGoogle(authorization),
       "",
+      current,
     );
   } catch (error) {
+    assertAccountOperationCurrent(current);
     throw signInError(error);
   }
 }
@@ -183,8 +206,11 @@ export async function register(
   email: string,
   password: string,
   extras: RegisterExtras = {},
+  current?: AccountOperationCurrent,
 ): Promise<SignIn> {
+  assertAccountOperationCurrent(current);
   const policy = await this.policy();
+  assertAccountOperationCurrent(current);
   if (policy.unavailable) throw Error(policy.unavailable);
   if (!policy.registrationEnabled)
     throw Error("Registration is closed on this Claudex service.");
@@ -202,16 +228,22 @@ export async function register(
         promoCode: policy.promoCode ? extras.promoCode?.trim() : undefined,
       }),
       email.trim(),
+      current,
     );
   } catch (error) {
+    assertAccountOperationCurrent(current);
     throw signInError(error);
   }
 }
 
-/** The saved session for this service, renewed once to prove it is still valid. */
+/** Renews the saved session, or opens its local profile when startup is offline. */
 export async function restore(
   this: RemoteAccounts,
-): Promise<{ session: RemoteSession; account: PublicAccount } | undefined> {
+  current?: AccountOperationCurrent,
+  mode: "online" | "startup" = "online",
+): Promise<{ session: RemoteSession; account: PublicAccount; offline?: true } | undefined> {
+  assertAccountOperationCurrent(current);
+  this.restorePending = false;
   const record = this.file.load();
   if (!record) {
     // The app closed while an account was being added: the account the
@@ -220,7 +252,7 @@ export async function restore(
     if (!adding) return undefined;
     this.setAdding(undefined);
     try {
-      return await this.resume(adding.from);
+      return await this.resume(adding.from, current);
     } catch {
       return undefined;
     }
@@ -236,17 +268,30 @@ export async function restore(
     this.now,
   );
   try {
-    await session.refresh();
-    const user = await session.authorized((token) => this.client.me(token));
+    await session.refresh(current);
+    const user = await session.authorized((token) => this.client.me(token), current);
+    assertAccountOperationCurrent(current);
     if (remoteAccountId(this.baseUrl, user.id) !== record.accountId) {
       session.end();
+      this.markEnded(record.accountId);
+      this.signedOutReason = "session-expired";
       return undefined;
     }
     this.remember(user);
     return { session, account: publicAccount(record.accountId, user) };
   } catch (error) {
+    assertAccountOperationCurrent(current);
+    if (mode === "startup" && error instanceof Sub2ApiError &&
+        error.status === 0 && error.code === "UNREACHABLE") {
+      const account = this.cachedAccount(record);
+      if (account) return { session, account, offline: true };
+    }
     // A refused token ends the saved session; an outage keeps it for next time.
-    if (error instanceof Sub2ApiError && error.status === 401) session.end();
+    if (error instanceof Sub2ApiError && error.status === 401) {
+      session.end();
+      this.markEnded(record.accountId);
+      this.signedOutReason = refreshRefusalReason(error.code);
+    } else this.restorePending = true;
     throw signInError(error);
   }
 }

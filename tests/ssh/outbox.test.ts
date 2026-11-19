@@ -263,8 +263,8 @@ test("a host that is reconnecting by itself makes a message wait; other failures
   }
 });
 
-// A message sent without a folder runs in the host's default folder or the
-// user's home there.
+// Owner, 2026-10-08: a message sent without a folder runs in the host's
+// default folder or the user's home there.
 test("an SSH message without a folder runs in the host's home", async () => {
   const env = setup();
   try {
@@ -420,4 +420,26 @@ test("a waiting message the host refuses shows the error on its turn", async () 
   } finally {
     env.close();
   }
+});
+
+test("queued inline declarations survive an outbox restart and are delivered once", async () => {
+  const env = setup();
+  try {
+    const { storeAttachment } = await import("../../electron/engine/composer-files");
+    const { inlineDisplayForSend } = await import("../../electron/official-ui/api/inline-attachment-displays");
+    const attachment = storeAttachment(path.join(env.root, "attachments"), "notes.txt.extracted.txt", Buffer.from("Queued excerpt"), openPolicy);
+    const displays = [inlineDisplayForSend(attachment.id, { file_name: "notes.txt", file_type: "txt", kind: "excerpt" }, "Queued excerpt")];
+    env.setWaiting(true);
+    const conversation = await env.remote.send(env.input({ attachments: [attachment], inlineAttachmentDisplays: displays }));
+    assert.deepEqual(conversation.turns.at(-1)!.inlineAttachmentDisplays, displays);
+    env.remote.options.outbox = new Outbox(env.root);
+    assert.deepEqual(env.remote.options.outbox.forConversation(conversation.id)!.inlineAttachmentDisplays, displays);
+    env.setWaiting(false);
+    await env.remote.deliverOutbox();
+    assert.deepEqual(env.store.conversation(conversation.id).turns.at(-1)!.inlineAttachmentDisplays, displays);
+    assert.equal(env.turnStarts().length, 1);
+    assert.equal(env.remote.options.outbox.list().length, 0);
+    await env.remote.deliverOutbox();
+    assert.equal(env.turnStarts().length, 1);
+  } finally { env.close(); }
 });

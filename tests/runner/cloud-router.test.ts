@@ -7,6 +7,8 @@ import {
   type CloudRouterDeps,
 } from "../../electron/cloud/cloud-router";
 import { cloudSnapshotTimeoutMs } from "../../electron/cloud/cloud-router-support";
+import { organizationProjectChat } from "../../electron/engine/organization-project-chat";
+import { searchLocalConversations } from "../../electron/conversations/history-search";
 
 const conversation = (id: string, mode = "chat") =>
   ({ id, mode, title: id, turns: [] }) as unknown as Conversation;
@@ -18,6 +20,24 @@ const snapshot = (part: Partial<Snapshot>) =>
     approvals: [],
     ...part,
   }) as unknown as Snapshot;
+
+test("desktop search merges only its visible cloud and local history before paging", async () => {
+  const row = (id: string, updatedAt: number) => ({
+    ...conversation(id), title: `F020 ${id}`, updatedAt,
+  });
+  const local = [row("local", 3), row("linked", 1)];
+  const cloud = [row("cloud", 5), row("linked", 4)];
+  const client = {
+    snapshot: async () => ({ snapshot: snapshot({ conversations: cloud }) }),
+    call: async (_method: string, args: unknown[]) =>
+      searchLocalConversations([...cloud, row("foreign", 7)], args[0], args[1]),
+  };
+  const router = new CloudRouter({ client: () => client, push() {}, attachmentBytes: async () => undefined });
+  await router.merge(snapshot({ conversations: local.map(c => c.id === "linked" ? { ...c, linkedToComputer: true } : c) }));
+  const search = router.route("searchConversations", (query, options) => searchLocalConversations(local, query, options));
+  const results = await search("F020", { limit: 2, page: { offset: 1, archive: "active" } });
+  assert.deepEqual(results.results.map((hit: { conversationId: string }) => hit.conversationId), ["local", "linked"]);
+});
 
 test("failed computer handoff releases the cloud claim", async () => {
   const { router, calls } = setup();
@@ -53,6 +73,51 @@ test("a locally linked task stays local across cloud snapshot refreshes", async 
     )({ conversationId: "linked" }),
     "local",
   );
+});
+
+test("learning that a listed Code ID belongs to the cloud refreshes the window once", async () => {
+  const cloud = conversation("mirrored-code", "code");
+  const { router, pushed } = setup({ conversations: [cloud] });
+  const local = snapshot({ conversations: [cloud, conversation("local-code", "code")] });
+
+  const merged = await router.merge(local);
+  assert.equal(merged.conversations.find((row) => row.id === cloud.id)?.cloudHosted, true);
+  await router.merge(local);
+  assert.deepEqual(pushed, [{ type: "resync" }]);
+});
+
+test("a deleted cloud project does not reappear from its migration backup while sync is on", async () => {
+  const { router, setOnline } = setup({}, { migratedConversations: () => new Set(["moved"]) });
+  const project = { id: "copied", name: "Copied", description: "", instructions: "", createdAt: 1 };
+  const local = snapshot({
+    projects: [project],
+    conversations: [{ ...conversation("moved"), projectId: project.id }],
+  });
+  const synced = await router.merge(local);
+  assert.deepEqual(synced.projects, []);
+  assert.deepEqual(synced.conversations, []);
+  const localWork = { ...conversation("local-code", "code"), projectId: project.id };
+  const withLocalWork = await router.merge(snapshot({
+    projects: [project],
+    conversations: [...local.conversations, localWork],
+  }));
+  assert.deepEqual(withLocalWork.projects, [project]);
+  assert.deepEqual(withLocalWork.conversations, [localWork]);
+  setOnline(false);
+  assert.equal(await router.merge(local), local);
+});
+
+test("project moves use the residency shown in the merged project catalog", async () => {
+  const project = { id: "copied", name: "Copied", description: "", instructions: "", createdAt: 1 };
+  const { router, calls } = setup({ projects: [project], conversations: [conversation("remote")] });
+  await router.merge(snapshot({ projects: [project], conversations: [conversation("local")] }));
+  const move = router.route("updateConversation", () => "local");
+  const patch = (target: string | null) => ({ projectId: { version: 1, target } });
+  assert.throws(() => move("local", patch("copied")), /Choose a project stored/);
+  assert.throws(() => move("remote", patch("local-project")), /Choose a project stored/);
+  assert.deepEqual(calls, []);
+  assert.equal(await move("remote", patch("copied")), "cloud:updateConversation");
+  assert.equal(move("local", patch(null)), "local");
 });
 
 test("computer handoff asks for sign-in before claiming a task when disconnected", async () => {
@@ -145,8 +210,7 @@ test("linked GitHub repositories cross into the cloud as links, not uploaded sna
     size: 100,
     github,
   };
-  const router = new CloudRouter({
-    client: () => ({
+  const client: CloudCalls = {
       snapshot: async () => ({ snapshot: snapshot({}) }),
       call: async (method, args = []) => {
         calls.push({ method, args });
@@ -154,7 +218,9 @@ test("linked GitHub repositories cross into the cloud as links, not uploaded sna
           ? attachment
           : conversation("cloud-chat");
       },
-    }),
+    };
+  const router = new CloudRouter({
+    client: () => client,
     push: () => {},
     attachmentBytes: async () => ({
       name: github.repository,
@@ -259,8 +325,8 @@ test("a conversation's calls go where it lives", async () => {
   );
   assert.equal(await read("p-local", "notes.md"), "local:readProjectKnowledge");
   assert.equal(await read("p-cloud", "notes.md"), "cloud:readProjectKnowledge");
-  // A cloud conversation's folders and terminals are the runner's: asked of the
-  // local store they were "not found".
+  // A cloud conversation's folders and terminals are the runner's: asked of
+  // the local store they were "not found" (desktop, 2026-10-20).
   for (const name of ["coworkFolders", "listBackgroundTerminals"]) {
     const call = t.router.route(name, t.local(name));
     assert.equal(await call("c-1"), `cloud:${name}`);
@@ -350,6 +416,22 @@ test("where each new conversation starts", async () => {
   // Signed out of the cloud: everything stays local.
   t.setOnline(false);
   assert.equal(await where({ mode: "chat" }), "local");
+});
+
+test("desktop starts only the authorized shared-project Chat on its local engine", async () => {
+  const t = setup();
+  const send = t.router.route("send", t.local("send"));
+  const input = { mode: "chat", text: "Hello", attachments: [], providerId: "sub2api", model: "m", newConversationId: "shared-chat" };
+  await organizationProjectChat.run({
+    conversationId: input.newConversationId,
+    projectOrganizationId: "org",
+    projectId: "project",
+    load: async () => ({ instructions: "", knowledge: "" }),
+  }, async () => {
+    assert.equal(await send(input), "local:send");
+    assert.equal((await send({ ...input, newConversationId: "other-chat" })).id, "c-new");
+  });
+  assert.deepEqual(t.calls.map(call => call.method), ["local:send", "send"]);
 });
 
 test("a cloud approval's id carries a prefix both ways", async () => {
@@ -553,6 +635,145 @@ const ownerSnapshot = (owner: string) =>
     projects: [{ id: `${owner}-project`, name: owner } as never],
     conversations: [conversation(`${owner}-conversation`)],
   });
+
+test("a late cloud snapshot restores history once without another download or delaying local work", async () => {
+  const pending = deferred<{ snapshot: Snapshot }>();
+  let downloads = 0;
+  const t = snapshotRace({
+    call: async () => "cloud",
+    snapshot: () => { downloads++; return pending.promise; },
+  });
+  const local = snapshot({ conversations: [
+    conversation("local-code", "code"), conversation("local-chat"),
+    conversation("mirrored-code", "code"),
+  ] });
+  const reads: Promise<Snapshot>[] = [];
+  const push = t.router.deps.push;
+  t.router.deps.push = event => {
+    push(event);
+    if (event.type === "resync") reads.push(t.router.merge(local));
+  };
+  const cold = t.router.merge(local);
+  t.fire(t.timer(cloudSnapshotTimeoutMs));
+  const fallback = await cold;
+  assert.deepEqual(fallback.conversations, local.conversations);
+  assert.deepEqual(fallback.projectCatalog, { status: "failed", cached: false });
+  assert.equal(await t.router.route("conversationTurns", async () => "local")("local-code"), "local");
+  const retry = t.timer(15_000);
+  pending.resolve({ snapshot: snapshot({
+    conversations: [conversation("cloud-chat"), conversation("mirrored-code", "code")],
+    projects: [{ id: "cloud-project", name: "Cloud" } as never],
+  }) });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(reads.length, 1);
+  const restored = await reads[0];
+  assert.deepEqual(restored.conversations.map(c => c.id), ["local-code", "local-chat", "cloud-chat", "mirrored-code"]);
+  assert.equal(restored.conversations.find(c => c.id === "mirrored-code")?.cloudHosted, true);
+  assert.deepEqual(restored.projectCatalog, { status: "ready", cached: true });
+  assert.equal(t.router.isCloudConversation("cloud-chat"), true);
+  assert.equal(t.router.isCloudProject("cloud-project"), true);
+  assert.equal(downloads, 1);
+  assert.equal(t.completed(), 1);
+  assert.equal(t.timers.get(retry)?.active, false);
+  t.fire(retry);
+  assert.deepEqual(t.events, [{ type: "resync" }]);
+  assert.equal(downloads, 1);
+});
+
+test("a conversation event received after a late snapshot stays visible on the refresh read", async () => {
+  const pending = deferred<{ snapshot: Snapshot }>();
+  let downloads = 0;
+  const t = snapshotRace({
+    call: async () => undefined,
+    snapshot: () => { downloads++; return pending.promise; },
+  });
+  const cold = t.router.merge(snapshot({}));
+  t.fire(t.timer(cloudSnapshotTimeoutMs));
+  await cold;
+  pending.resolve({ snapshot: ownerSnapshot("cloud") });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  t.router.cloudEvent({ type: "conversation", conversation: {
+    ...conversation("cloud-conversation"), title: "Latest title",
+  } });
+  t.router.cloudEvent({ type: "conversation", conversation: conversation("new-cloud-chat") });
+  const refreshed = await t.router.merge(snapshot({}));
+  assert.deepEqual(refreshed.conversations.map(c => [c.id, c.title]), [
+    ["cloud-conversation", "Latest title"], ["new-cloud-chat", "new-cloud-chat"],
+  ]);
+  assert.equal(downloads, 1);
+});
+
+test("reset discards a late snapshot awaiting the window refresh", async () => {
+  const pending = deferred<{ snapshot: Snapshot }>();
+  const t = snapshotRace({ call: async () => undefined, snapshot: () => pending.promise });
+  const cold = t.router.merge(snapshot({}));
+  t.fire(t.timer(cloudSnapshotTimeoutMs));
+  await cold;
+  pending.resolve({ snapshot: ownerSnapshot("old") });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  t.router.reset();
+  t.setClient({ call: async () => undefined, snapshot: async () => ({ snapshot: ownerSnapshot("new") }) });
+  const refreshed = await t.router.merge(snapshot({}));
+  assert.deepEqual(refreshed.conversations.map(c => c.id), ["new-conversation"]);
+});
+
+test("a synchronous snapshot failure still returns local history and schedules retry", async () => {
+  const t = snapshotRace({ call: async () => undefined, snapshot() { throw Error("offline"); } });
+  const local = ownerSnapshot("local");
+  const fallback = await t.router.merge(local);
+  assert.deepEqual(fallback.conversations, local.conversations);
+  assert.deepEqual(fallback.projectCatalog, { status: "failed", cached: false });
+  t.fire(t.timer(15_000));
+  assert.deepEqual(t.events, [{ type: "resync" }]);
+});
+
+for (const replacement of ["reset", "client", "newer-read"] as const)
+  test(`a timed-out snapshot cannot publish after ${replacement}`, async () => {
+    const pending = deferred<{ snapshot: Snapshot }>();
+    const client: CloudCalls = {
+      call: async () => assert.fail("retired reads must not recover claims"),
+      snapshot: () => pending.promise,
+    };
+    const t = snapshotRace(client);
+    const local = ownerSnapshot("local");
+    const old = t.router.merge(local);
+    t.fire(t.timer(cloudSnapshotTimeoutMs));
+    await old;
+    if (replacement === "reset") t.router.reset();
+    if (replacement === "client") t.setClient({ ...client });
+    if (replacement === "newer-read") {
+      client.snapshot = async () => ({ snapshot: ownerSnapshot("new") });
+      await t.router.merge(local);
+    }
+    pending.resolve({ snapshot: ownerSnapshot("old") });
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(t.router.isCloudConversation("old-conversation"), false);
+    assert.equal(t.router.isCloudProject("old-project"), false);
+    assert.deepEqual(t.events, []);
+    assert.equal(t.completed(), replacement === "newer-read" ? 1 : 0);
+    client.snapshot = async () => { throw Error("offline"); };
+    t.setClient(client);
+    const next = await t.router.merge(local);
+    assert.deepEqual(next.conversations.map(c => c.id), replacement === "newer-read"
+      ? ["local-conversation", "new-conversation"] : ["local-conversation"]);
+  });
+
+test("a late cloud rejection leaves the local fallback and its retry intact", async () => {
+  const pending = deferred<{ snapshot: Snapshot }>();
+  const t = snapshotRace({ call: async () => undefined, snapshot: () => pending.promise });
+  const local = ownerSnapshot("local");
+  const cold = t.router.merge(local);
+  t.fire(t.timer(cloudSnapshotTimeoutMs));
+  await cold;
+  const retry = t.timer(15_000);
+  pending.reject(Error("offline"));
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(t.timers.get(retry)?.active, true);
+  assert.equal(t.completed(), 0);
+  assert.deepEqual(t.events, []);
+  t.fire(retry);
+  assert.deepEqual(t.events, [{ type: "resync" }]);
+});
 
 for (const settlement of ["resolve", "reject", "timeout"] as const)
   test(`a snapshot ${settlement} after reset cannot refill the next account cache, touch its retry or recover claims`, async () => {
@@ -882,4 +1103,19 @@ test("a cloud Chat carries this computer's permission mode; Code doesn't", async
     .filter((c) => c.method === "send")
     .map((c) => (c.args[0] as Record<string, unknown>).taskPermission);
   assert.deepEqual(sent, ["bypass", undefined]);
+});
+
+test("a new Chat project is made in the cloud; local and folder projects stay here", async () => {
+  const t = setup({ projects: [{ id: "p-cloud", name: "Cloud" } as never] }, {
+    localProject: (id) => id === "p-local",
+  });
+  await t.router.merge(snapshot({}));
+  const save = t.router.route("saveProject", async () => "local");
+  const project = (part: Record<string, unknown>) =>
+    ({ name: "P", description: "", instructions: "", createdAt: 1, ...part }) as never;
+  assert.equal(await save(project({ id: "p-new" })), "cloud:saveProject");
+  assert.equal(await save(project({ id: "p-cloud" })), "cloud:saveProject");
+  assert.equal(await save(project({ id: "p-local" })), "local");
+  assert.equal(await save(project({ id: "p-folder", cwd: "/repo" })), "local");
+  assert.equal(await save(project({ id: "p-code", kind: "code" })), "local");
 });

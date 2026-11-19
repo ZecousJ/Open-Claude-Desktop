@@ -31,14 +31,15 @@ function promptText(prompt: StarterPrompt, category: StarterCategory) {
 }
 
 /**
- * The prompt ideas under the Chat home's composer (loaded with its styles when
- * the home first shows them). A row of category chips; a chip opens that
- * category's list in their place. A line previews its prompt in the composer
- * while the pointer or the keyboard is on it, and a click writes the prompt
- * there for the person to finish and send. Escape, the X and a press outside
- * close the list. Structure and measures follow the original's prompt list;
- * category selection, seeded prompt order and connector priority follow the
- * reference design -IdU-cvhU.js and.
+ * The prompt ideas under the Chat home's composer (loaded with its styles
+ * when the home first shows them). A row of category chips; a chip opens
+ * that category's list in their place. A line previews its prompt in the
+ * composer while the pointer or the keyboard is on it, and a click writes
+ * the prompt there for the person to finish and send. Escape, the X and a
+ * press outside close the list. Structure and measures follow the
+ * original's prompt list; category selection, seeded prompt order and
+ * connector priority follow live claude.ai bundle, 2026-10-14,
+ * cb7829751-IdU-cvhU.js and c00a93a61-CqDD2kKQ.js.
  */
 export default function StarterPrompts({
   onPick,
@@ -234,7 +235,7 @@ function StarterList({
 }) {
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   // Opened from the keyboard, the first line takes focus (the chip it came
-  // From is hidden now) so the arrow keys can go straight down the list.
+  // from is hidden now) so the arrow keys can go straight down the list.
   useEffect(() => {
     if (autoFocus) buttons.current[0]?.focus({ preventScroll: true });
   }, []);

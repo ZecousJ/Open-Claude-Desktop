@@ -189,12 +189,13 @@ export async function launch(
     );
     const command = runCommand(o, lp.bundle, id);
     const pipe = lo.stdio === "pipe";
-    // Relayed: the engine's stdio sockets reach this process with O_NONBLOCK
-    // set, and handed down as they are, gVisor gives codex a non-blocking
-    // stdout, so a reply bigger than the socket buffer (the thread's whole
-    // history, ~2 MB) failed with EAGAIN and codex closed its output. Pipes of
-    // our own are blocking on codex's side; Node carries the bytes with
-    // backpressure.
+    // Relayed (owner report, 2026-10-08: a long Cowork task's thread/resume
+    // timed out every time): the engine's stdio sockets reach this process
+    // with O_NONBLOCK set, and handed down as they are, gVisor gives codex a
+    // non-blocking stdout, so a reply bigger than the socket buffer (the
+    // thread's whole history, ~2 MB) failed with EAGAIN and codex closed its
+    // output. Pipes of our own are blocking on codex's side; Node carries
+    // the bytes with backpressure.
     const relay = lo.stdio === "relay";
     // Node's own child pipes are non-blocking on the child's side too (seen
     // on r1: the runsc child's fd 1 had O_NONBLOCK): a tiny python3 step

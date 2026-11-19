@@ -118,7 +118,7 @@ func (s *AntigravityGatewayService) ForwardAsResponses(
 		return nil, s.writeAntigravityCompatError(c, http.StatusBadRequest, "invalid_request_error", "model is required")
 	}
 
-	claudeRequest, err := apicompat.ResponsesToAnthropicRequest(&request)
+	claudeRequest, err := apicompat.ResponsesToAnthropicRequestWithReasoningCache(&request, privateAnthropicThinkingCache(c, s.cache).get)
 	if err != nil {
 		return nil, s.writeAntigravityCompatError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
 	}
@@ -591,7 +591,7 @@ func (s *AntigravityGatewayService) handleResponsesNonStreamingFromAntigravity(
 	if json.Unmarshal(claudeResponse, &anthropicResponse) != nil {
 		return nil, s.writeAntigravityCompatError(c, http.StatusBadGateway, "upstream_error", "Failed to parse upstream response")
 	}
-	c.JSON(http.StatusOK, apicompat.AnthropicToResponsesResponse(&anthropicResponse))
+	c.JSON(http.StatusOK, apicompat.AnthropicToResponsesResponseWithReasoningCache(&anthropicResponse, privateAnthropicThinkingCache(c, s.cache).set))
 	return result, nil
 }
 

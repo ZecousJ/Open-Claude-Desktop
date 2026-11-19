@@ -3,8 +3,10 @@ import { usePaneSide } from "../app/pane-side";
 import { t, tc } from "../i18n";
 
 /**
- * Where the Files pane's tree and the Changes pane's file list sit: one setting
- * for both, Automatic by default, which puts them on the pane's outer side.
+ * Where the Files pane's tree and the Changes pane's file list sit: one
+ * setting for both, Automatic by default, which puts them on the pane's
+ * outer side (live claude.ai bundle, 2026-10-21, cf3dc7910:
+ * epitaxy-nifty-pudding, "auto" | "left" | "right").
  */
 export type TreePosition = "auto" | "left" | "right";
 export const treePositions: readonly TreePosition[] = ["auto", "left", "right"];

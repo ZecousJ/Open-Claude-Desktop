@@ -7,7 +7,8 @@ import {
 } from "react";
 import { prefersReducedMotion, usePresence } from "../ui/usePresence";
 
-// Geometry and spring: 32px circle, 68px capsule, 500/30/0.7.
+// Geometry and spring (live claude.ai bundle, 2026-10-14,
+// c04e7453f-Cg2yRCdu.js): 32px circle, 68px capsule, 500/30/0.7.
 export function SubmitPill({
   reply = false,
   ...props
@@ -18,7 +19,8 @@ export function SubmitPill({
   stop: ReactElement<{ children?: ReactNode }>;
   send: ReactNode;
 }) {
-  // Reply PrimaryAction has ghost controls, not the home capsule.
+  // Reply PrimaryAction has ghost controls, not the home capsule (live
+  // claude.ai bundle, 2026-10-14, shared-5-DQt42NbL.js).
   if (reply)
     return (
       <span className="composer-reply-submit">

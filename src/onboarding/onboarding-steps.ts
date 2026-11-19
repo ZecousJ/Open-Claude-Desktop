@@ -1,11 +1,12 @@
 /**
- * The order of the first-run onboarding: "What kind of work do you do?"; for a
- * coding role "Set up and start coding" (`connector_claude_code`, roles `fs`);
- * "Connect your work tools" (`connector_connect`); "How did you get here?"
- * (`hear_about`); then the first task. There is no Back: each step goes
- * forward, and every step after the role can be skipped. The step reached is
- * kept in this browser, so a window closed half-way opens on it again (the
- * original keeps it in local storage too).
+ * The order of the first-run onboarding (live claude.ai bundle, 2026-10-12,
+ * c10bf8b47 `Jc`): "What kind of work do you do?"; for a coding role "Set up
+ * and start coding" (`connector_claude_code`, roles `fs`); "Connect your work
+ * tools" (`connector_connect`); "How did you get here?" (`hear_about`); then
+ * the first task. There is no Back: each step goes forward, and every step
+ * after the role can be skipped. The step reached is kept in this browser,
+ * so a window closed half-way opens on it again (the original keeps it in
+ * local storage too).
  */
 import type { WorkType } from "../../shared/settings-extras";
 
@@ -21,7 +22,7 @@ export const onboardingSteps: readonly OnboardingStep[] = [
   "first",
 ];
 
-/** The roles offered "Set up and start coding". */
+/** The roles offered "Set up and start coding" (c10bf8b47 `fs`). */
 export const codingRoles: readonly WorkType[] = [
   "Engineering",
   "SoftwareEngineer",
@@ -84,7 +85,7 @@ export function saveStep(accountId: string, step: OnboardingStep | undefined) {
 
 /**
  * "How did you get here?" in the original's order: shuffled for each person,
- * Other last.
+ * Other last (c10bf8b47 `zo`, `qi`).
  */
 export function shuffledWithOtherLast<T extends { value: string }>(
   list: readonly T[],

@@ -2,15 +2,24 @@ import path from "node:path";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
+
+export function bundledCodexDirectory(resourcesPath: string) {
+  const appPackRuntime = path.join(resourcesPath, "codex-runtime");
+  return process.platform === "win32" && fs.existsSync(appPackRuntime)
+    ? appPackRuntime
+    : path.join(resourcesPath, "codex");
+}
+
 export function resolveRuntime(resourcesPath?: string) {
   const filename = process.platform === "win32" ? "codex.exe" : "codex";
   if (resourcesPath) {
+    const root = bundledCodexDirectory(resourcesPath);
     for (const parts of [
-      ["codex", process.arch, "bin", filename],
-      ["codex", "bin", filename],
-      ["codex", filename],
+      [process.arch, "bin", filename],
+      ["bin", filename],
+      [filename],
     ]) {
-      const p = path.join(resourcesPath, ...parts);
+      const p = path.join(root, ...parts);
       if (fs.existsSync(p)) return p;
     }
   }

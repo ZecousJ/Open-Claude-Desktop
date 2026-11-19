@@ -3,7 +3,7 @@ import { fullTime, relativeTime } from "../../ui/RelativeTime";
 import type { Conversation, Project } from "../../../shared/types";
 import { projectKind } from "../../../shared/project-kind";
 
-// Type sections and persisted grouping.
+// Type sections and persisted grouping (live claude.ai bundle, 2026-10-14, c17beaa76-CrQT9ilA.js).
 export function projectGroups(projects: Project[], grouped: boolean) {
   if (!grouped) return [{ label: "Projects", projects }];
   return [
@@ -58,7 +58,7 @@ export function projectUpdatedAt(
 
 const sortKey = "claudex.projects.sort";
 
-/** The sort the person chose last. */
+/** The sort the person chose last (desktop bundle 2.31226.1 keeps it: "recent" by default). */
 export function storedProjectSort(): ProjectSort {
   try {
     const value = localStorage.getItem(sortKey);
@@ -82,7 +82,7 @@ export const folderName = (folder: string) =>
 
 /**
  * The date on a project's card: when it was made when the list is sorted by
- * creation, else when it last changed.
+ * creation, else when it last changed (desktop bundle 2.31226.1).
  */
 export function projectCardTime(
   project: Project,
@@ -98,8 +98,9 @@ export function projectCardTime(
 export type ProjectView = "mine" | "archived";
 
 /**
- * The Projects grid after search (name, description and folder) and sort, for
- * one tab; pinned projects come first whatever the sort.
+ * The Projects grid after search (name, description and folder) and sort
+ * (R-1290), for one tab; pinned projects come first whatever the sort (live
+ * claude.ai bundle, 2026-10-14, c17beaa76: the starred set's comparator).
  */
 export function visibleProjects(
   projects: Project[],
@@ -142,14 +143,18 @@ export function projectChats(project: Project, conversations: Conversation[]) {
 }
 
 /**
- * A card's date as the original's relative time writes it, with the full date
- * and time as its tooltip.
+ * A card's date as the original's relative time writes it (live claude.ai
+ * bundle, 2026-10-14, shared-2 `oN`: relative for a week, then a short date),
+ * with the full date and time as its tooltip.
  */
 export const projectDate = (timestamp: number, now = Date.now()) =>
   relativeTime(timestamp, now);
 export const projectDateTooltip = (timestamp: number) => fullTime(timestamp);
 
-/** Whether a project's settings differ, including appearance and defaults. */
+/**
+ * Whether a project's settings differ, including appearance and defaults
+ * (live claude.ai bundle, 2026-10-14, c57eefbba-Z8dldrXK.js).
+ */
 export function projectChanged(initial: Project, draft: Project) {
   return (
     initial.name !== draft.name ||

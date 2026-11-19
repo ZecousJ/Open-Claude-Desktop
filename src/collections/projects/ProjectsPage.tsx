@@ -64,7 +64,7 @@ type ProjectActions = {
   onSaveProject: (project: Project) => Promise<void>;
 };
 
-// Conditional checkbox after sort radios.
+// Conditional checkbox after sort radios (live claude.ai bundle, 2026-10-14, c17beaa76-CrQT9ilA.js).
 export function projectSortMenuEntries(
   sort: ProjectSort,
   onSort: (sort: ProjectSort) => void,
@@ -90,7 +90,8 @@ export function projectSortMenuEntries(
   ];
 }
 
-// A project's menu: Pin or Unpin, Edit details, a rule, Archive and Delete in
+// A project's menu (live claude.ai /projects and /project/<id>,
+// 2026-10-21): Pin or Unpin, Edit details, a rule, Archive and Delete in
 // red; the project page's own ⋮ leaves Pin to the pin button beside it.
 export function projectCardMenuEntries(
   project: Project,
@@ -147,12 +148,12 @@ export function projectCardMenuEntries(
 }
 
 /**
- * Projects: search, sort (Last updated, Date created, Alphabetical), New
- * project and two columns of cards with name, description and last activity;
- * each card's ⋮ edits or archives. A project opens in place with its
- * instructions, folder, files and chats, and starts new chats in it. Its files
- * are kept in the profile and chats in the project read them when they need to
- * (R13-D).
+ * Projects (R-1290, R-1289, R-Projects-加载中骨架): search, sort (Last
+ * updated, Date created, Alphabetical), New project and two columns of
+ * cards with name, description and last activity; each card's ⋮ edits or
+ * archives. A project opens in place with its instructions, folder, files
+ * and chats, and starts new chats in it. Its files are kept in the profile
+ * and chats in the project read them when they need to (R13-D).
  */
 export function ProjectsPage({
   projects,
@@ -260,7 +261,7 @@ export function ProjectsPage({
   const grid = useRef<HTMLDivElement>(null);
   // Down Arrow in the search goes to the first card, Escape in the cards back.
   const keys = useResultsKeys(searchInput, grid, () => setQuery(null));
-  // The live claude.ai keeps search behind its icon at every width.
+  // The live claude.ai keeps search behind its icon at every width (2026-09-29).
   const wide = useWideColumn(column, Number.POSITIVE_INFINITY);
   useEffect(() => {
     if (searching && !wide) searchInput.current?.focus();

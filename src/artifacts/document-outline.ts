@@ -1,12 +1,13 @@
 /*
- * A Markdown document's contents rail (MarkdownRail.tsx), after the The first
- * three heading levels (h1–h3), shown once there are three of them. Levels
- * count from the highest one present; a lone top heading that opens the
- * document (its title) stands at the first level and the rest start one level
- * lower, down to the third. Every heading is a rail tick: a long outline
- * scrolls the rail instead of dropping levels. The heading being read is the
- * last one above a line 20% down the view, the first one before any scroll and
- * the last one once the view reaches the end.
+ * A Markdown document's contents rail (MarkdownRail.tsx), after the
+ * document outline of the live claude.ai bundle, 2026-10-12: the first three
+ * heading levels (h1–h3), shown once there are three of them. Levels count
+ * from the highest one present; a lone top heading that opens the document
+ * (its title) stands at the first level and the rest start one level lower,
+ * down to the third. Every heading is a rail tick: a long outline scrolls the
+ * rail instead of dropping levels. The heading being read is the last one
+ * above a line 20% down the view, the first one before any scroll and the
+ * last one once the view reaches the end.
  */
 
 export interface OutlineEntry {

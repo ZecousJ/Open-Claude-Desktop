@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -103,7 +104,7 @@ func TestOllamaCloudUsageScheduleRateLimitProbeReturnsWhileProbeRuns(t *testing.
 	require.Equal(t, int64(1), upstream.calls.Load())
 }
 
-func TestOllamaCloudUsageRateLimitProbeExhaustedReportsReset(t *testing.T) {
+func TestGatewayOllamaCloudUsageRateLimitProbeExhaustedReportsReset(t *testing.T) {
 	fixedNow := time.Date(2026, 7, 20, 12, 0, 0, 0, time.UTC)
 	account := ollamaUsageAccount(11)
 	account.Extra[OllamaCloudUsageSessionExtraKey] = "cipher:wos-session=secret"
@@ -112,7 +113,11 @@ func TestOllamaCloudUsageRateLimitProbeExhaustedReportsReset(t *testing.T) {
 	}}
 	wantReset := ollamaCloudProbeReset(t, fixedNow)
 	upstream := &ollamaUsageHTTPStub{body: ollamaCloudProbeUsageBody(100, wantReset.Format(time.RFC3339))}
-	svc := ollamaCloudProbeFixture(t, repo, upstream, fixedNow)
+	cfg := &config.Config{Server: config.ServerConfig{Role: config.ServerRoleModelGateway}}
+	cfg.Totp.EncryptionKeyConfigured = true
+	svc := ProvideOllamaCloudUsageService(repo, upstream, nil, ollamaUsageTestEncryptor{}, cfg, nil, nil)
+	svc.now = func() time.Time { return fixedNow }
+	t.Cleanup(svc.Stop)
 
 	called := make(chan time.Time, 1)
 	require.True(t, svc.ScheduleOllamaCloudUsageRateLimitProbe(account.ID, func(id int64, reset time.Time) {

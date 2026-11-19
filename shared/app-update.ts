@@ -1,7 +1,7 @@
 /**
- * What Claudex's updater does with the service's release information. Pure:
- * the main process (electron/updates/) downloads, verifies and installs what
- * `planUpdate` names.
+ * What Claudex's updater does with the service's release information
+ * (package OTA, docs/ota.md). Pure: the main process (electron/updates/)
+ * downloads, verifies and installs what `planUpdate` names.
  */
 import type { AppUpdateStatus } from "./app-update-api";
 import { validClaudexVersion } from "./claudex-contract";
@@ -225,8 +225,8 @@ export type RelocationPlan =
   | { action: "defer"; target: string };
 
 /**
- * Where a Claudex bundle with another name moves: beside itself as
- * Claudex.app.
+ * Where a Claudex bundle with another name (ZecousAI's updater installs our
+ * zip as /Applications/ZecousAI.app) moves: beside itself as Claudex.app.
  * Bundles App Translocation or a disk image runs from stay where they are.
  */
 export function relocationPlan(options: {
@@ -255,9 +255,10 @@ export function relocationPlan(options: {
 
 /**
  * The application menu's updates item for a visible installation. The
- * original's wording: "Downloading Update…" with no percentage, "Restart to
- * Update to 1.2" once staged, and a disabled "Last Update Attempt Failed" line
- * under the ordinary item after a failure (`failed`).
+ * original's wording (source: desktop bundle 2.37337.1 static
+ * JS): "Downloading Update…" with no percentage, "Restart to Update to 1.2"
+ * once staged, and a disabled "Last Update Attempt Failed" line under the
+ * ordinary item after a failure (`failed`).
  */
 export function updateMenuItem(
   status: AppUpdateStatus | undefined,

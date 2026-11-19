@@ -2,8 +2,9 @@ import { WithTooltip } from "../ui/Tooltip";
 import { ResearchIcon } from "./ResearchIcon";
 
 /**
- * The composer's Research chip: shown right of the "+" button while Research is
- * on; clicking it turns Research off, as unchecking the menu row does.
+ * The composer's Research chip (R-0285, design R45 §4.2): shown right of
+ * the "+" button while Research is on; clicking it turns Research off, as
+ * unchecking the menu row does.
  */
 export function ResearchChip({
   onClick,

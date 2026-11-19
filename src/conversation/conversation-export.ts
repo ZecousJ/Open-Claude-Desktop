@@ -4,7 +4,7 @@ import { api } from "../desktop-api";
 import { formatText, t } from "../i18n";
 import { dismissToast, showToast } from "../ui/toast-store";
 
-/** Local and hosted success notices. */
+/** Local and hosted success notices (live claude.ai bundle, 2026-10-14, c7c83e720-D0f-geTp). */
 export async function exportConversation(
   conversation: Conversation,
   report: (error: unknown) => void,

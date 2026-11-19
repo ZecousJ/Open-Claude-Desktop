@@ -72,7 +72,7 @@ test("Chat's Edit opens the shared editor and Save passes the new text", async (
         }),
       ),
     );
-    // Edit sits in the message's More options menu.
+    // Edit sits in the message's More options menu (live claude.ai).
     await fire('button[aria-label="More options"]', "click");
     const edit = [...document.querySelectorAll('[role^="menuitem"]')].find(
       (item) => item.textContent?.trim() === "Edit",

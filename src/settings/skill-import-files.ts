@@ -9,6 +9,7 @@ export interface SkillSourceFile {
   arrayBuffer(): Promise<ArrayBuffer>;
 }
 
+// (live claude.ai bundle, 2026-10-14, index.chunk-Cr5NCWCa, W / PACK_LIMITS)
 export async function skillSourceFiles(
   files: SkillSourceFile[],
 ): Promise<SkillImportFile[]> {

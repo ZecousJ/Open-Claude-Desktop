@@ -2,7 +2,7 @@ import type { CapabilityTip } from "../../shared/chat-suggestions";
 import type { AppController } from "../app/AppContext";
 import { t } from "../i18n";
 
-// Fn/Wn.
+// Fn/Wn (live claude.ai bundle, 2026-10-14, c0c371a67-DnJIbmz9.js).
 export function actOnCapabilityTip(app: AppController, tip: CapabilityTip) {
   switch (tip) {
     case "projects":

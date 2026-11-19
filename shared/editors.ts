@@ -1,5 +1,6 @@
-/** The editors Open in ▸ offers. */
+/** The editors Open in ▸ offers (desktop 2.37337.1). */
 export type EditorKind = "vscode" | "cursor" | "zed" | "windsurf" | "xcode";
+export const editorApprovalServerName = "code-editor";
 export const editorKinds: readonly EditorKind[] = [
   "vscode",
   "cursor",
@@ -37,9 +38,9 @@ export function editorUriPath(file: string) {
 }
 
 /**
- * The URL that opens `folder` in the editor: a local folder as
- * `<scheme>file/<path>`, one on an SSH host as a VS Code remote. `windows`: a
- * local Windows path, written with forward slashes.
+ * The URL that opens `folder` in the editor (desktop 2.37337.1): a local
+ * folder as `<scheme>file/<path>`, one on an SSH host as a VS Code remote.
+ * `windows`: a local Windows path, written with forward slashes.
  */
 export function editorUrl(
   protocol: string,

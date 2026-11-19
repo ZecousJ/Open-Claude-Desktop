@@ -60,7 +60,7 @@ export function CommandCard({ item }: { item: Item }) {
     /^\s*(?:\/\S+\/)?(bash|zsh|sh|pwsh|powershell)(?:\s|$)/.exec(
       item.command ?? "",
     )?.[1] ||
-    // The card's language tag reads "bash".
+    // The card's language tag reads "bash" (normalized-command-hover-007 @18.8s).
     (/Windows/.test(globalThis.navigator?.userAgent ?? "")
       ? "powershell"
       : "bash");

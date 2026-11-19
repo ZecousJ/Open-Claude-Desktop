@@ -14,7 +14,7 @@ import { helpUrl } from "../../shared/help-links";
 import { AppContext } from "../app/AppContext";
 import type { Conversation, Mode } from "../../shared/types";
 import { lazyPiece } from "../ui/lazy-piece";
-import { AppIcon, type AppIconName } from "../ui/app-icon";
+import { Anthropicon, type AnthropiconName } from "../ui/anthropicons";
 import { IconButton } from "../ui/Controls";
 import { SearchIcon } from "../ui/icons";
 import { useDismiss } from "../ui/useDismiss";
@@ -47,15 +47,15 @@ const CodeFeedbackFooter = lazyPiece(
 
 /**
  * A menu row's glyph: the icon font's own, 20px on the web and 16px on the
- * desktop.
+ * desktop (live claude.ai bundle, 2026-10-16, cd75f6c8c-C9viWYbT.js).
  */
-const glyph = (name: AppIconName) => (
-  <AppIcon name={name} size={web ? 20 : 16} />
+const glyph = (name: AnthropiconName) => (
+  <Anthropicon name={name} size={web ? 20 : 16} />
 );
 
 /** An external link ends in ArrowOutSquare (the bundle's `trailing`). */
 const external = (
-  <AppIcon name="ArrowOutSquare" size="sm" className="profile-external" />
+  <Anthropicon name="ArrowOutSquare" size="sm" className="profile-external" />
 );
 
 /** The CDS scroll layer owns the web menu's gutter and bottom sizing ring. */
@@ -64,30 +64,32 @@ function AccountMenuScroll({ children }: { children: ReactNode }) {
 }
 
 /**
- * Account button at the foot of the sidebar and its menu. Get help, Get apps
- * and extensions and Learn more appear only when the administrator set their
- * pages (the policy's links). View all plans is the recharge entry, Add funds,
- * for a service account, and the administrator's plans page otherwise; Language
- * opens the language dialog (src/i18n). The plan label is the policy's plan
- * label; without one there is none.
+ * Account button at the foot of the sidebar and its menu (R-个人菜单-展开-深色).
+ * Get help, Get apps and extensions and Learn more appear only when the
+ * administrator set their pages (the policy's links). View all plans is
+ * the recharge entry, Add funds, for a service account (owner,
+ * 2026-10-12), and the administrator's plans page otherwise; Language
+ * opens the language dialog (src/i18n). The plan label (R-0088,
+ * "· Max" in the original) is the policy's plan label; without one there is
+ * none (the Sub2API group's name is not shown, owner 2026-10-03).
  *
  * The glyph right of the button: with a newer build published it is the
- * download glyph and opens the update notice; otherwise, in Chat and Cowork,
- * the download glyph opens Get apps and extensions when the administrator named
- * that page, and there is none otherwise. Code's Ant glyph opens session
- * feedback through the consented service collector.
+ * download glyph and opens the update notice (R-0111); otherwise, in Chat
+ * and Cowork, the download glyph opens Get apps and extensions (R-0056) when
+ * the administrator named that page, and there is none otherwise. Code's
+ * Ant glyph opens session feedback through the consented service collector.
  *
- * When Claudex updates itself the notice and glyph give way: "Relaunch to
- * update" sits above the account row once the update is staged.
+ * When Claudex updates itself (package OTA) the notice and glyph give way:
+ * "Relaunch to update" sits above the account row once the update is staged.
  *
  * On the web (W-UI-design §3.4) a page load is always the latest version, so
- * there is no update notice, glyph or relaunch. The row ends with the download
- * glyph for the desktop app (Chat and Cowork, only when the administrator set
- * its page) and a search button, since ⌘K can belong to the browser. Settings
- * has no shortcut there (⌘, opens the browser's).
+ * there is no update notice, glyph or relaunch. The row ends with the
+ * download glyph for the desktop app (Chat and Cowork, only when the
+ * administrator set its page) and a search button, since ⌘K can belong to
+ * the browser. Settings has no shortcut there (⌘, opens the browser's).
  *
- * The menu opens with the account's email; switching or adding accounts is not
- * offered.
+ * The menu opens with the account's email; switching or adding accounts
+ * is not offered (owner, 2026-10-14: Add account removed).
  */
 export function AccountMenu({
   name,
@@ -119,7 +121,8 @@ export function AccountMenu({
   onUsage?: () => void;
   /**
    * The recharge entry where the original has View all plans: Settings >
-   * Billing's Add funds. Given for every service account.
+   * Billing's Add funds. Given for every service account (Claudex has no
+   * plans to view, accounts run on their balance; owner, 2026-10-12).
    */
   onRecharge?: () => void;
   onChangelog: () => void;
@@ -177,8 +180,8 @@ export function AccountMenu({
         { label: "About Claudex", url: helpUrl() },
         { label: "Usage policy", url: helpUrl("usage-policy") },
       ];
-  // While Claudex downloads or has staged the update itself, Relaunch to update
-  // replaces the download notice and glyph.
+  // While Claudex downloads or has staged the update itself (package OTA),
+  // Relaunch to update replaces the download notice and glyph.
   const appUpdate = useAppUpdate();
   useRecheckForRelease(web ? undefined : appUpdate, serviceUpdate);
   const update =
@@ -294,7 +297,7 @@ export function AccountMenu({
             {name || email}
             {plan && <small> · {plan}</small>}
           </span>
-          <AppIcon name="CaretDown" size="xs" />
+          <Anthropicon name="CaretDown" size="xs" />
         </button>
         {update ? (
           <IconButton
@@ -348,7 +351,7 @@ export function AccountMenu({
                     : t("Feedback isn’t available for this session.")
                 }
               >
-                <AppIcon name="Ant" size={20} />
+                <Anthropicon name="Ant" size={20} />
               </IconButton>
             }
           >
@@ -477,7 +480,7 @@ export function AccountMenu({
                   >
                     {glyph("Info")}
                     <span>{t("Learn more")}</span>
-                    <AppIcon
+                    <Anthropicon
                       name="CaretRight"
                       size="sm"
                       className="profile-submenu-chevron"

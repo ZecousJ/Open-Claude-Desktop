@@ -71,7 +71,7 @@ test("the context popover summarises usage, and asks for a first message before 
     "the reason is a text beside the button, as well as its title",
   );
   assert.doesNotMatch(used, /context-popover-hint/);
-  // The popover offers no Hand off.
+  // The popover offers no Hand off (owner, 2026-10-20).
   assert.doesNotMatch(used, /Hand off to new session/);
 });
 
@@ -98,7 +98,8 @@ test("the shortcut list names Esc, queueing and Code's menus", () => {
   // Ctrl+Shift+I is the developer tools outside macOS.
   assert.equal(rows("win32")["Open model menu"], undefined);
   assert.equal(rows("win32")["Open effort selector"], "shift+mod+E");
-  // Chats open their model menu with ⇧⌘. and have no effort selector.
+  // Chats open their model menu with ⇧⌘. and have no effort selector
+  // (live claude.ai bundle, 2026-10-12: model_selector).
   const chat = rows("win32", "chat");
   assert.equal(chat["Open model menu"], "shift+mod+.");
   assert.equal(chat["Edit your last message"], "Esc+Esc");
@@ -112,12 +113,12 @@ test("the shortcut list names Esc, queueing and Code's menus", () => {
     webShortcutSections("darwin", "chat").map((s) => s.title),
     ["General", "In chats"],
   );
-  // Code's list has the live bundle's sections.
+  // Code's list has the live bundle's sections (2026-10-12).
   assert.deepEqual(
     webShortcutSections("darwin", "code").map((s) => s.title),
     ["General", "Panes", "Composer"],
   );
-  // The live order: thinking follows Queue.
+  // The live order (2026-10-14, c518a31cc-Dvpyv79W): thinking follows Queue.
   assert.deepEqual(
     webShortcutSections("darwin", "chat")[1]
       .shortcuts.map((s) => s.action)

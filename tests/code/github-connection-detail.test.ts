@@ -332,7 +332,7 @@ test(
   { timeout: 5000 },
   async () => {
     const { createFixtureDesktop, fixtureSettings } =
-      await import("../../scripts/preview/app-fixture");
+      await import("../../scripts/fidelity/app-fixture");
     const { ConnectorsTab } =
       await import("../../src/settings/tabs/Connectors");
     const { openSettingsLink, takeSettingsConnectorTarget } =

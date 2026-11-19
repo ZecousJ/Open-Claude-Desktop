@@ -16,7 +16,9 @@ import {
 import { metadataNumber, Sub2ApiError } from "../sub2api/http";
 import {
   MemoryConflictError,
+  MemoryControlsConflictError,
   MemoryOfflineError,
+  MemoryResetReadbackError,
   MemoryUnsupportedError,
   type MemoryStore,
   type SaveDocInput,
@@ -34,6 +36,7 @@ export const memoryCacheFile = "memory-cache.json";
 /** The service calls the store makes, each with a fresh access token. */
 export type MemoryApi = Pick<
   ClaudexMemory,
+  | "replaceControls"
   | "get"
   | "setPrefs"
   | "saveDoc"
@@ -42,7 +45,7 @@ export type MemoryApi = Pick<
   | "addEdit"
   | "removeEdit"
 >;
-export type Authorized = <T>(call: (token: string) => Promise<T>) => Promise<T>;
+export type Authorized = <T>(call: (token: string) => Promise<T>, current?: () => boolean) => Promise<T>;
 
 /** What a refused memory request means to the person. */
 export function memoryError(error: unknown): Error {
@@ -50,6 +53,10 @@ export function memoryError(error: unknown): Error {
     return error instanceof Error ? error : new Error(String(error));
   if (memoryMissing(error)) return new MemoryUnsupportedError();
   switch (error.code) {
+    case memoryErrorCodes.controlsConflict:
+      return new MemoryControlsConflictError();
+    case memoryErrorCodes.controlsReset:
+      return new MemoryControlsConflictError(true);
     case memoryErrorCodes.conflict:
       return new MemoryConflictError(
         metadataNumber(error, "current_revision") ?? -1,
@@ -101,6 +108,8 @@ export class RemoteMemoryStore implements MemoryStore {
   private snapshot?: MemorySnapshot;
   private readonly file: string;
   private closed = false;
+  private snapshotEpoch = 0;
+  private prefsTail: Promise<unknown> = Promise.resolve();
   constructor(
     private api: MemoryApi,
     private authorized: Authorized,
@@ -122,6 +131,8 @@ export class RemoteMemoryStore implements MemoryStore {
       generate: prefs.generate,
     });
     const view = {
+      controls_versions: s.controlsVersions,
+      empty_controls_version: s.emptyControlsVersion,
       available: s.available,
       reason: s.reason ?? null,
       allowed: wire(s.allowed ?? { searchChats: false, generate: false }),
@@ -169,7 +180,15 @@ export class RemoteMemoryStore implements MemoryStore {
   }
   private async request<T>(call: (token: string) => Promise<T>) {
     try {
-      return await this.authorized(call);
+      if (this.closed) throw new Error("Memory account changed.");
+      const result = await this.authorized((token) => {
+        // Authorization may refresh asynchronously or retry a request. Never
+        // dispatch a new remote mutation after this account store was closed.
+        if (this.closed) throw new Error("Memory account changed.");
+        return call(token);
+      }, () => !this.closed);
+      if (this.closed) throw new Error("Memory account changed.");
+      return result;
     } catch (error) {
       throw memoryError(error);
     }
@@ -182,52 +201,97 @@ export class RemoteMemoryStore implements MemoryStore {
   current() {
     return this.snapshot ? structuredClone(this.snapshot) : undefined;
   }
+  read() {
+    return this.request((token) => this.api.get(token));
+  }
   async load() {
-    const next = await this.request((token) => this.api.get(token));
+    const snapshotEpoch = this.snapshotEpoch;
+    const next = await this.read();
+    // Reads that overlap a reset or preference write must not restore stale
+    // state to the in-memory or offline snapshot.
+    if (snapshotEpoch !== this.snapshotEpoch)
+      return this.current() ?? structuredClone(next);
     this.snapshot = next;
     this.writeCache();
     return structuredClone(next);
   }
   async setPrefs(prefs: Partial<MemoryPrefs>) {
-    const status = await this.request((token) =>
-      this.api.setPrefs(token, prefs),
-    );
-    if (!this.snapshot) return this.load();
-    this.update((snapshot) => {
-      snapshot.available = status.available;
-      if (status.reason) snapshot.reason = status.reason;
-      else delete snapshot.reason;
-      snapshot.allowed = status.allowed;
-      snapshot.prefs = status.prefs;
-      snapshot.model = status.model;
-    });
-    return this.current()!;
+    const patch = { ...prefs };
+    const pending = this.prefsTail.then(() => this.writePrefs(patch));
+    // Independent switches share a full server response. Dispatch in order so
+    // an older response cannot undo a later user's choice; failure is not a
+    // permanent queue barrier.
+    this.prefsTail = pending.catch(() => undefined);
+    return pending;
+  }
+  private async writePrefs(prefs: Partial<MemoryPrefs>) {
+    this.snapshotEpoch++;
+    try {
+      const status = await this.request((token) =>
+        this.api.setPrefs(token, prefs),
+      );
+      if (!this.snapshot) return await this.load();
+      this.update((snapshot) => {
+        snapshot.available = status.available;
+        if (status.reason) snapshot.reason = status.reason;
+        else delete snapshot.reason;
+        snapshot.allowed = status.allowed;
+        snapshot.prefs = status.prefs;
+        snapshot.model = status.model;
+      });
+      return this.current()!;
+    } finally {
+      this.snapshotEpoch++;
+    }
   }
   async saveDoc(
     scope: MemoryScope,
     input: SaveDocInput,
+    checkBeforeWrite?: () => void,
   ): Promise<MemoryDocRecord> {
+    let snapshotEpoch = this.snapshotEpoch;
     const editsUpto =
       input.editsUpto !== undefined && /^\d+$/.test(input.editsUpto)
         ? Number(input.editsUpto)
         : undefined;
-    const saved = await this.request((token) =>
-      this.api.saveDoc(token, scope, {
+    const saved = await this.request((token) => {
+      checkBeforeWrite?.();
+      snapshotEpoch = this.snapshotEpoch;
+      return this.api.saveDoc(token, scope, {
         content: input.content,
         source: input.source,
         baseRevision: input.baseRevision,
+        ...(input.baseControlsVersion !== undefined
+          ? { baseControlsVersion: input.baseControlsVersion }
+          : {}),
         ...(editsUpto !== undefined ? { editsUpto } : {}),
-      }),
-    );
-    this.update((snapshot) => {
-      snapshot.docs = [
-        ...snapshot.docs.filter((doc) => doc.scope !== scope),
-        saved,
-      ];
-      if (editsUpto !== undefined)
-        snapshot.edits = snapshot.edits.filter(
-          (edit) => edit.scope !== scope || Number(edit.id) > editsUpto,
-        );
+      });
+    });
+    if (snapshotEpoch === this.snapshotEpoch) {
+      this.snapshotEpoch++;
+      this.update((snapshot) => {
+        snapshot.docs = [
+          ...snapshot.docs.filter((doc) => doc.scope !== scope),
+          saved,
+        ];
+        if (editsUpto !== undefined)
+          snapshot.edits = snapshot.edits.filter(
+            (edit) => edit.scope !== scope || Number(edit.id) > editsUpto,
+          );
+      });
+    }
+    await this.load().catch((error) => {
+      if (
+        input.source !== "generated" ||
+        this.closed ||
+        !this.snapshot?.docs.some(
+          (doc) =>
+            doc.scope === scope &&
+            doc.revision === saved.revision &&
+            doc.content === saved.content,
+        )
+      )
+        throw error;
     });
     return saved;
   }
@@ -238,6 +302,7 @@ export class RemoteMemoryStore implements MemoryStore {
     this.update((snapshot) => {
       snapshot.edits = [...snapshot.edits, saved];
     });
+    await this.load();
     return saved;
   }
   async removeEdit(id: string) {
@@ -245,11 +310,13 @@ export class RemoteMemoryStore implements MemoryStore {
     this.update((snapshot) => {
       snapshot.edits = snapshot.edits.filter((edit) => edit.id !== id);
     });
+    await this.load();
   }
   async reset(scope?: MemoryScope) {
     await this.request((token) =>
       scope ? this.api.deleteDoc(token, scope) : this.api.deleteAll(token),
     );
+    this.snapshotEpoch++;
     this.update((snapshot) => {
       snapshot.docs = scope
         ? snapshot.docs.filter((doc) => doc.scope !== scope)
@@ -257,7 +324,38 @@ export class RemoteMemoryStore implements MemoryStore {
       snapshot.edits = scope
         ? snapshot.edits.filter((edit) => edit.scope !== scope)
         : [];
+      if (scope) {
+        if (snapshot.controlsVersions) delete snapshot.controlsVersions[scope];
+      } else {
+        delete snapshot.controlsVersions;
+      }
+      delete snapshot.emptyControlsVersion;
     });
+    try {
+      await this.load();
+    } catch (error) {
+      throw new MemoryResetReadbackError(error);
+    }
+  }
+  async replaceControls(
+    scope: MemoryScope,
+    controls: string[],
+    baseVersion: string,
+  ) {
+    const saved = await this.request((token) =>
+      this.api.replaceControls(token, scope, controls, baseVersion),
+    );
+    this.update((snapshot) => {
+      snapshot.edits = [
+        ...snapshot.edits.filter((edit) => edit.scope !== scope),
+        ...saved.edits,
+      ];
+      snapshot.controlsVersions = {
+        ...snapshot.controlsVersions,
+        [scope]: saved.version,
+      };
+    });
+    return saved;
   }
   close() {
     this.closed = true;

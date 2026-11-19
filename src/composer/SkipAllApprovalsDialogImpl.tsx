@@ -16,9 +16,10 @@ import { directoryGlyph } from "../settings/directory/icons";
 import "./task-permission-notice.css";
 
 /**
- * One connector and the tools it would run unasked: its icon, name and tool
- * count, a caret that turns down to list the tools, each marked Read-only or
- * Write/delete from the server's own annotations, or Already allowed.
+ * One connector and the tools it would run unasked (live claude.ai bundle,
+ * 2026-10-16, caa47d26c: I and L): its icon, name and tool count, a caret
+ * that turns down to list the tools, each marked Read-only or Write/delete
+ * from the server's own annotations, or Already allowed.
  */
 function ConnectorRow({
   name,

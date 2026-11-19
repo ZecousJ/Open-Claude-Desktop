@@ -10,8 +10,9 @@ import type { CoworkFolderGrants } from "./cowork-folders";
 import type { SessionGrant, SavedGrants } from "./cowork-folders";
 
 /**
- * Why a folder can never be granted, if it can't, in the original's words: a
- * system folder is a protected location; a drive, a volume or a folder holding
+ * Why a folder can never be granted, if it can't, in the original's words
+ * (live claude.ai bundle, 2026-10-14, shared-3-C6ZHOxdE: qM): a system
+ * folder is a protected location; a drive, a volume or a folder holding
  * one contains a protected location; the app's data is named as such.
  */
 export function refusal(

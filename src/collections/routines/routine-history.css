@@ -1,4 +1,4 @@
-/* Inline rows. */
+/* Inline rows (live claude.ai bundle, 2026-10-14, c9e1458cd-nP2pbH75.js:95-98; ccd3f68fe-Ch8U0gGS.js:4001-4103). */
 .routine-history {
   color: var(--text);
   font-size: 13px;
@@ -222,7 +222,7 @@ button.routine-history-row:focus-visible {
 :root[data-theme="light"] .schedule-confirm-error {
   color: #8f2d2a;
 }
-/* Buttons are the editor's; only the gap above changes. */
+/* Buttons are the editor's (.routine-actions, R-1256); only the gap above changes. */
 .routine-actions.schedule-confirm-actions {
   margin-top: 4px;
 }

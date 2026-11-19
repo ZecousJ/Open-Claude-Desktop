@@ -5,9 +5,9 @@ import { compareVersions } from "../../shared/client-policy-rules";
 import { surface } from "../../shared/host";
 
 /**
- * Claudex's own update status: read once, then from every "app-update" event.
- * Undefined while unknown and where the bridge has no such call (the web, an
- * older build): the window then offers no Relaunch.
+ * Claudex's own update status (package OTA): read once, then from every
+ * "app-update" event. Undefined while unknown and where the bridge has no
+ * such call (the web, an older build): the window then offers no Relaunch.
  */
 export function useAppUpdate(): AppUpdateStatus | undefined {
   const [status, setStatus] = useState<AppUpdateStatus>();
@@ -49,8 +49,10 @@ function behind(status: AppUpdateStatus, version: string) {
 }
 
 /**
- * A release the updater has not found yet is looked for at once, the moment the
- * service announces it, once per version.
+ * A release the updater has not found yet is looked for at once, the
+ * moment the service announces it, once per version (owner, 2026-10-22: a
+ * release published after the launch check showed the download link instead
+ * of updating in place).
  */
 export function useRecheckForRelease(
   status: AppUpdateStatus | undefined,

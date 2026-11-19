@@ -28,7 +28,7 @@ test("a web Code title stays font-medium, where Chat's title is 400", async () =
     ["400"],
   );
   // A web Code session's Rename button: "truncate text-body font-medium
-  // font-control text-primary select-none".
+  // font-control text-primary select-none" (live claude.ai, 2026-10-21).
   assert.deepEqual(
     await declarations(
       "web/web-shell.css",

@@ -116,10 +116,12 @@ export function useArtifactChromeState(kit: UseArtifactChromeStateKit) {
   const [reporting, setReporting] = useState(false);
   const [permissionsOpen, setPermissionsOpen] = useState(false);
   const identity = artifactIdentity(artifact);
-  // Publish: offered when the Claudex service takes artifact links, for the
-  // version shown. It reads "Published" while that version has a public link,
-  // and stays off while the check runs, after it failed, while the artifact is
-  // written, and for a version that was unpublished.
+  // Publish (live claude.ai bundle, 2026-10-12: the artifact pane's
+  // Publish button and `publishCheck`): offered when the Claudex service
+  // takes artifact links, for the version shown. It reads "Published"
+  // while that version has a public link, and stays off while the check
+  // runs, after it failed, while the artifact is written, and for a
+  // version that was unpublished.
   const version = shown ?? artifact;
   const documentArtifact = canExportDocument(version);
   async function presentationAction() {

@@ -4,13 +4,14 @@ import { t } from "../i18n";
 import { Check, ChevronRight, Search } from "../ui/glyphs";
 
 /**
- * Connectors → Tool access in the add menu: this conversation's choice between
- * loading connector tools when needed and having them all loaded, each with the
- * note Settings → Capabilities shows for it. The choice applies from the next
- * message (shared/tool-search-mode.ts).
+ * Connectors → Tool access in the add menu (live claude.ai bundle,
+ * 2026-10-16, c752b32f8 `no`): this conversation's choice between loading
+ * connector tools when needed and having them all loaded, each with the
+ * note Settings → Capabilities shows for it. The choice applies from the
+ * next message (shared/tool-search-mode.ts).
  *
- * The connectors list scrolls, so the choices open beside it as a fixed panel
- * next to this row; in a phone sheet they open in place.
+ * The connectors list scrolls, so the choices open beside it as a fixed
+ * panel next to this row; in a phone sheet they open in place.
  */
 const choices: { mode: ToolSearchMode; label: string; note: string }[] = [
   {

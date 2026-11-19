@@ -6,7 +6,7 @@ import {
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { Mode } from "../../shared/types";
 import { surface } from "../../shared/host";
 import { NavItemBadge } from "./NavItemBadge";
@@ -19,7 +19,7 @@ function DesignRow({ onClick }: { onClick: () => void }) {
       <button role="menuitem" onClick={onClick}>
         {/* In the icon slot like the page rows, so it keeps their width. */}
         <span className="nav-glyph">
-          <AppIcon name="Palette" />
+          <Anthropicon name="Palette" />
         </span>
         <span>Design</span>
       </button>

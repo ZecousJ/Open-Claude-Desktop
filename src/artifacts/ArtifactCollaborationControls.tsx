@@ -1,4 +1,4 @@
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { t } from "../i18n";
 import { IconButton } from "../ui/Controls";
 import { Clock, ChevronDown, Maximize2, X } from "../ui/glyphs";
@@ -154,7 +154,7 @@ export function ArtifactCollaborationControls({
               .finally(() => setRestoring(false));
           }}
         >
-          <AppIcon name="ArrowClockwise" />
+          <Anthropicon name="ArrowClockwise" />
           {t("Restore")}
         </button>
       )}
@@ -209,8 +209,8 @@ export function ArtifactCollaborationControls({
             className="artifact-chrome-menu artifact-comments-menu"
             role="menu"
           >
-            {/* One item that shows or hides the list, with the open count while
-               it is hidden. */}
+            {/* One item that shows or hides the list, with the open
+                    count while it is hidden (desktop bundle 2.31226.1). */}
             <button
               role="menuitem"
               onClick={() => {
@@ -227,8 +227,9 @@ export function ArtifactCollaborationControls({
         )}
       </div>
       {standalone && chatGroup}
-      {/* Publish / Published: only where the service takes artifact links, as
-         the reference shows it only when it can publish. */}
+      {/* Publish / Published (live claude.ai bundle, 2026-10-12): only
+              where the service takes artifact links, as the reference
+              shows it only when it can publish. */}
       {canPublish && (
         <button
           className="artifact-share-button"
@@ -261,8 +262,8 @@ export function ArtifactCollaborationControls({
           <Maximize2 size={16} />
         </IconButton>
       )}
-      {/* Expanded, the reference offers only Chat to leave, and Close again
-         while the chat floats. */}
+      {/* Expanded, the reference offers only Chat to leave (R-1000),
+              and Close again while the chat floats (R-1047). */}
       {(!expanded || chatFloating) && (
         <IconButton label="Close" onClick={onClose}>
           <X size={15} />

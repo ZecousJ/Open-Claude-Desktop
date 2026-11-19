@@ -1,9 +1,12 @@
 /**
  * What the main window tells the application menu so its items follow the
- * window: the first item's name (New Chat, New Task, New Session), Show or Hide
- * for the sidebar and the Code panes, Back and Forward, Previous and Next, and
- * whether there is a pane to close or a session to reopen. The original's menu
- * does the same through its window-control reports.
+ * window: the first item's name (New Chat, New Session), Show or
+ * Hide for the sidebar and the Code panes, Back and Forward, Previous and
+ * Next, and whether
+ * there is a pane to close or a session to reopen. The original's menu does
+ * the same through its window-control reports (source: desktop bundle
+ * 2.31226.1 static JS: session panes, sidebar, Go menu and Reopen Closed
+ * Session states).
  */
 import type { Mode } from "./types";
 
@@ -66,8 +69,8 @@ export interface MenuState {
   /** A closed conversation or window can be reopened. */
   canReopenClosed: boolean;
   /**
-   * Go's area list: the sidebar's surfaces as checkboxes when there are two or
-   * more.
+   * Go's area list: the sidebar's surfaces as checkboxes when there are two
+   * or more (live claude.ai bundle, desktop 2.37337.1 yvi).
    */
   areas?: MenuArea[];
   /**

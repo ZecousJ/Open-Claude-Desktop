@@ -326,13 +326,14 @@ export function buildOciSpec(launch: RunscLaunch) {
   // Bridge sockets last so nothing can shadow them; read-only suffices for connect().
   if (forwards.length)
     mounts.push(bind(lp.fwd, `${SANDBOX_RUN_DIR}/fwd`, false));
-  // Codex makes its stdout non-blocking and waits for it to be writable; on the
-  // host socket gVisor imports as fd 1 that wait does not hold, so a reply
-  // bigger than the socket buffer failed with EAGAIN and codex closed its
-  // output. Inside the sandbox the image's python3 gives codex a pipe of
-  // gVisor's own as stdout and copies it to fd 1 with blocking writes
-  // (reproduced and verified end to end with the real launcher, codex and
-  // thread).
+  // Codex makes its stdout non-blocking and waits for it to be writable;
+  // on the host socket gVisor imports as fd 1 that wait does not hold, so a
+  // reply bigger than the socket buffer failed with EAGAIN and codex closed
+  // its output (r1, 2026-10-08: a long Cowork thread's ~450 KB
+  // thread/resume reply, every send "thread/resume timed out"). Inside the
+  // sandbox the image's python3 gives codex a pipe of gVisor's own as stdout
+  // and copies it to fd 1 with blocking writes (reproduced and verified
+  // end to end with the real launcher, codex and thread).
   const programArgv = [...(launch.command ?? [image.codex]), ...args];
   const codexArgv = fs.existsSync(inRootfs(launch.rootfs, blockingPython))
     ? [blockingPython, "-c", stdoutRelay, ...programArgv]

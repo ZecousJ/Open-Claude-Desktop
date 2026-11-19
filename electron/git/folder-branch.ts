@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
-import { gitEnvironment, safeGitConfig } from "./working-tree";
-import { validBranchName } from "./git-scope";
+import { promisify } from "node:util";
+import { gitEnvironment, localWorkingTree, safeGitConfig } from "./working-tree";
 import type {
   FolderBranches,
   FolderChanges,
@@ -9,31 +9,23 @@ import type {
 } from "../../shared/code-usage-api";
 
 /**
- * The new task's folder and its branch. Without Worktree, choosing a branch
- * checks it out in the folder; uncommitted changes are first stashed, committed
- * as WIP or discarded, as the person picks in the "Uncommitted changes" dialog.
+ * The new task's folder and its branch (live claude.ai bundle, 2026-10-14:
+ * the folder menu's Branch submenu). Without Worktree, choosing a branch
+ * checks it out in the folder; uncommitted changes are first stashed,
+ * committed as WIP or discarded, as the person picks in the "Uncommitted
+ * changes" dialog.
  */
 type Git = (cwd: string, args: string[]) => Promise<string>;
 
-const localGit: Git = (cwd, args) =>
-  new Promise((resolve, reject) => {
-    execFile(
-      "git",
-      [...safeGitConfig, "-c", "core.hooksPath=", ...args],
-      {
-        cwd,
-        timeout: 120_000,
-        maxBuffer: 8 * 1024 * 1024,
-        windowsHide: true,
-        env: { ...process.env, ...gitEnvironment },
-      },
-      (error, stdout, stderr) => {
-        if (!error) return resolve(String(stdout));
-        (error as { stderr?: string }).stderr = String(stderr || "");
-        reject(error);
-      },
-    );
-  });
+const execGit = promisify(execFile);
+const localGit: Git = async (cwd, args) =>
+  (await execGit("git", [...safeGitConfig, "-c", "core.hooksPath=", ...args], {
+    cwd,
+    timeout: 120_000,
+    maxBuffer: 8 * 1024 * 1024,
+    windowsHide: true,
+    env: { ...process.env, ...gitEnvironment },
+  })).stdout;
 
 /** The repository's local branches, most recently committed first. */
 export async function folderBranches(
@@ -47,15 +39,15 @@ export async function folderBranches(
   }
   const current =
     (
-      await git(folder, ["symbolic-ref", "--short", "-q", "HEAD"]).catch(
+      await git(folder, ["symbolic-ref", "-q", "HEAD"]).catch(
         () => "",
       )
-    ).trim() || null;
+    ).trim().replace(/^refs\/heads\//, "") || null;
   const branches = (
     await git(folder, [
       "for-each-ref",
       "--sort=-committerdate",
-      "--format=%(refname:short)",
+      "--format=%(refname:lstrip=2)",
       "refs/heads",
     ]).catch(() => "")
   )
@@ -111,24 +103,27 @@ export async function folderChanges(
 }
 
 export function branchPathsOverlap(changes: string[], target: string[]) {
+  const paths = new Set(target);
+  const parents = new Set<string>();
+  for (const file of target)
+    for (let end = file.indexOf("/"); end !== -1; end = file.indexOf("/", end + 1))
+      parents.add(file.slice(0, end));
   return changes.some((raw) => {
     const changed = raw.replace(/\/$/, "");
-    return target.some(
-      (file) =>
-        file === changed ||
-        file.startsWith(`${changed}/`) ||
-        changed.startsWith(`${file}/`),
-    );
+    if (paths.has(changed) || parents.has(changed)) return true;
+    for (let end = changed.indexOf("/"); end !== -1; end = changed.indexOf("/", end + 1))
+      if (paths.has(changed.slice(0, end))) return true;
+    return false;
   });
 }
 
-// .
+// (live desktop 2.37337.1, index.chunk-D9jr5E25.js, wouldBranchSwitchConflict).
 export async function checkBranchSwitchConflict(
   folder: string,
   branch: string,
   git: Git = localGit,
 ) {
-  if (!validBranchName(branch)) return true;
+  if (branch.startsWith("-")) return true;
   try {
     const status = await git(folder, [
       "status",
@@ -179,8 +174,126 @@ export async function checkBranchSwitchConflict(
       "--",
     ]);
     return branchPathsOverlap(paths, changed.split("\0").filter(Boolean));
+  } catch (error) {
+    return !/not a git repository/i.test(gitError(error));
+  }
+}
+
+function gitError(error: unknown) {
+  if (!(error instanceof Error)) return String(error);
+  if ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim())
+    return error.stderr.trim();
+  return error.message.trim();
+}
+
+export async function isBranchOnOrigin(folder: string, branch: string) {
+  const git = localWorkingTree.git;
+  try {
+    if ((await git(folder, ["rev-parse", "--verify", "--quiet", `refs/remotes/origin/${branch}^{commit}`], [0, 1])).trim())
+      return true;
+    const fetch = (await git(folder, ["config", "--no-includes", "--get-all", "remote.origin.fetch"], [0, 1]))
+      .trim().split("\n").map(ref => ref.replace(/^\+/, "")).filter(Boolean);
+    if (fetch.some(ref => ref.startsWith("^"))) return null;
+    if (fetch.includes("refs/heads/*:refs/remotes/origin/*")) return false;
+    const tracked = fetch.filter(ref => ref.startsWith("refs/heads/")).map(ref => {
+      const [source, destination] = ref.split(":");
+      const pattern = source.slice("refs/heads/".length);
+      return destination === `refs/remotes/origin/${pattern}` ? pattern : "";
+    });
+    if (tracked.some(pattern => !pattern)) return null;
+    return tracked.some(pattern => {
+      const wildcard = pattern.indexOf("*");
+      return wildcard < 0 ? pattern === branch :
+        branch.length >= pattern.length - 1 &&
+        branch.startsWith(pattern.slice(0, wildcard)) &&
+        branch.endsWith(pattern.slice(wildcard + 1));
+    }) ? false : null;
   } catch {
-    return true;
+    return null;
+  }
+}
+
+type FolderBranchAction =
+  | { kind: "stash"; message: string }
+  | { kind: "commit"; fromBranch: string }
+  | { kind: "discard" };
+
+type FolderBranchActionResult = { success: true } | { success: false; error: string };
+
+export class FolderBranchSwitch {
+  private readonly stashes = new Map<string, { oid: string; at: number }>();
+
+  private topStash(folder: string) {
+    return localGit(folder, ["rev-parse", "--verify", "--quiet", "stash@{0}"])
+      .then(out => out.trim(), () => "");
+  }
+
+  async prepare(folder: string, action: FolderBranchAction, current: () => void): Promise<FolderBranchActionResult> {
+    try {
+      switch (action.kind) {
+        case "stash": {
+          const before = await this.topStash(folder);
+          current();
+          await localGit(folder, ["stash", "push", "-u", "-m", action.message]);
+          const oid = await this.topStash(folder);
+          if (oid && oid !== before) this.stashes.set(folder, { oid, at: Date.now() });
+          break;
+        }
+        case "commit": {
+          current();
+          await localGit(folder, ["add", "-A"]).catch(() => {
+            throw Error("Could not stage changes for commit.");
+          });
+          const hidden = (await localGit(folder, ["ls-files", "-v", "-z"]))
+            .split("\0").filter(entry => /^[Sa-z] /.test(entry)).length;
+          if (hidden)
+            throw Error(`Couldn’t commit: ${hidden} tracked ${hidden === 1 ? "file is" : "files are"} hidden from Git by an index flag (skip-worktree or assume-unchanged) and would be left out. Clear the flags with git update-index --no-skip-worktree --no-assume-unchanged, then review the changes.`);
+          current();
+          await localGit(folder, ["commit", "-m", `WIP: epitaxy pre-switch from ${action.fromBranch}`, "--no-verify"])
+            .catch(error => {
+              if (!(error instanceof Error && "stdout" in error && typeof error.stdout === "string" &&
+                /nothing (?:added )?to commit/.test(error.stdout))) throw error;
+            });
+          break;
+        }
+        case "discard":
+          current();
+          await localGit(folder, ["reset", "--hard"]);
+          current();
+          await localGit(folder, ["clean", "-fd", "--", ":/"]).catch(() => undefined);
+          break;
+      }
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: gitError(error) };
+    }
+  }
+
+  async checkout(folder: string, branch: string, current: () => void) {
+    const top = (await localGit(folder, ["rev-parse", "--show-toplevel"]).catch(() => "")).trim();
+    if (!top) return;
+    const head = (await localGit(top, ["symbolic-ref", "-q", "HEAD"]).catch(() => "")).trim();
+    if (head === `refs/heads/${branch}` || (!head && branch === "HEAD")) return;
+    const conflict = await checkBranchSwitchConflict(top, branch);
+    current();
+    try {
+      if (conflict) {
+        const from = head ? ` on "${head.slice("refs/heads/".length)}"` : "";
+        throw Error(`Can't switch to "${branch}" — there are uncommitted changes${from} in ${folder}. Commit or stash them, or enable "use worktree".`);
+      }
+      await localGit(top, ["switch", branch]).catch(error => {
+        throw Error(`Failed to switch to "${branch}" in ${folder}: ${gitError(error)}`);
+      });
+      this.stashes.delete(folder);
+    } catch (error) {
+      const stash = this.stashes.get(folder);
+      this.stashes.delete(folder);
+      if (stash && Date.now() - stash.at <= 86_400_000 && await this.topStash(top) === stash.oid) {
+        current();
+        await localGit(top, ["stash", "pop"]).catch(() => undefined);
+      }
+      throw error;
+    }
   }
 }
 

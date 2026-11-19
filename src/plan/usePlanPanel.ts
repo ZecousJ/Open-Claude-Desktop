@@ -3,8 +3,9 @@ import type { Conversation } from "../../shared/types";
 import { latestPlan } from "./PlanPanel";
 
 /**
- * A running Code task that reports a task list shows it in the Plan panel, a
- * Cowork task in its Progress card, until the panel is closed for that
+ * A running Code task that reports a task list shows it in the Plan panel
+ * (R-Code-Plan面板), a Cowork task in its Progress card (owner, 2026-10-03:
+ * the list did not open on its own), until the panel is closed for that
  * conversation. Returns the callback to record that close.
  */
 export function usePlanPanel(

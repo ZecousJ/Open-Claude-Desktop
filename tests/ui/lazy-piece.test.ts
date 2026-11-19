@@ -1,9 +1,10 @@
 /**
- * Each lazily loaded piece shows its own load failure in its place: one quiet
- * retry of its own, then "Couldn’t load this." with Retry, then Reload;
- * "Claudex was updated." when a newer build removed its script; "You’re
- * offline." while the network is gone; anything that is not a load failure goes
- * to the nearest boundary.
+ * Each lazily loaded piece shows its own load failure in its place (live
+ * claude.ai bundle, 2026-10-12): one quiet retry of its own, then
+ * "Couldn’t load this." with Retry, then Reload; "Claudex was updated."
+ * when a newer build removed its script; "You’re offline." while the
+ * network is gone; anything that is not a load failure goes to the
+ * nearest boundary.
  */
 import assert from "node:assert/strict";
 import test from "node:test";

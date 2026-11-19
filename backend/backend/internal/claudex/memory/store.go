@@ -15,6 +15,12 @@ type prefsRow struct {
 	UpdatedAt   time.Time
 }
 
+type prefsWrite struct {
+	SearchChats *bool
+	Generate    *bool
+	DefaultOn   bool
+}
+
 // docRow is one stored memory document (content still sealed).
 type docRow struct {
 	Scope        string
@@ -42,13 +48,15 @@ type editRow struct {
 // EditsUpto (generated writes only) deletes the scope's edits with an id up
 // to it, in the same transaction: the synthesis folded them in.
 type docWrite struct {
-	Scope        string
-	ContentEnc   string
-	ContentBytes int
-	Source       string
-	BaseRevision int64
-	EditsUpto    *int64
-	MaxScopes    int
+	Scope               string
+	ContentEnc          string
+	ContentBytes        int
+	Source              string
+	BaseRevision        int64
+	EditsUpto           *int64
+	BaseControlsVersion *string
+	RequireGenerate     bool
+	MaxScopes           int
 }
 
 // editWrite is a new memory edit.
@@ -105,8 +113,12 @@ func (e *conflictError) Error() string {
 // store is the persistence of the component (SQL in production, in memory in
 // unit tests).
 type store interface {
+	snapshot(ctx context.Context, userID int64, scope string) (memoryRows, error)
+	replaceControls(ctx context.Context, userID int64, scope string, edits []editWrite, base string) ([]editRow, string, error)
+	melange(ctx context.Context, userID int64) (melangeRow, error)
+	saveMelange(ctx context.Context, userID int64, w melangeWrite) (int64, error)
 	prefs(ctx context.Context, userID int64) (*prefsRow, error)
-	setPrefs(ctx context.Context, userID int64, searchChats, generate bool) (prefsRow, error)
+	setPrefs(ctx context.Context, userID int64, w prefsWrite) error
 	// docs lists the user's documents, of one scope when scope is not "".
 	docs(ctx context.Context, userID int64, scope string) ([]docRow, error)
 	// edits lists the user's edits (oldest first), of one scope when scope is
@@ -118,7 +130,7 @@ type store interface {
 	saveDoc(ctx context.Context, userID int64, w docWrite) (docRow, error)
 	// deleteScope deletes the document and the edits of one scope.
 	deleteScope(ctx context.Context, userID int64, scope string) (docs, edits int64, err error)
-	// deleteAll deletes every document and edit of the user (prefs stay).
+	// deleteAll clears all stored memory of the user (prefs stay).
 	deleteAll(ctx context.Context, userID int64) (docs, edits int64, err error)
 	// addEdit returns errEditLimit or errScopeLimit.
 	addEdit(ctx context.Context, userID int64, w editWrite) (editRow, error)
@@ -156,17 +168,20 @@ func (s *sqlStore) prefs(ctx context.Context, userID int64) (*prefsRow, error) {
 	return &p, nil
 }
 
-func (s *sqlStore) setPrefs(ctx context.Context, userID int64, searchChats, generate bool) (prefsRow, error) {
-	if err := s.ready(); err != nil {
-		return prefsRow{}, err
-	}
-	p := prefsRow{}
-	err := s.db.QueryRowContext(ctx, `
-		INSERT INTO claudex_memory_prefs (user_id, search_chats, generate, updated_at) VALUES ($1, $2, $3, NOW())
-		ON CONFLICT (user_id) DO UPDATE SET search_chats = EXCLUDED.search_chats, generate = EXCLUDED.generate, updated_at = NOW()
-		RETURNING search_chats, generate, updated_at`, userID, searchChats, generate).
-		Scan(&p.SearchChats, &p.Generate, &p.UpdatedAt)
-	return p, err
+func (s *sqlStore) setPrefs(ctx context.Context, userID int64, w prefsWrite) error {
+	return s.withUserLock(ctx, userID, func(tx *sql.Tx) error {
+		return writePrefs(ctx, tx, userID, w)
+	})
+}
+
+func writePrefs(ctx context.Context, tx *sql.Tx, userID int64, w prefsWrite) error {
+	_, err := tx.ExecContext(ctx, `
+		INSERT INTO claudex_memory_prefs (user_id, search_chats, generate)
+		VALUES ($1, COALESCE($2::boolean, $4::boolean), COALESCE($3::boolean, $4::boolean))
+		ON CONFLICT (user_id) DO UPDATE SET
+			search_chats = COALESCE($2::boolean, claudex_memory_prefs.search_chats),
+			generate = COALESCE($3::boolean, claudex_memory_prefs.generate), updated_at = NOW()`, userID, w.SearchChats, w.Generate, w.DefaultOn)
+	return err
 }
 
 const docColumns = `scope, content_enc, content_bytes, revision, source, generated_at, updated_at, created_at`
@@ -190,7 +205,11 @@ func (s *sqlStore) docs(ctx context.Context, userID int64, scope string) ([]docR
 	if err := s.ready(); err != nil {
 		return nil, err
 	}
-	rows, err := s.db.QueryContext(ctx, `SELECT `+docColumns+` FROM claudex_memory_docs
+	return readDocs(ctx, s.db, userID, scope)
+}
+
+func readDocs(ctx context.Context, db memoryReader, userID int64, scope string) ([]docRow, error) {
+	rows, err := db.QueryContext(ctx, `SELECT `+docColumns+` FROM claudex_memory_docs
 		WHERE user_id = $1 AND ($2 = '' OR scope = $2) ORDER BY scope`, userID, scope)
 	if err != nil {
 		return nil, err
@@ -211,7 +230,11 @@ func (s *sqlStore) edits(ctx context.Context, userID int64, scope string) ([]edi
 	if err := s.ready(); err != nil {
 		return nil, err
 	}
-	rows, err := s.db.QueryContext(ctx, `SELECT id, scope, text_enc, text_bytes, device_id, created_at FROM claudex_memory_edits
+	return readEdits(ctx, s.db, userID, scope)
+}
+
+func readEdits(ctx context.Context, db memoryReader, userID int64, scope string) ([]editRow, error) {
+	rows, err := db.QueryContext(ctx, `SELECT id, scope, text_enc, text_bytes, device_id, created_at FROM claudex_memory_edits
 		WHERE user_id = $1 AND ($2 = '' OR scope = $2) ORDER BY scope, id`, userID, scope)
 	if err != nil {
 		return nil, err
@@ -314,6 +337,21 @@ func checkScopeRoom(ctx context.Context, tx *sql.Tx, userID int64, scope string,
 func (s *sqlStore) saveDoc(ctx context.Context, userID int64, w docWrite) (docRow, error) {
 	var saved docRow
 	err := s.withUserLock(ctx, userID, func(tx *sql.Tx) error {
+		if w.RequireGenerate {
+			var enabled bool
+			if err := tx.QueryRowContext(ctx, `SELECT COALESCE(
+				(SELECT generate FROM claudex_memory_prefs WHERE user_id = $1), TRUE)`, userID).Scan(&enabled); err != nil {
+				return err
+			}
+			if !enabled {
+				return disabledFor("generate")
+			}
+		}
+		if w.BaseControlsVersion != nil {
+			if err := checkControlsVersion(ctx, tx, userID, w.Scope, *w.BaseControlsVersion); err != nil {
+				return err
+			}
+		}
 		var current int64
 		err := tx.QueryRowContext(ctx, `SELECT revision FROM claudex_memory_docs WHERE user_id = $1 AND scope = $2`, userID, w.Scope).Scan(&current)
 		switch {
@@ -349,6 +387,7 @@ func (s *sqlStore) saveDoc(ctx context.Context, userID int64, w docWrite) (docRo
 				userID, w.Scope, *w.EditsUpto); err != nil {
 				return err
 			}
+			return bumpControls(ctx, tx, userID, w.Scope, false)
 		}
 		return nil
 	})
@@ -367,7 +406,7 @@ func (s *sqlStore) deleteScope(ctx context.Context, userID int64, scope string) 
 			return err
 		}
 		edits, _ = res.RowsAffected()
-		return nil
+		return bumpControls(ctx, tx, userID, scope, true)
 	})
 	return docs, edits, err
 }
@@ -384,7 +423,24 @@ func (s *sqlStore) deleteAll(ctx context.Context, userID int64) (docs, edits int
 			return err
 		}
 		edits, _ = res.RowsAffected()
-		return nil
+		hadMelange, err := clearMelange(ctx, tx, userID)
+		if err != nil {
+			return err
+		}
+		if hadMelange {
+			docs++
+		}
+		var hadCowork bool
+		if err := tx.QueryRowContext(ctx, `SELECT EXISTS (SELECT 1 FROM claudex_memory_cowork WHERE user_id=$1 AND entries_enc IS NOT NULL)`, userID).Scan(&hadCowork); err != nil {
+			return err
+		}
+		if hadCowork {
+			docs++
+		}
+		if err := clearCowork(ctx, tx, userID, nil); err != nil {
+			return err
+		}
+		return bumpControls(ctx, tx, userID, "", true)
 	})
 	return docs, edits, err
 }
@@ -404,24 +460,33 @@ func (s *sqlStore) addEdit(ctx context.Context, userID int64, w editWrite) (edit
 			return errEditLimit
 		}
 		saved = editRow{Scope: w.Scope, TextEnc: w.TextEnc, TextBytes: w.TextBytes, DeviceID: w.DeviceID}
-		return tx.QueryRowContext(ctx, `
+		err := tx.QueryRowContext(ctx, `
 			INSERT INTO claudex_memory_edits (user_id, scope, text_enc, text_bytes, device_id, created_at)
 			VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING id, created_at`,
 			userID, w.Scope, w.TextEnc, w.TextBytes, w.DeviceID).Scan(&saved.ID, &saved.CreatedAt)
+		if err != nil {
+			return err
+		}
+		return bumpControls(ctx, tx, userID, w.Scope, false)
 	})
 	return saved, err
 }
 
 func (s *sqlStore) deleteEdit(ctx context.Context, userID, id int64) (bool, error) {
-	if err := s.ready(); err != nil {
-		return false, err
-	}
-	res, err := s.db.ExecContext(ctx, `DELETE FROM claudex_memory_edits WHERE user_id = $1 AND id = $2`, userID, id)
-	if err != nil {
-		return false, err
-	}
-	n, _ := res.RowsAffected()
-	return n > 0, nil
+	deleted := false
+	err := s.withUserLock(ctx, userID, func(tx *sql.Tx) error {
+		var scope string
+		err := tx.QueryRowContext(ctx, `DELETE FROM claudex_memory_edits WHERE user_id = $1 AND id = $2 RETURNING scope`, userID, id).Scan(&scope)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		deleted = true
+		return bumpControls(ctx, tx, userID, scope, false)
+	})
+	return deleted, err
 }
 
 func (s *sqlStore) stats(ctx context.Context) (Stats, error) {
@@ -431,10 +496,14 @@ func (s *sqlStore) stats(ctx context.Context) (Stats, error) {
 	}
 	err := s.db.QueryRowContext(ctx, `SELECT
 		(SELECT COUNT(*) FROM claudex_memory_prefs WHERE search_chats OR generate),
-		(SELECT COUNT(*) FROM (SELECT user_id FROM claudex_memory_docs UNION SELECT user_id FROM claudex_memory_edits) u),
-		(SELECT COUNT(*) FROM claudex_memory_docs),
+		(SELECT COUNT(*) FROM (SELECT user_id FROM claudex_memory_docs UNION SELECT user_id FROM claudex_memory_edits
+			UNION SELECT user_id FROM claudex_memory_melange WHERE state_enc IS NOT NULL
+            UNION SELECT user_id FROM claudex_memory_cowork WHERE entries_enc IS NOT NULL) u),
+		(SELECT COUNT(*) FROM claudex_memory_docs) + (SELECT COUNT(*) FROM claudex_memory_melange WHERE state_enc IS NOT NULL) + (SELECT COUNT(*) FROM claudex_memory_cowork WHERE entries_enc IS NOT NULL),
 		(SELECT COUNT(*) FROM claudex_memory_edits),
-		(SELECT COALESCE(SUM(content_bytes), 0) FROM claudex_memory_docs) + (SELECT COALESCE(SUM(text_bytes), 0) FROM claudex_memory_edits)`).
+		(SELECT COALESCE(SUM(content_bytes), 0) FROM claudex_memory_docs) + (SELECT COALESCE(SUM(text_bytes), 0) FROM claudex_memory_edits)
+			+ (SELECT COALESCE(SUM(state_bytes), 0) FROM claudex_memory_melange WHERE state_enc IS NOT NULL)
+            + (SELECT COALESCE(SUM(entries_bytes), 0) FROM claudex_memory_cowork WHERE entries_enc IS NOT NULL)`).
 		Scan(&st.UsersOptedIn, &st.UsersWithMemory, &st.Documents, &st.Edits, &st.TotalBytes)
 	return st, err
 }
@@ -459,6 +528,12 @@ func (s *sqlStore) scopeMeta(ctx context.Context, userID int64) ([]ScopeMeta, er
 		), d AS (
 			SELECT scope, content_bytes, revision, source, generated_at, updated_at
 			FROM claudex_memory_docs WHERE user_id = $1
+			UNION ALL
+			SELECT 'melange', state_bytes, revision, NULL, NULL, updated_at
+			FROM claudex_memory_melange WHERE user_id = $1 AND state_enc IS NOT NULL
+            UNION ALL
+            SELECT 'cowork', entries_bytes, revision, NULL, NULL, updated_at
+            FROM claudex_memory_cowork WHERE user_id = $1 AND entries_enc IS NOT NULL
 		)
 		SELECT COALESCE(d.scope, e.scope), d.scope IS NOT NULL, COALESCE(d.content_bytes, 0), COALESCE(d.revision, 0),
 			d.source, d.generated_at, d.updated_at, COALESCE(e.n, 0), COALESCE(e.bytes, 0)

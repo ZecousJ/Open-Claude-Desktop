@@ -1,7 +1,7 @@
 /**
- * A project's folders: the person's "Allow" for the project lets each new
- * Cowork task in it use them, and a folder that leaves the project stops
- * counting.
+ * A project's folders (live claude.ai bundle, 2026-10-12: up to 16 per
+ * project): the person's "Allow" for the project lets each new Cowork task
+ * in it use them, and a folder that leaves the project stops counting.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

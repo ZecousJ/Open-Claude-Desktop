@@ -262,7 +262,7 @@ export class Accounts {
       throw Error("The password is incorrect.");
     this.removeSignedIn(accountId);
   }
-  /** The active account session authorizes deletion. */
+  /** The active account session authorizes deletion (live claude.ai bundle, 2026-10-14, c23cade21-BDjVxYsr). */
   removeSignedIn(accountId: string) {
     if (!this.db.users.some((user) => user.id === accountId))
       throw Error("Unknown account.");

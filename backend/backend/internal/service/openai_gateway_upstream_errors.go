@@ -279,10 +279,31 @@ func (s *OpenAIGatewayService) shouldFailoverOpenAIUpstreamResponse(account *Acc
 		isOpenAICompatibleModelNotFound400(upstreamBody) {
 		return true
 	}
+	if s.shouldFailoverOpenAIOpaqueInvalidRequest(account, statusCode, upstreamBody) {
+		return true
+	}
 	if s.shouldFailoverUpstreamError(statusCode) {
 		return true
 	}
 	return isOpenAITransientProcessingError(statusCode, upstreamMsg, upstreamBody)
+}
+
+func (s *OpenAIGatewayService) shouldFailoverOpenAIOpaqueInvalidRequest(account *Account, statusCode int, body []byte) bool {
+	if statusCode != http.StatusBadRequest || s.accountRepo == nil || !account.IsOpenAICompatible() {
+		return false
+	}
+	upstreamError := gjson.GetBytes(body, "error")
+	// An upstream can return this canned rejection for a request that another account accepts.
+	if upstreamError.Get("code").String() != "invalid_request" ||
+		upstreamError.Get("type").String() != "invalid_request_error" ||
+		strings.TrimSpace(upstreamError.Get("message").String()) != "请求参数不符合要求，请检查错误字段和输入内容。" {
+		return false
+	}
+	return strings.TrimSpace(upstreamError.Get("param").String()) == "" &&
+		upstreamError.Get("detail").String() == "" &&
+		upstreamError.Get("details").String() == "" &&
+		gjson.GetBytes(body, "detail").String() == "" &&
+		gjson.GetBytes(body, "details").String() == ""
 }
 
 func isOpenAICompatibleModelNotFound400(respBody []byte) bool {
@@ -537,12 +558,16 @@ func (s *OpenAIGatewayService) handleErrorResponse(
 			UpstreamStatus: resp.StatusCode,
 		})
 		setOpsUpstreamError(c, resp.StatusCode, cyberMsg, truncateString(string(body), 2048))
-		writeOpenAIPassthroughResponseHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
+		if !c.Writer.Written() {
+			writeOpenAIPassthroughResponseHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
+		}
 		contentType := resp.Header.Get("Content-Type")
 		if contentType == "" {
 			contentType = "application/json"
 		}
-		c.Data(resp.StatusCode, contentType, body)
+		if !writeOpenAIResponseFailureIfStreaming(c, resp.StatusCode, body) {
+			c.Data(resp.StatusCode, contentType, body)
+		}
 		if cyberMsg == "" {
 			return nil, fmt.Errorf("openai cyber_policy: %d", resp.StatusCode)
 		}
@@ -551,9 +576,11 @@ func (s *OpenAIGatewayService) handleErrorResponse(
 	if account != nil && account.Platform == PlatformGrok && isGrokContentPolicyRejection(resp.StatusCode, body) {
 		clientMsg := grokContentPolicyClientMessage(body)
 		setOpsUpstreamError(c, resp.StatusCode, clientMsg, truncateString(string(body), 2048))
-		writeOpenAIPassthroughResponseHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
+		if !c.Writer.Written() {
+			writeOpenAIPassthroughResponseHeaders(c.Writer.Header(), resp.Header, s.responseHeaderFilter)
+		}
 		MarkResponseCommitted(c)
-		c.JSON(http.StatusForbidden, gin.H{
+		writeOpenAIErrorResponse(c, http.StatusForbidden, gin.H{
 			"error": gin.H{
 				"type":    "invalid_request_error",
 				"message": clientMsg,
@@ -619,7 +646,7 @@ func (s *OpenAIGatewayService) handleErrorResponse(
 		"Upstream request failed",
 	); matched {
 		MarkResponseCommitted(c)
-		c.JSON(status, gin.H{
+		writeOpenAIErrorResponse(c, status, gin.H{
 			"error": gin.H{
 				"type":    errType,
 				"message": errMsg,
@@ -649,7 +676,7 @@ func (s *OpenAIGatewayService) handleErrorResponse(
 			Detail:             upstreamDetail,
 		})
 		MarkResponseCommitted(c)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		writeOpenAIErrorResponse(c, http.StatusInternalServerError, gin.H{
 			"error": gin.H{
 				"type":    "upstream_error",
 				"message": "Upstream gateway error",
@@ -697,16 +724,7 @@ func (s *OpenAIGatewayService) handleErrorResponse(
 
 	MarkResponseCommitted(c)
 
-	// 上游 400 是确定性的请求错误：同一份请求体换账号、重试多少次都会失败。归一成
-	// 502 upstream_error 会让下游网关把它当成可重试的上游故障反复重放（#5479 实测
-	// 30 个失败请求被放大成 60 次上游调用），同时抹掉客户端定位问题所需的 code/param。
-	//
-	// 走到这里说明 shouldFailoverOpenAIUpstreamResponse 已判定该 400 不可 failover，
-	// 即 server_is_overloaded / at capacity 这类可重试的 400 不会到达此处。
-	//
-	// 兄弟路径早已这么做：handleCompatErrorResponse（ChatCompletions / Anthropic）
-	// 回真实状态码 + invalid_request_error + 真实 message；/v1/images 还额外透传
-	// code/param。原生 Responses 是唯一漏掉的一条。
+	// 保留未触发 failover 的 400 的 code/param，供客户端定位请求问题。
 	if isOpenAIDeterministicClientError(resp.StatusCode) {
 		writeOpenAIUpstreamClientError(c, resp.StatusCode, body, upstreamMsg)
 		if upstreamMsg == "" {
@@ -745,7 +763,7 @@ func (s *OpenAIGatewayService) handleErrorResponse(
 		errMsg = upstreamMsg
 	}
 
-	c.JSON(statusCode, gin.H{
+	writeOpenAIErrorResponse(c, statusCode, gin.H{
 		"error": gin.H{
 			"type":    errType,
 			"message": errMsg,

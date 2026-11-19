@@ -449,6 +449,69 @@ test("configuration edits retire before deferred relaunch, and failed spawn neve
   }
 });
 
+test("failed server exit is cleared by a successful restart of the same configuration", async () => {
+  const f = await fixture();
+  try {
+    const program = path.join(f.directory, "restart.cjs");
+    fs.writeFileSync(program, "process.exit(17)");
+    const config = { command: process.execPath, args: [program] };
+    const first = start(f.launch("restart", config).entry);
+    first.child.stdin.end();
+    assert.equal((await first.ended).code, 17);
+    assert.equal(f.capture.read("restart").failed, true);
+    assert.equal(f.capture.read("restart").availability, "available");
+    fs.writeFileSync(program, "process.exit(0)");
+    const second = start(f.launch("restart", config).entry);
+    second.child.stdin.end();
+    assert.equal((await second.ended).code, 0);
+    assert.equal(f.capture.read("restart").failed, undefined);
+  } finally {
+    f.clean();
+  }
+});
+
+test(
+  "an unexpectedly killed server reports failure",
+  { skip: process.platform === "win32" },
+  async () => {
+    const f = await fixture();
+    try {
+      const run = start(
+        f.launch("killed", {
+          command: process.execPath,
+          args: ["-e", "process.kill(process.pid, 'SIGKILL')"],
+        }).entry,
+      );
+      run.child.stdin.end();
+      assert.equal((await run.ended).signal, "SIGKILL");
+      assert.equal(f.capture.read("killed").failed, true);
+    } finally {
+      f.clean();
+    }
+  },
+);
+
+test(
+  "a server that terminates itself with SIGTERM reports failure",
+  { skip: process.platform === "win32" },
+  async () => {
+    const f = await fixture();
+    try {
+      const run = start(
+        f.launch("self-terminated", {
+          command: process.execPath,
+          args: ["-e", "process.kill(process.pid, 'SIGTERM')"],
+        }).entry,
+      );
+      run.child.stdin.end();
+      assert.equal((await run.ended).signal, "SIGTERM");
+      assert.equal(f.capture.read("self-terminated").failed, true);
+    } finally {
+      f.clean();
+    }
+  },
+);
+
 test(
   "unhandled POSIX signals preserve the real child's signal exit",
   { skip: process.platform === "win32" },
@@ -467,6 +530,7 @@ test(
       await waitFor(() => run.stdout().length > 0);
       run.child.kill("SIGTERM");
       assert.deepEqual(await run.ended, { code: null, signal: "SIGTERM" });
+      assert.equal(f.capture.read("signal-exit").failed, undefined);
     } finally {
       f.clean();
     }

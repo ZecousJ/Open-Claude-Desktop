@@ -20,7 +20,7 @@ import { requestFolderAccess } from "../../cowork/useFolderAccess";
 import "../../composer/cowork-options.css";
 import { folderName } from "./project-list";
 
-/** The system picker's title for a project's folder. */
+/** The system picker's title for a project's folder (live claude.ai bundle, 2026-10-12). */
 const browsePrompt = "Choose a folder for the project";
 /** Add a folder's system picker, which takes several (live: "Select folders"). */
 const browseManyPrompt = "Select folders";
@@ -29,8 +29,10 @@ const browseManyPrompt = "Select folders";
 export const folderLimitReason = "A project can have up to {max} folders.";
 
 /**
- * Which of the chosen folders a project with `current` folders takes, and what
- * to say about the rest.
+ * Which of the chosen folders a project with `current` folders takes, and
+ * what to say about the rest (live claude.ai bundle, 2026-10-12: folders
+ * already in the project are skipped with a note, and those past the
+ * 16-folder limit with an error).
  */
 export function foldersToAdd(
   current: readonly string[],
@@ -69,15 +71,17 @@ type Picker = {
 };
 
 /**
- * A project's Folder section: "Folder" with the Only you badge; a row per
- * folder (icon, name, full path on hover, an X that shows on hover); "On
- * {deviceName}" under them. With one folder the header has Edit ("Choose a
- * different folder") and Add ("Add a folder"); with more, only Add, which is
- * off at 16 folders. Both open the folder picker (search, recent folders,
- * "Choose a different folder…"); without recent folders they go straight to the
- * system picker. Removing one of several folders asks first; the only folder
- * goes at once. Each folder passes Cowork's folder check, and the project keeps
- * the person's "Allow" so its new tasks get every folder.
+ * A project's Folder section (live claude.ai bundle, 2026-10-12,
+ * c8ad300b7 bound-folder block): "Folder" with the Only you badge; a row
+ * per folder (icon, name, full path on hover, an X that shows on hover);
+ * "On {deviceName}" under them. With one folder the header has Edit
+ * ("Choose a different folder") and Add ("Add a folder"); with more, only
+ * Add, which is off at 16 folders. Both open the folder picker (search,
+ * recent folders, "Choose a different folder…"); without recent folders
+ * they go straight to the system picker. Removing one of several folders
+ * asks first; the only folder goes at once. Each folder passes Cowork's
+ * folder check, and the project keeps the person's "Allow" so its new tasks
+ * get every folder.
  */
 export function ProjectFolders({
   project,
@@ -320,10 +324,11 @@ export function ProjectFolders({
 }
 
 /**
- * The folder picker: "Search folders", the recent folders (name over path, the
- * chosen one checked), then "Choose a different folder…" for the system picker.
- * It opens 4px under the button, right edges aligned, in the Cowork place
- * menu's measures.
+ * The folder picker (live claude.ai bundle, 2026-10-12, the folder select
+ * the project's Edit and Add open): "Search folders", the recent folders
+ * (name over path, the chosen one checked), then "Choose a different
+ * folder…" for the system picker. It opens 4px under the button, right
+ * edges aligned, in the Cowork place menu's measures (R-Cowork-项目文件夹菜单).
  */
 export function FolderPicker({
   anchor,

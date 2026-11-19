@@ -80,9 +80,10 @@ export function collectArtifacts(
     library.pinned.map((identity, index) => [identity, index]),
   );
   const pinned = new Set(library.pinned);
-  // Every artifact is listed: the old share popover's "Show in Artifacts list"
-  // switch is gone with it, so an artifact it hid shows again. `shares` is kept
-  // for the callers.
+  // Every artifact is listed: the old share popover's "Show in Artifacts
+  // list" switch is gone with it (the live claude.ai bundle, 2026-10-12,
+  // has no such setting), so an artifact it hid shows again. `shares` is
+  // kept for the callers.
   void shares;
   return [...sources, ...copies]
     .map((artifact) => ({

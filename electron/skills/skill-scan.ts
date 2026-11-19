@@ -6,6 +6,7 @@ const unsafeContent = [
   /(?:curl|wget|fetch)\b[^\n]*(?:\.ssh\/id_|\.aws\/credentials|\.codex\/auth\.json)/i,
 ];
 
+// (live claude.ai bundle, 2026-10-14, c6a2a31c4-kqWKJyeH)
 export function scanSkillContents(contents: Map<string, Buffer>, name: string) {
   for (const [file, content] of contents) {
     const executable = /\.(?:exe|dll|dylib|so|com|scr)$/i.test(file);

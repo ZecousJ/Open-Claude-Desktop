@@ -1,7 +1,7 @@
 import { currentLocale } from "../../i18n";
 import { Pause, Clock, Check } from "../../ui/glyphs";
 import type { Project } from "../../../shared/types";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import {
   isCompletedOnce,
   routineDispatchAt,
@@ -174,7 +174,7 @@ export function RoutineCard({
                   aria-label={`${t("Why this task won’t run")}: ${t(hold)}`}
                   title={t(hold)}
                 >
-                  <AppIcon name="Warning" size={16} />
+                  <Anthropicon name="Warning" size={16} />
                 </span>
               )}
               {modelWarning && (
@@ -184,7 +184,7 @@ export function RoutineCard({
                   aria-label={modelWarning}
                   title={modelWarning}
                 >
-                  <AppIcon name="Warning" size={16} />
+                  <Anthropicon name="Warning" size={16} />
                 </span>
               )}
               {dot && (
@@ -226,7 +226,7 @@ export function RoutineCard({
               <RoutineComputerBadge routine={routine} />
               {project && (
                 <span className="routine-card-project">
-                  <AppIcon name="Projects" size={12} />
+                  <Anthropicon name="Projects" size={12} />
                   <span dir="auto" data-no-translate>
                     {project.name}
                   </span>
@@ -245,7 +245,7 @@ export function RoutineCard({
           aria-expanded={menuOpen}
           onClick={(event) => onMenu(event.currentTarget)}
         >
-          <AppIcon name="DotsVertical" size={20} />
+          <Anthropicon name="DotsVertical" size={20} />
         </button>
       </li>
     );
@@ -272,7 +272,7 @@ export function RoutineCard({
                 aria-label={`${t("Why this task won’t run")}: ${t(hold)}`}
                 title={t(hold)}
               >
-                <AppIcon name="Warning" size={16} />
+                <Anthropicon name="Warning" size={16} />
               </span>
             )}
             {modelWarning && (
@@ -282,7 +282,7 @@ export function RoutineCard({
                 aria-label={modelWarning}
                 title={modelWarning}
               >
-                <AppIcon name="Warning" size={16} />
+                <Anthropicon name="Warning" size={16} />
               </span>
             )}
             {dot === "needs_attention" && (
@@ -291,7 +291,8 @@ export function RoutineCard({
               </span>
             )}
           </span>
-          {/* The description, else the instructions' first 280 characters. */}
+          {/* The description, else the instructions' first 280 characters
+              (live claude.ai bundle, 2026-10-14, cdbc75b4b). */}
           {(routine.description || routine.prompt) && (
             <span
               className="routine-card-description"
@@ -318,7 +319,7 @@ export function RoutineCard({
               )}
               {project && (
                 <span className="routine-card-project">
-                  <AppIcon name="Projects" />
+                  <Anthropicon name="Projects" />
                   <span dir="auto" data-no-translate>
                     {project.name}
                   </span>
@@ -333,7 +334,7 @@ export function RoutineCard({
                 {state === "On hold" && <Clock size={16} />}
                 {state === "Ran" && <Check size={16} />}
                 {state === "Auto-disabled" && (
-                  <AppIcon name="Warning" size={16} />
+                  <Anthropicon name="Warning" size={16} />
                 )}
                 {state}
               </span>
@@ -365,7 +366,7 @@ export function RoutineCard({
         aria-expanded={menuOpen}
         onClick={(event) => onMenu(event.currentTarget)}
       >
-        <AppIcon name="DotsVertical" size={20} />
+        <Anthropicon name="DotsVertical" size={20} />
       </button>
     </li>
   );

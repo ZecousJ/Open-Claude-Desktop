@@ -32,6 +32,7 @@ export interface MemoryDocView {
   generatedAt?: number;
   source: "generated" | "edited" | "imported";
   revision: number;
+  controlsVersion?: string;
   edits: MemoryEditView[];
   /**
    * The service's limits for the "remember or forget" edits: how many a
@@ -97,17 +98,30 @@ export interface MemoryAPI {
   writeGlobalMemory(content: string): Promise<boolean>;
   listAccountMemories(
     includeContent?: boolean,
+    options?: { strict?: boolean },
   ): Promise<{ path: string; content?: string; updatedAt: string }[]>;
   readAccountMemory(
     path: string,
+    options?: { strict?: boolean },
   ): Promise<{ path: string; content?: string; updatedAt: string } | null>;
   writeAccountMemory(path: string, content: string): Promise<boolean>;
   deleteAccountMemory(path: string): Promise<boolean>;
-  resetMemories(): Promise<boolean>;
+  resetMemories(options?: { strict?: boolean }): Promise<boolean>;
   getAutoMemoryDir(projectId: string): Promise<string | null>;
-  memoryStatus(): Promise<MemoryStatus>;
-  setMemoryPrefs(prefs: Partial<MemoryPrefs>): Promise<MemoryStatus>;
+  memoryStatus(options?: {snapshotOnly:true}): Promise<MemoryStatus>;
+  setMemoryPrefs(prefs: Partial<MemoryPrefs>, options?: {disableOnly:true}): Promise<MemoryStatus>;
   memoryDoc(scope: MemoryScopeRef): Promise<MemoryDocView | null>;
+  memoryControlsState(
+    scope: MemoryScopeRef,
+    options?: { snapshotOnly: true } | { fresh: true },
+  ): Promise<{ doc: MemoryDocView | null; version: string | null }>;
+  replaceMemoryControls(
+    scope: MemoryScopeRef,
+    controls: string[],
+    baseVersion: string,
+    options?: { nonGenerating: true },
+  ): Promise<MemoryDocView>;
+  synthesizeMemory(scope: MemoryScopeRef): Promise<MemoryDocView>;
   /** Saves an edited document; `revision` is the one the edit started from. */
   saveMemoryDoc(
     scope: MemoryScopeRef,
@@ -116,8 +130,9 @@ export interface MemoryAPI {
   ): Promise<MemoryDocView>;
   removeMemoryEdit(id: string): Promise<MemoryStatus>;
   /**
-   * Manage memory: adds a "remember or forget" edit to a scope, removes some of
-   * its edits, or both. Edits stay until removed; answers the scope's memory.
+   * Manage memory (live claude.ai bundle, 2026-10-12: the memory controls
+   * PUT): adds a "remember or forget" edit to a scope, removes some of its
+   * edits, or both. Edits stay until removed; answers the scope's memory.
    */
   updateMemoryEdits(
     scope: MemoryScopeRef,
@@ -153,6 +168,9 @@ export const memoryMethods = bridgeMethods<MemoryAPI>({
   memoryStatus: true,
   setMemoryPrefs: true,
   memoryDoc: true,
+  memoryControlsState: true,
+  replaceMemoryControls: true,
+  synthesizeMemory: true,
   saveMemoryDoc: true,
   removeMemoryEdit: true,
   updateMemoryEdits: true,

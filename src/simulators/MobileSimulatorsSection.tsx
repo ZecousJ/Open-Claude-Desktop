@@ -5,12 +5,13 @@ import { Row, Section, Toggle } from "../settings/controls";
 import type { TabProps } from "../settings/context";
 
 /**
- * Settings → Claude Code → Mobile simulators: one switch for the iOS Simulator
- * (a Mac) and one for the Android Emulator (a Mac or Windows). On, Claude gets
- * its device tools in Code sessions and is asked before it first uses each
- * device; off, Claude gets no tools and the panes still work for you. A kind
- * this computer can't run has no row, and without either the section is not
- * drawn.
+ * Settings → Claude Code → Mobile simulators (desktop bundle 2.31226.1,
+ * after the Browser section): one switch for the iOS Simulator (a Mac) and
+ * one for the Android Emulator (a Mac or Windows). On, Claude gets its
+ * device tools in Code sessions and is asked before it first uses each
+ * device; off, Claude gets no tools and the panes still work for you. A
+ * kind this computer can't run has no row, and without either the section
+ * is not drawn.
  */
 export function MobileSimulatorsSection({
   settings,

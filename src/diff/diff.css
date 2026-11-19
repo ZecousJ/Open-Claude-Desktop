@@ -1,8 +1,10 @@
-/* Diff rows shared by the approval card and the Changes panel. 12px/17px mono
-   rows; a 36px gutter with the number right-aligned, a three-character mark
-   column, then code. Colours as the original's diff library mixes them: a
-   changed row is the surface mixed in lab with the git added / removed colour
-   (20% dark, 12% light), its changed words that colour at 20% (15% light). */
+/* Diff rows shared by the approval card and the Changes panel.
+   R-0805-Code编辑app-js审批卡 (2x): 12px/17px mono rows; a 36px gutter with the
+   number right-aligned, a three-character mark column, then code. Colours
+   as the original's diff library mixes them (live claude.ai bundle,
+   2026-10-14): a changed row is the surface mixed in lab with the git
+   added / removed colour (20% dark, 12% light), its changed words that
+   colour at 20% (15% light). */
 .diff-lines {
   --diff-mono: var(--code-font-custom,) Menlo, Consolas, monospace;
   font: 12px/17px var(--diff-mono);
@@ -34,7 +36,7 @@
   text-align: right;
   user-select: none;
 }
-/* New files: "+ 1" in a 45px gutter, green from there on. */
+/* New files: "+ 1" in a 45px gutter, green from there on (R-0805 utils.js). */
 .diff-lines[data-new] .diff-gutter {
   width: 45px;
   padding-right: 7px;
@@ -82,7 +84,7 @@
 .diff-row[data-kind="add"] .diff-mark {
   color: var(--code-addition, #32d74b);
 }
-/* A new file keeps the gutter on the card background. */
+/* A new file keeps the gutter on the card background (R-0805 utils.js). */
 .diff-lines[data-new] .diff-row[data-kind="add"] .diff-gutter {
   background: var(--code-background, #1a1a1a);
 }
@@ -169,9 +171,10 @@
 :root[data-theme="light"] .diff-row[data-kind="add"] .diff-word {
   background: var(--code-addition-word, rgb(30 158 60 / 15%));
 }
-/* Side by side: two halves of equal width, each with its own gutter, mark and
-   code, coloured by its own side; an empty half (the other side's longer run)
-   is plain. */
+/* Side by side (live claude.ai bundle, 2026-10-14: Diff layout): two
+   halves of equal width, each with its own gutter, mark and code, coloured
+   by its own side; an empty half (the other side's longer run) is
+   plain. */
 .diff-row.diff-split-row,
 :root[data-theme="light"] .diff-row.diff-split-row {
   display: grid;
@@ -281,7 +284,8 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-/* Comments for Claude: an accent + at the row's start while it is hovered; rows
+/* Comments for Claude (live claude.ai bundle, 2026-10-14: "Add comment on
+   this line"): an accent + at the row's start while it is hovered; rows
    commented on carry an accent bar; the editor opens under the last row. */
 .diff-row {
   position: relative;
@@ -322,7 +326,11 @@
   border-radius: 8px;
   background: #1a1a19;
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 }
 .diff-comment-editor > textarea {
   box-sizing: border-box;

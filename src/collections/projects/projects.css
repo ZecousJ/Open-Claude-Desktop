@@ -1,7 +1,10 @@
 /* Projects list: docs/audit-live-2026-10-16/live/official-projects.txt.
  * The captured comfortable density uses effective pixels at our 14px root.
  * Uncaptured detail/dialog rules below retain their existing references. */
-/* CDS card tokens. */
+/* CDS card tokens (live claude.ai bundle, 2026-10-14, c6a992d55-D8h3Fpj5.css;
+   the gaps and the footnote re-read 2026-10-21: gap-xs .5rem, gap-md 1rem,
+   footnote .8125rem / 1.0625rem at its 16px rem, written in pixels at our
+   14px root). */
 .prj-view {
   --cds-surface-1: #151515;
   --cds-surface-2: #1a1a19;
@@ -20,7 +23,8 @@
   box-sizing: border-box;
   height: 100%;
   overflow: auto;
-  /* 40px each side; the reserved 8px gutter is part of the right one. */
+  /* 40px each side (live claude.ai, 2026-10-20: 8px scroller padding and
+     the column's 32px); the reserved 8px gutter is part of the right one. */
   padding: 48px 32px 48px 40px;
   scrollbar-gutter: stable;
 }
@@ -28,7 +32,7 @@
   max-width: 960px;
   margin-inline: auto;
 }
-/* Student cards. */
+/* Student cards (live claude.ai bundle, 2026-10-14, cd9282f83-CpkAIgb2.js). */
 .prj-template-section {
   margin-bottom: 24px;
 }
@@ -100,9 +104,11 @@
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  /* The page heading's serif. */
+  /* The page heading's serif (live claude.ai, 2026-10-20: anthropic-serif,
+     then "Claudex Serif", Georgia, then PingFang SC for Chinese). */
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   font-size: 24px;
   line-height: 32px;
   font-weight: 500;
@@ -112,7 +118,8 @@
 }
 :root[data-reference-fonts="true"] .prj-detail-head h1 {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   font-optical-sizing: auto;
 }
 .prj-tools {
@@ -201,7 +208,7 @@
   padding: 0;
   list-style: none;
 }
-/* mb-3 text-label font-medium text-secondary. */
+/* mb-3 text-label font-medium text-secondary (live claude.ai bundle, 2026-10-14, c17beaa76-CrQT9ilA.js). */
 .prj-groups {
   display: flex;
   flex-direction: column;
@@ -215,7 +222,7 @@
   font-weight: 500;
   color: var(--cds-text-secondary);
 }
-/* md grid utilities. */
+/* md grid utilities (live claude.ai bundle, 2026-10-14, c17beaa76-CrQT9ilA.js). */
 @media (min-width: 768px) {
   .prj-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -233,7 +240,7 @@
   align-items: stretch;
   min-width: 0;
 }
-/* Shared card utilities. */
+/* Shared card utilities (live claude.ai bundle, 2026-10-14, cbb0b7045-C2GzB_VF.js). */
 .prj-grid .prj-card {
   display: flex;
   flex-direction: column;
@@ -248,9 +255,9 @@
   box-shadow: inset 0 0 0 1px var(--cds-ring-color);
   text-align: left;
   color: inherit;
-  /* The original's page card: the fill steps at once on hover, only the press
-     eases back (200ms on the "out" curve, no spring) after a 98% squish in
-     60ms. */
+  /* The original's page card: the fill steps at once on hover, only the
+     press eases back (200ms on the "out" curve, no spring) after a 98%
+     squish in 60ms (desktop bundle 2.31226.1). */
   --press-card-scale: var(--press-grid-card-scale);
   transition: scale var(--motion-base) var(--ease-out);
 }
@@ -267,7 +274,7 @@
   text-overflow: ellipsis;
   color: var(--cds-text-primary);
 }
-/* Up to three lines. */
+/* Up to three lines (line-clamp-3, live claude.ai, 2026-10-21). */
 .prj-card > span {
   display: -webkit-box;
   margin-bottom: var(--cds-gap-md);
@@ -278,7 +285,8 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
-/* Footer utilities and CDS tokens. */
+/* Footer utilities and CDS tokens (live claude.ai bundle, 2026-10-14,
+   c17beaa76-CrQT9ilA.js, cbb0b7045-C2GzB_VF.js). */
 .prj-card > small {
   margin-top: auto;
   display: flex;
@@ -360,7 +368,8 @@
 .prj-card-more[aria-expanded="true"] {
   background: var(--fill-ghost-hover);
 }
-/* A touch screen has no hover to reveal it. */
+/* A touch screen has no hover to reveal it (live claude.ai bundle, 2026-10-16,
+   cbb0b7045: touch:opacity-100). */
 @media (hover: none) {
   .prj-card-more {
     opacity: 1;
@@ -369,7 +378,8 @@
 .prj-card-more.visible {
   position: static;
 }
-/* The no-match line. */
+/* The no-match line (live claude.ai bundle, 2026-10-14, c17beaa76:
+   mt-10 text-center text-body text-muted; R-1184: 13px). */
 .prj-none {
   margin: 40px 0 0;
   text-align: center;
@@ -377,7 +387,7 @@
   color: var(--text-muted);
 }
 
-/* One project. */
+/* One project (no capture: provisional). */
 .prj-back {
   display: inline-flex;
   align-items: center;
@@ -506,9 +516,10 @@
   -webkit-line-clamp: 8;
 }
 
-/* Memory: the "Only you" pill as the Folder row's in R-1314; the memory in the
-   rail's muted small text cut at two lines, "Last updated …" under it at 60%, a
-   60% wide placeholder line while it loads, and a small secondary Try again 4px
+/* Memory (live claude.ai bundle, 2026-10-12, project rail): the "Only you"
+   pill as the Folder row's in R-1314; the memory in the rail's muted small
+   text cut at two lines, "Last updated …" under it at 60%, a 60% wide
+   placeholder line while it loads, and a small secondary Try again 4px
    under the failure line. */
 .prj-only-you {
   display: inline-flex;
@@ -548,8 +559,8 @@
 }
 
 /*
- * New project / Edit details: a 520px dialog with a 22px title 20px above the
- * Name label, and 32px Cancel and Save.
+ * New project / Edit details (R-1289, Windows 1x): a 520px dialog with a
+ * 22px title 20px above the Name label, and 32px Cancel and Save.
  */
 .modal:has(.prj-editor) {
   width: 520px;
@@ -559,7 +570,7 @@
   font-weight: 600;
   line-height: normal;
 }
-/* The shared dialog header sits 3px lower than these were measured. */
+/* The shared dialog header (WP2) sits 3px lower than these were measured. */
 .modal:has(.prj-editor) > header {
   margin-top: -3px;
 }
@@ -578,8 +589,8 @@
   margin: 0;
 }
 /*
- * The label's own 6px gap spaces the field, not the shared 4px margin too, and
- * the one-line fields stay 33px.
+ * The label's own 6px gap spaces the field, not the shared 4px margin too,
+ * and the one-line fields stay 33px (R-1289).
  */
 .modal .prj-editor > label > input:not([type="checkbox"]):not([type="radio"]),
 .modal .prj-editor > label > textarea {
@@ -588,9 +599,10 @@
 .modal .prj-editor > label > input:not([type="checkbox"]):not([type="radio"]) {
   height: 33px;
 }
-/* Create a project. */
-/* 22px title 42px below the dialog edge, name field to the second label 33px,
-   78px description, the dialog 392px tall. */
+/* Create a project (R-0190–R-0195, W1164 JPG: proportions only). */
+/* Re-measured against R-1192 (Windows 1x, light): 22px title 42px below the
+   dialog edge, name field to the second label 33px, 78px description, the
+   dialog 392px tall. */
 .modal:has(.prj-editor.create) > header {
   margin-top: 6px;
   margin-bottom: 21px;
@@ -750,7 +762,7 @@
   }
 }
 
-/* Light. */
+/* Light (R-1290, R-1289). */
 :root[data-theme="light"] .prj-head h1,
 :root[data-theme="light"] .prj-detail-head h1,
 :root[data-theme="light"] .prj-chats button {
@@ -824,10 +836,10 @@
   color: #141413;
 }
 
-/* Project context files (R13-D). About 146×119, 1px border, radius 8, name on
-   up to two lines at 13px, the size at 11px under it and the type badge at the
-   foot. The capacity bar, Add text, the remove button and the dark colours are
-   provisional. */
+/* Project context files (R13-D). Cards after R-1314 (Windows 1x, light):
+   about 146×119, 1px border, radius 8, name on up to two lines at 13px,
+   the size at 11px under it and the type badge at the foot. The capacity
+   bar, Add text, the remove button and the dark colours are provisional. */
 .prj-knowledge-actions {
   display: flex;
   gap: 2px;
@@ -841,7 +853,7 @@
   gap: 6px;
   margin: 2px 0 10px;
 }
-/* The reference design Progress sm geometry. */
+/* Live claude.ai bundle, 2026-10-14, ca12e49f2-CABp0rxn.js: CDS Progress sm geometry. */
 .prj-capacity-bar {
   width: 100%;
   height: 4px;
@@ -971,7 +983,7 @@
 :root[data-theme="light"] .prj-files li {
   border-color: #cfcfcf;
   background: #ffffff;
-  /* A 3px soft shadow under each card's bottom edge. */
+  /* R-1202 (1x light): a 3px soft shadow under each card's bottom edge. */
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06);
 }
 :root[data-theme="light"] .prj-file-type {
@@ -988,16 +1000,18 @@
   color: #5e5e5c;
 }
 
-/* The web's Projects page: 500-weight title, cards on #151515 with a white 10%
-   inner ring (112 high, hover #1a1a19), name 500 in #f0efec, description
-   #c3c2b7 4px under it, date 13/17 #898781 with 24px above it. */
+/* The web's Projects page (live claude.ai, 2026-09-29, dark): 500-weight
+   title, cards on #151515 with a white 10% inner ring (112 high, hover #1a1a19), name
+   500 in #f0efec, description #c3c2b7 4px under it, date 13/17 #898781 with
+   24px above it. */
 :root[data-surface="web"] .prj-head h1 {
   font-weight: 500;
 }
 :root[data-surface="web"]:not([data-theme="light"]) .prj-head h1 {
   color: #f0efec;
 }
-/* Your projects · Archived, drawn as the chats page's tabs (history.css). */
+/* Your projects · Archived (live claude.ai bundle, 2026-10-14, c17beaa76),
+   drawn as the chats page's tabs (history.css). */
 .prj-tabs {
   display: flex;
   gap: 3px;
@@ -1074,7 +1088,8 @@
 .prj-card-pin:hover {
   background: var(--fill-ghost-hover);
 }
-/* A neutral Badge, h-5 ms-2. */
+/* A neutral Badge, h-5 ms-2 (live claude.ai bundle, 2026-10-16, c17beaa76 and
+   shared-frame: bg-neutral text-secondary, rounded-chip, px-sm). */
 .prj-card-example {
   display: inline-flex;
   align-items: center;

@@ -1,4 +1,8 @@
 import test from "node:test";
+import { cloudCodeSession } from "../../electron/official-ui/api/cloud-code-history";
+import { officialCoworkDeviceId } from "../../electron/official-ui/api/cowork-device-id";
+import { organizationUuid } from "../../electron/official-ui/api/context";
+import { createOfficialCoworkSession } from "../../runner/src/official-cowork-creation";
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -19,11 +23,12 @@ import type {
   Attachment,
   Conversation,
 } from "../../shared/types";
-import { defaultSettings } from "../../electron/store/store";
+import { defaultSettings, Store } from "../../electron/store/store";
 import { portableChatDeviceConversation } from "../../shared/chat-device-context";
 import { Engine } from "../../electron/engine/engine";
 import { openPolicy } from "../../shared/client-policy";
 import { DeviceTrustStore } from "../../electron/remote-control/device-trust-store";
+import { interruptExpectedTurn } from "../../electron/conversations/interrupt-target";
 
 const source = (patch: Partial<Conversation> = {}): Conversation => ({
   id: randomUUID(),
@@ -113,7 +118,24 @@ async function setup(proof = false) {
         size: bytes.byteLength,
         kind: "text",
       }),
-      interrupt: async (id) => {
+      interrupt: async (id, expected) => {
+        if (expected)
+          return interruptExpectedTurn(
+            {
+              store: {
+                conversation: (id) =>
+                  node.conversations.find((c) => c.id === id)!,
+              },
+              accountGeneration: () => node.scope,
+              engine: {
+                interrupt: async (id) => {
+                  node.interrupted.push(id);
+                },
+              },
+            },
+            id,
+            expected,
+          );
         node.interrupted.push(id);
         const c = node.conversations.find((c) => c.id === id)!;
         c.turns.at(-1)!.status = "interrupted";
@@ -132,6 +154,10 @@ async function setup(proof = false) {
           return c;
         },
         release: async () => null,
+        releaseCowork: (conversation) => {
+          assert.ok(conversation.deviceChatOrigin);
+          conversation.deviceChatOrigin.active = false;
+        },
         blob: async (digest) => {
           const bytes = node.blobs.get(digest);
           assert.ok(bytes);
@@ -286,6 +312,176 @@ test("V1 invokes actual device Chat execution with explicit model/permission, pe
     });
     assert.equal(h.nodes.get("device-a")!.sent.length, 2);
     assert.equal(h.fallbackCount(), 0);
+  } finally {
+    await h.clean();
+  }
+});
+
+test("device scoped Stop uses the remote turn identity and refuses a stale remote turn", async () => {
+  const h = await setup();
+  try {
+    const c = await h.send(),
+      node = h.nodes.get("device-a")!;
+    const remote = node.conversations[0];
+    remote.turns[0].status = "inProgress";
+    await h.controller.refresh();
+    const snapshot = h.cloud[0],
+      turn = snapshot.turns[0];
+    assert.equal(snapshot.createdAt, remote.createdAt);
+    assert.equal(snapshot.threadId, undefined);
+    const expected = {
+      turnId: turn.id,
+      turnCreatedAt: turn.createdAt,
+      conversationCreatedAt: snapshot.createdAt,
+    };
+    assert.deepEqual(
+      await h.controller.route("interrupt", [c.id, expected], h.fallback),
+      { status: "accepted" },
+    );
+    assert.deepEqual(node.interrupted, [remote.id]);
+    remote.turns.push({
+      ...structuredClone(remote.turns[0]),
+      id: "replacement",
+      createdAt: turn.createdAt + 1,
+    });
+    assert.deepEqual(
+      await h.controller.route("interrupt", [c.id, expected], h.fallback),
+      { status: "mismatch" },
+    );
+    assert.deepEqual(node.interrupted, [remote.id]);
+  } finally {
+    await h.clean();
+  }
+});
+
+test("Cowork removal releases the owning desktop before deleting its mirror and tolerates a repeat release", async () => {
+  const h = await setup();
+  try {
+    const row = await h.send({ mode: "cowork" });
+    const binding = row.chatDeviceBinding;
+    assert.ok(binding);
+    const device = h.nodes.get(binding.deviceId);
+    assert.ok(device);
+    const remote = device.conversations.find(
+      (conversation) => conversation.id === binding.remoteConversationId,
+    );
+    assert.ok(remote?.deviceChatOrigin);
+    const remove = (save: () => Promise<void>) =>
+      h.controller.deleteCowork(
+        row,
+        () => true,
+        async (current) => {
+          assert.equal(current(), true);
+          assert.equal(remote.deviceChatOrigin?.active, false);
+          await save();
+        },
+      );
+    await assert.rejects(
+      remove(async () => {
+        throw Error("Save unavailable");
+      }),
+      /Save unavailable/,
+    );
+    assert.equal(h.cloud[0], row);
+    await assert.rejects(
+      h.controller.call(binding, "chatDeviceOpen", {
+        remoteConversationId: remote.id,
+      }),
+      /no longer available/,
+    );
+    await remove(async () => {
+      h.cloud.length = 0;
+    });
+    assert.equal(h.cloud.length, 0);
+    assert.equal(
+      h.calls.filter(({ method }) => method === "chatDeviceRelease").length,
+      2,
+    );
+    assert.equal(h.events.filter(({ type }) => type === "resync").length, 1);
+  } finally {
+    await h.clean();
+  }
+});
+
+test("the desktop only publishes a Cowork binding release after its history is written", async () => {
+  const root = await fs.mkdtemp(
+    path.join(os.tmpdir(), "claudex-cowork-release-"),
+  );
+  try {
+    const store = new Store(root);
+    const row = source({
+      mode: "cowork",
+      environment: { kind: "local" },
+      deviceChatOrigin: {
+        version: 1,
+        accountScope: "7",
+        logicalConversationId: randomUUID(),
+        active: true,
+        permission: "default",
+      },
+    });
+    store.conversations = [row];
+    store.flush();
+    const file = path.join(root, "conversations.json");
+    const backup = `${file}.backup`;
+    await fs.rename(file, backup);
+    await fs.mkdir(file);
+    assert.throws(() => store.releaseCoworkDeviceBinding(row));
+    assert.equal(row.deviceChatOrigin?.active, true);
+    await fs.rmdir(file);
+    await fs.rename(backup, file);
+    store.releaseCoworkDeviceBinding(row);
+    assert.equal(row.deviceChatOrigin?.active, false);
+    assert.equal(
+      new Store(root).conversation(row.id).deviceChatOrigin?.active,
+      false,
+    );
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test("device Stop does not dispatch when the binding changes while directory lookup waits", async () => {
+  const h = await setup();
+  try {
+    const c = await h.send(),
+      remote = h.nodes.get("device-a")!.conversations[0];
+    remote.turns[0].status = "inProgress";
+    await h.controller.refresh();
+    const snapshot = h.cloud[0],
+      turn = snapshot.turns[0];
+    const expected = {
+      turnId: turn.id,
+      turnCreatedAt: turn.createdAt,
+      conversationCreatedAt: snapshot.createdAt,
+    };
+    const request = h.runnerHost.request;
+    let release!: () => void, entered!: () => void;
+    const waiting = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    h.runnerHost.request = async (op, body) => {
+      if (op === "device.list") {
+        entered();
+        await gate;
+      }
+      return request(op, body);
+    };
+    const fresh = new ChatDeviceController(h.runnerHost);
+    const stop = fresh.route("interrupt", [c.id, expected], h.fallback);
+    await waiting;
+    snapshot.chatDeviceBinding!.revision++;
+    release();
+    await assert.rejects(stop, /device or turn changed/);
+    assert.equal(
+      h.calls.filter((call) => call.method === "chatDeviceInterruptExpected")
+        .length,
+      0,
+    );
+    assert.deepEqual(h.nodes.get("device-a")!.interrupted, []);
   } finally {
     await h.clean();
   }
@@ -913,4 +1109,81 @@ test("a retired runner cannot enroll or execute after an awaited challenge", asy
   } finally {
     await h.clean();
   }
+});
+
+test("the original Cowork request binds only the selected computer through an older Go relay", async (t) => {
+  const fixture = await setup(true);
+  t.after(fixture.clean);
+  const forward = fixture.runnerHost.request;
+  fixture.runnerHost.request = async (operation, body) => {
+    const result = await forward(operation, body);
+    if (operation !== "device.call" || !body || typeof body !== "object" ||
+        !("method" in body) || body.method !== "deviceTrustChallenge")
+      return result;
+    assert.ok(result && typeof result === "object");
+    return Object.fromEntries(Object.entries(result).sort(([left], [right]) =>
+      left.localeCompare(right, "en"),
+    ));
+  };
+  const owner = "official-owner";
+  const userId = 7;
+  const device = fixture.nodes.get("device-b")!;
+  device.trust.setRequired(false);
+  const target = officialCoworkDeviceId(owner, "device-b");
+  const store = {
+    root: fixture.root,
+    conversations: fixture.cloud,
+    settings: {
+      activeProviderId: "p",
+      providers: [{ id: "p", model: "m" }],
+      codeEffort: "high",
+    },
+    async confirmOfficialCodeEvent(conversation: Conversation, eventId: string, current: () => boolean) {
+      assert.ok(current());
+      assert.equal(conversation.turns.at(-1)?.officialCodeEventId, eventId);
+    },
+  };
+  const ctx = {
+    userId, store, activeAccount: { id: owner },
+    chatDeviceController: fixture.controller,
+    selectedAttachments: fixture.attachments,
+    officialSessionIdentity: () => store,
+    policy: () => openPolicy,
+  };
+  const dispatcher = {
+    options: {},
+    async run(frame: { method: string }) {
+      assert.equal(frame.method, "modelCatalog", "Device send must avoid the cloud engine.");
+      return { items: [{ id: "m", efforts: ["high"] }] };
+    },
+  };
+  const opening = randomUUID();
+  const request = (targetId: string) => ({
+    contentType: "application/json",
+    body: Buffer.from(JSON.stringify({
+      message: "F114 device selection",
+      message_uuid: opening,
+      model: "m", surface: "hub", permission_mode: "auto", effort_level: "high",
+      target_device_id: targetId,
+    })),
+  });
+  const start = (targetId: string) => createOfficialCoworkSession(
+    dispatcher as never, {} as never, ctx as never, organizationUuid(owner), request(targetId), () => true,
+  );
+  assert.equal((await start(officialCoworkDeviceId("other-owner", "device-b"))).status, 404);
+  const first = await start(target);
+  assert.equal(first.status, 200);
+  assert.deepEqual(await start(target), first);
+  const result = JSON.parse(Buffer.from(first.body).toString("utf8"));
+  assert.equal(result.session.bound_device_uuid, target);
+  assert.equal(fixture.nodes.get("device-a")!.sent.length, 0);
+  assert.equal(device.sent.length, 1);
+  assert.equal(device.sent[0].permission, "auto");
+  assert.equal(device.sent[0].effort, "high");
+  const mirror = fixture.cloud[0]!;
+  assert.equal(mirror.turns[0]?.officialCodeEventId, opening);
+  assert.equal(cloudCodeSession(mirror, owner).bound_device_uuid, target);
+  await fixture.controller.refresh();
+  assert.equal(fixture.cloud[0]?.turns[0]?.officialCodeEventId, opening);
+  assert.equal(fixture.cloud[0]?.turns[0]?.items[0]?.text, "Real remote reply");
 });

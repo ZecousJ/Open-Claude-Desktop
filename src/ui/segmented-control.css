@@ -1,6 +1,7 @@
 /*
- * Segmented controls (src/ui/SegmentedControl.tsx): the chosen segment is
- * drawn by one thumb under the buttons, with an inner ring and a 0 1px 2px
+ * Segmented controls (src/ui/SegmentedControl.tsx), after the original's
+ * SegmentedControl (desktop bundle 2.31226.1): the chosen segment is drawn
+ * by one thumb under the buttons, with an inner ring and a 0 1px 2px
  * shadow, which the component slides and stretches to a new choice. The
  * consumer's class keeps the track, the buttons and the colours, and sets:
  *   --segmented-thumb      the thumb's fill

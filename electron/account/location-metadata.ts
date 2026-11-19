@@ -5,7 +5,7 @@ import {
 } from "../../shared/location-metadata";
 import type { EngineExtension } from "../engine/engine-extensions";
 
-/** Default-on coarse location. */
+/** Default-on coarse location (live claude.ai bundle, 2026-10-14, cc5f29bb3-CYcA7oXP). */
 export function locationMetadataExtension(
   settings: () => Pick<Settings, "locationMetadata">,
   lookup: () => Promise<unknown>,

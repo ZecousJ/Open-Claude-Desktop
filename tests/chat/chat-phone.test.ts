@@ -206,7 +206,7 @@ test("390px home keeps one chin with the official fine/coarse pointer distinctio
       );
       assert.equal(find(".cowork-options > button").gap, "4px");
       assert.equal(
-        find('.cowork-options > button > [data-icon="CaretDown"]')[
+        find('.cowork-options > button > [data-anthropicon="CaretDown"]')[
           "margin-inline-end"
         ],
         "-4px",

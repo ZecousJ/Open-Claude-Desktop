@@ -86,13 +86,13 @@ async function relay(directory: string) {
       else pending.reject(new Error(frame.error.message));
     },
   };
+  const session = {
+    currentToken: async () => "authenticated-account-token",
+    renewed: async () => "renewed",
+  };
   const link = new DeviceLink({
     baseUrl: () => "https://service.example",
-    session: () =>
-      ({
-        currentToken: async () => "authenticated-account-token",
-        renewed: async () => "renewed",
-      }) as never,
+    session: () => session,
     enabled: () => true,
     linkId: () => hostId,
     name: () => "Studio",

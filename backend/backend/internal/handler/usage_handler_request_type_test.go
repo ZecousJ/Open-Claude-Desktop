@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/timezone"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/usagestats"
 	middleware2 "github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -18,6 +19,7 @@ import (
 type userUsageRepoCapture struct {
 	service.UsageLogRepository
 	listParams   pagination.PaginationParams
+	dashboardDay time.Time
 	listFilters  usagestats.UsageLogFilters
 	statsFilters usagestats.UsageLogFilters
 	trendFilters usagestats.UsageLogFilters
@@ -47,6 +49,11 @@ func (s *userUsageRepoCapture) GetStatsWithFilters(ctx context.Context, filters 
 	return &usagestats.UsageStats{}, nil
 }
 
+func (s *userUsageRepoCapture) GetUserDashboardStats(_ context.Context, _ int64, today, _ time.Time) (*usagestats.UserDashboardStats, error) {
+	s.dashboardDay = today
+	return &usagestats.UserDashboardStats{}, nil
+}
+
 func (s *userUsageRepoCapture) GetUsageTrendWithFilters(ctx context.Context, startTime, endTime time.Time, granularity string, userID, apiKeyID, accountID, groupID int64, model string, requestType *int16, stream *bool, billingType *int8) ([]usagestats.TrendDataPoint, error) {
 	s.trendFilters = usagestats.UsageLogFilters{
 		UserID:      userID,
@@ -58,6 +65,11 @@ func (s *userUsageRepoCapture) GetUsageTrendWithFilters(ctx context.Context, sta
 		Stream:      stream,
 		BillingType: billingType,
 	}
+	return []usagestats.TrendDataPoint{}, nil
+}
+
+func (s *userUsageRepoCapture) GetUsageTrendWithUsageFilters(_ context.Context, _, _ time.Time, _ string, filters usagestats.UsageLogFilters) ([]usagestats.TrendDataPoint, error) {
+	s.trendFilters = filters
 	return []usagestats.TrendDataPoint{}, nil
 }
 
@@ -89,9 +101,54 @@ func newUserUsageRequestTypeTestRouter(repo *userUsageRepoCapture) *gin.Engine {
 	})
 	router.GET("/usage", handler.List)
 	router.GET("/usage/stats", handler.Stats)
+	router.GET("/usage/dashboard/stats", handler.DashboardStats)
+	router.GET("/usage/dashboard/trend", handler.DashboardTrend)
 	router.GET("/usage/dashboard/models", handler.DashboardModels)
 	router.GET("/usage/dashboard/snapshot-v2", handler.DashboardSnapshotV2)
 	return router
+}
+
+func TestUserUsageCalendarQueries(t *testing.T) {
+	repo := &userUsageRepoCapture{}
+	router := newUserUsageRequestTypeTestRouter(repo)
+	get := func(path string) *httptest.ResponseRecorder {
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
+		return rec
+	}
+
+	require.Equal(t, http.StatusOK, get("/usage/dashboard/stats").Code)
+	require.Equal(t, timezone.Location(), repo.dashboardDay.Location())
+	require.Equal(t, http.StatusOK, get("/usage/dashboard/stats?timezone=America%2FLos_Angeles").Code)
+	require.Equal(t, "America/Los_Angeles", repo.dashboardDay.Location().String())
+	require.Equal(t, 0, repo.dashboardDay.Hour())
+	require.Equal(t, http.StatusBadRequest, get("/usage/dashboard/stats?timezone=Unknown%2FZone").Code)
+
+	search := "?timezone=America%2FLos_Angeles&start_date=2026-03-08&end_date=2026-03-08"
+	start := time.Date(2026, time.March, 8, 8, 0, 0, 0, time.UTC)
+	end := time.Date(2026, time.March, 9, 7, 0, 0, 0, time.UTC)
+	trend := get("/usage/dashboard/trend" + search)
+	require.Equal(t, http.StatusOK, trend.Code)
+	require.Contains(t, trend.Body.String(), `"end_date":"2026-03-08"`)
+	require.Equal(t, "America/Los_Angeles", repo.trendFilters.TrendTimezone)
+	require.Equal(t, start, repo.trendFilters.StartTime.UTC())
+	require.Equal(t, end, repo.trendFilters.EndTime.UTC())
+	models := get("/usage/dashboard/models" + search)
+	require.Equal(t, http.StatusOK, models.Code)
+	require.Contains(t, models.Body.String(), `"end_date":"2026-03-08"`)
+	require.Equal(t, http.StatusOK, get("/usage"+search).Code)
+	require.Equal(t, start, repo.listFilters.StartTime.UTC())
+	require.Equal(t, end, repo.listFilters.EndTime.UTC())
+
+	search = "?timezone=America%2FHavana&start_date=2026-03-08&end_date=2026-03-08"
+	require.Equal(t, http.StatusOK, get("/usage"+search).Code)
+	require.Equal(t, time.Date(2026, time.March, 8, 5, 0, 0, 0, time.UTC), repo.listFilters.StartTime.UTC())
+	require.Equal(t, time.Date(2026, time.March, 9, 4, 0, 0, 0, time.UTC), repo.listFilters.EndTime.UTC())
+
+	search = "?timezone=America%2FLos_Angeles&start_date=2040-12-31&end_date=2040-12-31"
+	require.Equal(t, http.StatusOK, get("/usage"+search).Code)
+	require.Equal(t, time.Date(2040, time.December, 31, 8, 0, 0, 0, time.UTC), repo.listFilters.StartTime.UTC())
+	require.Equal(t, time.Date(2041, time.January, 1, 8, 0, 0, 0, time.UTC), repo.listFilters.EndTime.UTC())
 }
 
 func TestUserUsageListRequestTypePriority(t *testing.T) {

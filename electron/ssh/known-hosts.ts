@@ -1,9 +1,11 @@
 /**
- * "Remove the old key and try again". The host's real name and port come from
- * `ssh -G` (an alias of ~/.ssh/config resolves there, and so does a
- * HostKeyAlias), its known_hosts files too; each entry is removed with the
- * ssh-keygen next to the ssh Claudex uses. Nothing is trusted here: the next
- * connection asks about the new key as for any host seen the first time.
+ * "Remove the old key and try again" (owner, 2026-10-08: a WonderSim VM on
+ * localhost:2222 was rebuilt and ssh refused its new host key). The host's
+ * real name and port come from `ssh -G` (an alias of ~/.ssh/config resolves
+ * there, and so does a HostKeyAlias), its known_hosts files too; each entry
+ * is removed with the ssh-keygen next to the ssh Claudex uses. Nothing is
+ * trusted here: the next connection asks about the new key as for any host
+ * seen the first time.
  */
 import { execFile } from "node:child_process";
 import fs from "node:fs";

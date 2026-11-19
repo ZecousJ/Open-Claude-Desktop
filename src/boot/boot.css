@@ -11,10 +11,11 @@
   -webkit-app-region: drag;
 }
 /* The page in place of the app when it could not start (src/boot/
-   BootErrorPage.tsx), after the original's: centred on the window, 96px above
-   and 128px below, the product's lockup (24px high) 40px over a 20px/28px serif
-   headline, a 14px/18px secondary line, 8px apart, and the buttons 16px under
-   them, 12px apart. The window is dragged by it on the desktop; its text can be
+   BootErrorPage.tsx), after the original's (live claude.ai bundle,
+   2026-10-12): centred on the window, 96px above and 128px below, the
+   product's lockup (24px high) 40px over a 20px/28px serif headline, a
+   14px/18px secondary line, 8px apart, and the buttons 16px under them,
+   12px apart. The window is dragged by it on the desktop; its text can be
    selected. */
 .boot-error {
   display: grid;
@@ -38,7 +39,8 @@
   height: 24px;
   margin-bottom: 40px;
   font:
-    400 22px/1 "Claudex Serif",
+    400 22px/1 "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -52,7 +54,8 @@
   max-width: 672px;
   margin: 0;
   font:
-    400 20px/28px "Claudex Serif",
+    400 20px/28px "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -84,8 +87,10 @@
 }
 
 /* A page that failed to render (src/app/PageBoundary.tsx): the original's
-   danger banner in a 12px box, in the colours of the app's other load-error
-   banners (the Customize and Routines pages'). */
+   danger banner in a 12px box (live claude.ai bundle, 2026-10-12: rounded
+   card, 13px/19px body text, warning glyph, secondary button at the end),
+   in the colours of the app's other load-error banners (the Customize and
+   Routines pages'). */
 .page-error {
   padding: 12px;
 }
@@ -171,9 +176,12 @@
   line-height: 28px;
 }
 
-/* A lazily loaded piece that did not load, in its place. In the first-load
-   styles so it shows when nothing more can be fetched. The button is the app's
-   small secondary (Project memory's Try again). */
+/* A lazily loaded piece that did not load, in its place (src/ui/lazy-piece.tsx;
+   live claude.ai bundle, 2026-10-12, the chunk error view: a centred row
+   that wraps, 6px apart, 4px 8px in, the sentence in the 13px/19px muted
+   body text and a small secondary button). In the first-load styles so it
+   shows when nothing more can be fetched. The button is the app's small
+   secondary (Project memory's Try again). */
 .chunk-error {
   display: flex;
   flex-wrap: wrap;

@@ -2,7 +2,6 @@ import path from "node:path";
 import { type ClientPolicy } from "../../shared/client-policy";
 import { allowedMcpServers } from "../../shared/client-policy-rules";
 import type { EnvironmentRef } from "../../shared/types";
-import { withoutAlwaysAllowed } from "../../shared/mcp-tool-approval";
 import { remoteMcpServers } from "./mcp-servers";
 
 export interface McpConfigInput {
@@ -42,15 +41,10 @@ export interface McpConfigInput {
 export function mcpServersConfig(input: McpConfigInput): string {
   const reserved = input.reserved;
   const allowed = allowedMcpServers(input.servers, input.policy);
+  const requiresApproval = input.policy.approvalsAlwaysAllow === false;
+  const ssh = input.environmentKind === "ssh";
   const servers = Object.fromEntries(
-    Object.entries(
-      // "Always allow" choices stay in the settings but do not apply while
-      // the administrator requires approving each request.
-      input.policy.approvalsAlwaysAllow === false ||
-        input.environmentKind === "ssh"
-        ? withoutAlwaysAllowed(allowed)
-        : allowed,
-    ).filter(([name]) => !reserved.has(name)),
+    Object.entries(allowed).filter(([name]) => !reserved.has(name)),
   );
   // The web keeps a connector's bearer token on the runner, apart from the
   // settings: it joins the server's requests as a header, here only.
@@ -142,7 +136,13 @@ export function mcpServersConfig(input: McpConfigInput): string {
   const runtimeServers = Object.fromEntries(
     Object.entries(transported).flatMap(([name, value]) => {
       if (!value || typeof value !== "object") return [[name, value]];
-      const { claudex_extension, ...server } = value as Record<string, unknown>;
+      const {
+        claudex_extension,
+        claudex_extension_id,
+        claudex_extension_manifest_name,
+        claudex_extension_uv,
+        ...server
+      } = value as Record<string, unknown>;
       if (claudex_extension && server.command === "node" && input.builtInNode) {
         server.command = input.nodeExecutable ?? process.execPath;
         server.env = {
@@ -150,6 +150,13 @@ export function mcpServersConfig(input: McpConfigInput): string {
           ELECTRON_RUN_AS_NODE: "1",
         };
       }
+      if (
+        requiresApproval ||
+        ssh ||
+        server.default_tools_approval_mode === undefined
+      )
+        server.default_tools_approval_mode = "prompt";
+      if (requiresApproval || ssh) delete server.tools;
       const launched = input.launchConfig
         ? input.launchConfig(name, server)
         : server;

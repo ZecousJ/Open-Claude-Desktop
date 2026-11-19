@@ -1,6 +1,7 @@
-/* The original's EmptyState: flex column, gap-md, px-md py-12, centred; the
-   headline max-w-xs font-medium text-secondary, the line text-footnote; the CTA
-   is CDS's secondary Button. */
+/* The original's EmptyState (live claude.ai bundle, 2026-10-14, shared-2
+   G3): flex column, gap-md, px-md py-12, centred; the headline max-w-xs
+   font-medium text-secondary, the line text-footnote; the CTA is CDS's
+   secondary Button (shared-frame-B1JORnF0.js:3717). */
 .empty-state {
   display: flex;
   flex-direction: column;

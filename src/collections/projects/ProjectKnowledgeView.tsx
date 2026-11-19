@@ -563,9 +563,10 @@ export function projectKnowledgeView(kit: ProjectKnowledgeViewKit) {
           onDraft={setDraft}
           onClose={() => setWriting(false)}
           onSave={(file) => {
-            // The dialog closes at once, the + spins while the file is saved,
-            // the fields empty once it is, and a failure is reported while the
-            // text stays for the next Add text content.
+            // As the live claude.ai bundle (2026-10-12): the dialog closes at
+            // once, the + spins while the file is saved, the fields empty
+            // once it is, and a failure is reported while the text stays
+            // for the next Add text content.
             setWriting(false);
             setPending([
               {

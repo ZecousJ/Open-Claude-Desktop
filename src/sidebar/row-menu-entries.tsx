@@ -4,16 +4,18 @@ import type { HostSurface } from "../../shared/host";
 import { type MenuEntry } from "../ui/Menu";
 import { fileManagerName } from "./file-manager";
 import { projectEntries } from "./project-entries";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { RowMenuAbilities, RowMenuHandlers } from "./RowMenu";
 
 /**
- * The row's More and right-click menu. Code: Open in ▸ (Split view on the
- * desktop, which the web's single pane leaves out; New window, the file
- * manager, a divider, Terminal), Pin, Mark as unread, Rename, Fork, a divider,
- * Share, Copy link, Export, a divider, Move to group, Archive, Delete. Chat and
- * Cowork: Open in new window, Pin, Rename, Add to project, Share, Copy link,
- * Move to group, Delete. What the window cannot do is left out.
+ * The row's More and right-click menu. Code (R-0083): Open in ▸ (Split
+ * view on the desktop, which the web's single pane leaves out; New window,
+ * the file manager, a divider, Terminal), Pin, Mark as unread, Rename, Fork, a
+ * divider, Share, Copy link, Export, a divider, Move to group, Archive, Delete. Chat and Cowork (R-0044-0083
+ * structure): Open in new window, Pin, Rename, Add to project (Change
+ * project once the conversation is in one, with a search field and Remove
+ * from project; desktop bundle 2.31226.1), Share, Copy link, Move to group,
+ * Delete. What the window cannot do is left out.
  */
 export function rowMenuEntries({
   conversation: c,
@@ -66,9 +68,10 @@ export function rowMenuEntries({
           : []),
       ];
   if (c.mode === "code") {
-    // Split view and New window; then the editors this computer has, Terminal
-    // and the file manager under "Open in"; then "Continue in" Cloud ("Runs
-    // without your computer"). The headings show only with a Continue in row;
+    // Live claude.ai bundle, 2026-10-15 (ce4f4374c): Split view and New
+    // window; then the editors this computer has, Terminal and the file
+    // manager under "Open in"; then "Continue in" Cloud ("Runs without
+    // your computer"). The headings show only with a Continue in row;
     // number keys follow the rows' places.
     type Place = { label: string; description?: string; onSelect: () => void };
     const layout: Place[] = [
@@ -143,12 +146,15 @@ export function rowMenuEntries({
       on.releaseRunner && c.mode === "code" && !c.runnerReleasedAt
         ? [{ label: "Release runner", onSelect: on.releaseRunner }]
         : [];
-    // // the menu is groups with a rule between them. Edit holds Pin, Mark as
+    // Live claude.ai bundle, 2026-10-12 (shared-20 eH/tH/oH, ce4f4374c):
+    // the menu is groups with a rule between them. Edit holds Pin, Mark as
     // read or unread, Rename and Fork (key F); Share holds Share, Copy link
     // (key C) and Export (key E). Nested-session actions follow the same
-    // conditional groups as the live menu. A web session is a cloud one: its
-    // row has no Fork, Export or session settings; those belong to a session on
-    // this computer.
+    // conditional groups as the live menu.
+    // A web session is a cloud one: its row has no Fork, Export or session
+    // settings (live claude.ai, 2026-10-21: Open in, Pin, Mark as unread,
+    // Rename, Share, Copy link, Move to, Archive, Delete); those belong to
+    // a session on this computer.
     const cloud = hostSurface === "web";
     const share: MenuEntry[] = [
       ...sharing,
@@ -156,7 +162,9 @@ export function rowMenuEntries({
         ? [{ label: "Export", hint: "E", onSelect: on.exportConversation }]
         : []),
     ];
-    // Code's items carry no icons, on the web too.
+    // Code's items carry no icons, on the web too (live claude.ai bundle,
+    // 2026-10-16, ce4f4374c-_kduorGD.js: no `icon` on its rows, and the
+    // Move to group submenu has showIcon off).
     const bare = (entry: MenuEntry): MenuEntry =>
       "label" in entry ? { ...entry, icon: undefined } : entry;
     return [
@@ -170,8 +178,9 @@ export function rowMenuEntries({
       },
       bare(rename),
       // Only a session waiting for its review (or stopped by an error) is
-      // marked complete, and title offers are suppressed only while one is on
-      // offer.
+      // marked complete (live claude.ai bundle, 2026-10-21, shared-20:
+      // onAckAwaiting when hasError || ackableAwaiting), and title offers
+      // are suppressed only while one is on offer.
       ...(on.markCompleted &&
       c.mode === "code" &&
       !c.completedAt &&
@@ -207,8 +216,9 @@ export function rowMenuEntries({
         ? [{ label: "Fork", hint: "F", onSelect: on.fork }]
         : []),
       ...(share.length ? [{ separator: true as const }, ...share] : []),
-      // The session group: Transcript view, Output style, Release runner, Keep
-      // computer awake.
+      // The session group (live claude.ai bundle, 2026-10-16, ce4f4374c
+      // `Xe`): Transcript view, Output style, Release runner, Keep computer
+      // awake.
       ...(!cloud &&
       (on.transcriptView ||
         on.outputStyle ||
@@ -235,7 +245,8 @@ export function rowMenuEntries({
           ]
         : []),
       { separator: true },
-      // The organize group opens with Move up and Move down on a pinned row.
+      // The organize group opens with Move up and Move down on a pinned row
+      // (live claude.ai bundle, 2026-10-12: oH's organize list).
       ...(c.pinned && on.moveUp
         ? [{ label: "Move up", onSelect: on.moveUp }]
         : []),
@@ -263,7 +274,7 @@ export function rowMenuEntries({
       ? [
           {
             label: "Open as quick task",
-            icon: <AppIcon name="MinimizeBottomRight" />,
+            icon: <Anthropicon name="MinimizeBottomRight" />,
             disabled: can.quickTaskDisabled,
             onSelect: on.openAsQuickTask,
           },
@@ -275,17 +286,21 @@ export function rowMenuEntries({
     ...(newWindow
       ? [{ label: "Open in new window", onSelect: on.openInWindow }]
       : []),
-    // a Chat row's menu leads with Mark as unread (EyeSlash; Mark as read, Eye)
-    // and a rule, then Pin, Rename, Add to project and Move to group, a rule
-    // and Delete; a Cowork task archives too. An incognito chat is never kept:
-    // it has Delete only.
+    // Live claude.ai, 2026-10-20: a Chat row's menu leads with Mark as
+    // unread (EyeSlash; Mark as read, Eye) and a rule, then Pin, Rename, Add
+    // to project and Move to group, a rule and Delete; a Cowork task
+    // archives too. An incognito chat is never kept: it has Delete only
+    // (live claude.ai bundle, 2026-10-16, shared-16-BiJCywSO.js QX: Pin,
+    // Rename and the project rows wait on !temporary).
     ...(c.incognito
       ? []
       : [
           {
             label: c.unread ? "Mark as read" : "Mark as unread",
             hint: "U",
-            icon: <AppIcon name={c.unread ? "Eye" : "EyeSlash"} size={20} />,
+            icon: (
+              <Anthropicon name={c.unread ? "Eye" : "EyeSlash"} size={20} />
+            ),
             onSelect: on.toggleUnread,
           },
           { separator: true as const },
@@ -298,7 +313,7 @@ export function rowMenuEntries({
                 {
                   label: "Export",
                   hint: "E",
-                  icon: <AppIcon name="Download" size={20} />,
+                  icon: <Anthropicon name="Download" size={20} />,
                   onSelect: on.exportConversation,
                 },
               ]
@@ -306,15 +321,15 @@ export function rowMenuEntries({
           moveToGroup,
           { separator: true as const },
         ]),
-    // O14 QX/Ns: an archived Chat exposes Unarchive even when the caller has
-    // not offered Archive for a fresh chat. Do not infer that separate
-    // offersArchive capability from the stored record kind.
+    // O14 shared-16-CBfjFjLo:16800–16888 QX/Ns: an archived Chat exposes Unarchive even when
+    // the caller has not offered Archive for a fresh chat. Do not infer
+    // that separate offersArchive capability from the stored record kind.
     ...((c.mode === "cowork" || c.archived) && !c.incognito
       ? [
           {
             label: c.archived ? "Unarchive" : "Archive",
             hint: "A",
-            icon: <AppIcon name="Archive" size={20} />,
+            icon: <Anthropicon name="Archive" size={20} />,
             onSelect: on.toggleArchive,
           },
         ]

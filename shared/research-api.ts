@@ -22,6 +22,8 @@ export interface ResearchAPI {
   setConversationResearch(
     conversationId: string,
     enabled: boolean,
+    /** Optional combined producer setting, saved atomically with Research. */
+    options?: { webSearch?: boolean },
   ): Promise<Conversation>;
   /** A finished Research turn's report, read from the account's folder. */
   readResearchReport(

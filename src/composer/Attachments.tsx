@@ -21,7 +21,7 @@ import {
 } from "./attachment-input";
 import { removeAttachment } from "./attachment-motion";
 
-/** The path over two card lines, keeping its start and its end. */
+/** The path over two card lines, keeping its start and its end (R-0380: "D:\\Backup\\Doc…" over "tic-file.txt"). */
 function middleCut(path: string) {
   return path.length > 26
     ? `${path.slice(0, 13)}…\u200b${path.slice(-12)}`
@@ -67,7 +67,7 @@ function useImagePreviews(attachments: Attachment[]) {
 
 /**
  * A thumbnail's picture: transparent and blurred until it has loaded, then
- * clear over 400ms.
+ * clear over 400ms (the original's file thumbnail; desktop bundle 2.31226.1).
  */
 function ThumbnailImage({ src, name }: { src: string; name?: string }) {
   const [loaded, setLoaded] = useState(false);
@@ -118,7 +118,7 @@ function LoadingImage({ name }: { name?: string }) {
   );
 }
 
-/** The name on up to two lines; a cut name breaks after its ellipsis. */
+/** The name on up to two lines; a cut name breaks after its ellipsis (R-1093: "synthetic-lon…" over "-removal.txt"). */
 function AttachmentName({ name }: { name: string }) {
   const short = shortenAttachmentName(name);
   const cut = short === name ? -1 : short.indexOf("…");
@@ -139,9 +139,9 @@ function AttachmentName({ name }: { name: string }) {
 }
 
 /**
- * The composer's attachments: image thumbnails that open a preview, pasted text
- * as a Pasted card, other files as name-and-size cards, and a spinner card for
- * a file still being added.
+ * The composer's attachments (R-0242, R-0284): image thumbnails that open
+ * a preview, pasted text as a Pasted card, other files as name-and-size
+ * cards, and a spinner card for a file still being added.
  */
 export function AttachmentList({
   attachments,
@@ -153,12 +153,9 @@ export function AttachmentList({
 }: {
   attachments: Attachment[];
   pending: PendingAttachment[];
-  /** Missing in a sent message: the cards show without ×. */
+  /** Missing in a sent message (R-1090): the cards show without ×. */
   onRemove?: (id: string) => void;
-  /**
-   * Code names a file card by its path, cut in the middle, with the full path
-   * as a tooltip.
-   */
+  /** Code names a file card by its path, cut in the middle, with the full path as a tooltip (R-0380). */
   showPaths?: boolean;
   /**
    * The draft shown; when it changes, the cards already there are restored
@@ -243,9 +240,10 @@ export function AttachmentList({
               </div>
             </ImageActions>
           );
-        // A file is a 120px tile like the Pasted card: its name on two lines (a
-        // long one cut in the middle), the number of lines (the size when the
-        // file was not counted) and the extension as the label; × on hover.
+        // R-1093, R-1096, R-0243: a file is a 120px tile like the Pasted
+        // card: its name on two lines (a long one cut in the middle), the
+        // number of lines (the size when the file was not counted) and the
+        // extension as the label; × on hover.
         const extension = /\.([a-z0-9]{1,8})$/i.exec(a.name)?.[1];
         return (
           <div
@@ -344,11 +342,11 @@ export function AttachmentList({
 }
 
 /**
- * What a sent message carries: the composer's tiles, read-only, in a row above
- * the bubble at its right edge. An image is its thumbnail and opens the same
- * preview; any other file is the 120px tile with its name, size and extension.
- * The original's tile shows a page thumbnail for a PDF; Claudex does not render
- * one, so it stays the file tile.
+ * What a sent message carries (R-0507, R-1090, R-1091): the composer's tiles,
+ * read-only, in a row above the bubble at its right edge. An image is its
+ * thumbnail and opens the same preview; any other file is the 120px tile with
+ * its name, size and extension. The original's tile shows a page thumbnail
+ * for a PDF; Claudex does not render one, so it stays the file tile.
  */
 export function MessageAttachments({
   attachments,

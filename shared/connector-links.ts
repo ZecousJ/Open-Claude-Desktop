@@ -36,7 +36,7 @@ export interface ConnectorSuggestion {
   url: string;
 }
 
-// Deep-link prefill.
+// Deep-link prefill (live claude.ai bundle, 2026-10-14, ce99eb202-DGbIVS-C.js:1680).
 export function connectorSuggestion(
   href: string,
 ): ConnectorSuggestion | undefined {

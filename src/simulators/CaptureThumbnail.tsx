@@ -9,12 +9,12 @@ import type { SimulatorCapture } from "../../shared/simulators";
 import { formatText } from "../i18n";
 import { Menu, type MenuEntry, type MenuPosition } from "../ui/Menu";
 
-/** A capture shows this long before it goes by itself. */
+/** A capture shows this long before it goes by itself (live bundle: 5 s). */
 export const thumbnailShowMs = 5000;
-/** Its exit, and the wait after it said something (1.2 s). */
+/** Its exit (live bundle: 300 ms), and the wait after it said something (1.2 s). */
 export const thumbnailExitMs = 300;
 export const thumbnailStatusMs = 1200;
-/** The flight from the screen into the corner. */
+/** The flight from the screen into the corner (live bundle: 400 ms). */
 const flightMs = 400;
 
 export interface CaptureActions {
@@ -27,10 +27,7 @@ export interface CaptureActions {
 
 const fileName = (path: string) => path.slice(path.lastIndexOf("/") + 1);
 
-/**
- * The transform that puts `box` over `from`, letterboxed as the screen draws
- * it.
- */
+/** The transform that puts `box` over `from`, letterboxed as the screen draws it (live bundle: `wl`). */
 function flightFrom(from: DOMRect, box: DOMRect): string | undefined {
   if (from.width <= 0 || from.height <= 0 || box.width <= 0 || box.height <= 0)
     return undefined;
@@ -45,11 +42,12 @@ const reducedMotion = () =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * The saved capture in the stage's corner: a screenshot flies there from the
+ * The saved capture in the stage's corner (live claude.ai bundle,
+ * 2026-10-12, the capture thumbnail): a screenshot flies there from the
  * screen, a recording slides in. A click attaches it to the message being
  * written; its menu (right click) has Copy path, Attach as context, Show in
- * Finder, Close and Delete. It goes after five seconds unless the pointer or
- * the focus is on it, and as soon as a newer capture comes.
+ * Finder, Close and Delete. It goes after five seconds unless the pointer
+ * or the focus is on it, and as soon as a newer capture comes.
  */
 export function CaptureThumbnail({
   capture,

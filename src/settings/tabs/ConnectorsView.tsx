@@ -568,9 +568,10 @@ export function connectorsView(kit: ConnectorsViewKit) {
 }
 
 /**
- * What the person is told before connecting what a link suggested: who made it,
- * its address, whether it signs in, how it was reviewed and when it was added
- * to the directory, as far as the directory knows it.
+ * What the person is told before connecting what a link suggested (live
+ * claude.ai bundle, 2026-10-16, c109e6946: connectIntentConfirm*): who made
+ * it, its address, whether it signs in, how it was reviewed and when it was
+ * added to the directory, as far as the directory knows it.
  */
 export function SuggestionFacts({
   suggestion,

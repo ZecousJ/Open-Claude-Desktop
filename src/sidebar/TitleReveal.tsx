@@ -3,13 +3,14 @@ import { prefersReducedMotion } from "../ui/usePresence";
 import { graphemes, titleOutMs, titleRevealMs } from "./title-motion";
 
 /**
- * A conversation title that writes itself in when it changes (the first reply's
- * automatic title, a rename elsewhere): the old title fades out and blurs over
- * 200ms, then the new one appears a character at a time, each sharpening from a
- * 6px blur over 90ms, 30ms apart. The first title a row shows is drawn at once,
- * and a change that arrives while the last one is still writing waits for it.
- * Reduced motion swaps the text. Renders a span for the row's title slot
- * (sidebar.css .title-motion).
+ * A conversation title that writes itself in when it changes (the first
+ * reply's automatic title, a rename elsewhere): the old title fades out
+ * and blurs over 200ms, then the new one appears a character at a time,
+ * each sharpening from a 6px blur over 90ms, 30ms apart (the original's
+ * title reveal; source: desktop bundle 2.31226.1 static CSS/JS). The first
+ * title a row shows is drawn at once, and a change that arrives while the
+ * last one is still writing waits for it. Reduced motion swaps the text.
+ * Renders a span for the row's title slot (sidebar.css .title-motion).
  */
 export function TitleReveal({ text }: { text: string }) {
   const [shown, setShown] = useState(text);

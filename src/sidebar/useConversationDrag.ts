@@ -75,8 +75,9 @@ type Measured = {
 };
 
 /**
- * The row's copy for the pointer: the row's own markup, inert and stripped of
- * what identifies it.
+ * The row's copy for the pointer: the row's own markup, inert and stripped
+ * of what identifies it (source: desktop bundle 2.31226.1, the drag ghost's
+ * clone of the row).
  */
 function cloneRow(row: HTMLElement) {
   const clone = row.cloneNode(true) as HTMLElement;
@@ -96,13 +97,13 @@ const clamp = (value: number, low: number, high: number) =>
   Math.min(Math.max(value, low), Math.max(low, high));
 
 /**
- * Pointer-captured sidebar drag, independent of the OS clipboard and HTML drag
- * image, as in the original: the rows are measured when the drag starts, the
- * others slide by transforms while the dragged row's place stays laid out and
- * empty, and the copy follows the pointer frame by frame without rendering the
- * list. A release into Pinned shows the row in its new place at once and keeps
- * the list standing so until the reordered list arrives; the caller says when
- * with `release`.
+ * Pointer-captured sidebar drag, independent of the OS clipboard and HTML
+ * drag image, as in the original (desktop bundle 2.31226.1): the rows are
+ * measured when the drag starts, the others slide by transforms while the
+ * dragged row's place stays laid out and empty, and the copy follows the
+ * pointer frame by frame without rendering the list. A release into Pinned
+ * shows the row in its new place at once and keeps the list standing so
+ * until the reordered list arrives; the caller says when with `release`.
  */
 export function useConversationDrag(
   onDrop: (
@@ -166,7 +167,8 @@ export function useConversationDrag(
     if (!active || !current) return;
     const { x, y } = pointer.current;
     const at = y + current.pane.scrollTop - current.scrollTop;
-    // Over a custom group a release moves the row into it.
+    // Over a custom group a release moves the row into it (live claude.ai
+    // bundle, 2026-10-12: the group zones are tested before the pin logic).
     const group =
       x > current.right
         ? null
@@ -382,7 +384,9 @@ export function useConversationDrag(
   const activate = (origin: DragStart) => {
     const row = origin.row;
     const rect = row.getBoundingClientRect();
-    // The copy is as tall as the row's own pill, not its step.
+    // The copy is as tall as the row's own pill, not its step (live
+    // claude.ai bundle, 2026-10-12: min(row height, --df-row-h); the older
+    // build took the row step less a pixel).
     const pad = parseFloat(getComputedStyle(row).paddingTop) || 0;
     const height = rect.height - 2 * pad;
     // A previous drop still standing gives way to this drag.
@@ -408,10 +412,10 @@ export function useConversationDrag(
     event: PointerEvent<HTMLDivElement>,
     row: { id: string },
   ) => {
-    // Only a press on the row's own link starts a drag. The row also holds its
-    // ⋮ button, its open menu and the rename field; capturing the pointer for a
-    // press there sent the click to the row instead, so menu items could not be
-    // chosen.
+    // Only a press on the row's own link starts a drag. The row also holds
+    // its ⋮ button, its open menu and the rename field; capturing the pointer
+    // for a press there sent the click to the row instead, so menu items
+    // could not be chosen (owner report, 2026-10-12).
     const link = (event.target as HTMLElement).closest<HTMLElement>(
       ".conversation-link",
     );

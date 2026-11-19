@@ -1,10 +1,10 @@
 import type { RoutineBrowserAPI } from "./routine-browser";
 /**
- * Collection pages: routines on the local scheduler and the skills Customize
- * lists; R13-D adds custom sidebar groups, project knowledge files, a skill's
- * contents and a routine's run history. The routine fields (rule, description,
- * default model) are in `shared/routines.ts`; handlers go in
- * `electron/ipc/collections.ts`.
+ * Collection pages (package WP7): routines on the local scheduler and the
+ * skills Customize lists; R13-D adds custom sidebar groups, project
+ * knowledge files, a skill's contents and a routine's run history. The
+ * routine fields (rule, description, default model) are in
+ * `shared/routines.ts`; handlers go in `electron/ipc/collections.ts`.
  */
 import type {
   Routine,
@@ -61,7 +61,7 @@ export interface CustomizeSkill {
   provenance?: CustomizeSkillProvenance;
 }
 
-/** A custom sidebar group. */
+/** A custom sidebar group (Move to group, R-Code-会话行右键-Move-to-group). */
 export interface ConversationGroup {
   id: string;
   name: string;
@@ -77,18 +77,30 @@ export interface ConversationGroups {
 /** A file kept with a project for its chats to read. */
 export interface KnowledgeFile {
   name: string;
+  displayName?: string;
   bytes: number;
   addedAt: number;
+  imageWidth?: number;
+  imageHeight?: number;
   source?: KnowledgeSource;
 }
 
 /** Bounded contents of a file in the current account's project. No disk paths. */
 export type KnowledgePreview = { name: string; bytes: number } & (
   | { kind: "text"; text: string }
+  | { kind: "utf16"; text: string; base64: string }
   | { kind: "pdf"; base64: string }
+  | { kind: "image"; mime: KnowledgeImageMime; base64: string }
+  | { kind: "binary"; base64: string }
   | {
       kind: "unsupported";
-      reason: "type" | "encoding" | "invalid-pdf" | "too-large";
+      reason:
+        | "type"
+        | "encoding"
+        | "invalid-pdf"
+        | "invalid-image"
+        | "invalid-binary"
+        | "too-large";
     }
 );
 
@@ -161,9 +173,40 @@ export interface ProjectKnowledge {
   fileLimit: number;
 }
 
-/** Largest single knowledge file (10 MB, decimal as the page shows it). */
-export const knowledgeFileLimit = 10_000_000;
-/** Text files the agent can read as they are, and PDFs. */
+export const knowledgeFileLimitMiB = 30;
+/** Largest single knowledge file, in bytes. */
+export const knowledgeFileLimit = knowledgeFileLimitMiB * 1024 * 1024;
+export const knowledgeFileLimitMessage = `Project files can be up to ${knowledgeFileLimitMiB} MB.`;
+export type KnowledgeImageMime =
+  | "image/png"
+  | "image/jpeg"
+  | "image/gif"
+  | "image/webp"
+  | "image/bmp";
+
+export const knowledgeImageTypes: ReadonlyMap<string, KnowledgeImageMime> = new Map([
+  ["png", "image/png"],
+  ["jpg", "image/jpeg"],
+  ["jpeg", "image/jpeg"],
+  ["gif", "image/gif"],
+  ["webp", "image/webp"],
+  ["bmp", "image/bmp"],
+]);
+
+export const knowledgeBinaryExtensions = [
+  "xls",
+  "xlsx",
+  "xlsb",
+  "xlm",
+  "xlsm",
+  "xlt",
+  "xltm",
+  "xltx",
+  "ods",
+  "zip",
+];
+
+/** File types offered by the classic project picker. */
 export const knowledgeExtensions = [
   "txt",
   "md",
@@ -207,6 +250,109 @@ export const knowledgeExtensions = [
   "tex",
   "rst",
   "pdf",
+  "ipynb",
+  "gs",
+  "cc",
+  "cxx",
+  "cts",
+  "hh",
+  "r",
+  "rmd",
+  "kts",
+  "m",
+  "mm",
+  "mts",
+  "scala",
+  "dart",
+  "lua",
+  "pl",
+  "pm",
+  "t",
+  "bash",
+  "zsh",
+  "cfg",
+  "config",
+  "proto",
+  "prisma",
+  "bat",
+  "coffee",
+  "latex",
+  "gd",
+  "gdshader",
+  "tres",
+  "tscn",
+  "typst",
+  "adoc",
+  "asciidoc",
+  "textile",
+  "creole",
+  "wiki",
+  "env",
+  "gitignore",
+  "dockerignore",
+  "editorconfig",
+  "prettierrc",
+  "eslintrc",
+  "gradle",
+  "sbt",
+  "cabal",
+  "podspec",
+  "gemspec",
+  "makefile",
+  "dockerfile",
+  "rss",
+  "atom",
+  "graphql",
+  "gql",
+  "hbs",
+  "handlebars",
+  "mustache",
+  "twig",
+  "jinja",
+  "jinja2",
+  "j2",
+  "vue",
+  "svelte",
+  "glsl",
+  "hlsl",
+  "frag",
+  "vert",
+  "shader",
+  "elm",
+  "clj",
+  "cljs",
+  "erl",
+  "ex",
+  "exs",
+  "hs",
+  "nim",
+  "zig",
+  "fs",
+  "fsx",
+  "ml",
+  "mli",
+  "v",
+  "vsh",
+  "vv",
+  "pas",
+  "pp",
+  "inc",
+  "fish",
+  "csh",
+  "tcsh",
+  "ps1",
+  "psm1",
+  "psd1",
+  "tab",
+  "ndjson",
+  "lock",
+  "ignore",
+  "gitattributes",
+  "gitmodules",
+  "htaccess",
+  "htpasswd",
+  "robots",
+  "sitemap",
 ];
 
 /** A skill's SKILL.md and the other files in its folder. */
@@ -288,6 +434,8 @@ export interface PluginMarketplace {
   syncedCommit?: string;
   autoSync?: boolean;
   syncError?: string;
+  /** This profile explicitly registered the repository. */
+  userAdded?: true;
 }
 
 /** A plugin one of the marketplaces lists. */
@@ -354,6 +502,7 @@ export interface CollectionsAPI
     submit: boolean,
   ): Promise<DirectorySubmission>;
   deleteDirectorySubmission(id: string): Promise<void>;
+  publishDirectorySubmission(id: string): Promise<DirectorySubmission>;
   verifyDirectorySubmissionTools(serverName: string): Promise<string[]>;
   /** Skills for Customize; empty while the agent runtime is not running. */
   customizeSkills(): Promise<CustomizeSkill[]>;
@@ -509,6 +658,10 @@ export interface CollectionsAPI
     projectId: string,
     files: { name: string; data: Uint8Array }[],
   ): Promise<ProjectKnowledge>;
+  confirmProjectKnowledgeUpload(
+    projectId: string,
+    file: Pick<KnowledgeFile, "name" | "bytes" | "addedAt">,
+  ): Promise<void>;
   /** Saves pasted text as a file in the project. */
   addProjectKnowledgeText(
     projectId: string,
@@ -555,21 +708,23 @@ export interface CollectionsAPI
   upgradePluginMarketplaces(name?: string): Promise<void>;
   setPluginMarketplaceAutoSync(name: string, enabled: boolean): Promise<void>;
   /**
-   * Duplicate plugin: copies a plugin whose files are on this computer into the
-   * personal marketplace (~/plugins and ~/.agents/plugins/marketplace.json, the
-   * agent runtime's own convention) as `copy.name`, then installs the copy. A
-   * taken name is refused with `pluginNameTaken`. Desktop only.
+   * Duplicate plugin (live claude.ai bundle, 2026-10-12): copies a plugin
+   * whose files are on this computer into the personal marketplace
+   * (~/plugins and ~/.agents/plugins/marketplace.json, the agent runtime's
+   * own convention) as `copy.name`, then installs the copy. A taken name is
+   * refused with `pluginNameTaken`. Desktop only.
    */
   duplicatePlugin(
     id: string,
     copy: PluginCopy,
   ): Promise<PluginInstallResult & { id: string }>;
   /**
-   * Rename plugin: for a plugin of the personal marketplace
-   * (`PluginEntry.personal`). Its files take the new name or display name; an
-   * installed one is installed again under its new id and keeps its settings
-   * and on/off state. Answers the new id. Refusals use the live wording
-   * (`pluginNameTaken`, `renameSameName`, `pluginGone`). Desktop only.
+   * Rename plugin (live claude.ai bundle, 2026-10-12): for a plugin of the
+   * personal marketplace (`PluginEntry.personal`). Its files take the new
+   * name or display name; an installed one is installed again under its new
+   * id and keeps its settings and on/off state. Answers the new id. Refusals
+   * use the live wording (`pluginNameTaken`, `renameSameName`, `pluginGone`).
+   * Desktop only.
    */
   renamePlugin(
     id: string,
@@ -636,6 +791,7 @@ export const collectionsMethods = bridgeMethods<CollectionsAPI>({
   addProjectKnowledgeDriveFiles: true,
   addProjectKnowledge: true,
   addProjectKnowledgeFiles: true,
+  confirmProjectKnowledgeUpload: true,
   addProjectKnowledgeText: true,
   removeProjectKnowledge: true,
   readSkill: true,
@@ -650,6 +806,7 @@ export const collectionsMethods = bridgeMethods<CollectionsAPI>({
   listApprovedDirectory: true,
   saveDirectorySubmission: true,
   deleteDirectorySubmission: true,
+  publishDirectorySubmission: true,
   verifyDirectorySubmissionTools: true,
   readPlugin: true,
   installPlugin: true,

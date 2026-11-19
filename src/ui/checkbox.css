@@ -1,15 +1,17 @@
 /*
- * The checkbox of the original's multi-select question card: an 18px box with
- * 5px corners, a 1px #4d4d4d edge (light #cfcfcf) when clear, and a #2a78d6
- * fill with a white check when ticked. It stands in wherever a control has no
- * capture of its own. `.cx-check` is a span box, `.cx-check-input` the same
- * look on a native input.
+ * The checkbox of the original's multi-select question card (R-0804, R-0854,
+ * mac 2x, checked with a keyboard focus ring): an 18px box with 5px corners,
+ * a 1px #4d4d4d edge (light #cfcfcf) when clear, and a #2a78d6 fill with a
+ * white check when ticked. It stands in wherever a control has no capture of
+ * its own (R-1165 History rows, R-1598, the feedback and approval forms,
+ * the computer-use app list). `.cx-check` is a span box, `.cx-check-input`
+ * the same look on a native input.
  *
- * States follow the original's Checkbox: a clear box darkens its edge on hover
- * (alpha 40%, not when disabled), a ticked or half-ticked one takes the
- * accent's hover fill (15 lighter per channel, as #2a78d6 to #3987e5 is), and
- * the tick is wiped in from the left (clip-path, 200ms in and 120ms out on the
- * ease-out curve).
+ * States follow the original's Checkbox (desktop bundle 2.31226.1): a clear
+ * box darkens its edge on hover (alpha 40%, not when disabled), a ticked or
+ * half-ticked one takes the accent's hover fill (15 lighter per channel, as
+ * #2a78d6 to #3987e5 is), and the tick is wiped in from the left (clip-path,
+ * 200ms in and 120ms out on the ease-out curve).
  */
 .cx-check,
 input[type="checkbox"].cx-check-input {

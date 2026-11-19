@@ -4,10 +4,10 @@ import type { Artifact } from "../ui/ArtifactTypes";
 import { artifactIdentity } from "./artifact-metadata";
 import { kindLabel } from "./artifact-kind";
 import { formatText, t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import "./file-viewer-panel.css";
 
-/** Frame strip. */
+/** Frame strip (live claude.ai bundle, 2026-10-14, c293c7b4d-BMF-Wtra.js:454; cfe7c4b3b-DAHNPZv8.js:890). */
 export function ArtifactFrameTabs({
   artifact,
   artifacts,
@@ -138,7 +138,7 @@ export function ArtifactFrameTabs({
                   [next]?.focus();
               }}
             >
-              <AppIcon name="Artifacts" />
+              <Anthropicon name="Artifacts" />
               <span data-no-translate>{item.name}</span>
               {selected && activeVersionLabel && (
                 <span className="artifact-viewing-version">
@@ -162,12 +162,13 @@ export function ArtifactFrameTabs({
 }
 
 /*
- * The artifact header's two pickers, after the original's: "Switch between
- * artifacts", a list button shown when the conversation has two or more
- * artifacts, which opens the artifacts as a column of cards (each sliding in
- * 12px over 300ms, 35ms after the one above it; hovering one previews it,
- * leaving the list goes back; the one on screen has a 1px accent ring); and the
- * version switcher, "v{n} · Latest", for a file the agent wrote more than once.
+ * The artifact header's two pickers, after the original's (desktop bundle
+ * 2.31226.1): "Switch between artifacts", a list button shown when the
+ * conversation has two or more artifacts, which opens the artifacts as a
+ * column of cards (each sliding in 12px over 300ms, 35ms after the one
+ * above it; hovering one previews it, leaving the list goes back; the one
+ * on screen has a 1px accent ring); and the version switcher, "v{n} ·
+ * Latest", for a file the agent wrote more than once.
  */
 
 /**
@@ -331,9 +332,10 @@ export function ArtifactSwitchList({
 }
 
 /**
- * "v{n} · Latest" and its menu of versions, newest first, the newest marked
- * Latest. Choosing one shows that snapshot; Latest follows the file again. Each
- * earlier version of a text file also has a Compare with current button.
+ * "v{n} · Latest" and its menu of versions, newest first, the newest
+ * marked Latest. Choosing one shows that snapshot; Latest follows the
+ * file again. Each earlier version of a text file also has a Compare with
+ * current button (the original's version action, desktop bundle 2.31226.1).
  */
 export function VersionSwitcher({
   count,

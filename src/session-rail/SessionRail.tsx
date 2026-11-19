@@ -59,11 +59,12 @@ export const openComposerMenu = (menu: "model" | "effort" | "permissions") =>
   window.dispatchEvent(new CustomEvent(composerMenuEvent, { detail: menu }));
 
 /**
- * The Code session's rail of details beside the transcript, in the original's
- * order: Environment, Settings, Context, Usage, Connectors, Outputs, Changes
- * (the session's pull requests), Servers and Background tasks. Settings and
- * Usage start hidden (the cards menu shows them); Context, Usage, Connectors
- * and Background tasks start folded; a card with nothing to show is left out.
+ * The Code session's rail of details beside the transcript (live claude.ai
+ * bundle, 2026-10-14, "Session details"), in the original's order:
+ * Environment, Settings, Context, Usage, Connectors, Outputs, Changes (the
+ * session's pull requests), Servers and Background tasks. Settings and Usage
+ * start hidden (the cards menu shows them); Context, Usage, Connectors and
+ * Background tasks start folded; a card with nothing to show is left out.
  */
 export function SessionRail({
   conversation,
@@ -113,8 +114,8 @@ export function SessionRail({
   const cloud = environment?.kind === "space";
   const ssh = environment?.kind === "ssh" ? environment : undefined;
   const sshHost = useSshHost(ssh?.hostId);
-  // A cloud session names its cloud environment, the default one when it names
-  // none.
+  // A cloud session names its cloud environment, the default one when it
+  // names none (live claude.ai, 2026-10-21: "Default").
   const cloudEnvironment = cloudEnvironments.environments.find(
     (entry) => entry.id === (conversation.cloudEnvironmentId ?? "default"),
   );

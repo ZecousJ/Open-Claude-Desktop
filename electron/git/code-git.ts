@@ -7,11 +7,11 @@ import {
 } from "./working-tree";
 
 /**
- * What a Code session's pull request row shows about the folder's branch, from
- * read-only `git` queries run where the Changes panel's run: on this computer,
- * on an SSH host, or in the web runner's sandbox (`WorkingTreeHost`). The
- * folder is one the agent writes to, so nothing here runs a program from its
- * configuration.
+ * What a Code session's pull request row (desktop bundle 2.31226.1) shows
+ * about the folder's branch, from read-only `git` queries run where the
+ * Changes panel's run: on this computer, on an SSH host, or in the web
+ * runner's sandbox (`WorkingTreeHost`). The folder is one the agent writes
+ * to, so nothing here runs a program from its configuration.
  */
 
 /** The remote the branch belongs to: `origin`, else the first with a GitHub address. */

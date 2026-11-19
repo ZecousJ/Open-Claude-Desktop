@@ -1,9 +1,9 @@
 /**
  * A cloud Code session opens before its repository is cloned, and its first
- * turn shows the start's steps (shared/session-setup.ts): the engine runs the
- * runner's fetch in the turn, a failed clone ends in the transcript instead of
- * a toast, Stop ends the clone, and the transcript's words follow the live
- * claude.ai bundle. The Codex process is faked.
+ * turn shows the start's steps (shared/session-setup.ts): the engine runs
+ * the runner's fetch in the turn, a failed clone ends in the transcript
+ * instead of a toast, Stop ends the clone, and the transcript's words follow
+ * the live claude.ai bundle (2026-10-12). The Codex process is faked.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -104,7 +104,7 @@ function harness() {
 
 const repository = { url: "https://github.com/octo/hello", ref: "main" };
 
-test("an environment's setup script executes inside its engine before the first turn and reports its step", async () => {
+test("a cloud workspace without a repository runs its setup script before the first turn", async () => {
   const env = harness();
   // Setup scripts run only in a runner sandbox (a "space" engine).
   (env.engine as any).options.environment = { kind: "space", spaceId: "s" };
@@ -120,7 +120,7 @@ test("an environment's setup script executes inside its engine before the first 
       return original(method, params);
     }) as any;
     const conversation = await env.send({
-      repositories: [repository],
+      repositories: [],
       fetch: async () => {},
       setupScript: "npm ci",
     });
@@ -128,6 +128,7 @@ test("an environment's setup script executes inside its engine before the first 
       env.calls.indexOf("command/exec") < env.calls.indexOf("turn/start"),
     );
     assert.equal(conversation.pendingSetupScript, undefined);
+    assert.equal(conversation.repository, undefined);
     assert.equal(
       conversation.turns[0].setup?.steps.find(
         (step) => step.id === "setup_script",
@@ -355,6 +356,9 @@ test("the send handler takes a setup only as the runner's second argument", asyn
     registerConversationHandlers((name, fn) => handlers.set(name, fn), {
       store: { root, projects: [], conversation: () => undefined } as any,
       engine: { send: async (input: any) => (sent.push(input), input) } as any,
+      activeAccount: { id: "fixture" } as any,
+      accountActivationIdentity: {},
+      accountRetiring: false,
       replyFeedback: {} as any,
       selectedAttachments: new Map(),
       allowedFolder: () => {},
@@ -558,4 +562,134 @@ test("an engine on this computer never runs a setup script", async () => {
   } finally {
     env.close();
   }
+});
+
+test("expected provisional stop aborts its owned repository fetch and preserves interruption", async () => {
+  const { interruptExpectedTurn } = await import("../../electron/conversations/interrupt-target");
+  const env = harness();
+  let signal!: AbortSignal, entered!: () => void, release!: () => void;
+  const ready = new Promise<void>(resolve => entered = resolve);
+  const gate = new Promise<void>(resolve => release = resolve);
+  try {
+    const send = env.send({ repositories: [repository], fetch: async s => { signal = s; entered(); await gate; throw Error("late fetch failure"); } });
+    await ready;
+    const c = env.store.conversations[0], turn = c.turns.at(-1)!;
+    const result = await interruptExpectedTurn({ store: env.store, engine: env.engine, accountGeneration: () => 1 }, c.id,
+      { kind: "starting", turnId: turn.id, turnCreatedAt: turn.createdAt, conversationCreatedAt: c.createdAt });
+    assert.deepEqual(result, { status: "accepted" });
+    assert.equal(signal.aborted, true);
+    assert.equal(turn.status, "interrupted");
+    release(); await send;
+    assert.equal(turn.status, "interrupted");
+    assert.equal(turn.error, undefined);
+    assert.ok(turn.setup!.steps.every(step => step.status === "skipped"));
+    assert.equal(env.calls.includes("turn/start"), false);
+  } finally { release?.(); env.close(); }
+});
+
+for (const fail of [false, true]) test(`provisional stop preserves interruption after setup script ${fail ? "failure" : "completion"}`, async () => {
+  const { interruptExpectedTurn } = await import("../../electron/conversations/interrupt-target");
+  const env = harness(); (env.engine as any).options.environment = { kind: "space", spaceId: "s" };
+  let entered!: () => void, release!: () => void;
+  const ready = new Promise<void>(resolve => entered = resolve), gate = new Promise<void>(resolve => release = resolve);
+  const original = env.engine.rpc!.call.bind(env.engine.rpc);
+  env.engine.rpc!.call = (async (method: string, params: any) => {
+    if (method !== "command/exec") return original(method, params);
+    env.calls.push(method); entered(); await gate;
+    if (fail) throw Error("late script failure");
+    return { exitCode: 0 };
+  }) as any;
+  try {
+    const send = env.send({ repositories: [repository], fetch: async () => {}, setupScript: "npm ci" });
+    await ready; const c = env.store.conversations[0], turn = c.turns.at(-1)!;
+    const result = await interruptExpectedTurn({ store: env.store, engine: env.engine, accountGeneration: () => 1 }, c.id,
+      { kind: "starting", turnId: turn.id, turnCreatedAt: turn.createdAt, conversationCreatedAt: c.createdAt });
+    assert.deepEqual(result, { status: "accepted" }); release(); await send;
+    assert.equal(turn.status, "interrupted"); assert.equal(turn.error, undefined);
+    assert.equal(env.calls.includes("turn/start"), false);
+    assert.equal(turn.setup!.steps.find(step => step.id === "setup_script")!.status, "skipped");
+  } finally { release?.(); env.close(); }
+});
+
+test("setup Stop waits for exact process termination and coalesces duplicates", async () => {
+  const { interruptExpectedTurn } = await import("../../electron/conversations/interrupt-target");
+  const env = harness(); (env.engine as any).options.environment = { kind: "space", spaceId: "s" };
+  let entered!: () => void, releaseScript!: () => void, releaseStop!: () => void, processId = "", stops = 0;
+  const ready = new Promise<void>(resolve => entered = resolve), scriptGate = new Promise<void>(resolve => releaseScript = resolve), stopGate = new Promise<void>(resolve => releaseStop = resolve);
+  const original = env.engine.rpc!.call.bind(env.engine.rpc);
+  env.engine.rpc!.call = (async (method: string, params: any) => {
+    if (method === "command/exec") { processId = params.processId; entered(); await scriptGate; return { exitCode: 0 }; }
+    if (method === "command/exec/terminate") { stops++; assert.equal(params.processId, processId); await stopGate; return {}; }
+    return original(method, params);
+  }) as any;
+  try {
+    const send = env.send({ repositories: [repository], fetch: async () => {}, setupScript: "npm ci" }); await ready;
+    const c = env.store.conversations[0], turn = c.turns.at(-1)!, ctx = { store: env.store, engine: env.engine, accountGeneration: () => 1 };
+    const target = { kind: "starting", turnId: turn.id, turnCreatedAt: turn.createdAt, conversationCreatedAt: c.createdAt };
+    const a = interruptExpectedTurn(ctx, c.id, target), b = interruptExpectedTurn(ctx, c.id, target);
+    assert.ok(processId); assert.equal(stops, 1); assert.equal(turn.status, "inProgress");
+    releaseStop(); assert.deepEqual(await a, { status: "accepted" }); assert.deepEqual(await b, { status: "accepted" });
+    assert.equal(turn.status, "interrupted"); releaseScript(); await send; assert.equal(stops, 1); assert.equal(env.calls.includes("turn/start"), false);
+  } finally { releaseStop?.(); releaseScript?.(); env.close(); }
+});
+
+test("setup Stop accepts authoritative exit while termination remains pending", async () => {
+  const { interruptExpectedTurn } = await import("../../electron/conversations/interrupt-target");
+  const env = harness(); (env.engine as any).options.environment = { kind: "space", spaceId: "s" };
+  let entered!: () => void, releaseScript!: () => void, releaseStop!: () => void;
+  const ready = new Promise<void>(resolve => entered = resolve), scriptGate = new Promise<void>(resolve => releaseScript = resolve), stopGate = new Promise<void>(resolve => releaseStop = resolve);
+  const original = env.engine.rpc!.call.bind(env.engine.rpc);
+  env.engine.rpc!.call = (async (method: string, params: any) => {
+    if (method === "command/exec") { entered(); await scriptGate; return { exitCode: 0 }; }
+    if (method === "command/exec/terminate") { await stopGate; return {}; }
+    return original(method, params);
+  }) as any;
+  try {
+    const send = env.send({ repositories: [repository], fetch: async () => {}, setupScript: "npm ci" }); await ready;
+    const c = env.store.conversations[0], turn = c.turns.at(-1)!, ctx = { store: env.store, engine: env.engine, accountGeneration: () => 1 };
+    const stop = interruptExpectedTurn(ctx, c.id, { kind: "starting", turnId: turn.id, turnCreatedAt: turn.createdAt, conversationCreatedAt: c.createdAt });
+    releaseScript(); assert.deepEqual(await stop, { status: "accepted" }); await send;
+    assert.equal(turn.status, "interrupted"); assert.equal(env.calls.includes("turn/start"), false);
+  } finally { releaseStop?.(); releaseScript?.(); env.close(); }
+});
+
+test("late setup termination cannot mutate a successor turn", async () => {
+  const { interruptExpectedTurn } = await import("../../electron/conversations/interrupt-target");
+  const env = harness(); (env.engine as any).options.environment = { kind: "space", spaceId: "s" };
+  let entered!: () => void, releaseScript!: () => void, releaseStop!: () => void;
+  const ready = new Promise<void>(resolve => entered = resolve), scriptGate = new Promise<void>(resolve => releaseScript = resolve), stopGate = new Promise<void>(resolve => releaseStop = resolve);
+  const original = env.engine.rpc!.call.bind(env.engine.rpc);
+  env.engine.rpc!.call = (async (method: string, params: any) => {
+    if (method === "command/exec") { entered(); await scriptGate; return { exitCode: 0 }; }
+    if (method === "command/exec/terminate") { await stopGate; return {}; }
+    return original(method, params);
+  }) as any;
+  try {
+    const send = env.send({ repositories: [repository], fetch: async () => {}, setupScript: "npm ci" }); await ready;
+    const c = env.store.conversations[0], turn = c.turns.at(-1)!, ctx = { store: env.store, engine: env.engine, accountGeneration: () => 1 };
+    const stop = interruptExpectedTurn(ctx, c.id, { kind: "starting", turnId: turn.id, turnCreatedAt: turn.createdAt, conversationCreatedAt: c.createdAt });
+    const successor: Turn = { id: "new", prompt: "next", attachments: [], items: [], status: "inProgress", createdAt: 9 }; c.turns.push(successor);
+    releaseStop(); await assert.rejects(stop, /turn changed/i); releaseScript(); await send.catch(() => {});
+    assert.equal(successor.status, "inProgress"); assert.equal(successor.userStopped, undefined); assert.equal(env.calls.includes("turn/start"), false);
+  } finally { releaseStop?.(); releaseScript?.(); env.close(); }
+});
+
+test("failed setup termination is not acknowledged before the command exits", async () => {
+  const { interruptExpectedTurn } = await import("../../electron/conversations/interrupt-target");
+  const env = harness(); (env.engine as any).options.environment = { kind: "space", spaceId: "s" };
+  let entered!: () => void, release!: () => void;
+  const ready = new Promise<void>(resolve => entered = resolve), gate = new Promise<void>(resolve => release = resolve);
+  const original = env.engine.rpc!.call.bind(env.engine.rpc);
+  env.engine.rpc!.call = (async (method: string, params: any) => {
+    if (method === "command/exec") { entered(); await gate; return { exitCode: 0 }; }
+    if (method === "command/exec/terminate") throw Error("termination unavailable");
+    return original(method, params);
+  }) as any;
+  try {
+    const send = env.send({ repositories: [repository], fetch: async () => {}, setupScript: "npm ci" }); await ready;
+    const c = env.store.conversations[0], turn = c.turns.at(-1)!, ctx = { store: env.store, engine: env.engine, accountGeneration: () => 1 };
+    await assert.rejects(interruptExpectedTurn(ctx, c.id, { kind: "starting", turnId: turn.id, turnCreatedAt: turn.createdAt, conversationCreatedAt: c.createdAt }), /termination unavailable/);
+    assert.equal(turn.status, "inProgress"); release(); await send;
+    assert.equal(turn.status, "interrupted"); assert.equal(env.calls.includes("turn/start"), false);
+  } finally { release?.(); env.close(); }
 });

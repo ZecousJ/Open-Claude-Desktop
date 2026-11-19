@@ -1,5 +1,5 @@
-/* The gallery's 136×96 template tiles: the kind's glyph on a wash of its
-   hue. */
+/* Observed 136×96 gallery pictures. Theme formulas and shape coordinates
+   come from the actual template DOM, including its initially hidden layers. */
 .artifacts-make-art {
   --hue: #256abf;
   --neutral: #fff;
@@ -56,10 +56,13 @@
   overflow: hidden;
   border-radius: 8px;
 }
-.artifacts-template-gradient {
+.artifacts-template-gradient,
+.artifacts-template-ink {
   position: absolute;
   display: block;
   inset: 0;
+}
+.artifacts-template-gradient {
   background-image: linear-gradient(
     180deg,
     color-mix(in srgb, var(--hue) 24%, transparent) 0%,
@@ -68,20 +71,50 @@
     color-mix(in srgb, var(--hue) 3%, transparent) 100%
   );
 }
-.artifacts-template-glyph {
+.artifacts-template-ink {
+  --ink: color-mix(in srgb, var(--hue) 72%, white);
+  --ink-to: var(--ink);
+  --tint-boost: 30%;
+  --text-line: color-mix(in srgb, var(--ink) 35%, transparent);
+  --card-fill: color-mix(
+    in srgb,
+    var(--hue) 14%,
+    color-mix(in srgb, var(--neutral) 5%, transparent)
+  );
+  --card-line: color-mix(in srgb, var(--neutral) 15%, transparent);
+  --notch: color-mix(in srgb, var(--neutral) 35%, transparent);
+  --tab: color-mix(in srgb, var(--neutral) 30%, transparent);
+}
+.artifacts-template-part {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  color: color-mix(in srgb, var(--hue) 72%, white);
+  display: block;
+}
+.artifacts-template-check {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.artifacts-template-cursor {
+  display: block;
+  transform: translate(-1.5px, -1.5px);
+  overflow: visible;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 25%));
 }
 :root[data-theme="light"] .artifacts-make-art {
   --neutral: #0b0b0b;
   --template-surface: #fff;
   --template-shadow: rgb(11 11 11 / 8%);
 }
-:root[data-theme="light"] .artifacts-template-glyph {
-  color: var(--hue);
+:root[data-theme="light"] .artifacts-template-ink {
+  --ink: var(--hue);
+  --ink-to: white;
+  --tint-boost: 0%;
+  --text-line: color-mix(in srgb, var(--hue) 17%, transparent);
+  --card-fill: white;
+  --card-line: color-mix(in srgb, var(--neutral) 18%, transparent);
+  --notch: color-mix(in srgb, var(--neutral) 22%, transparent);
+  --tab: color-mix(in srgb, var(--neutral) 16%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   .artifacts-make-art,

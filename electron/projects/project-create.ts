@@ -6,7 +6,7 @@ import { ProjectKnowledgeStore } from "./project-knowledge";
 
 const creationFailure = "Failed to create project. You can try again.";
 
-/** Snapshot Chat context, not chats. */
+/** Snapshot Chat context, not chats (live claude.ai bundle, 2026-10-14, c259d3b84). */
 export function importChatProjects(
   root: string,
   projects: Project[],
@@ -74,7 +74,7 @@ export function importChatProjects(
   }
 }
 
-/** New folder per project. */
+/** New folder per project (live claude.ai bundle, 2026-10-14, c259d3b84). */
 export function createProjectFolder(location: string, name: string) {
   if (!name.trim() || /[/\\\x00]/.test(name) || name === "." || name === "..")
     throw new Error("Failed to create project. You can try again.");

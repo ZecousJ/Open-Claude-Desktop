@@ -12,9 +12,10 @@ type Listing = {
 };
 
 /**
- * Choose a folder on an SSH host. It starts in the host's default folder or
- * home, lists the folders there, and takes a typed path. Open makes the listed
- * folder the working folder.
+ * Choose a folder on an SSH host (design 3.4; a host has no system folder
+ * dialog, and none was captured). It starts in the host's default folder or
+ * home, lists the folders there, and takes a typed path. Open makes the
+ * listed folder the working folder.
  */
 export function RemoteFolderDialog({
   host,

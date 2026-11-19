@@ -33,8 +33,8 @@ export function RenameField({
       value={value}
       size={sized ? Math.min(Math.max(value.length, 1), 30) : undefined}
       autoFocus
-      // The capture shows the caret after the title, nothing selected; a Code
-      // session's title starts selected.
+      // The capture shows the caret after the title, nothing selected; a
+      // Code session's title starts selected (live claude.ai bundle).
       onFocus={(event) => {
         if (selectAll) return event.currentTarget.select();
         const end = event.currentTarget.value.length;

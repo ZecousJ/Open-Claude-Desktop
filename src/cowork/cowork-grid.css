@@ -1,10 +1,11 @@
 /*
- * The Cowork new-task page's backdrop, after the original's task grid: 1px
- * lines every 32px in the original's lowest surface (#0b0b0b over #151515 dark,
- * #f9f9f7 over #fcfcfb light), here a shade off Claudex's page, drawn behind
- * the home. It arrives once per mount: it fades in over 0.5s while a circle
- * opens from the middle to 150% over 1.5s (both ease-in-out). Reduced motion:
- * the fade only.
+ * The Cowork new-task page's backdrop, after the original's task grid
+ * (desktop bundle 2.31226.1): 1px lines every 32px in the original's
+ * lowest surface (#0b0b0b over #151515 dark, #f9f9f7 over #fcfcfb light),
+ * here a shade off Claudex's page, drawn behind the home. It arrives once
+ * per mount: it fades in
+ * over 0.5s while a circle opens from the middle to 150% over 1.5s (both
+ * ease-in-out). Reduced motion: the fade only.
  */
 .app.mode-cowork .chat-main:has(> .chat-home) {
   isolation: isolate;

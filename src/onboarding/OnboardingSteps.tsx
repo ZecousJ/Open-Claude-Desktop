@@ -38,7 +38,7 @@ import type { McpServerState } from "../../shared/settings-desktop-api";
 import { type FirstTask, type FirstTaskIcon } from "./first-tasks";
 import "./onboarding.css";
 
-/** "What kind of work do you do?": one role, then Continue. */
+/** "What kind of work do you do?" (c10bf8b47 `yc`): one role, then Continue. */
 export function WorkStep({
   value,
   onChange,
@@ -76,8 +76,9 @@ export function WorkStep({
 }
 
 /**
- * The role field: a button that opens a menu of the roles, the same pattern as
- * the science field below.
+ * The role field (c10bf8b47 `kc`: mode select, not searchable, size lg, full
+ * width, placeholder "Search for your role"): a button that opens a menu of
+ * the roles, the same pattern as the science field below.
  */
 function RoleSelect({
   value,
@@ -130,9 +131,10 @@ function RoleSelect({
 }
 
 /**
- * "What kind of science do you do? (optional)" under the Scientist role: a
- * multiple select with the field label above, "Select all that apply" until
- * something is picked, then the picks as a list.
+ * "What kind of science do you do? (optional)" under the Scientist role
+ * (live claude.ai bundle, 2026-10-14, c10bf8b47 Dc): a multiple select with
+ * the field label above, "Select all that apply" until something is picked,
+ * then the picks as a list.
  */
 function ScienceFieldsSelect({
   value,
@@ -204,9 +206,10 @@ function ScienceFieldsSelect({
 }
 
 /**
- * "Set up and start coding": the place to code, then Continue for those not
- * interested. Claudex has Code built in, so there is no install command: a tile
- * opens Code here (on the desktop, or on the web) once the onboarding ends.
+ * "Set up and start coding" (c10bf8b47 `_c`, its tiles from c31286932): the
+ * place to code, then Continue for those not interested. Claudex has Code
+ * built in, so there is no install command: a tile opens Code here (on the
+ * desktop, or on the web) once the onboarding ends.
  */
 export function CodeStep({
   onPick,
@@ -306,9 +309,9 @@ const taskIcons: Record<FirstTaskIcon, ComponentType<LucideProps>> = {
 };
 
 /**
- * The first task: three ideas for the chosen work, and "I have my own topic". A
- * pick ends the onboarding with its prompt in the composer of a new task, ready
- * to send.
+ * The first task (c10bf8b47 `nl`, the role's starter tasks of `Ec`): three
+ * ideas for the chosen work, and "I have my own topic". A pick ends the
+ * onboarding with its prompt in the composer of a new task, ready to send.
  */
 export function FirstTaskStep({
   tasks,

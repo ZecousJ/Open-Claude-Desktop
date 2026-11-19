@@ -17,6 +17,7 @@ import {
 import type { Sub2ApiClient } from "../sub2api/client";
 import { Sub2ApiError } from "../sub2api/http";
 import type { PlanChoice } from "../sub2api/provision";
+import type { AccountOperationCurrent } from "./operation-lease";
 
 /** A service error in words the Billing page can show; others pass through. */
 export function billingError(error: unknown): unknown {
@@ -307,9 +308,15 @@ export class OrderWatcher {
 export interface BillingHost {
   readonly backend: {
     readonly session: {
-      authorized<T>(call: (accessToken: string) => Promise<T>): Promise<T>;
+      authorized<T>(
+        call: (accessToken: string) => Promise<T>,
+        current: AccountOperationCurrent,
+      ): Promise<T>;
     };
-    readonly client: Pick<Sub2ApiClient, "profile" | "subscriptions">;
+    readonly client: Pick<
+      Sub2ApiClient,
+      "profile" | "subscriptions" | "redeem"
+    >;
     readonly plan?: PlanChoice;
   };
   readonly accounts: { readonly baseUrl: string };

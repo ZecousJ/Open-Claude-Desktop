@@ -1,12 +1,13 @@
 /*
- * Light theme of the main app. The original's light theme is neutral grey;
- * these rules replace dark-only values that the earlier audits (mostly dark)
- * left in place. Every value is sampled from a light capture, named per rule.
- * Loaded after all other sheets (light-main.slot.ts), so the rules win at equal
- * specificity.
+ * Light theme of the main app (audit 2026-09-29, area light-main).
+ * The original's light theme is neutral grey; these rules replace dark-only
+ * values that the earlier audits (mostly dark) left in place. Every value is
+ * sampled from a light capture, named per rule. Loaded after all other
+ * sheets (light-main.slot.ts), so the rules win at equal specificity.
  */
 
-/* Composer. The dark rules kept #454545 / #4d4d4d. */
+/* Composer (R-0220 Windows 1x, focused: border #dddddb, fill #fff, a faint
+   shadow under it). The dark rules kept #454545 / #4d4d4d. */
 :root[data-theme="light"] .composer,
 :root[data-theme="light"] .composer:focus-within,
 :root[data-theme="light"] .chat-home .composer:focus-within,
@@ -17,8 +18,8 @@
   box-shadow: 0 2px 4px #00000008;
 }
 
-/* Usage banner: no fill, a #e2e2e0 hairline, and the Get more usage pill white
-   with a #e4e4e4 rim. */
+/* Usage banner (R-0314 / R-0546): no fill, a #e2e2e0 hairline, and the
+   Get more usage pill white with a #e4e4e4 rim. */
 :root[data-theme="light"] .usage-banner.chat,
 :root[data-theme="light"] .usage-banner.code {
   background: transparent;
@@ -32,9 +33,9 @@
   color: #141414;
 }
 
-/* Code and Cowork transcripts: the prompt bubble and inline code take the Chat
-   light faces. Without it a Cowork prompt kept the dark #242424 bubble behind
-   dark text. */
+/* Code and Cowork transcripts: the prompt bubble and inline code take the
+   Chat light faces (R-0546: bubble #f0f0f0; inline code as .mode-chat).
+   Without it a Cowork prompt kept the dark #242424 bubble behind dark text. */
 :root[data-theme="light"] :is(.mode-code, .mode-cowork) .user-message {
   background: #f0f0f0;
   color: var(--text);
@@ -45,7 +46,8 @@
   border-color: #00000021;
 }
 
-/* Effort slider: white panel with a #dadad8 rim, track #e6e6e6, fill grey. */
+/* Effort slider (R-0365 Light, Windows 1x): white panel with a #dadad8 rim,
+   track #e6e6e6, fill grey. */
 :root[data-theme="light"] .code-effort-panel {
   background: #ffffff;
   border-color: #dadad8;
@@ -57,9 +59,9 @@
   background: #b4b4b4;
 }
 
-/* Artifact panel header: white, title #3a3a3a, the comment group white with
-   #e5e5e5 rim and divider (icon #020202, chevron #959595) and the Share button
-   #0b0b0b with white text. */
+/* Artifact panel header (R-1028): white, title #3a3a3a, the comment group
+   white with #e5e5e5 rim and divider (icon #020202, chevron #959595) and the
+   Share button #0b0b0b with white text. */
 :root[data-theme="light"] .file-preview {
   background: #ffffff;
 }
@@ -101,9 +103,10 @@
   background: #f3f3f3;
   color: #141414;
 }
-/* The Chat group's frame and its pop-out half take the light controls too: an
-   ink fill, a hairline of ink at 10%, the secondary ink, and comment mode's
-   pale blue when pressed. */
+/* The Chat group's frame and its pop-out half take the light controls too:
+   an ink fill, a hairline of ink at 10%, the secondary ink, and comment
+   mode's pale blue when pressed (live claude.ai bundle, 2026-10-16,
+   rules.json: --cds-fill-control, --cds-border). */
 :root[data-theme="light"] .artifact-chat-group {
   background: #f3f3f3;
 }
@@ -122,7 +125,9 @@
   color: #2f79d2;
 }
 
-/* Artifact menus. */
+/* Artifact menus (R-1010: #fff, hover row #f3f3f3, separator #e6e6e6, the
+   focused Delete row #d03c3c with white text; frame as the sidebar popovers,
+   #e4e4e4 with a 0 12 28 #0002 shadow). */
 :root[data-theme="light"] .artifact-chrome-menu {
   background: #ffffff;
   border-color: #e4e4e4;
@@ -152,7 +157,7 @@
   background: #e6e6e6;
 }
 
-/* Comments: white draft and list, hovered row #f3f3f3. */
+/* Comments (R-1017..R-1021): white draft and list, hovered row #f3f3f3. */
 :root[data-theme="light"] .artifact-comments-list,
 :root[data-theme="light"] .artifact-comment-draft {
   background: #ffffff;
@@ -197,13 +202,14 @@
   border-color: #c6c6c4;
 }
 
-/* Code face. */
+/* Code face (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js). */
 :root[data-theme="light"] .mode-chat .markdown .code-block {
   background: color-mix(in oklab, var(--cds-surface-3) 50%, transparent);
 }
 
-/* Approval and question cards: white card, #e0e0e0 rim, focused option #f3f3f3.
-   The Code cards have no light capture and take the same faces. */
+/* Approval and question cards (R-0854 Cowork question, light, 2x): white
+   card, #e0e0e0 rim, focused option #f3f3f3. The Code cards have no light
+   capture and take the same faces. */
 :root[data-theme="light"] .approval-card {
   background: #ffffff;
   border-color: #e0e0e0;
@@ -235,7 +241,8 @@
 }
 
 /* Warm tints the earlier light passes chose without a capture, moved to the
-   neutral values measured elsewhere. */
+   neutral values measured elsewhere (icons #4c4b4a, text #141414, hover
+   #f3f3f1, hairlines #dddddb / #e2e2e0; sidebar and R-0220). */
 :root[data-theme="light"] .code-composer .model-button,
 :root[data-theme="light"] .code-composer .code-effort-trigger,
 :root[data-theme="light"] .conversation-input-actions .send-button.plain,
@@ -278,8 +285,9 @@
   color: #82817f;
 }
 
-/* Code Bash card: command box white with a #e2e2e2 rim, prompt/title/output
-   #484848-#4d4d4d, command word #2c649f and strings #268d3a. */
+/* Code Bash card (R-0789/R-0790, light, 2.4x): command box white with a
+   #e2e2e2 rim, prompt/title/output #484848-#4d4d4d, command word #2c649f and
+   strings #268d3a. */
 :root[data-theme="light"] .mode-code .code-bash-card {
   border-color: #e2e2e2;
 }
@@ -316,15 +324,16 @@
   color: #82817f;
 }
 
-/* An opened tool row's title reads darker than the folded rows. */
+/* An opened tool row's title reads darker than the folded rows (#4b4b4b
+   against #82817f, R-0730 expanded, R-0789/R-0790). */
 :root[data-theme="light"] .code-command[open] > summary,
 :root[data-theme="light"] .command-activity[open] > summary,
 :root[data-theme="light"] .web-search-activity[open] > summary {
   color: #4b4b4b;
 }
 
-/* The 1/2 counter takes the light limit toast's amber; its dark faces are the
-   dark amber row's. */
+/* The 1/2 counter takes the light limit toast's amber (R-0314: fill #f8dba0,
+   text #5a3a05); its dark faces are the dark amber row's. */
 :root[data-theme="light"] .question-card-count {
   background: #f8dba0;
   color: #5a3a05;
@@ -346,8 +355,8 @@
   color: var(--danger);
 }
 
-/* The Code composer typed its text and return glyph in near-white, invisible on
-   the white light box. */
+/* The Code composer typed its text and return glyph in near-white (R-0338),
+   invisible on the white light box. */
 :root[data-theme="light"] .code-composer .composer-input-row textarea {
   color: var(--text);
 }
@@ -355,7 +364,8 @@
   color: #141414;
 }
 
-/* The light dialog backdrop: 40% black, as .overlay. */
+/* The light dialog backdrop: 40% black, as .overlay (desktop bundle
+   2.31226.1; the captures read 39%, R-0314, R-1161). */
 :root[data-theme="light"] .search-palette-overlay,
 :root[data-theme="light"] .sheet-overlay {
   background: #0006;
@@ -366,9 +376,9 @@
   background: rgb(0 0 0 / 39%);
 }
 
-/* Code file panel: fill #fcfcfa like the page, rim #dddddb, the rule under the
-   tab and path rows #e6e6e6 (the dark #2a2a28 rule out-ranked the older light
-   border). */
+/* Code file panel (R-1075, Windows 1x): fill #fcfcfa like the page, rim
+   #dddddb, the rule under the tab and path rows #e6e6e6 (the dark #2a2a28
+   rule out-ranked the older light border). */
 :root[data-theme="light"] .file-viewer.code-file-panel,
 :root[data-theme="light"] .file-viewer.code-file-panel .file-source {
   background: #fcfcfa;
@@ -380,8 +390,9 @@
   border-bottom-color: #e6e6e6;
 }
 
-/* Composer menus and palettes: the sidebar popover face: white with a #e4e4e4
-   rim; the earlier #fffefa cream and #d2d0ca rims matched no capture. */
+/* Composer menus and palettes: the sidebar popover face (R-1010, sidebar
+   popovers): white with a #e4e4e4 rim; the earlier #fffefa cream and #d2d0ca
+   rims matched no capture. */
 :root[data-theme="light"] .code-slash-palette,
 :root[data-theme="light"] .code-permission-menu,
 :root[data-theme="light"] .code-add-menu,
@@ -397,11 +408,12 @@
   border-color: #e4e4e4;
 }
 
-/* Chat and Cowork home composer: placeholder #777775, + #0e0e0e, the Chat |
-   Cowork track #f1f1ef with a white selected block on a #e7e7e5 rim (no dark
-   outline), Chat #777, model #474747 over effort #7c7c7c, microphone black, ⌄
-   #949494, and the Project or folder / Manual / Output row #3b3b39. The dark
-   rules had left the dark-theme glyph colours in place. */
+/* Chat and Cowork home composer (R-0409 light, W1351 1x crop, darkest text
+   pixels): placeholder #777775, + #0e0e0e, the Chat | Cowork track #f1f1ef
+   with a white selected block on a #e7e7e5 rim (no dark outline), Chat #777,
+   model #474747 over effort #7c7c7c, microphone black, ⌄ #949494, and the
+   Project or folder / Manual / Output row #3b3b39. The dark rules had left
+   the dark-theme glyph colours in place. */
 :root[data-theme="light"] .chat-home .composer-input-row textarea::placeholder {
   color: #777775;
 }

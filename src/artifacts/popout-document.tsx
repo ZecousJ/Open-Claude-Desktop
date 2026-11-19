@@ -47,7 +47,8 @@ export function NativePopout({
   );
 }
 
-// Pop-out is gated by the host, not kind.
+// Pop-out is gated by the host, not kind (live claude.ai bundle,
+// 2026-10-14, c3fc267c0-DAIgqFzQ.js).
 export async function popoutDocument(
   artifact: Artifact,
   bytes: () => Promise<string>,

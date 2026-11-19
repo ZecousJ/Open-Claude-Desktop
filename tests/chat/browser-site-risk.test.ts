@@ -4,8 +4,8 @@ import { SiteRiskChecks } from "../../electron/browser/site-risk";
 import { siteQuestion } from "../../electron/browser/browser-tool-questions";
 
 test("browser site risk is decided on this computer and cached by origin", async () => {
-  // No address leaves the computer: the check takes no request function and
-  // never asks a classification service.
+  // No address leaves the computer (owner, 2026-10-20): the check takes no
+  // request function and never asks a classification service.
   const originalFetch = globalThis.fetch;
   let requested = 0;
   globalThis.fetch = (async () => {

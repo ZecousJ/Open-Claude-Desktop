@@ -24,7 +24,10 @@ function Magnifier({ children }: { children: ReactNode }) {
   );
 }
 
-/** Zoom to fit: four small arrows pointing into the lens. */
+/**
+ * Zoom to fit: four small arrows pointing into the lens (the live claude.ai
+ * bundle's, 2026-10-12, ZoomToFit glyph).
+ */
 export function ZoomFitIcon() {
   return (
     <Magnifier>
@@ -37,7 +40,7 @@ export function ZoomFitIcon() {
   );
 }
 
-/** Physical size: a "1" in the lens. */
+/** Physical size: a "1" in the lens (the live bundle's ZoomPhysical glyph). */
 export function ZoomPhysicalIcon() {
   return (
     <Magnifier>
@@ -93,9 +96,9 @@ function ZoomButton({
 }
 
 /**
- * The zoom buttons at the end of the picker row: Zoom out, a divider, Zoom to
- * fit, Physical size and Zoom in. `canZoom` is null while the screen isn't
- * drawn yet.
+ * The zoom buttons at the end of the picker row (live claude.ai bundle,
+ * 2026-10-12): Zoom out, a divider, Zoom to fit, Physical size and Zoom in.
+ * `canZoom` is null while the screen isn't drawn yet.
  */
 export function ZoomControls({
   canZoom,

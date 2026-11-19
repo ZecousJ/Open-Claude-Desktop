@@ -22,8 +22,8 @@ export class DeviceRegistration {
     let saved: DeviceInfo | undefined;
     try {
       saved = JSON.parse(fs.readFileSync(this.file, "utf8"));
-      // A renewed link id is a new device: it starts over instead of failing
-      // every call on this computer.
+      // A renewed link id (device-identity.ts) is a new device: it starts
+      // over instead of failing every call on this computer.
       if (saved?.id !== identity.id) saved = undefined;
       else if (
         !Number.isFinite(Date.parse(saved.addedAt ?? "")) ||

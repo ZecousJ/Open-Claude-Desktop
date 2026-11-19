@@ -4,7 +4,7 @@ import type { Provider } from "../../shared/types";
 import { describeSub2ApiRefusal } from "../../server/sub2api-errors";
 import { claudexHeaders } from "../../shared/claudex-contract";
 import { claudexClientInfo } from "../sub2api/http";
-import { isDrawingModel } from "../../shared/model-catalog-api";
+import { routeForAutomaticImages } from "../../shared/provider-routes";
 import {
   drawingPrompt,
   drawingRequest,
@@ -18,14 +18,22 @@ import {
   Json,
   maxImageRequestBytes,
   imageTimeoutMs,
-  withImageModel,
   redact,
   sseFrame,
   readBody,
 } from "./gateway-support";
 
+type ImageRoute = ReturnType<typeof drawingRequest>["route"];
+
+function imageEndpoint(provider: Provider, route: ImageRoute) {
+  return endpoint(
+    provider.baseUrl,
+    provider.backend === "sub2api" ? `claudex/${route}` : route,
+  );
+}
+
 /** The pictures an image endpoint answered with, to the observers. */
-export function observeDrawnImages(this: Gateway, text: string) {
+export function observeDrawnImages(this: Gateway, text: string, requestId?: string) {
   try {
     const reply = JSON.parse(text) as Json;
     for (const entry of Array.isArray(reply?.data) ? reply.data : []) {
@@ -46,6 +54,8 @@ export function observeDrawnImages(this: Gateway, text: string) {
           },
         },
         undefined,
+        undefined,
+        requestId,
       );
     }
   } catch {
@@ -69,11 +79,13 @@ export async function drawTurn(
     provider: Provider;
     apiKey: string;
     threadId?: string;
+    turnId?: string;
     signal: AbortSignal;
     onUsage: (usage: Json) => void;
   },
 ): Promise<number> {
-  const { provider, apiKey, threadId, signal } = ctx;
+  const { provider, apiKey, threadId, turnId, signal } = ctx;
+  const imageRequest = turnId ? undefined : this.startImageRequest(threadId);
   const model = String(request.model);
   const response = {
     id: `resp_${randomBytes(12).toString("hex")}`,
@@ -108,7 +120,7 @@ export async function drawTurn(
       throw new Error("Describe the picture you want.");
     }
     const call = drawingRequest(model, prompt, images);
-    const upstream = await fetch(endpoint(provider.baseUrl, call.route), {
+    const upstream = await fetch(imageEndpoint(provider, call.route), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -165,6 +177,8 @@ export async function drawTurn(
         item: { ...item, result: base64 },
       },
       threadId,
+      turnId,
+      imageRequest?.id,
     );
     const kept = { ...item, result: "" };
     send({ type: "response.output_item.done", output_index: 0, item: kept });
@@ -202,6 +216,7 @@ export async function drawTurn(
     return status >= 400 ? status : 502;
   } finally {
     clearInterval(keepalive);
+    imageRequest?.finish();
   }
 }
 
@@ -209,8 +224,9 @@ export async function handleImages(
   this: Gateway,
   req: http.IncomingMessage,
   res: http.ServerResponse,
-  route: "images/generations" | "images/edits",
+  route: ImageRoute,
 ) {
+  const imageRequest = this.startImageRequest();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), imageTimeoutMs);
   res.on("close", () => controller.abort());
@@ -228,29 +244,22 @@ export async function handleImages(
     const current = this.getProvider();
     const { provider } = current;
     apiKey = current.apiKey;
-    // The group that draws (its key lists GPT's image models), else the
-    // group that serves GPT.
-    const routes = provider.routes ?? [];
-    const gpt =
-      routes.find((r) => r.models.some(isDrawingModel)) ??
-      routes.find((r) => r.models.some((m) => /^gpt-/i.test(m)));
-    if (gpt && !gpt.primary) apiKey = current.keyFor?.(gpt.keyId) || apiKey;
-    // The model chosen on the API page makes every picture.
-    const sent = await withImageModel(
-      raw,
-      req.headers["content-type"] ?? "application/json",
-      this.requestOptions.imageModel,
-    );
-    const upstream = await fetch(endpoint(provider.baseUrl, route), {
+    const body = new Uint8Array(raw);
+    const contentType = req.headers["content-type"] ?? "application/json";
+    const imageRoute =
+      provider.backend === "sub2api" ? routeForAutomaticImages(provider) : undefined;
+    if (imageRoute && !imageRoute.primary)
+      apiKey = current.keyFor?.(imageRoute.keyId) || apiKey;
+    const upstream = await fetch(imageEndpoint(provider, route), {
       method: "POST",
       headers: {
-        ...(sent.contentType ? { "Content-Type": sent.contentType } : {}),
+        ...(contentType ? { "Content-Type": contentType } : {}),
         ...(provider.backend === "sub2api"
           ? claudexHeaders(claudexClientInfo())
           : {}),
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
-      body: sent.body,
+      body,
       signal: controller.signal,
     });
     const text = redact(await upstream.text(), apiKey);
@@ -261,9 +270,9 @@ export async function handleImages(
       })
       .end(text);
     // Each picture is also the turn's Image card, whether or not the agent
-    // opens the file it saves. The running turn takes it (the request names no
-    // thread).
-    if (upstream.ok) this.observeDrawnImages(text);
+    // opens the file it saves (owner, 2026-10-03: the third was never
+    // shown). The running turn takes it (the request names no thread).
+    if (upstream.ok) this.observeDrawnImages(text, imageRequest?.id);
   } catch (error) {
     if (!res.headersSent)
       res.writeHead(502, { "Content-Type": "application/json" }).end(
@@ -278,5 +287,6 @@ export async function handleImages(
       );
   } finally {
     clearTimeout(timeout);
+    imageRequest?.finish();
   }
 }

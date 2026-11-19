@@ -50,7 +50,12 @@ test("connector transport initializes MCP, sends the session and calls the selec
     { url: "https://tools.example/mcp" },
     (request) =>
       request("tools/call", { name: "search", arguments: { query: "hello" } }),
-    { fetch: fetch_, token: "secret", remoteOnly: true },
+    {
+      fetch: fetch_,
+      token: "secret",
+      headers: { "x-tenant-id": "tenant" },
+      remoteOnly: true,
+    },
   );
   assert.equal(result.content[0].text, "done");
   assert.deepEqual(
@@ -59,6 +64,10 @@ test("connector transport initializes MCP, sends the session and calls the selec
   );
   assert.equal(calls[2].headers.get("mcp-session-id"), "session");
   assert.equal(calls[2].headers.get("authorization"), "Bearer secret");
+  assert.deepEqual(
+    calls.map(({ headers }) => headers.get("x-tenant-id")),
+    ["tenant", "tenant", "tenant", "tenant"],
+  );
   assert.equal(calls[1].headers.get("mcp-protocol-version"), "2025-03-26");
   assert.equal(calls[3].headers.get("mcp-protocol-version"), "2025-03-26");
   assert.equal(calls[2].body.params.arguments.query, "hello");

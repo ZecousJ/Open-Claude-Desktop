@@ -5,7 +5,7 @@ import { directoryGlyph } from "./icons";
 import type { CatalogueConnector } from "../../../shared/connectors-catalogue";
 import { connectorPublishedUrl } from "./connector-detail-model";
 
-// Genuine bundle member tile layouts.
+// Source c86c18ff2-DiFLLwFV.js:3054–3122, genuine bundle member tile layouts.
 const clusterLayout = [
   [[83, 0]],
   [
@@ -49,6 +49,7 @@ const clusterLayout = [
   ],
 ];
 
+// (live claude.ai bundle, 2026-10-14, c86c18ff2-DZs4-mW1.js)
 export default function ConnectorFeatured({
   entries,
   onOpen,

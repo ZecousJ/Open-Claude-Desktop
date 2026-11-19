@@ -1,9 +1,11 @@
-// W-BWRAP: sandbox driver interface + bubblewrap driver + sandbox-codex
-// launcher.  Runs under `npm test` (tsx) on any platform; the tests that need a
-// real bubblewrap run only on Linux hosts where `checkBwrap()` passes. Set
-// CLAUDEX_TEST_CODEX to a Linux codex binary to also start the real `codex
-// app-server` in the sandbox. Erasable TypeScript only, so plain Node can run
-// this file too.
+// W-BWRAP: sandbox driver interface + bubblewrap driver + sandbox-codex launcher.
+//
+// Runs under `npm test` (tsx) on any platform; the tests that need a real
+// bubblewrap run only on Linux hosts where `checkBwrap()` passes (for example
+// the spike image: `node --test tests/runner-sandbox-bwrap.test.ts` as an
+// unprivileged user in a --privileged container). Set CLAUDEX_TEST_CODEX to a
+// Linux codex binary to also start the real `codex app-server` in the sandbox.
+// Erasable TypeScript only, so plain Node can run this file too.
 
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";

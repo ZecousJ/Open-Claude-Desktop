@@ -1,5 +1,5 @@
 /**
- * Artifacts, the file viewer and local sharing. Handlers are in
+ * Artifacts, the file viewer and local sharing (package WP6). Handlers are in
  * `electron/ipc/artifacts.ts` and `electron/ipc/artifact-library.ts`.
  */
 import type {

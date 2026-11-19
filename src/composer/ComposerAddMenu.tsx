@@ -48,8 +48,10 @@ import { connectorAllowed } from "../../shared/client-policy-rules";
 import { AppContext } from "../app/AppContext";
 import { usePolicy } from "../policy/PolicyContext";
 import { researchConnectorEnabled } from "../../shared/research";
+import { KnowledgeMenuItems } from "../knowledge/KnowledgeControls";
+import type { KnowledgeProps } from "../knowledge/knowledge-props";
 import "./composer-add-menu.css";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { t } from "../i18n";
 import { callableSkills } from "./skill-tokens";
 import { useAddMenuResource } from "./useAddMenuResource";
@@ -69,7 +71,7 @@ type Props = {
   webSearch: boolean;
   webSearchAvailable: boolean;
   onWebSearch: () => void;
-  /** Research mode; the row is left out without onResearch. */
+  /** Research mode (R-0263); the row is left out without onResearch. */
   research?: boolean;
   researchAvailable?: boolean;
   /** Why Research can't be turned on, when it can't. */
@@ -77,6 +79,8 @@ type Props = {
   onResearch?: () => void;
   thinking?: boolean;
   onThinking?: () => void;
+  /** Knowledge bases (shared/knowledge-api.ts); the rows are left out without it. */
+  knowledge?: KnowledgeProps;
   onClose: () => void;
   onFiles: () => void;
   /** Inserts an enabled skill reference into this draft; never sends it. */
@@ -94,11 +98,11 @@ type Props = {
   onGitHub?: () => void;
   /** The chosen project's id; null takes the conversation out of its project. */
   onProject: (id: string | null) => void;
-  /** With a name, creates a project of that name right away. */
+  /** With a name, creates a project of that name right away (R-0228). */
   onCreateProject: (name?: string) => void;
   onSettings: (tab: string) => void;
   onUnavailable: (message: string) => void;
-  /** Set when the project catalogue cannot be read. */
+  /** Set when the project catalogue cannot be read (live bundle error row). */
   projectsError?: boolean;
   /** Set when project creation is unavailable in the current workspace. */
   projectsAvailable?: boolean;
@@ -132,6 +136,7 @@ export function ComposerAddMenu({
   onResearch,
   thinking = false,
   onThinking,
+  knowledge,
   onClose: closeImmediately,
   onFiles,
   onSkill,
@@ -178,7 +183,7 @@ export function ComposerAddMenu({
     onBack: () => setBranch(null),
   });
   const onClose = () => sheetMotion.dismiss(closeImmediately);
-  // The project submenu's "Search or create a project" field.
+  // The project submenu's "Search or create a project" field (R-0228).
   const [projectQuery, setProjectQuery] = useState("");
   const showResearch =
     policy.webSearch && researchPolicyOf(policy).enabled && !!onResearch;
@@ -221,6 +226,7 @@ export function ComposerAddMenu({
       </div>
     ) : null;
   const servers = app?.snapshot.settings.mcpServers ?? {};
+  const knowledgeRows = knowledge?.bases.length ?? 0;
   // Connectors outside the administrator's allowlist never start, so they are not listed.
   const connectorRows = Object.entries(servers).filter(
     ([connector, value]) =>
@@ -362,7 +368,8 @@ export function ComposerAddMenu({
   useLayoutEffect(() => {
     const rect = root.current?.parentElement?.getBoundingClientRect();
     // Below the button unless the menu (its real height: nine rows and two
-    // rules today) would run off the window and there is more room above.
+    // rules today) would run off the window and there is more room above
+    // (R-0212: in a conversation the composer sits low and it opens upward).
     const height = root.current?.offsetHeight ?? 286;
     setAbove(
       Boolean(
@@ -374,8 +381,9 @@ export function ComposerAddMenu({
     setLeft(Boolean(rect && rect.right + 230 > clipRight(root.current) - 8));
     keepInWindow(root.current);
   }, []);
-  // An open submenu never covers the menu or runs off the window: it turns to
-  // the menu's other side when the window cuts it.
+  // An open submenu never covers the menu or runs off the window: it turns
+  // to the menu's other side when the window cuts it (live claude.ai,
+  // owner 2026-10-21: "官方的层级菜单永远不会互相遮挡").
   useLayoutEffect(() => {
     const panel = root.current?.querySelector<HTMLElement>(
       ":scope .composer-add-submenu",
@@ -473,7 +481,7 @@ export function ComposerAddMenu({
       items[next]?.focus();
     } else if (event.key === "Tab") onClose();
   };
-  // Research does not lock Web search.
+  // Research does not lock Web search (live claude.ai bundle, 2026-10-14, shared-5-DQt42NbL).
   const webSearchReason = webSearchAvailable
     ? undefined
     : "Web search requires an idle conversation and a Responses-compatible model service.";
@@ -483,7 +491,7 @@ export function ComposerAddMenu({
         project.name.toLowerCase().includes(typedProject.toLowerCase()),
       )
     : projects;
-  // Typing a name no project has offers to create it.
+  // Typing a name no project has offers to create it (R-0228).
   const newProjectName = projects.some(
     (project) => project.name.toLowerCase() === typedProject.toLowerCase(),
   )
@@ -545,7 +553,8 @@ export function ComposerAddMenu({
                   key={project.id}
                   role="menuitemcheckbox"
                   aria-checked={project.id === currentProjectId}
-                  // The chosen project again takes the conversation out of it.
+                  // The chosen project again takes the conversation out of it
+                  // (desktop bundle 2.31226.1: a checkbox row).
                   onClick={() =>
                     activate(() =>
                       onProject(
@@ -608,7 +617,7 @@ export function ComposerAddMenu({
                 title={skill.description || undefined}
                 onClick={() => activate(() => onSkill?.(skill))}
               >
-                <AppIcon name="Scroll" size={20} />
+                <Anthropicon name="Scroll" size={20} />
                 <span data-no-translate>{skill.name}</span>
               </button>
             ))}
@@ -619,7 +628,7 @@ export function ComposerAddMenu({
               role="menuitem"
               onClick={() => activate(() => onSettings("skills"))}
             >
-              <AppIcon name="Tool" size={20} />
+              <Anthropicon name="Tool" size={20} />
               <span>Manage skills</span>
             </button>
             {onBrowseSkills && (
@@ -630,13 +639,14 @@ export function ComposerAddMenu({
             )}
           </>
         ) : name === "connectors" ? (
-          // Browse connectors (Add connectors while there are none), Manage
-          // connectors, the connectors with their switches, then Tool access ›.
+          // Live claude.ai bundle, 2026-10-16 (c1958b152): Browse connectors
+          // (Add connectors while there are none), Manage connectors, the
+          // connectors with their switches, then Tool access ›.
           <>
             <ConnectorAddMenu
               sheet={Boolean(sheet)}
               canAddCustom={canAddCustomConnector}
-              hasConnectors={connectorRows.length > 0}
+              hasConnectors={connectorRows.length > 0 || knowledgeRows > 0}
               onBrowse={() =>
                 activate(onBrowseConnectors ?? (() => onSettings("connectors")))
               }
@@ -650,10 +660,10 @@ export function ComposerAddMenu({
               role="menuitem"
               onClick={() => activate(() => onSettings("connectors"))}
             >
-              <AppIcon name="Tool" size={20} />
+              <Anthropicon name="Tool" size={20} />
               <span>Manage connectors</span>
             </button>
-            {connectorRows.length > 0 && (
+            {(connectorRows.length > 0 || knowledgeRows > 0) && (
               <div className="composer-add-separator" role="separator" />
             )}
             <ConnectorReconnectRows
@@ -676,6 +686,17 @@ export function ComposerAddMenu({
               switchClass="composer-add-switch"
               onError={app?.report}
             />
+            {/* Knowledge bases the service provides (shared/knowledge-api.ts),
+                per chat, after the account's own connectors. */}
+            {knowledge && knowledgeRows > 0 && (
+              <KnowledgeMenuItems
+                bases={knowledge.bases}
+                active={knowledge.active}
+                onToggle={knowledge.onToggle}
+                onUnavailable={onUnavailable}
+                switchClass="composer-add-switch"
+              />
+            )}
             <div className="composer-add-separator" role="separator" />
             <ToolAccessMenu
               sheet={Boolean(sheet)}
@@ -702,8 +723,8 @@ export function ComposerAddMenu({
             />
           </>
         ) : (
-          // Design systems: the ones the account has (one is in use), Manage
-          // design systems and New design system ›.
+          // Design systems (R-0261, R-0267): the ones the account has (one is
+          // in use), Manage design systems and New design system ›.
           <>
             {resourceState(
               designs,
@@ -792,7 +813,8 @@ export function ComposerAddMenu({
             {policy.attachments.types.some(
               (type) => !imageAttachmentTypes.includes(type),
             )
-              ? "Upload or add files"
+              ? // Live claude.ai, 2026-10-20.
+                "Upload or add files"
               : "Add image"}
           </span>
           {unifiedChat ? (
@@ -821,7 +843,7 @@ export function ComposerAddMenu({
             if (!folderUnavailableReason) activate(onFolder);
           }}
         >
-          <AppIcon name="FolderPlus" size={20} />
+          <Anthropicon name="FolderPlus" size={20} />
           <span>Add folder</span>
         </button>
       )}
@@ -842,10 +864,13 @@ export function ComposerAddMenu({
         </button>
       )}
       <div className="composer-add-separator" role="separator" />
-      {branchRow("skills", "Skills", <AppIcon name="Scroll" size={20} />)}
-      {/* No connector yet: the root row adds one. An administrator's allowlist
-         keeps the submenu. */}
-      {connectorRows.length === 0 && !policy.connectors ? (
+      {branchRow("skills", "Skills", <Anthropicon name="Scroll" size={20} />)}
+      {/* No connector yet: the root row adds one (live claude.ai bundle,
+          2026-10-16, c752b32f8). An administrator's allowlist keeps the
+          submenu. */}
+      {connectorRows.length === 0 &&
+      knowledgeRows === 0 &&
+      !policy.connectors ? (
         <button
           role="menuitem"
           onMouseEnter={() => {
@@ -869,25 +894,29 @@ export function ComposerAddMenu({
         }}
         onClick={() => activate(() => onSettings("plugins"))}
       >
-        <AppIcon name="Plugin" size={20} />
+        <Anthropicon name="Plugin" size={20} />
         <span>Add plugins</span>
       </button>
       {unifiedChat &&
         devices.value &&
         devices.value.devices.length > 0 &&
-        branchRow("devices", "Devices", <AppIcon name="Computer" size={20} />)}
+        branchRow(
+          "devices",
+          "Devices",
+          <Anthropicon name="Computer" size={20} />,
+        )}
       {(showResearch || (!unifiedChat && policy.webSearch)) && (
         <div className="composer-add-separator" role="separator" />
       )}
-      {/* Research: hidden where the administrator turned it off; turning it on
-         turns on web search too. */}
+      {/* Research (R-0263, design R45 §4.1): hidden where the administrator
+          turned it off; turning it on turns on web search too. */}
       {showResearch && (
         <button
           className="composer-add-research"
           role="menuitemcheckbox"
           aria-checked={research}
           // Disabled with its reason on hover, and a click that works closes
-          // the menu.
+          // the menu (desktop bundle 2.31226.1: closeOnClick, disabled + tooltip).
           disabled={!researchAvailable}
           title={
             researchAvailable
@@ -901,7 +930,7 @@ export function ComposerAddMenu({
           }}
           onClick={() => activate(() => onResearch?.())}
         >
-          <AppIcon name="Research" size={20} />
+          <Anthropicon name="Research" size={20} />
           <span>Research</span>
           {research && <Check className="composer-add-check" />}
         </button>

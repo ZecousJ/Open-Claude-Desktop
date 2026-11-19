@@ -1,18 +1,6 @@
-/**
- * The About window (Claudex ▸ About on every platform): a small fixed window
- * with the app's icon, its name, a version that copies itself when clicked, and
- * Help and Get support buttons. The original includes “for Mac” in the heading,
- * a build timestamp, and a copy status.
- *
- * The page is a static document with no script of its own: the buttons are
- * links to in-page addresses (`#copy`), which the main process hears as in-page
- * navigations and acts on. Colours are claude.ai's tokens, which the original's
- * window uses too.
- */
-// The default import is read when the window opens, so tests can load the
-// page builder under plain Node.
 import electron from "electron";
 import type { BrowserWindow } from "electron";
+import { uiScheme } from "../../shared/ui-pack";
 import {
   aboutActions,
   aboutPage,
@@ -32,8 +20,7 @@ export interface AboutWindowOptions {
   translate?: (text: string) => string;
   /** A data: address for the app icon, when the file is there. */
   icon?: string;
-  /** Opens the administrator's help page; absent: Help and Get support are greyed. */
-  openHelp?: () => void;
+  openHelp: () => void;
 }
 
 declare const __CLAUDEX_BUILD_TIMESTAMP__: string | undefined;
@@ -62,7 +49,7 @@ export function showAboutWindow(options: AboutWindowOptions) {
     open.focus();
     return;
   }
-  const { BrowserWindow, clipboard, nativeTheme } = electron;
+  const { BrowserWindow, clipboard, nativeTheme, session } = electron;
   const translate = options.translate ?? ((text: string) => text);
   const version = aboutVersionText(
     options.version,
@@ -72,6 +59,26 @@ export function showAboutWindow(options: AboutWindowOptions) {
   const copiedLabel = JSON.stringify(translate("Copied version to clipboard"));
   const versionLabel = JSON.stringify(
     translate("Version {version}").replace("{version}", version),
+  );
+  const html = aboutPage({
+    name: options.name,
+    version: options.version,
+    commitHash: options.commitHash,
+    channel: options.channel,
+    buildDate: options.buildDate,
+    locale: options.locale,
+    translate,
+    icon: options.icon,
+    platform: process.platform,
+  });
+  const url = `${uiScheme}://about/index.html`;
+  const aboutSession = session.fromPartition("about-window");
+  aboutSession.protocol.handle(uiScheme, (request) =>
+    request.url === url
+      ? new Response(html, {
+          headers: { "content-type": "text/html; charset=utf-8" },
+        })
+      : new Response(null, { status: 404 }),
   );
   const mac = process.platform === "darwin";
   const win = new BrowserWindow({
@@ -87,6 +94,7 @@ export function showAboutWindow(options: AboutWindowOptions) {
     backgroundColor: nativeTheme.shouldUseDarkColors ? "#151515" : "#fcfcfb",
     ...(mac ? { titleBarStyle: "hiddenInset" as const } : {}),
     webPreferences: {
+      session: aboutSession,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -96,6 +104,7 @@ export function showAboutWindow(options: AboutWindowOptions) {
   open = win;
   win.removeMenu();
   win.on("closed", () => {
+    aboutSession.protocol.unhandle(uiScheme);
     if (open === win) open = undefined;
   });
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
@@ -120,19 +129,8 @@ export function showAboutWindow(options: AboutWindowOptions) {
       action === aboutActions.help ||
       action === aboutActions.support
     ) {
-      options.openHelp?.();
+      options.openHelp();
     }
   });
-  const html = aboutPage({
-    name: options.name,
-    version: options.version,
-    commitHash: options.commitHash,
-    channel: options.channel,
-    buildDate: options.buildDate,
-    locale: options.locale,
-    translate,
-    icon: options.icon,
-    links: !!options.openHelp,
-  });
-  void win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  void win.loadURL(url);
 }

@@ -23,9 +23,10 @@ export const simulatorPanelId = {
 } as const;
 
 /**
- * Whether the title bar has a toggle for a kind: in a Code session on the
- * desktop, on a computer that can run the kind, unless its Settings switch is
- * off.
+ * Whether the title bar has a toggle for a kind (desktop bundle 2.31226.1:
+ * the iOS Simulator and Android Emulator entries of the view menu): in a
+ * Code session on the desktop, on a computer that can run the kind, unless
+ * its Settings switch is off.
  */
 export function simulatorToggleShown({
   kind,
@@ -62,7 +63,7 @@ export function deviceText(device: SimulatorDevice) {
     : device.name;
 }
 
-/** The picker's two groups. */
+/** The picker's two groups (desktop bundle 2.31226.1: Booted, Available (will boot)). */
 export function pickerGroups(devices: readonly SimulatorDevice[]) {
   return {
     booted: devices.filter((device) => device.state === "booted"),
@@ -102,9 +103,9 @@ export interface SetupSteps {
 }
 
 /**
- * The iOS steps: Install Xcode, Select Xcode (when the command-line tools point
- * somewhere else) and Install Simulator. `xcodeSelectFixPath` is the path to
- * select, or "" when it isn't known.
+ * The iOS steps (desktop bundle 2.31226.1): Install Xcode, Select Xcode
+ * (when the command-line tools point somewhere else) and Install Simulator.
+ * `xcodeSelectFixPath` is the path to select, or "" when it isn't known.
  */
 export function iosSteps(status: IosSetupStatus): SetupSteps {
   const fix = status.xcodeSelectFixPath;
@@ -329,8 +330,8 @@ export const screenRetryMs = 2000;
 // -- The picker ----------------------------------------------------------------
 
 /**
- * The picker's second line: the OS version, and for a running emulator its
- * serial after a middle dot.
+ * The picker's second line (live claude.ai bundle, 2026-10-12): the OS
+ * version, and for a running emulator its serial after a middle dot.
  */
 export function deviceDetail(device: SimulatorDevice): string | undefined {
   if (device.kind !== "android") return device.osVersion || undefined;
@@ -342,9 +343,10 @@ export function deviceDetail(device: SimulatorDevice): string | undefined {
 const keptTail = 7;
 
 /**
- * A device name split for the picker: a name over 14 characters shrinks with an
- * ellipsis before its last characters, so the model suffix at the end stays
- * readable ("iPhone 17… Pro Max": the space before the tail goes with it).
+ * A device name split for the picker (live claude.ai bundle, 2026-10-12):
+ * a name over 14 characters shrinks with an ellipsis before its last
+ * characters, so the model suffix at the end stays readable
+ * ("iPhone 17… Pro Max": the space before the tail goes with it).
  */
 export function nameParts(name: string): { head: string; tail?: string } {
   if (name.length <= 14) return { head: name };
@@ -356,8 +358,9 @@ export function nameParts(name: string): { head: string; tail?: string } {
 // -- Zoom ----------------------------------------------------------------------
 
 /**
- * How the screen is sized: fitted to the pane, one point to one CSS pixel
- * ("physical"), or a fixed number of CSS pixels per device pixel.
+ * How the screen is sized (live claude.ai bundle, 2026-10-12): fitted to
+ * the pane, one point to one CSS pixel ("physical"), or a fixed number of
+ * CSS pixels per device pixel.
  */
 export type ZoomMode = "fit" | "physical" | number;
 export type ZoomAction = "in" | "out" | "fit" | "physical";
@@ -423,8 +426,8 @@ export function zoomOf(mode: ZoomMode, physical: number | null): number | null {
 }
 
 /**
- * The zoom shortcuts on the focused screen: ⌘- out, ⌘0 fit, ⌘1 physical, ⌘+ in;
- * Ctrl off the Mac.
+ * The zoom shortcuts on the focused screen (live claude.ai bundle,
+ * 2026-10-12): ⌘- out, ⌘0 fit, ⌘1 physical, ⌘+ in; Ctrl off the Mac.
  */
 export function zoomShortcut(
   event: {

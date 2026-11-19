@@ -5,7 +5,7 @@ import { Button, SettingsModal } from "../controls";
 import { currentLocale, t, useLocale } from "../../i18n";
 import { privacyBridge, useDataPage } from "./page-state";
 import { ArrowLeft, RotateCcw } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { LoadingRows } from "../privacy-subpage";
 
 export default function FeedbackManager({
@@ -63,10 +63,9 @@ export default function FeedbackManager({
   const items = data.page?.items;
   return (
     <div ref={backRef} className="privacy-feedback">
-      {/*
-       * Live Privacy → Your feedback: a ghost Back icon beside the title, one
-       * footnote, then Date · Rating · Reason · Surface · Chat · Withdraw.
-       */}
+      {/* Live Privacy → Your feedback (claude.ai, 2026-10-19; source
+       * cc5f29bb3 Qn/rr): a ghost Back icon beside the title, one footnote,
+       * then Date · Rating · Reason · Surface · Chat · Withdraw. */}
       <div className="privacy-feedback-head">
         <button
           ref={back}
@@ -130,7 +129,7 @@ export default function FeedbackManager({
                         aria-label={rating}
                         title={rating}
                       >
-                        <AppIcon
+                        <Anthropicon
                           name={
                             item.rating === "up" ? "ThumbsUp" : "ThumbsDown"
                           }

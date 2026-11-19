@@ -24,10 +24,7 @@ export interface ServiceGroup {
    * its catalog item names.
    */
   models?: readonly string[];
-  /**
-   * A group that only draws: never offered on the API page or chosen for a
-   * provider; its models are always in the menus, under Images.
-   */
+  /** A group that only lists GPT image models. */
   drawing?: boolean;
 }
 
@@ -88,10 +85,9 @@ function inGroup(
 }
 
 /**
- * The catalog as the menus list it: only the models of the group in use for
- * each provider. One group (or none) leaves it whole. The administrator's
- * default stays when a group in use serves it; otherwise the first shown
- * model is the default.
+ * The catalog for each provider's active group and the image generation
+ * groups. One group (or none) leaves it whole. The administrator's default
+ * stays when the catalog still includes it.
  */
 export function catalogInGroup(
   catalog: ModelCatalog | null,
@@ -119,15 +115,9 @@ export function catalogInGroup(
   return { ...catalog, defaultModel, items };
 }
 
-/**
- * The drawing group's image models in catalog order (the administrator puts
- * the default first) and the one pictures are made with: the setting while
- * the group serves it, else the first. Undefined without a drawing group.
- */
-export function imagesFor(
+function imagesFor(
   catalog: ModelCatalog | null,
   groups: readonly ServiceGroup[],
-  setting: string | undefined,
 ): ApiImages | undefined {
   const group = groups.find((item) => item.drawing);
   if (!group) return undefined;
@@ -147,10 +137,7 @@ export function imagesFor(
       .map((id) => ({ id, name: id })),
   ];
   if (!models.length) return undefined;
-  const selected = models.some((model) => model.id === setting)
-    ? setting!
-    : models[0]!.id;
-  return { groupId: group.id, models, selected };
+  return { groupId: group.id, models, selected: "auto" };
 }
 
 /**
@@ -162,7 +149,6 @@ export function apiGroupsFor(
   catalog: ModelCatalog | null,
   groups: readonly ServiceGroup[],
   choices: GroupChoices,
-  imageModel?: string,
 ): ApiGroups {
   const listOf = (group: ServiceGroup) =>
     (catalog?.items ?? [])
@@ -188,7 +174,8 @@ export function apiGroupsFor(
         !known.some((item) => item.id === provider.id) &&
         list.findIndex((other) => other.id === provider.id) === index,
     );
-  // Only the providers the account has a group of, the well-known ones first.
+  // Only the providers the account has a group of (owner, 2026-10-03: no
+  // empty Google Gemini card), the well-known ones first.
   const providers: ApiProvider[] = [...known, ...extra]
     .map((provider) => ({
       ...provider,
@@ -198,6 +185,6 @@ export function apiGroupsFor(
       selected: active.get(provider.id)?.id ?? null,
     }))
     .filter((provider) => provider.groups.length > 0);
-  const images = imagesFor(catalog, groups, imageModel);
+  const images = imagesFor(catalog, groups);
   return { groups: all, providers, ...(images ? { images } : {}) };
 }

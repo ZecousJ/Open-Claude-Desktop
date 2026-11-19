@@ -11,7 +11,11 @@ export function setRemoteNotice(id: string, notice?: RemoteControlNotice) {
   else notices.delete(id);
   listeners.forEach((listener) => listener());
 }
-/** The banner's ×: the notice goes and the same one stays away. */
+/**
+ * The banner's × : the notice goes and the same one stays away (live
+ * claude.ai bundle, 2026-10-16, c1c1ec7b9: the set of dismissed ids is
+ * written only by the dismiss callback).
+ */
 export function dismissRemoteNotice(id: string) {
   const notice = notices.get(id);
   if (notice) dismissed.set(id, JSON.stringify(notice));

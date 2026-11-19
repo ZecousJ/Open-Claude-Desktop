@@ -3,10 +3,10 @@ import type { Conversation } from "./types";
 /**
  * The words of the "a turn finished" notification, shared by the desktop's
  * banners (electron/attention-rules.ts) and the web's browser notifications
- * (src/web-notifications.ts). After the original's idle banner: the session's
- * title, else the product it belongs to ("Claude Code", "Cowork"); "Claude
- * finished a task", or "Claude is waiting for your input" when the turn stopped
- * with an error.
+ * (src/web-notifications.ts). After the original's idle banner (live
+ * claude.ai desktop bundle, 2026-10-12): the session's title, else the
+ * product it belongs to ("Claude Code", "Cowork"); "Claude finished a task",
+ * or "Claude is waiting for your input" when the turn stopped with an error.
  */
 
 /** What a banner falls back to when its session has no title. */

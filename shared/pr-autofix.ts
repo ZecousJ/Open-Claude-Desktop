@@ -1,9 +1,10 @@
 /**
- * Auto-fix pull requests: while a local session's pull request is watched, the
- * app reads it on GitHub and wakes the session with a `<ci-monitor-event>`
- * message when checks fail on the head commit or new review comments arrive.
- * The message is the original's compact wording; GitHub's text is quoted as
- * data, never as instruction.
+ * Auto-fix pull requests (live desktop bundle, 2026-10-15, AutoFixEngine in
+ * index.chunk-CBaUYJQc): while a local session's pull request is watched,
+ * the app reads it on GitHub and wakes the session with a
+ * `<ci-monitor-event>` message when checks fail on the head commit or new
+ * review comments arrive. The message is the original's compact wording;
+ * GitHub's text is quoted as data, never as instruction.
  */
 
 /** A session's switches (the CI popover's Auto-fix CI and Address comments). */
@@ -17,6 +18,7 @@ export interface PullRequestAutoFix {
 export interface AutoFixComment {
   /** The review comment's id (a number: an inline thread's comment). */
   id: number;
+  kind?: "review" | "issue";
   author: string;
   path?: string;
   line?: number;
@@ -51,12 +53,15 @@ export function autoFixMessage(input: {
   number: number;
   failingChecks: string[];
   comments: AutoFixComment[];
+  conflicts?: boolean;
 }): string | undefined {
   const { repository, number, failingChecks, comments } = input;
-  if (!failingChecks.length && !comments.length) return undefined;
+  if (!failingChecks.length && !comments.length && !input.conflicts) return undefined;
   const pr = `${repository} PR #${number}`;
   const parts: string[] = [];
   const quoted: string[] = [];
+  if (input.conflicts)
+    parts.push("GitHub reports merge conflicts with the base branch. Inspect the PR base, resolve the conflicts on the PR branch, and push the fix.");
   if (failingChecks.length) {
     const noun = failingChecks.length === 1 ? "check" : "checks";
     parts.push(
@@ -80,7 +85,7 @@ export function autoFixMessage(input: {
     );
     shown.forEach((comment, index) => {
       quoted.push(
-        `Comment ${index + 1} — comment_id=${comment.id}, inline thread`,
+        `Comment ${index + 1} — comment_id=${comment.id}, ${comment.kind === "issue" ? "PR discussion" : comment.kind === "review" ? "review summary" : "inline thread"}`,
       );
       const author = oneLine(comment.author);
       const where = comment.path
@@ -111,6 +116,7 @@ export function autoFixNews(
     headSha?: string;
     failingChecks: string[];
     comments: AutoFixComment[];
+    conflicts?: boolean;
   },
 ) {
   const seen = new Set(autoFix.delivered ?? []);
@@ -119,15 +125,20 @@ export function autoFixNews(
         (name) => !seen.has(`f:${facts.headSha ?? ""}:${name}`),
       )
     : [];
+  const commentKey = (comment: AutoFixComment) =>
+    comment.kind ? `c:${comment.kind}:${comment.id}` : `c:${comment.id}`;
   const comments =
     autoFix.ci && autoFix.comments
-      ? facts.comments.filter((comment) => !seen.has(`c:${comment.id}`))
+      ? facts.comments.filter((comment) => !seen.has(commentKey(comment)))
       : [];
+  const conflictKey = `conflict:${facts.headSha ?? ""}`;
+  const conflicts = autoFix.ci && facts.conflicts === true && !!facts.headSha && !seen.has(conflictKey);
   const keys = [
     ...failing.map((name) => `f:${facts.headSha ?? ""}:${name}`),
-    ...comments.slice(0, maxComments).map((comment) => `c:${comment.id}`),
+    ...comments.slice(0, maxComments).map(commentKey),
+    ...(conflicts ? [conflictKey] : []),
   ];
-  return { failing, comments, keys };
+  return { failing, comments, keys, ...(conflicts ? { conflicts } : {}) };
 }
 
 /** Remembers what was sent, the newest 400 keys. */

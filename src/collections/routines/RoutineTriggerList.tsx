@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Menu, type MenuEntry } from "../../ui/Menu";
 import { IconButton } from "../../ui/Controls";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { t } from "../../i18n";
 import {
   defaultGitHubEvents,
@@ -14,15 +14,16 @@ import { RoutineApiAccess } from "./RoutineApiAccess";
 import { RoutineGitHubTrigger } from "./RoutineGitHubTrigger";
 
 /**
- * The scheduled task's triggers: with its schedule alone, one row (Trigger, the
- * schedule's fields, + at its end); once another trigger is added, a card
- * headed "Trigger" with + and a row per trigger, each with its remove button. +
- * offers what the task has not got yet, each with a line saying what it does.
- * An API or GitHub event trigger makes the task a Code task (its runs are cloud
- * sessions). An API trigger's token is made when the task is saved, and while
- * it has one the trigger cannot be removed ("Delete the token to remove"). A
- * GitHub event trigger listens to the task's repository unless another is
- * picked.
+ * The scheduled task's triggers (live claude.ai, 2026-10-21, the web's New
+ * scheduled task; bundle caa9df187 j/M/A): with its schedule alone, one row
+ * (Trigger, the schedule's fields, + at its end); once another trigger is
+ * added, a card headed "Trigger" with + and a row per trigger, each with
+ * its remove button. + offers what the task has not got yet, each with a
+ * line saying what it does. An API or GitHub event trigger makes the task
+ * a Code task (its runs are cloud sessions). An API trigger's token is made
+ * when the task is saved, and while it has one the trigger cannot be
+ * removed ("Delete the token to remove"). A GitHub event trigger listens to
+ * the task's repository unless another is picked (cb31d53a7 De).
  */
 export function RoutineTriggerList({
   draft,
@@ -67,7 +68,7 @@ export function RoutineTriggerList({
           {
             label: "Schedule",
             description: "Run on a recurring cron schedule",
-            icon: <AppIcon name="Clock" size={20} />,
+            icon: <Anthropicon name="Clock" size={20} />,
             onSelect: () => set({ ...triggers, schedule: true }),
           },
         ]
@@ -75,7 +76,7 @@ export function RoutineTriggerList({
     {
       label: "GitHub event",
       description: "Run when a GitHub webhook event fires",
-      icon: <AppIcon name="GitPullRequest" size={20} />,
+      icon: <Anthropicon name="GitPullRequest" size={20} />,
       disabled: Boolean(triggers.github),
       title: triggers.github ? "Already added" : undefined,
       onSelect: () =>
@@ -94,7 +95,7 @@ export function RoutineTriggerList({
     {
       label: "API",
       description: "Run when your own code calls it",
-      icon: <AppIcon name="Code" size={20} />,
+      icon: <Anthropicon name="Code" size={20} />,
       disabled: Boolean(triggers.api),
       title: triggers.api ? "Already added" : undefined,
       onSelect: () => set({ ...triggers, api: { id: newRoutineTriggerId() } }),
@@ -114,7 +115,7 @@ export function RoutineTriggerList({
         setMenu({ left: box.right - 299, top: box.bottom + 6 });
       }}
     >
-      <AppIcon name="Add" size={16} />
+      <Anthropicon name="Add" size={16} />
     </IconButton>
   );
   const remove = (onRemove: () => void, locked = false) => (
@@ -124,7 +125,7 @@ export function RoutineTriggerList({
       disabled={busy || locked}
       onClick={onRemove}
     >
-      <AppIcon name="Trash" size={16} />
+      <Anthropicon name="Trash" size={16} />
     </IconButton>
   );
   return (
@@ -147,7 +148,7 @@ export function RoutineTriggerList({
           {triggers.schedule && (
             <div className="task-trigger-item">
               <span className="task-trigger-name">
-                <AppIcon name="Clock" size={16} />
+                <Anthropicon name="Clock" size={16} />
                 Schedule
               </span>
               <div className="task-row-fields">{schedule}</div>
@@ -201,7 +202,7 @@ export function RoutineTriggerList({
             <div className="task-trigger-item task-trigger-api">
               <div className="task-trigger-line">
                 <span className="task-trigger-name">
-                  <AppIcon name="Code" size={16} />
+                  <Anthropicon name="Code" size={16} />
                   API
                 </span>
                 {!draft.id && (

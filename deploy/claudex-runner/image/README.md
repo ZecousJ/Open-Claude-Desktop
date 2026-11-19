@@ -1,4 +1,4 @@
-# claudex-sandbox image and gVisor runtime settings
+# claudex-sandbox image and gVisor runtime settings (W-GVISOR)
 
 The root file system of every gVisor sandbox on a runner host. The runner's
 `RunscDriver` (`runner/src/sandbox/runsc.ts`) runs codex from this image,
@@ -14,19 +14,19 @@ read-only, with the sandbox's workspace and codex home bound in.
 ## Build and install
 
 ```sh
-# build machine (Docker)
-deploy/claudex-runner/image/build.sh amd64
-# runner host, as root
+# development machine (Docker; use the Docker queue on the shared machine)
+GOLOCK_WEIGHT=2 SCRATCH/golock.sh deploy/claudex-runner/image/build.sh amd64
+# runner host (the WSL2 Ubuntu 24.04 VM), as root
 install-image.sh claudex-sandbox-<version>-amd64.rootfs.tar.zst
 install -m 0644 runsc.toml /etc/claudex-runner/runsc.toml
 ```
 
-To move to a new Codex version, change
+The image is never built on DC6. To move to a new Codex version, change
 `CODEX_VERSION` and both `CODEX_SRI_*` values in the Dockerfile (take them
 from `npm view @openai/codex@<version>-linux-x64 dist.integrity` and the
 `-linux-arm64` variant) together with the desktop app's pin.
 
-## Runner host requirements
+## Runner host requirements (for W-RDEPLOY)
 
 - gVisor release `20260921` or later, installed whole (`runsc`, the
   `gvisor-bin/` directory next to it, and `containerd-shim-runsc-v1` on
@@ -37,22 +37,21 @@ from `npm view @openai/codex@<version>-linux-x64 dist.integrity` and the
   dedicated sudo rule; the sandbox itself runs as uid 1000 without
   capabilities. This path is verified end to end (real codex, memory limit,
   loop quota, snapshots).
-- Optional engine `containerd`: the runner uses
+- Optional engine `containerd` (the runner host has 2.2.1): the runner uses
   its own namespace `claudex` and only `ctr run --config`, so no CRI or CNI
   setup is needed; install `runsc.toml` for the shim. The runner user needs
   the containerd socket (for example `[grpc] gid = <claudex-runner gid>`),
-  which is equivalent to root. The runsc shim has been seen to hang after
-  `runsc create` (containerd 2.3.6, gVisor 20260921), so only switch to it
+  which is equivalent to root. In the test VM (containerd 2.3.6, gVisor
+  20260921) the runsc shim hung after `runsc create`, so only switch to it
   after `RunscDriver.check({ smoke: true })` passes on the host.
 - cgroup v2 with the memory, pids and cpu controllers (WSL2 with systemd has
   them). Sandboxes go below `/sys/fs/cgroup/claudex/`.
 - Disk quotas: the loop quota (`quota.ts`, `LoopQuota`) needs `mkfs.ext4`,
   `mount`, `umount`, `losetup` and `resize2fs` as root (or through
   `sudo -n`). On XFS with `prjquota`, `XfsProjectQuota` is lighter.
-- Snapshots: local disk by default; with S3-compatible storage (such as
-  Cloudflare R2) configured on the server, the runner gets the endpoint,
-  bucket and keys at run time. They stay in the runner process, never in a
-  sandbox or a log.
+- Snapshots: local disk by default; with Cloudflare R2 configured the
+  runner gets the endpoint, bucket and keys from the control plane at run
+  time. They stay in the runner process, never in a sandbox or a log.
 
 ## Licenses
 

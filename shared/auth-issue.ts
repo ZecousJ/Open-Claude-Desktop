@@ -1,3 +1,4 @@
+// (live claude.ai bundle, 2026-10-14, shared-7-CO8eplZ3.js)
 export type AuthIssue = "auth_error" | "auth_unavailable" | "retrying";
 
 export const authIssueCopy: Record<AuthIssue, string> = {

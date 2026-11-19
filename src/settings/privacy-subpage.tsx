@@ -3,8 +3,9 @@ import { ArrowLeft } from "../ui/glyphs";
 import { Skeleton } from "../ui/Skeleton";
 
 /**
- * A Privacy subpage: a ghost "← Privacy" button on its own 56px line, focused
- * on arrival, then the title, an optional description and the list.
+ * A Privacy subpage (live claude.ai bundle, 2026-10-12): a ghost
+ * "← Privacy" button on its own 56px line, focused on arrival, then the
+ * title, an optional description and the list.
  */
 export function PrivacySubpage({
   title,

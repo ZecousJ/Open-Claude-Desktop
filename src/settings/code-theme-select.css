@@ -18,7 +18,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.code-theme-select > button > .app-icon {
+.code-theme-select > button > .anthropicon {
   margin-right: 2px;
   color: var(--settings-muted);
 }

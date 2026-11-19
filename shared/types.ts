@@ -59,6 +59,7 @@ import type { ApiKeysAPI } from "./api-keys-api";
 import type { AnnouncementsAPI } from "./announcements-api";
 import type { AccountProfileAPI } from "./account-profile-api";
 import type { OnboardingAPI } from "./onboarding-api";
+import type { ZecousMigrationAPI } from "./zecous-migration-api";
 import type { CloudSyncAPI } from "./cloud-sync-api";
 import type {
   ChatDevicesAPI,
@@ -71,6 +72,7 @@ import type { CloudContinueAPI } from "./cloud-continue-api";
 import type { PullRequestAutoFix } from "./pr-autofix";
 import type { UsageStatsAPI } from "./usage-stats-api";
 import type { ServiceStatusAPI } from "./service-status-api";
+import type { KnowledgeAPI } from "./knowledge-api";
 import type { GitHubAPI } from "./github-api";
 import type { LinearAPI } from "./linear-api";
 import type { CloudSessionInfo, HostInfo, RepositoryRef } from "./host";
@@ -115,10 +117,14 @@ export interface ProviderRoute {
   keyId: string;
   /** The plan group: its key is the provider's own. */
   primary: boolean;
+  /** The group's own model list contains only GPT image models. */
+  drawing?: true;
   /** The models this group serves, as the gateway listed them for its key. */
   models: string[];
 }
 export interface Settings extends SettingsPreferences {
+  officialModelPreferences?: Record<string, import("./model-catalog-api").ModelSelectorPreference>;
+  officialCodeUserSettings?: import("./official-code-user-settings").OfficialCodeUserSettings;
   theme: Theme;
   sidebarWidth: number;
   name: string;
@@ -129,7 +135,7 @@ export interface Settings extends SettingsPreferences {
   sandbox: "read-only" | "workspace-write";
   /** Code's sandbox; full access is Bypass permissions (Codex "Full access"). */
   codeSandbox: CodeSandbox;
-  /** Folders where the user confirmed bypassing permissions. */
+  /** Folders where the user confirmed bypassing permissions (R-0376). */
   bypassFolders?: string[];
   autoAcceptEdits: boolean;
   codePlanMode: boolean;
@@ -141,7 +147,7 @@ export interface Settings extends SettingsPreferences {
   motion?: "system" | "reduced";
   /** Monospace family tried before the built-in stack for code and terminals. */
   codeFont?: string;
-  /** Sidebar navigation rows moved into More with Edit sidebar…. */
+  /** Sidebar navigation rows moved into More with Edit sidebar… (R-0018). */
   hiddenNavItems?: string[];
 }
 export type ChatFont = "serif" | "sans" | "system" | "dyslexia";
@@ -150,6 +156,8 @@ export type CodeSandbox =
 /** Window commands reachable from the keyboard and the application menu. */
 export type AppCommand =
   | "new-chat"
+  | "new-code-window"
+  | "new-side-chat"
   | "incognito"
   /** ⌘K: opens the search palette, or closes it when it is open. */
   | "search"
@@ -178,7 +186,7 @@ export type AppCommand =
   | "reopen-closed-session"
   /** View ▸ Terminal, Changes and Browser: the Code panes of the open session. */
   | "toggle-terminal"
-  /** Ctrl+B: the Background tasks panel. */
+  /** Ctrl+B: the Background tasks panel (live claude.ai bundle, backgroundTasks). */
   | "toggle-background"
   | "toggle-changes"
   | "toggle-browser"
@@ -236,6 +244,7 @@ export type AppCommand =
 export type EnvironmentRef =
   | { kind: "local" }
   | { kind: "ssh"; hostId: string }
+  | { kind: "wsl"; distro: string }
   /**
    * An isolated space on the cloud runner (docs/cloud-sync.md): its own
    * sandbox, workspace and Codex home; one per Chat or Cowork conversation
@@ -245,7 +254,7 @@ export type EnvironmentRef =
 
 /** Runs on the machine that holds the conversation's files (not an SSH host). */
 export const onThisMachine = (environment?: EnvironmentRef) =>
-  !environment || environment.kind !== "ssh";
+  !environment || environment.kind === "local" || environment.kind === "space";
 export interface Attachment {
   github?: import("./chat-github").ChatGitHubLink;
   id: string;
@@ -273,7 +282,8 @@ export interface GeneratedFile {
   /**
    * The file is past what a snapshot keeps (one file's limit or the turn's
    * budget): no content, no digest, `bytes` its size when known. The viewer
-   * says so instead of an error line.
+   * says so instead of an error line (live claude.ai bundle, 2026-10-13:
+   * a file's contentsOmitted state).
    */
   tooLarge?: boolean;
 }
@@ -311,6 +321,13 @@ export interface SessionPullRequest {
   title?: string;
   /** The branch it was opened from. */
   headRef?: string;
+  headRepository?: string;
+  baseRef?: string;
+  own?: boolean;
+  openedBySession?: boolean;
+  createdAt?: number;
+  dismissed?: boolean;
+  autoFix?: PullRequestAutoFix;
   state: SessionPullRequestState;
   /** When the runner last read its state (ms since the epoch). */
   checkedAt: number;
@@ -325,8 +342,15 @@ export interface SessionWorktree {
   /** The folder the session was started from. */
   origin: string;
   name: string;
+  sourceBranch?: string;
+  archivedBranchTip?: string;
+}
+export interface SessionFolderWorktree extends SessionWorktree {
+  folders: { origin: string; repository: string; cwd: string }[];
+  state?: "kept" | "deleted";
 }
 export interface Item {
+  agentThreads?: Record<string, { id: string; turns: Turn[]; backfilled?: true }>;
   display_content?: import("./message-resources").ToolDisplayContent;
   resource_links?: Omit<
     import("./message-resources").McpResourceLink,
@@ -362,12 +386,15 @@ export interface Item {
   tool?: string;
   progress?: string;
   server?: string;
+  mcpAuthRejectionUrl?: string;
   result?: any;
   error?: any;
   /** What the model said a command does, from the tool call (R7). */
   description?: string;
   /** Pages a web search returned (R5). */
   sources?: WebSource[];
+  /** The gateway supplied this fallback when the turn settled. */
+  gatewayFallback?: true;
   /** Which built-in search produced `sources`. */
   searchTool?: "web_search" | "x_search";
   /** Spans of this message that cite a page (R5). */
@@ -375,8 +402,26 @@ export interface Item {
   [key: string]: any;
 }
 export interface Turn {
+  /** Durable marker for the uncertain window around a remote first turn dispatch. */
+  remoteCodeDispatchState?: "preparing" | "attempted";
+  dispatchDeliveryId?: string;
+  importedCodeTranscript?: import("./imported-code-transcript").ImportedCodeTranscriptRow[];
+  /** The accepted browser event that owns this Cloud Code user message. */
+  officialCodeEventId?: string;
+  /** Content identity of an accepted Code event with inline images. */
+  officialCodeInputHash?: string;
+  /** The slash invocation shown in Code while `prompt` holds its expansion. */
+  officialCodeDisplayText?: string;
+  /** Byte identities for queued Web Code attachment files. */
+  officialCodeAttachmentHashes?: string[];
+  /** Stable position of an accepted Web Code queue event in its session history. */
+  officialCodeQueueSequence?: number;
+  /** Original Web queue lane on its accepted user event. */
+  officialCodeQueuePriority?: "later";
   /** Permission snapshot for an executing Code turn; later UI changes wait. */
   codePermissionMode?: import("./code-session-permissions").CodePermissionMode;
+  /** Ultracode choice captured when this Code turn started. */
+  codeUltracode?: boolean;
   capabilityTip?: {
     feature: import("./chat-suggestions").CapabilityTip;
     tier: 1 | 2;
@@ -398,14 +443,30 @@ export interface Turn {
   responseGroupId?: string;
   promptGroupId?: string;
   promptVersionId?: string;
+  officialChatMessageIds?: { user: string; assistant?: string };
   prompt: string;
+  /** Structured user quote presentation, validated against prompt; never model authority. */
+  completionQuotes?: import("./completion-quotes").CompletionQuote[];
+  skillReferences?: import("./skill-references").SkillReference[];
+  skillInvocations?: import("./skill-references").SkillInvocationIdentity[];
+  /** Identity recorded by older single-skill turns. */
+  skillInvocation?: { name: string; path: string };
+  inlineAttachmentDisplays?: import("./inline-attachment-display").InlineAttachmentDisplay[];
   attachments: Attachment[];
   items: Item[];
   status: "inProgress" | "completed" | "failed" | "interrupted";
+  /** The user explicitly stopped this turn. */
+  userStopped?: boolean;
+  sshCut?: { executionId: string; at: number; executionEnded?: true; continuationId?: string };
+  autoContinuation?: true;
+  codeHelperReportIds?: string[];
+  codeHelperWake?: true;
   error?: string;
   /** The verbatim prompt parts sent to the model, when the host provides them. */
   rawOriginals?: string[];
   sendFailed?: boolean;
+  /** The Code send failed before turn/start was attempted. */
+  undispatchedCodeSendUuid?: string;
   /**
    * Why a turn ended early when that changes what the transcript offers:
    * "length" or "tool_use_limit" hit a turn limit (Continue),
@@ -418,11 +479,18 @@ export interface Turn {
     | "conversation_length_limit"
     | "restart"
     | "usage_limit";
-  usageHold?: { resetsAt: number | null };
+  usageHold?: {
+    resetsAt: number | null;
+    window?: "five_hour";
+    providerId?: string;
+    model?: string;
+    continuationId?: string;
+  };
   /** Codex's retry progress ("2/5") while it reconnects a dropped stream. */
   reconnecting?: string;
   /** What the retried failure was ("Rate limit reached. Retrying …"). */
   reconnectCause?: import("./turn-errors").RetryCause;
+  streamRetry?: import("./turn-errors").StreamRetry;
   createdAt: number;
   /** Output tokens generated in this turn (Code status line). */
   outputTokens?: number;
@@ -432,6 +500,7 @@ export interface Turn {
   inputTokenBase?: number;
   /** A Research turn's plan, progress and report (R4). */
   research?: ResearchState;
+  researchReportRevision?: import("./research").ResearchReportRevision;
   /** A cloud Code session's start, in its first turn (shared/session-setup.ts). */
   setup?: SessionSetup;
 }
@@ -452,10 +521,10 @@ export interface ConversationForkSource {
   title: string;
 }
 /**
- * Rewind to here: the turns a rewind set aside with the thread that held them,
- * so Undo rewind can bring them back (and Redo rewind set them aside again)
- * until the next message is sent. "pending" offers Undo rewind; "forward"
- * (after an undo) offers Redo.
+ * Rewind to here (desktop bundle 2.31226.1): the turns a rewind set aside
+ * with the thread that held them, so Undo rewind can bring them back
+ * (and Redo rewind set them aside again) until the next message is sent.
+ * "pending" offers Undo rewind; "forward" (after an undo) offers Redo.
  */
 export interface ConversationRewind {
   variant: "pending" | "forward";
@@ -486,6 +555,8 @@ export interface ConversationForkRecord {
   createdAt: number;
 }
 export interface Conversation {
+  /** Per-session instructions supplied when the official composer creates it. */
+  sessionInstructions?: string;
   scheduledTaskSetup?: import("./scheduled-task-setup").ScheduledTaskSetupState;
   /** A genuine editable file paired with this idle/new Chat; no synthetic turn. */
   blankArtifact?: import("./blank-artifacts").BlankArtifact;
@@ -493,6 +564,16 @@ export interface Conversation {
   backgroundTaskSuggestions?: import("./task-backlog").BackgroundTaskSuggestion[];
   importedCliSessionId?: string;
   importedHistory?: boolean;
+  importedSessionResumePending?: boolean;
+  importedCodeSource?: "local-1p-code" | "local-1p-cowork" | "local-1p-chat" | "terminal-cli";
+  importedSessionSpace?: { id: string; name: string };
+  importedSessionRun?: {
+    runId: string;
+    recordId: string;
+    timestamp: number;
+    source: "local3PBundle" | "local1P";
+    skipped: number;
+  };
   classifySessionStates?: boolean;
   sessionState?: "blocked" | "ready_for_review" | "done";
   promptSuggestion?: { turnId: string; text: string };
@@ -500,6 +581,8 @@ export interface Conversation {
   capabilityTipChecks?: number;
   sessionAuthors?: { viewerAccountUuid: string; ownerAccountUuid: string };
   effort?: CodeEffort;
+  /** Enable Ultracode for this Code session's next turn. */
+  codeUltracode?: boolean;
   activeBranchId?: string;
   branchVisit?: number;
   savedBranches?: ConversationBranch[];
@@ -513,8 +596,15 @@ export interface Conversation {
   /** Connectors → Tool access for this conversation (shared/tool-search-mode.ts). */
   toolSearchMode?: import("./tool-search-mode").ToolSearchMode;
   projectId?: string;
+  projectOrganizationId?: string;
   cwd?: string;
+  scratchCarried?: { from: string[]; to: string; left: string[] };
+  scratchFilesLeftIn?: string;
+  envScopeId?: string;
+  startedFromEnvironmentId?: string | null;
   additionalFolders?: string[];
+  /** Folders explicitly added to this Code session without an account picker grant. */
+  codeSessionFolderGrants?: string[];
   providerId: string;
   model: string;
   /** Code session goal and the number of completed turns checked against it. */
@@ -535,6 +625,7 @@ export interface Conversation {
    * phone on (electron/remote-control/device-methods.ts).
    */
   remoteControlOff?: boolean;
+  remoteControlStarted?: true;
   /** Code permission choice for this session; account defaults remain independent. */
   codePermissionMode?: import("./code-session-permissions").CodePermissionMode;
   /** Monotonic permission revision; older acknowledgements do not replace newer events. */
@@ -553,11 +644,16 @@ export interface Conversation {
    * the session was archived or deleted.
    */
   worktree?: SessionWorktree & { state?: "kept" | "deleted" };
+  additionalWorktrees?: SessionFolderWorktree[];
+  /** Durable first-message worktree intent for a remote-created Code session. */
+  remoteCodeWorktree?: { origin: string; plan?: SessionWorktree & { commit: string } };
   sidebarRank?: number;
   archived: boolean;
   createdAt: number;
   updatedAt: number;
   turns: Turn[];
+  /** A durable accepted Web Code attachment, kept outside the active engine turn. */
+  officialCodeQueuedTurns?: (Turn & { queueState: "queued" | "dispatching" | "cancelled"; modelText?: string })[];
   /**
    * The web snapshot cut its commands' long texts (shared/conversation-slim.ts);
    * `conversationTurns` gives the full turns, and the next full "conversation"
@@ -567,10 +663,12 @@ export interface Conversation {
   usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
   /** Incognito chats live only in memory on an ephemeral Codex thread. */
   incognito?: boolean;
+  /** The conversation was started without using saved memory in its replies. */
+  memoryDisabled?: true;
   /**
-   * A scheduled task's run follows its saved permission, independently of the
-   * home's mode. New routines ask; legacy runs without a saved mode retain full
-   * access.
+   * A scheduled task's run follows its saved permission, independently of
+   * the home's mode. New routines ask; legacy runs without a saved mode
+   * retain full access (live claude.ai bundle, 2026-10-14, c97b955f1-DnH50wWB.js).
    */
   scheduledRun?: boolean;
   /**
@@ -597,11 +695,14 @@ export interface Conversation {
    * prompt chose it; without one the account's own setting applies.
    */
   senderPermission?: "default" | "auto" | "bypass";
+  chatPermissionMode?: import("./chat-permission-mode").ChatPermissionMode;
+  coworkPermissionMode?: import("./settings-extras").TaskPermission;
   scheduledPermission?: "default" | "auto" | "bypass";
   /**
-   * A task started from a prompt that came from outside Claudex (an address or
-   * an artifact's prompt link, in a quick task window): it asks before using
-   * new tools whatever the permission mode.
+   * A task started from a prompt that came from outside Claudex (an
+   * address or an artifact's prompt link, in a quick task window): it asks
+   * before using new tools whatever the permission mode (live claude.ai
+   * bundle, 2026-10-12: such a session starts in "default").
    */
   asksFirst?: boolean;
   /**
@@ -617,11 +718,15 @@ export interface Conversation {
   strictSandbox?: true;
   /** Auto-fix for the session's pull request (shared/pr-autofix.ts). */
   prAutoFix?: PullRequestAutoFix;
+  prAutoFixArm?: { branch: string; expiresAt: number };
+  prAutoFixOwnPrs?: boolean;
   /**
    * Auto-archive for this session's pull request, when Claude set it
    * (set_pr_monitor); the window keeps the person's own choice itself.
    */
   prAutoArchive?: boolean;
+  codeAutoArchiveExempt?: boolean;
+  codeLastFocusedAt?: number;
   /**
    * A cloud Code session opens a pull request after a push without asking,
    * ready for review or as a draft (the sender's settings, last message).
@@ -634,8 +739,8 @@ export interface Conversation {
   pendingSetup?: RepositoryRef[];
   pendingSetupScript?: string;
   /**
-   * Every repository of a cloud Code session with more than one, the main
-   * one first; the others are folders inside its folder. Set by the runner
+   * Repositories selected for a cloud Code session, with the main one
+   * first and any others cloned inside its folder. Set by the runner
    * when the session starts (never by a window); the runner's GitHub tools
    * act on the others by name (runner/src/github-tools.ts).
    */
@@ -665,21 +770,40 @@ export interface Conversation {
   pullRequests?: SessionPullRequest[];
   /** A reply finished while the chat was not shown, or Mark as unread. */
   unread?: boolean;
+  /** Monotonic guard for delayed local Code read acknowledgments. */
+  readStateRevision?: number;
   /** Research mode is on for this Chat (R4). */
   research?: boolean;
+  /** The knowledge bases this conversation uses (shared/knowledge-api.ts); off when empty. */
+  knowledgeBases?: string[];
   /** Where a Code conversation runs; missing means this computer (R9). */
   environment?: EnvironmentRef;
   /** Set on a conversation forked from another one. */
   forkedFrom?: ConversationForkSource;
   /** The session this session is nested under in the sidebar. */
   parentSessionId?: string;
+  nativeSideSession?: { taskId: string };
+  codeHelperParentTurnId?: string;
+  codeHelperWakeWhenDone?: true;
+  codeModelProposals?: import("./official-code-model-proposal").CodeModelProposal[];
+  cloudSideSessionSource?: {
+    requestId: string;
+    parentId: string;
+    taskId: string;
+    payloadHash: string;
+  };
+  cloudSpawnedTasks?: { taskId: string; sessionId: string; title: string; messageUuid: string }[];
+  codeCloudHelperStarts?: import("./official-code-side-session").CodeCloudHelperStart[];
   codeNewTask?: {
     id: string;
     text: string;
+    skillReferences?: import("./skill-references").SkillReference[];
     attachments: Attachment[];
     providerId: string;
     model: string;
     effort?: CodeEffort;
+    nativeInput?: { uuid: string; createdAt: number };
+    cloudTarget?: import("./official-code-side-session").CodeCloudSideSessionTarget;
   };
   /** Whether this session's nested sessions are hidden in the sidebar. */
   nestedSessionsHidden?: boolean;
@@ -696,7 +820,7 @@ export interface Conversation {
    * offered, not changed (a generated one is replaced as the work moves on).
    */
   titleSetByUser?: boolean;
-  /** A host-generated title proposal. */
+  /** A host-generated title proposal (live bundle, 2026-10-14, c1c1ec7b9). */
   titleOffer?: import("./title-offers").TitleOffer;
   titleOfferCheckedTurnId?: string;
   /** Set when the session was marked complete from its row menu. */
@@ -711,8 +835,11 @@ export interface Conversation {
   handOffs?: ConversationHandOffRecord[];
   /** The last rewind, while it can still be undone or redone. */
   rewind?: ConversationRewind;
+  /** The previous Code thread and transcript saved by Clear conversation. */
+  preClearHistory?: Pick<Conversation, "threadId" | "turns" | "usage" | "tokenUsage" | "rewind">;
 }
 export interface Project {
+  importedSessionRun?: Conversation["importedSessionRun"];
   /** Host-written receipt for safe retries of initial context creation. */
   creationReceipt?: { operationId: string; digest: string };
   /** Host-owned access; renderer updates cannot change these capabilities. */
@@ -725,6 +852,7 @@ export interface Project {
   name: string;
   description: string;
   instructions: string;
+  template?: import("./project-creation").ProjectTemplate;
   tools?: ProjectTools;
   cwd?: string;
   /**
@@ -735,7 +863,7 @@ export interface Project {
   createdAt: number;
   /** Where the project's Code conversations run; missing means this computer (R9). */
   environment?: EnvironmentRef;
-  /** Pinned projects lead the Projects list. */
+  /** Pinned projects lead the Projects list (live claude.ai: Pin / Unpin). */
   pinned?: boolean;
   icon?: string;
   color?: string;
@@ -794,6 +922,7 @@ export interface ArtifactLibraryState {
   pinned: string[];
 }
 export interface Snapshot {
+  inlineAttachmentDisplayVersion?: 1;
   artifactLibrary: ArtifactLibraryState;
   dismissedBackgroundTasks: string[];
   artifactShares: ArtifactShareInfo[];
@@ -877,10 +1006,11 @@ export interface TwoFactorChallenge {
   maskedEmail: string;
 }
 export interface AuthStatus {
+  localSetup?: true;
+  localSetupTheme?: "light" | "dark";
   serviceOrigin?: string;
-  /** False on a desktop with no service chosen yet: sign-in asks for its address. */
-  serviceConfigured?: boolean;
   account?: PublicAccount;
+  signedOutReason?: Extract<AppEvent, { type: "signed-out" }>["reason"];
   hasAccounts: boolean;
   remote?: RemoteSignInPolicy;
   /** A password was accepted and an authenticator code is awaited. */
@@ -950,8 +1080,9 @@ export interface BackgroundTerminalInfo {
   cwd: string;
 }
 /**
- * What the Changes panel compares: the branch's changes since it left a base
- * branch (`base`, else the repository's default), only what isn't committed, or
+ * What the Changes panel compares (live claude.ai bundle, 2026-10-12, the
+ * "Diff scope" menu): the branch's changes since it left a base branch
+ * (`base`, else the repository's default), only what isn't committed, or
  * one commit of the branch. `base` also picks the commits listed.
  */
 export type DiffScope =
@@ -1003,6 +1134,7 @@ export interface TerminalSessionInfo {
   /** The shell it runs, when chosen from this computer's (Choose shell). */
   shell?: string;
   cwd: string;
+  size: { rows: number; cols: number };
   running: boolean;
   /**
    * Whether a command is running in the tab, read from its shell's prompt
@@ -1013,6 +1145,7 @@ export interface TerminalSessionInfo {
   sequence: number;
 }
 export type AppEvent =
+  | { type: "local-setup-theme"; theme: "light" | "dark" }
   | {
       type: "simulator-frame";
       kind: import("./simulators").SimulatorKind;
@@ -1025,8 +1158,10 @@ export type AppEvent =
       event: import("./remote-devices").DeviceAppEvent;
     }
   | { type: "devices-changed" }
+  | { type: "remote-code-changed"; conversationId?: string }
   /** Claude opened a page in a Code session's Browser: show the panel. */
   | { type: "browser-reveal"; conversationId: string }
+  | { type: "code-files-written"; conversationId: string; paths: string[] }
   | {
       type: "terminal-output";
       id: string;
@@ -1050,7 +1185,9 @@ export type AppEvent =
     }
   | { type: "terminal-reset" }
   | { type: "artifact-shares"; shares: ArtifactShareInfo[] }
-  | { type: "conversation"; conversation: Conversation }
+  | { type: "conversation"; conversation: Conversation; settledCodeTurnId?: string; codeAutoArchived?: true }
+  | { type: "code-read-state"; conversationId: string; unread: boolean; readStateRevision: number }
+  | { type: "cowork-session-deleted"; conversationId: string }
   /**
    * One turn of a conversation the window already has changed (reserved for
    * the web, where sending the whole conversation for every change costs too
@@ -1154,6 +1291,8 @@ export type AppEvent =
   | { type: "office-addin-files"; files: OfficeConnectedFile[] }
   /** A Code conversation's Browser panel changed (R8; the full state is `BrowserState`). */
   | { type: "browser"; state: BrowserEventState }
+  | { type: "official-preview-event"; conversationId: string; previewId: string; windowId: number; event: string; args: unknown[] }
+  | { type: "official-preview-link-confirm"; previewId: string; windowId: number; requestId: string; url: string }
   | WindowVisibilityEvent
   | { type: "layout-command"; command: import("./window-layout").LayoutCommand }
   | ConversationWindowClosedEvent
@@ -1169,7 +1308,7 @@ export type AppEvent =
   | WorkspaceTrustEvent
   | SharingEvent
   | StorageCleanupEvent
-  /** Claudex's own update. */
+  /** Claudex's own update (package OTA). */
   | AppUpdateEvent;
 /**
  * What every Browser panel state carries. Package R8-A defines the whole
@@ -1183,13 +1322,13 @@ export interface BrowserEventState {
 }
 /**
  * Calls every window needs (accounts, snapshot, settings, conversations,
- * projects, window controls). New calls go in a domain's
+ * projects, window controls). Frozen after WP0b: new calls go in a domain's
  * `shared/<domain>-api.ts` interface, which DesktopAPI extends below.
  */
 export interface CoreDesktopAPI {
   listResumableSessions: import("./resume-sessions").ResumeSessionsAPI["listResumableSessions"];
   probeImportableCliSessions(): Promise<{ count: number }>;
-  importAllCliSessions(): Promise<{ imported: number; skipped: number }>;
+  importAllCliSessions(options?: { strict?: boolean }): Promise<{ imported: number; skipped: number }>;
   previewResumeSession: import("./resume-sessions").ResumeSessionsAPI["previewResumeSession"];
   resumeSession: import("./resume-sessions").ResumeSessionsAPI["resumeSession"];
   /** Read-only stored history search, optionally project-scoped, including unloaded transcript text. */
@@ -1198,6 +1337,7 @@ export interface CoreDesktopAPI {
     options?: import("./history-search").HistorySearchOptions,
   ): Promise<{ results: import("./history-search").HistorySearchHit[] }>;
   authStatus(): Promise<AuthStatus>;
+  setupLocalProvider(input: { baseUrl: string; apiKey: string; model: string; protocol: Protocol }): Promise<AuthStatus>;
   registerAccount(
     email: string,
     password: string,
@@ -1218,6 +1358,9 @@ export interface CoreDesktopAPI {
   copyText(text: string, html?: string): Promise<void>;
   copyImage(dataUrl: string): Promise<void>;
   /** Capture the focused app surface for artifact previews. */
+  referenceFonts(): Promise<
+    { family: string; style: "normal" | "italic"; data: Uint8Array }[]
+  >;
   snapshot(): Promise<Snapshot>;
   /** A conversation's full turns and saved branches (for a `slim` one). */
   conversationTurns(
@@ -1225,18 +1368,24 @@ export interface CoreDesktopAPI {
   ): Promise<Pick<Conversation, "turns" | "savedBranches">>;
   saveSettings(settings: Settings): Promise<Settings>;
   send(input: {
+    /** Instructions for a new session; follow-ups retain the saved value. */
+    sessionInstructions?: string;
+    inlineAttachmentDisplays?: import("./inline-attachment-display").InlineAttachmentDisplay[];
     scheduledTaskSetup?: import("./scheduled-task-setup").ScheduledTaskSetupIntent;
     blankArtifactRevision?: import("./blank-artifacts").BlankArtifactRevision;
     /** New Code session output intent, without altering its visible prompt. */
     artifactOutputKind?: import("./artifact-output").ArtifactOutputKind;
     codePermissionMode?: import("./code-session-permissions").CodePermissionMode;
+    codeUltracode?: true;
     /** A computer's Chat permission mode, sent with a prompt for the cloud. */
     taskPermission?: "default" | "auto" | "bypass";
+    coworkPermissionMode?: import("./settings-extras").TaskPermission;
     effort?: CodeEffort;
     thinkingSummariesWanted?: boolean;
     thinkingMode?: "standard" | "extended";
     conversationId?: string;
     text: string;
+    skillReferences?: import("./skill-references").SkillReference[];
     mode: Mode;
     webSearch?: boolean;
     connectorOverrides?: Record<string, boolean>;
@@ -1244,6 +1393,8 @@ export interface CoreDesktopAPI {
     toolSearchMode?: import("./tool-search-mode").ToolSearchMode;
     /** Start a new Chat in Research mode (R4). */
     research?: boolean;
+    /** A new conversation's knowledge bases (shared/knowledge-api.ts). */
+    knowledgeBases?: string[];
     projectId?: string;
     cwd?: string;
     additionalFolders?: string[];
@@ -1251,6 +1402,8 @@ export interface CoreDesktopAPI {
     providerId: string;
     model: string;
     incognito?: boolean;
+    /** Applies when starting Chat or Cowork. Follow-ups use its saved setting. */
+    memoryDisabled?: true;
     /** Where a new Code conversation runs (R9); ignored for existing ones. */
     environment?: EnvironmentRef;
     /**
@@ -1283,6 +1436,13 @@ export interface CoreDesktopAPI {
     text: string,
     providerId: string,
     model: string,
+    options?: {
+      attachments?: Pick<Attachment, "id">[];
+      inlineAttachmentDisplays?: import("./inline-attachment-display").InlineAttachmentDisplay[];
+      completionQuotes?: import("./completion-quotes").CompletionQuote[];
+      skillReferences?: import("./skill-references").SkillReference[];
+      effort?: CodeEffort;
+    },
   ): Promise<Conversation>;
   selectPromptVersion(
     conversationId: string,
@@ -1294,6 +1454,12 @@ export interface CoreDesktopAPI {
     turnId: string,
     providerId: string,
     model: string,
+    options?: {
+      attachments?: Pick<Attachment, "id">[];
+      inlineAttachmentDisplays?: import("./inline-attachment-display").InlineAttachmentDisplay[];
+      completionQuotes?: import("./completion-quotes").CompletionQuote[];
+      effort?: CodeEffort;
+    },
   ): Promise<Conversation>;
   discardTurn(conversationId: string, turnId: string): Promise<Conversation>;
   selectReplyVersion(
@@ -1302,6 +1468,7 @@ export interface CoreDesktopAPI {
     versionTurnId: string,
   ): Promise<Conversation>;
   interrupt(id: string): Promise<void>;
+  interrupt(id: string, expected: import("./interrupt-target").InterruptTarget): Promise<import("./interrupt-target").InterruptTargetResult>;
   updateConversation(
     id: string,
     patch: {
@@ -1316,6 +1483,8 @@ export interface CoreDesktopAPI {
       archived?: boolean;
       projectId?: string | null;
       unread?: boolean;
+      /** The knowledge bases the conversation uses; [] turns them off. */
+      knowledgeBases?: string[];
       connectorOverrides?: Record<string, boolean>;
       connectorToolOverrides?: import("./conversation-tools").ConversationToolOverrides;
       toolSearchMode?: import("./tool-search-mode").ToolSearchMode;
@@ -1390,6 +1559,7 @@ export interface CoreDesktopAPI {
   searchProjectFiles(
     id: string,
     query: string,
+    options?: { strict?: boolean },
   ): Promise<import("./project-files").ProjectSearchResult>;
   /** The editors Open in ▸ can use on this computer (shared/editors.ts). */
   installedEditors(): Promise<EditorInfo[]>;
@@ -1486,17 +1656,21 @@ export interface DesktopAPI
     ApiKeysAPI,
     AnnouncementsAPI,
     OnboardingAPI,
+    ZecousMigrationAPI,
     CloudSyncAPI,
     ChatDevicesAPI,
     CloudEnvironmentsAPI,
     CloudContinueAPI,
     UsageStatsAPI,
     ServiceStatusAPI,
+    KnowledgeAPI,
     SimulatorsAPI,
     AccountProfileAPI,
     DispatchAPI {}
 export interface ArtifactShareInput {
   identity: string;
+  /** An exact saved version when the source has its own revision IDs. */
+  versionId?: string;
   title: string;
   language: string;
   content: string;

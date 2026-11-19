@@ -17,6 +17,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 
@@ -28,6 +29,10 @@ const outdir = path.resolve(
   at >= 0 && args[at + 1] ? args[at + 1] : "dist-runner",
 );
 fs.mkdirSync(outdir, { recursive: true });
+await build({
+  absWorkingDir: root, entryPoints: ["server/official-usercontent-main.ts"], bundle: true,
+  platform: "node", target: "node22", format: "esm", outfile: path.join(outdir, "official-usercontent.mjs"),
+});
 
 const shim = path.join(root, "runner/src/electron-shim.ts");
 /** Maps every import of "electron" (static or dynamic) to the shim. */
@@ -62,6 +67,19 @@ await build({
   plugins: [electronShim],
   sourcemap: true,
   logLevel: "warning",
+});
+const verifier = path.join(outdir, "verify-runner-artifact.mjs");
+await build({
+  absWorkingDir: root,
+  entryPoints: ["scripts/verify-runner-artifact.mjs"],
+  bundle: true,
+  platform: "node",
+  target: "node22",
+  format: "esm",
+  outfile: verifier,
+});
+execFileSync(process.execPath, [verifier, path.join(outdir, "runner.mjs")], {
+  stdio: "inherit",
 });
 
 await build({

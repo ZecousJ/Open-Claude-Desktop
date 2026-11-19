@@ -9,7 +9,7 @@ import {
   type ModelUsage,
 } from "./usageStats";
 
-/** Model colours by rank, darkest for the largest share. */
+/** Model colours by rank, darkest for the largest share (R-0328). */
 const shades = ["#5781d8", "#7195de", "#8dabe5", "#aabfea", "#c6d5f2"];
 const shade = (rank: number) => shades[Math.min(rank, shades.length - 1)];
 
@@ -23,7 +23,7 @@ function axis(max: number) {
   return { top: step * 3, step };
 }
 
-/** The legend lists this many models; the rest sit behind "Show N more". */
+/** The legend lists this many models; the rest sit behind "Show N more" (desktop bundle 2.31226.1). */
 const LEGEND_ROWS = 6;
 
 /** Up to ten evenly spaced day labels, always including both ends. */
@@ -59,8 +59,8 @@ export function dayRows(day: DayUsage, models: ModelUsage[]): DayRow[] {
 }
 
 /**
- * The hovered day: its date, then a dot and "model: tokens" per model, above
- * the bar in the chrome tooltip's style.
+ * The hovered day (desktop bundle 2.31226.1): its date, then a dot and
+ * "model: tokens" per model, above the bar in the chrome tooltip's style.
  */
 function DayTooltip({
   anchor,

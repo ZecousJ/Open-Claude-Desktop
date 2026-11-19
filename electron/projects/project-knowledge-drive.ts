@@ -4,6 +4,7 @@ import type { AppContext } from "../app/app-context";
 import type { KnowledgeDriveFile } from "../../shared/collections-api";
 import { connectorAllowed } from "../../shared/client-policy-rules";
 import { withArtifactConnector } from "../artifacts/artifact-tools";
+import { savedConnectorHeaders } from "../connectors/connector-clients";
 import {
   KnowledgeSourceError,
   knowledgeFailureState,
@@ -81,8 +82,8 @@ function argument(tool: DriveTool, names: string[]) {
   return key;
 }
 
-// Drive search, fetch and refresh use the configured connector, not Google
-// sign-in.
+// Drive search, fetch and refresh use the configured connector, not Google sign-in
+// (live claude.ai bundle, 2026-10-14, cb9e2fe50-C-qZWYxy.js, ca12e49f2-CABp0rxn.js).
 export class ProjectKnowledgeDrive {
   private syncing = new Set<string>();
   constructor(
@@ -149,6 +150,11 @@ export class ProjectKnowledgeDrive {
           {
             fetch: request,
             token: this.context.connectors?.getToken?.(server),
+            headers: savedConnectorHeaders(
+              this.context.store.root,
+              server,
+              config.url,
+            ),
             remoteOnly: Boolean(this.context.connectors),
           },
         ),
@@ -223,22 +229,16 @@ export class ProjectKnowledgeDrive {
     store.folder(projectId);
     z.array(knowledgeDriveFileInput).min(1).max(200).parse(files);
     const loaded = await this.read(server, files);
-    store.add(projectId, loaded);
-    return store.setSources(
-      projectId,
-      Object.fromEntries(
-        files.map((file, index) => [
-          loaded[index].name,
-          {
-            ...file,
-            provider: "gdrive" as const,
-            server,
-            status: "idle" as const,
-            lastSyncedAt: Date.now(),
-          },
-        ]),
-      ),
-    );
+    return store.add(projectId, loaded.map((file, index) => ({
+      ...file,
+      source: {
+        ...files[index],
+        provider: "gdrive",
+        server,
+        status: "idle",
+        lastSyncedAt: Date.now(),
+      },
+    })));
   }
 
   async sync(store: ProjectKnowledgeStore, projectId: string, name: string) {
@@ -253,18 +253,17 @@ export class ProjectKnowledgeDrive {
       const loaded = await this.read(source.server, [
         knowledgeDriveFileInput.parse(source),
       ]);
-      const current = store
-        .list(projectId)
-        .files.find((file) => file.name === name)?.source;
-      if (JSON.stringify(current) !== JSON.stringify(source))
-        return store.list(projectId);
-      store.add(projectId, [{ ...loaded[0], name }]);
-      return store.setSource(projectId, name, {
-        ...source,
-        status: "idle",
-        failure: undefined,
-        lastSyncedAt: Date.now(),
-      });
+      return await store.add(projectId, [{
+        ...loaded[0],
+        name,
+        expectedSource: source,
+        source: {
+          ...source,
+          status: "idle",
+          failure: undefined,
+          lastSyncedAt: Date.now(),
+        },
+      }]);
     } catch (error) {
       const current = store
         .list(projectId)

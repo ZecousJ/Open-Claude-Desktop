@@ -1,10 +1,11 @@
 /*
- * Tooltip timing, from the original's TooltipGroup: a tooltip shows after the
- * pointer rests 300ms on its trigger and stays 200ms after it leaves. Within a
- * group only one tooltip shows; while one is open, or for 400ms after it
- * closed, the next trigger's tooltip shows at once and without motion, and the
- * one before goes the same way. Moving along a toolbar therefore reads as one
- * tooltip following the pointer.
+ * Tooltip timing, from the original's TooltipGroup (desktop bundle
+ * 2.31226.1, Base UI's tooltip provider): a tooltip shows after the
+ * pointer rests 300ms on its trigger and stays 200ms after it leaves.
+ * Within a group only one tooltip shows; while one is open, or for 400ms
+ * after it closed, the next trigger's tooltip shows at once and without
+ * motion, and the one before goes the same way. Moving along a toolbar
+ * therefore reads as one tooltip following the pointer.
  */
 
 export const TOOLTIP_DELAY_MS = 300;

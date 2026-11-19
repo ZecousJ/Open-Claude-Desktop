@@ -24,7 +24,7 @@ export function projectMoveMessage(
   );
 }
 
-/** Partial successes are kept. */
+/** Partial successes are kept (live claude.ai bundle, 2026-10-14, shared-9-DeK5IbyG). */
 export async function moveProjectChats(
   app: Pick<
     AppController,

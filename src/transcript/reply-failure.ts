@@ -6,11 +6,12 @@ import {
 
 /**
  * A failed reply's reason in one plain sentence. The engine's own text
- * ("unexpected status 502 Bad Gateway: … url: http://127.0.0.1:…") is for logs:
- * the transcript says what happened and what to do, never the address or the
- * JSON. Where the original has a sentence for the cause it is used, with this
- * app's name: overloaded, "Claude is busy right now. Try again in a moment."; a
- * 5xx, "Claude is temporarily unavailable. Try again in a moment."; a lost
+ * ("unexpected status 502 Bad Gateway: … url: http://127.0.0.1:…") is for
+ * logs: the transcript says what happened and what to do, never the address
+ * or the JSON. Where the original has a sentence for the cause it is used,
+ * with this app's name (live claude.ai bundle, 2026-10-12, a failed reply's
+ * reasons): overloaded, "Claude is busy right now. Try again in a moment.";
+ * a 5xx, "Claude is temporarily unavailable. Try again in a moment."; a lost
  * connection or a stream that stopped early, "Claude couldn’t finish this
  * response. Try again in a moment."; anything else, "This response didn’t
  * load." The rate-limit and sign-in sentences have no counterpart there.
@@ -18,6 +19,7 @@ import {
 export function failureMessage(error: string | undefined): string {
   if (isStorageFullError(error)) return storageFullMessage;
   const text = (error ?? "").toLowerCase();
+  // (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js)
   if (/\bpolicy_deny\b/.test(text))
     return "This message was blocked by your organization’s policy.";
   if (
@@ -28,20 +30,29 @@ export function failureMessage(error: string | undefined): string {
     return "This response was blocked by content filtering. Rephrase your message or try again.";
   if (/\b529\b|overloaded/.test(text))
     return "Claudex is busy right now. Try again in a moment.";
+  // A terminal upstream stream failure is an interrupted reply, not a
+  // generic service outage. Likewise preserve explicit upstream rate limits.
+  if (/\b429\b|rate[ _-]?limit|too many requests/.test(text))
+    return "The service is busy right now. Wait a moment, then try again.";
+  if (
+    /stream (?:disconnected|closed|ended|was interrupted)|upstream response (?:was )?interrupted/.test(
+      text,
+    )
+  )
+    return "Claudex couldn’t finish this response. Try again in a moment.";
   if (
     /\b(502|503|504)\b|upstream|temporarily unavailable|bad gateway/.test(text)
   )
     return "Claudex is temporarily unavailable. Try again in a moment.";
-  if (/\b429\b|rate.?limit|too many requests/.test(text))
-    return "The service is busy right now. Wait a moment, then try again.";
   if (
     /timed? ?out|timeout|deadline|econn|enotfound|network|fetch failed|socket|offline|unreachable|stream (?:disconnected|closed|ended)|incomplete/.test(
       text,
     )
   )
     return "Claudex couldn’t finish this response. Try again in a moment.";
-  // An expired sign-in is said once, by the banner over the composer; the reply
-  // itself reads as any other that didn’t load.
+  // An expired sign-in is said once, by the banner over the composer; the
+  // reply itself reads as any other that didn’t load (live claude.ai bundle,
+  // 2026-10-16, shared-11 NH/HK).
   if (turnAuthIssue(error)) return "This response didn’t load.";
   if (
     /\b(401|403)\b|unauthori[sz]ed|forbidden|invalid api key|sign in/.test(text)

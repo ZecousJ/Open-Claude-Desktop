@@ -85,7 +85,9 @@ export function useConnectors() {
 
 /**
  * An SSH session's host: its name and connection, as the Environment row's
- * trailing status shows it.
+ * trailing status shows it (live claude.ai bundle, 2026-10-14: Connecting,
+ * Reconnecting, Disconnected in the danger colour, else Not connected;
+ * nothing once ready).
  */
 export function useSshHost(hostId: string | undefined) {
   const [label, setLabel] = useState<string>();

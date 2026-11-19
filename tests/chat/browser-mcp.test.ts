@@ -21,7 +21,8 @@ import {
   browserMcpServerName,
   browserMcpTokenEnv,
 } from "../../electron/browser/mcp-tools";
-import { browserToolsExtension } from "../../electron/browser/browser-tools-registration";
+import { SshLauncher } from "../../electron/ssh/ssh-launcher";
+import { browserToolsExtension, browserMcpPort, registerBrowserTools } from "../../electron/browser/browser-tools-registration";
 import { pastesClipboard } from "../../electron/browser/browser-tool-helpers";
 import { untrustedNotice } from "../../electron/browser/browser-tool-questions";
 import { SitePermissions } from "../../electron/browser/site-permissions";
@@ -710,9 +711,11 @@ class FakeDriver {
 
 class FakeHost implements BrowserToolsHost {
   tabs: BrowserTabState[] = [this.tab("tab-1", "")];
+  privateTabs = new Set<string>();
   active = "tab-1";
   driverFake = new FakeDriver();
   navigations: string[] = [];
+  historyActions: string[] = [];
   viewport: import("../../shared/browser").BrowserViewport = "desktop";
   next = 2;
   tab(id: string, url: string): BrowserTabState {
@@ -740,6 +743,9 @@ class FakeHost implements BrowserToolsHost {
       version: 1,
     };
   }
+  agentPageAvailable(_id: string, tabId = this.active) {
+    return !this.privateTabs.has(tabId);
+  }
   navigate(_c: string, input: string, tabId?: string) {
     const tab = this.tabs.find((t) => t.id === (tabId ?? this.active))!;
     this.navigations.push(input);
@@ -762,9 +768,15 @@ class FakeHost implements BrowserToolsHost {
   closeTab(_c: string, tabId: string) {
     this.tabs = this.tabs.filter((t) => t.id !== tabId);
   }
-  back() {}
-  forward() {}
-  reload() {}
+  back() {
+    this.historyActions.push("back");
+  }
+  forward() {
+    this.historyActions.push("forward");
+  }
+  reload() {
+    this.historyActions.push("reload");
+  }
   async setViewport(
     _c: string,
     viewport: import("../../shared/browser").BrowserViewport,
@@ -799,6 +811,9 @@ class FakeDevServers {
   }
   launchConfig() {
     return { path: "/repo/.claude/launch.json" };
+  }
+  configurations() {
+    return [];
   }
   async detect() {
     return [];
@@ -852,11 +867,13 @@ function toolsFixture(
     alwaysAllow?: boolean;
     mode?: string;
     siteRisk?: "financial" | "high-risk" | "blocked";
+    ssh?: boolean;
   } = {},
 ) {
   const host = new FakeHost();
   const dev = new FakeDevServers();
   const revealed: string[] = [];
+  const devServerLookups: string[] = [];
   let sites = [...(options.sites ?? [])];
   const policy = { ...openPolicy.browser!, ...(options.policy ?? {}) };
   const permissions = new SitePermissions({
@@ -866,10 +883,14 @@ function toolsFixture(
   });
   const service: BrowserToolsService = {
     host,
-    devServers: () => dev as any,
+    devServers: () => {
+      devServerLookups.push("local");
+      return dev;
+    },
   };
   const deps: BrowserToolsDeps = {
     siteRisk: async () => options.siteRisk,
+    publicHostsOnly: (id) => options.ssh === true && id === "conv-1",
     service: async () => service,
     permissions,
     policy: () => policy,
@@ -902,6 +923,7 @@ function toolsFixture(
     tools,
     host,
     dev,
+    devServerLookups,
     run,
     questions,
     permissions,
@@ -1193,13 +1215,133 @@ test("preview_start asks before starting a command and opens the page", async ()
   assert.equal(text(logs), "error: something failed");
 });
 
-test("dev servers: scheduled tasks and the policy refuse, and the tools aren't listed when off", async () => {
+test("SSH Browser tools offer public navigation and URL previews", async () => {
+  const f = toolsFixture({ ssh: true });
+  const sshTools = f.tools.tools("conv-1");
+  const previewTools = sshTools.filter((entry) =>
+    entry.name.startsWith("preview_"),
+  );
+  assert.deepEqual(
+    previewTools.map((entry) => entry.name),
+    ["preview_start"],
+  );
+  assert.deepEqual(previewTools[0].inputSchema.required, ["url"]);
+  assert.deepEqual(Object.keys(previewTools[0].inputSchema.properties ?? {}), [
+    "url",
+  ]);
+  assert.match(f.tools.instructions("conv-1"), /public HTTP or HTTPS URL/);
+  assert.ok(
+    f.tools
+      .tools("other-conversation")
+      .some((entry) => entry.name === "preview_list"),
+  );
+
+  const opened = await f.run("navigate", { url: "https://example.com" });
+  assert.equal(opened.isError, undefined, text(opened));
+  assert.match(text(await f.run("read_page")), /Sign in/);
+  const preview = await f.run("preview_start", {
+    url: "https://example.com/app",
+  });
+  assert.equal(preview.isError, undefined, text(preview));
+  assert.deepEqual(f.host.navigations, [
+    "https://example.com/",
+    "https://example.com/app",
+  ]);
+  assert.deepEqual(f.revealed, ["conv-1", "conv-1"]);
+  assert.equal(f.questions.length, 1);
+  assert.deepEqual(f.devServerLookups, []);
+});
+
+test("SSH Browser tools reject local addresses and named dev server calls", async () => {
+  const f = toolsFixture({ ssh: true });
+  for (const url of [
+    "localhost:5173",
+    "http://192.168.1.1",
+    "file:///repo/index.html",
+  ]) {
+    const result = await f.run("navigate", { url });
+    assert.equal(result.isError, true, text(result));
+  }
+  for (const [name, args] of [
+    ["tab_new", { url: "http://127.0.0.1:5173" }],
+    ["preview_start", { url: "http://localhost:5173" }],
+    ["preview_start", { url: "file:///repo/index.html" }],
+    ["preview_start", { name: "web" }],
+    ["preview_list", {}],
+    ["preview_stop", { name: "web" }],
+    ["preview_logs", { name: "web" }],
+  ] as const) {
+    const result = await f.run(name, args);
+    assert.equal(result.isError, true, text(result));
+  }
+  assert.deepEqual(f.host.navigations, []);
+  assert.deepEqual(f.devServerLookups, []);
+  assert.deepEqual(f.questions, []);
+});
+
+test("SSH Browser tools leave manually opened private tabs alone", async () => {
+  const f = toolsFixture({ ssh: true });
+  f.host.tabs[0] = f.host.tab("tab-1", "http://localhost:5173");
+  assert.equal(text(await f.run("tabs_list")), "No tabs.");
+  assert.equal((await f.run("get_text")).isError, true);
+  assert.equal((await f.run("navigate", { url: "reload" })).isError, true);
+  assert.equal((await f.run("navigate", { url: "back" })).isError, true);
+  assert.equal((await f.run("tab_close", { tabId: "tab-1" })).isError, true);
+  assert.deepEqual(f.host.historyActions, []);
+  assert.deepEqual(f.host.driverFake.sent, []);
+
+  f.host.privateTabs.add("tab-1");
+  f.host.tabs[0].url = "https://example.com/";
+  assert.equal(text(await f.run("tabs_list")), "No tabs.");
+  assert.equal((await f.run("console")).isError, true);
+  assert.equal((await f.run("resize", { viewport: "mobile" })).isError, true);
+  assert.equal(f.host.viewport, "desktop");
+
+  const preview = await f.run("preview_start", {
+    url: "https://example.com/app",
+  });
+  assert.equal(preview.isError, undefined, text(preview));
+  assert.deepEqual(
+    f.host.tabs.map((tab) => tab.url),
+    ["https://example.com/", "https://example.com/app"],
+  );
+  assert.match(text(await f.run("tabs_list")), /^tab-2 \(shown\)/);
+});
+
+test("SSH Browser tools recheck the active page after an approval", async () => {
+  const f = toolsFixture({ ssh: true });
+  f.host.tabs[0] = f.host.tab("tab-1", "https://example.com/");
+  f.answer(() => {
+    f.host.tabs[0].url = "http://localhost:5173";
+    return { action: "accept" };
+  });
+  const read = await f.run("get_text");
+  assert.equal(read.isError, true);
+  assert.doesNotMatch(text(read), /Ignore previous instructions/);
+  assert.deepEqual(f.host.driverFake.sent, []);
+});
+
+test("scheduled tasks and policy can block starting dev servers by name", async () => {
   const scheduled = toolsFixture({ unattended: true });
   const r = await scheduled.run("preview_start", { name: "web" });
   assert.match(text(r), /can't be started from scheduled tasks/);
   assert.deepEqual(scheduled.dev.started, []);
   const off = toolsFixture({ policy: { devServers: false } });
-  assert.ok(!off.tools.tools().some((t) => t.name.startsWith("preview_")));
+  assert.deepEqual(
+    off.tools
+      .tools()
+      .filter((t) => t.name.startsWith("preview_"))
+      .map((t) => t.name),
+    ["preview_start"],
+  );
+  assert.match(
+    text(await off.run("preview_start", { name: "web" })),
+    /aren't available/,
+  );
+  const opened = await off.run("preview_start", {
+    url: "http://localhost:5173",
+  });
+  assert.equal(opened.isError, undefined, text(opened));
   assert.match(text(await off.run("preview_list")), /aren't available/);
 });
 
@@ -1415,4 +1557,120 @@ test("an accepted question without a choice allows once", async () => {
     "allow",
   );
   assert.equal(f.questions[0].requestedSchema.required, undefined);
+});
+
+test("WSL Code uses its guest relay and per-thread Browser authorization", async () => {
+  const forwarded: string[] = [];
+  const extension = browserToolsExtension({
+    server: { url: (id) => `http://127.0.0.1:4000/mcp/${id}` },
+    token: TOKEN,
+    wslUrl: (id, url) => {
+      forwarded.push(url);
+      return `http://127.0.0.1:5000/mcp/${id}`;
+    },
+  });
+  const ctx = turnContext({
+    conversation: {
+      id: "wsl",
+      mode: "code",
+      environment: { kind: "wsl", distro: "Ubuntu" },
+    },
+  });
+  const offered = extension.builtinMcpServers!(ctx);
+  assert.deepEqual(forwarded, ["http://127.0.0.1:4000/mcp/wsl"]);
+  const server = offered![0];
+  assert.equal(server.url, "http://127.0.0.1:5000/mcp/wsl");
+  assert.deepEqual(server.httpHeaders, {
+    Authorization: `Bearer ${TOKEN}`,
+    Host: "127.0.0.1:4000",
+  });
+  assert.equal(server.bearerTokenEnvVar, undefined);
+});
+
+
+test("SSH Code uses its own Browser forward with the account and original Host headers", () => {
+  const extension = browserToolsExtension({
+    server: { url: (id) => `http://127.0.0.1:4000/mcp/${id}` },
+    token: TOKEN,
+    sshUrl: (id) => `http://127.0.0.1:5001/mcp/${id}`,
+  });
+  const ctx = turnContext({
+    conversation: { id: "ssh", mode: "code", environment: { kind: "ssh", hostId: "host-a" } },
+    settings: { browserAutoVerify: true },
+  });
+  assert.deepEqual(extension.builtinMcpServers!(ctx)?.[0], {
+    name: browserMcpServerName,
+    url: "http://127.0.0.1:5001/mcp/ssh",
+    httpHeaders: { Authorization: `Bearer ${TOKEN}`, Host: "127.0.0.1:4000" },
+    startupTimeoutSec: 10,
+    toolTimeoutSec: 660,
+    defaultToolsApprovalMode: "approve",
+  });
+  assert.match(extension.developerInstructions!(ctx)!, /public/i);
+  assert.equal(extension.turnContext!(ctx), undefined);
+  const disconnected = browserToolsExtension({
+    server: { url: () => "http://127.0.0.1:4000/mcp/ssh" },
+    token: TOKEN,
+    sshUrl: () => undefined,
+  });
+  assert.equal(disconnected.builtinMcpServers!(ctx), undefined);
+  const denied = browserToolsExtension({
+    server: { url: () => "http://127.0.0.1:4000/mcp/ssh" },
+    token: TOKEN,
+    sshUrl: () => "http://127.0.0.1:5001/mcp/ssh",
+    executionOwner: () => false,
+  });
+  assert.equal(denied.builtinMcpServers!(ctx), undefined);
+});
+
+
+test("SSH Browser capabilities retire with their issuing host binding and account", async () => {
+  let activate!: () => void;
+  let deactivate!: () => Promise<void>;
+  let extension!: import("../../electron/engine/engine-extensions").EngineExtension;
+  let ready!: () => void;
+  const registered = new Promise<void>((resolve) => { ready = resolve; });
+  const connection = { status: { state: "ready" }, toolBinding: { endpointKey: "endpoint-a", hostKey: "host-a" } };
+  const ssh = { allowed: () => true, existing: () => connection };
+  const launcher = new SshLauncher({ hostId: "host-a", dataRoot: "/unused", ssh: () => ssh as any });
+  const conversation = turnContext({ conversation: { id: "ssh-bound", mode: "code", turns: [], environment: { kind: "ssh", hostId: "host-a" } } }).conversation;
+  const engine = { launcher, peerExtensions: [], extensions: { add(value: typeof extension) { extension = value; ready(); return () => {}; } } };
+  const host = new FakeHost();
+  const ctx = {
+    store: { settings: {}, conversations: [conversation] },
+    engine,
+    engines: { all: () => [engine], running: () => engine },
+    services: { ssh },
+    policy: () => openPolicy,
+    onAccountActivated: (callback: () => void) => { activate = callback; },
+    onAccountDeactivating: (callback: () => Promise<void>) => { deactivate = callback; },
+    onSettingsChanged() {},
+  } as any;
+  registerBrowserTools(ctx, { service: async () => ({ host, devServers: () => undefined }), siteRisk: async () => undefined });
+  activate();
+  await registered;
+  try {
+    launcher.browserForward = { port: 5001, localPort: browserMcpPort(ctx)! };
+    const turn = turnContext({ conversation });
+    const offered = extension.builtinMcpServers!(turn)![0];
+    const token = offered.httpHeaders!.Authorization.slice("Bearer ".length);
+    const target = new URL(offered.url!);
+    target.port = String(browserMcpPort(ctx));
+    const originalUrl = target.href;
+    const initialized = await post(originalUrl, { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "host-binding-test", version: "1" } } }, { token });
+    const session = String(initialized.headers["mcp-session-id"]);
+    const call = () => post(originalUrl, { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "tabs_list", arguments: {} } }, { token, session });
+    assert.equal((await call()).message.result.isError, undefined);
+    connection.toolBinding = { endpointKey: "endpoint-b", hostKey: "host-b" };
+    assert.equal((await call()).message.result.isError, true);
+    const rebound = extension.builtinMcpServers!(turn)![0];
+    assert.notEqual(rebound.url, offered.url);
+    assert.equal((await call()).status, 404);
+    launcher.browserForward = undefined;
+    assert.equal(extension.builtinMcpServers!(turn), undefined);
+    await deactivate();
+    await assert.rejects(() => call());
+  } finally {
+    await deactivate();
+  }
 });

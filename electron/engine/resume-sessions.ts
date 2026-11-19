@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { stat } from "node:fs/promises";
 import type { Conversation, Turn } from "../../shared/types";
-import type { ResumableSession } from "../../shared/resume-sessions";
+import {
+  CliResumeError,
+  type ResumableSession,
+} from "../../shared/resume-sessions";
 
 interface NativeThread {
   id: string;
@@ -10,9 +13,17 @@ interface NativeThread {
   cwd: string;
   createdAt: number;
   updatedAt: number;
+  parentThreadId?: string | null;
+  ephemeral?: boolean;
   gitInfo?: { branch?: string };
   status?: { type: string };
-  turns?: { id: string; status: string; items: Record<string, any>[] }[];
+  turns?: {
+    id: string;
+    status: string;
+    startedAt?: number | null;
+    error?: { message?: string } | null;
+    items: Record<string, any>[];
+  }[];
 }
 
 export function resumeTurns(thread: NativeThread): Turn[] {
@@ -31,17 +42,18 @@ export function resumeTurns(thread: NativeThread): Turn[] {
       .filter((item) => item.type !== "userMessage")
       .map((item) => ({ ...item, id: item.id, type: item.type })),
     status:
-      turn.status === "failed" || turn.status === "interrupted"
-        ? "failed"
+      turn.status === "interrupted" || turn.status === "failed"
+        ? turn.status
         : "completed",
-    createdAt: thread.createdAt * 1000,
+    createdAt: (turn.startedAt ?? thread.createdAt) * 1000,
+    ...(turn.error?.message && { error: turn.error.message }),
   }));
 }
 
-/** Opaque handles and fresh liveness checks. */
+/** Opaque handles and fresh liveness checks (desktop 2.37337.1, index.chunk-DQOJOjYy). */
 export class ResumeSessions {
   private handles = new Map<string, string>();
-  private scope?: string;
+  private scope?: unknown;
   constructor(
     private options: {
       request(
@@ -50,7 +62,7 @@ export class ResumeSessions {
       ): Promise<any>;
       conversations(): Conversation[];
       allowFolder(cwd: string): void;
-      scope?(): string;
+      scope?(): unknown;
     },
   ) {}
 
@@ -71,6 +83,13 @@ export class ResumeSessions {
           conversation.savedBranches?.some((branch) => branch.threadId === id),
       );
   }
+  existing(handle: string) {
+    this.checkScope();
+    const id = this.handles.get(handle);
+    return id
+      ? this.options.conversations().find((row) => row.threadId === id)
+      : undefined;
+  }
 
   async list(): Promise<ResumableSession[]> {
     this.checkScope();
@@ -82,6 +101,9 @@ export class ResumeSessions {
         limit: 100,
         cursor,
         archived: false,
+        modelProviders: [],
+        sourceKinds: ["cli", "exec", "appServer", "vscode"],
+        sortKey: "updated_at",
       });
       this.checkScope();
       if (scope !== this.scope)
@@ -90,6 +112,8 @@ export class ResumeSessions {
         if (
           !thread.id ||
           !thread.cwd ||
+          thread.parentThreadId ||
+          thread.ephemeral ||
           this.owned(thread.id) ||
           thread.status?.type === "active"
         )
@@ -103,6 +127,10 @@ export class ResumeSessions {
           (info) => info.isDirectory(),
           () => false,
         );
+        this.checkScope();
+        if (scope !== this.scope)
+          throw new Error("Couldn’t load your Claudex Code sessions.");
+        if (this.owned(thread.id)) continue;
         let trusted = true;
         try {
           this.options.allowFolder(thread.cwd);
@@ -117,7 +145,8 @@ export class ResumeSessions {
           cwd: thread.cwd,
           gitBranch: trusted ? thread.gitInfo?.branch : undefined,
           lastActivityAt: thread.updatedAt * 1000,
-          folderMissing: !exists || !trusted || undefined,
+          folderMissing: !exists || undefined,
+          workspaceUntrusted: !trusted || undefined,
           liveness:
             thread.status && ["idle", "notLoaded"].includes(thread.status.type)
               ? "closed"
@@ -145,9 +174,12 @@ export class ResumeSessions {
     })) as { thread: NativeThread };
     this.checkScope();
     if (scope !== this.scope) throw new Error("Couldn’t resume that session.");
-    if (thread.id !== id || thread.status?.type === "active")
-      throw new Error("Couldn’t resume that session.");
-    this.options.allowFolder(thread.cwd);
+    if (thread.id !== id) throw new Error("Couldn’t resume that session.");
+    if (thread.status?.type === "active")
+      throw new CliResumeError(
+        "running",
+        "Couldn’t resume that session while it is running.",
+      );
     if (resuming) {
       if (
         !(await stat(thread.cwd).then(
@@ -155,12 +187,24 @@ export class ResumeSessions {
           () => false,
         ))
       )
-        throw new Error("Folder not found");
+        throw new CliResumeError("folder_missing", "Folder not found");
       if (!thread.status || !["idle", "notLoaded"].includes(thread.status.type))
-        throw new Error("Can’t confirm it’s closed");
+        throw new CliResumeError(
+          "liveness_unknown",
+          "Can’t confirm it’s closed",
+        );
+    }
+    try {
+      this.options.allowFolder(thread.cwd);
+    } catch (error) {
+      throw new CliResumeError(
+        "workspace_untrusted",
+        error instanceof Error ? error.message : "Workspace not trusted",
+      );
     }
     this.checkScope();
-    if (scope !== this.scope) throw new Error("Couldn’t resume that session.");
+    if (scope !== this.scope || this.owned(id))
+      throw new Error("Couldn’t resume that session.");
     return thread;
   }
 }

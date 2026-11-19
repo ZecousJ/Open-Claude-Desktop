@@ -4,7 +4,8 @@ export const errorName = (error: unknown) =>
 /**
  * What to tell the person when the microphone can't be opened: access was
  * refused (the system's privacy settings), no input exists, or another app
- * holds it, in the original's words.
+ * holds it, in the original's words (live claude.ai bundle, 2026-10-14,
+ * shared-m-2-fYgjMi_m: fH; shared-8-D8y0BqdN: PR).
  */
 export function microphoneError(error: unknown): Error {
   switch (errorName(error)) {

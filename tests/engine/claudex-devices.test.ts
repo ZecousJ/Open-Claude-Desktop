@@ -324,8 +324,8 @@ test("sign-in errors from the registration are explained and create no key", asy
     );
     assert.equal(env.mock.keys.length, 0);
 
-    // Balance only: an account without a plan group signs in with no key and no
-    // models, and the composer says why.
+    // Balance only (owner decision, 2026-10-12): an account without a plan
+    // group signs in with no key and no models, and the composer says why.
     env.mock.devices = [];
     env.mock.options.groups = [];
     env.mock.options.subscriptions = [];

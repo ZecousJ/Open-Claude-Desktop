@@ -122,6 +122,8 @@ export interface DynamicToolResult {
  * does not write to disk.
  */
 export interface BuiltinMcpServer {
+  /** Override the server state when starting or resuming a thread. */
+  enabled?: boolean;
   /** The Codex server name; must be one the extension reserves. */
   name: string;
   url?: string;
@@ -131,6 +133,8 @@ export interface BuiltinMcpServer {
   args?: string[];
   /** Environment of a stdio server's process (per thread). */
   env?: Record<string, string>;
+  enabledTools?: readonly string[];
+  required?: boolean;
   startupTimeoutSec?: number;
   toolTimeoutSec?: number;
   /**
@@ -169,6 +173,7 @@ export interface EngineExtension {
   developerInstructions?(ctx: EngineTurnContext): string | undefined;
   /** Text added to this turn only, as `additionalContext[<id>.<key>]`. */
   turnContext?(ctx: EngineTurnContext): Record<string, string> | undefined;
+  /** Refreshes turn inputs before developer instructions and tools are assembled. */
   prepareTurn?(ctx: EngineTurnContext): Promise<void>;
   /** Tools the app answers (fixed at thread/start; lost on retry/edit branches). */
   dynamicTools?(ctx: EngineTurnContext): DynamicToolSpec[] | undefined;
@@ -185,6 +190,12 @@ export interface EngineExtension {
    * thread whose servers change is unloaded and resumed at its next send.
    */
   builtinMcpServers?(ctx: EngineTurnContext): BuiltinMcpServer[] | undefined;
+  /** Disabled at process scope. The Runner forwards its port at launch. */
+  loopbackMcpBridge?: {
+    name: string;
+    ready: Promise<void>;
+    port(): number | undefined;
+  };
   /**
    * Environment of the app-server process (for `bearerTokenEnvVar`). Names
    * must contain TOKEN or SECRET (others are ignored), which keeps them out of
@@ -446,10 +457,28 @@ export class EngineExtensions {
         if (envName.test(key) && typeof value === "string") env[key] = value;
     return env;
   }
+  async prepareAppServer() {
+    await Promise.all(
+      this.entries.map((entry) => entry.loopbackMcpBridge?.ready),
+    );
+  }
   /** App-server config from extensions, without guarded keys. */
-  appServerConfig(): Record<string, unknown> {
+  appServerConfig(includeBridges = true): Record<string, unknown> {
+    const bridges: Record<string, unknown> = {};
+    for (const entry of includeBridges ? this.entries : []) {
+      const bridge = entry.loopbackMcpBridge;
+      const port = bridge?.port();
+      if (
+        bridge &&
+        port &&
+        entry.reservedMcpServerNames?.includes(bridge.name)
+      ) {
+        bridges[`mcp_servers.${bridge.name}.url`] = `http://127.0.0.1:${port}`;
+        bridges[`mcp_servers.${bridge.name}.enabled`] = false;
+      }
+    }
     return Object.assign(
-      {},
+      bridges,
       ...this.entries.map((entry) =>
         unguarded(
           `${entry.id}.appServerConfig`,
@@ -569,6 +598,9 @@ export function builtinMcpConfig(
       if (server.args) config[key("args")] = server.args;
       if (server.env) config[key("env")] = server.env;
     }
+    if (server.enabled !== undefined) config[key("enabled")] = server.enabled;
+    if (server.enabledTools) config[key("enabled_tools")] = server.enabledTools;
+    if (server.required) config[key("required")] = true;
     if (server.startupTimeoutSec !== undefined)
       config[key("startup_timeout_sec")] = server.startupTimeoutSec;
     if (server.toolTimeoutSec !== undefined)

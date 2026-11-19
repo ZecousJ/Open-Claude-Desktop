@@ -111,7 +111,12 @@ export async function adopt(
   this: WebAuth,
   value: unknown,
   previous?: PublicAccount,
+  continuation?: { epoch: object; session: WebSession },
 ) {
+  const startingEpoch = this.sessionEpoch;
+  const current = () => this.sessionEpoch === startingEpoch && (!continuation ||
+    continuation.epoch === this.sessionEpoch && continuation.session === this.session);
+  if (!current()) throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
   const json = record(value);
   const token = typeof json?.access_token === "string" ? json.access_token : "";
   if (!token) throw bridgeError("The service did not start a session.");
@@ -125,6 +130,7 @@ export async function adopt(
   // another tab, and the previous account must not label their token.
   const account =
     accountFrom(json) ?? accountFrom(await this.get("/api/v1/auth/me", token));
+  if (!current()) throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
   if (!account) throw bridgeError("The service did not return the account.");
   if (previous && account.id !== previous.id) {
     // This tab shows someone else's data: back to sign-in, not a switch.
@@ -136,7 +142,15 @@ export async function adopt(
     );
     throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
   }
+  const rawSessionId = json?.session_id;
+  const sessionId = typeof rawSessionId === "number" && Number.isSafeInteger(rawSessionId) && rawSessionId > 0
+    ? rawSessionId : undefined;
+  if (continuation?.session.sessionId !== undefined && sessionId !== continuation.session.sessionId) {
+    this.end("session-expired", messages.sessionExpired, false);
+    throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
+  }
   const session: WebSession = {
+    ...(sessionId !== undefined ? { sessionId } : {}),
     accessToken: token,
     expiresAt: this.env.now() + seconds * 1000,
     account,
@@ -147,12 +161,18 @@ export async function adopt(
   this.setTabValue(addingKey, undefined);
   this.setLocal(lastAccountKey, account.id);
   this.remember(account);
-  this.set(session);
+  this.set(session, continuation);
   this.tell({ type: "session", session });
   return session;
 }
 
-export function set(this: WebAuth, session: WebSession | undefined) {
+export function set(this: WebAuth, session: WebSession | undefined, continuation?: { epoch: object; session: WebSession }) {
+  // Only a token refresh for this session preserves its activation.
+  const refresh = !!session && !!continuation && continuation.epoch === this.sessionEpoch &&
+    continuation.session === this.session && session.account.id === this.session?.account.id &&
+    (this.session?.sessionId === undefined || session.sessionId === this.session.sessionId);
+  if (continuation && !refresh) throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
+  if (!refresh) this.sessionEpoch = {};
   this.session = session;
   if (!session) this.authUnavailable = false;
   this.env.timers.clearTimeout(this.refreshTimer);
@@ -187,22 +207,29 @@ export function fromTab(this: WebAuth, data: unknown) {
     if (
       mine &&
       next?.account?.id === mine.account.id &&
+      next.sessionId === mine.sessionId &&
       typeof next.accessToken === "string" &&
+      next.accessToken.length > 0 &&
+      typeof next.expiresAt === "number" && Number.isFinite(next.expiresAt) &&
       next.accessToken !== mine.accessToken &&
       next.expiresAt >= mine.expiresAt
-    )
-      this.set({
-        ...mine,
-        accessToken: next.accessToken,
-        expiresAt: next.expiresAt,
-      });
+    ) {
+      const updated = { ...mine, accessToken: next.accessToken, expiresAt: next.expiresAt };
+      this.set(updated, mine.sessionId !== undefined ? { epoch: this.sessionEpoch, session: mine } : undefined);
+    }
   } else if (message.type === "signed-out" && this.session) {
     // Another tab's account ending leaves this tab's alone.
     if (
-      typeof message.account === "string" &&
-      message.account !== this.session.account.id
+      (typeof message.account === "string" && message.account !== this.session.account.id) ||
+      (typeof message.sessionId === "number" && this.session.sessionId !== undefined &&
+        message.sessionId !== this.session.sessionId)
     )
       return;
+    const pending = this.revokingAll;
+    if (message.reason === "revoked" && pending?.epoch === this.sessionEpoch) {
+      pending.notice ??= { message: message.message, fromTab: true };
+      return;
+    }
     this.end(message.reason, message.message, false);
   }
 }
@@ -215,8 +242,9 @@ export function end(
   tell: boolean,
 ) {
   const account = this.session?.account.id;
+  const sessionId = this.session?.sessionId;
   this.set(undefined);
-  if (tell) this.tell({ type: "signed-out", reason, message, account });
+  if (tell) this.tell({ type: "signed-out", reason, message, account, sessionId });
   if (account) this.emit({ type: "signed-out", reason, message });
 }
 
@@ -226,6 +254,11 @@ export function expire(
   reason: SignedOutReason,
   message?: string,
 ) {
+  const pending = this.revokingAll;
+  if (reason === "revoked" && pending?.epoch === this.sessionEpoch) {
+    pending.notice = { message };
+    return;
+  }
   // The account menu offers to sign in to it again (its session ended
   // without a log out).
   const account = this.session?.account.id;
@@ -246,13 +279,15 @@ export function refresh(
   stale?: string,
   account?: string,
 ): Promise<WebSession | null> {
-  if (!this.refreshing) {
+  if (!this.refreshing || this.refreshingEpoch !== this.sessionEpoch) {
+    const epoch = this.sessionEpoch;
     const run = this.env
-      .withLock(refreshLock, () => this.refreshNow(stale, account))
+      .withLock(refreshLock, () => this.sessionEpoch === epoch ? this.refreshNow(stale, account) : Promise.resolve(null))
       .finally(() => {
-        if (this.refreshing === run) this.refreshing = undefined;
+        if (this.refreshing === run) { this.refreshing = undefined; this.refreshingEpoch = undefined; }
       });
     this.refreshing = run;
+    this.refreshingEpoch = epoch;
   }
   return this.refreshing;
 }
@@ -267,7 +302,8 @@ export async function refreshNow(
   stale?: string,
   account?: string,
 ): Promise<WebSession | null> {
-  const mine = this.session;
+  const mine = this.session, epoch = this.sessionEpoch;
+  const current = () => this.sessionEpoch === epoch && this.session === mine;
   // A call refused with a token of a session that has ended since (signed
   // out, another account's cookie): it must not start a new session.
   if (stale !== undefined && !mine) return null;
@@ -285,7 +321,9 @@ export async function refreshNow(
       webAuthRoutes.refresh,
       named ? { account: named } : {},
     );
-    const next = await this.adopt(value, mine?.account);
+    if (!current()) return null;
+    const next = await this.adopt(value, mine?.account, mine ? { epoch, session: mine } : undefined);
+    if (this.session !== next || mine && this.sessionEpoch !== epoch) return null;
     // Only a recovery is news: a routine refresh says nothing.
     if (this.authUnavailable) {
       this.authUnavailable = false;
@@ -293,6 +331,8 @@ export async function refreshNow(
     }
     return next;
   } catch (error) {
+    // A late old refresh must not expire or mark a later activation unavailable.
+    if (!current()) return null;
     // No usable cookie: signed out. Other failures (offline, 5xx) keep
     // the session, so a short outage does not sign anyone out.
     if (isSignedOutError(error)) {

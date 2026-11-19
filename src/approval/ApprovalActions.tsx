@@ -7,7 +7,8 @@ import { t } from "../i18n";
 
 type Key = "1" | "2" | "3" | "4" | "esc" | "shift" | "mod" | "enter";
 
-// Modifier keys are text: ⇧ and ⌘ on Mac, "Shift" and "Ctrl" elsewhere.
+// Modifier keys are text: ⇧ and ⌘ on Mac, "Shift" and "Ctrl" elsewhere (live
+// claude.ai bundle, 2026-10-16, ce8be540f-Skpcbts3.js: shortcut formatter).
 export function Keycap({ k, mac }: { k: Key; mac: boolean }) {
   const icon = { size: 11, strokeWidth: 1.75, "aria-hidden": true } as const;
   return (
@@ -35,7 +36,7 @@ export function Keycap({ k, mac }: { k: Key; mac: boolean }) {
   );
 }
 
-/** A labelled button followed by its keycap groups, 8px apart. */
+/** A labelled button followed by its keycap groups, 8px apart (R-0805). */
 export function ActionButton({
   label,
   icon,
@@ -113,11 +114,14 @@ export interface ApprovalHandlers {
   deny?: () => void;
   always?: () => void;
   once: () => void;
-  /** Always allow shown greyed with this reason, when there is no `always`. */
+  /**
+   * Always allow shown greyed with this reason (live claude.ai bundle,
+   * 2026-10-14: the admin's or the tool's rule), when there is no `always`.
+   */
   alwaysDisabledReason?: string;
   /**
-   * More allow options ▸ Allow and switch to Auto: allows once and puts the
-   * session in Auto. Absent: no menu.
+   * More allow options ▸ Allow and switch to Auto (live claude.ai bundle,
+   * 2026-10-14): allows once and puts the session in Auto. Absent: no menu.
    */
   switchToAuto?: () => void;
   /** False for a card whose buttons carry no 1-2-3 keycaps (the plan card). */
@@ -279,7 +283,11 @@ function ApprovalButtons({
   );
 }
 
-/** The split half after Allow once and its menu. */
+/**
+ * The split half after Allow once and its menu (live claude.ai bundle,
+ * 2026-10-15, c1c1ec7b9: More allow options holds the always choice with
+ * its ⇧⌘↵ and Allow and switch to Auto).
+ */
 function MoreAllowOptions({
   busy,
   alwaysLabel,

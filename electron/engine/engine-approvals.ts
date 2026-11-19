@@ -1,15 +1,19 @@
-import { codeExecutionSettings } from "../../shared/code-session-permissions";
+import { codeApprovalIsStopping } from "./code-interrupt-scope";
+import fs from "node:fs";
+import { codeExecutionPermissionMode, codeExecutionSettings } from "../../shared/code-session-permissions";
 import { taskConnectionRequest } from "../../shared/task-connection-hold";
 import { randomUUID } from "node:crypto";
 import { chatExecutionEnabled } from "../../shared/chat-execution";
 import { modeAllowed } from "../../shared/client-policy";
 import { allowedMcpServers } from "../../shared/client-policy-rules";
-import type { Approval } from "../../shared/types";
+import { chosenSandbox } from "./instructions";
+import type { Approval, Conversation } from "../../shared/types";
 import { sessionWideGrant } from "../../shared/approval-grants";
 import { SshToolGrantStore, sshServerKey } from "../ssh/tool-grants";
 import { coworkFolderRequest } from "../../shared/cowork-folder-request";
 import {
   mcpToolApproval,
+  toolApprovalMode,
   withOfferedPersist,
   withToolApproval,
 } from "../../shared/mcp-tool-approval";
@@ -20,6 +24,26 @@ import {
 } from "../../shared/approval-response";
 import { passthroughMethods } from "./mcp-servers";
 import type { Engine } from "./engine";
+
+function skipsCodeApprovals(
+  engine: Engine,
+  conversation: Conversation,
+  params: { threadId?: unknown; turnId?: unknown } | undefined,
+) {
+  if (conversation.mode !== "code" || conversation.asksFirst) return false;
+  const turn = conversation.turns.at(-1);
+  if (turn?.status !== "inProgress" || !conversation.threadId ||
+      params?.threadId !== conversation.threadId ||
+      (params.turnId !== undefined && params.turnId !== turn.id) ||
+      codeApprovalIsStopping(conversation, { threadId: conversation.threadId, turnId: turn.id }))
+    return false;
+  const mode = codeExecutionPermissionMode(conversation);
+  return mode === "bypass" && chosenSandbox(
+    codeExecutionSettings(engine.store.settings, conversation),
+    "code", conversation.cwd, conversation.scheduledRun, false,
+    conversation.scheduledPermission, mode,
+  ) === "danger-full-access";
+}
 
 export function request(this: Engine, msg: any) {
   const conversationId = this.routes.get(msg.params?.threadId);
@@ -49,14 +73,53 @@ export function request(this: Engine, msg: any) {
     );
     return;
   }
+  if (executionApproval && skipsCodeApprovals(this, conversation, msg.params)) {
+    this.rpc?.respond(msg.id, approvalResponse({
+      id: msg.id, conversationId, method: msg.method, params: msg.params,
+    }, "once"));
+    return;
+  }
+  if (
+    conversation.mode === "code" &&
+    this.environment.kind === "local" &&
+    process.platform === "win32"
+  ) {
+    const standalone = msg.method === "item/permissions/requestApproval";
+    const fileSystem = standalone
+      ? msg.params?.permissions?.fileSystem
+      : msg.method === "item/commandExecution/requestApproval"
+        ? msg.params?.additionalPermissions?.fileSystem
+        : undefined;
+    const writes: string[] = [
+      ...(fileSystem?.write ?? []),
+      ...(fileSystem?.entries ?? []).flatMap((entry: {
+        access: string;
+        path: { type: string; path?: string };
+      }) => entry.access === "write" && entry.path.type === "path" && entry.path.path
+        ? [entry.path.path]
+        : []),
+    ];
+    // The administrator sandbox can apply an ACL to an existing file or directory.
+    // The restricted-token sandbox cannot apply a separate writable root.
+    if (writes.length && (!this.windowsSandbox.supportsScopedWrites ||
+      writes.some((target) => !fs.existsSync(target)))) {
+      this.rpc?.respond(
+        msg.id,
+        standalone ? { permissions: {}, scope: "turn" } : { decision: "decline" },
+      );
+      return;
+    }
+  }
   const sessionSettings = codeExecutionSettings(
     this.store.settings,
     conversation,
   );
-  // On every platform.
+  // On every platform (owner, 2026-10-20: the win32 exclusion was never
+  // meant; Accept edits accepts file changes on Windows like macOS).
   if (
     msg.method === "item/fileChange/requestApproval" &&
     sessionSettings.autoAcceptEdits &&
+    !codeApprovalIsStopping(conversation, msg.params) &&
     modeAllowed(this.policy(), "acceptEdits") &&
     !sessionSettings.codePlanMode &&
     this.store.conversation(conversationId).mode === "code"
@@ -86,6 +149,10 @@ export function request(this: Engine, msg: any) {
     method: msg.method,
     params: this.offeredParams(msg),
   };
+  if (mcpToolApproval(approval) && skipsCodeApprovals(this, conversation, approval.params)) {
+    this.rpc?.respond(msg.id, approvalResponse(approval, "once"));
+    return;
+  }
   const sshTool = this.sshToolApproval(approval);
   if (
     sshTool &&
@@ -161,11 +228,27 @@ export function offeredParams(this: Engine, msg: any): any {
     properties && typeof properties === "object" && !Array.isArray(properties)
       ? { ...msg.params, claudexFieldOrder: Object.keys(properties) }
       : msg.params;
-  return withOfferedPersist(withOrder, {
-    configured:
-      (this.environment.kind !== "ssh" ||
-        Boolean(this.launcher?.sshToolBinding)) &&
-      Boolean(server && typeof server === "object" && !Array.isArray(server)),
+  const info = mcpToolApproval({ method: msg.method, params: withOrder });
+  const configured =
+    server && typeof server === "object" && !Array.isArray(server)
+      ? (server as Record<string, unknown>)
+      : undefined;
+  const ssh = this.environment.kind === "ssh";
+  const canRemember = configured && (!ssh || this.launcher?.sshToolBinding);
+  const toolMode =
+    info?.tool && configured && toolApprovalMode(configured, info.tool);
+  const params =
+    canRemember &&
+    info?.tool &&
+    !info.persist.session &&
+    !info.persist.always &&
+    (configured.default_tools_approval_mode !== "prompt" ||
+      toolMode === "approve") &&
+    toolMode !== "prompt"
+      ? { ...withOrder, _meta: { ...withOrder._meta, persist: ["always"] } }
+      : withOrder;
+  return withOfferedPersist(params, {
+    configured: Boolean(canRemember),
     alwaysAllowed: this.policy().approvalsAlwaysAllow !== false,
   });
 }
@@ -191,7 +274,8 @@ export function sshToolApproval(this: Engine, approval: Approval) {
     !server ||
     typeof server !== "object" ||
     Array.isArray(server) ||
-    (server as Record<string, unknown>).enabled === false
+    (server as Record<string, unknown>).enabled === false ||
+    toolApprovalMode(server as Record<string, unknown>, info.tool) === "prompt"
   )
     return;
   return {
@@ -227,17 +311,16 @@ export function rememberToolApproval(
     !info.persist.always ||
     !server ||
     typeof server !== "object" ||
-    Array.isArray(server)
+    Array.isArray(server) ||
+    toolApprovalMode(server as Record<string, unknown>, info.tool) === "prompt"
   )
     return;
-  const current = this.startedMcp === this.runtimeKey();
   servers[info.server] = withToolApproval(
     server as Record<string, unknown>,
     info.tool,
     "approve",
   );
   this.store.flush();
-  if (current) this.startedMcp = this.runtimeKey();
   this.onMcpServersRemembered?.();
 }
 
@@ -278,6 +361,10 @@ export function requestAppApproval(
 ): Promise<any> {
   const other = this.elsewhereFor(conversationId);
   if (other) return other.requestAppApproval(conversationId, params, signal);
+  if (signal?.aborted) return Promise.resolve(undefined);
+  if (params.serverName === "ccd_session" &&
+      skipsCodeApprovals(this, this.store.conversation(conversationId), params))
+    return Promise.resolve({ action: "accept", content: { decision: "once" }, _meta: null });
   const id = `app:${randomUUID()}`;
   const approval: Approval = {
     id,
@@ -322,17 +409,28 @@ export function approve(this: Engine, id: string | number, result: any): void {
     if (peer) return peer.approve(id, result);
     throw new Error("This request is no longer valid.");
   }
+  if (codeApprovalIsStopping(this.store.conversation(a.conversationId), a.params))
+    throw Error("This Code turn is stopping. No approval was sent.");
   // The administrator can turn "Always allow" off; the card hides it, and a
-  // session-wide grant sent anyway is refused here.
+  // session-wide grant sent anyway is refused here (WP5a).
   if (!this.policy().approvalsAlwaysAllow && sessionWideGrant(result))
     throw new Error(
       "Your administrator requires approving each request. Choose Allow once or Deny.",
+    );
+  const mcp = mcpToolApproval(a);
+  if (
+    mcp &&
+    ((result?._meta?.persist === "always" && !mcp.persist.always) ||
+      (result?._meta?.persist === "session" && !mcp.persist.session))
+  )
+    throw new Error(
+      "Always allow is unavailable for this tool. Choose Allow once or Deny.",
     );
   // "Always allow" in a routine's run is kept for the routine's later runs.
   if (
     sessionWideGrant(result) &&
     this.routineApprovals &&
-    !(this.environment.kind === "ssh" && mcpToolApproval(a))
+    !(this.environment.kind === "ssh" && mcp)
   ) {
     const conversation = this.store.conversation(a.conversationId);
     const entry = allowedEntryFor(a, conversation);
@@ -351,12 +449,11 @@ export function approve(this: Engine, id: string | number, result: any): void {
       }
   }
   this.rememberToolApproval(a, result);
-  this.rpc?.respond(
-    this.requestIdOf(id),
-    this.environment.kind === "ssh" && mcpToolApproval(a)
+  const response =
+    mcp && (this.environment.kind === "ssh" || result?._meta?.persist === "always")
       ? { ...result, _meta: null }
-      : result,
-  );
+      : result;
+  this.rpc?.respond(this.requestIdOf(id), response);
   this.ownApprovals = this.ownApprovals.filter((a) => a.id !== id);
   if (typeof id === "string") this.requestIds.delete(id);
   this.emit({ type: "approval-resolved", id });

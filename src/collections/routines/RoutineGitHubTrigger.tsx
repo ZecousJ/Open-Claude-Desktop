@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { IconButton } from "../../ui/Controls";
 import { ChevronDown } from "../../ui/glyphs";
 import { WithTooltip } from "../../ui/Tooltip";
@@ -31,7 +31,8 @@ const RepositoryMenu = lazyPiece(
   "RepositoryMenu",
 );
 
-/** What each event action is called, the same under every webhook. */
+/** What each event action is called (live claude.ai bundle, 2026-10-21,
+ * c29d48294 Er), the same under every webhook. */
 const actionLabels: Record<string, string> = {
   assigned: "Assigned",
   auto_merge_disabled: "Auto-merge disabled",
@@ -112,9 +113,8 @@ const eventLabel = (category: string, action: string) =>
     actions: t(actionLabels[action] ?? action.replace(/_/g, " ")),
   });
 
-/**
- * Every webhook, then each of its events; "Pull request: Merged" after Closed.
- */
+/** Every webhook, then each of its events; "Pull request: Merged" after
+ * Closed (c29d48294 wa). */
 const eventOptions = (): [string, string][] =>
   routineGitHubEvents.flatMap((group) => [
     [group.value, t(allLabels[group.value])] as [string, string],
@@ -131,7 +131,7 @@ const eventOptions = (): [string, string][] =>
     ]),
   ]);
 
-/** A mix of events, as the trigger's row names it. */
+/** A mix of events, as the trigger's row names it (c29d48294 Wr). */
 function eventsSummary(events: readonly string[]) {
   const groups = new Map<string, string[]>();
   for (const event of events) {
@@ -149,10 +149,12 @@ function eventsSummary(events: readonly string[]) {
 }
 
 /**
- * A GitHub event trigger's row: its name, the repository it listens to and its
- * remove button; once a repository is chosen, a card under it with the event,
- * the filter's conditions (field, operator, value, remove), the run limit
- * warning while nothing narrows it, and who the runs act as.
+ * A GitHub event trigger's row (live claude.ai, 2026-10-21, the New
+ * scheduled task with a GitHub event; bundle cb31d53a7 De and c29d48294
+ * Ta in its "rows" layout): its name, the repository it listens to and its
+ * remove button; once a repository is chosen, a card under it with the
+ * event, the filter's conditions (field, operator, value, remove), the run
+ * limit warning while nothing narrows it, and who the runs act as.
  */
 export function RoutineGitHubTrigger({
   trigger,
@@ -184,7 +186,7 @@ export function RoutineGitHubTrigger({
     >
       <div className="task-trigger-line">
         <span className="task-trigger-name">
-          <AppIcon name="GitPullRequest" size={16} />
+          <Anthropicon name="GitPullRequest" size={16} />
           GitHub event
         </span>
         <RepositoryChoice
@@ -227,7 +229,7 @@ export function RoutineGitHubTrigger({
                   })
                 }
               >
-                <AppIcon name="Add" size={20} />
+                <Anthropicon name="Add" size={20} />
               </IconButton>
             </div>
             {filters.map((filter, index) => (
@@ -269,10 +271,8 @@ export function RoutineGitHubTrigger({
   );
 }
 
-/**
- * One condition: field, operator, value and its remove button; a regex says it
- * matches the whole string.
- */
+/** One condition: field, operator, value and its remove button; a regex
+ * says it matches the whole string (c29d48294 Ma, "rows"). */
 function FilterRow({
   filter,
   fields,
@@ -363,7 +363,7 @@ function FilterRow({
           disabled={disabled}
           onClick={onRemove}
         >
-          <AppIcon name="Trash" size={20} />
+          <Anthropicon name="Trash" size={20} />
         </IconButton>
       </div>
       {filter.op === "matches" && (

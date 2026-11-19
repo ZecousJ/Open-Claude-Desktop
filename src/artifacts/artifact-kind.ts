@@ -30,7 +30,8 @@ export function artifactKind(a: Source): ArtifactKind {
   if (a.blob) {
     if (a.mime?.startsWith("image/")) return "image";
     if (a.mime === "application/pdf") return "pdf";
-    // A saved file without its type goes by its extension.
+    // A saved file without its type (a picture a turn made, owner
+    // 2026-10-03: the card's PNG had no preview) goes by its extension.
     if (!a.mime || a.mime === "application/octet-stream") {
       if (/^(png|jpe?g|gif|webp|bmp|avif)$/.test(extension)) return "image";
       if (extension === "pdf") return "pdf";

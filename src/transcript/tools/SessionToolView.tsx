@@ -48,9 +48,10 @@ export function SessionToolView({
     const failed =
       item.lifecycleStatus === "failed" || item.status === "failed";
     return (
-      // A plain grey line, "Compacting session…" then "Compacted session"
-      // (Codex reports no saved-token count for the original's "· saved 61.6k
-      // tokens"); a compaction that failed says so.
+      // R-0835: a plain grey line, "Compacting session…" then "Compacted
+      // session" (Codex reports no saved-token count for the original's
+      // "· saved 61.6k tokens"); a compaction that failed says so (live
+      // claude.ai bundle, 2026-10-16, shared-9 iU: "Compaction failed").
       <div className="agent-tool-event compaction-event" role="status">
         <span>
           {running
@@ -84,9 +85,9 @@ export function SessionToolView({
     );
   }
   if (item.type === "sleep") {
-    // "Waiting 60 seconds" while it runs, "Slept for 60 seconds" once done. The
-    // requested time is not on the running item, so the running row says
-    // "Waiting" alone.
+    // R-0841 (R-0832 AX): "Waiting 60 seconds" while it runs, "Slept for 60
+    // seconds" once done. The requested time is not on the running item, so
+    // the running row says "Waiting" alone.
     const seconds = Math.max(
       0,
       Math.round(Number(item.durationMs ?? 0) / 1000),
@@ -149,8 +150,9 @@ export function SessionToolView({
 }
 
 /**
- * The picture under "Generated an image": a 240px tall thumbnail read from its
- * profile snapshot; clicking it opens the image in the file viewer.
+ * The picture under "Generated an image" (R-0776, not captured: visual
+ * provisional): a 240px tall thumbnail read from its profile snapshot;
+ * clicking it opens the image in the file viewer.
  */
 export function GeneratedImagePreview({
   savedPath,
@@ -205,9 +207,9 @@ export function generatedImageArtifact(
 }
 
 /**
- * The picture the agent viewed, as a 111×62 thumbnail at the row's right end:
- * snapshotted from the conversation's working folder, and opening in the file
- * viewer.
+ * The picture the agent viewed, as a 111×62 thumbnail at the row's right
+ * end (R-0873): snapshotted from the conversation's working folder, and
+ * opening in the file viewer.
  */
 export function ViewedImageThumbnail({
   path,
@@ -283,7 +285,7 @@ function SessionToolRow({
   label: string;
   image?: string;
   filename?: string;
-  /** The viewed picture at the row's right end. */
+  /** The viewed picture at the row's right end (R-0873). */
   thumbnail?: React.ReactNode;
 }) {
   return (

@@ -3,7 +3,8 @@ import { sharedArtifactToken } from "../../shared/shared-artifact-import";
 import { t } from "../i18n";
 import { Modal } from "../ui/Controls";
 
-/** Link-import copy and small popup. Tokens identify Claudex hosted shares. */
+/** Link-import copy and small popup (live claude.ai bundle, 2026-10-14,
+ * cc4cd7497-DG-j0D53.js:65,426). Tokens identify Claudex hosted shares. */
 export function ImportSharedArtifactDialog({
   onClose,
   onImport,

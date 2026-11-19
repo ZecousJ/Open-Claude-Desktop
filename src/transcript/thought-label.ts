@@ -1,9 +1,9 @@
 import { formatText } from "../i18n";
 
 /**
- * How long Claude thought, in the largest units that read naturally: "Thought
- * for 42s", "Thought for 2m 5s", "Thought for 3m", "Thought for 1h 4m",
- * "Thought for 2h".
+ * How long Claude thought, in the largest units that read naturally (source:
+ * desktop bundle 2.31226.1, the reasoning header): "Thought for 42s",
+ * "Thought for 2m 5s", "Thought for 3m", "Thought for 1h 4m", "Thought for 2h".
  */
 export function thoughtLabel(seconds: number) {
   const total = Math.round(seconds);

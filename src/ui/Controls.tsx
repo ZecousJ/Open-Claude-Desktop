@@ -69,7 +69,7 @@ export function IconButton({
   shortcut?: string[];
   placement?: TooltipPlacement;
   className?: string;
-  /** False for buttons the original shows no tooltip on. */
+  /** False for buttons the original shows no tooltip on (R-1585/R-1586). */
   tooltip?: boolean;
   /** Why the button is disabled, as a tooltip (the label's is off then). */
   title?: string;
@@ -115,7 +115,11 @@ export function IconButton({
     </>
   );
 }
-/** Dialog over the window. `variant="confirm"` is the short confirmation. */
+/**
+ * Dialog over the window (R-1289 Edit details: 520 wide, 22px title, close
+ * button). `variant="confirm"` is the short confirmation (R-1289 Delete
+ * project: 400 wide, 15px title, no close button; Escape and Cancel close).
+ */
 export function Modal({
   title,
   titleIsUserData = false,
@@ -145,22 +149,32 @@ export function Modal({
   /** A dialog's own class (Create a skill takes the window's width). */
   className?: string;
   /**
-   * Which button of a confirmation starts focused: the confirming one Or the
-   * first, the safe one.
+   * Which button of a confirmation starts focused: the confirming one
+   * (R-1289 Delete project) or the first, the safe one (R-1583 Discard this
+   * draft?, where Keep editing shows the ring).
    */
   confirmFocus?: "confirm" | "cancel";
   showClose?: boolean;
   disablePointerDismissal?: boolean;
   /**
    * What the dialog confirmed is still under way: Escape and a press on the
-   * backdrop are ignored until it ends.
+   * backdrop are ignored until it ends (the original's confirmation dialog
+   * ignores a dismiss while pending, live claude.ai bundle, 2026-10-16,
+   * shared-frame-6654oR3- E9).
    */
   pending?: boolean;
   focusDialog?: boolean;
   dialogRole?: "dialog" | "alertdialog";
-  /** A back button before the title, for a dialog showing a sub-view. */
+  /**
+   * A back button before the title, for a dialog showing a sub-view (the
+   * Publish dialog's Get embed code: a caret-left and the title, 8px apart,
+   * live claude.ai bundle, 2026-10-12).
+   */
   back?: { label: string; onClick: () => void };
-  /** A line under the title row, before the body. */
+  /**
+   * A line under the title row, before the body (live claude.ai, 2026-10-21:
+   * New scheduled task's "Set up with Claude instead").
+   */
   subtitle?: ReactNode;
 }) {
   const titleId = useId();
@@ -294,9 +308,11 @@ export function Modal({
             </h2>
           )}
           {variant !== "confirm" && showClose && (
-            // No tooltip, as the original's dialog Close, like Sheet's.
+            // No tooltip, as the original's dialog Close (desktop bundle
+            // 2.31226.1: `tooltip: false`), like Sheet's.
             <IconButton label="Close" tooltip={false} onClick={onClose}>
-              {/* The web's dialogs close with a 20px X. */}
+              {/* The web's dialogs close with a 20px X (live claude.ai,
+                  2026-10-21). */}
               <X size={surface === "web" ? 20 : 18} />
             </IconButton>
           )}
@@ -326,9 +342,9 @@ export function CopyButton({
    */
   message?: "reply" | "prompt";
   /**
-   * Also write the text as rich text (Markdown rendered to HTML). On by default
-   * for a reply; a Chat prompt turns it on too, as the reference design copies
-   * a sent prompt the same way.
+   * Also write the text as rich text (Markdown rendered to HTML). On by
+   * default for a reply; a Chat prompt turns it on too, as the live claude.ai
+   * bundle (2026-10-12) copies a sent prompt the same way.
    */
   rich?: boolean;
   codeBlock?: boolean;

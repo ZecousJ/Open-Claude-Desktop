@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Installs Claudex on Linux:
-#   curl -fsSL https://<your service>/install.sh | CLAUDEX_BASE=https://<your service> bash
+#   curl -fsSL https://claudex.zecous.cn/install.sh | bash
 # Picks the package for this computer (deb for apt, rpm for dnf/yum/zypper,
 # otherwise the tar.gz into /opt/claudex), checks its SHA-256 against the
 # Claudex service's release information and installs it (sudo asks for
 # your password). Claudex then updates itself from the app.
 set -euo pipefail
 
-BASE="${CLAUDEX_BASE:?Set CLAUDEX_BASE to your Claudex service, e.g. https://claudex.example.com}"
+BASE="${CLAUDEX_BASE:-https://claudex.zecous.cn}"
 say() { printf '\033[1m%s\033[0m\n' "$*"; }
 die() { printf 'Claudex: %s\n' "$*" >&2; exit 1; }
 

@@ -7,6 +7,7 @@ package apicompat
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 )
 
 // ---------------------------------------------------------------------------
@@ -427,6 +428,38 @@ type ResponsesIncompleteDetails struct {
 	Reason string `json:"reason"` // "max_output_tokens" | "content_filter"
 }
 
+// CachePrivateReasoning keeps translated reasoning available for continuation
+// by item ID without placing its text on the Responses wire.
+type CachePrivateReasoning func(itemID, content string)
+
+// PrivateReasoningReplayPrefix marks a cache reference in encrypted_content.
+// Codex preserves that field when replaying items without their output IDs.
+const PrivateReasoningReplayPrefix = "claudex-reasoning-v1:"
+
+func privateReasoningReplayID(id, encryptedContent string) string {
+	if cachedID, ok := strings.CutPrefix(encryptedContent, PrivateReasoningReplayPrefix); ok {
+		return cachedID
+	}
+	return id
+}
+
+func (cache CachePrivateReasoning) replayReference(itemID string) string {
+	if cache != nil {
+		return PrivateReasoningReplayPrefix + itemID
+	}
+	return ""
+}
+
+func (cache CachePrivateReasoning) summary(text string) []ResponsesSummary {
+	if cache != nil {
+		return []ResponsesSummary{}
+	}
+	if text != "" {
+		return []ResponsesSummary{{Type: "summary_text", Text: text}}
+	}
+	return nil
+}
+
 // ResponsesOutput is one output item in a Responses API response.
 type ResponsesOutput struct {
 	Type string `json:"type"` // "message" | "reasoning" | "function_call" | "web_search_call"
@@ -461,6 +494,12 @@ type ResponsesOutput struct {
 // 序列化，输出逐字节不变。
 func (o ResponsesOutput) MarshalJSON() ([]byte, error) {
 	type responsesOutputAlias ResponsesOutput
+	if o.Type == "reasoning" && o.Summary != nil && len(o.Summary) == 0 {
+		return json.Marshal(struct {
+			responsesOutputAlias
+			Summary []ResponsesSummary `json:"summary"`
+		}{responsesOutputAlias(o), o.Summary})
+	}
 	if o.Type != "tool_search_call" {
 		return json.Marshal(responsesOutputAlias(o))
 	}
@@ -737,6 +776,7 @@ type ChatStreamOptions struct {
 type ChatMessage struct {
 	Role             string          `json:"role"` // "system" | "user" | "assistant" | "tool" | "function"
 	Content          json.RawMessage `json:"content,omitempty"`
+	Refusal          string          `json:"refusal,omitempty"`
 	ReasoningContent string          `json:"reasoning_content,omitempty"`
 	Reasoning        string          `json:"reasoning,omitempty"`
 	Name             string          `json:"name,omitempty"`
@@ -810,14 +850,15 @@ type ChatFunctionCall struct {
 
 // ChatCompletionsResponse is the non-streaming response from POST /v1/chat/completions.
 type ChatCompletionsResponse struct {
-	ID                string       `json:"id"`
-	Object            string       `json:"object"` // "chat.completion"
-	Created           int64        `json:"created"`
-	Model             string       `json:"model"`
-	Choices           []ChatChoice `json:"choices"`
-	Usage             *ChatUsage   `json:"usage,omitempty"`
-	SystemFingerprint string       `json:"system_fingerprint,omitempty"`
-	ServiceTier       string       `json:"service_tier,omitempty"`
+	ID                string          `json:"id"`
+	Object            string          `json:"object"` // "chat.completion"
+	Created           int64           `json:"created"`
+	Model             string          `json:"model"`
+	Choices           []ChatChoice    `json:"choices"`
+	Usage             *ChatUsage      `json:"usage,omitempty"`
+	SystemFingerprint string          `json:"system_fingerprint,omitempty"`
+	ServiceTier       string          `json:"service_tier,omitempty"`
+	Error             json.RawMessage `json:"error,omitempty"`
 }
 
 // ChatChoice is a single completion choice.

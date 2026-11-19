@@ -3,12 +3,11 @@ import { File, Folder } from "../ui/glyphs";
 import type { MentionFile } from "../../shared/composer-api";
 
 /**
- * The `@` file list above the Code composer. Arrow keys, Enter/Tab and Escape
- * are handled by the composer; the pointer chooses too.
+ * The `@` file list above the Code composer (R-0382, captured 09-28: the slash
+ * list's frame at 559 px, folder glyph, name, then its folder in grey). Arrow keys, Enter/Tab and
+ * Escape are handled by the composer; the pointer chooses too.
  */
-/**
- * The typed characters in bold; when a row matches, the rest of it is dimmed.
- */
+/** The typed characters in bold; when a row matches, the rest of it is dimmed (R-0382). */
 function Matched({ text, query }: { text: string; query: string }) {
   const needle = query.toLowerCase();
   const start = needle ? text.toLowerCase().indexOf(needle) : -1;

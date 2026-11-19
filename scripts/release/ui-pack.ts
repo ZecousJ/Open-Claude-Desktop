@@ -1,8 +1,8 @@
 /**
- * Publishes a desktop interface pack (docs/releasing.md).
+ * Publishes a desktop interface pack (docs/desktop-ui-hot-update.md).
  *
  *   npx tsx scripts/release/ui-pack.ts --n 1 [--skip-build] [--dist dist]
- *       [--out <dir>] [--download-base https://claudex.example.com/downloads] [--upload]
+ *       [--out <dir>] [--download-base https://claudex.zecous.cn/downloads] [--upload]
  *
  * Builds the window (`vite build`) unless --skip-build, then signs it with
  * the release key (~/.config/claudex/ui-signing.key, or the file named by
@@ -10,7 +10,7 @@
  * version in package.json>, n)`, writes `claudex-ui-<version>.zip` and prints
  * the `ui` section for claudex_client_release. `--upload` puts it in R2
  * (credentials from R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
- * R2_BUCKET) under <downloads prefix>/claudex/ui/<version>/.
+ * R2_BUCKET) under zecous/downloads/claudex/ui/<version>/.
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -23,7 +23,6 @@ import { verifyPack } from "../../electron/ui-pack/verify";
 import {
   claudexDownloadUrl,
   defaultDownloadBase,
-  downloadsPrefix,
   encodeKeyPath,
   r2Credentials,
   signV4,
@@ -74,7 +73,7 @@ const file = path.join(outDir, fileName);
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(file, zip);
 const sha256 = createHash("sha256").update(zip).digest("hex");
-const key = `${downloadsPrefix}/claudex/ui/${version}/${fileName}`;
+const key = `zecous/downloads/claudex/ui/${version}/${fileName}`;
 const url = claudexDownloadUrl(downloadBase, key);
 
 console.log(`Interface ${version} (app ${appVersion}, bridge ${bridgeLevel})`);

@@ -14,10 +14,10 @@ import { usd } from "../settings/billing/quote";
  * - service: the account itself cannot use the service (plan not active,
  *   balance used up, the device's own cap);
  * - rate-limit: kept for the frozen interface; the service's session and
- *   request rate limits show as the window's corner notice (GlobalLimitToast),
- *   not above the composer, so this kind shows nothing;
- * - balance: the account's balance is below $10, in the usage warning's frame
- *   with Add funds;
+ *   request rate limits (R-0127) show as the window's corner notice
+ *   (GlobalLimitToast), not above the composer, so this kind shows nothing;
+ * - balance: the account's balance is below $10 (owner, 2026-10-12), in the
+ *   usage warning's frame with Add funds;
  * - announcement: the newest unread popup notice from the administrator;
  * - update: a required update (an available one is shown above the account).
  */
@@ -60,7 +60,7 @@ export interface NoticeContent {
   icon: "gauge" | "info" | "download" | "coffee";
   title: string;
   detail?: string;
-  /** A button before the main action: Get notified. */
+  /** A button before the main action: Get notified (R-0314). */
   secondary?: { kind: NoticeAction; label: string; disabled?: boolean };
   action?: { kind: NoticeAction; label: string; disabled?: boolean };
   dismissible: boolean;
@@ -137,9 +137,11 @@ export function lowBalanceDue(
 }
 
 /**
- * The balance warning, in the usage warning's frame with the balance's words:
- * Chat and Cowork give what is left, Code a title and the amount under it. Add
- * funds opens the recharge entry when this account can recharge in the app.
+ * The balance warning, in the usage warning's frame (R-Chat/R-Cowork home's
+ * "You've used N% of your weekly limit", R-0338's "Approaching weekly usage
+ * limit" strip) with the balance's words: Chat and Cowork give what is
+ * left, Code a title and the amount under it. Add funds opens the recharge
+ * entry when this account can recharge in the app.
  */
 export function balanceNotice(
   balance: number,
@@ -177,15 +179,16 @@ export function formatResetClock(resetsAt: number) {
 }
 
 /**
- * The corner notice's sentence: the session limit in the original's words, the
- * request rate limit in the same shape. The link ("View your usage details.")
- * is added by the notice when it can open Settings → Usage.
+ * The corner notice's sentence (R-0127, R-0314): the session limit in the
+ * original's words, the request rate limit in the same shape. The link
+ * ("View your usage details.") is added by the notice when it can open
+ * Settings → Usage.
  */
 export function globalLimitText(notice: GlobalLimitNotice) {
   const at = notice.resetsAt ? formatResetClock(notice.resetsAt) : null;
   // The rate limit reads as the original's "Too many requests right now. Try
-  // again in a moment."; the session limit's reset clause is its "Limits will
-  // reset at {resetsAt}."
+  // again in a moment." (live claude.ai bundle, 2026-10-16, c797f68e4); the
+  // session limit's reset clause is its "Limits will reset at {resetsAt}."
   if (notice.kind === "rate-limit")
     return at
       ? formatText("Too many requests right now. Try again at {at}.", { at })

@@ -6,7 +6,7 @@ import { NavTemplateIcon } from "./NavCreateMenu";
 import { createBlankArtifact } from "../artifacts/create-blank-artifact";
 import { startCodeTemplate } from "../artifacts/start-code-template";
 import type { ArtifactOutputKind } from "../../shared/artifact-output";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useHost } from "../host/HostContext";
 import { useT } from "../i18n";
 import {
@@ -110,7 +110,10 @@ export function NavCreatePopup({
                 {
                   label: "Create with Claudex",
                   icon: (
-                    <AppIcon name="Chat" size={host.kind === "web" ? 20 : 16} />
+                    <Anthropicon
+                      name="Chat"
+                      size={host.kind === "web" ? 20 : 16}
+                    />
                   ),
                   onSelect: () => {
                     closePhoneSidebar();
@@ -121,7 +124,10 @@ export function NavCreatePopup({
           {
             label: "Set up manually",
             icon: (
-              <AppIcon name="Settings" size={host.kind === "web" ? 20 : 16} />
+              <Anthropicon
+                name="Settings"
+                size={host.kind === "web" ? 20 : 16}
+              />
             ),
             onSelect: schedule,
           },

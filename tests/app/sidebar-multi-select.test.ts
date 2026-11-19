@@ -72,8 +72,8 @@ test("the menu over a selection runs on the rows that need it", () => {
     () => {},
   );
   const labels = entries.map((e) => ("label" in e ? e.label : "—"));
-  // Each action counts the rows it runs on; a mixed selection offers both Pin
-  // and Unpin.
+  // Each action counts the rows it runs on; a mixed selection offers both
+  // Pin and Unpin (live claude.ai bundle, 2026-10-16, cf259e6ae).
   assert.deepEqual(labels, [
     "Pin 1",
     "Unpin 1",

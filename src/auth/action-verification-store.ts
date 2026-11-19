@@ -22,7 +22,8 @@ export function actionVerificationHandled(error: unknown): boolean {
   return error instanceof ActionVerificationHandled;
 }
 
-// No automatic replay: confirmed users press their original button again.
+// No automatic replay: confirmed users press their original button again
+// (live claude.ai bundle, 2026-10-14, shared-23-RHw-hr47.js).
 export function withActionVerification(api: DesktopAPI): DesktopAPI {
   return new Proxy(api, {
     get(target, property) {

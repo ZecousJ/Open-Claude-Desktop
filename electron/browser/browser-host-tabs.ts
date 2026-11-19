@@ -12,7 +12,10 @@ export function newTab(
   const tab = this.blankTab();
   const previous = session.activeTabId;
   session.tabs.push(tab);
-  if (foreground) session.activeTabId = tab.id;
+  if (foreground) {
+    if (session.picking) this.cancelPick(conversationId);
+    session.activeTabId = tab.id;
+  }
   if (url) {
     const result = this.navigate(conversationId, url, tab.id);
     if (!result.ok) {
@@ -39,6 +42,7 @@ export function selectTab(
   session.activeTabId = tabId;
   this.sync(session);
   this.changed(session);
+  return true;
 }
 
 /** Closes a tab; the panel always keeps one (a new blank tab replaces the last). */
@@ -46,21 +50,29 @@ export function closeTab(
   this: BrowserHost,
   conversationId: string,
   tabId: string,
+  reopenable = false,
 ) {
   const session = this.session(conversationId);
   const index = session.tabs.findIndex((tab) => tab.id === tabId);
-  if (index === -1) return;
+  if (index === -1) return false;
   const [tab] = session.tabs.splice(index, 1);
-  if (session.activeTabId === tabId && session.picking) session.picking = false;
+  if (reopenable) {
+    session.closedTabs ??= [];
+    session.closedTabs.push(tab.state.url);
+    if (session.closedTabs.length > 50) session.closedTabs.shift();
+  }
+  if (session.picking?.tab === tab) this.cancelPick(conversationId);
   if (session.activeTabId === tabId)
     this.deps.savePage?.(conversationId, undefined);
   this.dropView(tab);
+  this.removeWrittenFile(tab);
   if (!session.tabs.length) session.tabs.push(this.blankTab());
   if (!session.tabs.some((value) => value.id === session.activeTabId))
     session.activeTabId =
       session.tabs[Math.min(index, session.tabs.length - 1)].id;
   this.sync(session);
   this.changed(session);
+  return true;
 }
 
 export function closeOtherTabs(
@@ -79,6 +91,8 @@ export function dropView(this: BrowserHost, tab: Tab) {
   clearTimeout(tab.stallTimer);
   tab.driver?.dispose();
   tab.driver = undefined;
+  tab.emulation = undefined;
+  tab.appliedViewport = undefined;
   const view = tab.view;
   tab.view = undefined;
   if (!view) return;

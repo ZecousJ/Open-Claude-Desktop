@@ -13,7 +13,7 @@ export interface DevServerActions {
   add: () => void;
 }
 
-/** A row's tooltip: its port, Starting…, Failed to start or Not running. */
+/** A row's tooltip (cf580efe9): its port, Starting…, Failed to start or Not running. */
 export function devServerTooltip(server: DevServerState) {
   if (server.status === "starting" || server.status === "awaiting-approval")
     return t("Starting…");
@@ -25,14 +25,15 @@ export function devServerTooltip(server: DevServerState) {
 }
 
 /**
- * The dev servers menu. Each server is a row named after it, checked while the
- * tab shows it, with its port, Starting…, Failed to start or Not running as its
- * tooltip, and an xxs Run or (red) Stop at its end, which → also presses.
- * Choosing a running server opens it; choosing one that is not running runs it.
- * Stop all servers (red) follows while any runs; with nothing configured the
- * menu says "No dev server configured". Add server and Show or Hide dev server
- * logs end it. A server only seen in terminal output can be opened but not run
- * or stopped from here.
+ * The dev servers menu (live claude.ai bundle, 2026-10-15, cf580efe9: the
+ * Servers section). Each server is a row named after it, checked while the
+ * tab shows it, with its port, Starting…, Failed to start or Not running
+ * as its tooltip, and an xxs Run or (red) Stop at its end, which → also
+ * presses. Choosing a running server opens it; choosing one that is not
+ * running runs it. Stop all servers (red) follows while any runs; with
+ * nothing configured the menu says "No dev server configured". Add server
+ * and Show or Hide dev server logs end it. A server only seen in terminal
+ * output can be opened but not run or stopped from here.
  */
 export function devServerEntries(
   servers: readonly DevServerState[],

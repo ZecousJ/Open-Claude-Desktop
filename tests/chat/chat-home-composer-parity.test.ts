@@ -19,7 +19,11 @@ import { starterPromptsVisible } from "../../src/starter-prompts/visibility";
 import { voicePlaceholder } from "../../src/composer/voice-placeholder";
 import { isVoiceConnectionError } from "../../src/voice/connection-error";
 import { SubmitPill } from "../../src/composer/SubmitPill";
-import { AppIcon } from "../../src/ui/app-icon";
+import { Anthropicon } from "../../src/ui/anthropicons";
+import {
+  financePrompts,
+  hasFinanceSkills,
+} from "../../src/starter-prompts/FinanceStarters";
 import type { CustomizeSkill } from "../../shared/collections-api";
 import { readSource } from "../support/read-source";
 
@@ -53,6 +57,8 @@ test("starter chips fail open with no experiments and respect competing surfaces
     { conversationLoading: true },
     { checklistLoading: true },
     { checklistShowing: true, hideForChecklist: true },
+    { skillsLoading: true },
+    { skillSurface: true },
   ])
     assert.equal(starterPromptsVisible(state), false, JSON.stringify(state));
   assert.equal(starterPromptsVisible({ checklistShowing: true }), true);
@@ -64,6 +70,40 @@ test("starter chips fail open with no experiments and respect competing surfaces
       conversationLoading: true,
     }),
     true,
+  );
+});
+
+test("only staff can force chips past checklist, skill and count gates", () => {
+  const blocked = {
+    force: true,
+    conversationCount: 100,
+    skillSurface: true,
+    checklistShowing: true,
+    hideForChecklist: true,
+    skillsLoading: true,
+  };
+  assert.equal(
+    starterPromptsVisible({ ...blocked, accountEmail: "staff@anthropic.com" }),
+    true,
+  );
+  assert.equal(
+    starterPromptsVisible({
+      ...blocked,
+      accountEmail: "staff@sillylittleguy.org",
+    }),
+    true,
+  );
+  assert.equal(
+    starterPromptsVisible({ ...blocked, accountEmail: "staff@other.org" }),
+    false,
+  );
+  assert.equal(
+    starterPromptsVisible({
+      ...blocked,
+      accountEmail: "staff@anthropic.com",
+      voiceActive: true,
+    }),
+    false,
   );
 });
 
@@ -101,9 +141,20 @@ test("checklist preferences persist partial task state and stop showing after th
   );
 });
 
+test("finance replacement requires every named skill, even when some are disabled", () => {
+  const skills = financePrompts.map((prompt) => ({
+    name: prompt.skillName,
+    enabled: false,
+  })) as CustomizeSkill[];
+  assert.equal(skills.length, 11);
+  assert.equal(hasFinanceSkills(skills), true);
+  assert.equal(hasFinanceSkills(skills.slice(1)), false);
+});
+
 test("desktop and web preference schemas retain starter gates and checklist progress", () => {
   const homeStarters: HomeStarters = {
     chipsOverride: "show",
+    claudeai_fsi_skill_chips: true,
     prosumer_checklist_hide_prompt_chips: true,
     prosumer_checklist_v2: { setup_project: true },
     checklist: { tasks: { setup_project: { seen: 2, clicked: true } } },
@@ -184,7 +235,7 @@ test("reply controls stay ghost for empty, drafting, disabled and streaming stat
           stop: createElement("button", {
             className: "send-button stop plain",
             "aria-label": "Stop response",
-            children: createElement(AppIcon, {
+            children: createElement(Anthropicon, {
               name: "StopCircle",
               size: 20,
             }),
@@ -193,7 +244,7 @@ test("reply controls stay ghost for empty, drafting, disabled and streaming stat
             className: "send-button plain",
             "aria-label": "Send message",
             disabled: !hasContent,
-            children: createElement(AppIcon, {
+            children: createElement(Anthropicon, {
               name: "ArrowReturn",
               size: 20,
             }),
@@ -239,8 +290,8 @@ test("Chat and Cowork wire reply icons and preserve a separate chin voice action
   assert.match(source, /appContext\.windowRole\.kind === "main"/);
   assert.match(source, /!\("ClaudexConversation" in window\)/);
   assert.match(chin, /waveform\s/);
-  // The web reply chin: Dictate, then voice mode as the reply split button
-  // whose caret opens the microphone options.
+  // The web reply chin (live claude.ai, 2026-10-20): Dictate, then voice
+  // mode as the reply split button whose caret opens the microphone options.
   const reply = chin.slice(
     chin.indexOf("webReplyVoice ? ("),
     chin.indexOf(") : (", chin.indexOf("webReplyVoice ? (")),
@@ -268,7 +319,7 @@ test("Add keeps the official long accessible label; Stop is ghost without an inv
     source,
     /label=\{mode === "code" \? "Add" : "Add files, connectors, and more"\}/,
   );
-  assert.match(source, /AppIcon name="ComposerAdd"/);
+  assert.match(source, /Anthropicon name="ComposerAdd"/);
   const stop = source.slice(
     source.indexOf("const chatStopFace"),
     source.indexOf("const stopSlot"),

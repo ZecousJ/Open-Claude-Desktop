@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { createRunnerOfficialAdapter } from '../../runner/src/official-ui-adapter';
+import { organizationUuid } from '../../electron/official-ui/api/context';
+import { inAdapterScope, newAdapterScope } from '../../electron/official-ui/api/scope';
+import { writeState, flushState } from '../../electron/official-ui/api/state';
+
+ test('Runner adapter serves verified legacy sidecar over the owned GET query', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-sidecar-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const identity = {}, owner = 'owner', id = '33333333-3333-4333-8333-333333333333';
+  const bytes = Buffer.from('Emerald is green.');
+  const attachment = { id:'legacy-file', name:'old-note.txt.extracted.txt', size:bytes.length, path:'untrusted', kind:'text' };
+  const source = { id:'source', prompt:'Question', attachments:[], items:[{id:'answer',type:'agentMessage',text:bytes.toString()}], status:'completed', createdAt:1 };
+  const conversation = { id, mode:'chat', title:'History', providerId:'p', model:'m', createdAt:1, updatedAt:2, pinned:false, archived:false, turns:[source,{id:'quoted',prompt:'Explain',attachments:[attachment],items:[{id:'compact',type:'contextCompaction',status:'completed'}],status:'completed',createdAt:2}] };
+  const row = { ...attachment, kind:'blob', mediaType:'text/plain', conversationId:id, createdAt:1, inlineDisplay:{file_name:'old-note.txt',file_type:'txt',kind:'excerpt',quote_message_uuid:'source:assistant',sha256:createHash('sha256').update(bytes).digest('hex')} };
+  const scope = newAdapterScope(owner, root, identity);
+  inAdapterScope(scope, () => { writeState('files', () => ({files:[row],aliases:[]})); flushState('files'); });
+  let activeOwner = owner, calls:string[] = [];
+  const run = createRunnerOfficialAdapter({ account:()=>({id:activeOwner,email:'owner@example.invalid',name:'Owner'}), sessionIdentity:()=>identity, settings:()=>({}), stateDirectory:()=>root, onEvent:()=>()=>{}, appVersion:'test', log(){} } as never,
+    async (method,args) => { calls.push(method); if(method==='snapshot') return {conversations:[{...conversation,turns:[]}],projects:[]}; if(method==='conversationTurns') {assert.equal(args[0],id);return {turns:conversation.turns,savedBranches:[]};} if(method==='turnAttachment') {assert.deepEqual(args,[id,attachment.id]);return {data:bytes};} throw Error('unexpected '+method); }, path.resolve('build/official-ui'), {modes:['chat']});
+  const base = `/api/organizations/${organizationUuid(owner)}/chat_conversations/${id}`;
+  const response = await run({method:'GET',path:base+'?claudex_inline_displays=1'});
+  assert.equal(response.status,200);
+  const result = JSON.parse(Buffer.from(response.body).toString());
+  assert.equal(result.uuid,id);assert.equal(result.claudex_inline_attachment_displays.length,1);
+  const projected=result.claudex_inline_attachment_displays[0];
+  assert.equal(projected.turnId,'quoted');assert.equal(projected.display.attachmentId,attachment.id);
+  assert.equal(projected.display.bytes,bytes.length);assert.equal(projected.display.sha256,createHash('sha256').update(bytes).digest('hex'));
+  assert.deepEqual(projected.display.quoteSource,{role:'assistant',turnId:'source'});
+  assert.equal((await run({method:'GET',path:base})).status,501);
+  assert.equal('chat_messages' in result,false);
+  assert.ok(calls.includes('turnAttachment'));assert.ok(!calls.includes('send'));
+  activeOwner='other';
+  assert.notEqual((await run({method:'GET',path:base+'?claudex_inline_displays=1'})).status,200);
+ });

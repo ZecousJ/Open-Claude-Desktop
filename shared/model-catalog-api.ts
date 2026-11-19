@@ -1,16 +1,22 @@
 /**
  * The model catalog the administrator publishes (display names, badges,
- * efforts, context windows), already intersected with the models the gateway
- * lists for this device's key. Package C2 fills it; the model menus, the
- * context ring and web search / Research read it. Published fields keep their
- * types; new ones are added as optional fields.
+ * efforts, context windows), already intersected with the models the
+ * gateway lists for this device's key. Package C2 fills it; the model
+ * menus (WP4b), the context ring (WP4a) and web search / Research read it. Published
+ * fields keep their types; new ones are added as optional fields.
  */
 import type { Settings } from "./types";
 import { bridgeMethods } from "./bridge-methods";
 
 /** Reasoning efforts a catalog entry can offer, in the service's words. */
 export type CatalogEffort =
-  "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
+  "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max" | "ultra";
+
+/** Account default for one original model selector surface. */
+export interface ModelSelectorPreference {
+  model?: string;
+  thinking?: { type: "disabled" | "none" } | { type: "effort"; effort: CatalogEffort } | { type: "effort_and_mode"; effort: CatalogEffort; mode: "auto" };
+}
 
 export interface ModelCatalogItem {
   /** The gateway's model id, as sent in requests. */
@@ -105,11 +111,7 @@ export function isConversationModel(id: string) {
   );
 }
 
-/**
- * GPT's image models: the model menu offers them under "Images", and a
- * conversation with one of them is answered with a picture
- * (electron/gateway.ts). Other image and video models stay out of the menus.
- */
+/** GPT image models used by image generation and existing drawing conversations. */
 export function isDrawingModel(id: string) {
   return /^gpt-image-/i.test(id);
 }
@@ -141,10 +143,10 @@ export function catalogForModels(
     })
     .sort((a, b) => a.item.sort - b.item.sort || a.index - b.index)
     .map(({ item }) => item);
-  // A listed model the catalog leaves out is one the administrator hid (the
-  // service lists every model a group offers, placed or not): it is not
-  // offered. A catalog that names none of them leaves the gateway's list, by
-  // id.
+  // A listed model the catalog leaves out is one the administrator hid
+  // (the service lists every model a group offers, placed or not): it is
+  // not offered (owner, 2026-10-02: hidden models showed in the menu).
+  // A catalog that names none of them leaves the gateway's list, by id.
   const items: ModelCatalogItem[] = known.length
     ? known
     : listed.map((id, index) => ({

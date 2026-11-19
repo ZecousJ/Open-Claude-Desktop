@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Pin, Split } from "../ui/glyphs";
 import { Spinner } from "../ui/Spinner";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { Menu, type MenuPosition } from "../ui/Menu";
 import { canSpeak } from "../voice/speech";
 import { useReadAloud, type ReadAloudPhase } from "./read-aloud";
@@ -23,7 +23,7 @@ import { useTranscriptSlots } from "./transcript-slots";
 import { formatText } from "../i18n";
 import { messageSummary } from "./message-summary";
 
-/** The Read aloud button's name for each phase. */
+/** The Read aloud button's name for each phase (live claude.ai bundle, 2026-10-12). */
 export function readAloudLabel(phase: ReadAloudPhase) {
   return phase === "playing" || phase === "loading"
     ? "Pause"
@@ -33,7 +33,8 @@ export function readAloudLabel(phase: ReadAloudPhase) {
 }
 
 /**
- * Read aloud: the reply is spoken in the voice, speed and language chosen in
+ * Read aloud (live claude.ai bundle, 2026-10-12: after Copy, before the
+ * ratings): the reply is spoken in the voice, speed and language chosen in
  * Settings → General → Voice, one reply at a time (read-aloud.ts). The button
  * reads Read aloud, then Pause while it speaks, then Resume; it is Read aloud
  * again once the reply was read. While the voices load it is Pause with a
@@ -78,8 +79,8 @@ function ReadAloud({ readKey, text }: { readKey: string; text: string }) {
  * bundle 2.31226.1 static JS). Once focus is inside, the row stays shown.
  */
 export function ShowMessageActions({ heading }: { heading?: string } = {}) {
-  // O14 uses the row heading in this focus entry so screen-reader action lists
-  // distinguish replies.
+  // O14 shared-14-CbvrJQ0P:13601–13620,13768 uses the row heading in
+  // this focus entry so screen-reader action lists distinguish replies.
   const label = heading
     ? formatText("Show message actions for {heading}", { heading })
     : "Show message actions";
@@ -121,13 +122,11 @@ export function ReplyToolbar({
   turn: Turn;
   busy: boolean;
   /**
-   * Cowork: the More options menu's Spin off a new task; no menu without it.
+   * Cowork: the More options menu's Spin off a new task (live claude.ai
+   * bundle, 2026-10-12, shared-11 IS); no menu without it.
    */
   onSpinOff?: () => void;
-  /**
-   * Retry and reply versions: Chat only. Cowork's toolbar is copy and the two
-   * ratings.
-   */
+  /** Retry and reply versions: Chat only. Cowork's toolbar is copy and the two ratings (S-0008 also shows read aloud, removed by owner decision 19). */
   versions?: boolean;
   /** Shared Chat row headings; independent legacy/Code actions retain their own entry. */
   contextualActions?: boolean;
@@ -163,9 +162,10 @@ export function ReplyToolbar({
         readKey={JSON.stringify([conversation.id, turn.id])}
         text={text}
       />
-      {/* No ratings in an incognito chat (the original hides them in a temporary
-         one). A chosen thumb is solid; pressing it again rates again, which
-         opens the feedback dialog again rather than withdrawing the rating. */}
+      {/* No ratings in an incognito chat (the original hides them in a
+        temporary one). A chosen thumb is solid; pressing it again rates
+        again, which opens the feedback dialog again rather than withdrawing
+        the rating (desktop bundle 2.31226.1). */}
       {!conversation.incognito && (
         <>
           <ReplyToolbarButton
@@ -202,7 +202,11 @@ export function ReplyToolbar({
   );
 }
 
-/** A Cowork reply's More options. */
+/**
+ * A Cowork reply's More options (live claude.ai bundle, 2026-10-12: a
+ * ghost icon button whose menu opens under it, aligned to its end, with
+ * one row, Spin off a new task).
+ */
 function SpinOffMenu({ onSpinOff }: { onSpinOff: () => void }) {
   const [menu, setMenu] = useState<MenuPosition>();
   const trigger = useRef<HTMLSpanElement>(null);
@@ -220,7 +224,7 @@ function SpinOffMenu({ onSpinOff }: { onSpinOff: () => void }) {
           });
         }}
       >
-        <AppIcon name="DotsHorizontal" />
+        <Anthropicon name="DotsHorizontal" />
       </ReplyToolbarButton>
       {menu && (
         <Menu
@@ -231,7 +235,7 @@ function SpinOffMenu({ onSpinOff }: { onSpinOff: () => void }) {
           entries={[
             {
               label: "Spin off a new task",
-              icon: <AppIcon name="ArrowSplitRight" />,
+              icon: <Anthropicon name="ArrowSplitRight" />,
               onSelect: onSpinOff,
             },
           ]}
@@ -243,11 +247,11 @@ function SpinOffMenu({ onSpinOff }: { onSpinOff: () => void }) {
 }
 
 /**
- * A Code reply's toolbar: Copy, Fork and Pin, then the time. The latest reply
- * keeps its still star instead. Fork from here starts a new session continuing
- * after this reply ("Starts a new session, keeps this one"); pinning has no
- * Claudex counterpart yet, so it is greyed with why (read aloud was removed by
- * owner decision 19).
+ * A Code reply's toolbar (R-0638): Copy, Fork and Pin, then the time. The
+ * latest reply keeps its still star instead (R-0831). Fork from here starts
+ * a new session continuing after this reply ("Starts a new session, keeps
+ * this one"); pinning has no Claudex counterpart yet, so it is greyed with
+ * why (read aloud was removed by owner decision 19).
  */
 export function CodeReplyToolbar({
   turn,

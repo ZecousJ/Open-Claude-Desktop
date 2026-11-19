@@ -1,9 +1,10 @@
 /**
  * Git and pull request actions in a Code transcript (the official ccr rows
  * "Created PR #12", "Pushed to main", "Committed 1a2b3c4", "Rebased onto
- * origin/main"). The official Claude Code CLI reports a `gitOperation` with its
- * Bash result; Codex reports none, so Claudex works it out from what the
- * session ran:
+ * origin/main"). The official Claude Code CLI reports a `gitOperation` with
+ * its Bash result (Android 1.260923.20 qix.f / live bundle c52b02f3f `Ct`:
+ * pr, push, branch, commit); Codex reports none, so Claudex works it out from
+ * what the session ran:
  *
  * - a GitHub tool call of a cloud session (`github` namespace: push,
  *   create_pull_request, comment) knows its branch and pull request;

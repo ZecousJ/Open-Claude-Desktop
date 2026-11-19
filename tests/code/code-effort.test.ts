@@ -102,7 +102,7 @@ test("The pressed thumb follows the pointer on a capped rubber band", () => {
 test("Ultracode field cells sit on a 4px lattice anchored to the track end", () => {
   const cells = fieldCells(196, 7);
   assert.deepEqual(cells, fieldCells(196, 7));
-  // Cells start at x = 4k + 3 on the 196px track...
+  // Cells start at x = 4k + 3 on the 196px track (R-0330)...
   assert.ok(cells.every(({ x }) => x >= 0 && x % 4 === 3));
   assert.equal(cells.length, 48 * fieldRows);
   assert.deepEqual(

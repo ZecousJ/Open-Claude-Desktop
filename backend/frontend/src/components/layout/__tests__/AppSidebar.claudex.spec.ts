@@ -42,7 +42,6 @@ describe('AppSidebar Claudex parts', () => {
       '/admin/claudex/overview',
       '/admin/claudex/policy',
       '/admin/claudex/models',
-      '/admin/claudex/directory-submissions',
       '/admin/claudex/devices',
       '/admin/claudex/usage-rules',
       '/admin/claudex/release',

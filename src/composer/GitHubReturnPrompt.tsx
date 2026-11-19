@@ -4,7 +4,7 @@ import type { GitHubReturn } from "../../shared/github-api";
 import { api } from "../desktop-api";
 import "./github-return.css";
 
-/** The page's title and the reason under it. */
+/** The page's title and the reason under it (live claude.ai bundle, 2026-10-12). */
 export const githubReturnText = {
   title: "GitHub connection not completed",
   denied:
@@ -16,9 +16,10 @@ export const githubReturnText = {
 /**
  * The page the web Code home shows when the person comes back from GitHub
  * without a connection (`/code?github=denied|failed`): the live app's GitHub
- * callback recovery prompt: a centred column at most 28rem wide, a 28px serif
- * title over the reason, then "Try again" (back to GitHub) and "Go back" (to
- * the Code home under it). Before, the return was dropped without a word.
+ * callback recovery prompt (live claude.ai bundle, 2026-10-12): a centred
+ * column at most 28rem wide, a 28px serif title over the reason, then
+ * "Try again" (back to GitHub) and "Go back" (to the Code home under it).
+ * Before, the return was dropped without a word.
  */
 export function GitHubReturnPrompt({
   cause,

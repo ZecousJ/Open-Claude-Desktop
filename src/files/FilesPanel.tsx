@@ -76,7 +76,7 @@ const parents = (path: string) => {
   return parts.slice(0, -1).map((_, i) => parts.slice(0, i + 1).join("/"));
 };
 
-/** Literal content hits. */
+/** Literal content hits (live claude.ai bundle, 2026-10-14, cf6507c5a-DsgDGwiu.js). */
 export function contentMatchPreview(preview: string, query: string): ReactNode {
   if (!query) return preview;
   const text = preview.toLowerCase();
@@ -422,7 +422,8 @@ export function FilesPanel({
   const root = listings[""];
   const shown = active ? files[active] : undefined;
   const previewKind = active ? filePreviewKind(active) : undefined;
-  // Markdown and SVG open rendered, HTML as its source; the eye or code button
+  // Markdown and SVG open rendered, HTML as its source (live desktop
+  // 2.42304.2: defaultView "source" for /\.html?$/i); the eye or code button
   // flips the file's view (sourceViews holds the flipped files).
   const rendered =
     !!previewKind && sourceViews.has(active!) === (previewKind === "html");

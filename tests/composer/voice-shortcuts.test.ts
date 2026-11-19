@@ -273,7 +273,7 @@ test("Quick access has a separate double-tap default and validates its custom sh
   assert.match(render("win32"), /Tap Alt twice/);
 });
 
-test("Quick Entry onboarding is desktop-only, with a resumable step and its shortcut drawn as keys", () => {
+test("Quick Entry onboarding is desktop-only, with a resumable step and bundled keyboard artwork", () => {
   assert.doesNotMatch(
     readFileSync(new URL("../../index.html", import.meta.url), "utf8"),
     /img-src[^;]*https:\/\/claude\.ai\/images\/desktop\//,
@@ -301,10 +301,10 @@ test("Quick Entry onboarding is desktop-only, with a resumable step and its shor
       value: previous,
     });
   }
-  for (const [platform, key] of [
-    ["darwin", "Option"],
-    ["win32", "Ctrl"],
-    ["linux", "Ctrl"],
+  for (const [platform, asset] of [
+    ["darwin", "macos"],
+    ["win32", "windows"],
+    ["linux", "linux"],
   ]) {
     const html = renderToStaticMarkup(
       createElement(QuickEntryOnboarding, {
@@ -317,7 +317,7 @@ test("Quick Entry onboarding is desktop-only, with a resumable step and its shor
     assert.match(html, /Quick entry settings/);
     assert.match(html, /Try Quick Entry/);
     assert.match(html, />Skip</);
-    assert.match(html, new RegExp(`<kbd[^>]*>[^<]*${key}</kbd>`));
+    assert.ok(html.includes(`keyboard-${asset}.svg`));
     assert.ok(!html.includes("claude.ai/images"));
   }
 });

@@ -88,7 +88,7 @@ function span(ms: number) {
   return tf("{n} days", { n: Math.round(hours / 24) });
 }
 
-/** A slot's label as a local date. */
+/** A slot's label ("2026-09-30" or "2026-09-30T14:20") as a local date. */
 const slotOf = (label: string) => {
   const [date, time] = label.split("T");
   const [y, m, d] = date!.split("-").map(Number);
@@ -172,8 +172,8 @@ function Bars({
           <span
             key={day.date}
             className={`st-bar ${day.level}${hover === index ? " hover" : ""}`}
-            // A slot without data is drawn green but has no figures to show: no
-            // tip.
+            // A slot without data is drawn green (owner, 2026-10-14) but
+            // has no figures to show: no tip.
             onMouseEnter={() =>
               setHover(day.level === "none" ? undefined : index)
             }
@@ -226,7 +226,7 @@ function PlatformRow({
 }) {
   const [open, setOpen] = useState(false);
   const count = platform.components.length;
-  // The models the channel checks.
+  // The models the channel checks (owner, 2026-10-02: instead of "2 components").
   const models = [...new Set(platform.components.map((c) => c.name))];
   const uptime = percent(platform.uptime);
   // What the mark means: the state, from the last hour's checks (the uptime

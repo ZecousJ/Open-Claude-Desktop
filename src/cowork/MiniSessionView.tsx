@@ -16,12 +16,14 @@ import { MiniComposerControls } from "./MiniComposerControls";
 const pinSlack = 24;
 
 /**
- * A task window's live view of its task once it started: at most 28rem tall,
- * the task's messages in a list that keeps to its end while it writes, the
- * approvals it waits on, a status row while it works ("Working on it…" by the
- * shimmering star, or "Couldn’t set up this task"), and a reply field ("Reply
- * to Claudex…") that stops the task while it works. An archived task takes no
- * messages ("Open it to unarchive it"). Before the task arrives it says
+ * A task window's live view of its task once it started (live claude.ai
+ * bundle, 2026-10-12: MiniSessionView, c6eb5f8cf bn, with
+ * inCoworkWindowsRow): at most 28rem tall, the task's messages in a list
+ * that keeps to its end while it writes, the approvals it waits on, a
+ * status row while it works ("Working on it…" by the shimmering star, or
+ * "Couldn’t set up this task"), and a reply field ("Reply to Claudex…")
+ * that stops the task while it works. An archived task takes no messages
+ * ("Open it to unarchive it"). Before the task arrives it says
  * "Connecting…".
  */
 export function MiniSessionView({

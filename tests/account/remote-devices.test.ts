@@ -413,13 +413,14 @@ function linkSetup(
   let computerAccess = true;
   const h = host(conversations);
   const methods = new DeviceMethods(h);
+  const session = {
+    currentToken: async () => "tok",
+    renewed: async () => "tok2",
+  };
   const link = new DeviceLink({
     computerAccess: () => computerAccess,
     baseUrl: () => "https://claudex.example",
-    session: () => ({
-      currentToken: async () => "tok",
-      renewed: async () => "tok2",
-    }),
+    session: () => session,
     enabled: () => enabled,
     linkId: () => "pc-0123456789",
     name: () => "Studio",
@@ -480,17 +481,153 @@ function linkSetup(
   };
 }
 
+test("a delayed ticket cannot connect a desktop after switching accounts on the same service", async () => {
+  let resolveTicket: (response: Response) => void = () => {};
+  const ticket = new Promise<Response>((resolve) => { resolveTicket = resolve; });
+  const session = (token: string) => ({
+    currentToken: async () => token,
+    renewed: async () => token,
+  });
+  let account = session("old-account");
+  const testLink = linkSetup([], {
+    session: () => account,
+    fetch: async (_url, init) =>
+      new Headers(init?.headers).get("Authorization") === "Bearer old-account"
+        ? ticket
+        : Response.json({ data: { ticket: "B".repeat(43), expires_in: 30 } }),
+  });
+  testLink.link.refresh();
+  await testLink.settle();
+
+  testLink.link.disconnect();
+  account = session("new-account");
+  resolveTicket(
+    Response.json({ data: { ticket: "A".repeat(43), expires_in: 30 } }),
+  );
+  testLink.link.refresh();
+  await testLink.settle();
+
+  assert.deepEqual(
+    testLink.sockets.map((socket) => socket.protocols[1]),
+    [`ticket.${"B".repeat(43)}`],
+  );
+});
+
+test("a retired device link cannot run a call or publish an event", async () => {
+  const live = {
+    currentToken: async () => "old-account",
+    renewed: async () => "old-account",
+  };
+  let account: typeof live | undefined = live;
+  const task = conversation("code-1");
+  const testLink = linkSetup([task], { session: () => account });
+  testLink.link.refresh();
+  await testLink.settle();
+  const socket = testLink.sockets[0]!;
+  socket.open();
+  socket.receive({ t: "welcome" });
+
+  account = undefined;
+  socket.receive({ t: "call", id: "d1", method: "interrupt", args: [task.id] });
+  testLink.link.observe({ type: "conversation", conversation: task });
+  await testLink.settle();
+
+  assert.deepEqual(testLink.h.calls, []);
+  assert.deepEqual(socket.of("event"), []);
+  assert.equal(testLink.link.status().online, false);
+});
+
+test("a cancellation on a closed link cannot suppress a reply on the next link", async () => {
+  const task = conversation("code-1");
+  const testLink = linkSetup([task]);
+  let resolveInterrupt: () => void = () => {};
+  const interrupted = new Promise<void>((resolve) => { resolveInterrupt = resolve; });
+  testLink.h.interrupt = () => interrupted;
+  testLink.link.refresh();
+  await testLink.settle();
+  const first = testLink.sockets[0]!;
+  first.open();
+  first.receive({ t: "welcome" });
+  first.receive({ t: "call", id: "d1", method: "interrupt", args: [task.id] });
+  first.receive({ t: "cancel", id: "d1" });
+  first.onclose?.({ code: 1006, reason: "network" });
+
+  testLink.advance(3000);
+  await testLink.settle();
+  const next = testLink.sockets[1]!;
+  next.open();
+  next.receive({ t: "welcome" });
+  next.receive({ t: "call", id: "d1", method: "listCodeConversations" });
+  await testLink.settle();
+  resolveInterrupt();
+  await testLink.settle();
+
+  assert.deepEqual(first.of("result"), []);
+  const [result] = next.of("result");
+  assert.equal(result?.ok, true);
+  assert.deepEqual(
+    result?.value.map((item: { id: string }) => item.id),
+    [task.id],
+  );
+});
+
+test("the relay reports online changes after welcome and closes only once", async () => {
+  const states: boolean[] = [];
+  const setup = linkSetup([], { onlineChanged: () => states.push(setup.link.connected) });
+  setup.link.refresh();
+  await setup.settle();
+  await setup.settle();
+  const socket = setup.sockets[0];
+  socket.open();
+  assert.deepEqual(states, []);
+  socket.receive({ t: "welcome" });
+  socket.receive({ t: "welcome" });
+  assert.deepEqual(states, [true]);
+  setup.link.disconnect();
+  setup.link.disconnect();
+  assert.deepEqual(states, [true, false]);
+});
+
+test("a ticket from a previous connection cannot open the next account's link", async () => {
+  const ticket: Array<(response: Response) => void> = [];
+  const setup = linkSetup([], {
+    fetch: () => new Promise(resolve => ticket.push(resolve)),
+  });
+  const respond = (index: number) => ticket[index](Response.json({
+    ticket: "A".repeat(43), expires_in: 30,
+  }));
+  setup.link.refresh();
+  await setup.settle();
+  setup.link.disconnect();
+  setup.link.refresh();
+  await setup.settle();
+  assert.equal(ticket.length, 2);
+  respond(0);
+  await setup.settle();
+  assert.equal(setup.sockets.length, 0);
+  respond(1);
+  await setup.settle();
+  assert.equal(setup.sockets.length, 1);
+  setup.link.disconnect();
+});
+
+
 test("the relay exposes network and sign-in causes and clears them once reconnected", async () => {
-  const setup = linkSetup([]);
+  const changes: Array<ReturnType<DeviceLink["status"]>> = [];
+  const setup = linkSetup([], {
+    statusChanged: () => changes.push(setup.link.status()),
+  });
   setup.link.refresh();
   await setup.settle();
   await setup.settle();
   let socket = setup.sockets[0];
   socket.open();
   socket.receive({ t: "welcome" });
-  assert.equal(setup.link.status().cause, undefined);
+  assert.equal(changes.at(-1)?.online, true);
+  assert.equal(changes.at(-1)?.cause, undefined);
   socket.onclose?.({ code: 1006, reason: "network" });
-  assert.equal(setup.link.status().cause, "network");
+  assert.equal(changes.at(-1)?.online, false);
+  assert.equal(changes.at(-1)?.cause, "network");
   setup.advance(3000);
   await setup.settle();
   await setup.settle();
@@ -498,9 +635,11 @@ test("the relay exposes network and sign-in causes and clears them once reconnec
   assert.equal(setup.sockets.length, 2);
   socket.open();
   socket.receive({ t: "welcome" });
-  assert.equal(setup.link.status().cause, undefined);
+  assert.equal(changes.at(-1)?.online, true);
+  assert.equal(changes.at(-1)?.cause, undefined);
   socket.onclose?.({ code: 4008, reason: "" });
-  assert.equal(setup.link.status().cause, "sign_in");
+  assert.equal(changes.at(-1)?.online, false);
+  assert.equal(changes.at(-1)?.cause, "sign_in");
   setup.link.disconnect();
 });
 
@@ -521,7 +660,7 @@ test("the link says hello with its methods, answers calls and relays errors", as
   ]);
   assert.match(
     String((s.tickets[0] as { url: string }).url),
-    /\/api\/v1\/claudex\/web\/auth\/events-ticket$/,
+    /\/api\/v1\/claudex\/mobile\/events-ticket$/,
   );
   assert.equal(
     JSON.parse(String((s.tickets[0] as { body: string }).body)).tabId,

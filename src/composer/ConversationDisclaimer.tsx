@@ -21,11 +21,11 @@ export function disclaimerFeedbackAvailable(
 }
 
 /**
- * Conversation help note. Web uses configured help or Claudex's public support
- * route; native clients keep policy-aware link handling. The captured ordinary
- * web reply shows the first sentence. An explicit citation reminder and native
- * second-sentence behavior remain available. Phone web places this same note
- * above the input through composer CSS.
+ * Conversation help note (R-0579). Web uses configured help or Claudex's
+ * public support route; native clients keep policy-aware link handling.
+ * The captured ordinary web reply shows the first sentence. An explicit
+ * citation reminder and native second-sentence behavior remain available.
+ * Phone web places this same note above the input through composer CSS.
  */
 export function ConversationDisclaimer({
   help,
@@ -82,7 +82,8 @@ export function ConversationDisclaimer({
   const url =
     configured ??
     helpUrl("support", web ? globalThis.location?.origin : undefined);
-  // The current unified Chat on web and desktop uses the first sentence.
+  // The current unified Chat on web and desktop uses the first sentence
+  // (O16 shared-14-qJT2B88w:2891–2903; R15 native existing screenshot).
   // Explicit source reminders and independent legacy clients remain intact.
   const showSecond =
     !short &&

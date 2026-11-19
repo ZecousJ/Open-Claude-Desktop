@@ -123,7 +123,7 @@ export function useCustomizeState(kit: UseCustomizeStateKit) {
   const [menu, setMenu] = useState<OpenMenu>();
   const [busy, setBusy] = useState<string>();
   const [creating, setCreating] = useState(false);
-  // Duplicate or Rename from a row's menu.
+  // Duplicate or Rename from a row's menu (live claude.ai bundle, 2026-10-12).
   const [naming, setNaming] = useState<{
     kind: "duplicate" | "rename";
     skill: CustomizeSkill;

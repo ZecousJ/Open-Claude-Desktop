@@ -8,7 +8,7 @@ import {
   type ConversationImport,
 } from "../../shared/cloud-sync-api";
 
-// Link refusals and native-thread handoff.
+// Link refusals and native-thread handoff (live claude.ai bundle, 2026-10-14, c06fd35f9).
 export function assertLinkableTask(conversation: Conversation) {
   if (conversation.mode !== "cowork")
     throw new Error("This kind of task can’t be linked to a computer.");

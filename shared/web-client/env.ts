@@ -8,6 +8,7 @@
 export interface SocketLike {
   readonly readyState: number;
   readonly protocol: string;
+  readonly bufferedAmount?: number;
   binaryType: string;
   onopen: ((event: unknown) => void) | null;
   onmessage: ((event: { data: unknown }) => void) | null;

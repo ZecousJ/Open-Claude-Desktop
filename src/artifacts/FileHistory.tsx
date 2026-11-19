@@ -4,6 +4,7 @@ import { currentLocale, formatText, useLocale, useT } from "../i18n";
 import { RelativeTime } from "../ui/RelativeTime";
 import "./file-history.css";
 
+// (live claude.ai bundle, 2026-10-14, cd50800c7, we / Ee / Ae)
 export function FileHistory({
   path,
   versions,

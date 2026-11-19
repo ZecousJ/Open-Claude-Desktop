@@ -186,8 +186,8 @@ export function fillRailToolCards(kit: FillRailToolCardsKit) {
       </RailCard>
     );
 
-  // Progress: the session's task list, "{done} of {total}", only while it has
-  // one.
+  // Progress (live claude.ai bundle, 2026-10-14): the session's task list,
+  // "{done} of {total}", only while it has one.
   const plan = latestPlan(conversation) ?? [];
   if (plan.length)
     cards.progress = (
@@ -239,9 +239,9 @@ export function fillRailToolCards(kit: FillRailToolCardsKit) {
       </RailCard>
     );
 
-  // Changes: the session's open pull requests as rows, the merged and closed
-  // ones under "{count} earlier pull requests" (they are the rows when none is
-  // open).
+  // Changes (live claude.ai bundle, 2026-10-15, cb1afaa4b `ho`, `To`): the
+  // session's open pull requests as rows, the merged and closed ones under
+  // "{count} earlier pull requests" (they are the rows when none is open).
   const earlier = earlierRefs.map((ref, index) => ({
     ref,
     pr: earlierEntries[index]?.pr,
@@ -279,9 +279,10 @@ export function fillRailToolCards(kit: FillRailToolCardsKit) {
   const shownServers = devServers.filter(
     (server) => server.status !== "stopped",
   );
-  // A server row: the Cache glyph, its name, then "localhost:{port}" once it
-  // runs, "Starting…" until then or "Failed to start" in red, and a Stop
-  // button; the summary counts the running ones.
+  // A server row (live desktop 2.42304.2, the rail's Servers card): the
+  // Cache glyph, its name, then "localhost:{port}" once it runs, "Starting…"
+  // until then or "Failed to start" in red, and a Stop button; the summary
+  // counts the running ones.
   if (shownServers.length)
     cards.servers = (
       <RailCard

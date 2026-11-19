@@ -70,9 +70,10 @@
 .file-code-editor .cm-file-indented {
   position: relative;
 }
-/* With word wrap on, an indented line's wrapped rows start at its indent, not
-   at the left edge, so the guides stay in the indent and never run through the
-   text. CodeMirror's lines are 6px in. */
+/* With word wrap on, an indented line's wrapped rows start at its indent,
+   not at the left edge, so the guides stay in the indent and never run
+   through the text (owner, 2026-10-22; an editor's "wrap at the same
+   indent"). CodeMirror's lines are 6px in. */
 .file-code-editor .cm-lineWrapping .cm-file-indented {
   padding-left: calc(6px + var(--file-indent-width));
   text-indent: calc(-1 * var(--file-indent-width));

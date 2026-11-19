@@ -4,7 +4,7 @@ import { currentLocale } from "../../i18n";
 import type { CustomizeSkill } from "../../../shared/collections-api";
 import type { HostCapabilities } from "../../../shared/host";
 
-/** 1016 Ll/Fl: two letters/digits, 200 code points. */
+/** 1016 ccea1f474-D3CH0tgO Ll/Fl: two letters/digits, 200 code points. */
 export function searchableLength(query: string) {
   return Array.from(query).filter((c) => /[\p{L}\p{N}]/u.test(c)).length;
 }
@@ -17,7 +17,7 @@ export function catalogQuery(query: string) {
     : Array.from(trimmed).slice(0, 200).join("");
 }
 
-/** 1016 b, used by ccea1f474 Jl for local names. */
+/** 1016 c705a8db5-y9GW53Jl b, used by ccea1f474 Jl for local names. */
 export function normalizeSearchText(text: string) {
   return text
     .normalize("NFKD")
@@ -60,7 +60,7 @@ export function customizeOffers(can: HostCapabilities): CustomizeOffers {
   };
 }
 
-/** Filter menu "Created by"; Built in = bundled with the agent. */
+/** Filter menu "Created by" (R-1137); Built in = bundled with the agent. */
 export type SkillOrigin = "all" | "you" | "organization" | "builtin";
 export type SkillSort = "edited" | "name";
 
@@ -90,10 +90,10 @@ const sourceOf = (skill: CustomizeSkill) => {
 };
 
 /**
- * Yours groups only sources the runtime reports. Official 1016 Pt supplies
- * Created by you / organization / project. Explicit host provenance selects
- * shared/publisher/marketplace sections; a system scope alone does not
- * establish a publisher.
+ * Yours groups only sources the runtime reports. Official 1016
+ * c27f32a39-DlngGgoC pt supplies Created by you / organization / project.
+ * Explicit host provenance selects shared/publisher/marketplace sections;
+ * a system scope alone does not establish a publisher.
  */
 export const sections: {
   id: string;
@@ -102,8 +102,8 @@ export const sections: {
   from?: string;
   test: (s: CustomizeSkill) => boolean;
 }[] = [
-  // The live order: In this project, Created by you, From your organization,
-  // Shared with you, From … & Partners, marketplaces.
+  // The live order (c27f32a39 pt): In this project, Created by you, From
+  // your organization, Shared with you, From … & Partners, marketplaces.
   {
     id: "project",
     title: "In this project",
@@ -152,10 +152,8 @@ const matches = (text: string, query: string) => {
   return words.every((word) => haystack.includes(word));
 };
 
-/**
- * Official name-only Fuse matching, .25 threshold, independent word
- * intersection, with source order retained.
- */
+/** Official name-only Fuse matching, .25 threshold, independent word
+ * intersection, with source order retained (c39b69263 / ccea1f474 Jl). */
 export function matchingNames<T>(
   items: readonly T[],
   query: string,
@@ -229,8 +227,9 @@ export function editedLabel(timestamp: number, now = Date.now()) {
 }
 
 /**
- * The folder name a skill's name is saved under: lowercase letters, numbers and
- * hyphens, starting with a letter, at most 64 characters.
+ * The folder name a skill's name is saved under (R-1613: "test!" is saved
+ * as /test): lowercase letters, numbers and hyphens, starting with a
+ * letter, at most 64 characters (R-1625).
  */
 export function skillSlug(name: string): string {
   const slug = name

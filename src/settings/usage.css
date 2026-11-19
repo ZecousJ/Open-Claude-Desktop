@@ -1,6 +1,8 @@
 /* Settings → Usage, measured on R-1304-1311-Usage-limits-{top,bottom}-浅色-W1351
-   and -current-limit-top (Windows 1x: 1 image px = 1 CSS px). The dark theme
-   takes the Settings palette, as measured on the live page. */
+   and -current-limit-top (Windows 1x: 1 image px = 1 CSS px). The dark
+   theme takes the Settings palette, as measured on the live page
+   (2026-10-16: labels #f0efec, notes and the plan chip #c3c2b7, links
+   #6da7ec). */
 .usage-page {
   container: usage-page / inline-size;
   --usage-text: var(--settings-primary);
@@ -60,7 +62,9 @@
   line-height: 30px;
   color: var(--usage-text);
 }
-/* "Upgrade plan" and "Buy more usage" at Heads up and Limit hit. */
+/* "Upgrade plan" and "Buy more usage" at Heads up and Limit hit (live
+   claude.ai bundle, 2026-10-14, c71860c77 ui: gap-md under the line,
+   gap-sm between the lg buttons). */
 .usage-headline-actions {
   display: flex;
   flex-wrap: wrap;
@@ -68,7 +72,8 @@
   gap: 8px;
   margin-top: 12px;
 }
-/* The lg buttons: "Buy more usage" is 143 x 40, radius 10, 15px. */
+/* The lg buttons: "Buy more usage" is 143 x 40, radius 10, 15px (live
+   claude.ai capture, 2026-10-16, official-settings-tabs). */
 .usage-headline-actions .settings-button.regular {
   height: 40px;
   padding: 0 16px;
@@ -126,8 +131,9 @@
 .usage-bar.full > span {
   background: var(--usage-full);
 }
-/* Amber from 75%, red from 90%, the composer ring's colours; the track is the
-   fill's tint as in the accent bar. */
+/* Amber from 75%, red from 90% (live claude.ai bundle, 2026-10-14, shared-8
+   iv: the meter's warning and danger variants), the composer ring's
+   colours; the track is the fill's tint as in the accent bar. */
 .usage-bar.warning {
   --usage-fill: var(--usage-warning);
 }
@@ -190,7 +196,7 @@
   color: var(--usage-muted);
 }
 
-/* "Last updated: … ↻" and the Learn more link. */
+/* "Last updated: … ↻" (R-1309) and the Learn more link (R-1310). */
 .usage-updated {
   display: flex;
   align-items: center;
@@ -246,7 +252,7 @@
 .usage-link:hover {
   text-decoration-thickness: 2px;
 }
-/* Under Learn more, 8px apart. */
+/* Under Learn more, 8px apart (c71860c77 Mi: flex-col gap-sm). */
 .usage-link + .usage-billing-link {
   margin-top: 8px;
 }
@@ -258,8 +264,8 @@
     transition: none;
   }
 }
-/* Narrow page: the bar moves under the text, the percent stays at the right of
-   the label. */
+/* Narrow page (R-1312 has no capture below 1351): the bar moves under the
+   text, the percent stays at the right of the label. */
 @container usage-page (max-width: 700px) {
   .usage-row {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -273,8 +279,9 @@
 :root[data-motion="reduced"] .usage-bar > span {
   transition: none;
 }
-/* The week fold: the week's label is the toggle with a small caret that turns
-   over when open; the per-model rows follow 28px apart (the rows' gap). */
+/* The week fold (live claude.ai bundle, 2026-10-14, c71860c77 mi): the
+   week's label is the toggle with a small caret that turns over when open;
+   the per-model rows follow 28px apart (the rows' gap). */
 .usage-week-toggle {
   display: inline-flex;
   align-items: center;
@@ -295,7 +302,8 @@
   gap: 28px;
   padding-top: 28px;
 }
-/* This week's usage by product: a titled group of the same bar rows. */
+/* This week's usage by product (c71860c77 Ei): a titled group of the same
+   bar rows. */
 .usage-products {
   margin-top: 32px;
 }

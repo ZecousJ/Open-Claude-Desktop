@@ -1,4 +1,4 @@
-// .
+// (desktop 2.37337.1, index.chunk-BWk6pVUt.js, hP / aIn / CLOUD_METADATA_HOSTS).
 const metadataHosts = new Set([
   "metadata.google.internal",
   "metadata.goog",

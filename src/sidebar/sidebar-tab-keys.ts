@@ -1,8 +1,8 @@
 /**
- * Next and Previous sidebar tab: on the desktop ⌘⌥→ and ⌘⌥← (Ctrl+Alt
- * elsewhere) move between the sidebar's mode tabs, Chat and Cowork | Code here.
- * The tab before the open one shows ⌘⌥← in its tooltip and the one after it
- * ⌘⌥→.
+ * Next and Previous sidebar tab (live claude.ai bundle, 2026-10-12): on the
+ * desktop ⌘⌥→ and ⌘⌥← (Ctrl+Alt elsewhere) move between the sidebar's
+ * mode tabs, Chat and Cowork | Code here. The tab before the open one
+ * shows ⌘⌥← in its tooltip and the one after it ⌘⌥→.
  */
 
 /** The step a key press asks for: 1 next, -1 previous, 0 none. */

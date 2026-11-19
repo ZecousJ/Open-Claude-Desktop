@@ -1,6 +1,6 @@
 /* Cowork replies: serif body, tool rows, viewed pictures, queued prompts, plan rows. (part of chat-transcript.css) */
 /* Cowork replies share Chat's serif body and icon toolbar and have no avatar
-   star. */
+   star (S-0008, 2.0 px/CSS). */
 .mode-cowork .assistant-message {
   display: block;
 }
@@ -18,10 +18,11 @@
   font-size: inherit;
   line-height: inherit;
 }
-/* Text and tool rows: the same 12px of air above and below a row's 20px label
-   (10px margin and the 24px row's 2px), rows next to each other share it. While
-   a row works, its dots sit at the text's edge and the label starts 32px in;
-   done, the label slides back (200ms). */
+/* Text and tool rows (owner, 2026-10-03; as Chat's steps, live claude.ai):
+   the same 12px of air above and below a row's 20px label (10px margin and
+   the 24px row's 2px), rows next to each other share it. While a row works,
+   its dots sit at the text's edge and the label starts 32px in (R-0846: the
+   dots, then "Running workflow…"); done, the label slides back (200ms). */
 .mode-cowork
   .assistant-content
   > :is(
@@ -42,14 +43,18 @@
   ):first-child {
   margin-top: 0;
 }
-/* A picture the agent looked at (or made) has a row of its own in Cowork: the
-   same light row as the other tools, not a card. */
+/* A picture the agent looked at (or made) has a row of its own in Cowork:
+   the same light row as the other tools, not a card (owner, 2026-10-03). */
 .mode-cowork .assistant-content > .session-tool-activity {
   border: 0;
   border-radius: 0;
   background: none;
   overflow: visible;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 }
 .mode-cowork .assistant-content > .session-tool-activity > summary {
   position: relative;
@@ -130,8 +135,9 @@
   left: 4px;
   top: 2px;
 }
-/* Like Chat, paragraphs sit 4px inside the column, so the tool-group label and
-   the toolbar's first icon line up with the text. */
+/* Like Chat, paragraphs sit 4px inside the column, so the tool-group label
+   and the toolbar's first icon line up with the text (S-0008: label ink +0.5,
+   copy icon ink -0.5 from the paragraph's ink edge). */
 .mode-cowork .markdown p,
 .mode-cowork .markdown h3 {
   padding: 0 4px;
@@ -166,9 +172,9 @@
 :root[data-theme="light"] .mode-cowork .markdown {
   color: var(--text);
 }
-/* Cowork tool groups read as a timeline: a dot per call joined by a 1px #2d2d2d
-   line. The icons are Claude's own tools; the dots and spacing here are
-   provisional. */
+/* Cowork tool groups read as a timeline: a dot per call joined by a 1px
+   #2d2d2d line (S-0008 "Loaded a skill, used a tool ⌄"). The icons are
+   Claude's own tools; the dots and spacing here are provisional. */
 .agent-activity-content.cowork-timeline {
   margin-top: 8px;
   border: 0;
@@ -209,7 +215,11 @@
 
 .command-activity {
   margin: 0 0 24px;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 }
 .command-activity > summary {
   -webkit-user-select: none;
@@ -228,7 +238,7 @@
   list-style: none;
 }
 /* R-0728, R-0735, R-0759 (2.4 px/CSS): with the pointer on it the label
-   brightens to #cbcac5; unhovered rows stay #858580. */
+   brightens to #cbcac5; unhovered rows stay #858580 (inner rows of R-0728). */
 .command-activity > summary:is(:hover, :focus-visible) {
   color: #cbcac5;
 }
@@ -243,20 +253,22 @@
 .command-activity[open] > summary > svg {
   transform: rotate(90deg);
 }
-/* A row's focus ring is the accent line inside its edge, without the glow. */
+/* A row's focus ring is the accent line inside its edge, without the glow
+   (the original's row toggle; desktop bundle 2.31226.1). */
 .command-activity > summary:focus-visible {
   outline: 1px solid var(--focus);
   outline-offset: -1px;
   border-radius: 6px;
   box-shadow: none;
 }
-/* A task-list update (ChatPlanRow): the step row, unfolding the Plan panel's
-   list under it. */
+/* A task-list update (ChatPlanRow): the step row, unfolding the Plan
+   panel's list (R-Code-Plan面板: 13px/19px steps 6px apart) under it. */
 .chat-plan-steps {
   margin: 6px 0 0;
   padding: 0 4px;
   font:
-    13px/19px -apple-system,
+    13px/19px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }

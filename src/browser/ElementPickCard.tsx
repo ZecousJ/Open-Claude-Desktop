@@ -5,11 +5,12 @@ import { addFile } from "../composer/attachment-input";
 import { elementPickText } from "./browser-model";
 
 /**
- * Select element (R8-G): the element the person picked goes into the message as
- * attachments, so the composer stays clean: a text file with its place,
- * selector, text, styles and HTML, and, when the panel could take one, a
- * picture of it that shows as a thumbnail like any attached image. No capture
- * shows where the original puts it; attachments are the closest captured place.
+ * Select element (R8-G): the element the person picked goes into the
+ * message as attachments, so the composer stays clean: a text file with
+ * its place, selector, text, styles and HTML, and, when the panel could
+ * take one, a picture of it that shows as a thumbnail like any attached
+ * image (R-0242). No capture shows where the original puts it; attachments
+ * are the closest captured place.
  */
 
 /** The file name for a picked element: "element-button.md". */

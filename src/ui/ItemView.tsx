@@ -3,6 +3,7 @@ import type { Item, Mode, Turn } from "../../shared/types";
 import { itemIsRunning } from "../../shared/activity";
 import { AgentMessageAttribution } from "../transcript/agents/AgentMessageAttribution";
 import { withoutPrTags } from "../../shared/pr-tags";
+import { projectWebCitationText } from "../../shared/web-citation-text";
 import {
   FileChangeView,
   OutputFilesView,
@@ -109,7 +110,9 @@ export function ItemView({
         <Markdown
           // Claude's <pr-created> tag is for the branch row; here it is the link.
           text={
-            mode === "code" ? withoutPrTags(item.text ?? "") : (item.text ?? "")
+            mode === "code" ? withoutPrTags(item.text ?? "")
+              : item.type === "agentMessage" ? projectWebCitationText(item.text ?? "").text
+              : (item.text ?? "")
           }
           onArtifact={onArtifact}
           streaming={itemIsRunning(item)}
@@ -121,7 +124,8 @@ export function ItemView({
   if (item.type === "reasoning") {
     const text = item.summary?.join("\n\n");
     // The Thinking and Verbose views show the thinking itself in the
-    // transcript, muted and italic after a rule, instead of the folded step.
+    // transcript, muted and italic after a rule (live claude.ai bundle,
+    // 2026-10-12: inline thinking), instead of the folded step.
     if (text && mode === "code" && showsThinking(view))
       return <ThinkingInline text={text} />;
     // The phones fold a thought into the official row that opens its sheet.

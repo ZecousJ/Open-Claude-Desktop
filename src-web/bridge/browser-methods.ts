@@ -17,9 +17,11 @@ import { downloadPage, linkOpens } from "../../shared/external-links";
 import {
   knowledgeExtensions,
   knowledgeFileLimit,
+  knowledgeFileLimitMessage,
   type ProjectKnowledge,
 } from "../../shared/collections-api";
 import type { HostedShare } from "../../shared/sharing-api";
+import type { AccountExportOptions } from "../../shared/settings-api";
 import type { Attachment, Conversation } from "../../shared/types";
 import { webPaths } from "../../shared/web-protocol";
 import { base64ToBytes } from "../../shared/web-wire";
@@ -98,22 +100,32 @@ export function createBrowserMethods(deps: BrowserDeps) {
   const { env, transport, state, dictation, call } = deps;
 
   async function policy(): Promise<ClientPolicy> {
+    const current = transport.captureActivation();
+    current();
     const cached = state.cachedPolicy;
     if (cached) return cached;
     const fresh = (await call("clientPolicy", [])) as ClientPolicy;
+    current();
     state.cachedPolicy = fresh;
     return fresh;
   }
 
   /** Downloads what a Go downloads/ endpoint answers; resolves to the name. */
   async function downloadFrom(path: string, fallback: string) {
-    const response = await transport.fetch(path);
-    if (!response.ok) throw apiError(response.status, await readJson(response));
+    const current = transport.captureActivation();
+    const response = await transport.fetch(path, {}, current);
+    if (!response.ok) {
+      const error = await readJson(response);
+      current();
+      throw apiError(response.status, error);
+    }
     const name = safeFileName(
       dispositionName(response.headers.get("content-disposition")) ?? "",
       fallback,
     );
-    env.download(name, await response.blob());
+    const bytes = await response.blob();
+    current();
+    env.download(name, bytes);
     return name;
   }
 
@@ -158,6 +170,7 @@ export function createBrowserMethods(deps: BrowserDeps) {
     copyImage: (src: string) => env.writeImageClipboard(src),
 
     // Fonts of a local Claude installation are never served on the web.
+    referenceFonts: async () => [],
 
     // A browser tab has no window buttons.
     windowAction: async () => {},
@@ -191,6 +204,8 @@ export function createBrowserMethods(deps: BrowserDeps) {
       ),
 
     chooseAttachments: async (): Promise<Attachment[]> => {
+      const active = transport.captureActivation();
+      active();
       const known = state.cachedPolicy;
       if (known && !known.attachments.types.length)
         throw bridgeError("Your administrator has turned off attachments.");
@@ -200,8 +215,10 @@ export function createBrowserMethods(deps: BrowserDeps) {
         .map((type) => `.${type}`)
         .join(",");
       const files = await env.pickFiles({ accept, multiple: true });
+      active();
       if (!files.length) return [];
       const current = await policy();
+      active();
       if (!current.attachments.types.length)
         throw bridgeError("Your administrator has turned off attachments.");
       const chosen = files.slice(0, maxPickedFiles);
@@ -210,13 +227,13 @@ export function createBrowserMethods(deps: BrowserDeps) {
         if (refusal) throw bridgeError(refusal);
       }
       const attachments: Attachment[] = [];
-      for (const file of chosen)
-        attachments.push(
-          (await call("addAttachmentData", [
-            file.name,
-            await file.bytes(),
-          ])) as Attachment,
-        );
+      for (const file of chosen) {
+        const bytes = await file.bytes();
+        active();
+        const attachment = await call("addAttachmentData", [file.name, bytes]) as Attachment;
+        active();
+        attachments.push(attachment);
+      }
       return attachments;
     },
 
@@ -225,10 +242,13 @@ export function createBrowserMethods(deps: BrowserDeps) {
     addProjectKnowledge: async (
       projectId: string,
     ): Promise<ProjectKnowledge> => {
+      const active = transport.captureActivation();
+      active();
       const files = await env.pickFiles({
         accept: knowledgeExtensions.map((type) => `.${type}`).join(","),
         multiple: true,
       });
+      active();
       if (!files.length)
         return (await call("listProjectKnowledge", [
           projectId,
@@ -237,15 +257,20 @@ export function createBrowserMethods(deps: BrowserDeps) {
       for (const file of chosen)
         if (file.size > knowledgeFileLimit)
           throw bridgeError(
-            `${file.name} is too large. Project files can be up to 10 MB.`,
+            `${file.name} is too large. ${knowledgeFileLimitMessage}`,
           );
       const read = [];
-      for (const file of chosen)
-        read.push({ name: file.name, data: await file.bytes() });
-      return (await call("addProjectKnowledgeFiles", [
+      for (const file of chosen) {
+        const data = await file.bytes();
+        active();
+        read.push({ name: file.name, data });
+      }
+      const result = (await call("addProjectKnowledgeFiles", [
         projectId,
         read,
       ])) as ProjectKnowledge;
+      active();
+      return result;
     },
 
     exportConversation: async (id: string) => {
@@ -277,11 +302,18 @@ export function createBrowserMethods(deps: BrowserDeps) {
       );
     },
 
-    exportData: () =>
-      downloadFrom(
-        `${webPaths.downloads}export`,
+    exportData: (options: AccountExportOptions = {}) => {
+      const range = new URLSearchParams();
+      if (options.conversations_start_date)
+        range.set("conversations_start_date", options.conversations_start_date);
+      if (options.conversations_end_date)
+        range.set("conversations_end_date", options.conversations_end_date);
+      const query = range.toString();
+      return downloadFrom(
+        `${webPaths.downloads}export${query ? "?" + query : ""}`,
         `claudex-export-${new Date(env.now()).toISOString().slice(0, 10)}.zip`,
-      ),
+      );
+    },
 
     saveArtifact: async (name: string, content: string) => {
       const text = String(content ?? "");
@@ -331,7 +363,9 @@ export function createBrowserMethods(deps: BrowserDeps) {
     },
 
     saveGeneratedFile: async (digest: string, name: string) => {
+      const current = transport.captureActivation();
       const base64 = (await call("readGeneratedFile", [digest])) as string;
+      current();
       const bytes = base64ToBytes(String(base64 ?? ""));
       if (bytes.byteLength > 10 * 1024 * 1024) throw bridgeError("too_large");
       const file = safeFileName(name, "download");
@@ -345,10 +379,12 @@ export function createBrowserMethods(deps: BrowserDeps) {
     },
 
     saveResearchReport: async (conversationId: string, turnId: string) => {
+      const current = transport.captureActivation();
       const report = (await call("readResearchReport", [
         conversationId,
         turnId,
       ])) as { title: string; markdown: string };
+      current();
       saveText(
         `${safeFileName(report.title, "Research report")}.md`,
         report.markdown,

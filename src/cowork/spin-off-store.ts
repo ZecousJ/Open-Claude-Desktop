@@ -1,13 +1,17 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Task windows. Up to three windows float at the bottom right of the Cowork
- * page, each in its own slot. A spun-off window starts its task from the
- * conversation it was spun off, continuing after the reply it was opened on; a
- * quick task window starts a new task; either then follows its task. A window
- * opened on a task follows it from the start. With three open, a window whose
- * task started gives up its place; three drafts leave no room ("Composer at
- * capacity. Close a draft to spin off a new task.").
+ * Task windows (live claude.ai bundle, 2026-10-12: the mini compose
+ * windows' store, shared-6 VB, opened by a Cowork reply's Spin off a new
+ * task, shared-11 IS, by a prompt link, shared-20 and shared-15 iN, and by
+ * a task row's Open as quick task, shared-16). Up to three windows float at
+ * the bottom right of the Cowork page, each in its own slot. A spun-off
+ * window starts its task from the conversation it was spun off, continuing
+ * after the reply it was opened on; a quick task window starts a new task;
+ * either then follows its task. A window opened on a task follows it from
+ * the start. With three open, a window whose task started gives up its
+ * place; three drafts leave no room ("Composer at capacity. Close a draft
+ * to spin off a new task.").
  */
 export type TaskWindowSource =
   /** A Cowork reply's Spin off a new task. */
@@ -23,8 +27,8 @@ export type TaskWindowSource =
 export interface TaskWindowSeed {
   prompt: string;
   /**
-   * The prompt came from outside Claudex (an address or a link): the composer
-   * warns before it runs.
+   * The prompt came from outside Claudex (an address or a link): the
+   * composer warns before it runs (live bundle zn, "Use caution…").
    */
   unsafe?: boolean;
 }
@@ -46,18 +50,19 @@ export interface SpinOffWindow {
   sessionId?: string;
 }
 
-/** Three windows. */
+/** The live bundle's limit: three windows. */
 export const SPIN_OFF_SLOTS = 3;
 
 export const spinOffCapacityMessage =
   "Composer at capacity. Close a draft to spin off a new task.";
-/** A task row's Open as quick task finding no room. */
+/** A task row's Open as quick task finding no room (live bundle, shared-22 Ux). */
 export const quickTaskCapacityMessage =
   "Composer at capacity. Close a draft to open this task in the composer.";
 
 /**
  * A prompt that came from an address or a link runs in Manual whatever the
- * permission mode, and its window offers no permission picker.
+ * permission mode, and its window offers no permission picker (live bundle:
+ * askFloored, the url and artifact_link sources, FB).
  */
 export const asksFirst = (source: TaskWindowSource) =>
   source === "url" || source === "artifact_link";
@@ -132,9 +137,9 @@ export function openSpinOff(parentId: string, turnId: string): number | null {
 }
 
 /**
- * Opens a quick task window: false when there is no room for a window on a
- * task; with no room for a draft, the newest window comes up instead and the
- * call counts as done.
+ * Opens a quick task window (the live bundle's KB): false when there is no
+ * room for a window on a task; with no room for a draft, the newest window
+ * comes up instead and the call counts as done.
  */
 export function openQuickTask(
   source: TaskWindowSource,
@@ -198,7 +203,7 @@ export function useSpinOffWindows() {
   );
 }
 
-/** Widths the row lays windows out with. */
+/** Widths the row lays windows out with (live bundle: 416, 256, gap 12). */
 const EXPANDED = 416;
 const COLLAPSED = 256;
 const GAP = 12;
@@ -230,13 +235,13 @@ export function expandedSlots(list: SpinOffWindow[], room: number) {
   );
 }
 
-/** Longest prompt a link may carry. */
+/** Longest prompt a link may carry (live bundle QM: 14336 characters). */
 const maxLinkPrompt = 14336;
 
 /**
- * A prompt link's words: an address on this page's origin or claude.ai's,
- * `/new`, `composer=mini`, with a non-empty `q` of at most 14336 characters and
- * no user name or password; null otherwise.
+ * A prompt link's words (live bundle QM): an address on this page's origin
+ * or claude.ai's, `/new`, `composer=mini`, with a non-empty `q` of at most
+ * 14336 characters and no user name or password; null otherwise.
  */
 export function promptLink(href: string, origins: string[]) {
   let url: URL;

@@ -11,9 +11,8 @@ import {
 import { AllowedSitesDialog } from "./ClaudeCode";
 import { browserSectionState } from "./ClaudeCodeSections";
 
-/**
- * Link and allowed-sites controls only. Reuses Code's actual browser store
- * and site editor, without adding Chrome pairing.
+/** O/c12c3079a-B2CvnLPI.js:365–480: link and allowed-sites controls only.
+ * Reuses Code's actual browser store and site editor, without adding Chrome pairing.
  */
 type BrowserLinkPreferencesProps = Pick<TabProps, "settings" | "save">;
 export function BrowserLinkPreferences(props: BrowserLinkPreferencesProps) {

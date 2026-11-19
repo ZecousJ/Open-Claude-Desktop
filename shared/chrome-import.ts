@@ -20,6 +20,23 @@ export interface ImportedChromeLogin {
   importedAt: number;
 }
 
+export interface ChromeImportSiteResult {
+  root: string;
+  found: number;
+  imported: number;
+  failed: number;
+  skippedExpired: number;
+  failedDecrypt: number;
+  failedSet: number;
+}
+
+export type ChromeImportPresence =
+  | "granted"
+  | "busy"
+  | "presence_declined"
+  | "presence_left"
+  | "presence_timed_out";
+
 export type ChromeImportResult<T> =
   | ({ ok: true } & T)
   | {
@@ -30,8 +47,7 @@ export type ChromeImportResult<T> =
         | "expired"
         | "invalid_sites"
         | "keychain_denied"
-        /** Touch ID or the confirmation went unanswered for 2 minutes. */
-        | "presence_timed_out";
+        | Exclude<ChromeImportPresence, "granted">;
     };
 
 export interface ChromeImportAPI {
@@ -72,8 +88,9 @@ export interface ChromeImportAPI {
     keep: boolean,
   ): Promise<
     ChromeImportResult<{
-      results: { root: string; imported: number; failed: number }[];
+      results: ChromeImportSiteResult[];
       persistent: boolean;
+      storageCarried?: boolean;
     }>
   >;
   listImportedChromeLogins(

@@ -16,8 +16,9 @@ export function codePermissionNotificationAllowed(
 }
 
 /**
- * Code notifications: the tool a Code session calls with a short message while
- * the setting is on.
+ * Code notifications (live claude.ai, 2026-10-21: "Claude can choose to
+ * notify you about important updates from a Code session"): the tool a Code
+ * session calls with a short message while the setting is on.
  */
 export const codeNotificationTool = "PushNotification";
 

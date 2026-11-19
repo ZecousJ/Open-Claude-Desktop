@@ -2,25 +2,26 @@ import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 
 /*
  * Where keyboard focus goes when the front request in the composer dock is
- * answered.
+ * answered (live claude.ai bundle, 2026-10-12: the approval list's focus
+ * hand-off, `handsFocusOn` with `focusAfterLast`).
  *
- * - Focus moves on only when the card was answered from the keyboard: focus sat
- *   inside it and the last key press came after the last pointer press in it. A
- *   mouse decision leaves focus alone.
+ * - Focus moves on only when the card was answered from the keyboard: focus
+ *   sat inside it and the last key press came after the last pointer press
+ *   in it. A mouse decision leaves focus alone.
  * - The next request, if any, takes focus on the card itself (not one of its
  *   buttons), with the keyboard ring; Enter there moves on to its primary
  *   button. Enter within 400ms of a card going, or held, is swallowed so one
  *   press never answers two cards.
  * - With no request left, focus goes back to the composer, and ⌘↩ (Ctrl+↩)
- *   within 400ms of that is swallowed so the press that answered the card does
- *   not also send the draft.
+ *   within 400ms of that is swallowed so the press that answered the card
+ *   does not also send the draft.
  *
- * The original also hands focus between a card in the transcript and its docked
- * copy (`data-approval-docks`, `data-approval-awaits-dock`); Claudex shows a
- * request only in the dock, so that half has nothing to act on.
+ * The original also hands focus between a card in the transcript and its
+ * docked copy (`data-approval-docks`, `data-approval-awaits-dock`); Claudex
+ * shows a request only in the dock, so that half has nothing to act on.
  */
 
-/** Keys the original's hand-off ignores as "typing". */
+/** Keys the original's hand-off ignores as "typing" (live bundle, 2026-10-12). */
 const MODIFIERS = new Set([
   "Alt",
   "AltGraph",

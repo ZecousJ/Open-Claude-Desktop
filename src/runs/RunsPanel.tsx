@@ -22,7 +22,8 @@ import { t } from "../i18n";
 import { groupRuns, sessionRuns, type SessionRuns } from "./runs-model";
 import "./runs-panel.css";
 
-/** Scheduled-task runs. */
+/** Scheduled-task runs (live claude.ai bundle, 2026-10-14,
+ * cccc2cf0a-ClzhdM48.js, nT / fT / vT / yT). */
 export function RunsPanel({
   conversation,
   onClose,

@@ -1,19 +1,19 @@
 /**
- * Phones controlling the account's signed-in desktops. A desktop dials the
- * device link; the service relays a phone's calls to it and its events to the
- * account's tabs (backend webhost/devices.go). The Code conversations stay on
- * the computer.
+ * Phones controlling the account's signed-in desktops (owner, 2026-10-06).
+ * A desktop dials the device link; the service relays a phone's calls to it
+ * and its events to the account's tabs (backend webhost/devices.go). The
+ * Code conversations stay on the computer.
  *
  * - The link authenticates like a tab: an events ticket (auth/events-ticket)
  *   bound to the desktop's link id, offered as Sec-WebSocket-Protocol
  *   ["claudex.v1", "ticket.<t>"]. Frames are JSON objects with `t`.
- * - Desktop → service: hello, result, event, ping, pong. Service → desktop:
- *   welcome, call, cancel, ping, pong.
+ * - Desktop → service: hello, result, event, ping, pong.
+ *   Service → desktop: welcome, call, cancel, ping, pong.
  * - A phone lists online desktops with GET `devicePaths.list` and calls one
  *   with POST `devicePaths.rpc(device, method)` ({args}); the answer has the
  *   web RPC shape ({ok, value} or {ok:false, error}).
- * - On the account's event stream: {type:"device-event", deviceId, event} and
- *   {type:"devices-changed"}.
+ * - On the account's event stream: {type:"device-event", deviceId, event}
+ *   and {type:"devices-changed"}.
  */
 import type { Approval, Conversation, EnvironmentRef, Turn } from "./types";
 
@@ -27,8 +27,23 @@ export const devicePaths = {
 } as const;
 
 export const deviceProtocolVersion = 1;
-/** Advertised bridge default. */
+/** Advertised bridge default (desktop 2.37337.1, index.chunk-BWk6pVUt.js:246623). */
 export const remoteSessionCapacity = 32;
+
+export const remoteControlSpawnModes = ["same-dir", "worktree"] as const;
+export type RemoteControlSpawnMode = (typeof remoteControlSpawnModes)[number];
+export type RemoteFolderSpawnMode = { folder: string; mode: RemoteControlSpawnMode };
+
+export function remoteFolderUsesWorktree(
+  settings: {
+    remoteControlSpawnMode?: RemoteControlSpawnMode;
+    remoteFolderSpawnModes?: RemoteFolderSpawnMode[];
+  },
+  folder: string,
+): boolean {
+  const override = settings.remoteFolderSpawnModes?.find((item) => item.folder === folder);
+  return (override?.mode ?? settings.remoteControlSpawnMode) === "worktree";
+}
 
 /** What a desktop serves; its hello lists exactly these. */
 export const deviceMethods = [
@@ -52,12 +67,14 @@ export const deviceMethods = [
   "listModels",
   "setModel",
   "remoteControlCapacity",
+  "officialCode",
   "chatDeviceImport",
   "chatDeviceSend",
   "chatDeviceOpen",
   "chatDeviceRelease",
   "chatDeviceBlob",
   "chatDeviceInterrupt",
+  "chatDeviceInterruptExpected",
   "chatDeviceApprove",
   "chatDeviceActivate",
 ] as const;
@@ -324,7 +341,10 @@ export async function trustedDeviceCall(
       typeof challenge.requireTrustedDevices !== "boolean"
     )
       throw new Error("Invalid device verification challenge.");
-    return challenge;
+    // V1 hosts verify the challenge in issuance order. Older Go relays sort
+    // the returned object keys, so restore the wire order before signing.
+    const { id, nonce, accountScope, requireTrustedDevices, expiresAt } = challenge;
+    return { id, nonce, accountScope, deviceId, requireTrustedDevices, expiresAt };
   };
   const envelope = async (
     challenge: DeviceTrustChallenge,

@@ -1,7 +1,8 @@
 /**
- * The unified sidebar: the lists' titles once Chat and Cowork are one home, the
- * row numbers while ⌘ or Ctrl+Shift is held, a held Ctrl+Tab stepping on, and
- * ⌘⌥← / ⌘⌥→ between the sidebar's tabs.
+ * The unified sidebar (live claude.ai bundle, 2026-10-12): the lists'
+ * titles once Chat and Cowork are one home, the row numbers while ⌘ or
+ * Ctrl+Shift is held, a held Ctrl+Tab stepping on, and ⌘⌥← / ⌘⌥→ between
+ * the sidebar's tabs.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

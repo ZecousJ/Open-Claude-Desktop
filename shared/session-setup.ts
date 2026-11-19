@@ -1,10 +1,13 @@
 import type { RepositoryRef } from "./host";
 
 /**
- * A cloud Code session's start, shown in its transcript while it runs.
+ * A cloud Code session's start, shown in its transcript while it runs (live
+ * claude.ai bundle, 2026-10-12: the session opens at once and its first
+ * turn lists the setup steps "provision", "clone", "setup_script" and
+ * "start_cc"; the backend sends the order in `expected_steps`).
  *
- * Claudex's runner clones the repository before the session's sandbox starts,
- * so its order is clone, provision, an optional setup script, start.
+ * Claudex's runner clones the repository before the session's sandbox
+ * starts, so its order is clone, provision, an optional setup script, start.
  */
 export type SetupStepId = "clone" | "provision" | "setup_script" | "start";
 export type SetupStepStatus =
@@ -18,9 +21,9 @@ export interface SetupStep {
 }
 
 /**
- * Why a start failed, as the transcript names it: "upstream" the repository's
- * host could not be reached (`init_upstream_error`), "failed" anything else
- * (`init_failed`).
+ * Why a start failed, as the transcript names it (live claude.ai bundle,
+ * 2026-10-12): "upstream" the repository's host could not be reached
+ * (`init_upstream_error`), "failed" anything else (`init_failed`).
  */
 export type SetupFailure = "upstream" | "failed";
 

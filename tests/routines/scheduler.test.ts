@@ -4,6 +4,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Scheduler } from "../../electron/routines/scheduler";
+import {
+  inAdapterScope,
+  newAdapterScope,
+} from "../../electron/official-ui/api/scope";
+import { writeState } from "../../electron/official-ui/api/state";
+import { officialScheduledTaskModes } from "../../electron/official-ui/scheduled-task-preferences";
 import { nextOccurrence } from "../../electron/routines/scheduler-support";
 import type {
   Conversation,
@@ -118,6 +124,58 @@ test("computer access holds due Cowork tasks without consuming their scheduled t
   access = true;
   await scheduler.tick();
   assert.equal(runs, 1);
+});
+
+test("desktop routine modes honor independent preferences of the signed-in account", async (t) => {
+  const root = temporary(t);
+  const first = newAdapterScope("first", root);
+  const second = newAdapterScope("second", root);
+  const savePreferences = (values: {
+    ccdScheduledTasksEnabled: boolean;
+    coworkScheduledTasksEnabled: boolean;
+  }) => inAdapterScope(first, () => writeState("preferences", () => values));
+  assert.deepEqual(officialScheduledTaskModes(first), {
+    code: true,
+    cowork: true,
+  });
+
+  savePreferences({
+    ccdScheduledTasksEnabled: false,
+    coworkScheduledTasksEnabled: true,
+  });
+  const ran: Schedule["mode"][] = [];
+  const scheduler = new Scheduler(root, {
+    enabledModes: () => officialScheduledTaskModes(first),
+    isBusy: () => false,
+    now: () => NOW,
+    run: async ({ mode }) => {
+      ran.push(mode);
+      return conversation(mode);
+    },
+  });
+  const code = scheduler.save(task({ mode: "code", name: "Code review" }));
+  const cowork = scheduler.save(task({ mode: "cowork", name: "Cowork review" }));
+  await assert.rejects(scheduler.runNow(code.id), /aren’t turned on/);
+  await scheduler.tick();
+  assert.deepEqual(ran, ["cowork"]);
+  assert.equal(scheduler.runs(code.id).length, 0);
+  assert.equal(
+    scheduler.list().find(({ id }) => id === code.id)?.nextRunAt,
+    code.nextRunAt,
+  );
+  assert.deepEqual(officialScheduledTaskModes(second), {
+    code: true,
+    cowork: true,
+  });
+
+  savePreferences({
+    ccdScheduledTasksEnabled: true,
+    coworkScheduledTasksEnabled: false,
+  });
+  await assert.rejects(scheduler.runNow(cowork.id), /aren’t turned on/);
+  await scheduler.tick();
+  assert.deepEqual(ran, ["cowork", "code"]);
+  assert.equal(scheduler.runs(cowork.id).length, 1);
 });
 
 test("CRUD validates inputs, preserves IDs and persists without mutating caller data", (t) => {

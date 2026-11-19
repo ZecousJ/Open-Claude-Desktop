@@ -66,7 +66,7 @@ test("Code settings use the official defaults and only one local fallback switch
     assert.equal(preferenceFields[key].safeParse(false).success, true);
     assert.equal(preferenceFields[key].safeParse("false").success, false);
   }
-  // Bypass stays available by default; the original starts it off.
+  // Bypass stays available by default (owner, 2026-10-03); the original starts it off.
   assert.equal(preference(defaultSettings, "allowBypassPermissions"), true);
   const render = (settings: Settings) =>
     renderToStaticMarkup(
@@ -101,7 +101,10 @@ test("Code settings use the official defaults and only one local fallback switch
   );
   assert.doesNotMatch(markup, /Applies to cloud sessions\.<\/p>/);
   assert.ok(markup.includes(bypassPermissionsDescription));
-  assert.match(markup, /href="\/help\/code-security"/);
+  assert.match(
+    markup,
+    /href="https:\/\/claudex.zecous.cn\/help\/code-security"/,
+  );
   assert.doesNotMatch(markup, /uninterrupted in folders you confirm/);
   const off = render({
     ...defaultSettings,
@@ -123,7 +126,7 @@ test("Code settings use the official defaults and only one local fallback switch
 });
 
 test("workflow defaults follow the account, explicit opt-ins and policy in UI and runtime", () => {
-  // On unless the service or the user says otherwise.
+  // On unless the service or the user says otherwise (owner, 2026-10-14).
   for (const [planLabel, expected] of [
     [null, true],
     ["Pro", true],

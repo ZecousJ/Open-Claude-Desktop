@@ -3,7 +3,8 @@ import { dragHasFiles } from "./attachment-input";
 import { dropZoneAt } from "./drop-zones";
 
 /**
- * Where a file drag is, as the composer's drop overlay shows it: nowhere, over
+ * Where a file drag is, as the composer's drop overlay shows it (the
+ * original's composer drop zone, desktop bundle 2.31226.1): nowhere, over
  * the window, or over the composer itself.
  */
 export type FileDropState = "idle" | "off-target" | "on-target";
@@ -51,8 +52,9 @@ export function useFileDrop(
       node instanceof Node && !!target.current?.contains(node);
     const files = (event: DragEvent) =>
       !!event.dataTransfer && dragHasFiles(event.dataTransfer.types);
-    // Another drop zone under the pointer (a project's knowledge) takes the
-    // drag; the composer stands aside.
+    // Another drop zone under the pointer (a project's knowledge) takes
+    // the drag; the composer stands aside (live claude.ai bundle,
+    // 2026-10-12: the innermost zone wins over the page-wide one).
     const elsewhere = (node: EventTarget | null) => {
       const zone = dropZoneAt(node);
       return !!zone && !zone.contains(target.current);
@@ -76,9 +78,9 @@ export function useFileDrop(
           on || scope === "page" ? "copy" : "none";
       setState(on ? "on-target" : "off-target");
     };
-    // Leaving the window: a move inside the window enters the next element
-    // before it leaves the last one, so a leave from the element entered last
-    // means the drag left the window.
+    // Leaving the window (live claude.ai bundle, 2026-10-12): a move inside
+    // the window enters the next element before it leaves the last one, so
+    // a leave from the element entered last means the drag left the window.
     let entered: EventTarget | null = null;
     const enter = (event: DragEvent) => {
       if (files(event)) entered = event.target;

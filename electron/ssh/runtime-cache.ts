@@ -1,13 +1,15 @@
 /**
- * The Codex engine packages Claudex keeps on this computer for SSH hosts that
- * can't download them themselves (R9-S2).
+ * The Codex engine packages Claudex keeps on this computer for SSH hosts
+ * that can't download them themselves (R9-S2).
  *
- * `shared/codex-runtime-manifest.json` names every platform build of the
- * bundled engine with its npm URL and sha512. A package is fetched from the
- * administrator's mirror first when there is one, then from npm; the download
- * resumes where it stopped after a dropped connection, and a file only enters
- * the cache (<dataRoot>/runtime-cache/) once its sha512 matches the manifest. A
- * mirror can change where a package comes from, never what it holds.
+ * `shared/codex-runtime-manifest.json` (written from package-lock.json by
+ * scripts/codex-runtime-manifest.mjs) names every platform build of the
+ * bundled engine with its npm URL and sha512. A package is fetched from
+ * the administrator's mirror first when there is one, then from npm; the
+ * download resumes where it stopped after a dropped connection, and a file
+ * only enters the cache (<dataRoot>/runtime-cache/) once its sha512 matches
+ * the manifest. A mirror can change where a package comes from, never what
+ * it holds.
  */
 import { createHash } from "node:crypto";
 import fs from "node:fs";

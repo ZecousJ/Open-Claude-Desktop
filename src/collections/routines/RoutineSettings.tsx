@@ -13,10 +13,8 @@ import "./routine-settings.css";
 import { RoutineAdvancedTabs } from "./RoutineAdvancedTabs";
 import type { Project } from "../../../shared/types";
 
-/**
- * Exact-time jitter is local-only; web schedules always use the remote runner.
- * Web-bridge-methods.ts:216.
- */
+/** Exact-time jitter is local-only; web schedules always use the remote runner.
+ * Official c97b955f1-CPIQCg2e.js:1654,5489; web-bridge-methods.ts:216. */
 export function routineHasExactTime(
   draft: Pick<RoutineDraft, "kind" | "executionLocation">,
   hostSurface: HostSurface = surface,
@@ -43,7 +41,7 @@ export function validRoutineCapabilities(
   );
 }
 
-/** Settings rows. */
+/** Settings rows (live claude.ai bundle, 2026-10-14, c97b955f1-DnH50wWB.js, caa9df187-32TblDFA.js). */
 export function RoutineSettings({
   draft,
   onChange,

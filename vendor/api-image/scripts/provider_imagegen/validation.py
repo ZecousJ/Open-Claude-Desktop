@@ -85,15 +85,6 @@ def validate_background(background: str | None) -> str | None:
     raise ValueError(f"Unsupported --background '{background}'. Supported values: {choices}")
 
 
-def validate_model_background(model: str, background: str | None) -> str | None:
-    if model.strip().lower() == DEFAULT_MODEL and background == "transparent":
-        raise ValueError(
-            "--background transparent is not supported by official gpt-image-2. "
-            "Use auto or opaque, or choose a model/provider that explicitly supports transparency."
-        )
-    return background
-
-
 def validate_output_format(output_format: str | None) -> str | None:
     if output_format is None:
         return None
@@ -129,15 +120,6 @@ def validate_input_fidelity(input_fidelity: str | None) -> str | None:
         return normalized
     choices = ", ".join(sorted(SUPPORTED_INPUT_FIDELITY))
     raise ValueError(f"Unsupported --input-fidelity '{input_fidelity}'. Supported values: {choices}")
-
-
-def validate_model_input_fidelity(model: str, input_fidelity: str | None) -> str | None:
-    if model.strip().lower() == DEFAULT_MODEL and input_fidelity is not None:
-        raise ValueError(
-            "--input-fidelity is not supported by official gpt-image-2; "
-            "it always processes image inputs at high fidelity."
-        )
-    return input_fidelity
 
 
 def validate_moderation(moderation: str | None) -> str | None:

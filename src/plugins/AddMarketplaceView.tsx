@@ -8,7 +8,7 @@ import {
 } from "./AddMarketplaceDialog";
 import { formatText, tc } from "../i18n";
 import { notAvailable } from "../settings/unavailable";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { createPortal } from "react-dom";
 import { isComposingKey } from "../ui/ime";
 import { openSettingsLink } from "../settings/navigation";
@@ -222,7 +222,7 @@ export function addMarketplaceView(kit: AddMarketplaceViewKit) {
           }}
         >
           <div className="directory-warning" role="note">
-            <AppIcon name="Warning" size={16} />
+            <Anthropicon name="Warning" size={16} />
             <p>
               Make sure you trust a plugin before installing, updating, or using
               it. Plugins installed from marketplaces are not controlled by

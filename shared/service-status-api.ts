@@ -6,6 +6,7 @@
  * with the session's token, the web app from the page, and both read the
  * answer with `serviceStatusFrom`.
  */
+import { z } from "zod";
 import { bridgeMethods } from "./bridge-methods";
 
 export type StatusLevel = "none" | "operational" | "degraded" | "outage";
@@ -84,8 +85,8 @@ export interface StatusIncident {
 }
 
 /**
- * One IQ check: every hour the service asks a model for an HTML page with an
- * SVG animation of a pelican riding a bicycle.
+ * One IQ check (owner, 2026-10-06): every hour the service asks a model for
+ * an HTML page with an SVG animation of a pelican riding a bicycle.
  */
 export interface IqCheck {
   id: number;
@@ -97,7 +98,10 @@ export interface IqCheck {
   html: string;
 }
 
-/** A group the IQ check runs in; the status page switches between them. */
+/**
+ * A group the IQ check runs in (owner, 2026-10-14: codex and "Astra 专用");
+ * the status page switches between them.
+ */
 export interface IqGroup {
   key: string;
   name: string;
@@ -131,6 +135,11 @@ export interface ServiceStatus {
   iqExamples: IqExample[];
 }
 
+const maxStatusHours = 720;
+const maxStatusDays = 366;
+const statusSteps = [10, 15, 20, 30, 60] as const;
+const statusEnd = /^\d{4}-\d{2}-\d{2}(T\d{2}(:\d{2})?)?$/;
+
 export interface ServiceStatusQuery {
   /** Bars of `step` minutes for this many hours (up to 720)… */
   hours?: number;
@@ -140,6 +149,54 @@ export interface ServiceStatusQuery {
   days?: number;
   /** The last slot shown: YYYY-MM-DDTHH:MM for hours, YYYY-MM-DD for days; now when left out. */
   end?: string;
+}
+
+export const serviceStatusQuery = z.strictObject({
+  end: z.string().regex(statusEnd).optional(),
+  days: z.number().int().min(1).max(maxStatusDays).optional(),
+  hours: z.number().int().min(1).max(maxStatusHours).optional(),
+  step: z.literal(statusSteps).optional(),
+});
+
+export const officialServiceStatusPath = "/api/claudex/service-status";
+
+export function parseOfficialServiceStatusQuery(
+  params: URLSearchParams,
+): ServiceStatusQuery | undefined {
+  const fields: Record<string, unknown> = {};
+  for (const [key, value] of params) {
+    if (Object.hasOwn(fields, key) || value !== value.trim()) return undefined;
+    switch (key) {
+      case "end":
+        fields.end = value;
+        break;
+      case "hours":
+      case "days":
+      case "step":
+        if (!/^[1-9]\d{0,2}$/.test(value)) return undefined;
+        fields[key] = Number(value);
+        break;
+      default:
+        return undefined;
+    }
+  }
+  const checked = serviceStatusQuery.safeParse(fields);
+  if (!checked.success) return undefined;
+  const { hours, days, step, end } = checked.data;
+  const hourly = hours !== undefined;
+  if (hourly ? days !== undefined : step !== undefined) return undefined;
+  if (end !== undefined) {
+    const date = end.slice(0, 10);
+    const stamp = new Date(date);
+    if (
+      !Number.isFinite(stamp.valueOf()) ||
+      stamp.toISOString().slice(0, 10) !== date
+    )
+      return undefined;
+    if (hourly ? !/T(?:[01]\d|2[0-3])(?::[0-5]\d)?$/.test(end) : end !== date)
+      return undefined;
+  }
+  return checked.data;
 }
 
 export interface ServiceStatusAPI {
@@ -157,16 +214,19 @@ export function serviceStatusPath(query: ServiceStatusQuery = {}): string {
   if (query.hours !== undefined)
     params.set(
       "hours",
-      String(Math.min(720, Math.max(1, Math.trunc(query.hours) || 24))),
+      String(
+        Math.min(maxStatusHours, Math.max(1, Math.trunc(query.hours) || 24)),
+      ),
     );
   if (query.hours !== undefined && query.step !== undefined)
     params.set("step", String(Math.trunc(query.step) || 60));
-  if (query.end && /^\d{4}-\d{2}-\d{2}(T\d{2}(:\d{2})?)?$/.test(query.end))
-    params.set("end", query.end);
+  if (query.end && statusEnd.test(query.end)) params.set("end", query.end);
   if (query.days !== undefined)
     params.set(
       "days",
-      String(Math.min(366, Math.max(1, Math.trunc(query.days) || 90))),
+      String(
+        Math.min(maxStatusDays, Math.max(1, Math.trunc(query.days) || 90)),
+      ),
     );
   const text = params.toString();
   return `/claudex/status${text ? `?${text}` : ""}`;
@@ -177,6 +237,8 @@ const record = (value: unknown): Record<string, unknown> =>
 const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
 const text = (value: unknown, limit = 200) =>
   typeof value === "string" ? value.slice(0, limit) : "";
+const channelName = (value: unknown) =>
+  typeof value === "string" ? value : "";
 const number = (value: unknown) =>
   typeof value === "number" && Number.isFinite(value) ? value : 0;
 const optional = (value: unknown) =>
@@ -236,7 +298,7 @@ function incident(raw: unknown): StatusIncident {
   return {
     id: number(i.id),
     title: text(i.title),
-    platform: text(i.platform, 40),
+    platform: channelName(i.platform),
     impact: i.impact === "outage" ? "outage" : "degraded",
     status: status(i.status),
     startedAt: time(i.started_at) ?? 0,
@@ -279,36 +341,32 @@ export function serviceStatusFrom(raw: unknown): ServiceStatus {
         : 0,
     generatedAt: time(s.generated_at) ?? 0,
     level: level(s.level),
-    platforms: list(s.platforms)
-      .slice(0, 50)
-      .map((raw) => {
-        const p = record(raw);
-        return {
-          platform: text(p.platform, 40),
-          name: text(p.name, 100),
-          provider: text(p.provider, 40),
-          checks: number(p.checks),
-          failed: number(p.failed),
-          level: level(p.level),
-          uptime: optional(p.uptime),
-          recent: recentFrom(p.recent),
-          days: list(p.days).slice(0, 366).map(day),
-          components: list(p.components)
-            .slice(0, 100)
-            .map((raw) => {
-              const c = record(raw);
-              return {
-                monitorId: number(c.monitor_id),
-                name: text(c.name),
-                channel: text(c.channel),
-                level: level(c.level),
-                uptime: optional(c.uptime),
-                recent: recentFrom(c.recent),
-                days: list(c.days).slice(0, 366).map(day),
-              };
-            }),
-        };
-      }),
+    platforms: list(s.platforms).map((raw) => {
+      const p = record(raw);
+      return {
+        platform: channelName(p.platform),
+        name: channelName(p.name),
+        provider: text(p.provider, 40),
+        checks: number(p.checks),
+        failed: number(p.failed),
+        level: level(p.level),
+        uptime: optional(p.uptime),
+        recent: recentFrom(p.recent),
+        days: list(p.days).map(day),
+        components: list(p.components).map((raw) => {
+          const c = record(raw);
+          return {
+            monitorId: number(c.monitor_id),
+            name: text(c.name),
+            channel: channelName(c.channel),
+            level: level(c.level),
+            uptime: optional(c.uptime),
+            recent: recentFrom(c.recent),
+            days: list(c.days).map(day),
+          };
+        }),
+      };
+    }),
     incidents: list(s.incidents).slice(0, 200).map(incident),
     iq: iqChecks(s.iq),
     iqGroups: list(s.iq_groups)
@@ -335,4 +393,17 @@ export function serviceStatusFrom(raw: unknown): ServiceStatus {
       })
       .filter((example) => example.html !== ""),
   };
+}
+
+export function serviceStatusResponseFrom(body: unknown): ServiceStatus {
+  const data = record(body);
+  const raw = record("data" in data ? data.data : body);
+  if (
+    ("code" in data && data.code !== 0) ||
+    !Array.isArray(raw.platforms) ||
+    !Array.isArray(raw.incidents) ||
+    !time(raw.generated_at)
+  )
+    throw Error("The service status couldn't be read.");
+  return serviceStatusFrom(raw);
 }

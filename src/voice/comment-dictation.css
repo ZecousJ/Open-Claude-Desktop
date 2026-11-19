@@ -1,4 +1,5 @@
-/* ghost/sm/iconOnly: h-control--sm, rounded--sm and aria-pressed:text-accent. */
+/* ghost/sm/iconOnly: h-control--sm, rounded--sm and aria-pressed:text-accent
+   (live claude.ai bundle, 2026-10-14, ca929557b-CaUFEsYf, shared-frame-B1JORnF0). */
 .artifact-comment-draft button.comment-dictation,
 .artifact-thread-compose button.comment-dictation {
   display: inline-flex;

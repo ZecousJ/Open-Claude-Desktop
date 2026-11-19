@@ -6,11 +6,12 @@ import { configFromDraft, draftOf, type ServerDraft } from "./browser-model";
 import { formatText } from "../i18n";
 
 /**
- * Add server: Name, Command, Port, URL and Working directory. The command is
- * split into the program and its arguments and never runs through a shell. Save
- * writes `.claude/launch.json` in the session's folder; Save and start also
- * starts it (the dialog shows the command, so the click is the person's
- * approval).
+ * Add server (not captured: visual-provisional, laid out like the app's
+ * other form dialogs): Name, Command, Port, URL and Working directory.
+ * The command is split into the program and its arguments and never runs
+ * through a shell. Save writes `.claude/launch.json` in the session's
+ * folder; Save and start also starts it (the dialog shows the command, so
+ * the click is the person's approval).
  */
 export function AddServerDialog({
   initial,

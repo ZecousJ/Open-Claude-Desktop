@@ -9,7 +9,7 @@ export interface AgentMessageOrigin {
   relayedAgent?: { name?: string };
 }
 
-/** Peer attribution. */
+/** Peer attribution (live claude.ai bundle, 2026-10-14, c63275c0a-DgEJ2lto.js). */
 export function agentMessageOrigin(item: Item): AgentMessageOrigin | undefined {
   const origin = item.origin;
   if (origin?.kind !== "peer") return;

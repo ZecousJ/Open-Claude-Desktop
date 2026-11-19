@@ -22,7 +22,7 @@ export interface ConversationImport {
   /** The conversation's project, when it has one (without a folder). */
   project?: Pick<
     Project,
-    "id" | "name" | "description" | "instructions" | "createdAt"
+    "id" | "name" | "description" | "instructions" | "template" | "createdAt"
   >;
   rollouts: RolloutFile[];
   files?: { name: string; data: Uint8Array }[];

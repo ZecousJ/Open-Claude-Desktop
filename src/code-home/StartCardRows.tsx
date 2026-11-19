@@ -2,14 +2,16 @@ import { type MouseEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "../ui/glyphs";
 import { t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { WithTooltip } from "../ui/Tooltip";
 import "./next-steps.css";
 
 /**
- * The start card's suggestion list. Undefined slot keeps a standalone list; the
- * home's slot is that one ul and every piece portals its rows into it, in the
- * order given.
+ * The start card's suggestion list (live claude.ai bundle, 2026-10-16,
+ * cc43287c9: one "start-card-setup" ul holds the Next steps, the CLI import
+ * and the suggested tasks). Undefined slot keeps a standalone list; the
+ * home's slot is that one ul and every piece portals its rows into it, in
+ * the order given.
  */
 export function StartCardRows({
   slot,
@@ -27,11 +29,10 @@ export function StartCardRows({
   ) : null;
 }
 
-/** Row order across the pieces. */
+/** Row order across the pieces (cc43287c9: cre, blocked sessions first). */
 export const startRowOrder = {
   nextSteps: 0,
   suggestedTasks: 1,
-  cliImport: 2,
 } as const;
 
 /** One 32px row: glyph, title with its muted detail on the same line, and a × that shows on hover or focus. */
@@ -109,14 +110,14 @@ export function StartCardRow({
             </span>
             {end === "caret" && (
               <span className="next-step-caret" aria-hidden="true">
-                <AppIcon name="CaretDown" size={12} />
+                <Anthropicon name="CaretDown" size={12} />
               </span>
             )}
             {end === "spacer" ? (
               <span className="next-step-spacer" aria-hidden="true" />
             ) : end === "chevron" ? (
               <span className="next-step-chevron" aria-hidden="true">
-                <AppIcon name="CaretRight" />
+                <Anthropicon name="CaretRight" />
               </span>
             ) : null}
           </button>

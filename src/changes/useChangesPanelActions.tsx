@@ -215,8 +215,9 @@ export function useChangesPanelActions(kit: UseChangesPanelActionsKit) {
     ? files[Number(selected.split(":").pop())]?.path
     : undefined;
   /**
-   * The tree's keys: ↑ ↓ Home End move; → opens a folder or steps into it; ←
-   * closes it or steps out to its folder; Enter and Space act on the row.
+   * The tree's keys (live claude.ai bundle, 2026-10-14: role tree): ↑ ↓
+   * Home End move; → opens a folder or steps into it; ← closes it or steps
+   * out to its folder; Enter and Space act on the row.
    */
   const treeKeys = (event: React.KeyboardEvent<HTMLElement>) => {
     const rows = [
@@ -291,7 +292,8 @@ export function useChangesPanelActions(kit: UseChangesPanelActionsKit) {
       ? path.slice(cwd.length + 1)
       : path;
   };
-  // The diff's Open file: the file in the session's file pane.
+  // The diff's Open file: the file in the session's file pane (live desktop
+  // 2.42304.2, the diff file header's ArrowUpRight and its menu item).
   const openFile =
     app && filesPaneAvailable(conversation)
       ? (path: string) => {
@@ -406,8 +408,8 @@ export function useChangesPanelActions(kit: UseChangesPanelActionsKit) {
     toggleFiles: () => setShowFiles((value) => !value),
     stepToChange,
   };
-  // The panel's keys: ⇧⌘Y and ⌘P while the panel is open, F7 and ⌥F5 while the
-  // focus is in it.
+  // The panel's keys (live claude.ai bundle, 2026-10-12): ⇧⌘Y and ⌘P while
+  // the panel is open, F7 and ⌥F5 while the focus is in it.
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return;
@@ -455,7 +457,8 @@ export function useChangesPanelActions(kit: UseChangesPanelActionsKit) {
           keepOpen: true,
           onSelect: () => setShowFiles(!showFiles),
         },
-        // Where the list sits, shared with the Files pane's tree.
+        // Where the list sits, shared with the Files pane's tree (live
+        // claude.ai bundle, 2026-10-21, cccc2cf0a: _C("diff")).
         {
           label: "File list position",
           value: treePositionText(treePosition),

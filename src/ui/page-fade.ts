@@ -2,9 +2,9 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 
 /*
  * A page fading in when the workspace switches pages: claude.ai's own
- * cvc-fade-in-flat (opacity 0 → 1) at its base duration and ease-out. Opacity
- * only: a transform would move the page's fixed and sticky children while it
- * ran.
+ * cvc-fade-in-flat (opacity 0 → 1) at its base duration and ease-out
+ * (--cds-dur-base .2s, --cds-ease-out; live page, 2026-10-02). Opacity only:
+ * a transform would move the page's fixed and sticky children while it ran.
  */
 export const PAGE_FADE_MS = 200;
 export const PAGE_FADE_EASING = "cubic-bezier(.165, .84, .44, 1)";

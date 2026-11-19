@@ -44,7 +44,8 @@ export interface ConnectorDetailProps {
 // Kept here for the callers that read it from the detail.
 export { connectorReview };
 
-// Metadata is conditional, including unknown authentication.
+// Metadata is conditional, including unknown authentication (live claude.ai
+// bundle, 2026-10-14, c86c18ff2-DZs4-mW1.js, cc09cdb56-BzC_gzrq.js).
 export default function ConnectorDetail({
   entry,
   server,
@@ -87,8 +88,9 @@ export default function ConnectorDetail({
   const isAuthless = entry?.isAuthless;
   const connected =
     server?.state === "ready" && server.authStatus !== "notLoggedIn";
-  // How the connection stands, in the original's sentences: switched off,
-  // stopped working, or never finished.
+  // How the connection stands, in the original's sentences (live claude.ai
+  // bundle, 2026-10-16, c08e79e85): switched off, stopped working, or never
+  // finished.
   const status = connected
     ? undefined
     : server?.state === "disabled"

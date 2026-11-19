@@ -1,5 +1,5 @@
-/* An MCP server's resources for project knowledge: the search or URL field over
-   a scrolling list of the resources. */
+/* An MCP server's resources for project knowledge (cdeaafbfc Hn/Un): the
+   search or URL field over a scrolling list of the resources. */
 .knowledge-mcp-search {
   box-sizing: border-box;
   width: 100%;

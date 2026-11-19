@@ -25,8 +25,8 @@ export function registerAppWindow(win: BrowserWindow, role: AppWindowRole) {
   if (known) return;
   refreshNonessentialServices();
   nonessentialServices.add(win.webContents.session);
-  // Links leave the app only after the renderer's confirmation: middle-clicked
-  // reply links arrive here, preview links as frame navigations.
+  // Links leave the app only after the renderer's confirmation (R-1061):
+  // middle-clicked reply links arrive here, preview links as frame navigations.
   const confirmExternal = (url: string) => {
     if (/^https?:\/\//.test(url)) sendTo(win, { type: "external-link", url });
   };
@@ -55,8 +55,8 @@ export function registerAppWindow(win: BrowserWindow, role: AppWindowRole) {
   win.webContents.on("did-finish-load", () => {
     if (mainState.zoomLevel) applyZoom(win, mainState.zoomLevel);
   });
-  // macOS hides the traffic lights in full screen: the window moves its toolbar
-  // left. A reload while full screen is told again.
+  // macOS hides the traffic lights in full screen: the window moves its
+  // toolbar left (R-0132). A reload while full screen is told again.
   const fullScreen = (active: boolean) =>
     sendTo(win, { type: "full-screen", active });
   win.on("enter-full-screen", () => fullScreen(true));

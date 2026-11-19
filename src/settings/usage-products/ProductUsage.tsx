@@ -5,7 +5,7 @@ import type {
 } from "../../../shared/usage-api";
 import { currentLocale, formatText, t } from "../../i18n";
 
-/** The original's product names. */
+/** The original's product names (live claude.ai bundle, 2026-10-14, c71860c77 Ti). */
 const productLabels: Record<UsageProduct, string> = {
   code: "Claudex Code",
   cowork: "Cowork",
@@ -30,8 +30,9 @@ export function productRows(totals: ProductUsageData["totals"]) {
 }
 
 /**
- * This week's usage by product: one bar row per Claudex surface with its share
- * of the last seven days' spend.
+ * This week's usage by product (live claude.ai bundle, 2026-10-14,
+ * c71860c77 Ei): one bar row per Claudex surface with its share of the
+ * last seven days' spend.
  */
 export function ProductUsage() {
   const [usage, setUsage] = useState<ProductUsageData | null>();

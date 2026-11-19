@@ -45,7 +45,8 @@ export function chatSegments(
   for (const item of items) {
     if (item.type === "diff" || suggestionItem(item)) continue;
     // Chat folds file changes and pictures the agent looked at into the steps
-    // group; Cowork keeps them on their own rows.
+    // group ("Read a file, created a file", live claude.ai); Cowork keeps
+    // them on their own rows.
     const activity =
       ["commandExecution", "reasoning"].includes(item.type) ||
       (variant === "chat" &&
@@ -56,15 +57,16 @@ export function chatSegments(
     if (
       (activity && last?.activity) ||
       (item.type === "fileChange" && last?.items[0].type === "fileChange") ||
-      // Consecutive web searches share one row.
+      // Consecutive web searches share one row (R-0769).
       (!last?.activity && searchesJoin(last?.items.at(-1), item))
     )
       last!.items.push(item);
     else result.push({ id: item.id, activity, items: [item] });
   }
-  // A command run next to connector tool calls folds them into one group. Tool
-  // calls that introduce an agent (`skip`) keep their own row. Cowork folds
-  // tool calls on their own too.
+  // A command run next to connector tool calls folds them into one group
+  // ("Ran a command, used a tool", R-0730). Tool calls that introduce an
+  // agent (`skip`) keep their own row. Cowork folds tool calls on their own
+  // too ("Loaded a skill, used a tool ⌄", S-0008).
   const merged: typeof result = [];
   for (const segment of result) {
     const last = merged.at(-1);
@@ -87,8 +89,10 @@ export function chatSegments(
         variant === "cowork" ||
         mixed(run) ||
         (last.activity && segment.activity) ||
-        // Consecutive connector calls fold too, also across the model's
-        // thinking between them.
+        // Consecutive connector calls fold too ("Used 2 tools (1 failed)",
+        // R-0816 in Code), also across the model's thinking between them
+        // (owner, 2026-10-08: a summary-less reasoning item split rag_search,
+        // rag_read | rag_search, … into two groups).
         run.every(
           (item) => TOOL_TYPES.includes(item.type) || item.type === "reasoning",
         )
@@ -127,7 +131,7 @@ export function ActivityGroup({
   const phase = active ? turnActivity(turn, awaitingApproval) : "idle";
   const running = !["idle", "streaming"].includes(phase);
   useThinkingVerb(running && phase !== "approval" && phase !== "tools");
-  // After the label changes the running marker stays ~0.77s, then goes.
+  // R-0707: after the label changes the running marker stays ~0.77s, then goes.
   const marker = useLinger(running, 770);
   const normalized = items.map((item) =>
     turn.status !== "inProgress" && itemIsRunning(item)
@@ -155,12 +159,13 @@ export function ActivityGroup({
     (turn.status === "interrupted" && commands.some(itemIsRunning)) ||
     commands.some((item) => item.lifecycleStatus === "interrupted");
   const runningTool = normalized.filter(itemIsRunning).at(-1);
-  // Reasoning alone collapses to its duration, as Code's status shows it;
-  // without timings it stays generic.
+  // Reasoning alone collapses to its duration, as Code's status shows it
+  // ("Thought for 27s", R-0746 area); without timings it stays generic.
   const thought = thoughtSeconds(items, turn.createdAt, turn.items);
-  // The model's description of the running command names the row while it runs;
-  // a group of one command keeps it once done, past tense or "Failed to …"
-  // (R7). Summaries of several calls stay counts.
+  // The model's description of the running command names the row while it
+  // runs ("Change button label to Add", R-0734); a group of one command keeps
+  // it once done, past tense or "Failed to …" (R7). Summaries of several
+  // calls stay counts ("Ran 3 commands", R-0786).
   const runningDescription =
     runningTool?.type === "commandExecution"
       ? commandDescriptionText(runningTool, "running")
@@ -169,8 +174,9 @@ export function ActivityGroup({
     commands.length === 1 && !tools.length ? commands[0] : undefined;
   const doneDescription =
     single && commandDescriptionText(single, commandState(single));
-  // Cowork's finished row counts the model's notes in the group: "Ran a command
-  // · 1 note ›". A note is a reasoning summary; Chat rows carry no count.
+  // Cowork's finished row counts the model's notes in the group: "Ran a
+  // command · 1 note ›" (R-0849 at W969). A note is a reasoning summary; Chat
+  // rows carry no count (R-0728).
   const noteCount =
     variant === "cowork"
       ? items.filter(
@@ -179,8 +185,8 @@ export function ActivityGroup({
             item.summary?.some((text) => text.trim()),
         ).length
       : 0;
-  // The group with the turn's last command also names the files the turn handed
-  // over: "Ran a command, shared files ›".
+  // The group with the turn's last command also names the files the turn
+  // handed over: "Ran a command, shared files ›" (live claude.ai).
   const lastCommand = [...turn.items]
     .reverse()
     .find((item) => item.type === "commandExecution");

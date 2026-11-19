@@ -1,6 +1,7 @@
 /**
- * The Workflow tool's description: what the model reads to write a script,
- * with the session's size guideline.
+ * The Workflow tool's description: what the model reads to write a script
+ * (after the official Workflow tool and its workflow-authoring reference,
+ * Claude Code), with the session's size guideline.
  */
 export const workflowToolName = "Workflow";
 
@@ -11,7 +12,7 @@ export const workflowSizes: readonly WorkflowSize[] = [
   "large",
   "unrestricted",
 ];
-/** The agent counts behind each size guideline. */
+/** The agent counts behind each guideline (the official setting's text). */
 export const workflowSizeLimits: Record<WorkflowSize, number | undefined> = {
   small: 5,
   medium: 10,
@@ -26,14 +27,10 @@ function sizeLine(size: WorkflowSize) {
     : "This session has no workflow size guideline; scale the workflow to the task.";
 }
 
-export function workflowToolDescription(
-  size: WorkflowSize,
-  ultracode: boolean,
-) {
+export function workflowToolDescription(size: WorkflowSize) {
   return `Run a workflow script that orchestrates many subagents deterministically: fan a task out to parallel agents, verify findings adversarially, sweep a codebase, migrate many files. Each agent is a fresh agent with this session's model, folder and sandbox; it does not see this conversation, so give each prompt everything it needs.
 
-Use it only when the person chose many agents: they wrote "ultracode", ultracode is on for this session (see below), they asked for a workflow or for many agents in their own words, or they named a saved workflow. A workflow can cost many times a normal turn, so otherwise do the work yourself, or explain what a workflow would do and ask first.
-${ultracode ? "\nUltracode is ON for this session: for every substantive task, author and run a workflow by default (understand → design → implement → review, one workflow per phase when it helps). Answer conversational turns and trivial edits directly.\n" : ""}
+ONLY use this tool when the user opted into multi-agent orchestration for this turn. The turn's instructions may say Ultracode is on, or the user may ask to run a workflow, use many agents, fan out, or run a named workflow. A workflow can use many times the tokens of a normal turn. Otherwise do the work yourself, or describe what a workflow would do and ask.
 ${sizeLine(size)}
 
 The script is plain JavaScript (no TypeScript, no imports). It must begin with a pure-literal meta:

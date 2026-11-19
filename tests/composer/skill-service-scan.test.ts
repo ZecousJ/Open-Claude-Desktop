@@ -17,6 +17,8 @@ test("desktop and runner skill installs await the authenticated service scan bef
     store: { root, settings: {}, flush() {} },
     engine: {},
     window: undefined,
+    accountActivationIdentity: {},
+    accountRetiring: false,
     remote: {
       session: {
         authorized: (action: (token: string) => Promise<unknown>) =>

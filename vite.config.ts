@@ -36,14 +36,17 @@ export default defineConfig({
     rolldownOptions: {
       // The app, and its small extra pages with their own preloads
       // (electron/extra-pages.ts): the find bar and the Quick Entry composer.
-      input: { index: "index.html", find: "find.html", quick: "quick.html" },
+      input: {
+        index: "index.html",
+        find: "find.html",
+        quick: "quick.html",
+        checkout: "checkout.html",
+        design: "design.html",
+      },
     },
   },
   define: {
     __APP_VERSION__: JSON.stringify(version),
-    __CLAUDEX_SERVICE_URL__: JSON.stringify(
-      process.env.CLAUDEX_SERVICE_URL ?? "",
-    ),
     // The desktop build; the web build (vite.web.config.ts) sets "web".
     // CLAUDEX_SURFACE=web renders the web variant here too (web fidelity
     // fixtures on the dev server).

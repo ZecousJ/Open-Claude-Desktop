@@ -1,8 +1,8 @@
 /**
- * Settings → Transcript text size in Chat and Cowork: their prompts and replies
- * carry data-text-size as Code's do, the stylesheets size each choice, the
- * Chat/Cowork composer steps its type, and a Markdown document's headings are
- * in em.
+ * Settings → Transcript text size in Chat and Cowork (live claude.ai
+ * bundle, 2026-10-12): their prompts and replies carry data-text-size as
+ * Code's do, the stylesheets size each choice, the Chat/Cowork composer
+ * steps its type, and a Markdown document's headings are in em.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

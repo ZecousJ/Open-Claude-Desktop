@@ -68,40 +68,25 @@ export const maxImageRequestBytes = 64 * 1024 * 1024;
 /** A picture can take minutes. */
 export const imageTimeoutMs = 15 * 60_000;
 
-/**
- * An image request with its `model` replaced by the chosen image model: a
- * JSON body, or a multipart form (an edit with its pictures), whose new
- * boundary fetch writes. Without a choice, or a body it can't read, the
- * request goes out as it came.
- */
-export async function withImageModel(
-  raw: Buffer,
-  contentType: string,
-  model: string | undefined,
-): Promise<{ body: Uint8Array<ArrayBuffer> | FormData; contentType?: string }> {
-  const bytes = new Uint8Array(raw);
-  if (!model) return { body: bytes, contentType };
-  try {
-    if (/^application\/json/i.test(contentType)) {
-      const json = JSON.parse(raw.toString());
-      if (json && typeof json === "object" && !Array.isArray(json))
-        return {
-          body: new TextEncoder().encode(JSON.stringify({ ...json, model })),
-          contentType: "application/json",
-        };
-    }
-    if (/^multipart\/form-data/i.test(contentType)) {
-      const form = await new Response(bytes, {
-        headers: { "Content-Type": contentType },
-      }).formData();
-      form.set("model", model);
-      return { body: form };
-    }
-  } catch {
-    /* Sent as it came. */
-  }
-  return { body: bytes, contentType };
-}
+/** A knowledge-base MCP request (shared/knowledge-api.ts). */
+export const knowledgeTimeoutMs = 2 * 60_000;
+
+export const maxKnowledgeBytes = 1024 * 1024;
+
+export const knowledgeRequestHeaders = [
+  "content-type",
+  "accept",
+  "mcp-session-id",
+  "mcp-protocol-version",
+  "last-event-id",
+];
+
+export const knowledgeResponseHeaders = [
+  "content-type",
+  "mcp-session-id",
+  "mcp-protocol-version",
+  "cache-control",
+];
 
 export function redact(text: string, secret: string) {
   return secret ? text.split(secret).join("[redacted]") : text;

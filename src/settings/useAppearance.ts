@@ -70,8 +70,8 @@ export function useAppearance(settings: Settings | undefined) {
     const root = document.documentElement;
     root.dataset.chatFont = chatFont;
     root.dataset.motion = motion;
-    // The original sets it on the document too (dataset.chatTextSize);
-    // src/transcript-text-size.css.
+    // The original sets it on the document too (live claude.ai bundle,
+    // 2026-10-12: dataset.chatTextSize); src/transcript-text-size.css.
     root.dataset.chatTextSize = textSize;
     root.dataset.transcriptWidth = width;
     root.dataset.interfaceFont = interfaceFont;

@@ -35,7 +35,7 @@ func TestUpstreamBalanceAlertsOncePerHostUntilRefilled(t *testing.T) {
 }
 
 func TestUpstreamBalanceAlertEmail(t *testing.T) {
-	subject, body := upstreamBalanceAlertEmail("api.aijws.com", "aijws <x>", "openai", 9.5, 10, "https://claudex.example.com", time.Now())
+	subject, body := upstreamBalanceAlertEmail("api.aijws.com", "aijws <x>", "openai", 9.5, 10, "https://claudex.zecous.cn", time.Now())
 	require.Contains(t, subject, "api.aijws.com $9.50")
 	require.NotContains(t, subject, "\n")
 	require.Contains(t, body, "$9.50")

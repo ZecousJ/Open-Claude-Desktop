@@ -967,6 +967,8 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 		}
 		turnStart := time.Now()
 		wroteDownstream := false
+		semanticOutputSeen := false
+		generate := openAIWSPayloadBoolFromRaw(payload, "generate", true)
 		if err := lease.WriteJSONWithContextTimeout(ctx, json.RawMessage(payload), s.openAIWSWriteTimeout()); err != nil {
 			return nil, wrapOpenAIWSIngressTurnError(
 				"write_upstream",
@@ -1147,6 +1149,15 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 					lease.MarkBroken()
 					return nil, s.newOpenAIWSRateLimitFailoverError(account, lease.HandshakeHeaders(), upstreamMessage, errMsgRaw)
 				}
+			}
+			if account.Platform == PlatformOpenAI {
+				if openAIWSCompletionIsEmpty(eventType, upstreamMessage, &usage, generate, semanticOutputSeen) {
+					if turn == 1 && !clientDisconnected && !wroteDownstream && turnPreviousResponseID == "" && !turnHasFunctionCallOutput {
+						return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, lease.HandshakeHeader("x-request-id"))
+					}
+					return nil, wrapOpenAIWSIngressTurnError("empty_completion", openAIWSEmptyCompletionCloseError(c), wroteDownstream)
+				}
+				semanticOutputSeen = semanticOutputSeen || openAIWSHasSemanticOutput(eventType, upstreamMessage)
 			}
 			isTokenEvent := isOpenAIWSTokenEvent(eventType)
 			if isTokenEvent {

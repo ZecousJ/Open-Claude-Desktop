@@ -51,11 +51,12 @@ export function elementChatText(element: SimulatorElement, note: string) {
 }
 
 /**
- * Inspect: over the screen, the element under the pointer is outlined; a click
- * selects the frontmost one there, and the comment card opens beside it: the
- * Cursor glyph, the element's name in semibold and its type, Select the element
- * in front / behind, Close; a two-line field "Tell Claude what to change" and
- * Add to chat. Enter adds, Escape closes.
+ * Inspect (live claude.ai bundle, 2026-10-15, c49d37e5f: the simulator
+ * inspector): over the screen, the element under the pointer is outlined;
+ * a click selects the frontmost one there, and the comment card opens
+ * beside it: the Cursor glyph, the element's name in semibold and its type,
+ * Select the element in front / behind, Close; a two-line field "Tell
+ * Claude what to change" and Add to chat. Enter adds, Escape closes.
  */
 /** What the layer, its card and the side panel share. */
 export interface InspectorSelection {
@@ -347,11 +348,12 @@ export function elementInfoText(element: SimulatorElement) {
 }
 
 /**
- * The Inspect panel beside the screen: "Inspect" and Close inspector at the
- * top; "Reading the screen…", the reason it couldn't be read, or "No accessible
- * elements on screen."; the accessibility tree (a row per element, indented by
- * depth, the hovered and selected ones marked); and, for the selected element,
- * the Properties section with Copy info.
+ * The Inspect panel beside the screen (live claude.ai bundle, 2026-10-15,
+ * c49d37e5f): "Inspect" and Close inspector at the top; "Reading the
+ * screen…", the reason it couldn't be read, or "No accessible elements on
+ * screen."; the accessibility tree (a row per element, indented by depth,
+ * the hovered and selected ones marked); and, for the selected element, the
+ * Properties section with Copy info.
  */
 export function InspectorPanel({
   elements,

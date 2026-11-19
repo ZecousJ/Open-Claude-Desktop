@@ -48,8 +48,10 @@ function question(
 }
 
 /**
- * Asks to act on a site. Allow once lasts for this session here, so the line
- * says so.
+ * Asks to act on a site (live claude.ai bundle, 2026-10-15, c1c1ec7b9
+ * `browser:open_site`: "act on" the origin, the line on what the choices
+ * mean, the private-network one for a site on this computer's network).
+ * Allow once lasts for this session here, so the line says so.
  */
 export function siteQuestion(
   origin: string,
@@ -114,7 +116,8 @@ export function insideFolder(folder: string, file: string) {
 }
 
 /**
- * Asks to open a file outside the project folder: "open" the path, and that
+ * Asks to open a file outside the project folder (live claude.ai bundle,
+ * 2026-10-15, c1c1ec7b9 `browser:open_file`): "open" the path, and that
  * what the preview shows is readable by Claude in this session. Only once:
  * there is no Always allow for files.
  */

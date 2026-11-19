@@ -2,7 +2,8 @@ import { PageMenu } from "../PageMenu";
 import { Paperclip, TextCursorInput, Github, Plug } from "../../ui/glyphs";
 import { StarterCategoryIcon } from "../../starter-prompts/StarterCategoryIcon";
 
-// The Drive mark keeps its own 14px size, whatever the menu passes.
+// The Drive mark keeps its own 14px size, whatever the menu passes (live claude.ai
+// bundle, 2026-10-16, c4372214b-DnMA2xUN.js: kind "drive" icon, size 14).
 const DriveMark = () => <StarterCategoryIcon icon="drive" />;
 
 /** What AddToContextMenu needs from ProjectKnowledgeView.tsx. */
@@ -67,7 +68,7 @@ export function AddToContextMenu({
               },
             ]
           : []),
-        // One entry per connected MCP server with resources.
+        // One entry per connected MCP server with resources (cdeaafbfc Rn).
         ...mcpServers
           .filter((server) => !driveServers.includes(server))
           .map((server) => ({

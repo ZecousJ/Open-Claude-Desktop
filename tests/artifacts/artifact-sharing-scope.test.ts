@@ -45,7 +45,7 @@ const render = (state: Partial<PublishContentState> = {}) =>
     }),
   );
 
-// The Publish modal.
+// Live claude.ai bundle, 2026-10-12: the Publish modal.
 test("before publishing: what it means, the title, the usage note, Publish & copy link", () => {
   const html = render({ usagePolicyUrl: "https://service.example.test/usage" });
   assert.match(
@@ -170,7 +170,8 @@ test("invitation, private-link and sharing wording stays on the sharing surfaces
     [/Copy private link/, []],
     [
       /Shared with you/,
-      // Chats shared with the account: their page.
+      // Chats shared with the account: their page (the history page's
+      // section went on 2026-10-20, owner: the original has none).
       [
         "ArtifactsPage.tsx",
         "SharedChatPage.tsx",
@@ -188,8 +189,8 @@ test("invitation, private-link and sharing wording stays on the sharing surfaces
         "ArtifactTitleMenu.tsx",
       ],
     ],
-    // the title menu's row and its dialog, which sends the report to the
-    // administrator of the account's Claudex service.
+    // R-1055: the title menu's row and its dialog, which sends the report
+    // to the administrator of the account's Claudex service.
     [
       /Report artifact/,
       [
@@ -209,20 +210,22 @@ test("invitation, private-link and sharing wording stays on the sharing surfaces
     [
       /Anyone with the link/,
       [
-        // A published artifact's card names its reach.
+        // R-0946: a published artifact's card names its reach.
         "ArtifactCard.tsx",
         "ConversationShareDialog.tsx",
         "ChatSharePopover.tsx",
         "ConversationHeader.tsx",
-        // An artifact already shared by a public link says so on its card and
-        // in the Artifacts list.
+        // R-0946: an artifact already shared by a public link says so on its
+        // card and in the Artifacts list.
         "ArtifactCard.tsx",
         "ArtifactsPage.tsx",
         "ArtifactRow.tsx",
         "ArtifactGridCard.tsx",
-        // Privacy → Shared chats names each link's reach under its name.
+        // Privacy → Shared chats names each link's reach under its name
+        // (live claude.ai bundle, 2026-10-12).
         "Privacy.tsx",
-        // Share artifact: a version's link and who can open it.
+        // Share artifact: a version's link and who can open it (live
+        // claude.ai bundle, 2026-10-14, c6f91d293).
         "ArtifactShareDialog.tsx",
         // The standalone Share button reads the same hosted audience
         // record as that dialog; it never guesses public/private reach.

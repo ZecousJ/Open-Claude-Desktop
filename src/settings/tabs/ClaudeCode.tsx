@@ -39,22 +39,26 @@ const FontLicensesDialog = lazyPiece(
 /** Rows Settings search finds on this page. */
 export { codeLabels as searchLabels } from "./desktop-labels";
 
-/** The reference design. */
+/** Live claude.ai bundle, 2026-10-14, c71860c77-BUhAcWeF.js. */
 export const bypassPermissionsDescription =
   "Bypass all permission checks and let Claudex work uninterrupted. This works well for workflows like fixing lint errors or generating boilerplate code. Letting Claudex run arbitrary commands is risky and can result in data loss, system corruption, or data exfiltration (e.g., via prompt injection attacks).";
 
 /**
- * Claude Code. Only the rows Claudex acts on: the default mode and effort, the
- * code font, the transcript view, and the local-session switches read by the
- * desktop integration (attention, keep awake) and the sandbox ("Allow bypass
- * permissions mode" is the user's own switch; no administrator policy changes
- * it, owner decision 3), and SSH connections for Code sessions on other
- * computers (R9; shown only when they work, src/ssh/availability.ts), and the
- * built-in Browser. The original's other rows are drawn as in the original,
- * disabled with the reason (owner rule: UI first). Mobile simulators follow the
- * Browser section; the page ends with the account and sharing rows
- * (CodeAccountSections). The original's Authorization tokens block (CLI OAuth
- * tokens) is not drawn: Claudex has no such tokens.
+ * Claude Code (R-1360, R-1358–R-1367). Only the rows Claudex acts on:
+ * the default mode and effort, the code font, the transcript view,
+ * and the local-session
+ * switches read by the desktop integration (attention, keep awake) and
+ * the sandbox ("Allow bypass permissions mode" is the user's own switch;
+ * no administrator policy changes it, owner decision 3), and SSH
+ * connections for Code sessions on other computers (R9; shown only when
+ * they work, src/ssh/availability.ts), and the built-in Browser (R8,
+ * R-1360-04; desktop only). The original's other rows (R-1361–R-1366:
+ * the rest of the transcript appearance, archiving, output styles,
+ * Remote Control, pull requests) are drawn as in the original, disabled
+ * with the reason (owner rule: UI first). Mobile simulators (R-1360-05,
+ * desktop only) follow the Browser section; the page ends with the account
+ * and sharing rows (CodeAccountSections). The original's Authorization
+ * tokens block (CLI OAuth tokens) is not drawn: Claudex has no such tokens.
  */
 export function ClaudeCodeTab({ settings, save, platform, onError }: TabProps) {
   const allowBypass = preference(settings, "allowBypassPermissions");
@@ -185,7 +189,7 @@ export function ClaudeCodeTab({ settings, save, platform, onError }: TabProps) {
           />
         </>
       )}
-      {/* Pull requests. */}
+      {/* R-1364-1366: Pull requests. */}
       <ClaudeCodePullRequests save={save} settings={settings} />
       {surface !== "web" && <SshConnectionsSection onError={onError} />}
       {surface !== "web" && platform === "win32" && (
@@ -207,8 +211,9 @@ export function ClaudeCodeTab({ settings, save, platform, onError }: TabProps) {
 }
 
 /**
- * Dynamic workflows: the account sets the default; administrator policy can
- * turn them off, which shows the switch off and disabled.
+ * Dynamic workflows (live claude.ai bundle, 2026-10-14, cd19fedd2-Boqq6KGj.js):
+ * the account sets the default; administrator policy can turn them off,
+ * which shows the switch off and disabled.
  */
 export function DynamicWorkflowsRow({
   settings,
@@ -297,8 +302,9 @@ export { AllowedSitesContent, siteLabel } from "../AllowedSitesDialog";
 export { AllowedSitesDialog };
 
 /**
- * Worktree location: Inside project (.claude/worktrees) or Custom…, which asks
- * for a folder and shows it under the select.
+ * Worktree location (live claude.ai bundle, 2026-10-14): Inside project
+ * (.claude/worktrees) or Custom…, which asks for a folder and shows it
+ * under the select.
  */
 export function WorktreeLocationRow({
   settings,

@@ -4,9 +4,11 @@ import type { TooltipPlacement } from "./tooltip-position";
 
 /**
  * Text that is cut with an ellipsis and says the whole of itself in the shared
- * tooltip, only while it is cut. The browser's native `title` shows at once and
- * whether or not anything is cut. The element needs its own ellipsis
- * (`overflow: hidden; text-overflow: ellipsis; white-space: nowrap`).
+ * tooltip, only while it is cut (the original's OverflowTooltip: its content
+ * is empty unless scrollWidth exceeds clientWidth; live claude.ai bundle,
+ * 2026-10-16, shared-frame-6654oR3- `vi`). The browser's native `title` shows
+ * at once and whether or not anything is cut. The element needs its own
+ * ellipsis (`overflow: hidden; text-overflow: ellipsis; white-space: nowrap`).
  */
 export function OverflowText({
   text,

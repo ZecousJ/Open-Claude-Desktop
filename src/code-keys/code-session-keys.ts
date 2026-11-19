@@ -1,8 +1,9 @@
 /**
- * The keys a Code session's transcript answers to, from the live Ctrl+O cycles
- * the transcript view on every platform (cycleTranscriptMode, by the physical O
- * key); ⌥⌘↑ / ⌥⌘↓ on macOS and Alt+↑ / Alt+↓ elsewhere jump to the previous and
- * next prompt (jumpPrevPrompt, jumpNextPrompt).
+ * The keys a Code session's transcript answers to, from the live
+ * claude.ai bundle's session key table (2026-10-12): Ctrl+O cycles the
+ * transcript view on every platform (cycleTranscriptMode, by the physical
+ * O key); ⌥⌘↑ / ⌥⌘↓ on macOS and Alt+↑ / Alt+↓ elsewhere jump to the
+ * previous and next prompt (jumpPrevPrompt, jumpNextPrompt).
  */
 export type CodeSessionKey =
   "cycle-transcript-view" | "jump-previous-prompt" | "jump-next-prompt";

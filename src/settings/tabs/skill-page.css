@@ -1,12 +1,13 @@
 /*
- * A skill's page. "← Your skills" 13px; a 44px tile (radius 8) with the 14px
- * semibold name and a 13px "by … · updated …" line, the switch and ⋮ at the
- * right; 14px tabs 22px apart over a hairline, the open one underlined 2px.
- * Overview: a 13px Description label and 14/20 text 500px wide, beside a 240px
- * Created by card. Contents: a 32px version button, then a bordered split: a
- * 233px file tree (32px rows) and a reader with a 13px monospace path, the
- * preview/source toggle, and the file. Dark follows the Settings list colours
- * (settings.css).
+ * A skill's page (R-1515–R-1520, R-1622; Windows W1920 1x, light). "← Your
+ * skills" 13px; a 44px tile (radius 8) with the 14px semibold name and a
+ * 13px "by … · updated …" line, the switch and ⋮ at the right; 14px tabs
+ * 22px apart over a hairline, the open one underlined 2px. Overview: a
+ * 13px Description label and 14/20 text 500px wide, beside a 240px Created
+ * by card. Contents: a 32px version button, then a bordered split: a 233px
+ * file tree (32px rows) and a reader with a 13px monospace path, the
+ * preview/source toggle, and the file. Dark follows the Settings list
+ * colours (settings.css).
  */
 .skill-page {
   display: flex;

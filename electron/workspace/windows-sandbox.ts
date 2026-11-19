@@ -5,7 +5,7 @@ interface SandboxRPC {
   on(event: string, listener: (...args: any[]) => void): unknown;
   off(event: string, listener: (...args: any[]) => void): unknown;
 }
-const MODE = "unelevated";
+type WindowsSandboxMode = "unelevated" | "elevated";
 const RECEIPT_VERSION = 1;
 const RUNTIME_VERSION = "0.144.1";
 const SETUP_GUIDANCE =
@@ -16,6 +16,7 @@ export function runWindowsSandboxSetup(
   rpc: SandboxRPC,
   cwd: string,
   timeoutMs = 120_000,
+  mode: WindowsSandboxMode = "unelevated",
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     let accepted = false;
@@ -46,7 +47,7 @@ export function runWindowsSandboxSetup(
     const onNotification = (message: any) => {
       if (
         message.method !== "windowsSandbox/setupCompleted" ||
-        message.params?.mode !== MODE
+        message.params?.mode !== mode
       )
         return;
       completed = message.params;
@@ -67,7 +68,7 @@ export function runWindowsSandboxSetup(
     );
     rpc.on("notification", onNotification);
     rpc.on("failure", onFailure);
-    void rpc.call("windowsSandbox/setupStart", { mode: MODE, cwd }).then(
+    void rpc.call("windowsSandbox/setupStart", { mode, cwd }).then(
       (result) => {
         if (!result?.started) {
           finish(new Error("Codex did not start the Windows sandbox setup."));
@@ -85,6 +86,7 @@ export function runWindowsSandboxSetup(
 /** Codex 0.144.1 reports unelevated readiness from config alone; keep a completed-setup receipt too. */
 export class WindowsSandbox {
   private ready = false;
+  private mode: WindowsSandboxMode = "unelevated";
   private generation = 0;
   private pending?: Promise<{ ready: boolean; message: string }>;
   private readonly receiptPath: string;
@@ -97,6 +99,7 @@ export class WindowsSandbox {
   }
   reset() {
     this.ready = this.platform !== "win32";
+    this.mode = "unelevated";
     this.generation++;
   }
   assertReady() {
@@ -105,6 +108,9 @@ export class WindowsSandbox {
   get isReady() {
     return this.ready;
   }
+  get supportsScopedWrites() {
+    return this.mode === "elevated" && this.ready;
+  }
   /**
    * Ready before a turn: waits for a setup already under way, or runs one
    * now (Claudex sets the sandbox up by itself; the Settings button only
@@ -112,6 +118,7 @@ export class WindowsSandbox {
    */
   async ensureReady(rpc: SandboxRPC, cwd: string) {
     if (this.ready) return;
+    if (this.mode === "elevated") this.assertReady();
     try {
       await this.setup(rpc, cwd);
     } catch (error) {
@@ -121,18 +128,20 @@ export class WindowsSandbox {
     }
     this.assertReady();
   }
-  async check(rpc: SandboxRPC): Promise<boolean> {
+  async check(rpc: SandboxRPC, mode: WindowsSandboxMode = "unelevated"): Promise<boolean> {
     if (this.platform !== "win32") return true;
     const generation = this.generation;
+    this.mode = mode;
     this.ready = false;
     try {
-      const receipt = JSON.parse(fs.readFileSync(this.receiptPath, "utf8"));
-      if (
-        receipt.version !== RECEIPT_VERSION ||
-        receipt.runtimeVersion !== RUNTIME_VERSION ||
-        receipt.mode !== MODE
-      )
-        return false;
+      if (mode === "unelevated") {
+        const receipt = JSON.parse(fs.readFileSync(this.receiptPath, "utf8"));
+        if (
+          receipt.version !== RECEIPT_VERSION ||
+          receipt.runtimeVersion !== RUNTIME_VERSION ||
+          receipt.mode !== mode
+        ) return false;
+      }
       const result = await rpc.call("windowsSandbox/readiness", {});
       if (generation !== this.generation) return false;
       this.ready = result?.status === "ready";
@@ -152,9 +161,10 @@ export class WindowsSandbox {
       });
     if (this.pending) return this.pending;
     const generation = this.generation;
+    const mode = this.mode;
     this.ready = false;
     const work = async () => {
-      await runWindowsSandboxSetup(rpc, cwd);
+      await runWindowsSandboxSetup(rpc, cwd, undefined, mode);
       const result = await rpc.call("windowsSandbox/readiness", {});
       if (generation !== this.generation)
         throw new Error(
@@ -174,7 +184,7 @@ export class WindowsSandbox {
         JSON.stringify({
           version: RECEIPT_VERSION,
           runtimeVersion: RUNTIME_VERSION,
-          mode: MODE,
+          mode,
           completedAt: new Date().toISOString(),
         }),
         { mode: 0o600 },
@@ -183,8 +193,9 @@ export class WindowsSandbox {
       this.ready = true;
       return {
         ready: true,
-        message:
-          "The Windows restricted-token sandbox is set up. You can start conversations and run local tasks.",
+        message: mode === "elevated"
+          ? "The Windows administrator sandbox is ready."
+          : "The Windows restricted-token sandbox is set up. You can start conversations and run local tasks.",
       };
     };
     const pending = work().finally(() => {

@@ -4,7 +4,8 @@ import type { KeyboardEvent } from "react";
  * The menu keys of a popup of `[role="menuitem"]` rows: ↓ ↑ Home End walk the
  * rows and loop, and Tab, which would leave a popup rendered apart from the
  * sidebar, goes to `onTab` (the popup closes). Menu items show the keyboard
- * highlight through `:focus-visible`.
+ * highlight through `:focus-visible` (data-highlighted in the original; live
+ * claude.ai bundle, 2026-10-16, shared-frame-6654oR3-.js).
  */
 export function roamMenuItems(
   event: KeyboardEvent<HTMLElement>,

@@ -2,7 +2,7 @@ import { useSettingsRequestScope } from "../../settings/useSettingsRequestScope"
 import type { SkillUploadCapabilitiesAPI } from "../../../shared/customize-search";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, CircleCheck, File, Upload, X } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Spinner } from "../../ui/Spinner";
 import { formatText } from "../../i18n";
 import { WarningIcon } from "../../policy/GlobalLimitToast";
@@ -37,13 +37,14 @@ type FileState =
   | { kind: "skipped" };
 
 /**
- * Upload a skill: back to Your skills, the title and line, a drop zone that
- * also browses (several files at once), then, once files are chosen, a card per
- * file (icon, name, size, remove), a red banner when a file cannot be a skill,
- * the two format rules, a Preview card with the skill's name and description,
- * the Security scan row, and Upload / Cancel. While uploading the Upload button
- * shows only a spinner and Cancel is disabled. Uploaded contents are checked in
- * the main process before replacing any installed files.
+ * Upload a skill (R-1130, R-1153): back to Your skills, the title and line,
+ * a drop zone that also browses (several files at once), then, once files
+ * are chosen, a card per file (icon, name, size, remove), a red banner when
+ * a file cannot be a skill ("Invalid zip file", R-1594), the two format
+ * rules, a Preview card with the skill's name and description, the Security
+ * scan row, and Upload / Cancel. While uploading the Upload button shows
+ * only a spinner and Cancel is disabled (R-1603). Uploaded contents are
+ * checked in the main process before replacing any installed files.
  */
 export function UploadSkillPage({
   onBack,
@@ -478,7 +479,7 @@ function FileStatus({
       return (
         <>
           <span className="upload-skill-status failed">
-            <AppIcon name="WarningCircle" size={14} />
+            <Anthropicon name="WarningCircle" size={14} />
             <span data-no-translate>
               {formatText("A skill named {name} already exists", {
                 name: state.name,
@@ -511,7 +512,7 @@ function FileStatus({
       return (
         <>
           <span className="upload-skill-status failed">
-            <AppIcon name="WarningCircle" size={14} />
+            <Anthropicon name="WarningCircle" size={14} />
             <span>{state.message}</span>
           </span>
           <button
@@ -548,7 +549,7 @@ function UploadSummary({
       {added > 0 ? (
         <CircleCheck size={16} />
       ) : (
-        <AppIcon name="WarningCircle" size={16} />
+        <Anthropicon name="WarningCircle" size={16} />
       )}
       <span>
         {added === 0 ? (

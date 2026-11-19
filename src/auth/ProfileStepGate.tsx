@@ -17,13 +17,15 @@ const storage = (): Storage | undefined => {
 };
 
 /**
- * The account step after sign-up stands before the app, as the original's
- * onboarding gate does: an account of a Claudex service whose name, birthday or
- * current terms are not on record sees ProfileStep first. A device that saw the
- * account finish opens the app at once and asks the service in the background
- * (a new terms version brings the step back); otherwise the app waits for the
- * answer. A service without the step, or one that cannot answer, lets the
- * account in: the step is asked again at the next start.
+ * The account step after sign-up stands before the app (owner,
+ * 2026-10-12), as the original's onboarding gate does (live claude.ai
+ * bundle, 2026-10-12: c02ff39a4 `R`, "legal" before "done"): an account of
+ * a Claudex service whose name, birthday or current terms are not on record
+ * sees ProfileStep first. A device that saw the account finish opens the
+ * app at once and asks the service in the background (a new terms version
+ * brings the step back); otherwise the app waits for the answer. A service
+ * without the step, or one that cannot answer, lets the account in: the
+ * step is asked again at the next start.
  */
 export function ProfileStepGate({
   accountId,

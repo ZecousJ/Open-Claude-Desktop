@@ -4,11 +4,12 @@ import {
 } from "../../shared/artifact-notes";
 
 /*
- * A comment and its replies as one thread, after the original's comment cards:
- * the first comment can be edited, resolved and reopened, and the whole thread
- * deleted; a reply can be edited and deleted; a reply to a resolved thread
- * reopens it ("Reply to reopen…"). Every change answers the comments list to
- * save, so the order and the other comments stay as they were.
+ * A comment and its replies as one thread, after the original's comment
+ * cards (desktop bundle 2.31226.1): the first comment can be edited, resolved
+ * and reopened, and the whole thread deleted; a reply can be edited and
+ * deleted; a reply to a resolved thread reopens it ("Reply to reopen…").
+ * Every change answers the comments list to save, so the order and the
+ * other comments stay as they were.
  */
 
 /** The text a comment or reply may hold, trimmed; undefined when it is empty or too long. */

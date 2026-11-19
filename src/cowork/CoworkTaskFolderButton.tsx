@@ -157,7 +157,8 @@ export function CoworkTaskFolderButton({
     }
   };
   // A cloud task on this computer that is not linked to it yet: the button
-  // links it first.
+  // links it first (live claude.ai bundle, 2026-10-16, shared-8-kIxzyY2S: uh,
+  // disabled-unbound).
   const unbound =
     host.kind !== "web" &&
     host.capabilities.localFolders &&

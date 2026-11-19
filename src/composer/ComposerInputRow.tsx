@@ -229,8 +229,8 @@ export function ComposerInputRow({
         running &&
         hasDraft &&
         !plainEnterSends(host.kind === "desktop") && (
-          // On a touch screen a mid-turn Send carries More send options: Queue
-          // for later, then Stop.
+          // On a touch screen a mid-turn Send carries More send options
+          // (live claude.ai bundle, 2026-10-14): Queue for later, then Stop.
           <MoreSendOptions
             canQueue={!bash}
             onQueue={() => submit({ later: true })}

@@ -9,7 +9,7 @@ export type CodeSlashCommand = {
   conversation?: boolean;
   /** Only with a session open: the host registry's hasSession gate (/rewind, /status, /copy). */
   session?: boolean;
-  /** Added by the person: a custom prompt ("Custom command") or a skill. */
+  /** Added by the person: a custom prompt ("Custom command") or a skill (R-0401). */
   source?: CustomSlashCommand["source"];
   argumentHint?: string;
   /** Runs when typed but is not in the unfiltered list. */
@@ -17,11 +17,12 @@ export type CodeSlashCommand = {
 };
 
 /**
- * The Code slash list in the original's order, with its descriptions, argument
- * hints and aliases. Commands the original keeps behind flags or for its own
- * services (subtask, context, memory, logs, advisor, Ultrareview launching a
- * remote session) are left out; those Claudex lacks the feature for say so when
- * run (code-slash-actions.ts).
+ * The Code slash list in the original's order, with its descriptions,
+ * argument hints and aliases (live claude.ai bundle, 2026-10-14, the host
+ * command registry). Commands the original keeps behind flags or for its
+ * own services (subtask, context, memory, logs, advisor, Ultrareview
+ * launching a remote session) are left out; those Claudex lacks the feature
+ * for say so when run (code-slash-actions.ts).
  */
 export const codeSlashCommands: CodeSlashCommand[] = [
   {
@@ -36,8 +37,8 @@ export const codeSlashCommands: CodeSlashCommand[] = [
     session: true,
   },
   // The live app lists /ultrareview only where the host can launch a remote
-  // review session; Claudex has no such session, and /review runs the local
-  // review.
+  // review session (cc183b3ab: gate on ipc.launchUltrareview); Claudex has
+  // no such session, and /review runs the local review.
   {
     name: "rewind",
     description: "Rewind the session to an earlier message",
@@ -118,8 +119,8 @@ export const codeSlashCommands: CodeSlashCommand[] = [
     description: "Add another folder to this session",
     argumentHint: "[path]",
     session: true,
-    // A session works in one folder, so the list does not offer it; typed, it
-    // says so.
+    // A session works in one folder (docs/parity-audit-2026-10-15.md), so the
+    // list does not offer it; typed, it says so.
     typedOnly: true,
   },
   {
@@ -195,7 +196,8 @@ export const codeSlashCommands: CodeSlashCommand[] = [
   },
   { name: "login", aliases: ["logout"], description: "Sign in again" },
   { name: "help", description: "Get help and support" },
-  // After /help, [N], only with a session.
+  // Live claude.ai bundle, 2026-10-16, cc183b3ab: after /help, [N], only
+  // with a session.
   {
     name: "copy",
     description:
@@ -228,8 +230,8 @@ export function builtInSlashCommand(name: string) {
 }
 
 /**
- * The grey tag at the right of a row: the person's own prompts say "Custom
- * command"; skills carry no tag (their plugin prefix, as in
+ * The grey tag at the right of a row (R-0401): the person's own prompts say
+ * "Custom command"; skills carry no tag (their plugin prefix, as in
  * "anthropic-skills:docs", is part of the name).
  */
 export const slashSourceLabels: Record<
@@ -276,7 +278,8 @@ export function availableCodeSlashCommands({
   );
   return [
     ...builtIn,
-    // After the built-in rows the prompts and skills follow in name order.
+    // After the built-in rows the prompts and skills follow in name order
+    // (R-0401: advisor … anthropic-skills:docs … cowork-plugin-management:…).
     ...custom
       .filter((command) => !reserved.has(command.name))
       .sort((a, b) =>
@@ -324,8 +327,9 @@ export function filterCodeSlashCommands(
 ) {
   const search = query.trim().toLowerCase();
   if (!search) return commands.filter((command) => !command.typedOnly);
-  // A command is found by its name or an alias, as a part of it, and by nothing
-  // else: not its description, not letters picked out in order.
+  // A command is found by its name or an alias, as a part of it, and by
+  // nothing else: not its description, not letters picked out in order (live
+  // claude.ai bundle, 2026-10-16, shared-5 I$ over c_: label and aliases).
   const rank = (command: CodeSlashCommand) => {
     const name = command.name.toLowerCase();
     if (name === search) return 0;
@@ -344,59 +348,4 @@ export function filterCodeSlashCommands(
     .map((value) => value.command);
 }
 
-/**
- * Splits a custom prompt's arguments as Codex custom prompts do: on
- * whitespace, with "double" or 'single' quotes keeping spaces together.
- */
-export function splitPromptArguments(text: string) {
-  const values: string[] = [];
-  for (const match of text.matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g))
-    values.push(match[1] ?? match[2] ?? match[3] ?? "");
-  return values;
-}
-
-/**
- * A custom prompt with its arguments filled in: `$1`…`$9` take the
- * positional arguments, `$ARGUMENTS` all of them, `$NAME` a `NAME=value`
- * argument, and `$$` is a literal "$". A prompt without placeholders gets
- * the arguments after it, on a line of their own.
- */
-export function expandCustomPrompt(body: string, argumentText: string) {
-  const all = argumentText.trim();
-  const named = new Map<string, string>();
-  const positional: string[] = [];
-  for (const value of splitPromptArguments(all)) {
-    const pair = /^([A-Z][A-Z0-9_]*)=([\s\S]*)$/.exec(value);
-    if (pair) named.set(pair[1], pair[2]);
-    else positional.push(value);
-  }
-  let used = false;
-  const expanded = body.replace(
-    /\$(\$|[1-9]|[A-Z][A-Z0-9_]*)/g,
-    (whole, key: string) => {
-      if (key === "$") return "$";
-      if (key === "ARGUMENTS") {
-        used = true;
-        return all;
-      }
-      if (/^[1-9]$/.test(key)) {
-        used = true;
-        return positional[Number(key) - 1] ?? "";
-      }
-      if (named.has(key)) {
-        used = true;
-        return named.get(key)!;
-      }
-      return whole;
-    },
-  );
-  const text = expanded.trim();
-  if (used || !all) return text;
-  return text ? `${text}\n\n${all}` : all;
-}
-
-/** The message a skill command sends: Codex reads `$name` as a request to use that skill. */
-export function skillMessage(name: string, argumentText: string) {
-  const rest = argumentText.trim();
-  return rest ? `$${name} ${rest}` : `$${name}`;
-}
+export { splitPromptArguments, expandCustomPrompt, skillMessage } from "../../../shared/custom-command-expansion";

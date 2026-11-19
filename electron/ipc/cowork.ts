@@ -283,7 +283,7 @@ export function registerCoworkHandlers(handle: IpcHandle, ctx: AppContext) {
         resourceRoot(id, index),
         z.string().max(4096).parse(relative),
       );
-      // Desktop listFilesInFolderImpl.
+      // Desktop listFilesInFolderImpl (2.37337.1, index.chunk-BWk6pVUt.js: qin).
       result.entries = result.entries.filter(
         ({ name }) =>
           !name.startsWith(".") &&

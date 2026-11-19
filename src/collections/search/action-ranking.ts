@@ -22,10 +22,9 @@ function truncateField(value: unknown): unknown {
   return value;
 }
 
-/**
- * O16 /5966. Same Fuse 7.4.0 options, weighted description/hints and
- * primary-prefix priority. Equal scores stay stable.
- */
+/** O16 shared-9-eoxSi7VI:9236, c2b74c150-rgc4gx7X:20–70,
+ * c2771e1f6-B2qqRLkw:4145/5966. Same Fuse 7.4.0 options, weighted
+ * description/hints and primary-prefix priority. Equal scores stay stable. */
 export function rankPaletteActions(
   actions: readonly PaletteAction[],
   query: string,

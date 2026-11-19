@@ -45,13 +45,14 @@ test("only child threads recorded in the account can be interrupted", async () =
     store.conversations = [conversation];
     const calls: string[] = [];
     const engine = {
+      elsewhereFor: () => undefined,
       state: { state: "ready" },
       rpc: {
         call: async (method: string) => {
           calls.push(method);
           return method === "thread/read"
             ? {
-                thread: { turns: [{ id: "child-turn", status: "inProgress" }] },
+                thread: { id: "child", turns: [{ id: "child-turn", status: "inProgress" }] },
               }
             : {};
         },
@@ -121,11 +122,12 @@ test("a completed child is not interrupted, and RPC failure leaves data unchange
     ];
     const calls: string[] = [];
     const engine = {
+      elsewhereFor: () => undefined,
       state: { state: "ready" },
       rpc: {
         call: async (method: string) => {
           calls.push(method);
-          return { thread: { turns: [{ id: "done", status: "completed" }] } };
+          return { thread: { id: "child", turns: [{ id: "done", status: "completed" }] } };
         },
       },
     } as unknown as Engine;
@@ -136,6 +138,7 @@ test("a completed child is not interrupted, and RPC failure leaves data unchange
       "completed",
     );
     const failed = {
+      elsewhereFor: () => undefined,
       state: { state: "ready" },
       rpc: {
         call: async () => {
@@ -156,7 +159,7 @@ test("a completed child is not interrupted, and RPC failure leaves data unchange
   }
 });
 
-test("background status refresh reads only children from the signed-in conversation", async () => {
+test("background status refresh reads a hosted workflow's children from its space engine", async () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "claudex-workflow-refresh-"),
   );
@@ -167,6 +170,7 @@ test("background status refresh reads only children from the signed-in conversat
         id: "c",
         title: "Fixture",
         mode: "code",
+        environment: { kind: "space", spaceId: "workflow-space" },
         providerId: "default",
         model: "fixture",
         pinned: false,
@@ -184,6 +188,7 @@ test("background status refresh reads only children from the signed-in conversat
               {
                 id: "s",
                 type: "collabAgentToolCall",
+                tool: "workflow",
                 receiverThreadIds: ["child"],
                 agentsStates: {
                   child: { status: "running", message: "Working" },
@@ -195,7 +200,7 @@ test("background status refresh reads only children from the signed-in conversat
       },
     ];
     let calls = 0;
-    const engine = {
+    const peer = {
       state: { state: "ready" },
       rpc: {
         call: async (method: string, params: any) => {
@@ -204,6 +209,7 @@ test("background status refresh reads only children from the signed-in conversat
           calls++;
           return {
             thread: {
+              id: "child",
               status: { type: "idle" },
               turns: [{ id: "done", status: "completed" }],
             },
@@ -211,6 +217,7 @@ test("background status refresh reads only children from the signed-in conversat
         },
       },
     } as unknown as Engine;
+    const engine = { elsewhereFor: () => peer } as unknown as Engine;
     const { refreshWorkflowAgents } =
       await import("../../electron/ipc/workflow");
     const first = await refreshWorkflowAgents({ store, engine }, "c");
@@ -272,6 +279,7 @@ test("native V2 child activity authorizes stop and status refresh without a coll
     ];
     const methods: string[] = [];
     const engine = {
+      elsewhereFor: () => undefined,
       state: { state: "ready" },
       rpc: {
         call: async (method: string) => {
@@ -279,6 +287,7 @@ test("native V2 child activity authorizes stop and status refresh without a coll
           return method === "thread/read"
             ? {
                 thread: {
+                  id: "native-child",
                   createdAt: 42,
                   updatedAt: 43,
                   status: { type: "idle" },
@@ -324,6 +333,87 @@ test("native V2 child activity authorizes stop and status refresh without a coll
       0,
     );
   } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("child stop uses its environment engine and refuses an account retired during read", async () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "claudex-child-environment-"),
+  );
+  const store = new Store(root);
+  store.conversations = [
+    {
+      id: "parent",
+      title: "Parent",
+      mode: "code",
+      model: "fixture",
+      providerId: "fixture",
+      pinned: false,
+      archived: false,
+      createdAt: 1,
+      updatedAt: 1,
+      turns: [
+        {
+          id: "turn",
+          prompt: "Inspect",
+          attachments: [],
+          status: "completed",
+          createdAt: 1,
+          items: [
+            {
+              id: "spawn",
+              type: "subAgentActivity",
+              kind: "started",
+              agentThreadId: "child",
+            },
+          ],
+        },
+      ],
+    },
+  ];
+  const calls: string[] = [];
+  let current = true;
+  let retire = false;
+  const peer = {
+    state: { state: "ready" },
+    rpc: {
+      call: async (method: string) => {
+        calls.push(method);
+        if (method === "thread/read") {
+          if (retire) current = false;
+          return {
+            thread: {
+              id: "child",
+              turns: [{ id: "child-turn", status: "inProgress" }],
+            },
+          };
+        }
+        return {};
+      },
+    },
+  } as unknown as Engine;
+  const engine = { elsewhereFor: () => peer } as unknown as Engine;
+  try {
+    await stopWorkflowAgent(
+      { store, engine, current: () => current },
+      "parent",
+      "child",
+    );
+    assert.deepEqual(calls, ["thread/read", "turn/interrupt"]);
+    calls.length = 0;
+    retire = true;
+    await assert.rejects(
+      stopWorkflowAgent(
+        { store, engine, current: () => current },
+        "parent",
+        "child",
+      ),
+      /connection changed/,
+    );
+    assert.deepEqual(calls, ["thread/read"]);
+  } finally {
+    store.flush();
     fs.rmSync(root, { recursive: true, force: true });
   }
 });

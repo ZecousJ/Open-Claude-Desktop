@@ -25,7 +25,7 @@ import {
 } from "../connector-owner";
 import { starterConnectorId } from "../../../shared/starter-integrations";
 
-// Personal connector form.
+// Personal connector form (live claude.ai bundle, 2026-10-14, ce99eb202-DGbIVS-C.js).
 type Props = {
   defaults?: CatalogueConnector;
   suggested?: ConnectorSuggestion;

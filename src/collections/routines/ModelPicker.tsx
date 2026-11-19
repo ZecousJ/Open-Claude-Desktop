@@ -47,8 +47,8 @@ export const sameChoice = (a: ModelChoice, b: ModelChoice) =>
     : !b.default && a.providerId === b.providerId && a.model === b.model;
 
 /**
- * The routine editor's model menu: a search field on top and one 24px row per
- * model, "Default" first.
+ * The routine editor's model menu (R-1265): a search field on top and one
+ * 24px row per model, "Default" first.
  */
 export function ModelPicker({
   providers,

@@ -5,9 +5,10 @@ import { WithTooltip } from "../ui/Tooltip";
 
 /**
  * A sent prompt's editor: the text field that replaces the bubble's text and
- * the row under it with the note about saving, Cancel and Save. Chat and Cowork
- * share it. It renders inside `.user-message`, which the caller marks
- * `is-editing`.
+ * the row under it with the note about saving, Cancel and Save. Chat and
+ * Cowork share it (the original's edit box is one component in both; source:
+ * desktop bundle 2.31226.1). It renders inside `.user-message`, which the
+ * caller marks `is-editing`.
  */
 export function PromptEdit({
   original,
@@ -55,7 +56,9 @@ export function PromptEdit({
             e.preventDefault();
             onCancel();
           }
-          // Enter and Cmd/Ctrl+Enter save when Save is enabled.
+          // R-0566 (no capture beyond Esc; analogue: the composer, where
+          // Enter sends and Shift+Enter breaks the line): Enter and
+          // Cmd/Ctrl+Enter save when Save is enabled.
           if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
             e.preventDefault();
             if (saveable) onSave();

@@ -1,9 +1,9 @@
 /**
- * How long a message's start took, step by step. One line per send in a runner
- * space, or anywhere with CLAUDEX_TIMING=1: [timing] c1234567: setup 2100ms,
- * engine 5400ms (gateway 3, app-server 3900, skills 1200), thread 300ms, turn
- * 80ms, first output 4200ms Each step is measured from the end of the one
- * before.
+ * How long a message's start took, step by step (owner, 2026-10-15: "can the
+ * cloud session start be faster?"). One line per send in a runner space, or
+ * anywhere with CLAUDEX_TIMING=1:
+ *   [timing] c1234567: setup 2100ms, engine 5400ms (gateway 3, app-server 3900, skills 1200), thread 300ms, turn 80ms, first output 4200ms
+ * Each step is measured from the end of the one before.
  */
 export class StartTiming {
   private last = Date.now();

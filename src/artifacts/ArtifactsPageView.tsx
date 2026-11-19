@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { ImportSharedArtifactDialog } from "./ArtifactsPage";
 import { PageSearchIcon, PageFilterIcon } from "../ui/icons";
 import { LayoutGrid, List, Search, X } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { galleryTypes } from "./gallery";
 import { TypeMenu, ArtifactRow } from "./ArtifactRow";
 import { isEditEndKey } from "../ui/ime";
@@ -94,9 +94,8 @@ export interface ArtifactsPageViewKit {
   width: number;
 }
 
-/**
- * Group by's choices; the button names the choice briefly ("Group by: None").
- */
+/** Group by's choices (live claude.ai /artifacts, 2026-10-21); the button
+ * names the choice briefly ("Group by: None"). */
 const groupLabels: Record<ArtifactGroup, string> = {
   none: "None (Last edited)",
   date: "Date edited",
@@ -256,8 +255,8 @@ export function artifactsPageView(kit: ArtifactsPageViewKit) {
                     <PageSearchIcon />
                   </button>
                 )}
-                {/* Group by: a ghost button with its choice and a caret, 12px
-                   after the search. */}
+                {/* Group by (live claude.ai, 2026-10-21): a ghost button
+                    with its choice and a caret, 12px after the search. */}
                 <button
                   type="button"
                   className="artifacts-group"
@@ -280,7 +279,7 @@ export function artifactsPageView(kit: ArtifactsPageViewKit) {
                   {formatText("Group by: {group}", {
                     group: t(groupShort[groupBy]),
                   })}
-                  <AppIcon name="CaretDown" size={16} />
+                  <Anthropicon name="CaretDown" size={16} />
                 </button>
                 <button
                   className="artifacts-tool"
@@ -334,8 +333,8 @@ export function artifactsPageView(kit: ArtifactsPageViewKit) {
                     aria-label={t("Design")}
                     onClick={openDesign}
                   >
-                    {/* The live toolbar: DotsHorizontal. */}
-                    <AppIcon name="DotsHorizontal" size={20} />
+                    {/* The live toolbar: DotsHorizontal (2026-10-20). */}
+                    <Anthropicon name="DotsHorizontal" size={20} />
                   </button>
                 )}
                 <button
@@ -355,7 +354,7 @@ export function artifactsPageView(kit: ArtifactsPageViewKit) {
                     )
                   }
                 >
-                  <AppIcon name="Add" size={20} />
+                  <Anthropicon name="Add" size={20} />
                 </button>
                 {toolMenu && (
                   <Menu
@@ -378,14 +377,14 @@ export function artifactsPageView(kit: ArtifactsPageViewKit) {
                         : [
                             {
                               label: "Chat",
-                              icon: <AppIcon name="Chat" size={20} />,
+                              icon: <Anthropicon name="Chat" size={20} />,
                               onSelect: () => onCreate(""),
                             },
                             { separator: true as const },
                             ...makeTemplates.map(
                               ({ name, badge, prompt, kind, icon }) => ({
                                 label: name,
-                                icon: <AppIcon name={icon} size={20} />,
+                                icon: <Anthropicon name={icon} size={20} />,
                                 ...(badge === "Beta" ? { badge } : {}),
                                 onSelect: () => onCreate(prompt, kind),
                               }),
@@ -467,7 +466,8 @@ export function artifactsPageView(kit: ArtifactsPageViewKit) {
                   )}
                 </div>
               ) : view === "grid" ? (
-                // Grouped, each group is its heading over its own grid.
+                // Grouped, each group is its heading over its own grid (live
+                // claude.ai, 2026-10-21: "flex flex-col gap-sm" sections).
                 sections.map((section) => (
                   <section
                     key={section.id}

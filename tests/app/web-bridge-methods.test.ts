@@ -103,6 +103,7 @@ const neverRemote = [
   "computerUsePreview",
   "revealCoworkFolder",
   "copyText",
+  "referenceFonts",
   "chooseAttachments",
 ];
 

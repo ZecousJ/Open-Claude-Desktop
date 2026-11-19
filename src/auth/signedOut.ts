@@ -8,8 +8,9 @@ export type SignedOutReason =
   "revoked" | "device-revoked" | "session-expired" | "password-changed";
 
 /**
- * The line above the sign-in card after a session ended. The original says the
- * same whatever ended it.
+ * The line above the sign-in card after a session ended (live claude.ai
+ * bundle, 2026-10-12: the login form's "session ended" line). The original
+ * says the same whatever ended it.
  */
 export const sessionEndedLine = "Your session ended. Log in again to continue.";
 

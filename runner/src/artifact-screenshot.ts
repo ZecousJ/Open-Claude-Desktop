@@ -3,8 +3,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { SandboxDriver } from "./sandbox/driver";
+import { imageType } from "../../electron/artifacts/generated-blobs";
 
-const script = `import base64, pathlib, sys
+const screenshotScript = `import base64, pathlib, sys
 from playwright.sync_api import sync_playwright
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch(headless=True, executable_path="/usr/local/bin/chromium")
@@ -17,34 +18,51 @@ with sync_playwright() as playwright:
     browser.close()
 `;
 
-export async function captureSandboxArtifact(
+const imageScript = `import json, sys
+from PIL import Image
+try:
+    with Image.open(sys.argv[1], formats=(sys.argv[2],)) as image:
+        image.load()
+        print(json.dumps({"width": image.width, "height": image.height}))
+except (OSError, SyntaxError, ValueError, Image.DecompressionBombError):
+    print("null")
+`;
+
+async function runSandboxPython(
   driver: SandboxDriver,
   stateRoot: string,
-  html: string,
+  data: string | Buffer,
+  script: string,
+  args: string[],
+  maxBuffer: number,
 ) {
-  const id = `screenshot-${randomUUID()}`;
+  const id = `pv-${randomUUID().replaceAll("-", "").slice(0, 24)}`;
   const folder = path.join(stateRoot, id);
   await fs.mkdir(folder, { recursive: true, mode: 0o700 });
-  const document = path.join(folder, "preview.html");
+  const source = path.join(folder, "source");
+  const workspace = path.join(folder, "work");
+  const document = path.join(source, "input");
   let prepared: ReturnType<SandboxDriver["prepare"]> | undefined;
   try {
-    await fs.writeFile(document, html, { mode: 0o600 });
+    await fs.mkdir(source, { mode: 0o700 });
+    await fs.mkdir(workspace, { mode: 0o700 });
+    await fs.writeFile(document, data, { mode: 0o600 });
     prepared = driver.prepare({
       id,
       kind: "cowork",
       stateDir: path.join(folder, "state"),
       codexBinary: "/usr/bin/python3",
       codexRoot: "/usr/bin",
-      mounts: [{ host: folder, writable: false }],
-      cwd: folder,
+      mounts: [{ host: source, writable: false }, { host: workspace, writable: true }],
+      cwd: workspace,
       limits: { memoryMb: 512, pids: 256, cpus: 1, tmpMb: 128 },
     });
     const binary = prepared.binary;
     return await new Promise<string>((resolve, reject) => {
       execFile(
         binary,
-        ["-c", script, document],
-        { timeout: 30000, maxBuffer: 2 * 1024 * 1024 },
+        ["-c", script, document, ...args],
+        { timeout: 30000, maxBuffer, env: { PATH: process.env.PATH, CODEX_HOME: workspace } },
         (error, stdout) => {
           if (error) reject(error);
           else resolve(stdout.trim());
@@ -52,7 +70,25 @@ export async function captureSandboxArtifact(
       );
     });
   } finally {
-    prepared?.dispose();
-    await fs.rm(folder, { recursive: true, force: true });
+    try {
+      prepared?.dispose();
+    } finally {
+      await fs.rm(folder, { recursive: true, force: true });
+    }
   }
+}
+
+export function captureSandboxArtifact(driver: SandboxDriver, stateRoot: string, html: string) {
+  return runSandboxPython(driver, stateRoot, html, screenshotScript, [], 2 * 1024 * 1024);
+}
+
+export async function decodeSandboxImage(driver: SandboxDriver, stateRoot: string, bytes: Buffer) {
+  const type = imageType(bytes)?.slice("image/".length).toUpperCase() ??
+    (/^GIF8[79]a$/.test(bytes.toString("latin1", 0, 6)) ? "GIF" : undefined);
+  if (!type) return undefined;
+  const output = await runSandboxPython(driver, stateRoot, bytes, imageScript, [type], 4096);
+  const size: unknown = JSON.parse(output);
+  if (!size || typeof size !== "object" || !("width" in size) || !("height" in size) ||
+      typeof size.width !== "number" || typeof size.height !== "number") return undefined;
+  return { width: size.width, height: size.height };
 }

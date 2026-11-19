@@ -1,14 +1,14 @@
 /**
- * Settings search. Every page exports `searchLabels`: the labels of the rows
- * and sections it can show, as they read on the page. `pages.ts` collects them;
- * the search field ranks the pages and rows that match (as the original's does)
- * and opening one scrolls to the matching row.
+ * Settings search (R-1540, R-1564). Every page exports `searchLabels`: the
+ * labels of the rows and sections it can show, as they read on the page.
+ * `pages.ts` collects them; the search field ranks the pages and rows that
+ * match (as the original's does) and opening one scrolls to the matching row.
  */
 import type { TabId } from "../nav";
 
 export type SearchIndex = Partial<Record<TabId, readonly string[]>>;
 
-/** Search keys. */
+/** Search keys (live claude.ai bundle, 2026-10-14, cc011544b-BsGhAsO9). */
 export function settingsSearchKey(
   key: string,
   query: string,
@@ -44,12 +44,14 @@ export interface SearchHit {
   count?: number;
 }
 
-/** The most rows listed under a page. */
+/** The most rows listed under a page (desktop bundle 2.31226.1, Mt). */
 const MAX_CHILD_ROWS = 3;
 
 /**
- * Words a page is also found by when neither its name nor a row matches.
- * Connectors is also found by "tools".
+ * Words a page is also found by when neither its name nor a row matches
+ * (desktop bundle 2.31226.1, the keyword table next to the search; the
+ * Capabilities page's searchHints). Connectors is also found by "tools"
+ * (live claude.ai bundle, 2026-10-12, Customize → Connectors).
  */
 export const pageKeywords: Partial<Record<TabId, readonly string[]>> = {
   capabilities: ["features", "abilities", "permissions"],
@@ -62,8 +64,11 @@ export const pageKeywords: Partial<Record<TabId, readonly string[]>> = {
 };
 
 /**
- * Other ways to ask for a row. A phrase counts when it equals, starts with or
- * has every typed word at a word start, and ranks below a match on the label.
+ * Other ways to ask for a row (the setting definitions' searchPhrases in
+ * the desktop bundle; Interface font, Transcript width and Code font from
+ * the live claude.ai bundle, 2026-10-12). A phrase counts when it equals,
+ * starts with or has every typed word at a word start, and ranks below a
+ * match on the label.
  */
 export const rowPhrases: Readonly<Record<string, readonly string[]>> = {
   "Output style": ["concise", "terse", "brief", "response style"],

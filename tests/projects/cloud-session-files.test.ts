@@ -9,8 +9,8 @@ useElectronShim();
 const { registerWorkspaceHandlers } =
   await import("../../electron/ipc/workspace");
 
-// The Files pane of a cloud Code session: the runner reads the session's own
-// folder, never saves there.
+// The Files pane of a cloud Code session (live claude.ai Code on the web,
+// 2026-10-21): the runner reads the session's own folder, never saves there.
 function handlers(conversation: object) {
   const map = new Map<string, (...args: any[]) => any>();
   registerWorkspaceHandlers((name, handler) => map.set(name, handler), {

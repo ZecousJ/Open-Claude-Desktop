@@ -10,8 +10,9 @@ import { surface } from "../../shared/host";
 import { commandForKey, keyTable, type KeyTable } from "../host/keys";
 
 /**
- * Next and Previous chat (Ctrl+Tab, Ctrl+Shift+Tab, ⇧⌘] and ⇧⌘[) keep stepping
- * while held, at most one step every 50ms.
+ * Next and Previous chat (Ctrl+Tab, Ctrl+Shift+Tab, ⇧⌘] and ⇧⌘[) keep
+ * stepping while held, at most one step every 50ms (live claude.ai bundle,
+ * 2026-10-12: the session cycler's repeat floor).
  */
 export const repeatingCommands: ReadonlySet<AppCommand> = new Set([
   "next-session",
@@ -36,7 +37,8 @@ function typingTarget(target: EventTarget | null) {
 /**
  * Whether a key press runs its command: a first press always; a held key's
  * repeat only for the stepping commands, 50ms after their last step. Every
- * other shortcut runs once however long it is held.
+ * other shortcut runs once however long it is held (live claude.ai bundle,
+ * 2026-10-12: a shortcut's repeats are swallowed).
  */
 export function heldKeyRuns(
   command: AppCommand,

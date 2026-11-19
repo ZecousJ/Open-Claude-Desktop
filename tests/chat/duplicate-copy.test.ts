@@ -1,8 +1,8 @@
 /**
- * Duplicate and Rename for skills and plugins: the folders are really copied,
- * the copies carry their new names, taken names are refused, and a plugin copy
- * lands in the runtime's personal marketplace and is installed (or taken back
- * out).
+ * Duplicate and Rename for skills and plugins (live claude.ai bundle,
+ * 2026-10-12): the folders are really copied, the copies carry their new
+ * names, taken names are refused, and a plugin copy lands in the runtime's
+ * personal marketplace and is installed (or taken back out).
  */
 import assert from "node:assert/strict";
 import fs from "node:fs";

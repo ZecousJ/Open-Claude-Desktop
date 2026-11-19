@@ -80,7 +80,31 @@ export type GatewaySignal =
  * How the gateway rewrites requests; the main process sends it with the
  * `requestOptions` command whenever it changes.
  */
+export interface GatewayModelEfforts {
+  model: string;
+  efforts: string[];
+}
+const effortValues = new Set([
+  "none",
+  "minimal",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+  "ultra",
+]);
+export function validGatewayEfforts(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= 8 &&
+    value.every((v) => typeof v === "string" && effortValues.has(v)) &&
+    new Set(value).size === value.length
+  );
+}
 export interface GatewayRequestOptions {
+  /** Trusted cached catalog contracts; missing model is unknown, [] means no effort. */
+  modelEfforts?: GatewayModelEfforts[];
   /** Add a `description` parameter to Codex's shell tools (R7). */
   describeTools: boolean;
   /**
@@ -88,11 +112,6 @@ export interface GatewayRequestOptions {
    * carries the web search tool. Empty turns X search off (R45).
    */
   xSearchModels: string[];
-  /**
-   * The image model every picture is made with (sidebar → API → Image
-   * generation); empty leaves each request's own model.
-   */
-  imageModel?: string;
 }
 
 export const defaultRequestOptions: GatewayRequestOptions = Object.freeze({
@@ -116,16 +135,34 @@ export function parseRequestOptions(
     )
   )
     return;
-  const imageModel =
-    typeof raw.imageModel === "string" &&
-    raw.imageModel.length <= 200 &&
-    /^[\w.:/-]*$/.test(raw.imageModel)
-      ? raw.imageModel
-      : "";
+  if (
+    raw.modelEfforts !== undefined &&
+    (!Array.isArray(raw.modelEfforts) ||
+      raw.modelEfforts.length > maxRequestOptionModels ||
+      !raw.modelEfforts.every(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          !Array.isArray(item) &&
+          typeof item.model === "string" &&
+          item.model.length > 0 &&
+          item.model.length <= 200 &&
+          validGatewayEfforts(item.efforts),
+      ) ||
+      new Set(raw.modelEfforts.map((item) => item.model)).size !==
+        raw.modelEfforts.length)
+  )
+    return;
   return {
+    ...(raw.modelEfforts !== undefined
+      ? {
+          modelEfforts: (raw.modelEfforts as GatewayModelEfforts[]).map(
+            (item) => ({ model: item.model, efforts: [...item.efforts] }),
+          ),
+        }
+      : {}),
     describeTools: raw.describeTools,
     xSearchModels: [...new Set(raw.xSearchModels as string[])],
-    ...(imageModel ? { imageModel } : {}),
   };
 }
 

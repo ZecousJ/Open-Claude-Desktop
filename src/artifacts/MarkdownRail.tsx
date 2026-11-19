@@ -20,7 +20,7 @@ import {
 import "./file-viewer-panel.css";
 
 export const HEADINGS = "h1, h2, h3, h4, h5, h6";
-/** Space kept above a heading jumped to. */
+/** Space kept above a heading jumped to (live claude.ai bundle, 2026-10-12). */
 const LANDING_MARGIN_PX = 16;
 /** The landed highlight's length (file-viewer.css). */
 const LANDED_MS = 1600;
@@ -35,16 +35,17 @@ interface Anchor {
 
 /**
  * The contents rail of a Markdown document in the viewer
- * (MarkdownDocument.tsx), after the document rail of the live claude.ai a
- * sticky column of 8px rows with a short tick per heading (14, 9 and 6px by
- * level, the deeper ones set in 3px a level). Headings above the one being read
- * are in the muted text colour, the rest in the disabled one; the one being
- * read is a full 18px, 3px tall, in the accent text colour. A long outline
- * scrolls the rail to keep that tick in view, fading the clipped edge. Hovering
- * the ticks for 80ms opens the headings as a list beside them, the hovered
- * heading level with its tick; focusing the hidden Show contents button opens
- * it centred on the heading being read. Choosing one scrolls it 16px under the
- * top, focuses it and flashes its background in the accent tint (1.6s).
+ * (MarkdownDocument.tsx), after the document rail of the live claude.ai
+ * bundle, 2026-10-12: a sticky column of 8px rows with a short tick per
+ * heading (14, 9 and 6px by level, the deeper ones set in 3px a level).
+ * Headings above the one being read are in the muted text colour, the rest
+ * in the disabled one; the one being read is a full 18px, 3px tall, in the
+ * accent text colour. A long outline scrolls the rail to keep that tick in
+ * view, fading the clipped edge. Hovering the ticks for 80ms opens the
+ * headings as a list beside them, the hovered heading level with its tick;
+ * focusing the hidden Show contents button opens it centred on the heading
+ * being read. Choosing one scrolls it 16px under the top, focuses it and
+ * flashes its background in the accent tint (1.6s).
  */
 export default function MarkdownRail({
   text,

@@ -70,6 +70,7 @@ export async function launch(
   connection.setStatus({ state: "starting" });
 
   const gateway = gatewayAddress(input.gatewayUrl);
+  const browserPort = this.options.browserPort?.();
   const id = (this.currentEngine = engineId());
   const script = wrapperScript({
     layout,
@@ -85,6 +86,15 @@ export async function launch(
 
   if (this.shares) {
     const port = await this.openForward(host, gateway.port);
+    if (browserPort) {
+      const result = await this.control(host, "forward", `127.0.0.1:0:127.0.0.1:${browserPort}`);
+      const browser = result.code === 0 ? parseForwardOutput(result.stdout) : undefined;
+      if (!browser) {
+        await this.closeForward(host);
+        throw new LaunchError(errorMessage("forward-failed", host.label), false, "forward-failed");
+      }
+      this.browserForward = { port: browser, localPort: browserPort };
+    }
     const args = connection.commandArgs(remoteCommand(script));
     return {
       spawn: () =>
@@ -102,6 +112,7 @@ export async function launch(
       "ExitOnForwardFailure=yes",
       "-R",
       `127.0.0.1:0:127.0.0.1:${gateway.port}`,
+      ...(browserPort ? ["-R", `127.0.0.1:0:127.0.0.1:${browserPort}`] : []),
     ])
     .map((arg) => (arg === "LogLevel=ERROR" ? "LogLevel=INFO" : arg));
   const askpass = this.askpass(
@@ -116,7 +127,11 @@ export async function launch(
         askpass,
       ) as unknown as ChildProcessWithoutNullStreams,
     preamble: async (child) => {
-      const port = await this.allocatedPort(child);
+      const [port, browser] = await Promise.all([
+        this.allocatedPort(child, gateway.port),
+        browserPort ? this.allocatedPort(child, browserPort) : undefined,
+      ]);
+      if (browser && browserPort) this.browserForward = { port: browser, localPort: browserPort };
       askpass.close();
       return `${port}\n${tail}`;
     },
@@ -152,6 +167,7 @@ export function askpass(
 export function allocatedPort(
   this: SshLauncher,
   child: ChildProcess,
+  targetPort?: number,
 ): Promise<number> {
   return new Promise((resolve, reject) => {
     let stderr = "";
@@ -166,7 +182,7 @@ export function allocatedPort(
     };
     const onData = (chunk: Buffer | string) => {
       if (stderr.length < 16_384) stderr += chunk.toString();
-      const port = parseAllocatedPort(stderr);
+      const port = parseAllocatedPort(stderr, targetPort);
       if (port) done(undefined, port);
     };
     const onExit = () =>
@@ -208,21 +224,19 @@ export async function openForward(
 }
 
 export async function closeForward(this: SshLauncher, host?: SshHost) {
-  const forward = this.forward;
+  const ports = [this.forward?.gateway, this.browserForward?.localPort];
   this.forward = undefined;
+  this.browserForward = undefined;
   const target = host ?? this.options.ssh()?.hosts.get(this.options.hostId);
-  if (!forward || !target || !this.shares) return;
-  try {
-    // OpenSSH's mux finds the forward by the spec it was opened with
-    // (listen port 0), not by the port the host allocated; the latter is
-    // "port not found" and leaves the forward open (R9-S7 end-to-end test).
-    await this.control(
-      target,
-      "cancel",
-      `127.0.0.1:0:127.0.0.1:${forward.gateway}`,
-    );
-  } catch {
-    // The master is gone, and the forward with it.
+  if (!target || !this.shares) return;
+  for (const port of ports) {
+    if (!port) continue;
+    try {
+      // OpenSSH's mux identifies forwards by their original listen-port-0 spec.
+      await this.control(target, "cancel", `127.0.0.1:0:127.0.0.1:${port}`);
+    } catch {
+      // The master is gone, and the forward with it.
+    }
   }
 }
 

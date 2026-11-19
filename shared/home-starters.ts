@@ -1,5 +1,5 @@
-// Visibility and checklist state. Experiments default off, not to a guessed
-// rollout.
+// Visibility and checklist state (live claude.ai bundle, 2026-10-14,
+// shared-23-RHw-hr47.js). Experiments default off, not to a guessed rollout.
 export const homeChecklistTasks = [
   "setup_project",
   "explore_skills",
@@ -15,6 +15,7 @@ export type HomeChecklistTask = (typeof homeChecklistTasks)[number];
 export interface HomeStarters {
   chipsOverride?: "show" | "hide";
   prosumer_checklist_hide_prompt_chips?: boolean;
+  claudeai_fsi_skill_chips?: boolean;
   prosumer_checklist_v2?: Partial<Record<HomeChecklistTask, boolean>>;
   checklist?: {
     dismissed?: boolean;

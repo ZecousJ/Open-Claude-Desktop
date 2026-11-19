@@ -14,6 +14,9 @@ import {
   pruneCodexCache,
 } from "../../electron/engine/codex-cache";
 import type { WebAppContext } from "./web-app-context";
+import { accountSkillsMount } from "../../electron/skills/space-skills";
+import { organizationPluginSources } from "./organization-plugin-sources";
+import { assertSkillsFolderPrivate } from "../../electron/skills/skill-private";
 
 export function spaceStopped(this: WebAppContext, spaceId: string) {
   this.runtime.releaseSandbox?.(this.userId, `space-${this.userId}-${spaceId}`);
@@ -64,6 +67,22 @@ export function spaceSandbox(
     mode: 0o700,
   });
   const profile = this.store.root;
+  assertSkillsFolderPrivate(this);
+  const accountSkills = accountSkillsMount(
+    profile,
+    path.join(root, "codex-home"),
+  );
+  fs.mkdirSync(accountSkills.host, { recursive: true, mode: 0o700 });
+  if (this.runtime.sandboxDriver)
+    fs.mkdirSync(accountSkills.sandbox, { recursive: true, mode: 0o700 });
+  else {
+    fs.mkdirSync(path.dirname(accountSkills.sandbox), {
+      recursive: true,
+      mode: 0o700,
+    });
+    if (!fs.lstatSync(accountSkills.sandbox, { throwIfNoEntry: false }))
+      fs.symlinkSync(accountSkills.host, accountSkills.sandbox, "dir");
+  }
   const projects = path.join(profile, "projects");
   fs.mkdirSync(projects, { recursive: true, mode: 0o700 });
   const binary = this.runtime.codexBinary({
@@ -72,6 +91,8 @@ export function spaceSandbox(
     codexCache,
     attachments: attachmentsFolder(profile),
     projects,
+    accountSkills,
+    organizationPluginSources: organizationPluginSources(root),
     sandboxId: `space-${this.userId}-${spaceId}`,
     cloudEnvironment,
   });

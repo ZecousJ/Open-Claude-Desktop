@@ -1,10 +1,12 @@
 /*
- * A separate conversation window's title bar (R2, package R2-C). Reference:
- * 03-对话/独立Code窗口/Code失败命令独立窗口-W{900,1351}-*-深色.png: a 48px bar in the page
- * colour with no rule under it; the environment icon starts at x 85 after the
- * traffic lights; three 16px icons on the right, 30 apart, the last centred
- * 25.5 from the window's right edge. Every rule is scoped to
- * `.app.conversation-window`, so the main window's title bar is untouched.
+ * A separate conversation window's title bar (R2, package R2-C).
+ * Reference: 03-对话/独立Code窗口/Code失败命令独立窗口-W{900,1351}-*-深色.png
+ * (2x, ÷2 → CSS px; fidelity/observations/conversation-window.md): a 48px
+ * bar in the page colour with no rule under it; the environment icon starts
+ * at x 85 after the traffic lights; three 16px icons on the right, 30 apart,
+ * the last centred 25.5 from the window's right edge.
+ * Every rule is scoped to `.app.conversation-window`, so the main window's
+ * title bar is untouched.
  */
 html[data-tool-pane-window] .chat-main,
 html[data-tool-pane-window] .conversation-window-header {

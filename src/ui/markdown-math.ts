@@ -1,7 +1,7 @@
 /**
  * remark-math reads $$…$$; models also write \(…\) and \[…\]. Rewrites those
- * delimiters outside code so every form renders. Single dollars stay text so
- * prices such as "$5 and $10" are not read as math.
+ * delimiters outside code so every form renders (R-0523, R-0524). Single
+ * dollars stay text so prices such as "$5 and $10" are not read as math.
  */
 export function normalizeMathDelimiters(text: string) {
   if (!text.includes("\\(") && !text.includes("\\[")) return text;

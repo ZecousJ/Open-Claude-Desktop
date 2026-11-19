@@ -1,6 +1,7 @@
 /**
- * The card's title: the file name without its extension, separators as spaces
- * and the first letter capitalised.
+ * The card's title: the file name without its extension, separators as
+ * spaces and the first letter capitalised (live claude.ai names
+ * first_10_primes.csv "First 10 primes").
  */
 export function fileCardName(name: string) {
   const title = name

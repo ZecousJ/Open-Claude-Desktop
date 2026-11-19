@@ -10,6 +10,7 @@ import { ChatSearchIndex } from "../memory/chat-search";
 import { gatewayCompleter } from "../memory/completion";
 import { createMemoryExtension, memoryExtensionId } from "../memory/inject";
 import { LocalMemoryStore } from "../memory/local-store";
+import { existingMelangeForAccount, ownsMemoryProject, readyMelangeForAccount } from "../memory/melange-host";
 import { RemoteMemoryStore } from "../memory/remote-store";
 import {
   MemoryService,
@@ -17,6 +18,7 @@ import {
   memoryRefreshMs,
 } from "../memory/service";
 import { MemoryScheduler } from "../memory/scheduler";
+import { startMemorySearch } from "../memory/search-mcp";
 import type { MemoryStore } from "../memory/store";
 import { MemorySynthesizer } from "../memory/synthesizer";
 import {
@@ -71,10 +73,13 @@ function storeFor(ctx: AppContext): MemoryStore | undefined {
     remote.accounts.baseUrl,
     remote.backend.deviceId,
   );
+  const store = ctx.store, owner = ctx.activeAccount?.id, generation = ctx.accountActivationIdentity, session = remote.session;
   return new RemoteMemoryStore(
     api,
-    (call) => remote.session.authorized(call),
-    ctx.store.root,
+    (call, current) => session.authorized(call, () =>
+      !ctx.accountRetiring && ctx.store === store && ctx.remote === remote && remote.session === session &&
+      ctx.activeAccount?.id === owner && ctx.accountActivationIdentity === generation && (!current || current())),
+    store.root,
   );
 }
 
@@ -92,9 +97,24 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
   const files = () => new CoworkMemoryFiles(ctx.store.root);
   const projectFiles = (projectId: string) =>
     new CoworkMemoryFiles(ctx.store.root, projectId);
-  const resetFiles = () => {
-    const reset = files().reset();
-    for (const project of ctx.store.projects) projectFiles(project.id).reset();
+  const deviceFiles = () => {
+    if (ctx.coworkAccountMemory) throw Error("Use the hosted Cowork memory controls.");
+    return files();
+  };
+  const strictInput = z.object({ strict: z.boolean().optional() }).strict().optional();
+  const resetFiles = (strict = false, store = ctx.store) => {
+    const account = ctx.coworkAccountMemory ? undefined : new CoworkMemoryFiles(store.root);
+    const projects = store.projects.map(project => new CoworkMemoryFiles(store.root, project.id));
+    if (strict) {
+      const stores = account ? [account, ...projects] : projects;
+      for (const store of stores) store.assertResettable();
+      try {
+        for (const store of stores) if (!store.reset(true)) throw Error("Memory reset was refused.");
+        return true;
+      } catch (error) { throw Error("Memory reset was incomplete; some files may already have been removed.", { cause: error }); }
+    }
+    const reset = account?.reset() ?? true;
+    for (const project of projects) project.reset();
     return reset;
   };
   handle(
@@ -110,14 +130,14 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
     ctx.settingsChanged();
     return true;
   });
-  handle("listAccountMemories", (raw?: unknown) =>
-    files().list(z.boolean().default(true).parse(raw)),
+  handle("listAccountMemories", (raw?: unknown, options?: unknown) =>
+    deviceFiles().list(z.boolean().default(true).parse(raw), strictInput.parse(options)?.strict),
   );
-  handle("readAccountMemory", (raw: unknown) =>
-    files().read(z.string().min(1).max(4096).parse(raw)),
+  handle("readAccountMemory", (raw: unknown, options?: unknown) =>
+    deviceFiles().read(z.string().min(1).max(4096).parse(raw), strictInput.parse(options)?.strict),
   );
   handle("writeAccountMemory", (rawPath: unknown, rawContent: unknown) => {
-    const saved = files().write(
+    const saved = deviceFiles().write(
       z.string().min(1).max(4096).parse(rawPath),
       z.string().max(262144).parse(rawContent),
     );
@@ -125,12 +145,13 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
     return saved;
   });
   handle("deleteAccountMemory", (raw: unknown) => {
-    const removed = files().delete(z.string().min(1).max(4096).parse(raw));
+    const removed = deviceFiles().delete(z.string().min(1).max(4096).parse(raw));
     if (removed) ctx.push({ type: "memory-changed" });
     return removed;
   });
-  handle("resetMemories", () => {
-    const reset = resetFiles();
+  handle("resetMemories", (options?: unknown) => {
+    if (ctx.coworkAccountMemory) throw Error("Use the hosted Cowork memory controls.");
+    const reset = resetFiles(strictInput.parse(options)?.strict);
     if (reset) ctx.push({ type: "memory-changed" });
     return reset;
   });
@@ -146,44 +167,19 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
   });
   let stops: (() => void)[] = [];
   let synthesizer: MemorySynthesizer | undefined;
-  // The past-chats index reads this computer's conversations as they are.
-  const chatIndex = new ChatSearchIndex(() => ctx.store.conversations);
+  let searchTransport: ReturnType<typeof startMemorySearch> | undefined;
   const service = () => ctx.services.memory?.service;
   const close = () => {
     for (const stop of stops.splice(0)) stop();
     synthesizer = undefined;
-    chatIndex.clear();
     ctx.services.memory?.service.close();
     delete ctx.services.memory;
+    const search = searchTransport;
+    searchTransport = undefined;
+    return search?.close();
   };
-  ctx.onAccountActivated(() => {
-    close();
-    const engine = ctx.engine;
-    engine.capabilityTipMemory = () => service()?.status();
-    if (!engine.extensions.has(memoryExtensionId)) {
-      const remove = engine.extensions.add(
-        createMemoryExtension({
-          service,
-          search: () => chatIndex,
-          accountFiles: (projectId) =>
-            [
-              files().instructions(),
-              projectId &&
-              ctx.store.projects.some((project) => project.id === projectId)
-                ? projectFiles(projectId).instructions()
-                : "",
-            ]
-              .filter(Boolean)
-              .join("\n\n"),
-          accountStore: (projectId) =>
-            projectId &&
-            ctx.store.projects.some((project) => project.id === projectId)
-              ? projectFiles(projectId)
-              : files(),
-        }),
-      );
-      stops.push(remove);
-    }
+  const prepareMemory = () => {
+    void close();
     let store: MemoryStore | undefined;
     try {
       store = storeFor(ctx);
@@ -200,10 +196,70 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
       changed: () => ctx.push({ type: "memory-changed" }),
     });
     ctx.services.memory = { service: memory };
-    stops.push(() => memory.close());
-    startSynthesis(memory);
+  };
+  ctx.onAccountPrepared?.(prepareMemory);
+  ctx.onAccountActivated(() => {
+    if (!ctx.onAccountPrepared) prepareMemory();
+    const engine = ctx.engine;
+    const melange = ctx.remote?.claudex ? async () => {
+      const memory = service();
+      await memory?.ready();
+      if (!memory || memory !== service()) return undefined;
+      return existingMelangeForAccount(ctx) ?? await readyMelangeForAccount(ctx);
+    } : undefined;
+    engine.capabilityTipMemory = () => service()?.status();
+    if (!engine.extensions.has(memoryExtensionId)) {
+      const ownerStore = ctx.store;
+      const owner = ctx.activeAccount?.id;
+      const activation = ctx.accountActivationIdentity;
+      const current = () =>
+        !ctx.accountRetiring &&
+        ctx.store === ownerStore &&
+        ctx.activeAccount?.id === owner &&
+        ctx.accountActivationIdentity === activation;
+      const accountService = () => (current() ? service() : undefined);
+      const coworkAccountMemory = ctx.coworkAccountMemory;
+      const ownedProject = (id?: string) =>
+        id && ownerStore.projects.some(project => project.id === id) ? id : undefined;
+      const chatIndex = new ChatSearchIndex(() => ownerStore.conversations);
+      searchTransport = startMemorySearch({
+        service: accountService,
+        conversation: (id) => current()
+          ? ownerStore.conversations.find((conversation) => conversation.id === id)
+          : undefined,
+        index: chatIndex,
+      });
+      const extension = createMemoryExtension({
+        service: accountService,
+        melange,
+        coworkAccountMemory,
+        search: () => chatIndex,
+        searchTransport,
+        accountFiles: (projectId) => {
+          const project = ownedProject(projectId);
+          return [
+            !coworkAccountMemory && new CoworkMemoryFiles(ownerStore.root).instructions(),
+            project && new CoworkMemoryFiles(ownerStore.root, project).instructions(),
+          ].filter(Boolean).join("\n\n");
+        },
+        accountStore: (projectId) => {
+          const project = ownedProject(projectId);
+          if (project || !coworkAccountMemory) return new CoworkMemoryFiles(ownerStore.root, project);
+        },
+      });
+      const remove = engine.extensions.add(extension);
+      engine.peerExtensions.push(extension);
+      stops.push(() => {
+        remove();
+        const index = engine.peerExtensions.indexOf(extension);
+        if (index >= 0) engine.peerExtensions.splice(index, 1);
+      });
+    }
+    const memory = service();
+    if (!memory) return;
+    startSynthesis(memory, melange);
     const remote = ctx.remote;
-    if (store.kind === "remote" && remote) {
+    if (memory.store.kind === "remote" && remote) {
       // A new bootstrap whose memory section differs (another device wrote).
       stops.push(
         remote.bootstrap.onChange(() => {
@@ -225,7 +281,7 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
     }
   });
   /** The summary task and its schedule for the signed-in account. */
-  function startSynthesis(memory: MemoryService) {
+  function startSynthesis(memory: MemoryService, melange?: () => ReturnType<typeof readyMelangeForAccount>) {
     const model = async () => {
       const settings = ctx.store.settings;
       const provider = settings.providers.find(
@@ -250,10 +306,17 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
       conversations: () => ctx.store.conversations,
       complete: gatewayCompleter(model),
       root: ctx.store.root,
+      melange,
+      ownsScope: (scope) => scope === "global" || ctx.store.projects.some(project =>
+        `project:${project.id.toLowerCase()}` === scope && !ctx.store.isProjectDeleting(project.id),
+      ),
     });
     synthesizer = task;
     const scheduler = new MemoryScheduler({
-      enabled: () => memory.effective().generate,
+      enabled: () => {
+        const { available, allowed } = memory.status();
+        return memory.effective().generate || (!!melange && available && allowed.generate);
+      },
       busy: () => {
         try {
           ctx.noActive();
@@ -266,6 +329,8 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
       lastRunFailed: () => task.lastRunFailed(),
       run: () => task.run(),
     });
+    if (ctx.services.memory?.service === memory)
+      ctx.services.memory.onMelangeEnabled = () => scheduler.runSoon();
     scheduler.start();
     // Turning Generate on starts a first summary soon, not tomorrow.
     let wasOn = memory.effective().generate;
@@ -273,6 +338,7 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
       if (event.type !== "memory-changed") return;
       const on = memory.effective().generate;
       if (on && !wasOn) scheduler.runSoon();
+      else if (!on && wasOn) task.cancelClassic();
       wasOn = on;
     });
     stops.push(() => {
@@ -295,6 +361,7 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
     const memory = service();
     if (!memory) throw new Error(memoryMessages.unsupported);
     await memory.ready();
+    if (service() !== memory) throw new Error("Memory account changed.");
     return memory;
   };
   /** The scope of a reference; a project must exist and have a usable id. */
@@ -305,7 +372,7 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
     if (
       mustExist &&
       ref.kind === "project" &&
-      !ctx.store.projects.some((project) => project.id === ref.projectId)
+      !ownsMemoryProject(ctx, ref.projectId)
     )
       throw new Error("Project not found.");
     return scope;
@@ -366,23 +433,130 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
       generatedAt: reflection.generatedAt,
     };
   });
-  handle("memoryStatus", async () => {
-    const memory = service();
+  const snapshotRead = z.object({snapshotOnly:z.literal(true)}).strict().optional();
+  const controlsRead = z.union([
+    snapshotRead.unwrap(),
+    z.strictObject({ fresh: z.literal(true) }),
+  ]).optional();
+  // A service can survive briefly while an account retires or is reactivated.
+  // Pin every read to the whole activation, not just the service object, and
+  // check again after each asynchronous boundary before returning private data.
+  const memoryRead = () => {
+    const memory = service(), store = ctx.store, remote = ctx.remote;
+    const session = remote?.session, owner = ctx.activeAccount?.id;
+    const generation = ctx.accountActivationIdentity;
+    const check = () => {
+      if (ctx.accountRetiring || service() !== memory || ctx.store !== store ||
+          ctx.remote !== remote || ctx.remote?.session !== session ||
+          ctx.activeAccount?.id !== owner || ctx.accountActivationIdentity !== generation)
+        throw new Error("Memory account changed.");
+    };
+    check();
+    return { memory, check };
+  };
+  handle("memoryStatus", async (options?: unknown) => {
+    const snapshot = snapshotRead.parse(options);
+    const { memory, check } = memoryRead();
     if (!memory) return structuredClone(unavailableMemory);
+    if (snapshot) {
+      const status = memory.status();
+      if (status.reason === "offline") throw Error(memoryMessages.offline);
+      return status;
+    }
     await memory.ready();
+    check();
     return memory.status();
   });
-  handle("setMemoryPrefs", async (raw: unknown) => {
-    const prefs = prefsInput.parse(raw);
-    return (await required()).setPrefs(prefs);
+  handle("setMemoryPrefs", async (raw: unknown, options?: unknown) => {
+    const mode = z.object({disableOnly:z.literal(true)}).strict().optional().parse(options);
+    const prefs = mode ? z.object({generate:z.literal(false)}).strict().parse(raw) : prefsInput.parse(raw);
+    const { memory, check } = memoryRead();
+    if (!memory) throw Error(memoryMessages.unsupported);
+    // General switch writes need the same activation lease as disable-only.
+    // Keep disable-only inert: no readiness wait, refresh or implicit recovery.
+    if (!mode) {
+      await memory.ready();
+      check();
+    }
+    const status = await memory.setPrefs(prefs, mode);
+    check();
+    return status;
   });
   handle("memoryDoc", async (raw: unknown) => {
-    const ref = scopeRef.parse(raw) as MemoryScopeRef;
-    const scope = scopeOf(ref);
-    const memory = service();
-    if (!scope || !memory) return null;
+    const scope = scopeFrom(raw, true);
+    const { memory, check } = memoryRead();
+    if (!memory) return null;
     await memory.ready();
+    check();
+    scopeFrom(raw, true);
+    await memory.refresh();
+    check();
+    scopeFrom(raw, true);
     return memory.docView(scope);
+  });
+  handle("memoryControlsState", async (raw: unknown, options?: unknown) => {
+    const read = controlsRead.parse(options);
+    const scope = scopeFrom(raw, true);
+    const { memory, check } = memoryRead();
+    if (!memory) throw Error(memoryMessages.unsupported);
+    if (read && "fresh" in read) {
+      const state = await memory.readControlsState(scope);
+      check();
+      scopeFrom(raw, true);
+      return state;
+    }
+    if (read) {
+      const status = memory.status();
+      if (!status.available) throw Error(status.reason === "offline" ? memoryMessages.offline : memoryMessages.disabled);
+      return {doc:memory.docView(scope),version:memory.controlsVersion(scope)??null};
+    }
+    await memory.ready();
+    check();
+    scopeFrom(raw, true);
+    await memory.refresh();
+    check();
+    scopeFrom(raw, true);
+    return {
+      doc: memory.docView(scope),
+      version: memory.controlsVersion(scope) ?? null,
+    };
+  });
+  handle(
+    "replaceMemoryControls",
+    async (raw: unknown, values: unknown, base: unknown, options?: unknown) => {
+      const scope = scopeFrom(raw, true);
+      const controls = z
+        .array(z.string().max(4 * memoryLimits.editChars))
+        .max(memoryLimits.editsPerScope)
+        .parse(values);
+      const version = z.string().min(1).max(200).parse(base);
+      const mode = z.object({nonGenerating:z.literal(true)}).strict().optional().parse(options);
+      if (mode) {
+        // No ready/refresh here: this opt-in path never discovers/enables generation.
+        const memory = service();
+        if (!memory) throw Error(memoryMessages.unsupported);
+        return memory.replaceControls(scope, controls, version, mode);
+      }
+      return (await required()).replaceControls(scope, controls, version);
+    },
+  );
+  handle("synthesizeMemory", async (raw: unknown, cancellation?: unknown) => {
+    const signal = cancellation instanceof AbortSignal ? cancellation : undefined;
+    const scope = scopeFrom(raw, true);
+    const { memory, check } = memoryRead();
+    const task = synthesizer;
+    if (!memory || !task) throw new Error(memoryMessages.unsupported);
+    const checkCurrent = () => {
+      check();
+      scopeFrom(raw, true);
+    };
+    const result = await task.regenerate(scope, signal, checkCurrent);
+    checkCurrent();
+    if (result.status !== "done")
+      throw new Error(result.message ?? "Memory regeneration did not finish.");
+    const doc = memory.docView(scope);
+    if (!doc) throw new Error("Memory changed. Reload it before continuing.");
+    return doc;
   });
   handle(
     "saveMemoryDoc",
@@ -411,10 +585,28 @@ export function registerMemoryHandlers(handle: IpcHandle, ctx: AppContext) {
     if (!synthesizer) throw new Error(memoryMessages.unsupported);
     return synthesizer.previewImport(text);
   });
-  handle("resetMemory", async (raw?: unknown) => {
-    const scope = raw === undefined ? undefined : scopeFrom(raw, false);
-    const result = await (await required()).reset(scope);
-    if (scope === undefined) resetFiles();
+  handle("resetMemory", async (raw?: unknown, options?: unknown) => {
+    const classicOnly = z.strictObject({ classicOnly: z.literal(true) }).optional().parse(options)?.classicOnly === true;
+    const store = ctx.store, owner = ctx.activeAccount?.id, generation = ctx.accountActivationIdentity;
+    const memory = service();
+    const check = () => {
+      if (ctx.store !== store || ctx.activeAccount?.id !== owner || ctx.accountActivationIdentity !== generation ||
+          ctx.accountRetiring === true || service() !== memory)
+        throw Error("Memory account changed.");
+    };
+    check();
+    const scope = raw === undefined ? undefined : scopeFrom(raw, classicOnly);
+    const ready = await required();
+    check();
+    if (ready !== memory) throw Error("Memory account changed.");
+    if (classicOnly && raw !== undefined) scopeFrom(raw, true);
+    const result = await ready.reset(scope, classicOnly ? { retryOffline: true } : undefined);
+    check();
+    if (classicOnly) {
+      const cleared = scope ?? "global";
+      return { doc: ready.docView(cleared), version: ready.controlsVersion(cleared) ?? null };
+    }
+    if (scope === undefined) resetFiles(false, store);
     return result;
   });
 }

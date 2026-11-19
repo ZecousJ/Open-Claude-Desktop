@@ -2,10 +2,11 @@ import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { springPanels } from "../ui/spring-panels";
 
 /**
- * How the chat page arranges its parts: the title bar (or the home's corner
- * actions), the conversation column and the panels beside it. WP5b changes the
- * arrangement here, for example a conversation column with its own title bar
- * next to full-height panel cards, without editing the parts or AppPages.tsx.
+ * How the chat page arranges its parts (package WP5b): the title bar (or the
+ * home's corner actions), the conversation column and the panels beside it.
+ * WP5b changes the arrangement here, for example a conversation column with
+ * its own title bar next to full-height panel cards, without editing the
+ * parts or AppPages.tsx.
  */
 export function ConversationLayout({
   header,

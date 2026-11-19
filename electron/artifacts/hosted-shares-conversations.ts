@@ -11,6 +11,7 @@ import {
 } from "../conversations/conversation-snapshot";
 import { unavailableMessage, sourceKeyOf } from "./hosted-shares-support";
 import type { HostedShares } from "./hosted-shares";
+import type { Conversation } from "../../shared/types";
 
 // ---- conversations
 
@@ -18,11 +19,12 @@ import type { HostedShares } from "./hosted-shares";
 export async function conversationShare(
   this: HostedShares,
   conversationId: string,
+  force = false,
 ) {
   if (!(await this.status())) return null;
-  await this.list("conversation");
+  await this.list("conversation", force);
   const share = this.cachedFor("conversation", conversationId);
-  return share ? this.present(share) : null;
+  return share ? this.present(share, conversationId) : null;
 }
 
 /** Shares the conversation's current branch, or refreshes its link's snapshot. */
@@ -31,9 +33,18 @@ export async function shareConversation(
   conversationId: string,
   access: ShareAccess = "link",
 ) {
-  const status = await this.allowed("conversation");
+  await this.allowed("conversation");
   const conversation = this.options.conversation(conversationId);
   if (!conversation) throw new Error("Conversation not found.");
+  return this.publishConversationSnapshot(conversation, access);
+}
+
+export async function publishConversationSnapshot(
+  this: HostedShares,
+  conversation: Conversation,
+  access: ShareAccess,
+) {
+  const status = await this.allowed("conversation");
   const snapshot = buildConversationSnapshot(conversation, status);
   if (
     conversation.mode === "code" &&
@@ -46,7 +57,7 @@ export async function shareConversation(
         ...new Set([...(snapshot.repositories ?? []), repository]),
       ];
   }
-  const key = sourceKeyOf("conversation", conversationId);
+  const key = sourceKeyOf("conversation", conversation.id);
   const share = await this.options.service.create({
     kind: "conversation",
     source_key: key,
@@ -57,11 +68,11 @@ export async function shareConversation(
   const turn = lastSharedTurn(conversation);
   this.remember(key, {
     kind: "conversation",
-    source: conversationId,
+    source: conversation.id,
     ...(turn ? { turn } : {}),
   });
   this.store(share);
-  this.options.changed("conversation", conversationId);
+  this.options.changed("conversation", conversation.id);
   return this.present(share);
 }
 
@@ -74,6 +85,7 @@ export async function setShareAccess(
   this: HostedShares,
   conversationId: string,
   access: ShareAccess,
+  keepEmptyInviteLink = false,
 ) {
   await this.allowed("conversation");
   await this.list("conversation");
@@ -82,16 +94,16 @@ export async function setShareAccess(
     return access === "link"
       ? this.shareConversation(conversationId, "link")
       : null;
-  if ((share.access ?? "link") === access) return this.present(share);
+  if ((share.access ?? "link") === access) return this.present(share, conversationId);
   // Nobody invited and no public link is no share at all.
-  if (access === "invited" && !share.invites?.length) {
+  if (access === "invited" && !share.invites?.length && !keepEmptyInviteLink) {
     await this.unshareConversation(conversationId);
     return null;
   }
   const updated = await this.options.service.setAccess(share.id, access);
   this.store(updated);
   this.options.changed("conversation", conversationId);
-  return this.present(updated);
+  return this.present(updated, conversationId);
 }
 
 /** Invites an address; the conversation is shared to invited people only first when it has no share. */

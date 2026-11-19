@@ -10,6 +10,8 @@ import (
 
 	webusage "github.com/Wei-Shaw/sub2api/internal/claudex/web/usage"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webproto"
+	"github.com/google/uuid"
+	"golang.org/x/sync/singleflight"
 )
 
 // Runs and capacity (W-KEY's web-usage slots): a call that starts a turn
@@ -49,8 +51,9 @@ type run struct {
 }
 
 type runs struct {
-	c  *Component
-	mu sync.Mutex
+	c        *Component
+	mu       sync.Mutex
+	starting singleflight.Group
 	// byUser holds each user's runs; a run without a conversation id yet
 	// is keyed by "".
 	byUser map[int64]map[string]*run
@@ -66,6 +69,12 @@ type convInfo struct {
 	Turns []struct {
 		Status string `json:"status"`
 	} `json:"turns"`
+}
+
+type runTargetInfo struct {
+	conversation string
+	mode         string
+	nativeSend   bool
 }
 
 func (ci convInfo) inProgress() bool {
@@ -90,35 +99,58 @@ func (ci convInfo) exitReason() string {
 }
 
 // runTarget reads the conversation and mode a turn-starting call names.
-func runTarget(method string, args []json.RawMessage) (conv, mode string) {
+func runTarget(method string, args []json.RawMessage) (result runTargetInfo) {
 	if len(args) == 0 {
-		return "", ""
+		return result
 	}
 	if method == "send" {
 		var in struct {
-			ConversationID string `json:"conversationId"`
-			Mode           string `json:"mode"`
+			ConversationID  string `json:"conversationId"`
+			ClientRequestID string `json:"clientRequestId"`
+			Mode            string `json:"mode"`
 		}
 		if json.Unmarshal(args[0], &in) == nil {
-			conv, mode = in.ConversationID, in.Mode
+			result.conversation, result.mode = in.ConversationID, in.Mode
+			if id, err := uuid.Parse(in.ClientRequestID); err == nil && len(in.ClientRequestID) == 36 {
+				result.nativeSend = true
+				if result.conversation == "" {
+					result.conversation = id.String()
+				}
+			}
 		}
 	} else {
-		_ = json.Unmarshal(args[0], &conv)
+		_ = json.Unmarshal(args[0], &result.conversation)
 	}
-	if !webusage.ValidID(conv) {
-		conv = ""
+	if !webusage.ValidID(result.conversation) {
+		result.conversation = ""
 	}
-	switch mode {
+	switch result.mode {
 	case webusage.ModeChat, webusage.ModeCowork, webusage.ModeCode:
 	default:
-		mode = webusage.ModeChat
+		result.mode = webusage.ModeChat
 	}
-	return conv, mode
+	return result
 }
 
 // begin returns the run a turn-starting call belongs to: the conversation's
 // running one, or a new one holding a slot. fresh tells whether it is new.
 func (r *runs) begin(ctx context.Context, userID int64, conv, mode, runnerID string) (*run, bool, error) {
+	if conv == "" {
+		return r.acquire(ctx, userID, conv, mode, runnerID)
+	}
+	fresh := false
+	value, err, _ := r.starting.Do(strconv.FormatInt(userID, 10)+":"+conv, func() (any, error) {
+		ru, started, err := r.acquire(ctx, userID, conv, mode, runnerID)
+		fresh = started
+		return ru, err
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	return value.(*run), fresh, nil
+}
+
+func (r *runs) acquire(ctx context.Context, userID int64, conv, mode, runnerID string) (*run, bool, error) {
 	if conv != "" {
 		r.mu.Lock()
 		if existing := r.byUser[userID][conv]; existing != nil {

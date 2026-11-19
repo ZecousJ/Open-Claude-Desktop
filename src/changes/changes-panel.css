@@ -2,16 +2,17 @@
    列表-utils选中 and File-changes面板-空状态 (2x, 1164px window): 537px panel 8px from the
    window edge, 33px header, a 239px file list with 24px rows, 32px #252525 file headers
    and 17px diff rows with a 3px change bar. */
-/* 537px wide at a 1164px window; narrower windows keep about 360px for the
-   conversation before the panel shrinks. Size and position:
-   92-reference-panels.css. */
+/* 537px wide at a 1164px window (R-0874, panel edge 1238→2312 at 2x); narrower
+   windows keep about 360px for the conversation before the panel shrinks.
+   Size and position: 92-reference-panels.css. */
 .work-panel.changes-panel {
   border: 1px solid #2c2c2c;
   border-radius: 10px;
   background: #1a1a1a;
   color: #c8c8c4;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   overflow: hidden;
@@ -45,7 +46,8 @@
 .changes-icon-button:active {
   background: #292929;
 }
-/* The list toggle while the file list shows: the ghost button's selected fill. */
+/* The list toggle while the file list shows: the ghost button's selected
+   fill (live claude.ai bundle, 2026-10-14: pressedVariant "selected"). */
 .changes-icon-button[aria-pressed="true"] {
   background: rgb(255 255 255 / 15%);
   color: var(--text);
@@ -61,7 +63,7 @@
   min-width: 0;
   margin-left: 9px;
   color: #c8c8c4;
-  /* "working tree" is 67px wide, 13px. */
+  /* R-0874: "working tree" is 67px wide, 13px. */
   font-size: 13px;
   white-space: nowrap;
 }
@@ -69,7 +71,8 @@
   flex: none;
   color: #8c8c8c;
 }
-/* Light: the weak text step, #898781. */
+/* Light: the weak text step, #898781 (live claude.ai bundle, 2026-10-16,
+   rules.json: --cds-text-muted). */
 :root[data-theme="light"] .changes-base {
   color: var(--text-muted);
 }
@@ -81,7 +84,7 @@
   flex: 1;
   place-items: center;
   padding: 24px;
-  /* "No changes to show" 13px #f0f0f0 (120.5px wide). */
+  /* R-0874 空状态: "No changes to show" 13px #f0f0f0 (120.5px wide). */
   color: #f0f0f0;
   font-size: 13px;
   text-align: center;
@@ -91,10 +94,10 @@
   flex: 1;
   min-height: 0;
 }
-/* The left column: about 35% of the panel, the changed files as a tree above
-   the turns, a hairline between them; the turns list "All changes" first, a
-   selected row #313131 with 8px corners, each turn's message on one line and
-   its counts under it. */
+/* The left column (owner's capture of the original, 2026-10-03, 2x): about
+   35% of the panel, the changed files as a tree above the turns, a hairline
+   between them; the turns list "All changes" first, a selected row #313131
+   with 8px corners, each turn's message on one line and its counts under it. */
 .changes-side {
   display: flex;
   flex: 0 0 35%;
@@ -194,7 +197,7 @@
 .changes-file-row[aria-current="true"] {
   background: #313131;
 }
-/* File names 13px (app.js 34.5px wide). */
+/* R-0874 列表: file names 13px (app.js 34.5px wide). */
 .changes-file-row .changes-file-name {
   font-size: 13px;
 }
@@ -209,7 +212,8 @@
   flex: none;
   color: #8c8c8c;
 }
-/* "+2 −1" in the git added and removed text colours. */
+/* "+2 −1" in the git added and removed text colours (live claude.ai
+   bundle, 2026-10-14: text-git-added / text-git-removed). */
 .changes-stat {
   display: inline-flex;
   flex: none;
@@ -237,9 +241,10 @@
 .changes-file + .changes-file {
   margin-top: 8px;
 }
-/* A file jumped to from the list rings once in the accent: 2px at 55% and a
-   16px glow at 25%, fading over 0.9s. Drawn inside the file's edge, over its
-   sticky header, as the list clips anything outside it. */
+/* A file jumped to from the list rings once in the accent: 2px at 55% and
+   a 16px glow at 25%, fading over 0.9s (review-scroll.ts; desktop bundle
+   2.31226.1). Drawn inside the file's edge, over its sticky header, as the
+   list clips anything outside it. */
 .changes-file.review-landed {
   position: relative;
 }
@@ -279,7 +284,7 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  /* Chevron, glyph and name at 631.5 / 649.5 / 664.5. */
+  /* R-0874: chevron, glyph and name at 631.5 / 649.5 / 664.5. */
   gap: 5px;
   width: 100%;
   height: 32px;
@@ -311,12 +316,13 @@
 .changes-hunks {
   padding: 0 0 4px;
 }
-/* Panel rows wrap long lines under the code column. Geometry of the original's
-   diff library with classic indicators: the number column padded calc(2ch +
+/* Panel rows wrap long lines under the code column. Geometry of the
+   original's diff library with classic indicators (live claude.ai bundle,
+   2026-10-15, c49d7f557 / c44d00c7f): the number column padded calc(2ch +
    5px) and 1ch, numbers at least 3ch and right-aligned, a 2px rule in the
-   background colour after it; the line padded 1ch with the + or - in its first
-   2ch. A changed row's number cell mixes less of the colour (85% dark, 91%
-   light) than its line (80%, 88%). */
+   background colour after it; the line padded 1ch with the + or - in its
+   first 2ch. A changed row's number cell mixes less of the colour (85%
+   dark, 91% light) than its line (80%, 88%). */
 .diff-lines[data-variant="panel"] {
   --diff-panel-bg: #151515;
 }
@@ -391,7 +397,7 @@
 .changes-more {
   display: flex;
   align-items: center;
-  /* "Show more lines" 12px (89.5px wide), text at 648.5. */
+  /* R-0874: "Show more lines" 12px (89.5px wide), text at 648.5. */
   gap: 6px;
   width: 100%;
   height: 32px;
@@ -401,7 +407,8 @@
   background: none;
   color: #8c8c8c;
   font:
-    12px/18px -apple-system,
+    12px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   text-align: left;
@@ -455,8 +462,10 @@
 .changes-diffs:focus {
   outline: none;
 }
-/* Go to file. The surface, search row and empty line are the menus' (menu.css);
-   the rows repeat the menu rows' size and highlight. */
+/* Go to file (GoToFile.tsx; live claude.ai bundle, 2026-10-12: a 22rem
+   popup aligned to the button's end, about 12 rows tall). The surface,
+   search row and empty line are the menus' (menu.css); the rows repeat the
+   menu rows' size and highlight. */
 .menu.go-to-file {
   width: 22rem;
   max-width: calc(100vw - 16px);
@@ -492,8 +501,8 @@
   background: #f0f0f0;
 }
 
-/* The header's totals: "{count} files" then +N and −N, footnote size, tabular,
-   muted. */
+/* The header's totals (live claude.ai bundle, 2026-10-14): "{count} files"
+   then +N and −N, footnote size, tabular, muted. */
 .changes-totals {
   display: inline-flex;
   align-items: center;
@@ -556,8 +565,9 @@
   font-size: 13px;
   line-height: 19px;
 }
-/* Commits: rows pressed like the turns' current row; a commit's second line is
-   "short SHA · author · age" in muted footnote text, the SHA in the code face. */
+/* Commits (live claude.ai bundle, 2026-10-14): rows pressed like the
+   turns' current row; a commit's second line is "short SHA · author ·
+   age" in muted footnote text, the SHA in the code face. */
 .changes-turn-row[aria-pressed="true"] {
   background: #313131;
 }
@@ -590,8 +600,8 @@
   font-size: 12px;
   line-height: 15px;
 }
-/* A file header's badge: muted body text after the name that gives way first
-   when the row is narrow. */
+/* A file header's badge (live claude.ai bundle, 2026-10-14): muted body
+   text after the name that gives way first when the row is narrow. */
 .changes-file-badge {
   flex-shrink: 9999;
   min-width: 0;
@@ -690,8 +700,8 @@
   touch-action: none;
   z-index: 2;
 }
-/* The list on the pane's right (File list position): it comes after the diffs
-   with its rule on its start side. */
+/* The list on the pane's right (File list position): it comes after the
+   diffs with its rule on its start side (live claude.ai Code, 2026-10-21). */
 .changes-body[data-list-right] {
   flex-direction: row-reverse;
 }
@@ -703,8 +713,8 @@
   margin-left: 0;
   margin-right: -2px;
 }
-/* The web's bar: 32px with 4px inside and the 24px ghost buttons 2px apart,
-   radius 6, in the primary ink. */
+/* The web's bar (live claude.ai Code, 2026-10-21): 32px with 4px inside and
+   the 24px ghost buttons 2px apart, radius 6, in the primary ink. */
 .app.web .work-panel.changes-panel > header {
   height: 32px;
   min-height: 32px;

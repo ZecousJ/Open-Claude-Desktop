@@ -1,4 +1,8 @@
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
+import { credentialOperation } from "./credential-operation-queue";
+import { isUnconfirmedProviderWrite } from "./provider-service-client";
 import { codeSessionSettings } from "../../shared/code-session-permissions";
+import { CodeUltracodeUnavailable } from "../../shared/code-session-settings";
 import { modelProtocol } from "../../shared/provider-routes";
 import { effectiveTurnSandbox } from "../../shared/sandbox-policy";
 import path from "node:path";
@@ -31,19 +35,40 @@ export async function updateProviderKey(
   key: string,
   inVault: boolean,
   groupKeys: Record<string, string> = {},
+  callerCurrent?: AccountOperationCurrent,
 ) {
-  if (inVault)
-    await this.gateway?.setKeys({ [providerId]: key, ...groupKeys }, [
-      providerId,
-      ...Object.keys(groupKeys),
-    ]);
-  else await this.gateway?.setSessionKey(key, groupKeys);
-  // Each SSH engine has its own gateway on this computer (R9).
-  for (const peer of this.peers?.all() ?? [])
-    if (peer !== this)
-      await peer
-        .updateProviderKey(providerId, key, inVault, groupKeys)
-        .catch(() => {});
+  const store = this.store, gateway = this.gateway, stopped = this.intentionalStop;
+  const root = this.vaultRoot ?? store.root;
+  const peers = [...(this.peers?.all() ?? [])].filter(peer => peer !== this);
+  const current = () => (!callerCurrent || callerCurrent()) && this.store === store &&
+    this.gateway === gateway && (this.vaultRoot ?? this.store.root) === root && this.intentionalStop === stopped;
+  assertAccountOperationCurrent(current);
+  if (gateway) {
+    if (inVault) {
+      await credentialOperation(root, current, async uncertain => {
+        assertAccountOperationCurrent(current);
+        try {
+          await gateway.setKeysConfirmed({ [providerId]: key, ...groupKeys }, [providerId, ...Object.keys(groupKeys)]);
+        } catch (error) {
+          if (isUnconfirmedProviderWrite(error)) uncertain();
+          throw error;
+        }
+        assertAccountOperationCurrent(current);
+      });
+    } else await gateway.setSessionKey(key, groupKeys);
+    assertAccountOperationCurrent(current);
+  }
+  // Never hold the parent's root slot while waiting on a same-root peer.
+  for (const peer of peers) {
+    assertAccountOperationCurrent(current);
+    if (!(this.peers?.all() ?? []).includes(peer)) continue;
+    await peer.updateProviderKey(providerId, key, inVault, groupKeys,
+      () => current() && (this.peers?.all() ?? []).includes(peer)).catch(error => {
+        assertAccountOperationCurrent(current);
+        // Preserve the existing best-effort peer behavior. Unknown writes still
+        // poison their canonical root inside the peer before they reject.
+      });
+  }
 }
 
 /** Rejects a message the account, model service or composer state cannot send. */
@@ -51,21 +76,27 @@ export function assertSendable(
   this: Engine,
   provider: Provider,
   input: SendInput,
+  webSearchOverride?: boolean,
 ) {
   if (!input.model.trim())
     throw new Error(
       this.unavailableReason ?? "No model is assigned to this account yet.",
     );
   this.assertModel(provider, input.model);
+  if (input.codeUltracode && (
+    input.conversationId || input.mode !== "code" || input.incognito ||
+    !this.codeUltracodeAvailable(provider.id, input.model)
+  ))
+    throw new CodeUltracodeUnavailable();
   if (input.mode === "code" && input.webSearch)
     throw Error("This Web search control belongs to Chat and Cowork.");
   // With web search turned off by the administrator, a conversation that had
   // it on simply continues without it (its switch is hidden, see sendTurn).
   const webSearch =
     this.policy().webSearch &&
-    (input.conversationId
+    (webSearchOverride ?? (input.conversationId
       ? this.store.conversation(input.conversationId).webSearch
-      : input.webSearch);
+      : input.webSearch));
   if (webSearch && modelProtocol(provider, input.model) !== "responses")
     throw new Error(
       "Web search requires a Responses-compatible model service.",
@@ -149,6 +180,7 @@ export function assertPolicy(this: Engine, input: SendInput) {
         existing?.scheduledRun ?? input.scheduledRun,
         false,
         existing?.scheduledPermission ?? input.scheduledPermission,
+        existing?.codePermissionMode ?? input.codePermissionMode,
       ),
     ),
   );
@@ -212,6 +244,7 @@ export function sendCwd(this: Engine, input: SendInput, project?: Project) {
   return this.launcher
     ? this.remoteCwd(input, project)
     : (input.cwd ??
+        (existing?.mode === "code" ? existing.cwd : undefined) ??
         (projectOnly ? undefined : project?.cwd) ??
         path.join(this.spaceRoot, "workspace"));
 }

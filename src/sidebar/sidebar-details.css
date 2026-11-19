@@ -1,6 +1,6 @@
 /* Projects plus, template menu, full screen, scrollbar, status dots, PR status, empty list (part of sidebar.css) */
-/* The Projects row's plus: 7px glyph #9fa093 at the same right end, in the
-   second row (New is the first), shown on hover. */
+/* The Projects row's plus (R-0013 悬停): 7px glyph #9fa093 at the same
+   right end, in the second row (New is the first), shown on hover. */
 .main-nav-item-wrap > .main-nav-row-plus {
   position: absolute;
   top: 50%;
@@ -69,7 +69,8 @@
   font-weight: 400;
   line-height: 17px;
 }
-/* The badge follows its text and each kind keeps its own 16%-tinted tile. */
+/* Official template-menu DOM, 2026-10-16: the badge follows its text and
+   each kind keeps its own 16%-tinted tile. */
 .nav-create-menu.artifacts > button > span:not(.rate-badge) {
   flex: none;
 }
@@ -158,12 +159,13 @@
 .task-permission-trigger > .task-permission-mobile-icon {
   display: none;
 }
-.recents-search .app-icon,
-.recents-view-all .app-icon {
+.recents-search .anthropicon,
+.recents-view-all .anthropicon {
   width: 20px;
   height: 20px;
 }
-/* The web's section buttons. */
+/* The web's section buttons (live claude.ai, 2026-10-20: 24px ghost
+   buttons, radius 6, #c3c2b7, their glyphs 16px). */
 :root[data-surface="web"] .section-label {
   column-gap: 8px;
 }
@@ -182,7 +184,7 @@
   > button {
   color: #c3c2b7;
 }
-:root[data-surface="web"] .recents-view-all .app-icon {
+:root[data-surface="web"] .recents-view-all .anthropicon {
   width: 16px;
   height: 16px;
 }
@@ -231,11 +233,11 @@
   cursor: default;
 }
 
-/* macOS full screen: the traffic lights are hidden, so the toolbar starts at
-   the window's left edge like the Windows layout without ≡ (12px, then the
-   toggle, back and forward: 12 + 3 x 24 + 14 = 98px of header inset). The
-   original's full screen is not captured; the Windows layout is the closest
-   analogue. */
+/* macOS full screen (R-0132): the traffic lights are hidden, so the toolbar
+   starts at the window's left edge like the Windows layout without ≡ (12px,
+   then the toggle, back and forward: 12 + 3 x 24 + 14 = 98px of header
+   inset). The original's full screen is not captured; the Windows layout is
+   the closest analogue. */
 .app.darwin.full-screen .sidebar-chrome {
   padding-left: 12px;
 }
@@ -260,10 +262,10 @@
 :root:root .sidebar-scroll {
   margin-right: calc(-1 * var(--list-gutter, 0px));
 }
-/* The list's scrollbar is an overlay bar: none at rest, as in R-0044 (an
-   overflowing list, the pointer over a row), a thumb while it scrolls or under
-   the pointer. The fade is not reproduced: Chromium does not animate the
-   scrollbar pieces. Windows draws the same bars. */
+/* The list's scrollbar is an overlay bar (R-0077): none at rest, as in R-0044
+   (an overflowing list, the pointer over a row), a thumb while it scrolls or
+   under the pointer. The fade is not reproduced: Chromium does not animate
+    the scrollbar pieces. Windows draws the same bars (owner, 2026-10-22). */
 :root:root .sidebar-scroll::-webkit-scrollbar-thumb {
   background: transparent;
 }
@@ -278,8 +280,8 @@
 
 /* A row's dot with its name (StatusDot.tsx). A Chat or Cowork row's dot is a
    button for marking read or unread, with a hit area a few pixels wider than
-   the dot, as the original's. An archived row shows the Archive glyph in the
-   same 16px column. */
+   the dot, as the original's (desktop bundle 2.31226.1). An archived row
+   shows the Archive glyph in the same 16px column. */
 .row-status {
   position: relative;
   display: flex;
@@ -296,7 +298,8 @@
   color: var(--text-muted);
   opacity: 0.8;
 }
-/* A Code session's pull request in place of the dot: the 14px bold glyph in its
+/* A Code session's pull request in place of the dot (Show PR status; live
+   claude.ai bundle, 2026-10-12, shared-18 `Cw`): the 14px bold glyph in its
    state's git colour, the 16px column kept. The colours are the original's
    --cds-text-git-* values (dark / light); the branch row reads them too. */
 :root {
@@ -362,10 +365,10 @@
   opacity: 1;
 }
 
-/* Dragging into an empty Pinned section: a Pin row reads "Drop here", the pin
-   tilting while a row is dragged, and "Let go" on the neutral fill while a
-   release would pin. After the release the dropped row stands on it until the
-   list has the row. */
+/* Dragging into an empty Pinned section: a Pin row reads "Drop here", the
+   pin tilting while a row is dragged, and "Let go" on the neutral fill while
+   a release would pin (desktop bundle 2.31226.1). After the release the
+   dropped row stands on it until the list has the row. */
 .pin-hint {
   display: flex;
   align-items: center;
@@ -414,9 +417,12 @@
   color: var(--text-muted);
 }
 
-/* A row's number while ⌘ (Ctrl+Shift) is held (jump-hints.ts), over the 16px
-   leading column: a 16px tag, radius 3, 0.5px border on surface-1, 10px medium
-   secondary text. */
+/* A row's number while ⌘ (Ctrl+Shift) is held (jump-hints.ts), over the
+   16px leading column: a 16px tag, radius 3, 0.5px border on surface-1,
+   10px medium secondary text (live claude.ai bundle, 2026-10-12: h-4
+   min-w-4 rounded-[3px] border-[0.5px] bg-surface-1 px-[3px] text-[10px]
+   font-medium text-secondary; surface-1, text-secondary and the 10% border
+   as the cds tokens in src/downloads/downloads.css). */
 .row-jump-hint {
   position: absolute;
   top: 50%;
@@ -444,11 +450,13 @@
   color: #52514e;
 }
 
-/* Current Code rows: the status and More share the final 24px slot. The status
-   is the link's last flex item: the row's centring lines it up with the title
-   and the link's end padding (none here) places it, so the title stops 8px (the
-   link's gap) before it. Without a status the link keeps 32px for More. More
-   itself is an overlay outside the flow, centred on the row. */
+/* Current Code rows: the status and More share the final 24px slot
+   (live web + native Code, 2026-10-17; O16 shared-21 row decorations).
+   The status is the link's last flex item: the row's centring lines it up
+   with the title and the link's end padding (none here) places it, so the
+   title stops 8px (the link's gap) before it. Without a status the link
+   keeps 32px for More. More itself is an overlay outside the flow, centred
+   on the row. */
 :root .app.mode-code .conversation-link.plain-recent {
   padding-left: 10px;
   padding-right: 32px;
@@ -487,8 +495,9 @@
   visibility: hidden;
 }
 
-/* A touch screen keeps every row's status or place; only the open row shows its
-   ⋯, at the end, and the slot moves in before it. */
+/* A touch screen keeps every row's status or place; only the open row
+   shows its ⋯, at the end, and the slot moves in before it (the original's
+   touch:group-data-[touch-menu]; live claude.ai, 2026-10-21). */
 @media (pointer: coarse) {
   :root .app.mode-code .conversation-row:not(.selected) .row-more {
     opacity: 0;
@@ -513,8 +522,8 @@
 }
 
 /* The Code Recents heading's buttons on every surface (the web rules in
-   web-shell.css say the same): Group and sort folds away until the heading is
-   hovered or focused, New session stays. */
+   web-shell.css say the same): Group and sort folds away until the heading
+   is hovered or focused, New session stays (live claude.ai, 2026-10-21). */
 .app.mode-code .code-recents-new,
 .app.mode-code .code-recents-sort > button {
   display: grid;

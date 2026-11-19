@@ -56,7 +56,7 @@ test("completed command with empty output is not presented as still waiting", as
     }),
   );
   assert.match(html, /Ran a command/);
-  // Empty output leaves the Output area blank.
+  // Empty output leaves the Output area blank (normalized-command-group-001, G-39).
   assert.doesNotMatch(html, /No output|Waiting for output/);
 });
 

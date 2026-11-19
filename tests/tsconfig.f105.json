@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.f096.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/engine/engine-history.ts",
+    "../electron/ipc/composer.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "../electron/official-ui/native/code-tool-transcript.ts",
+    "../electron/official-ui/native/code-transcript.ts",
+    "../electron/official-ui/native/context-usage.ts",
+    "../shared/agent-api.ts",
+    "official-ui-code-compaction.test.ts",
+    "official-ui-agent-activity.test.ts",
+    "official-ui-context-usage.test.ts",
+    "official-ui-code-slash.test.ts"
+  ]
+}

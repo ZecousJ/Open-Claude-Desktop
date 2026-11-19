@@ -106,7 +106,8 @@ export function SkillRow({
 
 /**
  * A skill's menu: Turn on/off, Rename (your own), Duplicate, Show in folder,
- * and Remove for your own.
+ * and Remove for your own (live claude.ai bundle, 2026-10-12: Rename and
+ * Duplicate come before Show in folder).
  */
 export function skillMenu(
   skill: ListedSkill,
@@ -135,7 +136,7 @@ export function skillMenu(
   if (own)
     entries.push(
       { separator: true },
-      // The original calls it Remove.
+      // R-1519: the original calls it Remove.
       { label: "Remove", danger: true, onSelect: onRemove },
     );
   return entries;

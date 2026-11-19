@@ -1,20 +1,22 @@
 /**
- * The web sign-in session (W-ARCH §4, web plan §2 #5). The refresh token lives
- * only in the HttpOnly `__Secure-claudex_web_rt` cookie, which the browser
- * sends to the auth endpoints alone; the 60-minute access token is kept in this
- * object's memory and never written to storage. A reloaded page restores its
- * session with `POST auth/refresh`.
+ * The web sign-in session (W-ARCH §4, web plan §2 #5). The refresh token
+ * lives only in the HttpOnly `__Secure-claudex_web_rt` cookie, which the
+ * browser sends to the auth endpoints alone; the 60-minute access token is
+ * kept in this object's memory and never written to storage. A reloaded
+ * page restores its session with `POST auth/refresh`.
  *
- * Several tabs share one cookie, and every refresh rotates it, so refreshes run
- * one at a time across tabs (Web Locks) and each tab tells the others the new
- * access token (BroadcastChannel), which saves them a refresh. A sign-out in
- * one tab signs the others out too.
+ * Several tabs share one cookie, and every refresh rotates it, so refreshes
+ * run one at a time across tabs (Web Locks) and each tab tells the others
+ * the new access token (BroadcastChannel), which saves them a refresh. A
+ * sign-out in one tab signs the others out too.
  *
- * Several accounts per browser: each account has its own refresh cookie, and
- * every refresh and logout names its account. A tab keeps its account across
- * reloads (sessionStorage); a new tab opens the account used last
- * (localStorage). The accounts used here are remembered in localStorage (id,
- * email, name: no token) for the chooser, ten at most as the original keeps.
+ * Several accounts per browser (the account menu's other accounts, "Add
+ * account", the signed-out "Choose an account"; live claude.ai bundle,
+ * 2026-10-12): each account has its own refresh cookie, and every refresh
+ * and logout names its account. A tab keeps its account across reloads
+ * (sessionStorage); a new tab opens the account used last (localStorage).
+ * The accounts used here are remembered in localStorage (id, email, name:
+ * no token) for the chooser, ten at most as the original keeps.
  */
 import type { AppEvent, PublicAccount } from "../../shared/types";
 import {
@@ -48,6 +50,7 @@ export interface WebSession {
   accessToken: string;
   /** When the access token expires (ms since the epoch). */
   expiresAt: number;
+  sessionId?: number;
   account: PublicAccount;
 }
 
@@ -65,6 +68,7 @@ export type TabMessage =
       message: string;
       /** The account that ended; older tabs sent none (then: any). */
       account?: string;
+      sessionId?: number;
     };
 
 interface Remembered {
@@ -80,8 +84,13 @@ export type Json = Record<string, unknown>;
 export class WebAuth {
   authUnavailable = false;
   session?: WebSession;
+  /** Memory-only activation epoch: never a token, cookie, storage value or wire field. */
+  sessionEpoch: object = {};
+  get activationIdentity(): object | undefined { return this.session ? this.sessionEpoch : undefined; }
+  revokingAll?: { epoch: object; notice?: { message?: string; fromTab?: true } };
   pendingTwoFactor?: { tempToken?: string; maskedEmail: string };
   refreshing?: Promise<WebSession | null>;
+  refreshingEpoch?: object;
   refreshTimer?: unknown;
   channel: ChannelLike | null;
   changes = new Set<(session: WebSession | undefined) => void>();
@@ -227,16 +236,26 @@ export class WebAuth {
       | typeof webAuthRoutes.eventsTicket
       | typeof webAuthRoutes.voiceTicket = webAuthRoutes.eventsTicket,
   ): Promise<WebTicketResponse> {
-    const send = async (token: string) =>
-      (await this.post(route, { tabId: this.tabId }, token)).value;
+    const opening = this.activationIdentity;
+    const current = () => {
+      if (this.activationIdentity !== opening)
+        throw new DOMException("The active account changed.", "AbortError");
+    };
+    const send = async (token: string) => {
+      current();
+      const answer = await this.post(route, { tabId: this.tabId }, token);
+      current();
+      return parseTicketResponse(answer.value);
+    };
     const token = await this.accessToken();
     try {
-      return parseTicketResponse(await send(token));
+      return await send(token);
     } catch (error) {
+      current();
       if (statusOf(error) !== 401) throw error;
       const next = await this.refresh(token);
       if (!next) throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
-      return parseTicketResponse(await send(next.accessToken));
+      return send(next.accessToken);
     }
   }
 

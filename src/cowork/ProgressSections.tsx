@@ -52,8 +52,8 @@ export function Section({
 }
 
 /**
- * The empty Context picture: two small sheets, a raised one with a plus and a
- * dotted slot behind it.
+ * The empty Context picture (R-0853, R-0928): two small sheets, a raised
+ * one with a plus and a dotted slot behind it.
  */
 export function ContextPlaceholder() {
   const lines = (x: number, y: number, w: number) => (

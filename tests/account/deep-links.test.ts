@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { codeEntryConversation, parseDeepLink } from "../../shared/deep-links";
 import type { Conversation } from "../../shared/types";
 import { parseSshLink, sshLinkIdentity } from "../../shared/ssh-links";
+import { officialDeepLinkRoute } from "../../electron/official-ui/deep-link-route";
 
 test("OS session links resolve the latest Code session or oldest waiting session", () => {
   const conversation = (
@@ -108,15 +109,23 @@ test("claudex:// links open a new chat, a conversation, a project or Code", () =
     mode: "chat",
     prompt: "Hello there",
   });
-  assert.deepEqual(parseDeepLink("claudex://claudex.example.com/new"), {
+  assert.deepEqual(parseDeepLink("claudex://claudex.zecous.cn/new"), {
     kind: "new",
     mode: "chat",
   });
   assert.deepEqual(parseDeepLink("claudex://cowork/new?q=Plan"), {
     kind: "new",
-    mode: "chat",
+    mode: "cowork",
     prompt: "Plan",
   });
+  assert.deepEqual(
+    parseDeepLink("claudex://claude.ai/new?surface=cowork&q=Plan"),
+    {
+      kind: "new",
+      mode: "cowork",
+      prompt: "Plan",
+    },
+  );
   assert.deepEqual(parseDeepLink("claudex://conversation/abc-123"), {
     kind: "conversation",
     id: "abc-123",
@@ -135,7 +144,7 @@ test("claudex:// links open a new chat, a conversation, a project or Code", () =
     folder: "/work/api",
   });
   assert.deepEqual(parseDeepLink("claudex://code/continue?session=s1"), {
-    kind: "conversation",
+    kind: "code-continue",
     id: "s1",
   });
   assert.deepEqual(parseDeepLink("claudex://code/needs-input"), {
@@ -145,8 +154,113 @@ test("claudex:// links open a new chat, a conversation, a project or Code", () =
     parseDeepLink("claudex://settings/connectors?connector=x"),
     undefined,
   );
-  assert.equal(parseDeepLink("https://claudex.example.com/new"), undefined);
+  assert.equal(parseDeepLink("https://claudex.zecous.cn/new"), undefined);
   assert.equal(parseDeepLink("claudex://conversation/a%20b"), undefined);
   assert.equal(parseDeepLink("claudex://user:pw@new"), undefined);
   assert.equal(parseDeepLink("not a url"), undefined);
+});
+
+test("the official desktop opens drafts in the requested composer and keeps SSH confirmation in Code", () => {
+  const draft = "Read this & do not send";
+  const q = encodeURIComponent(draft);
+  const route = (href: string) => {
+    const link = parseDeepLink(href);
+    assert.ok(link);
+    return new URL(officialDeepLinkRoute(link, "owner"), "http://localhost");
+  };
+  for (const [link, pathname] of [
+    [`claudex://new?q=${q}`, "/new"],
+    [`claudex://cowork/new?q=${q}`, "/task/new"],
+    [`claudex://claude.ai/new?surface=cowork&q=${q}`, "/task/new"],
+    [`claudex://code/new?prompt=${q}`, "/epitaxy"],
+  ]) {
+    const url = route(link);
+    assert.equal(url.pathname, pathname);
+    assert.equal(url.searchParams.get("q"), draft);
+  }
+  const folder = route("claudex://code/new?folder=%2Fwork%2Fapi");
+  assert.equal(folder.searchParams.get("folder"), "/work/api");
+  assert.equal(folder.searchParams.get("src"), "external");
+  const ssh = route(
+    `claudex://code/new?ssh_host=user%40Box&ssh_port=2222&ssh_folder=%2Fwork&q=${q}`,
+  );
+  assert.equal(ssh.pathname, "/epitaxy");
+  assert.deepEqual(Object.fromEntries(ssh.searchParams), {
+    ssh_host: "user@Box",
+    ssh_port: "2222",
+    ssh_folder: "/work",
+    q: draft,
+    src: "external",
+  });
+  const refused = route("claudex://code/new?ssh_host=-option&q=ignore");
+  assert.equal(
+    refused.pathname + refused.search,
+    "/epitaxy?ssh_refused=invalid_host",
+  );
+  assert.equal(
+    route("claudex://claude.ai/project/project-1").pathname,
+    "/project/project-1",
+  );
+});
+
+test("the official desktop opens owned sessions and resolves Code entry points against desktop sessions", () => {
+  const conversation = (
+    id: string,
+    mode: Conversation["mode"],
+    updatedAt: number,
+    extra: Partial<Conversation> = {},
+  ) =>
+    ({
+      id,
+      mode,
+      updatedAt,
+      cwd: "/work",
+      ...extra,
+    }) as Conversation;
+  const snapshot = {
+    conversations: [
+      conversation("old", "code", 1),
+      conversation("new", "code", 5),
+      conversation("cowork", "cowork", 3),
+      conversation("chat", "chat", 9),
+      conversation("private", "code", 10, { incognito: true }),
+      conversation("archived", "code", 11, { archived: true }),
+      conversation("cloud", "code", 12, { cloudHosted: true }),
+      conversation("another-account", "code", 13, {
+        sessionAuthors: {
+          ownerAccountUuid: "different-owner",
+          viewerAccountUuid: "different-owner",
+        },
+      }),
+    ],
+    approvals: ["new", "cowork", "private", "another-account"].map(
+      (conversationId) => ({ conversationId }),
+    ),
+  };
+  const route = (href: string) => {
+    const link = parseDeepLink(href);
+    assert.ok(link);
+    return officialDeepLinkRoute(link, "owner", snapshot);
+  };
+  assert.equal(route("claudex://conversation/chat"), "/chat/chat");
+  assert.equal(route("claudex://conversation/cowork"), "/cowork/local_cowork");
+  assert.equal(
+    route("claudex://code/continue?session=local_old"),
+    "/epitaxy/local_old",
+  );
+  assert.equal(
+    route("claudex://code/continue?session=last"),
+    "/epitaxy/local_new",
+  );
+  assert.equal(route("claudex://code/continue?session=chat"), "/epitaxy");
+  assert.equal(
+    route("claudex://code/needs-input?session=local_new"),
+    "/epitaxy/local_new",
+  );
+  assert.equal(
+    route("claudex://code/needs-input?session=gone"),
+    "/cowork/local_cowork",
+  );
+  assert.equal(route("claudex://conversation/another-account"), "/recents");
+  assert.equal(route("claudex://conversation/private"), "/recents");
 });

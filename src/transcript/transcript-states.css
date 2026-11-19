@@ -1,13 +1,15 @@
 /* Conversation states. The ordinary Chat scroll control was captured
    live on 2026-10-16; other state motion remains provisional. */
 
-/* Back to the latest message. A zero-height dock between the transcript and the
-   composer, outside the transcript's edge fade, holds a 24px pill whose top is
-   32px above the composer: 4px in, 6px round, the raised surface with a
-   hairline ring (none in dark) and a faint 1px shadow, secondary ink and a 12px
-   caret; hovered, the secondary button's hover fill over it. It fades in and
-   out over 150ms. While the conversation waits on the person it reads "Needs
-   your input" (12/15) after a 6px accent dot, 6px apart. */
+/* Back to the latest message (ConversationTranscript; the original's scroll
+   button, source: desktop bundle 2.31226.1 static CSS/JS). A zero-height
+   dock between the transcript and the composer, outside the transcript's
+   edge fade, holds a 24px pill whose top is 32px above the composer: 4px
+   in, 6px round, the raised surface with a hairline ring (none in dark) and
+   a faint 1px shadow, secondary ink and a 12px caret; hovered, the
+   secondary button's hover fill over it. It fades in and out over 150ms. While the conversation
+   waits on the person it reads "Needs your input" (12/15) after a 6px
+   accent dot, 6px apart. */
 .scroll-bottom-dock {
   position: relative;
   z-index: 5;
@@ -68,7 +70,7 @@
     var(--jump-hover-fill)
   );
 }
-.scroll-bottom-button > .app-icon {
+.scroll-bottom-button > .anthropicon {
   flex-shrink: 0;
   margin: 0 2px;
 }
@@ -93,10 +95,10 @@
   background: var(--accent);
 }
 
-/* Long prompts: a prompt over 300px folds to 200px behind a fade over its last
-   3rem; Show more is a small ghost button, the editor's Cancel
-   (chat-transcript.css) in size and fill, set back by its own padding so the
-   label lines up with the text. */
+/* Long prompts (source: desktop bundle 2.31226.1): a prompt over 300px folds
+   to 200px behind a fade over its last 3rem; Show more is a small ghost
+   button, the editor's Cancel (chat-transcript.css) in size and fill, set
+   back by its own padding so the label lines up with the text. */
 .user-message-text.is-clamped {
   max-height: 200px;
   overflow: hidden;
@@ -129,8 +131,9 @@
   color: var(--text-secondary);
 }
 
-/* Reconnecting and closed-early lines: plain grey text in the reply's size,
-   like "Background task stopped · …" in R-0654; a stop itself shows nothing. */
+/* Reconnecting and closed-early lines (R-0701, R-0742: no capture): plain
+   grey text in the reply's size, like "Background task stopped · …" in
+   R-0654; a stop itself shows nothing (R-0812). */
 .turn-interrupted,
 .turn-reconnecting {
   display: flex;
@@ -139,7 +142,8 @@
   margin: 8px 0 4px;
   color: #858580;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -153,7 +157,7 @@
   color: var(--text-muted);
 }
 
-/* Notice. */
+/* Notice (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js). */
 .reply-banner {
   display: flex;
   align-items: flex-start;
@@ -165,7 +169,9 @@
   background: var(--bg);
   color: var(--text);
   box-shadow: 0 0 0 1px #ffffff1a;
-  font: 400 13px/19px sans-serif;
+  font:
+    400 13px/19px "Claudex Reference Sans",
+    sans-serif;
   overflow-wrap: break-word;
 }
 .reply-banner-icon {
@@ -269,11 +275,12 @@
   background: #0b0b0b0d;
 }
 /* A failed Code turn (src/CodeTurnError.tsx), after the Code session's
-   turn-error card: at least 480px wide (never past the transcript), 12px round,
-   a hairline outline; a header strip on the 5% fill, 8px tall padding and 12px
-   sides, the warning glyph 12px from the headline in the primary ink; the hint
-   12px under it in the secondary ink; the buttons on the right, 8px apart, 8px
-   under the hint and 12px above the card's edge. Body text 13px/19px. */
+   turn-error card (live claude.ai bundle, 2026-10-12): at least 480px wide
+   (never past the transcript), 12px round, a hairline outline; a header
+   strip on the 5% fill, 8px tall padding and 12px sides, the warning glyph
+   12px from the headline in the primary ink; the hint 12px under it in the
+   secondary ink; the buttons on the right, 8px apart, 8px under the hint
+   and 12px above the card's edge. Body text 13px/19px. */
 .code-turn-error {
   display: flex;
   flex-direction: column;

@@ -37,9 +37,9 @@ export function registerTaskBacklogHandlers(
   handle("getTaskBacklog", async (raw, count) => {
     const cwd = z.string().min(1).max(4096).parse(raw);
     const limit = z.number().int().min(1).max(20).default(20).parse(count);
-    // The home's card asks for whatever folder the draft shows, a remote host's
-    // or one not chosen here included: those have no backlog, and the card is
-    // no place for a folder-picker notice.
+    // The home's card asks for whatever folder the draft shows, a remote
+    // host's or one not chosen here included: those have no backlog, and
+    // the card is no place for a folder-picker notice (owner, 2026-10-20).
     try {
       ctx.allowedFolder(cwd);
     } catch {

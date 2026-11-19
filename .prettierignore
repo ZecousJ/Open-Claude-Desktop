@@ -4,7 +4,7 @@ package-lock.json
 # Recorded evidence and measurements are data, kept byte-for-byte as captured.
 /fidelity/
 /validation/
-scripts/preview/fixtures/
+scripts/fidelity/fixtures/
 # Prose documents are edited by hand.
 *.md
 

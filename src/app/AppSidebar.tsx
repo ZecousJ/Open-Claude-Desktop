@@ -27,7 +27,6 @@ import { surface } from "../../shared/host";
 import { useSidebarPeek } from "../sidebar/useSidebarPeek";
 import { slideMs } from "../sidebar/useSidebarVisibility";
 import { openInSplitView } from "../split-view/open-in-split";
-import { usePullRequestAutoArchive } from "../pr/auto-archive";
 import { openRecharge } from "../settings/billing/recharge";
 import { moveProjectChats } from "../collections/projects/project-move";
 import { requestScheduleConfirmation } from "../collections/routines/schedule-request";
@@ -53,8 +52,9 @@ export function AppSidebar() {
   } = app;
   const sidebar = sidebarView.open;
   // Collapsed, the sidebar peeks out over the page from the left edge or the
-  // toggle (useSidebarPeek); at narrow widths the toggle opens it. The web too,
-  // but for a phone's width, where the sidebar is a sheet.
+  // toggle (useSidebarPeek); at narrow widths the toggle opens it. The web
+  // too, but for a phone's width, where the sidebar is a sheet (live
+  // claude.ai bundle, 2026-10-12: the web frame's peek).
   const card = useRef<HTMLElement | null>(null);
   const peek = useSidebarPeek(
     !sidebar && !incognitoShown && !sidebarView.phone,
@@ -73,14 +73,6 @@ export function AppSidebar() {
   const host = useHost();
   const desktop = host.kind === "desktop";
   const appMenu = desktop && snapshot.platform !== "darwin";
-  // A session whose pull request merges or closes is archived when auto-archive
-  // is on for it.
-  usePullRequestAutoArchive(listed, snapshot.settings, (c, merged) =>
-    patchConversation(c, {
-      archived: true,
-      ...(merged && c.worktree ? { prMerged: true } : {}),
-    }),
-  );
   // Held in a variable so the row menu can take `onOpenInWindow` (Open in
   // new window, Open in ▸ New window) once ConversationRow lists it.
   const rowActions: SidebarRowActions = {
@@ -181,7 +173,7 @@ export function AppSidebar() {
           avatarPhoto={snapshot.settings.avatarPhoto}
           accountEmail={app.accountEmail}
           // Only a plan the administrator named; the service group's name
-          // ("codex") is not a plan.
+          // ("codex") is not a plan (owner, 2026-10-03).
           accountPlan={app.policy.planLabel ?? undefined}
         />
       )}
@@ -231,10 +223,11 @@ export function AppSidebar() {
 
 /**
  * Renders into the app's last child (App.tsx `.app-chrome-layer`). Electron
- * builds a frameless window's drag area from app regions in document order, so
- * a page's title bar took the collapsed sidebar's buttons into the drag area on
- * Windows, Linux and macOS; after every page they stay clickable. Inline until
- * the layer exists.
+ * builds a frameless window's drag area from app regions in document order,
+ * so a page's title bar (a drag region across the top, owner report
+ * 2026-10-09) took the collapsed sidebar's buttons into the drag area on
+ * Windows, Linux and macOS; after every page they stay clickable. Inline
+ * until the layer exists.
  */
 function TopLayer({ children }: { children: ReactNode }) {
   const [layer, setLayer] = useState<Element | null>(null);

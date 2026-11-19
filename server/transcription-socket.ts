@@ -112,6 +112,7 @@ export class SocketRefused extends Error {
 
 export interface SocketHandlers {
   onText(text: string): void;
+  onBinary?(data: Buffer): void;
   /** The connection ended; `code` 1005 when the service gave none. */
   onClose(code: number, reason: string): void;
   onError(error: Error): void;
@@ -123,10 +124,12 @@ export class TranscriptionSocket {
   private reader = new FrameReader();
   private fragments: Buffer[] = [];
   private fragmentBytes = 0;
+  private messageOpcode: Opcode = Opcode.Text;
   constructor(
     private socket: Duplex,
     private handlers: SocketHandlers,
     head: Buffer,
+    private maskOutgoing = true,
   ) {
     socket.on("data", (chunk: Buffer) => this.read(chunk));
     socket.on("error", (error) => this.fail(error));
@@ -159,7 +162,7 @@ export class TranscriptionSocket {
   }
   private write(opcode: Opcode, payload: Uint8Array) {
     if (this.closed) throw Error("Dictation is no longer connected.");
-    this.socket.write(encodeFrame(opcode, payload, true));
+    this.socket.write(encodeFrame(opcode, payload, this.maskOutgoing));
   }
   private read(chunk: Buffer) {
     let frames: Frame[];
@@ -172,7 +175,7 @@ export class TranscriptionSocket {
     for (const frame of frames) {
       if (frame.opcode === Opcode.Ping) {
         if (!this.closed)
-          this.socket.write(encodeFrame(Opcode.Pong, frame.payload, true));
+          this.socket.write(encodeFrame(Opcode.Pong, frame.payload, this.maskOutgoing));
       } else if (frame.opcode === Opcode.Close) {
         const code =
           frame.payload.length >= 2 ? frame.payload.readUInt16BE(0) : 1005;
@@ -180,7 +183,7 @@ export class TranscriptionSocket {
         if (!this.closed) {
           this.closed = true;
           this.socket.end(
-            encodeFrame(Opcode.Close, frame.payload.subarray(0, 2), true),
+            encodeFrame(Opcode.Close, frame.payload.subarray(0, 2), this.maskOutgoing),
           );
         }
         this.finish(code, reason);
@@ -191,6 +194,7 @@ export class TranscriptionSocket {
         frame.opcode === Opcode.Continuation
       ) {
         if (frame.opcode !== Opcode.Continuation) {
+          this.messageOpcode = frame.opcode;
           this.fragments = [];
           this.fragmentBytes = 0;
         }
@@ -204,9 +208,8 @@ export class TranscriptionSocket {
         const message = Buffer.concat(this.fragments);
         this.fragments = [];
         this.fragmentBytes = 0;
-        // The service speaks JSON; a binary message is not part of the protocol.
-        if (frame.opcode !== Opcode.Binary || message.length)
-          this.handlers.onText(message.toString("utf8"));
+        if (this.messageOpcode === Opcode.Binary) this.handlers.onBinary?.(message);
+        else this.handlers.onText(message.toString("utf8"));
       }
     }
   }
@@ -223,6 +226,28 @@ export class TranscriptionSocket {
     this.destroy();
     this.finish(1006, "");
   }
+}
+
+export function acceptTranscriptionSocket(
+  request: http.IncomingMessage,
+  socket: Duplex,
+  head: Buffer,
+  protocol: string | undefined,
+  handlers: SocketHandlers,
+) {
+  const key = request.headers["sec-websocket-key"];
+  if (!key || request.headers.upgrade?.toLowerCase() !== "websocket" ||
+      request.headers["sec-websocket-version"] !== "13") {
+    socket.end("HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n");
+    return;
+  }
+  const accept = createHash("sha1").update(key + acceptGuid).digest("base64");
+  socket.write(
+    "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n" +
+    `Sec-WebSocket-Accept: ${accept}\r\n` +
+    (protocol ? `Sec-WebSocket-Protocol: ${protocol}\r\n` : "") + "\r\n",
+  );
+  return new TranscriptionSocket(socket, handlers, head, false);
 }
 
 /**

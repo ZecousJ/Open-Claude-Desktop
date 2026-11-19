@@ -2,7 +2,9 @@ import { useSyncExternalStore } from "react";
 
 /**
  * Comments on the Changes panel's lines that go to Claude with the next
- * message.
+ * message (live claude.ai bundle, 2026-10-14: a diff comment becomes a
+ * "Review comment on {file}:{lines}" quote in the composer, which then
+ * asks to "Address these review comments").
  */
 export interface ReviewComment {
   id: string;

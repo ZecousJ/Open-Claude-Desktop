@@ -1,3 +1,6 @@
+import { bindStagedDocument, stagedDocumentCurrent } from "./staged-document-lease";
+import { OfficialWindowCreationCancelled } from "../official-ui/staged-window";
+import { createOfficialWindow, officialAppWindows, notifyOfficialZoomChanged, officialUiEnabled, isRetiredOfficialWindow, openOfficialDeepLink, showOfficialRecoveryWindow } from "../official-ui/window";
 import { takeStealthWindow } from "../updates/stealth-window";
 import { microphoneRequestAllowed } from "../voice/microphone-permission";
 import { refreshAppMenu } from "./app-menu";
@@ -16,9 +19,11 @@ import {
   BrowserWindow,
   nativeTheme,
   screen,
+  type Rectangle,
   type WebContents,
 } from "electron";
 import { mainWindowChrome } from "./main-window-chrome";
+import { waitForSignIn } from "./sign-in-handoff";
 import { mainState } from "./main-state";
 import {
   artifactPreviews,
@@ -27,14 +32,46 @@ import {
   integration,
   appWindowOf,
   appWindows,
+  appWindowRoles,
+  sendTo,
   ctx,
 } from "../main";
 import { registerAppWindow, loadRenderer } from "./app-window-registry";
 
+const classicRecoveryWindows = new WeakSet<BrowserWindow>();
+
+export function bindPendingDeepLink() {
+  const pending = mainState.pendingDeepLink;
+  const activation = mainState.accountRetirement.accountActivationIdentity;
+  if (!pending || !mainState.activeAccount || mainState.accountRetirement.accountRetiring) return;
+  pending.activation ??= activation;
+  if (pending.activation === activation) return pending;
+  mainState.pendingDeepLink = undefined;
+}
+
+export async function deliverPendingDeepLink() {
+  const win = mainState.window;
+  const pending = bindPendingDeepLink();
+  if (!win || win.isDestroyed() || !pending) return;
+  const take = () => {
+    if (mainState.window !== win || win.isDestroyed() || bindPendingDeepLink() !== pending)
+      return false;
+    mainState.pendingDeepLink = undefined;
+    return true;
+  };
+  if (await openOfficialDeepLink(win, pending.link, take)) return;
+  if (officialUiEnabled() && !classicRecoveryWindows.has(win)) return;
+  if (stagedDocumentCurrent(win) && take())
+    sendTo(win, { type: "deep-link", link: pending.link });
+}
+
 /** Zooms every app window to a level, remembers it and refreshes the menu. */
 export function setZoomLevel(level: number) {
   mainState.zoomLevel = level;
-  for (const win of appWindows.all()) applyZoom(win, level);
+  const official = officialAppWindows();
+  for (const win of new Set([...appWindows.all(), ...official]))
+    applyZoom(win, level);
+  for (const win of official) notifyOfficialZoomChanged(win);
   rememberZoomLevel(mainWindowFile(), level);
   refreshAppMenu();
 }
@@ -56,8 +93,13 @@ export async function showMainWindow() {
   // During startup the startup sequence creates the window itself (with any
   // pending link); the dock, a second launch or a link only wait for it.
   if (!mainState.started) return;
+  if (isRetiredOfficialWindow(mainState.window)) {
+    await showOfficialRecoveryWindow();
+    return;
+  }
   if (!mainState.window || mainState.window.isDestroyed()) {
-    await createWindow();
+    if (officialUiEnabled() && mainState.activeAccount) await createOfficialWindow();
+    else await createWindow();
     return;
   }
   if (mainState.window.isMinimized()) mainState.window.restore();
@@ -78,17 +120,7 @@ export function shapeMainWindow(signedIn: boolean) {
     if (win.isMaximized() || win.isFullScreen()) return;
     mainState.boundsBeforeSignIn = win.getBounds();
     mainState.signInShape = true;
-    const area = screen.getDisplayMatching(
-      mainState.boundsBeforeSignIn,
-    ).workArea;
-    win.setBounds(
-      {
-        x: Math.round(area.x + (area.width - signInWindowSize.width) / 2),
-        y: Math.round(area.y + (area.height - signInWindowSize.height) / 2),
-        ...signInWindowSize,
-      },
-      true,
-    );
+    win.setBounds(signInBounds(mainState.boundsBeforeSignIn), true);
   } else if (signedIn && mainState.signInShape) {
     mainState.signInShape = false;
     if (mainState.boundsBeforeSignIn)
@@ -97,15 +129,38 @@ export function shapeMainWindow(signedIn: boolean) {
   }
 }
 
-export async function createWindow() {
-  const stealthWindow = takeStealthWindow(app.getPath("userData"));
+function signInBounds(previous: Rectangle): Rectangle {
+  const area = screen.getDisplayMatching(previous).workArea;
+  return {
+    x: Math.round(area.x + (area.width - signInWindowSize.width) / 2),
+    y: Math.round(area.y + (area.height - signInWindowSize.height) / 2),
+    ...signInWindowSize,
+  };
+}
+
+export async function createWindow(options: { stage?: { current(): boolean } } = {}) {
+  const previousMain = mainState.window;
+  const documentStore = mainState.store;
+  const documentAccount = mainState.activeAccount?.id;
+  const officialSignIn = !documentAccount && officialUiEnabled();
+  const documentGeneration = mainState.accountRetirement?.accountActivationIdentity;
+  const documentCurrent = () => documentGeneration != null && mainState.store === documentStore &&
+    mainState.activeAccount?.id === documentAccount &&
+    mainState.accountRetirement?.accountActivationIdentity === documentGeneration;
+  let committed = !options.stage;
+  const checkStage = () => {
+    if (options.stage && (!options.stage.current() || !documentCurrent() || mainState.window !== previousMain))
+      throw new OfficialWindowCreationCancelled();
+  };
+  checkStage();
+  const stealthWindow = options.stage ? undefined : takeStealthWindow(app.getPath("userData"));
   const saved = readMainWindowState(mainWindowFile());
   if (saved?.zoomLevel !== undefined && !mainState.zoomLevel)
     mainState.zoomLevel = saved.zoomLevel;
   const win = new BrowserWindow({
     ...mainWindowPlacement(saved, workAreas()),
-    ...(stealthWindow ? { show: false } : {}),
-    // The original's window narrows to ~600.
+    ...(stealthWindow || options.stage ? { show: false } : {}),
+    // W602 captures (R-0114, R-0315 …): the original's window narrows to ~600.
     minWidth: minMainWindowSize.width,
     minHeight: minMainWindowSize.height,
     title: "Claudex",
@@ -118,31 +173,36 @@ export async function createWindow() {
     ),
     webPreferences: appWindows.webPreferences(),
   });
-  mainState.window = win;
+  const signInRestoreBounds = options.stage && !documentAccount && !saved?.maximized && !saved?.fullScreen
+    ? win.getBounds() : undefined;
+  if (signInRestoreBounds) win.setBounds(signInBounds(signInRestoreBounds), false);
+  const revokeDocument = options.stage ? bindStagedDocument(win, () => documentCurrent() &&
+    (committed || (options.stage!.current() && mainState.window === previousMain))) : undefined;
+  if (revokeDocument) win.once("closed", revokeDocument);
+  try {
+  if (!options.stage) mainState.window = win;
   // The title follows the open conversation (electron/window-title.ts).
-  mainState.window.on("page-title-updated", (event, title) => {
+  win.on("page-title-updated", (event, title) => {
     event.preventDefault();
     const next = mainWindowTitle(title);
     if (
-      mainState.window &&
-      !mainState.window.isDestroyed() &&
-      mainState.window.getTitle() !== next
-    )
-      mainState.window.setTitle(next);
+      !win.isDestroyed() && win.getTitle() !== next
+    ) win.setTitle(next);
   });
-  if (saved?.maximized) mainState.window.maximize();
-  if (saved?.fullScreen) mainState.window.setFullScreen(true);
+  if (!options.stage && saved?.maximized) win.maximize();
+  if (!options.stage && saved?.fullScreen) win.setFullScreen(true);
   trackMainWindow(
-    mainState.window,
+    win,
     mainWindowFile(),
     () => mainState.zoomLevel,
-    () => !mainState.signInShape,
+    () => committed && !mainState.signInShape,
   );
   // Nobody is signed in yet: the window starts as the sign-in window.
-  if (!mainState.activeAccount) shapeMainWindow(false);
+  if (!options.stage && !mainState.activeAccount) shapeMainWindow(false);
   // Link confirmation, navigation guards, focus and trust (registerAppWindow).
-  registerAppWindow(mainState.window, { kind: "main" });
-  mainState.window.on("closed", () => {
+  registerAppWindow(win, { kind: "main" });
+  win.on("closed", () => {
+    if (mainState.window !== win) return;
     artifactPopouts.closeAll();
     artifactPreviews.clear();
     appWindows.closeConversationWindows();
@@ -152,7 +212,7 @@ export async function createWindow() {
     appWindowOf(requester) || mainState.quickEntry?.owns(requester)
       ? requester!
       : undefined;
-  mainState.window.webContents.session.setPermissionRequestHandler(
+  win.webContents.session.setPermissionRequestHandler(
     (requester, permission, callback, details) => {
       const media = "mediaTypes" in details ? details.mediaTypes : undefined;
       callback(
@@ -172,7 +232,7 @@ export async function createWindow() {
       );
     },
   );
-  mainState.window.webContents.session.setPermissionCheckHandler(
+  win.webContents.session.setPermissionCheckHandler(
     (requester, permission, _origin, details) =>
       permission === "media" &&
       microphoneRequestAllowed(
@@ -194,7 +254,7 @@ export async function createWindow() {
   // update restart really close it, and the dock icon or a second launch
   // brings it back. A full-screen window leaves full screen first.
   // Windows closes the windows without a before-quit when the session ends.
-  mainState.window.on("session-end", () => {
+  win.on("session-end", () => {
     mainState.quitting = true;
   });
   win.on("close", (event) => {
@@ -205,7 +265,7 @@ export async function createWindow() {
     event.preventDefault();
     // Windows and Linux without the tray icon: nothing would bring a hidden
     // window back, so closing quits (before-quit still asks about a running
-    // task). Users had to end Claudex in Task Manager.
+    // task). Users had to end Claudex in Task Manager (owner, 2026-10-14).
     if (process.platform !== "darwin" && !integration.hasTray()) {
       app.quit();
       return;
@@ -216,25 +276,51 @@ export async function createWindow() {
     } else win.hide();
   });
   const connector = mainState.pendingConnectorLink;
-  mainState.pendingConnectorLink = undefined;
-  const deepLink = mainState.activeAccount
-    ? mainState.pendingDeepLink
-    : undefined;
-  mainState.pendingDeepLink = undefined;
+  if (!options.stage) mainState.pendingConnectorLink = undefined;
+  const deepLink = bindPendingDeepLink();
   const emailLink = !mainState.activeAccount
     ? mainState.pendingEmailLink
     : undefined;
-  mainState.pendingEmailLink = undefined;
-  await loadRenderer(
-    mainState.window,
-    emailLink
+  if (!options.stage) mainState.pendingEmailLink = undefined;
+  const query: Record<string, string> | undefined = emailLink
       ? { "email-link": emailLink }
       : connector
         ? { connector }
         : deepLink
-          ? { deeplink: deepLink }
-          : undefined,
-  );
-  if (stealthWindow?.minimized) mainState.window.minimize();
-  else if (stealthWindow?.visible) mainState.window.showInactive();
+          ? { deeplink: deepLink.href }
+          : undefined;
+  await loadRenderer(win, officialSignIn ? { ...query, "official-sign-in": "1" } : query);
+  if (options.stage && !documentAccount) {
+    checkStage();
+    await waitForSignIn(win.webContents);
+  }
+  if (options.stage) {
+    checkStage();
+    if (!stagedDocumentCurrent(win)) throw new OfficialWindowCreationCancelled();
+    if (win.isDestroyed()) throw new Error("The recovery window closed before loading.");
+    mainState.window = win;
+    committed = true;
+    if (emailLink && mainState.pendingEmailLink === emailLink) mainState.pendingEmailLink = undefined;
+    else if (connector && mainState.pendingConnectorLink === connector) mainState.pendingConnectorLink = undefined;
+    classicRecoveryWindows.add(win);
+    if (saved?.maximized) win.maximize();
+    if (saved?.fullScreen) win.setFullScreen(true);
+    mainState.signInShape = !!signInRestoreBounds;
+    mainState.boundsBeforeSignIn = signInRestoreBounds;
+    win.show();
+    if (previousMain && isRetiredOfficialWindow(previousMain)) previousMain.hide();
+  }
+  if (!emailLink && !connector && deepLink && mainState.pendingDeepLink === deepLink)
+    mainState.pendingDeepLink = undefined;
+  if (stealthWindow?.minimized) win.minimize();
+  else if (stealthWindow?.visible) win.showInactive();
+  return win;
+  } catch (error) {
+    if (options.stage && !committed) {
+      revokeDocument?.();
+      appWindowRoles.delete(win);
+      if (!win.isDestroyed()) win.destroy();
+    }
+    throw error;
+  }
 }

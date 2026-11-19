@@ -1,9 +1,11 @@
 /**
- * The marks of Annotate and how they are drawn: Pen, Line, Arrow, Rectangle,
- * Ellipse, Text and Redact, in one of five ink colours; redactions are solid
- * black or carry a mosaic or noise texture. Strokes are 4 pixels wide and text
- * 16 pixels high on the shown picture, so the marks are kept in the picture's
- * own pixels and scaled by how much smaller the picture is shown.
+ * The marks of Annotate and how they are drawn (live claude.ai bundle,
+ * 2026-10-12, the shared sketch canvas of the "Annotate image" editor):
+ * Pen, Line, Arrow, Rectangle, Ellipse, Text and Redact, in one of five ink
+ * colours; redactions are solid black or carry a mosaic or noise texture.
+ * Strokes are 4 pixels wide and text 16 pixels high on the shown picture,
+ * so the marks are kept in the picture's own pixels and scaled by how much
+ * smaller the picture is shown.
  */
 import { textFrame, markHandles } from "./annotate-hit";
 import {
@@ -46,7 +48,7 @@ export const redactStyleLabels: Record<RedactStyle, string> = {
   noise: "Noise",
 };
 
-/** The ink colours and their names. */
+/** The ink colours and their names (live bundle: Red, Blue, Green, Black, White). */
 export const inkColors: { value: string; label: string }[] = [
   { value: "#E03131", label: "Red" },
   { value: "#1971C2", label: "Blue" },
@@ -72,8 +74,8 @@ export interface Point {
 }
 
 /**
- * Where a bent line's middle handle sits: `u` along the line from its start and
- * `v` across it, both in line lengths.
+ * Where a bent line's middle handle sits: `u` along the line from its start
+ * and `v` across it, both in line lengths (live bundle, 2026-10-12).
  */
 export interface Bend {
   u: number;
@@ -287,7 +289,10 @@ export function drawMark(
   ctx.restore();
 }
 
-/** Undo, Redo and Clear all. */
+/**
+ * Undo, Redo and Clear all (live bundle: Clear all is itself undoable; a
+ * new mark drops what could be redone).
+ */
 export interface SketchHistory {
   past: Mark[][];
   present: Mark[];
@@ -300,7 +305,7 @@ export const emptyHistory: SketchHistory = {
   future: [],
 };
 
-/** The history keeps the last 100 steps. */
+/** Live bundle: the history keeps the last 100 steps. */
 export const historyLimit = 100;
 
 export function commit(history: SketchHistory, marks: Mark[]): SketchHistory {
@@ -337,14 +342,13 @@ export function redo(history: SketchHistory): SketchHistory {
   };
 }
 
-/*
- * ---------------------------------------------------------------------------
- * Selecting, moving, resizing and bending marks. The original measures its
- * reaches in shown pixels; here every such length is multiplied by `scale`, the
- * picture's pixels per shown pixel, since the marks keep the picture's own
- * pixels.
- * -------------------------------------------------------------------------
- */
+/* ---------------------------------------------------------------------------
+ * Selecting, moving, resizing and bending marks (live claude.ai bundle,
+ * 2026-10-12, the sketch canvas's select tool). The original measures its
+ * reaches in shown pixels; here every such length is multiplied by `scale`,
+ * the picture's pixels per shown pixel, since the marks keep the picture's
+ * own pixels.
+ * ------------------------------------------------------------------------- */
 
 /** The tools plus Select, which a tool falls back to once a shape is done. */
 export type EditorTool = SketchTool | "select";
@@ -363,7 +367,7 @@ export interface Box {
 /** Measures a text mark in the picture's pixels. */
 export type MeasureText = (mark: TextMark) => Box;
 
-/** Pen strokes can't be picked up. */
+/** Pen strokes can't be picked up (live bundle: only shapes, text and redactions). */
 export const isSelectable = (mark: Mark) => mark.kind !== "pen";
 
 /** A line's length; a bent one's is taken a third of the way to its control polygon. */
@@ -521,7 +525,7 @@ export const removeMark = (history: SketchHistory, mark: Mark) =>
       )
     : history;
 
-/** Handles in the accent fill ringed in white; the bend handle green. */
+/** Live bundle: handles in the accent fill ringed in white; the bend handle green. */
 export const selectionColors = {
   accent: "#2a78d6",
   onAccent: "#ffffff",
@@ -557,7 +561,7 @@ export function drawSelection(
   ctx.restore();
 }
 
-/** `--dur-base`, 200ms. */
+/** Live bundle: `--dur-base`, 200ms. */
 export const revealDuration = 200;
 export function revealProgress(elapsed: number) {
   const t = Math.min(1, Math.max(0, elapsed / revealDuration));

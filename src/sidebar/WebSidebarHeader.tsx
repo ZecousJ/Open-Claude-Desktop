@@ -7,19 +7,20 @@ import { codeProductName, productName } from "../web/document-title";
 import { SurfaceSwitch } from "./SurfaceSwitch";
 
 /**
- * The web app's sidebar head (W-UI-design §3.1, ref-web-chat-home): the sidebar
- * toggle, the product name in the greeting's serif and the Chat | Code switch
- * at the right. There are no traffic lights and no back or forward buttons: the
- * browser has its own, and the address follows the window
- * (src/web/useWebRoute.ts), so switching surfaces is a navigation to `/new` or
- * `/code` with a browser history entry.
+ * The web app's sidebar head (W-UI-design §3.1, ref-web-chat-home): the
+ * sidebar toggle, the product name in the greeting's serif and the Chat |
+ * Code switch at the right. There are no traffic lights and no back or
+ * forward buttons: the browser has its own, and the address follows the
+ * window (src/web/useWebRoute.ts), so switching surfaces is a navigation
+ * to `/new` or `/code` with a browser history entry.
  *
- * The switch always shows, as on claude.ai, and Code always opens the Code page
- * (ref-web-code-home); until the service runs Code in the cloud, that page's
- * composer says it cannot send yet.
+ * The switch always shows, as on claude.ai, and Code always opens the Code
+ * page (ref-web-code-home); until the service runs Code in the cloud, that
+ * page's composer says it cannot send yet.
  *
  * On a phone the sidebar is a full-screen sheet and the toggle is its Close
- * button: an X with no tooltip.
+ * button: an X with no tooltip (the live claude.ai bundle's phone sheet
+ * header, 2026-10-12).
  */
 export function WebSidebarHeader({
   mode,

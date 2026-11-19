@@ -1,5 +1,5 @@
-/* Signed-in official detail, 1440×900 and 390×844, 2026-10-16. The lg grid and
-   inset edit rows are /. */
+/* Signed-in official detail, 1440×900 and 390×844, 2026-10-16.
+   The lg grid and inset edit rows are c9e1458cd-CPyGtk3m / ccd3f68fe-CamBxzX6. */
 .routine-detail-web.routines-view {
   position: relative;
   overflow: hidden;
@@ -83,7 +83,8 @@
   font-size: 14px;
   line-height: 20px;
 }
-/* Live task detail: mt-4 lg:mt-6 under the 48px frame row, md:px-8, pb-6. */
+/* Live task detail (2026-10-19): mt-4 lg:mt-6 under the 48px frame row,
+   md:px-8, pb-6. */
 .scheduled-detail-scroll {
   position: absolute;
   inset: 48px 0 0;
@@ -255,7 +256,7 @@
   align-items: flex-start;
   gap: 8px;
 }
-.scheduled-detail-permission > [data-icon] {
+.scheduled-detail-permission > [data-anthropicon] {
   margin-top: 2px;
   flex-shrink: 0;
 }

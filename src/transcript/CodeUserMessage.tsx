@@ -25,9 +25,10 @@ const SentPromptDialog = lazyPiece(
 );
 
 /**
- * A Code prompt longer than this many characters folds to 16rem behind a fade,
- * with Show more under it. Chat's bubble measures its height instead
- * (UserMessage.tsx).
+ * A Code prompt longer than this many characters folds to 16rem behind a
+ * fade, with Show more under it (live claude.ai bundle, 2026-10-12; the
+ * same in desktop bundle 2.31226.1). Chat's bubble measures its height
+ * instead (UserMessage.tsx).
  */
 export const codePromptClampChars = 1200;
 
@@ -44,11 +45,12 @@ function bubbleSelection(bubble: HTMLElement | null) {
 
 /**
  * A Code or Cowork prompt bubble. In Code its right-click menu is the
- * original's message menu: Copy message, Copy message as Markdown, Pin as
- * chapter (greyed), then Rewind to here ("Removes this message and what
- * follows") and Fork from here ("Starts a new session, keeps this one"). Attach
- * selection / message as context adds the text to the composer as an Excerpt
- * card (code-message-menu.ts).
+ * original's message menu (live claude.ai bundle, 2026-10-13, c63275c0a):
+ * Copy message, Copy message as Markdown, Pin as chapter (greyed), then
+ * Rewind to here ("Removes this message and what follows") and Fork from
+ * here ("Starts a new session, keeps this one"). Attach selection / message
+ * as context adds the text to the composer as an Excerpt card
+ * (code-message-menu.ts).
  */
 export function CodeUserMessage({
   turn,
@@ -158,9 +160,9 @@ export function CodeUserMessage({
           />
         ) : (
           <>
-            {/* A Bash mode line reads as typed: "! command". A long prompt is
-               folded and out of reach while folded; screen readers get the
-               whole text instead. */}
+            {/* A Bash mode line reads as typed: "! command". A long prompt
+              is folded and out of reach while folded; screen readers get
+              the whole text instead (live claude.ai bundle, 2026-10-12). */}
             <div
               className={`user-message-text${folded ? " is-clamped" : ""}`}
               inert={folded || undefined}
@@ -179,8 +181,9 @@ export function CodeUserMessage({
               </button>
             )}
             {/* A sent prompt's actions show once the pointer rests on it: the
-               time, then icon buttons. Cowork's last prompt adds Restart and
-               Edit before Copy, as the original orders them. */}
+              time, then icon buttons (desktop bundle 2.31226.1: Timestamp and
+              icon buttons in the message row's actions). Cowork's last prompt
+              adds Restart and Edit before Copy, as the original orders them. */}
             <div
               className="user-message-actions"
               role="toolbar"

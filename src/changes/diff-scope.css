@@ -1,8 +1,9 @@
-/* The Changes header's diff scope trigger. Text size, colours and the 8px arrow
-   gap stay R-0874's (.changes-base in changes-panel.css); the hover and press
-   fills and the 26px height are the header's icon buttons'
-   (.changes-icon-button), the closest captured ghost control. Loaded with the
-   panel's lazy chunk. */
+/* The Changes header's diff scope trigger (live claude.ai bundle,
+   2026-10-12: a ghost trigger button around "{base} → working tree", each
+   name cut with an ellipsis). Text size, colours and the 8px arrow gap stay
+   R-0874's (.changes-base in changes-panel.css); the hover and press fills
+   and the 26px height are the header's icon buttons' (.changes-icon-button),
+   the closest captured ghost control. Loaded with the panel's lazy chunk. */
 .changes-base.changes-scope {
   flex: 0 1 auto;
   height: 26px;

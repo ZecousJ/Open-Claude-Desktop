@@ -1,12 +1,13 @@
 /*
- * A project's page. "Projects / name" 13px medium 22px from the left and
- * centred 60px down; a 1112px column: the 26px serif name centred 63px under
- * the crumbs with Pin and ⋮ (28px, 34px apart) at the right; 49px under it the
- * 720px composer beside the 350px card (32px gap, the card's top level with the
- * composer). Recents: a 14px muted label 41px under the composer, 14px rows
- * with the date at the right. The card: radius 12, 22px sides, 14px semibold
- * titles with 12.5px muted lines, sections split by rules, each with its + at
- * the right.
+ * A project's page (R-1202–R-1214, W1920 1x; dark from R-1205/R-1213).
+ * "Projects / name" 13px medium 22px from the left and centred 60px down;
+ * a 1112px column: the 26px serif name centred 63px under the crumbs with
+ * Pin and ⋮ (28px, 34px apart) at the right; 49px under it the 720px
+ * composer beside the 350px card (32px gap, the card's top level with the
+ * composer). Recents: a 14px muted label 41px under the composer, 14px
+ * rows with the date at the right. The card: radius 12, 22px sides, 14px
+ * semibold titles with 12.5px muted lines, sections split by rules, each
+ * with its + at the right.
  */
 .prj-overview {
   position: relative;
@@ -39,8 +40,8 @@
   color: #8f8f8c;
   font-weight: 400;
 }
-/* Entity crumb: rounded-md px-1.5 py-1; edit h-7 surface-3, inset fill-accent
-   ring. */
+/* Entity crumb (live claude.ai bundle, 2026-10-14, c05e9d5d1):
+   rounded-md px-1.5 py-1; edit h-7 surface-3, inset fill-accent ring. */
 .prj-crumbs {
   --prj-crumb-surface: #20201f;
   --prj-crumb-primary: #f0efec;
@@ -120,7 +121,8 @@
   /* 24px/31.2px medium (the live project page; the desktop shares its
      component). */
   font:
-    500 24px/31.2px "Claudex Serif",
+    500 24px/31.2px "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -202,8 +204,9 @@
   max-width: none;
   margin: 0;
 }
-/* A project's chats: sections 8px apart, h2 text-sm muted; rows at least 36px
-   with a 12px gap, title text-body primary, time text-body muted, 1px alpha-1
+/* A project's chats (ProjectChats.tsx; live claude.ai bundle, 2026-10-14,
+   c71dee58b): sections 8px apart, h2 text-sm muted; rows at least 36px with
+   a 12px gap, title text-body primary, time text-body muted, 1px alpha-1
    hairlines between rows; Show more centred, text-sm muted. */
 .prj-chats {
   display: flex;
@@ -211,7 +214,8 @@
   gap: 24px;
   margin-top: 36px;
 }
-/* Project search: Sa's CDS Input lg, _c's empty box and lc's result rows. */
+/* Project search: Sa's CDS Input lg, _c's empty box and lc's result rows
+   (live claude.ai bundle, 2026-10-14, c71dee58b-DpJg0DX-.js, shared-frame-B1JORnF0.js). */
 .prj-project-search,
 .prj-header-search {
   --prj-search-fill: hsl(from #fff h s l / 5%);
@@ -614,8 +618,9 @@
   background: #262626;
   color: var(--text);
 }
-/* The remove X shows while the row is pointed at or has focus, and always on a
-   touch screen. */
+/* The remove X shows while the row is pointed at or has focus, and always
+   on a touch screen (live claude.ai bundle, 2026-10-12: the folder row's
+   group-hover / group-focus-within / pointer-coarse X). */
 .prj-overview-side .prj-folder-row button {
   opacity: 0;
 }
@@ -635,11 +640,11 @@
   margin-top: 2px;
 }
 /*
- * The project's tasks: rows 4px apart, each with a 6px-round hover wash
- * (neutral-30 at 40%), the status icon, the name over its schedule, and at the
- * end an Active (green) or Paused tag that moves 26px aside on hover or focus
- * for the unlink X. Colours and sizes otherwise follow the card's own captured
- * rows.
+ * The project's tasks (live claude.ai bundle, 2026-10-12): rows 4px apart,
+ * each with a 6px-round hover wash (neutral-30 at 40%), the status icon,
+ * the name over its schedule, and at the end an Active (green) or Paused
+ * tag that moves 26px aside on hover or focus for the unlink X. Colours
+ * and sizes otherwise follow the card's own captured rows.
  */
 .prj-tasks {
   display: flex;
@@ -869,7 +874,8 @@
 .prj-context-sheets .front {
   fill: #333332;
 }
-/* Dialog and TextArea CDS classes. */
+/* Dialog and TextArea CDS classes (live claude.ai bundle, 2026-10-14,
+   c9b54eb90 and shared-frame-B1JORnF0). */
 .modal.prj-instructions-dialog {
   --prj-instructions-primary: #f0efec;
   --prj-instructions-secondary: #c3c2b7;
@@ -956,8 +962,8 @@
   font-size: 12px;
   line-height: 17px;
 }
-/* Recommended Tools:: 8px under the semibold title, 32px bordered tiles 4px
-   apart, then a 32px ghost Edit button. */
+/* Recommended Tools: (c9b54eb90 De, md): 8px under the semibold title, 32px
+   bordered tiles 4px apart, then a 32px ghost Edit button. */
 .prj-recommended-tools {
   display: flex;
   flex-direction: column;
@@ -1018,7 +1024,7 @@
   margin: 0;
   color: #898781;
 }
-/* Tool groups and CDS checkboxes. */
+/* Tool groups and CDS checkboxes (live claude.ai bundle, 2026-10-14, c9b54eb90-ALO4mYkL.js, shared-frame-B1JORnF0.js). */
 .prj-tools-list,
 .prj-tools-rows {
   display: flex;
@@ -1068,7 +1074,7 @@
   width: 20px;
   height: 20px;
 }
-/* Connector initial fallback. */
+/* Connector initial fallback (live claude.ai bundle, 2026-10-14, shared-7-CO8eplZ3.js). */
 .prj-tool-connector-image,
 .prj-tool-connector-initial {
   width: 20px;
@@ -1159,7 +1165,7 @@
 :root[data-theme="light"] .prj-overview-description {
   color: #52514e;
 }
-/* The empty-state line and instructions hint read #757671. */
+/* R-1314 (1x light): the empty-state line and instructions hint read #757671. */
 :root[data-theme="light"] .prj-recents-empty,
 :root[data-theme="light"] .prj-instructions-preview,
 :root[data-theme="light"] .prj-crumbs > span[aria-hidden] {
@@ -1351,7 +1357,8 @@
 :root[data-surface="web"] .prj-overview-composer {
   margin-inline: -16px;
 }
-/* Below md the live page wraps the composer in px-2: it bleeds 8px. */
+/* Below md the live page wraps the composer in px-2: it bleeds 8px (measured
+   2026-10-19 at 390 and 767; 16px at 1280). */
 @media (max-width: 767.98px) {
   :root[data-surface="web"] .prj-overview-composer {
     margin-inline: -8px;
@@ -1414,9 +1421,9 @@
   }
 }
 @media (min-width: 768px) {
-  /* Current web frame yields the collapsed trigger's right edge plus its 8px
-     gap. Here the trigger starts at 6px and is 24px wide; the expanded-sidebar
-     header keeps its 16px. */
+  /* Current web frame yields the collapsed trigger's right edge plus
+     its 8px gap (shared-styles-DG9uV_so.css:5728). Here the trigger starts
+     at 6px and is 24px wide; the expanded-sidebar header keeps its 16px. */
   .app.web.sidebar-hidden .prj-overview-topbar {
     padding-inline-start: calc(6px + 24px + 8px);
   }
@@ -1464,9 +1471,10 @@
 :root[data-surface="web"][data-theme="light"] .prj-context-empty {
   background: #f9f9f7;
 }
-/* The page's blocks sit 36px apart (gap-9) under the composer, whose model row
-   ends the block; the empty Recents is 64px in from top and bottom, its 32px
-   Chat glyph 12px over the line. */
+/* The page's blocks sit 36px apart (gap-9) under the composer, whose
+   model row ends the block; the empty Recents is 64px in from top and
+   bottom, its 32px Chat glyph 12px over the line (live claude.ai project
+   page, 2026-10-21: "py-16 gap-sm"). */
 .prj-overview-composer
   .composer-wrap:not(.code-composer)
   .composer-chin[data-place="home"] {
@@ -1505,9 +1513,10 @@
   color: #898781;
 }
 
-/* Crumbs and name #f0efec with a #c3c2b7 slash, the head's buttons #f0efec, the
-   card's titles #c3c2b7 on rows as tall as the title (their 28px buttons
-   overhang by 4px), its lines and the recents note #898781, the Context field
+/* Dark, measured on live claude.ai (2026-09-30, viewport 1552): crumbs and
+   name #f0efec with a #c3c2b7 slash, the head's buttons #f0efec, the card's
+   titles #c3c2b7 on rows as tall as the title (their 28px buttons overhang
+   by 4px), its lines and the recents note #898781, the Context field
    #0b0b0b. */
 :root[data-surface="web"] .prj-overview-side .prj-side-head {
   min-height: 20px;
@@ -1562,8 +1571,9 @@
 
 /*
  * The folder picker of the Folder section (ProjectFolders.tsx): the Cowork
- * place menu's frame, search row and rows, fixed under the button; its "Recent"
- * heading is the app menu's 24px grey heading (menu.css, .menu.regular).
+ * place menu's frame, search row and rows (cowork-options.css,
+ * R-Cowork-项目文件夹菜单), fixed under the button; its "Recent" heading is
+ * the app menu's 24px grey heading (menu.css, .menu.regular).
  */
 .prj-folder-menu.cowork-menu {
   z-index: 60;
@@ -1591,13 +1601,14 @@
 }
 
 /*
- * The knowledge drop zone over the rail: the rail blurs 12px under the page
- * colour at 60%, each fading in over 200ms; a dashed accent rim while the drag
- * is elsewhere, which fades (60ms) for the 2px ring once the drag is over the
- * rail (120ms), its inner glow 100ms later over 450ms; red when refused. Three
- * 28px icons 12px apart (Image tilted -14deg, File raised 12px, Spreadsheet
- * tilted 14deg) over the 14px medium accent label, 8px apart. Leaving, all of
- * it fades over 200ms.
+ * The knowledge drop zone over the rail (ProjectKnowledge.tsx; live
+ * claude.ai bundle, 2026-10-12): the rail blurs 12px under the page colour
+ * at 60%, each fading in over 200ms; a dashed accent rim while the drag is
+ * elsewhere, which fades (60ms) for the 2px ring once the drag is over the
+ * rail (120ms), its inner glow 100ms later over 450ms; red when refused.
+ * Three 28px icons 12px apart (Image tilted -14deg, File raised 12px,
+ * Spreadsheet tilted 14deg) over the 14px medium accent label, 8px apart.
+ * Leaving, all of it fades over 200ms.
  */
 .prj-overview-side {
   position: relative;
@@ -1764,10 +1775,8 @@
   text-decoration: none;
   color: var(--prj-chat-ink);
 }
-/*
- * Current web session table, confirmed live: title and last-message time share
- * a 54px row, unlike search snippets.
- */
+/* Current web session table (c71dee58b:3765–3854), confirmed live:
+ * title and last-message time share a 54px row, unlike search snippets. */
 .app.web .prj-chat-row {
   min-height: 54px;
   padding-block: 12px;
@@ -1808,9 +1817,10 @@
   }
 }
 /* A project's composer: the model and the permission control 4px apart
-   ("ms-auto flex min-w-0 items-center gap-1", where the home has gap-0.5), the
-   control 8px from the frame's right edge as on the home, 6px for the 32px
-   touch icon. */
+   ("ms-auto flex min-w-0 items-center gap-1", where the home has gap-0.5),
+   the control 8px from the frame's right edge as on the home, 6px for the
+   32px touch icon (live project page, 2026-10-21 at 1280; 2026-10-19 at
+   390). */
 .prj-overview-composer
   .composer-wrap:not(.code-composer)
   .composer-chin[data-place="home"]
@@ -1826,8 +1836,8 @@
   }
 }
 
-/* "Private" under the project's cards: 12/17 muted, 16px below, in line with
-   their 12px inset. */
+/* "Private" under the project's cards: 12/17 muted, 16px below, in line
+   with their 12px inset (live claude.ai project page, 2026-10-21). */
 .prj-visibility {
   margin: 16px 0 0;
   padding-inline: 12px;
@@ -1836,11 +1846,12 @@
   line-height: 17px;
 }
 
-/* The web's Set project instructions at the comfortable density: the popover
-   surface with its rim and two-layer shadow, 24px in; the title 22/28 at 580;
-   the line under it 14/20 secondary, 12px over the field, its link the blue
-   underlined text link; the field 14/20, 8px 12px in, radius 8; Cancel and Save
-   32px, 14/20. */
+/* The web's Set project instructions at the comfortable density (live
+   claude.ai project page, 2026-10-21, 1280 wide): the popover surface with
+   its rim and two-layer shadow, 24px in; the title 22/28 at 580; the line
+   under it 14/20 secondary, 12px over the field, its link the blue
+   underlined text link; the field 14/20, 8px 12px in, radius 8; Cancel
+   and Save 32px, 14/20. */
 :root[data-surface="web"] .modal.prj-instructions-dialog {
   padding: 24px;
   border: 0;

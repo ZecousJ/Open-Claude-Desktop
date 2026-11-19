@@ -1,4 +1,5 @@
-/* File rows and selection bar. */
+/* File rows and selection bar (live claude.ai bundle, 2026-10-14,
+   c5512639f-DFhfJjZE.js and shared-13-CALRr8Bn.js). */
 .prj-context-list {
   --context-primary: #f0efec;
   --context-muted: #898781;
@@ -357,7 +358,7 @@
 .prj-knowledge-preview-download {
   opacity: 0;
 }
-/* A ghost small button. */
+/* A ghost small button (live claude.ai bundle, 2026-10-16, ca12e49f2: kt). */
 .prj-knowledge-preview-remove {
   flex: none;
   height: 32px;

@@ -337,3 +337,28 @@ test("the manifest must match this platform and stay inside its folder", () => {
     { PATH: "/bin", A: "1", B: "1" },
   );
 });
+
+test("an Accessibility refusal makes the next attempt use a fresh driver", async () => {
+  const denial = "Accessibility permission is required. Run `open-computer-use doctor` and grant access to Open Computer Use.";
+  let restarted = false;
+  let stops = 0;
+  const driver = new OpenComputerUseDriver({
+    request: async () => restarted
+      ? { content: [{ type: "text", text: "Accessibility tree" }] }
+      : { isError: true, content: [{ type: "text", text: denial }] },
+    stop: async () => {
+      restarted = true;
+      stops++;
+    },
+  } as unknown as DriverHost);
+  const refused = await driver.call("get_app_state", { app: "Safari" }, "background");
+  assert.equal(refused.isError, true);
+  const guidance = refused.content[0];
+  assert.ok(guidance?.type === "text");
+  assert.match(guidance.text, /Settings → System → Computer use/);
+  assert.doesNotMatch(guidance.text, /doctor/);
+  assert.deepEqual(await driver.call("get_app_state", { app: "Safari" }, "background"), {
+    content: [{ type: "text", text: "Accessibility tree" }],
+  });
+  assert.equal(stops, 1);
+});

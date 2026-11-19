@@ -40,6 +40,7 @@ type directoryInput struct {
 	RemoteURLTemplate string               `json:"remoteUrlTemplate,omitempty"`
 	RemoteUserConfig  *directoryUserConfig `json:"remoteUserConfig,omitempty"`
 	TestServerURL     string               `json:"testServerUrl,omitempty"`
+	Original          json.RawMessage      `json:"original,omitempty"`
 	Curation          *directoryCuration   `json:"curation,omitempty"`
 }
 
@@ -186,12 +187,14 @@ type directorySubmission struct {
 	UserID       int64  `json:"userId,omitempty"`
 	Status       string `json:"status"`
 	ReviewerNote string `json:"reviewerNote"`
+	CreatedAt    int64  `json:"createdAt"`
 	UpdatedAt    int64  `json:"updatedAt"`
+	PublishedAt  *int64 `json:"publishedAt,omitempty"`
 }
 
 var directorySlug = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
-func validDirectoryInput(input directoryInput, submit bool) bool {
+func validDirectoryDraft(input directoryInput) bool {
 	if input.Kind != "plugin" && input.Kind != "mcp" {
 		return false
 	}
@@ -203,7 +206,10 @@ func validDirectoryInput(input directoryInput, submit bool) bool {
 			return false
 		}
 	}
-	if !directorySlug.MatchString(input.Slug) || len(input.Tools) > 2000 {
+	if (input.Slug != "" && !directorySlug.MatchString(input.Slug)) || len(input.Tools) > 2000 {
+		return false
+	}
+	if !validDirectoryOriginal(input.Original) {
 		return false
 	}
 	if len(input.Author) > 200 {
@@ -223,28 +229,32 @@ func validDirectoryInput(input directoryInput, submit bool) bool {
 			return false
 		}
 	}
-	if !submit {
-		if len(input.RemoteURLRegex) > 200 || len(input.RemoteURLTemplate) > 400 || len(input.TestServerURL) > 2048 || len(input.RemoteURLOptions) > 10 {
+	for _, option := range input.RemoteURLOptions {
+		if hasDirectoryURLCredentials(option.URL) {
 			return false
 		}
-		return true
+	}
+	return len(input.RemoteURLRegex) <= 200 && len(input.RemoteURLTemplate) <= 400 && len(input.TestServerURL) <= 2048 && len(input.RemoteURLOptions) <= 10 &&
+		!hasDirectoryURLCredentials(input.URL) && !hasDirectoryURLCredentials(input.TestServerURL) && !hasDirectoryURLCredentials(input.RemoteURLTemplate)
+}
+
+func directoryReady(input directoryInput) bool {
+	if input.Slug == "" || !validDirectoryURL(input.URL) {
+		return false
 	}
 	if input.Kind == "mcp" && !validDirectoryURLConfiguration(input) {
 		return false
 	}
-	parsed, err := url.Parse(input.URL)
-	if err != nil || parsed.Scheme != "https" || parsed.Hostname() == "" || parsed.User != nil {
-		return false
-	}
-	_, err = mail.ParseAddress(input.Email)
+	_, err := mail.ParseAddress(input.Email)
 	return err == nil && input.TermsAcknowledged && strings.TrimSpace(input.Name) != "" && strings.TrimSpace(input.Description) != "" && (input.Kind != "mcp" || (input.ToolsVerified && len(input.Tools) > 0))
 }
 
 func (c *Component) registerDirectoryRoutes(g *gin.RouterGroup) {
-	g.GET("/directory", c.directoryApproved)
+	g.GET("/directory", c.directoryPublished)
 	g.GET("/directory/submissions", c.directoryList)
 	g.POST("/directory/submissions", c.directorySave)
 	g.PUT("/directory/submissions/:id", c.directorySave)
+	g.POST("/directory/submissions/:id/publish", c.directoryPublish)
 	g.DELETE("/directory/submissions/:id", c.directoryWithdraw)
 	g.POST("/skills/scan", c.scanSkill)
 }
@@ -263,17 +273,25 @@ func (c *Component) directoryDB(g *gin.Context) *sql.DB {
 	return c.env.DB
 }
 
-const directoryColumns = `id, user_id, input, status, reviewer_note, updated_at`
+const directoryColumns = `id, user_id, input, status, reviewer_note, created_at, updated_at, published_at`
+
+const directoryOwnerPublishes = `(input->>'kind' = 'mcp' AND input ? 'original')`
 
 func readDirectoryRow(row interface{ Scan(...any) error }) (directorySubmission, error) {
 	var submission directorySubmission
 	var input []byte
-	var updated time.Time
-	err := row.Scan(&submission.ID, &submission.UserID, &input, &submission.Status, &submission.ReviewerNote, &updated)
+	var created, updated time.Time
+	var published sql.NullTime
+	err := row.Scan(&submission.ID, &submission.UserID, &input, &submission.Status, &submission.ReviewerNote, &created, &updated, &published)
 	if err == nil {
 		err = json.Unmarshal(input, &submission.directoryInput)
 	}
+	submission.CreatedAt = created.UnixMilli()
 	submission.UpdatedAt = updated.UnixMilli()
+	if published.Valid {
+		millis := published.Time.UnixMilli()
+		submission.PublishedAt = &millis
+	}
 	return submission, err
 }
 
@@ -287,7 +305,7 @@ func (c *Component) directoryRows(g *gin.Context, filter string, args ...any) {
 		response.Error(g, 500, "Failed to load submissions")
 		return
 	}
-	defer func() { _ = rows.Close() }()
+	defer rows.Close()
 	items := []directorySubmission{}
 	for rows.Next() {
 		item, err := readDirectoryRow(rows)
@@ -315,28 +333,28 @@ func (c *Component) directoryList(g *gin.Context) {
 
 func (c *Component) directoryAdminList(g *gin.Context) { c.directoryRows(g, "status <> 'draft'") }
 
-func (c *Component) directoryApproved(g *gin.Context) {
+func (c *Component) directoryPublished(g *gin.Context) {
 	db := c.directoryDB(g)
 	if db == nil {
 		return
 	}
-	rows, err := db.QueryContext(g.Request.Context(), `SELECT id, input, updated_at FROM claudex_directory_submissions WHERE status='approved' AND withdrawn_at IS NULL ORDER BY updated_at DESC`)
+	rows, err := db.QueryContext(g.Request.Context(), `SELECT id, input, published_at FROM claudex_directory_submissions WHERE status='approved' AND published_at IS NOT NULL AND withdrawn_at IS NULL ORDER BY published_at DESC`)
 	if err != nil {
 		response.Error(g, 500, "Failed to load submissions")
 		return
 	}
-	defer func() { _ = rows.Close() }()
+	defer rows.Close()
 	items := []map[string]any{}
 	for rows.Next() {
 		var id string
 		var raw []byte
-		var updated time.Time
+		var published time.Time
 		var input directoryInput
-		if rows.Scan(&id, &raw, &updated) != nil || json.Unmarshal(raw, &input) != nil {
+		if rows.Scan(&id, &raw, &published) != nil || json.Unmarshal(raw, &input) != nil {
 			response.Error(g, 500, "Failed to load submissions")
 			return
 		}
-		item := map[string]any{"id": id, "kind": input.Kind, "name": input.Name, "slug": input.Slug, "description": input.Description, "url": input.URL, "added": updated.UTC().Format(time.RFC3339), "tools": input.Tools}
+		item := map[string]any{"id": id, "kind": input.Kind, "name": input.Name, "slug": input.Slug, "description": input.Description, "url": input.URL, "added": published.UTC().Format(time.RFC3339), "tools": input.Tools}
 		if input.Author != "" {
 			item["author"] = input.Author
 		}
@@ -380,7 +398,12 @@ func (c *Component) directorySave(g *gin.Context) {
 		Submit bool           `json:"submit"`
 	}
 	g.Request.Body = http.MaxBytesReader(g.Writer, g.Request.Body, 512*1024)
-	if g.ShouldBindJSON(&body) != nil || !validDirectoryInput(body.Input, body.Submit) {
+	if g.ShouldBindJSON(&body) != nil || !validDirectoryDraft(body.Input) {
+		response.Error(g, 400, "Failed to submit. You can try again.")
+		return
+	}
+	ready := directoryReady(body.Input)
+	if body.Submit && !ready {
 		response.Error(g, 400, "Failed to submit. You can try again.")
 		return
 	}
@@ -393,6 +416,9 @@ func (c *Component) directorySave(g *gin.Context) {
 		status = "submitted"
 	}
 	body.Input.Curation = nil
+	if body.Input.Tools == nil {
+		body.Input.Tools = []string{}
+	}
 	input, _ := json.Marshal(body.Input)
 	id := g.Param("id")
 	var row *sql.Row
@@ -404,7 +430,20 @@ func (c *Component) directorySave(g *gin.Context) {
 			response.Error(g, 404, "That submission wasn’t found in this organization.")
 			return
 		}
-		row = db.QueryRowContext(g.Request.Context(), `UPDATE claudex_directory_submissions SET input=$3,status=$4,updated_at=NOW() WHERE id=$1 AND user_id=$2 AND status IN ('draft','submitted') AND withdrawn_at IS NULL RETURNING `+directoryColumns, id, userID, input, status)
+		row = db.QueryRowContext(g.Request.Context(), `UPDATE claudex_directory_submissions SET
+			input=CASE WHEN $6 AND status IN ('submitted','in_review') AND input ? 'curation'
+				THEN jsonb_set($3::jsonb,'{curation}',input->'curation') ELSE $3::jsonb END,
+			status=CASE WHEN $4='draft' AND (status='rejected' OR ($6 AND status IN ('submitted','in_review'))) THEN status ELSE $4 END,
+			reviewer_note=CASE WHEN status='approved' OR ($4='submitted' AND status IN ('draft','rejected')) THEN '' ELSE reviewer_note END,
+			reviewer_id=CASE WHEN status='approved' OR ($4='submitted' AND status IN ('draft','rejected')) THEN NULL ELSE reviewer_id END,
+			updated_at=NOW()
+			WHERE id=$1 AND user_id=$2 AND withdrawn_at IS NULL
+			AND input->>'kind'=$3::jsonb->>'kind'
+			AND (NOT (input ? 'original') OR $3::jsonb ? 'original')
+			AND (status IN ('draft','rejected') OR (status='approved' AND published_at IS NULL)
+				OR (status='submitted' AND NOT ($3::jsonb ? 'original'))
+				OR (status IN ('submitted','in_review') AND $6 AND $4='draft' AND $5))
+			RETURNING `+directoryColumns, id, userID, input, status, ready, body.Input.Kind == "mcp" && len(body.Input.Original) != 0)
 	}
 	submission, err := readDirectoryRow(row)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -413,6 +452,37 @@ func (c *Component) directorySave(g *gin.Context) {
 	}
 	if err != nil {
 		response.Error(g, 409, "Failed to submit. You can try again.")
+		return
+	}
+	response.Success(g, submission)
+}
+
+func (c *Component) directoryPublish(g *gin.Context) {
+	userID, ok := core.Subject(g)
+	if !ok {
+		response.Error(g, 401, "Unauthorized")
+		return
+	}
+	id := g.Param("id")
+	if _, err := uuid.Parse(id); err != nil {
+		response.Error(g, 404, "That submission wasn’t found in this organization.")
+		return
+	}
+	db := c.directoryDB(g)
+	if db == nil {
+		return
+	}
+	row := db.QueryRowContext(g.Request.Context(), `UPDATE claudex_directory_submissions SET
+		published_at=COALESCE(published_at,NOW()),
+		updated_at=CASE WHEN published_at IS NULL THEN NOW() ELSE updated_at END
+		WHERE id=$1 AND user_id=$2 AND status='approved' AND withdrawn_at IS NULL RETURNING `+directoryColumns, id, userID)
+	submission, err := readDirectoryRow(row)
+	if errors.Is(err, sql.ErrNoRows) {
+		response.Error(g, 409, "This submission isn’t available to publish.")
+		return
+	}
+	if err != nil {
+		response.Error(g, 500, "Unable to publish. Try again.")
 		return
 	}
 	response.Success(g, submission)
@@ -432,7 +502,9 @@ func (c *Component) directoryWithdraw(g *gin.Context) {
 	if db == nil {
 		return
 	}
-	result, err := db.ExecContext(g.Request.Context(), `UPDATE claudex_directory_submissions SET withdrawn_at=NOW(),updated_at=NOW() WHERE id=$1 AND user_id=$2 AND withdrawn_at IS NULL`, g.Param("id"), userID)
+	result, err := db.ExecContext(g.Request.Context(), `UPDATE claudex_directory_submissions SET withdrawn_at=NOW(),updated_at=NOW()
+		WHERE id=$1 AND user_id=$2 AND withdrawn_at IS NULL
+		AND (NOT `+directoryOwnerPublishes+` OR status IN ('draft','submitted','in_review','rejected'))`, g.Param("id"), userID)
 	if err != nil {
 		response.Error(g, 500, "Failed to submit. You can try again.")
 		return
@@ -452,9 +524,10 @@ func (c *Component) directoryReview(g *gin.Context) {
 		return
 	}
 	var body struct {
-		Status   string             `json:"status"`
-		Note     string             `json:"note"`
-		Curation *directoryCuration `json:"curation"`
+		Status            string             `json:"status"`
+		Note              string             `json:"note"`
+		Curation          *directoryCuration `json:"curation"`
+		ExpectedUpdatedAt *int64             `json:"expectedUpdatedAt"`
 	}
 	g.Request.Body = http.MaxBytesReader(g.Writer, g.Request.Body, 32*1024)
 	if g.ShouldBindJSON(&body) != nil || (body.Status != "in_review" && body.Status != "approved" && body.Status != "rejected") || len(body.Note) > 10000 || !validDirectoryCuration(body.Curation) {
@@ -474,9 +547,19 @@ func (c *Component) directoryReview(g *gin.Context) {
 		encoded, _ := json.Marshal(body.Curation)
 		curation = string(encoded)
 	}
-	row := db.QueryRowContext(g.Request.Context(), `UPDATE claudex_directory_submissions SET status=$2,reviewer_note=$3,reviewer_id=$4,input=CASE WHEN $5::jsonb IS NULL THEN input ELSE jsonb_set(input,'{curation}',$5::jsonb) END,updated_at=NOW() WHERE id=$1 AND status <> 'draft' AND withdrawn_at IS NULL RETURNING `+directoryColumns, g.Param("id"), body.Status, body.Note, reviewerID, curation)
+	row := db.QueryRowContext(g.Request.Context(), `UPDATE claudex_directory_submissions SET status=$2,reviewer_note=$3,reviewer_id=$4,
+		input=CASE WHEN $5::jsonb IS NULL THEN input ELSE jsonb_set(input,'{curation}',$5::jsonb) END,
+		published_at=CASE WHEN $2<>'approved' THEN NULL WHEN `+directoryOwnerPublishes+` THEN published_at ELSE COALESCE(published_at,NOW()) END,
+		updated_at=NOW() WHERE id=$1 AND status <> 'draft' AND withdrawn_at IS NULL
+		AND (status <> 'rejected' OR NOT (input ? 'original'))
+		AND ($6::bigint IS NULL OR FLOOR(EXTRACT(EPOCH FROM updated_at) * 1000)::bigint=$6)
+		RETURNING `+directoryColumns, g.Param("id"), body.Status, body.Note, reviewerID, curation, body.ExpectedUpdatedAt)
 	submission, err := readDirectoryRow(row)
 	if errors.Is(err, sql.ErrNoRows) {
+		if body.ExpectedUpdatedAt != nil {
+			response.ErrorWithDetails(g, 409, "This submission changed. Reload it before reviewing.", "DIRECTORY_SUBMISSION_CHANGED", nil)
+			return
+		}
 		response.Error(g, 404, "That submission wasn’t found in this organization.")
 		return
 	}

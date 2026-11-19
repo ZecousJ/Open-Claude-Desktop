@@ -6,9 +6,10 @@ import {
 } from "../../shared/transcript-view";
 
 /*
- * Each Code session's own transcript view, kept on this device as the original
- * keeps it. A session without a pick of its own follows Settings → Default
- * transcript view.
+ * Each Code session's own transcript view, kept on this device as the
+ * original keeps it (live claude.ai bundle, 2026-10-12: transcriptMode
+ * BySession in the session store, the latest 100 sessions). A session
+ * without a pick of its own follows Settings → Default transcript view.
  */
 
 const viewsKey = "claudex.transcriptView.v1";

@@ -401,8 +401,13 @@ test("preview storage shares all saved sites, scopes session jars and isolates e
   );
   const other = previewPartitionName("always", "b", "/workspace", "web", "c1");
   const ordinary = partitionName("always", "a", "c1");
-  for (const name of [partition, ephemeral, other, ordinary])
+  const perSession = previewPartitionName("per-session", "a", "/workspace", "web", "c1");
+  for (const name of [partition, ephemeral, other, ordinary, perSession])
     jars.session(name);
+  await jars.clearPreviews("a", true, true);
+  assert.deepEqual(sessions.get(perSession)?.cleared, ["storage", "cache", "auth"]);
+  assert.deepEqual(sessions.get(ordinary)?.cleared, []);
+  assert.deepEqual(sessions.get(ephemeral)?.cleared, []);
   await jars.clearPreviews("a");
   assert.deepEqual(sessions.get(partition)?.cleared, [
     "storage",

@@ -32,7 +32,7 @@ export function artifactFeedbackTurn(artifact: Artifact, turns: Turn[]) {
     );
 }
 
-/** Send feedback uses the existing reply flow. */
+/** Send feedback uses the existing reply flow (live claude.ai bundle, 2026-10-14, c547ae5e3-GTYn8RRi.js:577). */
 export function ArtifactFeedbackDialog({
   artifact,
   onDone,

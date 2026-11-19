@@ -10,11 +10,12 @@ import type { Artifact } from "../ui/ArtifactTypes";
 import { useApp } from "../app/AppContext";
 import { useBlankArtifact } from "./useBlankArtifact";
 import { BlankArtifactEditor } from "./BlankArtifactEditor";
+import { BlankArtifactWorkspace } from "./BlankArtifactWorkspace";
 import { PanelResizeHandle } from "./PanelResizeHandle";
 import { usePaneExpandToggle } from "../app/pane-expand";
 import { t, tc } from "../i18n";
 import { ArtifactCurrentUser } from "./ArtifactCurrentUser";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import {
   artifactChatLabel,
   guardArtifactNavigation,
@@ -48,12 +49,6 @@ export function BlankArtifactPanel({
   const openChat = onChat && guardArtifactNavigation(app, artifact, onChat);
   usePaneExpandToggle("artifact", toggle);
   const close = () => source.beforeLeave(onClose);
-  const status =
-    source.saving || source.dirty
-      ? t("Saving…")
-      : source.document
-        ? t("Saved")
-        : "";
   return (
     <aside
       ref={root}
@@ -84,7 +79,7 @@ export function BlankArtifactPanel({
               source.beforeLeave(() => app.newChat("chat"));
             }}
           >
-            <AppIcon name="Home" size={16} />
+            <Anthropicon name="Home" size={16} />
           </a>
         )}
         <span className="blank-artifact-title">{artifact.name}</span>
@@ -120,58 +115,17 @@ export function BlankArtifactPanel({
           </button>
         </div>
       </header>
-      {source.waiting && (
-        <div className="blank-editor-error" role="status">
-          <span>
-            {t("Changes are still being saved. Try again in a moment.")}
-          </span>
-          <button onClick={source.cancelNavigation}>{t("Keep editing")}</button>
-        </div>
-      )}
-      {Boolean(source.error) && (
-        <div className="blank-editor-error" role="alert">
-          <span>
-            {source.error instanceof Error
-              ? source.error.message
-              : t("Couldn’t load this.")}
-          </span>
-          <button type="button" onClick={source.retry}>
-            {t("Retry")}
-          </button>
-          {source.dirty && (
-            <button type="button" onClick={source.reload}>
-              {t("Reload saved version")}
-            </button>
-          )}
-        </div>
-      )}
-      {source.conflict && (
-        <div className="blank-editor-error" role="alert">
-          <span>
-            {t("The saved file changed. Your unsaved edits are still here.")}
-          </span>
-          <button type="button" onClick={source.reload}>
-            {t("Reload saved version")}
-          </button>
-        </div>
-      )}
-      {source.loading ? (
-        <div className="blank-editor-loading" role="status">
-          {t("Loading artifact…")}
-        </div>
-      ) : (
-        source.document && (
+      <BlankArtifactWorkspace
+        source={source}
+        renderEditor={(props) => (
           <BlankArtifactEditor
+            {...props}
             artifact={artifact}
             kind={artifact.blankArtifact!.kind}
-            content={source.content!}
-            onChange={source.change}
-            readOnly={source.readOnly}
-            status={status}
             onError={onError}
           />
-        )
-      )}
+        )}
+      />
     </aside>
   );
 }

@@ -1,11 +1,12 @@
 import { prefersReducedMotion } from "../ui/usePresence";
 
 /*
- * The review jump, after the original's: a change chosen from a list scrolls
- * into place over 400ms on an ease-out quad, re-aiming every frame in case the
- * content above it moves, and then flashes an accent ring (0.9s,
- * `.review-landed` in changes-panel.css). A target already in full view only
- * flashes. Reduced motion jumps at once and does not flash.
+ * The review jump, after the original's (desktop bundle 2.31226.1): a
+ * change chosen from a list scrolls into place over 400ms on an ease-out
+ * quad, re-aiming every frame in case the content above it moves, and then
+ * flashes an accent ring (0.9s, `.review-landed` in changes-panel.css). A
+ * target already in full view only flashes. Reduced motion jumps at once
+ * and does not flash.
  */
 
 export const REVIEW_SCROLL_MS = 400;

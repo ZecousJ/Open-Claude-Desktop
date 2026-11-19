@@ -1,5 +1,5 @@
 import { useRef, useState, type RefObject } from "react";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useDismiss } from "../ui/useDismiss";
 
 export function PlacePickerTrigger({
@@ -38,12 +38,12 @@ export function PlacePickerTrigger({
         onClick={onToggle}
       >
         {(collapsed || (!native && chosen)) && (
-          <AppIcon name="Projects" size={16} />
+          <Anthropicon name="Projects" size={16} />
         )}
         {!collapsed && (
           <>
             <span data-no-translate={chosen || undefined}>{label}</span>
-            <AppIcon name="CaretDown" size={12} />
+            <Anthropicon name="CaretDown" size={12} />
           </>
         )}
         {collapsed && chosen && (

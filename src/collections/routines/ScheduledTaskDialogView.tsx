@@ -11,7 +11,7 @@ import {
   RoutinePermissionNotice,
   AlwaysAllowed,
 } from "./RoutinePermission";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { windowPermissionText } from "../../composer/TaskPermissionPicker";
 import { ChevronDown } from "../../ui/glyphs";
 import { toLocalInput, fromLocalInput } from "./routine-draft";
@@ -236,9 +236,10 @@ export function scheduledTaskDialogView(kit: ScheduledTaskDialogViewKit) {
                 />
                 <div className="task-instructions-bar">
                   {cloudCode ? (
-                    // A cloud Code task's permissions are its environment's.
+                    // A cloud Code task's permissions are its environment's
+                    // (live claude.ai, 2026-10-21).
                     <span className="task-permission-environment">
-                      <AppIcon name="LockShield" size={12} />
+                      <Anthropicon name="LockShield" size={12} />
                       {t("Permissions set by environment")}
                     </span>
                   ) : (
@@ -260,7 +261,7 @@ export function scheduledTaskDialogView(kit: ScheduledTaskDialogViewKit) {
                         )
                         .map((row) => [row.value, row.label] as const)}
                       icon={(permission) => (
-                        <AppIcon
+                        <Anthropicon
                           name={windowPermissionText[permission].glyph}
                           size={16}
                         />
@@ -315,7 +316,7 @@ export function scheduledTaskDialogView(kit: ScheduledTaskDialogViewKit) {
                   options={[["schedule", "Schedule"]]}
                   className="task-trigger-type"
                   caretSize={12}
-                  icon={() => <AppIcon name="Clock" size={16} />}
+                  icon={() => <Anthropicon name="Clock" size={16} />}
                   onChange={() => {}}
                 />
               }
@@ -422,7 +423,7 @@ export function scheduledTaskDialogView(kit: ScheduledTaskDialogViewKit) {
             />
             {unavailable && (
               <p className="routine-model-warning" role="status">
-                <AppIcon name="Warning" size={16} aria-hidden="true" />
+                <Anthropicon name="Warning" size={16} aria-hidden="true" />
                 {unavailableRoutineModel.remote}
               </p>
             )}

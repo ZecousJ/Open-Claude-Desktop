@@ -1,12 +1,13 @@
 /**
- * The pane's Show logs drawer: the device's log read line by line. iOS streams
- * the unified log as JSON (`xcrun simctl spawn <udid> log stream --style ndjson
- * --level debug`); Android reads `adb logcat`
- * in its threadtime format. A capture keeps the latest lines in memory and the
+ * The pane's Show logs drawer (live claude.ai bundle, 2026-10-12: "Simulator
+ * logs"): the device's log read line by line. iOS streams the unified log
+ * as JSON (`xcrun simctl spawn <udid> log stream --style ndjson --level
+ * debug`, as the original's capture does); Android reads `adb logcat` in its
+ * threadtime format. A capture keeps the latest lines in memory and the
  * window reads what is new since the last line it has.
  *
- * The original reads the log of the app Claude launched (its process id); the
- * pane here shows the whole device, which the drawer's filter narrows.
+ * The original reads the log of the app Claude launched (its process id);
+ * the pane here shows the whole device, which the drawer's filter narrows.
  */
 import path from "node:path";
 import type {
@@ -121,8 +122,8 @@ const logcatLine =
   /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})\.(\d{3})\s+(\d+)\s+(\d+)\s+([VDIWEFA])\s+(.*?)\s*: ?(.*)$/;
 
 /**
- * One line of `adb logcat -v threadtime -v year`, read as the emulator's local
- * time.
+ * One line of `adb logcat -v threadtime -v year` ("2026-10-12 09:41:07.123
+ * 1234 1250 I Tag: message"), read as the emulator's local time.
  */
 export function parseLogcatLine(
   line: string,

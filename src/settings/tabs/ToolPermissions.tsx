@@ -36,19 +36,19 @@ export function groupMode(tools: McpToolState[]): Mode | "custom" {
   return modes.size === 1 ? [...modes][0] : "custom";
 }
 
-// Search and empty copy.
+// Search and empty copy (live claude.ai bundle, 2026-10-14, c1ef064de-Ps8TrUOg.js).
 export function filterConnectorTools(tools: McpToolState[], query: string) {
   const needle = query.trim().toLowerCase();
   return tools.filter((tool) => tool.name.toLowerCase().includes(needle));
 }
 
 /**
- * Tool permissions: "Choose when Claudex is allowed to use these tools", the
- * tools under a collapsible group with its count and a menu that sets them all
- * (Always allow, Needs approval, Blocked; Custom when they differ), and on each
- * row three icon buttons for the same three. Blocked is Codex's
- * `disabled_tools`; Always allow and Needs approval are the tool's
- * `approval_mode` ("approve" never asks, "prompt" always asks).
+ * Tool permissions (R-1379): "Choose when Claudex is allowed to use these
+ * tools", the tools under a collapsible group with its count and a menu
+ * that sets them all (Always allow, Needs approval, Blocked; Custom when
+ * they differ), and on each row three icon buttons for the same three.
+ * Blocked is Codex's `disabled_tools`; Always allow and Needs approval are
+ * the tool's `approval_mode` ("approve" never asks, "prompt" always asks).
  */
 export function ToolPermissions({
   server,

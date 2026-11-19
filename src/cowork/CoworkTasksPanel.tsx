@@ -53,7 +53,7 @@ export function taskNextRun(timestamp: number, now: number, locale: string) {
   });
 }
 
-// Tasks panel sections, filter and resize bounds.
+// Tasks panel sections, filter and resize bounds (live claude.ai bundle, 2026-10-14, c1f04f7e1-BY11zgRA.js).
 export function CoworkTasksPanel({
   conversations,
   approvals,

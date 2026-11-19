@@ -10,9 +10,10 @@ import { describeCommand } from "../../code-tools/tool-description-text";
 import { formatText } from "../../i18n";
 
 /**
- * An agent row's words: its description, in the past tense once done and as
- * "Failed to …" when it failed; "Running agent", "Ran agent" or "Failed to run
- * agent" when it has none.
+ * An agent row's words (live claude.ai bundle, 2026-10-14, the Agent tool's
+ * row): its description, in the past tense once done and as "Failed to …"
+ * when it failed; "Running agent", "Ran agent" or "Failed to run agent"
+ * when it has none.
  */
 export function agentRowLabel(task: Pick<WorkflowSummary, "title" | "status">) {
   const title = task.title.trim();
@@ -32,9 +33,10 @@ export function agentRowLabel(task: Pick<WorkflowSummary, "title" | "status">) {
 }
 
 /**
- * Code: the parent conversation shows a background agent as one line, its title
- * and model, that opens the agent. Codex gives the task's own title, so the
- * reference's past tense ("Checked …") is not invented here.
+ * Code: the parent conversation shows a background agent as one line, its
+ * title and model, that opens the agent (R-0786 完成行收起, S-0005). Codex
+ * gives the task's own title, so the reference's past tense ("Checked …")
+ * is not invented here.
  */
 export function CodeAgentRow({
   task,

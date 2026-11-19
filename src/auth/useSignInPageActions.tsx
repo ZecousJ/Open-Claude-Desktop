@@ -13,7 +13,7 @@ import type { StatePage, AuthField, AuthStep } from "./signInView";
 import { t, formatText } from "../i18n";
 import { BusyLabel } from "./BusyLabel";
 import { placeholders } from "./SignInPage";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { signInFailed } from "../../shared/sign-in-errors";
 import { SignInFallback, TextLink } from "./SignInFrame";
 import type { BrowserAccount } from "../../shared/sign-in-api";
@@ -101,7 +101,7 @@ export function useSignInPageActions(kit: UseSignInPageActionsKit) {
   } = kit;
   useEffect(() => {
     if (step !== "emailSent") return;
-    // .
+    // (live claude.ai bundle, 2026-10-14, c19e49841-CY7h9R_N.js: W).
     const timer = setTimeout(() => {
       setCodeAutoFocus(false);
       go("code");
@@ -273,8 +273,9 @@ export function useSignInPageActions(kit: UseSignInPageActionsKit) {
   const blocked = blockedPage(status);
   const page = state ?? blocked;
   const heading = frameHeading(page);
-  // Adding an account (the account menu): its own heading, naming the account
-  // that stays signed in.
+  // Adding an account (the account menu): its own heading, naming the
+  // account that stays signed in (live claude.ai bundle, 2026-10-12, the
+  // add-account login page's heading and subheading).
   const { title, subtitle } = linkFallback
     ? {
         title: t("Use verification code to continue"),
@@ -343,7 +344,7 @@ export function useSignInPageActions(kit: UseSignInPageActionsKit) {
     <>
       {offline && !error && (
         <p className="signin-warning" role="status">
-          <AppIcon
+          <Anthropicon
             name="Warning"
             size={15}
             strokeWidth={1.7}

@@ -97,8 +97,8 @@ export const windowsMethods = bridgeMethods<WindowsAPI>({
 });
 
 /**
- * The conversations shown in a separate window the person can see now: a reply
- * that finishes there is not marked unread by the main window.
+ * The conversations shown in a separate window the person can see now: a
+ * reply that finishes there is not marked unread by the main window (R-0038).
  */
 export interface WindowVisibilityEvent {
   type: "window-visibility";

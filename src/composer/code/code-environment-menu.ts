@@ -2,7 +2,7 @@ import type { MenuEntry } from "../../ui/Menu";
 import type { DispatchStatus } from "../../../shared/dispatch-api";
 import { createElement } from "react";
 import { currentLocale, formatText } from "../../i18n";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { environmentMenu, type EnvironmentMenuOptions } from "../../ssh/model";
 import {
   initialCloudEnvironment,
@@ -16,8 +16,8 @@ export const environmentReasons = {
 } as const;
 
 /**
- * Local, Cloud and host groups: cloud rows select a profile; their gear edits
- * it separately.
+ * Local, Cloud and host groups (live claude.ai bundle, 2026-10-14,
+ * ca690a791): cloud rows select a profile; their gear edits it separately.
  */
 export function codeEnvironmentMenu(
   options: EnvironmentMenuOptions & {
@@ -112,10 +112,10 @@ const idNamed =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * The start card's Choose environment: Local with This computer and the latest
- * folder, the rest under More with their count; then Cloud, Remote Control and
- * SSH as submenus. A folder named like an id is a cloud session's or a task's
- * own workspace, not a place to pick.
+ * The start card's Choose environment (live desktop, 2026-10-21): Local with
+ * This computer and the latest folder, the rest under More with their
+ * count; then Cloud, Remote Control and SSH as submenus. A folder named like
+ * an id is a cloud session's or a task's own workspace, not a place to pick.
  */
 export function expandedEnvironmentMenu(
   entries: MenuEntry[],
@@ -127,7 +127,7 @@ export function expandedEnvironmentMenu(
         "label" in entry && entry.label === label,
     );
   const local = find("Local");
-  const laptop = createElement(AppIcon, { name: "Laptop", size: 20 });
+  const laptop = createElement(Anthropicon, { name: "Laptop", size: 20 });
   const places = recentLocal
     .filter((entry) => !("label" in entry) || !idNamed.test(entry.label))
     .map((entry) => ("label" in entry ? { ...entry, icon: laptop } : entry));

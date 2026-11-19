@@ -95,7 +95,7 @@ test("network controls retain the service ceiling and the real allowlist state",
   assert.match(open, /aria-label="Domain allowlist"/);
   assert.doesNotMatch(open, /width:192px/);
   assert.match(open, /class="capabilities-allowlist-note" role="status"/);
-  assert.match(open, /width="20" height="20"[^>]*data-icon="Info"/);
+  assert.match(open, /width="20" height="20"[^>]*data-anthropicon="Info"/);
   assert.match(open, /class="settings-button primary regular" disabled="">Add/);
   assert.doesNotMatch(render("full", false), /class="capabilities-allowlist"/);
   const closed = render("none");
@@ -107,9 +107,9 @@ test("network controls retain the service ceiling and the real allowlist state",
 });
 
 test("the network card matches the measured outer frame, banner and large field geometry", () => {
-  // Outer card 782×282, 24px padding+1px rim, inner banner 732×64, Info20,
-  // Add61×40 r10. The card keeps 24px padding at390px; 183px is an inner
-  // trigger only.
+  // Current read-only official DOM, 2026-10-16: outer card 782×282,
+  // 24px padding+1px rim, inner banner 732×64, Info20, Add61×40 r10.
+  // The card keeps 24px padding at390px; 183px is an inner trigger only.
   const css = source("src/settings/original-rows.css");
   const rule = (selector: string) => {
     const escaped = selector
@@ -155,10 +155,10 @@ test("Privacy memory navigation uses the measured 20px ArrowOutSquare and actual
   );
   assert.match(
     memoryRow,
-    /width="20" height="20"[^>]*data-icon="ArrowOutSquare"/,
+    /width="20" height="20"[^>]*data-anthropicon="ArrowOutSquare"/,
   );
-  assert.doesNotMatch(memoryRow, /data-icon="CaretRight"/);
-  assert.doesNotMatch(memoryRow, /data-icon="ArrowUpRight"/);
+  assert.doesNotMatch(memoryRow, /data-anthropicon="CaretRight"/);
+  assert.doesNotMatch(memoryRow, /data-anthropicon="ArrowUpRight"/);
   const leaf = source("src/settings/tabs/Privacy.tsx");
   assert.match(leaf, /onClick=\{\(\) => goTo\("memory"\)\}/);
   const css = source("src/settings/original-rows.css");

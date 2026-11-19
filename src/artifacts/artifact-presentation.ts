@@ -16,8 +16,8 @@ const chatPlacement: Placement = {
 };
 
 /**
- * Cowork's outputs open in the file viewer at 50%, as they do from the Progress
- * card's Outputs list.
+ * Cowork's outputs open in the file viewer at 50%, as they do from the
+ * Progress card's Outputs list (R-0928, visual-provisional).
  */
 const coworkPlacement: Placement = {
   surface: "file",

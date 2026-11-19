@@ -5,7 +5,8 @@ type ServiceSession = Pick<
   "webRequest" | "isSpellCheckerEnabled" | "setSpellCheckerEnabled"
 >;
 
-// Nonessential service destinations.
+// Nonessential service destinations (desktop 2.37337.1,
+// index.chunk-BWk6pVUt.js:37166–37242).
 export function nonessentialService(url: string, platform: NodeJS.Platform) {
   let parsed: URL;
   try {

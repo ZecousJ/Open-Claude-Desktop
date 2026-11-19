@@ -79,6 +79,51 @@ func TestLoadServerTimingConfig(t *testing.T) {
 	})
 }
 
+func TestLoadServerRole(t *testing.T) {
+	t.Run("full by default", func(t *testing.T) {
+		resetViperWithJWTSecret(t)
+		t.Setenv("SERVER_ROLE", "")
+		cfg, err := Load()
+		require.NoError(t, err)
+		require.Equal(t, ServerRoleFull, cfg.Server.Role)
+		require.True(t, cfg.RunsControlPlane())
+		require.True(t, (*Config)(nil).RunsControlPlane())
+	})
+
+	t.Run("environment overrides YAML", func(t *testing.T) {
+		resetViperWithJWTSecret(t)
+		configFile := filepath.Join(t.TempDir(), "config.yaml")
+		require.NoError(t, os.WriteFile(configFile, []byte("server:\n  role: model-gateway\n"), 0o600))
+		t.Setenv("CONFIG_FILE", configFile)
+		t.Setenv("SERVER_ROLE", "")
+
+		cfg, err := LoadForBootstrap()
+		require.NoError(t, err)
+		require.Equal(t, ServerRoleModelGateway, cfg.Server.Role)
+		require.False(t, cfg.RunsControlPlane())
+
+		t.Setenv("SERVER_ROLE", "full")
+		cfg, err = Load()
+		require.NoError(t, err)
+		require.True(t, cfg.RunsControlPlane())
+	})
+
+	t.Run("reject unknown role during bootstrap", func(t *testing.T) {
+		resetViperWithJWTSecret(t)
+		t.Setenv("SERVER_ROLE", "model-gatway")
+		_, err := LoadForBootstrap()
+		require.ErrorContains(t, err, "server.role")
+	})
+}
+
+func TestLoadOfficialUserContentOrigin(t *testing.T) {
+	resetViperWithJWTSecret(t)
+	t.Setenv("CLAUDEX_USERCONTENT_ORIGIN", "https://viewer.example")
+	cfg, err := Load()
+	require.NoError(t, err)
+	require.Equal(t, "https://viewer.example", cfg.Claudex.Web.UserContentOrigin)
+}
+
 func TestLoadSimpleModeKeyRateLimitEnabledFromEnvironment(t *testing.T) {
 	resetViperWithJWTSecret(t)
 	t.Setenv("SIMPLE_MODE_KEY_RATE_LIMIT_ENABLED", "true")

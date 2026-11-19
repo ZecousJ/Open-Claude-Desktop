@@ -14,7 +14,11 @@ import (
 // enables Anthropic platform groups to accept OpenAI Responses API requests
 // by converting them to the native /v1/messages format before forwarding upstream.
 func ResponsesToAnthropicRequest(req *ResponsesRequest) (*AnthropicRequest, error) {
-	system, messages, err := convertResponsesInputToAnthropic(req.Instructions, req.Input, claude.IsOpus55(req.Model))
+	return ResponsesToAnthropicRequestWithReasoningCache(req, nil)
+}
+
+func ResponsesToAnthropicRequestWithReasoningCache(req *ResponsesRequest, thinkingByID func(string) string) (*AnthropicRequest, error) {
+	system, messages, err := convertResponsesInputToAnthropic(req.Instructions, req.Input, claude.IsOpus55(req.Model), thinkingByID)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +135,7 @@ func mapResponsesEffortToAnthropic(effort string) string {
 // convertResponsesInputToAnthropic extracts system prompt and messages from
 // a Responses API instructions + input array. Returns the system as raw JSON
 // (for Anthropic's polymorphic system field) and a list of Anthropic messages.
-func convertResponsesInputToAnthropic(instructions string, inputRaw json.RawMessage, preserveThinking bool) (json.RawMessage, []AnthropicMessage, error) {
+func convertResponsesInputToAnthropic(instructions string, inputRaw json.RawMessage, preserveThinking bool, thinkingByID func(string) string) (json.RawMessage, []AnthropicMessage, error) {
 	var systemParts []string
 	if strings.TrimSpace(instructions) != "" {
 		systemParts = append(systemParts, strings.TrimSpace(instructions))
@@ -196,10 +200,19 @@ func convertResponsesInputToAnthropic(instructions string, inputRaw json.RawMess
 			})
 
 		case item.Type == "reasoning":
+			if !preserveThinking {
+				continue
+			}
+			thinking := item.EncryptedContent
+			if thinkingByID != nil && !strings.HasPrefix(thinking, anthropicThinkingEnvelopePrefix) {
+				if id := privateReasoningReplayID(item.ID, thinking); id != "" {
+					thinking = thinkingByID(id)
+				}
+			}
 			// Only decode marked Anthropic bridge envelopes, not arbitrary
 			// OpenAI ciphertext. The upstream remains responsible for signature validation.
-			if preserveThinking && strings.HasPrefix(item.EncryptedContent, anthropicThinkingEnvelopePrefix) {
-				raw, err := base64.RawStdEncoding.DecodeString(strings.TrimPrefix(item.EncryptedContent, anthropicThinkingEnvelopePrefix))
+			if strings.HasPrefix(thinking, anthropicThinkingEnvelopePrefix) {
+				raw, err := base64.RawStdEncoding.DecodeString(strings.TrimPrefix(thinking, anthropicThinkingEnvelopePrefix))
 				if err != nil {
 					return nil, nil, fmt.Errorf("invalid Anthropic thinking envelope: %w", err)
 				}

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the claudex-sandbox image and packs its root file system for runner
-# hosts (W-GVISOR). Run on a development machine or in CI, not on the production server:
+# hosts (W-GVISOR). Run on a development machine or in CI, never on DC6:
 #
 #   deploy/claudex-runner/image/build.sh [amd64|arm64] [out-dir]
 #
@@ -10,7 +10,8 @@
 #   claudex-sandbox-<version>-<arch>.image.json       copy of /opt/claudex/image.json
 # Install on the runner host with install-image.sh (as root).
 #
-# Heavy (Docker build).
+# Heavy (Docker build): on the shared development machine run it through the
+# Docker queue, e.g. GOLOCK_WEIGHT=2 SCRATCH/golock.sh deploy/claudex-runner/image/build.sh
 # Knobs: IMAGE_VERSION (default <date>-<git short hash>), BASE_IMAGE, NODE_IMAGE,
 # and the mirrors APT_MIRROR, PIP_INDEX_URL, PLAYWRIGHT_DOWNLOAD_HOST (Dockerfile).
 set -euo pipefail

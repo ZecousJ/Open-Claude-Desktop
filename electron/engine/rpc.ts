@@ -18,8 +18,15 @@ export type RpcPreamble =
   | string
   | ((child: ChildProcessWithoutNullStreams) => Promise<string> | string);
 
+export class CodexRequestTimeout extends Error {
+  constructor(method: string) {
+    super(`${method} timed out`);
+  }
+}
+
 export class CodexRPC extends EventEmitter {
   private process?: ChildProcessWithoutNullStreams;
+  private failure?: Error;
   private next = 1;
   private pending = new Map<
     number,
@@ -50,12 +57,17 @@ export class CodexRPC extends EventEmitter {
     spawnFn: () => ChildProcessWithoutNullStreams,
     preamble?: RpcPreamble,
   ) {
+    if (this.process) await this.stop();
+    this.failure = undefined;
     const child = (this.process = spawnFn());
     let failed: Error | undefined;
     let storageFull = false;
     let stderrTail = "";
     const fail = (error: Error) => {
+      // A closing/replaced child cannot reject the new process's calls.
+      if (this.process !== child || failed) return;
       failed ??= error;
+      this.failure = error;
       for (const p of this.pending.values()) {
         clearTimeout(p.timer);
         p.reject(error);
@@ -65,7 +77,6 @@ export class CodexRPC extends EventEmitter {
     };
     child.on("error", fail);
     child.on("exit", (code, signal) => {
-      if (this.process === child) this.process = undefined;
       fail(
         new Error(
           storageFull
@@ -73,13 +84,30 @@ export class CodexRPC extends EventEmitter {
             : `The Codex process exited (${code ?? signal})`,
         ),
       );
+      if (this.process === child) this.process = undefined;
     });
-    // A closed pipe is reported through "exit"; a write never throws.
+    // Pipes can close while the process is still alive (including SSH
+    // wrappers). Fail immediately instead of timing out every later call.
+    const connectionClosed = () =>
+      new Error(
+        storageFull
+          ? storageFullMessage
+          : "The agent connection closed. Send again to reconnect.",
+      );
     child.stdin.on("error", (error) => {
-      if (isStorageFullError(error)) fail(new Error(storageFullMessage));
+      fail(
+        isStorageFullError(error)
+          ? new Error(storageFullMessage)
+          : connectionClosed(),
+      );
     });
+    child.stdout.on("error", () => fail(connectionClosed()));
     const lines = createInterface({ input: child.stdout });
+    // readline emits a final line without a trailing newline before close.
+    // Waiting for that event keeps the last complete response deliverable.
+    lines.on("close", () => fail(connectionClosed()));
     lines.on("line", (line) => {
+      if (this.process !== child || failed) return;
       let msg: any;
       try {
         msg = JSON.parse(line);
@@ -118,28 +146,34 @@ export class CodexRPC extends EventEmitter {
       },
       capabilities: { experimentalApi: true },
     });
+    if (failed) throw failed;
     this.notify("initialized", {});
     return result;
   }
   /** The process runs and takes requests. */
   get connected() {
-    return !!this.process?.stdin.writable;
+    return !this.failure && !!this.process?.stdin.writable;
+  }
+  get processId() {
+    return this.process?.pid;
   }
   call(method: string, params: any = {}, timeout = 60_000): Promise<any> {
-    if (!this.process?.stdin.writable)
-      return Promise.reject(new Error("The Codex engine is not connected."));
+    if (!this.connected)
+      return Promise.reject(
+        this.failure ?? new Error("The Codex engine is not connected."),
+      );
     const id = this.next++;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`${method} timed out`));
+        reject(new CodexRequestTimeout(method));
       }, timeout);
       this.pending.set(id, { resolve, reject, timer });
       this.write({ id, method, params });
     });
   }
   private write(value: any) {
-    this.process?.stdin.write(JSON.stringify(value) + "\n");
+    if (this.connected) this.process?.stdin.write(JSON.stringify(value) + "\n");
   }
   notify(method: string, params: any) {
     this.write({ method, params });
@@ -153,6 +187,13 @@ export class CodexRPC extends EventEmitter {
   async stop() {
     const child = this.process;
     this.process = undefined;
+    for (const p of this.pending.values()) {
+      clearTimeout(p.timer);
+      p.reject(
+        new Error("The agent connection closed. Send again to reconnect."),
+      );
+    }
+    this.pending.clear();
     if (!child || child.exitCode !== null) return;
     await new Promise<void>((resolve) => {
       let settled = false;

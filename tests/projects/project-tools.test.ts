@@ -85,7 +85,7 @@ test("connector recommendations enable all tools per thread without mutating glo
   assert.deepEqual(
     connectorThreadConfig(servers, { ...overrides, Beta: false }),
     {
-      "mcp_servers.Alpha.enabled": true,
+      "mcp_servers.Alpha.enabled": false,
       "mcp_servers.Beta.enabled": false,
     },
   );
@@ -95,4 +95,29 @@ test("connector recommendations enable all tools per thread without mutating glo
     disabled_tools: ["read"],
   });
   assert.deepEqual(connectorThreadConfig({}, overrides), {});
+});
+
+test("session intent cannot override account connector or tool blocks", () => {
+  const servers = {
+    wiki: {
+      enabled: false,
+      disabled_tools: ["search"],
+      tools: { search: { approval_mode: "prompt" } },
+    },
+  };
+  const intent = { wiki: true };
+  assert.deepEqual(
+    connectorThreadConfig(servers, intent, { wiki: { search: true } }),
+    {
+      "mcp_servers.wiki.enabled": false,
+      "mcp_servers.wiki.disabled_tools": ["search"],
+    },
+  );
+  assert.equal(
+    connectorThreadConfig({ wiki: { enabled: true } }, intent)[
+      "mcp_servers.wiki.enabled"
+    ],
+    true,
+  );
+  assert.equal(servers.wiki.tools.search.approval_mode, "prompt");
 });

@@ -1,10 +1,12 @@
 /*
- * Next steps: a 320px card on surface-1 with the card ring (1px of 10% white
- * inside in dark, 10% ink outside in light), radius 12, 4px padding and 2px
- * between rows. A row is 32px, radius 8, 8px between its icon, words and end;
- * title in text-secondary, detail in text-muted (secondary on hover); the hover
- * fill is fill-ghost-hover. The × fades in at the row's end on hover or focus
- * (always on touch screens), where the chevron fades out.
+ * Next steps (live claude.ai bundle, 2026-10-14: the start card's
+ * suggestion list): a 320px card on surface-1 with the card ring (1px of
+ * 10% white inside in dark, 10% ink outside in light), radius 12, 4px
+ * padding and 2px between rows. A row is 32px, radius 8, 8px between its
+ * icon, words and end; title in text-secondary, detail in text-muted
+ * (secondary on hover); the hover fill is fill-ghost-hover. The × fades in
+ * at the row's end on hover or focus (always on touch screens), where the
+ * chevron fades out.
  */
 .next-steps {
   box-sizing: border-box;
@@ -49,7 +51,7 @@
 :root[data-theme="light"] .next-step-row {
   color: #52514e;
 }
-.next-step-row > .app-icon {
+.next-step-row > .anthropicon {
   flex: none;
 }
 .next-step:hover > .next-step-row,
@@ -167,7 +169,7 @@
   background: rgb(11 11 11 / 5%);
   color: #0b0b0b;
 }
-/* A row that opens a list shows its CaretDown ("xs", muted) beside the title. */
+/* A row that opens a list shows its CaretDown ("xs", muted) beside the title (cc43287c9 T5). */
 .next-step-caret {
   display: inline-flex;
   flex: none;

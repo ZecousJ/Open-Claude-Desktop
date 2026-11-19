@@ -95,8 +95,8 @@ describe('ClaudexReleaseView', () => {
     ).toBe(SHA)
     expect(wrapper.get('[data-testid="claudex-release-notes-preview"] h2').text()).toBe('1.4.0')
     expect(wrapper.get('[data-testid="claudex-release-updated"]').exists()).toBe(true)
-    // Seven platforms (RELEASE_PLATFORMS), each with a URL and a checksum field.
-    expect(wrapper.findAll('[data-testid^="claudex-release-download-sha-"]')).toHaveLength(7)
+    // Six platforms, each with a URL and a checksum field.
+    expect(wrapper.findAll('[data-testid^="claudex-release-download-sha-"]')).toHaveLength(6)
   })
 
   it('keeps the gateway enforcement off by default, with the warning shown', async () => {

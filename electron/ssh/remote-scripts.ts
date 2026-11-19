@@ -143,11 +143,18 @@ export function platformLabel(probe: Pick<HostProbe, "os" | "arch">) {
  * Names may hold any byte but NUL, so the output is split on NUL.
  * Exits 3 when the path is not a folder it can enter.
  */
-export function listDirectoryScript(path?: string): string {
+export function listDirectoryScript(path?: string, root?: string): string {
   return [
+    ...(root === undefined ? [] : [
+      `root=$(cd -- ${shQuote(root)} 2>/dev/null && pwd -P) || exit 3`,
+    ]),
     pathAssignment(path),
-    `cd -- "$P" 2>/dev/null || exit 3`,
-    `printf 'path=%s\\0' "$(pwd -P)"`,
+    `cd -- "$P" 2>/dev/null || exit ${root === undefined ? 3 : 4}`,
+    `dir=$(pwd -P)`,
+    ...(root === undefined ? [] : [
+      `if [ "$root" != / ]; then case $dir/ in "$root"/*) ;; *) exit 5 ;; esac; fi`,
+    ]),
+    `printf 'path=%s\\0' "$dir"`,
     `for f in * .[!.]* ..?*; do`,
     `  [ -e "$f" ] || [ -L "$f" ] || continue`,
     `  if [ -d "$f" ]; then printf 'd %s\\0' "$f"; else printf 'f %s\\0' "$f"; fi`,

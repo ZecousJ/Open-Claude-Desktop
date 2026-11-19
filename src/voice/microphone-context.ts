@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
 
-/** Keyboard context menu. */
+/** Keyboard context menu (live claude.ai bundle, 2026-10-14, c47a58ae1-BODMtME-). */
 export function microphoneContextKey(event: KeyboardEvent<HTMLButtonElement>) {
   if (
     event.defaultPrevented ||

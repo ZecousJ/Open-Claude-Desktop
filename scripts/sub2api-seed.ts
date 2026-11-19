@@ -11,7 +11,7 @@
  * Idempotent: each entity is looked up by name first and only missing or
  * different fields are written. --claudex-provisioning also makes the seed's
  * subscription group the default group of Claudex device provisioning. See
- * deploy/sub2api/seed.env.example for the inputs and docs/self-hosting.md for
+ * deploy/sub2api/seed.env.example for the inputs and docs/admin-backend.md for
  * the runbook.
  */
 import fs from "node:fs";
@@ -572,7 +572,7 @@ export async function seed(config: SeedConfig, options: SeedOptions = {}) {
   }
   const planId = groupIds[1];
 
-  // 3. Upstream account.
+  // 3. Upstream account (operator-supplied base URL and key).
   const accounts = await read<ListPage>(
     `/api/v1/admin/accounts?platform=${encodeURIComponent(config.platform)}&search=${encodeURIComponent(config.upstream.name)}&page_size=100`,
     {},

@@ -1,7 +1,8 @@
 /**
- * Bridge calls behind the desktop and developer Settings pages: System, Cowork
- * files, Developer (MCP servers), Skills and the Windows sandbox. Handlers are
- * in `electron/ipc/settings-desktop.ts` and `electron/ipc/skills.ts`.
+ * Bridge calls behind the desktop and developer Settings pages (package
+ * WP3): System, Cowork files, Developer (MCP servers), Skills and the
+ * Windows sandbox. Handlers are in `electron/ipc/settings-desktop.ts` and
+ * `electron/ipc/skills.ts`.
  */
 import { bridgeMethods } from "./bridge-methods";
 import type { SkillUploadCapabilities } from "./customize-search";
@@ -9,12 +10,13 @@ import type { InstallSkillOptions } from "./skill-upload";
 import type { SkillImportFile, SkillImportOutcome } from "./skill-import";
 import type { NotificationAuthorizationAPI } from "./desktop-notifications";
 import type { McpSettingsAPI } from "./settings-mcp-api";
+import type { ConnectorCredentials } from "./custom-connector";
 
 /**
- * Settings → System → Storage: the space Claudex uses on this computer in the
- * official four areas. "Cowork tasks" are Claudex's Chat and Cowork
- * conversations, "Code sessions" its Code conversations; Claudex makes no
- * worktrees, so the Code area has none.
+ * Settings → System → Storage (live claude.ai bundle, 2026-10-12): the space
+ * Claudex uses on this computer in the official four areas. "Cowork tasks"
+ * are Claudex's Chat and Cowork conversations, "Code sessions" its Code
+ * conversations; Claudex makes no worktrees, so the Code area has none.
  */
 export interface StorageUsage {
   computedAt: number;
@@ -150,6 +152,7 @@ export interface McpServerState {
   displayName?: string;
   name: string;
   connectorId?: import("./starter-integrations").StarterConnectorId;
+  directoryId?: string;
   /** `disabled`: switched off in the configuration (`"enabled": false`) or the Connectors menu. */
   state: "starting" | "ready" | "failed" | "cancelled" | "stopped" | "disabled";
   error?: string;
@@ -162,7 +165,9 @@ export interface McpServerState {
    * How the runtime signs in to a remote server: `notLoggedIn` offers
    * Connect (OAuth in the browser), `oAuth` is signed in.
    */
-  authStatus?: "unsupported" | "notLoggedIn" | "bearerToken" | "oAuth";
+  authStatus?:
+    "unsupported" | "notLoggedIn" | "bearerToken" | "oAuth" | "staticHeaders";
+  oauthStatus?: "connected" | "reconnect" | "disconnected";
   lastConnectedAt?: number;
   desktopExtension?: boolean;
   /** The configured command line, when the server is a local program. */
@@ -171,6 +176,14 @@ export interface McpServerState {
 }
 
 export interface McpToolState {
+  /** Host-discovered MCP definition, retained for the official native catalog. */
+  definition?: {
+    name: string;
+    description?: string;
+    inputSchema?: Record<string, unknown>;
+    annotations?: Record<string, unknown>;
+    _meta?: Record<string, unknown>;
+  };
   name: string;
   description: string;
   /** False when listed in the server's `disabled_tools`. */
@@ -182,9 +195,9 @@ export interface McpToolState {
    */
   approval?: "approve" | "prompt";
   /**
-   * What the server says the tool does: `readOnly` when its annotations call it
-   * read-only, `write` when it has annotations that do not, unset when it has
-   * none.
+   * What the server says the tool does: `readOnly` when its annotations call
+   * it read-only, `write` when it has annotations that do not, unset when it
+   * has none (live claude.ai bundle, 2026-10-16, shared-6-D1d5h68m: accessKind).
    */
   access?: "readOnly" | "write";
 }
@@ -193,14 +206,13 @@ export interface McpToolState {
 export type ConnectorToolPermission = "allow" | "ask" | "block";
 
 /** Settings → Connectors → Add custom connector. */
-export interface CustomConnector {
+export interface CustomConnector extends ConnectorCredentials {
   replaceName?: string;
   name: string;
   displayName?: string;
-  clientId?: string;
-  clientSecret?: string;
   transport?: "sse" | "streamable-http";
   connectorId?: import("./starter-integrations").StarterConnectorId;
+  directoryId?: string;
   /** https://…, or http:// on this computer. */
   url: string;
   /** The environment variable with a bearer token (the token itself is never stored). */
@@ -211,6 +223,12 @@ export interface CustomConnector {
    * requests as an Authorization header.
    */
   bearerToken?: string;
+}
+
+export interface ConnectorProbe {
+  authRequired: boolean;
+  suggestedRegistration?: "dcr" | "cimd" | "static_per_installation";
+  transport: NonNullable<CustomConnector["transport"]>;
 }
 
 export interface McpServers {
@@ -270,6 +288,7 @@ export interface SettingsDesktopAPI
     description: string;
     instructions: string;
   }): Promise<void>;
+  editSkill(path: string, content: string): Promise<void>;
   setSkillEnabled(path: string, enabled: boolean): Promise<void>;
   /** Copies a skill folder (with SKILL.md) chosen by the user; its name, or null. */
   uploadSkill(): Promise<string | null>;
@@ -299,7 +318,7 @@ export interface SettingsDesktopAPI
     url: string,
     name?: string,
     transport?: "sse" | "streamable-http",
-  ): Promise<{ authRequired: boolean }>;
+  ): Promise<ConnectorProbe>;
   /** Removes a connector from the configuration (Disconnect). */
   removeConnector(name: string): Promise<McpServers>;
   /** Turns one of a connector's tools on or off. */
@@ -317,6 +336,14 @@ export interface SettingsDesktopAPI
     name: string,
     tool: string,
     permission: ConnectorToolPermission,
+  ): Promise<McpServers>;
+  /** Commit a menu's tool choices together, restarting the runtime only once. */
+  setConnectorToolPermissions(
+    changes: {
+      name: string;
+      tool: string;
+      permission: ConnectorToolPermission;
+    }[],
   ): Promise<McpServers>;
   /**
    * Forgets the "Always allow" choices made for connector tools: one
@@ -357,6 +384,7 @@ export const settingsDesktopMethods = bridgeMethods<SettingsDesktopAPI>({
   listMcp: true,
   listSkills: true,
   saveSkill: true,
+  editSkill: true,
   setSkillEnabled: true,
   uploadSkill: true,
   installSkillFiles: true,
@@ -373,6 +401,7 @@ export const settingsDesktopMethods = bridgeMethods<SettingsDesktopAPI>({
   removeConnector: true,
   setConnectorTool: true,
   setConnectorToolPermission: true,
+  setConnectorToolPermissions: true,
   forgetConnectorApprovals: true,
   connectConnector: true,
   completeConnectorLogin: true,

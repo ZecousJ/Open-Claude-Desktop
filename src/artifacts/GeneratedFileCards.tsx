@@ -4,9 +4,9 @@ import { DownloadAllButton, GeneratedFileCard } from "./GeneratedFileCard";
 import "./generated-file-card.css";
 
 /**
- * The file cards under a finished change and, for two or more files, Download
- * all. Loaded on first use, with its styles, so the web app's first load stays
- * within budget.
+ * The file cards under a finished change and, for two or more files,
+ * Download all (R-0941, R-0956). Loaded on first use, with its styles, so
+ * the web app's first load stays within budget.
  */
 export default function GeneratedFileCards({
   files,

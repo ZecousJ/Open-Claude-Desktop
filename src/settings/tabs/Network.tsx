@@ -4,7 +4,7 @@ import type { TabProps } from "../context";
 import { t } from "../../i18n";
 import "../network.css";
 
-// Endpoint purposes:.
+// Endpoint purposes: (live claude.ai bundle, 2026-10-14, c98ac6b4b-wwf01Khc.js).
 export function NetworkTab({ onError }: TabProps) {
   const [endpoints, setEndpoints] = useState<AppEnvironment["updateEndpoints"]>(
     [],

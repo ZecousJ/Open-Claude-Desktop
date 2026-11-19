@@ -7,10 +7,18 @@ import {
   type EditorKind,
 } from "../../shared/editors";
 
+export type EditorSshTarget = NonNullable<Parameters<typeof editorUrl>[2]>;
+export type EditorFileLaunch = {
+  ssh?: EditorSshTarget;
+  current?(): boolean;
+  verify?(): Promise<boolean>;
+};
+
 /**
- * Open in ▸ editors: an editor counts as installed when the system has an app
- * for its URL scheme; the folder opens through that scheme, over SSH as a VS
- * Code remote. Xcode opens the folder's project file and is offered only where
+ * Open in ▸ editors (desktop 2.37337.1, the main process's editor list):
+ * an editor counts as installed when the system has an app for its URL
+ * scheme; the folder opens through that scheme, over SSH as a VS Code
+ * remote. Xcode opens the folder's project file and is offered only where
  * one exists.
  */
 const editors: Record<
@@ -96,6 +104,7 @@ export async function openInEditor(
   kind: EditorKind,
   folder: string,
   ssh?: { destination: string; port?: number },
+  current?: () => boolean,
 ): Promise<boolean> {
   const editor = editors[kind];
   if (!editor) return false;
@@ -104,13 +113,52 @@ export async function openInEditor(
   if (kind === "xcode") {
     if (ssh) return false;
     const project = await xcodeProjectFile(folder);
-    if (!project || (await fs.promises.lstat(project)).isSymbolicLink())
+    if (
+      !project ||
+      (await fs.promises.lstat(project)).isSymbolicLink() ||
+      current?.() === false
+    )
       return false;
     return !(await shell.openPath(project));
   }
-  if (ssh && kind === "zed") return false;
+  if ((ssh && kind === "zed") || current?.() === false) return false;
   await shell.openExternal(
     editorUrl(found.protocol, folder, ssh, process.platform === "win32"),
   );
+  return true;
+}
+
+/** Opens a file at an optional position using a registered editor protocol. */
+export async function openFileInEditor(
+  kind: Exclude<EditorKind, "xcode">,
+  file: string,
+  line?: number,
+  column?: number,
+  options: EditorFileLaunch = {},
+): Promise<boolean> {
+  if (options.ssh && kind === "zed") return false;
+  const found = await handler(kind);
+  if (!found) return false;
+  const position =
+    line === undefined
+      ? ""
+      : `:${line}${column === undefined ? "" : `:${column}`}`;
+  const target = file + position;
+  const windows = process.platform === "win32";
+  if (kind === "zed" && position && !windows) {
+    // Zed prefers an existing literal filename over its line and column suffix.
+    const sibling = await fs.promises.lstat(target).catch((error: unknown) => {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT")
+        return undefined;
+      throw error;
+    });
+    if (sibling) return false;
+  }
+  const url = options.ssh
+    ? editorUrl(found.protocol, file, options.ssh) + position
+    : editorUrl(found.protocol, target, undefined, windows);
+  if (options.verify && !(await options.verify())) return false;
+  if (options.current?.() === false) return false;
+  await shell.openExternal(url);
   return true;
 }

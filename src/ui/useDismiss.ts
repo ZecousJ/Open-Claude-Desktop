@@ -2,11 +2,13 @@ import { useEffect, useRef, type RefObject } from "react";
 
 /**
  * The open layers that answer Escape, oldest first. Escape closes only the
- * innermost one, so a menu in a dialog, a submenu in a menu and a popover over
- * voice mode each leave what is under them open. Document listeners run oldest
- * first, so each one checks it is the innermost before it acts; whoever handles
- * Escape on `document` for something that can sit under a layer asks
- * `hasEscapeLayer()` first.
+ * innermost one (the original's menus and dialogs: Base UI
+ * `closeParentOnEsc` is false, live claude.ai bundle, 2026-10-16,
+ * vendor-frame-G1rQD-pP), so a menu in a dialog, a submenu in a menu and a
+ * popover over voice mode each leave what is under them open. Document
+ * listeners run oldest first, so each one checks it is the innermost before
+ * it acts; whoever handles Escape on `document` for something that can sit
+ * under a layer asks `hasEscapeLayer()` first.
  */
 const escapeLayers: symbol[] = [];
 
@@ -60,9 +62,10 @@ export function useEscapeLayer(open: boolean, onEscape: () => void) {
  * for popovers rendered in a portal, the popover itself; pressing the trigger
  * then toggles instead of closing and reopening.
  *
- * `modal` makes the press only close it: the original's menus are modal, so the
- * control under the press does not also receive it, and the page behind does
- * not scroll while the popover is up.
+ * `modal` makes the press only close it: the original's menus are modal (a
+ * backdrop over the page, desktop bundle 2.31226.1), so the control under
+ * the press does not also receive it, and the page behind does not scroll
+ * while the popover is up.
  */
 export function useDismiss(
   containers: RefObject<HTMLElement | null>[],

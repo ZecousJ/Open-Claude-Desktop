@@ -108,11 +108,13 @@ const switchRows: {
 ];
 
 /**
- * Memory: the two switches exactly as the original, then, while Generate is
- * on, the live "View and manage memory" row and Import memory. Memory is reset,
- * as in the original, by turning Generate off and choosing Reset memory. An
- * administrator's lock disables a switch and says so; offline shows the cached
- * switches read-only; a service without memory shows only why.
+ * Memory (R-1452–R-1460): the two switches exactly as the original
+ * (R-设置-Memory-顶部), then, while Generate is on, the live "View and
+ * manage memory" row (live claude.ai bundle, 2026-10-12) and Import memory.
+ * Memory is reset, as in the original, by turning Generate off and
+ * choosing Reset memory. An administrator's lock disables a switch and says so;
+ * offline shows the cached switches read-only; a service without memory
+ * shows only why.
  */
 export function MemoryTab({ onError }: TabProps) {
   const memory = useMemory(onError);
@@ -191,8 +193,8 @@ export function MemoryPage({
   return (
     <>
       <Section title="Memory" headingLevel={2}>
-        {/* Without memory on the service: the original's two switches, off and
-           disabled, with why. */}
+        {/* Without memory on the service: the original's two switches,
+            off and disabled, with why (R-1453, UI first). */}
         {view.kind === "unavailable" &&
           switchRows.map((row) => (
             <Row key={row.key} label={row.label} description={row.description}>
@@ -258,8 +260,9 @@ function MemoryRows({
   const offline = !status.available;
   return (
     <>
-      {/* A full-width "View and manage memory · Updated …" button with a caret
-         that opens the memory, or a still "Chat memory · No memory yet". */}
+      {/* Live claude.ai bundle (2026-10-12, the memory row): a full-width
+          "View and manage memory · Updated …" button with a caret that
+          opens the memory, or a still "Chat memory · No memory yet". */}
       {doc?.content.trim() ? (
         <button
           type="button"

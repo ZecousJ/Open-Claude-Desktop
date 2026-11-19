@@ -17,6 +17,17 @@ func init() {
 	gin.SetMode(gin.TestMode)
 }
 
+func TestOfficialWebCodePreviewCSP(t *testing.T) {
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Header("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none'; frame-src 'self'; connect-src 'self' https://api.example.test")
+	AllowOfficialWebFrame(c, "https://preview.example.test:443")
+	policy := c.Writer.Header().Get("Content-Security-Policy")
+	require.Contains(t, policy, "frame-ancestors 'self'")
+	require.Contains(t, policy, "frame-src 'self' https://preview.example.test:443 https://*.example.test:443")
+	require.Contains(t, policy, "connect-src 'self' https://api.example.test https://*.example.test:443")
+	require.NotContains(t, policy, "script-src")
+}
+
 func TestGenerateNonce(t *testing.T) {
 	t.Run("generates_valid_base64_string", func(t *testing.T) {
 		nonce, err := GenerateNonce()

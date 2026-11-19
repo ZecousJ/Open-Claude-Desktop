@@ -683,7 +683,7 @@ test("actual project row menu shows captured icons and single-key shortcuts, and
     );
     assert.equal(
       env.document.querySelectorAll(
-        '[role="menuitem"] .menu-icon :is(svg, [data-icon])',
+        '[role="menuitem"] .menu-icon :is(svg, [data-anthropicon])',
       ).length,
       5,
     );

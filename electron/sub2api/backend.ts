@@ -1,3 +1,4 @@
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
 import { drawsOnly, type ServiceGroup } from "../account/api-groups";
 import type {
   PlanUsage,
@@ -28,11 +29,13 @@ export interface KeyStore {
   setKeys(
     patch: Record<string, string>,
     providers: Provider[],
+    current?: AccountOperationCurrent,
   ): Promise<Record<string, boolean>>;
   remote(
     provider: Provider,
     route: "models" | "usage",
     apiKey?: string,
+    current?: AccountOperationCurrent,
   ): Promise<RemoteReply>;
   /** False without OS encryption: the key is then kept in memory for this run. */
   readonly canPersist: boolean;
@@ -78,6 +81,7 @@ export class RemoteBackend {
    */
   catalog: ModelCatalog | null = null;
   provisioning?: Promise<void>;
+  provisioningChecks?: Set<AccountOperationCurrent>;
   private lock: Promise<unknown> = Promise.resolve();
   /** The device key when it cannot be stored encrypted; the service returns it at each sign-in. */
   memoryKey = "";
@@ -103,9 +107,9 @@ export class RemoteBackend {
     private dataRoot: string,
     public now: () => number = Date.now,
   ) {
-    this.bootstrap = new ClaudexBootstrapSource((etag) =>
+    this.bootstrap = new ClaudexBootstrapSource((etag, current) =>
       session.authorized((token) =>
-        accounts.client.bootstrap(token, this.deviceId, etag),
+        accounts.client.bootstrap(token, this.deviceId, etag), current,
       ),
     );
     this.usage = new SubscriptionUsage(
@@ -167,8 +171,9 @@ export class RemoteBackend {
     return this.plan?.name;
   }
   /** Chooses the plan, stores this device's key and reads the plan's models. */
-  prepare(keys: KeyStore): Promise<Provider> {
-    return this.serial(() => this.load(keys));
+  prepare(keys: KeyStore, current?: AccountOperationCurrent): Promise<Provider> {
+    assertAccountOperationCurrent(current);
+    return this.serial(() => { assertAccountOperationCurrent(current); return this.load(keys, current); });
   }
   /** Key provisioning runs one at a time, so the device key is never created twice. */
   serial<T>(task: () => Promise<T>): Promise<T> {
@@ -191,7 +196,9 @@ export class RemoteBackend {
     keys: KeyStore,
     provider: Provider,
     registration: ClaudexDeviceRegistration,
+    current?: AccountOperationCurrent,
   ) {
+    assertAccountOperationCurrent(current);
     const key = registration.apiKey?.key ?? "";
     const groupKeys = this.groupKeysOf(provider, registration);
     if (keys.canPersist) {
@@ -200,18 +207,21 @@ export class RemoteBackend {
       // Entries of groups the account no longer has leave the vault.
       await keys.setKeys(
         { [provider.id]: key, ...groupKeys },
-        vaultProviders(provider, Object.keys(groupKeys)),
+        vaultProviders(provider, Object.keys(groupKeys)), current,
       );
+      assertAccountOperationCurrent(current);
     } else {
       this.memoryKey = key;
       this.memoryGroupKeys = groupKeys;
     }
   }
-  async storeKey(keys: KeyStore, provider: Provider, key: string) {
+  async storeKey(keys: KeyStore, provider: Provider, key: string, current?: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
     if (keys.canPersist) {
       this.memoryKey = "";
       this.memoryGroupKeys = {};
-      await keys.setKeys({ [provider.id]: key }, [provider]);
+      await keys.setKeys({ [provider.id]: key }, [provider], current);
+      assertAccountOperationCurrent(current);
     } else {
       this.memoryKey = key;
       this.memoryGroupKeys = {};

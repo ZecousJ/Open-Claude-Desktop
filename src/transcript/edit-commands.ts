@@ -12,7 +12,7 @@ export function historyEditor(document: Document) {
 }
 
 // Dispatch beforeinput so ProseMirror/CodeMirror can consume their own history
-// .
+// (live claude.ai bundle, 2026-10-14, shared-23-RHw-hr47.js).
 export function installEditCommands(document: Document, api: DesktopAPI) {
   if (!api.claimEditCommands) return () => {};
   void api.claimEditCommands();

@@ -1,11 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import type {
+  CustomConnector,
   McpServerState,
   McpToolState,
 } from "../../shared/settings-desktop-api";
 import { starterConnectorId } from "../../shared/starter-integrations";
 import { computerUseServerName } from "../../shared/computer-use";
+import { HIWONDER_KNOWLEDGE_SERVER } from "../../shared/knowledge-api";
 import {
   alwaysAllowedTools,
   toolApprovalMode,
@@ -84,20 +86,7 @@ export function validBearerToken(value: unknown) {
   return token;
 }
 
-export interface CustomConnectorInput {
-  replaceName?: string;
-  name: string;
-  displayName?: string;
-  clientId?: string;
-  clientSecret?: string;
-  transport?: "sse" | "streamable-http";
-  connectorId?: import("../../shared/starter-integrations").StarterConnectorId;
-  url: string;
-  /** The environment variable holding a bearer token; never the token. */
-  bearerTokenEnvVar?: string;
-  /** The web: the token itself, kept on the runner (never written to settings). */
-  bearerToken?: string;
-}
+export type CustomConnectorInput = CustomConnector;
 
 /**
  * Checks a custom remote connector and returns its configuration entry
@@ -112,7 +101,8 @@ export function customConnectorEntry(
   const name = typeof input?.name === "string" ? input.name.trim() : "";
   if (!/^[a-zA-Z0-9_-]{1,64}$/.test(name))
     throw Error("Use letters, numbers, - and _ for the name (up to 64).");
-  if (reservedMcpServerName(name)) throw Error(reservedNameMessage(name));
+  if (name.toLowerCase() === HIWONDER_KNOWLEDGE_SERVER || reservedMcpServerName(name))
+    throw Error(reservedNameMessage(name));
   const replacing = input.replaceName;
   const previous = existing[name] as Record<string, unknown> | undefined;
   if (
@@ -145,6 +135,7 @@ export function customConnectorEntry(
     delete entry.bearer_token_env_var;
     delete entry.http_headers;
     delete entry.env_http_headers;
+    delete entry.claudex_directory_id;
   }
   if (input.transport !== undefined) {
     if (input.transport !== "sse" && input.transport !== "streamable-http")
@@ -176,6 +167,11 @@ export function customConnectorEntry(
     const identity = starterConnectorId(input.connectorId);
     if (!identity) throw Error("Choose a valid connector.");
     entry.connector_id = identity;
+  }
+  if (input.directoryId !== undefined) {
+    if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(input.directoryId))
+      throw Error("Choose a valid directory connector.");
+    entry.claudex_directory_id = input.directoryId;
   }
   const variable =
     typeof input.bearerTokenEnvVar === "string"
@@ -314,6 +310,7 @@ export function mcpServerStates(
     name: string;
     tools?: Record<string, unknown>;
     authStatus?: string;
+    serverInfo?: unknown;
   }[],
 ): McpServerState[] {
   const known = ["starting", "ready", "failed", "cancelled"];
@@ -334,7 +331,9 @@ export function mcpServerStates(
     const disabled = Array.isArray(config.disabled_tools)
       ? config.disabled_tools.map(String)
       : [];
-    const toolList = Object.entries(live?.tools ?? {})
+    const toolList: NonNullable<McpServerState["toolList"]> = Object.entries(
+      live?.tools ?? {},
+    )
       .map(([key, raw]) => {
         const tool = (raw ?? {}) as Record<string, unknown>;
         const toolName = typeof tool.name === "string" ? tool.name : key;
@@ -347,6 +346,22 @@ export function mcpServerStates(
           enabled: !disabled.includes(toolName),
           ...approvalOf(config, toolName),
           ...toolAccess(tool.annotations),
+          definition: {
+            name: toolName,
+            ...(typeof tool.description === "string"
+              ? { description: tool.description }
+              : {}),
+            ...Object.fromEntries(
+              ["inputSchema", "annotations", "_meta"]
+                .filter(
+                  (k) =>
+                    tool[k] &&
+                    typeof tool[k] === "object" &&
+                    !Array.isArray(tool[k]),
+                )
+                .map((k) => [k, tool[k]]),
+            ),
+          },
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -369,6 +384,9 @@ export function mcpServerStates(
       ...(typeof config.display_name === "string"
         ? { displayName: config.display_name }
         : {}),
+      ...(typeof config.claudex_directory_id === "string"
+        ? { directoryId: config.claudex_directory_id }
+        : {}),
       state,
       error: state === "failed" ? started?.error : undefined,
       tools: Object.keys(live?.tools ?? {}).length,
@@ -377,9 +395,12 @@ export function mcpServerStates(
       ...(auth === "notLoggedIn" ||
       auth === "oAuth" ||
       auth === "bearerToken" ||
+      auth === "staticHeaders" ||
       auth === "unsupported"
         ? { authStatus: auth }
-        : {}),
+        : live?.serverInfo && (auth === undefined || auth === "unknown")
+          ? { authStatus: "unsupported" as const }
+          : {}),
       command:
         typeof config.command === "string"
           ? [config.command, ...(Array.isArray(config.args) ? config.args : [])]

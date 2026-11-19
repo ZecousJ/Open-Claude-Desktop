@@ -177,7 +177,8 @@ export function useAppNavigation(kit: UseAppNavigationKit) {
     upsert,
   } = kit;
   // The conversation last shown in each area of the sidebar's Chat | Code
-  // switch, so switching back returns to it.
+  // switch, so switching back returns to it (owner, 2026-10-22: Code →
+  // Chat → Code opened a new session instead of the one left).
   const lastShown = useRef<{ chat?: string; code?: string }>({});
   useEffect(() => {
     if (page !== "chat" || incognito || !activeId) return;
@@ -338,8 +339,9 @@ export function useAppNavigation(kit: UseAppNavigationKit) {
     setArtifact(paired);
     setPanel(null);
     follow.current = true;
-    // The conversation's composer takes the focus, as the live chat page does;
-    // not on a touch screen, where it would raise the keyboard.
+    // The conversation's composer takes the focus, as the live chat page
+    // does (live claude.ai bundle, 2026-10-12: refocusComposerOnConversation
+    // Change); not on a touch screen, where it would raise the keyboard.
     if (!globalThis.matchMedia?.("(pointer: coarse)").matches)
       setTimeout(() => {
         const field = composer.current;
@@ -413,6 +415,7 @@ export function useAppNavigation(kit: UseAppNavigationKit) {
     };
     if (
       link.kind === "needs-input" ||
+      link.kind === "code-continue" ||
       (link.kind === "conversation" && link.id === "last")
     ) {
       const waiting = new Set(
@@ -469,7 +472,8 @@ export function useAppNavigation(kit: UseAppNavigationKit) {
     }
     // Panes, Open File… and Reopen Closed Session need the window's state.
     if (runShellCommand(command)) return;
-    // ⌘K opens the palette or closes it; ⇧⌘K opens it on Search.
+    // ⌘K opens the palette or closes it; ⇧⌘K opens it on Search (live
+    // claude.ai bundle, 2026-10-12: toggleCommandPalette, search_palette).
     if (command === "search") {
       setSearchEntrypoint("default");
       setSearch((current) => (current === null ? "" : null));
@@ -480,8 +484,8 @@ export function useAppNavigation(kit: UseAppNavigationKit) {
       window.dispatchEvent(new Event(searchViewEvent));
     }
     if (command === "new-chat") newChat();
-    // ⇧⌘I enters incognito from Chat, or leaves it. The administrator can turn
-    // incognito off; leaving it always works.
+    // ⇧⌘I enters incognito from Chat, or leaves it (R-0001, R-0003).
+    // The administrator can turn incognito off; leaving it always works.
     if (command === "incognito" && (policy.incognito || incognitoShown))
       newChat("chat", undefined, !incognitoShown);
     // Settings… opens Claudex Code's page from Code, System's elsewhere.
@@ -542,7 +546,7 @@ export function useAppNavigation(kit: UseAppNavigationKit) {
     Boolean(panel || artifact),
     setPanel,
   );
-  // Background terminals of the open Code task, for its inline rows and badge.
+  // Background terminals of the open Code task, for its inline rows and badge (R-0646).
   const { terminals: activeTerminals } = useNativeBackgroundTerminals(
     active?.mode === "code" ? [active] : [],
     active?.id,

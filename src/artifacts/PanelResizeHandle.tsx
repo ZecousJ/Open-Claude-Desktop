@@ -7,12 +7,12 @@ const max = 80;
 
 /**
  * What the original leaves each side of the divider at the W969 window with the
- * sidebar collapsed: dragged narrowest the panel is 321px wide, widest 365px,
- * so the chat column keeps 435px. The same limits hold for the Artifact panel
- * and the file viewer. Widths are kept as a share of the workspace, so the
- * limits become shares of the current workspace. The Artifact panel sits 10px
- * further in than the file viewer (artifact-collaboration.md), hence 341 and
- * 423.
+ * sidebar collapsed (R-0920, R-0921, R-0922, R-0923; 2.4 image px per CSS px):
+ * dragged narrowest the panel is 321px wide, widest 365px, so the chat column
+ * keeps 435px. The same limits hold for the Artifact panel and the file
+ * viewer. Widths are kept as a share of the workspace, so the limits become
+ * shares of the current workspace. The Artifact panel sits 10px further in
+ * than the file viewer (artifact-collaboration.md), hence 341 and 423.
  */
 const limitsPx = {
   viewer: { least: 331, chatInset: 433 },

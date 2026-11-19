@@ -4,6 +4,13 @@ import { t } from "../i18n";
 export function showDispatchNotification(
   deviceId: string,
   event: Extract<DeviceAppEvent, { type: "dispatch-notification" }>,
+  {
+    path = "/dispatch",
+    current = () => true,
+  }: {
+    path?: string;
+    current?: () => boolean;
+  } = {},
 ) {
   if (
     typeof Notification === "undefined" ||
@@ -16,11 +23,14 @@ export function showDispatchNotification(
       tag: event.tag,
     });
     notice.onclick = () => {
-      window.focus();
-      window.location.assign(
-        `/dispatch?device=${encodeURIComponent(deviceId)}&task=${encodeURIComponent(event.conversationId)}`,
-      );
+      if (current()) {
+        window.focus();
+        window.location.assign(
+          `${path}?device=${encodeURIComponent(deviceId)}&task=${encodeURIComponent(event.conversationId)}`,
+        );
+      }
       notice.close();
     };
+    return notice;
   } catch {}
 }

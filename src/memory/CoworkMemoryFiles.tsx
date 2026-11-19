@@ -4,7 +4,8 @@ import { t } from "../i18n";
 import { api } from "../desktop-api";
 import { ConfirmationDialog } from "../dialogs/ConfirmationDialog";
 
-// Account-file editing.
+// Account-file editing (live claude.ai bundle, 2026-10-14,
+// c953053b7-DnFvXby4.js:187, 208, 223, 307).
 export function CoworkMemoryFiles({
   onClose,
   onError,

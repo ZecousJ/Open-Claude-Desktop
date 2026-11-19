@@ -26,7 +26,7 @@ import "./cloud-environment.css";
 const variableExample =
   'NODE_ENV=production\nGIT_AUTHOR_NAME=Your Name\n\n# Multiline values - wrap in quotes\nCONFIG="key1=val1\nkey2=val2"';
 
-/** Cloud form, archive and discard. */
+/** Cloud form, archive and discard (live claude.ai bundle, 2026-10-14, c73f2f585, c28ccf1ab, c80320932). */
 export function CloudEnvironmentDialog({
   environment,
   onError,
@@ -46,7 +46,8 @@ export function CloudEnvironmentDialog({
     allowTrailingBareKey: true,
   });
   const dirty = JSON.stringify(value) !== JSON.stringify(initial);
-  // Custom access needs at least one domain, each a valid one.
+  // Custom access needs at least one domain, each a valid one (live bundle,
+  // 2026-10-16, c73f2f585 domainsRequired; c512c69e9 for the format).
   const domains = value.allowedDomains
     .map((domain) => domain.trim())
     .filter(Boolean);

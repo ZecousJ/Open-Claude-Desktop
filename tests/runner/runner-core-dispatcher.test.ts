@@ -9,6 +9,7 @@ import { useElectronShim } from "./runner-core-support.test.ts";
 import type { RunnerFrame } from "../../shared/web-runner-frames";
 import {
   webAbsentMethods,
+  webMethodKind,
   webRemoteRunnerMethods,
 } from "../../shared/web-bridge-methods";
 
@@ -22,6 +23,14 @@ test("every remote-runner method has a handler; nothing else is served", () => {
   const missing = webRemoteRunnerMethods.filter((m) => !registered.includes(m));
   assert.deepEqual(missing, [], "remote-runner methods no domain registers");
   const d = new Dispatcher(options());
+  // An independent literal catches accidental table/handler regressions even
+  // when the generated expected method list changes along with the dispatcher.
+  assert.equal(webMethodKind("turnAttachment"), "remote-runner");
+  assert.ok(registered.includes("turnAttachment"));
+  assert.equal(d.options.officialUiRoot, undefined);
+  assert.equal(d.options.officialUiActions, undefined);
+  assert.ok(d.methods.includes("turnAttachment"));
+  assert.equal(d.missing.includes("turnAttachment"), false);
   assert.deepEqual(d.methods, [...webRemoteRunnerMethods]);
   assert.deepEqual(d.missing, []);
   // Desktop-only handlers the domains register are left out.
@@ -32,7 +41,8 @@ test("every remote-runner method has a handler; nothing else is served", () => {
     "uploadSkill",
   ])
     assert.ok(
-      d.dropped.includes(name) && webAbsentMethods.includes(name),
+      d.dropped.includes(name) && webAbsentMethods.includes(name) &&
+        !d.methods.includes(name),
       name,
     );
   assert.equal(d.methods.includes("previewDocument"), false);
@@ -51,6 +61,7 @@ interface FakeContext {
   stops: number;
   artifactPreviews: { document: () => undefined };
   setAccessToken(token: string): void;
+  officialSessionIdentity(): object;
   busy(): boolean;
   engineRunning(): boolean;
   stopEngine(): Promise<void>;
@@ -59,6 +70,7 @@ interface FakeContext {
 }
 
 function fakeContext(userId: number): FakeContext {
+  const activation = {};
   const ctx: FakeContext = {
     userId,
     handlers: new Map(),
@@ -74,6 +86,7 @@ function fakeContext(userId: number): FakeContext {
     setAccessToken(token) {
       ctx.token = token;
     },
+    officialSessionIdentity: () => activation,
     busy: () => ctx.isBusy,
     engineRunning: () => ctx.running,
     async stopEngine() {
@@ -167,6 +180,36 @@ test("calls run in the user's context with the newest token", async () => {
   );
   await d.call(call(1, "toString"));
   assert.equal(lastResult(o.frames).ok, false);
+});
+
+test("snapshot results above the frame limit keep their full conversation history", async () => {
+  const o = options();
+  const d = new Dispatcher(o);
+  await d.call(call(1, "snapshot"));
+  const text = "é🌏".repeat(4_400_000);
+  const snapshot = {
+    conversations: [
+      {
+        turns: [
+          {
+            items: [
+              {
+                type: "agentMessage",
+                text,
+                generatedFiles: [
+                  { id: "report", content: "# Report\nOriginal content\n" },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  o.contexts.get(1)!.handlers.set("snapshot", () => snapshot);
+  await d.call(call(1, "snapshot"));
+  assert.equal(lastResult(o.frames).ok, true);
+  assert.deepEqual(lastResult(o.frames).value, snapshot);
 });
 
 test("a payment page opens in the calling user's tab", async () => {
@@ -326,10 +369,12 @@ test("a due scheduled task wakes its user: a token from Go, a context, one tick"
   });
   const d = new Dispatcher(o as any);
   let ticks = 0;
+  let archiveChecks = 0;
   const original = o.openContext;
   o.openContext = async (runtime: unknown, input: { userId: number }) => {
     const ctx: any = await original(runtime, input);
     ctx.scheduler = { tick: async () => void ticks++ };
+    ctx.codeAutoArchive = { check: async () => void archiveChecks++ };
     return ctx;
   };
   await d.wakeUser(701);
@@ -340,6 +385,11 @@ test("a due scheduled task wakes its user: a token from Go, a context, one tick"
   await d.wakeUser(701);
   assert.equal(o.contexts.size, 1);
   assert.equal(ticks, 2);
+  const lastActive = o.contexts.get(701)!.lastActive;
+  await d.wakeUser(701, { routine: false, codeArchive: true });
+  assert.equal(archiveChecks, 1);
+  assert.equal(ticks, 2);
+  assert.equal(o.contexts.get(701)!.lastActive, lastActive);
 });
 
 test("waking a user without a token from Go fails and opens nothing", async () => {

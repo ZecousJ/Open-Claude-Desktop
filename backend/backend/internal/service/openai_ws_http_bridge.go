@@ -369,7 +369,7 @@ func buildOpenAIWSHTTPBridgeErrorEvent(statusCode int, message string) []byte {
 	return body
 }
 
-func buildOpenAIWSHTTPBridgeFailedEvent(responseID, model string, source []byte, fallbackMessage string) []byte {
+func buildOpenAIWSFailedEvent(responseID, model string, source []byte, fallbackMessage string) []byte {
 	errorType := strings.TrimSpace(gjson.GetBytes(source, "error.type").String())
 	if errorType == "" {
 		errorType = strings.TrimSpace(gjson.GetBytes(source, "response.error.type").String())
@@ -634,6 +634,8 @@ func (s *OpenAIGatewayService) proxyOpenAIWSHTTPBridgeTurn(
 	upstreamTerminalEvent := ""
 	sawDone := false
 	wroteDownstream := false
+	semanticOutputSeen := false
+	generate := openAIWSPayloadBoolFromRaw(payload, "generate", true)
 	pendingClientMessages := make([][]byte, 0, 4)
 	pendingClientMessageBytes := int64(0)
 	capacityFailoverSuppressedLogged := false
@@ -712,7 +714,7 @@ func (s *OpenAIGatewayService) proxyOpenAIWSHTTPBridgeTurn(
 		if clientDisconnected {
 			return nil
 		}
-		clientMessage := buildOpenAIWSHTTPBridgeFailedEvent(responseID, originalModel, bareErrorPayload, bareErrorMessage)
+		clientMessage := buildOpenAIWSFailedEvent(responseID, originalModel, bareErrorPayload, bareErrorMessage)
 		if rewritten, changed := sanitizeOpenAICapacityShedErrorCodeForClient(clientMessage); changed {
 			clientMessage = rewritten
 		}
@@ -780,6 +782,16 @@ func (s *OpenAIGatewayService) proxyOpenAIWSHTTPBridgeTurn(
 		}
 		if openAIWSMessageShouldParseUsage(eventType, upstreamMessage) {
 			parseOpenAIWSResponseUsageFromCompletedEvent(upstreamMessage, &usage)
+		}
+		if officialOpenAIResponses {
+			if openAIWSCompletionIsEmpty(eventType, upstreamMessage, &usage, generate, semanticOutputSeen) {
+				if turn == 1 && !clientDisconnected && !wroteDownstream &&
+					openAIWSPayloadStringFromRaw(payload, "previous_response_id") == "" && !openAIWSRawPayloadHasToolCallOutput(payload) {
+					return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, resp.Header.Get("x-request-id"))
+				}
+				return nil, openAIWSEmptyCompletionCloseError(c)
+			}
+			semanticOutputSeen = semanticOutputSeen || openAIWSHasSemanticOutput(eventType, upstreamMessage)
 		}
 		if eventType == "error" || eventType == "response.failed" {
 			markOpenAICyberPolicyEvent(c, upstreamMessage, http.StatusOK, &usage)

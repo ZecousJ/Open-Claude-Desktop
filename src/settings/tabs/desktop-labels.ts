@@ -1,8 +1,8 @@
 /**
- * Search labels and pure helpers of the desktop and developer Settings pages.
- * Kept apart from the page components, which import their stylesheets, so
- * Settings search (`search/pages.ts`) and tests can load them without CSS. Each
- * page re-exports its `searchLabels`.
+ * Search labels and pure helpers of the desktop and developer Settings
+ * pages (package WP3). Kept apart from the page components, which import
+ * their stylesheets, so Settings search (`search/pages.ts`) and tests can
+ * load them without CSS. Each page re-exports its `searchLabels`.
  */
 import type { Settings } from "../../../shared/types";
 import type { McpServerState } from "../../../shared/settings-desktop-api";
@@ -142,7 +142,7 @@ export function shortcutOptions(accelerators: readonly string[]) {
   ];
 }
 
-/** The badge a server's state shows. */
+/** The badge a server's state shows (R-1433: running / failed). */
 export const mcpStateLabels: Record<McpServerState["state"], string> = {
   ready: "Running",
   starting: "Starting",

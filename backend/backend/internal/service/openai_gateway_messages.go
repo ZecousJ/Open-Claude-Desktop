@@ -656,13 +656,15 @@ func (s *OpenAIGatewayService) handleAnthropicBufferedStreamingResponse(
 		writeAnthropicError(c, http.StatusBadGateway, "api_error", message)
 		return nil, fmt.Errorf("upstream response failed: %s", message)
 	}
-	if strings.TrimSpace(finalResponse.Status) == "completed" {
-		logOpenAISuccessMissingUsage(c.Request.Context(), c, account, resp, &usage, "response.completed", false)
-	}
-
 	// When the terminal event has an empty output array, reconstruct from
 	// accumulated delta events so the client receives the full content.
 	acc.SupplementResponseOutput(finalResponse)
+	if account != nil && account.Platform == PlatformOpenAI && openAICompatBufferedCompletionIsEmpty(finalResponse, usage) {
+		return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, requestID)
+	}
+	if strings.TrimSpace(finalResponse.Status) == "completed" {
+		logOpenAISuccessMissingUsage(c.Request.Context(), c, account, resp, &usage, "response.completed", false)
+	}
 
 	anthropicResp := apicompat.ResponsesToAnthropic(finalResponse, originalModel)
 
@@ -703,6 +705,18 @@ func isOpenAICompatResponsesTerminalEvent(eventType string) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+func openAICompatBufferedCompletionIsEmpty(response *apicompat.ResponsesResponse, usage OpenAIUsage) bool {
+	return strings.TrimSpace(response.Status) == "completed" && response.Error == nil && response.IncompleteDetails == nil &&
+		len(response.Output) == 0 && !openAIUsageHasTokens(&usage) &&
+		(response.Usage == nil || response.Usage.TotalTokens <= 0)
+}
+
+func applyOpenAICompatTerminalUsage(usage *OpenAIUsage, terminal *apicompat.ResponsesUsage) {
+	if parsed := copyOpenAIUsageFromResponsesUsage(terminal); openAIUsageHasTokens(&parsed) {
+		*usage = parsed
 	}
 }
 
@@ -854,13 +868,13 @@ func (s *OpenAIGatewayService) readOpenAICompatBufferedTerminal(
 						acc.ProcessEvent(&event)
 						if response := openAICompatTerminalResponse(&event, []byte(payload)); isOpenAICompatResponsesTerminalEvent(event.Type) && response != nil {
 							if event.Usage != nil {
-								usage = copyOpenAIUsageFromResponsesUsage(event.Usage)
+								applyOpenAICompatTerminalUsage(&usage, event.Usage)
 								if response.Usage == nil {
 									response.Usage = event.Usage
 								}
 							}
 							if response.Usage != nil {
-								usage = copyOpenAIUsageFromResponsesUsage(response.Usage)
+								applyOpenAICompatTerminalUsage(&usage, response.Usage)
 							}
 							return response, usage, acc, nil
 						}
@@ -903,13 +917,13 @@ func (s *OpenAIGatewayService) readOpenAICompatBufferedTerminal(
 
 			if response := openAICompatTerminalResponse(&event, []byte(payload)); isOpenAICompatResponsesTerminalEvent(event.Type) && response != nil {
 				if event.Usage != nil {
-					usage = copyOpenAIUsageFromResponsesUsage(event.Usage)
+					applyOpenAICompatTerminalUsage(&usage, event.Usage)
 					if response.Usage == nil {
 						response.Usage = event.Usage
 					}
 				}
 				if response.Usage != nil {
-					usage = copyOpenAIUsageFromResponsesUsage(response.Usage)
+					applyOpenAICompatTerminalUsage(&usage, response.Usage)
 				}
 				return response, usage, acc, nil
 			}
@@ -950,6 +964,9 @@ func (s *OpenAIGatewayService) handleAnthropicStreamingResponse(
 	firstChunk := true
 	clientDisconnected := false
 	clientOutputStarted := false
+	semanticOutputSeen := false
+	checkEmptyCompletion := account != nil && account.Platform == PlatformOpenAI
+	var pendingStart []apicompat.AnthropicStreamEvent
 	var streamFailoverErr error
 	var streamNonFailoverErr error
 	terminalEventType := ""
@@ -1027,6 +1044,10 @@ func (s *OpenAIGatewayService) handleAnthropicStreamingResponse(
 		eventType := strings.TrimSpace(event.Type)
 		isBareErrorEvent := eventType == "error"
 		isTerminalEvent := isOpenAICompatResponsesTerminalEvent(eventType) || isBareErrorEvent
+		if checkEmptyCompletion && !isTerminalEvent && !clientOutputStarted && !semanticOutputSeen {
+			semanticOutputSeen = openAIStreamDataStartsVisibleOutput(payload, eventType) ||
+				(event.Item != nil && event.Item.EncryptedContent != "")
+		}
 		if isTerminalEvent {
 			terminalEventType = eventType
 			if event.Response != nil {
@@ -1034,11 +1055,17 @@ func (s *OpenAIGatewayService) handleAnthropicStreamingResponse(
 					responseID = id
 				}
 				if event.Response.Usage != nil {
-					usage = copyOpenAIUsageFromResponsesUsage(event.Response.Usage)
+					applyOpenAICompatTerminalUsage(&usage, event.Response.Usage)
 				}
 			}
 			if event.Usage != nil {
-				usage = copyOpenAIUsageFromResponsesUsage(event.Usage)
+				applyOpenAICompatTerminalUsage(&usage, event.Usage)
+			}
+			if checkEmptyCompletion && !clientOutputStarted && !semanticOutputSeen && !clientDisconnected &&
+				(eventType == "response.completed" || eventType == "response.done") &&
+				openAIResponsesCompletionIsEmpty([]byte(payload), &usage) {
+				streamFailoverErr = newOpenAIResponsesEmptyCompletedFailoverError(c, account, requestID)
+				return true
 			}
 			// cyber_policy 致命不可重试：标记供 handler 事后记录；以 Anthropic SSE error 事件
 			// 回写让客户端感知并停止重试（F4），丢弃后续转换输出。
@@ -1109,6 +1136,14 @@ func (s *OpenAIGatewayService) handleAnthropicStreamingResponse(
 
 		// Convert to Anthropic events
 		events := apicompat.ResponsesEventToAnthropicEvents(&event, state)
+		if checkEmptyCompletion && !clientOutputStarted && len(events) == 1 && events[0].Type == "message_start" {
+			pendingStart = events
+			return false
+		}
+		if len(pendingStart) > 0 && len(events) > 0 {
+			events = append(pendingStart, events...)
+			pendingStart = nil
+		}
 		if !clientDisconnected {
 			for _, evt := range events {
 				sse, err := apicompat.ResponsesAnthropicEventToSSE(evt)
@@ -1139,7 +1174,7 @@ func (s *OpenAIGatewayService) handleAnthropicStreamingResponse(
 	// finalizeStream sends any remaining Anthropic events and returns the result.
 	finalizeStream := func() (*OpenAIForwardResult, error) {
 		if streamFailoverErr != nil {
-			return resultWithUsage(), streamFailoverErr
+			return nil, streamFailoverErr
 		}
 		if streamNonFailoverErr != nil {
 			return resultWithUsage(), streamNonFailoverErr

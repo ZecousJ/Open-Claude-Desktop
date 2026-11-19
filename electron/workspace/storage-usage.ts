@@ -4,9 +4,10 @@ import type { Conversation } from "../../shared/types";
 import type { StorageUsage } from "../../shared/settings-desktop-api";
 
 /**
- * Settings → System → Storage: what Claudex keeps on this computer, measured on
- * disk in the official four areas, and what each conversation takes (the
- * cleanups in storage-cleanup.ts free exactly that).
+ * Settings → System → Storage (live claude.ai bundle, 2026-10-12): what
+ * Claudex keeps on this computer, measured on disk in the official four
+ * areas, and what each conversation takes (the cleanups in
+ * storage-cleanup.ts free exactly that).
  */
 
 /** Sizes on disk; links are never followed and anything unreadable is remembered. */
@@ -278,9 +279,9 @@ export function freedBytes(
 }
 
 /**
- * Cleanup can select a conversation: saved, on this computer, not pinned,
- * nothing running, and no activity for `days` days. Chat and Cowork are the
- * Cowork tasks; Code its sessions.
+ * Cleanup can select a conversation (P5i in the live bundle): saved, on
+ * this computer, not pinned, nothing running, and no activity for `days`
+ * days. Chat and Cowork are the Cowork tasks; Code its sessions.
  */
 export function cleanupEligible(
   conversation: Conversation,
@@ -299,10 +300,10 @@ export function cleanupEligible(
 }
 
 export const dayMs = 24 * 60 * 60 * 1000;
-/** The main dialog's "no activity in the last 30 days". */
+/** The main dialog's "no activity in the last 30 days" (tn in the live bundle). */
 export const staleDays = 30;
 
-/** The web caches Chromium keeps in userData. */
+/** The web caches Chromium keeps in userData (yfa in the live bundle). */
 const webCacheFolders = [
   "Cache",
   "Code Cache",
@@ -326,7 +327,7 @@ export interface StorageInput {
   now?: number;
 }
 
-/** How much space Claudex uses on this computer, by area. */
+/** How much space Claudex uses on this computer, by area (live claude.ai bundle, 2026-10-12). */
 export async function storageUsage(input: StorageInput): Promise<StorageUsage> {
   const { root, dataRoot } = input;
   const now = input.now ?? Date.now();

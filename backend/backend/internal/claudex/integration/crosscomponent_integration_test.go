@@ -20,6 +20,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/claudex/core"
 	claudexhook "github.com/Wei-Shaw/sub2api/internal/claudex/hook"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/voice"
+	"github.com/Wei-Shaw/sub2api/internal/claudex/webproto"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
 	coderws "github.com/coder/websocket"
@@ -190,17 +191,27 @@ func TestSignInRightAfterRevokeAllWorks(t *testing.T) {
 	for attempt := 0; ; attempt++ {
 		// Start early in a second so the revoke-all and the new token share it.
 		time.Sleep(time.Until(time.Now().Truncate(time.Second).Add(time.Second + 20*time.Millisecond)))
-		rec := h.do(http.MethodPost, fmt.Sprintf("/api/v1/admin/claudex/users/%d/devices/revoke-all", u.ID), "", nil, "")
+		oldNative, err := h.auth.GenerateTokenPair(h.ctx, u, "")
+		require.NoError(t, err)
+		nativeClaims, err := h.auth.ValidateToken(oldNative.AccessToken)
+		require.NoError(t, err)
+		claudexhook.TokensIssued(h.ctx, claudexhook.TokenIssue{UserID: u.ID, SessionID: nativeClaims.SessionID, UserAgent: "Claudex-Android/1.0"})
+
+		rec := h.do(http.MethodPost, "/api/v1/auth/revoke-all-sessions", oldNative.AccessToken, nil, "")
 		require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
 		fresh := h.token(u)
 		claims, err := h.auth.ValidateToken(fresh)
 		require.NoError(t, err)
 		var revokedAt time.Time
 		require.NoError(t, itDB.QueryRow(`SELECT revoked_at FROM claudex_session_revocations WHERE user_id = $1`, u.ID).Scan(&revokedAt))
-		if !claims.IssuedAt.Time.Truncate(time.Second).Equal(revokedAt.Truncate(time.Second)) {
+		if claims.IssuedAt.Unix() != revokedAt.Unix() || nativeClaims.IssuedAt.Unix() != revokedAt.Unix() {
 			require.Less(t, attempt, 3, "could not place a sign-in in the revoke-all's second")
 			continue
 		}
+		rec = h.do(http.MethodGet, "/api/v1/claudex/native-sessions", oldNative.AccessToken, nil, "")
+		require.Equal(t, http.StatusUnauthorized, rec.Code, rec.Body.String())
+		require.Contains(t, rec.Body.String(), "CLAUDEX_SESSION_REVOKED")
+
 		rec = h.do(http.MethodGet, "/api/v1/claudex/bootstrap", fresh, deviceHeaders(newDeviceID(), "1.4.0"), "")
 		require.Equal(t, http.StatusOK, rec.Code, "same-second sign-in: %s", rec.Body.String())
 		d := h.mustRegister(fresh)
@@ -211,6 +222,75 @@ func TestSignInRightAfterRevokeAllWorks(t *testing.T) {
 	rec := h.do(http.MethodGet, "/api/v1/claudex/devices", old, nil, "")
 	require.Equal(t, http.StatusUnauthorized, rec.Code)
 	require.Contains(t, rec.Body.String(), "CLAUDEX_SESSION_REVOKED")
+}
+
+func TestSingleSessionRevocationRefusesCachedAccessToken(t *testing.T) {
+	h := newHarness(t)
+	u := h.user()
+	h.adminJSON(http.MethodPut, "/web/settings", `{"enabled":true,"mode":"everyone","revision":0}`)
+	caller := h.token(u)
+
+	for _, kind := range []struct {
+		name, path, table string
+	}{
+		{"browser", "/web/sessions", "claudex_web_sessions"},
+		{"native", "/native-sessions", "claudex_native_sessions"},
+	} {
+		t.Run(kind.name, func(t *testing.T) {
+			pair, err := h.auth.GenerateTokenPair(h.ctx, u, "")
+			require.NoError(t, err)
+			claims, err := h.auth.ValidateToken(pair.AccessToken)
+			require.NoError(t, err)
+			var id int64
+			err = itDB.QueryRowContext(h.ctx, "INSERT INTO "+kind.table+
+				" (user_id, family_id, expires_at) VALUES ($1, $2, NOW() + INTERVAL '1 hour') RETURNING id",
+				u.ID, claims.SessionID).Scan(&id)
+			require.NoError(t, err)
+
+			path := "/api/v1/claudex" + kind.path
+			rec := h.do(http.MethodGet, path, pair.AccessToken, nil, "")
+			require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+			rec = h.do(http.MethodDelete, fmt.Sprintf("%s/%d", path, id), caller, nil, "")
+			require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+			rec = h.do(http.MethodGet, path, pair.AccessToken, nil, "")
+			require.Equal(t, http.StatusUnauthorized, rec.Code, rec.Body.String())
+			require.Contains(t, rec.Body.String(), "CLAUDEX_SESSION_REVOKED")
+			rec = h.do(http.MethodGet, path, caller, nil, "")
+			require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+		})
+	}
+
+	t.Run("logout after another tab signs in", func(t *testing.T) {
+		previous, err := h.auth.GenerateTokenPair(h.ctx, u, "")
+		require.NoError(t, err)
+		claims, err := h.auth.ValidateToken(previous.AccessToken)
+		require.NoError(t, err)
+		_, err = itDB.ExecContext(h.ctx, `INSERT INTO claudex_web_sessions
+			(user_id, family_id, expires_at) VALUES ($1, $2, NOW() + INTERVAL '1 hour')`, u.ID, claims.SessionID)
+		require.NoError(t, err)
+		replacement, err := h.auth.GenerateTokenPair(h.ctx, u, "")
+		require.NoError(t, err)
+		claims, err = h.auth.ValidateToken(replacement.AccessToken)
+		require.NoError(t, err)
+		_, err = itDB.ExecContext(h.ctx, `INSERT INTO claudex_web_sessions
+			(user_id, family_id, expires_at) VALUES ($1, $2, NOW() + INTERVAL '1 hour')`, u.ID, claims.SessionID)
+		require.NoError(t, err)
+
+		account := fmt.Sprintf(`{"account":"%d"}`, u.ID)
+		headers := map[string]string{
+			webproto.HeaderWeb: "1",
+			"Sec-Fetch-Site":   "same-origin",
+			"Cookie":           webproto.AccountCookie(u.ID) + "=" + replacement.RefreshToken,
+		}
+		rec := h.do(http.MethodPost, webproto.PathAuth+webproto.AuthLogout, previous.AccessToken, headers, account)
+		require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+		require.Empty(t, rec.Header().Values("Set-Cookie"))
+
+		rec = h.do(http.MethodGet, "/api/v1/claudex/web/sessions", previous.AccessToken, nil, "")
+		require.Equal(t, http.StatusUnauthorized, rec.Code, rec.Body.String())
+		rec = h.do(http.MethodPost, webproto.PathAuth+webproto.AuthRefresh, "", headers, account)
+		require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+	})
 }
 
 // B6 on the gateway: successes and SSE streams pass byte for byte; a device

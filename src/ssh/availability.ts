@@ -11,7 +11,7 @@
  *   features). Both are in: R9-S3/R9-S4 run sessions on a host and the
  *   composer's send carries the environment (src/app/composer-send.ts).
  *
- * The preview (scripts/preview/fixtures/ssh.ts) turns the second check on
+ * The preview (scripts/fidelity/fixtures/ssh.ts) turns the second check on
  * to draw the states against the references.
  */
 const remoteCodeSessions: boolean = true;

@@ -1,5 +1,5 @@
-/* Allowed sites: a 400px card; an Add URL field and 28px site rows, 20px apart;
-   Clear all at the left of the footer. */
+/* Allowed sites (desktop bundle 2.31226.1): a 400px card; an Add URL field
+   and 28px site rows, 20px apart; Clear all at the left of the footer. */
 .modal.allowed-sites {
   width: 400px;
   max-width: calc(100vw - 32px);

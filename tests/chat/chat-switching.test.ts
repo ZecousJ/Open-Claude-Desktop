@@ -1,7 +1,7 @@
 /**
- * Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 switch chats (Next chat, Previous chat,
- * Jump to chat) unless the focus is in the Browser, whose tabs they switch
- * then.
+ * Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 switch chats (Next chat, Previous
+ * chat, Jump to chat) unless the focus is in the Browser, whose tabs they
+ * switch then (live claude.ai bundle, 2026-10-12).
  */
 import test from "node:test";
 import assert from "node:assert/strict";

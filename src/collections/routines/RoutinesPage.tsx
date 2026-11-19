@@ -273,9 +273,9 @@ export function RoutinesPage({
         : undefined;
   const startChatSetup = () => {
     if (blocked || !app) return;
-    // Z's Chat branch routes the empty setup request to shared-18 DP. Reuse the
-    // same real Chat draft/submit path as the sidebar, including
-    // translated-draft delivery and owner guards.
+    // O16 ca9f82cfa: z's Chat branch routes the empty setup request to
+    // shared-18 DP. Reuse the same real Chat draft/submit path as the
+    // sidebar, including translated-draft delivery and owner guards.
     createScheduledChat(app, t(scheduledChatPrompt));
   };
   latestChatSetup.current = startChatSetup;

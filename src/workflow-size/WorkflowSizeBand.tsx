@@ -13,9 +13,10 @@ import { compactTokens, workflowSizeWarning } from "./workflow-size";
 const dismissed = new Set<string>();
 
 /**
- * "{name} is larger than most workflows." above a Code session's composer: how
- * many agents are scheduled or tokens projected, Stop workflow and View
- * workflow; dismissible for that run.
+ * "{name} is larger than most workflows." above a Code session's composer
+ * (live claude.ai bundle, 2026-10-15, cc43287c9 `k0`): how many agents are
+ * scheduled or tokens projected, Stop workflow and View workflow;
+ * dismissible for that run.
  */
 export function WorkflowSizeBand({
   conversation,

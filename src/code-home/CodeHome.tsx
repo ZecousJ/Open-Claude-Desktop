@@ -1,16 +1,11 @@
-import { Suspense, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Conversation } from "../../shared/types";
 import { useHost } from "../host/HostContext";
 import { t } from "../i18n";
-import { lazyPiece } from "../ui/lazy-piece";
 import { CodeHomeEnvironmentSlot } from "./CodeHomeEnvironmentSlot";
 import { useCodeHomeGutters } from "./useCodeHomeGutters";
 import { CodeHomeSuggestionsSlot } from "./CodeHomeSuggestionsSlot";
-
-const NativeCliImportCard = lazyPiece(
-  () => import("./NativeCliImportCard"),
-  "NativeCliImportCard",
-);
+import { CodeLandingTexture } from "./CodeLandingTexture";
 
 interface CodeHomeProps {
   name: string;
@@ -38,14 +33,12 @@ function DesktopCodeHome({ composer }: CodeHomeProps) {
     <CodeHomeEnvironmentSlot.Provider value={environmentSlot}>
       <CodeHomeSuggestionsSlot.Provider value={suggestionsSlot}>
         <div className="code-home-draft native-code-home">
+          <CodeLandingTexture />
           <div className="native-code-home-centre">
             <div
               className="native-code-home-environments"
               ref={setEnvironmentSlot}
             />
-            <Suspense fallback={null}>
-              <NativeCliImportCard />
-            </Suspense>
             <ul
               className="native-code-home-suggestions next-steps"
               aria-label={t("Next steps")}
@@ -68,6 +61,7 @@ function WebCodeHome({ composer }: { composer: ReactNode }) {
   return (
     <CodeHomeEnvironmentSlot.Provider value={environmentSlot}>
       <div className="code-home-draft" ref={home}>
+        <CodeLandingTexture />
         <div className="code-home-environments" ref={setEnvironmentSlot} />
         {composer}
       </div>

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/pkg/apicompat"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/Wei-Shaw/sub2api/internal/util/responseheaders"
 	"github.com/gin-gonic/gin"
@@ -74,6 +75,8 @@ func (s *OpenAIGatewayService) forwardOpenAIWSV2(
 	setOpenAIWSTurnMetadata(payload, turnMetadata)
 	applyStagedCodexFingerprintClientMetadata(c, account, payload)
 	previousResponseID := openAIWSPayloadString(payload, "previous_response_id")
+	generate, hasGenerate := payload["generate"].(bool)
+	inspectEmptyCompletion := account.Platform == PlatformOpenAI && (!hasGenerate || generate) && isOpenAIResponsesBufferedCompletion(c, account)
 	previousResponseIDKind := ClassifyOpenAIPreviousResponseIDKind(previousResponseID)
 	promptCacheKey := strings.TrimSpace(clientPromptCacheKey)
 	if promptCacheKey == "" {
@@ -367,10 +370,17 @@ func (s *OpenAIGatewayService) forwardOpenAIWSV2(
 
 	usage := &OpenAIUsage{}
 	imageCounter := newOpenAIImageOutputCounter()
+	var outputAccumulator *apicompat.BufferedResponseAccumulator
+	var outputItems *responsesStreamOutputItems
+	if inspectEmptyCompletion && !reqStream {
+		outputAccumulator = apicompat.NewBufferedResponseAccumulator()
+		outputItems = newResponsesStreamOutputItems()
+	}
 	var firstTokenMs *int
 	responseID := ""
 	var finalResponse []byte
 	wroteDownstream := false
+	semanticOutputSeen := false
 	needModelReplace := originalModel != mappedModel
 	var mappedModelBytes []byte
 	if needModelReplace && mappedModel != "" {
@@ -665,6 +675,43 @@ readLoop:
 		if openAIWSMessageShouldParseUsage(eventType, message) {
 			parseOpenAIWSResponseUsageFromCompletedEvent(message, usage)
 		}
+		if outputAccumulator != nil {
+			if eventType == "response.output_item.done" {
+				outputItems.Observe(message)
+			}
+			if responsesStreamEventMayContributeToOutput(eventType) {
+				var event apicompat.ResponsesStreamEvent
+				if err := json.Unmarshal(message, &event); err == nil {
+					outputAccumulator.ProcessEvent(&event)
+				}
+			}
+			if isTerminalEvent {
+				if normalized, changed := normalizeResponsesStreamingTerminalOutput(message, outputAccumulator, outputItems, nil); changed {
+					message = normalized
+					responseField = gjson.GetBytes(message, "response")
+				}
+			}
+		}
+		if inspectEmptyCompletion {
+			if openAIWSCompletionIsEmpty(eventType, message, usage, true, semanticOutputSeen) {
+				if !wroteDownstream && !clientDisconnected && previousResponseID == "" && !HasFunctionCallOutput(payload) {
+					return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, lease.HandshakeHeader("x-request-id"))
+				}
+				emptyErr := errors.New(openAIResponsesEmptyCompletedMessage)
+				setOpsUpstreamError(c, http.StatusBadGateway, emptyErr.Error(), "")
+				if !clientDisconnected && wroteDownstream {
+					failed := buildOpenAIWSFailedEvent(responseID, originalModel, nil, emptyErr.Error())
+					emitStreamMessage(failed, true)
+					if !clientDisconnected {
+						markOpenAIWSClientVisibleFailure(c, "response.failed", failed)
+					}
+				} else if !clientDisconnected {
+					c.JSON(http.StatusBadGateway, gin.H{"error": gin.H{"type": "upstream_error", "message": emptyErr.Error()}})
+				}
+				return nil, emptyErr
+			}
+			semanticOutputSeen = semanticOutputSeen || openAIWSHasSemanticOutput(eventType, message)
+		}
 		imageCounter.AddSSEData(message)
 
 		if eventType == "error" || eventType == "response.failed" {
@@ -810,7 +857,6 @@ readLoop:
 			finalResponse = s.replaceModelInResponseBody(finalResponse, mappedModel, originalModel)
 		}
 		finalResponse = s.correctToolCallsInResponseBody(finalResponse)
-		populateOpenAIUsageFromResponseJSON(finalResponse, usage)
 		if responseID == "" {
 			responseID = strings.TrimSpace(gjson.GetBytes(finalResponse, "id").String())
 		}

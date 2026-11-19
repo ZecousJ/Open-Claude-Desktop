@@ -31,16 +31,18 @@ const ContextPopover = lazyPiece(
 );
 
 /**
- * The Code footer's context ring. Without a known window it shows the track
+ * The Code footer's context ring (R-Code-Browser单面板, R-0331: 12px, a
+ * 2px #2d2d2d track and a blue arc from twelve o'clock for the share of
+ * the context window in use). Without a known window it shows the track
  * only, and the tooltip gives the token count. Pressing it opens the usage
  * popover (ContextPopover): the context window and Compact session in a
- * session, and for an account on the Claudex service the balance, the spend of
- * today and the last 7 days and the group's limits, read when it opens. Before
- * there is a session the ring follows the group's fullest limit (amber from
- * 75%, red from 90%), as the live ring with no session follows the plan;
- * without limits it stays the empty ring. With a session, the popover's "See
- * detailed breakdown" closes it and posts the usage report in the transcript,
- * as the live one does.
+ * session, and for an account on the Claudex service the balance, the spend
+ * of today and the last 7 days and the group's limits, read when it opens.
+ * Before there is a session the ring follows the group's fullest limit (amber
+ * from 75%, red from 90%), as the live ring with no session follows the
+ * plan; without limits it stays the empty ring. With a session, the
+ * popover's "See detailed breakdown" closes it and posts the usage report in
+ * the transcript, as the live one does.
  */
 export function ContextRing({
   usage,
@@ -131,14 +133,16 @@ export function ContextRing({
   const planReset = planWindow
     ? resetIn(planWindow.resetsAt, Date.now())
     : null;
-  // Before a session there is no context to name: the plan's label, else "Usage
-  // limits" / "Usage".
+  // Before a session there is no context to name: the plan's label, else
+  // "Usage limits" / "Usage" (live bundle, 2026-10-16, c82492f2c gn: the
+  // "Context {summary}" text exists only in a session).
   const label =
     planLabel ??
     (usage.draft
       ? t(remote ? "Usage limits" : "Usage")
       : contextUsageLabel(usage));
-  // A draft without a Claudex account has nothing for the popover to hold.
+  // A draft without a Claudex account has nothing for the popover to hold
+  // (c82492f2c jn returns null when the panel is hidden).
   const hasPanel = !usage.draft || remote;
   const { props, tooltip } = useTooltip(label, {
     placement: "above",

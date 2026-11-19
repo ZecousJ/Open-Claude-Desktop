@@ -8,7 +8,10 @@ export function microphoneBlocked(error: unknown) {
   );
 }
 
-/** Why dictation can't start, as the original's microphone panel tells it. */
+/**
+ * Why dictation can't start, as the original's microphone panel tells it
+ * (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN: Ql).
+ */
 export type MicrophoneReason =
   | "permission_denied"
   | "no_microphone"
@@ -72,7 +75,7 @@ export function microphoneReasonCopy(reason: MicrophoneReason) {
   }
 }
 
-/** Permission guidance. */
+/** Permission guidance (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN). */
 export function microphoneGuidance(platform: string, desktop: boolean) {
   if (desktop && platform === "darwin")
     return "To use dictation, open System Settings, go to Privacy and Security, select Microphone, and turn on Claudex.";
@@ -100,9 +103,10 @@ export function dictationLabel(
 
 export const dictationErrorMs = 1500;
 
-/** Failure copy. */
+/** Failure copy (live claude.ai bundle, 2026-10-14, shared-9-DeK5IbyG). */
 export function dictationFailureCopy(reason: string | null, hasWords: boolean) {
-  // Dictation that stopped itself.
+  // Dictation that stopped itself (live claude.ai bundle, 2026-10-16,
+  // shared-9-eoxSi7VI, nc: auto_silence and auto_max_duration).
   if (reason === "auto_silence" || reason === "auto_max_duration")
     return {
       title:

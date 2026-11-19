@@ -18,7 +18,7 @@ import {
   PinOff,
   Trash2,
 } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { Conversation, Mode, Project } from "../../../shared/types";
 import { defaultFilter, type ListFilter } from "../../sidebar/listFilter";
 import {
@@ -49,7 +49,7 @@ import { historyPageView } from "./HistoryPageView";
 
 /** The Projects glyph of the row menu, as the selection toolbar's. */
 const ProjectsGlyph = ({ size }: { size?: number }) => (
-  <AppIcon name="Projects" size={size} />
+  <Anthropicon name="Projects" size={size} />
 );
 
 export function HistoryRowText({
@@ -120,9 +120,10 @@ export function HistoryRepositoryText({
 
 /**
  * "Chats and tasks": every conversation of the current surface with its last
- * activity. Search filters the list in place, tabs under the title pick Active,
- * Shared or Archived, and Select turns rows into checkboxes for selection
- * actions.
+ * activity (R-History-全部对话). Search filters the list in place, tabs under
+ * the title pick Active, Shared or Archived (Code: Active or Archived; live
+ * claude.ai bundle, 2026-10-14, c03be4f3b), and Select turns rows into
+ * checkboxes for selection actions.
  */
 export function HistoryPage({
   mode,
@@ -175,7 +176,8 @@ export function HistoryPage({
   const [busy, setBusy] = useState(false);
   const anchor = useRef<string>(undefined);
   const headingId = useId();
-  // Chats with a live link carry a Shared tag, except on the Shared tab.
+  // Chats with a live link carry a Shared tag, except on the Shared tab
+  // (live claude.ai chats page).
   const { ids: shared, pending: sharedPending } = useSharedConversations(
     mode !== "code",
   );
@@ -226,7 +228,7 @@ export function HistoryPage({
   ]);
   // The Shared tab waits for the list of links before it says it is empty.
   const loading = (tab === "shared" && sharedPending) || searchPending;
-  // Rows render a page at a time as the list scrolls.
+  // Rows render a page at a time as the list scrolls (R-1172).
   const [shown, setShown] = useState(pageSize);
   useEffect(() => setShown(pageSize), [query, filter, tab, mode]);
   const more = useRef<HTMLDivElement>(null);
@@ -284,8 +286,9 @@ export function HistoryPage({
   const chosen = rows.filter((c) => selected.has(c.id));
   const allArchived = chosen.length > 0 && chosen.every((c) => c.archived);
   const actions = selectionActions(chosen, approvalIds);
-  // Code's page is "Sessions"; Chat and Cowork's is "Recents" once they are one
-  // home (src/sidebar/recents-labels.ts).
+  // Code's page is "Sessions" (live claude.ai bundle, 2026-10-12: the
+  // all-sessions page scoped to Code); Chat and Cowork's is "Recents" once
+  // they are one home (src/sidebar/recents-labels.ts).
   const labels = historyLabels(mode, hub, kind);
   const title = labels.title;
   const noun = historyNoun(mode);
@@ -385,8 +388,9 @@ export function HistoryPage({
   return historyPageViewView;
 
   /**
-   * A row's menu, in the live order: Select, Pin, Mark as read, Rename, Add to
-   * project, Archive, Delete, with the keys p, u, r, a and d.
+   * A row's menu, in the live order (2026-10-16, shared-16 QX): Select, Pin,
+   * Mark as read, Rename, Add to project, Archive, Delete, with the keys p, u,
+   * r, a and d.
    */
   function rowEntries(c: Conversation): PageMenuEntry[] {
     const own = selectionActions([c], approvalIds);

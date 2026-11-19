@@ -1,9 +1,9 @@
 /**
- * Desktop and developer Settings pages: the switches' effect in the main
- * process (tray, login item, keep awake, Quick access), MCP configuration hot
- * reload and server states, skill uploads, storage, and the pages themselves.
- * Electron is replaced by a fake module and page stylesheets by empty modules,
- * so the real code runs under node:test.
+ * Desktop and developer Settings pages (package WP3): the switches' effect
+ * in the main process (tray, login item, keep awake, Quick access), MCP
+ * configuration hot reload and server states, skill uploads, storage, and
+ * the pages themselves. Electron is replaced by a fake module and page
+ * stylesheets by empty modules, so the real code runs under node:test.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -30,7 +30,6 @@ const fake = {
   shortcuts: new Map<string, () => void>(),
   /** Accelerators another app holds. */
   taken: new Set<string>(),
-  openAtLogin: false,
   cacheCleared: 0,
   /** The answer the system's question gets (1: Clear and restart). */
   answer: 0,
@@ -39,16 +38,17 @@ const fake = {
   quit: 0,
   opened: [] as string[],
 };
-(globalThis as any).__fakeElectron = {
+const fakeElectron = {
   app: {
     name: "Claudex",
     on: () => {},
     off: () => {},
     dock: { bounce: () => {}, setMenu: () => {} },
-    getLoginItemSettings: () => ({ openAtLogin: fake.openAtLogin }),
-    setLoginItemSettings: (value: { openAtLogin: boolean }) => {
-      fake.openAtLogin = value.openAtLogin;
-    },
+    getLoginItemSettings: (_options?: Electron.LoginItemSettingsOptions) => ({
+      openAtLogin: false,
+      executableWillLaunchAtLogin: false,
+    }),
+    setLoginItemSettings: (_settings: Electron.Settings) => {},
     relaunch: () => {
       fake.relaunched++;
     },
@@ -141,7 +141,8 @@ const fake = {
     },
   },
 };
-const electronNames = Object.keys((globalThis as any).__fakeElectron);
+(globalThis as any).__fakeElectron = fakeElectron;
+const electronNames = Object.keys(fakeElectron);
 registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "electron")
@@ -197,12 +198,17 @@ const running = (mode: Conversation["mode"]): Conversation =>
     turns: [{ id: "t", status: "inProgress", items: [], prompt: "" }],
   }) as unknown as Conversation;
 
-function integration(settings: () => Settings | undefined, now?: () => number) {
+function integration(
+  settings: () => Settings | undefined,
+  now?: () => number,
+  devicePreferences?: () => { menuBar?: boolean },
+) {
   let conversations: Conversation[] = [];
   const commands: string[] = [];
   const desktop = new DesktopIntegration({
     window: () => undefined,
     settings,
+    devicePreferences,
     conversations: () => conversations,
     command: (command) => commands.push(command),
     trayIcon: import.meta.filename,
@@ -217,6 +223,17 @@ function integration(settings: () => Settings | undefined, now?: () => number) {
     },
   };
 }
+
+test("a disabled device menu bar stays off after sign-out", () => {
+  let settings: Settings | undefined = { ...defaultSettings, menuBar: false };
+  const { desktop } = integration(() => settings, undefined, () => ({ menuBar: false }));
+  desktop.apply();
+  assert.equal(fake.trays.length, 0);
+  settings = undefined;
+  desktop.apply();
+  assert.equal(fake.trays.length, 0);
+  desktop.stop();
+});
 
 test("the menu bar icon follows the setting and stays when signed out", () => {
   assert.equal(preference(defaultSettings, "menuBar"), true);
@@ -369,6 +386,38 @@ test("a tray click brings up Quick Entry and only shows the main window without 
   assert.equal(desktop.hasTray(), true);
 });
 
+test("Remote Control keep-awake uses the device link without replacing other sleep holds", t => {
+  fake.blockers.clear();
+  const settings: Settings = { ...defaultSettings, remoteControlStayReachable: false };
+  let online = true;
+  const desktop = new DesktopIntegration({
+    window: () => undefined,
+    settings: () => settings,
+    remoteServing: () => online,
+    conversations: () => [],
+    command: () => {},
+    trayIcon: import.meta.filename,
+  });
+  t.after(() => desktop.stop());
+  desktop.start();
+  assert.equal(fake.blockers.size, 0);
+  settings.remoteControlStayReachable = true;
+  desktop.apply();
+  assert.equal(fake.blockers.size, 1);
+  online = false;
+  desktop.updateKeepAwake();
+  assert.equal(fake.blockers.size, 0);
+  online = true;
+  desktop.updateKeepAwake();
+  settings.keepAwake = true;
+  settings.remoteControlStayReachable = false;
+  desktop.apply();
+  assert.equal(fake.blockers.size, 1);
+  settings.keepAwake = false;
+  desktop.apply();
+  assert.equal(fake.blockers.size, 0);
+});
+
 test("Keep computer awake while Claudex works holds sleep off only while a Code turn runs", () => {
   fake.blockers.clear();
   const settings: Settings = {
@@ -442,6 +491,15 @@ test("Quick Entry answers Alt+Space off macOS until another shortcut is saved, s
     delete settings.quickAccessShortcut;
     host.desktop.apply();
     assert.deepEqual([...fake.shortcuts.keys()], ["Alt+Space"]);
+    settings = { ...settings, legacyQuickEntryEnabled: false };
+    host.desktop.apply();
+    assert.equal(fake.shortcuts.size, 0);
+    settings = { ...settings, quickAccessShortcut: "Control+Alt+F10" };
+    host.desktop.apply();
+    assert.equal(fake.shortcuts.size, 0);
+    settings = { ...settings, legacyQuickEntryEnabled: true };
+    host.desktop.apply();
+    assert.deepEqual([...fake.shortcuts.keys()], ["Control+Alt+F10"]);
     // Clearing it in Settings turns it off.
     settings = { ...settings, quickAccessShortcut: "" };
     host.desktop.apply();
@@ -462,6 +520,7 @@ test("the Quick access shortcut registers, moves, and refuses one another app ho
   fake.shortcuts.clear();
   let settings: Settings = {
     ...defaultSettings,
+    quickEntryShortcut: "Option+Space",
     quickAccessShortcut: "Option+Space",
   };
   const host = integration(() => settings);
@@ -470,18 +529,18 @@ test("the Quick access shortcut registers, moves, and refuses one another app ho
   fake.shortcuts.get("Option+Space")!();
   assert.deepEqual(host.commands, ["new-chat"]);
   fake.taken.add("Command+Shift+Space");
-  settings = { ...settings, quickAccessShortcut: "Command+Shift+Space" };
-  assert.throws(() => host.desktop.apply(), /used by another app/);
+  settings = { ...settings, quickEntryShortcut: "Command+Shift+Space", quickAccessShortcut: "Command+Shift+Space" };
+  assert.throws(() => host.desktop.apply(), /registration-failed/);
   assert.deepEqual(
     [...fake.shortcuts.keys()],
     ["Option+Space"],
     "a refused change keeps the last working shortcut",
   );
-  settings = { ...settings, quickAccessShortcut: "" };
+  settings = { ...settings, quickEntryShortcut: "off", quickAccessShortcut: "" };
   host.desktop.apply();
   assert.equal(fake.shortcuts.size, 0);
-  // The offered accelerators and any recorded shortcut with a modifier pass the
-  // settings schema; a bare key does not.
+  // The offered accelerators and any recorded shortcut with a modifier
+  // pass the settings schema (R-1424); a bare key does not.
   const fields = desktopPreferenceFields("darwin");
   assert.equal(fields.quickAccessShortcut.safeParse("").success, true);
   assert.equal(
@@ -540,6 +599,75 @@ function handlers(options: {
   return table;
 }
 
+test("Developer status starts an idle engine before reading local MCP status", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-mcp-status-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const provider = { id: "fixture" };
+  const engine: any = {
+    state: { state: "stopped" }, rpc: undefined, mcpStartup: new Map(),
+    async ensure(received: unknown) {
+      assert.equal(received, provider);
+      engine.state = { state: "ready" };
+      engine.rpc = { call: async () => ({ data: [{ name: "fixture", tools: {} }] }) };
+    },
+  };
+  const table = handlers({
+    root,
+    context: { engine, store: { root, settings: { ...defaultSettings, providers: [provider], activeProviderId: "fixture", mcpServers: { fixture: { command: "node" } } }, conversations: [] } },
+  });
+  assert.equal((await table.get("mcpServers")!(true)).servers[0].state, "ready");
+});
+
+test("native status permits anonymous tools until a deferred OAuth call is rejected", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-mcp-deferred-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { Store } = await import("../../electron/store/store");
+  const { ConnectorClients } = await import("../../electron/connectors/connector-clients");
+  const { recordConnectorAuthRejection } = await import("../../electron/connectors/connector-auth-rejection");
+  const store = new Store(root);
+  const url = "https://example.test/mcp";
+  const config = { wiki: { url } };
+  store.settings.mcpServers = config;
+  new ConnectorClients(root).set("wiki", { oauth: { posture: "defer_auth" } }, url);
+  let token: string | undefined;
+  const engine = {
+    state: { state: "ready" },
+    mcpStartup: new Map(),
+    connectorHeaders: () => token ? { Authorization: token } : undefined,
+    rpc: { call: async () => ({ data: [{ name: "wiki", tools: { read: { name: "read" } }, authStatus: token ? "bearerToken" : "notLoggedIn" }] }) },
+  };
+  const table = handlers({ root, context: { engine, store } });
+  const status = async () => (await table.get("mcpServers")!()).servers[0];
+  assert.equal((await status()).authStatus, "unsupported");
+  recordConnectorAuthRejection(store, "wiki", url);
+  assert.equal((await status()).authStatus, "notLoggedIn");
+  assert.equal((await status()).tools, 1);
+  token = "Bearer token";
+  assert.equal((await status()).authStatus, "bearerToken");
+  token = undefined;
+  assert.equal((await status()).authStatus, "unsupported");
+});
+
+test("removing a local connector persists through a fresh store and config reload", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-mcp-remove-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { Store } = await import("../../electron/store/store");
+  const { commitNativeMcpServers } = await import("../../electron/connectors/native-extension-mirror");
+  const store = new Store(root);
+  store.settings.mcpServers = { demo: { command: "node" }, off: { command: "node", enabled: false } };
+  store.flush();
+  const file = new McpConfigFile(root, () => store.settings.mcpServers, (servers) => commitNativeMcpServers(store, servers));
+  file.ensure();
+  t.after(() => file.close());
+  const table = handlers({ root, context: { store, mcpConfig: file } });
+  await table.get("removeConnector")!("demo");
+  assert.deepEqual(JSON.parse(fs.readFileSync(file.path, "utf8")).mcpServers, { off: { command: "node", enabled: false } });
+  const reopened = new Store(root);
+  const reopenedFile = new McpConfigFile(root, () => reopened.settings.mcpServers, (servers) => { reopened.settings.mcpServers = servers; });
+  reopenedFile.reload();
+  assert.deepEqual(reopened.settings.mcpServers, { off: { command: "node", enabled: false } });
+});
+
 test("desktop notification IPC routes actions only to the originating live window", () => {
   let destroyed = false;
   const sender = {};
@@ -595,8 +723,13 @@ test("packaged extension IPC confirms installation and registers private files",
   const { createZip } = await import("../../electron/workspace/zip");
   const root = temp();
   const current: Record<string, unknown> = {};
+  const window = {
+    isDestroyed: () => false,
+    webContents: { mainFrame: { url: "http://localhost/settings/extensions" }, on() {}, removeListener() {} },
+  };
   const table = handlers({
     root,
+    context: { callerWindow: () => window, window },
     mcpConfig: {
       update: (servers: Record<string, unknown>) =>
         Object.assign(current, servers),
@@ -671,7 +804,53 @@ test("extension folder buttons create and open their account-scoped folders", as
   }
 });
 
-test("Run on startup sets the login item; Clear cache and restart asks first", async () => {
+test("Run on startup reads and updates the Claudex login item", async (t) => {
+  const root = temp();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const app = fakeElectron.app;
+  const login = { openAtLogin: false, executableWillLaunchAtLogin: true };
+  const read = t.mock.method(app, "getLoginItemSettings", () => ({ ...login }));
+  const write = t.mock.method(app, "setLoginItemSettings", (options: Electron.Settings) => {
+    login.openAtLogin = options.openAtLogin === true;
+    login.executableWillLaunchAtLogin = login.openAtLogin && options.enabled === true;
+  });
+  const platform = process.platform;
+  t.after(() => Object.defineProperty(process, "platform", { value: platform }));
+  Object.defineProperty(process, "platform", { value: "win32" });
+  const table = handlers({ root });
+  const executable = { path: process.execPath, args: [] };
+  assert.equal((await table.get("systemState")!()).runOnStartup, true);
+  assert.deepEqual(read.mock.calls[0]?.arguments, [executable]);
+  assert.equal(write.mock.callCount(), 0);
+  await assert.rejects(async () => table.get("setRunOnStartup")!("yes"));
+  assert.equal(write.mock.callCount(), 0);
+
+  assert.equal((await table.get("setRunOnStartup")!(false)).runOnStartup, false);
+  assert.deepEqual(write.mock.calls[0]?.arguments, [
+    { ...executable, openAtLogin: false, enabled: false },
+  ]);
+  assert.equal((await table.get("setRunOnStartup")!(true)).runOnStartup, true);
+  assert.deepEqual(write.mock.calls[1]?.arguments, [
+    { ...executable, openAtLogin: true, enabled: true },
+  ]);
+
+  login.executableWillLaunchAtLogin = false;
+  assert.equal((await table.get("systemState")!()).runOnStartup, false);
+  Object.defineProperty(process, "platform", { value: "darwin" });
+  assert.equal((await table.get("systemState")!()).runOnStartup, true);
+  login.openAtLogin = false;
+  write.mock.mockImplementationOnce(() => {});
+  assert.equal((await table.get("setRunOnStartup")!(true)).runOnStartup, false);
+
+  Object.defineProperty(process, "platform", { value: "linux" });
+  const readCount = read.mock.callCount();
+  assert.equal((await table.get("systemState")!()).runOnStartup, null);
+  await assert.rejects(async () => table.get("setRunOnStartup")!(true), /Linux/);
+  assert.equal(read.mock.callCount(), readCount);
+  assert.equal(write.mock.callCount(), 3);
+});
+
+test("Clear cache and restart asks first", async () => {
   const root = temp();
   fs.writeFileSync(path.join(root, "conversations.json"), "x".repeat(100));
   fs.mkdirSync(path.join(root, "workspace"));
@@ -679,11 +858,6 @@ test("Run on startup sets the login item; Clear cache and restart asks first", a
   fs.mkdirSync(path.join(root, "Cache"));
   fs.writeFileSync(path.join(root, "Cache", "data_0"), "z".repeat(30));
   const table = handlers({ root });
-  const state = await table.get("setRunOnStartup")!(true);
-  if (process.platform === "linux") return;
-  assert.equal(fake.openAtLogin, true);
-  assert.equal(state.runOnStartup, true);
-  await assert.rejects(async () => table.get("setRunOnStartup")!("yes"));
   const usage = await table.get("storageUsage")!();
   assert.equal(usage.folder, root);
   assert.equal(usage.cowork.workspaceBytes, 50);
@@ -1194,7 +1368,7 @@ test("Developer lists servers beside the chosen server's details", async () => {
   // Environment variables stay folded until opened.
   assert.doesNotMatch(html, /Environment variables/);
   // Only the failed server carries the warning in the list.
-  assert.equal(html.match(/data-icon="Warning"/g)?.length, 1);
+  assert.equal(html.match(/data-anthropicon="Warning"/g)?.length, 1);
   assert.doesNotMatch(render(false), /aria-label="Delete"/);
 });
 

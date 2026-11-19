@@ -29,13 +29,7 @@ test("the task picker's trigger is the mode's name only, Manual by default", () 
     html({ taskPermission: "bypass" }),
     /aria-label="Skip all approvals"[^>]*><span class="task-permission-label">Skip all approvals<\/span>/,
   );
-  // Only the phone layout's glyph, which CSS shows below 640px.
-  assert.deepEqual(
-    html({})
-      .match(/<svg[^>]*class="[^"]*"/g)
-      ?.map((tag) => tag.includes("task-permission-mobile-icon")),
-    [true],
-  );
+  assert.doesNotMatch(html({}), /<svg/);
 });
 
 test("the menu lists Manual, Auto and Skip all approvals under Permission mode", () => {

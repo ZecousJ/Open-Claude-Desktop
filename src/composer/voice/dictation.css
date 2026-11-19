@@ -17,8 +17,9 @@
   background: transparent;
   pointer-events: none;
 }
-/* Hovered, the original's alpha-2 step; the Cowork and Code groups keep their
-   captured faces (cowork-voice.css, code-composer-footer.css). */
+/* Hovered, the original's alpha-2 step (white / ink 10%, desktop bundle
+   2.31226.1 static CSS/JS); the Cowork and Code groups keep their captured
+   faces (cowork-voice.css, code-composer-footer.css). */
 .dictation-button:hover::before,
 .dictation-button:focus-visible::before {
   background: var(--alpha-2);
@@ -26,7 +27,8 @@
 .dictation-button > svg {
   transform: translateY(0.5px);
 }
-/* Above the button, 4px off it: side top, sideOffset 4. */
+/* Above the button, 4px off it: side top, sideOffset 4 (live claude.ai
+   bundle, 2026-10-16, shared-frame-6654oR3-). */
 .dictation-tooltip {
   position: absolute;
   z-index: 50;
@@ -40,7 +42,8 @@
   box-shadow: 0 6px 15px #0005;
   color: #e4e2df;
   font:
-    13px/20px -apple-system,
+    13px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   white-space: nowrap;
@@ -59,8 +62,9 @@
   transition-duration: 50ms;
 }
 /* The microphone's hint opens above the button, 4px off: its Tooltip names no
-   side, so it takes the default "top". The voice-mode status chip keeps the
-   rule above. */
+   side, so it takes the default "top" (live claude.ai bundle, 2026-10-16,
+   c47a58ae1 te; shared-frame sideOffset 4). The voice-mode status chip keeps
+   the rule above. */
 .dictation-button > .dictation-tooltip {
   top: auto;
   bottom: calc(100% + 4px);
@@ -69,14 +73,14 @@
 .dictation-button > .dictation-tooltip[data-open="true"] {
   transform: translate(-50%, 0);
 }
-/* Tooltip detail. */
+/* Tooltip detail (live claude.ai bundle, 2026-10-14, c47a58ae1-BODMtME-). */
 .dictation-tooltip-detail {
   display: block;
   font-size: 11px;
   line-height: 14px;
   color: var(--dictation-secondary);
 }
-/* Tooltip fades in over ~50ms and, after the 190ms hold, out within ~35ms. */
+/* Tooltip fades in over ~50ms (37-70ms across the Dictate / voice recordings) and, after the 190ms hold, out within ~35ms. */
 @media (prefers-reduced-motion: reduce) {
   .dictation-tooltip,
   .dictation-button > .dictation-tooltip {
@@ -94,7 +98,8 @@
   transform: translate(-50%, 0);
 }
 
-/* Recording toolbar and text-danger. */
+/* Recording toolbar and text-danger (live claude.ai bundle, 2026-10-14,
+   shared-8-D8y0BqdN, c47a58ae1-BODMtME-; resolved CDS tokens). */
 :root {
   --dictation-danger: #ec7e7e;
   --dictation-secondary: #c3c2b7;

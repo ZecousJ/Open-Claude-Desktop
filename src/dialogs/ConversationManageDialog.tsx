@@ -6,9 +6,9 @@ import "../collections/collections.css";
 const nouns = { chat: "chat", cowork: "task", code: "session" } as const;
 
 /**
- * Rename chat: a ~398px dialog with the name selected in a field, Cancel and
- * Save (disabled while empty) and no close button. Esc and Cancel keep the old
- * name.
+ * Rename chat (R-0184–R-0187, R-0186-0187 AX): a ~398px dialog with the
+ * name selected in a field, Cancel and Save (disabled while empty) and no
+ * close button. Esc and Cancel keep the old name.
  */
 export function ConversationManageDialog({
   draft,

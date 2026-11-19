@@ -8,7 +8,7 @@ import {
   severity,
 } from "./RailParts";
 import { formatText } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { BranchChip, branchUrl } from "../pr/BranchChip";
 import { api } from "../desktop-api";
 import { openComposerMenu } from "./SessionRail";
@@ -201,7 +201,7 @@ export function fillRailCards(kit: FillRailCardsKit) {
               aria-label={t("Edit cloud environment")}
               onClick={editCloudEnvironment}
             >
-              <AppIcon name="Settings" size={12} />
+              <Anthropicon name="Settings" size={12} />
             </button>
           ) : sshHost.connection ? (
             <span
@@ -231,7 +231,8 @@ export function fillRailCards(kit: FillRailCardsKit) {
       >
         {environmentLabel}
       </RailRow>
-      {/* A cloud session's folder is the runner's; it names its repository. */}
+      {/* A cloud session's folder is the runner's; it names its repository
+          (live claude.ai, 2026-10-21: the repository's name). */}
       {cloud ? (
         repositoryName && <RailRow icon="Folder">{repositoryName}</RailRow>
       ) : (

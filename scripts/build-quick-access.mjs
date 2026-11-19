@@ -16,4 +16,15 @@ if (process.platform === "darwin") {
     ],
     { stdio: "inherit" },
   );
+  execFileSync(
+    "swiftc",
+    [
+      "electron/official-ui/native/device-key-mac.swift",
+      "-module-cache-path",
+      path.join(tmpdir(), "claudex-swift-cache"),
+      "-o",
+      "dist-electron/device-key-mac",
+    ],
+    { stdio: "inherit" },
+  );
 }

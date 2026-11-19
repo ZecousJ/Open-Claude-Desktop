@@ -90,17 +90,29 @@ test("current home templates use Hi/Hey rather than the separate new-user templa
   );
 });
 
-test("the catalog keeps its ids unique and its connector ideas behind their connectors", () => {
-  const prompts = starterCategories.flatMap((category) => category.prompts);
-  assert.equal(prompts.length, 66);
-  assert.equal(new Set(prompts.map((prompt) => prompt.id)).size, 66);
-  for (const id of ["drive", "calendar", "gmail"])
-    for (const prompt of starterCategories.find((item) => item.id === id)!
-      .prompts)
-      assert.ok(prompt.requiredIntegrations?.includes(id as never), prompt.id);
+test("the complete official catalog preserves every label, id and integration requirement", () => {
+  const canonical = starterCategories.map((category) => [
+    category.id,
+    category.prompts.map((prompt) => [
+      prompt.id,
+      prompt.label,
+      prompt.requiredIntegrations ?? [],
+    ]),
+  ]);
+  assert.equal(
+    createHash("sha256").update(JSON.stringify(canonical)).digest("hex"),
+    "823e3e0054c7746324efd2756adc1b680f469ac6ec120ec8d81eae5cdb392e5a",
+  );
+  assert.equal(
+    starterCategories.reduce(
+      (count, category) => count + category.prompts.length,
+      0,
+    ),
+    416,
+  );
 });
 
-test("every starter label and prompt template is translated in all locales", async () => {
+test("every official starter label and prompt template is translated in all locales", async () => {
   const messages = new Set([
     ...starterCategories.flatMap((category) => [
       category.title,
@@ -140,7 +152,7 @@ test("every category has ideas, each with a line and a prompt", () => {
   );
 });
 
-test("the category names are kept", () => {
+test("the original's category names are kept", () => {
   const titles = starterCategories.map((category) => category.title);
   for (const name of [
     "Write",
@@ -384,7 +396,7 @@ test("official glyphs use the 20px optical outlines and 14px branded connector m
     createElement(StarterCategoryIcon, { icon: "binoculars" }),
   );
   assert.match(research, /width="20" height="20"/);
-  assert.match(research, /lucide-binoculars/);
+  assert.doesNotMatch(research, /stroke-width/);
   const gmail = renderToStaticMarkup(
     createElement(StarterCategoryIcon, { icon: "gmail" }),
   );

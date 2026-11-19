@@ -20,6 +20,7 @@ import {
   webPaths,
 } from "../web-protocol";
 import { apiValue, bridgeError, messages, readJson, apiError } from "./errors";
+import { attachmentObjectURL } from "../attachment-object";
 import type { WebTransport } from "./transport";
 
 /** Bytes kept inside the body; base64 makes them a third larger. */
@@ -29,6 +30,12 @@ export const maxUploadBytes = 64 * 1024 * 1024;
 
 export interface UploadRef {
   $upload: string;
+}
+
+export interface UploadTransfer {
+  signal: AbortSignal;
+  onProgress?(loaded: number, total: number): void;
+  private?: boolean;
 }
 
 async function sha256Hex(bytes: Uint8Array) {
@@ -41,16 +48,60 @@ async function sha256Hex(bytes: Uint8Array) {
     .join("");
 }
 
-/** Uploads bytes in chunks; resolves to the upload's id. */
+function putObject(address: string, sha: string, bytes: Uint8Array, transfer?: UploadTransfer) {
+  if (typeof XMLHttpRequest === "undefined")
+    return fetch(address, {
+      method: "PUT",
+      credentials: "omit",
+      redirect: "error",
+      signal: transfer?.signal,
+      headers: { "If-None-Match": "*", "X-Amz-Content-Sha256": sha },
+      body: bytes as Uint8Array<ArrayBuffer>,
+    }).then((response) => {
+      void response.body?.cancel();
+      return response.status;
+    }, () => 0);
+  return new Promise<number>((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    const signal = transfer?.signal;
+    const abort = () => request.abort();
+    const settle = (finish: () => void) => {
+      signal?.removeEventListener("abort", abort);
+      finish();
+    };
+    request.open("PUT", address);
+    request.timeout = 120_000;
+    request.setRequestHeader("If-None-Match", "*");
+    request.setRequestHeader("X-Amz-Content-Sha256", sha);
+    request.onload = () => settle(() => resolve(request.status));
+    request.onerror = () => settle(() => resolve(0));
+    request.ontimeout = request.onerror;
+    request.onabort = () => settle(() => reject(signal?.reason ?? new DOMException("Upload cancelled", "AbortError")));
+    request.upload.onprogress = (event) => transfer?.onProgress?.(event.loaded, bytes.byteLength);
+    signal?.throwIfAborted();
+    signal?.addEventListener("abort", abort, { once: true });
+    request.send(bytes as Uint8Array<ArrayBuffer>);
+  });
+}
+
+/** Uploads bytes and resolves to the upload's id. */
 export async function upload(
   transport: WebTransport,
   bytes: Uint8Array,
-  meta: { name?: string; type?: string } = {},
+  meta: { name?: string; type?: string; private?: boolean } = {},
+  assertCurrent?: () => void,
+  transfer?: UploadTransfer,
 ): Promise<string> {
   if (bytes.byteLength > maxUploadBytes)
     throw bridgeError(messages.tooLarge, webErrorCodes.tooLarge);
+  const current = () => {
+    transfer?.signal.throwIfAborted();
+    assertCurrent?.();
+  };
+  const fetch = (path: string, init: RequestInit) =>
+    transport.fetch(path, transfer ? { ...init, signal: transfer.signal } : init, current);
   const post = async (path: string, body: unknown) => {
-    const response = await transport.fetch(path, {
+    const response = await fetch(path, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -59,28 +110,59 @@ export async function upload(
     if (!response.ok) throw apiError(response.status, json);
     return apiValue(response.status, json) as Record<string, unknown>;
   };
+  current();
+  const sha = await sha256Hex(bytes);
   const started = await post(webPaths.uploads, {
     name: meta.name ?? "data",
     size: bytes.byteLength,
     type: meta.type ?? "application/octet-stream",
-    sha256: await sha256Hex(bytes),
+    sha256: sha,
+    ...(meta.private ? { private: true } : { direct: true }),
   });
+  current();
+  if (meta.private && started?.private !== true)
+    throw bridgeError("Private upload staging is unavailable.", webErrorCodes.methodUnavailable);
   const id = typeof started?.id === "string" ? started.id : "";
   if (!/^[A-Za-z0-9_-]{1,128}$/.test(id))
     throw bridgeError("The upload could not start.");
   const base = `${webPaths.uploads}/${id}`;
+  if (!meta.private && started.upload && typeof started.upload === "object" &&
+      "url" in started.upload && typeof started.upload.url === "string") {
+    const address = attachmentObjectURL(started.upload.url);
+    for (let attempt = 0; ; attempt++) {
+      current();
+      const status = await putObject(address, sha, bytes, transfer);
+      current();
+      if (status >= 200 && status < 300 || status === 412) break;
+      if (attempt === 2 || status !== 0 && status !== 429 && status < 500)
+        throw bridgeError("The file could not be uploaded. Try again.");
+      await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+    }
+    await post(`${base}/complete`, {});
+    current();
+    transfer?.onProgress?.(bytes.byteLength, bytes.byteLength);
+    return id;
+  }
+  if (bytes.byteLength === 0) {
+    await post(`${base}/complete`, {});
+    current();
+    return id;
+  }
   const size = webLimits.uploadChunkBytes;
   const count = Math.max(1, Math.ceil(bytes.byteLength / size));
   for (let index = 0; index < count; index++) {
     const chunk = bytes.subarray(index * size, (index + 1) * size);
-    const response = await transport.fetch(`${base}/chunks/${index}`, {
+    const response = await fetch(`${base}/chunks/${index}`, {
       method: "PUT",
       headers: { "Content-Type": "application/octet-stream" },
       body: chunk as Uint8Array<ArrayBuffer>,
     });
     if (!response.ok) throw apiError(response.status, await readJson(response));
+    current();
+    transfer?.onProgress?.(Math.min((index + 1) * size, bytes.byteLength), bytes.byteLength);
   }
   await post(`${base}/complete`, {});
+  current();
   return id;
 }
 
@@ -89,7 +171,9 @@ async function lift(
   value: unknown,
   transport: WebTransport,
   hint: { name?: string; avatarPhoto?: boolean },
+  assertCurrent?: () => void,
 ): Promise<unknown> {
+  assertCurrent?.();
   if (
     hint.avatarPhoto &&
     typeof value === "string" &&
@@ -100,17 +184,17 @@ async function lift(
       $avatarPhoto: {
         $upload: await upload(transport, new TextEncoder().encode(value), {
           name: "avatar",
-        }),
+        }, assertCurrent),
       },
     };
   }
   if (value instanceof Uint8Array) {
     if (value.byteLength <= inlineBytes) return value;
-    const ref: UploadRef = { $upload: await upload(transport, value, hint) };
+    const ref: UploadRef = { $upload: await upload(transport, value, hint, assertCurrent) };
     return ref;
   }
   if (Array.isArray(value))
-    return Promise.all(value.map((item) => lift(item, transport, hint)));
+    return Promise.all(value.map((item) => lift(item, transport, hint, assertCurrent)));
   if (value && typeof value === "object" && !(value instanceof Date)) {
     const out: Record<string, unknown> = {};
     for (const [key, item] of Object.entries(value))
@@ -118,7 +202,7 @@ async function lift(
         value: await lift(item, transport, {
           ...hint,
           avatarPhoto: key === "avatarPhoto",
-        }),
+        }, assertCurrent),
         enumerable: true,
         writable: true,
         configurable: true,
@@ -155,10 +239,13 @@ function hasLargeBytes(value: unknown, seen = 0, avatarPhoto = false): boolean {
 export async function encodeCall(
   args: unknown[],
   transport: WebTransport,
+  assertCurrent?: () => void,
 ): Promise<string> {
-  // A left-out argument stays left out: JSON would turn a trailing undefined
-  // into null, which the desktop's handlers (on the runner) read as a value and
-  // refuse.
+  assertCurrent?.();
+  // A left-out argument stays left out: JSON would turn a trailing
+  // undefined into null, which the desktop's handlers (on the runner) read
+  // as a value and refuse (saveProject(project, undefined) failed "The
+  // request was not valid." on the web, 2026-10-21).
   let end = args.length;
   while (end > 0 && args[end - 1] === undefined) end--;
   args = end === args.length ? args : args.slice(0, end);
@@ -168,7 +255,8 @@ export async function encodeCall(
       typeof args[0] === "string" && args[0].length <= 500
         ? args[0]
         : undefined;
-    prepared = (await lift(args, transport, { name })) as unknown[];
+    prepared = (await lift(args, transport, { name }, assertCurrent)) as unknown[];
   }
+  assertCurrent?.();
   return JSON.stringify(rpcRequest(prepared));
 }

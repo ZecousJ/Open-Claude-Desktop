@@ -1,4 +1,5 @@
-/* Active QuietProjectRail. The older filled rail is a separate branch. */
+/* Active QuietProjectRail: cfe1b8ada-vb_B89oP:92–216 and
+   cd6a82830-BYaeDEF8:180–266. The older filled rail is a separate branch. */
 .prj-hub-cards {
   --prj-hub-primary: #f0efec;
   --prj-hub-secondary: #c3c2b7;
@@ -53,11 +54,11 @@
 }
 /* The leading icon (an icon-font glyph, or an SVG) keeps its size in the
    secondary ink; the text column after it takes the rest. */
-.prj-hub-card-main > :is(svg, .app-icon) {
+.prj-hub-card-main > :is(svg, .anthropicon) {
   flex: none;
   color: var(--prj-hub-secondary);
 }
-.prj-hub-card-main > span:not(.app-icon) {
+.prj-hub-card-main > span:not(.anthropicon) {
   display: flex;
   flex: 1;
   align-items: baseline;
@@ -130,8 +131,8 @@
   gap: 12px;
 }
 
-/* Opened Context, live 1016. The 1280×720 capture has one 1152×576 dialog and a
-   432px list pane. */
+/* Opened Context, live 1016 c5512639f-C6KQg7IH:37–112.
+   The 1280×720 capture has one 1152×576 dialog and a 432px list pane. */
 .modal.prj-hub-context-dialog {
   width: min(720px, calc(100vw - 48px));
   height: min(80dvh, 760px);

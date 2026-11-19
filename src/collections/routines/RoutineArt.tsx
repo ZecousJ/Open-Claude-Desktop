@@ -18,8 +18,8 @@ import type { TemplateIcon } from "./routine-templates";
 import "./scheduled.css";
 
 /**
- * The empty Yours tab's stopwatch: a 72px grey dial with a white hand-drawn
- * outline, a crown on top and hands at twelve and two.
+ * The empty Yours tab's stopwatch (R-1220): a 72px grey dial with a white
+ * hand-drawn outline, a crown on top and hands at twelve and two.
  */
 export function StopwatchArt() {
   return (

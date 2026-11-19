@@ -14,7 +14,7 @@ export function shortcutChoices(platform: NodeJS.Platform) {
 
 /**
  * The preference fields spread into the main process's settings schema:
- * `shared/settings-extras-schema.ts` plus this platform's checks.
+ * `shared/settings-extras-schema.ts` (WP2) plus this platform's checks.
  */
 export function desktopPreferenceFields(platform: NodeJS.Platform) {
   return {
@@ -41,6 +41,7 @@ export function desktopPreferenceFields(platform: NodeJS.Platform) {
 
 const keys = Object.keys(preferenceDefaults).concat(
   "workType",
+  "codeBrowserTools",
 ) as (keyof SettingsPreferences)[];
 
 /** The preferences as the renderer sees them. */

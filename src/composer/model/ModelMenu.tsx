@@ -105,16 +105,16 @@ export function ModelMenu({
   };
   const provider = providers.find((p) => p.id === providerId);
   // With the administrator's catalog the menu lists its models with their
-  // descriptions and hidden ones under More models (owner decision 11); without
-  // one it shows the current model and its service.
+  // descriptions (R-Chat-模型菜单) and hidden ones under More models (owner
+  // decision 11); without one it shows the current model and its service.
   const catalogRead = useModelCatalogState();
   const catalog = catalogRead.value;
   const hasCatalogResult = catalog !== undefined;
   const catalogued = Boolean(catalog?.items.length);
   const choices = codeModelChoices(providers, providerId, model, catalog);
-  // The provider switch: with models of two or more makers, a switch at the top
-  // shows one maker's models, in the menu and under More models; it opens on
-  // the current model's maker.
+  // The provider switch (owner, 2026-10-02): with models of two or more
+  // makers, a switch at the top shows one maker's models, in the menu and
+  // under More models; it opens on the current model's maker.
   const vendors = catalogued
     ? choiceVendors([...choices.quick, ...choices.more])
     : [];
@@ -147,8 +147,8 @@ export function ModelMenu({
       if (wasUp) popup?.classList.add("opens-up");
     }
     setLeft(Boolean(rect && rect.right + 328 > clipRight(root.current)));
-    // The Chat and Cowork home menu opens below the pill; without room it opens
-    // above it.
+    // The Chat and Cowork home menu opens below the pill; without room it
+    // opens above it (live claude.ai).
     if (inline && popup) {
       // O16 Op.Popup uses sideOffset=4 and available-height; R17 live
       // phone home anchors at y812 and fits its popup above, ending at808.
@@ -197,8 +197,9 @@ export function ModelMenu({
     panel.style.maxHeight = "";
     panel.classList.remove("over-menu", "flip-left", "flip-right");
     const rect = menu.getBoundingClientRect();
-    // The live submenus never cover their menu: they open on the menu's side
-    // and turn to the other side of the window when that side is short.
+    // The live submenus never cover their menu: they open on the menu's
+    // side and turn to the other side of the window when that side is
+    // short (owner, 2026-10-21: "官方的层级菜单永远不会互相遮挡").
     const gap = 6 + 8;
     const rightRoom = window.innerWidth - rect.right - gap;
     const leftRoom = rect.left - gap;

@@ -29,7 +29,7 @@ type store interface {
 	incident(ctx context.Context, id int64) (*Incident, error)
 	create(ctx context.Context, in IncidentInput, auto bool, by int64, now time.Time) (*Incident, error)
 	// update changes what the input names; a status or a message adds an update.
-	update(ctx context.Context, id int64, in IncidentInput, by int64, now time.Time) (*Incident, error)
+	update(ctx context.Context, id int64, in IncidentInput, platform *string, by int64, now time.Time) (*Incident, error)
 	remove(ctx context.Context, id int64) (bool, error)
 }
 
@@ -283,7 +283,7 @@ func (s *sqlStore) create(ctx context.Context, in IncidentInput, auto bool, by i
 	return s.incident(ctx, id)
 }
 
-func (s *sqlStore) update(ctx context.Context, id int64, in IncidentInput, by int64, now time.Time) (*Incident, error) {
+func (s *sqlStore) update(ctx context.Context, id int64, in IncidentInput, platform *string, by int64, now time.Time) (*Incident, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -292,13 +292,13 @@ func (s *sqlStore) update(ctx context.Context, id int64, in IncidentInput, by in
 	var status string
 	err = tx.QueryRowContext(ctx, `UPDATE claudex_status_incidents SET
 		title = COALESCE(NULLIF($2::text,''), title),
-		platform = CASE WHEN $3::text = '-' THEN platform ELSE $3::text END,
+		platform = COALESCE($3::text, platform),
 		impact = COALESCE(NULLIF($4::text,''), impact),
 		status = COALESCE(NULLIF($5::text,''), status),
 		published = COALESCE($7::bool, published),
 		resolved_at = CASE WHEN $5::text = '' THEN resolved_at WHEN $5::text = 'resolved' THEN COALESCE(resolved_at, $6::timestamptz) ELSE NULL END,
 		updated_at = $6::timestamptz
-		WHERE id = $1::bigint RETURNING status`, id, in.Title, in.Platform, in.Impact, in.Status, now, in.Published).Scan(&status)
+		WHERE id = $1::bigint RETURNING status`, id, in.Title, platform, in.Impact, in.Status, now, in.Published).Scan(&status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

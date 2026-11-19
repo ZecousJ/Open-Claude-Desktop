@@ -1,11 +1,12 @@
 /**
- * Continue in cloud: a local Code session moves to a cloud session with its
- * work exactly as it is now. "Move this session to the cloud?" shows what comes
- * along; Continue in cloud then saves the working tree as a commit of its own
- * on top of HEAD ("Saving your work"), uploads that commit to a ref of the
- * session's own on GitHub with the person's GitHub connection ("Uploading your
- * work"; nothing is pushed to their branch), writes the handoff note ("Writing
- * the handoff note") and starts the cloud session on that commit ("Starting the
+ * Continue in cloud (live claude.ai bundle, 2026-10-12): a local Code
+ * session moves to a cloud session with its work exactly as it is now.
+ * "Move this session to the cloud?" shows what comes along; Continue in
+ * cloud then saves the working tree as a commit of its own on top of HEAD
+ * ("Saving your work"), uploads that commit to a ref of the session's own
+ * on GitHub with the person's GitHub connection ("Uploading your work";
+ * nothing is pushed to their branch), writes the handoff note ("Writing the
+ * handoff note") and starts the cloud session on that commit ("Starting the
  * cloud session"). The local session stays.
  *
  * Desktop only: the folder is on this computer. Handlers in

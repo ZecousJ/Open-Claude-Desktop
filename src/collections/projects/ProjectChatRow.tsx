@@ -12,9 +12,8 @@ const ProjectChatActions = lazyPiece(
   "ProjectChatActions",
 );
 
-/**
- * Both recents and search use a primary link with a separate action trigger.
- */
+/** Both recents and search use a primary link with a separate action trigger.
+ * Source: c71dee58b-CHt5Ijkk.js:1750–1961. */
 export function ProjectChatRow({
   id,
   title,

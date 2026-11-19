@@ -5,7 +5,7 @@
  * threads that may, and to no others:
  * - per thread, through `builtinMcpServers`: the server is in the thread's
  *   config only while the broker says computer use is on for the
- *   conversation (policy, the person's setting, Code or Cowork, this
+ *   conversation (policy, the person's setting, this
  *   computer, macOS permissions). A change reloads the thread at its next
  *   send, so turning computer use off takes the tools away.
  * - never for a routine's run: nobody is at the computer to answer the
@@ -56,9 +56,6 @@ export function computerUseServerFor(
   const service = deps.service();
   if (!service) return undefined;
   const conversation = ctx.conversation;
-  // The broker refuses Chat too; the turn's mode is checked here as well
-  // because a send may switch the conversation's mode.
-  if (ctx.mode === "chat" || conversation.mode === "chat") return undefined;
   if (!onThisMachine(conversation.environment)) return undefined;
   // The broker follows the scheduler's answer here too, so a run that
   // failed before the scheduler saw it doesn't stay unattended.

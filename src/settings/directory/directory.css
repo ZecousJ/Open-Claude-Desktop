@@ -1,5 +1,6 @@
-/* Design systems, Plugins and Extensions. Dark tokens follow settings.css;
-   light overrides at the end. */
+/* Design systems, Plugins and Extensions (R-1104, R-1392–R-1398,
+   R-1443–R-1451, R-1461–R-1466). Dark tokens follow settings.css; light
+   overrides at the end. */
 
 /* Heading + description on the left, an outlined action on the right
    (Design systems, Extensions). */
@@ -87,8 +88,8 @@
   fill: #464543;
 }
 
-/* Design systems: search half the width, "Showing 1–1 of 1" on the right, then
-   the table. */
+/* Design systems: search half the width, "Showing 1–1 of 1" on the right,
+   then the table (R-1393–R-1396). */
 .directory-toolbar {
   display: flex;
   align-items: center;
@@ -149,7 +150,7 @@
   color: #a3a29f;
 }
 
-/* Set up your design system. */
+/* Set up your design system (R-1397). */
 .directory-setup {
   max-width: 640px;
   margin: 0 auto;
@@ -238,8 +239,8 @@
   cursor: not-allowed;
 }
 
-/* Extensions: heading with Browse extensions, the stepped plug, "No extensions
-   installed", Advanced settings and the drop hint. */
+/* Extensions (R-1443–R-1450): heading with Browse extensions, the stepped
+   plug, "No extensions installed", Advanced settings and the drop hint. */
 .directory-extensions {
   min-height: 360px;
   border-radius: 12px;
@@ -308,9 +309,9 @@
 :root[data-theme="light"] .extension-detected-tools > div > span {
   color: #52514e;
 }
-/* "Install extension" is 132 wide in 14px medium and "Install unpacked
-   extension" 199 wide in 14px regular; outside a row the buttons inherited the
-   page's 13px. */
+/* R-1449 (1x light): "Install extension" is 132 wide in 14px medium and
+   "Install unpacked extension" 199 wide in 14px regular; outside a row the
+   buttons inherited the page's 13px. */
 .directory-button-pair .settings-button {
   font-size: 14px;
 }
@@ -322,8 +323,8 @@
   color: #a3a29f;
 }
 
-/* Plugins: Yours | Discover beside the title, the search, filter and sort icons
-   and Add on the right. */
+/* Plugins: Yours | Discover beside the title (R-1461), the search, filter
+   and sort icons and Add on the right. */
 .directory-plugins .settings-page-header > h1 {
   flex: none;
 }
@@ -491,7 +492,7 @@
   color: #a3a29f;
 }
 
-/* Plugin details and Add marketplace. */
+/* Plugin details and Add marketplace (R-1465). */
 .directory-detail > p {
   margin: 12px 0;
 }
@@ -510,8 +511,8 @@
   align-items: center;
   gap: 8px;
 }
-/* The "New" badge. The dark pair has no capture; it takes the blue of a
-   narrowing filter. */
+/* The "New" badge (R-1143, light: 37x20 on #cee2fa, text #25497b). The dark
+   pair has no capture; it takes the blue of a narrowing filter. */
 .directory-new {
   display: inline-grid;
   place-items: center;
@@ -646,13 +647,13 @@
   color: #141413;
 }
 :root[data-theme="light"] .directory-illustration-fill {
-  /* The base reads #e3dacb. */
+  /* R-1443 (1x light): the base reads #e3dacb. */
   fill: #e3dacb;
 }
 :root[data-theme="light"] .directory-plugins-art .directory-illustration-fill {
   fill: #e7e6e1;
 }
-/* The blue-grey Data banner. */
+/* R-1126 light: the blue-grey Data banner. */
 :root[data-theme="light"] .directory-banner {
   background: #c9d6e0;
   color: #141413;
@@ -679,9 +680,9 @@
   outline-color: #b5b4b0;
 }
 
-/* Extensions: the Developer page's heading sizes — a 15px title over a one-line
-   13px description — the 72×80 illustration 39px under it, and "No extensions
-   installed" in dark grey. */
+/* Extensions (R-1443 at 1x): the Developer page's heading sizes — a 15px
+   title over a one-line 13px description — the 72×80 illustration 39px
+   under it, and "No extensions installed" in dark grey. */
 .directory-extensions .directory-header h2 {
   font-size: 15px;
   line-height: 22px;
@@ -695,8 +696,9 @@
 .directory-extensions .directory-extensions-empty {
   padding-top: 36.5px;
 }
-/* The buttons are 32 tall; the piece 79 tall from y 253, the text centred 35
-   under its foot, the button 26 under the text, the hint 25 under the button. */
+/* R-1443 W1920: the buttons are 32 tall; the piece 79 tall from y 253, the
+   text centred 35 under its foot, the button 26 under the text, the hint
+   25 under the button. */
 .directory-extensions .directory-outline-button {
   height: 32px;
 }
@@ -723,8 +725,8 @@
   fill: #e3dacb;
 }
 
-/* A page with Yours/Discover: the switch follows the title, the search takes
-   the rest. */
+/* A page with Yours/Discover: the switch follows the title (R-1513,
+   R-1518: 16px after it), the search takes the rest. */
 .settings-page-header:has(> .directory-view-switch) > h1 {
   flex: none;
 }
@@ -737,7 +739,11 @@
   color: #25497b;
 }
 
-/* Design systems list. */
+/* Design systems list (R-1393–R-1396, Windows 1x light 1920: title 15px,
+   13px description on an 18px line wrapping at 560, search 447×32 without an
+   icon, "Showing" 14px #838383, header row 13px #474747 over a #f2f2f2 rule,
+   48px rows: underlined name, 13px #f2f2f2 badge, 32px square more button at
+   the left of the last column; columns 45/23/23/9% as at 600 in R-1393-1396). */
 .design-systems-page .directory-header h2 {
   font-size: 15px;
   line-height: 22px;
@@ -832,10 +838,10 @@
   height: 32px;
   border-radius: 8px;
 }
-/* Title 15/20, note 13/17 wrapping at 572, "+ New design system" 182.5×28 on
-   white 10% with 7px corners, the search 448×32 on white 5% with 8px corners
-   and no border 28px under the note, the table drawn even when empty (header
-   row 32px, empty cell 149px). */
+/* Live claude.ai web (2026-09-29, dark): title 15/20, note 13/17 wrapping at
+   572, "+ New design system" 182.5×28 on white 10% with 7px corners, the
+   search 448×32 on white 5% with 8px corners and no border 28px under the
+   note, the table drawn even when empty (header row 32px, empty cell 149px). */
 .design-systems-page .directory-header h2 {
   line-height: 20px;
 }

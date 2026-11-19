@@ -1,9 +1,11 @@
 /*
- * The window's corner notice for a session or request rate limit. A 358×83 box
- * 16px from the right and bottom edges, 10px corners, 1px #c6a34b border on
- * #f9dca2; 16px warning triangle 16px in, centred on the first line; 14px/20px
- * #5a3a05 text 46px in, three lines; a close cross centred 23px from the right
- * edge; the first line centred 22px from the top. Provisional colours below.
+ * The window's corner notice for a session or request rate limit (R-0127).
+ * R-0314-limit-reached-banner-浅色-W1920 (Windows, 1 px = 1 CSS px): a
+ * 358×83 box 16px from the right and bottom edges, 10px corners, 1px
+ * #c6a34b border on #f9dca2; 16px warning triangle 16px in, centred on the
+ * first line; 14px/20px #5a3a05 text 46px in, three lines; a close cross
+ * centred 23px from the right edge; the first line centred 22px from the
+ * top. The dark theme has no capture: provisional colours below.
  */
 .global-limit-toast {
   position: fixed;
@@ -85,8 +87,9 @@
     animation: none;
   }
 }
-/* Dark: #2d1b03 with a #32261a rim and #c3a26f text, sampled from a 0.6x
-   capture. */
+/* Dark (live claude.ai, 2026-09-29, the connection notice in the same
+   corner): #2d1b03 with a #32261a rim and #c3a26f text, sampled from a
+   0.6x capture. */
 :root:not([data-theme="light"]) .global-limit-toast {
   --global-limit-bg: #2d1b03;
   --global-limit-border: #32261a;
@@ -97,10 +100,12 @@
   background: rgb(242 212 138 / 12%);
 }
 
-/* The error notice is the original's warning toast, not the limit notice: a
-   360px box, 8px 12px inside, a 20px Warning icon, the message at 13/19 medium,
-   a 1px ring over yellow-100 in light and the app's warning amber in dark. The
-   R-0314 look above stays for the limit notice. */
+/* The error notice is the original's warning toast, not the limit notice:
+   a 360px box, 8px 12px inside, a 20px Warning icon, the message at 13/19
+   medium, a 1px ring over yellow-100 in light and the app's warning amber in
+   dark (live claude.ai bundle, 2026-10-16: shared-l-p-m-2 addError
+   toastType "warning"; shared-l-p-m-6 viewport, bg-warning ring-warning
+   text-warning). The R-0314 look above stays for the limit notice. */
 :root .global-limit-toast.error-banner {
   grid-template-columns: 20px minmax(0, 1fr) 24px;
   column-gap: 8px;

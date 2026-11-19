@@ -72,7 +72,7 @@ test("code status follows the reference phase wording", () => {
     lifecycleStatus: "inProgress",
     startedAt: start + 2000,
   });
-  // A plain "Thinking" after the timer.
+  // A plain "Thinking" after the timer (live desktop 2.42304.2: "4s · Thinking").
   assert.deepEqual(codeStatusParts(turn, start + 4200), ["4s", "Thinking"]);
   assert.deepEqual(codeStatusParts(turn, start + 17000), ["17s", "Thinking"]);
   Object.assign(turn.items[0], {
@@ -174,7 +174,7 @@ test("code command card shows description, Bash title, prompt and plain output",
   assert.doesNotMatch(html, /Output</);
 });
 
-test("a Code prompt over 1200 characters folds behind Show more", () => {
+test("a Code prompt over 1200 characters folds behind Show more (live claude.ai bundle)", () => {
   const turn = (prompt: string): Turn => ({
     id: "t",
     prompt,

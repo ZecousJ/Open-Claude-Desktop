@@ -1,8 +1,8 @@
 /**
- * Mobile simulators: the iOS Simulator and Android Emulator panes of Code and
- * the device tools Claude uses. The data types live in `shared/simulators.ts`;
- * the handlers are in `electron/ipc/simulators.ts`. Desktop only: the web app
- * has no devices to drive.
+ * Mobile simulators (package SIM): the iOS Simulator and Android Emulator
+ * panes of Code and the device tools Claude uses. The data types live in
+ * `shared/simulators.ts`; the handlers are in `electron/ipc/simulators.ts`.
+ * Desktop only: the web app has no devices to drive.
  */
 import { bridgeMethods } from "./bridge-methods";
 import type { Attachment } from "./types";

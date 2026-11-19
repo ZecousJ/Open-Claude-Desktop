@@ -2,10 +2,12 @@ import type { Plugin } from "vite";
 
 /**
  * claude.ai's light palette on the web. The stylesheets' light rules carry the
- * desktop app's own light greys; the web page's tokens sit a shade off them. In
- * a web build the text greys inside light-theme rules become the web's three
- * inks, and the dark ink of primary buttons the web's primary ink. Dark rules,
- * layout and every other colour are left as they are.
+ * desktop app's own light greys (measured from its captures); the web page's
+ * tokens (`--cds-text-primary #0b0b0b`, `-secondary #52514e`, `-muted #898781`,
+ * read from claude.ai on 2026-09-30) sit a shade off them. In a web build the
+ * text greys inside light-theme rules become the web's three inks, and the
+ * dark ink of primary buttons the web's primary ink. Dark rules, layout and
+ * every other colour are left as they are.
  */
 export const webInk = "#0b0b0b";
 export const webSecondary = "#52514e";

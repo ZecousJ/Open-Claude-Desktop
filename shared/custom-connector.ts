@@ -1,11 +1,18 @@
 import { isLocalDevHost, isPrivateNetworkHost } from "./browser";
+import type { ConnectorOAuthOptions } from "./connector-oauth-options";
 
 export interface ConnectorOAuthClient {
   clientId?: string;
   clientSecret?: string;
 }
 
-// Personal connector form.
+export interface ConnectorCredentials extends ConnectorOAuthClient {
+  headers?: Record<string, string>;
+  staticAuth?: true;
+  oauth?: ConnectorOAuthOptions;
+}
+
+// Personal connector form (live claude.ai bundle, 2026-10-14, ce99eb202-DGbIVS-C.js).
 export function connectorUrlError(address: string) {
   if (!address.trim()) return "Enter a valid https:// URL";
   let url: URL;

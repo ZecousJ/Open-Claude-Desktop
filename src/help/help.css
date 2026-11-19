@@ -1,7 +1,7 @@
 /* Tailwind max-w-3xl, p-6, gap-3, text-base and text-2xl from the live
-   2026-10-14 rules.json; links follow. CDS surface-1, text-primary,
-   text-secondary and border values are resolved with work/audit/tokens.py for
-   each theme. */
+   2026-10-14 rules.json; links follow c9500abe8-Daq5EplY.js: Fr.
+   CDS surface-1, text-primary, text-secondary and border values are
+   resolved with work/audit/tokens.py for each theme. */
 :root:has(.help-page),
 :root:has(.help-page) body,
 :root:has(.help-page) #root {

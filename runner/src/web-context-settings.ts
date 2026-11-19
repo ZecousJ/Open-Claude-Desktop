@@ -99,23 +99,25 @@ export function registerCoreHandlers(this: WebAppContext, handle: IpcHandle) {
   });
   handle(
     "setReplyFeedback",
-    (conversationId: unknown, turnId: unknown, rating: unknown) => {
+    (conversationId: unknown, turnId: unknown, rating: unknown, options?: unknown) => {
       const id = idString.parse(conversationId);
       const turn = idString.parse(turnId);
-      const found = this.store
-        .conversation(id)
-        .turns.find((item) => item.id === turn);
+      const conversation = this.store.conversation(id);
+      const found = [...conversation.turns, ...(conversation.savedBranches ?? []).flatMap((branch) => branch.turns)]
+        .find((item) => item.id === turn);
       if (!found || found.status !== "completed")
         throw Error("Only completed replies can be rated.");
       const value = z
         .union([z.literal("up"), z.literal("down"), z.null()])
         .parse(rating);
+      const localOnly = options === undefined ? false : z.object({ localOnly: z.literal(true) }).strict().parse(options).localOnly;
       const all = this.replyFeedback.set(id, turn, value);
-      this.ratingListeners.emit({
-        conversationId: id,
-        turnId: turn,
-        rating: value,
-      });
+      if (!localOnly)
+        this.ratingListeners.emit({
+          conversationId: id,
+          turnId: turn,
+          rating: value,
+        });
       return all;
     },
   );
@@ -125,7 +127,9 @@ export function registerCoreHandlers(this: WebAppContext, handle: IpcHandle) {
 }
 
 export function snapshot(this: WebAppContext): Snapshot {
+  const host = this.runtime.host ?? webHost;
   return {
+    inlineAttachmentDisplayVersion: 1,
     artifactShares: this.artifactShares.list(),
     artifactLibrary: this.artifactLibrary.list(),
     dismissedBackgroundTasks: this.backgroundHistory.list(),
@@ -138,7 +142,7 @@ export function snapshot(this: WebAppContext): Snapshot {
     approvals: this.engine.approvals,
     platform: process.platform,
     modelUnavailable: this.engine.unavailableReason,
-    host: this.runtime.host ?? webHost,
+    host: { ...host, capabilities: { ...host.capabilities, nativeSendReceipts: true } },
   };
 }
 
@@ -153,7 +157,7 @@ export async function saveSettings(
     store.settings,
     settingsSchema.parse(raw) as Settings,
     this.rendererBase,
-    ["disabledSkills"],
+    ["disabledSkills", "officialCodeUserSettings"],
   );
   const keys = z.record(z.string(), z.string().max(16000)).parse(secrets);
   if (Object.keys(keys).length)
@@ -163,8 +167,8 @@ export async function saveSettings(
   settings.providers = structuredClone(store.settings.providers);
   settings.activeProviderId = store.settings.activeProviderId;
   settings.mcpServers = structuredClone(store.settings.mcpServers);
-  // Bypass needs no folder here: every session runs in its own sandbox, so the
-  // runner confirms them all.
+  // Bypass needs no folder here: every session runs in its own sandbox,
+  // so the runner confirms them all (owner, 2026-10-03).
   settings.bypassFolders = [anyFolder];
   const refusal = settingsRefusal(store.settings, settings, this.policy());
   if (refusal) throw Error(refusal);
@@ -201,6 +205,7 @@ export async function saveSettings(
     if (this.closed || this.signedOut)
       throw new Error("This account has signed out.");
   }
+  settings.officialCodeUserSettings = store.settings.officialCodeUserSettings;
   store.settings = settings;
   store.flush();
   if (codeEmailChanged) {

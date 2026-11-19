@@ -10,12 +10,99 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
+
+const responsesMessagesCreated = "data: " + `{"type":"response.created","response":{"id":"resp_messages","status":"in_progress","output":[]}}` + "\n\n"
+
+func TestForwardAsAnthropic_ResponsesEmptyCompletionFailsOverBeforeCommit(t *testing.T) {
+	for _, stream := range []bool{false, true} {
+		for _, usage := range []string{"", `,"usage":{"input_tokens":0,"output_tokens":0,"total_tokens":0}`} {
+			t.Run(fmt.Sprintf("stream=%t/usage=%t", stream, usage != ""), func(t *testing.T) {
+				terminal := `{"type":"response.completed","response":{"id":"resp_messages","status":"completed","output":[]` + usage + `}}`
+				result, err, rec, c := forwardResponsesMessages(t, stream, responsesMessagesCreated+"data: "+terminal+"\n\n")
+				var failover *UpstreamFailoverError
+				require.ErrorAs(t, err, &failover, "downstream body: %s", rec.Body)
+				require.Nil(t, result)
+				require.Equal(t, http.StatusBadGateway, failover.StatusCode)
+				require.True(t, failover.ShouldRetryNextAccount())
+				require.False(t, c.Writer.Written())
+				require.False(t, rec.Flushed)
+				require.Empty(t, rec.Body.String())
+			})
+		}
+	}
+}
+
+func TestForwardAsAnthropic_ResponsesPreservesUsageOutputAndIncomplete(t *testing.T) {
+	const zero = `,"usage":{"input_tokens":0,"output_tokens":0,"total_tokens":0}`
+	for _, tc := range []struct {
+		name        string
+		delta       string
+		terminal    string
+		want        string
+		inputTokens int
+	}{
+		{
+			name:     "delta reconstruction",
+			delta:    `{"type":"response.output_text.delta","output_index":0,"content_index":0,"delta":"hello"}`,
+			terminal: `{"type":"response.completed","response":{"id":"resp_messages","status":"completed","output":[]` + zero + `}}`,
+			want:     `"text":"hello"`,
+		},
+		{
+			name:        "progressive usage",
+			delta:       `{"type":"response.in_progress","usage":{"input_tokens":5}}`,
+			terminal:    `{"type":"response.completed","response":{"id":"resp_messages","status":"completed","output":[]` + zero + `}}`,
+			want:        `"stop_reason":"end_turn"`,
+			inputTokens: 5,
+		},
+		{
+			name:     "incomplete response.done",
+			terminal: `{"type":"response.done","response":{"id":"resp_messages","status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[]` + zero + `}}`,
+			want:     `"stop_reason":"max_tokens"`,
+		},
+	} {
+		for _, stream := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/stream=%t", tc.name, stream), func(t *testing.T) {
+				body := responsesMessagesCreated
+				if tc.delta != "" {
+					body += "data: " + tc.delta + "\n\n"
+				}
+				result, err, rec, _ := forwardResponsesMessages(t, stream, body+"data: "+tc.terminal+"\n\n")
+				require.NoError(t, err)
+				require.NotNil(t, result)
+				require.Equal(t, tc.inputTokens, result.Usage.InputTokens)
+				require.Contains(t, rec.Body.String(), tc.want)
+				if stream {
+					require.Equal(t, 1, strings.Count(rec.Body.String(), "event: message_start"))
+					require.Contains(t, rec.Body.String(), "event: message_stop")
+				}
+			})
+		}
+	}
+}
+
+func forwardResponsesMessages(t *testing.T, stream bool, upstreamBody string) (*OpenAIForwardResult, error, *httptest.ResponseRecorder, *gin.Context) {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+	body := []byte(`{"model":"gpt-5.4","max_tokens":32,"messages":[{"role":"user","content":"hello"}],"stream":` + strconv.FormatBool(stream) + `}`)
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/messages", bytes.NewReader(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+	svc := &OpenAIGatewayService{cfg: rawChatCompletionsTestConfig(), httpUpstream: &httpUpstreamRecorder{resp: &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     http.Header{"Content-Type": {"text/event-stream"}},
+		Body:       io.NopCloser(strings.NewReader(upstreamBody)),
+	}}}
+	result, err := svc.ForwardAsAnthropic(c.Request.Context(), c, rawChatCompletionsTestAccount(), body, "", "")
+	return result, err, rec, c
+}
 
 func buildResponsesFailedSSEStream(errType, errorMessage string) string {
 	failed := fmt.Sprintf(`{"type":"response.failed","response":{"id":"resp_err","object":"response","status":"failed","error":{"type":"%s","message":"%s"},"output":[],"usage":{"input_tokens":10,"output_tokens":0,"total_tokens":10}}}`, errType, errorMessage)
@@ -111,6 +198,8 @@ func TestForwardAsAnthropic_StreamingBareErrorAfterOutputIsVisible(t *testing.T)
 	_, err := svc.ForwardAsAnthropic(context.Background(), c, account, body, "", "")
 
 	require.Error(t, err)
+	var failover *UpstreamFailoverError
+	require.NotErrorAs(t, err, &failover)
 	require.Contains(t, err.Error(), "upstream response failed: mixed tools failed")
 	clientStream := rec.Body.String()
 	require.Contains(t, clientStream, `"text":"partial"`)
@@ -164,11 +253,8 @@ func TestForwardAsAnthropic_StreamingGenericBareErrorBeforeOutputIsNotHiddenByFa
 	c.Request = httptest.NewRequest(http.MethodPost, "/v1/messages", bytes.NewReader(body))
 	c.Request.Header.Set("Content-Type", "application/json")
 
-	// CLAUDEX: server_error before the first token now fails over
-	// (openAIStreamTransportErrorMarkers), so the generic error here is an
-	// api_error.
 	ssePayload := "event: error\n" +
-		`data: {"type":"error","error":{"type":"api_error","code":"upstream_error","message":"mixed tools failed"}}` + "\n\n" +
+		`data: {"type":"error","error":{"type":"server_error","code":"upstream_error","message":"mixed tools failed"}}` + "\n\n" +
 		"data: [DONE]\n\n"
 	upstream := &httpUpstreamRecorder{resp: &http.Response{
 		StatusCode: http.StatusOK,

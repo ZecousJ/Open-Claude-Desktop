@@ -5,10 +5,11 @@ import {
   type AuthIssue,
 } from "../../shared/auth-issue";
 import { useT } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { voiceAuthIssue } from "../voice/auth-issue";
 import "./auth-issue.css";
 
+// (live claude.ai bundle, 2026-10-14, shared-7-CO8eplZ3.js)
 export function AuthIssueBanner({
   error,
   turnId,
@@ -72,7 +73,7 @@ export function AuthIssueNotice({
         data-testid="voice-status-banner"
       >
         <span className="auth-issue-icon">
-          <AppIcon name="Warning" />
+          <Anthropicon name="Warning" />
         </span>
         <span className="auth-issue-copy">{t(authIssueCopy[issue])}</span>
         {onDismiss && (
@@ -83,7 +84,7 @@ export function AuthIssueNotice({
               aria-label={t("Dismiss")}
               onClick={onDismiss}
             >
-              <AppIcon name="X" />
+              <Anthropicon name="X" />
             </button>
           </span>
         )}

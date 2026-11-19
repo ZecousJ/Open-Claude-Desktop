@@ -35,7 +35,7 @@ export const rememberedKey = "claudex-web-accounts";
 /** The last account logged out: a new tab opens on the sign-in page. */
 export const loggedOut = "-";
 
-/** How many accounts the chooser remembers. */
+/** How many accounts the chooser remembers (live claude.ai bundle, 2026-10-12). */
 export const rememberLimit = 10;
 
 /** Refresh this long before the access token expires. */

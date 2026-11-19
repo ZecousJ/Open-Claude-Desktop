@@ -61,7 +61,9 @@ export function listGranted(
 export function ask(
   this: ComputerUseBroker,
   request: ComputerUseAccessRequest,
+  turnId: string | undefined,
 ): Promise<{ allow: string[] } | "deny"> {
+  requireAccessTurn(this, request.conversationId, turnId, request.kind);
   return new Promise((resolve) => {
     const timer = setTimeout(
       () => finish("deny"),
@@ -75,9 +77,24 @@ export function ask(
       this.deps.emit.resolved(request.id);
       resolve(answer);
     };
-    this.pending.set(request.id, { request, finish });
+    this.pending.set(request.id, { request, turnId, finish });
     this.deps.emit.request(request);
   });
+}
+
+function requireAccessTurn(
+  broker: ComputerUseBroker,
+  conversationId: string,
+  turnId: string | undefined,
+  kind: ComputerUseAccessRequest["kind"],
+) {
+  const current = broker.deps.conversation(conversationId);
+  if (!current?.running || current.turnId !== turnId || broker.turns.get(conversationId)?.halted)
+    throw new Refusal("The computer-use request is no longer current.");
+  const refusal = broker.refusalFor(current, { permissions: kind !== "permissions" });
+  if (refusal) throw new Refusal(refusal);
+  if (kind === "full-control" && !broker.deps.policy().allowFullControl)
+    throw new Refusal("Your administrator doesn't allow full control. Use background actions.");
 }
 
 export async function requestAccess(
@@ -85,6 +102,7 @@ export async function requestAccess(
   conversationId: string,
   args: Record<string, unknown>,
 ): Promise<ComputerUseToolResult> {
+  const turnId = this.deps.conversation(conversationId)?.turnId;
   if (
     !Array.isArray(args.apps) ||
     !args.apps.length ||
@@ -149,7 +167,8 @@ export async function requestAccess(
       ...(deniedAutomatically.length ? { deniedAutomatically } : {}),
       ...(clipboard.read || clipboard.write ? { clipboard } : {}),
     };
-    const answer = await this.ask(request);
+    const answer = await this.ask(request, turnId);
+    if (answer !== "deny") requireAccessTurn(this, conversationId, turnId, request.kind);
     if (clipboard.read || clipboard.write) {
       if (answer === "deny")
         lines.push("Clipboard: the person didn't allow it.");
@@ -190,7 +209,7 @@ export async function askPermissions(
     conversationId,
     kind: "permissions",
     apps: [],
-  });
+  }, this.deps.conversation(conversationId)?.turnId);
   if (this.deps.permissionsReady())
     return {
       content: [
@@ -213,6 +232,12 @@ export function answer(
   const pending = this.pending.get(id);
   if (!pending) throw new Error("This request was already answered.");
   if (decision === "deny") return pending.finish("deny");
+  try {
+    requireAccessTurn(this, pending.request.conversationId, pending.turnId, pending.request.kind);
+  } catch (error) {
+    pending.finish("deny");
+    throw error;
+  }
   const asked = new Set(pending.request.apps.map((item) => item.app.id));
   pending.finish({
     allow: decision.allow.filter((appId) => asked.has(appId)),
@@ -232,6 +257,7 @@ export async function requestFullControl(
   conversationId: string,
   args: Record<string, unknown>,
 ): Promise<ComputerUseToolResult> {
+  const turnId = this.deps.conversation(conversationId)?.turnId;
   const reason = str(args.reason, "reason", 1000).trim().slice(0, 300);
   if (!this.deps.policy().allowFullControl)
     throw new Refusal(
@@ -252,16 +278,14 @@ export async function requestFullControl(
         app: this.refOf(grant.app),
         tier: grant.tier,
       })),
-    });
+    }, turnId);
     if (answer === "deny")
       return failure(
         "The person didn't allow full control. Continue with background actions or stop.",
       );
   }
   // The answer may have come after the turn ended or was stopped.
-  const conversation = this.deps.conversation(conversationId);
-  if (!conversation?.running || this.turns.get(conversationId)?.halted)
-    throw new Refusal("The turn ended before full control started.");
+  requireAccessTurn(this, conversationId, turnId, "full-control");
   if (this.control)
     throw new Refusal("Another conversation has full control of the screen.");
   this.control = { conversationId };

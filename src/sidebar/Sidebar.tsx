@@ -8,7 +8,7 @@ import { SurfaceSwitch } from "./SurfaceSwitch";
 import { WebSidebarHeader } from "./WebSidebarHeader";
 import { NativeChatSearch } from "./NativeChatSearch";
 import { WindowNav } from "./WindowNav";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useT } from "../i18n";
 import { AppContext } from "../app/AppContext";
 import { SidebarLoadBoundary } from "./SidebarLoadBoundary";
@@ -161,7 +161,7 @@ export function Sidebar({
             onMouseDown={(event) => event.preventDefault()}
             onClick={onSearch}
           >
-            <AppIcon name="Search" />
+            <Anthropicon name="Search" />
             <span>{t("Search")}</span>
             <kbd aria-hidden="true">{keyName(platform, "mod")} K</kbd>
           </button>

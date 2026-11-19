@@ -314,7 +314,7 @@ func TestDeviceHashAndKeyNames(t *testing.T) {
 }
 
 func TestCleanDeviceName(t *testing.T) {
-	require.Equal(t, "Ada's MacBook Pro", cleanDeviceName("  Ada's\u0000 MacBook‮ Pro\n "))
+	require.Equal(t, "Zecous's MacBook Pro", cleanDeviceName("  Zecous's\u0000 MacBook‮ Pro\n "))
 	long := strings.Repeat("é", 150)
 	require.Equal(t, 100, len([]rune(cleanDeviceName(long))))
 	require.Equal(t, "", cleanDeviceName("\t\r\n"))

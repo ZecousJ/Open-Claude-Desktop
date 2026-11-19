@@ -8,13 +8,13 @@
   border-radius: 8px;
 }
 
-.routine-grid .routine-native-item .routine-more > [data-icon] {
+.routine-grid .routine-native-item .routine-more > [data-anthropicon] {
   width: 20px;
   height: 20px;
 }
 
-/* Small inline host metadata with a 12px glyph and 6px connectivity dot.
-   Unknown connectivity has no status indicator. */
+/* O16 c73d5fa6d In: small inline host metadata with a 12px glyph and
+   6px connectivity dot. Unknown connectivity has no status indicator. */
 .routine-computer {
   min-width: 0;
   max-width: min(100%, 180px);

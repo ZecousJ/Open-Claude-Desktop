@@ -233,7 +233,7 @@ export function QueuedList({
       if (moveEvent.pointerId !== pointerId) return;
       const travel = moveEvent.clientY - startY;
       if (!started) {
-        // A press only becomes a drag past 5px.
+        // A press only becomes a drag past 5px (live bundle).
         if (Math.abs(travel) < 5) return;
         started = true;
         slots = measure();

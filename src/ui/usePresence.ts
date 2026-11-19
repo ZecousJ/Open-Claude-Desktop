@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
 
 /*
- * Overlays open and close symmetrically, as the original's Base UI popups do
- * with their starting/ending styles: an element stays on screen for its exit
- * animation, marked `data-state="closed"`, and only then leaves the document.
- * CSS animates the entrance on the element itself and the exit on
- * `[data-state=closed]`. Under reduced motion (the app's setting or the
- * system's) there is no exit to wait for: the element goes at once.
+ * Overlays open and close symmetrically, as the original's Base UI popups
+ * do with their starting/ending styles (desktop bundle 2.31226.1): an
+ * element stays on screen for its exit animation, marked
+ * `data-state="closed"`, and only then leaves the document. CSS animates
+ * the entrance on the element itself and the exit on `[data-state=closed]`.
+ * Under reduced motion (the app's setting or the system's) there is no exit
+ * to wait for: the element goes at once.
  */
 
 export type PresenceState = "open" | "closed";

@@ -244,8 +244,8 @@ test("#27 web legacy Cowork keeps unified tabs and search, without a shared-reco
       ["Active", "Shared", "Archived"],
     );
     assert.deepEqual(titles(), ["chat", "legacy"]);
-    // No "Shared with you" section on the history page; chats shared with the
-    // account keep their page.
+    // No "Shared with you" section on the history page (owner, 2026-10-20:
+    // the original has none); chats shared with the account keep their page.
     assert.equal(
       document.querySelector('[aria-label="Shared with you"]'),
       null,
@@ -356,7 +356,8 @@ test("#34 web account menu retains real service actions, configured links and Le
     const item = (label: string, parent: ParentNode = menu()) =>
       [...parent.querySelectorAll("button")].find(
         (button) =>
-          button.querySelector("span:not([data-icon])")?.textContent === label,
+          button.querySelector("span:not([data-anthropicon])")?.textContent ===
+          label,
       )!;
     const choose = async (label: string) => {
       await click(trigger());
@@ -370,9 +371,9 @@ test("#34 web account menu retains real service actions, configured links and Le
       assert.ok(trigger().querySelector("[data-no-translate]"));
       assert.ok(menu().querySelector(":scope > .profile-menu-scroll"));
       assert.deepEqual(
-        [...menu().querySelectorAll("button > span:not([data-icon])")].map(
-          (element) => element.textContent,
-        ),
+        [
+          ...menu().querySelectorAll("button > span:not([data-anthropicon])"),
+        ].map((element) => element.textContent),
         [
           "Settings",
           "Usage",

@@ -63,7 +63,7 @@ func TestAdminPutRequiresStepUp(t *testing.T) {
 	put := func() *httptest.ResponseRecorder {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPut, "/api/v1/admin/claudex/voice",
-			strings.NewReader(`{"transcription":{"upstream_url":"wss://transcribe.example.com/v1/audio/realtime/transcriptions","enabled":true,"api_key":"sk-test-0123456789abcdef"}}`))
+			strings.NewReader(`{"transcription":{"enabled":true,"api_key":"fixture-1-aaaaaaaaaaaaaa"}}`))
 		req.Header.Set("Content-Type", "application/json")
 		r.ServeHTTP(w, req)
 		return w

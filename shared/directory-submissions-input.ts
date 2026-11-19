@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const directorySubmissionInput = z.object({
   id: z.string().uuid().optional(),
+  original: z.record(z.string(), z.unknown()).optional(),
   kind: z.enum(["plugin", "mcp"]),
   name: z.string().max(200),
   slug: z.string().max(100),

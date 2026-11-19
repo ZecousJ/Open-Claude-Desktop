@@ -48,10 +48,12 @@ const unpublishable = new Set(["image", "pdf", "docx", "xlsx", "pptx", "file"]);
 
 /**
  * The file surface's header: Preview/Code, title, copy (or download for a
- * binary file) and its options, expand and close. While the agent rewrites the
- * file only expand and close show, as in the reference. When the Claudex
- * service offers public artifact links (R1), More options also has Publish
- * artifact, which opens the Publish dialog for the file. A file the agent
+ * binary file) and its options, expand and close. While the agent rewrites
+ * the file only expand and close show, as in the reference (R-1027).
+ * When the Claudex service offers public artifact links (R1), More options
+ * also has Publish artifact, which opens the Publish dialog for the file
+ * (live claude.ai bundle, 2026-10-12: the file panel's menu item, with
+ * "Content already published" or "Unpublished" under it). A file the agent
  * wrote more than once has the version switcher after its title.
  */
 export function FileViewerHeader({

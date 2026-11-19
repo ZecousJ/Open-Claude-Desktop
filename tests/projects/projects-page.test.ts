@@ -166,7 +166,7 @@ test("the project Memory section shows only while memory is usable and Generate 
     projectMemoryPreview({ ...doc, content: " \n" }),
     projectMemoryEmpty,
   );
-  // The reference design (`memoryAfterAFew`).
+  // Live claude.ai bundle, 2026-10-12 (`memoryAfterAFew`).
   assert.equal(
     projectMemoryEmpty,
     "Project memory will show here after a few chats.",

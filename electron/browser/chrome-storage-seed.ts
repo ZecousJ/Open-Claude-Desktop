@@ -1,7 +1,8 @@
 import { WebContentsView, type Session } from "electron";
 import type { ImportedStorage } from "./chrome-import-storage";
 
-// Never contact the imported origin or run its scripts.
+// Never contact the imported origin or run its scripts (desktop 2.37337.1,
+// index.chunk-DsYy5tSo.js, Le / Re / ze).
 async function storageDocument<Result>(
   jar: Session,
   origin: string,

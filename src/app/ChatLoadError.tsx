@@ -3,7 +3,8 @@ import { t } from "../i18n";
 import { EmptyState } from "../ui/EmptyState";
 import "./chat-load-error.css";
 
-// V3 conversation recovery.
+// V3 conversation recovery (live claude.ai bundle, 2026-10-14,
+// shared-2-ATjXCy8a.js:20880–20980).
 export function ChatLoadError({
   session = false,
   onRetry,

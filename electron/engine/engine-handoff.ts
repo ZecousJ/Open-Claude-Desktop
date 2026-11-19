@@ -1,3 +1,4 @@
+import { holdCodeTurnApprovals } from "./code-interrupt-scope";
 import { finishTurn } from "../../shared/activity";
 import { randomUUID } from "node:crypto";
 import { effortForMode } from "../../shared/code-effort";
@@ -18,23 +19,31 @@ import { isOutboxTurn } from "../ssh/outbox";
 import { WorkflowAgentRequest, WorkflowThreadListener } from "./engine-types";
 import { sideChatInstructions, sideContextFull } from "./side-chat-model";
 import { steerMissedTurn, turnInput } from "./engine-support";
+import type { OfficialCodeSteer } from "../../shared/official-code-followup";
 import type { Engine } from "./engine";
+import { beginCodeInterrupt, codeSendStartFor } from "./code-send-start";
+import type { CodeSideSessionPlacement } from "../../shared/official-code-side-session";
 
-/** Linked sessions and remembered choices. */
+/** Linked sessions and remembered choices (live claude.ai bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2.js). */
 export async function resolveCodeNewTask(
   this: Engine,
   id: string,
   offerId: string,
   choice: "here" | "new_session",
   remember = false,
+  current?: () => boolean,
+  placement?: CodeSideSessionPlacement,
 ): Promise<Conversation> {
   const other = this.elsewhereFor(id);
-  if (other) return other.resolveCodeNewTask(id, offerId, choice, remember);
+  if (other) return other.resolveCodeNewTask(id, offerId, choice, remember, current, placement);
   const conversation = this.store.conversation(id);
   const offer = conversation.codeNewTask;
   if (!offer || offer.id !== offerId)
     throw new Error("This suggestion is no longer available.");
+  if (offer.cloudTarget) throw Error("This suggestion is already starting in the cloud.");
+  if (offer.nativeInput && !current) throw new Error("Open the original Code offer to respond.");
   this.assertIdle(id);
+  if (current && !current()) throw new Error("Code session is no longer available.");
   delete conversation.codeNewTask;
   if (remember) {
     this.store.settings.ccNewTaskPrompt = choice;
@@ -42,10 +51,13 @@ export async function resolveCodeNewTask(
     this.emit({ type: "resync" });
   }
   this.changed(conversation, true);
+  if (offer.nativeInput) this.store.flush();
   try {
-    return await this.send(
+    const result = await this.send(
       {
         ...offer,
+        ...(choice === "new_session" ? placement : undefined),
+        ...(offer.nativeInput ? { officialCodeEventId: offer.nativeInput.uuid } : {}),
         conversationId: choice === "here" ? id : undefined,
         parentSessionId: choice === "new_session" ? id : undefined,
         mode: "code",
@@ -53,16 +65,30 @@ export async function resolveCodeNewTask(
         projectId: conversation.projectId,
         environment: conversation.environment,
         additionalFolders:
-          choice === "new_session" ? conversation.additionalFolders : undefined,
+          choice === "new_session"
+            ? conversation.additionalFolders?.filter(
+                folder => !conversation.codeSessionFolderGrants?.includes(folder),
+              )
+            : undefined,
         cloudEnvironmentId: conversation.cloudEnvironmentId,
       },
       undefined,
       false,
-      { newTaskResolved: true },
+      { newTaskResolved: true, current },
     );
+    if (offer.nativeInput && choice === "new_session") {
+      const child = this.store.conversation(result.id);
+      child.nativeSideSession = { taskId: offer.id };
+      this.changed(child, true);
+      this.store.flush();
+      return structuredClone(child);
+    }
+    return result;
   } catch (error) {
-    conversation.codeNewTask = offer;
-    this.changed(conversation, true);
+    if (!offer.nativeInput) {
+      conversation.codeNewTask = offer;
+      this.changed(conversation, true);
+    }
     throw error;
   }
 }
@@ -106,6 +132,7 @@ export async function handOffConversation(
       projectId: c.projectId,
       providerId: c.providerId,
       model: c.model,
+      ...(c.knowledgeBases?.length ? { knowledgeBases: c.knowledgeBases } : {}),
       ...(c.environment ? { environment: c.environment } : {}),
       handedOffFrom: {
         conversationId: c.id,
@@ -126,9 +153,10 @@ export async function handOffConversation(
 }
 
 /**
- * Continue in cloud's "Writing the handoff note": the same note a hand-off
- * writes, returned instead of sent, so the window can start the cloud session
- * with it as its first message (`handOffPrompt`). This session is not touched.
+ * Continue in cloud's "Writing the handoff note" (live claude.ai bundle,
+ * 2026-10-12): the same note a hand-off writes, returned instead of sent,
+ * so the window can start the cloud session with it as its first message
+ * (`handOffPrompt`). This session is not touched.
  */
 export async function writeHandOffNote(
   this: Engine,
@@ -204,14 +232,16 @@ export async function handOffNote(this: Engine, id: string) {
 }
 
 /**
- * Side chat: a question about a conversation asked beside it. It runs on an
- * ephemeral fork of the conversation's thread, made at its last finished turn
- * the first time, so the model sees the whole conversation so far and the
- * conversation itself is not touched: no turn, item or thread of it changes,
- * even while it is running. The side chat's later questions go to the same
- * fork. Resolves with the answer. While it is written, the answer so far goes
- * to the window as "side-chat-text" events; Stop (`interruptSideChat`) ends it
- * early with what was written.
+ * Side chat (desktop bundle 2.31226.1: "Start a side chat"): a question
+ * about a conversation asked beside it. It runs on an ephemeral fork of
+ * the conversation's thread, made at its last finished turn the first
+ * time, so the model sees the whole conversation so far and the
+ * conversation itself is not touched: no turn, item or thread of it
+ * changes, even while it is running. The side chat's later questions go
+ * to the same fork. Resolves with the answer. While it is written, the
+ * answer so far goes to the window as "side-chat-text" events (the desktop
+ * bundle's side chat shows the reply as it arrives); Stop
+ * (`interruptSideChat`) ends it early with what was written.
  */
 /**
  * Starts one agent of a workflow (electron/workflows): a fresh Codex thread
@@ -358,10 +388,14 @@ export async function steerTurn(
   id: string,
   text: string,
   attachments: Attachment[],
+  officialCode?: OfficialCodeSteer & { current: () => boolean },
+  officialCowork?: { eventId?: string; current: () => boolean },
 ): Promise<SteerResult | null> {
   const other = this.elsewhereFor(id);
-  if (other) return other.steerTurn(id, text, attachments);
+  if (other) return other.steerTurn(id, text, attachments, officialCode, officialCowork);
   const c = this.store.conversation(id);
+  if (c.projectOrganizationId)
+    throw Error("Send a new message from the shared project after this response ends.");
   if (!text.trim() && !attachments.length) throw new Error("Enter a message.");
   const policy = this.policy();
   if (policy.update?.state === "required")
@@ -384,11 +418,24 @@ export async function steerTurn(
   )
     return null;
   const messageId = "steer-" + randomUUID();
+  const threadId = c.threadId;
   const input = await turnInput(text, attachments, {
     inlineImages: !!this.launcher,
   });
+  if (officialCode && !officialCode.current()) return null;
+  if (officialCowork && !officialCowork.current())
+    throw Error("The Cowork session changed before sending.");
+  if (officialCowork && (c.threadId !== threadId || c.turns.at(-1) !== turn ||
+      turn.status !== "inProgress"))
+    return null;
   // Registered first: Codex can hand the message over before it answers.
-  this.steers.set(messageId, { turnId: turn.id, text, attachments });
+  this.steers.set(messageId, {
+    turnId: turn.id,
+    text,
+    attachments,
+    officialCode: officialCode && { eventId: officialCode.eventId, inputHash: officialCode.inputHash },
+    officialCoworkEventId: officialCowork?.eventId,
+  });
   try {
     await this.forward("turn/steer", {
       threadId: c.threadId,
@@ -397,39 +444,232 @@ export async function steerTurn(
       input,
     });
   } catch (error) {
-    this.steers.delete(messageId);
-    if (steerMissedTurn.test((error as Error).message)) return null;
+    if (steerMissedTurn.test((error as Error).message)) {
+      this.steers.delete(messageId);
+      return null;
+    }
+    if (!officialCode) this.steers.delete(messageId);
     throw error;
   }
   return { messageId, conversation: structuredClone(c) };
 }
 
-export async function interrupt(this: Engine, id: string): Promise<void> {
-  const other = this.elsewhereFor(id);
+export async function interrupt(
+  this: Engine,
+  id: string,
+  exact?: {
+    conversation: Conversation;
+    turn: Turn;
+    threadId: string;
+    current: () => boolean;
+  },
+): Promise<void> {
+  const other = exact ? undefined : this.elsewhereFor(id);
   if (other) return other.interrupt(id);
-  const c = this.store.conversation(id);
+  const store = this.store;
+  const c = store.conversation(id);
   const t = c.turns.at(-1);
-  // Stop while a cloud session fetches its repository: the fetch ends.
-  if (this.setupAbort?.conversationId === id) {
-    this.setupAbort.abort.abort();
-    return;
-  }
-  // Stop on a message waiting for its SSH host: it is never sent.
-  if (t?.status === "inProgress" && isOutboxTurn(t)) {
-    this.options.outbox?.remove(t.id);
-    finishTurn(t, "interrupted");
-    delete t.reconnecting;
-    this.changed(c, true);
-    this.store.flush();
-    return;
+  if (exact) {
+    if (
+      !exact.current() ||
+      c !== exact.conversation ||
+      t !== exact.turn ||
+      c.threadId !== exact.threadId
+    )
+      throw Error("The Code turn changed before it could be stopped.");
+  } else {
+    const start = codeSendStartFor(c, t)?.start;
+    if (
+      start &&
+      t?.status === "inProgress" &&
+      (t.id.startsWith("pending-") || start.stopping)
+    ) {
+      if ((await start.stop()).status === "mismatch")
+        throw Error("The Code turn changed before it could be stopped.");
+      return;
+    }
+    // Stop while a cloud session fetches its repository: the fetch ends.
+    if (this.setupAbort?.conversationId === id) {
+      this.setupAbort.abort.abort();
+      return;
+    }
+    // Stop on a message waiting for its SSH host: it is never sent.
+    if (t?.status === "inProgress" && isOutboxTurn(t)) {
+      this.options.outbox?.remove(t.id);
+      t.userStopped = true;
+      finishTurn(t, "interrupted");
+      delete t.reconnecting;
+      this.changed(c, true);
+      this.store.flush();
+      return;
+    }
   }
   if (t?.status === "inProgress" && c.threadId) {
-    await this.rpc?.call("turn/interrupt", {
-      threadId: c.threadId,
-      turnId: t.id,
-    });
-    this.gateway?.abortThread(c.threadId);
+    const threadId = c.threadId;
+    const rpc = this.rpc;
+    const turnId = t.id;
+    // Keep the actual source objects, not just reused IDs. A delayed stop must
+    // never reconcile/clean up a replacement conversation or another account.
+    const current = () => {
+      try {
+        return (!exact || exact.current()) && this.store === store && store.conversation(id) === c && this.rpc === rpc &&
+          c.threadId === threadId && c.turns.at(-1) === t && t.id === turnId;
+      } catch { return false; } // Deleted session / signed-out store.
+    };
+    const releaseApprovals = c.mode === "code" ? holdCodeTurnApprovals(t) : undefined;
+    let accepted = false;
+    let endInterrupt: (() => void) | undefined;
+    try {
+      if (!rpc)
+        throw new Error("The Codex engine is not connected.");
+      if (c.mode === "code" || c.mode === "cowork") endInterrupt = beginCodeInterrupt(t, current);
+      await rpc.call("turn/interrupt", { threadId, turnId });
+      accepted = true;
+      if (current() && !t.userStopped && (t.status === "inProgress" || (t.status as Turn["status"]) === "interrupted")) {
+        t.userStopped = true;
+        if ((t.status as Turn["status"]) === "interrupted") {
+          this.changed(c, true);
+          this.store.flush();
+        }
+      }
+    } catch (error) {
+      if (process.env.CLAUDEX_STOP_DIAGNOSTICS === "1")
+        console.warn(
+          "[Claudex stop error]",
+          JSON.stringify({
+            turnId: t.id,
+            status: t.status,
+            message: (error as Error).message,
+          }),
+        );
+      // A reply may finish between the click and Codex handling the stop.
+      // Only accept that race when a terminal notification or an explicit
+      // history read proves this exact turn finished; other errors still fail.
+      if (!/^no active turn to interrupt$/i.test((error as Error).message))
+        throw error;
+      if (!current()) throw error;
+      if (t.status !== "inProgress") {
+        accepted = true;
+        return;
+      }
+      const result = await rpc?.call("thread/read", {
+        threadId,
+        includeTurns: true,
+      });
+      const finished =
+        result?.thread?.id === threadId &&
+        result.thread.turns?.find((turn: any) => turn.id === t.id);
+      if (process.env.CLAUDEX_STOP_DIAGNOSTICS === "1")
+        console.warn(
+          "[Claudex stop reconciliation]",
+          JSON.stringify({
+            turnId: t.id,
+            localStatus: t.status,
+            threadMatches: result?.thread?.id === threadId,
+            sameEngine: this.rpc === rpc,
+            sameLatestTurn: c.turns.at(-1) === t,
+            nativeTurns: result?.thread?.turns?.map((turn: any) => ({
+              id: turn.id,
+              status: turn.status,
+            })),
+          }),
+        );
+      if (
+        !current() ||
+        !finished ||
+        !["completed", "failed", "interrupted"].includes(finished.status)
+      )
+        throw error;
+      accepted = true;
+      if (t.status === "inProgress") {
+        for (const item of finished.items ?? []) {
+          if (item.type !== "userMessage")
+            this.notification({
+              method: "item/completed",
+              params: { threadId, turnId: t.id, item },
+            });
+        }
+        this.notification({
+          method: "turn/completed",
+          params: { threadId, turn: finished },
+        });
+        this.store.flush();
+      }
+    } finally {
+      endInterrupt?.();
+      try {
+        if (accepted && rpc && current())
+          await stopTurnBackgroundTerminals(rpc, threadId, t, current);
+      } finally {
+        // A failed RPC must not leave this turn's upstream stream hanging.
+        // Never abort a newer turn or a replacement engine's request.
+        releaseApprovals?.();
+        if (current()) this.gateway?.abortThread(threadId);
+      }
+    }
   }
+}
+
+/** Stop only background terminals whose item IDs belong to the interrupted turn. */
+async function stopTurnBackgroundTerminals(
+  rpc: NonNullable<Engine["rpc"]>,
+  threadId: string,
+  turn: Turn,
+  current: () => boolean,
+) {
+  const itemIds = new Set(
+    turn.items
+      .filter(
+        (item) =>
+          item.type === "commandExecution" &&
+          typeof item.id === "string" &&
+          !!item.id,
+      )
+      .map((item) => item.id),
+  );
+  if (!itemIds.size) return;
+  let cursor: string | undefined;
+  const seenCursors = new Set<string>();
+  const terminated = new Set<string>();
+  let pages = 0;
+  do {
+    // A malformed or continuously growing listing must fail rather than leave
+    // Stop pending forever. Report incomplete cleanup to the caller.
+    if (++pages > 100)
+      throw new Error("Background terminal cleanup exceeded its page limit.");
+    if (!current()) return;
+    const page = await rpc.call("thread/backgroundTerminals/list", {
+      threadId,
+      limit: 50,
+      ...(cursor ? { cursor } : {}),
+    });
+    if (!current()) return;
+    const matches = Array.isArray(page?.data)
+      ? page.data.filter(
+          (terminal: any) =>
+            typeof terminal?.processId === "string" &&
+            !!terminal.processId &&
+            itemIds.has(terminal.itemId),
+        )
+      : [];
+    await Promise.all(
+      matches.map((terminal: any) => {
+        if (!current() || terminated.has(terminal.processId)) return;
+        terminated.add(terminal.processId);
+        return rpc.call("thread/backgroundTerminals/terminate", {
+          threadId,
+          processId: terminal.processId,
+        });
+      }),
+    );
+    if (!current()) return;
+    cursor = typeof page?.nextCursor === "string" ? page.nextCursor : undefined;
+    if (cursor) {
+      if (seenCursors.has(cursor))
+        throw new Error("Background terminal cleanup returned a repeated cursor.");
+      seenCursors.add(cursor);
+    }
+  } while (cursor);
 }
 
 export async function releaseRunner(

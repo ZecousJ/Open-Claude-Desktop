@@ -1,6 +1,7 @@
 /**
- * The plan card's line drawing. Claudex's own drawing of a branching stem, not
- * the original artwork.
+ * The plan card's line drawing (R-设置-Billing-顶部: a 64px glyph drawn in
+ * 1.5px strokes, the text colour). Claudex's own drawing of a branching
+ * stem, not the original artwork.
  */
 export function PlanIcon() {
   const dots: [number, number][] = [

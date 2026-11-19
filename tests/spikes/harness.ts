@@ -301,7 +301,7 @@ export class CodexHost {
     delete env.OPENAI_API_KEY;
     running.add(this);
     await this.rpc.startWith(() => {
-      const child = spawn(resolveRuntime(), args, {
+      const child = spawn(resolveRuntime(process.env.CLAUDEX_RUNTIME_RESOURCES), args, {
         env,
         stdio: "pipe",
         windowsHide: true,

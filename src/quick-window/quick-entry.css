@@ -1,8 +1,10 @@
 /*
  * The Quick Entry composer (QuickEntry.tsx). Its window is transparent and
- * exactly the composer's size; the composer is a 16px-radius card with a soft
- * top-to-bottom gradient and a 0.5px hairline, the mark in a 56px square and a
- * 16px field. The card's shadow is the window's own.
+ * exactly the composer's size; the composer is a 16px-radius card with a
+ * soft top-to-bottom gradient and a 0.5px hairline, the mark in a 56px
+ * square and a 16px field (live claude.ai bundle, 2026-10-14,
+ * desktop/.vite/renderer/quick_window/quick-window.html).
+ * The card's shadow is the window's own.
  */
 :root {
   color-scheme: dark;
@@ -14,6 +16,7 @@
   --quick-placeholder: var(--claude-text-500);
   --quick-mark: #d97757;
   font-family:
+    "Claudex Reference Sans",
     "anthropic-sans",
     ui-sans-serif,
     -apple-system,

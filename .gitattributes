@@ -1,2 +1,4 @@
 # backend/ is the vendored Sub2API fork (LGPL-3.0); keep it out of language stats.
 backend/** linguist-vendored
+# Base64 handoff text: preserve exact 512 KiB chunks without newline conversion.
+docs/handoff/source/*.txt -text diff

@@ -57,7 +57,7 @@ execFileSync(
 const sha256 = createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const keep = await keepDigest(resources);
 if (!keep) throw new Error(`No ${appPackKeptFolder} folder in ${resources}`);
-const key = `${downloadsPrefix}/claudex/${version}/${name}`;
+const key = `zecous/downloads/claudex/${version}/${name}`;
 const url = claudexDownloadUrl(
   option("download-base") ?? defaultDownloadBase,
   key,

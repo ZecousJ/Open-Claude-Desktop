@@ -81,7 +81,8 @@ export function connectorConnected(server: McpServerState) {
 }
 
 /**
- * Connectors and the Add menu. Custom connectors use the desktop configuration
+ * Connectors and the Add menu (live claude.ai bundle, 2026-10-14,
+ * c0e82e24a-lPWvfDG4.js). Custom connectors use the desktop configuration
  * or the web runner; local programs remain available through Edit config.
  */
 export interface ConnectorBrowseModel {
@@ -249,7 +250,7 @@ function OwnedConnectorsTab({
   const [localQuery, setQuery] = useState("");
   const query = customize?.query ?? localQuery;
   const [status, setStatus] = useState<ConnectorStatusFilter>("all");
-  // Yours | Discover and the directory's All connectors page.
+  // Yours | Discover and the directory's All connectors page (R-1380).
   const [localView, setView] = useState<"yours" | "discover">(() =>
     readConnectorsEntry() === "discover" ? "discover" : "yours",
   );

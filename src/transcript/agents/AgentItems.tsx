@@ -30,8 +30,8 @@ export interface AgentTarget {
 }
 
 /**
- * Opens a single Agent's own transcript, or the task list when the row has no
- * child thread yet or no transcript panel is wired.
+ * Opens a single Agent's own transcript (R-0786, S-0005), or the task list
+ * when the row has no child thread yet or no transcript panel is wired.
  */
 export function agentOpener(
   task: WorkflowSummary,
@@ -124,8 +124,8 @@ export function AgentItems({
   const shown = turn.items.filter(
     (item) => !consumedTools.has(item.id) && !isWorkflowToolCall(item),
   );
-  // Code folds consecutive tool calls into one row; the Thinking and Verbose
-  // transcript views list each call on its own.
+  // Code folds consecutive tool calls into one row (R-0730, R-0794); the
+  // Thinking and Verbose transcript views list each call on its own.
   const view = useTranscriptViewContext();
   // The phones draw Code's tool calls as the official collapsed row.
   const ToolGroup = useTranscriptSlots().CodeToolGroup ?? CodeToolGroup;

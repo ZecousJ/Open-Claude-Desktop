@@ -1,11 +1,16 @@
+import { profileReadLease } from "../account/profile-read-lease";
+import { assertAccountOperationCurrent } from "../account/operation-lease";
 import { requestJson } from "../sub2api/http";
-import type { SpendLimit } from "../../shared/billing-api";
+import {
+  readSpendLimitSource,
+  spendLimitAmount,
+  writeSpendLimitSource,
+} from "../account/spend-limit-read";
 import { shell } from "electron";
 import { z } from "zod";
 import type { AppContext, IpcHandle } from "../app/app-context";
-import { BillingSession, redeemMessage } from "../account/billing";
+import { BillingSession } from "../account/billing";
 import { billingError } from "../account/billing-payments";
-import type { RemoteHost } from "../remote/host";
 
 const orderId = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const paymentRequest = z
@@ -23,27 +28,25 @@ const paymentRequest = z
 
 /** Settings → Billing: the plan and balance, redeem codes and payments. */
 export function registerBillingHandlers(handle: IpcHandle, ctx: AppContext) {
-  const sessions = new WeakMap<RemoteHost, BillingSession>();
-  let last: BillingSession | undefined;
-  const remote = () => {
-    if (!ctx.remote) throw Error("This account has no Claudex plan.");
-    return ctx.remote;
-  };
+  const captureLease = profileReadLease(ctx);
+  let active: { billing: BillingSession; current: () => boolean } | undefined;
+  ctx.onAccountDeactivating(() => {
+    active?.billing.close();
+    active = undefined;
+  });
   const session = () => {
-    const host = remote();
-    let found = sessions.get(host);
-    if (!found) {
-      // Orders of an account that signed out are no longer followed.
-      last?.close();
-      found = new BillingSession(host, {
-        openExternal: (url) => shell.openExternal(url),
-        push: (event) => ctx.push(event),
-        active: () => ctx.remote === host,
-      });
-      sessions.set(host, found);
-      last = found;
-    }
-    return found;
+    if (active?.current()) return active.billing;
+    const { host, current } = captureLease();
+    assertAccountOperationCurrent(current);
+    if (!host) throw Error("This account has no Claudex plan.");
+    active?.billing.close();
+    const billing = new BillingSession(host, {
+      openExternal: (url) => shell.openExternal(url),
+      push: (event) => ctx.push(event),
+      active: current,
+    });
+    active = { billing, current };
+    return billing;
   };
   const translated =
     <A extends unknown[], T>(run: (...args: A) => Promise<T>) =>
@@ -54,45 +57,43 @@ export function registerBillingHandlers(handle: IpcHandle, ctx: AppContext) {
         throw billingError(error);
       }
     };
-  // Settings → Billing → Monthly spend limit (backend usage/spend.go).
-  const spendUrl = () =>
-    `${remote().backend.accounts.baseUrl}/api/v1/claudex/spend-limit`;
-  const spendFrom = (body: unknown): SpendLimit => {
-    const value = (body ?? {}) as Record<string, unknown>;
-    return {
-      limitUsd: typeof value.limit_usd === "number" ? value.limit_usd : null,
-      usedUsd: typeof value.used_usd === "number" ? value.used_usd : 0,
-      resetsAt: typeof value.resets_at === "string" ? value.resets_at : "",
-    };
-  };
   handle("spendLimit", async () => {
-    if (!ctx.remote) return null;
-    const backend = remote().backend;
-    try {
-      return spendFrom(
-        await backend.session.authorized((token) =>
-          requestJson(fetch, spendUrl(), { token }),
-        ),
-      );
-    } catch {
-      // An older service has no spend limits: the block is not shown.
-      return null;
-    }
+    const lease = captureLease();
+    if (!lease.current())
+      throw Error("The account changed while reading its spend limit.");
+    const host = lease.host;
+    if (!host) return null;
+    const backend = host.backend;
+    const url = `${backend.accounts.baseUrl}/api/v1/claudex/spend-limit`;
+    return readSpendLimitSource(
+      (check) =>
+        backend.session.authorized((token) => {
+          check();
+          return requestJson(fetch, url, { token });
+        }),
+      lease.current,
+    );
   });
   handle(
     "setSpendLimit",
     translated(async (raw: unknown) => {
-      const limit = z.number().min(0).max(100_000).nullable().parse(raw);
-      const backend = remote().backend;
-      return spendFrom(
-        await backend.session.authorized((token) =>
-          requestJson(fetch, spendUrl(), {
-            method: "PUT",
-            token,
-            body: { limit_usd: limit },
-          }),
-        ),
-      );
+      const limitUsd = spendLimitAmount.parse(raw);
+      const lease = captureLease();
+      const { host } = lease;
+      const check = () => {
+        if (!lease.current())
+          throw Error("The account changed while saving its spend limit.");
+      };
+      check();
+      if (!host) throw Error("This account has no Claudex plan.");
+      const backend = host.backend;
+      const baseUrl = backend.accounts.baseUrl;
+      const saved = await backend.session.authorized((token) => {
+        check();
+        return writeSpendLimitSource({ baseUrl, token, limitUsd });
+      });
+      check();
+      return saved;
     }),
   );
   handle("billingInfo", () =>
@@ -106,17 +107,7 @@ export function registerBillingHandlers(handle: IpcHandle, ctx: AppContext) {
         .trim()
         .regex(/^[A-Za-z0-9_-]{4,128}$/, "Enter the code as you received it.")
         .parse(raw);
-      const host = remote();
-      const backend = host.backend;
-      const redeemed = await backend.session.authorized((token) =>
-        backend.client.redeem(token, code),
-      );
-      // A new plan or balance can change the models this device may use.
-      await host.refreshPlan().catch(() => {});
-      return {
-        message: redeemMessage(redeemed),
-        billing: await session().info(),
-      };
+      return session().redeem(code);
     }),
   );
   handle("billingCheckout", () =>

@@ -1,8 +1,8 @@
 /**
- * Load failures: the boot error page tells a service that is down from one that
- * cannot be reached or a browser that is offline, and a page that cannot render
- * shows the danger banner with Try again (Reload once a retry failed or a
- * script did not load).
+ * Load failures (live claude.ai bundle, 2026-10-12): the boot error page
+ * tells a service that is down from one that cannot be reached or a browser
+ * that is offline, and a page that cannot render shows the danger banner
+ * with Try again (Reload once a retry failed or a script did not load).
  */
 import assert from "node:assert/strict";
 import test from "node:test";

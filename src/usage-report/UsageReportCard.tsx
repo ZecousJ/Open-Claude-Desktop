@@ -17,7 +17,7 @@ import { useModelCatalog } from "../composer/useComposerServices";
 import { useConversationServices } from "../conversation/ConversationServices";
 import { currentLocale, t, useT } from "../i18n";
 import { rowLabel } from "../settings/planUsageFormat";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import {
   activeMs,
   copyReportText,
@@ -31,19 +31,20 @@ import {
 import "./usage-report-card.css";
 
 /**
- * The usage report a Code session posts in its transcript: "Usage" with Copy
- * report over the plan's limits, then "This session": Cost, API and Active
- * time, Lines, each model family's share of the cost and the cache hit rate,
- * three to a row, and the Breakdown of Input / Output / Cache read / Cache
- * write by model. It reads the plan and the service's record of the session
- * when it appears and again when a turn ends, and Codex's own totals until the
- * service has any.
+ * The usage report a Code session posts in its transcript (live claude.ai
+ * bundle, 2026-10-12): "Usage" with Copy report over the plan's limits, then
+ * "This session": Cost, API and Active time, Lines, each model family's
+ * share of the cost and the cache hit rate, three to a row, and the
+ * Breakdown of Input / Output / Cache read / Cache write by model. It reads
+ * the plan and the service's record of the session when it appears and
+ * again when a turn ends, and Codex's own totals until the service has any.
  *
- * Not built, with reasons: the live "Web searches" cell (no Claudex count), the
- * "Costs may be inaccurate…" note (the service's cost is what the balance was
- * charged), credit rows (no subscriptions or credits), and "What's using your
- * limits?" (the live app attributes requests to subagents, skills and MCP
- * servers from its own logs; neither Codex nor the service records that).
+ * Not built, with reasons: the live "Web searches" cell (no Claudex count),
+ * the "Costs may be inaccurate…" note (the service's cost is what the
+ * balance was charged), credit rows (no subscriptions or credits), and
+ * "What's using your limits?" (the live app attributes requests to
+ * subagents, skills and MCP servers from its own logs; neither Codex nor the
+ * service records that).
  */
 export function UsageReportCard({
   conversation,
@@ -215,7 +216,7 @@ function CopyReport({ text }: { text: () => string }) {
       {copied ? (
         <Check size={16} aria-hidden="true" />
       ) : (
-        <AppIcon name="Copy" />
+        <Anthropicon name="Copy" />
       )}
     </button>
   );

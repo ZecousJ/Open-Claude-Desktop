@@ -26,7 +26,7 @@
    square 12px from the top and the edge, radius 6, its 16px Sidebar glyph
    in the secondary ink. Collapsed for want of room, it is a control-sized
    square (24px with a mouse, 32px on a touch screen) 8px in, its glyph
-   20px. */
+   20px. Live claude.ai, 2026-10-21, at 1280 and 700 wide. */
 .app.web .collapsed-chrome {
   top: 12px;
   left: 12px;
@@ -46,7 +46,7 @@
 }
 /* The glyph's size is the icon's inline style; the original overrides its
    chrome glyphs the same way (.df-chrome-btn span[style*=font-size]). */
-.app.web.sidebar-narrow .collapsed-chrome .app-icon {
+.app.web.sidebar-narrow .collapsed-chrome .anthropicon {
   width: 20px;
   height: 20px;
   font-size: 20px !important;
@@ -65,8 +65,9 @@
 .app.web.sidebar-hidden .routine-crumb {
   padding-left: 88px;
 }
-/* A conversation's title starts 38px in, clear of the floating toggle; the
-   title row's own -1px start makes that 39px. */
+/* A conversation's title starts 38px in, clear of the floating toggle
+   (live claude.ai chat, 2026-10-21, 1280 wide: 304 docked, 38 collapsed);
+   the title row's own -1px start makes that 39px. */
 .app.web.sidebar-hidden .chat-header {
   padding-left: 39px;
 }
@@ -90,7 +91,7 @@
 }
 
 /* An address the web app does not know (page "not-found"), in the sign-in
-   pages' style: serif heading, serif subtitle, one button. */
+   pages' style (package LOGIN): serif heading, serif subtitle, one button. */
 .app.web .not-found-page .panel-empty {
   min-height: 0;
   margin: auto;
@@ -101,7 +102,8 @@
 .app.web .not-found-page h1 {
   margin: 0;
   font:
-    400 40px/48px "Claudex Serif",
+    400 40px/48px "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -112,7 +114,8 @@
 .app.web .not-found-page p {
   margin: 0 0 14px;
   font:
-    400 16.5px/24px "Claudex Serif",
+    400 16.5px/24px "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -126,13 +129,13 @@
   font-weight: 500;
 }
 
-/* Narrow layout. At or under the collapse line, max(700px, width + 329px), the
-   sidebar is never a column: src/sidebar/sidebar-visibility.ts keeps the app
-   `sidebar-hidden` there, from the stored width, which no media query can read.
-   Above a phone's width it opens as the peek over the page (below,
-   sidebar.css); on a phone it is the sheet that covers the screen, which
-   src/App.tsx closes after a row is chosen. The slide (transform) still
-   applies. */
+/* Narrow layout. At or under the collapse line, max(700px, width + 329px)
+   (live claude.ai bundle, 2026-10-12), the sidebar is never a column:
+   src/sidebar/sidebar-visibility.ts keeps the app `sidebar-hidden` there,
+   from the stored width, which no media query can read. Above a phone's
+   width it opens as the peek over the page (below, sidebar.css); on a phone
+   it is the sheet that covers the screen, which src/App.tsx closes after a
+   row is chosen. The slide (transform) still applies. */
 @media (max-width: 639.98px) {
   .app.web,
   .app.web.sidebar-hidden {
@@ -150,11 +153,12 @@
   }
 }
 
-/* Phone home: live 390×844 fine-pointer capture uses a 24px greeting, 15px
-   editor and 24px chin buttons; coarse pointers retain 16px/32px.
-   Header/headroom/greeting spacing comes; the composer uses the sticky bottom
-   seat. Keyboard-open and short-window transitions still need live
-   measurements. */
+/* Phone home: live 390×844 fine-pointer capture uses a 24px greeting,
+   15px editor and 24px chin buttons; coarse pointers retain 16px/32px.
+   Header/headroom/greeting spacing comes
+   from shared-19-B3wmJeb_.js:4353–4397; the composer uses the sticky bottom
+   seat from shared-5-DDng4H2p.js:13436–13469. Keyboard-open and short-window
+   transitions still need live measurements. */
 @media (max-width: 639.98px) {
   .app.web .collapsed-chrome {
     top: max(8px, env(safe-area-inset-top));
@@ -292,7 +296,7 @@
   /* The live chin keeps its 24px row. Touch controls grow 4px above and
      below it; a narrow fine-pointer window keeps the ordinary xs buttons. */
   @media (pointer: coarse), (hover: none) {
-    /* The same in a project's composer. */
+    /* The same in a project's composer (live 2026-10-19 at 390: 32px). */
     .app.web
       :is(.chat-home, .prj-overview-composer)
       .composer-chin
@@ -352,8 +356,9 @@
   .app.web .conversation-footer > :last-child {
     flex: none;
   }
-  /* The sidebar covers the whole screen, its rows 44px high for a finger, with
-     no scrim behind it. */
+  /* The sidebar covers the whole screen, its rows 44px high for a finger,
+     with no scrim behind it (the live claude.ai bundle's phone sheet,
+     2026-10-12). */
   .app.web .sidebar {
     width: 100%;
     padding-top: env(safe-area-inset-top);
@@ -361,8 +366,8 @@
     box-sizing: border-box;
     border-right: 0;
   }
-  /* Current top-search branch: a 44px head and a separate Search row 8px below
-     it. */
+  /* Current top-search branch: a 44px head and a separate Search row 8px
+     below it (live 390×844 DOM, 2026-10-16). */
   .app.web .sidebar-chrome.web-sidebar-head {
     height: 44px;
     padding-left: 8px;
@@ -387,7 +392,9 @@
     height: 44px;
     min-height: 44px;
   }
-  /* Search heads the sheet; the account row's search icon goes. */
+  /* Search heads the sheet (live claude.ai at 390px: 40px high, 8px in, on
+     white 10%, 10px round, 16px in, a 20px glyph and 15/22 #f0efec 4px
+     apart); the account row's search icon goes. */
   .app.web .sidebar .web-sidebar-search {
     display: flex;
     flex: none;
@@ -402,7 +409,7 @@
     font-size: 15px;
     line-height: 22px;
   }
-  .app.web .sidebar .web-sidebar-search .app-icon {
+  .app.web .sidebar .web-sidebar-search .anthropicon {
     width: 20px;
     height: 20px;
     margin-left: -4px;
@@ -418,12 +425,13 @@
     display: none;
   }
 }
-/* Dialogs keep 16px from the window's edges at every width and may grow to the
-   window's height less that margin and twice the larger safe area (live Its
-   Dialog is `w-[calc(100vw-2rem)]` with `max-h-[calc(100dvh - 2rem - 2 *
-   max(safe-area top, safe-area bottom))]`). :where() keeps the weight of the base
-   rules, so a dialog's own size (import, memory, create-skill) still wins; the
-   Sheet dialogs keep their captured 720px cap inside the 16px margin. */
+/* Dialogs keep 16px from the window's edges at every width and may grow to
+   the window's height less that margin and twice the larger safe area (live
+   claude.ai bundle, 2026-10-12: its Dialog is `w-[calc(100vw-2rem)]` with
+   `max-h-[calc(100dvh - 2rem - 2 * max(safe-area top, safe-area bottom))]`).
+   :where() keeps the weight of the base rules, so a dialog's own size
+   (import, memory, create-skill) still wins; the Sheet dialogs keep their
+   captured 720px cap inside the 16px margin. */
 :where(:root[data-surface="web"]) .overlay,
 :where(:root[data-surface="web"]) .sheet-overlay {
   padding: 16px;
@@ -435,9 +443,10 @@
   );
 }
 
-/* Below 640px a dialog's buttons stack, the main one on top, each as wide as
-   the dialog and 8px apart; a confirmation already did
-   (80-dialogs-responsive.css). */
+/* Below 640px a dialog's buttons stack, the main one on top, each as wide
+   as the dialog and 8px apart (live claude.ai bundle, 2026-10-12: its
+   Dialog footer is `flex-col-reverse gap-2 sm:flex-row`); a confirmation
+   already did (80-dialogs-responsive.css). */
 @media (max-width: 639.98px) {
   :root[data-surface="web"] .modal > .button-row,
   :root[data-surface="web"] .modal form > .button-row {
@@ -450,10 +459,12 @@
   }
 }
 
-/* Below 768px the Chat transcript is 20px from each side and centred, and a
-   reply's text runs to its right edge. The desktop's measured 4px centring
-   offset and the text stop short of the right edge (live-web/transcript.css,
-   clamp(0, (width - 384px) * .175, 56px)) are for wide windows. */
+/* Below 768px the Chat transcript is 20px from each side and centred, and
+   a reply's text runs to its right edge (live claude.ai bundle, 2026-10-12:
+   the chat list is `px-5` under `md`, where `--msg-inset-end` drops to 0).
+   The desktop's measured 4px centring offset and the text stop short of the
+   right edge (live-web/transcript.css, clamp(0, (width - 384px) * .175,
+   56px)) are for wide windows. */
 @media (max-width: 767.98px) {
   .app.web.mode-chat .chat-layout {
     padding-left: 0;
@@ -463,11 +474,12 @@
     padding-left: 20px;
     padding-right: 20px;
   }
-  /* The live column sits 8px in from the sidebar and runs to the window's edge
-     (overlay scrollbar): at 740 wide its text is 316..720 and the composer
-     304..732 (8px inside the dock's 296..740). Here the transcript keeps an 8px
-     scrollbar gutter on each side, so its text stops 12px from the gutter, and
-     the composer takes 16px on the left and 8 on the right. */
+  /* The live column sits 8px in from the sidebar and runs to the window's
+     edge (overlay scrollbar): at 740 wide its text is 316..720 and the
+     composer 304..732 (8px inside the dock's 296..740). Here the transcript
+     keeps an 8px scrollbar gutter on each side, so its text stops 12px from
+     the gutter, and the composer takes 16px on the left and 8 on the right
+     (live claude.ai, 2026-10-21). */
   .app.web.mode-chat .has-conversation .messages {
     padding-right: 12px;
   }
@@ -490,8 +502,9 @@
 .web-sidebar-search {
   display: none;
 }
-/* The phone sheet slides in from the left and back out over the live claude.ai
-   bundle's sheet duration and ease-out; reduced motion keeps sidebar.css's
+/* The phone sheet slides in from the left and back out over the live
+   claude.ai bundle's sheet duration and ease-out (2026-10-12: 0.3s,
+   cubic-bezier(0.165, 0.84, 0.44, 1)); reduced motion keeps sidebar.css's
    jump. */
 @media (max-width: 639.98px) and (prefers-reduced-motion: no-preference) {
   :root:not([data-motion="reduced"]) .app.web .sidebar {
@@ -514,10 +527,10 @@
   }
 }
 
-/* claude.ai's light theme, from the live web page: page #fcfcfb, primary text
-   #0b0b0b, secondary #52514e, muted #898781. The light values in the foundation
-   and sidebar sheets come from the desktop app's own capture and sit a shade
-   off these. */
+/* claude.ai's light theme, from the live web page (2026-09-30, --cds tokens):
+   page #fcfcfb, primary text #0b0b0b, secondary #52514e, muted #898781. The
+   light values in the foundation and sidebar sheets come from the desktop
+   app's own capture and sit a shade off these. */
 :root[data-surface="web"][data-theme="light"] {
   --bg: #fcfcfb;
   --text: #0b0b0b;
@@ -555,10 +568,12 @@
 :root[data-surface="web"][data-theme="light"] .section-toggle > svg,
 :root[data-surface="web"][data-theme="light"] .group-toggle > svg,
 :root[data-surface="web"][data-theme="light"] .profile small,
-:root[data-surface="web"][data-theme="light"] .profile > .app-icon {
+:root[data-surface="web"][data-theme="light"] .profile > .anthropicon {
   color: #898781;
 }
-/* Under the pointer a heading lifts from the muted to the secondary ink. */
+/* Under the pointer a heading lifts from the muted to the secondary ink
+   (--cds-text-secondary #52514e; live claude.ai bundle, 2026-10-16,
+   shared-styles-DG9uV_so.css [data-sidebar-group-label]:hover). */
 @media (hover: hover) {
   :root[data-surface="web"][data-theme="light"] .section-label:hover {
     color: var(--text-secondary);
@@ -578,11 +593,11 @@
   color: #898781;
 }
 
-/* Keep unverified shortcut hints hidden. The current sidebar-field branch and
-   command palette show these working shortcuts in the live web UI, and the
-   prompt history's header names its keys (up, down, esc) in the shared
-   composer; :where keeps this rule's specificity for the overrides written
-   against it. */
+/* Keep unverified shortcut hints hidden. The current sidebar-field branch
+   and command palette show these working shortcuts in the live web UI, and
+   the prompt history's header names its keys (up, down, esc) in the shared
+   composer (live bundle, 2026-10-16, c1958b152); :where keeps this rule's
+   specificity for the overrides written against it. */
 :root[data-surface="web"]
   kbd:not(.markdown kbd):not(.main-nav kbd):not(.web-sidebar-search kbd):not(
     .search-palette kbd
@@ -590,9 +605,10 @@
   display: none !important;
 }
 
-/* The conversation title: a 28px button 8px from the sidebar, radius 7, the
-   title 14/20 at 400 in #f0efec 10px in; the 16px caret 8px after it and 6px
-   from the end (there a second 28px button, here one). */
+/* The conversation title (live claude.ai, 2026-10-01, from its DOM): a 28px
+   button 8px from the sidebar, radius 7, the title 14/20 at 400 in #f0efec
+   10px in; the 16px caret 8px after it and 6px from the end (there a
+   second 28px button, here one). */
 :root[data-surface="web"] .chat-header .thread-title {
   gap: 8px;
   margin: 0 -6px 0 -9px;
@@ -604,19 +620,19 @@
 :root[data-surface="web"]:not([data-theme="light"]) .chat-header .thread-title {
   color: #f0efec;
 }
-:root[data-surface="web"] .chat-header .thread-title > .app-icon {
+:root[data-surface="web"] .chat-header .thread-title > .anthropicon {
   width: 16px;
   height: 16px;
 }
 
 /*
  * A tool panel on a phone (Progress, Plan, an Agent's transcript, …): beside
- * the conversation it got min(313px, 100% − 360px), 15px of a 375px screen, so
- * a Cowork task's "Updated tasks ›" opened nothing visible. It is the file
- * viewer's sheet instead: the lower three quarters of the screen, the
- * conversation dimmed and in place above it, a tap there or a drag down closes
- * it (ToolPanelHost). [class] outweighs the panels' own lazily loaded rules
- * (progress-panel.css).
+ * the conversation it got min(313px, 100% − 360px), 15px of a 375px screen,
+ * so a Cowork task's "Updated tasks ›" opened nothing visible. It is the
+ * file viewer's sheet instead (artifact-narrow.css, owner 2026-10-05): the
+ * lower three quarters of the screen, the conversation dimmed and in place
+ * above it, a tap there or a drag down closes it (ToolPanelHost). [class]
+ * outweighs the panels' own lazily loaded rules (progress-panel.css).
  */
 @media (max-width: 639.98px) {
   .app.web .workspace > .chat-layout > .work-panel[class] {

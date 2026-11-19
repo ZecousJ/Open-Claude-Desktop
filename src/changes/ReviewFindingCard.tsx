@@ -5,9 +5,10 @@ import { ThreadIcon } from "./review-thread-glyphs";
 import "./review-thread.css";
 
 /**
- * A review finding at its line in the Changes panel: Claude's mark and name,
- * "Line N", Fixing… or Fixed, Next finding and Dismiss finding; the finding and
- * its failure scenario; "Fix this one" while it is open.
+ * A review finding at its line in the Changes panel (live claude.ai bundle,
+ * 2026-10-15, c44d00c7f `xa`): Claude's mark and name, "Line N", Fixing… or
+ * Fixed, Next finding and Dismiss finding; the finding and its failure
+ * scenario; "Fix this one" while it is open.
  */
 export function ReviewFindingCard({
   finding,

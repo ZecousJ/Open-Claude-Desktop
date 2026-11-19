@@ -4,7 +4,7 @@ import type {
 } from "../../shared/computer-use-api";
 import { Button, Row } from "../settings/controls";
 
-/** The original's words for a permission. */
+/** The original's words for a permission (live claude.ai bundle, 2026-10-14, c71860c77 Un). */
 const statusLabels: Record<
   Exclude<ComputerUsePermissionState, "restart-required">,
   string
@@ -15,10 +15,11 @@ const statusLabels: Record<
 };
 
 /**
- * A status badge (neutral, or danger when denied) and, until it is granted,
- * Open System Settings. A permission that macOS has not asked about yet is
- * asked for first, so the app shows in the list; one that needs the app to
- * start again offers Restart.
+ * Accessibility or Screen recording (live claude.ai bundle, 2026-10-14,
+ * c71860c77 Gn): a status badge (neutral, or danger when denied) and,
+ * until it is granted, Open System Settings. A permission that macOS has
+ * not asked about yet is asked for first, so the app shows in the list;
+ * one that needs the app to start again offers Restart.
  */
 export function PermissionRow({
   kind,

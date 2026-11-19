@@ -40,7 +40,7 @@ export function bulkFailure(
         : `${failed} of ${total} ${noun}s`;
   return `Couldn't ${verb} ${count}${reason ? `: ${reason}` : "."}`;
 }
-/** Mixed selections prefer Unpin and Mark as read. */
+/** Mixed selections prefer Unpin and Mark as read (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 export function selectionActions(
   rows: readonly Conversation[],
   approvalIds: ReadonlySet<string> = new Set(),
@@ -69,7 +69,7 @@ export function selectionActions(
   };
 }
 
-/** Counted result notices. */
+/** Counted result notices (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 export function bulkResultMessages(
   action: "archive" | "unarchive" | "delete",
   total: number,

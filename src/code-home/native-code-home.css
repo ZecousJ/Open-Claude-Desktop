@@ -10,14 +10,15 @@
   grid-area: 1 / 1;
   inset: auto;
   overflow: hidden;
-  /* The edge is the theme's border colour, as in Chat. */
+  /* The edge is the theme's border colour, as in Chat (live claude.ai bundle,
+     2026-10-16, shared-styles-DG9uV_so: .dframe-sidebar var(--cds-border)). */
   border-right: 0.5px solid var(--border);
   border-radius: 0;
   background: var(--sidebar);
   box-shadow: none;
 }
 /* The flat sidebar's drag handle sits on its edge, full height, not on the
-   floating card's offset. */
+   floating card's offset (shared-styles-DG9uV_so: .dframe-resize-handle). */
 .app:not(.web).mode-code:not(.sidebar-hidden) .sidebar-resize-handle {
   top: 0;
   bottom: 0;
@@ -43,9 +44,10 @@
 .app:not(.web).mode-code.sidebar-hidden {
   grid-template-columns: 0 minmax(0, 1fr);
 }
-/* The full-bleed sidebar's right edge is x=W, so the drag handle centres on it
-   like Chat's; the floating card's +8px inset would leave it 8px inside the
-   content. .dframe-root[data-variant=web]. */
+/* The full-bleed sidebar's right edge is x=W, so the drag handle centres on
+   it like Chat's; the floating card's +8px inset would leave it 8px inside
+   the content. shared-styles-DG9uV_so.css .dframe-root[data-variant=web]
+   (live claude.ai bundle, 2026-10-16). */
 .app:not(.web).mode-code:not(.sidebar-hidden) .sidebar-resize-handle {
   top: var(--sidebar-chrome-height);
   bottom: 0;
@@ -82,16 +84,16 @@
   display: none;
 }
 
-/* Native Code uses the compact search row in the current frame, not the footer
-   search slot. + dframe compact density. */
+/* Native Code uses the compact search row in the current frame, not the
+   footer search slot. shared-21-DI_JOKFI + dframe compact density. */
 .app:not(.web).mode-code .web-sidebar-search {
   display: flex;
   flex: none;
   align-items: center;
   gap: 8px;
-  /* The same box as Chat's native search (native-chat-sidebar.css): 2px in from
-     each side, the glyph 10px in and the text 34px in, so switching modes moves
-     nothing. */
+  /* The same box as Chat's native search (native-chat-sidebar.css): 2px in
+     from each side, the glyph 10px in and the text 34px in, so switching
+     modes moves nothing (owner, 2026-10-20: the field twitched). */
   width: calc(100% - 4px);
   margin-inline: 2px;
   height: 26px;
@@ -115,7 +117,7 @@
     background: var(--fill-ghost-hover);
   }
 }
-.app:not(.web).mode-code .web-sidebar-search .app-icon {
+.app:not(.web).mode-code .web-sidebar-search .anthropicon {
   width: 16px;
   height: 16px;
 }
@@ -130,8 +132,9 @@
     background: var(--fill-ghost-hover);
   }
 }
-/* The current native Code Group and sort inventory is the session-list menu
-   too. This sheet is already awaited before the native renderer's first paint. */
+/* The current native Code Group and sort inventory is the session-list
+   menu too (live native Claude, 2026-10-17; O14/shared-20:24528–24688).
+   This sheet is already awaited before the native renderer's first paint. */
 :root:not([data-surface="web"]) .menu.code-list-menu {
   padding: 4px;
   border: 0;

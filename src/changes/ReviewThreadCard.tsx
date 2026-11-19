@@ -16,10 +16,11 @@ import { ThreadIcon } from "./review-thread-glyphs";
 import "./review-thread.css";
 
 /**
- * A pull request's review thread under its line in the Changes panel: the
- * author, "Line N", the Resolved badge, Previous / Next comment, Open on GitHub
- * and (resolved) Collapse; the comment with its suggested changes (Apply), the
- * replies; then Reply, Resolve and Send to Claude, and the reply box ("Reply on
+ * A pull request's review thread under its line in the Changes panel (live
+ * claude.ai bundle, 2026-10-15, c44d00c7f `Xi`): the author, "Line N", the
+ * Resolved badge, Previous / Next comment, Open on GitHub and (resolved)
+ * Collapse; the comment with its suggested changes (Apply), the replies;
+ * then Reply, Resolve and Send to Claude, and the reply box ("Reply on
  * GitHub…", Send reply). A resolved thread starts folded to one row.
  */
 

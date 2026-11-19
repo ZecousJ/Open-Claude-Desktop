@@ -34,7 +34,7 @@ export function loopCommand(text: string): SessionLoopInput {
   };
 }
 
-// Session loops expire after thirty days.
+// Session loops expire after thirty days (live claude.ai bundle, 2026-10-14, c6b8adeaf-LIFgKKRD.js).
 export const sessionLoopLifetime = 2_592_000_000;
 
 export function loopNextRun(loop: SessionLoop, now: number) {

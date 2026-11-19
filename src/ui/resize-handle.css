@@ -1,10 +1,11 @@
 /*
- * Panel dividers (src/ui/ResizeHandle.tsx), after the original's ResizeHandle:
- * a 12px grab area, a 3×48px pill centred in it. Hover fades the pill in over
- * 200ms after a 200ms wait, in the muted text colour; dragging turns it the
- * secondary colour over 120ms; keyboard focus draws it in the accent colour
- * along the whole edge with no wait, and rings the grab area. Each consumer
- * places the handle (its own class sets `left`/`top` and the stacking).
+ * Panel dividers (src/ui/ResizeHandle.tsx), after the original's
+ * ResizeHandle (desktop bundle 2.31226.1): a 12px grab area, a 3×48px
+ * pill centred in it. Hover fades the pill in over 200ms after a 200ms
+ * wait, in the muted text colour; dragging turns it the secondary colour
+ * over 120ms; keyboard focus draws it in the accent colour along the whole
+ * edge with no wait, and rings the grab area. Each consumer places the
+ * handle (its own class sets `left`/`top` and the stacking).
  */
 .resize-handle {
   position: absolute;

@@ -21,10 +21,9 @@ type Rect = Pick<
   "left" | "right" | "top" | "bottom" | "width" | "height"
 >;
 
-/**
- * horizontal intersection, Code composer's 200px near-bottom threshold, then a
- * 16px gap. Clamp to the actual toast height so Close stays visible.
- */
+/** Official 2026-10-14 safe-region contract (shared-l-p-m-5: Ij):
+ * horizontal intersection, Code composer's 200px near-bottom threshold,
+ * then a 16px gap. Clamp to the actual toast height so Close stays visible. */
 export function errorToastBottom(
   viewportHeight: number,
   toast: Rect,

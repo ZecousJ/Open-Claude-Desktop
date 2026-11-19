@@ -1,3 +1,4 @@
+// (live claude.ai bundle, 2026-10-14, c3f9f1667-By41brQy.js)
 export const sshDiagnosticMessages = {
   "ssh-too-old":
     "This computer’s ssh is older than OpenSSH 7.6, which Claudex needs to reach {host}. Update it, then retry.",

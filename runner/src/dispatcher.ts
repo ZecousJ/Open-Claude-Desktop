@@ -1,15 +1,19 @@
-import {
-  isStorageFullError,
-  storageFullMessage,
-} from "../../shared/turn-errors";
-import { ZodError } from "zod";
+import { promisify } from "node:util";
+import { gzip } from "node:zlib";
 import { encodeWireValue } from "../../shared/web-wire";
 import {
   webErrorCodes,
   webLimits,
-  type WebRpcError,
 } from "../../shared/web-protocol";
-import { type GoFrame, type RunnerFrame } from "../../shared/web-runner-frames";
+import { type GoFrame, type RunnerMessage } from "../../shared/web-runner-frames";
+import { officialMemoryAction } from "../../shared/official-memory-capability";
+import { officialMelangeEditRequest } from "../../shared/official-melange";
+import { closeOfficialMelangeEdits } from "./official-melange-edit";
+import {
+  officialMcpAppToolboxTarget,
+  officialUiReadMaxBytes,
+  type OfficialUiReadResponse,
+} from "../../shared/official-ui-web";
 import type { IpcHandle } from "../../electron/app/app-context";
 import {
   defaultGuardOptions,
@@ -20,21 +24,70 @@ import { registerIpc } from "../../electron/ipc/index";
 import {
   coreHandlerNames,
   WebAppContext,
+  type WebContextOpenInput,
   type WebRuntime,
 } from "./web-app-context";
-import { CapacityError } from "./dispatcher-support";
+import type { StrictTextChatExecutor } from "./official-ui-text-authority";
+import { CapacityError, callError } from "./dispatcher-support";
+export { callError } from "./dispatcher-support";
 import * as dispatcherSessions from "./dispatcher-sessions";
+import { nativeCodeQueueMethods } from "./official-code-followup";
 import { installMethods } from "./install-methods";
+import { officialResponseTransfers } from "./official-response-transfer";
+import {
+  closeOfficialCodeTerminals,
+  closeOfficialCodeTerminalsForTab,
+} from "./official-code-terminals";
 
-export type CallFrame = Extract<GoFrame, { t: "call" }>;
+const compressBody = promisify(gzip);
+
+function legacyKnowledgePreview(value: unknown) {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    !("kind" in value) ||
+    !("name" in value) ||
+    !("bytes" in value) ||
+    (value.kind !== "utf16" && value.kind !== "image" && value.kind !== "binary")
+  )
+    return value;
+  return {
+    name: value.name,
+    bytes: value.bytes,
+    kind: "unsupported",
+    reason: value.kind === "utf16" ? "encoding" : "type",
+  };
+}
+
+export type CallFrame = Extract<GoFrame, { t: "call" }> & { signal?: AbortSignal };
+
+function isAbortableCall(frame: CallFrame) {
+  if (frame.method === "synthesizeMemory") return true;
+  if (frame.method !== "officialUiAction") return false;
+  const request = frame.args[0];
+  return !!request && typeof request === "object" && "method" in request && "path" in request &&
+    typeof request.method === "string" && typeof request.path === "string" &&
+    (officialMemoryAction(request.method, request.path) === "synthesize" ||
+      officialMelangeEditRequest(request.method, request.path)?.kind === "start" ||
+      officialMcpAppToolboxTarget(request.method, request.path) !== undefined);
+}
 
 /** How the dispatcher talks to Go (the control link, or a fake in tests). */
 export interface DispatcherLink {
-  send(frame: RunnerFrame): boolean;
+  send(frame: RunnerMessage): boolean;
   request(op: string, userId: number, body?: unknown): Promise<unknown>;
 }
 
 export interface DispatcherOptions {
+  /** Explicit opt-in path for the experimental read-only official Web adapter. */
+  officialUiRoot?: string;
+  officialUiActions?: boolean;
+  /** Independent explicit opt-in: manual memory rule CAS only, no generation/reset/settings. */
+  officialUiMemoryControls?: boolean;
+  /** Independent opt-in: only validated response font settings. */
+  officialUiAppearanceSettings?: boolean;
+  /** Source-only explicit strict mode. Missing executor means unavailable; never legacy-send fallback. */
+  officialUiStrictTextChat?: { executor?: StrictTextChatExecutor };
   runtime: Omit<WebRuntime, "transport" | "publish" | "closed">;
   link: DispatcherLink;
   /** Where user events go (the event hub). */
@@ -51,14 +104,7 @@ export interface DispatcherOptions {
   engineIdleMs?: number;
   contextIdleMs?: number;
   /** Opens a context (tests replace it). */
-  openContext?: (
-    runtime: WebRuntime,
-    input: {
-      userId: number;
-      accessToken: string;
-      register: (ctx: WebAppContext) => void;
-    },
-  ) => Promise<WebAppContext>;
+  openContext?: (runtime: WebRuntime, input: WebContextOpenInput) => Promise<WebAppContext>;
   now?: () => number;
   log?: (message: string) => void;
 }
@@ -121,45 +167,13 @@ export function webRegisteredNames(): string[] {
   ].sort();
 }
 
-/** The answer a failed call gives the browser. */
-export function callError(error: unknown): WebRpcError {
-  if (isStorageFullError(error)) return { message: storageFullMessage };
-  if (error instanceof ZodError)
-    return {
-      message: "The request was not valid.",
-      code: webErrorCodes.badRequest,
-    };
-  const raw = error as {
-    message?: unknown;
-    code?: unknown;
-    details?: unknown;
-    syscall?: unknown;
-    errno?: unknown;
-  };
-  // A Node system error names the runner's own files (ENOENT, EACCES, …).
-  const system =
-    typeof raw?.syscall === "string" || typeof raw?.errno === "number";
-  const message =
-    !system && typeof raw?.message === "string" && raw.message
-      ? raw.message
-      : "Something went wrong. Try again.";
-  const out: WebRpcError = { message };
-  if (typeof raw?.code === "string" && /^CLAUDEX_[A-Z0-9_]+$/.test(raw.code))
-    out.code = raw.code;
-  if (raw?.details !== undefined)
-    try {
-      out.details = JSON.parse(JSON.stringify(raw.details));
-    } catch {
-      // Not serialisable: left out.
-    }
-  return out;
-}
-
 export class Dispatcher {
   contexts = new Map<number, WebAppContext>();
-  opening = new Map<number, Promise<WebAppContext>>();
+  opening = new Map<number, dispatcherSessions.OpeningContext>();
+  private connectionGeneration = 0;
   private cancelled = new Set<string>();
-  reserved = new Set<number>();
+  private abortableCalls = new Map<string, AbortController>();
+  reserved = new Map<number, number>();
   slotLock: Promise<unknown> = Promise.resolve();
   private sweeper?: NodeJS.Timeout;
   draining = false;
@@ -188,7 +202,12 @@ export class Dispatcher {
     this.log = options.log ?? ((message) => console.error(message));
     const registered = webRegisteredNames();
     const set = new Set(registered);
-    this.methods = [...runnerMethods].filter((name) => set.has(name)).sort();
+    this.methods = [...runnerMethods].filter((name) => set.has(name));
+    if (this.guard.modes.includes("code")) this.methods.push(...nativeCodeQueueMethods);
+    if (options.officialUiRoot) this.methods.push("officialUiRead");
+    if (options.officialUiRoot && (options.officialUiActions || options.officialUiMemoryControls || options.officialUiAppearanceSettings))
+      this.methods.push("officialUiAction");
+    this.methods.sort();
     this.missing = [...runnerMethods].filter((name) => !set.has(name)).sort();
     this.dropped = registered.filter((name) => !runnerMethods.has(name));
     if (this.missing.length)
@@ -206,8 +225,14 @@ export class Dispatcher {
   async stop() {
     clearInterval(this.sweeper);
     this.sweeper = undefined;
+    this.abortRelayedCalls();
+    const closingShells: Promise<WebAppContext>[] = [];
+    for (const opening of this.opening.values()) {
+      if (opening.shellContext) closingShells.push(opening.context);
+      opening.retire();
+    }
     await Promise.allSettled(
-      [...this.contexts.values()].map((ctx) => ctx.close()),
+      [...closingShells, ...[...this.contexts.values()].map((ctx) => ctx.close())],
     );
     this.contexts.clear();
   }
@@ -225,17 +250,75 @@ export class Dispatcher {
 
   // ---- Frames from Go
 
+  private async readProjectKnowledge(frame: CallFrame) {
+    const capability = frame.args?.[2];
+    const transfer =
+      capability &&
+      typeof capability === "object" &&
+      "responseTransfer" in capability &&
+      capability.responseTransfer === true;
+    if (!transfer || !this.options.officialUiRoot) {
+      const value = await this.run(frame);
+      return transfer ? value : legacyKnowledgePreview(value);
+    }
+
+    const ctx = await this.contextFor(frame);
+    const identity = ctx.officialSessionIdentity();
+    const assertCurrent = () => {
+      if (
+        ctx.accountRetiring ||
+        this.context(ctx.userId) !== ctx ||
+        ctx.officialSessionIdentity() !== identity
+      )
+        throw new Error("The account changed during this request.");
+    };
+    assertCurrent();
+    ctx.setAccessToken(frame.user.accessToken);
+    const value = await this.run(frame, { context: ctx, identity });
+    assertCurrent();
+    const body = Buffer.from(JSON.stringify(value));
+    if (body.byteLength <= officialUiReadMaxBytes) return value;
+
+    const compressed = await compressBody(body, { level: 1 });
+    assertCurrent();
+    const answer: OfficialUiReadResponse = {
+      status: 200,
+      contentType: "application/json",
+      ...(compressed.byteLength < body.byteLength
+        ? { body: compressed, bodyEncoding: "gzip" }
+        : { body }),
+    };
+    if (answer.body.byteLength <= officialUiReadMaxBytes) return answer;
+    const started = officialResponseTransfers(ctx).start(answer, this.now());
+    if (!started)
+      throw new CapacityError(
+        "Too many official Web responses are being transferred. Try again later.",
+      );
+    return started;
+  }
+
   /** Runs a relayed call and sends its result. */
   async call(frame: CallFrame) {
-    let result: RunnerFrame;
+    const generation = this.connectionGeneration;
+    const resultId = frame.id;
+    frame = { ...frame, id: `${generation}:${resultId}` };
+    const controller = isAbortableCall(frame) ? new AbortController() : undefined;
+    if (controller) {
+      if (this.cancelled.delete(frame.id)) return;
+      this.abortableCalls.set(frame.id, controller);
+      frame = { ...frame, signal: controller.signal };
+    }
+    let result: RunnerMessage;
     try {
-      const value = await this.run(frame);
-      result = { t: "result", id: frame.id, ok: true };
+      const value = frame.method === "readProjectKnowledge"
+        ? await this.readProjectKnowledge(frame)
+        : await this.run(frame);
+      result = { t: "result", id: resultId, ok: true };
       if (value !== undefined) result.value = encodeWireValue(value);
-      if (Buffer.byteLength(JSON.stringify(result)) > webLimits.linkFrameBytes)
+      if (Buffer.byteLength(JSON.stringify(result)) > webLimits.linkMessageBytes)
         result = {
           t: "result",
-          id: frame.id,
+          id: resultId,
           ok: false,
           error: {
             message: "The answer is too large to send.",
@@ -243,9 +326,10 @@ export class Dispatcher {
           },
         };
     } catch (error) {
+      if (controller?.signal.aborted) return;
       result = {
         t: "result",
-        id: frame.id,
+        id: resultId,
         ok: false,
         error: callError(error),
       };
@@ -256,41 +340,86 @@ export class Dispatcher {
         this.log(
           `claudex-runner: ${frame.method} failed for user ${frame.user.id}: ${error instanceof Error ? error.message : result.error!.message}`,
         );
+    } finally {
+      if (controller && this.abortableCalls.get(frame.id) === controller)
+        this.abortableCalls.delete(frame.id);
     }
-    if (this.cancelled.delete(frame.id)) return;
+    if (
+      controller?.signal.aborted ||
+      this.cancelled.delete(frame.id) ||
+      generation !== this.connectionGeneration
+    ) return;
     this.options.flush?.(frame.user.id);
     this.options.link.send(result);
   }
 
   cancel(id: string) {
+    id = `${this.connectionGeneration}:${id}`;
+    const controller = this.abortableCalls.get(id);
+    if (controller) {
+      controller.abort();
+      return;
+    }
     this.cancelled.add(id);
     // Forget old ids so the set stays small.
     if (this.cancelled.size > 1000)
       this.cancelled.delete(this.cancelled.values().next().value!);
   }
 
+  abortRelayedCalls() {
+    this.connectionGeneration++;
+    for (const controller of this.abortableCalls.values()) controller.abort();
+    this.abortableCalls.clear();
+    for (const ctx of this.contexts.values()) closeOfficialMelangeEdits(ctx);
+  }
+
+  isCallCancelled(id: string) {
+    return this.cancelled.has(id);
+  }
+
   presence(frame: Extract<GoFrame, { t: "presence" }>) {
-    const ctx = this.contexts.get(frame.userId);
+    const ctx = this.contexts.get(frame.userId) ?? this.opening.get(frame.userId)?.shellContext;
     if (!ctx) return;
     const gained = frame.focused;
     ctx.tabs = frame.tabs;
     ctx.lastActive = this.now();
+    if (frame.detachedTabId) {
+      closeOfficialMelangeEdits(ctx, frame.detachedTabId);
+      void closeOfficialCodeTerminalsForTab(ctx, frame.detachedTabId);
+    } else if (frame.tabs === 0) {
+      closeOfficialMelangeEdits(ctx);
+      void closeOfficialCodeTerminals(ctx);
+    }
     if (gained) ctx.focused();
+  }
+
+  async closeBrowserTerminals() {
+    await Promise.allSettled([...this.contexts.values()].map(ctx => closeOfficialCodeTerminals(ctx)));
   }
 
   /** Go signed the user out: no more user-API calls; closes once idle. */
   async signedOut(frame: Extract<GoFrame, { t: "user-signed-out" }>) {
+    const opening = this.opening.get(frame.userId);
+    const closingShell = opening?.shellContext ? opening.context : undefined;
+    opening?.retire();
     const ctx = this.contexts.get(frame.userId);
-    if (!ctx) return;
+    if (!ctx) {
+      this.options.runtime.wakeCodeArchive?.(frame.userId, undefined);
+      await closingShell?.catch(() => {});
+      return;
+    }
     ctx.signedOut = true;
+    ctx.codeAutoArchive?.stop();
     ctx.setAccessToken("");
+    closeOfficialMelangeEdits(ctx);
+    await closeOfficialCodeTerminals(ctx);
     if (!ctx.busy()) await this.closeContext(ctx);
   }
 
   /**
-   * Finish what runs; `done` runs once nothing is busy. Moving off this runner
-   * (Go's drain) takes no new users; a restart (`admitNew`, an update) serves
-   * everyone until the last turn ends.
+   * Finish what runs; `done` runs once nothing is busy. Moving off this
+   * runner (Go's drain) takes no new users; a restart (`admitNew`, an
+   * update) serves everyone until the last turn ends (owner, 2026-10-03).
    */
   drain(done?: () => void, { admitNew = false } = {}) {
     this.draining = true;
@@ -360,6 +489,15 @@ export interface Dispatcher {
   contextFor(
     ...args: Parameters<typeof dispatcherSessions.contextFor>
   ): ReturnType<typeof dispatcherSessions.contextFor>;
+  shellContextFor(
+    ...args: Parameters<typeof dispatcherSessions.shellContextFor>
+  ): ReturnType<typeof dispatcherSessions.shellContextFor>;
+  isShellContextCurrent(
+    ...args: Parameters<typeof dispatcherSessions.isShellContextCurrent>
+  ): ReturnType<typeof dispatcherSessions.isShellContextCurrent>;
+  accountSettingsFor(
+    ...args: Parameters<typeof dispatcherSessions.accountSettingsFor>
+  ): ReturnType<typeof dispatcherSessions.accountSettingsFor>;
   userSlot(
     ...args: Parameters<typeof dispatcherSessions.userSlot>
   ): ReturnType<typeof dispatcherSessions.userSlot>;

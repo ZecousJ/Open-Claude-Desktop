@@ -1,7 +1,7 @@
 import { Suspense, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { MenuPosition } from "../ui/Menu";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useTooltip } from "../ui/Tooltip";
 import { useDismiss } from "../ui/useDismiss";
 import { lazyPiece, preloadPiece } from "../ui/lazy-piece";
@@ -64,7 +64,7 @@ export function CodeListMenu({
           setPosition({ right: innerWidth - r.right, top: r.bottom + 4 });
         }}
       >
-        <AppIcon name="Filter" size={16} />
+        <Anthropicon name="Filter" size={16} />
       </button>
       {tip.tooltip}
       {position &&

@@ -20,9 +20,14 @@ import type { BrowserKeepCookies } from "../../shared/browser";
 import { requestBlocked } from "./navigation-guard";
 
 const prefix = "claudex-browser";
+const sshPrefix = `${prefix}-ssh-`;
 
 function hash(value: string) {
   return createHash("sha256").update(value).digest("hex").slice(0, 16);
+}
+
+export function sshPreviewPartitionName(accountId: string, conversationId: string) {
+  return `${sshPrefix}${encodeURIComponent(accountId)}:${encodeURIComponent(conversationId)}`;
 }
 
 /** The partition a conversation's tabs use for a Keep cookies choice. */
@@ -43,7 +48,7 @@ export function perSessionPrefix(accountId: string) {
 }
 
 // Shared spans workspaces and servers; session spans one conversation;
-// ephemeral spans one workspace.
+// ephemeral spans one workspace (desktop 2.37337.1, index.chunk-BWk6pVUt.js, gui / yN).
 export function previewPartitionName(
   mode: BrowserKeepCookies,
   accountId: string,
@@ -76,7 +81,7 @@ export interface PartitionSession {
     onBeforeRequest(
       filter: { urls: string[] },
       listener: (
-        details: { url: string },
+        details: { url: string; webContentsId?: number; initiatorOrigin?: string },
         callback: (response: { cancel?: boolean }) => void,
       ) => void,
     ): void;
@@ -95,6 +100,7 @@ export interface PartitionDeps<S extends PartitionSession> {
   partitionsDir?: string;
   /** The administrator's blocked domains now. */
   blockedDomains(): readonly string[];
+  allowsPrivateRequest?(webContentsId: number | undefined, url: string, initiatorOrigin?: string): boolean;
   /** A page tried to download a file (the download was refused). */
   downloadRefused(contents: unknown, filename: string): void;
 }
@@ -117,12 +123,12 @@ export class BrowserPartitions<S extends PartitionSession = PartitionSession> {
     const known = this.configured.get(name);
     if (known) return known;
     const session = this.deps.fromPartition(name);
-    this.configure(session);
+    this.configure(session, name.startsWith(sshPrefix));
     this.configured.set(name, session);
     return session;
   }
 
-  private configure(session: S) {
+  private configure(session: S, publicHostsOnly: boolean) {
     session.setPermissionRequestHandler((_contents, _permission, callback) =>
       callback(false),
     );
@@ -153,7 +159,9 @@ export class BrowserPartitions<S extends PartitionSession = PartitionSession> {
       { urls: ["<all_urls>"] },
       (details, callback) =>
         callback({
-          cancel: requestBlocked(details.url, this.deps.blockedDomains()),
+          cancel: requestBlocked(details.url, this.deps.blockedDomains()) ||
+            (publicHostsOnly && requestBlocked(details.url, [], true) &&
+              !this.deps.allowsPrivateRequest?.(details.webContentsId, details.url, details.initiatorOrigin)),
         }),
     );
     session.setUserAgent(chromeUserAgent(session.getUserAgent()));
@@ -233,7 +241,7 @@ export class BrowserPartitions<S extends PartitionSession = PartitionSession> {
         await this.clear(`persist:${folder}`);
   }
 
-  async clearPreviews(accountId: string, persistentOnly = false) {
+  async clearPreviews(accountId: string, persistentOnly = false, preserveShared = false) {
     const prefix = previewPartitionPrefix(accountId);
     const sessionPrefix = perSessionPrefix(accountId);
     const shared = partitionName("always", accountId, "");
@@ -241,7 +249,7 @@ export class BrowserPartitions<S extends PartitionSession = PartitionSession> {
       [...this.configured.keys()].filter(
         (name) =>
           name.startsWith(`persist:${prefix}`) ||
-          name === shared ||
+          (!preserveShared && name === shared) ||
           name.startsWith(`persist:${sessionPrefix}`) ||
           (!persistentOnly && name.startsWith(prefix)),
       ),
@@ -250,7 +258,7 @@ export class BrowserPartitions<S extends PartitionSession = PartitionSession> {
       if (
         folder.startsWith(prefix) ||
         folder.startsWith(sessionPrefix) ||
-        `persist:${folder}` === shared
+        (!preserveShared && `persist:${folder}` === shared)
       )
         names.add(`persist:${folder}`);
     for (const name of names) await this.clear(name);

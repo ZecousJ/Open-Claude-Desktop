@@ -1,9 +1,9 @@
 /**
- * The Code tool panels beside a conversation: terminal, Changes, background
- * tasks, and the Browser panel with its dev servers (R8; types in
- * `shared/browser.ts`). Handlers go in `electron/ipc/panels.ts` (terminal and
- * background terminal ones in `electron/ipc/terminal.ts` and
- * `electron/ipc/background-terminals.ts`).
+ * The Code tool panels beside a conversation (package WP5b): terminal,
+ * Changes, background tasks, and the Browser panel with its dev servers
+ * (R8; types in `shared/browser.ts`). Handlers go in
+ * `electron/ipc/panels.ts` (terminal and background terminal ones in
+ * `electron/ipc/terminal.ts` and `electron/ipc/background-terminals.ts`).
  */
 import type {
   BackgroundTerminalInfo,
@@ -28,9 +28,10 @@ import type { SessionLoop, SessionLoopInput } from "./session-loops";
 import type { TaskBacklogAPI } from "./task-backlog";
 
 /**
- * A background terminal that ended: stopped from the Background tasks panel, or
- * gone from Codex's list on its own. Codex's list carries no exit code, so the
- * panel shows one only when the command's own item has it.
+ * A background terminal that ended: stopped from the Background tasks panel,
+ * or gone from Codex's list on its own (R-0654/R-0655). Codex's list carries
+ * no exit code, so the panel shows one only when the command's own item has
+ * it.
  */
 export interface FinishedBackgroundTerminal {
   /** `terminal:<conversationId>:<processId>`, as Clear finished tasks uses. */
@@ -45,9 +46,9 @@ export interface FinishedBackgroundTerminal {
 }
 
 /**
- * A Code session's branch for the pull request row above the composer: which
- * branch, the repository it belongs to on GitHub, how far it is from the base
- * branch and how much it changes.
+ * A Code session's branch for the pull request row above the composer
+ * (desktop bundle 2.31226.1): which branch, the repository it belongs to on
+ * GitHub, how far it is from the base branch and how much it changes.
  */
 export interface CodeGitStatus {
   state: "ready" | "not-git" | "no-folder";
@@ -59,7 +60,10 @@ export interface CodeGitStatus {
   repository?: string;
   /** Commits on the branch that the base branch lacks. */
   ahead: number;
-  /** Commits on the base branch that the branch lacks. */
+  /**
+   * Commits on the base branch that the branch lacks (live claude.ai
+   * bundle, 2026-10-12: the branch row's "N commits behind {base}").
+   */
   behind?: number;
   /** The remote has a branch of this name (as far as the last fetch or push knew). */
   pushed: boolean;

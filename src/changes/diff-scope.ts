@@ -6,9 +6,10 @@ import type {
 import type { MenuEntry } from "../ui/Menu";
 
 /**
- * The Changes panel's "Diff scope" menu: All changes against the base branch,
- * Uncommitted changes while the working tree has some, "Compare against"
- * another branch, and one of the branch's commits.
+ * The Changes panel's "Diff scope" menu (live claude.ai bundle, 2026-10-12,
+ * cccc2cf0a cv/iv): All changes against the base branch, Uncommitted
+ * changes while the working tree has some, "Compare against" another
+ * branch, and one of the branch's commits.
  */
 
 /** The original lists the newest 50 commits and says how many more there are. */

@@ -52,8 +52,8 @@
   max-width: 100%;
 }
 
-/* Current web Code draft: a 44px prompt, then a 24px chin 10px below. Native
-   home uses the same source component; opened sessions stay separate. */
+/* Current web Code draft (2026-10-16): a 44px prompt, then a 24px chin
+   10px below. Native home uses the same source component; opened sessions stay separate. */
 .app .code-home-composer {
   padding: 0 0 10px;
 }
@@ -216,8 +216,8 @@
   }
 }
 
-/* Native home environment/folder selectors share the 24px chin; their
-   local/SSH/remote actions remain real. */
+/* Native home environment/folder selectors share the 24px chin from
+   cc43287c9-Dxed_hEI.js; their local/SSH/remote actions remain real. */
 .app .code-home-composer .workspace-bar {
   min-height: 24px;
   margin: 0;
@@ -238,7 +238,7 @@
 }
 
 /* The one start-card suggestion list: Next steps, suggested tasks and the CLI
-   import portal their rows into it. */
+   import portal their rows into it (cc43287c9, live bundle 2026-10-16). */
 .native-code-home-suggestions.next-steps {
   margin: 0;
 }

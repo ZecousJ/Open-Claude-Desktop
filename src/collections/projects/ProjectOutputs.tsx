@@ -31,7 +31,8 @@ export function splitProjectOutputs(
   };
 }
 
-/** Project outputs home, separate from the global Artifacts gallery. */
+/** Project outputs home, separate from the global Artifacts gallery
+ * (live claude.ai bundle, 2026-10-14, c10f0af0c-8Nw5bOUb.js, lC / oC). */
 export function ProjectOutputs({ chats }: { chats: Conversation[] }) {
   const app = useApp();
   const { artifactShares, artifactLibrary } = app.snapshot;

@@ -3,20 +3,22 @@ import { preference, type SettingsPreferences } from "./settings-extras";
 
 /**
  * Settings → Capabilities → Allow network egress on this computer: what a
- * Chat's code may reach from the local sandbox.
+ * Chat's code may reach from the local sandbox (owner, 2026-10-19: Codex
+ * permission profiles with network domains).
  *
  * - off: no network (the sandbox as before);
  * - All domains: the sandbox's own network switch;
- * - None / Package managers only: a Codex permission profile that extends the
- *   workspace sandbox with Codex's network proxy, which lets through only the
- *   listed names. Codex matches `name` exactly and `*.name` for its subdomains
- *   only, so a package manager entry (the name and everything under it, as on
- *   the web runner) is both.
+ * - None / Package managers only: a Codex permission profile that extends
+ *   the workspace sandbox with Codex's network proxy, which lets through only
+ *   the listed names. Codex matches `name` exactly and `*.name` for its
+ *   subdomains only, so a package manager entry (the name and everything
+ *   under it, as on the web runner) is both.
  */
 export const egressProfileId = "claudex-egress";
 
 /**
- * Codex's network proxy enforces the list on macOS and Linux. On Windows The
+ * Codex's network proxy enforces the list on macOS and Linux. On Windows
+ * (checked on r1 with Codex 0.144.1's unelevated sandbox, 2026-10-19) the
  * profile let an unlisted name through and HTTPS failed inside the sandbox
  * (schannel: no credentials), so Windows keeps Chat's code offline.
  */

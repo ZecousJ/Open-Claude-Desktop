@@ -27,15 +27,16 @@ type View = { kind: "list" } | { kind: "setup" } | { kind: "edit"; id: string };
 export const dateOf = (at: number) =>
   formatPublished(new Date(at).toISOString().slice(0, 10));
 /**
- * Design systems: the account's design systems in a searchable table, the setup
- * form New design system opens, and a page to edit one. A design system is a
- * description, notes and example files (styles, tokens, code) from which the
- * account's model writes guidelines: colours, type, spacing and components in
- * Markdown, which the person may edit. The one chosen for use (here or in the
- * composer's + menu) is told to every new Chat and Cowork turn. Sharing with an
- * organization, .fig files, GitHub links and font or image assets have no
- * Claudex service behind them and stay disabled. A 28px "+ New design system"
- * button, a 448×32 search, and a table that is always drawn.
+ * Design systems: the account's design systems in a searchable table, the
+ * setup form New design system opens, and a page to edit one. A design
+ * system is a description, notes and example files (styles, tokens, code)
+ * from which the account's model writes guidelines: colours, type, spacing
+ * and components in Markdown, which the person may edit. The one chosen for
+ * use (here or in the composer's + menu) is told to every new Chat and
+ * Cowork turn. Sharing with an organization, .fig files, GitHub links and
+ * font or image assets have no Claudex service behind them and stay
+ * disabled. Layout from live claude.ai (2026-09-29): a 28px "+ New design
+ * system" button, a 448×32 search, and a table that is always drawn.
  */
 export function DesignSystemsTab({
   settings,
@@ -150,7 +151,8 @@ export function DesignSystemsTab({
           ]}
         />
       )}
-      {/* The search and the count share one row, the count at the right. */}
+      {/* The search and the count share one row, the count at the right
+          (live claude.ai Settings 2026-10-21: flex justify-between gap-md). */}
       <div className="design-systems-toolbar">
         <input
           className="design-systems-search"

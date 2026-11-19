@@ -196,7 +196,7 @@ func TestConstantsMatchTheSharedSample(t *testing.T) {
 		{"runnerLinkSubprotocol", RunnerLinkSubprotocol, c.RunnerLinkSubprotocol},
 		{"limits", map[string]int64{
 			"rpcBodyBytes": RPCBodyBytes, "uploadChunkBytes": UploadChunkBytes,
-			"linkFrameBytes": LinkFrameBytes, "turnDocBytes": TurnDocBytes,
+			"linkFrameBytes": LinkFrameBytes, "linkMessageBytes": LinkMessageBytes, "turnDocBytes": TurnDocBytes,
 			"ticketTtlMs": ms(TicketTTL), "previewSignatureTtlMs": ms(PreviewSignatureTTL),
 			"heartbeatMs": ms(Heartbeat), "eventRing": EventRing, "coalesceMs": ms(Coalesce),
 			"callTimeoutMs": ms(CallTimeout), "methodNameLength": MethodNameLength,

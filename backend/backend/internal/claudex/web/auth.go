@@ -369,7 +369,7 @@ func (c *Component) issue(g *gin.Context, user *service.User) {
 		response.ErrorFrom(g, errUnavailable)
 		return
 	}
-	c.dropFamilies(ctx, ended)
+	c.dropFamilies(ctx, user.ID, ended)
 	middleware.SetAuditActor(g, user.ID, user.Email)
 	// The account's own cookie; the browser's other accounts stay signed in.
 	c.setAccountCookie(g, user.ID, pair.RefreshToken)
@@ -429,10 +429,14 @@ func (c *Component) refresh(g *gin.Context) {
 	}
 	now := c.now()
 	end := func(reason string, answer error) {
-		if _, err := c.store.revoke(ctx, 0, 0, claims.SessionID, reason, now, c.revokedUntil(now)); err != nil && !errors.Is(err, errNoSession) {
-			slog.Warn("claudex web: ending session failed", "error", err)
+		if ended, err := c.store.revoke(ctx, 0, 0, claims.SessionID, reason, now, c.revokedUntil(now)); err == nil {
+			c.dropFamilies(ctx, ended.UserID, []string{ended.FamilyID})
+		} else {
+			if !errors.Is(err, errNoSession) {
+				slog.Warn("claudex web: ending session failed", "error", err)
+			}
+			_ = auth.RevokeSessionFamily(ctx, claims.SessionID)
 		}
-		_ = auth.RevokeSessionFamily(ctx, claims.SessionID)
 		clearCookie()
 		response.ErrorFrom(g, answer)
 	}
@@ -499,18 +503,20 @@ func (c *Component) refresh(g *gin.Context) {
 	})
 }
 
-// POST auth/logout: ends the tab's session. Always succeeds and clears the
-// cookie.
+// POST auth/logout: ends the tab's session and clears its matching cookie.
 func (c *Component) logout(g *gin.Context) {
 	ctx := g.Request.Context()
 	auth := c.env.AuthService
 	family := ""
+	var userID int64
+	clearCookie := true
 	// The account the body names (its own cookie), else the bare cookie.
 	name, rt := sessionCookie(g, requestedAccount(g), false)
 	if auth != nil {
 		if tok := bearer(g); tok != "" {
 			// An expired access token still names its session.
 			if claims, err := auth.ValidateToken(tok); claims != nil && (err == nil || errors.Is(err, service.ErrTokenExpired)) {
+				userID = claims.UserID
 				family = claims.SessionID
 			}
 		}
@@ -528,21 +534,26 @@ func (c *Component) logout(g *gin.Context) {
 				}
 			}
 		case rt != "":
-			if err := auth.RevokeRefreshToken(ctx, rt); err != nil {
-				slog.Debug("claudex web: revoking refresh token failed", "error", err)
+			owner, cookieFamily, ok := auth.RefreshTokenOwner(ctx, rt)
+			clearCookie = ok && owner == userID && cookieFamily == family
+			if clearCookie {
+				if err := auth.RevokeRefreshToken(ctx, rt); err != nil {
+					slog.Debug("claudex web: revoking refresh token failed", "error", err)
+				}
 			}
 		}
 	}
 	if family != "" && c.env.DB != nil {
 		now := c.now()
-		if _, err := c.store.revoke(ctx, 0, 0, family, RevokedLogout, now, c.revokedUntil(now)); err != nil && !errors.Is(err, errNoSession) {
+		if ended, err := c.store.revoke(ctx, 0, 0, family, RevokedLogout, now, c.revokedUntil(now)); err == nil {
+			c.dropFamilies(ctx, ended.UserID, []string{ended.FamilyID})
+		} else if !errors.Is(err, errNoSession) {
 			slog.Warn("claudex web: ending session failed", "error", err)
-		} else if err == nil {
-			_ = auth.RevokeSessionFamily(ctx, family)
 		}
 	}
-	// Only this account's cookie: the browser's other accounts stay signed in.
-	clearCookieNamed(g, name)
+	if clearCookie {
+		clearCookieNamed(g, name)
+	}
 	response.Success(g, gin.H{"message": "Logged out successfully"})
 }
 

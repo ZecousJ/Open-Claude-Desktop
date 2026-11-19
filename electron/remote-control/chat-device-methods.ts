@@ -8,6 +8,7 @@ import {
 } from "../../shared/chat-device-context";
 import type { Conversation } from "../../shared/types";
 import type { DeviceHost } from "./device-methods";
+import { interruptTargetSchema } from "../../shared/interrupt-target";
 
 const scopeInput = chatDeviceScopeInput.extend({
   remoteConversationId: z.string().max(200),
@@ -39,6 +40,7 @@ export class ChatDeviceMethods {
     string,
     { requestId: string; promise: Promise<unknown> }
   >();
+  private releasing = new Set<string>();
   constructor(private host: DeviceHost) {}
   capabilities() {
     return this.host.chatDevice && this.host.chatDevice.accountScope()
@@ -61,19 +63,23 @@ export class ChatDeviceMethods {
         "The signed-in account changed. Select the device again.",
       );
   }
-  private target(raw: unknown) {
+  private target(raw: unknown, allowReleased = false) {
     const input = scopeInput.parse(raw);
     this.current(input.accountScope);
     const conversation = this.host
       .conversations()
       .find((c) => c.id === input.remoteConversationId);
+    const origin = conversation?.deviceChatOrigin;
     if (
-      !conversation?.deviceChatOrigin?.active ||
-      conversation.deviceChatOrigin.accountScope !== input.accountScope ||
+      !conversation ||
+      !origin ||
+      (!allowReleased && !origin.active) ||
+      this.releasing.has(input.remoteConversationId) ||
+      origin.accountScope !== input.accountScope ||
       conversation.incognito
     )
       throw new Error("This Chat device binding is no longer available.");
-    return { input, conversation };
+    return { input, conversation, origin };
   }
   private opened(conversation: Conversation) {
     return {
@@ -151,7 +157,11 @@ export class ChatDeviceMethods {
             c.id === input.remoteConversationId &&
             c.deviceChatOrigin?.accountScope === input.accountScope,
         );
-      if (!conversation?.deviceChatOrigin || conversation.incognito)
+      if (
+        !conversation?.deviceChatOrigin ||
+        conversation.incognito ||
+        this.releasing.has(input.remoteConversationId)
+      )
         throw new Error("This Chat device binding is no longer available.");
       if (this.host.computerAccess?.() !== true)
         throw new Error("Computer access is off on this device.");
@@ -178,19 +188,60 @@ export class ChatDeviceMethods {
       this.pending.set(key, { requestId: input.requestId, promise });
       return promise;
     }
-    const { input, conversation } = this.target(raw);
-    if (method === "chatDeviceOpen") return this.opened(conversation);
+    const { input, conversation, origin } = this.target(
+      raw,
+      method === "chatDeviceRelease",
+    );
     if (method === "chatDeviceRelease") {
-      if (conversation.turns.some((turn) => turn.status === "inProgress"))
+      if (!origin.active) return null;
+      if (
+        this.pending.has(
+          JSON.stringify([input.accountScope, origin.logicalConversationId]),
+        ) ||
+        conversation.turns.some((turn) => turn.status === "inProgress")
+      )
         throw new Error("Stop the response before changing devices.");
-      await this.host.chatDevice!.release(conversation.id);
-      this.current(input.accountScope);
-      conversation.deviceChatOrigin!.active = false;
-      await this.host.chatDevice!.save(conversation);
-      return null;
+      this.releasing.add(conversation.id);
+      try {
+        // Cowork copies run in the desktop's shared engine. Releasing this
+        // idle copy revokes its binding without touching the Code-only runner.
+        if (conversation.mode === "cowork") {
+          this.host.chatDevice!.releaseCowork(conversation);
+        } else {
+          await this.host.chatDevice!.release(conversation.id);
+          this.current(input.accountScope);
+          await this.host.chatDevice!.save({
+            ...conversation,
+            deviceChatOrigin: { ...origin, active: false },
+          });
+        }
+        this.current(input.accountScope);
+        return null;
+      } finally {
+        this.releasing.delete(conversation.id);
+      }
     }
+    if (method === "chatDeviceOpen") return this.opened(conversation);
     if (method === "chatDeviceInterrupt")
       return this.host.interrupt(conversation.id);
+    if (method === "chatDeviceInterruptExpected") {
+      const { expected } = scopeInput
+        .extend({ expected: interruptTargetSchema })
+        .strict()
+        .parse(raw);
+      if (
+        "kind" in expected ||
+        expected.threadId !== undefined ||
+        !conversation.threadId
+      )
+        throw new Error(
+          "The stop target cannot be confirmed on this computer.",
+        );
+      return this.host.interrupt(conversation.id, {
+        ...expected,
+        threadId: conversation.threadId,
+      });
+    }
     if (method === "chatDeviceApprove") {
       const approvalInput = scopeInput
         .extend({

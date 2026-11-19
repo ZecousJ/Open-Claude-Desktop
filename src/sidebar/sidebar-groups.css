@@ -1,4 +1,4 @@
-.group-toggle > .app-icon {
+.group-toggle > .anthropicon {
   width: 12px;
   height: 12px;
   color: #878787;
@@ -6,25 +6,25 @@
   rotate: 90deg;
   transition: rotate var(--motion-fast) var(--ease-standard);
 }
-.group-toggle[aria-expanded="false"] > .app-icon {
+.group-toggle[aria-expanded="false"] > .anthropicon {
   rotate: 0deg;
 }
-.row-group-label:hover .group-toggle > .app-icon,
-.group-toggle:focus-visible > .app-icon,
-.group-toggle[aria-expanded="false"] > .app-icon {
+.row-group-label:hover .group-toggle > .anthropicon,
+.group-toggle:focus-visible > .anthropicon,
+.group-toggle[aria-expanded="false"] > .anthropicon {
   opacity: 1;
 }
 @media (prefers-reduced-motion: reduce) {
-  .group-toggle > .app-icon {
+  .group-toggle > .anthropicon {
     transition: none;
   }
 }
-:root[data-motion="reduced"] .group-toggle > .app-icon {
+:root[data-motion="reduced"] .group-toggle > .anthropicon {
   transition: none;
 }
 /* Row states, Group by headings, custom groups, Code session headings (part of sidebar.css) */
-/* New while a conversation is open: the 18px disc replaces the 16px plus with
-   its centre unchanged, and the row has no current fill. */
+/* New while a conversation is open (R-0083): the 18px disc replaces the 16px
+   plus with its centre unchanged, and the row has no current fill. */
 .main-nav .nav-item.new .circled-plus {
   margin: 0 -1px;
   color: #c5c5c3;
@@ -39,8 +39,10 @@
   color: #4c4b4a;
 }
 
-/* Row states. Unread is the accent fill, #2a78d6 in both themes. Waiting for
-   approval is the amber of the selected row in A 6px disc, #efb547 inside. */
+/* Row states. Unread is the accent fill, #2a78d6 in both themes (live
+   claude.ai, 2026-10-21: unread → "ready" → .status-dot background
+   --cds-fill-accent). Waiting for approval (R-0039) is the amber of the selected row in
+   the three R-0805 approval captures (2x): a 6px disc, #efb547 inside. */
 .thread-dot.unread {
   border: 0;
   background: var(--focus-accent);
@@ -58,14 +60,19 @@
   line-height: 22px;
   color: #6f6f6d;
 }
-/* Light: the muted ink, as the section headings. */
+/* Light: the muted ink, as the section headings (--cds-text-muted #898781;
+   live claude.ai bundle, 2026-10-16, shared-styles-DG9uV_so.css). */
 :root[data-theme="light"] .row-group-label {
   color: #898781;
 }
 .row-group + .row-group {
   margin-top: 6px;
 }
-/* A custom group a dragged row would land in. */
+/* A custom group a dragged row would land in (live claude.ai bundle,
+   2026-10-12: the group section's drop paint over its rows, the accent fill
+   (blue-450 #2a78d6) at 10% inside a 2px inset ring of it, radius 8, from
+   6px above the heading to the group's foot; the fill and ring change over
+   the default 150ms on the standard curve). */
 .row-group {
   position: relative;
 }
@@ -85,7 +92,10 @@
   background-color: color-mix(in srgb, #2a78d6 10%, transparent);
   box-shadow: inset 0 0 0 2px #2a78d6;
 }
-/* An empty custom group's line, "Drag or move sessions here". */
+/* An empty custom group's line, "Drag or move sessions here" (live
+   claude.ai bundle, 2026-10-12: the heading's inset, a row high at least,
+   4px above and below, 2px on the right, caption type 11/17 in the muted
+   ink, not selectable). */
 .row-group-hint {
   display: flex;
   align-items: center;
@@ -98,7 +108,9 @@
   user-select: none;
 }
 /* Code's session list: each heading is a row-high band 8px under the group
-   before. */
+   before (live claude.ai bundle, 2026-10-12: the session list's group band,
+   10px less the 2px row gap, was 18px in the older build; its height is the
+   row height). */
 .sidebar-scroll[data-mode="code"] .row-group-label {
   height: 26px;
   line-height: 26px;
@@ -113,9 +125,13 @@
     color: var(--text-secondary);
   }
 }
-/* Code's heading is a button that shows and hides the group's rows. The caret
-   is the section headings': hidden while the group is open until the heading is
-   hovered or focused, turned while it is open, shown while it is shut. */
+/* Code's heading is a button that shows and hides the group's rows (live
+   claude.ai bundle, 2026-10-12: the group label's toggle spans the heading,
+   pulls 4px out to the left with as much padding so the name stays put, is
+   its 16px line and 4px above and below high, pill radius, 4px to its
+   caret). The caret is the section headings': hidden
+   while the group is open until the heading is hovered or focused, turned
+   while it is open, shown while it is shut. */
 .row-group-label.has-toggle {
   display: flex;
   align-items: center;

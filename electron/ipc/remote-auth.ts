@@ -1,5 +1,6 @@
+import { ActivationCleanupUnconfirmed } from "../account/activation-failure";
 import { z } from "zod";
-import { normalizeSub2ApiUrl } from "../../server/sub2api-config";
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
 import {
   authorizeWithGoogle,
   cancelGoogleAuthorization,
@@ -13,10 +14,15 @@ interface Context {
   accounts: RemoteAccounts;
   readonly activeAccount?: PublicAccount;
   readonly session?: RemoteSession;
+  readonly accountActivationIdentity?: unknown;
+  readonly accountRetiring?: boolean;
+  readonly accountStore?: object;
   /** Prepares the plan, key and models, then opens the account's profile. */
   activate: (
     session: RemoteSession,
     account: PublicAccount,
+    current?: AccountOperationCurrent,
+    onPhase?: () => void,
   ) => Promise<PublicAccount>;
   deactivate: () => Promise<void>;
   /**
@@ -26,13 +32,11 @@ interface Context {
   leaveDevice?: () => Promise<void>;
   /**
    * Loads the window that asked again (Add account: it opens on the sign-in
-   * page). The main process does it: the page reloading itself once left the
-   * window on the old account's page, signed out underneath, every call failing
-   * with "Sign in to continue.".
+   * page). The main process does it: the page reloading itself once left
+   * the window on the old account's page, signed out underneath, every call
+   * failing with "Sign in to continue." (owner, 2026-10-14).
    */
   reloadCaller?: () => void;
-  /** Keeps the service the person chose, and starts what needs one. */
-  serviceChosen?: (baseUrl: string) => Promise<void>;
 }
 
 const email = z.string().trim().min(3).max(254);
@@ -61,47 +65,119 @@ const extrasSchema = z
  */
 export function registerRemoteAuthHandlers(handle: Handle, context: Context) {
   const { accounts } = context;
-  /** The page's status while no service is chosen: it asks for the address. */
-  const unconfigured = () => ({
-    serviceConfigured: false,
-    hasAccounts: false,
-  });
-  async function finish(result: SignIn) {
+  // Only session-replacing intents supersede one another. Read-only status,
+  // verification-code requests and other independent reads do not cancel them.
+  let operationSerial = 0;
+  let activeTransition = false;
+  const replaceActiveAccount = <Args extends unknown[], Result>(
+    run: (...args: Args) => Promise<Result>,
+  ) => async (...args: Args): Promise<Result> => {
+    if (activeTransition) throw Error("An account change is already in progress.");
+    activeTransition = true;
+    try {
+      return await run(...args);
+    } finally {
+      activeTransition = false;
+    }
+  };
+  function beginOperation() {
+    const serial = ++operationSerial;
+    let owner = context.activeAccount?.id, session = context.session;
+    let generation = context.accountActivationIdentity, store = context.accountStore;
+    const intentCurrent = () => serial === operationSerial;
+    const current = () => intentCurrent() && context.activeAccount?.id === owner &&
+      context.session === session && context.accountActivationIdentity === generation &&
+      context.accountStore === store && (context.accountRetiring !== true ||
+        (!context.activeAccount && !context.accountStore));
+    const capture = () => {
+      owner = context.activeAccount?.id; session = context.session;
+      generation = context.accountActivationIdentity; store = context.accountStore;
+    };
+    assertAccountOperationCurrent(current);
+    return { current, intentCurrent, capture };
+  }
+  type Operation = ReturnType<typeof beginOperation>;
+  async function activate(session: RemoteSession, account: PublicAccount, op: Operation) {
+    assertAccountOperationCurrent(op.current);
+    let generation = context.accountActivationIdentity, store = context.accountStore;
+    const onPhase = () => {
+      assertAccountOperationCurrent(op.intentCurrent);
+      generation = context.accountActivationIdentity; store = context.accountStore;
+    };
+    const pending = context.activate(session, account, op.intentCurrent, onPhase);
+    void pending.catch(() => {}); // Observe even if a synchronous reentrant handoff invalidates onPhase.
+    // Only a synchronous lifecycle handoff or host's explicit phase callback
+    // can establish a new generation; never accept an arbitrary late result.
+    onPhase();
+    let result: PublicAccount;
+    try { result = await pending; }
+    catch (error) {
+      if (error instanceof ActivationCleanupUnconfirmed && error.isCurrent()) throw error;
+      assertAccountOperationCurrent(() => op.intentCurrent() &&
+        context.accountActivationIdentity === generation && context.accountStore === store &&
+        !context.activeAccount && !context.accountStore);
+      op.capture();
+      throw error;
+    }
+    assertAccountOperationCurrent(() => op.intentCurrent() &&
+      context.accountActivationIdentity === generation && context.accountStore === store &&
+      context.activeAccount?.id === account.id && context.session === session &&
+      context.accountRetiring !== true);
+    op.capture();
+    return result;
+  }
+  async function finish(result: SignIn, op: Operation) {
+    assertAccountOperationCurrent(op.current);
     if (result.kind === "twoFactor")
-      return {
-        twoFactorRequired: true as const,
-        maskedEmail: result.maskedEmail,
-      };
+      return { twoFactorRequired: true as const, maskedEmail: result.maskedEmail };
     if (!result.session.persist())
       console.error("Account session will not persist after restart.");
     let account: PublicAccount;
-    try {
-      account = await context.activate(result.session, result.account);
-    } catch (error) {
-      // A session whose plan or key cannot be prepared is not kept.
-      await result.session.logout().catch(() => {});
+    try { account = await activate(result.session, result.account, op); }
+    catch (error) {
+      if (error instanceof ActivationCleanupUnconfirmed && error.isCurrent()) throw error;
+      assertAccountOperationCurrent(op.current);
+      await result.session.logout(op.current).catch(() => {});
+      assertAccountOperationCurrent(op.current);
       throw error;
     }
-    // An account added (or signed in to again) is the window's account
-    // now; an older session of it kept here gives way to the new one.
+    assertAccountOperationCurrent(op.current);
     accounts.finishAdding();
-    await accounts.dropParked(account.id);
+    await accounts.dropParked(account.id, op.current);
+    assertAccountOperationCurrent(op.current);
     return account;
   }
   const signedOut = () => {
+    if (activeTransition) throw Error("An account change is already in progress.");
     if (context.activeAccount) throw Error("Already signed in.");
   };
+  let restore: Promise<void> | undefined;
+  const retrySavedSession = replaceActiveAccount(async () => {
+    const op = beginOperation();
+    const restored = await accounts.restore(op.current);
+    if (restored) await activate(restored.session, restored.account, op);
+  });
   handle("authStatus", async () => {
-    if (!accounts.configured) return unconfigured();
+    let unavailable: string | undefined;
+    if (!context.activeAccount && (restore || accounts.restorePending && !activeTransition)) {
+      restore ??= retrySavedSession().finally(() => { restore = undefined; });
+      try { await restore; }
+      catch (error) {
+        if (accounts.restorePending && error instanceof Error)
+          unavailable = error.message;
+      }
+    }
     const account = context.activeAccount;
     // Signed out: the accounts of this computer ("Choose an account") and
     // whether one is being added.
     const browserAccounts = account ? undefined : accounts.browserAccounts();
+    const remote = account ? undefined : await accounts.policy();
     return {
       serviceOrigin: new URL(accounts.baseUrl).origin,
       account,
       hasAccounts: accounts.hasAccounts,
-      remote: account ? undefined : await accounts.policy(),
+      signedOutReason: account ? undefined : accounts.signedOutReason,
+      remote: remote && unavailable ? { ...remote, unavailable } : remote,
       twoFactorPending: accounts.pendingTwoFactor,
       ...(browserAccounts &&
       (browserAccounts.accounts.length || browserAccounts.adding)
@@ -109,50 +185,34 @@ export function registerRemoteAuthHandlers(handle: Handle, context: Context) {
         : {}),
     };
   });
-  handle("setServiceAddress", async (raw: unknown) => {
-    signedOut();
-    const address = normalizeSub2ApiUrl(
-      z.string().trim().min(1).max(2000).parse(raw),
-    );
-    const previous = accounts.baseUrl;
-    accounts.useService(address);
-    try {
-      await accounts.publicSettings();
-    } catch {
-      accounts.useService(previous);
-      throw Error(
-        "No Claudex service answered at this address. Check it and try again.",
-      );
-    }
-    await context.serviceChosen?.(address);
-    return {
-      serviceOrigin: new URL(address).origin,
-      hasAccounts: accounts.hasAccounts,
-      remote: await accounts.policy(),
-    };
-  });
   handle("loginAccount", async (rawEmail: unknown, rawPassword: unknown) => {
     signedOut();
+    const op = beginOperation();
     return await finish(
-      await accounts.login(email.parse(rawEmail), password.parse(rawPassword)),
+      await accounts.login(email.parse(rawEmail), password.parse(rawPassword), op.current), op,
     );
   });
   handle("completeTwoFactor", async (rawCode: unknown) => {
     signedOut();
+    const op = beginOperation();
     const result = await accounts.completeTwoFactor(
-      z.string().trim().max(12).parse(rawCode),
+      z.string().trim().max(12).parse(rawCode), op.current,
     );
-    const account = await finish(result);
+    const account = await finish(result, op);
     if ("twoFactorRequired" in account)
       throw Error("The service asked for another code.");
     return account;
   });
-  handle("cancelTwoFactor", () => accounts.cancelTwoFactor());
+  handle("cancelTwoFactor", () => {
+    if (activeTransition) return;
+    operationSerial++;
+    accounts.cancelTwoFactor();
+  });
   handle("sendVerificationCode", async (rawEmail: unknown) => {
     signedOut();
     return await accounts.sendVerificationCode(email.parse(rawEmail));
   });
-  // The sign-in page's other ways in.
+  // The sign-in page's other ways in (shared/sign-in-api.ts, package LOGIN).
   handle("requestPasswordReset", async (rawEmail: unknown) => {
     signedOut();
     await accounts.requestPasswordReset(email.parse(rawEmail));
@@ -179,12 +239,13 @@ export function registerRemoteAuthHandlers(handle: Handle, context: Context) {
     "loginWithCode",
     async (rawEmail: unknown, rawCode: unknown, rawRequest: unknown) => {
       signedOut();
+      const op = beginOperation();
       return await finish(
         await accounts.loginWithCode(
           email.parse(rawEmail),
           z.string().trim().max(12).parse(rawCode),
-          emailLinkRequest.parse(rawRequest),
-        ),
+          emailLinkRequest.parse(rawRequest), op.current,
+        ), op,
       );
     },
   );
@@ -192,9 +253,14 @@ export function registerRemoteAuthHandlers(handle: Handle, context: Context) {
   // service exchanges it (electron/google-sign-in.ts, LOGIN-GOOGLE).
   handle("loginWithGoogle", async () => {
     signedOut();
-    return await finish(await accounts.loginWithGoogle(authorizeWithGoogle));
+    const op = beginOperation();
+    return await finish(await accounts.loginWithGoogle(authorizeWithGoogle, op.current), op);
   });
-  handle("cancelGoogleSignIn", () => cancelGoogleAuthorization());
+  handle("cancelGoogleSignIn", () => {
+    if (activeTransition) return;
+    operationSerial++;
+    cancelGoogleAuthorization();
+  });
   handle("loginWithPasskey", () => {
     throw Error("Passkeys work in Claudex on the web.");
   });
@@ -202,48 +268,65 @@ export function registerRemoteAuthHandlers(handle: Handle, context: Context) {
   handle("setUpPasskey", () => {
     throw Error("Passkeys work in Claudex on the web.");
   });
-  // Several accounts at once. The web keeps one cookie per account; here each
-  // account's session is kept in the main process (RemoteAccounts.park/resume),
-  // with its own refresh token, and the service registers this computer for
-  // each account with its own key.
+  // Several accounts at once (live claude.ai bundle, 2026-10-12: the user
+  // menu's session accounts, Add account, the signed-out chooser; the
+  // desktop app shows the same page). The web keeps one cookie per
+  // account; here each account's session is kept in the main process
+  // (RemoteAccounts.park/resume), with its own refresh token, and the
+  // service registers this computer for each account with its own key.
   handle("browserAccounts", () =>
     accounts.browserAccounts(context.activeAccount?.id),
   );
   /** The open account leaves the window but stays signed in. */
-  async function leave(adding?: { email?: string }) {
+  async function leave(op: Operation, adding?: { email?: string }) {
     const session = context.session;
     if (!session) throw Error("Sign in to continue.");
-    await accounts.park(session, adding);
-    await context.deactivate();
+    await accounts.park(session, adding, op.current);
+    assertAccountOperationCurrent(op.current);
+    const pending = context.deactivate();
+    const generation = context.accountActivationIdentity;
+    await pending;
+    assertAccountOperationCurrent(() => op.intentCurrent() &&
+      context.accountActivationIdentity === generation && !context.activeAccount && !context.accountStore);
+    op.capture();
   }
-  /** Opens a signed-in account; one that cannot open stays signed in. */
-  async function open(accountId: string) {
-    const opened = await accounts.resume(accountId);
-    try {
-      return await context.activate(opened.session, opened.account);
-    } catch (error) {
-      await accounts.park(opened.session).catch(() => {});
+  /** Failure recovery may only touch the same still-current operation. */
+  async function open(accountId: string, op: Operation) {
+    assertAccountOperationCurrent(op.current);
+    const opened = await accounts.resume(accountId, op.current);
+    assertAccountOperationCurrent(op.current);
+    try { return await activate(opened.session, opened.account, op); }
+    catch (error) {
+      if (error instanceof ActivationCleanupUnconfirmed && error.isCurrent()) throw error;
+      assertAccountOperationCurrent(op.current);
+      await accounts.park(opened.session, undefined, op.current).catch(() => {});
+      assertAccountOperationCurrent(op.current);
       throw error;
     }
   }
-  handle("switchAccount", async (raw: unknown) => {
+  handle("switchAccount", replaceActiveAccount(async (raw: unknown) => {
     const id = accountId.parse(raw);
     const active = context.activeAccount;
     if (active?.id === id) return active;
     if (!accounts.canHoldAccounts)
       throw Error("Switching accounts needs this computer's secure storage.");
+    const op = beginOperation();
     const from = active ? active.id : undefined;
-    if (active) await leave();
+    if (active) await leave(op);
+    assertAccountOperationCurrent(op.current);
     accounts.finishAdding();
     try {
-      return await open(id);
+      return await open(id, op);
     } catch (error) {
+      if (error instanceof ActivationCleanupUnconfirmed && error.isCurrent()) throw error;
       // Back to the account the window had.
-      if (from) await open(from).catch(() => {});
+      assertAccountOperationCurrent(op.current);
+      if (from) await open(from, op).catch(() => {});
+      assertAccountOperationCurrent(op.current);
       throw error;
     }
-  });
-  handle("addAccount", async (raw: unknown) => {
+  }));
+  handle("addAccount", replaceActiveAccount(async (raw: unknown) => {
     const address = email.optional().parse(raw ?? undefined);
     const active = context.activeAccount;
     if (!active) throw Error("Sign in to continue.");
@@ -260,20 +343,28 @@ export function registerRemoteAuthHandlers(handle: Handle, context: Context) {
       );
     if (!again && accounts.signedInCount(active.id) >= limit)
       throw Error(`You can be signed in to up to ${limit} accounts.`);
-    await leave(address ? { email: address } : {});
+    const op = beginOperation();
+    await leave(op, address ? { email: address } : {});
+    assertAccountOperationCurrent(op.current);
     context.reloadCaller?.();
-  });
-  handle("cancelAddAccount", async () => {
+  }));
+  handle("cancelAddAccount", replaceActiveAccount(async () => {
     const adding = accounts.adding;
     if (!adding || context.activeAccount) return;
+    const op = beginOperation();
     accounts.finishAdding();
-    await open(adding.from);
-  });
+    await open(adding.from, op);
+  }));
   handle("forgetBrowserAccount", async (raw: unknown) => {
     const id = accountId.parse(raw);
     if (context.activeAccount?.id === id)
       throw Error("Log out of this account to remove it.");
-    await accounts.forget(id);
+    const owner = context.activeAccount?.id, generation = context.accountActivationIdentity;
+    const store = context.accountStore, serial = operationSerial;
+    const current = () => serial === operationSerial && context.activeAccount?.id === owner &&
+      context.accountActivationIdentity === generation && context.accountStore === store &&
+      (context.accountRetiring !== true || (!context.activeAccount && !context.accountStore));
+    await accounts.forget(id, current);
   });
   handle(
     "registerAccount",
@@ -284,41 +375,59 @@ export function registerRemoteAuthHandlers(handle: Handle, context: Context) {
       rawExtras: unknown,
     ) => {
       signedOut();
+      const op = beginOperation();
       const result = await accounts.register(
         email.parse(rawEmail),
         password.parse(rawPassword),
-        (extrasSchema.parse(rawExtras) ?? {}) as RegisterExtras,
+        (extrasSchema.parse(rawExtras) ?? {}) as RegisterExtras, op.current,
       );
-      const account = await finish(result);
+      const account = await finish(result, op);
       if ("twoFactorRequired" in account)
         throw Error("Sign in to finish creating your account.");
       return account;
     },
   );
-  handle("logoutAccount", async () => {
+  handle("logoutAccount", replaceActiveAccount(async () => {
+    const serial = ++operationSerial;
+    const session = context.session, owner = context.activeAccount?.id;
+    const generation = context.accountActivationIdentity, store = context.accountStore;
+    const current = () => serial === operationSerial && context.session === session && context.activeAccount?.id === owner &&
+      context.accountActivationIdentity === generation && context.accountStore === store && context.accountRetiring !== true &&
+      (!("accountActivationIdentity" in context) || generation != null && generation !== "");
+    assertAccountOperationCurrent(current);
     // Order matters: the device leaves with the access token the logout ends.
-    if (context.session) await context.leaveDevice?.().catch(() => {});
-    await context.session
-      ?.logout()
+    if (session) await context.leaveDevice?.().catch(() => {});
+    assertAccountOperationCurrent(current);
+    await session
+      ?.logout(current)
       .catch((error) =>
         console.error(
           "The service did not confirm sign-out:",
           error instanceof Error ? error.message : String(error),
         ),
       );
+    assertAccountOperationCurrent(current);
     await context.deactivate();
     return {
       hasAccounts: accounts.hasAccounts,
       remote: await accounts.policy(),
     };
-  });
-  handle("revokeAllSessions", async () => {
-    if (!context.session) throw Error("Sign in to continue.");
-    await context.session.revokeAll();
+  }));
+  handle("revokeAllSessions", replaceActiveAccount(async () => {
+    const serial = ++operationSerial;
+    const session = context.session, owner = context.activeAccount?.id;
+    const generation = context.accountActivationIdentity, store = context.accountStore;
+    if (!session) throw Error("Sign in to continue.");
+    const current = () => serial === operationSerial && context.session === session && context.activeAccount?.id === owner &&
+      context.accountActivationIdentity === generation && context.accountStore === store && context.accountRetiring !== true &&
+      (!("accountActivationIdentity" in context) || generation != null && generation !== "");
+    assertAccountOperationCurrent(current);
+    await session.revokeAll(current);
+    assertAccountOperationCurrent(current);
     await context.deactivate();
     return {
       hasAccounts: accounts.hasAccounts,
       remote: await accounts.policy(),
     };
-  });
+  }));
 }

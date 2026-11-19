@@ -23,9 +23,10 @@ import { attachTerminalSelection } from "../composer/terminal-excerpt";
 export { openAgentTranscript } from "./agent-transcript";
 
 /**
- * The Browser panel's window state (R8-D), or undefined when this window has no
- * Browser: the web app, a conversation that is not Code, an administrator who
- * turned it off. Browser tools off still allows Preview.
+ * The Browser panel's window state (R8-D), or undefined when this window
+ * has no Browser: the web app, a conversation that is not Code, an
+ * administrator who turned it off. Browser tools off still allows Preview
+ * (live claude.ai bundle, 2026-10-14, cf580efe9-gW7kJXTJ.js).
  */
 function useBrowserEnv(
   app: AppController,
@@ -67,9 +68,11 @@ function useBrowserEnv(
 }
 
 /**
- * The tool panels beside the conversation: Progress alone, or the dock's cards
- * side by side — Background tasks, Changes and Browser stacked in a column,
- * Terminal in its own.
+ * The tool panels beside the conversation: Progress alone,
+ * or the dock's cards side by side — Background
+ * tasks, Changes and Browser stacked in a column, Terminal in its own
+ * (ToolDock.tsx, owner 2026-10-03 after the original with every window
+ * open).
  */
 export function ToolPanelHost({
   panel,

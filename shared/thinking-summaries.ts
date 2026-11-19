@@ -1,7 +1,18 @@
-import type { Conversation, Settings } from "./types";
+import type { Conversation, Item, Settings } from "./types";
 import { preference } from "./settings-extras";
 
-/** ccd_thinking_summary_on_demand. */
+/** Only provider-issued public summary sections are displayable, never raw content. */
+export function visibleThinkingSummary(item: Pick<Item, "summary">): string[] {
+  return Array.isArray(item.summary)
+    ? item.summary.filter(
+        (part): part is string =>
+          typeof part === "string" && part.trim().length > 0,
+      )
+    : [];
+}
+
+/** ccd_thinking_summary_on_demand (live claude.ai bundle, 2026-10-14,
+ * c1c1ec7b9-DdxFmCQ2.js; desktop 2.37337.1, index.chunk-BolytlRP.js). */
 export function onDemandThinking(
   conversation: Conversation,
   settings: Settings,
@@ -9,14 +20,26 @@ export function onDemandThinking(
   return (
     preference(settings, "ccdThinkingSummaryOnDemand") &&
     conversation.mode === "code" &&
-    (!conversation.environment || conversation.environment.kind === "local")
+    !conversation.cloudHosted &&
+    !conversation.cloudEnvironmentId &&
+    (!conversation.environment ||
+      conversation.environment.kind === "local" ||
+      conversation.environment.kind === "ssh")
   );
 }
 
 export function thinkingSummaryForTurn(
   conversation: Conversation,
   settings: Settings,
+  supportsCloudSummary = false,
 ) {
+  if (
+    supportsCloudSummary &&
+    conversation.mode === "code" &&
+    conversation.environment?.kind === "space" &&
+    !conversation.cloudHosted
+  )
+    return { summary: "auto" as const };
   return onDemandThinking(conversation, settings)
     ? {
         summary:
@@ -39,8 +62,7 @@ export function thinkingSummariesNotice(
     !conversation.turns.some((turn) =>
       turn.items.some(
         (item) =>
-          item.type === "reasoning" &&
-          item.summary?.some((text) => text.trim().length > 0),
+          item.type === "reasoning" && visibleThinkingSummary(item).length > 0,
       ),
     )
   );

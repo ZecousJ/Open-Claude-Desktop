@@ -216,7 +216,7 @@ func newFixture(t *testing.T) *fixture {
 }
 
 func itoa(n int64) string {
-	return string(rune('0' + n%10))
+	return strings.TrimSpace(strings.Replace(string(rune('0'+n%10)), "", "", 0))
 }
 
 type result struct {

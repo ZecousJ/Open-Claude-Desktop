@@ -1,10 +1,11 @@
 /*
- * Settings → Import and its dialog. Loaded with the page, on first use. The
- * dialog is 640 wide; a location is a 12px-radius card with a checkbox, its
- * name and path, and "Added by you" with a remove button, 14px gaps and 12px
- * 14px padding; "Add another location…" is a dashed card of the same size; the
- * history is a list of rows with 16px sides and 12px above and below, a 14px
- * gap after the icon.
+ * Settings → Import and its dialog (desktop bundle 2.31226.1, the Import
+ * settings page and its wizard). Loaded with the page, on first use.
+ * The dialog is 640 wide; a location is a 12px-radius card with a checkbox,
+ * its name and path, and "Added by you" with a remove button, 14px gaps and
+ * 12px 14px padding; "Add another location…" is a dashed card of the same
+ * size; the history is a list of rows with 16px sides and 12px above and
+ * below, a 14px gap after the icon.
  */
 .modal.import-dialog {
   width: 640px;

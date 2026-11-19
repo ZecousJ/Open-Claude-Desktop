@@ -53,7 +53,7 @@ function storedView(fallback: "list" | "grid"): "list" | "grid" {
   }
 }
 
-/** Conditional tabs. */
+/** Conditional tabs (live claude.ai bundle, 2026-10-14, c230724a2-D4h5gIjn.js). */
 const owners: { id: ArtifactOwner; label: string }[] = [
   { id: "all", label: "All" },
   { id: "pinned", label: "Pinned" },

@@ -10,7 +10,7 @@ export function ProjectVisibility({
 }) {
   useT();
   if (project.visibility !== "private") return null;
-  // "mt-4 font-small text-muted-as-secondary", the word alone, 16px under the
-  // cards.
+  // Live claude.ai, 2026-10-21: "mt-4 font-small text-muted-as-secondary",
+  // the word alone, 16px under the cards.
   return <p className="prj-visibility">{t("Private")}</p>;
 }

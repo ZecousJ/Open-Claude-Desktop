@@ -123,6 +123,9 @@ export function registerWindowsHandlers(
   handle: IpcHandle,
   ctx: AppContext,
   create: (ctx: AppContext) => ChatWindows = chatWindowsFor,
+  dispatchOfficialLayout?: (
+    command: Omit<LayoutCommand, "requestId" | "deadline" | "mainWindowHidden">,
+  ) => Promise<import("../app/window-layout").LayoutDispatchResult> | undefined,
 ) {
   let manager: ChatWindows | undefined;
   const layoutCommands = new WindowLayoutCommands();
@@ -133,7 +136,9 @@ export function registerWindowsHandlers(
   };
   if (ctx.services)
     ctx.services.chatWindows = {
-      layoutCommand: (command) => {
+      layoutCommand: async (command) => {
+        const official = dispatchOfficialLayout?.(command);
+        if (official) return official;
         const main = ctx.appWindows.main();
         return layoutCommands.dispatch(
           main?.webContents,
@@ -160,9 +165,10 @@ export function registerWindowsHandlers(
     };
 
   // A draft handed back to the main window must not reach the next account.
-  ctx.onAccountActivated?.(() => {
-    void windows().restoreLayout();
-  });
+  if (process.versions.electron)
+    ctx.onAccountActivated?.(() => {
+      void windows().restoreLayout();
+    });
   ctx.onAccountDeactivating?.(() => {
     layoutCommands.dispose();
     manager?.preserveLayout();

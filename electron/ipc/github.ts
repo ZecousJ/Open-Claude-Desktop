@@ -30,13 +30,13 @@ const repository = z.string().max(140).refine(validRepositoryName);
 
 /**
  * The hosted GitHub connection (shared/github-api.ts) belongs to the service.
- * Local Chat lists repositories and branches through the machine's GitHub CLI
- * sign-in.
+ * Local Chat lists repositories and branches through the machine's GitHub
+ * CLI sign-in (live claude.ai bundle, 2026-10-14, c23f22bfb-Bq6uLUoL.js).
  *
- * The issue and pull request calls are the exception: here they go through the
- * machine's GitHub CLI (electron/github-cli.ts), as the original app's do, the
- * branch row's changes to a pull request included. (On the web the page asks
- * the service instead.)
+ * The issue and pull request calls are the exception: here they go through
+ * the machine's GitHub CLI (electron/github-cli.ts), as the original app's
+ * do, the branch row's changes to a pull request included. (On the web the
+ * page asks the service instead.)
  */
 export function registerGitHubHandlers(handle: IpcHandle, ctx: AppContext) {
   handle("githubReview", (raw: unknown) => {

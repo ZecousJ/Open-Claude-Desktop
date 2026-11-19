@@ -1,8 +1,10 @@
 /**
- * Dragging a rail card as the live rail's sortable list does: the card follows
- * the pointer on a page fill above the others, the card whose middle is nearest
- * the dragged card's middle is where it lands, and the cards between slide over
- * by the dragged card's height and the gap to open its place.
+ * Dragging a rail card as the live rail's sortable list does (live claude.ai
+ * bundle, 2026-10-21, cf74bc599: dnd-kit's sortable with the vertical list
+ * strategy): the card follows the pointer on a page fill above the others,
+ * the card whose middle is nearest the dragged card's middle is where it
+ * lands, and the cards between slide over by the dragged card's height and
+ * the gap to open its place.
  */
 export interface SlotBox {
   top: number;

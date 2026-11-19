@@ -1,5 +1,6 @@
-/* Projects: search opens as a 384×32 field, 5% white, radius 8, its focus ring
-   a 1px blue line with a 6px glow; card titles are weight 500. */
+/* Projects (live claude.ai, dark, 1482×597): search opens as a 384×32 field, 5%
+   white, radius 8, its focus ring a 1px blue line with a 6px glow; card titles
+   are weight 500. */
 :root:not([data-theme="light"]) .prj-search {
   width: min(384px, 40vw);
   padding: 0 4px 0 12px;
@@ -16,9 +17,9 @@
   font-weight: 500;
 }
 
-/* Artifacts: a 960px column, All / Yours / Shared with you as 32px text tabs
-   24px under the title, "Make something new" tiles 136×96 with radius 14, no
-   rim and a two-part shadow. */
+/* Artifacts (live claude.ai, 1482×596): a 960px column, All / Yours / Shared with
+   you as 32px text tabs 24px under the title, "Make something new" tiles 136×96
+   with radius 14, no rim and a two-part shadow. */
 .artifacts-page > *,
 .artifacts-page > .artifacts-grid {
   max-width: 960px;
@@ -47,8 +48,8 @@
     0 2px 8px #0000003d;
 }
 
-/* Chat header Share: a 57.5×28 text button, 10% white with a faint rim, 14/20
-   text 10px in. */
+/* Chat header Share (live claude.ai): a 57.5×28 text button, 10% white with a
+   faint rim, 14/20 text 10px in. */
 .chat-header .conversation-share-button.text {
   width: auto;
   height: 28px;
@@ -66,8 +67,10 @@
   color: #f0efec;
 }
 
-/* Share ends 8px from the window's right edge, the activity button beside it in
-   the primary ink. Share's -3px margin makes the 11px padding an 8px gap. */
+/* Share ends 8px from the window's right edge, the activity button beside
+   it in the primary ink (live claude.ai, 2026-10-20, 1280px window: Share
+   right 1272, the activity button #f0efec). Share's -3px margin makes the
+   11px padding an 8px gap. */
 @media (min-width: 640px) {
   .app.web .chat-header {
     padding-right: 11px;
@@ -81,13 +84,14 @@
   color: #f0efec;
 }
 
-/* Reply toolbar icons rest at #898781. */
+/* Reply toolbar icons rest at #898781 (live claude.ai). */
 :root:not([data-theme="light"]) [aria-label="Message actions"] button {
   color: #898781;
 }
 
-/* Settings on the web: the frame keeps 16px above and below, #1a1a19 with a
-   faint rim, and the page reserves no scrollbar gutter (content 782 wide). */
+/* Settings on the web (live claude.ai, 1129×733): the frame keeps 16px above
+   and below (the desktop app's 36px is R-1321), #1a1a19 with a faint rim, and
+   the page reserves no scrollbar gutter (content 782 wide). */
 :root[data-surface="web"] .settings-overlay {
   padding: 16px;
 }
@@ -102,12 +106,14 @@
   scrollbar-gutter: auto;
 }
 
-/* Menus on the web: #20201f with a 1px #ffffff1a inner ring, radius 12, 4px
-   inside; 32px rows with radius 8, 10px side padding, a 20px glyph 8px before
-   14/20 text, 13/17 #898781 keys, a #ffffff1a rule 4px 10px, Delete in #ec7e7e.
-   The desktop app keeps its captured 24px rows and has no glyphs. */
-/* Its scroll layer keeps a transparent 1px under the rows, and in the dark the
-   shadow is black 32% and 20%. */
+/* Menus on the web (live claude.ai row menu, 170.5 wide): #20201f with a 1px
+   #ffffff1a inner ring, radius 12, 4px inside; 32px rows with radius 8, 10px
+   side padding, a 20px glyph 8px before 14/20 text, 13/17 #898781 keys, a
+   #ffffff1a rule 4px 10px, Delete in #ec7e7e. The desktop app keeps its
+   captured 24px rows and has no glyphs. */
+/* Its scroll layer keeps a transparent 1px under the rows, and in the dark
+   the shadow is black 32% and 20% (live claude.ai, 2026-10-21, the title,
+   page and New task menus). */
 :root[data-surface="web"]:not([data-theme="light"]) .menu {
   border: 0;
   border-bottom: 1px solid transparent;
@@ -121,8 +127,9 @@
   border-bottom: 1px solid transparent;
   padding: 4px;
   border-radius: 12px;
-  /* Comfortable density: 14px/20px text, 13px/17px values and keys, a 25px
-     heading. */
+  /* Comfortable density: 14px/20px text, 13px/17px values and keys, a
+     25px heading (live claude.ai bundle, 2026-10-16, c6a992d55 and
+     shared-frame-6654oR3- xE). */
   font-size: 14px;
   line-height: 20px;
 }
@@ -185,9 +192,9 @@
   display: none;
 }
 
-/* The web's confirmation: #20201f with the ring, radius 12, 24px inside; a
-   15/20 500 title, 14/20 #c3c2b7 text, then 32px buttons 16px lower: Cancel 10%
-   white, Delete #d03b3b at 500. */
+/* The web's confirmation (live claude.ai "Delete chat?", 400×138): #20201f
+   with the ring, radius 12, 24px inside; a 15/20 500 title, 14/20 #c3c2b7
+   text, then 32px buttons 16px lower: Cancel 10% white, Delete #d03b3b at 500. */
 :root[data-surface="web"] .modal.confirm {
   padding: 22px 24px 24px;
 }
@@ -234,8 +241,8 @@
 }
 
 /* The side panel on the web slides in: 200ms, from 48px to the right and
-   transparent, cubic-bezier(0.2, 0, 0, 1). The desktop app's panel appears in
-   one frame. */
+   transparent, cubic-bezier(0.2, 0, 0, 1) (live claude.ai opening a shared
+   file). The desktop app's panel appears in one frame. */
 @keyframes web-panel-in {
   from {
     opacity: 0;
@@ -254,9 +261,9 @@
   }
 }
 
-/* Customize → Skills → Discover: 28px between the feature and the sections, a
-   section's title row 28px high with its card grid 16px under it, and the
-   cards' + a 28px square, 7px round. */
+/* Customize → Skills → Discover (live claude.ai, 2026-09-29): 28px between
+   the feature and the sections, a section's title row 28px high with its
+   card grid 16px under it, and the cards' + a 28px square, 7px round. */
 :root[data-surface="web"] .customize-directory-head {
   margin: 28px 0 0;
   height: 28px;

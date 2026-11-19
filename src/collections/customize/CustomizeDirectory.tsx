@@ -1,6 +1,6 @@
 import { formatText, useLocale } from "../../i18n";
 import { Check, Plus } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { notAvailable } from "../../settings/unavailable";
 import type { DirectoryIcon } from "../../../shared/directory-icon";
 import { directoryGlyph } from "../../settings/directory/icons";
@@ -23,7 +23,9 @@ export interface CatalogueCard {
   icon: DirectoryIcon;
 }
 
-/** Discover's empty search. */
+/**
+ * Discover's empty search (live claude.ai bundle, 2026-10-14, ccea1f474).
+ */
 export function NoSkillsMatch({ noun = "skills" }: { noun?: Noun }) {
   return (
     <div className="customize-nothing" role="status">
@@ -159,7 +161,7 @@ function CatalogueRowActions({
           }
           onClick={() => onAddAndTry?.(entry)}
         >
-          <AppIcon name="Chat" size={20} aria-hidden="true" />
+          <Anthropicon name="Chat" size={20} aria-hidden="true" />
           <span className="customize-catalogue-try-label">Try</span>
         </button>
       )}

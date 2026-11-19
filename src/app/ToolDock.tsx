@@ -39,19 +39,21 @@ const EXPANDED_CARD =
   ":scope > .work-panel.expanded, :scope > .tool-dock-column > .work-panel.expanded";
 
 /**
- * The Code tool cards side by side: Background tasks, Changes and Browser stack
- * in one column, 10px apart; Terminal is a column of its own on the right. The
- * column's left edge drags like the Background rail (its width is kept per
- * account); the Terminal keeps its own edge. The dock's width is published to
- * the workspace as --tool-dock-width, so the conversation and its title bar
- * make room for it.
+ * The Code tool cards side by side (owner, 2026-10-03, after the original
+ * with every window open): Background tasks, Changes and Browser stack in
+ * one column, 10px apart; Terminal is a column of its own on the right.
+ * The column's left edge drags like the Background rail (its width is kept
+ * per account); the Terminal keeps its own edge. The dock's width is
+ * published to the workspace as --tool-dock-width, so the conversation and
+ * its title bar make room for it.
  *
- * With two or more cards it behaves like the original's split panes: the card
- * last pressed or focused is the focused one, the others dim (filter opacity
- * .75, saturate .85, 120ms) and show their header buttons only on hover; a card
- * opened later fades in (180ms); the divider between two stacked cards drags
- * their heights; and an expanded card grows over the conversation while the
- * others fold away (200ms), instead of jumping.
+ * With two or more cards it behaves like the original's split panes
+ * (desktop bundle 2.31226.1): the card last pressed or focused is the
+ * focused one, the others dim (filter opacity .75, saturate .85, 120ms)
+ * and show their header buttons only on hover; a card opened later fades
+ * in (180ms); the divider between two stacked cards drags their heights;
+ * and an expanded card grows over the conversation while the others fold
+ * away (200ms), instead of jumping.
  */
 export function ToolDock({
   panels,
@@ -86,8 +88,8 @@ function LegacyToolDock({
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   useEffect(() => setRoot(dock.current), []);
   const columnRef = useRef<HTMLDivElement>(null);
-  // Changes, Browser and the simulators need room; Background tasks alone is
-  // the 282px rail.
+  // Changes, Browser and the simulators need room (537px at rest, R-0874);
+  // Background tasks alone is the 282px rail (R-0646).
   const wide =
     column.some((pane) =>
       ["session", "pr", "widget", "artifact", "files"].includes(pane),

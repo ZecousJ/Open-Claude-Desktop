@@ -98,7 +98,7 @@ export function FileChangeView({
   const documents = [...latest.values()].filter(
     (f) => ["html", "svg"].includes(f.language) && f.state === "ready",
   );
-  // Every other file the reply wrote gets its own card.
+  // Every other file the reply wrote gets its own card (R-0941, R-0956).
   const files = [...latest.values()].filter(
     (f) =>
       !["html", "svg"].includes(f.language) &&
@@ -242,7 +242,7 @@ export function FileChangeCards({
 const artifactLanguage = (file: string) =>
   /\.html?$/i.test(file) ? "html" : /\.svg$/i.test(file) ? "svg" : undefined;
 
-/** Why an artifact's change ended without it. */
+/** Why an artifact's change ended without it (R-0949, provisional wording). */
 const failures = {
   declined: "Changes declined",
   failed: "Couldn't finish this artifact",
@@ -250,8 +250,10 @@ const failures = {
 } as const;
 
 /**
- * HTML and SVG files the change is still writing or that it could not finish.
- * Files whose snapshot is ready show as ordinary artifact cards instead.
+ * HTML and SVG files the change is still writing (R-0935: a card with only
+ * the name and "Artifact") or that it could not finish (R-0949: a muted
+ * card with the reason). Files whose snapshot is ready show as ordinary
+ * artifact cards instead.
  */
 export function pendingArtifacts(
   changes: {

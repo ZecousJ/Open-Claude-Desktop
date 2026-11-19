@@ -1,5 +1,5 @@
 /* Light theme (part of sidebar.css) */
-/* Light theme */
+/* Light theme (R-0025) */
 :root[data-theme="light"] .sidebar {
   background: #fbfbf9;
 }
@@ -80,7 +80,7 @@
 :root[data-theme="light"] .profile > span:nth-child(2) {
   color: #52514e;
 }
-/* The light ghost hover, #0b0b0b at 5%. */
+/* Light hover fills have no capture: the light ghost hover, #0b0b0b at 5%. */
 :root[data-theme="light"] .main-nav-more > button.open,
 :root[data-theme="light"] .conversation-row.menu-open,
 :root[data-theme="light"] .section-label > div > button.open,
@@ -123,10 +123,10 @@
 }
 :root[data-theme="light"] .main-nav-more > button svg,
 :root[data-theme="light"] .section-label,
-:root[data-theme="light"] .section-toggle > .app-icon,
-:root[data-theme="light"] .group-toggle > .app-icon,
+:root[data-theme="light"] .section-toggle > .anthropicon,
+:root[data-theme="light"] .group-toggle > .anthropicon,
 :root[data-theme="light"] .profile small,
-:root[data-theme="light"] .profile > .app-icon {
+:root[data-theme="light"] .profile > .anthropicon {
   color: #82817f;
 }
 /* The rules above out-rank the hover rule of sidebar-list.css, so the
@@ -162,7 +162,7 @@
 :root[data-theme="light"] .main-nav-more-menu > button > svg,
 :root[data-theme="light"] .main-nav-more-menu > button > .nav-glyph,
 :root[data-theme="light"] .profile-popover > button,
-:root[data-theme="light"] .profile-popover > button > .app-icon {
+:root[data-theme="light"] .profile-popover > button > .anthropicon {
   color: #141414;
 }
 :root[data-theme="light"] .profile-popover > header,

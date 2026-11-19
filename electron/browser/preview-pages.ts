@@ -7,7 +7,8 @@ import type { BrowserSavedPage } from "../../shared/browser";
  * on each change, so it stays small. */
 const maxSavedFrame = 1_500_000;
 
-/** Last frames, not live pages, restored after quit. */
+/** Last frames, not live pages, restored after quit (live claude.ai bundle,
+ * 2026-10-14, cf580efe9-gW7kJXTJ.js, Bi). */
 export class PreviewPages {
   private pages: Record<string, BrowserSavedPage> = {};
   private file: string;

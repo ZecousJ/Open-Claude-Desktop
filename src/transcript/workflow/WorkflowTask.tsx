@@ -44,7 +44,8 @@ export function WorkflowTask({
   return (
     <article className="background-task">
       <div className="background-task-title">
-        {/* The title shimmers while the workflow runs. */}
+        {/* The title shimmers while the workflow runs (live claude.ai
+            bundle, 2026-10-15, c1c1ec7b9 `Mke`). */}
         {running ? (
           <ShimmerText className="background-task-name">
             {workflow.title}

@@ -1,8 +1,8 @@
 /* Native unified Chat keeps the existing folder browser and access checks.
-   Source: 1016 hW/oD and RE: plainTrigger + hideIcon, a shrinking label with
-   truncate. These rules are intentionally confined to that trigger; web's
-   ProjectPicker has its own measured layout and the Code workspace chips remain
-   separate. */
+   Source: 1016 shared-19-B3wmJeb_.js hW/oD and shared-8-kIxzyY2S.js RE:
+   plainTrigger + hideIcon, a shrinking label with truncate. These rules are
+   intentionally confined to that trigger; web's ProjectPicker has its own
+   measured layout and the Code workspace chips remain separate. */
 .cowork-options[data-picker-surface="desktop-chat"] {
   min-width: 0;
   max-width: 100%;
@@ -35,8 +35,8 @@
   line-height: 20px;
 }
 
-/* Same current CDS root shell as the web capture, 32px rows with 20px icons.
-   This file loads only on desktop. */
+/* R15 official-native-chat-add: same current CDS root shell as the web
+   capture, 32px rows with 20px icons. This file loads only on desktop. */
 .composer-add-menu.composer-add-native-chat {
   width: 226.375px;
   padding: 4px;
@@ -51,7 +51,9 @@
   padding: 6px 10px;
   border-radius: 8px;
 }
-.composer-add-menu.composer-add-native-chat > button > :is(svg, [data-icon]),
+.composer-add-menu.composer-add-native-chat
+  > button
+  > :is(svg, [data-anthropicon]),
 .composer-add-menu.composer-add-native-chat
   > .composer-add-branch
   > button

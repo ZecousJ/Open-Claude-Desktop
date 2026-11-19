@@ -1,7 +1,7 @@
 /* The Chat home's prompt ideas (StarterPrompts.tsx). Measures are the
-   original's prompt chips and prompt list: secondary buttons 32px tall in a
-   centred, wrapping row 16px under the composer, and a 16px-radius card with a
-   heading row and 14px lines. */
+   original's prompt chips and prompt list (desktop bundle 2.31226.1 static
+   CSS/JS): secondary buttons 32px tall in a centred, wrapping row 16px under
+   the composer, and a 16px-radius card with a heading row and 14px lines. */
 .starter-prompts {
   position: relative;
   width: 100%;
@@ -15,12 +15,14 @@
   padding: 16px 0 0;
   list-style: none;
 }
-/* An open list covers the row, which keeps its height. */
+/* An open list covers the row, which keeps its height (live claude.ai
+   bundle, 2026-10-12: the row turns invisible rather than leaving). */
 .starter-chips.is-covered {
   visibility: hidden;
 }
-/* Each chip rises 10px into place and fades in over 300ms, 50ms after the one
-   before it. */
+/* Each chip rises 10px into place and fades in over 300ms, 50ms after the
+   one before it (live claude.ai bundle, 2026-10-12: chip-in,
+   cubic-bezier(0.25, 0.1, 0.35, 1), backwards fill). */
 .starter-chips > li {
   animation: starter-chip-in 300ms cubic-bezier(0.25, 0.1, 0.35, 1) backwards;
 }

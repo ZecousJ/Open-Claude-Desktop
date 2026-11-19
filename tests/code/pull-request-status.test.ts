@@ -1,8 +1,9 @@
 /**
- * A pull request's state on screen: the glyph's state, the CI chip, when the
+ * A pull request's state on screen (shared/pull-request-status.ts, live
+ * claude.ai bundle, 2026-10-12): the glyph's state, the CI chip, when the
  * branch row offers Merge, why auto-merge can't change, GitHub's refusals in
- * words, the sidebar row's PR status, the service's answers, and the window's
- * shared store.
+ * words, the sidebar row's PR status, the service's answers, and the
+ * window's shared store.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

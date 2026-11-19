@@ -1,11 +1,12 @@
 /**
- * What the sign-in page shows: pure functions of the account status, so each
- * step and refusal can be tested without a window. SignInPage.tsx renders them.
+ * What the sign-in page shows (package LOGIN, SCRATCH/impl/web/LOGIN-design.md):
+ * pure functions of the account status, so each step and refusal can be
+ * tested without a window. SignInPage.tsx renders them.
  *
- * A Sub2API service signs in like claude.ai: the email first, then the password
- * (or a code sent by email, when the administrator offers it), then the
- * authenticator code when the account has 2FA. Local accounts (a desktop
- * without a service) keep one email-and-password card.
+ * A Sub2API service signs in like claude.ai: the email first, then the
+ * password (or a code sent by email, when the administrator offers it),
+ * then the authenticator code when the account has 2FA. Local accounts
+ * (a desktop without a service) keep one email-and-password card.
  */
 import { surface, type HostSurface } from "../../shared/host";
 import type { StartMode } from "./startMode";
@@ -49,8 +50,9 @@ export const hero = {
 } as const;
 
 /**
- * The desktop's signed-out pages: a short serif heading above the card in place
- * of the web page's hero, and a welcome screen before it.
+ * The desktop's signed-out pages (live claude.ai bundle, 2026-10-12, the
+ * desktop login): a short serif heading above the card in place of the web
+ * page's hero, and a welcome screen before it.
  */
 export const desktopHeading = "Sign In";
 
@@ -136,7 +138,7 @@ export function emailProblem(
   creating = false,
 ): string | undefined {
   const value = email.trim();
-  // The email field's valueMissing line.
+  // live claude.ai bundle, 2026-10-12: the email field's valueMissing line.
   if (!value) return "Email address is required";
   if (value.length > 254 || !emailPattern.test(value))
     return signInErrorMessages.INVALID_EMAIL;
@@ -271,3 +273,14 @@ export {
   type SignedOutNotice,
   type SignedOutReason,
 } from "./signedOut";
+
+/**
+ * The email field's value once the suggested address arrives (package OTA:
+ * the address ZecousAI knew). Whatever the person already typed stays; a
+ * hint that isn't a plain address is ignored.
+ */
+export function prefilledEmail(current: string, hint: unknown): string {
+  if (current.trim() || typeof hint !== "string") return current;
+  const email = hint.trim();
+  return email.length <= 254 && emailPattern.test(email) ? email : current;
+}

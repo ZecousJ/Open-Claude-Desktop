@@ -1,18 +1,15 @@
 /**
- * Release tooling's pure parts: which built files are which, where they go in
- * the R2 bucket, the Claudex admin release payload, and AWS Signature V4 for R2's S3 API. Tested in
- * tests/release-tooling.test.ts.
+ * Release tooling's pure parts (package OTA, docs/ota.md): which built
+ * files are which, where they go in the R2 bucket, the Claudex admin
+ * release payload, ZecousAI's desktop_update_releases rows, and AWS
+ * Signature V4 for R2's S3 API. Tested in tests/release-tooling.test.ts.
  */
 import { createHash, createHmac, randomUUID } from "node:crypto";
 import path from "node:path";
 
-/**
- * Bucket prefix every download lives under, and the bucket's public
- * address (CLAUDEX_DOWNLOADS_PREFIX, CLAUDEX_PUBLIC_BASE).
- */
-export const downloadsPrefix =
-  process.env.CLAUDEX_DOWNLOADS_PREFIX ?? "claudex/downloads";
-export const defaultPublicBase = process.env.CLAUDEX_PUBLIC_BASE ?? "";
+/** Bucket prefix every download lives under (served as https://all.zecous.cn/zecous/downloads/…). */
+export const downloadsPrefix = "zecous/downloads";
+export const defaultPublicBase = "https://all.zecous.cn";
 
 export type PlatformKey =
   | "darwin-arm64"
@@ -116,21 +113,48 @@ export function claudexArtifacts(files: string[]): {
   };
 }
 
+/**
+ * The bridge's outputs (tools/zecous-bridge/out): the Squirrel feed and the
+ * one-file exe, all in one folder, because ZecousAI derives the Squirrel
+ * feed from the directory of the win32 row's package URL.
+ */
+export function bridgeArtifacts(
+  files: string[],
+  bridgeVersion: string,
+): Artifact[] {
+  const want = new Map([
+    ["RELEASES", "text/plain"],
+    [`ZecousAI-${bridgeVersion}-full.nupkg`, "application/octet-stream"],
+    [
+      `ZecousAI-Setup-${bridgeVersion}.exe`,
+      "application/vnd.microsoft.portable-executable",
+    ],
+  ]);
+  const artifacts: Artifact[] = [];
+  for (const [name, contentType] of want) {
+    const file = files.find((item) => path.basename(item) === name);
+    if (!file) throw new Error(`The bridge build has no ${name}.`);
+    artifacts.push({
+      file,
+      key: `${downloadsPrefix}/zecousai/${bridgeVersion}/${name}`,
+      contentType,
+    });
+  }
+  return artifacts;
+}
+
 export const publicUrl = (base: string, key: string) =>
   `${base.replace(/\/+$/, "")}/${key.split("/").map(encodeURIComponent).join("/")}`;
 
 /**
- * Where Claudex itself downloads its installers: the Claudex service's
- * /downloads/, which serves the bucket's downloads/claudex/... objects
- * (CLAUDEX_DOWNLOAD_BASE, e.g. https://claudex.example.com/downloads).
+ * Where Claudex itself downloads its installers (owner, 2026-10-02): the
+ * Claudex server's /downloads/, which DC6's nginx serves from the bucket and
+ * caches (from China about 3.8x Cloudflare/R2's speed). It maps
+ * /downloads/claudex/... to the object zecous/downloads/claudex/....
  */
-export const defaultDownloadBase = process.env.CLAUDEX_DOWNLOAD_BASE ?? "";
+export const defaultDownloadBase = "https://claudex.zecous.cn/downloads";
 
 export function claudexDownloadUrl(base: string, key: string) {
-  if (!base)
-    throw new Error(
-      "Set CLAUDEX_DOWNLOAD_BASE (or --download-base) to the service's /downloads address.",
-    );
   const prefix = `${downloadsPrefix}/`;
   if (!key.startsWith(`${prefix}claudex/`))
     throw new Error(`Not a Claudex installer key: ${key}`);
@@ -158,6 +182,58 @@ export function claudexReleasePayload(options: {
     },
     enforce_minimum_on_gateway: false,
   };
+}
+
+export const zecousChangelog =
+  "ZecousAI 现已升级为 Claudex。本次更新会自动安装 Claudex 桌面端并移除 ZecousAI；安装完成后请在 Claudex 中登录，登录邮箱会自动填好。";
+
+/** ZecousAI's release rows: API bodies for POST /api/admin/desktop-updates/publish and equivalent SQL. */
+export function zecousRows(options: {
+  bridgeVersion: string;
+  winPackageUrl: string;
+  macPackageUrl?: string;
+  changelog?: string;
+  id?: () => string;
+}) {
+  const changelog = options.changelog ?? zecousChangelog;
+  const rows = [
+    {
+      version: options.bridgeVersion,
+      platform: "win32",
+      arch: "x64",
+      packageUrl: options.winPackageUrl,
+      changelog,
+    },
+    ...(options.macPackageUrl
+      ? [
+          {
+            version: options.bridgeVersion,
+            platform: "darwin",
+            arch: "arm64",
+            packageUrl: options.macPackageUrl,
+            changelog,
+          },
+        ]
+      : []),
+  ];
+  const quote = (value: string) => `'${value.replace(/'/g, "''")}'`;
+  const id = options.id ?? randomUUID;
+  const sql = rows
+    .map(
+      (row) =>
+        `INSERT INTO desktop_update_releases (id, version, platform, arch, package_url, changelog, is_published, published_at, created_at, updated_at) VALUES (${[
+          id(),
+          row.version,
+          row.platform,
+          row.arch,
+          row.packageUrl,
+          row.changelog,
+        ]
+          .map(quote)
+          .join(", ")}, TRUE, NOW(), NOW(), NOW());`,
+    )
+    .join("\n");
+  return { api: rows, sql };
 }
 
 const sha256Hex = (data: string | Buffer) =>

@@ -9,9 +9,9 @@ import {
 import { failed as commandFailed } from "../../code-tools/code-tool-model";
 
 /**
- * One call in an agent's tool list: a collapsed row ("Listed repository files
- * ›", "Read README.md ›"); failed rows are red and open to the `$` command and
- * its red output.
+ * One call in an agent's tool list: a collapsed row ("Listed repository
+ * files ›", "Read README.md ›"); failed rows are red and open to the `$`
+ * command and its red output (R-0786 nested tool list and failed row).
  */
 function AgentToolRow({ item }: { item: Item }) {
   const running = itemIsRunning(item);
@@ -45,9 +45,9 @@ function AgentToolRow({ item }: { item: Item }) {
 }
 
 /**
- * An agent's consecutive tool calls as one summary ("Ran 3 commands (1 failed),
- * read 3 files ⌄") over a bordered list of collapsed rows, as in the
- * reference's agent transcript.
+ * An agent's consecutive tool calls as one summary ("Ran 3 commands (1
+ * failed), read 3 files ⌄") over a bordered list of collapsed rows, as in
+ * the reference's agent transcript (R-0681, R-0786).
  */
 export function AgentCommandGroup({ commands }: { commands: Item[] }) {
   const running = commands.some(itemIsRunning);

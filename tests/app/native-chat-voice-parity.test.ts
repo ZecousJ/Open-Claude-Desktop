@@ -146,7 +146,9 @@ test("native microphone options are visible on the first render while voice mode
   const document = renderCaller("chatActions", { pending: true });
   assert.deepEqual(labels(document), ["Dictate", "Microphone"]);
   assert.ok(
-    document.querySelector(".cowork-voice-options [data-icon='CaretDown']"),
+    document.querySelector(
+      ".cowork-voice-options [data-anthropicon='CaretDown']",
+    ),
   );
   assert.ok(
     document.querySelector(

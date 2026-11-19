@@ -29,9 +29,8 @@ import { markExplicitFolderSelection } from "./explicit-folder-selection";
 import { folderName } from "./recentFolders";
 import { useProjectCatalogState } from "./useProjectCatalogState";
 
-/**
- * Native data adapter for the same combobox used by web ProjectPicker.
- * Filter/sort, Pinned/default, typed creation and folder rows.
+/** Native data adapter for the same combobox used by web ProjectPicker.
+ * 1016 c2b3e8506: Filter/sort, Pinned/default, typed creation and folder rows.
  */
 export type NativeProjectPickerProps = ProjectPickerProps & {
   cwd?: string;

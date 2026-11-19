@@ -47,7 +47,7 @@ export const fixture = {
           {
             id: "reply-rich",
             type: "agentMessage",
-            text: '## One shared conversation\n\n手机、网页和 PC 直接使用同一个组件。**强调文本**、*斜体*、`inline code` 和引用均来自现有 Markdown 渲染器。\n\n> Shared source, shared styles.\n\n| Component | Shared |\n| --- | --- |\n| Markdown | Yes |\n| Reply actions | Yes |\n\n```typescript\nconst platforms = ["web", "desktop", "ios", "android"];\nexport const shared = platforms.every(Boolean);\n```\n\n$$E = mc^2$$\n\n[Open the source](https://github.com/ZecousJ/Open-Claude-Desktop)\n\n![Remote image stays private until loaded](https://example.invalid/image.png)\n\n```html\n<!doctype html><html><head><title>Shared artifact</title></head><body><h1>Shared HTML source</h1></body></html>\n```',
+            text: '## One shared conversation\n\n手机、网页和 PC 直接使用同一个组件。**强调文本**、*斜体*、`inline code` 和引用均来自现有 Markdown 渲染器。\n\n> Shared source, shared styles.\n\n| Component | Shared |\n| --- | --- |\n| Markdown | Yes |\n| Reply actions | Yes |\n\n```typescript\nconst platforms = ["web", "desktop", "ios", "android"];\nexport const shared = platforms.every(Boolean);\n```\n\n$$E = mc^2$$\n\n[Open the source](https://github.com/ZecousJ/claudex)\n\n![Remote image stays private until loaded](https://example.invalid/image.png)\n\n```html\n<!doctype html><html><head><title>Shared artifact</title></head><body><h1>Shared HTML source</h1></body></html>\n```',
           },
           {
             id: "files",

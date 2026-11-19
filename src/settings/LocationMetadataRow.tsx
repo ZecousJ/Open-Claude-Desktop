@@ -5,8 +5,9 @@ import type { TabProps } from "./context";
 import { useState } from "react";
 
 /**
- * Location metadata, shown on Privacy and in Capabilities → General after the
- * model switch. Enabled unless the person turns it off (enabled_geolocation).
+ * Location metadata, shown on Privacy and in Capabilities → General after
+ * the model switch (live claude.ai bundle, 2026-10-14, c71860c77: ze).
+ * Enabled unless the person turns it off (enabled_geolocation).
  */
 export function LocationMetadataRow({
   settings,

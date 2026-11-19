@@ -1,9 +1,11 @@
 import { preference, type SettingsPreferences } from "./settings-extras";
 
 /**
- * Tool access for one conversation: "on" loads connector tools when needed
- * (Codex's tool search), "off" sends them all from the start. Unset follows
- * Settings → Capabilities → Tool access mode.
+ * Tool access for one conversation (the add menu's Connectors → Tool access,
+ * live claude.ai bundle 2026-10-16, c752b32f8: `tool_search_mode`): "on"
+ * loads connector tools when needed (Codex's tool search), "off" sends them
+ * all from the start. Unset follows Settings → Capabilities → Tool access
+ * mode.
  *
  * Codex turns its tool search off per model (the model catalog's
  * `supports_search_tool`), and only for the catalog it started with, so each

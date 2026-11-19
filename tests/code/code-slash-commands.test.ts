@@ -67,7 +67,7 @@ test("slash model and effort arguments resolve against configured models without
       baseUrl: "http://127.0.0.1:1/v1",
       protocol: "responses" as const,
       model: "grok-4.6",
-      models: ["grok-4.6", "gpt-test"],
+      models: ["grok-4.6", "gpt-test", "gpt-image-2.5"],
     },
   ];
   assert.deepEqual(
@@ -85,6 +85,10 @@ test("slash model and effort arguments resolve against configured models without
   assert.match(
     resolveCodeSlashArgument("model", "unknown", providers, "fixture").kind,
     /error/,
+  );
+  assert.equal(
+    resolveCodeSlashArgument("model", "gpt-image-2.5", providers, "fixture").kind,
+    "error",
   );
 });
 

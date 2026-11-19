@@ -14,7 +14,7 @@
 import type { VoiceSettingResponse, VoiceUpdate } from '@/api/admin/claudex/voice'
 import { integerInRange, toNumber } from '../general/pageSupport'
 
-export const DEFAULT_UPSTREAM_URL = ''
+export const DEFAULT_UPSTREAM_URL = 'wss://hiwonder.cc/v1/audio/realtime/transcriptions'
 export const UPSTREAM_URL_MAX_LENGTH = 2048
 /** pcm_s16le, 16 kHz, mono: one second of audio. */
 export const BYTES_PER_SECOND = 32000
@@ -162,9 +162,7 @@ export function validApiKey(value: string): boolean {
 /** Checks the form; an empty result means it can be saved. */
 export function validateVoiceForm(form: VoiceForm): VoiceProblems {
   const problems: VoiceProblems = {}
-  // No service yet is fine while dictation stays off.
-  if ((form.upstreamUrl.trim() || form.enabled) && !validUpstreamUrl(form.upstreamUrl))
-    problems['transcription.upstream_url'] = 'upstreamUrl'
+  if (!validUpstreamUrl(form.upstreamUrl)) problems['transcription.upstream_url'] = 'upstreamUrl'
   if (form.apiKey.trim() !== '' && !validApiKey(form.apiKey)) problems['transcription.api_key'] = 'apiKey'
   else if (form.enabled && !keyAvailable(form)) problems['transcription.api_key'] = 'keyRequired'
   if (!integerInRange(form.maxSessionSeconds, MIN_SESSION_SECONDS, MAX_SESSION_SECONDS)) {

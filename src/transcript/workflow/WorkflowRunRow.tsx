@@ -5,7 +5,9 @@ import type { WorkflowSummary } from "../../../shared/workflow-model";
 
 /**
  * A Workflow tool run that has ended, in the Code transcript: "Ran workflow",
- * its description, then "Stopped" or "Failed" with the reason on hover.
+ * its description, then "Stopped" or "Failed" with the reason on hover (live
+ * claude.ai bundle, 2026-10-14, the Workflow tool row; a running one is the
+ * compact card, WorkflowCard).
  */
 export function WorkflowRunRow({ workflow }: { workflow: WorkflowSummary }) {
   const t = useT();

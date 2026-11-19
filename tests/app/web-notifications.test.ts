@@ -1,11 +1,11 @@
 /**
  * Response completions on the web (src/web-notifications.ts): the browser's
- * permission and notifications, after the reference design. The browser is
- * faked.
+ * permission and notifications, after the live claude.ai bundle
+ * (2026-10-12). The browser is faked.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { Conversation } from "../../shared/types";
+import type { Conversation, Schedule } from "../../shared/types";
 
 class FakeNotification {
   static permission: string = "default";
@@ -189,4 +189,92 @@ test("a scheduled run's request is told as the task's, under Scheduled tasks, in
     "Scheduled task needs your approval",
   );
   assert.equal(FakeNotification.all[0].options.body, "Morning briefing");
+});
+
+test("official Web events deliver Code and scheduled notices and clear them on account exit", async () => {
+  const { defaultSettings } = await import("../../electron/store/store");
+  const { subscribeOfficialNotifications } = await import("../../src-web/official/notifications");
+  type Event = import("../../shared/types").AppEvent;
+  FakeNotification.permission = "granted";
+  FakeNotification.all = [];
+  Object.assign(globalThis.document, { visibilityState: "visible" });
+  const opened: string[] = [];
+  Object.assign(globalThis, {
+    location: { pathname: "/new", hash: "", assign: (url: string) => opened.push(url) },
+  });
+  const code = {
+    ...finished("completed"),
+    id: "code",
+    title: "Code session",
+    mode: "code",
+  } satisfies Conversation;
+  const notice = async (tag: string) => {
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const found = FakeNotification.all.find(item => item.options.tag === tag);
+      if (found) return found;
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    throw Error("Missing browser notification " + tag);
+  };
+  let receive = (_event: Event) => {};
+  const close = subscribeOfficialNotifications({
+    api: {
+      snapshot: async () => ({
+        settings: { ...defaultSettings, notifyCodeUpdates: true, notifyCodePermissions: true, notifySchedules: true },
+        artifactLibrary: { version: 1, copies: [], pinned: [] },
+        dismissedBackgroundTasks: [],
+        artifactShares: [],
+        approvals: [],
+        projects: [],
+        conversations: [code],
+        replyFeedback: {},
+        engine: { state: "ready" },
+        platform: "linux",
+      }),
+      listSchedules: async () => [],
+    },
+    officialUiEvents: listener => {
+      receive = listener;
+      return () => { receive = () => {}; };
+    },
+  }, () => "owner", () => true);
+  await Promise.resolve();
+
+  const approval = { id: "approval", conversationId: code.id, method: "item/commandExecution/requestApproval", params: { command: "ls" } };
+  receive({ type: "approval", approval });
+  const permission = await notice("code-permission-approval");
+  receive({ type: "approval-resolved", id: approval.id });
+  assert.equal(permission.closed, true);
+
+  const turn = code.turns[0];
+  receive({ type: "conversation-turn", conversationId: code.id, turn: {
+    ...turn,
+    items: [{
+      id: "notice",
+      type: "dynamicToolCall",
+      tool: "PushNotification",
+      status: "completed",
+      success: true,
+      arguments: { message: "Code task update" },
+    }],
+  } });
+  const update = await notice("code-update-code");
+  assert.equal(update.options.body, "Code task update");
+
+  const schedule = {
+    id: "routine", name: "Scheduled task", conversationId: code.id,
+    prompt: "Run the fixture", enabled: true, createdAt: 0, updatedAt: 0,
+    mode: "code", model: "fixture", providerId: "fixture", frequency: "daily",
+    lastRunStatus: "running", nextRunAt: 0,
+  } satisfies Schedule;
+  receive({ type: "schedules", schedules: [schedule] });
+  receive({ type: "schedules", schedules: [{ ...schedule, lastRunStatus: "completed" }] });
+  const scheduled = await notice("scheduled-code");
+  assert.equal(scheduled.options.body, "Scheduled task");
+
+  close();
+  assert.equal(update.closed, true);
+  assert.equal(scheduled.closed, true);
+  scheduled.onclick?.();
+  assert.deepEqual(opened, []);
 });

@@ -74,7 +74,7 @@ const offlineGraceMs = 10_000;
 /** How long a link may take to open at all. */
 const connectingGraceMs = 30_000;
 
-/** Connection banners. */
+/** Connection banners (live claude.ai bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2.js: rY). */
 export function RemoteControlNotice({
   conversation,
 }: {
@@ -105,16 +105,18 @@ export function RemoteControlNotice({
         const online = Boolean(status.local?.online);
         offlineSince = online ? undefined : (offlineSince ?? Date.now());
         // The link is still opening (no cause yet), or mending a dropped
-        // connection, which it does within seconds: only a link that stays down
-        // is a failure to show.
+        // connection, which it does within seconds: only a link that stays
+        // down is a failure to show (owner, 2026-10-21: the banner came up
+        // at every start and on every network change).
         const settling =
           !online &&
           status.signedIn !== false &&
           Date.now() - offlineSince! <
             (status.local.cause ? offlineGraceMs : connectingGraceMs);
         if (online) {
-          // Back after a failure: the failure goes; "Remote Control is on now."
-          // is for the person turning it on, not for a link that mended itself.
+          // Back after a failure: the failure goes; "Remote Control is on
+          // now." is for the person turning it on, not for a link that
+          // mended itself (owner, 2026-10-21).
           const previous = remoteNotice(conversation.id);
           if (
             previous?.kind === "connect_failed" ||
@@ -202,7 +204,7 @@ export function RemoteControlNotice({
   );
 }
 
-/** The per-session switch belongs in the session rail, not View options. */
+/** The per-session switch belongs in the session rail, not View options (live claude.ai bundle, 2026-10-14, cf74bc599-BRpV2M4z.js). */
 export default function SessionRemoteControl({
   conversation,
 }: {

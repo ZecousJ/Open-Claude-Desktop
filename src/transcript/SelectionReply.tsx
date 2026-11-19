@@ -6,10 +6,10 @@ import { AppContext } from "../app/AppContext";
 import { usePolicy } from "../policy/PolicyContext";
 import { useVoiceAvailability } from "../voice/useVoiceAvailability";
 import { useSpeechEngine } from "../voice/useSpeechEngine";
-import { preference, preferenceDefaults } from "../../shared/settings-extras";
+import { defaultDictationShortcut, dictationAccelerator } from "../../shared/settings-extras";
 import { acceleratorLabel, pressMatches } from "../../shared/accelerator";
 import { useTooltip } from "../ui/Tooltip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { lazyPiece } from "../ui/lazy-piece";
 
 const SelectionDictation = lazyPiece(
@@ -17,7 +17,7 @@ const SelectionDictation = lazyPiece(
   "SelectionDictation",
 );
 
-/** Selection actions. */
+/** Selection actions (live claude.ai bundle, 2026-10-14, c59c32499-DO3QTjpt). */
 export function SelectionReplyActions({
   onReply,
   onDictate,
@@ -61,7 +61,7 @@ export function SelectionReplyActions({
             }
             onClick={onDictate}
           >
-            <AppIcon name="Microphone" />
+            <Anthropicon name="Microphone" />
           </button>
           {hint.tooltip}
         </>
@@ -82,12 +82,13 @@ export function quoteSelection(text: string) {
 }
 
 /**
- * "Reply ↰" over text selected in a reply: an 81×32 black pill centred over the
- * selection, 7px above its top line. It quotes the selection into the composer
- * and puts the caret after it. Where a side chat can be asked, "Start a side
- * chat" (once one has been used, "Send to side chat") comes first in the same
- * pill, split by a hairline, as the original's selection actions are; it opens
- * the side chat with the selection staged as the context of the next question.
+ * "Reply ↰" over text selected in a reply (R-0526): an 81×32 black pill
+ * centred over the selection, 7px above its top line. It quotes the
+ * selection into the composer and puts the caret after it. Where a side
+ * chat can be asked, "Start a side chat" (once one has been used, "Send to
+ * side chat") comes first in the same pill, split by a hairline, as the
+ * original's selection actions are (desktop bundle 2.31226.1); it opens the
+ * side chat with the selection staged as the context of the next question.
  */
 export function SelectionReply({
   container,
@@ -107,8 +108,8 @@ export function SelectionReply({
   const voice = useVoiceAvailability(app?.providerId ?? "");
   const engine = useSpeechEngine(policy.voice, voice);
   const shortcut = app
-    ? preference(app.snapshot.settings, "dictationShortcut")
-    : preferenceDefaults.dictationShortcut;
+    ? dictationAccelerator(app.snapshot.settings)
+    : defaultDictationShortcut;
   const platform =
     app?.snapshot.platform ??
     (/Mac/.test(globalThis.navigator?.platform ?? "") ? "darwin" : "linux");

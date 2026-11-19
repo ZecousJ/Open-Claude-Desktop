@@ -4,8 +4,9 @@ import { Menu, type MenuEntry, type MenuPosition } from "../ui/Menu";
 import { t } from "../i18n";
 
 /**
- * More send options beside a mid-turn Send on a touch screen: Queue for later
- * (not in Bash mode), a rule, then Stop.
+ * More send options beside a mid-turn Send on a touch screen (live
+ * claude.ai bundle, 2026-10-14): Queue for later (not in Bash mode), a rule,
+ * then Stop.
  */
 export function MoreSendOptions({
   canQueue,

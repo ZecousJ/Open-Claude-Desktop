@@ -28,6 +28,7 @@ import {
   offlineError,
   readJson,
 } from "./errors";
+import { collectOfficialResponse } from "./official-response";
 
 /** Longer than the relay's own deadline, which answers CLAUDEX_WEB_TIMEOUT. */
 const clientTimeoutMs = webLimits.callTimeoutMs + 15_000;
@@ -36,6 +37,7 @@ type SignedOutReason = Extract<AppEvent, { type: "signed-out" }>["reason"];
 
 /** What the transport needs of the sign-in session (WebAuth, or the desktop's). */
 export interface TransportAuth {
+  readonly activationIdentity?: object;
   /** The access token; throws "session expired" when there is none. */
   accessToken(): Promise<string>;
   /** A new access token after `stale` was refused; null when the session ended. */
@@ -47,11 +49,32 @@ export interface TransportAuth {
 export type TransportEnv = Pick<WebEnv, "fetch" | "timers">;
 
 export class WebTransport {
+  private snapshotRead?: {
+    activation: object;
+    body: string;
+    result: Promise<{ value: unknown; eventSeq?: number }>;
+  };
+
+  invalidateSnapshotRead() {
+    this.snapshotRead = undefined;
+  }
+
   constructor(
     private env: TransportEnv,
     private auth: TransportAuth,
     private tabId: string,
   ) {}
+
+  captureActivation(): () => void {
+    const scoped = "activationIdentity" in this.auth;
+    const opening = this.auth.activationIdentity;
+    return () => {
+      if (!scoped) return;
+      if (opening === undefined) throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
+      if (this.auth.activationIdentity !== opening)
+        throw new DOMException("The active account changed.", "AbortError");
+    };
+  }
 
   private headers(token: string, extra?: HeadersInit): Headers {
     const headers = new Headers(extra);
@@ -65,29 +88,46 @@ export class WebTransport {
    * A request with the access token. Refreshes and repeats it once on 401;
    * ends the session when the service still refuses the new token.
    */
-  async fetch(path: string, init: RequestInit = {}): Promise<Response> {
+  async fetch(
+    path: string,
+    init: RequestInit = {},
+    assertCurrent?: () => void,
+  ): Promise<Response> {
+    const checkActivation = this.captureActivation();
+    const current = () => { checkActivation(); assertCurrent?.(); };
     const send = async (token: string) => {
+      current();
+      let response: Response;
       try {
-        return await this.env.fetch(path, {
+        response = await this.env.fetch(path, {
           ...init,
           credentials: "same-origin",
           cache: "no-store",
           headers: this.headers(token, init.headers),
         });
       } catch (error) {
+        current();
         if ((error as Error)?.name === "AbortError")
           throw bridgeError(messages.timeout, webErrorCodes.timeout);
         throw offlineError();
       }
+      current();
+      return response;
     };
     // Throws "session expired" when there is no session to refresh.
+    current();
     const token = await this.auth.accessToken();
     const first = await send(token);
     if (first.status !== 401) return first;
+    current();
     const next = await this.auth.refresh(token);
-    if (!next) throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
+    if (!next) {
+      if (this.auth.activationIdentity !== undefined) current();
+      throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
+    }
     const second = await send(next.accessToken);
     if (second.status === 401) {
+      current();
       this.auth.expire("session-expired");
       throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
     }
@@ -96,10 +136,30 @@ export class WebTransport {
 
   /** GET/POST that answers JSON (the service's own endpoints). */
   async json(path: string, init: RequestInit = {}): Promise<unknown> {
-    const response = await this.fetch(path, init);
-    const body = await readJson(response);
-    if (!response.ok) throw apiError(response.status, body);
-    return body;
+    const current = this.captureActivation();
+    const writes = !["GET", "HEAD"].includes((init.method ?? "GET").toUpperCase());
+    if (writes) this.invalidateSnapshotRead();
+    try {
+      const response = await this.fetch(path, init, current);
+      const body = await readJson(response);
+      current();
+      if (!response.ok) throw apiError(response.status, body);
+      return body;
+    } finally {
+      if (writes) this.invalidateSnapshotRead();
+    }
+  }
+
+  keepaliveRpc(method: string, body: string, token: string) {
+    this.invalidateSnapshotRead();
+    void this.env.fetch(`${webPaths.rpc}${encodeURIComponent(method)}`, {
+      method: "POST",
+      headers: this.headers(token, { "Content-Type": "application/json" }),
+      body,
+      credentials: "same-origin",
+      cache: "no-store",
+      keepalive: true,
+    }).catch(() => {});
   }
 
   /**
@@ -110,6 +170,103 @@ export class WebTransport {
     method: string,
     body: string,
     meta?: { eventSeq?: number },
+    assertCallCurrent?: () => void,
+    signal?: AbortSignal,
+  ): Promise<unknown> {
+    const checkActivation = this.captureActivation();
+    const current = () => {
+      checkActivation();
+      assertCallCurrent?.();
+      signal?.throwIfAborted();
+    };
+    current();
+    const owner = this.auth.activationIdentity;
+    if (method === "snapshot" && owner && !signal) {
+      let pending = this.snapshotRead;
+      if (!pending || pending.activation !== owner || pending.body !== body) {
+        const responseMeta: { eventSeq?: number } = {};
+        const result = this.rpc(method, body, responseMeta, checkActivation)
+          .then(value => ({ value, eventSeq: responseMeta.eventSeq }))
+          .finally(() => {
+            if (this.snapshotRead?.result === result) this.invalidateSnapshotRead();
+          });
+        pending = { activation: owner, body, result };
+        this.snapshotRead = pending;
+      }
+      const answer = await pending.result;
+      current();
+      if (meta) meta.eventSeq = answer.eventSeq;
+      return structuredClone(answer.value);
+    }
+    this.invalidateSnapshotRead();
+    if (method !== "readProjectKnowledge")
+      return this.rpc(method, body, meta, current, signal)
+        .finally(() => this.invalidateSnapshotRead());
+    const activation = this.auth.activationIdentity;
+    if (activation === undefined) return this.rpc(method, body, meta, current, signal);
+    const request: unknown = JSON.parse(body);
+    if (
+      !request ||
+      typeof request !== "object" ||
+      !("args" in request) ||
+      !Array.isArray(request.args) ||
+      request.args.length !== 2
+    )
+      return this.rpc(method, body, meta, current, signal);
+
+    const isCurrent = () => this.auth.activationIdentity === activation;
+    const assertCurrent = () => {
+      current();
+      if (!isCurrent())
+        throw new Error("The account changed during this request.");
+    };
+    const value = await this.rpc(
+      method,
+      JSON.stringify({
+        ...request,
+        args: [...request.args, { responseTransfer: true }],
+      }),
+      meta,
+      assertCurrent,
+      signal,
+    );
+    assertCurrent();
+    if (!value || typeof value !== "object" || !("status" in value))
+      return value;
+
+    const answer = await collectOfficialResponse({
+      initial: value,
+      allowTransfer: true,
+      isCurrent,
+      readChunk: (path) =>
+        this.rpc(
+          "officialUiRead",
+          JSON.stringify({ args: [{ method: "GET", path }] }),
+          undefined,
+          assertCurrent,
+          signal,
+        ),
+    });
+    if (answer.status !== 200 || answer.contentType !== "application/json")
+      throw new Error("The project knowledge response was not valid.");
+    const bytes = new Uint8Array(answer.body);
+    const content =
+      answer.bodyEncoding === "gzip"
+        ? new Blob([bytes])
+            .stream()
+            .pipeThrough(new DecompressionStream("gzip"))
+        : bytes;
+    const preview: unknown = await new Response(content).json();
+    assertCurrent();
+    return preview;
+  }
+
+  private async rpc(
+    method: string,
+    body: string,
+    meta?: { eventSeq?: number },
+    assertCurrent?: () => void,
+    signal?: AbortSignal,
   ): Promise<unknown> {
     if (new TextEncoder().encode(body).byteLength > webLimits.rpcBodyBytes)
       throw bridgeError(messages.tooLarge, webErrorCodes.tooLarge);
@@ -125,10 +282,12 @@ export class WebTransport {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
-          signal: abort.signal,
+          signal: signal ? AbortSignal.any([signal, abort.signal]) : abort.signal,
         },
+        assertCurrent,
       );
       const json = await readJson(response);
+      assertCurrent?.();
       const seq = response.headers.get(webHeaders.eventSeq);
       if (meta && seq !== null && /^\d+$/.test(seq))
         meta.eventSeq = Number(seq);

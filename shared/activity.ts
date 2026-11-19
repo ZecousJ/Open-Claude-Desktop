@@ -2,9 +2,8 @@ import type { Item, Turn } from "./types";
 
 /** UI lifecycle metadata is independent of upstream tool-specific status values. */
 export function itemIsRunning(item: Item): boolean {
-  return item.lifecycleStatus
-    ? item.lifecycleStatus === "inProgress"
-    : item.status === "inProgress";
+  const status = item.lifecycleStatus ?? item.status;
+  return status === "inProgress" || status === "running";
 }
 
 export function recordItemLifecycle(
@@ -15,6 +14,11 @@ export function recordItemLifecycle(
 ) {
   const index = turn.items.findIndex((item) => item.id === incoming.id);
   const previous = index < 0 ? undefined : turn.items[index];
+  const tool =
+    incoming.type === "mcpToolCall" || incoming.type === "dynamicToolCall";
+  // Late start snapshots must not overwrite a completed tool's name, input,
+  // error or result, even though its lifecycle would otherwise remain terminal.
+  if (tool && previous && !completed && !itemIsRunning(previous)) return;
   // Late notifications must never resurrect a terminal item or turn.
   const lifecycleStatus =
     turn.status !== "inProgress"
@@ -23,6 +27,36 @@ export function recordItemLifecycle(
         ? "completed"
         : (previous?.lifecycleStatus ?? "inProgress");
   const item: Item = { ...previous, ...incoming, lifecycleStatus };
+  // Distinguish an explicit empty completion from finishTurn's inferred
+  // settlement of a tool whose final notification was never recorded.
+  if (tool && completed && incoming.status === undefined)
+    item.status = [
+      "completed",
+      "failed",
+      "declined",
+      "interrupted",
+      "cancelled",
+      "canceled",
+    ].includes(previous?.status ?? "")
+      ? previous!.status
+      : "completed";
+  // Progress can precede item/started; empty start defaults are not a reset.
+  if (tool && !completed && previous?.progress && !incoming.progress)
+    item.progress = previous.progress;
+  // A start snapshot may arrive after streamed reasoning already did.
+  // Only completion snapshots (including []) may clear that text.
+  if (
+    !completed &&
+    incoming.type === "reasoning" &&
+    previous?.type === "reasoning" &&
+    Array.isArray(previous.summary) &&
+    previous.summary.some(
+      (text) => typeof text === "string" && text.length > 0,
+    ) &&
+    Array.isArray(incoming.summary) &&
+    incoming.summary.length === 0
+  )
+    item.summary = previous.summary;
   // Local observation times drive the Code status line ("Thought for Ns").
   item.startedAt =
     typeof previous?.startedAt === "number" ? previous.startedAt : now;
@@ -39,7 +73,13 @@ export function recordMcpProgress(
   itemId: string,
   message: string,
 ): boolean {
-  if (turn.status !== "inProgress") return false;
+  if (
+    turn.status !== "inProgress" ||
+    typeof itemId !== "string" ||
+    !itemId.trim() ||
+    typeof message !== "string"
+  )
+    return false;
   let item = turn.items.find((value) => value.id === itemId);
   if (item && (item.type !== "mcpToolCall" || !itemIsRunning(item)))
     return false;
@@ -49,11 +89,20 @@ export function recordMcpProgress(
       type: "mcpToolCall",
       status: "inProgress",
       lifecycleStatus: "inProgress",
+      startedAt: Date.now(),
     };
     turn.items.push(item);
   }
-  item.progress = message.slice(0, 1000);
+  const progress = message.slice(0, 1000);
+  if (item.progress === progress) return false;
+  item.progress = progress;
   return true;
+}
+
+export function clearTurnRetry(turn: Turn) {
+  delete turn.reconnecting;
+  delete turn.reconnectCause;
+  delete turn.streamRetry;
 }
 
 export function finishTurn(
@@ -61,6 +110,13 @@ export function finishTurn(
   status: Exclude<Turn["status"], "inProgress">,
 ) {
   turn.status = status;
+  clearTurnRetry(turn);
+  if (turn.compactionUncertain) {
+    delete turn.compactionUncertain;
+    turn.error = status === "interrupted"
+      ? "Compaction was interrupted before its outcome could be confirmed."
+      : "Compaction ended without a confirmed outcome.";
+  }
   const now = Date.now();
   for (const item of turn.items) {
     if (itemIsRunning(item)) {
@@ -86,8 +142,8 @@ export function turnActivity(
     )
   )
     return "tools";
-  // Text that is only whitespace has not started the reply: some upstreams open
-  // with a blank message, which hid the working mark.
+  // Text that is only whitespace has not started the reply: some upstreams
+  // open with a blank message, which hid the working mark (owner, 2026-10-14).
   if (
     active.some(
       (item) =>

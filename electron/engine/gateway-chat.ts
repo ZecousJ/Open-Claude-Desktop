@@ -439,9 +439,10 @@ export async function streamChatResponse(
   for (const call of [...calls.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([, v]) => v)) {
-    // A tool the request does not offer (a model inventing one from a skill's
-    // text) goes to Codex as a plain function call: Codex answers it
-    // "unsupported" and the model carries on.
+    // A tool the request does not offer (a model inventing one from a
+    // skill's text) goes to Codex as a plain function call: Codex answers it
+    // "unsupported" and the model carries on (owner, 2026-10-03: the reply
+    // was cut off instead).
     const mapped: ToolMap = mapping.get(call.name) ?? {
       original: call.name,
       custom: false,

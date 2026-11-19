@@ -23,16 +23,17 @@ const remembered = () =>
   surface === "web" ? bootSidebarWidth(readBootHints()) : undefined;
 
 /**
- * Whether the sidebar shows, with the forced collapse at narrow widths, and a
- * flag set in the same render as the change so only toggling animates the
- * layout (a 150ms slide on the web and the desktop, sidebar.css). The collapse
- * line follows `sidebarWidth`, the stored width; the web keeps it for its first
- * paint (web.html), which collapses before the scripts run.
+ * Whether the sidebar shows, with the forced collapse at narrow widths, and
+ * a flag set in the same render as the change so only toggling animates the
+ * layout (a 150ms slide on the web and the desktop, sidebar.css).
+ * The collapse line follows `sidebarWidth`, the stored width (live claude.ai
+ * bundle, 2026-10-12: `max(700px, width + 329px)`); the web keeps it for its
+ * first paint (web.html), which collapses before the scripts run.
  *
- * Narrow and wider than a phone, the sidebar never takes room: the toggle opens
- * and closes the peek over the page instead, as claude.ai's narrow viewport
- * does (`peekRequested`, followed by useSidebarPeek, which reports back with
- * `peekChanged`).
+ * Narrow and wider than a phone, the sidebar never takes room: the toggle
+ * opens and closes the peek over the page instead, as claude.ai's narrow
+ * viewport does (`peekRequested`, followed by useSidebarPeek, which reports
+ * back with `peekChanged`).
  */
 export function useSidebarVisibility(sidebarWidth?: number) {
   const width = sidebarWidth ?? remembered();

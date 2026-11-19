@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
   ArtifactDocumentCloud,
   documentToolArguments,
@@ -99,7 +102,9 @@ test("cloud adapters require a writable, compatible schema and use the official 
   );
 });
 
-test("cloud saves use the configured session, token and policy, respect disabled tools, and propagate failures", async () => {
+test("cloud saves use the configured session, token and policy, respect disabled tools, and propagate failures", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "artifact-docs-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const calls: { method: string; params: any }[] = [];
   let denied = false;
   let toolError = false;
@@ -108,6 +113,7 @@ test("cloud saves use the configured session, token and policy, respect disabled
   let token: string | undefined;
   const context = {
     store: {
+      root,
       settings: {
         mcpServers: { gdrive: config, notion: { ...config }, unrelated: {} },
       },

@@ -1,7 +1,7 @@
 export async function openSseConnector(
   address: string,
   request: typeof fetch,
-  headers: Record<string, string>,
+  headers: HeadersInit,
   receive: (message: unknown) => void,
 ) {
   const source = new URL(address);
@@ -18,8 +18,11 @@ export async function openSseConnector(
     rejectEndpoint(Error("The request failed."));
     controller.abort();
   }, 30_000);
+  const eventHeaders = new Headers(headers);
+  if (!eventHeaders.has("Accept"))
+    eventHeaders.set("Accept", "text/event-stream");
   const response = await request(address, {
-    headers: { ...headers, Accept: "text/event-stream" },
+    headers: eventHeaders,
     redirect: "error",
     signal: controller.signal,
   }).catch((error) => {
@@ -93,6 +96,9 @@ export async function openSseConnector(
     },
     send: async (message: unknown) => {
       controller.signal.throwIfAborted();
+      const messageHeaders = new Headers(headers);
+      if (!messageHeaders.has("Content-Type"))
+        messageHeaders.set("Content-Type", "application/json");
       const response = await request(endpoint!.href, {
         method: "POST",
         redirect: "error",
@@ -100,7 +106,7 @@ export async function openSseConnector(
           controller.signal,
           AbortSignal.timeout(60_000),
         ]),
-        headers: { ...headers, "Content-Type": "application/json" },
+        headers: messageHeaders,
         body: JSON.stringify(message),
       });
       await response.body?.cancel();

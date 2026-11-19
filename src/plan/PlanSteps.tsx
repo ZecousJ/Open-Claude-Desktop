@@ -9,8 +9,8 @@ import { formatText, t } from "../i18n";
 export const KEPT_DONE_STEPS = 2;
 
 /**
- * How many steps fold under "N earlier steps": the run of finished steps at the
- * top of the list, less the last two of them.
+ * How many steps fold under "N earlier steps": the run of finished steps at
+ * the top of the list, less the last two of them (desktop bundle 2.31226.1).
  */
 export function foldedStepCount(plan: PlanStep[]) {
   let done = 0;
@@ -27,12 +27,13 @@ export function currentStepIndex(plan: PlanStep[]) {
 }
 
 /**
- * The task list as a progress rail: a 2px rail joins each step's glyph to the
- * next, brighter along the part already walked. A step that arrives rises in
- * (220ms) while the rail grows down to it (220ms); a step that starts running
- * pops its glyph in from 40% (180ms). While a running task's list has no step
- * started yet a light runs down the rail. Finished steps at the top fold away
- * under "N earlier steps", keeping the last two in view.
+ * The task list as a progress rail (desktop bundle 2.31226.1): a 2px rail
+ * joins each step's glyph to the next, brighter along the part already
+ * walked. A step that arrives rises in (220ms) while the rail grows down to
+ * it (220ms); a step that starts running pops its glyph in from 40% (180ms).
+ * While a running task's list has no step started yet a light runs down the
+ * rail. Finished steps at the top fold away under "N earlier steps", keeping
+ * the last two in view.
  */
 export function PlanSteps({
   conversationId,

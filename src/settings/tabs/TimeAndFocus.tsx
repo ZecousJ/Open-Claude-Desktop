@@ -14,10 +14,10 @@ import "../../focus/focus.css";
 export { timeLabels as searchLabels } from "./desktop-labels";
 
 /**
- * Settings → Time and focus: Break reminders, an hours and a minutes menu ("–"
- * until chosen); Quiet hours, seven 32px day circles, S to S. The From and To
- * menus under the days are Claudex's (the original's were not opened: that
- * changes the account).
+ * Settings → Time and focus (live claude.ai, 2026-09-29): Break reminders,
+ * an hours and a minutes menu ("–" until chosen); Quiet hours, seven 32px
+ * day circles, S to S. The From and To menus under the days are Claudex's
+ * (the original's were not opened: that changes the account).
  */
 export function TimeAndFocusTab({ settings, save }: TabProps) {
   const locale = useLocale();
@@ -36,7 +36,9 @@ export function TimeAndFocusTab({ settings, save }: TabProps) {
   return (
     <Section title="Time and focus">
       <div className="focus-page">
-        {/* The two menus sit under the description, 112px each, 12px apart. */}
+        {/* The two menus sit under the description, 112px each, 12px
+            apart (live claude.ai Settings, 2026-10-21: flex-col gap-sm,
+            then flex gap-sm of w-28 menus). */}
         <Row
           label="Break reminders"
           description="Get a nudge to take a break from Claudex. You can snooze or adjust anytime."

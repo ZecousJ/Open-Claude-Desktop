@@ -146,7 +146,7 @@ func (s *sqlStore) listOwnFeedback(ctx context.Context, user int64, before *hist
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = rows.Close() }()
+	defer rows.Close()
 	items := []Feedback{}
 	for rows.Next() {
 		item, err := scanFeedback(rows)
@@ -166,7 +166,7 @@ func (s *sqlStore) withdrawFeedback(ctx context.Context, user int64, id string) 
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback() }()
+	defer tx.Rollback()
 	// Same lock as intake. A racing retry can never recreate a withdrawn UUID.
 	if err = lockUser(ctx, tx, tableFeedback, user); err != nil {
 		return err

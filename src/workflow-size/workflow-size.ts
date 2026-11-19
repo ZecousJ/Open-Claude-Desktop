@@ -1,8 +1,9 @@
 import type { WorkflowSummary } from "../../shared/workflow-model";
 
 /**
- * When a running workflow is larger than most: more than 25 agents scheduled,
- * or more than 1.5M tokens projected (the tokens so far per started agent, 70k
+ * When a running workflow is larger than most (live claude.ai bundle,
+ * 2026-10-15, cc43287c9 `o0`/`s0`): more than 25 agents scheduled, or more
+ * than 1.5M tokens projected (the tokens so far per started agent, 70k
  * before any started, times the agents scheduled).
  */
 export const agentCap = 25;

@@ -12,12 +12,12 @@ import { Pictogram } from "../../ui/Pictogram";
 export { reflectLabels as searchLabels } from "./desktop-labels";
 
 /**
- * Settings → Reflect: "Based on your conversations in Claude chat." With memory
- * off, a centred empty state: "For this reflection to work, you'll need to
- * enable memory in memory settings." (the link opens Memory). With memory on,
- * Claudex writes a short reflection from the memory with the account's model
- * and keeps it a day; the original's filled page had no capture (its account
- * keeps memory off).
+ * Settings → Reflect (live claude.ai, 2026-09-29): "Based on your
+ * conversations in Claude chat." With memory off, a centred empty state:
+ * "For this reflection to work, you'll need to enable memory in memory
+ * settings." (the link opens Memory). With memory on, Claudex writes a short
+ * reflection from the memory with the account's model and keeps it a day;
+ * the original's filled page had no capture (its account keeps memory off).
  */
 export function ReflectTab({ goTo, onError }: TabProps) {
   const [value, setValue] = useState<MemoryReflection>();

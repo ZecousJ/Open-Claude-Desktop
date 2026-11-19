@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Check, MessageSquare, Square, ChevronRight } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Spinner } from "../../ui/Spinner";
 import type { Item } from "../../../shared/types";
 import {
@@ -18,11 +18,12 @@ import { ActivityMark } from "../TurnActivity";
 export { isMemoryTool, memoryToolNamespace } from "./memory-tool-kind";
 
 type Command = "view" | "add" | "remove" | "replace";
-// Auto-memory states.
+// Auto-memory states (live claude.ai bundle, 2026-10-14, shared-10-C9_UFbV-).
 const labels: Record<Command, { running: string; done: string }> = {
   view: { running: "Reading memory", done: "Read memory" },
   add: { running: "Adding to memory", done: "Added to memory" },
-  // Removing reads "Removing from memory" while it runs.
+  // Removing reads "Removing from memory" while it runs (live claude.ai bundle,
+  // 2026-10-16, c52c099b5: delete).
   remove: { running: "Removing from memory", done: "Updated memory" },
   replace: { running: "Updating memory", done: "Updated memory" },
 };
@@ -57,15 +58,19 @@ export function memoryToolTitle(item: Item) {
 const toolFailed = (item: Item) =>
   item.status === "failed" ||
   item.success === false ||
-  item.lifecycleStatus === "failed";
+  item.lifecycleStatus === "failed" ||
+  (item.type === "mcpToolCall" && item.result?.isError === true);
 
-const resultTexts = (item: Item) =>
-  (Array.isArray(item.contentItems) ? item.contentItems : [])
-    .filter(
-      (value: any) =>
-        value?.type === "inputText" && typeof value.text === "string",
-    )
-    .map((value: any) => value.text as string);
+function resultTexts(item: Item) {
+  const mcp = item.type === "mcpToolCall";
+  const items: unknown = mcp ? item.result?.content : item.contentItems;
+  const textType = mcp ? "text" : "inputText";
+  return Array.isArray(items)
+    ? items.flatMap((entry) =>
+        entry?.type === textType && typeof entry.text === "string" ? [entry.text] : [],
+      )
+    : [];
+}
 
 /** The tool's own text for a removed line: "Removed line 2 from memory: <statement>". */
 const removedStatement = (texts: string[]) =>
@@ -127,8 +132,10 @@ export function pastChatsTitle(item: Item) {
 }
 
 /**
- * A search of past chats: a plain line "Searched past chats" and the query,
- * opening to the chats it found (chat icon, title, when it was last active). A
+ * A search of past chats (R-0777, not captured; closest analogue: the
+ * captured web search row R-0739 and its result list, so this row uses the
+ * same classes): a plain line "Searched past chats" and the query, opening
+ * to the chats it found (chat icon, title, when it was last active). A
  * click opens the chat when it still exists.
  */
 function PastChatsView({ item }: { item: Item }) {
@@ -150,7 +157,7 @@ function PastChatsView({ item }: { item: Item }) {
         role="status"
       >
         <div className="web-search-summary">
-          <AppIcon name="WarningCircle" size={15} />
+          <Anthropicon name="WarningCircle" size={15} />
           <span>{pastChatsTitle(item)}</span>
         </div>
       </div>
@@ -217,10 +224,10 @@ function PastChatsView({ item }: { item: Item }) {
 }
 
 /**
- * A memory_edits call in the transcript: one plain row like a finished tool
- * ("Added to memory"), opening onto the statement and the tool's own result
- * text, not the raw JSON. Reuses the dynamic tool row's styles, so it adds no
- * CSS.
+ * A memory_edits call in the transcript (R-0777, not captured): one plain
+ * row like a finished tool ("Added to memory"), opening onto the statement
+ * and the tool's own result text, not the raw JSON. Reuses the dynamic
+ * tool row's styles, so it adds no CSS.
  */
 export function MemoryToolView({ item }: { item: Item }) {
   if (item.tool === "conversation_search" || item.tool === "recent_chats")
@@ -252,14 +259,14 @@ export function MemoryToolView({ item }: { item: Item }) {
     <details
       className={`activity dynamic-tool-activity memory-tool-activity is-plain${failed ? " failed memory-tool-warning" : ""}`}
       // A refused or failed change is announced: failures at once, the rest
-      // politely.
+      // politely (live claude.ai bundle, 2026-10-16, c52c099b5: E).
       aria-live={failed ? (refused ? "polite" : "assertive") : undefined}
     >
       <summary>
         {running ? (
           <ActivityMark phase="tools" />
         ) : failed ? (
-          <AppIcon name="WarningCircle" size={15} />
+          <Anthropicon name="WarningCircle" size={15} />
         ) : stopped ? (
           <Square size={13} />
         ) : (

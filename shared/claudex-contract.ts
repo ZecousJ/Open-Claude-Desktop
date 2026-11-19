@@ -233,7 +233,7 @@ export interface ClaudexRelease {
   /** Markdown; render without raw HTML or remote images. */
   releaseNotesMd: string | null;
   publishedAt: number | null;
-  /** The desktop interface pack published without an installer (docs/releasing.md). */
+  /** The desktop interface pack published without an installer (docs/desktop-ui-hot-update.md). */
   ui?: ClaudexUiPack | null;
   /** Windows: this build's app files without the installer (ClaudexAppPack). */
   appPack?: ClaudexAppPack | null;
@@ -354,8 +354,9 @@ export interface ClaudexDevice {
 export interface ClaudexDeviceRegistration {
   device: ClaudexDevice;
   /**
-   * The plan group's key; null for an account without a plan group, which signs
-   * in anyway and runs on its balance alone.
+   * The plan group's key; null for an account without a plan group, which
+   * signs in anyway and runs on its balance alone (Claudex has no
+   * subscriptions, owner decision 2026-10-12).
    */
   apiKey: { id: number; key: string; status: string } | null;
   /**
@@ -1279,8 +1280,9 @@ function buildSchemas() {
     .object({ label: z.string().min(1).max(60), url: z.string() })
     .refine((item) => httpsUrl(item.url) !== null, "expected an https url")
     .transform((item) => ({ label: item.label, url: item.url }));
-  // Round-2 blocks. Each is optional, so an older service's policy still parses
-  // (the field is then absent); a block that is sent must be complete.
+  // Round-2 blocks (package POL). Each is optional, so an older service's
+  // policy still parses (the field is then absent); a block that is sent
+  // must be complete.
   const catalogModelId = z
     .string()
     .regex(/^[^\s*]{1,200}$/)
@@ -1313,7 +1315,6 @@ function buildSchemas() {
   const appName = /^[A-Za-z0-9._ -]{1,200}$/;
   const computerUsePolicy = z
     .object({
-      enabled: z.boolean(),
       allow_full_control: z.boolean(),
       denied_apps: z.array(z.unknown()).nullable(),
       max_actions_per_turn: int.refine((value) => value >= 1).nullable(),
@@ -1506,7 +1507,6 @@ function buildSchemas() {
         ...(wire.computer_use
           ? {
               computerUse: {
-                enabled: wire.computer_use.enabled,
                 allowFullControl: wire.computer_use.allow_full_control,
                 deniedApps: (wire.computer_use.denied_apps ?? [])
                   .filter(
@@ -1534,6 +1534,7 @@ function buildSchemas() {
     "high",
     "xhigh",
     "max",
+    "ultra",
   ];
   const badge = z.string().regex(/^[A-Za-z0-9 .×x+-]{1,16}$/);
   const modelId = z.string().min(1).max(200);

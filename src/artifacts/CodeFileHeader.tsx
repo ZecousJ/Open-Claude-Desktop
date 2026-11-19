@@ -16,7 +16,7 @@ import { notAvailable } from "../settings/unavailable";
 import { acceleratorLabel } from "../../shared/accelerator";
 import "./file-viewer-panel.css";
 
-/** The Code file panel's editor options. */
+/** The Code file panel's editor options (R-1077, R-1078). */
 export interface CodeFileOptions {
   wordWrap: boolean;
   showWhitespace: boolean;
@@ -58,11 +58,11 @@ export function useCodeFileOptions() {
 }
 
 /**
- * A Code session's file panel header: a tab row with the file tree toggle, the
- * file's tab (italic while it is a preview tab) with its ×, then Search, More
- * options, Expand and Close; under it the file's path with the preview (eye)
- * toggle. Claudex opens one file at a time and has no workspace tree or in-file
- * search yet, so those are greyed.
+ * A Code session's file panel header (R-1062–R-1082): a tab row with the
+ * file tree toggle, the file's tab (italic while it is a preview tab) with
+ * its ×, then Search, More options, Expand and Close; under it the file's
+ * path with the preview (eye) toggle. Claudex opens one file at a time and
+ * has no workspace tree or in-file search yet, so those are greyed.
  */
 export function CodeFileHeader({
   filename,

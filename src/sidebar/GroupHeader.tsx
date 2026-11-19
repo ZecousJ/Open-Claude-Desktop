@@ -19,14 +19,18 @@ import {
 } from "./group-toggles";
 
 /**
- * The heading of a custom group in the recent list, with a menu of its own (⋮
- * on hover, or a right click): Rename group, New group… and Delete group, which
- * asks first. Code's list calls its groups sections: Rename section, New
- * section, Delete section and its own confirmation. New group… asks for a name
+ * The heading of a custom group in the recent list, with a menu of its own
+ * (⋮ on hover, or a right click): Rename group, New group… and Delete group,
+ * which asks first (desktop bundle 2.31226.1). Code's list calls its groups
+ * sections: Rename section, New section, Delete section and its own
+ * confirmation (live claude.ai bundle, 2026-10-16, shared-18-Ba1nN-6T.js). New group… asks for a name
  * and adds an empty group after the others, which this window keeps showing
- * while it is empty. Between them, Collapse all / Expand all turn every heading
- * in the list that collapses. The other headings (date, type, folder) are
- * names, or in Code toggles (ConversationList's GroupLabel).
+ * while it is empty (live claude.ai bundle, 2026-10-12). Between them,
+ * Collapse all / Expand all turn every heading in the
+ * list that collapses (live claude.ai bundle, 2026-10-12: the heading
+ * menu's view group, between its edit and remove groups; group-toggles.ts).
+ * The other headings (date, type, folder) are names, or in Code toggles
+ * (ConversationList's GroupLabel).
  */
 export function GroupHeader({
   label,
@@ -52,8 +56,8 @@ export function GroupHeader({
 }) {
   const app = useContext(AppContext);
   const [menu, setMenu] = useState<MenuPosition>();
-  // What the view group offers, and the heading control that had focus, read as
-  // the menu opens.
+  // What the view group offers, and the heading control that had focus,
+  // read as the menu opens (live claude.ai bundle, 2026-10-12).
   const [view, setView] = useState<
     ReturnType<typeof groupViewOptions> & { opener: HTMLElement | null }
   >({ canCollapse: false, canExpand: false, opener: null });
@@ -102,7 +106,8 @@ export function GroupHeader({
       onSelect: () =>
         app?.setConfirm({
           title: section ? "Delete section?" : "Delete group?",
-          // An empty group's body says nothing is in it.
+          // Live claude.ai bundle, 2026-10-12: an empty group's body says
+          // nothing is in it.
           body: formatText(
             members === 0
               ? "“{groupName}” will be removed. Nothing is in it."

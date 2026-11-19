@@ -15,15 +15,15 @@ import {
   nextIdeaCategory,
 } from "../../src/cowork/cowork-ideas";
 
-test("the first set is the home's ideas, then the other sets in order", () => {
+test("the first set is the home's ideas, then the live Cowork categories in order", () => {
   assert.deepEqual(
     coworkIdeaCategories.map((category) => category.name),
     [
       "Ideas for you",
-      "Start with something small",
-      "Clear the clutter",
-      "Get ready for what’s next",
-      "Make sense of scattered information",
+      "Pick a task, any task",
+      "Tidy up and get organized",
+      "Plan for what’s ahead",
+      "Turn messy data into action",
     ],
   );
   assert.deepEqual(

@@ -1,7 +1,7 @@
 /**
- * Claude's `<pr-created>` tag in a reply: the tag is for the branch row, which
- * binds to the address inside it (shared/pull-request.ts); the transcript shows
- * the address as a link.
+ * Claude's `<pr-created>` tag in a reply (desktop bundle 2.31226.1): the tag
+ * is for the branch row, which binds to the address inside it
+ * (shared/pull-request.ts); the transcript shows the address as a link.
  */
 const prCreated = /<pr-created>\s*(https?:\/\/[^\s<]+?)\s*<\/pr-created>/gi;
 const wordCharacter = /[A-Za-z0-9_-]/;

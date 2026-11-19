@@ -2,6 +2,7 @@ package status
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -105,6 +106,30 @@ type Incident struct {
 	touched bool
 }
 
+// Older incidents stored lowercased names. Only a unique channel can recover that spelling.
+func matchIncidentChannels(channels []Channel, incidents []Incident) []Incident {
+	if len(incidents) == 0 {
+		return incidents
+	}
+	names := map[string]string{}
+	for _, ch := range channels {
+		folded := strings.ToLower(ch.Name)
+		switch name, exists := names[folded]; {
+		case !exists:
+			names[folded] = ch.Name
+		case name != ch.Name:
+			names[folded] = ""
+		}
+	}
+	out := slices.Clone(incidents)
+	for i, inc := range out {
+		if name := names[inc.Platform]; name != "" {
+			out[i].Platform = name
+		}
+	}
+	return out
+}
+
 // Update is one step of an incident's handling.
 type Update struct {
 	Status    string    `json:"status"`
@@ -139,7 +164,7 @@ func invalid(field, message string) error {
 func (in IncidentInput) normalize(full bool) (IncidentInput, error) {
 	out := IncidentInput{
 		Title:     strings.TrimSpace(in.Title),
-		Platform:  strings.ToLower(strings.TrimSpace(in.Platform)),
+		Platform:  strings.TrimSpace(in.Platform),
 		Impact:    strings.ToLower(strings.TrimSpace(in.Impact)),
 		Status:    strings.ToLower(strings.TrimSpace(in.Status)),
 		Message:   strings.TrimSpace(in.Message),
@@ -161,7 +186,7 @@ func (in IncidentInput) normalize(full bool) (IncidentInput, error) {
 		return out, invalid("title", "The title can be up to 200 characters.")
 	case utf8.RuneCountInString(out.Message) > maxMessage:
 		return out, invalid("message", "The message can be up to 5,000 characters.")
-	case len(out.Platform) > maxPlatform:
+	case utf8.RuneCountInString(out.Platform) > maxPlatform:
 		return out, invalid("platform", "That channel isn't known.")
 	case out.Impact != "" && out.Impact != ImpactDegraded && out.Impact != ImpactOutage:
 		return out, invalid("impact", "The impact is degraded or outage.")

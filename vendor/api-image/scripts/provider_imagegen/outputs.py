@@ -47,12 +47,29 @@ def versioned_path(
     return base_path.with_name(f"{base_path.stem}{suffix}{base_path.suffix}")
 
 
-def write_images(images: list[bytes], output_paths: list[Path]) -> list[Path]:
+def write_images(
+    images: list[bytes], output_paths: list[Path], *, preserve_existing: bool = False
+) -> list[Path]:
     if len(images) != len(output_paths):
         raise ValueError("Image count does not match output path count.")
     saved_paths: list[Path] = []
     for image_bytes, path in zip(images, output_paths, strict=True):
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(image_bytes)
-        saved_paths.append(path)
+        if not preserve_existing:
+            path.write_bytes(image_bytes)
+            saved_paths.append(path)
+            continue
+        candidate = path
+        suffix = 2
+        while True:
+            try:
+                output = candidate.open("xb")
+            except FileExistsError:
+                candidate = path.with_name(f"{path.stem}-{suffix}{path.suffix}")
+                suffix += 1
+                continue
+            with output:
+                output.write(image_bytes)
+            saved_paths.append(candidate)
+            break
     return saved_paths

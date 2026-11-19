@@ -19,7 +19,7 @@ import {
 const repositoryName = z.string().max(140).refine(validRepositoryName);
 const failure = "Something went wrong. You can try again.";
 
-// GitHub file selection.
+// GitHub file selection (live claude.ai bundle, 2026-10-14, c23f22bfb-Bq6uLUoL.js).
 export async function knowledgeRepositories(
   run: GhRunner = runGh,
 ): Promise<string[]> {
@@ -121,7 +121,7 @@ export async function readKnowledgeRepositoryFiles(
   return read;
 }
 
-// Source refresh preserves the last good copy on failure.
+// Source refresh preserves the last good copy on failure (live claude.ai bundle, 2026-10-14, ca12e49f2-CABp0rxn.js).
 const syncing = new Set<string>();
 
 export async function syncKnowledgeRepositoryFile(
@@ -150,18 +150,16 @@ export async function syncKnowledgeRepositoryFile(
       [file],
       run,
     );
-    const current = store
-      .list(projectId)
-      .files.find((file) => file.name === name)?.source;
-    if (!current || JSON.stringify(current) !== JSON.stringify(source))
-      return store.list(projectId);
-    store.add(projectId, loaded);
-    return store.setSource(projectId, name, {
-      ...source,
-      status: "idle",
-      failure: undefined,
-      lastSyncedAt: Date.now(),
-    });
+    return await store.add(projectId, loaded.map((file) => ({
+      ...file,
+      expectedSource: source,
+      source: {
+        ...source,
+        status: "idle",
+        failure: undefined,
+        lastSyncedAt: Date.now(),
+      },
+    })));
   } catch (error) {
     const current = store
       .list(projectId)

@@ -2,12 +2,12 @@ import { surface } from "../../shared/host";
 import { defaultSidebarWidth } from "../../shared/sidebar-layout";
 
 /**
- * The widest window (CSS pixels, so zooming in counts) at which the sidebar is
- * forced collapsed, for a sidebar `sidebarWidth` wide: the live claude.ai
- * bundle collapses while `(max-width: max(700px, ceil(width) + 329px))`
- * matches, its width being at most 420px, so the line is 700px for the default
- * 288px sidebar and never past 749px. Claudex's sidebar can be dragged to
- * 460px; the line stops at the same 749px.
+ * The widest window (CSS pixels, so zooming in counts) at which the sidebar
+ * is forced collapsed, for a sidebar `sidebarWidth` wide: the live claude.ai
+ * bundle (2026-10-12) collapses while `(max-width: max(700px, ceil(width) +
+ * 329px))` matches, its width being at most 420px, so the line is 700px for
+ * the default 288px sidebar and never past 749px. Claudex's sidebar can be
+ * dragged to 460px; the line stops at the same 749px.
  */
 export function collapseThreshold(sidebarWidth: number = defaultSidebarWidth) {
   return Math.max(700, Math.min(Math.ceil(sidebarWidth) + 329, 749));
@@ -20,7 +20,8 @@ export const collapseWidth = (sidebarWidth?: number) =>
 /**
  * Below this width the web app's sidebar is the phone sheet that covers the
  * screen (95-web.css); from it up to the collapse line, a collapsed sidebar
- * opens as the peek panel over the page.
+ * opens as the peek panel over the page (live claude.ai bundle, 2026-10-12:
+ * the phone sheet below 640px, the peek above it).
  */
 export const webSheetWidth = 640;
 

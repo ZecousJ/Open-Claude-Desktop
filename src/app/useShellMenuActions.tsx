@@ -88,9 +88,9 @@ export function useShellMenuActions(kit: UseShellMenuActionsKit) {
     onJump: openRow,
   });
 
-  // A run of Next / Previous lasts while its keys stay held: pressing or
-  // letting go of Ctrl, ⌘ or Alt, or the window losing the focus, starts the
-  // next press from the open row.
+  // A run of Next / Previous lasts while its keys stay held (live claude.ai
+  // bundle, 2026-10-12): pressing or letting go of Ctrl, ⌘ or Alt, or the
+  // window losing the focus, starts the next press from the open row.
   useEffect(() => {
     if (!mainWindow) return;
     const modifier = (key: string) =>
@@ -127,7 +127,7 @@ export function useShellMenuActions(kit: UseShellMenuActionsKit) {
       if (!active || page !== "chat" || incognitoShown || active.archived)
         return;
       event.preventDefault();
-      // A held chord pins once.
+      // A held chord pins once (live claude.ai bundle, 2026-10-12).
       if (event.repeat) return;
       void api
         .reorderConversations({
@@ -223,13 +223,15 @@ export function useShellMenuActions(kit: UseShellMenuActionsKit) {
       return true;
     }
     if (command === "toggle-expand-pane") {
-      // The cards are the primary pane's.
+      // The cards are the primary pane's (live claude.ai bundle,
+      // 2026-10-12: toggleExpandPane on the focused tile).
       if (!splitRef.current.secondaryFocused) toggleExpandPane();
       return true;
     }
     if (command === "browser-select-element") {
       // ⇧⌘S: Select element in the open Browser (toggleSelectionMode);
-      // elsewhere a Cowork task's Activity panel.
+      // elsewhere a Cowork task's Activity panel (live claude.ai bundle,
+      // 2026-10-14, shared-16: "Toggle activity sidebar").
       if (splitRef.current.secondaryFocused) return true;
       if (app.toolPanels.isOpen("browser"))
         sendBrowserCommand("select-element");
@@ -269,9 +271,9 @@ export function useShellMenuActions(kit: UseShellMenuActionsKit) {
       sendBrowserCommand("focus-address");
       return true;
     }
-    // Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 are Next chat, Previous chat and
-    // Jump to chat; they switch the Browser's tabs instead while the focus is
-    // in the Browser.
+    // Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 are Next chat, Previous chat
+    // and Jump to chat; they switch the Browser's tabs instead while the
+    // focus is in the Browser (live claude.ai bundle, 2026-10-12).
     if (command === "browser-next-tab" || command === "browser-previous-tab") {
       const owner = keyOwner();
       const next = command === "browser-next-tab";
@@ -339,8 +341,8 @@ export function useShellMenuActions(kit: UseShellMenuActionsKit) {
     const ids = document.querySelector(".sidebar-scroll")
       ? drawnIds(document)
       : listedIds(app.snapshot.conversations, app.mode);
-    // While the keys stay held the steps go on from the last stop, not from the
-    // conversation still opening.
+    // While the keys stay held the steps go on from the last stop, not from
+    // the conversation still opening (live claude.ai bundle, 2026-10-12).
     const run = cycleRun.current;
     const from =
       run && run.mode === app.mode

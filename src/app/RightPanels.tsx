@@ -35,8 +35,9 @@ export function registerRightPanel(id: string, slot: RightPanelSlot) {
 }
 
 /**
- * The panels beside the conversation: the file viewer, or one Code tool panel,
- * then any registered panel. Each sits in its own error boundary, so a panel
+ * The panels beside the conversation: the file viewer (WP6's
+ * ArtifactPanelHost), or one Code tool panel (WP5b's ToolPanelHost), then
+ * any registered panel. Each sits in its own error boundary, so a panel
  * that fails to render never blanks the window.
  */
 export function RightPanels() {

@@ -223,17 +223,19 @@ for (const program of ["/bin/zsh", "/bin/bash"]) {
 
 class FakeRPC extends EventEmitter {
   calls: Array<{ method: string; params: any }> = [];
-  private resolveExec?: (result: any) => void;
+  private running = new Map<string, (result: { exitCode: number }) => void>();
   call(method: string, params: any) {
     this.calls.push({ method, params });
     if (method === "command/exec")
       return new Promise<any>((resolve) => {
-        this.resolveExec = resolve;
+        this.running.set(params.processId, resolve);
       });
     return Promise.resolve({});
   }
-  finish(code: number) {
-    this.resolveExec?.({ exitCode: code });
+  finish(code: number, id = [...this.running.keys()].at(-1)) {
+    if (!id) return;
+    this.running.get(id)?.({ exitCode: code });
+    this.running.delete(id);
   }
   output(id: string, text: string) {
     this.emit("notification", {
@@ -300,8 +302,13 @@ test("a tab tells the window when a command starts and ends, and lists busy tabs
   assert.deepEqual(manager.busy("chat"), []);
   rpc.output(tab.id, COMMAND);
   assert.deepEqual(manager.busy("chat"), [tab.id]);
-  await manager.close("chat", tab.id);
+  const closing = manager.close("chat", tab.id);
+  rpc.finish(0, tab.id);
+  await closing;
   assert.deepEqual(manager.busy("chat"), []);
+  assert.deepEqual(events.filter(event => event.type === "terminal-exit"), [
+    { type: "terminal-exit", id: tab.id, conversationId: "chat" },
+  ]);
   manager.reset();
 });
 
@@ -384,7 +391,7 @@ test("the controller starts this computer's shell with its hooks and answers whi
     const [tab] = await controller.ensure("chat");
     const exec = rpc.calls.find((call) => call.method === "command/exec")!;
     const zdotdir = path.join(root, "shell-integration", "zsh");
-    assert.deepEqual(exec.params.command, ["/bin/zsh", "-i"]);
+    assert.deepEqual(exec.params.command.slice(-2), ["/bin/zsh", "-i"]);
     assert.equal(exec.params.env.ZDOTDIR, zdotdir);
     assert.ok(fs.existsSync(path.join(zdotdir, ".zshrc")));
     rpc.output(tab.id, COMMAND);

@@ -1,10 +1,10 @@
-/* Pop out chat over an expanded Artifact. Measured on
-   R-1047-1048-Pop-out-chat-limit-state-浅色-W1920-全窗.jpg (Windows, 1x, light):
-   the card's outer edge runs x 15–433, y 535–1017 of a 1920×1032 viewport, so
-   15px from the left and bottom, 418×482 with a 1px border and 12px corners;
-   Expand chat and Close chat centre 21px below its top, 36px apart, the last
-   24px from its right edge. The dark colours are provisional (暂定，待补采): no dark
-   capture exists. */
+/* Pop out chat over an expanded Artifact (R-1047/R-1048).
+   Measured on R-1047-1048-Pop-out-chat-limit-state-浅色-W1920-全窗.jpg
+   (Windows, 1x, light): the card's outer edge runs x 15–433, y 535–1017 of
+   a 1920×1032 viewport, so 15px from the left and bottom, 418×482 with a
+   1px border and 12px corners; Expand chat and Close chat centre 21px
+   below its top, 36px apart, the last 24px from its right edge. The dark
+   colours are provisional (暂定，待补采): no dark capture exists. */
 
 .floating-chat-frame {
   position: absolute;
@@ -78,9 +78,10 @@
   z-index: 11;
 }
 
-/* Inside the card the conversation keeps its parts but not the page's margins:
-   the composer runs 8px from the card's sides, the transcript 12px, and the
-   footer keeps only the model picker, as the narrow split view does. */
+/* Inside the card the conversation keeps its parts but not the page's
+   margins: the composer runs 8px from the card's sides (R-1048: x 24–424
+   in a 15–433 card), the transcript 12px, and the footer keeps only the
+   model picker, as the narrow split view does. */
 .chat-layout:has(> .file-viewer[data-chat-float="true"])
   > .chat-main.has-conversation
   .messages {
@@ -115,11 +116,12 @@
   display: none;
 }
 
-/* The expanded header's Pop out chat: the second half of the Chat group, 28×28
-   behind a hairline, pressed while the chat floats: pale blue with a dark blue
-   window in the light capture. The Artifact header has only its dark colours so
-   far, so the pressed state takes comment mode's dark blue to match its
-   neighbours; light values wait for a light header. */
+/* The expanded header's Pop out chat: the second half of the Chat group,
+   28×28 behind a hairline (R-1000), pressed while the chat floats: pale
+   blue with a dark blue window in the light capture (R-1047, sampled
+   #cbe4ff and #2a4a6e). The Artifact header has only its dark colours so
+   far, so the pressed state takes comment mode's dark blue (R-1016) to
+   match its neighbours; light values wait for a light header. */
 .artifact-chat-group > .artifact-popout-chat {
   justify-content: center;
   width: 28px;

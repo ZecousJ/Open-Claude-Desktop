@@ -2,15 +2,17 @@ import { buildReplaced } from "../src/app/chunk-status";
 
 /**
  * A page left open across a deploy still names the previous build's chunks;
- * when one it has not loaded yet is gone (404 or 410), Vite reports the failed
- * import as `vite:preloadError`, and reloading picks up the new build at the
- * same address. At most once in 30 s, so a chunk that really is missing shows
- * "Claudex was updated. Reload to continue." in the piece's place
- * (src/ui/lazy-piece.tsx) instead of reloading forever.
+ * when one it has not loaded yet is gone (404 or 410), Vite reports the
+ * failed import as `vite:preloadError`, and reloading picks up the new
+ * build at the same address. At most once in 30 s, so a chunk that really
+ * is missing shows "Claudex was updated. Reload to continue." in the
+ * piece's place (src/ui/lazy-piece.tsx) instead of reloading forever.
  *
- * Any other failure is not a reason to reload: the failed import reaches the
- * piece, which retries and says so. Offline the chunk is only out of reach, and
- * reloading would put the browser's own offline page in place of the app.
+ * Any other failure is not a reason to reload (live claude.ai bundle,
+ * 2026-10-12: its pieces retry in place): the failed import reaches the
+ * piece, which retries and says so. Offline the chunk is only out of
+ * reach, and reloading would put the browser's own offline page in place
+ * of the app.
  */
 const key = "claudex.staleBuildReload";
 

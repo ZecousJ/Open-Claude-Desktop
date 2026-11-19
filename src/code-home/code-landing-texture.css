@@ -1,0 +1,30 @@
+.code-landing-texture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  contain: strict;
+  color: var(--text-muted);
+}
+.code-texture-canvas {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  transition: opacity 3s ease-out;
+}
+.code-landing-texture[data-texture-state="unseen"] .code-texture-canvas,
+.code-landing-texture[data-texture-state="busy"] .code-texture-canvas {
+  transition-duration: 500ms;
+}
+.app .code-home-draft {
+  position: relative;
+  isolation: isolate;
+}
+.app .code-home-draft > .code-landing-texture {
+  z-index: -1;
+}
+@media (forced-colors: active), (prefers-contrast: more) {
+  .code-landing-texture {
+    display: none;
+  }
+}

@@ -1,7 +1,8 @@
 /**
- * The account step after sign-up on the web: plain requests to the service's
- * profile endpoint with the session's token. The terms are the site's own
- * /legal/terms, as an absolute address so openExternal (http(s) only) opens it.
+ * The account step after sign-up (shared/account-profile-api.ts) on the
+ * web: plain requests to the service's profile endpoint with the session's
+ * token. The terms are the site's own /legal/terms, as an absolute address
+ * so openExternal (http(s) only) opens it.
  */
 import {
   accountProfileBody,

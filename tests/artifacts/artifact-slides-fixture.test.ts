@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import {
   createFixtureDesktop,
   fixtureSnapshot,
-} from "../../scripts/preview/app-fixture";
-import { artifactsFixture } from "../../scripts/preview/fixtures/artifacts";
+} from "../../scripts/fidelity/app-fixture";
+import { artifactsFixture } from "../../scripts/fidelity/fixtures/artifacts";
 import { collectArtifacts } from "../../src/artifacts/artifact-collection";
 import {
   artifactKind,

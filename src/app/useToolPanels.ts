@@ -7,10 +7,10 @@ import { surface } from "../../shared/host";
 import { deferFileTransition } from "../files/file-transitions";
 
 /**
- * The Code tool cards that open side by side: Background tasks, Changes,
- * Browser and the iOS Simulator and Android Emulator stack in one column, in
- * that order; Terminal is a column of its own on the right. Each opens and
- * closes on its own.
+ * The Code tool cards that open side by side (owner, 2026-10-03, after the
+ * original with every window open): Background tasks, Changes, Browser and
+ * the iOS Simulator and Android Emulator stack in one column, in that
+ * order; Terminal is a column of its own on the right. Each opens and closes on its own.
  */
 export const dockPanels = [
   "background",
@@ -38,12 +38,13 @@ export const openInDock = (dock: readonly DockPanel[], panel: DockPanel) =>
   dockPanels.filter((p) => p === panel || dock.includes(p));
 
 /**
- * Which tool panels are open beside the conversation. App.tsx keeps this state
- * here and shares the whole result as `useApp().toolPanels`.
+ * Which tool panels are open beside the conversation (package WP5b).
+ * App.tsx keeps this state here and shares the whole result as
+ * `useApp().toolPanels`.
  *
  * - `dock` holds the cards that open side by side (see dockPanels).
- * - `single` is any other panel (Progress), which shows alone and closes the
- *   dock.
+ * - `single` is any other panel (Progress),
+ *   which shows alone and closes the dock.
  * - `panel` / `setPanel` keep their old meaning for hosts and shortcuts:
  *   `panel` is the panel alone or the dock's first card (null with nothing
  *   open); `setPanel(card)` opens a dock card beside the others, any other

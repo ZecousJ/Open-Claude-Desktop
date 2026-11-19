@@ -1,9 +1,10 @@
 /**
- * What starts a scheduled task besides its schedule: a call to its fire address
- * with a token ("API"), or an event of a GitHub repository ("GitHub event"). A
+ * What starts a scheduled task besides its schedule (live claude.ai bundle,
+ * 2026-10-21, caa9df187 and c29d48294): a call to its fire address with a
+ * token ("API"), or an event of a GitHub repository ("GitHub event"). A
  * task has at most one of each, and its schedule can be switched off when
- * another one starts it. Either of the two makes the task a Code task on the
- * web: it runs as a cloud session, on a repository when it names one.
+ * another one starts it. Either of the two makes the task a Code task on
+ * the web: it runs as a cloud session, on a repository when it names one.
  */
 import type { RepositoryRef } from "./host";
 
@@ -37,10 +38,8 @@ export interface RoutineGitHubTrigger {
   filters: RoutineGitHubFilter[];
 }
 
-/**
- * The events a GitHub trigger offers, by webhook, "pull_request.opened" by
- * default.
- */
+/** The events a GitHub trigger offers, by webhook (live claude.ai bundle,
+ * 2026-10-21, c29d48294 Tr), "pull_request.opened" by default. */
 export const routineGitHubEvents = [
   {
     value: "pull_request",
@@ -111,7 +110,7 @@ const knownEvents = new Set<string>(
   ),
 );
 
-/** The fields a filter can test, by webhook. */
+/** The fields a filter can test, by webhook (c29d48294 ca, la, ua). */
 export const routineFilterFields = {
   pull_request: [
     { value: "pr.author", type: "string" },
@@ -139,7 +138,7 @@ export const routineFilterFields = {
   ],
 } as const;
 export type RoutineFilterType = "string" | "string-list" | "bool";
-/** The operators each kind of field takes. */
+/** The operators each kind of field takes (c29d48294 ga). */
 export const routineFilterOps: Record<RoutineFilterType, RoutineFilterOp[]> = {
   string: ["in", "not_in", "starts_with", "contains", "matches", "eq"],
   "string-list": ["in", "not_in"],
@@ -310,7 +309,8 @@ export function githubWebhooks(events: readonly string[]): string[] {
   return [...new Set(events.map((event) => event.split(".")[0]))].sort();
 }
 
-/** The "Pull request: Merged" choice: closed pull requests that merged. */
+/** The "Pull request: Merged" choice: closed pull requests that merged
+ * (c29d48294 Ar, pr_merged). */
 export const mergedPreset = "preset:pr_merged";
 const mergedFilter: RoutineGitHubFilter = {
   field: "pr.merged",
@@ -354,11 +354,10 @@ export function githubEventChoice(
     : undefined;
 }
 
-/**
- * The events and filters after choosing an event: a whole webhook takes all its
- * actions, the merged preset its condition, and a change of webhook (or leaving
- * the preset) clears the conditions, whose fields belong to the webhook.
- */
+/** The events and filters after choosing an event (c29d48294 Ta's
+ * onEventChange): a whole webhook takes all its actions, the merged preset
+ * its condition, and a change of webhook (or leaving the preset) clears the
+ * conditions, whose fields belong to the webhook. */
 export function chooseGitHubEvent(
   trigger: Pick<RoutineGitHubTrigger, "events" | "filters">,
   choice: string,

@@ -1,4 +1,4 @@
-// LinearLogo.
+// LinearLogo (live claude.ai bundle, 2026-10-14, cc43287c9-79FKhdho.js).
 export function LinearMark({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">

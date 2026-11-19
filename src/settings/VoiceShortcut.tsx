@@ -11,7 +11,7 @@ export function voiceShortcutOptions(customSupported: boolean) {
   ];
 }
 
-/** Native voice shortcut. */
+/** Native voice shortcut (live claude.ai bundle, 2026-10-14, c71860c77-yHKjimoi). */
 export function VoiceShortcut({
   value,
   platform,
@@ -25,14 +25,22 @@ export function VoiceShortcut({
   onChange: (value: string) => Promise<void>;
   onError: (error: unknown) => void;
 }) {
-  const custom = value !== "off" && value !== "capslock";
+  const doubleTap = value === "double-tap-capslock";
+  const custom = value !== "off" && value !== "capslock" && !doubleTap;
   return (
     <div className="voice-shortcut">
       <div className="voice-shortcut-control">
         <SelectField<string>
           label="Voice shortcut"
           value={custom ? "custom" : value}
-          options={voiceShortcutOptions(customSupported)}
+          options={
+            doubleTap
+              ? [
+                  ...voiceShortcutOptions(customSupported),
+                  { value, label: "Double-tap Caps Lock" },
+                ]
+              : voiceShortcutOptions(customSupported)
+          }
           onChange={(next) => {
             void onChange(
               next === "custom" ? "Command+Shift+Alt+Space" : next,
@@ -44,7 +52,7 @@ export function VoiceShortcut({
             label="Voice shortcut"
             value={custom ? value : ""}
             platform={platform}
-            onChange={(next) => onChange(next || "off")}
+            onChange={onChange}
           />
         )}
       </div>

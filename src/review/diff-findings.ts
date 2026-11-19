@@ -3,9 +3,10 @@ import type { Conversation } from "../../shared/types";
 import { parseReviewOutput } from "./review-output";
 
 /**
- * The latest `/review`'s findings at their lines in the Changes panel: each can
- * be fixed ("Fix this one" asks Claude with the original's wording, then reads
- * Fixing… until that turn ends and Fixed after) or dismissed, for this session.
+ * The latest `/review`'s findings at their lines in the Changes panel (live
+ * claude.ai bundle, 2026-10-15, c44d00c7f `xa`): each can be fixed ("Fix
+ * this one" asks Claude with the original's wording, then reads Fixing…
+ * until that turn ends and Fixed after) or dismissed, for this session.
  */
 
 export interface DiffFinding {

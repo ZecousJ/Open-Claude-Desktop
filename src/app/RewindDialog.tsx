@@ -13,10 +13,11 @@ import { Spinner } from "../ui/Spinner";
 import "./rewind-dialog.css";
 
 /**
- * "Rewind to this message?": the message, then — when Claude edited files from
- * it on, in a session on this computer — Restore: Code and conversation,
- * Conversation only, Code only, with "{count} files · +a −d" and the note that
- * shell commands' changes aren't reverted. Cancel and Rewind ("Rewinding…").
+ * "Rewind to this message?" (live claude.ai bundle, 2026-10-15, cc43287c9
+ * `Aae`): the message, then — when Claude edited files from it on, in a
+ * session on this computer — Restore: Code and conversation, Conversation
+ * only, Code only, with "{count} files · +a −d" and the note that shell
+ * commands' changes aren't reverted. Cancel and Rewind ("Rewinding…").
  */
 export default function RewindDialog({
   conversation,

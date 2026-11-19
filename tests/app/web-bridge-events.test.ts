@@ -30,6 +30,23 @@ async function connected() {
   return { ...setup, clock, socket };
 }
 
+test("same-account reactivation retires an already queued stream callback", async (t) => {
+  const { bridge, service, socket, tab, events } = await connected();
+  t.after(() => bridge.dispose());
+  socket.receive({ t: "ready", v: 1, seq: 0, resumed: false });
+  const oldMessage = socket.onmessage;
+  assert.ok(oldMessage);
+  service.valid.add("reactivated");
+  const account = bridge.auth.current!.account;
+  await bridge.auth.adopt({ access_token: "reactivated", expires_in: 3600, account });
+  await flush();
+  const replacement = tab.sockets.at(-1)!;
+  assert.notEqual(replacement, socket);
+  assert.equal(socket.readyState, 3);
+  oldMessage({ data: JSON.stringify(event(1, { type: "conversation", conversation: conversation("retired") })) });
+  assert.ok(!events.some((event) => event.type === "conversation" && event.conversation.id === "retired"));
+});
+
 test("the stream opens with a one-time ticket in the sub-protocols, never the URL", async () => {
   const { tab, socket, bridge } = await connected();
   assert.equal(socket.url, "wss://claudex.example/api/v1/claudex/web/events");

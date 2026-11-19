@@ -8,7 +8,7 @@ import postcss from "postcss";
 import ts from "typescript";
 import type { Conversation } from "../../shared/types";
 import { desktopHost, webHost } from "../../shared/host";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { ConversationPanelButtons } from "../../src/conversation/ConversationPanelButtons";
 import {
   ToolSidePanel,
@@ -206,10 +206,12 @@ test("native ordinary Chat toggles the real lazy activity route, reports pressed
     const button = () =>
       env.document.querySelector('button[aria-label="Activity panel"]')!;
     assert.equal(button().getAttribute("aria-pressed"), "false");
-    assert.ok(button().querySelector('[data-icon="File"]'));
+    assert.ok(button().querySelector('[data-anthropicon="File"]'));
     assert.match(
-      button().querySelector('[data-icon="File"]')!.getAttribute("width") ?? "",
-      /^18$/,
+      button()
+        .querySelector('[data-anthropicon="File"]')!
+        .getAttribute("style") ?? "",
+      /18px/,
     );
     assert.equal(env.document.querySelector(".session-activity-panel"), null);
     await env.click('button[aria-label="Activity panel"]');
@@ -343,7 +345,7 @@ test("web retains the verified illustration and independent legacy Cowork retain
     ),
   ).document;
   assert.ok(legacy.querySelector('[aria-label="Activity panel"]'));
-  assert.equal(legacy.querySelector('[data-icon="File"]'), null);
+  assert.equal(legacy.querySelector('[data-anthropicon="File"]'), null);
 });
 
 test("native geometry and startup import match the main desktop wrapper without affecting web, Code or embedded views", () => {

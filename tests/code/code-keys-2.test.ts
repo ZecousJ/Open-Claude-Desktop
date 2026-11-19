@@ -1,7 +1,8 @@
 /**
- * Batch 11 Code keys: ⇧⌘X sketch mode on the Browser's page, the Changes keys
- * (⇧⌘Y, ⌘P, F7 / ⌥F5), and ⌘R / F5 reloading the Browser's page with View ▸
- * Reload, plus their rows in the shortcuts list.
+ * Batch 11 Code keys (live claude.ai bundle, 2026-10-12): ⇧⌘X sketch mode
+ * on the Browser's page, the Changes keys (⇧⌘Y, ⌘P, F7 / ⌥F5), and ⌘R / F5
+ * reloading the Browser's page with View ▸ Reload, plus their rows in the
+ * shortcuts list.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

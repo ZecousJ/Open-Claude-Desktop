@@ -355,6 +355,24 @@ test("each published version keeps a link of its own", async (t) => {
   assert.deepEqual(hosted.identities(), [card.identity]);
 });
 
+test("saved revisions with identical bytes retain distinct publication links after reopen", async (t) => {
+  const { hosted, service, dir } = setup(t);
+  const first = { ...card, versionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" };
+  const second = { ...card, versionId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" };
+  const a = await hosted.publishArtifact(first);
+  const b = await hosted.publishArtifact(second);
+  assert.notEqual(a.id, b.id);
+  hosted.close();
+  const reopened = new HostedShares({ service, root: dir, conversation: () => undefined, changed() {} });
+  t.after(() => reopened.close());
+  const links = await reopened.publishedArtifactVersions();
+  assert.deepEqual(new Map(links.map(({ share, versionId }) => [versionId, share.url])),
+    new Map([[first.versionId, a.url], [second.versionId, b.url]]));
+  await reopened.unpublishArtifact(card.identity);
+  assert.equal((await reopened.publication(first))?.unpublished, true);
+  assert.equal((await reopened.publication(second))?.unpublished, true);
+});
+
 test("artifact invites grant collaboration without restricting or revoking the public link", async (t) => {
   const { hosted, calls, changes } = setup(t);
   const published = await hosted.publishArtifact(card);

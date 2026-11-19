@@ -11,8 +11,9 @@ const QueuedMessageBarHost = lazyPiece(() => import("./QueuedMessageBar"));
 const EXIT_FALLBACK_MS = 400;
 
 /**
- * Where the open Code conversation's queued messages show, above the composer.
- * When the last one leaves, the bar keeps it while it sinks out.
+ * Where the open Code conversation's queued messages show, above the
+ * composer (live claude.ai bundle, 2026-10-12: QueuedMessageBar). When the
+ * last one leaves, the bar keeps it while it sinks out.
  */
 export function QueuedBarSlot({
   conversation,

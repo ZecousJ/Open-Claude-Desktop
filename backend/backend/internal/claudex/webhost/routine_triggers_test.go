@@ -62,7 +62,7 @@ func fire(t *testing.T, h *host, id, token, body string) (int, map[string]any) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = res.Body.Close() }()
+	defer res.Body.Close()
 	var out map[string]any
 	_ = json.NewDecoder(res.Body).Decode(&out)
 	return res.StatusCode, out

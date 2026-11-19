@@ -5,8 +5,13 @@ import os from "node:os";
 import path from "node:path";
 import test, { type TestContext } from "node:test";
 import { build } from "esbuild";
+import type { AppContext } from "../../electron/app/app-context";
 import { Gateway } from "../../electron/engine/gateway";
 import { ProviderServiceClient } from "../../electron/engine/provider-service-client";
+import { RemoteHost } from "../../electron/remote/host";
+import { RemoteBackend } from "../../electron/sub2api/backend";
+import { RemoteAccounts } from "../../electron/sub2api/identity";
+import { Store } from "../../electron/store/store";
 import {
   allResponses,
   groupKeyId,
@@ -19,6 +24,7 @@ import {
 import { researchUnavailable } from "../../shared/research";
 import type { ServiceCatalog } from "../../shared/model-catalog-api";
 import type { Provider, UsageRecord } from "../../shared/types";
+import { fakeCipher, MockSub2Api } from "../support/sub2api-mock";
 
 const openai: GroupModels = {
   groupId: 4,
@@ -134,6 +140,23 @@ test("the protocol follows the selected model's group", () => {
   assert.equal(researchUnavailable({ ...base, model: "grok-4" }), "service");
 });
 
+test("the catalog and group preference choose between dedicated drawing groups", () => {
+  const model = "gpt-image-2";
+  const first: GroupModels = { ...other, models: [model] };
+  const second: GroupModels = { ...grok, models: [model] };
+  const mixed = { ...openai, models: [...openai.models, model] };
+  const catalog: ServiceCatalog = {
+    defaultModel: "gpt-5.5",
+    items: [item(model, second.groupId)],
+  };
+  const groups = [mixed, first, second];
+
+  const tagged = mergeGroupModels(groups, catalog, [mixed.groupId]);
+  assert.equal(routeForModel(tagged, model)?.groupId, second.groupId);
+  const preferred = mergeGroupModels(groups, catalog, [mixed.groupId, first.groupId]);
+  assert.equal(routeForModel(preferred, model)?.groupId, first.groupId);
+});
+
 async function upstream(t: TestContext) {
   const seen: { path?: string; authorization?: string; model?: string }[] = [];
   const server = http.createServer(async (req: IncomingMessage, res) => {
@@ -244,6 +267,168 @@ test("the gateway sends each model with its group's key and protocol", async (t)
   });
   assert.equal(refused.status, 403);
   assert.equal(seen.length, 3);
+});
+
+test("the first request uses the profile's saved group, and a running gateway follows a new selection", async (t) => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "claudex-activate-routes-"),
+  );
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const user = {
+    id: 1,
+    email: "test@example.invalid",
+    password: "test-password",
+  };
+  const standard = {
+    id: 4,
+    name: "Standard",
+    platform: "openai",
+    status: "active",
+  };
+  const alternate = { ...standard, id: 11, name: "Alternate" };
+  const service = new MockSub2Api({
+    users: [user],
+    groups: [standard, alternate],
+    defaultGroupId: standard.id,
+    keyGroups: [alternate],
+    modelsByGroup: {
+      [standard.id]: ["shared-model"],
+      [alternate.id]: ["shared-model"],
+    },
+  });
+  await service.start();
+  t.after(() => service.close());
+  const accounts = new RemoteAccounts(root, service.url, fakeCipher);
+  const login = await accounts.login(user.email, user.password);
+  if (login.kind !== "signedIn")
+    throw new Error("Expected a signed-in account.");
+  const backend = new RemoteBackend(accounts, login.session, root);
+  const engine: { gateway?: ProviderServiceClient; providerId?: string } = {};
+  const store = new Store(root);
+  store.settings.apiGroups = { openai: alternate.id };
+  store.flush();
+  let remote: RemoteHost | undefined;
+  let credentials: AppContext["credentials"];
+  const ctx = {
+    store,
+    engine,
+    accountRetiring: false,
+    accountActivationIdentity: {},
+    activeAccount: login.account,
+    get remote() {
+      return remote;
+    },
+    get credentials() {
+      return credentials;
+    },
+    settingsChanged() {},
+  } as unknown as AppContext;
+  const host = new RemoteHost(ctx, backend);
+  remote = host;
+  credentials = {
+    canPersist: false,
+    initialize: async () => {},
+    async remote(provider: Provider, route: string, key: string) {
+      const response = await fetch(`${provider.baseUrl}/${route}`, {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      const body = await response.json();
+      return {
+        ok: response.ok,
+        status: response.status,
+        models: body.data.map(({ id }: { id: string }) => id),
+      };
+    },
+  } as unknown as AppContext["credentials"];
+  await host.prepare(credentials);
+  host.ready = true;
+  assert.equal(
+    host.apiGroups().providers.find(({ id }) => id === "openai")?.selected,
+    alternate.id,
+  );
+  const script = path.join(root, "provider-service.cjs");
+  await build({
+    entryPoints: ["server/provider-service.ts"],
+    bundle: true,
+    platform: "node",
+    format: "cjs",
+    target: "node22",
+    outfile: script,
+    logLevel: "silent",
+  });
+  const provider = store.settings.providers[0];
+  const child = new ProviderServiceClient(
+    script,
+    root,
+    provider,
+    host.sessionKey(provider.id),
+  );
+  child.sessionGroupKeys = host.groupSessionKeys(provider.id);
+  await child.start();
+  t.after(() => child.close());
+  engine.gateway = child;
+  engine.providerId = provider.id;
+  const send = async () => {
+    const reply = await fetch(`${child.url}/responses`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${child.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "shared-model",
+        input: "hi",
+        stream: true,
+      }),
+    });
+    await reply.text();
+    return service.keys.find(({ key }) => key === service.gatewayAuth.at(-1))
+      ?.group_id;
+  };
+  assert.equal(
+    await send(),
+    alternate.id,
+    "the saved group owns the first request",
+  );
+  store.settings.providers = structuredClone(store.settings.providers);
+  fs.mkdirSync(path.join(root, "settings.json.tmp"));
+  await assert.rejects(host.useGroup("openai", standard.id), {
+    code: "EISDIR",
+  });
+  fs.rmdirSync(path.join(root, "settings.json.tmp"));
+  assert.equal(new Store(root).settings.apiGroups?.openai, alternate.id);
+  assert.equal(
+    host.apiGroups().providers.find(({ id }) => id === "openai")?.selected,
+    alternate.id,
+  );
+  assert.equal(
+    await send(),
+    alternate.id,
+    "a rejected save leaves the actual route unchanged",
+  );
+  await host.useGroup("openai", standard.id);
+  assert.equal(
+    await send(),
+    standard.id,
+    "the running gateway uses the newly selected group",
+  );
+  const added = { ...standard, id: 12, name: "New group" };
+  service.options.groups?.push(added);
+  service.options.keyGroups?.push(added);
+  if (service.options.modelsByGroup)
+    service.options.modelsByGroup[added.id] = ["shared-model"];
+  await host.refreshModels();
+  assert.equal(
+    await send(),
+    standard.id,
+    "refresh preserves the selected group",
+  );
+  await host.useGroup("openai", added.id);
+  assert.equal(
+    await send(),
+    added.id,
+    "the running gateway uses a key provisioned by refresh",
+  );
 });
 
 test("the provider child finds each group's key in the vault or in memory", async (t) => {

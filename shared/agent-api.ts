@@ -1,12 +1,13 @@
 /**
- * Agent runtime calls: workflow sub-agents, and new calls such as the reply
- * feedback dialog. Handlers go in `electron/ipc/agent.ts`
+ * Agent runtime calls (package WP5a): workflow sub-agents, and new calls such
+ * as the reply feedback dialog. Handlers go in `electron/ipc/agent.ts`
  * (`electron/ipc/workflow.ts` holds the workflow agent ones).
  */
-import type { AgentTranscript, Attachment, Conversation, Item } from "./types";
+import type { AgentTranscript, Attachment, Conversation, Item, Turn } from "./types";
 import { bridgeMethods } from "./bridge-methods";
 
 export interface AgentAPI {
+  readCodeAgent(conversationId: string, agentThreadId: string): Promise<{ id: string; turns: import("./types").Turn[] }>;
   stopWorkflowAgent(
     conversationId: string,
     agentThreadId: string,
@@ -24,6 +25,7 @@ export const agentMethods = bridgeMethods<AgentAPI>({
   stopWorkflowAgent: true,
   refreshWorkflowAgents: true,
   readWorkflowAgent: true,
+  readCodeAgent: true,
   stopWorkflowRun: true,
 });
 
@@ -53,6 +55,7 @@ export interface ThreadTokenUsage {
   total: TokenUsageBreakdown;
   last: TokenUsageBreakdown;
   modelContextWindow: number | null;
+  model?: string;
 }
 
 /**
@@ -80,9 +83,15 @@ export interface SteeredMessageItem extends Item {
   clientId: string;
   text: string;
   attachments: Attachment[];
+  officialCodeEventId?: string;
+  officialCoworkEventId?: string;
+  officialCodeInputHash?: string;
 }
 
 declare module "./types" {
+  interface Item {
+    compactionTokens?: { before?: number; after?: number };
+  }
   interface Conversation {
     thinkingSummariesWanted?: boolean;
     thinkingMode?: "standard" | "extended";
@@ -93,11 +102,20 @@ declare module "./types" {
     tokenUsage?: ThreadTokenUsage;
   }
   interface Turn {
+    /** Model and context report for this turn's actual execution. */
+    contextUsageModel?: string;
+    contextUsage?: TokenUsageBreakdown;
     /**
      * "manual": a /compact turn (`compactConversation`). It has no prompt and
      * holds the `contextCompaction` item; it cannot be retried or edited.
      */
     compaction?: "manual";
+    /** Original Code request identity; a recorded attempt must never auto-dispatch twice. */
+    compactionRequestId?: string;
+    /** The runner received the upstream acknowledgement before any turn event. */
+    compactionAccepted?: true;
+    /** Dispatch may have been accepted; no new work until settlement or agent restart. */
+    compactionUncertain?: true;
     /**
      * A Bash mode line (`runShellCommand`): the prompt is the command, run
      * in the session's shell; it holds the `commandExecution` item and
@@ -105,6 +123,12 @@ declare module "./types" {
      */
     shell?: true;
   }
+}
+
+export function isAcceptedCodeCompaction(turn: Turn) {
+  return turn.compaction === "manual" &&
+    (turn.compactionAccepted === true ||
+      (!turn.id.startsWith("pending-") && !turn.compactionUncertain));
 }
 
 export function isSteeredMessage(item: Item): item is SteeredMessageItem {

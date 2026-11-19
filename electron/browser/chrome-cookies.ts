@@ -15,7 +15,7 @@ import type {
   ChromeImportSite,
 } from "../../shared/chrome-import";
 
-// .
+// (desktop 2.37337.1, index.chunk-DsYy5tSo.js, V / Ye / Xe).
 export function importHostMatches(host: string, root: string) {
   return host === root || host.endsWith(`.${root}`);
 }
@@ -116,7 +116,7 @@ const browsers = [
   },
 ];
 
-// .
+// (desktop 2.37337.1, index.chunk-DsYy5tSo.js, S / ue / F).
 export async function chromeProfiles(
   home = os.homedir(),
   platform = process.platform,
@@ -330,11 +330,17 @@ export async function readChromeCookies(profile: ImportProfile) {
   }
 }
 
-export async function chromeKey(profile: ImportProfile) {
+export async function chromeKey(profile: ImportProfile, keychain?: string) {
   if (profile.browser === "firefox") return Buffer.alloc(0);
   const result = await execute(
     "/usr/bin/security",
-    ["find-generic-password", "-w", "-s", profile.safeStorage],
+    [
+      "find-generic-password",
+      "-w",
+      "-s",
+      profile.safeStorage,
+      ...(keychain ? [keychain] : []),
+    ],
     {
       timeout: 120_000,
       maxBuffer: 4096,
@@ -349,7 +355,8 @@ export async function chromeKey(profile: ImportProfile) {
   );
 }
 
-// Sites the picker warns about: sign-in providers, email, banks and payments.
+// Sites the picker warns about (desktop 2.37337.1, index.chunk-DsYy5tSo.js
+// Ke, qe, Je, Ze): sign-in providers, email, banks and payments.
 const identityRoots = new Set([
   "okta.com",
   "oktapreview.com",

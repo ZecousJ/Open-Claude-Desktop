@@ -1,11 +1,12 @@
 @import "../../citations/citations.css";
 
-/* Web search rows and their result lists (R5, design R45 §4.5). The result list
-   is R-0740 (W969, 2.4 px/CSS): a 1px card (#2e2e2e, light #e3e3e3, 8px
-   corners) holding 36px rows between 10px of padding, a 16px site icon 12px in,
-   then the title and the host, both 14px in one grey (#939391, light #787876),
-   the host at the right 12px in. Running, several queries, a page search and a
-   failed search have no capture and reuse the plain row of R-0739. */
+/* Web search rows and their result lists (R5, design R45 §4.5). The result
+   list is R-0740 (W969, 2.4 px/CSS): a 1px card (#2e2e2e, light #e3e3e3, 8px
+   corners) holding 36px rows between 10px of padding, a 16px site icon 12px
+   in, then the title and the host, both 14px in one grey (#939391, light
+   #787876), the host at the right 12px in. Running, several queries, a page
+   search and a failed search (R-0738, R-0769, R-0783..0785) have no capture
+   and reuse the plain row of R-0739. */
 .web-search-activity .web-search-detail {
   display: grid;
   gap: 5px;
@@ -28,10 +29,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* R-0740 (Chat, 2.4 px/CSS): the list is a 1px #2e2e2e box on the page colour;
-   rows 35.8 apart (36), 8 from the box top and bottom (the box 12 under the
-   line); the title starts 36 from the box's left and the host ends 12 from its
-   right; title and host are both #939391. */
+/* R-0740 (Chat, 2.4 px/CSS): the list is a 1px #2e2e2e box on the page
+   colour; rows 35.8 apart (36), 8 from the box top and bottom (the box 12 under the line); the title
+   starts 36 from the box's left (a 16 icon slot, blank in the capture) and
+   the host ends 12 from its right; title and host are both #939391. */
 .web-search-activity .web-search-detail:has(.web-search-result) {
   gap: 0;
   padding: 8px 12px;
@@ -124,7 +125,7 @@
     var(--button-fill-transition),
     scale var(--motion-fast) ease-out;
 }
-/* A failed search is a row that does not open. */
+/* A failed search is a row that does not open (R-0785). */
 .web-search-failed .web-search-summary {
   display: flex;
   align-items: center;
@@ -144,7 +145,8 @@
 .activity.web-search-activity[open] > summary > svg:last-child {
   transition-duration: 58ms;
 }
-/* Its focus ring is the accent line inside the row's edge, without the glow. */
+/* Its focus ring is the accent line inside the row's edge, without the glow
+   (the original's row toggle; desktop bundle 2.31226.1). */
 .web-search-activity > summary:focus-visible {
   outline: 1px solid var(--focus);
   outline-offset: -1px;
@@ -164,9 +166,10 @@
 }
 
 /* R-0739 (Chat) and R-0813/R-0814 (Code), 2.4 px/CSS: a finished search or
-   fetch is a plain line like "Ran 3 commands ›" — no card and no globe — with
-   the query after the label. Label #858580 as the command rows; in Chat the
-   query takes the reply's text colour; in Code the whole line stays grey. */
+   fetch is a plain line like "Ran 3 commands ›" — no card and no globe —
+   with the query after the label. Label #858580 as the command rows; in
+   Chat the query takes the reply's text colour (light R-0739: label
+   #7e7d7b, query #484745); in Code the whole line stays grey. */
 .web-search-activity {
   margin: 0 0 24px;
   border: 0;
@@ -220,7 +223,7 @@
   > summary:is(:hover, :focus-visible) {
   color: var(--text);
 }
-/* Title and host #787876, box border #e3e3e3. */
+/* R-0740 light: title and host #787876, box border #e3e3e3. */
 :root[data-theme="light"] .web-search-result,
 :root[data-theme="light"] .web-search-result-host {
   color: #787876;
@@ -229,13 +232,16 @@
   border-color: #e3e3e3;
 }
 
-/* Cowork's search row (a task's lone "Searched the web query") keeps the same
-   air above and below its words as Chat's step row. */
+/* Cowork's search row (a task's lone "Searched the web  query") keeps the
+   same air above and below its words as Chat's step row (about 15px to the
+   text either side; 0 above and 24px under made it hug the sentence before
+   and float off the answer, owner 2026-10-13). */
 .mode-cowork .assistant-content > .web-search-activity {
   margin: 10px 0 12px;
 }
 
-/* Results table, not the legacy 150px sources box. */
+/* Results table, not the legacy 150px sources box (live claude.ai bundle,
+   2026-10-14, shared-12-BFzJn52f). */
 .web-search-activity > summary > .web-search-meta[data-result-count] {
   color: #898781;
 }

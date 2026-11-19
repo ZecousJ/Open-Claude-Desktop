@@ -8,6 +8,57 @@ import { json, signedInBridge } from "./web-bridge-fakes.test.ts";
 
 const path = (url: string) => new URL(url, "https://claudex.example").pathname;
 
+test("an old official request cannot replay with the replacement account's token", async (t) => {
+  const { bridge, tab, service } = await signedInBridge();
+  t.after(() => bridge.dispose());
+  let started!: () => void;
+  let refuse!: () => void;
+  const sent = new Promise<void>((resolve) => { started = resolve; });
+  const held = new Promise<void>((resolve) => { refuse = resolve; });
+  const tokens: (string | null)[] = [];
+  tab.routes.unshift(async (request) => {
+    if (!path(request.url).endsWith("/rpc/officialUiRead")) return;
+    tokens.push(request.headers.get("authorization"));
+    if (tokens.length === 1) { started(); await held; }
+    return json({ ok: false, error: { message: "Unauthorized" } }, 401);
+  });
+  const pending = bridge.officialUiRead({ method: "GET", path: "/api/account" });
+  const check = assert.rejects(pending, { name: "AbortError" });
+  await sent;
+  service.valid.add("account-b");
+  await bridge.auth.adopt({ access_token: "account-b", expires_in: 3600,
+    account: { id: "43", email: "b@example.invalid", name: "B" } });
+  refuse();
+  await check;
+  assert.deepEqual(tokens, ["Bearer at-1"]);
+  assert.equal(bridge.auth.current?.account.id, "43");
+});
+
+test("a shared read under a new activation does not join the old account's request", async (t) => {
+  let started!: () => void;
+  let release!: () => void;
+  const sent = new Promise<void>((resolve) => { started = resolve; });
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  let reads = 0;
+  const { bridge, service } = await signedInBridge(async (method) => {
+    if (method !== "modelCatalog") return null;
+    if (++reads === 1) { started(); await held; return "A"; }
+    return "B";
+  });
+  t.after(() => bridge.dispose());
+  const pending = bridge.api.modelCatalog();
+  const check = assert.rejects(pending, { name: "AbortError" });
+  await sent;
+  service.valid.add("account-b");
+  await bridge.auth.adopt({ access_token: "account-b", expires_in: 3600,
+    account: { id: "43", email: "b@example.invalid", name: "B" } });
+  const next = bridge.api.modelCatalog();
+  release();
+  assert.equal(await next, "B");
+  await check;
+  assert.equal(reads, 2);
+});
+
 test("a call is a Bearer RPC with the tab's id and wire-encoded arguments", async () => {
   const { bridge, calls } = await signedInBridge((method, args) => ({
     method,
@@ -234,4 +285,61 @@ test("the same read asked for twice at once is one request", async () => {
   assert.equal(calls.length, 1);
   await bridge.api.modelCatalog();
   assert.equal(calls.length, 2, "not cached once answered");
+});
+
+test("simultaneous browser snapshots share a request without retaining the answer", async t => {
+  const { bridge, calls } = await signedInBridge(() => ({ conversations: [], platform: "linux" }));
+  t.after(() => bridge.dispose());
+  await bridge.api.snapshot();
+  await Promise.all([bridge.api.snapshot(), bridge.api.snapshot()]);
+  assert.equal(calls.filter(call => call.method === "snapshot").length, 1);
+  await bridge.api.snapshot();
+  assert.equal(calls.filter(call => call.method === "snapshot").length, 2);
+});
+
+test("a replacement account never shares the previous account's pending snapshot", async t => {
+  let started!: () => void, release!: () => void;
+  const sent = new Promise<void>(resolve => { started = resolve; });
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let reads = 0;
+  const { bridge, service } = await signedInBridge(async method => {
+    if (method !== "snapshot") return null;
+    if (++reads === 2) { started(); await held; }
+    return { conversations: [], platform: "linux", accountRead: reads };
+  });
+  t.after(() => bridge.dispose());
+  await bridge.api.snapshot();
+  const old = bridge.api.snapshot();
+  const rejected = assert.rejects(old, { name: "AbortError" });
+  await sent;
+  service.valid.add("snapshot-account-b");
+  await bridge.auth.adopt({ access_token: "snapshot-account-b", expires_in: 3600,
+    account: { id: "43", email: "b@example.invalid", name: "B" } });
+  const next = await bridge.api.snapshot();
+  assert.equal((next as any).accountRead, 3);
+  release();await rejected;
+});
+
+
+test("a REST settings write separates pending snapshot reads", async () => {
+  const { WebTransport } = await import("../../shared/web-client/transport");
+  const { FakeClock, flush } = await import("./web-bridge-fakes.test");
+  const clock = new FakeClock();
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let reads = 0;
+  const transport = new WebTransport({
+    timers: { setTimeout: clock.setTimeout, clearTimeout: clock.clear, setInterval: clock.setInterval, clearInterval: clock.clear },
+    fetch: async url => {
+      if (!String(url).endsWith("/snapshot")) return json({ saved: true });
+      const revision = ++reads;
+      if (revision === 1) await held;
+      return json({ ok: true, value: { revision } });
+    },
+  }, { activationIdentity: {}, accessToken: async () => "account-token", refresh: async () => null, expire() {} }, "tab");
+  const first = transport.call("snapshot", '{"args":[]}');
+  await flush();
+  await transport.json("/profile", { method: "PUT", body: "{}" });
+  assert.deepEqual(await transport.call("snapshot", '{"args":[]}'), { revision: 2 });
+  release();await first;
 });

@@ -1,10 +1,12 @@
 /**
- * What a sign-in refusal says to the person, by the service's code: Sub2API's
- * own codes (`INVALID_CREDENTIALS`…) and the Claudex extensions'. The desktop
- * main process (electron/sub2api/identity.ts) and the web bridge
- * (src-web/bridge/auth.ts) both use it, so neither shows the service's raw
- * wording ("invalid email or password") or a code. The catalogs translate each
- * sentence. Where the original has the same refusal, its sentence is used.
+ * What a sign-in refusal says to the person (package LOGIN), by the
+ * service's code: Sub2API's own codes (`INVALID_CREDENTIALS`…) and the
+ * Claudex extensions'. The desktop main process (electron/sub2api/identity.ts)
+ * and the web bridge (src-web/bridge/auth.ts) both use it, so neither shows
+ * the service's raw wording ("invalid email or password") or a code. The
+ * catalogs translate each sentence. Where the original has the same
+ * refusal, its sentence is used (live claude.ai bundle, 2026-10-14,
+ * c19e49841-CY7h9R_N.js and c7bab91e0-GJgXnU-L.js).
  */
 export const codeMismatch =
   "Incorrect code entered. Check that the code matches what you received in your other browser or device and try again.";
@@ -20,13 +22,15 @@ const invalidEmail =
   "Invalid email address. Double-check the email entered and try again.";
 
 /**
- * A pending verification step that ran out. The page then offers only "Start
- * again" (src/auth/SignInPage.tsx).
+ * A pending verification step that ran out (live claude.ai bundle,
+ * 2026-10-12: the MFA step's expired challenge). The page then offers only
+ * "Start again" (src/auth/SignInPage.tsx).
  */
 export const signInExpired =
   "This sign-in expired. Start again to get a new code.";
 
 /** The generic failure sentence, when the service gave nothing better. */
+// (live claude.ai bundle, 2026-10-14, c029a409d-B6xY2mgY.js)
 export const signInFailed = "There was an error logging you in. {emailSupport}";
 
 export const signInErrorMessages: Readonly<Record<string, string>> = {

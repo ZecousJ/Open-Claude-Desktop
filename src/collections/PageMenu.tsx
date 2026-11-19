@@ -33,8 +33,9 @@ type Item = Extract<PageMenuEntry, { label: string }>;
 const isItem = (entry: PageMenuEntry): entry is Item => "label" in entry;
 
 /**
- * The page menus of Customize: 32px rows with 14px text and optional 16px
- * icons, a 4px frame, opening 7px under the trigger and right-aligned with it.
+ * The page menus of Customize (R-1110 Add, R-1137 filter, R-1139 sort,
+ * R-1128 row ⋯): 32px rows with 14px text and optional 16px icons, a
+ * 4px frame, opening 7px under the trigger and right-aligned with it.
  * The sidebar-sized `ui/Menu` has 24px rows.
  */
 export function PageMenu({
@@ -59,7 +60,7 @@ export function PageMenu({
     const trigger = anchor.current?.getBoundingClientRect();
     const own = box.current?.getBoundingClientRect();
     if (!trigger || !own) return;
-    // 6px from its trigger.
+    // 6px from its trigger (live claude.ai, 2026-10-21).
     const below = trigger.bottom + 6;
     setPlace({
       left: Math.max(

@@ -5,18 +5,18 @@ import {
   codexModelCatalog,
 } from "../../electron/engine/codex-model-catalog";
 
-test("Codex's identity sentences say Claudex", () => {
+test("Codex's identity sentences say Claudex, made by ZecousAI", () => {
   assert.equal(
     claudexIdentity(
       "You are Codex, an agent based on GPT-5. As Codex, you are curious.",
     ),
-    "You are Claudex, an agent. As Claudex, you are curious.",
+    "You are Claudex, an agent made by ZecousAI. As Claudex, you are curious.",
   );
   assert.equal(
     claudexIdentity(
       "You are a coding agent running in the Codex CLI, a terminal-based coding assistant. Codex CLI is an open source project led by OpenAI.",
     ),
-    "You are Claudex, a coding agent running in the Claudex app. Claudex is an open-source project.",
+    "You are Claudex, a coding agent made by ZecousAI, running in the Claudex app. Claudex is made by ZecousAI.",
   );
   // Codex as a tool or setting name stays.
   assert.equal(claudexIdentity("Run `codex exec`."), "Run `codex exec`.");

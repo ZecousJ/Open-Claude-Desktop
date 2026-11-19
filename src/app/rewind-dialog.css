@@ -1,7 +1,8 @@
-/* "Rewind to this message?": gap-md (8px) between the message card and the
-   restore part; the card rounded-card (10px) on bg-neutral, px-lg py-md (12px
-   8px), heading text (14/18) clamped to two lines; the summary in body text
-   (13/19), secondary, its note muted. */
+/* "Rewind to this message?" (live claude.ai bundle, 2026-10-15, cc43287c9
+   `Aae`): gap-md (8px) between the message card and the restore part; the
+   card rounded-card (10px) on bg-neutral, px-lg py-md (12px 8px), heading
+   text (14/18) clamped to two lines; the summary in body text (13/19),
+   secondary, its note muted. */
 .rewind-dialog-body {
   display: flex;
   flex-direction: column;

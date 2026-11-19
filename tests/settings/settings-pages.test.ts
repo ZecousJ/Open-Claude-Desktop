@@ -269,8 +269,14 @@ test("Billing never sends an end user to the service's web console", () => {
   assert.deepEqual(billing, {
     plan: null,
     planExpiresAt: null,
-    balance: 12.35,
+    balance: 12.345,
     subscriptions: [{ id: 1, plan: "Plan 3", status: "active", expiresAt: 5 }],
   });
   assert.equal("purchaseUrl" in billing, false);
+});
+
+test("Billing preserves balances smaller than one cent, including debt", () => {
+  for (const balance of [0.000123, -0.000123]) {
+    assert.equal(billingFrom({ balance, subscriptions: [] }).balance, balance);
+  }
 });

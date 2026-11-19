@@ -164,7 +164,7 @@ test("a memory row shows a check when done, Removing from memory while it runs a
     createElement(MemoryToolView, { item: memory("add") }),
   );
   assert.match(done, /Added to memory/);
-  assert.match(done, /data-icon="Check"/);
+  assert.match(done, /data-anthropicon="Check"/);
   assert.doesNotMatch(done, /memory-tool-warning/);
   const failed = renderToStaticMarkup(
     createElement(MemoryToolView, {

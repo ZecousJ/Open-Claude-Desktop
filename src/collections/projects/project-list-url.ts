@@ -9,10 +9,8 @@ import {
   type ProjectView,
 } from "./project-list";
 
-/**
- * A place transition owns its pathname; list query state and Settings hash
- * survive. Changes URLSearchParams in place.
- */
+/** A place transition owns its pathname; list query state and Settings hash
+ * survive. Source c17beaa76-C1HHrhad:3576–3630 changes URLSearchParams in place. */
 export function projectPlaceURL(
   projectId: string | undefined,
   location: { search: string; hash: string },

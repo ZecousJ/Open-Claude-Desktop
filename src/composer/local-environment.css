@@ -1,8 +1,10 @@
 /*
- * Edit local environment: the 520px dialog of
- * src/styles/80-dialogs-responsive.css with one 14px semibold label, a 176px
- * monospace field (#272725, placeholder #959593), a 13px note whose ".env
- * format" is a link, then a filled Cancel (#373735) and a white Save changes.
+ * Edit local environment (R-0386, 1x Windows captures; the colours come from
+ * the Default cloud editor's frame, the local one was caught mid-fade): the
+ * 520px dialog of src/styles/80-dialogs-responsive.css with one 14px
+ * semibold label, a 176px monospace field (#272725, placeholder #959593), a
+ * 13px note whose ".env format" is a link, then a filled Cancel (#373735) and
+ * a white Save changes.
  */
 .modal .local-environment > label {
   display: block;
@@ -78,8 +80,8 @@
 :root[data-theme="light"] .local-environment-note {
   color: var(--text-secondary);
 }
-/* A line the editor can't use: the field's error in the danger text colour, in
-   place of the note. */
+/* A line the editor can't use (live claude.ai bundle, 2026-10-14): the
+   field's error in the danger text colour, in place of the note. */
 .local-environment-error {
   margin: 10px 0 0;
   font-size: 13px;

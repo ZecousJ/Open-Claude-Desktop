@@ -29,7 +29,7 @@ test("settings pages draw the icon-font glyph the live navigation names", () => 
       .find((t) => t.id === id);
     assert.ok(tab, id);
     return renderToStaticMarkup(createElement(tab.Icon, { size: 20 })).match(
-      /data-icon="(\w+)"/,
+      /data-anthropicon="(\w+)"/,
     )?.[1];
   };
   assert.deepEqual(Object.fromEntries(ids.map((id) => [id, glyph(id)])), {

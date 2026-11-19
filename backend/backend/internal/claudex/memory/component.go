@@ -16,7 +16,7 @@
 //
 // Routes (design R3 3.2-3.3):
 //   - user: GET/DELETE /memory, PUT /memory/prefs, PUT/DELETE /memory/docs/:scope,
-//     POST /memory/edits, DELETE /memory/edits/:id (memory text stays out of
+//     POST /memory/edits, DELETE /memory/edits/:id, GET/PUT /memory/melange (memory text stays out of
 //     the audit log, see routes.go; writes are limited to 120 per user and
 //     hour);
 //   - admin: GET /memory/stats, GET/DELETE /memory/users/:id (DELETE behind
@@ -67,6 +67,12 @@ func (c *Component) RegisterUserRoutes(g *gin.RouterGroup) {
 	g.GET("/memory", c.getMemory)
 	g.DELETE("/memory", write, c.deleteAll)
 	g.PUT("/memory/prefs", write, c.putPrefs)
+	g.PUT("/memory/controls/:scope", write, c.putControls)
+	g.GET("/memory/cowork", c.getCowork)
+	g.PUT("/memory/cowork", write, c.changeCowork)
+	g.DELETE("/memory/cowork", write, c.changeCowork)
+	g.GET("/memory/melange", c.getMelange)
+	g.PUT("/memory/melange", write, c.putMelange)
 	g.PUT("/memory/docs/:scope", write, c.putDoc)
 	g.DELETE("/memory/docs/:scope", write, c.deleteDoc)
 	g.POST("/memory/edits", write, c.postEdit)

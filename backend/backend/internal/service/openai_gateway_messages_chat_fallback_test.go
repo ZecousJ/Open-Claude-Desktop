@@ -315,35 +315,96 @@ func TestForwardAsAnthropic_ForceChatCompletionsStreamingLengthMapsToMaxTokens(t
 	require.Contains(t, out, "event: message_stop")
 }
 
-// An upstream that ends immediately with [DONE] must still produce a fully
-// framed (message_start → message_delta → message_stop) Anthropic stream.
-func TestForwardAsAnthropic_ForceChatCompletionsEmptyStreamStillFramesMessage(t *testing.T) {
+func TestForwardAsAnthropic_ForceChatCompletionsEmptyReplyFailsOverBeforeCommit(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	body := []byte(`{"model":"gpt-5.4","max_tokens":8,"messages":[{"role":"user","content":"hello"}],"stream":true}`)
+	for _, tc := range []struct {
+		name     string
+		stream   bool
+		upstream string
+	}{
+		{name: "done only", stream: true, upstream: "data: [DONE]\n\n"},
+		{name: "empty EOF", stream: true},
+		{
+			name:   "role and zero usage",
+			stream: true,
+			upstream: `data: {"id":"chatcmpl_empty","choices":[{"delta":{"role":"assistant","content":"","reasoning_content":""},"finish_reason":null}]}` + "\n\n" +
+				`data: {"choices":[{"delta":{},"finish_reason":"stop"}]}` + "\n\n" +
+				`data: {"choices":[],"usage":{"prompt_tokens":0,"completion_tokens":0}}` + "\n\ndata: [DONE]\n\n",
+		},
+		{name: "empty JSON", upstream: `{"id":"chatcmpl_empty","choices":[{"message":{"role":"assistant","content":""},"finish_reason":"stop"}],"usage":{"prompt_tokens":0,"completion_tokens":0}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err, rec, c := forwardForcedChatMessages(t, tc.stream, io.NopCloser(strings.NewReader(tc.upstream)))
+			var failover *UpstreamFailoverError
+			require.ErrorAs(t, err, &failover, "downstream body: %s", rec.Body)
+			require.Nil(t, result)
+			require.Equal(t, http.StatusBadGateway, failover.StatusCode)
+			require.True(t, failover.ShouldRetryNextAccount())
+			require.Equal(t, "rid_msg_chat_fallback", failover.ResponseHeaders.Get("x-request-id"))
+			require.False(t, c.Writer.Written())
+			require.False(t, rec.Flushed)
+			require.Empty(t, rec.Body.String())
+			require.Empty(t, rec.Header().Get("Content-Type"))
+		})
+	}
+}
+
+func TestForwardAsAnthropic_ForceChatCompletionsPreservesNonEmptySemantics(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	for _, tc := range []struct {
+		name        string
+		stream      bool
+		payload     string
+		want        string
+		inputTokens int
+	}{
+		{name: "stream usage", stream: true, payload: `{"choices":[],"usage":{"prompt_tokens":5,"completion_tokens":0}}`, want: `"stop_reason":"end_turn"`, inputTokens: 5},
+		{name: "stream stop cause", stream: true, payload: `{"choices":[{"delta":{},"finish_reason":"length"}]}`, want: `"stop_reason":"max_tokens"`},
+		{name: "stream thinking", stream: true, payload: `{"choices":[{"delta":{"reasoning":"thinking"},"finish_reason":"stop"}]}`, want: `"thinking":"thinking"`},
+		{name: "stream deferred tool", stream: true, payload: `{"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_1","function":{"arguments":"{}"}}]},"finish_reason":"stop"}]}`, want: `"stop_reason":"tool_use"`},
+		{name: "buffered usage", payload: `{"choices":[],"usage":{"prompt_tokens":5,"completion_tokens":0}}`, want: `"stop_reason":"end_turn"`, inputTokens: 5},
+		{name: "buffered stop cause", payload: `{"choices":[{"message":{},"finish_reason":"length"}]}`, want: `"stop_reason":"max_tokens"`},
+		{name: "buffered thinking", payload: `{"choices":[{"message":{"reasoning_content":"thinking"},"finish_reason":"stop"}]}`, want: `"thinking":"thinking"`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			upstreamBody := tc.payload
+			if tc.stream {
+				upstreamBody = "data: " + upstreamBody + "\n\ndata: [DONE]\n\n"
+			}
+			result, err, rec, _ := forwardForcedChatMessages(t, tc.stream, io.NopCloser(strings.NewReader(upstreamBody)))
+			require.NoError(t, err)
+			require.NotNil(t, result)
+			require.Equal(t, tc.inputTokens, result.Usage.InputTokens)
+			require.Equal(t, http.StatusOK, rec.Code)
+			require.Contains(t, rec.Body.String(), tc.want)
+			if tc.stream {
+				require.Equal(t, 1, strings.Count(rec.Body.String(), "event: message_start"))
+				require.Contains(t, rec.Body.String(), "event: message_stop")
+			}
+		})
+	}
+}
+
+func forwardForcedChatMessages(t *testing.T, stream bool, upstreamBody io.ReadCloser) (*OpenAIForwardResult, error, *httptest.ResponseRecorder, *gin.Context) {
+	t.Helper()
+	streamJSON, contentType := "false", "application/json"
+	if stream {
+		streamJSON, contentType = "true", "text/event-stream"
+	}
+	body := []byte(`{"model":"gpt-5.4","max_tokens":8,"messages":[{"role":"user","content":"hello"}],"stream":` + streamJSON + `}`)
 	rec := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(rec)
 	c.Request = httptest.NewRequest(http.MethodPost, "/v1/messages", bytes.NewReader(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-
-	upstream := &httpUpstreamRecorder{resp: &http.Response{
+	svc := &OpenAIGatewayService{cfg: rawChatCompletionsTestConfig(), httpUpstream: &httpUpstreamRecorder{resp: &http.Response{
 		StatusCode: http.StatusOK,
-		Header:     http.Header{"Content-Type": []string{"text/event-stream"}, "x-request-id": []string{"rid_msg_chat_empty"}},
-		Body:       io.NopCloser(strings.NewReader("data: [DONE]\n\n")),
-	}}
-	svc := &OpenAIGatewayService{
-		cfg:          rawChatCompletionsTestConfig(),
-		httpUpstream: upstream,
-	}
-
-	result, err := svc.ForwardAsAnthropic(context.Background(), c, forceChatMessagesFallbackAccount(), body, "", "")
-	require.NoError(t, err)
-	require.NotNil(t, result)
-
-	out := rec.Body.String()
-	require.Contains(t, out, "event: message_start")
-	require.Contains(t, out, "event: message_delta")
-	require.Contains(t, out, "event: message_stop")
+		Header:     http.Header{"Content-Type": {contentType}, "X-Request-Id": {"rid_msg_chat_fallback"}},
+		Body:       upstreamBody,
+	}}}
+	result, err := svc.ForwardAsAnthropic(c.Request.Context(), c, forceChatMessagesFallbackAccount(), body, "", "")
+	return result, err, rec, c
 }
 
 // Non-failover 4xx responses must go through the shared compat error handler:
@@ -422,6 +483,8 @@ func TestForwardAsAnthropic_ForceChatCompletionsStreamReadErrorSkipsFinalize(t *
 	result, err := svc.ForwardAsAnthropic(context.Background(), c, forceChatMessagesFallbackAccount(), body, "", "")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "stream usage incomplete")
+	var failover *UpstreamFailoverError
+	require.NotErrorAs(t, err, &failover)
 	require.NotNil(t, result)
 	require.True(t, result.Stream)
 

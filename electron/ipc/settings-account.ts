@@ -1,3 +1,5 @@
+import { profileReadLease } from "../account/profile-read-lease";
+import { assertAccountOperationCurrent } from "../account/operation-lease";
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
@@ -16,6 +18,7 @@ import { exportArchive } from "../conversations/data-export";
 import { coworkFolderGrants } from "../workspace/cowork-folders";
 import { HistoryImporter } from "../conversations/history-import";
 import { ClaudeAiImport } from "../conversations/claude-ai-import";
+import { registerSessionTransferHandlers } from "./session-transfer";
 import { Sub2ApiError } from "../sub2api/http";
 
 /** The service's answer while its web app is turned off (webproto.ErrCodeDisabled). */
@@ -23,15 +26,37 @@ const webAppOff = "CLAUDEX_WEB_DISABLED";
 
 /**
  * Handlers behind Settings → Account and Privacy. Deletion uses the active
- * account session.
+ * account session (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh).
  */
 export function registerSettingsAccountHandlers(
   handle: IpcHandle,
   ctx: AppContext,
 ) {
-  const profile = async (): Promise<AccountProfile> => {
+  registerSessionTransferHandlers(handle, ctx);
+  const captureProfileLease = profileReadLease(ctx);
+  const profileLease = () => {
+    const account = ctx.activeAccount;
+    if (!account) throw Error("Sign in to continue.");
+    const lease = captureProfileLease();
+    if (!lease.current())
+      throw Error(
+        "The account is signing out. Reopen account settings after signing in.",
+      );
+    return { ...lease, accountId: account.id };
+  };
+  type ProfileLease = ReturnType<typeof profileLease>;
+  const checkProfileLease = (lease: ProfileLease, submitted = false) => {
+    if (!lease.current())
+      throw Error(
+        submitted
+          ? "The account changed after the name request was submitted. It may have taken effect; reopen that account to confirm before retrying."
+          : "The account changed. Reopen account settings and try again.",
+      );
+  };
+  const profile = async (lease: ProfileLease): Promise<AccountProfile> => {
+    checkProfileLease(lease);
     const account = ctx.activeAccount!;
-    const remote = ctx.remote?.backend;
+    const remote = lease.host?.backend;
     if (!remote)
       return {
         kind: "local",
@@ -39,17 +64,29 @@ export function registerSettingsAccountHandlers(
         email: account.email,
         canDelete: true,
       };
-    const user = await remote.session.authorized((token) =>
-      remote.client.profile(token),
-    );
-    return {
-      kind: "remote",
-      fullName: user.username,
-      email: user.email,
-      canDelete: true,
-    };
+    try {
+      const user = await remote.session.authorized((token) => {
+        checkProfileLease(lease);
+        return remote.client.readProfileIdentity(token);
+      });
+      checkProfileLease(lease);
+      return {
+        kind: "remote",
+        fullName: user.username,
+        email: user.email,
+        canDelete: true,
+      };
+    } catch (error) {
+      checkProfileLease(lease);
+      throw error;
+    }
   };
-  handle("accountProfile", profile);
+  handle("accountProfile", async () => {
+    const lease = profileLease();
+    const result = await profile(lease);
+    checkProfileLease(lease);
+    return result;
+  });
   handle("deleteStoredCodeSessions", () => {
     throw new Error("Sign in to Claudex again.");
   });
@@ -70,47 +107,111 @@ export function registerSettingsAccountHandlers(
   });
   handle("setFullName", async (raw: unknown) => {
     const name = z.string().trim().min(1).max(100).parse(raw);
-    const remote = ctx.remote?.backend;
-    if (remote)
-      await remote.session.authorized((token) =>
-        remote.client.updateUsername(token, name),
+    const lease = profileLease(),
+      remote = lease.host?.backend;
+    let submitted = false;
+    try {
+      checkProfileLease(lease);
+      if (remote)
+        await remote.session.authorized((token) => {
+          // Existing authorized() may retry a refused expired-token request;
+          // every callback must still belong to the original activation.
+          checkProfileLease(lease, submitted);
+          submitted = true;
+          return remote.client.updateUsername(token, name);
+        });
+      else {
+        ctx.accounts.rename(lease.accountId, name);
+        submitted = true;
+      }
+      checkProfileLease(lease, submitted);
+    } catch (error) {
+      checkProfileLease(lease, submitted);
+      throw error;
+    }
+    try {
+      const result = await profile(lease);
+      checkProfileLease(lease, submitted);
+      return result;
+    } catch {
+      checkProfileLease(lease, submitted);
+      throw Error(
+        "The name request completed, but the refreshed profile could not be read. Reopen account settings to confirm before retrying.",
       );
-    else ctx.accounts.rename(ctx.activeAccount!.id, name);
-    return profile();
+    }
   });
   handle("deleteAccount", async () => {
     const id = ctx.activeAccount?.id;
     if (!id) throw Error("Not signed in.");
-    const remote = ctx.remote?.backend;
+    const lease = captureProfileLease();
+    assertAccountOperationCurrent(lease.current);
+    const remote = lease.host?.backend, accounts = ctx.accounts, dataRoot = ctx.dataRoot;
     if (remote) {
       await remote.session.authorized((token) =>
         remote.client.deleteAccount(token),
-      );
+        lease.current);
+      assertAccountOperationCurrent(lease.current);
       remote.session.end();
     }
-    await ctx.deactivate();
-    if (remote) await remote.accounts.removeDeleted(id);
-    else ctx.accounts.removeSignedIn(id);
-    fs.rmSync(path.join(ctx.dataRoot, "account-session.enc"), {
+    assertAccountOperationCurrent(lease.current);
+    const deactivation = ctx.deactivate();
+    // The real lifecycle retires its generation synchronously before awaiting.
+    const retiredGeneration = ctx.accountActivationIdentity;
+    await deactivation;
+    // Deactivation deliberately changes the lease. Only its still-signed-out
+    // successor may finish local cleanup; reentry (including the same ID)
+    // must not lose a new profile or the new shared session file.
+    const cleanupCurrent = () => !ctx.activeAccount && ctx.accountActivationIdentity === retiredGeneration &&
+      ctx.accounts === accounts && ctx.dataRoot === dataRoot;
+    assertAccountOperationCurrent(cleanupCurrent);
+    if (remote) await remote.accounts.removeDeleted(id, cleanupCurrent);
+    else accounts.removeSignedIn(id);
+    assertAccountOperationCurrent(cleanupCurrent);
+    fs.rmSync(path.join(dataRoot, "account-session.enc"), {
       force: true,
     });
-    return { hasAccounts: ctx.accounts.hasAccounts };
+    return { hasAccounts: accounts.hasAccounts };
   });
-  handle("exportData", async () => {
+  handle("exportData", async (raw?: unknown) => {
+    const range = z.strictObject({
+      conversations_start_date: z.iso.datetime({ offset: true }).optional(),
+      conversations_end_date: z.iso.datetime({ offset: true }).optional(),
+    }).parse(raw ?? {});
+    const start = range.conversations_start_date === undefined
+      ? undefined : Date.parse(range.conversations_start_date);
+    const end = range.conversations_end_date === undefined
+      ? undefined : Date.parse(range.conversations_end_date);
+    if (start !== undefined && end !== undefined && start > end)
+      throw new Error("The export start date must be before or equal to the end date.");
+    const lease = profileLease(), store = lease.store;
+    const window = ctx.window, root = store.root;
+    const check = () => {
+      if (!lease.current() || !window || window.isDestroyed() ||
+          ctx.window !== window || store.root !== root)
+        throw new Error("The account or window changed. Reopen export from the account you want to save.");
+    };
+    check();
     // Loaded here so the handlers can be tested without Electron.
     const { dialog } = await import("electron");
+    check();
     const stamp = new Date().toISOString().slice(0, 10);
-    const result = await dialog.showSaveDialog(ctx.window!, {
+    const result = await dialog.showSaveDialog(window!, {
       defaultPath: `claudex-export-${stamp}.zip`,
       filters: [{ name: "ZIP archive", extensions: ["zip"] }],
     });
-    if (!result.filePath) return null;
+    // Cancellation has no account-data side effect, even after retirement.
+    if (result.canceled || !result.filePath) return null;
+    check();
+    const settings = ctx.publicSettings();
+    check();
     const archive = exportArchive({
-      root: ctx.store.root,
-      conversations: ctx.store.conversations,
-      projects: ctx.store.projects,
-      settings: ctx.publicSettings(),
+      root,
+      conversations: store.conversations,
+      projects: store.projects,
+      settings,
+      conversationRange: { start, end },
     });
+    check();
     fs.writeFileSync(result.filePath, archive, { mode: 0o600 });
     return result.filePath;
   });

@@ -13,7 +13,7 @@ import os from "node:os";
 import path from "node:path";
 import ts from "typescript";
 import { parseHTML } from "linkedom";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import { Store, defaultSettings } from "../../electron/store/store";
 import {
   publicPreferences,

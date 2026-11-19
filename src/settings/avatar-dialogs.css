@@ -1,5 +1,5 @@
-/* Crop viewport and picker. w-72, rounded-card, surface-2, backdrop, gap-md and
-   grid-cols-6/sm:grid-cols-12. */
+/* Crop viewport and picker (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh).
+   w-72, rounded-card, surface-2, backdrop, gap-md and grid-cols-6/sm:grid-cols-12. */
 .settings-avatar-dialog {
   width: 520px;
   padding: 19px 23px 23px;

@@ -1,7 +1,7 @@
-/* Captured web editor. Keep this scope lazy; task-dialog is also used by API
-   keys/local tasks. */
-/* As tall as the live dialog whatever it holds (44rem, at most the window less
-   2rem), the actions at its foot. */
+/* Captured web editor, official-scheduled-task.txt:28–36 (2026-10-16).
+   Keep this scope lazy; task-dialog is also used by API keys/local tasks. */
+/* As tall as the live dialog whatever it holds (44rem, at most the window
+   less 2rem), the actions at its foot (live claude.ai, 2026-10-21). */
 :root .modal.task-dialog.scheduled-task-dialog {
   --task-primary: #f0efec;
   --task-field: rgb(255 255 255 / 5%);
@@ -78,8 +78,9 @@
 .scheduled-task-dialog .task-field + :is(.task-trigger, .task-triggers) {
   margin-top: 24px;
 }
-/* A required field left empty: the name's field and the instructions' box
-   ringed in the danger fill, the name's focus ring red too. */
+/* A required field left empty (live claude.ai, 2026-10-21): the name's
+   field and the instructions' box ringed in the danger fill, the name's
+   focus ring red too. */
 .modal.scheduled-task-dialog
   .task-form
   .task-field
@@ -133,8 +134,9 @@
 .scheduled-task-dialog .task-model {
   margin-left: auto;
 }
-/* A cloud Code task's permissions: the 12px LockShield 6px before 13/17 text in
-   the secondary ink, 8px in. */
+/* A cloud Code task's permissions (live claude.ai bundle, 2026-10-21,
+   c7b47b35d ie): the 12px LockShield 6px before 13/17 text in the
+   secondary ink, 8px in. */
 .scheduled-task-dialog .task-permission-environment {
   display: inline-flex;
   align-items: center;
@@ -157,7 +159,7 @@
 }
 .scheduled-task-dialog
   :is(.task-permission, .task-trigger-type)
-  > .app-icon:first-child {
+  > .anthropicon:first-child {
   margin-left: -4px;
 }
 .scheduled-task-dialog :is(.task-note, .permission-mode-notice) {
@@ -215,14 +217,15 @@
   padding-inline: 10px;
   background: rgb(255 255 255 / 10%);
 }
-/* The triggers: + ends the one-row layout 16px in, a 28px ghost square (radius
-   7) with the 20px Add glyph. With another trigger the card is a 56px head
-   ("Trigger" 14/20 medium, +) and a row per trigger under a 0.5px rule, 14px
-   16px inside: a 128px name column (its 16px glyph in the secondary ink, 14/20
-   text) 8px before its fields, the remove button (the 20px Trash) at the end.
-   Its schedule's fields are 32px tall; the API row says 13/17 in the secondary
-   ink when the token comes. The menu: 299 wide, under +, its rows 50px with a
-   20px glyph, 14/20 title and 13/17 line. */
+/* The triggers (live claude.ai, 2026-10-21, 1280 wide): + ends the one-row
+   layout 16px in, a 28px ghost square (radius 7) with the 20px Add glyph.
+   With another trigger the card is a 56px head ("Trigger" 14/20 medium, +)
+   and a row per trigger under a 0.5px rule, 14px 16px inside: a 128px name
+   column (its 16px glyph in the secondary ink, 14/20 text) 8px before its
+   fields, the remove button (the 20px Trash) at the end. Its schedule's
+   fields are 32px tall; the API row says 13/17 in the secondary ink when
+   the token comes. The menu: 299 wide, under +, its rows 50px with a 20px
+   glyph, 14/20 title and 13/17 line. */
 .scheduled-task-dialog .task-trigger > .task-trigger-add {
   margin-left: auto;
 }
@@ -235,7 +238,7 @@
 }
 .scheduled-task-dialog
   :is(.task-trigger-add, .task-trigger-remove)
-  > .app-icon {
+  > .anthropicon {
   width: 20px;
   height: 20px;
   font-size: 20px !important;
@@ -274,7 +277,7 @@
   font-size: 14px;
   line-height: 20px;
 }
-.scheduled-task-dialog .task-trigger-name > .app-icon {
+.scheduled-task-dialog .task-trigger-name > .anthropicon {
   color: #898781;
 }
 .scheduled-task-dialog .task-trigger-item > .task-row-fields {
@@ -406,8 +409,8 @@
   }
 }
 
-/* "Set up with Claudex instead": 4px under the title row, 13/17 muted
-   underlined text, 16px over the first field. */
+/* "Set up with Claudex instead" (live claude.ai, 2026-10-21): 4px under the
+   title row, 13/17 muted underlined text, 16px over the first field. */
 .scheduled-task-dialog > header:has(+ .modal-subtitle) {
   margin-bottom: 4px;
 }
@@ -432,12 +435,13 @@
   cursor: pointer;
 }
 
-/* The API trigger of a saved task: under its name, a panel 8px inside on white
-   5% with radius 10, 4px between its lines: 13/17 labels in the secondary ink
-   (the status in the success ink while a token is active), the address in a
-   monospace field with its copy button, the token's last characters on white 3%
-   (radius 5) with Generate or Regenerate and Delete, then the example request
-   folded under a ghost button, its curl on white 3%. */
+/* The API trigger of a saved task (live claude.ai bundle, 2026-10-21,
+   c29d48294 Pa): under its name, a panel 8px inside on white 5% with
+   radius 10, 4px between its lines: 13/17 labels in the secondary ink (the
+   status in the success ink while a token is active), the address in a
+   monospace field with its copy button, the token's last characters on
+   white 3% (radius 5) with Generate or Regenerate and Delete, then the
+   example request folded under a ghost button, its curl on white 3%. */
 .scheduled-task-dialog .task-trigger-api {
   flex-direction: column;
   align-items: stretch;
@@ -548,10 +552,10 @@
   user-select: text;
 }
 
-/* A new token, shown once: the warning on the warning fill, 12px 8px inside,
-   radius 10, its glyph in the warning ink 5px before the 13/17 text; the token
-   on white 3%, 12px 5px inside, radius 5, wrapping anywhere, with its copy
-   button; Done at the end. */
+/* A new token, shown once (c29d48294 Na): the warning on the warning fill,
+   12px 8px inside, radius 10, its glyph in the warning ink 5px before the
+   13/17 text; the token on white 3%, 12px 5px inside, radius 5, wrapping
+   anywhere, with its copy button; Done at the end. */
 .routine-token-dialog {
   max-width: 480px;
 }
@@ -567,7 +571,7 @@
   font-size: 13px;
   line-height: 17px;
 }
-.routine-token-notice > .app-icon {
+.routine-token-notice > .anthropicon {
   flex: none;
   color: #e6a23c;
 }
@@ -605,11 +609,12 @@
   margin-top: 16px;
 }
 
-/* Advanced settings on the web: the tabs 12px in, 28px tall, 14/20 medium, 10px
-   inside, the chosen one in the primary ink on a white-7.5% pill (radius 7),
-   the others in the secondary ink; each row 16px in, 14px above and below, a
-   0.5px rule between rows, its choice a 28px button on white 10% (radius 7),
-   10px inside, 6px between its parts. */
+/* Advanced settings on the web (live claude.ai, 2026-10-21): the tabs 12px
+   in, 28px tall, 14/20 medium, 10px inside, the chosen one in the primary
+   ink on a white-7.5% pill (radius 7), the others in the secondary ink;
+   each row 16px in, 14px above and below, a 0.5px rule between rows, its
+   choice a 28px button on white 10% (radius 7), 10px inside, 6px between
+   its parts. */
 .scheduled-task-dialog .routine-advanced-tabs [role="tablist"] {
   display: flex;
   padding: 0 12px;
@@ -702,13 +707,14 @@
   padding: 0 10px;
   border-radius: 7px;
 }
-/* A GitHub event trigger: its row as the others, the repository a 32px field
-   (white 5%, radius 8, 8px in, the 16px caret in the muted ink). Once it has
-   one, a card 16px in from the trigger card's sides and 16px above its foot
-   (radius 12, the ring), 16px in: Event with its choice at the end (12px above
-   and below), then under a 0.5px rule Filter with a 32px ghost Add (12px above,
-   8 below); each condition is the field, operator and value (1: 1.4: 2.1) and
-   the 20px Trash 8px apart, 16px under it; the run limit warning under a rule
+/* A GitHub event trigger (live claude.ai, 2026-10-21, 1280 wide): its row
+   as the others, the repository a 32px field (white 5%, radius 8, 8px in,
+   the 16px caret in the muted ink). Once it has one, a card 16px in from
+   the trigger card's sides and 16px above its foot (radius 12, the ring),
+   16px in: Event with its choice at the end (12px above and below), then
+   under a 0.5px rule Filter with a 32px ghost Add (12px above, 8 below);
+   each condition is the field, operator and value (1 : 1.4 : 2.1) and the
+   20px Trash 8px apart, 16px under it; the run limit warning under a rule
    and Runs as are 13/17 in the muted ink, 12px clear. */
 .scheduled-task-dialog .task-trigger-github {
   flex-direction: column;
@@ -788,7 +794,7 @@
   border-radius: 8px;
   color: var(--task-primary);
 }
-.scheduled-task-dialog .routine-github-icon > .app-icon {
+.scheduled-task-dialog .routine-github-icon > .anthropicon {
   width: 20px;
   height: 20px;
   font-size: 20px !important;
@@ -804,7 +810,7 @@
   align-items: center;
   gap: 8px;
 }
-/* Field, operator and value share the row 1: 1.4: 2.1 from a base of
+/* Field, operator and value share the row 1 : 1.4 : 2.1 from a base of
    their inline padding, 8px for a choice (its caret 8px in sits in its
    content) and 24px for the text field, as the original's. */
 .scheduled-task-dialog .routine-github-clause-line > * {
@@ -852,9 +858,9 @@
 .scheduled-task-dialog .routine-github-runs-as {
   padding-bottom: 12px;
 }
-/* Behavior's switch rows: the text takes the row bar the 36px switch 8px after
-   it, at the row's top; the title 14/20 medium, 2px over the 13/17 line in the
-   muted ink. */
+/* Behavior's switch rows (live claude.ai, 2026-10-21, c29d48294 Mo): the
+   text takes the row bar the 36px switch 8px after it, at the row's top;
+   the title 14/20 medium, 2px over the 13/17 line in the muted ink. */
 .scheduled-task-dialog .routine-behavior-row {
   align-items: flex-start;
   gap: 8px;

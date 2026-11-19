@@ -1,8 +1,9 @@
 /**
- * Whether the microphone is heard at all during voice mode. Every 500 ms the
- * loudest chunk since the last look is compared with a peak RMS of 3 (16-bit
- * samples); no sound for 5 seconds while listening is "silent", a muted input
- * track is "muted".
+ * Whether the microphone is heard at all during voice mode (live
+ * claude.ai bundle, 2026-10-14, ccc68ce7f-B3HSnJMZ: checkMicSilence). Every
+ * 500 ms the loudest chunk since the last look is compared with a peak RMS
+ * of 3 (16-bit samples); no sound for 5 seconds while listening is
+ * "silent", a muted input track is "muted".
  */
 export type MicSilence = "silent" | "muted";
 

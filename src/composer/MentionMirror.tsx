@@ -3,8 +3,9 @@ import type { MentionRange } from "./mention";
 
 /**
  * The accent behind chosen `@path` tokens in the Code composer's plain text
- * area. A copy of the draft lies under the transparent text area in the same
- * font and wrapping, its text invisible and each token marked, and follows the
+ * area (the original draws them as atomic chips; desktop bundle 2.31226.1).
+ * A copy of the draft lies under the transparent text area in the same font
+ * and wrapping, its text invisible and each token marked, and follows the
  * text area's scrolling. The tokens themselves delete and select as one
  * (mention.ts).
  */

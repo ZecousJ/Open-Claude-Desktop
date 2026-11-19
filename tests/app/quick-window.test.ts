@@ -430,9 +430,9 @@ test(
     integration.apply();
     shortcuts.get(settings.quickEntryDictationShortcut)!();
     assert.deepEqual(actions, ["toggle"]);
-    settings.quickAccessShortcut = settings.quickEntryDictationShortcut;
+    settings.quickEntryShortcut = "Alt+Cmd+Shift+Space";
     assert.throws(() => integration.apply(), /used by another app/);
-    settings.quickAccessShortcut = "";
+    settings.quickEntryShortcut = "off";
     settings.quickEntryDictationShortcut = "off";
     integration.apply();
     assert.equal(shortcuts.size, 0);
@@ -512,70 +512,40 @@ test("the main window closing takes the hidden composer with it", async () => {
   assert.ok(win.destroyed);
 });
 
-test("the Quick Entry shortcut setting brings up the composer", () => {
-  shortcuts.clear();
-  let asked = 0;
-  const commands: string[] = [];
-  const settings = {
-    ...structuredClone(defaultSettings),
-    quickAccessShortcut: "Alt+Space",
-  };
-  const integration = new DesktopIntegration({
-    window: () => undefined,
-    settings: () => settings,
-    conversations: () => [],
-    command: (command) => void commands.push(command),
-    trayIcon: "/nonexistent.png",
-    quickEntry: () => void asked++,
-  });
-  integration.start();
-  integration.apply();
-  shortcuts.get("Alt+Space")?.();
-  assert.equal(asked, 1);
-  assert.deepEqual(commands, []);
-  // No shortcut set: nothing is registered.
-  settings.quickAccessShortcut = "";
-  integration.apply();
-  assert.equal(shortcuts.size, 0);
-});
-
-test("Quick access and the explicit Quick Entry shortcut register independently", () => {
-  shortcuts.clear();
-  let opened = 0;
-  const settings = {
-    ...structuredClone(defaultSettings),
-    quickAccessShortcut: "Control+Alt+Space",
-    quickEntryShortcut: "Alt+Space",
-  };
-  const integration = new DesktopIntegration({
-    window: () => undefined,
-    settings: () => settings,
-    conversations: () => [],
-    command() {},
-    trayIcon: "/nonexistent.png",
-    quickEntry: () => {
-      opened++;
-    },
-  });
-  integration.start();
-  integration.apply();
-  assert.deepEqual([...shortcuts.keys()].sort(), [
-    "Alt+Space",
-    "Control+Alt+Space",
-  ]);
-  shortcuts.get("Alt+Space")!();
-  shortcuts.get("Control+Alt+Space")!();
-  assert.equal(opened, 2);
-  settings.quickEntryShortcut = "off";
-  integration.apply();
-  assert.deepEqual([...shortcuts.keys()], ["Control+Alt+Space"]);
-  settings.quickEntryShortcut = settings.quickAccessShortcut;
-  integration.apply();
-  settings.quickAccessShortcut = "";
-  integration.apply();
-  assert.deepEqual([...shortcuts.keys()], ["Control+Alt+Space"]);
-  integration.stop();
-  assert.equal(shortcuts.size, 0);
+test("only the operating system's Quick Entry binding is active", () => {
+  const originalPlatform = process.platform;
+  try {
+    for (const [platform, key] of [["darwin", "Alt+Space"], ["win32", "Ctrl+Alt+Space"]] as const) {
+      Object.defineProperty(process, "platform", { value: platform });
+      shortcuts.clear();
+      let opened = 0;
+      const settings = {
+        ...structuredClone(defaultSettings),
+        quickAccessShortcut: "Ctrl+Alt+Space",
+        quickEntryShortcut: "Alt+Space",
+        legacyQuickEntryEnabled: platform === "win32",
+      };
+      const integration = new DesktopIntegration({
+        window: () => undefined,
+        settings: () => settings,
+        conversations: () => [],
+        command: () => assert.fail("the shortcut should open the composer"),
+        trayIcon: "/nonexistent.png",
+        quickEntry: () => { opened++; },
+      });
+      integration.start();
+      assert.deepEqual([...shortcuts.keys()], [key]);
+      shortcuts.get(key)!();
+      assert.equal(opened, 1);
+      if (platform === "darwin") settings.quickEntryShortcut = "off";
+      else settings.quickAccessShortcut = "";
+      integration.apply();
+      assert.equal(shortcuts.size, 0);
+      integration.stop();
+    }
+  } finally {
+    Object.defineProperty(process, "platform", { value: originalPlatform });
+  }
 });
 
 test("Quick Entry hands screenshots to the main composer only from its trusted top frame", async () => {

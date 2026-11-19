@@ -1,9 +1,10 @@
 /**
- * Settings controls. Published for the other Settings pages: `Section`, `Row`,
- * `Value`, `Toggle`, `Segmented`, `Dropdown` (borderless value and chevron),
- * `SelectField` (bordered), `TextField`, `TextArea`, `Button`, `PageHeader` and
- * `SettingsModal`; `useLoaded` is in `pageControls.tsx`. Sizes and colours are
- * measured from the R-设置-* captures.
+ * Settings controls (package WP2). Published for the other Settings pages:
+ * `Section`, `Row`, `Value`, `Toggle`, `Segmented`, `Dropdown` (borderless
+ * value and chevron), `SelectField` (bordered), `TextField`, `TextArea`,
+ * `Button`, `PageHeader` and `SettingsModal`; `useLoaded` is in
+ * `pageControls.tsx`. Sizes and colours are measured from the R-设置-*
+ * captures (see fidelity/observations/settings-controls.md).
  */
 import {
   useId,
@@ -35,11 +36,12 @@ export function Section({
   headingLevel?: 2 | 3;
   note?: ReactNode;
   /**
-   * The note describes the section and sits right under its title rather than
-   * introducing the page (Privacy).
+   * The note describes the section and sits right under its title (R-1369
+   * Site permissions, R-1385 Cowork local devices, R-1400 Browser use)
+   * rather than introducing the page (Privacy).
    */
   tightNote?: boolean;
-  /** 28px under the section above instead of 39. */
+  /** 28px under the section above instead of 39 (Cowork's single rows, R-1384/R-1390). */
   tightAbove?: boolean;
   /** A row of the section above, drawn as its own block (no gap, no title). */
   joinsAbove?: boolean;
@@ -106,7 +108,7 @@ export function Value({ children }: { children: ReactNode }) {
   return <span className="settings-value">{children}</span>;
 }
 
-/** Switch: a 36×20 track with a 16px knob. */
+/** Switch: a 36×20 track with a 16px knob (R-1480–R-1482, R-1507, R-1508). */
 export function Toggle({
   label,
   checked,
@@ -224,7 +226,8 @@ export function Segmented<T extends string>({
   /** The original's control that Claudex cannot back yet: disabled, with the reason. */
   unavailable?: string;
 }) {
-  // An icon-only segment names itself in a tooltip above it.
+  // An icon-only segment names itself in a tooltip above it (R-1610
+  // "Light", R-1619 "Dark" near the window's right edge).
   const group = (
     <SegmentedControl
       className="settings-segmented"
@@ -247,7 +250,7 @@ export function Segmented<T extends string>({
   );
 }
 
-/** Gap between a dropdown's trigger and its list. */
+/** Gap between a dropdown's trigger and its list (R-设置-General-*-菜单: 6.5 at 2x). */
 export const dropdownGap = 6;
 /** Closest a list comes to the window edge. */
 const edgeMargin = 8;
@@ -297,7 +300,7 @@ export function nextChoice(
   return undefined;
 }
 
-/** The framed choice field: a bordered `Dropdown`. */
+/** The framed choice field (System's shortcuts, R-1576): a bordered `Dropdown`. */
 export function SelectField<T extends string>(
   props: Omit<Parameters<typeof Dropdown<T>>[0], "bordered">,
 ) {
@@ -306,9 +309,10 @@ export function SelectField<T extends string>(
 
 /** Text input that reports its value when editing ends (blur or Enter). */
 /**
- * What a key does in a TextField: Enter ends the edit and saves; Escape with an
- * edited value puts the saved one back and keeps Settings open; Escape on an
- * unedited value is left to close Settings.
+ * What a key does in a TextField (live claude.ai bundle, 2026-10-14: the
+ * profile fields' inline input): Enter ends the edit and saves; Escape
+ * with an edited value puts the saved one back and keeps Settings open;
+ * Escape on an unedited value is left to close Settings.
  */
 export function textFieldKey(
   key: string,
@@ -406,10 +410,12 @@ export function TextArea({
 }
 
 /**
- * Row buttons: grey by default (Log out, Export data, Manage), `primary` light
- * on dark (Edit config), `danger` red. A disabled primary keeps the original's
- * dimmed look. `size="compact"` (default) is 28 tall; `size="regular"` is 32
- * tall with 12px padding.
+ * Row buttons: grey by default (Log out, Export data, Manage), `primary`
+ * light on dark (Edit config), `danger` red. A disabled primary keeps the
+ * original's dimmed look (R-1331). `size="compact"` (default) is 28 tall
+ * (Log out, R-设置-Account-顶部); `size="regular"` is 32 tall with 12px
+ * padding (Export data, Manage, Delete account: R-设置-Privacy-顶部,
+ * R-设置-Account-顶部).
  */
 export function Button({
   children,
@@ -465,8 +471,9 @@ export function UnavailableButton({
 }
 
 /**
- * A row that opens a page of its own, with a chevron; `reason` draws it
- * disabled when Claudex has no such page yet.
+ * A row that opens a page of its own, with a chevron (R-1503 "How we
+ * protect your data"); `reason` draws it disabled when Claudex has no such
+ * page yet.
  */
 export function LinkRow({
   label,

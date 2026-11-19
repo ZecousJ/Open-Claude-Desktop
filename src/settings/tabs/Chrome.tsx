@@ -9,10 +9,11 @@ import "../original-rows.css";
 export { chromeLabels as searchLabels } from "./desktop-labels";
 
 /**
- * Claude in Chrome: the original's page, drawn as it is. The Chrome extension
- * does not connect to Claudex, so its switch and the site policy are disabled
- * with the reason (owner rule: UI first). The navigation shows the page only
- * where the app runs local MCP servers (nav.tsx tabAvailable).
+ * Claude in Chrome (R-1368–R-1373, R-设置-Claude-in-Chrome-顶部-深色): the
+ * original's page, drawn as it is. The Chrome extension does not connect
+ * to Claudex, so its switch and the site policy are disabled with the
+ * reason (owner rule: UI first). The navigation shows the page only where
+ * the app runs local MCP servers (nav.tsx tabAvailable).
  */
 export function ChromeTab(_props: TabProps) {
   const localMcp = useHostCapability("localMcp");
@@ -62,7 +63,10 @@ export function ChromeTab(_props: TabProps) {
   );
 }
 
-/** Two browser windows and a pointer, 58×55. */
+/**
+ * Two browser windows and a pointer, 58×55 (R-1369 at 1x: the back window
+ * 217–264 × 76–111, the front one 228–274 × 95–130, title bars 6px down).
+ */
 function ChromeIllustration() {
   return (
     <svg

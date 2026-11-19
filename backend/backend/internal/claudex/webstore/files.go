@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Wei-Shaw/sub2api/internal/claudex/attachmentstore"
 )
 
 // Files: uploads from the browser (W-RELAY's chunked /web/uploads calls
@@ -54,15 +56,16 @@ func ValidFileID(s string) bool { return fileIDPattern.MatchString(s) }
 
 // FileInfo describes a stored file.
 type FileInfo struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Mime      string    `json:"mime"`
-	Size      int64     `json:"size"`
-	Received  int64     `json:"received"`
-	SHA256    string    `json:"sha256,omitempty"`
-	Complete  bool      `json:"complete"`
-	Origin    string    `json:"origin"`
-	CreatedAt time.Time `json:"createdAt"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Mime          string    `json:"mime"`
+	Size          int64     `json:"size"`
+	Received      int64     `json:"received"`
+	SHA256        string    `json:"sha256,omitempty"`
+	Complete      bool      `json:"complete"`
+	Origin        string    `json:"origin"`
+	CreatedAt     time.Time `json:"createdAt"`
+	ObjectStorage bool      `json:"-"`
 }
 
 type blobs struct{ root string }
@@ -118,12 +121,12 @@ func cleanMime(mime string) string {
 	return mime
 }
 
-const fileColumns = `id, name, mime, size, received, sha256, state, origin, created_at`
+const fileColumns = `id, name, mime, size, received, sha256, state, origin, created_at, object_storage`
 
 func scanFile(sc interface{ Scan(...any) error }) (FileInfo, error) {
 	var f FileInfo
 	var state string
-	err := sc.Scan(&f.ID, &f.Name, &f.Mime, &f.Size, &f.Received, &f.SHA256, &state, &f.Origin, &f.CreatedAt)
+	err := sc.Scan(&f.ID, &f.Name, &f.Mime, &f.Size, &f.Received, &f.SHA256, &state, &f.Origin, &f.CreatedAt, &f.ObjectStorage)
 	f.Complete = state == stateReady
 	return f, err
 }
@@ -131,10 +134,10 @@ func scanFile(sc interface{ Scan(...any) error }) (FileInfo, error) {
 // BeginUpload starts a file of the declared size and reserves it against
 // the user's quota. A file of size 0 is complete at once.
 func (c *Component) BeginUpload(ctx context.Context, userID int64, name, mime string, size int64) (FileInfo, error) {
-	return c.beginFile(ctx, userID, name, mime, size, OriginUpload)
+	return c.beginFile(ctx, userID, name, mime, size, OriginUpload, "", "")
 }
 
-func (c *Component) beginFile(ctx context.Context, userID int64, name, mime string, size int64, origin string) (FileInfo, error) {
+func (c *Component) beginFile(ctx context.Context, userID int64, name, mime string, size int64, origin, objectSHA, stableID string) (FileInfo, error) {
 	lim := c.Limits(ctx)
 	if size < 0 {
 		return FileInfo{}, badRequest("The file size is not valid.")
@@ -142,20 +145,48 @@ func (c *Component) beginFile(ctx context.Context, userID int64, name, mime stri
 	if size > lim.MaxFileBytes {
 		return FileInfo{}, tooLarge("file")
 	}
-	id, err := newFileID()
-	if err != nil {
-		return FileInfo{}, failed(err)
+	id := stableID
+	if id == "" {
+		var err error
+		id, err = newFileID()
+		if err != nil {
+			return FileInfo{}, failed(err)
+		}
 	}
 	var info FileInfo
-	err = c.store.tx(ctx, userID, func(tx *sql.Tx) error {
+	err := c.store.tx(ctx, userID, func(tx *sql.Tx) error {
+		if stableID != "" {
+			existing, err := scanFile(tx.QueryRowContext(ctx, "SELECT "+fileColumns+" FROM claudex_web_files WHERE user_id=$1 AND id=$2 AND organization_id IS NULL", userID, id))
+			if err == nil {
+				if !existing.ObjectStorage || existing.SHA256 != objectSHA || existing.Size != size {
+					return badRequest("The stored attachment does not match.")
+				}
+				info = existing
+				if !info.Complete {
+					return recordAttachmentObject(ctx, tx, userID, id)
+				}
+				if _, err := tx.ExecContext(ctx, "UPDATE claudex_web_files SET updated_at=NOW() WHERE user_id=$1 AND id=$2", userID, id); err != nil {
+					return failed(err)
+				}
+				return nil
+			}
+			if !errors.Is(err, sql.ErrNoRows) {
+				return failed(err)
+			}
+		}
 		if err := checkQuota(ctx, tx, userID, size, lim, quotaStrict); err != nil {
 			return err
 		}
-		row := tx.QueryRowContext(ctx, `INSERT INTO claudex_web_files (user_id, id, name, mime, size, origin)
-VALUES ($1, $2, $3, $4, $5, $6) RETURNING `+fileColumns, userID, id, cleanName(name), cleanMime(mime), size, origin)
+		row := tx.QueryRowContext(ctx, `INSERT INTO claudex_web_files (user_id, id, name, mime, size, origin, sha256, object_storage)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING `+fileColumns, userID, id, cleanName(name), cleanMime(mime), size, origin, objectSHA, objectSHA != "")
 		var err error
 		if info, err = scanFile(row); err != nil {
 			return failed(err)
+		}
+		if info.ObjectStorage {
+			if err := recordAttachmentObject(ctx, tx, userID, id); err != nil {
+				return err
+			}
 		}
 		if err := addUsage(ctx, tx, userID, 0, size); err != nil {
 			return failed(err)
@@ -184,7 +215,7 @@ func (c *Component) WriteUpload(ctx context.Context, userID int64, id string, of
 	var info FileInfo
 	err := c.store.tx(ctx, userID, func(tx *sql.Tx) error {
 		var state string
-		row := tx.QueryRowContext(ctx, `SELECT `+fileColumns+` FROM claudex_web_files WHERE user_id = $1 AND id = $2 FOR UPDATE`, userID, id)
+		row := tx.QueryRowContext(ctx, `SELECT `+fileColumns+` FROM claudex_web_files WHERE user_id = $1 AND id = $2 AND organization_id IS NULL FOR UPDATE`, userID, id)
 		var err error
 		info, err = scanFile(row)
 		if errors.Is(err, sql.ErrNoRows) {
@@ -192,6 +223,9 @@ func (c *Component) WriteUpload(ctx context.Context, userID int64, id string, of
 		}
 		if err != nil {
 			return failed(err)
+		}
+		if info.ObjectStorage {
+			return badRequest("This upload uses object storage.")
 		}
 		if info.Complete {
 			state = stateReady
@@ -246,29 +280,9 @@ func (c *Component) WriteUpload(ctx context.Context, userID int64, id string, of
 
 // finishFile hashes a complete upload and moves it to its blob.
 func (c *Component) finishFile(ctx context.Context, tx *sql.Tx, userID int64, info *FileInfo) error {
-	tmp := c.blobs.tmpPath(userID, info.ID)
-	f, err := os.Open(tmp)
+	sum, err := c.publishBlob(userID, c.blobs.tmpPath(userID, info.ID), info.Size)
 	if err != nil {
-		return failed(err)
-	}
-	h := sha256.New()
-	n, err := io.Copy(h, f)
-	_ = f.Close()
-	if err != nil {
-		return failed(err)
-	}
-	if n != info.Size {
-		return failed(errors.New("webstore: upload size changed on disk"))
-	}
-	sum := hex.EncodeToString(h.Sum(nil))
-	dst := c.blobs.blobPath(userID, sum)
-	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
-		return failed(err)
-	}
-	if _, err := os.Stat(dst); err == nil {
-		_ = os.Remove(tmp)
-	} else if err := os.Rename(tmp, dst); err != nil {
-		return failed(err)
+		return err
 	}
 	if _, err := tx.ExecContext(ctx, `UPDATE claudex_web_files SET sha256 = $3, state = 'ready', received = size, updated_at = NOW()
 WHERE user_id = $1 AND id = $2`, userID, info.ID, sum); err != nil {
@@ -276,6 +290,33 @@ WHERE user_id = $1 AND id = $2`, userID, info.ID, sum); err != nil {
 	}
 	info.SHA256, info.Complete, info.Received = sum, true, info.Size
 	return nil
+}
+
+func (c *Component) publishBlob(userID int64, tmp string, size int64) (string, error) {
+	f, err := os.Open(tmp)
+	if err != nil {
+		return "", failed(err)
+	}
+	h := sha256.New()
+	n, err := io.Copy(h, f)
+	_ = f.Close()
+	if err != nil {
+		return "", failed(err)
+	}
+	if n != size {
+		return "", failed(errors.New("webstore: upload size changed on disk"))
+	}
+	sum := hex.EncodeToString(h.Sum(nil))
+	dst := c.blobs.blobPath(userID, sum)
+	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+		return "", failed(err)
+	}
+	if _, err := os.Stat(dst); err == nil {
+		_ = os.Remove(tmp)
+	} else if err := os.Rename(tmp, dst); err != nil {
+		return "", failed(err)
+	}
+	return sum, nil
 }
 
 // File returns a file of the user.
@@ -286,7 +327,7 @@ func (c *Component) File(ctx context.Context, userID int64, id string) (FileInfo
 	if err := c.store.ok(); err != nil {
 		return FileInfo{}, err
 	}
-	info, err := scanFile(c.store.db.QueryRowContext(ctx, `SELECT `+fileColumns+` FROM claudex_web_files WHERE user_id = $1 AND id = $2`, userID, id))
+	info, err := scanFile(c.store.db.QueryRowContext(ctx, `SELECT `+fileColumns+` FROM claudex_web_files WHERE user_id = $1 AND id = $2 AND organization_id IS NULL`, userID, id))
 	if errors.Is(err, sql.ErrNoRows) {
 		return FileInfo{}, notFound("file")
 	}
@@ -297,13 +338,22 @@ func (c *Component) File(ctx context.Context, userID int64, id string) (FileInfo
 }
 
 // OpenFile opens a complete file of the user for reading.
-func (c *Component) OpenFile(ctx context.Context, userID int64, id string) (FileInfo, *os.File, error) {
+func (c *Component) OpenFile(ctx context.Context, userID int64, id string) (FileInfo, io.ReadCloser, error) {
 	info, err := c.File(ctx, userID, id)
 	if err != nil {
 		return info, nil, err
 	}
 	if !info.Complete || !shaPattern.MatchString(info.SHA256) {
 		return info, nil, notFound("file")
+	}
+	if info.ObjectStorage && c.objects != nil {
+		body, err := c.objects.Open(ctx, attachmentstore.Key(userID, id), "")
+		if err == nil {
+			return info, body, nil
+		}
+		if _, localErr := os.Stat(c.blobs.blobPath(userID, info.SHA256)); localErr != nil {
+			return info, nil, failed(err)
+		}
 	}
 	f, err := os.Open(c.blobs.blobPath(userID, info.SHA256))
 	if errors.Is(err, os.ErrNotExist) {
@@ -323,11 +373,13 @@ func (c *Component) ReadFile(ctx context.Context, userID int64, id string, offse
 	if length > fileReadBytes {
 		length = fileReadBytes
 	}
-	info, f, err := c.OpenFile(ctx, userID, id)
+	info, err := c.File(ctx, userID, id)
 	if err != nil {
 		return info, nil, err
 	}
-	defer func() { _ = f.Close() }()
+	if !info.Complete || !shaPattern.MatchString(info.SHA256) {
+		return info, nil, notFound("file")
+	}
 	if offset > info.Size {
 		return info, nil, badRequest("The range is not valid.")
 	}
@@ -335,7 +387,32 @@ func (c *Component) ReadFile(ctx context.Context, userID int64, id string, offse
 		length = rest
 	}
 	buf := make([]byte, length)
-	if _, err := f.ReadAt(buf, offset); err != nil && !errors.Is(err, io.EOF) {
+	if length == 0 {
+		return info, buf, nil
+	}
+	if info.ObjectStorage && c.objects != nil {
+		source, err := c.objects.Open(ctx, attachmentstore.Key(userID, id),
+			"bytes="+strconv.FormatInt(offset, 10)+"-"+strconv.FormatInt(offset+length-1, 10))
+		if err == nil {
+			_, err = io.ReadFull(source, buf)
+			_ = source.Close()
+			if err == nil {
+				return info, buf, nil
+			}
+		}
+		if _, localErr := os.Stat(c.blobs.blobPath(userID, info.SHA256)); localErr != nil {
+			return info, nil, failed(err)
+		}
+	}
+	f, err := os.Open(c.blobs.blobPath(userID, info.SHA256))
+	if errors.Is(err, os.ErrNotExist) {
+		return info, nil, notFound("file")
+	}
+	if err != nil {
+		return info, nil, failed(err)
+	}
+	defer f.Close()
+	if _, err := f.ReadAt(buf, offset); err != nil {
 		return info, nil, failed(err)
 	}
 	return info, buf, nil
@@ -355,7 +432,7 @@ func (c *Component) DeleteFile(ctx context.Context, userID int64, id string) err
 func (c *Component) deleteFileTx(ctx context.Context, tx *sql.Tx, userID int64, id string) error {
 	var size int64
 	var sha, state string
-	err := tx.QueryRowContext(ctx, `DELETE FROM claudex_web_files WHERE user_id = $1 AND id = $2 RETURNING size, sha256, state`, userID, id).
+	err := tx.QueryRowContext(ctx, `DELETE FROM claudex_web_files WHERE user_id = $1 AND id = $2 AND organization_id IS NULL RETURNING size, sha256, state`, userID, id).
 		Scan(&size, &sha, &state)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil
@@ -386,7 +463,7 @@ func (c *Component) deleteFileTx(ctx context.Context, tx *sql.Tx, userID int64, 
 
 // listFiles lists the user's files, newest first.
 func (c *Component) listFiles(ctx context.Context, q querier, userID int64) ([]FileInfo, error) {
-	rows, err := q.QueryContext(ctx, `SELECT `+fileColumns+` FROM claudex_web_files WHERE user_id = $1 ORDER BY created_at DESC, id`, userID)
+	rows, err := q.QueryContext(ctx, `SELECT `+fileColumns+` FROM claudex_web_files WHERE user_id = $1 AND organization_id IS NULL ORDER BY created_at DESC, id`, userID)
 	if err != nil {
 		return nil, failed(err)
 	}

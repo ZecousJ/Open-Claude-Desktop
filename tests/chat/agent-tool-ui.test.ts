@@ -26,7 +26,7 @@ import {
 import {
   elicitationContent,
   elicitationFields,
-} from "../../src/approval/elicitation-form";
+} from "../../shared/elicitation-form";
 import { questionAnswers } from "../../src/approval/QuestionsBody";
 import {
   codeSegments,
@@ -48,7 +48,7 @@ import {
   approvalConversation,
   mixedToolsConversation,
   workingTreeDiff,
-} from "../../scripts/preview/agent-tool-fixtures";
+} from "../../scripts/fidelity/agent-tool-fixtures";
 import { ChatTurnContent } from "../../src/transcript/ChatTurnContent";
 import { chatSegments } from "../../src/transcript/ChatActivityGroup";
 
@@ -341,7 +341,7 @@ test("consecutive tool calls fold into one counted summary", () => {
     [
       "Read 2 files",
       "m",
-      // A file edit joins the run and kinds keep their first-seen order.
+      // A file edit joins the run and kinds keep their first-seen order (R-0805, G-08/G-09).
       "Ran 4 commands (1 failed), edited a file, used a tool",
     ],
   );
@@ -396,7 +396,7 @@ test("file rows name the file and the turn totals come from Codex's turn diff", 
     "Editing app.js",
   );
   assert.equal(fileChangeLabel(change("add")), "Created app.js");
-  // A write that did not happen names the file.
+  // R-0823: a write that did not happen names the file.
   assert.equal(
     fileChangeLabel(change("update", "declined")),
     "Failed to edit app.js",
@@ -434,7 +434,7 @@ test("file rows name the file and the turn totals come from Codex's turn diff", 
   assert.match(latest, /turn-edits-undo[^>]*>Undo</);
 });
 
-test("Undo on a turn's changes asks Claude to restore each file", () => {
+test("Undo on a turn's changes asks Claude to restore each file (live claude.ai bundle)", () => {
   assert.equal(
     undoChangesPrompt(["src/app.js"]),
     "Undo the changes you made to `src/app.js` in your last turn and restore it to its previous state.",

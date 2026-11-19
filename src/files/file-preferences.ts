@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore } from "react";
 
-/** Current native Files settings. */
+/** Current native Files settings (O16/cccc2cf0a:10629–10730). */
 export interface FilePreferences {
   previewTabs: boolean;
   autoSave: boolean;

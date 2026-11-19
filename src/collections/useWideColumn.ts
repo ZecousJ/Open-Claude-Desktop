@@ -1,9 +1,9 @@
 import { useEffect, useState, type RefObject } from "react";
 
 /**
- * Whether a page column is at least `width` wide. A full 960px column has room
- * for a page's search field itself; narrower windows show the lens that opens
- * it.
+ * Whether a page column is at least `width` wide. A full 960px column has
+ * room for a page's search field itself (R-1284, R-1290); narrower windows
+ * show the lens that opens it (R-Customize-主页, R-Projects-加载中骨架).
  */
 export function useWideColumn(
   column: RefObject<HTMLElement | null>,

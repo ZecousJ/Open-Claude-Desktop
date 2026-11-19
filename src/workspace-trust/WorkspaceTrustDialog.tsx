@@ -4,8 +4,8 @@ import type { TrustQuestion } from "./trust-request";
 import "./workspace-trust.css";
 
 /**
- * "on {host}" under the folder of an SSH host's workspace: the host's name in
- * the monospace of the folder.
+ * "on {host}" under the folder of an SSH host's workspace (c165c93f1
+ * :270-283): the host's name in the monospace of the folder.
  */
 function HostLine({ host }: { host: string }) {
   const [before, after = ""] = formatText("on {host}", {
@@ -23,13 +23,15 @@ function HostLine({ host }: { host: string }) {
 }
 
 /**
- * "Trust this workspace?": asked before the first Code session in a folder
- * Codex doesn't trust. Cancel starts focused (initialFocus "cancel"); Escape
- * and Cancel decline. Under the description: the folder, where Codex records
- * the trust when that is the repository around it, and the folder's own Codex
- * files that load once it is trusted ("Execution allowed by:"); on an SSH host
- * "on {host}" under the folder. The original's macOS folder-permission note and
- * security guide link are Claude Code's and are left out.
+ * "Trust this workspace?" (live claude.ai bundle, 2026-10-12, c165c93f1
+ * :120-380): asked before the first Code session in a folder Codex doesn't
+ * trust. Cancel starts focused (initialFocus "cancel"); Escape and Cancel
+ * decline. Under the description: the folder, where Codex records the trust
+ * when that is the repository around it, and the folder's own Codex files
+ * that load once it is trusted ("Execution allowed by:"); on an SSH host
+ * "on {host}" under the folder. The original's
+ * macOS folder-permission note and security guide link are Claude Code's
+ * and are left out.
  */
 export function WorkspaceTrustDialog({
   question,

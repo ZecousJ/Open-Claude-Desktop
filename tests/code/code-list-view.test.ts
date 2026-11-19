@@ -23,7 +23,7 @@ import {
   codeMetadata,
   codePlaceDescription,
 } from "../../src/sidebar/CodeRowMetadata";
-import { codeListFixture } from "../../scripts/preview/fixtures/code-list";
+import { codeListFixture } from "../../scripts/fidelity/fixtures/code-list";
 import type { MenuEntry } from "../../src/ui/Menu";
 import { Menu } from "../../src/ui/Menu";
 

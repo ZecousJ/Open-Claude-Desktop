@@ -53,6 +53,28 @@ export function widgetUri(value: unknown): string | undefined {
     : undefined;
 }
 
+export function widgetToolMetadata(tool: { _meta?: unknown } | undefined) {
+  const resourceUri = widgetUri(tool);
+  const meta = tool?._meta;
+  const ui =
+    meta && typeof meta === "object" && "ui" in meta ? meta.ui : undefined;
+  const audiences =
+    ui && typeof ui === "object" && "visibility" in ui ? ui.visibility : undefined;
+  const visibility = Array.isArray(audiences)
+    ? [...new Set(audiences.filter(
+        (value: unknown): value is "app" | "model" =>
+          value === "app" || value === "model",
+      ))]
+    : undefined;
+  if (resourceUri === undefined && visibility === undefined) return;
+  return {
+    ui: {
+      ...(resourceUri !== undefined ? { resourceUri } : {}),
+      ...(visibility !== undefined ? { visibility } : {}),
+    },
+  };
+}
+
 export function embeddedWidget(
   result: unknown,
 ): { html: string; uri: string } | undefined {

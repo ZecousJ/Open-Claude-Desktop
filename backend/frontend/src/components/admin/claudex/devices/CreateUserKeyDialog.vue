@@ -291,8 +291,7 @@ async function submit() {
 }
 
 function selectAll(event: FocusEvent) {
-  const input = event.target as HTMLInputElement | null
-  input?.select()
+  ;(event.target as HTMLInputElement | null)?.select()
 }
 
 async function copyKey() {

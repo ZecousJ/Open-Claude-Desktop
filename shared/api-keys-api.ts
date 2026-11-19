@@ -38,21 +38,17 @@ export interface ApiProvider {
   selected: number | null;
 }
 
-/**
- * Image generation: the drawing group's image models, one of which makes every
- * picture, whatever the conversation's model.
- */
+/** The drawing group's configured image models. */
 export interface ApiImages {
   groupId: number;
   models: { id: string; name: string }[];
-  /** The model pictures are made with. */
-  selected: string;
+  selected: "auto";
 }
 
 export interface ApiGroups {
   /** Every group of the account (a new key picks among them). */
   groups: ApiGroup[];
-  /** The drawing group's models and the one in use; absent without one. */
+  /** The drawing group's models, when available. */
   images?: ApiImages;
   /** The providers, the well-known ones first even when they have no group. */
   providers: ApiProvider[];
@@ -117,8 +113,6 @@ export interface ApiKeysAPI {
   apiGroups(fresh?: boolean): Promise<ApiGroups>;
   /** Uses a group's models for its provider; the model menus follow at once. */
   setApiGroup(providerId: string, groupId: number): Promise<ApiGroups>;
-  /** Makes every picture with this image model of the drawing group. */
-  setImageModel(model: string): Promise<ApiGroups>;
   /** The account's own keys, newest first. */
   apiKeys(): Promise<ApiKey[]>;
   createApiKey(input: ApiKeyInput): Promise<ApiKey>;
@@ -133,7 +127,6 @@ export interface ApiKeysAPI {
 export const apiKeysMethods = bridgeMethods<ApiKeysAPI>({
   apiGroups: true,
   setApiGroup: true,
-  setImageModel: true,
   apiKeys: true,
   createApiKey: true,
   deleteApiKey: true,
@@ -170,9 +163,10 @@ export function groupRatesFrom(
 export const keyUsageBatch = 100;
 
 /**
- * The keys with their total charges. `stats` is the merged `data.stats` of
- * `POST /api/v1/usage/dashboard/api-keys-usage`, by key id; a key it does not
- * name has not been charged yet.
+ * The keys with their total charges (owner, 2026-10-09: the API page's
+ * "Total cost" column, what was actually deducted, in dollars). `stats` is
+ * the merged `data.stats` of `POST /api/v1/usage/dashboard/api-keys-usage`,
+ * by key id; a key it does not name has not been charged yet.
  */
 export function withKeyCosts(keys: ApiKey[], stats: unknown): ApiKey[] {
   const byId =

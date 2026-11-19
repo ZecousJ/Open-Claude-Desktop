@@ -2,9 +2,10 @@ import { createPortal } from "react-dom";
 import { Modal } from "../ui/Controls";
 import { t } from "../i18n";
 
-// Verbatim originals. Opened from a message inside the transcript's scroller,
-// it is drawn on the page itself, as the menus are: inside, the scroller
-// clipped it and centred it on itself rather than on the window.
+// Verbatim originals (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js).
+// Opened from a message inside the transcript's scroller, it is drawn on the
+// page itself, as the menus are: inside, the scroller clipped it and centred
+// it on itself rather than on the window (owner, 2026-10-21).
 export function SentPromptDialog({
   prompts,
   onClose,

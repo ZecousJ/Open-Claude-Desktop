@@ -76,7 +76,10 @@ export function browserLocale(): string {
 }
 
 /** Switches the interface language; resolves once its catalog is loaded. */
-export async function setLocale(id: string | undefined): Promise<void> {
+export async function setLocale(
+  id: string | undefined,
+  options: { persist?: boolean; document?: boolean } = {},
+): Promise<void> {
   const request = ++localeRequest;
   const next = validLocale(id);
   if (next === current && chosen) return;
@@ -119,11 +122,11 @@ export async function setLocale(id: string | undefined): Promise<void> {
   chosen = true;
   version++;
   try {
-    localStorage.setItem(storageKey, next);
+    if (options.persist !== false) localStorage.setItem(storageKey, next);
   } catch {
     /* the account's setting still holds it */
   }
-  if (typeof document !== "undefined") document.documentElement.lang = next;
+  if (options.document !== false && typeof document !== "undefined") document.documentElement.lang = next;
   listeners.forEach((listener) => listener());
 }
 
@@ -200,8 +203,8 @@ function translate(text: string, depth: number): string {
   if (templates.length && text.length < 240)
     for (const { pattern, to } of templates) {
       const match = pattern.exec(text);
-      // A hole holds a name, never a clause: "{client} on {os}" must not take
-      // "Turn on Allow … in Settings to use it." apart.
+      // A hole holds a name, never a clause: "{client} on {os}" must not
+      // take "Turn on Allow … in Settings to use it." apart (2026-10-20).
       if (
         match &&
         Object.entries(match.groups ?? {}).some(

@@ -46,9 +46,9 @@ test("settings groups expose the live heading and named-row semantics", () => {
 });
 
 test("General uses the measured comfortable-density frame and controls", () => {
-  // Official-settings-general.txt:2–6,12–23; current read-only DOM measurements
-  // additionally resolve py-md/gap-lg and the 390×844 modal/header. Source rem
-  // values use the official 16px scale.
+  // 2026-10-16 live: official-settings-general.txt:2–6,12–23; current
+  // read-only DOM measurements additionally resolve py-md/gap-lg and
+  // the 390×844 modal/header. Source rem values use the official 16px scale.
   const css = source("src/settings/settings.css");
   const rule = (selector: string) => {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

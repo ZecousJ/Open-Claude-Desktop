@@ -66,7 +66,8 @@ function argumentsOf(item: Item): Record<string, any> {
     : {};
 }
 
-// Resource aggregation and scratchpad exclusions.
+// Resource aggregation and scratchpad exclusions (live claude.ai bundle,
+// 2026-10-14, ce5658dc8-Dez48Sxz.js: gs, Fs, ti).
 export function contextResources(
   conversation: Conversation,
   folders: string[],

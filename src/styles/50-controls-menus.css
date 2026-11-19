@@ -30,7 +30,9 @@
   color: var(--text);
 }
 /* The comfortable-density md button: 32px high, 8px radius, 14px/20px text,
-   medium for the primary and regular for the secondary. */
+   medium for the primary and regular for the secondary (live claude.ai
+   bundle, 2026-10-16, shared-frame-6654oR3-.js Button base, rules.json
+   .cds-root[data-density=comfortable]). */
 .primary,
 .secondary {
   display: inline-flex;
@@ -84,12 +86,13 @@
   background: var(--surface-hover);
 }
 /* The danger fill is the original's red-450 in both themes and lightens to
-   red-400 under the pointer; dark had a derived #ad453c. */
+   red-400 under the pointer (--cds-fill-danger and its hover, desktop bundle
+   2.31226.1); dark had a derived #ad453c. */
 .danger-button {
   color: #fff;
   background: #d03b3b;
 }
-/* #d03c3c. */
+/* R-1289 Delete project (light): #d03c3c. */
 :root[data-theme="light"] .danger-button {
   background: #d03c3c;
 }
@@ -133,8 +136,8 @@
   border: 1px solid var(--border-strong);
   border-radius: 10px;
   box-shadow: var(--shadow);
-  /* No open or close motion: the original's menu and popover popups carry no
-     transition. */
+  /* No open or close motion: the original's menu and popover popups carry
+     no transition (desktop bundle 2.31226.1). */
 }
 .popover > button,
 .popover > div > button {

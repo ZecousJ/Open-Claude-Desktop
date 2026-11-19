@@ -61,6 +61,7 @@ export async function sendWithChatDevice(
       thinkingMode: input.thinkingMode,
       connectorOverrides: input.connectorOverrides,
       connectorToolOverrides: input.connectorToolOverrides,
+      knowledgeBases: input.knowledgeBases,
     },
   });
   if (!input.conversationId) clearDraftChatDevice(app);

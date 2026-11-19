@@ -1,9 +1,10 @@
 /*
- * A security-review routine's findings. Sizes follow the routine history dialog
- * it sits beside (routine-history.css: 12–13px text, secondary grey, 1px
- * rules), the dialog's buttons are the shared .secondary ones, and the severity
- * colours are the ones a failed run (#e5877b, light #8f2d2a) and the model
- * menu's Max warning (#d69c44) already use.
+ * A security-review routine's findings (SecurityFindings.tsx; not captured:
+ * provisional). Sizes follow the routine history dialog it sits beside
+ * (routine-history.css: 12–13px text, secondary grey, 1px rules), the
+ * dialog's buttons are the shared .secondary ones, and the severity colours
+ * are the ones a failed run (#e5877b, light #8f2d2a) and the model menu's
+ * Max warning (#d69c44) already use.
  */
 .sec-findings {
   max-height: 64vh;

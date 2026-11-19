@@ -1,9 +1,9 @@
 /**
- * The web Code home's repository flow: the chosen repository outlives the home
- * and the reload, the repository menu's empty, connect and expired states use
- * the live picker's words, the environment menu says the network level under
- * each environment, and a return from GitHub without a connection has its own
- * page.
+ * The web Code home's repository flow (flow audit 2026-10-12): the chosen
+ * repository outlives the home and the reload, the repository menu's empty,
+ * connect and expired states use the live picker's words, the environment
+ * menu says the network level under each environment, and a return from
+ * GitHub without a connection has its own page.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

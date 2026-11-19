@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -64,6 +65,9 @@ func (c *Component) Cleanup(ctx context.Context) (CleanupStats, error) {
 	if err := c.store.ok(); err != nil {
 		return st, err
 	}
+	if err := c.deleteQueuedObjects(ctx); err != nil {
+		slogWarn("claudex webstore: delete attachment objects", err)
+	}
 	n, err := c.dropStaleUploads(ctx)
 	st.StaleUploads = n
 	if err != nil {
@@ -75,12 +79,21 @@ func (c *Component) Cleanup(ctx context.Context) (CleanupStats, error) {
 		return st, err
 	}
 	st.OrphanBlobs, err = c.removeOrphanBlobs(ctx)
+	if err == nil && c.objects != nil {
+		if migrated, migrateErr := c.migrateAttachmentObjects(ctx); migrateErr != nil {
+			slogWarn("claudex webstore: copy legacy attachments", migrateErr)
+		} else if migrated > 0 {
+			slog.Info("claudex webstore: copied legacy attachments", "files", migrated)
+		}
+	}
 	return st, err
 }
 
 func (c *Component) dropStaleUploads(ctx context.Context) (int, error) {
 	rows, err := c.store.db.QueryContext(ctx, `SELECT user_id, id FROM claudex_web_files
-WHERE state = 'uploading' AND updated_at < $1 ORDER BY updated_at LIMIT $2`, c.now().Add(-staleUpload), cleanupBatch)
+WHERE updated_at < $1 AND (state = 'uploading' OR
+    (object_storage AND origin = 'runner' AND id = sha256))
+ORDER BY updated_at LIMIT $2`, c.now().Add(-staleUpload), cleanupBatch)
 	if err != nil {
 		return 0, err
 	}
@@ -106,7 +119,30 @@ WHERE state = 'uploading' AND updated_at < $1 ORDER BY updated_at LIMIT $2`, c.n
 			return 0, err
 		}
 	}
-	return len(stale), nil
+	return len(stale) + c.dropStaleProjectKnowledgeUploads(), nil
+}
+
+func (c *Component) dropStaleProjectKnowledgeUploads() int {
+	accounts, _ := os.ReadDir(c.blobs.root)
+	cutoff := time.Now().Add(-staleUpload)
+	n := 0
+	for _, account := range accounts {
+		if !account.IsDir() {
+			continue
+		}
+		dir := filepath.Join(c.blobs.root, account.Name(), "tmp")
+		entries, _ := os.ReadDir(dir)
+		for _, entry := range entries {
+			if entry.IsDir() || !strings.HasPrefix(entry.Name(), projectKnowledgeTempPrefix) {
+				continue
+			}
+			info, err := entry.Info()
+			if err == nil && info.ModTime().Before(cutoff) && os.Remove(filepath.Join(dir, entry.Name())) == nil {
+				n++
+			}
+		}
+	}
+	return n
 }
 
 // accountGone reports whether the user row is missing or soft-deleted.

@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { Menu } from "../ui/Menu";
-import { AppIcon } from "../ui/app-icon";
+import { AnthropiconGlyph } from "../ui/AnthropiconGlyph";
 import "./task-permission-menu.css";
 
 /** Current web popup; its rules arrive with this on-demand menu. */
@@ -10,7 +10,7 @@ export function TaskPermissionMenu(props: ComponentProps<typeof Menu>) {
       ? {
           ...entry,
           icon: (
-            <AppIcon
+            <AnthropiconGlyph
               name="Check"
               size={20}
               bold

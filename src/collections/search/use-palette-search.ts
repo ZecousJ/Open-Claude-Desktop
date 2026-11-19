@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { HistorySearchHit } from "../../../shared/history-search";
 import { api } from "../../desktop-api";
 
-/** Deeper stored-message search. */
+/** Deeper stored-message search (live claude.ai bundle, 2026-10-14, c2771e1f6). */
 export function usePaletteSearch(query: string, enabled: boolean) {
   const [result, setResult] = useState<{
     query: string;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Spinner } from "../../ui/Spinner";
 import { Modal } from "../../ui/Controls";
 import { isComposingKey } from "../../ui/ime";
@@ -11,13 +11,13 @@ import { nameRequired } from "./CreateSkillDialog";
 import "./create-skill.css";
 
 /**
- * Duplicate skill, Rename skill, Duplicate plugin and Rename plugin: a Name
- * field with the proposed name selected, the name it is saved as under it, an
- * optional note ("The copy is added to your personal skills."), Cancel and the
- * action. A name that cannot be used, or one the main process refuses (taken),
- * shows its reason under the field; while the request runs the field and
- * buttons wait and the dialog stays open. Laid out with Create a skill's field
- * and footer (the closest Claudex analogue).
+ * Duplicate skill, Rename skill, Duplicate plugin and Rename plugin (live claude.ai bundle,
+ * 2026-10-12): a Name field with the proposed name selected, the name it is
+ * saved as under it, an optional note ("The copy is added to your personal
+ * skills."), Cancel and the action. A name that cannot be used, or one the
+ * main process refuses (taken), shows its reason under the field; while the
+ * request runs the field and buttons wait and the dialog stays open. Laid
+ * out with Create a skill's field and footer (the closest Claudex analogue).
  */
 export function NameCopyDialog({
   title,
@@ -156,7 +156,7 @@ export function NameCopyDialog({
             className="create-skill-error"
             role="alert"
           >
-            <AppIcon name="WarningCircle" size={13} strokeWidth={1.8} />
+            <Anthropicon name="WarningCircle" size={13} strokeWidth={1.8} />
             {shown}
           </small>
         ) : (

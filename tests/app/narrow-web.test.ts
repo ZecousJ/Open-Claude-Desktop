@@ -1,7 +1,8 @@
 /**
- * The web app at narrow and phone widths: where the sidebar becomes a drawer,
- * how a swipe closes the phone sheet, and the CSS that turns menus into bottom
- * sheets on a touch phone, keeps dialogs 16px from the edges and gives the Chat
+ * The web app at narrow and phone widths (flow audit 2026-10-12, live
+ * claude.ai bundle): where the sidebar becomes a drawer, how a swipe closes
+ * the phone sheet, and the CSS that turns menus into bottom sheets on a
+ * touch phone, keeps dialogs 16px from the edges and gives the Chat
  * transcript its 20px sides.
  */
 import test from "node:test";

@@ -1,8 +1,10 @@
 /**
- * Chat and Cowork home greetings. Only sentences seen in the The time-of-day
- * greeting with the user's name, "Back at it, <name>", "Let’s noodle", and in
- * the evening "Evening, how are things?" and "Evening thoughts", and in the
- * afternoon "Afternoon, <name>".
+ * Chat and Cowork home greetings (R-0291, R-0292). Only sentences seen in the
+ * original's captures are used: the time-of-day greeting with the user's
+ * name, "Back at it, <name>", "Let’s noodle" (R-0005), and in the evening
+ * "Evening, how are things?" and "Evening thoughts" (R-Chat/R-Cowork home),
+ * and in the afternoon "Afternoon, <name>" (the owner's capture of the live
+ * claude.ai home, 2026-10-12-chat-home-composer).
  */
 export function timeOfDayGreeting(hour: number) {
   return hour >= 5 && hour < 12

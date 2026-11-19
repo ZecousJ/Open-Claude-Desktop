@@ -10,6 +10,7 @@ import {
 } from "../../shared/account-profile-api";
 import type { AppContext, IpcHandle } from "../app/app-context";
 import { requestJson, Sub2ApiError } from "../sub2api/http";
+import { assertAccountOperationCurrent } from "../account/operation-lease";
 
 const input = z.object({
   name: z.string().max(400),
@@ -18,25 +19,31 @@ const input = z.object({
 });
 
 /**
- * The account step after sign-up, read and saved with the session's token in
- * the main process. A local account, or a service without the step (404), has
- * none.
+ * The account step after sign-up (shared/account-profile-api.ts), read and
+ * saved with the session's token in the main process. A local account, or a
+ * service without the step (404), has none.
  */
 export function registerAccountProfileHandlers(
   handle: IpcHandle,
   ctx: AppContext,
 ) {
   const service = () => (ctx.remote?.ready ? ctx.remote.backend : undefined);
-  const actionVerification = (suffix: string, body: { code?: string }) => {
-    const backend = service();
-    if (!backend) throw Error("Sign in to a Claudex service first.");
-    return backend.session.authorized((token) =>
-      requestJson(
+  const actionVerification = async (suffix: string, body: { code?: string }) => {
+    const remote = ctx.remote;
+    if (!remote?.ready || ctx.accountRetiring) throw Error("Sign in to a Claudex service first.");
+    const { backend } = remote;
+    const activation = ctx.accountActivationIdentity;
+    const current = () => !ctx.accountRetiring && ctx.remote === remote && ctx.accountActivationIdentity === activation;
+    const answer = await backend.session.authorized((token) => {
+      assertAccountOperationCurrent(current);
+      return requestJson(
         fetch,
         `${backend.accounts.baseUrl}${actionVerificationPath}${suffix}`,
         { method: "POST", body, token },
-      ),
-    );
+      );
+    }, current);
+    assertAccountOperationCurrent(current);
+    return answer;
   };
   handle("sendActionVerification", () => actionVerification("/send", {}));
   handle("confirmActionVerification", (raw: unknown) =>

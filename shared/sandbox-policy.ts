@@ -1,4 +1,5 @@
 import type { CodeSandbox, Mode, Settings } from "./types";
+import type { CodePermissionMode } from "./code-session-permissions";
 import {
   preference,
   type SettingsPreferences,
@@ -6,11 +7,12 @@ import {
 } from "./settings-extras";
 
 /**
- * The sandbox a turn runs in. Both stored Chat and Cowork sessions follow the
- * unified permission picker observed on the current official Chat. Code follows
- * its own picker. Windows follows the same rules as macOS and Linux: Codex's
+ * The sandbox a turn runs in. Both stored Chat and Cowork sessions follow
+ * the unified permission picker observed on the current official Chat.
+ * Code follows its own picker. Windows follows the same rules as macOS and Linux: Codex's
  * unelevated Windows sandbox applies edits inside the workspace and refuses
- * writes outside it.
+ * writes outside it (checked on a Windows 11 machine with the bundled Codex
+ * 0.144.1, 2026-09-28).
  */
 export function effectiveTurnSandbox(
   _platform: NodeJS.Platform,
@@ -29,7 +31,8 @@ export function taskSandboxFor(
   settings: SettingsPreferences,
   /**
    * A scheduled task's run: full access unless the task chose Manual or Auto
-   * (`scheduledPermission`); a task saved before the choice has full access.
+   * (`scheduledPermission`); a task saved before the choice has full access
+   * (owner, 2026-10-12).
    */
   scheduledRun = false,
   /** A task from an outside prompt asks first (Conversation.asksFirst). */
@@ -71,10 +74,8 @@ export function scheduledCodeSandbox(
 }
 
 /**
- * Who answers a turn's approval requests: in an Auto task, Codex's automatic
- * reviewer (`approvalsReviewer: "auto_review"`, a second model that sees the
- * request and the conversation but not tool output, as the official Auto
- * mode's classifier); otherwise the person.
+ * Who answers a turn's approval requests: Auto uses Codex's automatic
+ * reviewer, while other modes leave requests to the person.
  */
 export function approvalsReviewerFor(
   mode: Mode,
@@ -84,11 +85,12 @@ export function approvalsReviewerFor(
   asksFirst = false,
   /** The permission mode a scheduled task was saved with. */
   scheduledPermission?: TaskPermission,
+  codePermission?: CodePermissionMode,
 ): "user" | "auto_review" {
   if (scheduledRun)
     return scheduledPermission === "auto" ? "auto_review" : "user";
-  return mode !== "code" &&
-    !asksFirst &&
+  if (mode === "code") return codePermission === "auto" && !asksFirst ? "auto_review" : "user";
+  return !asksFirst &&
     preference(settings, "taskPermission") === "auto"
     ? "auto_review"
     : "user";
@@ -96,8 +98,8 @@ export function approvalsReviewerFor(
 
 /**
  * Code's sandbox for a folder. Bypass permissions maps to Codex full access,
- * but only in folders where the user confirmed it; elsewhere Code behaves as
- * Auto. Plan mode is always read-only.
+ * for an explicitly opted-in session. The fallback preference still uses
+ * the confirmed folders. Plan mode is always read-only.
  */
 /** The bypassFolders entry that confirms every folder (the web runner). */
 export const anyFolder = "*";
@@ -108,17 +110,20 @@ export function codeSandboxFor(
     "codeSandbox" | "codePlanMode" | "bypassFolders" | "allowBypassPermissions"
   >,
   cwd?: string,
+  sessionPermission?: CodePermissionMode,
 ): CodeSandbox {
   if (settings.codePlanMode) return "read-only";
   if (settings.codeSandbox !== "danger-full-access")
     return settings.codeSandbox;
-  // Settings → Claude Code → "Allow bypass permissions mode" is the user's own
-  // switch; administrators cannot turn Bypass off. "*" confirms every folder:
-  // the web runner's sessions, which run in their own sandbox.
+  // Settings → Claude Code → "Allow bypass permissions mode" is the user's
+  // own switch; administrators cannot turn Bypass off.
+  // "*" confirms every folder: the web runner's sessions, which run in their
+  // own sandbox (owner, 2026-10-03: Bypass on the web).
   return preference(settings, "allowBypassPermissions") &&
-    cwd &&
-    (settings.bypassFolders?.includes(cwd) ||
-      settings.bypassFolders?.includes(anyFolder))
+    (sessionPermission === "bypass" ||
+      (cwd &&
+        (settings.bypassFolders?.includes(cwd) ||
+          settings.bypassFolders?.includes(anyFolder))))
     ? "danger-full-access"
     : "workspace-write";
 }
@@ -144,12 +149,12 @@ export type ApprovalPolicy =
 
 /**
  * A Code turn's sandbox and approval policy with the session's Local sandbox
- * and Strict sandbox choices:
+ * and Strict sandbox choices (live claude.ai bundle, 2026-10-14, c71860c77):
  *
  * - Plan mode (read-only) and Bypass (full access) are unchanged.
- * - Local sandbox on: the folder's sandbox; a command that needs to leave it
- *   asks (on-request). With Strict sandbox mode it is refused instead: nothing
- *   escalates out of the sandbox, everything else still asks.
+ * - Local sandbox on: the folder's sandbox; a command that needs to leave
+ *   it asks (on-request). With Strict sandbox mode it is refused instead:
+ *   nothing escalates out of the sandbox, everything else still asks.
  * - Local sandbox off: no sandbox, but every command that isn't known to be
  *   safe asks first (untrusted). Never silently full access.
  */
@@ -178,17 +183,19 @@ export function codeTurnPermissions(
 }
 
 /**
- * The turn/start `sandboxPolicy` for a turn's sandbox (R11-D). Extra writable
- * folders only widen a workspace-write turn (Cowork's added folders); read-only
- * and full access carry none. Codex keeps a turn's policy for later turns, so a
- * caller that sends one sends one every turn. `network` lets commands use the
- * network the engine itself has: off on a computer; on in the web runner, whose
- * gVisor sandbox already limits the network and cannot set up the separate
- * network Codex gives a command otherwise (#22: every restricted command failed
- * at "RTM_NEWADDR"). `outer`: the turn already runs in that gVisor sandbox, so
- * a turn that works in its folder is Codex's external sandbox. Codex reads a
- * file it patches through a helper with a network of its own, which gVisor
- * can't give it either.
+ * The turn/start `sandboxPolicy` for a turn's sandbox (R11-D). Extra
+ * writable folders only widen a workspace-write turn (Cowork's added
+ * folders); read-only and full access carry none. Codex keeps a turn's
+ * policy for later turns, so a caller that sends one sends one every turn.
+ * `network` lets commands use the network the engine itself has: off on a
+ * computer; on in the web runner, whose gVisor sandbox already limits the
+ * network and cannot set up the separate network Codex gives a command
+ * otherwise (#22: every restricted command failed at "RTM_NEWADDR").
+ * `outer`: the turn already runs in that gVisor sandbox, so a turn that
+ * works in its folder is Codex's external sandbox. Codex reads a file it
+ * patches through a helper with a network of its own, which gVisor can't
+ * give it either (owner, 2026-10-23: every "Update File" failed at
+ * "RTM_NEWADDR" while new files were written).
  */
 export function turnSandboxPolicy(
   sandbox: CodeSandbox,

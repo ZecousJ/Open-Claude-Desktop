@@ -7,7 +7,7 @@ import { parseHTML } from "linkedom";
 import postcss from "postcss";
 import type { Conversation } from "../../shared/types";
 import { desktopHost, webHost, type HostInfo } from "../../shared/host";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { ConversationPanelButtons } from "../../src/conversation/ConversationPanelButtons";
 import {
   ToolSidePanel,

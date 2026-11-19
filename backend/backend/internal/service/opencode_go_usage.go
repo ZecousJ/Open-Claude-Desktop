@@ -18,6 +18,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/config"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/google/uuid"
@@ -386,11 +387,14 @@ func ProvideOpenCodeGoUsageService(
 	settingService *SettingService,
 	lockCache LeaderLockCache,
 	db *sql.DB,
+	cfg *config.Config,
 ) *OpenCodeGoUsageService {
 	svc := NewOpenCodeGoUsageService(accountRepo, httpUpstream, settingService)
 	svc.lockCache = lockCache
 	svc.db = db
-	svc.Start()
+	if cfg.RunsControlPlane() {
+		svc.Start()
+	}
 	return svc
 }
 

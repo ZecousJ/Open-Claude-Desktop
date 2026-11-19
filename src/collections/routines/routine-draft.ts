@@ -61,7 +61,7 @@ export interface RoutineDraft {
   notifyOnCompletion?: Routine["notifyOnCompletion"];
   /** Keeps a findings list (the Security review template). */
   securityReview?: boolean;
-  /** What starts it besides Run now. */
+  /** What starts it besides Run now (shared/routine-triggers.ts). */
   triggers: RoutineTriggers;
   /** Web Code: the repository and cloud environment its runs use. */
   repository?: RepositoryRef;
@@ -118,7 +118,7 @@ export function newDraft(
     mode,
     model: { default: true },
     kind: "daily",
-    // Daily at 09:00, as the original's new task.
+    // Daily at 09:00, as the original's new task (c97b955f1: Ji).
     time: "09:00",
     minute: 0,
     day: date.getDay(),
@@ -127,14 +127,16 @@ export function newDraft(
     cron: "",
     // One-time: tomorrow at the hour of the daily default.
     at: nextHour(now) + DAY,
-    // A new task runs on Auto where Auto is allowed; the editor falls back to
-    // Manually approve when the administrator turned Auto off.
+    // A new task runs on Auto where Auto is allowed (live claude.ai bundle,
+    // 2026-10-21, c97b955f1: ef); the editor falls back to Manually approve
+    // when the administrator turned Auto off.
     permission: "auto",
     alwaysAllowed: [],
     enabled: true,
     disableJitter: false,
-    // A new task notifies on completion, as the original's new routine does,
-    // and as a saved task with no setting shows below.
+    // A new task notifies on completion, as the original's new routine does
+    // (live claude.ai bundle, 2026-10-16, c29d48294: kr), and as a saved task
+    // with no setting shows below.
     notifyOnCompletion: { push: true, email: false, slack: false },
     triggers: { schedule: true },
   };
@@ -318,8 +320,9 @@ export function draftInput(
 }
 
 /**
- * A copy of a task as the original's Duplicate makes it: a new task with the
- * same instructions and schedule whose tools must be allowed again.
+ * A copy of a task as the original's Duplicate makes it (live claude.ai
+ * bundle, 2026-10-14, c29d48294: "Copy of {name}"): a new task with the same
+ * instructions and schedule whose tools must be allowed again.
  */
 export function duplicateDraft(
   draft: RoutineDraft,

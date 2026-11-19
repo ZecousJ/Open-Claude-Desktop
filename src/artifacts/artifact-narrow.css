@@ -1,10 +1,12 @@
 /*
- * The file viewer in a narrow window. W969 captures are at 1.2 page zoom (2.4
- * image px per CSS px; 808 CSS px wide). With the sidebar open, the original's
- * panel covers the whole conversation column flush against the sidebar and the
- * window's top, right and bottom edges, with Close and no Expand. With the
- * sidebar collapsed at the same width it stays beside the conversation in its
- * framed, inset form with Expand. At W602 the preview fills the window. The
+ * The file viewer in a narrow window (R-0975, R-0981, R-0982, R-1029;
+ * narrow-layout.ts). W969 captures are at 1.2 page zoom (2.4 image px per
+ * CSS px; 808 CSS px wide). With the sidebar open, the original's panel
+ * covers the whole conversation column flush against the sidebar and the
+ * window's top, right and bottom edges (no inset, no rounded frame: R-0981),
+ * with Close and no Expand (R-0963). With the sidebar collapsed at the same
+ * width it stays beside the conversation in its framed, inset form with
+ * Expand (R-0975). At W602 the preview fills the window (R-1029). The
  * breakpoints repeat artifactOverlayWidth (1000) and artifactCollapseWidth
  * (720); neither was measured, only bounded by the captures.
  */
@@ -16,8 +18,8 @@
     border-color: #2a2a2a;
     border-radius: 0;
   }
-  /* Flush with the window's top, the header is 48px with its controls centred
-     in it, and no rounded top corners. */
+  /* Flush with the window's top, the header is 48px (115 image px, R-0981)
+     with its controls centred in it, and no rounded top corners. */
   .app:not(.sidebar-hidden) .artifact-panel.file-viewer > header {
     height: 48px;
     min-height: 48px;
@@ -69,13 +71,14 @@
 }
 /*
  * A phone (the web below 640px, also the Android app): the viewer is a sheet
- * over the lower three quarters of the screen, like the iOS app's sheets, and
- * goes down with a drag. The conversation stays where it is, full width and
- * dimmed with the drawer's scrim (95-web.css), so opening a file moves nothing
- * under it; a tap on the dimmed part (the ::before) closes the sheet. The drag
- * indicator is the iOS one: 36 by 5, 5px from the top, tertiary label grey. The
- * top corners are the panel's 11px. Opened from the Artifacts page (expanded) a
- * file still takes the page.
+ * over the lower three quarters of the screen, like the iOS app's sheets,
+ * and goes down with a drag (owner, 2026-10-05; ui/sheet-drag.ts). The
+ * conversation stays where it is, full width and dimmed with the drawer's
+ * scrim (95-web.css), so opening a file moves nothing under it; a tap on the
+ * dimmed part (the ::before) closes the sheet. The drag indicator is the iOS
+ * one: 36 by 5, 5px from the top, tertiary label grey. The top corners are
+ * the panel's 11px. Opened from the Artifacts page (expanded) a file still
+ * takes the page.
  */
 @media (max-width: 639.98px) {
   .app.web .artifact-panel.file-viewer:not([data-expanded="true"]) {

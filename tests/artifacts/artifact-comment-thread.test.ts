@@ -181,7 +181,8 @@ test("Publish shows only with hosted artifact links; Open in web says why it is 
       onError() {},
     }),
   );
-  // No Claudex service with artifact links: no Publish button.
+  // No Claudex service with artifact links: no Publish button (live
+  // claude.ai bundle, 2026-10-12: the pane shows it only when it can publish).
   assert.doesNotMatch(html, /artifact-publish-button/);
   assert.doesNotMatch(html, />Share</);
   assert.equal(

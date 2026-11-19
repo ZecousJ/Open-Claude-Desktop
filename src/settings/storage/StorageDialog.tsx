@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Folder } from "../../ui/glyphs";
 import { formatText, t, useT } from "../../i18n";
 import { relativeTime } from "../../ui/RelativeTime";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Collapsible } from "../../ui/Collapsible";
 import { Skeleton, SkeletonGroup } from "../../ui/Skeleton";
 import { showToast } from "../../ui/toast-store";
@@ -26,7 +26,7 @@ type Loaded =
   | { status: "error" }
   | { status: "ready"; value: StorageUsage; refreshing: boolean };
 
-/** How much of a bar each kind takes: the first in full, the rest fading. */
+/** How much of a bar each kind takes: the first in full, the rest fading (Kt in the live bundle). */
 const shades = [1, 0.72, 0.5, 0.32, 0.2];
 
 interface Kind {
@@ -37,7 +37,7 @@ interface Kind {
   muted?: boolean;
 }
 
-/** A bar of kinds and its legend. */
+/** A bar of kinds and its legend (qt in the live claude.ai bundle, 2026-10-12). */
 function KindBar({ label, kinds }: { label: string; kinds: Kind[] }) {
   const shown = kinds.filter((kind) => kind.bytes > 0);
   if (!shown.length) return null;
@@ -85,7 +85,7 @@ function KindBar({ label, kinds }: { label: string; kinds: Kind[] }) {
   );
 }
 
-/** "Details" that opens an area's kinds and its cleanup. */
+/** "Details" that opens an area's kinds and its cleanup (hn in the live bundle). */
 function Details({ label, children }: { label: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
@@ -97,7 +97,7 @@ function Details({ label, children }: { label: string; children: ReactNode }) {
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        <AppIcon name="CaretRight" />
+        <Anthropicon name="CaretRight" />
         Details
       </button>
       <Collapsible open={open}>
@@ -140,9 +140,10 @@ function Area({
 }
 
 /**
- * Settings → System → Storage: the space Claudex uses on this computer, the
- * area bar, then Cowork tasks, Code sessions, Runtime and App caches and logs,
- * each with Details and its own cleanup, and Open folder and Refresh.
+ * Settings → System → Storage (live claude.ai bundle, 2026-10-12): the
+ * space Claudex uses on this computer, the area bar, then Cowork tasks,
+ * Code sessions, Runtime and App caches and logs, each with Details and
+ * its own cleanup, and Open folder and Refresh.
  */
 export function StorageDialog({ onClose }: { onClose: () => void }) {
   useT();
@@ -253,7 +254,7 @@ export function StorageDialog({ onClose }: { onClose: () => void }) {
             disabled={busy}
             onClick={refresh}
           >
-            <AppIcon name="ArrowClockwise" />
+            <Anthropicon name="ArrowClockwise" />
             Refresh
           </button>
         </div>

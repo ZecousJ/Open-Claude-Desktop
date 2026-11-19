@@ -1,11 +1,12 @@
 import type { Mode } from "../../shared/types";
 
 /**
- * What the lists of past conversations call themselves. Once Chat and Cowork
- * are one home (`hub`: the host can run Cowork, src/home-mode.ts) the sidebar's
- * list and the full list are "Recents", searched with "Search recents..." and
- * started with "New session", as Code's are; a host that cannot run Cowork
- * keeps "Chats and tasks".
+ * What the lists of past conversations call themselves (live claude.ai
+ * bundle, 2026-10-12). Once Chat and Cowork are one home (`hub`: the host
+ * can run Cowork, src/home-mode.ts) the sidebar's list and the full list
+ * are "Recents", searched with "Search recents..." and started with "New
+ * session", as Code's are; a host that cannot run Cowork keeps "Chats and
+ * tasks".
  */
 
 /** The sidebar's recents section title. */
@@ -15,7 +16,7 @@ export function recentsTitle(_mode: Mode, _hub: boolean) {
 
 export type HistoryKind = "both" | "chats" | "tasks";
 
-/** The full list's copy. */
+/** The full list's copy (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 export function historyLabels(
   mode: Mode,
   _hub: boolean,

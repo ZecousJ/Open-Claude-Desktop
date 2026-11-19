@@ -1,7 +1,7 @@
 import type { Session } from "electron";
 
 export function hostedUiUrl(
-  page: "index.html" | "find.html" | "quick.html",
+  page: "index.html" | "find.html" | "quick.html" | "checkout.html",
   query?: Record<string, string>,
   source = process.env.CLAUDEX_UI_URL,
 ) {
@@ -17,7 +17,7 @@ export function hostedUiUrl(
   return url.toString();
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, bootPreconnect).
 export function warmHostedUi(
   session: Pick<Session, "preconnect" | "fetch" | "resolveProxy">,
   source: string,

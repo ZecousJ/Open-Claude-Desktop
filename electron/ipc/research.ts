@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
 import type {
   DynamicToolCall,
@@ -42,8 +42,53 @@ import {
   turnSourceUrls,
   type ResearchState,
 } from "../../shared/research";
+import { readResearchReportRevision, researchReportReview, researchReportRevisionContext } from "./research-report-revisions";
 import type { ResearchEvent } from "../../shared/research-api";
 import type { AppEvent, Conversation, Turn } from "../../shared/types";
+
+export function verifiedResearchMarkdown(report: NonNullable<ResearchState["report"]>, markdown: unknown): markdown is string {
+  return typeof markdown === "string" && !markdown.includes("\0") &&
+    Number.isSafeInteger(report.bytes) && report.bytes > 0 && report.bytes <= maxResearchReportBytes * 2 &&
+    typeof report.sha256 === "string" && /^[0-9a-f]{64}$/.test(report.sha256) &&
+    Buffer.byteLength(markdown, "utf8") === report.bytes &&
+    createHash("sha256").update(markdown, "utf8").digest("hex") === report.sha256;
+}
+
+export function portableResearchReport(
+  reports: ResearchReports,
+  conversationId: string,
+  turnId: string,
+  report: NonNullable<ResearchState["report"]>,
+) {
+  if (verifiedResearchMarkdown(report, report.markdown)) return { ...report, markdown: report.markdown };
+  const legacy = report.sha256 === undefined;
+  if (!researchTurnIdPattern.test(conversationId) ||
+      (legacy && (!researchTurnIdPattern.test(turnId) || report.path !== `research/${conversationId}/${turnId}.md`)) ||
+      (!legacy && (typeof report.path !== "string" || !report.path.startsWith(`research/${conversationId}/`) ||
+        report.path.slice(`research/${conversationId}/`.length).includes("/"))))
+    throw new Error("This research report isn't available.");
+  const markdown = reports.read(report.path);
+  const sha256 = legacy ? createHash("sha256").update(markdown, "utf8").digest("hex") : report.sha256;
+  const portable = { ...report, sha256, markdown };
+  if (!verifiedResearchMarkdown(portable, markdown)) throw new Error("This research report is no longer available.");
+  return portable;
+}
+
+export function hydrateResearchReports(reports: ResearchReports, conversations: Conversation[]) {
+  let changed = false;
+  for (const conversation of conversations)
+    for (const turn of [conversation.turns, ...(conversation.savedBranches ?? []).map(branch => branch.turns)].flat()) {
+      const report = turn.research?.report;
+      if (!report || verifiedResearchMarkdown(report, report.markdown)) continue;
+      try {
+        turn.research!.report = portableResearchReport(reports, conversation.id, turn.id, report);
+        changed = true;
+      } catch {
+        // An unavailable or changed file remains unchanged and can be retried later.
+      }
+    }
+  return changed;
+}
 
 /**
  * Research mode (R4, design R45 §3.3): the conversation switch, the Research
@@ -79,28 +124,59 @@ export class ResearchReports {
     return {
       path: path.relative(this.accountRoot, file).split(path.sep).join("/"),
       bytes: Buffer.byteLength(markdown, "utf8"),
+      sha256: createHash("sha256").update(markdown, "utf8").digest("hex"),
     };
   }
   /** A stored report's text; refuses any path outside the reports folder. */
   read(relativePath: string) {
     const file = path.resolve(this.accountRoot, relativePath);
     const inside = path.relative(this.folder, file);
-    if (
-      !inside ||
-      inside.startsWith("..") ||
-      path.isAbsolute(inside) ||
-      !file.endsWith(".md")
-    )
+    if (!inside || inside.startsWith("..") || path.isAbsolute(inside) || !file.endsWith(".md"))
       throw new Error("This research report isn't available.");
-    let stat: fs.Stats;
+    let fd: number | undefined;
     try {
-      stat = fs.lstatSync(file);
+      // Reports are app-owned directories, never links. Check every descendant
+      // and keep inode identities across the bounded read, not only the leaf.
+      const directories = [path.resolve(this.accountRoot), path.resolve(this.folder)];
+      let directory = path.resolve(this.folder);
+      for (const part of inside.split(path.sep).slice(0, -1)) {
+        directory = path.join(directory, part);
+        directories.push(directory);
+      }
+      const parents = directories.map(p => {
+        const stat = fs.lstatSync(p);
+        if (!stat.isDirectory() || stat.isSymbolicLink()) throw Error("directory");
+        return { p, dev: stat.dev, ino: stat.ino };
+      });
+      const root = fs.realpathSync(this.accountRoot);
+      const expected = path.join(root, path.relative(path.resolve(this.accountRoot), file));
+      if (fs.realpathSync(file) !== expected) throw Error("path");
+      const before = fs.lstatSync(file);
+      if (!before.isFile() || before.isSymbolicLink() || before.size > maxResearchReportBytes * 2) throw Error("file");
+      fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0));
+      const opened = fs.fstatSync(fd);
+      if (!opened.isFile() || opened.dev !== before.dev || opened.ino !== before.ino || opened.size !== before.size) throw Error("changed");
+      const bytes = Buffer.alloc(maxResearchReportBytes * 2 + 1);
+      let length = 0;
+      while (length < bytes.length) {
+        const n = fs.readSync(fd, bytes, length, bytes.length - length, length);
+        if (!n) break;
+        length += n;
+      }
+      const after = fs.fstatSync(fd), named = fs.lstatSync(file);
+      if (length !== opened.size || length > maxResearchReportBytes * 2 ||
+          after.size !== opened.size || after.mtimeMs !== opened.mtimeMs || after.ctimeMs !== opened.ctimeMs ||
+          named.dev !== opened.dev || named.ino !== opened.ino || named.isSymbolicLink() ||
+          fs.realpathSync(file) !== expected || parents.some(({ p, dev, ino }) => {
+            const stat = fs.lstatSync(p);
+            return !stat.isDirectory() || stat.isSymbolicLink() || stat.dev !== dev || stat.ino !== ino;
+          })) throw Error("changed");
+      return new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(0, length));
     } catch {
       throw new Error("This research report is no longer available.");
+    } finally {
+      if (fd !== undefined) fs.closeSync(fd);
     }
-    if (!stat.isFile() || stat.size > maxResearchReportBytes * 2)
-      throw new Error("This research report isn't available.");
-    return fs.readFileSync(file, "utf8");
   }
   /** Removes the reports of conversations that no longer exist. */
   removeOrphans(conversationIds: Set<string>) {
@@ -120,6 +196,7 @@ export class ResearchReports {
 }
 
 export interface ResearchExtensionDeps {
+  accountId?(): string | undefined;
   policy(): ClientPolicy;
   /** The service catalog's entry for a model, when the service has one. */
   catalogItem(providerId: string, model: string): ModelCatalogItem | undefined;
@@ -230,7 +307,7 @@ export function createResearchExtension(
     );
     const research = stateOf(turn);
     research.title = title;
-    research.report = { title, ...stored };
+    research.report = { title, ...stored, ...(verifiedResearchMarkdown({ title, ...stored }, markdown) ? { markdown } : {}) };
     research.reportSource = "tool";
     research.state = "done";
     research.completedAt = now();
@@ -257,8 +334,12 @@ export function createResearchExtension(
     },
     turnContext(ctx) {
       const conversation = ctx.conversation as Conversation;
+      const turn = conversation.turns.at(-1);
+      if (turn?.status === "inProgress") {
+        const report = researchReportReview(deps.accountId?.(), conversation, turn);
+        if (report) return researchReportRevisionContext(report);
+      }
       if (active(ctx)) {
-        const turn = conversation.turns.at(-1);
         if (turn?.status === "inProgress" && !turn.research)
           turn.research = {
             state: "starting",
@@ -383,6 +464,15 @@ export function createResearchExtension(
       return item;
     },
     onTurnCompleted(conversation, turn) {
+      if (turn.status === "completed") {
+        const prior = researchReportReview(deps.accountId?.(), conversation, turn);
+        if (prior) {
+          const item = turn.items.filter(item => item.type === "agentMessage" && item.text?.trim()).at(-1);
+          const revision = item && readResearchReportRevision(item, prior);
+          if (revision) turn.researchReportRevision = revision;
+          return;
+        }
+      }
       const research = turn.research;
       if (!research) return;
       countSources(turn);
@@ -415,7 +505,7 @@ export function createResearchExtension(
         reportHeading(reply) ?? research.title ?? conversation.title;
       try {
         const stored = deps.reports.write(conversation.id, turn.id, reply);
-        research.report = { title, ...stored };
+        research.report = { title, ...stored, ...(verifiedResearchMarkdown({ title, ...stored }, reply) ? { markdown: reply } : {}) };
         research.reportSource = "reply";
         research.title ??= title;
       } catch (error) {

@@ -50,8 +50,9 @@ export type MenuEntry =
        */
       description?: string;
       /**
-       * The description wraps to as many lines as it needs instead of one cut
-       * line.
+       * The description wraps to as many lines as it needs instead of one
+       * cut line (live claude.ai bundle, 2026-10-12: a menu item's
+       * description without descriptionLines is "break-words").
        */
       descriptionWraps?: boolean;
       /** Tooltip, e.g. the full path behind a folder name. */
@@ -78,7 +79,8 @@ export type MenuEntry =
       checkedRole?: "checkbox" | "radio";
       /**
        * Choosing the row (a check that toggles) leaves the menu open, as the
-       * original's keepOpen items, at the root or in a submenu.
+       * original's keepOpen items (live claude.ai bundle, 2026-10-12: Show
+       * empty groups), at the root or in a submenu.
        */
       keepOpen?: boolean;
       /**
@@ -89,19 +91,22 @@ export type MenuEntry =
       submenu?: MenuEntry[];
       /**
        * A submenu that opens with a search field (placeholder given): typing
-       * narrows its rows by label, as the original's "Add to project" list.
+       * narrows its rows by label, as the original's "Add to project" list
+       * (desktop bundle 2.31226.1).
        */
       searchable?: string;
       /**
        * What a searchable submenu says when nothing matches the typed text,
-       * instead of "No matches".
+       * instead of "No matches" (live claude.ai bundle, 2026-10-12: the
+       * Changes panel's "No branches match", "No commits match").
        */
       searchEmpty?: string;
       /**
-       * A searchable submenu's create row: `idle` heads the list over a rule
-       * while nothing is typed ("New project"); once something is, `typed` with
-       * {name} ends the list ("Create project {name}") instead of "No matches".
-       * `empty` is what an empty list says ("No projects yet").
+       * A searchable submenu's create row (live claude.ai bundle,
+       * 2026-10-12, "Add to project"): `idle` heads the list over a rule
+       * while nothing is typed ("New project"); once something is, `typed`
+       * with {name} ends the list ("Create project {name}") instead of "No
+       * matches". `empty` is what an empty list says ("No projects yet").
        */
       searchCreate?: {
         idle: string;
@@ -113,18 +118,20 @@ export type MenuEntry =
       chevron?: boolean;
       /**
        * A settings gear at the row's right edge while it is hovered or
-       * highlighted; → on the row does the same. Greyed with the row when it is
-       * disabled.
+       * highlighted; → on the row does the same (R-0386, Local and the
+       * cloud environments). Greyed with the row when it is disabled.
        */
       settings?: { label: string; onSelect: () => void };
       /**
-       * A small button at the row's end that does something other than choosing
-       * the row, and leaves the menu open; → does the same, `hint` says so to
-       * screen readers.
+       * A small button at the row's end that does something other than
+       * choosing the row, and leaves the menu open (live claude.ai bundle,
+       * 2026-10-15, cf580efe9 `fi`: a dev server's xxs Run or Stop, danger
+       * for Stop); → does the same, `hint` says so to screen readers.
        */
       /**
-       * Actions a right-click on the row opens at the pointer. Choosing one
-       * closes both menus.
+       * Actions a right-click on the row opens at the pointer (live
+       * claude.ai bundle, 2026-10-15, c5220dfc1 `qo`: a device row's Shut
+       * down, Restart, Start and Rename…). Choosing one closes both menus.
        */
       contextMenu?: MenuEntry[];
       trailing?: {
@@ -134,7 +141,7 @@ export type MenuEntry =
         hint?: string;
         onAction: () => void;
       };
-      /** A 20px glyph before the label; the web's menus draw them. */
+      /** A 20px glyph before the label; the web's menus draw them (live claude.ai). */
       icon?: ReactNode;
       /** A small badge after the label, e.g. a group's rate "0.25x" (the page styles `.rate-badge`). */
       badge?: string;
@@ -178,14 +185,17 @@ function RowTrailing({ item }: { item: Item }) {
 
 /**
  * Row heights (published for the other packages, which pick one and do not
- * change the component): "compact" 24px rows; "regular" 32px rows with 14px
- * text and a 24px heading.
+ * change the component): "compact" 24px rows (sidebar, Artifact and
+ * Routines menus, R-0031, R-1000, R-1230); "regular" 32px rows with 14px
+ * text and a 24px heading (Customize Add, filter and sort menus,
+ * R-1110, R-1137, R-1139).
  */
 export type MenuSize = "compact" | "regular";
 
 /**
- * How the last input arrived. A menu opened from the keyboard lights its first
- * row (its last for ↑) at once, as the original's does; one opened with the
+ * How the last input arrived. A menu opened from the keyboard lights its
+ * first row (its last for ↑) at once, as the original's does (Base UI
+ * `focusItemOnOpen: "auto"`, desktop bundle 2.31226.1); one opened with the
  * pointer lights nothing until the pointer reaches a row.
  */
 let lastInput = { keyboard: false, key: "" };
@@ -217,18 +227,19 @@ export function menuSheetExitMs() {
 }
 
 /**
- * Floating menu with keyboard navigation, single-key hints and submenus that
- * open 2px to the right, level with their row. Rendered in a portal so sidebar
- * clipping does not cut it off.
+ * Floating menu with keyboard navigation, single-key hints and submenus
+ * that open 2px to the right, level with their row. Rendered in a portal
+ * so sidebar clipping does not cut it off.
  *
- * Keys follow the original's menus: focus moves through the rows and loops at
- * the ends, Home/End jump to them, typed letters move to the row they start,
- * Escape or ← in a submenu closes only that submenu, and closing the menu gives
- * focus back to the element that had it (its trigger). A submenu opens 100ms
- * after its row is hovered, and a pointer moving diagonally towards an open
- * submenu does not switch rows on its way. The menu opens and closes without
- * motion, as the original's popup; as a sheet on a touch phone (menu.css) it
- * slides down and its scrim fades for 0.3s as it closes.
+ * Keys follow the original's menus (Base UI, desktop bundle 2.31226.1):
+ * focus moves through the rows and loops at the ends, Home/End jump to
+ * them, typed letters move to the row they start, Escape or ← in a submenu
+ * closes only that submenu, and closing the menu gives focus back to the
+ * element that had it (its trigger). A submenu opens 100ms after its row is
+ * hovered, and a pointer moving diagonally towards an open submenu does
+ * not switch rows on its way. The menu opens and closes without motion, as
+ * the original's popup; as a sheet on a touch phone (menu.css) it slides
+ * down and its scrim fades for 0.3s as it closes.
  */
 export function Menu({
   label,
@@ -433,9 +444,10 @@ export function Menu({
         SUBMENU_OPEN_DELAY_MS,
       );
   };
-  // A submenu the pointer opened closes when the pointer leaves it for anywhere
-  // but its own row, and when it leaves the menu for anywhere but the submenu
-  // or the way to it.
+  // A submenu the pointer opened closes when the pointer leaves it for
+  // anywhere but its own row, and when it leaves the menu for anywhere but the
+  // submenu or the way to it (Base UI useHover with a safe polygon, closeDelay
+  // 0, live claude.ai bundle, 2026-10-16, vendor-frame-G1rQD-pP).
   const leaveMenus = (event: PointerEvent, fromSubmenu: boolean) => {
     if (!open?.hover || event.pointerType === "touch") return;
     const to = event.relatedTarget;

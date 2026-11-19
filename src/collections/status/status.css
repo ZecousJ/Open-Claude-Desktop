@@ -1,10 +1,11 @@
-/* Service status (not in claude.ai), laid out and coloured after the reference
-   status page the owner gave: a card with a 1px #e4e4e7 border and 8px corners,
-   rows split by #f7f7f8 hairlines, 16px padding; the issues banner framed in
-   #fbbf23 with a #fef3c7 head and #92400d provider chips; bars a day 15px high,
-   2px apart, #23c19a (no issues), #fbbf23 (degraded), #f5785c (outage); titles
-   #171718, details #787882, uptime and dates #95959d. The dark theme keeps the
-   hues on the app's dark surfaces. */
+/* Service status (not in claude.ai), laid out and coloured after the
+   reference status page the owner gave (2026-09-30, light, 2x): a card with
+   a 1px #e4e4e7 border and 8px corners, rows split by #f7f7f8 hairlines,
+   16px padding; the issues banner framed in #fbbf23 with a #fef3c7 head and
+   #92400d provider chips; bars a day 15px high, 2px apart, #23c19a (no
+   issues), #fbbf23 (degraded), #f5785c (outage); titles #171718, details
+   #787882, uptime and dates #95959d. The dark theme keeps the hues on the
+   app's dark surfaces (no dark capture). */
 .status-view {
   --st-text: #f5f5f3;
   --st-muted: #a2a19e;
@@ -268,7 +269,8 @@
   border-radius: 1px;
   background: var(--st-none);
 }
-/* No data: drawn green like a slot without failures. It still has no tip. */
+/* No data: drawn green like a slot without failures (owner, 2026-10-14;
+   before, from 2026-10-03, it showed nothing). It still has no tip. */
 .st-bar.none {
   background: var(--st-green);
 }
@@ -393,9 +395,9 @@
 /* 智商检测 (IqChecks.tsx): the cards sit in the card's 16px padding, 12px
    apart, each in the card's own 1px border and 8px corners; the caption is
    the incident meta's 14px muted line. */
-/* The group switch sits right after the title: the shared segmented control
-   (segmented-control.css), drawn as the routine schedule's segments a size up,
-   the chosen one black on white (owner). */
+/* The group switch sits right after the title (owner, 2026-10-14): the
+   shared segmented control (segmented-control.css), drawn as the routine
+   schedule's segments a size up, the chosen one black on white (owner). */
 .st-iq-groups {
   --segmented-thumb: #fff;
   --segmented-thumb-ring: rgb(0 0 0 / 4%);
@@ -460,9 +462,9 @@
   gap: 12px;
   padding: 12px 16px 16px;
 }
-/* 参考示例: a large four-character title, and each example in its verdict's colour
-   — the bars' green (正常) or red (降智) — as a 2px frame and a tinted, bold
-   caption. */
+/* 参考示例 (owner, 2026-10-06): a large four-character title, and each
+   example in its verdict's colour — the bars' green (正常) or red (降智) —
+   as a 2px frame and a tinted, bold caption. */
 /* The two examples always share the row, half each, however wide the page
    (the checks keep their own 220px-and-up grid). */
 .st-iq-examples .st-iq-grid {

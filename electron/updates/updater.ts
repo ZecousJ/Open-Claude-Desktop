@@ -1,9 +1,9 @@
 /**
- * Claudex's updater: asks the Claudex service for its release information at
- * launch and every four hours (and when Check for Updates… is chosen),
- * downloads a newer build in the background, verifies its SHA-256 and stages
- * it. Installing is apply.ts's job, when the person relaunches or quits. No
- * Electron imports: launch.ts wires it to the app.
+ * Claudex's updater (package OTA, docs/ota.md): asks the Claudex service for
+ * its release information at launch and every four hours (and when Check for
+ * Updates… is chosen), downloads a newer build in the background, verifies
+ * its SHA-256 and stages it. Installing is apply.ts's job, when the person
+ * relaunches or quits. No Electron imports: launch.ts wires it to the app.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -31,10 +31,15 @@ import {
   readStaged,
   updatesDir,
   writeStaged,
-  type StagedUpdate,
+  type InstallableUpdate,
 } from "./staging";
+import {
+  prepareWindowsAppPack,
+  preparedWindowsAppPack,
+  discardWindowsAppPack,
+} from "./windows-pack";
 
-/** . */
+/** (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, F$r / i$r). */
 export const checkIntervalMs = 4 * 60 * 60 * 1000;
 /** After launch, so the first check does not compete with start-up. */
 export const firstCheckDelayMs = 90_000;
@@ -58,6 +63,8 @@ export interface UpdaterOptions {
   installed?: () => Promise<InstalledApp | undefined>;
   /** Lightweight release-version peek used while an update is staged. */
   peekRelease?: () => Promise<UpdateRelease>;
+  windowsInstallDir?: string;
+  prepareWindowsAppPack?: typeof prepareWindowsAppPack;
   download?: typeof downloadVerified;
   onStatus?: (status: AppUpdateStatus) => void;
   onDownloaded?: () => void;
@@ -75,8 +82,9 @@ const networkFailure = (error: unknown) =>
 
 export function updateCheckError(error: unknown) {
   const detail = message(error);
+  // (live Claude desktop bundle, 2026-10-14, index.chunk-BWk6pVUt.js)
   if (networkFailure(error))
-    return `Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking it — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from your Claudex service's website.`;
+    return `Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking claudex.zecous.cn — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from claudex.zecous.cn.`;
   return `Failed to check for updates: ${detail}`;
 }
 
@@ -111,7 +119,7 @@ export class AppUpdater {
       };
   }
 
-  /** . */
+  /** (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js). */
   menuVisible() {
     const { options } = this;
     return (
@@ -130,24 +138,49 @@ export class AppUpdater {
   status(): AppUpdateStatus {
     const status = { ...this.current, supported: this.supported() };
     // A staged update that was already tried and is still here did not install.
-    if (status.phase === "ready" && (this.staged()?.attempts ?? 0) > 0)
-      status.retry = true;
+    if (status.phase === "ready") {
+      const staged = this.staged();
+      if (!staged && this.options.platform === "win32")
+        return {
+          phase: "idle",
+          supported: status.supported,
+          currentVersion: status.currentVersion,
+        };
+      if (staged && staged.attempts > 0) status.retry = true;
+    }
     return status;
   }
 
-  /** The staged update newer than this build, if any. */
-  staged(): StagedUpdate | undefined {
+  /** The staged update newer than this build that can be installed. */
+  staged(): InstallableUpdate | undefined {
     const staged = readStaged(this.dir);
-    return staged &&
-      (!this.options.maxVersion ||
-        compareVersions(staged.version, this.options.maxVersion) <= 0) &&
-      compareVersions(staged.version, this.options.currentVersion) > 0 &&
-      fs.existsSync(staged.file)
+    if (
+      !staged ||
+      (this.options.maxVersion &&
+        compareVersions(staged.version, this.options.maxVersion) > 0) ||
+      compareVersions(staged.version, this.options.currentVersion) <= 0
+    )
+      return undefined;
+    if (staged.kind !== "win-app")
+      return fs.existsSync(staged.file) ? staged : undefined;
+    const target = this.options.windowsInstallDir;
+    return target &&
+      staged.prepared &&
+      staged.sourceVersion === this.options.currentVersion &&
+      preparedWindowsAppPack(target, staged.prepared)
       ? staged
       : undefined;
   }
 
+  private clearStaged() {
+    const staged = readStaged(this.dir);
+    clearStaged(this.dir);
+    if (this.options.windowsInstallDir && staged?.kind === "win-app")
+      discardWindowsAppPack(this.options.windowsInstallDir, staged.prepared);
+  }
+
   private set(next: Omit<AppUpdateStatus, "supported" | "currentVersion">) {
+    if (this.stopped) return;
     const wasReady = this.current.phase === "ready";
     const { manual: _manual, ...rest } = next as AppUpdateStatus;
     this.current = {
@@ -208,7 +241,8 @@ export class AppUpdater {
   check(options: { manual?: boolean } = {}): Promise<CheckResult> {
     // Check for Updates… joining a running check makes it a manual one: the
     // sidebar then says what it is doing.
-    if (!this.supported()) return Promise.resolve({ status: this.status() });
+    if (this.stopped || !this.supported())
+      return Promise.resolve({ status: this.status() });
     if (options.manual && !this.manualRun) {
       this.manualRun = true;
       if (this.running) this.set({ ...this.current });
@@ -233,6 +267,7 @@ export class AppUpdater {
     if (staged && !manual && this.options.peekRelease) {
       try {
         peeked = await this.options.peekRelease();
+        if (this.stopped) return { status: this.status() };
         this.config = peeked.desktopUpdaterConfig;
         const latest = peeked.latestVersion;
         if (!validClaudexVersion(latest)) {
@@ -240,7 +275,7 @@ export class AppUpdater {
           return { status: this.status() };
         }
         if (latest && compareVersions(latest, staged.version) < 0)
-          clearStaged(this.dir);
+          this.clearStaged();
         else if (!latest || compareVersions(latest, staged.version) === 0) {
           this.set({ phase: "ready", version: staged.version });
           return { status: this.status() };
@@ -254,6 +289,7 @@ export class AppUpdater {
     let release: UpdateRelease;
     try {
       release = peeked ?? (await this.options.fetchRelease());
+      if (this.stopped) return { status: this.status() };
       this.config = release.desktopUpdaterConfig;
     } catch (error) {
       if (staged) {
@@ -272,19 +308,21 @@ export class AppUpdater {
       release.latestVersion &&
       compareVersions(release.latestVersion, this.options.maxVersion) > 0
     ) {
-      clearStaged(this.dir);
+      this.clearStaged();
       this.set({ phase: "up-to-date", checkedAt });
       return { status: this.status() };
     }
+    const installed = release.appPack
+      ? await this.options.installed?.().catch(() => undefined)
+      : undefined;
+    if (this.stopped) return { status: this.status() };
     const plan = planUpdate(
       release,
       this.options.currentVersion,
       this.options.platform,
       this.options.arch,
       this.options.linuxPackage,
-      release.appPack
-        ? await this.options.installed?.().catch(() => undefined)
-        : undefined,
+      installed,
     );
     // A staged build the service no longer offers (it went back to an
     // older version) is not installed.
@@ -295,7 +333,7 @@ export class AppUpdater {
         : plan.version !== undefined &&
           compareVersions(plan.version, staged.version) < 0)
     ) {
-      clearStaged(this.dir);
+      this.clearStaged();
     }
     if (plan.action === "none") {
       const still = this.staged();
@@ -320,7 +358,7 @@ export class AppUpdater {
       return { status: this.status(), plan };
     }
     const ready = this.staged();
-    if (ready && ready.version === plan.version) {
+    if (ready && ready.version === plan.version && ready.kind === plan.kind) {
       this.set({ phase: "ready", version: ready.version, checkedAt });
       return { status: this.status(), plan };
     }
@@ -343,10 +381,15 @@ export class AppUpdater {
     plan: Extract<UpdatePlan, { action: "download" }>,
     checkedAt: number,
   ): Promise<CheckResult> {
+    if (this.stopped) return { status: this.status(), plan };
     const file = path.join(this.dir, plan.fileName);
     pruneUpdates(this.dir, [file]);
-    this.set({ phase: "downloading", version: plan.version, checkedAt });
     const now = this.options.now ?? Date.now;
+    const installDir = this.options.windowsInstallDir;
+    const previous = readStaged(this.dir);
+    if (installDir && previous?.kind === "win-app")
+      discardWindowsAppPack(installDir, previous.prepared);
+    this.set({ phase: "downloading", version: plan.version, checkedAt });
     try {
       await (this.options.download ?? downloadVerified)({
         url: plan.url,
@@ -368,16 +411,44 @@ export class AppUpdater {
       // Checked again after the download: the file on disk is what is staged.
       if ((await fileSha256(file)) !== plan.sha256)
         throw new ChecksumMismatch();
-      writeStaged(this.dir, {
+      if (this.stopped) return { status: this.status(), plan };
+      const staged = {
         version: plan.version,
-        kind: plan.kind,
         file,
         sha256: plan.sha256,
         stagedAt: now(),
         attempts: 0,
-      });
+      };
+      if (plan.kind === "win-app") {
+        if (!installDir)
+          throw new Error("Claudex's install folder isn't available.");
+        const prepare =
+          this.options.prepareWindowsAppPack ?? prepareWindowsAppPack;
+        const prepared = await prepare({
+          file,
+          version: plan.version,
+          installDir,
+        });
+        try {
+          if (this.stopped) {
+            discardWindowsAppPack(installDir, prepared);
+            return { status: this.status(), plan };
+          }
+          writeStaged(this.dir, {
+            ...staged,
+            kind: plan.kind,
+            prepared,
+            sourceVersion: this.options.currentVersion,
+          });
+        } catch (error) {
+          discardWindowsAppPack(installDir, prepared);
+          throw error;
+        }
+      } else {
+        writeStaged(this.dir, { ...staged, kind: plan.kind });
+      }
       this.set({ phase: "ready", version: plan.version, checkedAt });
-      this.options.onDownloaded?.();
+      if (!this.stopped) this.options.onDownloaded?.();
     } catch (error) {
       if (error instanceof ChecksumMismatch) fs.rmSync(file, { force: true });
       this.set({

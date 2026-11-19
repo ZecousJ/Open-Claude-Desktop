@@ -17,14 +17,14 @@ import {
 import { createPortal } from "react-dom";
 import { formatText, useT } from "../i18n";
 import { useDismiss } from "../ui/useDismiss";
-import { AppIcon, type AppIconName } from "../ui/app-icon";
+import { Anthropicon, type AnthropiconName } from "../ui/anthropicons";
 import { Skeleton, SkeletonGroup } from "../ui/Skeleton";
 import type { ProjectCatalogRead } from "./useProjectCatalogState";
 
 export interface PlacePickerEntry {
   key: string;
   name: string;
-  icon: AppIconName;
+  icon: AnthropiconName;
   detail?: string;
   selected?: boolean;
   isDefault?: boolean;
@@ -41,7 +41,7 @@ export interface PlacePickerControl {
   disabled?: boolean;
   checkbox?: boolean;
   section?: string;
-  icon?: AppIconName;
+  icon?: AnthropiconName;
   onPick(): void;
 }
 /** Shared source-backed combobox, typed creation, default keys and filter menu.
@@ -240,7 +240,7 @@ export function PlacePickerSurface({
       onMouseMove={() => setActive(index)}
       onClick={() => pick(entry)}
     >
-      <AppIcon name={entry.icon} size={native ? 20 : 16} />
+      <Anthropicon name={entry.icon} size={native ? 20 : 16} />
       <span
         className="project-picker-name"
         data-no-translate={
@@ -270,10 +270,13 @@ export function PlacePickerSurface({
             entry.onDefault?.();
           }}
         >
-          <AppIcon name={entry.isDefault ? "StarFilled" : "Star"} size={12} />
+          <Anthropicon
+            name={entry.isDefault ? "StarFilled" : "Star"}
+            size={12}
+          />
         </button>
       )}
-      {entry.selected && <AppIcon name="Check" size={12} />}
+      {entry.selected && <Anthropicon name="Check" size={12} />}
     </div>
   );
   return (
@@ -341,7 +344,7 @@ export function PlacePickerSurface({
           >
             <div className="project-picker-search-row">
               <label className="project-picker-search">
-                <AppIcon name="Search" size={16} />
+                <Anthropicon name="Search" size={16} />
                 <input
                   ref={input}
                   type="text"
@@ -424,7 +427,7 @@ export function PlacePickerSurface({
                   } else setFilterOpen(true);
                 }}
               >
-                <AppIcon name="Filter" size={16} />
+                <Anthropicon name="Filter" size={16} />
               </button>
             </div>
             <div className="cowork-menu-separator" role="separator" />
@@ -560,10 +563,15 @@ export function PlacePickerSurface({
                       }}
                     >
                       {control.icon && (
-                        <AppIcon name={control.icon} size={native ? 20 : 16} />
+                        <Anthropicon
+                          name={control.icon}
+                          size={native ? 20 : 16}
+                        />
                       )}
                       <span>{t(control.label)}</span>
-                      {control.checked && <AppIcon name="Check" size={12} />}
+                      {control.checked && (
+                        <Anthropicon name="Check" size={12} />
+                      )}
                     </button>
                   </Fragment>
                 ))}

@@ -52,13 +52,14 @@ function Paragraphs({ description }: { description: Description }) {
 }
 
 /**
- * "Move this session to the cloud?": the session's Continue in ▸ Cloud row
- * opens it over the session. It reads the folder's git state first and says
- * what comes along; Continue in cloud then runs the steps with a list under the
- * description ("Step {step} of {total}: {label}" for screen readers). A refused
- * upload shows what git said and offers Ask Claudex to push, which asks this
- * session to run the push and brings the dialog back when that turn ends
- * (`resume`). The new cloud session opens when it is ready; this session stays.
+ * "Move this session to the cloud?" (live claude.ai bundle, 2026-10-12):
+ * the session's Continue in ▸ Cloud row opens it over the session. It reads
+ * the folder's git state first and says what comes along; Continue in
+ * cloud then runs the steps with a list under the description ("Step
+ * {step} of {total}: {label}" for screen readers). A refused upload shows
+ * what git said and offers Ask Claudex to push, which asks this session to
+ * run the push and brings the dialog back when that turn ends (`resume`).
+ * The new cloud session opens when it is ready; this session stays.
  */
 export function ContinueInCloudDialog({
   conversation,

@@ -5,12 +5,16 @@ package web
 import (
 	"net/http"
 	"path"
+	"regexp"
 	"strings"
 )
 
 // Vite emits content-hashed filenames under assets/, so the backend can apply
 // immutable caching without relying on a reverse proxy to classify paths.
 const staticAssetsCacheControl = "public, max-age=31536000, immutable"
+
+var versionedOfficialAssetPath = regexp.MustCompile(`^assets/official-[0-9a-f]{20}/[^/]+\.(?:js|css|woff2?|ttf|png|svg|wasm)$`)
+var bootstrapCatalogAssetPath = regexp.MustCompile(`^assets/bootstrap-catalog-[0-9a-f]{64}\.json$`)
 
 // isFingerprintedEmbeddedAssetPath reports whether a cleaned URL path refers to
 // a Vite asset whose filename contains the default eight-character build hash.
@@ -43,11 +47,20 @@ func isFingerprintedEmbeddedAssetPath(cleanPath string) bool {
 	return true
 }
 
-// applyStaticAssetCacheHeaders sets Cache-Control for long-cacheable static paths.
+// applyStaticAssetCacheHeaders sets Cache-Control for app assets.
 // index.html / SPA routes must keep no-cache and are not handled here.
 func applyStaticAssetCacheHeaders(header http.Header, cleanPath string) {
-	if header == nil || !isFingerprintedEmbeddedAssetPath(cleanPath) {
+	if header == nil {
 		return
 	}
-	header.Set("Cache-Control", staticAssetsCacheControl)
+	switch {
+	case versionedOfficialAssetPath.MatchString(strings.TrimPrefix(cleanPath, "/")),
+		bootstrapCatalogAssetPath.MatchString(strings.TrimPrefix(cleanPath, "/")):
+		header.Set("Cache-Control", staticAssetsCacheControl)
+	case strings.HasPrefix(strings.TrimPrefix(cleanPath, "/"), "assets/v1/"):
+		// The derived vendor bundles keep their upstream filenames when their bytes change.
+		header.Set("Cache-Control", "no-cache")
+	case isFingerprintedEmbeddedAssetPath(cleanPath):
+		header.Set("Cache-Control", staticAssetsCacheControl)
+	}
 }

@@ -1,5 +1,5 @@
-/* Project settings: Comfortable density: px-xl 24, py-md 12, gap-lg 28; body
-   14/20. */
+/* Project settings (live claude.ai bundle, 2026-10-14, c57eefbba-Z8dldrXK.js):
+   Comfortable density: px-xl 24, py-md 12, gap-lg 28; body 14/20. */
 .prj-settings-dialog {
   --prj-settings-surface: #1a1a19;
   --prj-settings-primary: #f0efec;
@@ -43,7 +43,9 @@
   flex: 1;
   min-width: 0;
 }
-/* The name field's error: a danger footnote with a WarningCircle before it. */
+/* The name field's error: a danger footnote with a WarningCircle before it
+   (live claude.ai bundle, 2026-10-16, shared-frame-6654oR3- DH: flex
+   items-start gap-1 text-footnote text-danger leading-snug). */
 .prj-field-error {
   display: flex;
   align-items: flex-start;
@@ -54,7 +56,7 @@
   line-height: 1.375;
   overflow-wrap: break-word;
 }
-.prj-field-error > [data-icon] {
+.prj-field-error > [data-anthropicon] {
   flex: none;
   margin-top: 1px;
 }
@@ -405,7 +407,7 @@
   }
 }
 
-/* Official palette. */
+/* Official palette (live claude.ai bundle, 2026-10-14, shared-3-C6ZHOxdE.js). */
 :root[data-theme="dark"] .prj-settings [data-color="gray"] {
   --prj-icon-color: #97958d;
 }

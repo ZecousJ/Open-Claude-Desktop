@@ -5,12 +5,12 @@ import {
 } from "../../shared/cowork-api";
 
 /**
- * Asking before Cowork uses a folder. The main process decides
+ * Asking before Cowork uses a folder (R11, S-0007). The main process decides
  * (`electron/ipc/cowork.ts`); this module asks it, and when it answers "ask"
- * shows the access dialog through the one mounted `FolderAccessHost` and waits
- * for the person's choice. Folders the app already allows (its own workspace,
- * trusted folders, folders this task was given) pass without a dialog. Cancel
- * keeps whatever was chosen before.
+ * shows the access dialog through the one mounted `FolderAccessHost` and
+ * waits for the person's choice. Folders the app already allows (its own
+ * workspace, trusted folders, folders this task was given) pass without a
+ * dialog. Cancel keeps whatever was chosen before.
  */
 
 export type FolderAccessResult = "granted" | "cancelled";

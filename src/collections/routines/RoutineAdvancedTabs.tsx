@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { lazyPiece } from "../../ui/lazy-piece";
 import { Menu } from "../../ui/Menu";
 import { Toggle } from "../../settings/controls";
@@ -23,11 +23,13 @@ const RepositoryMenu = lazyPiece(
 type Tab = "general" | "connectors" | "behavior" | "notifications";
 
 /**
- * Advanced settings on the web: General, Connectors and Notifications as tabs.
+ * Advanced settings on the web (live claude.ai, 2026-10-21, the New
+ * scheduled task dialog): General, Connectors and Notifications as tabs.
  * General picks the repository ("Picking a repository makes this a Code
- * task."), then the project for a Chat task or the cloud environment for a Code
- * one; Connectors lists the account's connectors and goes to Settings to add
- * one; Behavior (a Code task's) lets its runs fix the pull requests they open.
+ * task."), then the project for a Chat task or the cloud environment
+ * for a Code one; Connectors lists the account's connectors and goes to
+ * Settings to add one; Behavior (a Code task's) lets its runs fix the pull
+ * requests they open.
  */
 export function RoutineAdvancedTabs({
   draft,
@@ -48,7 +50,7 @@ export function RoutineAdvancedTabs({
 }) {
   const [tab, setTab] = useState<Tab>("general");
   const code = draft.mode === "code";
-  // Behavior is a Code task's: its runs' pull requests.
+  // Behavior is a Code task's (c29d48294 Mo): its runs' pull requests.
   const tabs: [Tab, string][] = [
     ["general", "General"],
     ["connectors", "Connectors"],
@@ -308,7 +310,7 @@ function ProjectRow({
           setMenu({ left: box.right - 240, top: box.bottom + 6 });
         }}
       >
-        <AppIcon name="Folder" size={18} />
+        <Anthropicon name="Folder" size={18} />
         <span data-no-translate={current ? true : undefined}>
           {current?.name ?? t("None")}
         </span>
@@ -390,7 +392,7 @@ function ConnectorsTab({ code }: { code: boolean }) {
       <ul>
         {connected.map((server) => (
           <li key={server.name} data-no-translate>
-            <AppIcon name="Connectors" size={16} />
+            <Anthropicon name="Connectors" size={16} />
             {server.displayName ?? server.name}
           </li>
         ))}

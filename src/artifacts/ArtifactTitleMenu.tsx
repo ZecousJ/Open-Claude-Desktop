@@ -20,7 +20,7 @@ import {
   TiltedPinIcon,
 } from "./artifact-icons";
 import { ReasonTooltip } from "../ui/Tooltip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import {
   Lock,
   Clock,
@@ -216,7 +216,8 @@ export function ArtifactTitleMenu({
           ) : undefined
         }
       />
-      {/* Project copy belongs to Copy. */}
+      {/* Project copy belongs to Copy (live claude.ai bundle,
+                2026-10-14, cbaae0d6d-C79zgQ3d.js). */}
       {onCopyToProject ? (
         <ArtifactSubmenu
           label={t("Copy")}
@@ -257,7 +258,7 @@ export function ArtifactTitleMenu({
             aria-description={rename ? undefined : renameDisabledReason}
             onClick={startRename}
           >
-            <AppIcon name="Edit" />
+            <Anthropicon name="Edit" />
             Rename
           </button>
         )}
@@ -275,13 +276,14 @@ export function ArtifactTitleMenu({
               aria-description={duplicateDisabledReason}
               onClick={() => void duplicate()}
             >
-              <AppIcon name="Copy" />
+              <Anthropicon name="Copy" />
               {duplicateLabel ?? t("Duplicate")}
             </button>
           )}
         </ReasonTooltip>
       )}
-      {/* Verbs before talk and window rows. */}
+      {/* Verbs before talk and window rows (live claude.ai bundle,
+                2026-10-14, c547ae5e3-GTYn8RRi.js). */}
       <button
         role="menuitem"
         data-testid="frame-title-menu-share"
@@ -291,7 +293,7 @@ export function ArtifactTitleMenu({
           setVersionShareOpen(true);
         }}
       >
-        <AppIcon name="Share" />
+        <Anthropicon name="Share" />
         {t("Share")}
       </button>
       <button
@@ -366,12 +368,13 @@ export function ArtifactTitleMenu({
             onAsk();
           }}
         >
-          <AppIcon name="Chats" />
+          <Anthropicon name="Chats" />
           {t("Ask Claudex")}
         </button>
       )}
-      {/* Pop out and Open in web. Only an artifact with a public link has a page
-         on the web: otherwise Open in web is greyed with the reason. */}
+      {/* Pop out and Open in web (R-0971). Only an artifact with a
+                public link has a page on the web (R-1054): otherwise Open
+                in web is greyed with the reason. */}
       <div role="separator" />
       <button
         role="menuitem"
@@ -434,7 +437,7 @@ export function ArtifactTitleMenu({
         data-testid="frame-title-menu-chat"
         onClick={toggleChat}
       >
-        <AppIcon name="Chats" />
+        <Anthropicon name="Chats" />
         {t("Show chat")}
         <span className="artifact-menu-checkbox">
           {chatShown && <Check size={12} />}
@@ -470,7 +473,8 @@ export function ArtifactTitleMenu({
           />
         </>
       )}
-      {/* A report target and renderer are required. */}
+      {/* A report target and renderer are required (live claude.ai bundle,
+                2026-10-14, c547ae5e3-GTYn8RRi.js). */}
       <div role="separator" />
       {reportsState === "open" &&
         typeof window !== "undefined" &&
@@ -489,8 +493,9 @@ export function ArtifactTitleMenu({
             </button>
           </>
         )}
-      {/* Only library copies can be deleted: an artifact in a conversation is
-         part of that conversation, so there the row is greyed with the reason. */}
+      {/* Only library copies can be deleted: an artifact in a
+                conversation is part of that conversation, so there the row
+                is greyed with the reason (R-0971 lists it for every one). */}
       <>
         <button
           role="menuitem"

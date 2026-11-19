@@ -3,11 +3,15 @@ import { ConnectorReconnectRows } from "../ConnectorReconnectRows";
 import { usePolicy } from "../../policy/PolicyContext";
 import { connectorAllowed } from "../../../shared/client-policy-rules";
 
+import { KnowledgeMenuItems } from "../../knowledge/KnowledgeControls";
+import type { KnowledgeProps } from "../../knowledge/knowledge-props";
 type Props = {
   servers: Record<string, unknown>;
   onBrowse: () => void;
   onManage: () => void;
   onToggle: (name: string, enabled: boolean) => void;
+  /** Knowledge bases (shared/knowledge-api.ts), listed after the connectors. */
+  knowledge?: KnowledgeProps;
   onUnavailable?: (message: string) => void;
 };
 
@@ -56,6 +60,7 @@ export function CodeConnectorSubmenu({
   onBrowse,
   onManage,
   onToggle,
+  knowledge,
   onUnavailable = () => {},
 }: Props) {
   const policy = usePolicy();
@@ -84,7 +89,7 @@ export function CodeConnectorSubmenu({
         <CaseIcon />
         <span>Manage connectors</span>
       </button>
-      {entries.length > 0 && (
+      {(entries.length > 0 || (knowledge?.bases.length ?? 0) > 0) && (
         <div className="code-add-submenu-separator" role="separator" />
       )}
       <ConnectorReconnectRows
@@ -96,6 +101,17 @@ export function CodeConnectorSubmenu({
           onUnavailable(error instanceof Error ? error.message : String(error))
         }
       />
+      {/* Knowledge bases the service provides, after the account's connectors. */}
+      {knowledge && knowledge.bases.length > 0 && (
+        <KnowledgeMenuItems
+          bases={knowledge.bases}
+          active={knowledge.active}
+          onToggle={knowledge.onToggle}
+          onUnavailable={onUnavailable}
+          switchClass="code-connector-switch"
+          rowProps={(index) => row(entries.length + 2 + index)}
+        />
+      )}
     </div>
   );
 }

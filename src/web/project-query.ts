@@ -9,10 +9,8 @@ const collection = (path: string) =>
       ? "artifacts"
       : undefined;
 
-/**
- * Project list filters own their query state. The app's route synchronizer owns
- * the place and Settings destination only.
- */
+/** Project list filters own their query state (c17beaa76:3576–3630). The
+ * app's route synchronizer owns the place and Settings destination only. */
 export function withProjectQuery(
   target: string | undefined,
   current: { pathname: string; search: string } | undefined,

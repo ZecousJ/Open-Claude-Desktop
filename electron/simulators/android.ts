@@ -377,8 +377,9 @@ export class AndroidDriver implements DeviceDriver {
   }
 
   /**
-   * Claude's airplane_mode; whether it is on afterwards. Throws when the
-   * emulator can't say (before Android 10).
+   * Claude's airplane_mode (live claude.ai bundle, 2026-10-15: `cmd
+   * connectivity airplane-mode`); whether it is on afterwards. Throws when
+   * the emulator can't say (before Android 10).
    */
   async airplaneMode(id: string, on?: boolean) {
     const serial = await this.serialOf(id);

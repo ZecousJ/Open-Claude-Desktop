@@ -138,6 +138,10 @@ const (
 	NameAnnouncements = "announcements"
 	// Service status: the channels' uptime and incidents.
 	NameServiceStatus = "service-status"
+	// ZecousAI accounts moved to Claudex (owner, 2026-10-03).
+	NameZecousMigration = "zecous-migration"
+	// Knowledge bases served to the agents as MCP (owner, 2026-10-07).
+	NameKnowledge = "knowledge"
 	// Failing upstream accounts paused and probed back (owner, 2026-10-10).
 	NameAccountGuard = "account-guard"
 	// The account step after sign-up: name, birthday, terms (owner, 2026-10-12).

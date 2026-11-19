@@ -24,6 +24,7 @@ export const githubConnectionCalls = new Set([
 /** Calls whose first argument is a conversation id. */
 export const conversationCalls = new Set([
   "resolveCodeNewTask",
+  "turnAttachment",
   "conversationTurns",
   "interrupt",
   "releaseRunner",
@@ -65,7 +66,10 @@ export const conversationCalls = new Set([
   "stopWorkflowAgent",
   "stopWorkflowRun",
   "readResearchReport",
-  // A cloud conversation's folders, files and terminals are the runner's.
+  // A cloud conversation's folders, files and terminals are the runner's
+  // (owner, 2026-10-20: on the desktop every Chat's folder read failed with
+  // "Task conversation not found" and its terminals were asked of the
+  // local store every 5 s).
   "coworkFolders",
   "listTaskFolderDirectory",
   "listCoworkFolder",
@@ -101,6 +105,7 @@ export const projectCalls = new Set([
   "searchProjectKnowledgeDrive",
   "addProjectKnowledgeDriveFiles",
   "addProjectKnowledgeFiles",
+  "confirmProjectKnowledgeUpload",
   "addProjectKnowledgeText",
   "removeProjectKnowledge",
 ]);
@@ -135,6 +140,7 @@ export function mergedSnapshot(
   local: Snapshot,
   cloud: Snapshot | undefined,
   failed: boolean,
+  migrated?: ReadonlySet<string>,
 ): Snapshot {
   if (!cloud)
     return failed
@@ -145,26 +151,35 @@ export function mergedSnapshot(
   );
   const cloudConversations = new Set(cloud.conversations.map((c) => c.id));
   const cloudProjects = new Set((cloud.projects ?? []).map((p) => p.id));
+  const migratedProjects = new Set<string>();
+  const localConversations = local.conversations.filter((row) => {
+    if (localTasks.has(row.id)) return true;
+    if (!migrated?.has(row.id)) return !cloudConversations.has(row.id);
+    if (row.projectId) migratedProjects.add(row.projectId);
+    return false;
+  });
+  const localProjects = new Set(localConversations.flatMap(row => row.projectId ? [row.projectId] : []));
   return {
     ...local,
     projectCatalog: { status: failed ? "failed" : "ready", cached: true },
     // A conversation moved to the cloud (P5) shows once, from the cloud.
     conversations: [
-      ...local.conversations.filter(
-        (c) => localTasks.has(c.id) || !cloudConversations.has(c.id),
-      ),
+      ...localConversations,
       ...cloud.conversations
         .filter((c) => !localTasks.has(c.id))
         .map((c) => ({ ...c, cloudHosted: true })),
     ],
     projects: [
-      ...local.projects.filter((p) => !cloudProjects.has(p.id)),
+      ...local.projects.filter((p) =>
+        !cloudProjects.has(p.id) && (!migratedProjects.has(p.id) || localProjects.has(p.id))),
       ...(cloud.projects ?? []),
     ],
     approvals: [
       ...local.approvals,
       ...(cloud.approvals ?? []).map(cloudApproval),
     ],
+    // A cloud conversation's ratings are kept where it runs.
+    replyFeedback: { ...(cloud.replyFeedback ?? {}), ...local.replyFeedback },
   };
 }
 

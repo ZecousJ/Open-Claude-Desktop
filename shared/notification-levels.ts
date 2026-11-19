@@ -1,9 +1,11 @@
 /**
  * How loudly the desktop tells the person about its sessions (Settings →
- * Claudex Code → Local sessions). After the original's notification levels.
+ * Claudex Code → Local sessions). After the original's notification levels
+ * (live claude.ai bundle, 2026-10-12: desktop preference
+ * `notificationLevels`, rows "Permission requests", "Questions" and "Task
+ * complete" with Off / Badge only / Banners, and `notificationSound`).
  *
- * A level the person never chose shows a banner and no Dock badge; one they
- * chose as Banners also counts in the badge, as in the original.
+ * The desktop level picker defaults to Banners.
  */
 export const notificationKinds = ["permission", "question", "idle"] as const;
 export type NotificationKind = (typeof notificationKinds)[number];
@@ -25,7 +27,6 @@ const effects: Record<NotificationLevel, LevelEffect> = {
   badge: { banner: false, badge: true },
   banner: { banner: true, badge: true },
 };
-const unchosen: LevelEffect = { banner: true, badge: false };
 
 interface LevelSettings {
   notificationLevels?: NotificationLevels;
@@ -59,7 +60,7 @@ export function levelEffect(
   kind: NotificationKind,
 ): LevelEffect {
   const level = notificationLevels(settings)[kind];
-  return level ? effects[level] : unchosen;
+  return effects[level ?? "banner"];
 }
 
 /**
@@ -91,10 +92,12 @@ export function freezeLevels(settings: LevelSettings): {
 
 /**
  * Whether Settings shows the level and sound rows. The original keeps them
- * behind a flag, off by default, but shows them anyway once the person has a
- * level stored or the sound set to None. Claudex has no such flag; levels
- * carried over from the old switches count as stored, so a person whose banners
- * those switches turned off can turn them back on here.
+ * behind a flag, off by default, but shows them anyway once the person has
+ * a level stored or the sound set to None (live claude.ai bundle,
+ * 2026-10-12: `Ns(flag, notificationLevels, notificationSound)`). Claudex
+ * has no such flag; levels carried over from the old switches count as
+ * stored, so a person whose banners those switches turned off can turn them
+ * back on here.
  */
 export function levelRowsShown(
   settings: LevelSettings & { notificationSound?: NotificationSound },

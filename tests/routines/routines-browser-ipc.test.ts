@@ -48,6 +48,7 @@ test("actual collection IPC validates IDs, inventories/revokes only owned native
     },
     scheduler,
     engine: {
+      peerExtensions: [],
       extensions: {
         add() {
           ready();

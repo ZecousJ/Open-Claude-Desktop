@@ -169,7 +169,7 @@ func (c *Component) serveTab(ctx context.Context, conn *websocket.Conn, ticket s
 			t.enqueue(pong)
 		case "presence":
 			t.setState(*f.Visible, *f.Focused)
-			c.presenceChanged(userID)
+			c.hubs.presenceChanged(userID)
 		}
 	}
 }
@@ -221,18 +221,6 @@ func (c *Component) pushSnapshot(t *tabConn) {
 		return
 	}
 	c.hubs.sendSnapshot(t, res.Value)
-}
-
-// presenceChanged reports a user's tabs to the runner that serves the user.
-func (c *Component) presenceChanged(userID int64) {
-	rc := c.reg.current(context.Background(), userID)
-	if rc == nil {
-		return
-	}
-	p, changed := c.hubs.presence(userID, true)
-	if changed {
-		rc.presence(userID, p.tabs, p.focused)
-	}
 }
 
 // endUser closes a user's tabs (error frame, then close code) and tells the

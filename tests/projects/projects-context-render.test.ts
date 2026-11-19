@@ -210,7 +210,7 @@ test("17: a retained editable submit callback cannot save after effective rights
 
 test("22: readonly context retains search and inert preview while Add, Select, sync and removal actions are absent", async (context) => {
   const backend = setup(context);
-  backend.store.add("p", [
+  await backend.store.add("p", [
     {
       name: "reference.html",
       data: Buffer.from("<script>window.executed=true</script>Reference text"),
@@ -313,7 +313,7 @@ test("20: rendered durable pending chooser previews all source charsets, cancell
       assert.equal(backend.uploads.list("p").pending.length, 0),
     );
     assert.ok(env.calls.includes("confirm"));
-    const read = backend.store.read("p", "legacy.txt");
+    const read = await backend.store.read("p", "legacy.txt");
     if (read.kind === "text") assert.equal(read.text, "café");
     else assert.fail("Confirmed text must be UTF8");
     assert.deepEqual(env.errors, []);

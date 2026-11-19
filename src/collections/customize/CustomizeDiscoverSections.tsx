@@ -3,7 +3,7 @@ import { ServiceDirectory, CustomizeConnectors } from "./CustomizePage";
 import { PluginsBody } from "../../plugins/PluginsBody";
 import { notAvailable } from "../../settings/unavailable";
 import { Folder } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { useOpenLink } from "../../ui/ExternalLinks";
 import { helpUrl } from "../../../shared/help-links";
 import { Connectors } from "./CustomizeRows";
@@ -184,7 +184,8 @@ export function CustomizeDiscoverSections({
   yours,
 }: CustomizePart1Props) {
   const openLink = useOpenLink();
-  // "Build for the Claudex Directory" under Yours on Plugins and Connectors.
+  // "Build for the Claudex Directory" under Yours on Plugins and Connectors
+  // (live claude.ai, 2026-10-21: both tabs end with it).
   const buildForDirectory = (
     <section className="customize-build">
       <div>
@@ -197,7 +198,7 @@ export function CustomizeDiscoverSections({
           onClick={() => openLink(helpUrl("developer-docs"))}
         >
           Developer docs
-          <AppIcon name="ArrowUpRight" size={20} />
+          <Anthropicon name="ArrowUpRight" size={20} />
         </button>
         <button
           type="button"
@@ -239,7 +240,8 @@ export function CustomizeDiscoverSections({
             onDiscover={() => changeView("discover")}
             onError={onError}
           />
-          {/* While the list loads its skeleton stands alone. */}
+          {/* While the list loads its skeleton stands alone (live
+              claude.ai, 2026-10-21). */}
           {view === "yours" && (plugins.catalog || plugins.failure) && (
             <>
               {host.kind !== "web" && (

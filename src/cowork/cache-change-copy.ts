@@ -1,6 +1,7 @@
 import type { CacheChangeKind } from "../../shared/cowork-cache";
 
-/** Cowork cache-miss confirmation. */
+/** Cowork cache-miss confirmation (live claude.ai bundle, 2026-10-14,
+ * cca617cde-B64yBLGw.js). */
 export const cacheChangeTitles: Record<CacheChangeKind, string> = {
   model: "Switch model?",
   effort: "Change effort level?",

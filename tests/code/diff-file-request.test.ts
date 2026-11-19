@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { act, createElement } from "react";
 import { parseHTML } from "linkedom";
 import type { Item, Turn } from "../../shared/types";
-import { workingTreeDiff } from "../../scripts/preview/agent-tool-fixtures";
+import { workingTreeDiff } from "../../scripts/fidelity/agent-tool-fixtures";
 import {
   clearDiffFile,
   pendingDiffFile,

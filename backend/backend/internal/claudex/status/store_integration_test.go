@@ -84,12 +84,17 @@ func freshDB(t *testing.T) *sql.DB {
 	// The two Sub2API tables the component reads, as far as it reads them.
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS channel_monitors (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL,
 		provider TEXT NOT NULL, primary_model TEXT NOT NULL, enabled BOOLEAN NOT NULL DEFAULT TRUE,
-		extra_models JSONB NOT NULL DEFAULT '[]'::jsonb, group_name VARCHAR(100) NOT NULL DEFAULT '');
+		extra_models JSONB NOT NULL DEFAULT '[]', group_name TEXT NOT NULL DEFAULT '');
 		CREATE TABLE channel_monitor_histories (id BIGSERIAL PRIMARY KEY, monitor_id BIGINT NOT NULL,
 		model VARCHAR(200) NOT NULL, status VARCHAR(20) NOT NULL, checked_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`)
 	require.NoError(t, err)
 	for i := 0; i < 2; i++ { // idempotent
-		for _, name := range []string{"claudex_0120_service_status.sql", "claudex_0121_status_incident_published.sql", "claudex_0122_status_incident_channel.sql"} {
+		for _, name := range []string{
+			"claudex_0120_service_status.sql",
+			"claudex_0121_status_incident_published.sql",
+			"claudex_0122_status_incident_channel.sql",
+			"claudex_0124_status_incident_channel_length.sql",
+		} {
 			raw, err := fs.ReadFile(migrations.FS, name)
 			require.NoError(t, err)
 			_, err = db.Exec(string(raw))
@@ -179,7 +184,7 @@ func TestIntegrationServiceStatus(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, seen)
 	yes := true
-	published, err := s.update(ctx, list[0].ID, IncidentInput{Platform: "-", Published: &yes}, 7, now)
+	published, err := s.update(ctx, list[0].ID, IncidentInput{Published: &yes}, nil, 7, now)
 	require.NoError(t, err)
 	require.True(t, published.Published)
 	require.Len(t, published.Updates, 1, "publishing posts no update")
@@ -206,23 +211,29 @@ func TestIntegrationServiceStatus(t *testing.T) {
 		Status: StatusInvestigating, Message: "Looking into it."}, false, 7, now)
 	require.NoError(t, err)
 	require.True(t, mine.Published, "an administrator's incident is published unless they say otherwise")
-	mine, err = s.update(ctx, mine.ID, IncidentInput{Platform: "-", Status: StatusIdentified, Message: "Found it."}, 7, now.Add(time.Hour))
+	mine, err = s.update(ctx, mine.ID, IncidentInput{Status: StatusIdentified, Message: "Found it."}, nil, 7, now.Add(time.Hour))
 	require.NoError(t, err)
 	require.Equal(t, StatusIdentified, mine.Status)
 	require.Equal(t, "Found it.", mine.Message)
 	require.True(t, mine.touched)
-	mine, err = s.update(ctx, mine.ID, IncidentInput{Title: "Slow xAI replies", Platform: "-"}, 7, now.Add(2*time.Hour))
+	mine, err = s.update(ctx, mine.ID, IncidentInput{Title: "Slow xAI replies"}, nil, 7, now.Add(2*time.Hour))
 	require.NoError(t, err)
 	require.Equal(t, "Slow xAI replies", mine.Title)
 	require.Equal(t, "grok", mine.Platform)
 	require.Len(t, mine.Updates, 2, "an edit without status or message adds no update")
-	mine, err = s.update(ctx, mine.ID, IncidentInput{Platform: "-", Status: StatusResolved, Message: "Fixed."}, 7, now.Add(3*time.Hour))
+	mine, err = s.update(ctx, mine.ID, IncidentInput{Status: StatusResolved, Message: "Fixed."}, nil, 7, now.Add(3*time.Hour))
 	require.NoError(t, err)
 	require.NotNil(t, mine.ResolvedAt)
-	mine, err = s.update(ctx, mine.ID, IncidentInput{Platform: "-", Status: StatusMonitoring}, 7, now.Add(4*time.Hour))
+	mine, err = s.update(ctx, mine.ID, IncidentInput{Status: StatusMonitoring}, nil, 7, now.Add(4*time.Hour))
 	require.NoError(t, err)
 	require.Nil(t, mine.ResolvedAt, "reopened")
-	missing, err := s.update(ctx, 999, IncidentInput{Platform: "-", Status: StatusResolved}, 7, now)
+	mine, err = s.update(ctx, mine.ID, IncidentInput{}, ptr("-"), 7, now.Add(4*time.Hour))
+	require.NoError(t, err)
+	require.Equal(t, "-", mine.Platform)
+	mine, err = s.update(ctx, mine.ID, IncidentInput{}, ptr(""), 7, now.Add(4*time.Hour))
+	require.NoError(t, err)
+	require.Empty(t, mine.Platform)
+	missing, err := s.update(ctx, 999, IncidentInput{Status: StatusResolved}, nil, 7, now)
 	require.NoError(t, err)
 	require.Nil(t, missing)
 	ok, err := s.remove(ctx, mine.ID)

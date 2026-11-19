@@ -73,11 +73,8 @@ describe('console routes and reserved_paths.json', () => {
     expect(paths.length).toBeGreaterThan(20)
 
     // The catch-all is the only route that matches anything; its guard sends
-    // non-console paths back to the web app. /reset-password is the web app's
-    // own page; the console keeps its route for a server without the web app.
-    const outside = paths.filter(
-      (p) => p !== '/:pathMatch(.*)*' && p !== '/reset-password' && !isServedByConsole(p)
-    )
+    // non-console paths back to the web app.
+    const outside = paths.filter((p) => p !== '/:pathMatch(.*)*' && !isServedByConsole(p))
     expect(outside).toEqual([])
   })
 

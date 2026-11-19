@@ -7,7 +7,7 @@ import { codexModelCatalog } from "../../electron/engine/codex-model-catalog";
 import { Engine } from "../../electron/engine/engine";
 import { Store } from "../../electron/store/store";
 import { sandboxArgs } from "../../runner/src/sandbox/sandbox-setup";
-import type { Conversation } from "../../shared/types";
+import type { AppEvent, Conversation } from "../../shared/types";
 import { fileChangeLabel } from "../../src/code-tools/CodeFileChange";
 
 test("the catalog gives GPT-6 models a directly called freeform apply_patch", () => {
@@ -21,7 +21,7 @@ test("the catalog gives GPT-6 models a directly called freeform apply_patch", ()
   assert.equal(gpt6.supports_parallel_tool_calls, false);
   assert.match(
     String(gpt6.base_instructions),
-    /^You are Claudex, a coding agent/,
+    /^You are Claudex, a coding agent made by ZecousAI/,
   );
   // Codex's own models stay as it ships them.
   for (const slug of ["gpt-5.5", "gpt-5.6-sol", "codex-auto-review"])
@@ -58,11 +58,14 @@ test("a file the model is still writing shows from its first patch update", () =
       ],
     };
     store.conversations = [c];
+    const written: Extract<AppEvent, { type: "code-files-written" }>[] = [];
     const engine = new Engine(
       store,
       "unused",
       () => "",
-      () => {},
+      (event) => {
+        if (event.type === "code-files-written") written.push(event);
+      },
     ) as any;
     engine.routes.set("thread", "c");
     const send = (method: string, params: object) =>
@@ -111,6 +114,14 @@ test("a file the model is still writing shows from its first patch update", () =
       c.turns[0].items[0].changes![0].diff,
       "# 第1章\n## 1.1\n正文\n",
     );
+    send("item/completed", { item: done });
+    send("item/completed", { item: { ...done, id: "failed", status: "failed" } });
+    send("item/completed", { turnId: "old-turn", item: { ...done, id: "old-item" } });
+    assert.deepEqual(written, [{
+      type: "code-files-written",
+      conversationId: c.id,
+      paths: [path.resolve("/w/thesis.md")],
+    }]);
     // The store's pending save, before its folder goes.
     store.flush();
   } finally {

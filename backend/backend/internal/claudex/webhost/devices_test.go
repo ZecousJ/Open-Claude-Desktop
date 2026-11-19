@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -59,7 +60,7 @@ func (h *host) dialDeviceWithTicket(ticket, id, name string, methods []string, a
 
 func (fd *fakeDevice) send(frame any) {
 	data, _ := json.Marshal(frame)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	_ = fd.conn.Write(ctx, websocket.MessageText, data)
 }
@@ -82,6 +83,9 @@ func (fd *fakeDevice) loop() {
 		fd.calls = append(fd.calls, f)
 		fd.mu.Unlock()
 		value, rpcErr := fd.answer(f)
+		if _, manual := value.(manualAnswer); manual {
+			continue
+		}
 		ok := rpcErr == nil
 		out := map[string]any{"t": "result", "id": f.ID, "ok": ok}
 		if ok {
@@ -290,4 +294,79 @@ func TestRevokeAndSweepCloseDeviceLinks(t *testing.T) {
 	h.mu.Unlock()
 	h.c.sweep(context.Background())
 	require.Equal(t, websocket.StatusCode(webproto.CloseForbidden), fb.closeCode())
+}
+
+// manualAnswer tells the fake device's loop that the test answers the call itself.
+type manualAnswer struct{}
+
+// Owner, 2026-10-31: a big answer must not cost the link. Answers above the
+// old 4 MB pass; one above the frame limit is dropped with a clear error for
+// its caller, and the link keeps working.
+func TestDeviceLargeAnswersKeepTheLink(t *testing.T) {
+	h := newHost(t)
+	big := func(n int) string { return strings.Repeat("x", n) }
+	fd, err := h.dialDevice(userA, "mac-of-a-0002", "A's Mac", []string{"openConversation", "huge", "send"}, func(f DeviceFrame) (any, *webproto.RPCError) {
+		switch f.Method {
+		case "openConversation":
+			return map[string]any{"text": big(6 << 20)}, nil
+		case "huge":
+			return map[string]any{"text": big(deviceFrameBytes + 1<<20)}, nil
+		}
+		return echoDevice(f)
+	})
+	require.NoError(t, err)
+	waitFor(t, "listed", func() bool { return len(h.devices(userA)) == 1 })
+
+	status, res := h.deviceCall(userA, "mac-of-a-0002", "openConversation", "c1")
+	require.Equal(t, http.StatusOK, status)
+	require.True(t, res.OK)
+	require.Greater(t, len(res.Value), 6<<20)
+
+	status, res = h.deviceCall(userA, "mac-of-a-0002", "huge")
+	require.Equal(t, http.StatusOK, status)
+	require.False(t, res.OK)
+	require.Equal(t, "CLAUDEX_DEVICE_ANSWER_TOO_LARGE", res.Error.Code)
+
+	status, res = h.deviceCall(userA, "mac-of-a-0002", "send", map[string]any{"text": "still here"})
+	require.Equal(t, http.StatusOK, status)
+	require.True(t, res.OK)
+	select {
+	case <-fd.closed:
+		t.Fatal("the link closed")
+	default:
+	}
+}
+
+// A slow uplink: an answer whose bytes keep arriving outlives the link's
+// silence window (2.5 heartbeats, 2.5 s here) without losing the link.
+func TestDeviceSlowAnswerKeepsTheLink(t *testing.T) {
+	h := newHost(t)
+	var fd *fakeDevice
+	answered := make(chan struct{})
+	fd, err := h.dialDevice(userA, "mac-of-a-0003", "A's Mac", []string{"openConversation"}, func(f DeviceFrame) (any, *webproto.RPCError) {
+		go func() {
+			defer close(answered)
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+			w, err := fd.conn.Writer(ctx, websocket.MessageText)
+			if err != nil {
+				return
+			}
+			_, _ = w.Write([]byte(`{"t":"result","id":"` + f.ID + `","ok":true,"value":"`))
+			for i := 0; i < 8; i++ {
+				time.Sleep(500 * time.Millisecond)
+				_, _ = w.Write([]byte(strings.Repeat("y", 1024)))
+			}
+			_, _ = w.Write([]byte(`"}`))
+			_ = w.Close()
+		}()
+		return manualAnswer{}, nil
+	})
+	require.NoError(t, err)
+	waitFor(t, "listed", func() bool { return len(h.devices(userA)) == 1 })
+	status, res := h.deviceCall(userA, "mac-of-a-0003", "openConversation", "c1")
+	<-answered
+	require.Equal(t, http.StatusOK, status)
+	require.True(t, res.OK)
+	require.Len(t, res.Value, 8*1024+2)
 }

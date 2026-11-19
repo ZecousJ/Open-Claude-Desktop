@@ -262,8 +262,8 @@ test("install helpers capture stderr and verify a signed Mac app before replacin
 });
 
 test("an ad-hoc signed Mac install is not held to a signature it cannot have", () => {
-  // Both checks sit inside the Team ID branch: an ad-hoc, linker-signed install
-  // (no Team ID) skips them, as every build so far is.
+  // Both checks sit inside the Team ID branch: an ad-hoc, linker-signed
+  // install (no Team ID) skips them, as every build so far is (2026-10-16).
   const branch = macApplyScript.match(
     /\nif \[ -n "\$TEAM" \] && \[ "\$TEAM" != "not set" \]; then\n([^]*?)\nfi\n/,
   );

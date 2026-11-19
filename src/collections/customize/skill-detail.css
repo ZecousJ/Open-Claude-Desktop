@@ -1,6 +1,7 @@
 /*
- * A skill's details. Facts in two columns, SKILL.md rendered in a scrolling
- * box, then the folder's files; the buttons sit on the right.
+ * A skill's details (R13-D; R-1114 not captured: provisional). Facts in
+ * two columns, SKILL.md rendered in a scrolling box, then the folder's
+ * files; the buttons sit on the right.
  */
 .skill-detail-facts {
   display: flex;
@@ -89,7 +90,7 @@
 :root[data-theme="light"] .skill-detail-actions > .skill-detail-remove {
   color: #b3413a;
 }
-/* Light: the muted labels use the Customize muted grey. */
+/* Light: the muted labels use the Customize muted grey (R-1600, R-1318). */
 :root[data-theme="light"] .skill-detail-facts dt,
 :root[data-theme="light"] .skill-detail-label,
 :root[data-theme="light"] .skill-detail-more,

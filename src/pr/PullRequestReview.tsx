@@ -20,7 +20,8 @@ import "../changes/changes-panel.css";
 
 type Section = "files" | "checks" | "timeline";
 
-// PR sections and review actions.
+// PR sections and review actions (live claude.ai bundle, 2026-10-14,
+// ca9ee6f68-M9gPLwhl.js:3794, 3814, 3831, 4295, 7553).
 export function PullRequestReview({
   pr,
   section,

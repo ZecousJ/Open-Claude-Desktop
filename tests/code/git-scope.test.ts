@@ -1,8 +1,9 @@
 /**
- * The Changes panel's diff scope: what "All changes", "Uncommitted changes",
- * "Compare against" and "Commits" read (electron/working-tree.ts,
- * electron/git-scope.ts) and the menu they make (src/changes/diff-scope.ts),
- * with the system git on throwaway repositories.
+ * The Changes panel's diff scope (live claude.ai bundle, 2026-10-12): what
+ * "All changes", "Uncommitted changes", "Compare against" and "Commits"
+ * read (electron/working-tree.ts, electron/git-scope.ts) and the menu they
+ * make (src/changes/diff-scope.ts), with the system git on throwaway
+ * repositories.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

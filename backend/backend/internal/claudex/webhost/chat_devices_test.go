@@ -28,10 +28,10 @@ func TestChatDevicesNegotiateAndRelayOnlyTheAuthenticatedScope(t *testing.T) {
 	go fd.loop()
 	value, err := h.c.chatDeviceRequest(ctx, userA, "device.list", nil)
 	require.NoError(t, err)
-	directory, _ := value.(map[string]any)
+	directory := value.(map[string]any)
 	require.Equal(t, strconv.FormatInt(userA, 10), directory["accountScope"])
 	require.Nil(t, directory["organizationId"])
-	devices, _ := directory["devices"].([]DeviceInfo)
+	devices := directory["devices"].([]DeviceInfo)
 	require.Len(t, devices, 1)
 	require.Equal(t, 1, devices[0].ChatBindingVersion)
 	require.NotNil(t, devices[0].LastSeenAt)
@@ -66,8 +66,7 @@ func TestOldChatDeviceHelloDoesNotClaimV1Support(t *testing.T) {
 	require.NoError(t, err)
 	value, err := h.c.chatDeviceRequest(context.Background(), userA, "device.list", nil)
 	require.NoError(t, err)
-	listed, _ := value.(map[string]any)
-	devices, _ := listed["devices"].([]DeviceInfo)
+	devices := value.(map[string]any)["devices"].([]DeviceInfo)
 	require.Len(t, devices, 1)
 	require.Zero(t, devices[0].ChatBindingVersion)
 	body, _ := json.Marshal(map[string]any{"version": 1, "deviceId": "old-device-0001", "method": "chatDeviceSend", "args": []any{map[string]any{"version": 1, "accountScope": strconv.FormatInt(userA, 10), "organizationId": nil}}})
@@ -104,8 +103,7 @@ func TestAssignedChatRelayPreservesProofAndValidatesBothScopes(t *testing.T) {
 	}
 	directory, err := h.c.chatDeviceRequest(ctx, userA, "device.list", nil)
 	require.NoError(t, err)
-	listed, _ := directory.(map[string]any)
-	require.Equal(t, 1, listed["deviceTrustRelayVersion"])
+	require.Equal(t, 1, directory.(map[string]any)["deviceTrustRelayVersion"])
 	require.NoError(t, call("deviceTrustChallenge", map[string]any{"publicKey": "test key", "name": "Runner", "platform": "linux"}, scope(userA)))
 	enroll := map[string]any{"deviceTrust": map[string]any{"challengeId": "challenge", "signature": "proof"}, "args": []any{}}
 	require.NoError(t, call("deviceTrustEnroll", enroll, scope(userA)))
@@ -127,4 +125,38 @@ func TestAssignedChatRelayPreservesProofAndValidatesBothScopes(t *testing.T) {
 	fd.mu.Lock()
 	require.Len(t, fd.calls, 3, "rejected scopes and local-only authorities never reach a host")
 	fd.mu.Unlock()
+}
+
+func TestChatRelayPreservesChallengeOrder(t *testing.T) {
+	h := newHost(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	id := "ordered-challenge-01"
+	challenge := json.RawMessage(`{"id":"challenge","nonce":"nonce","accountScope":"account","deviceId":"ordered-challenge-01","requireTrustedDevices":false,"expiresAt":123}`)
+	conn, _, err := websocket.Dial(ctx, h.wsURL("/api/v1/claudex"+RouteDeviceLink), &websocket.DialOptions{Subprotocols: []string{webproto.EventsSubprotocol, webproto.TicketSubprotocolPrefix + h.ticket(userA, id)}})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = conn.CloseNow() })
+	fd := &fakeDevice{t: t, conn: conn, answer: func(DeviceFrame) (any, *webproto.RPCError) { return challenge, nil }, closed: make(chan struct{})}
+	fd.send(map[string]any{"t": "hello", "v": 1, "deviceId": id, "name": "Proof host", "platform": "darwin", "version": "1", "methods": []string{"deviceTrustChallenge", "chatDeviceSend"}, "computerAccess": true, "chatBindingVersion": 1, "chatModes": []string{"chat"}, "chatPermissionModes": []string{"default"}})
+	_, _, err = conn.Read(ctx)
+	require.NoError(t, err)
+	go fd.loop()
+	scope := map[string]any{"version": 1, "accountScope": strconv.FormatInt(userA, 10), "organizationId": nil}
+	request, err := json.Marshal(map[string]any{"version": 1, "deviceId": id, "method": "deviceTrustChallenge", "args": []any{map[string]any{"publicKey": "key", "name": "Runner", "platform": "linux"}}, "scope": scope})
+	require.NoError(t, err)
+	value, err := h.c.chatDeviceRequest(ctx, userA, "device.call", request)
+	require.NoError(t, err)
+	forwarded, err := json.Marshal(value)
+	require.NoError(t, err)
+	require.Equal(t, string(challenge), string(forwarded))
+	envelope := json.RawMessage(`{"deviceTrust":{"signature":"proof","challengeId":"challenge"},"args":[{"version":1,"accountScope":"` + strconv.FormatInt(userA, 10) + `","organizationId":null,"text":"fixture"}]}`)
+	request, err = json.Marshal(map[string]any{"version": 1, "deviceId": id, "method": "chatDeviceSend", "args": []json.RawMessage{envelope}, "scope": scope})
+	require.NoError(t, err)
+	_, err = h.c.chatDeviceRequest(ctx, userA, "device.call", request)
+	require.NoError(t, err)
+	fd.mu.Lock()
+	defer fd.mu.Unlock()
+	var args []json.RawMessage
+	require.NoError(t, json.Unmarshal(fd.calls[1].Args, &args))
+	require.Equal(t, string(envelope), string(args[0]))
 }

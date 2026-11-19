@@ -1,6 +1,6 @@
 import { formatText, t } from "../i18n";
 
-// Palette order.
+// Palette order (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh, qn).
 export const avatarVariants = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
   23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 33, 35, 36, 37, 38, 39, 40, 41,
@@ -8,9 +8,9 @@ export const avatarVariants = [
   61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
 ];
 
-// Six shapes, twelve background/foreground pairs; Hourglass variants 33/34 swap
-// pairs. English names/template were read from the official picker, not
-// inferred IDs.
+// 1016 c547d6690-Cz73vFOt xt + shared-0-BI_eO5E_ OR: six shapes,
+// twelve background/foreground pairs; Hourglass variants 33/34 swap pairs.
+// English names/template were read from the official picker, not inferred IDs.
 const avatarShapes = [
   "Flower",
   "Grid",

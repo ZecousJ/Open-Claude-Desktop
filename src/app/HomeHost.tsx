@@ -81,7 +81,8 @@ export function HomeHost() {
         if (submit) flushSync(() => app.setText(prompt));
         else app.setText(prompt);
         app.composer.current?.focus();
-        // Starter clicks send unless resources are attached or still loading.
+        // Starter clicks send unless resources are attached or still loading
+        // (live claude.ai bundle, 2026-10-14, cb7829751-IdU-cvhU.js).
         if (submit)
           requestComposerSubmit(
             `${app.activeId ?? app.draftSession}:${app.mode}`,

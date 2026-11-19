@@ -32,7 +32,7 @@ var claudexMigrationRanges = []struct {
 	from, to int
 	owner    string
 }{
-	{1, 9, ""},                   // reserved for B0, which creates no table
+	{1, 9, ""}, // reserved for B0, which creates no table
 	{10, 19, "B3 model catalog"}, // includes plugin/connector directory submissions
 	{20, 29, "B4 devices"},
 	{30, 39, "B5 usage rules"},
@@ -49,7 +49,7 @@ var claudexMigrationRanges = []struct {
 	{100, 109, ""}, // reserved: ask the B0 owner for a range of ten
 	{110, 119, "announcements"},
 	{120, 129, "service status"},
-	{130, 139, "(retired)"},
+	{130, 139, "ZecousAI migration"},
 	{140, 149, "account sessions"},
 	{150, 159, "account profile and onboarding"},
 	{160, 169, "artifact embeds"},

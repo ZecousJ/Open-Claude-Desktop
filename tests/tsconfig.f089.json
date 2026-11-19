@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.f094.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../shared/activity.ts",
+    "../electron/engine/engine-events.ts",
+    "../electron/official-ui/native/code-tool-transcript.ts",
+    "../electron/official-ui/native/code-transcript.ts",
+    "code-tool-transcript.test.ts",
+    "mcp-transcript-events.test.ts",
+    "official-ui-code-mcp-original.test.ts",
+    "official-ui-code-transcript.test.ts",
+    "engine/native-mcp-transcript-chain.test.ts"
+  ]
+}

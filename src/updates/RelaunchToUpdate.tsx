@@ -66,12 +66,13 @@ export function useRelaunchFlow(onError: (error: unknown) => void) {
 }
 
 /**
- * "Relaunch to update" at the foot of the sidebar, above the account row: a
- * full-width 28px rounded button, the label on the left and a grey arrow on the
- * right. Shown once an update is downloaded, verified and staged; clicking
- * quits, installs it and opens the new version. While a task runs it asks first
- * (useRelaunchFlow); after an install that did not complete it reads "Relaunch
- * to retry update".
+ * "Relaunch to update" at the foot of the sidebar, above the account row
+ * (ref-relaunch-to-update.png, 2x; fidelity/observations/relaunch-to-update.md):
+ * a full-width 28px rounded button, the label on the left and a grey arrow
+ * on the right. Shown once an update is downloaded, verified and staged;
+ * clicking quits, installs it and opens the new version. While a task runs
+ * it asks first (useRelaunchFlow); after an install that did not complete it
+ * reads "Relaunch to retry update" (desktop bundle 2.31226.1).
  */
 export function RelaunchToUpdate({
   version,
@@ -106,7 +107,11 @@ export function RelaunchToUpdate({
   );
 }
 
-/** While Check for Updates… is checking or downloading. */
+/**
+ * While Check for Updates… is checking or downloading (live claude.ai
+ * bundle, 2026-10-14, shared-21 Z_: the update strip with a spinner in the
+ * brand colour and the status in the muted colour, role=status).
+ */
 export function UpdateStatusStrip({
   phase,
 }: {

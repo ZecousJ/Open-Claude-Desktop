@@ -267,6 +267,28 @@ test("real ModelMenu never substitutes provider/effort rows for an unresolved or
   }
 });
 
+test("the fallback conversation menu lists text models for a saved drawing conversation", async () => {
+  const api = bridge();
+  const env = await menuDom(api.value);
+  env.window.innerWidth = 1440;
+  env.window.innerHeight = 900;
+  try {
+    await env.render(h(ModelMenu, {
+      ...menuProps,
+      model: "gpt-image-2.5",
+      providers: [{ ...provider, models: [provider.model, "gpt-image-2", "gpt-image-2.5"] }],
+    }));
+    await act(async () => {
+      api.requests[0].resolve(null);
+    });
+    await env.click('[data-branch="models"]');
+    assert.match(env.document.body.textContent ?? "", /configured-model/);
+    assert.doesNotMatch(env.document.body.textContent ?? "", /gpt-image-/i);
+  } finally {
+    await env.clean();
+  }
+});
+
 test("account replacement drops old menu rows synchronously and ignores its late read", async () => {
   const api = bridge(),
     env = await menuDom(api.value);

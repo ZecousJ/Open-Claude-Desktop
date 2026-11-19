@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { DictationActions } from "./DictationActions";
 import "./dictation-bar.css";
 
-/** Waveform. */
+/** Waveform (live claude.ai bundle, 2026-10-14, ce1d55484-CB0KBuN1). */
 export function waveformLevel(samples: Uint8Array) {
   let sum = 0;
   for (const sample of samples) sum += ((sample - 128) / 128) ** 2;

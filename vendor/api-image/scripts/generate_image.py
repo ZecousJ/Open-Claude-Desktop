@@ -35,13 +35,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mask", help="Mask image path for localized edits.")
     parser.add_argument(
         "--background",
-        help="Background mode. Use auto or opaque for gpt-image-2; transparent is model/provider-specific.",
+        help="auto, opaque, or transparent where supported by the provider.",
     )
     parser.add_argument("--output-format", help="png, jpeg, or webp.")
     parser.add_argument("--output-compression", type=int, help="0-100, only for jpeg/webp.")
     parser.add_argument(
         "--input-fidelity",
-        help="low or high for supported edit models. Do not use with gpt-image-2.",
+        help="low or high where supported by the provider for edits.",
     )
     parser.add_argument("--moderation", help="auto or low for supported GPT image models.")
     parser.add_argument("--codex-home", help="Override Codex root directory.")
@@ -136,7 +136,7 @@ def main() -> int:
         print(f"Waiting for provider image {mode} job {prompt_index + 1}/{len(prompts)}...", file=sys.stderr)
         images = request_images(args, prompt, mode, timeout)
         output_paths = output_paths_for_response(base_path, prompt_index, len(prompts), len(images))
-        for path in write_images(images, output_paths):
+        for path in write_images(images, output_paths, preserve_existing=mode == "edit"):
             print(path)
     return 0
 

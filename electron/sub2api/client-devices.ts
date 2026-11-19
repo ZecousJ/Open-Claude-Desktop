@@ -147,12 +147,14 @@ export async function createKey(
   accessToken: string,
   name: string,
   groupId: number,
+  idempotencyKey?: string,
 ) {
   return (
     key(
       await this.call("/keys", {
         method: "POST",
         token: accessToken,
+        idempotencyKey,
         body: { name, group_id: groupId },
       }),
     ) ?? malformed()

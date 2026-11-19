@@ -1,7 +1,9 @@
-/* Reply on a selection: 81×32, #0b0b0b with a #2a2a2a rim, radius 7, 15px white
-   "Reply" and the reply arrow 6px after it, its bottom 7px above the
-   selection's first line. With "Start a side chat" beside it the pill holds
-   both buttons, split by a hairline in the rim's colour. */
+/* Reply on a selection (R-0526, W969 at 2.4 image px per CSS px): 81×32,
+   #0b0b0b with a #2a2a2a rim, radius 7, 15px white "Reply" and the reply
+   arrow 6px after it, its bottom 7px above the selection's first line.
+   With "Start a side chat" beside it the pill holds both buttons, split by
+   a hairline in the rim's colour (the original's selection actions are a
+   split group, desktop bundle 2.31226.1). */
 .selection-reply {
   position: fixed;
   z-index: 60;
@@ -32,7 +34,7 @@
 .selection-reply > button:hover {
   background: #1c1c1c;
 }
-/* Icon-only ghost button. */
+/* Icon-only ghost button (live claude.ai bundle, 2026-10-14, c59c32499-DO3QTjpt). */
 .selection-reply > .selection-dictate {
   justify-content: center;
   width: 32px;

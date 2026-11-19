@@ -10,9 +10,9 @@ function startOfDay(timestamp: number) {
 }
 
 /**
- * Relative times as the History list shows them: "12 hours ago", "Yesterday",
- * "2 days ago" … "6 days ago", then "Sep 16"; a date in another year adds the
- * year.
+ * Relative times as the History list shows them (R-History-全部对话):
+ * "12 hours ago", "Yesterday", "2 days ago" … "6 days ago", then "Sep 16";
+ * a date in another year adds the year.
  */
 export function collectionTime(timestamp: number, now = Date.now()) {
   const elapsed = Math.max(0, now - timestamp);

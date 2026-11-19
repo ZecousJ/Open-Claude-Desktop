@@ -72,7 +72,7 @@ Claudex 自 2026-09-26 起修改本目录。
 | `cmd/server/main.go` | W-SITE | `runSetupServer` 用 `web.NewSiteServer(SiteOptions{SetupMode: true})` | 安装向导期间 `/` 跳 `/admin/setup`，不提供网页版 |
 | `internal/web/embed_on.go`、`embed_off.go`、`embed_test.go`、`html_cache.go`、`static_cache.go` | W-SITE | 上游 `FrontendServer` 删除，分发移到新增的 `site.go`、`render.go`、`sitepaths/`；内嵌目录改为 `dist/admin`（控制台）与 `dist/app`（网页版）；`html_cache.go`、`static_cache.go` 去掉构建标签；`HasEmbeddedFrontend` 改查 `dist/admin/index.html`，新增 `HasEmbeddedWebApp`；`ServeEmbeddedFrontend` 保留给旧调用方 | 分发、注入与缓存测试不依赖 `embed` 标签即可运行；H15 的 `/s/` 放行移入 `sitepaths/reserved_paths.json` |
 | `internal/server/middleware/audit_log.go` | B8 | `auditSensitiveReads` 增加 `GET /api/v1/admin/claudex/diagnostics/:id`、`GET /api/v1/admin/claudex/feedback/:id` | 管理员打开诊断报告或回复反馈（含对话摘录）时写一条不含正文的审计记录（设计 2.9）；上游审计中间件只记录名单内的 GET，`SetAuditAction` 对其他 GET 不起作用 |
-| `internal/service/auth_service.go` | ZMIG | `CheckPassword` 改为 `legacypw.Verify`；`Login` 密码校验通过后 `s.claudexUpgradeLegacyPasswordHash(...)`；import | 从其他系统导入的用户保留 passlib `bcrypt_sha256`（v1/v2）或 werkzeug `pbkdf2`/`scrypt` 哈希，用原密码登录；首次登录成功后在签发 token 之前改写为标准 bcrypt（token 版本由哈希推导）。标准 bcrypt 行为不变 |
+| `internal/service/auth_service.go` | ZMIG | `CheckPassword` 改为 `legacypw.Verify`；`Login` 密码校验通过后 `s.claudexUpgradeLegacyPasswordHash(...)`；import | 从 ZecousAI 迁入的用户保留 passlib `bcrypt_sha256`（v1/v2）或 werkzeug `pbkdf2`/`scrypt` 哈希，用原密码登录；首次登录成功后在签发 token 之前改写为标准 bcrypt（token 版本由哈希推导）。标准 bcrypt 行为不变 |
 | `internal/service/user.go` | ZMIG | `User.CheckPassword` 改为 `legacypw.Verify`；import | 改密、TOTP、passkey、备份等“确认当前密码”的路径同样接受迁入用户的旧哈希；`SetPassword`、管理员重置仍写 bcrypt |
 
 ### 前端（`backend/frontend/src`）
@@ -331,16 +331,20 @@ WebSocket 中转取代。上游已有文件只改 H6 一行路由（见上表）
 
 ### R13 细节（R13-A 填写）
 
-### ZMIG 旧密码哈希兼容
+### ZMIG 从 ZecousAI 迁移用户
 
 - `internal/claudex/legacypw/`：旧哈希识别与校验（passlib `$bcrypt-sha256$v=2,…`、`$bcrypt-sha256$2b,…`，werkzeug
   `pbkdf2:<sha1|sha256|sha512>:<迭代>$salt$hex`、`scrypt:N:r:p$salt$hex`），常数时间比较，限制迭代次数与 scrypt 内存；
   测试向量由 passlib 1.7.4 / werkzeug 3 生成。只依赖标准库与 `x/crypto`。
 - `internal/service/claudex_legacy_password.go`(+`_test`)：登录成功后改写为 bcrypt（上表 `auth_service.go` 的挂钩）。
+- `internal/claudex/usermigrate/`：导入逻辑（按邮箱幂等、冲突与用户名重复报告、`credit_cny` 经
+  `AdminService.UpdateUserBalance` 入账并写余额历史，备注以 `[claudex-migration zecousai]` 开头、每个用户只入账一次）。
+- `cmd/claudex-import-users/`：命令行入口（`--file`、`--dry-run`、`--update-existing`、`--balance-per-cny`、`--report`）。
+- 没有新迁移：不建表、不加列；旧 id、原注册时间、display_name 写进用户备注。
 
 ## 网页版（W-*，2026-09-26 起）
 
-整体说明见仓库根目录的 `docs/architecture.md`。网页包把变更条目写进自己的报告，由 W-FINAL 汇总到本节；本节按 origin/main
+整体说明见仓库根目录的 `docs/web.md`。网页包把变更条目写进自己的报告，由 W-FINAL 汇总到本节；本节按 origin/main
 `5b0e0544` 的合并结果填写。
 
 ### 已合并
@@ -518,20 +522,3 @@ runner 列表多 `disabled`、`disabled_at`。前端（相对 `backend/frontend/
 `internal/claudex/signin/google.go`（新）：公开路由 `POST /api/v1/claudex/auth/google/login`，网页版的 Cookie 会话路由 `POST /api/v1/claudex/web/auth/google/login`（`webproto.AuthGoogleLogin`，`internal/claudex/web/auth.go`）。网页用自己的按钮调起 Google Identity Services 的授权码弹窗，传 `{code, redirect_uri: "postmessage"}`，服务端用网页客户端密钥换取 ID token（也仍接受 `{id_token}`）；桌面传 PKCE 授权码 `{code, code_verifier, redirect_uri}`（只接受回环地址），由服务端用桌面客户端密钥换取 ID token。ID token 交给 Google tokeninfo 校验，再核对 aud（本服务的客户端）、iss、exp 与 `email_verified`；账号按上游“已验证邮箱的 OAuth 身份”规则查找或创建（注册开关、邮箱策略、`auth_identities` 绑定，provider `google`），最后走 `core.WebAuth().CodeLogin`，TOTP、后台模式与登录记录照常生效。登录选项 `GET /api/v1/claudex/sign-in/options` 增加 `google_client_id`（配置了网页密钥才返回）、`google_desktop_client_id`（后台模式下都不返回）。配置来自环境变量 `CLAUDEX_GOOGLE_WEB_CLIENT_ID`、`CLAUDEX_GOOGLE_WEB_CLIENT_SECRET`、`CLAUDEX_GOOGLE_DESKTOP_CLIENT_ID`、`CLAUDEX_GOOGLE_DESKTOP_CLIENT_SECRET`（密钥只在服务器）。
 
 上游文件：`internal/service/auth_email_oauth_auto.go`（拆出 `ResolveVerifiedEmailOAuthUser`，原 `LoginOrRegisterVerifiedEmailOAuth` 行为不变）、`internal/handler/claudex_webauth.go`（`OAuthUser`）、`internal/claudex/core/webauth.go` 与 `emailcode.go`（接口 `OAuthUser`、`GoogleSignIn`）、`internal/server/middleware/security_headers.go`（网页区 CSP 只放行 `https://accounts.google.com/gsi/` 的脚本、样式、连接与框架；COOP 改为 `same-origin-allow-popups`，Google 登录弹窗需要），测试同步。
-
-### 流在首个 token 前断开时换账号
-
-- `internal/service/openai_gateway_chat_completions.go`：上游流在任何内容到达客户端之前断开（没有终止事件），返回 `UpstreamFailoverError`（502），请求换到分组里的其他账号，和连接被拒一样处理；已经开始输出时仍报 “missing terminal event”。
-- `internal/service/openai_gateway_chat_completions_test.go`：`TestForwardAsChatCompletions_DoneSentinelWithoutTerminalReturnsError` 改为期望换账号（`CLAUDEX:` 标记）。
-
-### 不内置 Google OAuth 客户端
-
-- `internal/pkg/geminicli/constants.go`、`oauth.go`：内置 Gemini CLI 客户端的 client_id 与 client_secret 都不写在仓库里，分别来自 `GEMINI_CLI_OAUTH_CLIENT_ID`、`GEMINI_CLI_OAUTH_CLIENT_SECRET`；缺任何一个都报 `GEMINI_CLI_OAUTH_CLIENT_SECRET_MISSING`。
-- `internal/pkg/antigravity/oauth.go`：`ClientID` 来自 `ANTIGRAVITY_OAUTH_CLIENT_ID`，默认 secret 为空（`ANTIGRAVITY_OAUTH_CLIENT_SECRET`）；新增 `CheckClientConfigured`。`internal/service/antigravity_oauth_service.go` 的 `GenerateAuthURL` 先检查客户端是否配置。
-- 部署文件（`deploy/docker-compose*.yml`、`.env.example`、`config.example.yaml`、`README.md`）加上两个 `*_CLIENT_ID` 变量。
-- 测试：`claudex_test_client_test.go`（两个包）与 `internal/service/claudex_google_test_clients_test.go` 用替身 client id；`antigravity/oauth_test.go` 的常量用例、`geminicli/oauth_test.go` 的内置回退用例改为环境变量行为（`CLAUDEX:` 标记）。
-
-### 跟上 Claudex 行为的上游测试
-
-- `internal/service/email_html_escape_test.go`：Claudex 改版的邮件把站点名放在页头单元格，改为检查 `>站点名</td>`。
-- `internal/service/openai_gateway_messages_failed_response_test.go`：首个 token 前的 `server_error` 现在会换账号（`openAIStreamTransportErrorMarkers`），“通用错误不被换账号掩盖”的用例改用 `api_error`。

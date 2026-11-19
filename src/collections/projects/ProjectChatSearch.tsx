@@ -15,7 +15,7 @@ import { RelativeTime } from "../../ui/RelativeTime";
 import { Skeleton, SkeletonGroup } from "../../ui/Skeleton";
 import { ProjectChatRow } from "./ProjectChatRow";
 
-// Project search is debounced 300ms and returns up to 50 chats.
+// Project search is debounced 300ms and returns up to 50 chats (live claude.ai bundle, 2026-10-14, c71dee58b-DpJg0DX-.js).
 export const projectSearchDelay = 300;
 export const projectSearchLimit = 50;
 

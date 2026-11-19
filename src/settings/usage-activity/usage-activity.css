@@ -300,8 +300,9 @@
   color: var(--usage-muted);
 }
 
-/* Requests: a header row and one row per request in four columns, each a value
-   over a muted second line; a row opens to its details. The page's own type,
+/* Requests (owner, 2026-10-08, after the Sub2API dashboard's request table):
+   a header row and one row per request in four columns, each a value over
+   a muted second line; a row opens to its details. The page's own type,
    ink and rules. */
 .ua-records {
   --ua-record-columns: minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 0.8fr)
@@ -358,6 +359,7 @@
   color: var(--usage-muted);
 }
 .ua-record-tokens svg {
+  display: inline-block;
   margin-right: 2px;
   vertical-align: -1px;
   color: var(--usage-muted);

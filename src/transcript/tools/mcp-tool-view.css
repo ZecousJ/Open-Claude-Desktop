@@ -52,10 +52,11 @@
   color: var(--danger);
 }
 
-/* A connector or dynamic tool call reads as a plain grey text row, like the
-   rows in "Used a tool" groups: no card, no icon; the chevron follows the text.
-   Running it has the working dots; failed it is red text, stopped it says so,
-   still no icon. */
+/* A connector or dynamic tool call reads as a plain grey text row (R-0718;
+   Cowork "Ran skill: …" in S-0008), like the rows in "Used a tool" groups:
+   no card, no icon; the chevron follows the text. Running it has the working
+   dots; failed it is red text (R-0816), stopped it says so, still no icon
+   (owner, 2026-10-03: no card left anywhere). */
 :is(
     .mcp-tool-activity,
     .dynamic-tool-activity,
@@ -115,8 +116,10 @@
   background: transparent;
   padding: 21.5px 12px 22.5px;
 }
-/* An opened connector or dynamic call is the opened Bash card: the same frame,
-   an 11px #a9a9a4 label over 12px monospace text, 29.5px between the parts. */
+/* An opened connector or dynamic call (R-0719, R-0723, R-0726: no capture)
+   is the opened Bash card (R-0755, R-0757; chat-transcript.css): the same
+   frame, an 11px #a9a9a4 label over 12px monospace text, 29.5px between the
+   parts. */
 :is(.mcp-tool-activity, .dynamic-tool-activity, .agent-collab-activity).is-plain
   > .activity-body
   strong {
@@ -124,7 +127,8 @@
   margin: 0 0 9px;
   color: #a9a9a4;
   font:
-    11px/16px -apple-system,
+    11px/16px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }

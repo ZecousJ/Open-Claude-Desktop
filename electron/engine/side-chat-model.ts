@@ -4,8 +4,14 @@ export const maxSideChats = 8;
 /** A side question is as long as a message. */
 export const maxSideQuestionLength = 200_000;
 
+/** Native notifications can arrive before turn/start returns its authoritative id. */
+export const maxSideStartEvents = 128;
+export const maxSideStartEventBytes = 1024 * 1024;
+
 /**
- * What a side chat's thread is told: answer from the conversation so far, in
+ * What a side chat's thread is told (desktop bundle 2.31226.1: "Ask on the
+ * side without touching the main chat. Claude sees the full context, and
+ * nothing here is added to it."): answer from the conversation so far, in
  * words, without working.
  */
 export const sideChatInstructions =
@@ -30,6 +36,12 @@ export interface SideChat {
     resolve: (answer: string) => void;
     reject: (error: Error) => void;
     turnId?: string;
+    /** Keep early events private until the start response identifies this turn. */
+    startPending?: boolean;
+    startAttempted?: boolean;
+    closedReason?: Error;
+    startEvents: { method: string; params: any }[];
+    startEventBytes: number;
   };
 }
 

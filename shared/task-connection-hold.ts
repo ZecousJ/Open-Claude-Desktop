@@ -8,7 +8,7 @@ export interface TaskConnectionHold {
 export const taskConnectionHoldMessage =
   "This task is on hold because a service it uses needs you to connect your account.";
 
-// Connection recovery.
+// Connection recovery (live claude.ai bundle, 2026-10-14, c3a5facd2-DNmdDDX7.js).
 export function taskConnectionRequest(
   approval: Pick<Approval, "method" | "params">,
   servers: Record<string, unknown>,

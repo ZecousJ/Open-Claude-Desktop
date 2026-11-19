@@ -169,7 +169,8 @@ test("a reply that finishes off screen marks the chat unread", () => {
 test("tooltips sit under their button, or end before it, inside the window", () => {
   const view = { width: 1164, height: 1049 };
   const size = { width: 140, height: 24 };
-  // The incognito button at 1124–1156 × 8–40; tooltip 980–1120, 4px under it.
+  // R-0001: the incognito button at 1124–1156 × 8–40; tooltip 980–1120,
+  // 4px under it (the original's sideOffset; the capture read 1.5).
   const button = { left: 1124, right: 1156, top: 8, bottom: 40 };
   assert.deepEqual(tooltipPosition(button, size, view, "below-before"), {
     left: 980,

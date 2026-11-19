@@ -9,7 +9,7 @@ import type { AppContext } from "../../electron/app/app-context";
 import { CloudRoutines } from "../../electron/cloud/cloud-routines";
 import type { CloudCalls } from "../../electron/cloud/cloud-router";
 import { pageRoutineRuns } from "../../shared/routine-history-page";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import {
   nextRun,
   type Routine,

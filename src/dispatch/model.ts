@@ -1,6 +1,6 @@
 import type { DeviceConversationSummary } from "../../shared/remote-devices";
 
-/** Sections, not tabs. */
+/** Sections, not tabs (live claude.ai bundle, 2026-10-14, c1f04f7e1-BY11zgRA, Yo). */
 export function dispatchGroups(
   tasks: DeviceConversationSummary[],
   ongoing: ReadonlySet<string> = new Set(),

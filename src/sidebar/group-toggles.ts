@@ -1,9 +1,10 @@
 /**
- * Collapse all / Expand all for a group heading's menu. They act on every
- * heading in the list that collapses: the Pinned and Recents headings and
- * Code's group headings, each a button marked `data-group-toggle` with its
- * `aria-expanded`. A heading inside a section that is closing (`inert`) is left
- * alone.
+ * Collapse all / Expand all for a group heading's menu (live claude.ai
+ * bundle, 2026-10-12: the heading menu's "view" group, between its edit and
+ * remove groups). They act on every heading in the list that collapses: the
+ * Pinned and Recents headings and Code's group headings, each a button
+ * marked `data-group-toggle` with its `aria-expanded`. A heading inside a
+ * section that is closing (`inert`) is left alone.
  */
 
 export type GroupToggleState = "expanded" | "collapsed";

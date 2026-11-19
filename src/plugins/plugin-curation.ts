@@ -2,12 +2,13 @@ import type { PluginEntry } from "../../shared/collections-api";
 import type { ApprovedDirectoryEntry } from "../../shared/directory-submissions";
 
 /**
- * Discover's curated blocks: the entries are the marketplaces' real plugins;
- * which of them are featured, new or most installed is the Claudex directory's
- * curation. A curated entry names its plugin by slug (the plugin's marketplace
- * name); a featured block's members are directory entries (by id) or plugins
- * (`name@marketplace` or a name). A name two marketplaces share is not a match:
- * nothing is guessed.
+ * Discover's curated blocks (owner decision 2026-10-19, option A): the
+ * entries are the marketplaces' real plugins; which of them are featured,
+ * new or most installed is the Claudex directory's curation. A curated
+ * entry names its plugin by slug (the plugin's marketplace name); a featured
+ * block's members are directory entries (by id) or plugins (`name@marketplace`
+ * or a name). A name two marketplaces share is not a match: nothing is
+ * guessed.
  */
 export interface PluginCuration {
   featured?: {

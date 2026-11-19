@@ -7,11 +7,11 @@ import { parseApps, type AppDownloads } from "./apps";
 import "./downloads.css";
 
 /**
- * The web app's downloads page at /downloads, after claude.ai/downloads: the
- * Desktop card and the Mobile card (Android now, iOS once it is on TestFlight).
- * It stands alone, signed in or not, and reads GET /api/v1/claudex/apps. The
- * cards keep the original's frames, type and rows; its marketing pictures under
- * each card are left out.
+ * The web app's downloads page at /downloads (owner, 2026-10-07), after
+ * claude.ai/downloads: the Desktop card and the Mobile card (Android now,
+ * iOS once it is on TestFlight). It stands alone, signed in or not, and
+ * reads GET /api/v1/claudex/apps. The cards keep the original's frames,
+ * type and rows; its marketing pictures under each card are left out.
  */
 export function DownloadsPage() {
   const [apps, setApps] = useState<AppDownloads | null>();

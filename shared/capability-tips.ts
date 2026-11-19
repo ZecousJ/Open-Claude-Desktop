@@ -33,7 +33,7 @@ export function tipAvailability(
   };
 }
 
-// Rn/Bn.
+// Rn/Bn (live claude.ai bundle, 2026-10-14, c0c371a67-DnJIbmz9.js).
 export function eligibleCapabilityTips(
   conversation: Pick<Conversation, "incognito" | "projectId" | "turns"> & {
     id?: string;

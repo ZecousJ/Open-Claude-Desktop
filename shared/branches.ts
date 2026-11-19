@@ -2,6 +2,20 @@ import type { Conversation, ConversationBranch, Turn } from "./types";
 
 export const responseGroup = (turn: Turn) => turn.responseGroupId ?? turn.id;
 
+/** Find a completed reply even when its version is on a saved branch. */
+export function completedReply(c: Conversation, turnId: string): Turn | undefined {
+  return [c.turns, ...(c.savedBranches ?? []).map((branch) => branch.turns)]
+    .flat()
+    .find((turn) => turn.id === turnId && turn.status === "completed");
+}
+
+export interface ChatLeafTarget {
+  conversationCreatedAt: number;
+  turnId: string;
+  turnCreatedAt: number;
+  branchId: string | null;
+}
+
 function activePath(c: Conversation): ConversationBranch {
   return {
     id: c.activeBranchId ?? "original",
@@ -114,6 +128,38 @@ export function selectReplyVersion(
   if (version.turnId === turn.id) return;
   const next = c.savedBranches?.find((b) => b.id === version.branchId);
   if (!next) throw new Error("The saved reply branch is unavailable.");
+  activateBranch(c, next);
+}
+
+export function selectChatLeaf(c: Conversation, target: ChatLeafTarget): boolean {
+  if (c.mode !== "chat" || c.createdAt !== target.conversationCreatedAt)
+    throw new Error("The Chat conversation changed. Reopen it before selecting a version.");
+  if (c.turns.some((turn) => turn.status === "inProgress"))
+    throw new Error("Wait for the current response to finish.");
+  const isTarget = (turn: Turn | undefined) =>
+    turn?.id === target.turnId && turn.createdAt === target.turnCreatedAt;
+  const activeBranchId = c.activeBranchId ?? "original";
+  if (
+    (target.branchId === null || target.branchId === activeBranchId) &&
+    isTarget(c.turns.at(-1))
+  )
+    return false;
+  const branches = (c.savedBranches ?? []).filter(
+    (branch) => branch.id === target.branchId,
+  );
+  const next = branches.length === 1 ? branches[0] : undefined;
+  if (
+    !next ||
+    next.id === activeBranchId ||
+    !isTarget(next.turns.at(-1)) ||
+    next.turns.some((turn) => turn.status === "inProgress")
+  )
+    throw new Error("The saved Chat version changed. Reopen the conversation.");
+  activateBranch(c, next);
+  return true;
+}
+
+function activateBranch(c: Conversation, next: ConversationBranch) {
   const previous = structuredClone(activePath(c));
   c.savedBranches = c.savedBranches!.filter((b) => b.id !== next.id);
   c.savedBranches.push(previous);

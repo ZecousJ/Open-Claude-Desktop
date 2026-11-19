@@ -195,7 +195,8 @@
   display: grid;
   place-items: center;
   border-radius: 8px;
-  /* The original's brand button. */
+  /* The original's brand button (live claude.ai bundle, 2026-10-14:
+     fill-brand clay-emphasized #c6613f, hover clay #d97757, on-brand #fff). */
   background: #c6613f;
   color: #fff;
   flex-shrink: 0;
@@ -203,7 +204,8 @@
 .send-button:hover:not(:disabled) {
   background: #d97757;
 }
-/* Disabled: a grey alpha-2 fill with the muted glyph. */
+/* Disabled: a grey alpha-2 fill with the muted glyph (live claude.ai
+   bundle, 2026-10-14; desktop 2.31226.1 had dimmed the clay instead). */
 .send-button:disabled {
   background: var(--alpha-2);
   color: var(--text-muted);
@@ -290,7 +292,8 @@
 }
 /* The column itself never scrolls (only .messages-scroll does): clip, not
    hidden, so a focus or scrollIntoView inside a menu that reaches past its
-   bottom cannot scroll it and leave the composer stranded mid-page. */
+   bottom cannot scroll it and leave the composer stranded mid-page
+   (owner, 2026-10-21: the chin's + menu opened, the bottom went blank). */
 .has-conversation {
   overflow: clip;
 }
@@ -336,8 +339,8 @@
 .user-message:focus-within > .small-action {
   opacity: 1;
 }
-/* A sent message's files: the composer's 120px tiles in a row above the bubble,
-   at its right edge. */
+/* A sent message's files (R-0507): the composer's 120px tiles in a row above
+   the bubble, at its right edge. */
 .message-attachments {
   display: flex;
   flex-wrap: wrap;

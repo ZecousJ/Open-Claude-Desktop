@@ -154,6 +154,8 @@ declare module "./engine" {
     >;
     swapRewind: OmitThisParameter<typeof engineHistory.swapRewind>;
     forkConversation: OmitThisParameter<typeof engineHistory.forkConversation>;
+    warmCodeSession: OmitThisParameter<typeof engineHistory.warmCodeSession>;
+    resumeSshCodeCut: OmitThisParameter<typeof engineHistory.resumeSshCodeCut>;
     request: OmitThisParameter<typeof engineApprovals.request>;
     offeredParams: OmitThisParameter<typeof engineApprovals.offeredParams>;
     sshToolApproval: OmitThisParameter<typeof engineApprovals.sshToolApproval>;
@@ -184,6 +186,7 @@ declare module "./engine" {
       typeof engineSend.selectPromptVersion
     >;
     selectReplyVersion: OmitThisParameter<typeof engineSend.selectReplyVersion>;
+    selectChatLeaf: OmitThisParameter<typeof engineSend.selectChatLeaf>;
     queue: OmitThisParameter<typeof engineTurnSetup.queue>;
     canQueue: OmitThisParameter<typeof engineTurnSetup.canQueue>;
     deliverOutbox: OmitThisParameter<typeof engineTurnSetup.deliverOutbox>;

@@ -1,10 +1,11 @@
 /**
- * A conversation with one of GPT's image models: each message is answered with
- * a picture. Codex still sends a Responses request; the gateway asks the
- * service's image endpoint with the person's latest message as the prompt (and
- * the pictures attached to it, which makes it an edit) and answers Codex with
- * one `image_generation_call`, the item an upstream image tool gives. Nothing
- * is added to what the person wrote.
+ * A conversation with one of GPT's image models (owner, 2026-10-03: the
+ * model menu's "Image generation" choice): each message is answered with a
+ * picture. Codex still sends a Responses request; the gateway asks the
+ * service's image endpoint with the person's latest message as the prompt
+ * (and the pictures attached to it, which makes it an edit) and answers
+ * Codex with one `image_generation_call`, the item an upstream image tool
+ * gives. Nothing is added to what the person wrote.
  */
 type Json = Record<string, any>;
 

@@ -9,9 +9,10 @@ import type {
 import { hasHiddenCharacters } from "../../shared/review-threads";
 
 /**
- * A pull request's review threads in the Changes panel: read, replied to and
- * resolved with the machine's `gh`, and a reviewer's suggested change applied
- * to the file here when the lines it was written against are still there.
+ * A pull request's review threads in the Changes panel (live claude.ai
+ * bundle, 2026-10-15, c44d00c7f): read, replied to and resolved with the
+ * machine's `gh`, and a reviewer's suggested change applied to the file
+ * here when the lines it was written against are still there.
  */
 
 export const reviewThreadsQuery = `query($owner: String!, $name: String!, $number: Int!) {

@@ -13,8 +13,8 @@ import { type CaptureActions } from "./CaptureThumbnail";
 import { FrameClock, frameTickMs } from "./simulator-controls";
 
 /**
- * The device menu's foot: after the devices, a separator, Detach and "Shut down
- * {name}".
+ * The device menu's foot (live claude.ai bundle, 2026-10-12): after the
+ * devices, a separator, Detach and "Shut down {name}".
  */
 export function deviceMenuFooter({
   kind,
@@ -84,7 +84,7 @@ export interface DeviceTools {
   revealLabel: string;
 }
 
-/** "FPS: idle" or "FPS: {fps}" beside the zoom buttons. */
+/** "FPS: idle" or "FPS: {fps}" beside the zoom buttons (live claude.ai bundle, 2026-10-12). */
 export function FrameRate({ clock }: { clock: FrameClock }) {
   const [value, setValue] = useState<number | "idle" | null>(null);
   useEffect(() => {

@@ -47,10 +47,11 @@ func Ops() []string {
 //	store.settings.put        {settings}                        → {}
 //	store.projects.list       {cursor?}                         → {projects: Project[], next?}
 //	store.projects.put        {project, position}               → {}
-//	store.projects.delete     {id}                              → {}
+//	store.projects.delete     {id, deleteChats?}                → {deletedConversationIds?}
 //	store.conversations.list  {cursor?}                         → {items: [{doc, position}], next?}
 //	store.conversations.get   {id}                              → {doc: ConversationDoc|null, position?}
 //	store.conversations.put   {doc, position}                   → {revision}
+//	store.conversations.rewind {doc, position, keep, targetTurnId, retained?} → {revision}
 //	store.conversations.delete {id}                             → {} (turns and artifacts go too)
 //	store.turns.list          {conversationId, cursor?}         → {turns: TurnDoc[], next?}
 //	store.turns.put           {turns: TurnDoc[]} (or one TurnDoc) → {revisions: {id: n}, revision?}
@@ -62,7 +63,7 @@ func Ops() []string {
 //	store.files.get           {id, offset?, length?}            → {id, name, mime, size, bytes}
 //	store.files.put           {id?, name?, mime?, size, offset, bytes} → FileInfo (complete with the last byte)
 //	store.files.delete        {id}                              → {}
-//	store.search              {query, mode?, includeArchived?, limit?} → {results: SearchHit[]}
+//	store.search              {query, mode?, projectId?, includeArchived?, limit?, page?} → {results: SearchHit[]}
 func (c *Component) ServeRunnerOp(ctx context.Context, userID int64, op string, body json.RawMessage) (any, error) {
 	if userID < 1 {
 		return nil, badRequest("The request has no user.")
@@ -187,11 +188,24 @@ func (c *Component) serve(ctx context.Context, userID int64, op string, body jso
 		return empty{}, c.store.putProject(ctx, userID, head.ID, req.Position, req.Project, c.Limits(ctx))
 
 	case "store.projects.delete":
-		id, err := idBody(body)
+		var req struct {
+			ID          string `json:"id"`
+			DeleteChats bool   `json:"deleteChats"`
+		}
+		if err := decode(body, &req); err != nil {
+			return nil, err
+		}
+		if !docID.MatchString(req.ID) {
+			return nil, badRequest("id has the wrong shape.")
+		}
+		deleted, err := c.store.deleteProject(ctx, userID, req.ID, req.DeleteChats)
 		if err != nil {
 			return nil, err
 		}
-		return empty{}, c.store.deleteProject(ctx, userID, id)
+		if req.DeleteChats {
+			return map[string][]string{"deletedConversationIds": deleted}, nil
+		}
+		return empty{}, nil
 
 	case "store.conversations.list":
 		var req struct {
@@ -239,6 +253,44 @@ func (c *Component) serve(ctx context.Context, userID int64, op string, body jso
 			return nil, badRequest("position is not valid.")
 		}
 		rev, err := c.store.putConversation(ctx, userID, req.Doc, meta, req.Position, c.Limits(ctx))
+		if err != nil {
+			return nil, err
+		}
+		return map[string]int64{"revision": rev}, nil
+
+	case "store.conversations.rewind":
+		var req struct {
+			Doc          json.RawMessage `json:"doc"`
+			Position     int             `json:"position"`
+			Keep         int             `json:"keep"`
+			TargetTurnID string          `json:"targetTurnId"`
+			Retained     json.RawMessage `json:"retained"`
+		}
+		if err := decode(body, &req); err != nil {
+			return nil, err
+		}
+		if len(req.Doc) > conversationBytes {
+			return nil, tooLarge("conversation")
+		}
+		_, meta, err := webproto.DecodeConversationDoc(req.Doc)
+		if err != nil {
+			return nil, badRequest("%s", err.Error())
+		}
+		if meta.Mode != "code" || boolOr(meta.Archived) || !validPosition(req.Position) || !validPosition(req.Keep) || !docID.MatchString(req.TargetTurnID) {
+			return nil, badRequest("The Code rewind boundary is not valid.")
+		}
+		var retained *turnRow
+		if len(req.Retained) != 0 {
+			row, err := decodeTurn(req.Retained)
+			if err != nil {
+				return nil, err
+			}
+			if row.doc.ConversationID != meta.ID || row.doc.BranchID != nil || row.doc.Ordinal != req.Keep || row.doc.TurnID != req.TargetTurnID || row.head.Status != "completed" {
+				return nil, badRequest("The retained Code turn does not match the rewind boundary.")
+			}
+			retained = &row
+		}
+		rev, err := c.store.rewindCodeConversation(ctx, userID, req.Doc, meta, req.Position, req.Keep, req.TargetTurnID, retained, c.Limits(ctx))
 		if err != nil {
 			return nil, err
 		}
@@ -376,9 +428,23 @@ func (c *Component) serve(ctx context.Context, userID int64, op string, body jso
 			ID     string `json:"id"`
 			Offset int64  `json:"offset"`
 			Length *int64 `json:"length"`
+			Direct bool   `json:"direct"`
 		}
 		if err := decode(body, &req); err != nil {
 			return nil, err
+		}
+		if req.Direct {
+			info, err := c.File(ctx, userID, req.ID)
+			if err != nil {
+				return nil, err
+			}
+			if info.ObjectStorage && c.objects != nil {
+				address, err := c.downloadURL(ctx, userID, info, false)
+				if err != nil {
+					return nil, err
+				}
+				return map[string]any{"id": info.ID, "name": info.Name, "mime": info.Mime, "size": info.Size, "url": address}, nil
+			}
 		}
 		length := int64(fileReadBytes)
 		if req.Length != nil {
@@ -392,15 +458,42 @@ func (c *Component) serve(ctx context.Context, userID int64, op string, body jso
 
 	case "store.files.put":
 		var req struct {
-			ID     string     `json:"id"`
-			Name   string     `json:"name"`
-			Mime   string     `json:"mime"`
-			Size   *int64     `json:"size"`
-			Offset int64      `json:"offset"`
-			Bytes  *wireBytes `json:"bytes"`
+			ID          string     `json:"id"`
+			Name        string     `json:"name"`
+			Mime        string     `json:"mime"`
+			Size        *int64     `json:"size"`
+			Offset      int64      `json:"offset"`
+			Bytes       *wireBytes `json:"bytes"`
+			SnapshotSHA string     `json:"snapshotSha"`
+			Complete    bool       `json:"complete"`
 		}
 		if err := decode(body, &req); err != nil {
 			return nil, err
+		}
+		if req.Complete {
+			info, err := c.CompleteDirectUpload(ctx, userID, req.ID)
+			if err != nil {
+				return nil, err
+			}
+			address, err := c.downloadURL(ctx, userID, info, false)
+			return map[string]any{"url": address}, err
+		}
+		if req.SnapshotSHA != "" {
+			if req.Size == nil || req.ID != "" || req.Bytes != nil || !shaPattern.MatchString(req.SnapshotSHA) {
+				return nil, badRequest("The attachment snapshot was not valid.")
+			}
+			info, upload, err := c.beginObjectFile(ctx, userID, req.Name, req.Mime, *req.Size, req.SnapshotSHA, OriginRunner, req.SnapshotSHA)
+			if err != nil {
+				return nil, err
+			}
+			if upload != nil {
+				return map[string]any{"id": info.ID, "upload": upload}, nil
+			}
+			if info.Complete {
+				address, err := c.downloadURL(ctx, userID, info, false)
+				return map[string]any{"url": address}, err
+			}
+			return empty{}, nil
 		}
 		data, err := req.Bytes.decode()
 		if err != nil {
@@ -414,7 +507,7 @@ func (c *Component) serve(ctx context.Context, userID int64, op string, body jso
 			if req.Offset != 0 || req.Size == nil {
 				return nil, badRequest("A new file starts at offset 0 and declares its size.")
 			}
-			info, err := c.beginFile(ctx, userID, req.Name, req.Mime, *req.Size, OriginRunner)
+			info, err := c.beginFile(ctx, userID, req.Name, req.Mime, *req.Size, OriginRunner, "", "")
 			if err != nil {
 				return nil, err
 			}
@@ -436,16 +529,17 @@ func (c *Component) serve(ctx context.Context, userID int64, op string, body jso
 
 	case "store.search":
 		var req struct {
-			Query           string `json:"query"`
-			Mode            string `json:"mode"`
-			ProjectID       string `json:"projectId"`
-			IncludeArchived bool   `json:"includeArchived"`
-			Limit           int    `json:"limit"`
+			Query           string      `json:"query"`
+			Mode            string      `json:"mode"`
+			ProjectID       string      `json:"projectId"`
+			IncludeArchived bool        `json:"includeArchived"`
+			Limit           int         `json:"limit"`
+			Page            *SearchPage `json:"page"`
 		}
 		if err := decode(body, &req); err != nil {
 			return nil, err
 		}
-		hits, err := c.Search(ctx, userID, req.Query, SearchOptions{Mode: req.Mode, ProjectID: req.ProjectID, IncludeArchived: req.IncludeArchived, Limit: req.Limit})
+		hits, err := c.Search(ctx, userID, req.Query, SearchOptions{Mode: req.Mode, ProjectID: req.ProjectID, IncludeArchived: req.IncludeArchived, Limit: req.Limit, Page: req.Page})
 		if err != nil {
 			return nil, err
 		}
@@ -496,20 +590,27 @@ func decodeTurns(body json.RawMessage) ([]turnRow, error) {
 	rows := make([]turnRow, 0, len(list))
 	seen := map[string]bool{}
 	for _, raw := range list {
-		if len(raw) > webproto.TurnDocBytes {
-			return nil, tooLarge("reply")
-		}
-		doc, head, err := webproto.DecodeTurnDoc(raw)
+		row, err := decodeTurn(raw)
 		if err != nil {
-			return nil, badRequest("%s", err.Error())
+			return nil, err
 		}
-		branch := strOr(doc.BranchID)
-		key := doc.ConversationID + "\x00" + branch + "\x00" + doc.TurnID
+		key := row.doc.ConversationID + "\x00" + row.branch + "\x00" + row.doc.TurnID
 		if seen[key] {
-			return nil, badRequest("turn %s is in the request twice.", doc.TurnID)
+			return nil, badRequest("turn %s is in the request twice.", row.doc.TurnID)
 		}
 		seen[key] = true
-		rows = append(rows, turnRow{raw: jsonbSafe(raw), doc: doc, head: head, branch: branch})
+		rows = append(rows, row)
 	}
 	return rows, nil
+}
+
+func decodeTurn(raw json.RawMessage) (turnRow, error) {
+	if len(raw) > webproto.TurnDocBytes {
+		return turnRow{}, tooLarge("reply")
+	}
+	doc, head, err := webproto.DecodeTurnDoc(raw)
+	if err != nil {
+		return turnRow{}, badRequest("%s", err.Error())
+	}
+	return turnRow{raw: jsonbSafe(raw), doc: doc, head: head, branch: strOr(doc.BranchID)}, nil
 }

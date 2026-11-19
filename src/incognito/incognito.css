@@ -1,6 +1,7 @@
-/* The window turns into a light #f0efeb frame with a 50px title bar, and the
-   chat sits in a #151515 card inset 8px with 12px corners. The sidebar and its
-   title-bar buttons are gone until incognito ends. */
+/* Incognito chat, measured from the R-0003 captures (dark theme, 1164 × 1049):
+   the window turns into a light #f0efeb frame with a 50px title bar, and the
+   chat sits in a #151515 card inset 8px with 12px corners. The sidebar and
+   its title-bar buttons are gone until incognito ends. */
 .app.incognito-app {
   grid-template-columns: minmax(0, 1fr);
   background: #f0efeb;
@@ -23,7 +24,8 @@
   border-radius: 12px;
   background: var(--bg);
 }
-/* The web's frame is rounded-2xl. */
+/* The web's frame is rounded-2xl (live claude.ai /new?incognito,
+   2026-10-21: inset 50px 8px 8px, radius 16). */
 .app.web.incognito-app > .workspace {
   border-radius: 16px;
 }
@@ -55,11 +57,12 @@
   gap: 11px;
   margin: 0 0 1px;
   font:
-    400 15px/20px -apple-system,
+    400 15px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
-/* 32px square 8px from the top-right corner; #e5e4e0 on hover. */
+/* 32px square 8px from the top-right corner; #e5e4e0 on hover (R-0003 Exit incognito). */
 .incognito-bar > .incognito-exit {
   position: absolute;
   top: 8px;
@@ -74,7 +77,7 @@
   background: #e5e4e0;
   color: #202020;
 }
-/* The home keeps the greeting where the normal Chat home has it. */
+/* The home keeps the greeting where the normal Chat home has it (R-0003 vs R-0001). */
 .incognito-app .chat-home {
   margin-top: -50px;
 }
@@ -132,7 +135,7 @@
 }
 
 /* Use incognito on the Chat home: a 32px square 8px from the corner with a
-   #262626 hover face. */
+   #262626 hover face (R-0001 hover captures). */
 .incognito-button {
   top: 8px;
   right: 8px;
@@ -149,11 +152,11 @@
   background: var(--surface-hover);
 }
 
-/* Current web incognito: same home composition, 1px dashed semantic 30% rim in
-   both themes. The note starts 48px below the chin (column gap24 + source Gf
-   mt6=24) at 14/20, with Learn more on its own line. Scope to web; the native
-   window keeps its separate chrome. Source: shared-5:2327–2335,
-   shared-23:7192–7226. */
+/* Current web incognito (official 1440x900, 2026-10-18): same home
+   composition, 1px dashed semantic 30% rim in both themes. The note starts
+   48px below the chin (column gap24 + source Gf mt6=24) at 14/20, with
+   Learn more on its own line. Scope to web; the native window keeps its
+   separate chrome. Source: shared-5:2327–2335, shared-23:7192–7226. */
 .app.web.incognito-app .incognito-bar {
   justify-content: flex-start;
   height: 48px;

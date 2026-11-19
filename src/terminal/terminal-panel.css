@@ -44,7 +44,9 @@
   align-items: center;
   gap: 2px;
 }
-/* The tab strip; a tab 24px tall with 2px padding, its label from 6px in and at
+/* The tab strip (live claude.ai bundle, 2026-10-15, cfe7c4b3b: "Terminal
+   tabs", 4px apart inside 4px of padding, the strip scrolling under an 8px
+   fade); a tab 24px tall with 2px padding, its label from 6px in and at
    most 140px, filled ghost-selected when chosen and ghost-hover under the
    pointer; its 20px close box rounded-sm, muted, shown on hover and on the
    chosen tab. */
@@ -157,8 +159,8 @@
 .terminal-canvas .xterm-viewport {
   background: var(--terminal-bg) !important;
 }
-/* Shell exited / Failed to start shell: the stage covered in surface-1 with the
-   title and a small secondary button, centred. */
+/* Shell exited / Failed to start shell (c6bf19e8f): the stage covered in
+   surface-1 with the title and a small secondary button, centred. */
 .terminal-overlay {
   position: absolute;
   inset: 0;
@@ -239,12 +241,13 @@
   font: inherit;
   font-size: 12px;
 }
-/* The cursor shows 600ms and hides 600ms; xterm's own blink is a 1s cycle. */
+/* R-0882 光标闪烁 18 s: the cursor shows 600ms and hides 600ms; xterm's own
+   blink is a 1s cycle. */
 .terminal-canvas .xterm-cursor {
   animation-duration: 1.2s !important;
 }
-/* A terminal that failed: plain failure red, as the failed write of R-0823
-   (#e5877b); it was a pink strip. */
+/* A terminal that failed (R-0894: no capture): plain failure red, as the
+   failed write of R-0823 (#e5877b); it was a pink strip. */
 .terminal-error {
   margin: 7px 10px;
   color: var(--danger);
@@ -292,9 +295,9 @@
 :root[data-theme="light"] .terminal-find-field input {
   color: #0b0b0b;
 }
-/* A width dragged from the card's left edge replaces the 299px default; the
-   conversation keeps 260px, as beside Background tasks. The separator itself is
-   .background-panel-resize. */
+/* A width dragged from the card's left edge (R-0887, not captured) replaces
+   the 299px default; the conversation keeps 260px, as beside Background
+   tasks. The separator itself is .background-panel-resize. */
 .workspace:has(> .chat-layout > .work-panel.terminal-panel[data-width]) {
   --tool-panel-width: min(
     var(--terminal-panel-width, 299px),

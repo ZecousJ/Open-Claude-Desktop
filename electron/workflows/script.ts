@@ -4,13 +4,15 @@
  * name, description, optional whenToUse and phases) and then orchestrates
  * agents with `agent()`, `parallel()`, `pipeline()`, `phase()` and `log()`.
  *
- * The script runs in its own V8 context: no `require`, `process`, file system
- * or network, and `Date.now()`, argless `new Date()` and `Math.random()`
- * throw, so a run can be resumed (cached agent results replay in order). The
- * host gives it agents; everything an agent does happens in its own Codex
- * thread with the session's sandbox.
+ * QuickJS WebAssembly runs the orchestration. Each agent runs in its own
+ * Codex thread with the session's sandbox. Resumed runs replay cached agent
+ * results, so scripts cannot read the clock or generate random numbers.
  */
-import vm from "node:vm";
+import type {
+  QuickJSDeferredPromise,
+  QuickJSHandle,
+} from "quickjs-emscripten-core";
+import { workflowError, workflowRuntimeFactory } from "./script-runtime";
 
 export interface WorkflowPhaseMeta {
   title: string;
@@ -38,14 +40,10 @@ export interface AgentOptions {
 /** What the host does for a script. */
 export interface WorkflowHost {
   /** Runs one agent; resolves with its final text, or the parsed object when a schema was given; null when it was skipped or died. */
-  agent(prompt: string, options: AgentOptions): Promise<unknown>;
+  agent(prompt: string, options: AgentOptions, phase?: string): Promise<unknown>;
   log(message: string): void;
-  phase(title: string): void;
-  /** A saved workflow or script file run inline (one level only). */
-  workflow?(
-    ref: string | { scriptPath: string },
-    args: unknown,
-  ): Promise<unknown>;
+  phase?(title: string): void;
+  loadWorkflow?(name: string): string;
 }
 
 export const maxScriptBytes = 512 * 1024;
@@ -90,7 +88,14 @@ const text = (value: unknown, field: string, max: number, required = true) => {
 };
 
 /** Splits a script into its meta and the body that runs. */
-export function parseWorkflowScript(source: string): {
+export async function parseWorkflowScript(source: string) {
+  return parseWorkflowSource(source, await workflowRuntimeFactory());
+}
+
+function parseWorkflowSource(
+  source: string,
+  createRuntime: Awaited<ReturnType<typeof workflowRuntimeFactory>>,
+): {
   meta: WorkflowMeta;
   body: string;
 } {
@@ -107,18 +112,20 @@ export function parseWorkflowScript(source: string): {
   if (source[start] !== "{") throw new Error("meta must be an object literal.");
   const end = literalEnd(source, start);
   const literal = source.slice(start, end);
-  // A pure literal evaluates in an empty context with no globals worth using.
+  const sandbox = createRuntime();
+  const { vm } = sandbox;
   let raw: any;
   try {
-    raw = vm.runInNewContext(`(${literal})`, Object.create(null), {
-      timeout: 50,
-    });
-    // Plain data of this realm (the literal's arrays belong to the other one).
-    raw = JSON.parse(JSON.stringify(raw ?? null));
+    sandbox.begin();
+    raw = sandbox
+      .value(vm.evalCode(`JSON.stringify((${literal}))`, "workflow-meta.js"))
+      .consume((metadata) => JSON.parse(vm.getString(metadata)));
   } catch (error) {
     throw new Error(
       `meta must be a pure literal: ${error instanceof Error ? error.message : String(error)}`,
     );
+  } finally {
+    vm.dispose();
   }
   if (!raw || typeof raw !== "object" || Array.isArray(raw))
     throw new Error("meta must be an object literal.");
@@ -182,6 +189,7 @@ class Gate {
 
 export interface RunScriptOptions {
   args?: unknown;
+  initialPhase?: string;
   /** Agents running at once. */
   concurrency: number;
   /** Agents over the whole run. */
@@ -198,14 +206,25 @@ export async function runWorkflowScript(
   host: WorkflowHost,
   options: RunScriptOptions,
 ): Promise<unknown> {
+  if (options.signal.aborted) throw new WorkflowStopped();
+  const createRuntime = await workflowRuntimeFactory();
+  const sandbox = createRuntime();
+  const { vm } = sandbox;
   const gate = new Gate(Math.max(1, options.concurrency));
   let started = 0;
-  const stopped = () => options.signal.aborted;
-  const plain = (value: unknown) =>
-    value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+  const checkStopped = () => {
+    if (options.signal.aborted) throw new WorkflowStopped();
+  };
+  const pending = new Map<QuickJSDeferredPromise, Promise<void>>();
+  let wakeForAbort!: () => void;
+  const abort = new Promise<void>((resolve) => {
+    wakeForAbort = resolve;
+  });
+  options.signal.addEventListener("abort", wakeForAbort, { once: true });
 
-  const agent = async (prompt: unknown, opts: unknown) => {
-    if (stopped()) throw new WorkflowStopped();
+  const agent = async (input: unknown) => {
+    checkStopped();
+    const [prompt, opts, phase] = Array.isArray(input) ? input : [];
     if (typeof prompt !== "string" || !prompt.trim())
       throw new Error("agent() needs a prompt string.");
     if (++started > options.maxAgents)
@@ -216,106 +235,199 @@ export async function runWorkflowScript(
     const clean: AgentOptions = {
       ...(typeof o.label === "string" ? { label: o.label.slice(0, 80) } : {}),
       ...(typeof o.phase === "string" ? { phase: o.phase.slice(0, 80) } : {}),
-      ...(o.schema && typeof o.schema === "object"
-        ? { schema: plain(o.schema) }
-        : {}),
+      ...(o.schema && typeof o.schema === "object" ? { schema: o.schema } : {}),
       ...(typeof o.model === "string" ? { model: o.model } : {}),
       ...(typeof o.effort === "string" ? { effort: o.effort } : {}),
       ...(o.isolation === "worktree" ? { isolation: "worktree" as const } : {}),
       ...(typeof o.agentType === "string" ? { agentType: o.agentType } : {}),
     };
     return gate.run(async () => {
-      if (stopped()) throw new WorkflowStopped();
-      return plain(await host.agent(prompt, clean));
+      checkStopped();
+      return host.agent(prompt, clean, typeof phase === "string" ? phase : undefined);
     });
   };
-  const parallel = async (thunks: unknown) => {
+
+  function expose(
+    name: string,
+    fn: (arg: QuickJSHandle) => QuickJSHandle | void,
+  ) {
+    vm.newFunction(name, fn).consume((handle) =>
+      vm.setProp(vm.global, name, handle),
+    );
+  }
+  function exposeAsync(name: string, fn: (arg: unknown) => Promise<unknown>) {
+    expose(name, (arg) => {
+      if (!arg || vm.typeof(arg) !== "string")
+        throw Error("Invalid workflow arguments.");
+      const input: unknown = JSON.parse(vm.getString(arg));
+      const result = vm.newPromise();
+      const running = Promise.resolve()
+        .then(() => {
+          checkStopped();
+          return fn(input);
+        })
+        .then((value) => {
+          if (result.alive)
+            vm.newString(JSON.stringify({ value })).consume(result.resolve);
+        })
+        .catch((error: unknown) => {
+          if (result.alive)
+            vm.newError(
+              error instanceof Error ? error.message : String(error),
+            ).consume(result.reject);
+        })
+        .finally(() => {
+          pending.delete(result);
+          if (result.alive) result.dispose();
+        });
+      pending.set(result, running);
+      return result.handle;
+    });
+  }
+
+  try {
+    checkStopped();
+    exposeAsync("callAgent", agent);
+    expose("workflowLog", (arg) => {
+      if (arg && vm.typeof(arg) === "string")
+        host.log(vm.getString(arg).slice(0, 2000));
+    });
+    expose("phase", (arg) => {
+      if (!arg || vm.typeof(arg) !== "string") return;
+      const title = vm.getString(arg).trim();
+      if (title) host.phase?.(title.slice(0, 80));
+    });
+    const loadWorkflow = host.loadWorkflow;
+    if (loadWorkflow) {
+      expose("loadSavedWorkflow", (arg) => {
+        checkStopped();
+        const name = arg && vm.typeof(arg) === "string" ? vm.getString(arg) : "";
+        if (!name.trim()) throw Error("workflow() needs a saved workflow name.");
+        const { meta, body } = parseWorkflowSource(loadWorkflow(name), createRuntime);
+        const phase = JSON.stringify(meta.phases[0]?.title ?? null);
+        return sandbox.value(vm.evalCode(
+          `(async (args, hooks) => {
+            const { agent, log, phase, parallel, pipeline, budget } = hooks(${phase});
+            const workflow = async () => { throw Error("Saved workflows can only run one level inline."); };
+            return (async () => {\n${body}\n})();
+          })`,
+          "saved-workflow.js",
+        ));
+      });
+    }
+    const args = JSON.stringify(options.args);
+    if (args !== undefined)
+      vm.newString(args).consume((handle) =>
+        vm.setProp(vm.global, "workflowArgs", handle),
+      );
+    sandbox.begin();
+    const result = sandbox.value(
+      vm.evalCode(workflowBody(body, options.initialPhase), "workflow.js"),
+    );
+    try {
+      for (;;) {
+        sandbox.jobs();
+        const state = vm.getPromiseState(result);
+        if (state.type === "rejected") throw workflowError(vm, state.error);
+        if (state.type === "fulfilled") {
+          const data = state.value.consume((value) =>
+            JSON.parse(vm.getString(value)),
+          );
+          return data.result;
+        }
+        if (!pending.size)
+          throw Error(
+            "The workflow is waiting for an operation that cannot complete.",
+          );
+        await Promise.race([abort, ...pending.values()]);
+        checkStopped();
+        sandbox.begin();
+      }
+    } finally {
+      result.dispose();
+    }
+  } finally {
+    options.signal.removeEventListener("abort", wakeForAbort);
+    for (const promise of pending.keys()) if (promise.alive) promise.dispose();
+    vm.dispose();
+  }
+}
+
+function workflowBody(body: string, initialPhase?: string) {
+  return `(async () => {
+  const encode = JSON.stringify;
+  const decode = JSON.parse;
+  const args = typeof workflowArgs === "string" ? decode(workflowArgs) : undefined;
+  const load = globalThis.loadSavedWorkflow;
+  delete globalThis.loadSavedWorkflow;
+  const reportPhase = globalThis.phase;
+  const budget = Object.freeze({ total: null, spent: () => 0, remaining: () => Infinity });
+  const log = (message) => workflowLog(String(message));
+
+  const parallel = async (thunks) => {
     if (!Array.isArray(thunks))
       throw new Error("parallel() takes an array of functions.");
-    if (thunks.length > maxFanOut)
-      throw new Error(`parallel() accepts at most ${maxFanOut} items.`);
-    return Promise.all(
-      thunks.map(async (thunk) => {
-        try {
-          return typeof thunk === "function" ? await thunk() : null;
-        } catch (error) {
-          if (error instanceof WorkflowStopped) throw error;
-          return null;
-        }
-      }),
-    );
+    if (thunks.length > ${maxFanOut})
+      throw new Error("parallel() accepts at most ${maxFanOut} items.");
+    return Promise.all(thunks.map(async (thunk) => {
+      try { return typeof thunk === "function" ? await thunk() : null; }
+      catch { return null; }
+    }));
   };
-  const pipeline = async (items: unknown, ...stages: unknown[]) => {
+  const pipeline = async (items, ...stages) => {
     if (!Array.isArray(items))
       throw new Error("pipeline() takes an array of items.");
-    if (items.length > maxFanOut)
-      throw new Error(`pipeline() accepts at most ${maxFanOut} items.`);
-    return Promise.all(
-      items.map(async (item, index) => {
-        let value: unknown = item;
-        try {
-          for (const stage of stages)
-            value =
-              typeof stage === "function"
-                ? await stage(value, item, index)
-                : value;
-          return value;
-        } catch (error) {
-          if (error instanceof WorkflowStopped) throw error;
-          return null;
-        }
-      }),
-    );
+    if (items.length > ${maxFanOut})
+      throw new Error("pipeline() accepts at most ${maxFanOut} items.");
+    return Promise.all(items.map(async (item, index) => {
+      let value = item;
+      try {
+        for (const stage of stages)
+          if (typeof stage === "function") value = await stage(value, item, index);
+        return value;
+      } catch { return null; }
+    }));
   };
-  const context = vm.createContext(
-    {
-      agent,
-      parallel,
-      pipeline,
-      phase: (title: unknown) => {
-        if (typeof title === "string" && title.trim())
-          host.phase(title.trim().slice(0, 80));
+
+  (() => {
+    const refuse = () => { throw new EvalError("Code generation from strings is unavailable in workflows."); };
+    for (const fn of [function () {}, async function () {}, function* () {}, async function* () {}]) {
+      Object.defineProperty(Object.getPrototypeOf(fn), "constructor", { value: refuse });
+    }
+    globalThis.eval = globalThis.Function = refuse;
+    const RealDate = Date;
+    const deny = (what) => () => { throw new Error(what + " is unavailable in workflows (it would break resume); pass timestamps in through args."); };
+    globalThis.Date = new Proxy(RealDate, {
+      construct(target, argList) {
+        if (!argList.length) deny("new Date() without arguments")();
+        return Reflect.construct(target, argList);
       },
-      log: (message: unknown) => host.log(String(message).slice(0, 2000)),
-      args: plain(options.args),
-      budget: Object.freeze({
-        total: null,
-        spent: () => 0,
-        remaining: () => Infinity,
-      }),
-      workflow: host.workflow
-        ? async (ref: unknown, args: unknown) =>
-            plain(
-              await host.workflow!(
-                typeof ref === "string"
-                  ? ref
-                  : { scriptPath: String((ref as any)?.scriptPath ?? "") },
-                plain(args),
-              ),
-            )
-        : undefined,
-    },
-    { codeGeneration: { strings: false, wasm: false } },
-  );
-  // Determinism: a resumed run replays the same calls in the same order.
-  vm.runInContext(
-    `(() => {
-      const RealDate = Date;
-      const deny = (what) => () => { throw new Error(what + " is unavailable in workflows (it would break resume); pass timestamps in through args."); };
-      globalThis.Date = new Proxy(RealDate, {
-        construct(target, argList) {
-          if (!argList.length) deny("new Date() without arguments")();
-          return Reflect.construct(target, argList);
-        },
-        apply() { return deny("Date()")(); },
-        get(target, key) { return key === "now" ? deny("Date.now()") : Reflect.get(target, key); },
-      });
-      Math.random = deny("Math.random()");
-    })();`,
-    context,
-  );
-  const wrapped = `(async () => {\n${body}\n})()`;
-  const script = new vm.Script(wrapped, { filename: "workflow.js" });
-  const result = await script.runInContext(context);
-  return plain(result);
+      apply() { return deny("Date()")(); },
+      get(target, key) { return key === "now" ? deny("Date.now()") : Reflect.get(target, key); },
+    });
+    Math.random = deny("Math.random()");
+  })();
+
+  const hooks = (initialPhase) => {
+    let currentPhase = initialPhase;
+    return {
+      agent: async (prompt, options) => decode(await callAgent(encode([prompt, options, currentPhase]))).value,
+      phase: (title) => {
+        if (typeof title !== "string" || !title.trim()) return;
+        currentPhase = title.trim().slice(0, 80);
+        reportPhase(currentPhase);
+      },
+      log, parallel, pipeline, budget,
+    };
+  };
+  const { agent, phase } = hooks(${JSON.stringify(initialPhase ?? null)});
+  const workflow = load && (async (name, input) => {
+    const childInput = decode(encode({ value: input })).value;
+    const child = load(name);
+    const result = await child(childInput, hooks);
+    return decode(encode({ value: result })).value;
+  });
+  const result = await (async () => {\n${body}\n})();
+  return encode({ result });
+})()`;
 }

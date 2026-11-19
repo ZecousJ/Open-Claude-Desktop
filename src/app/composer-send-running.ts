@@ -8,11 +8,12 @@ import { addQueued } from "../composer/queue";
 import { conversationChanged, sendQueued } from "../composer/queue";
 
 /**
- * A message written while the conversation runs: the running turn reads it at
- * its next step (`turn/steer`); when no turn can take it now, it is queued and
- * sent as the next message once the turn ends. Either way it waits above the
- * composer until it is delivered. `later` skips the steer: the message is
- * queued for after the turn.
+ * A message written while the conversation runs (R-0222, R-0317): the
+ * running turn reads it at its next step (`turn/steer`); when no turn can
+ * take it now, it is queued and sent as the next message once the turn
+ * ends. Either way it waits above the composer until it is delivered.
+ * `later` (⌘↵, "Queue for later", desktop bundle 2.31226.1) skips the steer:
+ * the message is queued for after the turn.
  */
 export async function sendWhileRunning(
   app: AppController,

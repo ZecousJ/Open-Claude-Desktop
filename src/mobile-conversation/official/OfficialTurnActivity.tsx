@@ -5,10 +5,10 @@ import { t, useT } from "../../i18n";
 import { ThinkingVerb } from "./ThinkingVerb";
 
 /**
- * The working row before any step arrives: Claudex's own working mark (not
- * Anthropic's spark), 8 dp, then the rotating thinking verb. No elapsed time
- * and no connection status text (product rule). While a request waits on the
- * person it says so instead.
+ * The working row before any step arrives (chat-transcript.md §4.3/§4.9):
+ * Claudex's own working mark (not Anthropic's spark), 8 dp, then the
+ * rotating thinking verb. No elapsed time and no connection status text
+ * (product rule). While a request waits on the person it says so instead.
  */
 export function OfficialTurnActivity({
   turn,

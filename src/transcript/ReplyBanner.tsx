@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { InfoIcon } from "../ui/icons";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { Spinner } from "../ui/Spinner";
 import { t } from "../i18n";
 import { ReasonTooltip } from "../ui/Tooltip";
@@ -22,9 +22,11 @@ export interface ReplyBannerButton {
  * A line under a reply that did not end normally: a failure's reason, the
  * output limit, a stop with nothing written. The original shows these as a
  * neutral banner inside the conversation, the sentence on the left and
- * secondary buttons on the right, and while another response is still being
- * written the buttons stay but are disabled with "Waiting for a previous
- * response to finish...".
+ * secondary buttons on the right (live claude.ai bundle, 2026-10-14,
+ * shared-frame-B1JORnF0.js; shared-11-AyO4lbEo.js: "message-warning";
+ * "Try again", "Continue", "Edit prompt"), and while another response is
+ * still being written the buttons stay but are disabled with
+ * "Waiting for a previous response to finish...".
  */
 export function ReplyBanner({
   mode,
@@ -33,6 +35,7 @@ export function ReplyBanner({
   disabledReason,
   actionAlign = "first-line",
   warning = false,
+  icon,
   onDismiss,
   children,
 }: {
@@ -46,6 +49,7 @@ export function ReplyBanner({
   actionAlign?: "first-line" | "center";
   /** The Warning glyph in place of Info. */
   warning?: boolean;
+  icon?: ReactNode;
   /** A close button at the end of the first line, after the buttons. */
   onDismiss?: () => void;
   children: ReactNode;
@@ -94,7 +98,7 @@ export function ReplyBanner({
       role={role}
     >
       <span className="reply-banner-icon">
-        {warning ? <AppIcon name="Warning" /> : <InfoIcon />}
+        {icon ?? (warning ? <Anthropicon name="Warning" /> : <InfoIcon />)}
       </span>
       <div className="reply-banner-body">
         <div ref={text} className="reply-banner-text">
@@ -145,7 +149,7 @@ export function ReplyBanner({
             type="button"
             onClick={onDismiss}
           >
-            <AppIcon name="X" />
+            <Anthropicon name="X" />
           </button>
         </span>
       )}

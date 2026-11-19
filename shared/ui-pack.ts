@@ -1,5 +1,5 @@
 /**
- * The desktop interface pack (docs/releasing.md): the window's
+ * The desktop interface pack (docs/desktop-ui-hot-update.md): the window's
  * own code (`dist/`), published and signed apart from the installer, so a
  * front-end change reaches desktop users without a new installer.
  *

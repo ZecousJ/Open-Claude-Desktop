@@ -1,6 +1,7 @@
 import { useCollectionQuery } from "../collections/useCollectionQuery";
 import type { ArtifactGroup, ArtifactOwner } from "./gallery";
 
+// c230724a2-1I8WxdA6:4470 and c73d5fa6d-C_YhEgJ4:527–546.
 // The visible Yours tab uses source URL value mine; tab transitions replace.
 export function useGalleryQuery(web: boolean) {
   const query = useCollectionQuery(web);

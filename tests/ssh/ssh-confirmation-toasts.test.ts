@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readSource } from "../support/read-source";
 
-// The window-level SSH dialogs confirm what they did: the overlay registers on
-// import, so the wiring is read from its source.
+// The window-level SSH dialogs confirm what they did (live claude.ai bundle,
+// 2026-10-16, c3f9f1667): the overlay registers on import, so the wiring is
+// read from its source.
 test("saving and deleting an SSH connection tell the person so", () => {
   const source = readSource("src/ssh/ssh.slot.tsx");
   assert.match(

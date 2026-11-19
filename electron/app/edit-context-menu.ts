@@ -2,10 +2,12 @@ import { Menu, type App, type ContextMenuParams } from "electron";
 import { contextMenuOwnsHistory, routeEditCommand } from "./edit-commands";
 
 /**
- * The menu right-clicking a text field opens: Cut, Copy and Paste, each greyed
- * when it cannot act (an empty field greys all three). Claimed editors prepend
- * their own Undo/Redo. Only in the app's own windows; pages that open their own
- * menu (rows, messages) stop the event before it gets here.
+ * The menu right-clicking a text field opens (R-1618): Cut, Copy and Paste,
+ * each greyed when it cannot act (an empty field greys all three). Claimed
+ * editors prepend their own Undo/Redo (desktop 2.37337.1, index.chunk-BWk6pVUt.js).
+ * Only in
+ * the app's own windows; pages that open their own menu (rows, messages)
+ * stop the event before it gets here.
  */
 export function editMenuTemplate(params: Pick<ContextMenuParams, "editFlags">) {
   return [
@@ -16,8 +18,9 @@ export function editMenuTemplate(params: Pick<ContextMenuParams, "editFlags">) {
 }
 
 /**
- * The menu right-clicking selected reply text opens: Look Up is macOS's own
- * dictionary lookup, so other systems get Copy alone.
+ * The menu right-clicking selected reply text opens (R-0587: the original's
+ * AX tree lists "Look Up" and "Copy"): Look Up is macOS's own dictionary
+ * lookup, so other systems get Copy alone.
  */
 export function selectionMenuTemplate(
   selection: string,

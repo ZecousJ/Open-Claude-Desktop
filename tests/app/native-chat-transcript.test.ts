@@ -4,7 +4,7 @@ import { act, createElement, createRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { parseHTML } from "linkedom";
 import type { Conversation, Turn } from "../../shared/types";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { ConversationTranscript } from "../../src/transcript/ConversationTranscript";
 import { preloadChatSteps } from "../../src/transcript/ChatTurnContent";
@@ -131,7 +131,7 @@ test("current unified Chat has no reply mark, streaming or done, while the stand
     text: "Continuing",
     lifecycleStatus: "inProgress",
   });
-  // No mark while it streams either.
+  // No mark while it streams either (owner, 2026-10-22).
   assert.equal(
     render(conversation, { presentation: "chat" }).querySelector(
       ".response-stream-mark",

@@ -15,8 +15,8 @@ import { SkeletonGroup, skeletonIndex, TableSkeleton } from "../../ui/Skeleton";
 import type { ConnectorStatus } from "./CustomizePage";
 
 /**
- * Rows while the list loads: the skill row's tile, title and description as
- * grey blocks in their places.
+ * Rows while the list loads (R-1145): the skill row's tile, title and
+ * description as grey blocks in their places.
  */
 export function SkeletonRows({ label }: { label: string }) {
   return (

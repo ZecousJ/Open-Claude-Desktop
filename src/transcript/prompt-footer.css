@@ -1,12 +1,14 @@
 /* Prompt size, failed-prompt footer, the wait ladder, GitHub asset roles. (part of chat-transcript.css) */
-/* A prompt in Chat and Cowork is the same size as the reply; it was the generic
-   14/21. */
+/* A prompt in Chat and Cowork is the same size as the reply (live
+   claude.ai, 2026-10-13: the user message's text-heading, 15/20 sans,
+   beside the reply's 15/22 serif); it was the generic 14/21. */
 :is(.mode-chat, .mode-cowork) .user-message {
   font-size: 15px;
   line-height: 20px;
 }
 
-/* Failed prompt footer and the verbatim sent-prompt blocks. */
+/* Failed prompt footer and the verbatim sent-prompt blocks (live claude.ai bundle,
+   2026-10-14, shared-11-AyO4lbEo.js). */
 .failed-send-row {
   display: flex;
   align-items: center;

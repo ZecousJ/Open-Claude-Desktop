@@ -11,7 +11,7 @@ import { AppContext } from "../app/AppContext";
 import { useT } from "../i18n";
 import { useNoticeStack } from "../ui/notice-stack";
 import { CloseSmallIcon } from "../ui/icons";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { globalLimitKey, globalLimitText } from "./notice-content";
 import { useWeeklyUsage } from "./useWeeklyUsage";
 
@@ -59,8 +59,11 @@ function subscribeOwners(listener: () => void) {
 }
 
 /**
- * The window's corner notice when the service's 5-hour session limit or its
- * request rate limit refused a request. Closing it hides it until the limit is
+ * The window's corner notice when the service's 5-hour session limit or
+ * its request rate limit refused a request (R-0127; R-0314 W1920 1x: a
+ * 358×83 amber box 16px from the window's right and bottom edges, a
+ * warning triangle, the sentence with an underlined "View your usage
+ * details." link and a close cross). Closing it hides it until the limit is
  * hit again with another reset time.
  */
 export function GlobalLimitToast() {
@@ -171,9 +174,13 @@ export function GlobalLimitView({
   );
 }
 
-// Warning family.
+// Warning family (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js).
 export function WarningIcon({ size = 16 }: { size?: number }) {
   return (
-    <AppIcon name="Warning" size={size} className="global-limit-toast-icon" />
+    <Anthropicon
+      name="Warning"
+      size={size}
+      className="global-limit-toast-icon"
+    />
   );
 }

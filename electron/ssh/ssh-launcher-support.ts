@@ -32,6 +32,7 @@ export interface SshLauncherOptions {
   dataRoot: string;
   /** The administrator's runtime mirror (policy codexRuntimeMirror). */
   mirror?: () => string | null | undefined;
+  browserPort?: () => number | undefined;
   /** This computer's platform (connection sharing where it isn't Windows). */
   platform?: NodeJS.Platform;
   /** Replaces RemoteRuntime (tests). */
@@ -97,8 +98,11 @@ export function wrapperScript(options: {
 }
 
 /** ssh's "Allocated port N for remote forward to …" (INFO); undefined until it appears. */
-export function parseAllocatedPort(stderr: string): number | undefined {
-  const match = /Allocated port (\d{1,5}) for remote forward/.exec(stderr);
+export function parseAllocatedPort(stderr: string, targetPort?: number): number | undefined {
+  const pattern = targetPort === undefined
+    ? /Allocated port (\d{1,5}) for remote forward/
+    : new RegExp(`Allocated port (\\d{1,5}) for remote forward to 127\\.0\\.0\\.1:${targetPort}(?:\\s|$)`);
+  const match = pattern.exec(stderr);
   const port = match ? Number(match[1]) : NaN;
   return port > 0 && port < 65536 ? port : undefined;
 }

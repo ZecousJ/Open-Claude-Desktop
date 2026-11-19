@@ -4,6 +4,15 @@
  * counts screenshots). Set while an account is signed in; the implementation
  * is in `electron/ipc/computer-use.ts`.
  */
+import type {
+  ComputerUseActivity,
+  ComputerUseState,
+} from "../../shared/computer-use";
+
+export type ComputerUseSettingsState = Omit<
+  ComputerUseState,
+  "activity" | "requests"
+>;
 /** A built-in MCP server the engine adds to a thread's config (S1's builtinMcpServers, command form). */
 export interface ComputerUseMcpServer {
   name: string;
@@ -17,8 +26,11 @@ export interface ComputerUseMcpServer {
 
 /** What other packages (R10-E's engine extension, storage usage) use. */
 export interface ComputerUseService {
+  settingsState?(): ComputerUseSettingsState;
+  currentActivity?(): ComputerUseActivity | null;
   /** Computer use is on for this conversation (policy, setting, mode, platform, permissions). */
   enabledFor(conversationId: string): boolean;
+  revokeGrant?(conversationId: string, appId: string): Promise<void>;
   /** The adapter for the conversation's thread, or undefined while computer use is off for it. */
   mcpServer(conversationId: string): ComputerUseMcpServer | undefined;
   /** Routines run unattended and never get computer use. */

@@ -7,12 +7,29 @@ export interface ResumableSession {
   gitBranch?: string;
   lastActivityAt: number;
   folderMissing?: boolean;
+  workspaceUntrusted?: boolean;
   liveness: "closed" | "running" | "unknown";
 }
 
 export type ResumeScope = "all" | "folder" | "branch";
 
-/** Folder/branch scope and AND-word search. */
+export type CliResumeRefusal =
+  | "running"
+  | "liveness_unknown"
+  | "workspace_untrusted"
+  | "folder_missing"
+  | "failed";
+
+export class CliResumeError extends Error {
+  constructor(
+    readonly reason: CliResumeRefusal,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+/** Folder/branch scope and AND-word search (live claude.ai bundle, 2026-10-14, cc43287c9). */
 export function filterResumeSessions(
   sessions: readonly ResumableSession[],
   query: string,

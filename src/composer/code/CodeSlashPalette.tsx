@@ -12,8 +12,8 @@ type Props = {
   onSelect: (command: CodeSlashCommand) => void;
   onHover: (index: number) => void;
 };
-// The original bolds the matched characters; a fuzzy match (letters in order,
-// not adjacent) bolds each matched letter.
+// R-0373: the original bolds the matched characters; a fuzzy match (letters in
+// order, not adjacent) bolds each matched letter.
 function MatchedName({ name, query }: { name: string; query: string }) {
   const needle = query.trim().toLowerCase();
   if (!needle) return <>{name}</>;

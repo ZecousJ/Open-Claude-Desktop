@@ -5,7 +5,10 @@ import type { ArtifactShareInput } from "../../shared/types";
 
 export const unavailableMessage = "Sharing isn't available on this service.";
 
-/** Why a version can't be published again. */
+/**
+ * Why a version can't be published again (live claude.ai bundle,
+ * 2026-10-12: the Publish button's reason after Unpublish).
+ */
 export const previouslyUnpublishedMessage =
   "This artifact was previously unpublished. Create a new artifact to publish again.";
 
@@ -29,8 +32,9 @@ export const digestOf = (snapshot: ShareSnapshot) =>
 
 /** An artifact version is its content: the same text is the same version. */
 export function versionOf(
-  input: Pick<ArtifactShareInput, "language" | "content">,
+  input: Pick<ArtifactShareInput, "language" | "content" | "versionId">,
 ) {
+  if (input.versionId) return input.versionId;
   return createHash("sha256")
     .update(`${input.language}\n${input.content}`)
     .digest("hex");

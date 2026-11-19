@@ -190,7 +190,7 @@ export function LoadMore({
   );
 }
 
-/** Why the session's only repository can't be taken away. */
+/** Why the session's only repository can't be taken away (live claude.ai bundle, 2026-10-12). */
 export const lastRepositoryReason =
   "This session needs at least one repository.";
 

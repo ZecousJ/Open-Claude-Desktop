@@ -6,6 +6,7 @@ import path from "node:path";
 import { createCipheriv, createHash } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { ChromeImport } from "../../electron/browser/chrome-import";
+import { requestChromeImportPresence } from "../../electron/browser/chrome-import-presence";
 import {
   chromeProfiles,
   decryptChromeCookie,
@@ -36,6 +37,29 @@ const profile: ImportProfile = {
 };
 const key = Buffer.alloc(16, 42);
 const epoch = 11644473600;
+
+test("a timed-out native security prompt blocks another prompt until it closes", async (t) => {
+  const owner = new AbortController();
+  let close = (_: boolean) => {};
+  t.after(() => close(false));
+  const respond = () => new Promise<boolean>((resolve) => { close = resolve; });
+  assert.equal(await requestChromeImportPresence(respond, owner.signal, 10), "presence_timed_out");
+  assert.equal(await requestChromeImportPresence(async () => true, owner.signal), "busy");
+  close(false);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(await requestChromeImportPresence(async () => true, owner.signal), "granted");
+});
+
+test("closing the owner cancels import presence and prevents a late grant", async () => {
+  const owner = new AbortController();
+  const result = requestChromeImportPresence(async (signal) => {
+    owner.abort();
+    assert.equal(signal.aborted, true);
+    return true;
+  }, owner.signal);
+  assert.equal(await result, "presence_left");
+});
+
 function cookie(host = ".example.com"): ImportCookie {
   return {
     host_key: host,
@@ -139,7 +163,7 @@ test("cookie import needs consent, selection and a single-use session-bound tick
   const cleared: string[] = [];
   const importer = new ChromeImport({
     profiles: async () => [profile],
-    authorize: async () => consent,
+    authorize: async () => consent ? "granted" : "presence_declined",
     read: async () => {
       reads++;
       return { version: 24, rows: [cookie(), cookie("blocked.example")] };
@@ -201,9 +225,14 @@ test("cookie import needs consent, selection and a single-use session-bound tick
       lastUsed: true,
     },
   ]);
-  assert.deepEqual(await importer.sites("conversation", profile.id), {
+  const first = importer.sites("conversation", profile.id);
+  assert.deepEqual(await importer.sites("another", profile.id), {
     ok: false,
-    error: "keychain_denied",
+    error: "busy",
+  });
+  assert.deepEqual(await first, {
+    ok: false,
+    error: "presence_declined",
   });
   assert.equal(reads, 0);
   consent = true;
@@ -228,7 +257,7 @@ test("cookie import needs consent, selection and a single-use session-bound tick
   );
   assert.ok(result.ok);
   assert.deepEqual(result.results, [
-    { root: "example.com", imported: 1, failed: 0 },
+    { root: "example.com", found: 1, imported: 1, failed: 0, skippedExpired: 0, failedDecrypt: 0, failedSet: 0 },
   ]);
   assert.equal(set[0].value, "secret");
   assert.deepEqual(seeded, ["https://login.example.com"]);
@@ -430,7 +459,7 @@ test("shared-cookie offers copy only imported roots into another session and rem
     profiles: async () => [profile],
     read: async () => ({ rows: [cookie()], version: 24 }),
     key: async () => Buffer.from(key),
-    authorize: async () => true,
+    authorize: async () => "granted",
     target: async (id, keep) =>
       id === "original" || keep
         ? { partition: "persist:shared", jar: sharedJar, persistent: true }

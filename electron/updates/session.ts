@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, pTn).
 export function beginUpdateSession(
   userData: string,
   pid: number,

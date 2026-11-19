@@ -1,11 +1,13 @@
 /*
  * The find bar (FindBar.tsx). Its page is a transparent view laid over the
- * window's top-right corner (electron/find-in-page.ts), 8px of room above the
- * bar, 16px at the sides and 24px below for its shadow. The bar is 320×48 with
- * 8px inside: the field, a hairline, then previous, next and close as 32px
- * ghost icon-only buttons whose glyphs are the icon font's ArrowUp, ArrowDown
- * and X at 20px. Colours are the app's menu surfaces; the page follows the
- * app's theme through the colour scheme the app sets.
+ * window's top-right corner (electron/find-in-page.ts), 8px of room above
+ * the bar, 16px at the sides and 24px below for its shadow. The bar is
+ * 320×48 with 8px inside: the field, a hairline, then previous, next and
+ * close as 32px ghost icon-only buttons whose glyphs are the icon font's
+ * ArrowUp, ArrowDown and X at 20px (live claude.ai bundle, 2026-10-13,
+ * c6bf19e8f: Button size "base", variant "ghost", iconOnly).
+ * Colours are the app's menu surfaces; the page follows the app's theme
+ * through the colour scheme the app sets.
  */
 :root {
   color-scheme: dark;
@@ -61,7 +63,9 @@ body,
 }
 /* The compact 40px bar (the view is 72 tall) keeps its 8px inside, so its
    content is 24px: ghost buttons of --cds-h-control 24px around 16px glyphs,
-   the footnote at 12px, and 6px between the field's parts. */
+   the footnote at 12px, and 6px between the field's parts (find_in_page
+   find-in-page.html, desktop 2.37337.1: the base block of .cds-root and
+   FindInPage-CQNgjouh.js, which the comfortable density widens). */
 @media (max-height: 75px) {
   .find-field {
     gap: 6px;

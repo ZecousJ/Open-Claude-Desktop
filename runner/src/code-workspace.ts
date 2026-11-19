@@ -25,12 +25,13 @@ export interface WorkspaceSession {
 }
 
 /**
- * Prepares a new session's folder and returns the one Code runs in. The folder
- * must lie inside `codeWorkspaceRoot(session.workspace)`.
+ * Prepares a new session's folder and returns the one Code runs in. The
+ * folder must lie inside `codeWorkspaceRoot(session.workspace)`.
  *
- * `repository` is the session's main repository (its folder is that checkout);
- * `more` are the other repositories the person added to the session, cloned
- * inside it (`extraRepositoryFolders`).
+ * `repository` is the session's main repository (its folder is that
+ * checkout); `more` are the other repositories the person added to the
+ * session (live claude.ai bundle, 2026-10-12: a cloud session takes several
+ * repositories, a pill each), cloned inside it (`extraRepositoryFolders`).
  */
 export type PrepareWorkspace = (
   session: WorkspaceSession,
@@ -174,6 +175,14 @@ export function excludeExtraRepositories(cwd: string, folders: string[]) {
   );
 }
 
+export function validRepositoryRef(value: unknown): value is string {
+  return (
+    typeof value === "string" && value.length > 0 &&
+    Buffer.byteLength(value) <= 255 &&
+    !/^[-/]|[/.]$|\.lock$|\.\.|\/\/|@\{|[\x00-\x20\x7f~^:?*\[\\]/.test(value)
+  );
+}
+
 /**
  * The repository a send names, or undefined. Only its shape is checked here
  * (an https address without credentials, a plain ref); the hook decides
@@ -203,25 +212,9 @@ export function parseRepository(value: unknown): RepositoryRef | undefined {
     !parsed.hostname
   )
     throw new Error("Repositories are cloned over https, without credentials.");
-  if (
-    ref !== undefined &&
-    (typeof ref !== "string" ||
-      ref.length > 200 ||
-      !/^[A-Za-z0-9._\/@+-]+$/.test(ref) ||
-      ref.startsWith("-") ||
-      ref.includes(".."))
-  )
+  if (ref !== undefined && !validRepositoryRef(ref))
     throw new Error("The branch is not valid.");
-  if (
-    branch !== undefined &&
-    (typeof branch !== "string" ||
-      !ref ||
-      branch.length > 200 ||
-      !/^[A-Za-z0-9._\/@+-]+$/.test(branch) ||
-      branch.startsWith("-") ||
-      branch.includes("..") ||
-      branch.endsWith(".lock"))
-  )
+  if (branch !== undefined && (!ref || !validRepositoryRef(branch)))
     throw new Error("The branch is not valid.");
   return {
     url: parsed.href,

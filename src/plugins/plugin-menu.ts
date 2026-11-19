@@ -7,10 +7,8 @@ import {
 } from "../ui/glyphs";
 import type { PageMenuEntry } from "../collections/PageMenu";
 
-/**
- * Source actions keep this order and are absent when their backend/caller does
- * not offer the corresponding capability.
- */
+/** O16 c6a2a31c4 `ad`: source actions keep this order and are absent
+ * when their backend/caller does not offer the corresponding capability. */
 export function pluginAddMenu({
   connector = [],
   onUpload,

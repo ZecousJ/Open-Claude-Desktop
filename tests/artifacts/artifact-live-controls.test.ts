@@ -59,7 +59,7 @@ test("gallery Slides treatment follows an artifact's supported presentation capa
     const tile = card(value);
     assert.ok(tile.hasAttribute("data-presentation"));
     assert.equal(
-      tile.querySelector("svg")?.getAttribute("data-icon"),
+      tile.querySelector("svg")?.getAttribute("data-anthropicon"),
       "Slides",
     );
     assert.equal(tile.querySelector("svg")?.getAttribute("width"), "16");
@@ -110,7 +110,7 @@ test("gallery metadata has the real trailing Pin without nesting it in the opene
   const pin = meta.querySelector('button[aria-label="Unpin"]')!;
   assert.equal(pin.getAttribute("aria-pressed"), "true");
   assert.equal(
-    pin.querySelector("svg")!.getAttribute("data-icon"),
+    pin.querySelector("svg")!.getAttribute("data-anthropicon"),
     "PinFilled",
   );
   assert.equal(pin.querySelector("svg")!.getAttribute("width"), "16");

@@ -1,6 +1,7 @@
-/* Bash mode: the line is typed in the mono face, placeholder included
-   (.epitaxy-prompt[data-bash-mode]), and a small "bash" pill sits before Send.
-   The pill is the original's Badge variant pro, size sm: bg-tint-violet
+/* Bash mode (desktop bundle 2.31226.1): the line is typed in the mono face,
+   placeholder included (.epitaxy-prompt[data-bash-mode]), and a small "bash"
+   pill sits before Send. The pill is the original's Badge variant pro, size
+   sm (live claude.ai bundle, 2026-10-16, c1958b152 + shared-frame): bg-tint-violet
    text-pro, h-control-nested (18px), rounded-chip (a quarter of that), px-sm
    (6px) and caption text (11/17) at medium weight. */
 .composer-wrap textarea[data-bash-mode] {

@@ -1,4 +1,7 @@
-/** Stop: a ringed square. */
+/**
+ * Stop: a ringed square (R-0215, R-0222 in Chat; R-0316 in Code, where a
+ * running session's frame draws the same ring about 12px across).
+ */
 export function RingedStopIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">

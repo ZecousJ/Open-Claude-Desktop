@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { formatText, t } from "../i18n";
 import {
   findable,
@@ -16,10 +16,11 @@ const keys = mac
 
 /**
  * The find bar (shared/find-in-page.ts): a field that searches the window's
- * page 250ms after typing rests, the match count ("3/12"), previous and next,
- * and close. Enter steps to the next match and Shift+Enter to the previous one,
- * as do the Down and Up arrows; Escape closes the bar. As in the original, a
- * query needs three characters, or one Chinese, Japanese or Korean character.
+ * page 250ms after typing rests, the match count ("3/12"), previous and
+ * next, and close. Enter steps to the next match and Shift+Enter to the
+ * previous one, as do the Down and Up arrows; Escape closes the bar. As in
+ * the original (source: desktop bundle 2.31226.1 static JS), a query needs
+ * three characters, or one Chinese, Japanese or Korean character.
  */
 export function FindBar({ bridge }: { bridge: FindBarBridge }) {
   const field = useRef<HTMLInputElement>(null);
@@ -128,7 +129,7 @@ export function FindBar({ bridge }: { bridge: FindBarBridge }) {
           disabled={stepless}
           onClick={() => step(false)}
         >
-          <AppIcon name="ArrowUp" />
+          <Anthropicon name="ArrowUp" />
         </button>
         <button
           type="button"
@@ -139,7 +140,7 @@ export function FindBar({ bridge }: { bridge: FindBarBridge }) {
           disabled={stepless}
           onClick={() => step(true)}
         >
-          <AppIcon name="ArrowDown" />
+          <Anthropicon name="ArrowDown" />
         </button>
         <button
           type="button"
@@ -148,7 +149,7 @@ export function FindBar({ bridge }: { bridge: FindBarBridge }) {
           title={t("Close find bar (Esc)")}
           onClick={close}
         >
-          <AppIcon name="XBase" />
+          <Anthropicon name="XBase" />
         </button>
       </div>
     </div>

@@ -125,13 +125,13 @@ test("context rows expose folder controls, per-file menus, selection and upload 
   assert.match(empty, /No matching files\./);
 });
 
-test("nested knowledge persists and bulk removal validates all names before deleting anything", (context) => {
+test("nested knowledge persists and bulk removal validates all names before deleting anything", async (context) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-context-"));
   context.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new ProjectKnowledgeStore(root, () => [
     { id: "p1" } as Project,
   ]);
-  store.add("p1", [
+  await store.add("p1", [
     { name: "docs/one.md", data: Buffer.from("one") },
     { name: "docs/deep/two.md", data: Buffer.from("two") },
   ]);
@@ -149,15 +149,15 @@ test("nested knowledge persists and bulk removal validates all names before dele
     "/absolute.md",
     "docs/.hidden.md",
   ])
-    assert.throws(() => store.add("p1", [{ name, data: Buffer.from("no") }]));
+    await assert.rejects(() => store.add("p1", [{ name, data: Buffer.from("no") }]));
   const outside = path.join(root, "outside");
   fs.mkdirSync(outside);
   fs.symlinkSync(outside, path.join(store.folder("p1"), "linked"));
-  assert.throws(() =>
+  await assert.rejects(() =>
     store.add("p1", [{ name: "linked/escape.md", data: Buffer.from("no") }]),
   );
   assert.equal(fs.existsSync(path.join(outside, "escape.md")), false);
-  assert.throws(() =>
+  await assert.rejects(() =>
     store.add("p1", [
       { name: "parent.md", data: Buffer.from("parent") },
       { name: "parent.md/child.md", data: Buffer.from("child") },

@@ -1,7 +1,7 @@
 import { nextRun } from "../../../shared/routines";
 import { toLocalInput } from "./routine-draft";
 
-/** The next occurrence of each day. */
+/** The next occurrence of each day (live claude.ai bundle, 2026-10-14, c97b955f1-DnH50wWB.js, xi). */
 export function MonthlyDayPicker({
   dayOfMonth,
   time,

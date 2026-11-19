@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { Blocks, Paperclip, Plug, ChevronRight, Folder } from "../../ui/glyphs";
+import type { KnowledgeProps } from "../../knowledge/knowledge-props";
 import { GithubMark } from "../../ui/GithubMark";
 import { CodeConnectorSubmenu } from "./CodeConnectorSubmenu";
 import { CodePluginSubmenu } from "./CodePluginSubmenu";
@@ -45,6 +46,8 @@ type Props = {
   /** Opens Import GitHub issue; the row is left out without it. */
   onImportIssue?: () => void;
   onImportLinearIssue?: () => void;
+  /** Knowledge bases (shared/knowledge-api.ts); the rows are left out without it. */
+  knowledge?: KnowledgeProps;
 };
 function SlashIcon() {
   return (
@@ -71,6 +74,7 @@ export function CodeAddMenu({
   onBrowseConnectors,
   onToggleConnector,
   connectors,
+  knowledge,
   onPlugins,
   onBrowsePlugins,
   onSlashCommands,
@@ -125,7 +129,8 @@ export function CodeAddMenu({
   const plugins = useEnabledPlugins();
   const attachmentTypes = usePolicy().attachments.types;
   const attachmentsAllowed = attachmentTypes.length > 0;
-  // Only pictures allowed: the row reads "Add image".
+  // Only pictures allowed: the row reads "Add image" (live claude.ai bundle,
+  // 2026-10-14: when files are not supported).
   const imagesOnly =
     attachmentsAllowed &&
     attachmentTypes.every((type) =>
@@ -260,8 +265,9 @@ export function CodeAddMenu({
           <kbd>{shortcutText(platform, ["mod", "U"])}</kbd>
         </button>
       )}
-      {/* Add folder: the desktop's rows only; in a cloud environment it stays,
-         off, saying it is only available in local sessions. */}
+      {/* Add folder (live claude.ai bundle, 2026-10-14): the desktop's
+          rows only; in a cloud environment it stays, off, saying it is
+          only available in local sessions. */}
       {localFolders && (
         <ReasonTooltip
           reason={inCloud ? t("Only available in local sessions") : undefined}
@@ -288,10 +294,11 @@ export function CodeAddMenu({
           )}
         </ReasonTooltip>
       )}
-      {/* Import GitHub issue, on a new task only: a repository to read issues
-         from opens the list (github/ImportIssueDialog.tsx); a local folder
-         without a GitHub remote, or without a signed-in GitHub CLI, leaves the
-         row off with the reason beside it. */}
+      {/* Import GitHub issue, on a new task only (live claude.ai bundle,
+          2026-10-14): a repository to read issues from opens the list
+          (github/ImportIssueDialog.tsx); a local folder without a GitHub
+          remote, or without a signed-in GitHub CLI, leaves the row off with
+          the reason beside it. */}
       {onImportIssue && !app?.active && (issueUnavailable || issueReady) && (
         <ReasonTooltip reason={issueUnavailable}>
           {(tip) => (
@@ -356,6 +363,7 @@ export function CodeAddMenu({
               onBrowse={() => activate(onBrowseConnectors)}
               onManage={() => activate(onConnectors)}
               onToggle={onToggleConnector}
+              knowledge={knowledge}
               onUnavailable={onUnavailable}
             />
           </div>

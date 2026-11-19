@@ -1,7 +1,8 @@
-/* Discover and Related use the default source Me card branch:/2040–2085
-   forwards the same flags; cdfe41513--KsaWoSO.js:476–620 chooses a sm Card and
-   a 48px icon slot with mergedPageLook=false/cardOnHover=false. No ruled-row
-   flag is exposed by this renderer. Live Discover confirms this card branch. */
+/* Discover and Related use the default source Me card branch:
+   cc141fa17-Cwdexeml.js:1145–1246/2040–2085 forwards the same flags;
+   cdfe41513--KsaWoSO.js:476–620 chooses a sm Card and a 48px icon slot
+   with mergedPageLook=false/cardOnHover=false. No ruled-row flag is
+   exposed by this renderer. Live Discover confirms this card branch. */
 .connector-directory-rows {
   --connector-card-page: #151515;
   display: grid;

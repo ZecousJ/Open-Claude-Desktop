@@ -13,6 +13,18 @@ import {
 } from "./auth-support";
 import type { WebAuth } from "./auth";
 
+/** Local response lease only; an already-dispatched server mutation is not undone. */
+function mutationLease(auth: WebAuth) {
+  const epoch = auth.sessionEpoch;
+  return () => {
+    if (auth.sessionEpoch !== epoch)
+      throw bridgeError(
+        "The session changed while this request was pending. Its service result may already have taken effect; check the account before retrying.",
+        "UNAUTHORIZED",
+      );
+  };
+}
+
 // -------------------------------------------------------------------------
 // Several accounts per browser
 
@@ -70,12 +82,15 @@ export async function switchAccount(
   const target = String(id);
   if (!/^\d{1,19}$/.test(target)) throw bridgeError("Choose an account.");
   if (this.session?.account.id === target) return this.session.account;
+  const current = mutationLease(this);
   let value: unknown;
   try {
-    ({ value } = await this.env.withLock(refreshLock, () =>
-      this.post(webAuthRoutes.refresh, { account: target }),
-    ));
+    ({ value } = await this.env.withLock(refreshLock, () => {
+      current();
+      return this.post(webAuthRoutes.refresh, { account: target });
+    }));
   } catch (error) {
+    current();
     if (!isSignedOutError(error)) throw error;
     this.markSignInAgain(target, true);
     throw bridgeError(
@@ -83,6 +98,7 @@ export async function switchAccount(
       signInAgainCode,
     );
   }
+  current();
   this.pendingTwoFactor = undefined;
   return (await this.adopt(value)).account;
 }
@@ -112,9 +128,13 @@ export async function forgetBrowserAccount(this: WebAuth, id: string) {
   if (!/^\d{1,19}$/.test(target)) return;
   if (this.session?.account.id === target)
     throw bridgeError("Log out of this account instead.");
+  const current = mutationLease(this);
   await this.post(webAuthRoutes.logout, { account: target });
+  current();
   this.leftAccount(target);
+  current();
   this.saveRemembered(this.remembered().filter((item) => item.id !== target));
+  current();
   this.tell({
     type: "signed-out",
     reason: "revoked",

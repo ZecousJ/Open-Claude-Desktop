@@ -76,7 +76,7 @@ test("the account menu draws the icon font's glyphs, marks external links, and t
     );
     const trigger = document.querySelector<HTMLButtonElement>(".profile")!;
     // The footer's arrow is CaretDown at the xs size.
-    assert.ok(trigger.querySelector('[data-icon="CaretDown"]'));
+    assert.ok(trigger.querySelector('[data-anthropicon="CaretDown"]'));
     trigger.focus();
     await key(trigger, "ArrowDown");
     const menu = document.querySelector('.profile-popover[role="menu"]')!;
@@ -90,8 +90,8 @@ test("the account menu draws the icon font's glyphs, marks external links, and t
             (span) => span.textContent === label,
           ),
         )
-        ?.querySelector("[data-icon]")
-        ?.getAttribute("data-icon");
+        ?.querySelector("[data-anthropicon]")
+        ?.getAttribute("data-anthropicon");
     assert.equal(iconOf("Settings"), "Settings");
     assert.equal(iconOf("Usage"), "UsageGaugeMiddle");
     assert.equal(iconOf("Language"), "Globe");
@@ -99,10 +99,14 @@ test("the account menu draws the icon font's glyphs, marks external links, and t
     assert.equal(iconOf("Learn more"), "Info");
     assert.equal(iconOf("Get API keys"), "Key");
     assert.equal(iconOf("Log out"), "Logout");
+    assert.equal(menu.querySelector("svg"), null);
     // Get help is an external link; Settings is not.
     const help = rows().find((row) => row.textContent?.includes("Get help"))!;
-    assert.ok(help.querySelector('[data-icon="ArrowOutSquare"]'));
-    assert.equal(rows()[0].querySelector('[data-icon="ArrowOutSquare"]'), null);
+    assert.ok(help.querySelector('[data-anthropicon="ArrowOutSquare"]'));
+    assert.equal(
+      rows()[0].querySelector('[data-anthropicon="ArrowOutSquare"]'),
+      null,
+    );
     // ↓ opened onto the first row; ↑ ↓ Home End walk and loop.
     assert.ok(document.activeElement === rows()[0]);
     await key(rows()[0], "ArrowUp");

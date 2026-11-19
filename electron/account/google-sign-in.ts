@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import http from "node:http";
+import { listenOnLoopback } from "../loopback-ports";
 
 /**
  * The desktop's Continue with Google (LOGIN-GOOGLE): Google's authorization
@@ -108,18 +109,12 @@ export function authorizeWithGoogle(
       cancel: () =>
         finish(() => reject(Error("Google sign-in was cancelled."))),
     };
-    server.on("error", () =>
-      finish(() =>
-        reject(Error("Claudex couldn’t wait for Google here. Try again.")),
-      ),
-    );
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      if (!address || typeof address === "string")
-        return finish(() =>
-          reject(Error("Claudex couldn’t wait for Google here. Try again.")),
-        );
-      redirectUri = `http://127.0.0.1:${address.port}/callback`;
+    void listenOnLoopback(server).then(port => {
+      if (settled) {
+        server.close();
+        return;
+      }
+      redirectUri = `http://127.0.0.1:${port}/callback`;
       const url = new URL(authorizeUrl);
       url.search = new URLSearchParams({
         client_id: clientId,
@@ -139,6 +134,8 @@ export function authorizeWithGoogle(
       open(url.toString()).catch(() =>
         finish(() => reject(Error("Claudex couldn’t open your browser."))),
       );
+    }).catch(() => {
+      finish(() => reject(Error("Claudex couldn’t wait for Google here. Try again.")));
     });
   });
 }

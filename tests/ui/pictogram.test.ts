@@ -1,14 +1,31 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { Pictogram } from "../../src/ui/Pictogram";
+import HandBlocks from "../../src/ui/pictograms/HandBlocks";
+import ObjectShapes from "../../src/ui/pictograms/ObjectShapes";
 
-test("a pictogram is a glyph on its disc at the size asked for", () => {
-  const html = renderToStaticMarkup(
-    createElement(Pictogram, { name: "ObjectMagnifier", size: 64 }),
+test("the empty-state pictograms carry the original's highlight and lines", () => {
+  for (const def of [HandBlocks, ObjectShapes]) {
+    assert.ok(def.highlight.length > 0);
+    assert.ok(def.line.length > 0);
+    for (const path of [...def.highlight, ...def.line])
+      assert.match(
+        String(typeof path === "string" ? path : (path as { d: string }).d),
+        /^M/,
+      );
+  }
+  assert.equal(
+    HandBlocks.highlight[0],
+    "M315.261 194.184H203.965V294.35h111.296z",
   );
-  assert.match(html, /^<svg class="pictogram" width="64" height="64"/);
-  assert.match(html, /<circle class="pictogram-highlight"/);
-  assert.match(html, /lucide-search/);
+});
+
+test("the magnifier pictogram is the original's: a lens highlight and an outline", async () => {
+  const { default: ObjectMagnifier } =
+    await import("../../src/ui/pictograms/ObjectMagnifier");
+  assert.equal(ObjectMagnifier.highlight.length, 1);
+  assert.ok(ObjectMagnifier.line.length > 0);
+  assert.match(
+    ObjectMagnifier.highlight[0],
+    /^M162 266\.174c62\.408 0 113-50\.592/,
+  );
 });

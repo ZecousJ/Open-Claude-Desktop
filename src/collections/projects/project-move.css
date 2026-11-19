@@ -1,4 +1,5 @@
-/* Search and rows. */
+/* Search and rows (live claude.ai bundle, 2026-10-14, c9d22852b-BCr1HnjD;
+   CDS surface/text/border tokens resolved from rules.json for both themes). */
 .project-move-modal {
   --move-surface: #20201f;
   --move-hover: #0b0b0b;
@@ -27,7 +28,7 @@
     0 4px 8px 0 hsl(from #0b0b0b h s l / 8%),
     0 12px 28px -2px hsl(from #0b0b0b h s l / 8%);
 }
-/* Popup md and Header. */
+/* Popup md and Header (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0). */
 :root:not([data-theme="light"]) .modal.project-move-modal,
 :root[data-theme="light"] .modal.project-move-modal {
   display: flex;

@@ -1,4 +1,4 @@
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { codeLiveLayout } from "./code-live-layout";
 import { Suspense, useEffect, useRef } from "react";
 import {
@@ -27,7 +27,7 @@ import {
   DictationButton,
   UnavailableDictationButton,
 } from "./voice/DictationButton";
-import { preference } from "../../shared/settings-extras";
+import { dictationAccelerator, preference } from "../../shared/settings-extras";
 import { CoworkVoiceControls } from "./voice/CoworkVoiceControls";
 import { PreferredVoiceInput } from "./PreferredVoiceInput";
 import { ContextRing } from "./ContextRing";
@@ -44,6 +44,7 @@ import type {
 } from "../../shared/types";
 import type { ComposerField } from "./composer-field";
 import type { DictationPhase } from "./voice/DictationButton";
+import type { KnowledgeProps } from "../knowledge/knowledge-props";
 import type { PendingAttachment } from "./Attachments";
 import type { SkillToken } from "./skill-tokens";
 import type { VoicePhase } from "../voice/useVoiceMode";
@@ -92,6 +93,7 @@ export interface UseComposerControlsKit {
   incognito: boolean;
   incognitoControls: boolean;
   interrupt: () => Promise<void>;
+  knowledge: KnowledgeProps | undefined;
   mode: Mode;
   model: string;
   modelMenu: boolean;
@@ -188,6 +190,7 @@ export function useComposerControls(kit: UseComposerControlsKit) {
     incognito,
     incognitoControls,
     interrupt,
+    knowledge,
     mode,
     model,
     modelMenu,
@@ -264,6 +267,7 @@ export function useComposerControls(kit: UseComposerControlsKit) {
     hasDraft,
     attachmentPicker,
     researchChip,
+    knowledgeChip,
     modelPicker,
     effortPicker,
   } = useComposerPickers({
@@ -285,6 +289,7 @@ export function useComposerControls(kit: UseComposerControlsKit) {
     incognito,
     incognitoControls,
     interrupt,
+    knowledge,
     mode,
     model,
     modelMenu,
@@ -385,8 +390,9 @@ export function useComposerControls(kit: UseComposerControlsKit) {
       {stopButton}
     </span>
   );
-  // A cloud Code home that cannot start a session keeps Send: pressing it says
-  // why.
+  // A cloud Code home that cannot start a session keeps Send: pressing it
+  // says why (live claude.ai bundle, 2026-10-12: a blocked draft submit
+  // shows the reason; Send stays available).
   const sendDisabled =
     coworkComputerWaiting(active) ||
     Boolean(unsupported) ||
@@ -427,18 +433,21 @@ export function useComposerControls(kit: UseComposerControlsKit) {
       ) : mode === "code" ? (
         <CodeReturnIcon width={plainGlyphs ? 15 : 11} />
       ) : (
-        <AppIcon
+        <Anthropicon
           name={plainGlyphs ? "ArrowReturn" : "ComposerSend"}
           size={plainGlyphs ? 20 : 16}
         />
       )}
     </button>
   );
-  // A focused or hovered Chat / Cowork Send says "Send message". Code's Send
-  // says "Send ↵", and while a turn runs also how to queue for later. While a
-  // reply runs, ⌘↵ queues instead of steering it; at rest a Code session's Send
-  // also names ⌥⌘↵. Code's tooltip is several lines, each its words and its own
-  // keys.
+  // R-0255: a focused or hovered Chat / Cowork Send says "Send message".
+  // Code's Send says "Send ↵", and while a turn runs also how to queue for
+  // later (live claude.ai bundle, 2026-10-12).
+  // While a reply runs, ⌘↵ queues instead of steering it; at rest a Code
+  // session's Send also names ⌥⌘↵ (live claude.ai bundle, 2026-10-12: the
+  // Send tooltip's "Send in a forked session" line). Code's tooltip is
+  // several lines, each its words and its own keys (2026-10-16, c1958b152
+  // rf: multiline, rows 4px apart).
   const codeSendRows =
     mode === "code" && showsShortcuts && (running || forkSendAvailable)
       ? [
@@ -475,12 +484,13 @@ export function useComposerControls(kit: UseComposerControlsKit) {
       {sendFace}
     </WithTooltip>
   );
-  // Stop and Send share a spring-driven capsule; Code keeps its own submit
-  // cell.
+  // Stop and Send share a spring-driven capsule (live claude.ai bundle,
+  // 2026-10-14, c04e7453f-Cg2yRCdu.js); Code keeps its own submit cell.
   const foldSendShown = !running || hasDraft;
-  // Code's Stop and Send share one place: Stop while a turn runs with nothing
-  // to send, Send otherwise, so a draft written mid-turn swaps Stop for Send
-  // (Esc still stops).
+  // Code's Stop and Send share one place (live claude.ai bundle,
+  // 2026-10-12, the Code prompt's send cell): Stop while a turn runs with
+  // nothing to send, Send otherwise, so a draft written mid-turn swaps Stop
+  // for Send (Esc still stops).
   const submitButton = (
     <CodeSubmitCell
       showStop={running && !hasDraft}
@@ -519,7 +529,7 @@ export function useComposerControls(kit: UseComposerControlsKit) {
       </span>
     );
   // Unbound task conversations use Cowork labels; the unified home uses hub
-  // labels.
+  // labels (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN.js oK).
   const taskPermissionPicker = (
     <TaskPermissionPicker
       presentation={unifiedChat ? "web-chat" : "legacy"}
@@ -562,7 +572,7 @@ export function useComposerControls(kit: UseComposerControlsKit) {
       onTranscript={dictation.onTranscript}
       onCancel={dictation.onCancel}
       onError={report}
-      shortcut={preference(settings, "dictationShortcut")}
+      shortcut={dictationAccelerator(settings)}
       platform={platform}
     />
   ) : (
@@ -571,22 +581,26 @@ export function useComposerControls(kit: UseComposerControlsKit) {
       reason={dictationReason!}
     />
   );
-  // The Chat and Cowork home: an empty composer shows the microphone and,
-  // greyed, the original's voice mode (Chat) or voice options (Cowork) after
-  // it; once there is something to send, Send replaces it. Stop comes first
-  // while a turn runs. While dictation writes the draft, the microphone keeps
-  // its place (Send would otherwise replace it and unmount the recording).
+  // The Chat and Cowork home (R-0213, R-0215, R-0222): an empty composer
+  // shows the microphone and, greyed, the original's voice mode (Chat) or
+  // voice options (Cowork) after it (R-0258, R-0546); once there is
+  // something to send, Send replaces it. Stop comes first while a turn runs.
+  // While dictation writes the draft, the microphone keeps its place (Send
+  // would otherwise replace it and unmount the recording).
   const coworkTask = mode === "cowork" && Boolean(active);
-  // Chat and Cowork conversations share one composer: the frame holds only the
-  // message and Stop / Send; "+", the microphone, the disclaimer and the model
-  // sit in the row under it.
+  // Chat and Cowork conversations share one composer: the frame holds only
+  // the message and Stop / Send; "+", the microphone, the disclaimer and the
+  // model sit in the row under it (live claude.ai bundle, 2026-10-12: the
+  // controls move to the composer's chin; owner's capture
+  // 2026-10-12-chat-conversation-composer.png).
   const conversation = mode !== "code" && Boolean(active);
   // Send and the microphone share one place and cross-fade in 60ms (the
   // original's send and idle slots); the microphone stays mounted under Send,
   // so a recording is never cut off by the draft it writes.
   const sendShown = hasDraft && !dictation.live;
   // Chat and Cowork homes keep Dictate and its caret in place with a draft;
-  // Send takes only voice mode's place.
+  // Send takes only voice mode's place (live claude.ai, 2026-10-20: with
+  // text the toolbar reads Dictate, Microphone, Send).
   const chatActions = (
     <>
       {mode !== "code" && (
@@ -660,16 +674,18 @@ export function useComposerControls(kit: UseComposerControlsKit) {
       </div>
     </>
   );
-  // A conversation's microphone sits in the row under the frame, 4px after "+".
-  // In Chat its microphone menu and a separate voice action stay visible with a
-  // draft. Draft edits retain the chosen primary control. The single-control web
+  // A conversation's microphone sits in the row under the frame, 4px after
+  // "+" (live claude.ai bundle, 2026-10-12: the chin's mic group). In Chat its
+  // microphone menu and a separate voice action stay visible with a draft
+  // (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN.js).
+  // Draft edits retain the chosen primary control. The single-control web
   // reply layout offers the source pinned input action; split layouts keep
   // separate dictation and voice actions.
   const chinVoice = (
     <div className="composer-chin-voice">
       {webReplyVoice ? (
-        // Dictate, then voice mode as a split button whose caret opens the
-        // microphone options.
+        // Live claude.ai reply chin (2026-10-20): Dictate, then voice mode
+        // as a split button whose caret opens the microphone options.
         <div
           className="cowork-voice-controls chin-voice-controls"
           role="group"
@@ -782,6 +798,7 @@ export function useComposerControls(kit: UseComposerControlsKit) {
             ? null
             : attachmentPicker}
         {researchChip}
+        {knowledgeChip}
         {mode === "code" ? (
           <>
             {!codeLiveLayout(mode, host, codeHomeDraft) && micButton && (
@@ -870,6 +887,7 @@ export function useComposerControls(kit: UseComposerControlsKit) {
     toolbar,
     coworkTask,
     researchChip,
+    knowledgeChip,
     chinVoice,
     modelPicker,
     taskPermissionPicker,

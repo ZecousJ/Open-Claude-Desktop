@@ -1,9 +1,9 @@
 /**
- * The browser half of a passkey sign-in: Sub2API's `passkey/login/begin`
- * answers WebAuthn request options as JSON (base64url buffers); the browser
- * signs the challenge and the assertion goes back to `passkey/login/finish` as
- * JSON again. Same conversion as the console's
- * backend/frontend/src/api/passkey.ts.
+ * The browser half of a passkey sign-in (package LOGIN): Sub2API's
+ * `passkey/login/begin` answers WebAuthn request options as JSON
+ * (base64url buffers); the browser signs the challenge and the assertion
+ * goes back to `passkey/login/finish` as JSON again. Same conversion as
+ * the console's backend/frontend/src/api/passkey.ts.
  */
 
 type Json = Record<string, unknown>;

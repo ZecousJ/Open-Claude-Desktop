@@ -1,17 +1,19 @@
 /**
- * Find in page (Edit ▸ Find…, Cmd/Ctrl+F): a small bar at the top right of an
- * app window that searches the window's page with Chromium's own find
- * (`webContents.findInPage`). The bar is a page of its own laid over the window
- * (`find.html`, preload `electron/find-preload.ts`), so the text typed into it
- * is never one of the matches. Values from the original's find bar.
+ * Find in page (Edit ▸ Find…, Cmd/Ctrl+F): a small bar at the top right of
+ * an app window that searches the window's page with Chromium's own find
+ * (`webContents.findInPage`). The bar is a page of its own laid over the
+ * window (`find.html`, preload `electron/find-preload.ts`), so the text
+ * typed into it is never one of the matches. Values from the original's
+ * find bar (source: desktop bundle 2.31226.1 static JS).
  *
  * The bar's bridge is `window.findBar` (FindBarBridge); it reaches only the
  * channels below, and the main process answers only the bar it opened.
  */
 
 /**
- * The bar: 320 wide, 48 tall (40 at the compact density, while the window shows
- * Code), 12px from the window's top-right corner below its title bar.
+ * The bar: 320 wide, 48 tall (40 at the compact density, while the window
+ * shows Code), 12px from the window's top-right corner below its title bar
+ * (desktop 2.37337.1 gK).
  */
 export const findBarSize = { width: 320, height: 48 };
 export const findBarHeights = { compact: 40, comfortable: 48 } as const;

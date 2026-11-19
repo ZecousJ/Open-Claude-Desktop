@@ -1,7 +1,8 @@
 /**
- * Rename plugin: the person's own plugins in the personal marketplace take a
- * new name or display name, an installed one is installed again under its new
- * id with its settings and on/off state, and a failure puts everything back.
+ * Rename plugin (live claude.ai bundle, 2026-10-12): the person's own
+ * plugins in the personal marketplace take a new name or display name, an
+ * installed one is installed again under its new id with its settings and
+ * on/off state, and a failure puts everything back.
  */
 import assert from "node:assert/strict";
 import fs from "node:fs";

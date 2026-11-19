@@ -5,9 +5,10 @@ export type DropPosition = "before" | "after";
 
 /**
  * When a conversation was last active, for ordering lists: the start of its
- * latest turn (the person's last message), else its last change. A reply that
- * streams changes `updatedAt` many times a second, so two running conversations
- * ordered by it swapped places over and over.
+ * latest turn (the person's last message), else its last change. A reply
+ * that streams changes `updatedAt` many times a second, so two running
+ * conversations ordered by it swapped places over and over (owner,
+ * 2026-10-22).
  */
 export function lastActivityAt(
   c: Pick<Conversation, "turns" | "updatedAt">,

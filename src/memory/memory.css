@@ -1,6 +1,7 @@
 /*
  * Settings → Memory (design R3 4.1). The two switch rows use the settings
- * controls as they are; the rest of the page and the dialogs are 暂定.
+ * controls as they are (measured to match R-设置-Memory-顶部); the rest of
+ * the page and the dialogs are 暂定 (no capture of R-1457–R-1459).
  */
 .memory-learn-more {
   padding: 0;
@@ -20,10 +21,10 @@
   line-height: 20px;
   color: #908f8d;
 }
-/* The memory row: full width, 8px round, 12px across and 8px down, the 5% wash
-   (10% under the pointer); the label in the body size, " · Updated …" in the
-   13px muted footnote, a caret at the right. Without memory it is still, on the
-   surface. */
+/* The memory row (live claude.ai bundle, 2026-10-12): full width, 8px
+   round, 12px across and 8px down, the 5% wash (10% under the pointer);
+   the label in the body size, " · Updated …" in the 13px muted footnote,
+   a caret at the right. Without memory it is still, on the surface. */
 .memory-manage {
   display: flex;
   align-items: center;
@@ -73,14 +74,15 @@ button.memory-manage:hover {
   color: #908f8d;
 }
 
-/* Import memory. Two numbered steps 16px apart; a step is a column 8px apart
-   with a 1px line from under its number down past the step (left 10px, from
-   28px to 16px below), its label 14px medium secondary beside a 20px round
-   number (12px semibold on neutral-50). The prompt sits in a box 28px in
-   (0.6rem radius, a 5% hairline, neutral-30), 104px high at most with 12px
-   insides and 48px at the foot, a 64px fade into the box colour at its foot and
-   Copy 8px from its corner; the paste field is 28px in, six rows, at most 300px
-   high. */
+/* Import memory (live claude.ai bundle, 2026-10-12: the import modal's
+   class strings). Two numbered steps 16px apart; a step is a column 8px
+   apart with a 1px line from under its number down past the step (left
+   10px, from 28px to 16px below), its label 14px medium secondary beside a
+   20px round number (12px semibold on neutral-50). The prompt sits in a
+   box 28px in (0.6rem radius, a 5% hairline, neutral-30), 104px high at
+   most with 12px insides and 48px at the foot, a 64px fade into the box
+   colour at its foot and Copy 8px from its corner; the paste field is 28px
+   in, six rows, at most 300px high. */
 .memory-import {
   --memory-import-neutral-30: #111;
   --memory-import-neutral-50: #151515;

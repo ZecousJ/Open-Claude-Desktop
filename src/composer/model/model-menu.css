@@ -1,5 +1,5 @@
-/* Measured static reference: Motion remains unverified. */
-/* Disabled CDS rows. */
+/* Measured static reference: fidelity/observations/model-menu.md. Motion remains unverified. */
+/* Disabled CDS rows (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js, Tx). */
 .model-menu button[aria-disabled="true"] {
   opacity: 0.4;
   cursor: default;
@@ -12,7 +12,11 @@
   padding: 4px;
   box-shadow: var(--shadow);
   color: #d4d4d1;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   font-size: 14px;
   line-height: 18px;
 }
@@ -53,9 +57,11 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
-/* A glyph span (the row's caret) keeps its 16px slot at the row's end and the
-   muted ink; it is not a label. */
-.model-menu button > span.app-icon {
+/* A glyph span (the row's caret) keeps its 16px slot at the row's end and
+   the muted ink; it is not a label (live claude.ai, 2026-10-20: Effort's
+   "High" ends 8px before a 16px #898781 CaretRight at 1007–1023; stretching
+   it put the caret mid-row). */
+.model-menu button > span.anthropicon {
   flex: none;
   width: 16px;
   height: 16px;
@@ -122,19 +128,22 @@
   right: auto;
 }
 /* No room on either side (ModelMenu measures): over the menu, as wide as it,
-   above its row so the row stays to close it. */
+   above its row so the row stays to close it (owner, 2026-10-03). */
 .model-menu .model-submenu.over-menu {
   left: 0;
   right: 0;
   width: auto;
   bottom: calc(100% + 4px);
 }
-/* A retired model's notice heads the menu; the effort note's style. */
+/* A retired model's notice heads the menu (live claude.ai bundle,
+   2026-10-12: the menu's header, muted footnote text); the effort note's
+   style. */
 .model-submenu p,
 .model-menu-notice {
   margin: 3px 8px 4px;
   font:
-    13px/17px -apple-system,
+    13px/17px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   color: #858580;
@@ -147,7 +156,8 @@
   padding: 1px 4px;
   border-radius: 4px;
   font:
-    10px/13px -apple-system,
+    10px/13px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   vertical-align: 1px;
@@ -184,11 +194,11 @@
 }
 
 /*
- * With the administrator's catalog: as wide as
- * * Popup min-w-[128px] max-w-[min(26rem,var(--available-width))]; measured
- *   295px with the live descriptions), one 50px row per model with its name
- *   (#f7f5f6) over a description (#8f8e8c), both 14px on 18.5px lines, text
- *   15px inside the rim.
+ * With the administrator's catalog (R-Chat-模型菜单-展开, 2x ÷2): as wide as
+ * its widest row, 128px to 416px (live claude.ai bundle, 2026-10-16:
+ * Popup min-w-[128px] max-w-[min(26rem,var(--available-width))]; measured
+ * 295px with the live descriptions), one 50px row per model with its name (#f7f5f6) over a description (#8f8e8c),
+ * both 14px on 18.5px lines, text 15px inside the rim.
  */
 .model-menu.catalogued {
   width: max-content;
@@ -241,7 +251,7 @@
 :root[data-theme="light"] .model-menu.catalogued .model-menu-current strong {
   color: inherit;
 }
-/* On the Chat and Cowork home the menu opens 5.5px below the 29px pill. */
+/* On the Chat and Cowork home the menu opens 5.5px below the 29px pill (R-Chat-模型菜单-展开: pill 522.5–551.5, menu rim 557). */
 .chat-home .model-effort-anchor > .model-menu {
   top: calc(100% + 5.5px);
   bottom: auto;
@@ -266,10 +276,11 @@
 }
 
 /*
- * The makers' switch at the top, drawn as the composer's Chat/Cowork switch: a
- * white 5% track with 1px inside, 26px segments on a 6px radius, the chosen one
- * on a white 10% thumb with a 1px white 10% ring; the others #898781. The thumb
- * slides in claude.ai's base duration and ease-out (200ms, --cds-ease-out).
+ * The makers' switch at the top (owner, 2026-10-02), drawn as the
+ * composer's Chat/Cowork switch (live claude.ai): a white 5% track with 1px
+ * inside, 26px segments on a 6px radius, the chosen one on a white 10%
+ * thumb with a 1px white 10% ring; the others #898781. The thumb slides in
+ * claude.ai's base duration and ease-out (200ms, --cds-ease-out).
  */
 .model-vendor-switch {
   position: relative;
@@ -322,9 +333,9 @@
   flex: none;
 }
 /* The one-colour marks (OpenAI, xAI) stay in the selected colour like the
-   coloured ones; above the menu's grey icon rule
-   (:root:not([data-theme="light"]) .model-menu button > svg), which had kept
-   them grey. */
+   coloured ones (owner, 2026-10-03: they read grey beside them); above the
+   menu's grey icon rule (:root:not([data-theme="light"]) .model-menu
+   button > svg), which had kept them grey (owner, 2026-10-14). */
 :root:not([data-theme="light"])
   :is(.model-menu, .code-model-menu)
   .model-vendor-switch

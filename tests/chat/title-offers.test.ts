@@ -91,10 +91,10 @@ test("a title the person chose is offered a change, not renamed", async () => {
   assert.equal(saves, 1);
 });
 
-test("first turns, failures, shell commands, compactions, suppressed and non-Code sessions do not call a model", async () => {
+test("Code first turns, failures, shell commands, compactions, suppressed and Cowork sessions do not call a model", async () => {
   const variants = [
     session({ turns: [turn("first")] }),
-    session({ mode: "chat" }),
+    session({ mode: "chat", titleSetByUser: true }),
     session({ mode: "cowork" }),
     session({ incognito: true }),
     session({ archived: true }),
@@ -468,5 +468,66 @@ test("a pending title offer has two actions; Don't suggest again lives in the re
       if (value) Object.defineProperty(globalThis, key, value);
       else Reflect.deleteProperty(globalThis, key);
     }
+  }
+});
+
+
+test("Chat summarizes its first completed exchange and spaces out later title updates", async () => {
+  const conversation = session({ mode: "chat", title: "帮我分析这两个项目的不同", turns: [turn("first")] });
+  let calls = 0, saves = 0;
+  const generator = new TitleOfferGenerator(
+    () => async prompt => {
+      calls++;
+      assert.match(prompt.instructions, /conversation/);
+      return '{"proposedTitle":"桌面自动化项目对比"}';
+    },
+    () => conversation,
+    () => saves++,
+  );
+  await generator.afterTurn(conversation, conversation.turns[0]);
+  assert.equal(conversation.title, "桌面自动化项目对比");
+  assert.equal(saves, 1);
+  for (let i = 2; i <= 5; i++) {
+    conversation.turns.push(turn(String(i)));
+    await generator.afterTurn(conversation, conversation.turns.at(-1)!);
+  }
+  assert.equal(calls, 1);
+  conversation.turns.push(turn("6"));
+  await generator.afterTurn(conversation, conversation.turns.at(-1)!);
+  assert.equal(calls, 2);
+});
+
+test("Chat keeps a manual title chosen while its automatic title is pending", async () => {
+  const conversation = session({ mode: "chat", turns: [turn("first")] });
+  let finish!: (answer: string) => void;
+  const generator = new TitleOfferGenerator(
+    () => () => new Promise<string>(resolve => { finish = resolve; }),
+    () => conversation,
+    () => assert.fail("manual Chat title must remain unchanged"),
+  );
+  const pending = generator.afterTurn(conversation, conversation.turns[0]);
+  assert.equal(typeof finish, "function");
+  conversation.titleSetByUser = true;
+  finish('{"proposedTitle":"Replacement"}');
+  await pending;
+  assert.equal(conversation.title, "Original topic");
+  assert.equal(conversation.titleOffer, undefined);
+});
+
+test("a generated Chat title is persisted when its model reply arrives", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "chat-title-save-"));
+  const store = new Store(root);
+  try {
+    const conversation = session({ mode: "chat", turns: [turn("first")] });
+    store.conversations.push(conversation);
+    store.flush();
+    const engine = new Engine(store, "unused", () => "", () => {});
+    const generator = engine.titleOffers as any;
+    generator.complete = () => async () => '{"proposedTitle":"已保存的 Chat 标题"}';
+    await generator.afterTurn(conversation, conversation.turns[0]);
+    assert.equal(new Store(root).conversation(conversation.id)?.title, "已保存的 Chat 标题");
+  } finally {
+    store.flush();
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });

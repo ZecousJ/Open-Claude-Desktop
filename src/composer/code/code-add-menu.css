@@ -12,7 +12,8 @@
   box-shadow: 0 12px 28px #0006;
   color: var(--text);
   font:
-    13px/20px -apple-system,
+    13px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -39,7 +40,7 @@
   text-align: left;
   font: inherit;
   /* Rows appear highlighted at once and have no pressed look: the original's
-     menu rows. */
+     menu rows (desktop bundle 2.31226.1 static CSS/JS). */
   transition: none;
 }
 .code-add-menu button:hover,
@@ -70,7 +71,8 @@
   margin-left: auto;
   color: #8f8f8e;
   font:
-    12px/18px -apple-system,
+    12px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }

@@ -40,7 +40,7 @@ const device = (
   extra: Partial<ClaudexDeviceList["items"][number]> = {},
 ): ClaudexDeviceList["items"][number] => ({
   id,
-  deviceName: "Ada's MacBook Pro",
+  deviceName: "Zecous's MacBook Pro",
   platform: "darwin",
   arch: "arm64",
   appVersion: "1.3.2",
@@ -105,14 +105,14 @@ test("a row names its device as the original does: app (OS)", () => {
     { items: [device(1)], limit: 5 },
     null,
   )[0]!;
-  assert.equal(sessionDeviceLabel(desktop), "Ada's MacBook Pro (Mac OS X)");
+  assert.equal(sessionDeviceLabel(desktop), "Zecous's MacBook Pro (Mac OS X)");
   assert.equal(
     sessionDeviceLabel({ ...desktop, deviceName: "", platform: "win32" }),
     "Claudex Desktop (Windows)",
   );
   assert.equal(
     sessionDeviceLabel({ ...desktop, platform: "" }),
-    "Ada's MacBook Pro",
+    "Zecous's MacBook Pro",
   );
   const web = (userAgent: string): ActiveSession => ({
     ...desktop,
@@ -249,6 +249,8 @@ function handlers(service?: {
   const calls: string[] = [];
   const ctx = {
     activeAccount: { id: "a", email: "z@example.com", name: "Z" },
+    onAccountDeactivating: () => () => {},
+    onAccountActivated: () => () => {},
     remote: service && {
       backend: {
         deviceId: "6f1c2a4e-9b0d-4c1e-8a57-2f3b9d0c7e11",
@@ -330,7 +332,7 @@ test("the phone apps' sign-ins join the list as app rows named after the app", a
   );
   assert.deepEqual(sessions.map(sessionDeviceLabel), [
     "Claudex (iOS)",
-    "Ada's MacBook Pro (Mac OS X)",
+    "Zecous's MacBook Pro (Mac OS X)",
     "Claudex (Android)",
   ]);
   assert.equal(
@@ -452,13 +454,13 @@ test("the table: the original's columns, Current badge, Unknown location, a ⋮ 
   const markup = render({ state: "ready", sessions });
   for (const header of ["Device", "Location", "Created", "Updated"])
     assert.match(markup, new RegExp(`<th>(<span[^>]*>)?${header}`));
-  assert.match(markup, /Ada&#x27;s MacBook Pro \(Mac OS X\)/);
+  assert.match(markup, /Zecous&#x27;s MacBook Pro \(Mac OS X\)/);
   assert.match(markup, /class="session-current">Current</);
   assert.match(markup, /<span>Unknown device<\/span>/);
   assert.equal(markup.match(/<td>Unknown<\/td>/g)?.length, 2);
   assert.match(
     markup,
-    /aria-label="Session actions for Ada&#x27;s MacBook Pro \(Mac OS X\) \(current session\)"/,
+    /aria-label="Session actions for Zecous&#x27;s MacBook Pro \(Mac OS X\) \(current session\)"/,
   );
   assert.match(
     markup,

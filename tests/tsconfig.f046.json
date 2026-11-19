@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../shared/session-connector-preference.ts",
+    "../electron/ipc/session-connector-preference.ts",
+    "../electron/ipc/conversation-manage-handlers.ts",
+    "../electron/official-ui/native/session-connectors.ts",
+    "../electron/store/store.ts",
+    "../runner/src/cloud-store.ts",
+    "official-ui-session-connectors.test.ts",
+    "f046-*.test.ts"
+  ]
+}

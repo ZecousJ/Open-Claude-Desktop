@@ -2,11 +2,13 @@ import type { Mode } from "../../shared/types";
 import { collapseWidth } from "./sidebar-visibility";
 
 /**
- * The one-time tip beside Pinned that says rows can be dragged there. Pinning a
- * row from its menu or with the keyboard, while the tip has never been
- * dismissed and the sidebar is open at a normal width, shows it; closing it
- * with its × marks it seen for good. Hiding the sidebar takes the tip away
- * without marking it seen, so the next pin from a menu shows it again.
+ * The one-time tip beside Pinned that says rows can be dragged there (live
+ * claude.ai bundle, 2026-10-12: the sidebar store's showDragPinHint /
+ * seenDragPinHint). Pinning a row from its menu or with the keyboard, while
+ * the tip has never been dismissed and the sidebar is open at a normal
+ * width, shows it; closing it with its × marks it seen for good. Hiding the
+ * sidebar takes the tip away without marking it seen, so the next pin from a
+ * menu shows it again.
  */
 
 /** The seen flag, kept with the browser's other per-person sidebar state. */

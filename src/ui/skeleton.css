@@ -15,10 +15,12 @@
  * there at once, with a full-width 90° sheen crossing it in 2s, linear.
  * Reduced motion keeps the wait and ends the breathing in its end state
  * (0.01ms, once) and hides the sheen.
+ * Source: live claude.ai bundle, 2026-10-16, shared-frame (SkeletonGroup)
+ * and c6a992d55 (cds-skeleton-*, cds-shimmer).
  *
  * A block (.sk) is the page's own 8px-rounded rectangle in white at 7.5%
- * (dark) or #0b0b0b at 5% (light). A page may set --sk-base for its own
- * measured fill.
+ * (dark) or #0b0b0b at 5% (light), measured on the original's Settings →
+ * Usage (2026-09-30). A page may set --sk-base for its own measured fill.
  */
 :root {
   --placeholder-reveal-delay: 0.5s;
@@ -136,11 +138,12 @@
   margin-top: 40px;
 }
 
-/* Cards, as the original's Scheduled tasks and Projects pages load: two columns
-   24px apart, eight 140px cards with 16px padding and 12px corners, #151515
-   with a 1px inset white 10% ring in dark, #fcfcfb with a 1px #0b0b0b 10% ring
-   outside in light. In each: a title at 60% (16px), 16px below it two lines
-   (12px, 100% and 85%, 8px apart), and a 100×10 foot at the bottom. */
+/* Cards, as the original's Scheduled tasks and Projects pages load
+   (2026-09-30): two columns 24px apart, eight 140px cards with 16px
+   padding and 12px corners, #151515 with a 1px inset white 10% ring in dark,
+   #fcfcfb with a 1px #0b0b0b 10% ring outside in light. In each: a title at
+   60% (16px), 16px below it two lines (12px, 100% and 85%, 8px apart), and a
+   100×10 foot at the bottom. */
 .sk-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

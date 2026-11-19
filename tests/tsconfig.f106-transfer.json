@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.f106.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/ipc/workspace-trust.ts",
+    "../electron/conversations/session-transfer.ts",
+    "../electron/ipc/session-transfer.ts",
+    "../electron/official-ui/native/history-transfer.ts",
+    "chat/f106-session-transfer.test.ts",
+    "chat/f106-lasm-session-transfer.test.ts",
+    "official-ui-history-transfer.test.ts"
+  ]
+}

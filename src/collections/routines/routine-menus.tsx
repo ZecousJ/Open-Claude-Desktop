@@ -11,7 +11,7 @@ import {
 import { repeatOf } from "../../../shared/routine-labels";
 import type { OpenMenu } from "./RoutinesPage";
 import type { MenuEntry } from "../../ui/Menu";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { tc, formatText } from "../../i18n";
 import { Play, Pause, PlayCircle, Trash2 } from "../../ui/glyphs";
 import { editDraft, duplicateDraft } from "./routine-draft";
@@ -174,14 +174,14 @@ export function routineMenus(kit: RoutineMenusKit) {
           ? [
               {
                 label: "Create with Claudex",
-                icon: <AppIcon name="Chat" size={16} />,
+                icon: <Anthropicon name="Chat" size={16} />,
                 onSelect: () => latestChatSetup.current(),
               },
             ]
           : []),
         {
           label: "Set up manually",
-          icon: <AppIcon name="Settings" size={16} />,
+          icon: <Anthropicon name="Settings" size={16} />,
           onSelect: () => startNew(),
         },
       ];
@@ -195,7 +195,8 @@ export function routineMenus(kit: RoutineMenusKit) {
           onSelect: () => setSort(value),
         })),
         { separator: true as const },
-        // Completed one-time tasks stay hidden unless included.
+        // Completed one-time tasks stay hidden unless included (live
+        // claude.ai bundle, 2026-10-14, c0c89c77a: showCompleted).
         {
           label: "Include completed",
           hint: completedCount > 0 ? String(completedCount) : undefined,
@@ -239,7 +240,8 @@ export function routineMenus(kit: RoutineMenusKit) {
               { separator: true as const },
             ]
           : []),
-        // Recurring tasks start by themselves, one-time ones once.
+        // Recurring tasks start by themselves, one-time ones once (live
+        // claude.ai bundle, 2026-10-16, c0c89c77a: filterSchedule).
         { heading: "Schedule" },
         ...(["all", "recurring", "once"] as const).map((value) => ({
           label: { all: "All", recurring: "Recurring", once: "One-time" }[
@@ -270,8 +272,9 @@ export function routineMenus(kit: RoutineMenusKit) {
       ? projects.find((value) => value.id === routine.projectId)
       : undefined;
     const busy = running !== undefined || isRunning(routine);
-    // The original's card menu; the run history and last run are on the task's
-    // page.
+    // The original's card menu (live claude.ai bundle, 2026-10-14,
+    // cdbc75b4b: Run now, Pause or Enable, Edit, Open project, then
+    // Delete); the run history and last run are on the task's page.
     return [
       {
         label: "Run now",
@@ -303,13 +306,13 @@ export function routineMenus(kit: RoutineMenusKit) {
           ]),
       {
         label: "Edit",
-        icon: <AppIcon name="Edit" />,
+        icon: <Anthropicon name="Edit" />,
         onSelect: () =>
           setDraft(editDraft(routine, repeatOf(routine), settings)),
       },
       {
         label: "Duplicate",
-        icon: <AppIcon name="Copy" />,
+        icon: <Anthropicon name="Copy" />,
         disabled: Boolean(blocked),
         onSelect: () =>
           setDraft(
@@ -323,7 +326,7 @@ export function routineMenus(kit: RoutineMenusKit) {
         ? [
             {
               label: "Open project",
-              icon: <AppIcon name="Projects" />,
+              icon: <Anthropicon name="Projects" />,
               onSelect: () => onOpenProject(project.id),
             },
           ]

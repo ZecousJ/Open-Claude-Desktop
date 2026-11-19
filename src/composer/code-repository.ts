@@ -1,14 +1,15 @@
 /**
- * The repositories the web Code home's next session starts with. The repository
- * picker (GitHub package) chooses them; the composer's send reads
- * `currentCodeRepositories()` for a new Code session and the runner clones them,
- * the first into the session's folder and the others inside it
+ * The repositories the web Code home's next session starts with. The
+ * repository picker (GitHub package) chooses them; the composer's send
+ * reads `currentCodeRepositories()` for a new Code session and the runner
+ * clones them, the first into the session's folder and the others inside it
  * (runner/src/code-workspace.ts).
  *
  * A session takes several repositories, a pill each with its branch, plus an
- * Add trigger. The choice outlives the home: the chips read it back from here,
- * so what they show is what the next send takes, and the browser keeps it for
- * the next visit.
+ * Add trigger (live claude.ai bundle, 2026-10-12: the Code session store
+ * keeps `selectedRepos` and their branches). The choice outlives the home:
+ * the chips read it back from here, so what they show is what the next send
+ * takes, and the browser keeps it for the next visit.
  */
 import { useSyncExternalStore } from "react";
 import type { RepositoryRef } from "../../shared/host";
@@ -224,8 +225,10 @@ export function repositoryRef(
 
 /**
  * Sending from the cloud Code home without a repository opens the repository
- * picker instead. The workspace bar listens; a request made while no bar is
- * mounted waits for the next one.
+ * picker instead (live claude.ai bundle, 2026-10-12: a draft submit blocked
+ * on the repository calls the picker store's openRepoPicker and returns; the
+ * draft stays, nothing is sent and nothing is said). The workspace bar
+ * listens; a request made while no bar is mounted waits for the next one.
  */
 const pickerListeners = new Set<() => void>();
 let pickerPending = false;

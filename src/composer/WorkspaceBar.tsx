@@ -64,14 +64,15 @@ export type Open = {
 };
 
 /**
- * Environment and folder chips above the Code home composer. Both chips open
- * menus 6px above them, left-aligned; the square chip goes straight to the
- * folder picker. The environment menu lists Local, Cloud, Remote Control and
- * SSH as the capture does (src/code-environment-menu.ts); SSH › lists the saved
- * hosts, and Cloud selects or edits a saved runner profile. On a host the
- * folder menu lists that host's recent folders and Open folder… browses the
- * host. In a local Git repository the branch chip names the checked-out branch;
- * the folder menu ends with the Worktree switch (electron/code-worktree.ts).
+ * Environment and folder chips above the Code home composer (R-0338,
+ * R-0341, R-0343). Both chips open menus 6px above them, left-aligned; the
+ * square chip goes straight to the folder picker. The environment menu
+ * lists Local, Cloud, Remote Control and SSH as the capture does
+ * (src/code-environment-menu.ts); SSH › lists the saved hosts, and Cloud
+ * selects or edits a saved runner profile. On a host the folder menu lists that host's recent folders
+ * and Open folder… browses the host. In a local Git repository the branch
+ * chip names the checked-out branch (R-0338); the folder menu ends with
+ * the Worktree switch (electron/code-worktree.ts).
  */
 export function WorkspaceBar({
   homeDraft = false,
@@ -128,7 +129,7 @@ export function WorkspaceBar({
     addingFolder.current = true;
     try {
       // The draft's plus browses once; the session panel accepts multiple
-      // folders.
+      // folders (live claude.ai bundle, 2026-10-14, cc43287c9-79FKhdho.js).
       const folder = await window.desktop.chooseFolder(
         t("Add folder to session"),
       );
@@ -149,9 +150,9 @@ export function WorkspaceBar({
     gitRead,
     environment,
   );
-  // The folder menu's Branch: with Worktree on it picks the new worktree's
-  // start branch; otherwise it checks the branch out, asking first about
-  // uncommitted changes.
+  // The folder menu's Branch (live claude.ai bundle, 2026-10-14): with
+  // Worktree on it picks the new worktree's start branch; otherwise it
+  // checks the branch out, asking first about uncommitted changes.
   const [branches, setBranches] = useState<FolderBranches | null>(null);
   const [switching, setSwitching] = useState<string>();
   const worktreeOn =
@@ -271,8 +272,9 @@ export function WorkspaceBar({
           { separator: true },
           ...recentEntries(recents, (path) => setCwd(path)),
           { label: "Open folder…", onSelect: () => void pickFolder() },
-          // Worktree: the new session works in its own worktree of the folder's
-          // repository.
+          // Worktree (live claude.ai bundle, 2026-10-14: the folder menu's
+          // switch, kept open while it flips): the new session works in its
+          // own worktree of the folder's repository.
           ...(cwd && app
             ? [
                 { separator: true } as const,

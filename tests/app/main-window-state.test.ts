@@ -166,7 +166,7 @@ test("zoom moves in half steps within limits", () => {
 });
 
 test("the traffic lights follow the zoom around the original's place", () => {
-  // 33/2 on both axes, rounded.
+  // Live claude.ai bundle, 2026-10-12: 33/2 on both axes, rounded.
   assert.deepEqual(trafficLightPosition(0), { x: 17, y: 17 });
   // One step in (factor 1.2): round((16.5 + 6) * 1.2 - 6) = 21.
   assert.deepEqual(trafficLightPosition(1), { x: 21, y: 21 });

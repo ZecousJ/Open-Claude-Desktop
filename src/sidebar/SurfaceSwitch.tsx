@@ -20,11 +20,13 @@ type SegmentDot = "attention" | "busy" | "unread" | "";
 
 /**
  * Chat and Cowork | Code switch in the sidebar's title bar. The surface not
- * shown gets a dot while one of its conversations is running and, as the rows
- * do, an amber one while a request waits and a blue one for an unread reply.
- * Each segment names its surface in a tooltip. With `tabKeys` (the desktop) ⌘⌥→
- * and ⌘⌥← move to the next and previous segment and the other segment's tooltip
- * shows its key.
+ * shown gets a dot while one of its conversations is running (R-0037, the
+ * reference with a running Code task) and, as the rows do, an amber one
+ * while a request waits and a blue one for an unread reply (R-0154 has no
+ * capture of those two: 暂定, the row dots' colours). Each segment names its
+ * surface in a tooltip. With `tabKeys` (the desktop) ⌘⌥→ and ⌘⌥← move to
+ * the next and previous segment and the other segment's tooltip shows its
+ * key (src/sidebar/sidebar-tab-keys.ts).
  */
 export function SurfaceSwitch({
   mode,
@@ -108,8 +110,8 @@ export function SurfaceSwitch({
         const selected = tab === current;
         const unavailable = tab === "code" ? codeUnavailable : undefined;
         const indicator = selected ? "" : dot(tab);
-        // The live frame annotates only the inactive, available surface, also
-        // observed in native Code.
+        // The live frame annotates only the inactive, available surface
+        // (shared-20-BCaQhdKH.js:9377–9380,9827–9830), also observed in native Code.
         const state = !unavailable ? indicator : "";
         const baseLabel = t(tab === "code" ? "Code" : "Claudex");
         const label = state

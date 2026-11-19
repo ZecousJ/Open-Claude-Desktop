@@ -34,3 +34,20 @@ docs/audit-live-*/**/*.jpeg
 docs/audit-live-*/**/*.webp
 docs/audit-live-*/**/*.gif
 docs/audit-live-*/**/*.mp4
+build/official-ui/
+build/official-static-assets/
+# Generated full inventories, screenshots and local test evidence are attached
+# to the private handoff release; reviewed handoff records live in docs/.
+/outputs/
+build/official-usercontent/
+build/document-runtime/
+build/document-runtime-win/
+
+build/chrome-native-host/
+
+.env
+.env.*
+!.env.example
+*.p12
+*.pem
+*.key

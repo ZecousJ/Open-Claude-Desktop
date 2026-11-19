@@ -1,9 +1,9 @@
 /**
- * Import history (Settings → Import): bringing conversations and projects over
- * from a Claudex export (.zip) or from a Claudex data folder copied from
- * another computer. The wizard follows the original's session import: a list
- * of locations, a time range, what will be added, and an Import history of
- * earlier runs that can be removed.
+ * Import history (Settings → Import): bringing conversations and projects
+ * over from a Claudex export (.zip) or from a Claudex data folder copied
+ * from another computer. The wizard follows the original's session import
+ * (desktop bundle 2.31226.1): a list of locations, a time range, what will
+ * be added, and an Import history of earlier runs that can be removed.
  */
 
 /** A location the person added: an export file or a copied data folder. */

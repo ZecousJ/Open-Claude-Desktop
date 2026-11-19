@@ -5,13 +5,24 @@ const output = ".mobile-conversation-tests/effects.mjs";
 mkdirSync(".mobile-conversation-tests", { recursive: true });
 try {
   await build({
-    entryPoints: ["tests/mobile-conversation-effects.test.tsx"],
+    entryPoints: ["tests/mobile/mobile-conversation-effects.test.tsx"],
     outfile: output,
     bundle: true,
     packages: "external",
     platform: "node",
     format: "esm",
-    loader: { ".css": "empty" },
+    loader: { ".css": "empty", ".svg": "text" },
+    plugins: [{
+      name: "worklet-url",
+      setup(builder) {
+        builder.onResolve({ filter: /\?url&no-inline$/ }, ({ path }) => ({
+          path, namespace: "worklet-url",
+        }));
+        builder.onLoad({ filter: /.*/, namespace: "worklet-url" }, () => ({
+          contents: 'export default "about:blank";',
+        }));
+      },
+    }],
     jsx: "automatic",
   });
   const run = spawnSync(process.execPath, ["--test", output], {

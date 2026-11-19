@@ -1,17 +1,21 @@
 /**
- * Pictures the built-in image tool made, read beside the stream Codex gets.
+ * Pictures the built-in image tool made, read beside the stream Codex gets
+ * (as web-source-observer.ts reads search sources).
  *
- * Codex 0.144.1 records an upstream `image_generation_call` in its rollout but,
- * through the Claudex gateway, neither saves the picture nor reports an
+ * Codex 0.144.1 records an upstream `image_generation_call` in its rollout
+ * but, through the Claudex gateway, neither saves the picture nor reports an
  * `imageGeneration` item; the reply ends empty and the paid-for picture is
- * lost. The gateway therefore hands the picture to the main process, which
- * saves it where Codex would (`$CODEX_HOME/generated_images`) and records the
- * item. The bytes sent to Codex are never changed.
+ * lost (owner, 2026-10-03: "the AI ended twice without replying"). The
+ * gateway therefore hands the picture to the main process, which saves it
+ * where Codex would (`$CODEX_HOME/generated_images`) and records the item.
+ * The bytes sent to Codex are never changed.
  */
 type Json = Record<string, any>;
 
 export interface GeneratedImageEvent {
   threadId?: string;
+  turnId?: string;
+  requestId?: string;
   /** The upstream call id (`ig_…`), the item's id. */
   callId: string;
   /** The picture, base64. */
@@ -19,6 +23,12 @@ export interface GeneratedImageEvent {
   /** png, jpeg or webp. */
   format: "png" | "jpeg" | "webp";
   revisedPrompt?: string;
+}
+
+export interface ImageRequestEvent {
+  id: string;
+  kind: "started" | "finished";
+  threadId?: string;
 }
 
 /** Largest picture handed over (base64 characters, about 24 MB of image). */
@@ -30,6 +40,8 @@ const formats = new Set(["png", "jpeg", "webp"]);
 export function generatedImageFromResponse(
   event: Json,
   threadId: string | undefined,
+  turnId?: string,
+  requestId?: string,
 ): GeneratedImageEvent | undefined {
   if (event?.type !== "response.output_item.done") return;
   const item = event.item as Json | undefined;
@@ -41,6 +53,8 @@ export function generatedImageFromResponse(
   const format = String(item.output_format ?? "png").toLowerCase();
   return {
     threadId,
+    ...(turnId ? { turnId } : {}),
+    ...(requestId ? { requestId } : {}),
     callId,
     base64,
     format: (formats.has(format)
@@ -68,8 +82,12 @@ export function parseGeneratedImageSignal(
     return;
   if (!formats.has(raw.format)) return;
   if (raw.threadId !== undefined && typeof raw.threadId !== "string") return;
+  if (raw.turnId !== undefined && (typeof raw.turnId !== "string" || !/^[\w.:-]{1,255}$/.test(raw.turnId))) return;
+  if (raw.requestId !== undefined && typeof raw.requestId !== "string") return;
   return {
     ...(raw.threadId ? { threadId: raw.threadId.slice(0, 200) } : {}),
+    ...(raw.turnId ? { turnId: raw.turnId } : {}),
+    ...(raw.requestId ? { requestId: raw.requestId } : {}),
     callId: raw.callId,
     base64: raw.base64,
     format: raw.format,

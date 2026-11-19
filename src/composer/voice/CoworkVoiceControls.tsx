@@ -1,6 +1,6 @@
 import type { VoiceInputChoice } from "../voice-input-preference";
 import { Suspense, useRef, useState, type ReactNode } from "react";
-import { AppIcon } from "../../ui/app-icon";
+import { AnthropiconGlyph } from "../../ui/AnthropiconGlyph";
 import { useTooltip } from "../../ui/Tooltip";
 import { useT } from "../../i18n";
 import { lazyPiece } from "../../ui/lazy-piece";
@@ -48,7 +48,10 @@ export function MicrophoneChevron({
         aria-disabled={reason ? "true" : undefined}
         onClick={() => !reason && setOpen((value) => !value)}
       >
-        <AppIcon name="CaretDown" size={menuVariant === "idle" ? 12 : 13} />
+        <AnthropiconGlyph
+          name="CaretDown"
+          size={menuVariant === "idle" ? 12 : 13}
+        />
       </button>
       {reason && tooltip}
       {open && (

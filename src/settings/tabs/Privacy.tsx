@@ -1,7 +1,7 @@
 import { currentLocale, useLocale, t } from "../../i18n";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { SquareArrowOutUpRight } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { ReportingStatus } from "../../../shared/diagnostics-api";
 import { preference } from "../../../shared/settings-extras";
 import type { HostedShare, SharingStatus } from "../../../shared/sharing-api";
@@ -57,11 +57,11 @@ export const nonessentialServicesWarning =
   "This disables connector icons, hosted artifact previews and MCP Apps widgets, and also turns spellcheck off on Linux. Artifacts still render locally. Connectors that return MCP Apps show the text tool result instead of the widget.";
 
 /**
- * Privacy. Only what Claudex does: data stays on this computer, the consent
- * switch for the service's collection, the export and the links shared from it:
- * Shared chats while the Claudex service hosts shared conversations (R1),
- * Shared artifacts for links on this computer and public ones. Location
- * metadata is resolved by the service.
+ * Privacy (R-1505–R-1511). Only what Claudex does: data stays on this
+ * computer, the consent switch for the service's collection, the export
+ * and the links shared from it: Shared chats while the Claudex service
+ * hosts shared conversations (R1), Shared artifacts for links on this
+ * computer and public ones. Location metadata is resolved by the service.
  */
 export function PrivacyTab(props: TabProps) {
   const owner = usePrivacyOwner();
@@ -147,7 +147,8 @@ function PrivacyPage({
     returnTo.current = managing;
     setManaging(undefined);
   };
-  // Manage shows the list in place of the page, with "← Privacy" to come back.
+  // Manage shows the list in place of the page, with "← Privacy" to come
+  // back (live claude.ai bundle, 2026-10-12: Privacy subpages).
   if (managing === "chats")
     return <SharedChatsPage owner={owner} onBack={back} onError={onError} />;
   if (managing === "artifacts")
@@ -245,7 +246,7 @@ function PrivacyPage({
             Manage
           </Button>
         </Row>
-        {/* The original's other data rows. */}
+        {/* R-1509: the original's other data rows. */}
         <Row label="Uploaded files">
           <Button
             ref={uploadsButton}
@@ -310,7 +311,8 @@ function PrivacyPage({
   );
 }
 
-/** Preferences and the Telemetry service block. */
+/** Preferences and the Telemetry service block (live claude.ai bundle,
+ * 2026-10-14, c6f6cf4c2-Dbp5GpN7.js:4666). */
 export function PreferencesSection({
   status,
   settings,
@@ -320,9 +322,9 @@ export function PreferencesSection({
   settings: Settings;
   save: TabProps["save"];
 }) {
-  // The original's two switches. Claudex sends no location; the consent is
-  // there to give only while the service collects (owner decision 1), and is
-  // drawn off and disabled otherwise (UI first).
+  // R-1503: the original's two switches. Claudex sends no location; the
+  // consent is there to give only while the service collects (owner
+  // decision 1), and is drawn off and disabled otherwise (UI first).
   const collects = collectsReports(status);
   const blocked = preference(settings, "disableNonessentialServices");
   return (
@@ -353,7 +355,7 @@ export function PreferencesSection({
               id="nonessential-services-warning"
             >
               <span className="nonessential-services-warning-icon">
-                <AppIcon name="Warning" size={16} aria-hidden="true" />
+                <Anthropicon name="Warning" size={16} aria-hidden="true" />
               </span>
               <span>{t(nonessentialServicesWarning)}</span>
             </div>
@@ -397,8 +399,8 @@ export function sharedArtifactsNote(hosted: boolean) {
 }
 
 /**
- * "Sep 26, 2026": the Date shared and Date published columns; "—" when the date
- * isn't known.
+ * "Sep 26, 2026": the Date shared and Date published columns (live
+ * claude.ai bundle, 2026-10-12); "—" when the date isn't known.
  */
 export function sharedDate(time: number | undefined) {
   if (!time) return "—";
@@ -417,8 +419,9 @@ export function removedDetail(share: HostedShare) {
 }
 
 /**
- * Who can open a shared chat, under its name; a chat the administrator took
- * down says so instead.
+ * Who can open a shared chat, under its name (live claude.ai bundle,
+ * 2026-10-12: the audience line, in the Share popover's words); a chat the
+ * administrator took down says so instead.
  */
 export function sharedChatAudience(share: HostedShare) {
   if (share.status !== "active") return removedDetail(share);

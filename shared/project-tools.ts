@@ -15,7 +15,7 @@ export interface ProjectTool {
   url?: string;
 }
 
-/** Recommendations, not connections. */
+/** Recommendations, not connections (live claude.ai bundle, 2026-10-14, c9b54eb90-ALO4mYkL.js). */
 export function availableProjectTools(
   policy: ClientPolicy,
   servers: Record<string, unknown>,
@@ -91,7 +91,13 @@ export function connectorThreadConfig(
   const entries: [string, unknown][] = Object.entries(overrides ?? {}).flatMap(
     ([name, enabled]) =>
       Object.hasOwn(servers, name)
-        ? [[`mcp_servers.${name}.enabled`, enabled]]
+        ? [
+            [
+              `mcp_servers.${name}.enabled`,
+              enabled &&
+                (servers[name] as { enabled?: boolean })?.enabled !== false,
+            ],
+          ]
         : [],
   );
   for (const [name, switches] of Object.entries(tools ?? {})) {

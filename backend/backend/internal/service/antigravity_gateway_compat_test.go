@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -355,6 +356,36 @@ func TestAntigravityCompatResponsesCodexWebSearchMixedWithFunctionsDropsBuiltins
 		require.False(t, tool.Get("googleSearch").Exists())
 	}
 	require.False(t, gjson.GetBytes(requestBody, "request.toolConfig.includeServerSideToolInvocations").Exists())
+}
+
+func TestAntigravityCompatCodeResponsesKeepProviderThoughtsPrivate(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	for _, stream := range []bool{false, true} {
+		for _, product := range []string{"code", "chat"} {
+			t.Run(fmt.Sprintf("product=%s/stream=%t", product, stream), func(t *testing.T) {
+				const raw = "provider thought"
+				upstream := &queuedHTTPUpstreamStub{responses: []*http.Response{{
+					StatusCode: http.StatusOK,
+					Header:     http.Header{"Content-Type": []string{"text/event-stream"}},
+					Body:       io.NopCloser(strings.NewReader(`data: {"response":{"responseId":"resp_thinking","candidates":[{"content":{"parts":[{"text":"provider thought","thought":true,"thoughtSignature":"sig"},{"text":"answer"}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":8,"candidatesTokenCount":3,"thoughtsTokenCount":2}}}` + "\n\n")),
+				}}}
+				svc := newAntigravityCompatService(config.GatewayConfig{MaxLineSize: defaultMaxLineSize}, upstream)
+				body := []byte(fmt.Sprintf(`{"model":"gemini-3.1-pro-high","input":"hello","stream":%t}`, stream))
+				c, rec := newAntigravityCompatContext(http.MethodPost, "/v1/responses", body)
+				c.Request.Header.Set("X-Claudex-Product", product)
+				_, err := svc.ForwardAsResponses(context.Background(), c, newAntigravityCompatAccount(AccountTypeOAuth), body, nil)
+				require.NoError(t, err)
+				require.Equal(t, http.StatusOK, rec.Code)
+				require.Contains(t, rec.Body.String(), "answer")
+				if product == "code" {
+					require.NotContains(t, rec.Body.String(), raw)
+					require.NotContains(t, rec.Body.String(), "response.reasoning_summary_")
+				} else {
+					require.Contains(t, rec.Body.String(), raw)
+				}
+			})
+		}
+	}
 }
 
 func TestAntigravityCompatPreservesChatTokenLimit(t *testing.T) {

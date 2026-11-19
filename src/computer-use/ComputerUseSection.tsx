@@ -26,13 +26,6 @@ type InstalledApp = ComputerUseAppRef & { icon?: string };
 /** The id a denied-apps entry is compared by (case and ".exe" ignored). */
 const appKey = (id: string) => id.toLowerCase().replace(/\.exe$/, "");
 
-/**
- * Settings → System → Computer use (Beta), R-1399-02/03. Shown only while
- * the administrator's policy, this computer and the bundled driver allow
- * computer use; otherwise nothing of it appears. The original's "Not
- * available in cloud Code sessions" note is left out: Claudex has no cloud
- * sessions.
- */
 export function ComputerUseSection({
   platform,
   onError,
@@ -178,7 +171,7 @@ function ComputerUseRows({
   );
 }
 
-/** Background | Full control, the settings' segmented pill. */
+/** Background | Full control, the settings' segmented pill (R-1399-02). */
 function ModeControl({
   value,
   disabled,
@@ -214,7 +207,7 @@ function ModeControl({
   );
 }
 
-/** Denied apps: Add app ⌄, the list, the empty line. */
+/** Denied apps (R-1399-03): Add app ⌄, the list, the empty line. */
 function DeniedApps({
   state,
   onError,

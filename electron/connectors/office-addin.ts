@@ -1,3 +1,4 @@
+import { listenOnLoopback } from "../loopback-ports";
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import http from "node:http";
 import https from "node:https";
@@ -10,7 +11,7 @@ import type {
 } from "../../shared/office-addin-api";
 
 // Connected-file state and expiring, document-bound handoffs follow desktop
-// Transport stays local to this account.
+// 2.37337.1, index.chunk-vARe1R59.js. Transport stays local to this account.
 export class OfficeAddinBridge {
   private files = new Map<string, OfficeConnectedFile>();
   private commands = new Map<string, unknown[]>();
@@ -302,13 +303,7 @@ export class OfficeAddinBridge {
             listener,
           )
         : http.createServer(listener);
-    await new Promise<void>((resolve, reject) => {
-      server.once("error", reject);
-      server.listen(this.options.port ?? 0, "127.0.0.1", () => {
-        server.off("error", reject);
-        resolve();
-      });
-    });
+    await listenOnLoopback(server, this.options.port ?? 0);
     this.origin = `${this.options.cert ? "https" : "http"}://127.0.0.1:${(server.address() as AddressInfo).port}`;
     this.server = server;
     this.sweep = setInterval(() => {

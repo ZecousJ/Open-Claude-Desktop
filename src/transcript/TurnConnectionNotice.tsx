@@ -12,11 +12,12 @@ function progress(turn: Turn) {
 
 /**
  * Under a running reply when the stream it arrives on went down: a neutral
- * notice (ReplyBanner, as the original's) saying "Connection lost. Claudex may
- * still be working on this response." with Check now. The words follow what
- * Check now found: before any check it is still "Connection lost", a check that
- * found no reply says "No reply yet. …", one that could not reach the service
- * says "Couldn’t check for a reply. …". Check now reads the whole state again,
+ * notice (ReplyBanner, as the original's) saying "Connection lost. Claudex
+ * may still be working on this response." with Check now (live claude.ai
+ * bundle, 2026-10-16, shared-12 ha). The words follow what Check now found:
+ * before any check it is still "Connection lost", a check that found no
+ * reply says "No reply yet. …", one that could not reach the service says
+ * "Couldn’t check for a reply. …". Check now reads the whole state again,
  * its label giving way to a spinner meanwhile. The notice goes as soon as the
  * reply moves on.
  */

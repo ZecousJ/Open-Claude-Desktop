@@ -221,7 +221,7 @@ test("the About page names the app, its version and the buttons", () => {
     version: "1.2.3",
     buildDate: new Date("2026-10-14T12:34:00Z"),
     icon: "data:image/png;base64,AAAA",
-    links: true,
+    platform: "darwin",
   });
   assert.match(html, /<h2>Claudex &lt;b&gt;&nbsp;<em>for <\/em>Mac<\/h2>/);
   assert.match(html, /Version 1\.2\.3/);
@@ -237,10 +237,17 @@ test("the About page names the app, its version and the buttons", () => {
   assert.match(html, /Help<\/a>/);
   assert.match(html, /Get support<\/a>/);
   assert.match(html, /default-src 'none'/);
-  // Without a help page the buttons are drawn greyed and link nowhere.
-  const off = aboutPage({ name: "Claudex", version: "1", links: false });
-  assert.ok(!off.includes(aboutActions.help));
-  assert.match(off, /aria-disabled="true">Help</);
+});
+
+test("the About window names the operating system on Windows and Linux", () => {
+  const windows = aboutPage({
+    name: "Claudex",
+    version: "1",
+    platform: "win32",
+  });
+  const linux = aboutPage({ name: "Claudex", version: "1", platform: "linux" });
+  assert.match(windows, /<h2>Claudex&nbsp;<em>for <\/em>Windows<\/h2>/);
+  assert.match(linux, /<h2>Claudex&nbsp;<em>for <\/em>Linux<\/h2>/);
 });
 
 test("the About build date uses the selected locale and translated version copy", () => {
@@ -252,7 +259,7 @@ test("the About build date uses the selected locale and translated version copy"
     locale: "de-DE",
     translate: (text) =>
       text === "Version {version}" ? "Ausgabe {version}" : text,
-    links: true,
+    platform: "darwin",
   });
   assert.match(html, /Ausgabe 1\.2\.3/);
   assert.ok(
@@ -286,7 +293,7 @@ test("About version and copied diagnostics include the app version, commit and a
     commitHash: "abcdef123456",
     channel: "latest",
     buildDate,
-    links: true,
+    platform: "darwin",
   });
   assert.ok(html.includes(`Version ${version}`));
   assert.ok(html.includes(`aria-label="Copy version ${version} to clipboard"`));

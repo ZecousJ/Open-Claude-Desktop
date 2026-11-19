@@ -69,7 +69,11 @@ export interface UsageOverview {
 
 export type UsageGranularity = "day" | "hour";
 
-export interface UsageRange {
+export interface UsageOverviewQuery {
+  timezone?: string;
+}
+
+export interface UsageRange extends UsageOverviewQuery {
   /** YYYY-MM-DD, the first day. */
   start: string;
   /** YYYY-MM-DD, the last day. */
@@ -137,7 +141,7 @@ export interface UsageRecord {
   client: string;
 }
 
-export interface UsageRecordQuery {
+export interface UsageRecordQuery extends UsageOverviewQuery {
   page: number;
   pageSize: number;
   start?: string;
@@ -185,7 +189,7 @@ export interface SessionUsageQuery {
 
 export interface UsageStatsAPI {
   /** Totals, and per provider what it used and its limits. Null when the account has no service. */
-  usageOverview(): Promise<UsageOverview | null>;
+  usageOverview(query?: UsageOverviewQuery): Promise<UsageOverview | null>;
   /** The use over a range, day by day or hour by hour, and by model. */
   usageBreakdown(range: UsageRange): Promise<UsageBreakdown>;
   /** The requests, newest first, a page at a time. */
@@ -244,12 +248,24 @@ export function validRange(range: UsageRange): UsageRange {
     start: range.start,
     end: range.end,
     granularity: range.granularity === "hour" ? "hour" : "day",
+    ...(range.timezone !== undefined ? { timezone: range.timezone } : {}),
   };
+}
+
+export function usageTimezone(value: string): string | undefined {
+  if (!/^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+)*$/.test(value)) return;
+  try {
+    return new Intl.DateTimeFormat(undefined, { timeZone: value }).resolvedOptions().timeZone;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Addresses under `/api/v1`, with the browser's time zone so days start where the person is. */
 export const usageStatsPaths = {
-  stats: () => "/usage/dashboard/stats",
+  stats: (timezone?: string) => timezone === undefined
+    ? "/usage/dashboard/stats"
+    : `/usage/dashboard/stats?${new URLSearchParams({ timezone })}`,
   quotas: () => "/user/platform-quotas",
   trend: (range: UsageRange, timezone: string) =>
     `/usage/dashboard/trend?${new URLSearchParams({
@@ -413,7 +429,7 @@ export function breakdownFrom(
   const trend = record(rawTrend).trend;
   const models = record(rawModels).models;
   return {
-    trend: (Array.isArray(trend) ? trend : []).slice(0, 800).map((entry) => {
+    trend: (Array.isArray(trend) ? trend : []).map((entry) => {
       const p = record(entry);
       return {
         date: text(p.date, 40),

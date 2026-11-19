@@ -1,17 +1,18 @@
 /*
- * The signed-out pages: sign-in steps, registration, password reset and the
- * account-state pages, on the desktop and the web. Measured on ref-login-email
- * / ref-login-verify (Safari, 2x, a 1000 x 848 CSS viewport): the wordmark in a
- * 73px header, the rest centred in the space below it. Light colours are
- * inferred (provisional). Loaded with the page's lazy chunk, never in the web
- * app's first load.
+ * The signed-out pages (package LOGIN): sign-in steps, registration,
+ * password reset and the account-state pages, on the desktop and the web.
+ * Measured on ref-login-email / ref-login-verify (Safari, 2x, a 1000 x 848
+ * CSS viewport): the wordmark in a 73px header, the rest centred in the
+ * space below it. Light colours are inferred (provisional). Loaded with the
+ * page's lazy chunk, never in the web app's first load.
  */
 .signin {
   --auth-bg: #111111;
   --auth-text: #f7f7f5;
   --auth-muted: #8c8c8a;
   --auth-card-border: #252525;
-  /* bg-surface-1: --cds-gray-850 dark, --cds-gray-10 light. */
+  /* bg-surface-1: --cds-gray-850 dark, --cds-gray-10 light (live bundle,
+     2026-10-16, ccd8f64d4 class S; c6a992d55 tokens). */
   --auth-card-surface: #151515;
   --auth-input-bg: #1d1d1d;
   --auth-input-border: #303030;
@@ -39,8 +40,9 @@
 }
 :root[data-reference-fonts="true"] .signin {
   --auth-serif:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
-  --auth-sans: -apple-system, "Segoe UI", sans-serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
+  --auth-sans: "Claudex Reference Sans", -apple-system, "Segoe UI", sans-serif;
 }
 :root[data-theme="light"] .signin {
   --auth-bg: #faf9f5;
@@ -82,9 +84,10 @@
   padding: 0 49px;
 }
 /*
- * The desktop: no wordmark, a 36px drag strip over the top of the window (its
- * buttons off macOS, the traffic lights on it), and the page centred in the
- * whole window with 32px around it.
+ * The desktop (live claude.ai bundle, 2026-10-12, the desktop login): no
+ * wordmark, a 36px drag strip over the top of the window (its buttons off
+ * macOS, the traffic lights on it), and the page centred in the whole
+ * window with 32px around it.
  */
 .signin-desktop .signin-header {
   -webkit-app-region: drag;
@@ -198,8 +201,9 @@
   font: 400 16.5px/24px var(--auth-serif);
   text-align: center;
 }
-/* The original's login card, at the desktop's 0.875 rem scale; the web at full
-   size. */
+/* The original's login card (live claude.ai bundle, 2026-10-14, c029a409d:
+   mt-8 p-7 max-w-md sm:min-w-xs rounded-[2rem] border-0.5 and a soft
+   shadow stack), at the desktop's 0.875 rem scale; the web at full size. */
 .signin-card {
   box-sizing: border-box;
   width: min(397px, 100%);
@@ -221,8 +225,8 @@
   padding: 28px;
   border-radius: 32px;
 }
-/* The form shell is flex-col gap-4: 16px on the web, 14px at the desktop's
-   0.875 scale; the main button has no extra margin. */
+/* The form shell is flex-col gap-4 (live bundle, 2026-10-16, c19e49841): 16px
+   on the web, 14px at the desktop's 0.875 scale; the main button has no extra margin. */
 .signin-card form {
   display: flex;
   flex-direction: column;
@@ -336,15 +340,15 @@
 .signin-gap {
   margin-top: 27.5px;
 }
-/* mt-4 text-secondary text-center; 16px on the web, 14px at the desktop's
-   scale. */
+/* mt-4 text-secondary text-center (live bundle, 2026-10-16, c19e49841 0PfZ1dipt9);
+   16px on the web, 14px at the desktop's scale. */
 .signin-link-hint {
   margin-top: 14px;
 }
 :root[data-surface="web"] .signin-link-hint {
   margin-top: 16px;
 }
-/* . */
+/* (live claude.ai bundle, 2026-10-14, c19e49841-CY7h9R_N.js: W, We). */
 .signin-mailbox-form {
   display: flex;
   flex-direction: column;
@@ -414,7 +418,7 @@
 :root[data-theme="light"] .signin-link-fallback .signin-link {
   color: #184f95;
 }
-/* . */
+/* (live claude.ai bundle, 2026-10-14, c7fe425d4-CifY-P9J.js: At). */
 .signin-link-fallback {
   display: flex;
   flex-direction: column;
@@ -531,11 +535,9 @@
 .signin-state .signin-text {
   margin: 0;
 }
-.signin-loading {
-  margin: 0;
-}
-/* After the service ended the session: one line above the card, 32px below the
-   heading, 13/19 secondary text, at most 448px wide. */
+/* After the service ended the session (live claude.ai bundle, 2026-10-12):
+   one line above the card, 32px below the heading, 13/19 secondary text,
+   at most 448px wide. */
 .signin-ended {
   box-sizing: border-box;
   max-width: 448px;
@@ -547,9 +549,10 @@
   text-align: center;
 }
 
-/* Waiting for the connection. Its colours, padding and glyph are the captured
-   repository warning of the Share dialog (conversation-share.css), the same
-   callout in the app. */
+/* Waiting for the connection (live claude.ai bundle, 2026-10-12: a warning
+   callout under the field). Its colours, padding and glyph are the
+   captured repository warning of the Share dialog (conversation-share.css),
+   the same callout in the app. */
 .signin-warning {
   --signin-warning-bg: #2d1b03;
   --signin-warning-border: #443111;
@@ -585,7 +588,8 @@
 }
 
 /* A ghost button (the chooser's and the add-account page's): no fill until
-   hovered, then the secondary button's fill. Default 32px tall, small 28px. */
+   hovered, then the secondary button's fill. Default 32px tall, small 28px
+   (live claude.ai bundle, 2026-10-12, comfortable controls). */
 .signin-ghost {
   box-sizing: border-box;
   display: inline-flex;
@@ -627,10 +631,10 @@
   color: var(--auth-muted);
 }
 
-/* "Choose an account": 16px between the heading, the list and "Use another
-   account"; rows 12px apart; each row a small card (14px in, 11px corners, a
-   1px ring) with a 32px avatar, the name in 14/20 medium and the email in 12/17
-   muted, and a 28px X. */
+/* "Choose an account" (live claude.ai bundle, 2026-10-12): 16px between the
+   heading, the list and "Use another account"; rows 12px apart; each row a
+   small card (14px in, 11px corners, a 1px ring) with a 32px avatar, the
+   name in 14/20 medium and the email in 12/17 muted, and a 28px X. */
 .signin-chooser {
   display: flex;
   flex-direction: column;
@@ -803,7 +807,8 @@
   color: inherit;
   text-decoration: underline;
 }
-/* "Confirm it’s you" over the second-factor step. */
+/* "Confirm it’s you" over the second-factor step (live claude.ai bundle,
+   2026-10-14, c7bab91e0: text-center text-primary font-medium). */
 .signin-mfa-heading {
   margin: 0 0 4px;
   color: var(--auth-text, var(--text));
@@ -817,8 +822,9 @@
   display: flex;
   flex-direction: column;
 }
-/* A refused sign-in in the warning callout's frame, with the app's danger
-   colours (the page error banner's). */
+/* A refused sign-in (live claude.ai bundle, 2026-10-14, c7bab91e0 _: a
+   danger Callout with role=alert, its text at the start) in the warning
+   callout's frame, with the app's danger colours (the page error banner's). */
 .signin-error[role="alert"] {
   padding: 7px 12px;
   border: 1px solid #6a3a37;

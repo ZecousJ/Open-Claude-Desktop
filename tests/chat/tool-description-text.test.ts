@@ -33,7 +33,7 @@ const command = (id: string, extra: Partial<Item> = {}): Item => ({
 });
 
 test("the reference rows' past tenses", () => {
-  // The panel title "Check greet against README" becomes "Checked …".
+  // R-0786: the panel title "Check greet against README" becomes "Checked …".
   assert.equal(
     pastTense("Check greet against README"),
     "Checked greet against README",
@@ -305,7 +305,7 @@ test("a running group summary names the running command's description (R-0787)",
     toolSummary([items[0], command("c", { lifecycleStatus: "inProgress" })]),
     "Running a command",
   );
-  // Finished groups keep their counts.
+  // Finished groups keep their counts (R-0786).
   assert.equal(
     toolSummary([items[0], command("d", { description: "Run tests" })]),
     "Ran 2 commands",
@@ -351,7 +351,7 @@ const renderChat = (turn: Turn) =>
 
 test("Chat's activity label: running description, then its single-command outcome", () => {
   const description = "Change button label to Add";
-  // The running row reads as the model's sentence.
+  // R-0734: the running row reads as the model's sentence.
   const running = renderChat(
     chatTurn(
       [command("c", { description, lifecycleStatus: "inProgress" })],
@@ -369,8 +369,8 @@ test("Chat's activity label: running description, then its single-command outcom
       "completed",
     ),
   );
-  // Finished: the group counts, the step keeps the model's sentence in the past
-  // tense.
+  // Finished: the group counts (live claude.ai), the step keeps the
+  // model's sentence in the past tense.
   assert.match(done, /class="activity-label">Ran a command</);
   assert.equal(
     stepLine(command("c", { description })).text,

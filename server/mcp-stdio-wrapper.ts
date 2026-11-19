@@ -29,7 +29,9 @@ async function run() {
   if (
     !address ||
     typeof address.socketPath !== "string" ||
-    !address.socketPath.startsWith("/") ||
+    !(process.platform === "win32"
+      ? address.socketPath.startsWith("\\\\.\\pipe\\claudex-mcp-")
+      : address.socketPath.startsWith("/")) ||
     ![address.owner, address.version, address.token].every(
       (value) => typeof value === "string",
     )
@@ -145,8 +147,10 @@ async function run() {
   child.stderr.on("end", () => consume(decoder.end(), true));
   const signals = ["SIGTERM", "SIGINT", "SIGHUP"] as const;
   const forward = new Map<NodeJS.Signals, () => void>();
+  let forwarded = false;
   for (const signal of signals) {
     const handler = () => {
+      forwarded = true;
       child.kill(signal);
     };
     forward.set(signal, handler);
@@ -171,7 +175,7 @@ async function run() {
   }>((resolve) => {
     child.on("error", () => {
       spawnFailed = true;
-      captureState(spec, "failed");
+      captureState(spec, "spawn-failed");
       resolve({ code: 1, signal: null });
     });
     child.on("close", (code, signal) => resolve({ code, signal }));
@@ -181,7 +185,19 @@ async function run() {
   for (const [signal, handler] of forward) process.off(signal, handler);
   process.stdin.unpipe(child.stdin);
   process.stdin.pause();
-  captureState(spec, spawnFailed || captureFailed ? "failed" : "stopped");
+  captureState(
+    spec,
+    spawnFailed
+      ? "spawn-failed"
+      : (result.code !== null && result.code !== 0) ||
+          (!retired && !forwarded && result.signal !== null)
+        ? captureFailed
+          ? "crashed-no-log"
+          : "crashed"
+        : captureFailed
+          ? "failed"
+          : "stopped",
+  );
   if (result.signal && process.platform !== "win32")
     process.kill(process.pid, result.signal);
   else process.exitCode = result.code ?? 1;

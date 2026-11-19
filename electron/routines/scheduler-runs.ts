@@ -28,9 +28,11 @@ export async function tick(this: Scheduler): Promise<void> {
   const slept = now - this.lastTickAt > 60_000;
   this.lastTickAt = now;
   if (!this.allowed()) return;
+  const enabledModes = this.options.enabledModes?.();
   for (const task of this.schedules.slice()) {
     if (
       this.migrationBlocked(task.id) ||
+      enabledModes?.[task.mode] === false ||
       !task.enabled ||
       scheduleOff(task) ||
       routineDispatchAt(task) > now
@@ -48,6 +50,7 @@ export async function tick(this: Scheduler): Promise<void> {
     .filter(
       (task) =>
         task.enabled &&
+        enabledModes?.[task.mode] !== false &&
         !this.migrationBlocked(task.id) &&
         !task.connectionHold &&
         (task.mode !== "cowork" || this.options.computerAccess?.() !== false) &&
@@ -90,15 +93,20 @@ export function skip(
   );
 }
 
-export async function runNow(this: Scheduler, id: string): Promise<Routine> {
+export async function runNow(
+  this: Scheduler,
+  id: string,
+  extra?: string,
+  attended = false,
+): Promise<Routine> {
   if (!this.allowed()) throw new Error(routinesOffMessage);
-  return this.execute(id, "manual");
+  return this.execute(id, "manual", extra, attended);
 }
 
 /**
- * Starts the task its API or GitHub trigger names: the service checked the
- * caller's token or the event's signature. `extra` (the call's text, or what
- * the event was) follows the instructions.
+ * Starts the task its API or GitHub trigger names (shared/routine-triggers.ts):
+ * the service checked the caller's token or the event's signature. `extra`
+ * (the call's text, or what the event was) follows the instructions.
  */
 export async function fireTrigger(
   this: Scheduler,
@@ -197,12 +205,17 @@ export async function execute(
   trigger: RoutineRun["trigger"],
   /** Text that follows the instructions in this run only. */
   extra?: string,
+  attended = false,
 ): Promise<Routine> {
   this.assertMigrationUnlocked(id);
   if (this.executing || this.options.isBusy())
     throw new Error("Another task is running. Try again when it finishes.");
   const task = this.schedules.find((value) => value.id === id);
   if (!task) throw new Error("This scheduled task no longer exists.");
+  if (this.options.enabledModes?.()?.[task.mode] === false)
+    throw new Error(routinesOffMessage);
+  if (this.activeRuns.has(id))
+    throw new Error("This scheduled task is already running.");
   if (task.mode === "cowork" && this.options.computerAccess?.() === false)
     throw new Error(
       "This task will run on schedule once Computer access is on.",
@@ -223,7 +236,7 @@ export async function execute(
   const prompt = extra?.trim()
     ? `${task.prompt}\n\n${extra.trim()}`
     : task.prompt;
-  this.dispatch = { taskId: id, prompt, since: now };
+  this.dispatch = attended ? undefined : { taskId: id, prompt, since: now };
   // A one-time routine switches itself off once its moment has come,
   // however it was started, so it cannot run a second time.
   const fires = task.repeat?.kind === "once" && now >= task.repeat.at;
@@ -262,9 +275,10 @@ export async function execute(
       } catch (error) {
         this.options.onError?.(error);
       }
-    this.markUnattended(
-      this.recentConversations.get(conversation.id) ?? conversation,
-    );
+    if (!attended)
+      this.markUnattended(
+        this.recentConversations.get(conversation.id) ?? conversation,
+      );
     this.activeRuns.set(id, run.id);
     this.updateRun(id, run.id, {
       status: "running",

@@ -4,7 +4,7 @@ import { Mic } from "../../ui/glyphs";
 import { Spinner } from "../../ui/Spinner";
 import { createPortal } from "react-dom";
 import { surface } from "../../../shared/host";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { lazyPiece } from "../../ui/lazy-piece";
 import { type MicrophoneReason } from "../../voice/microphone-guidance";
 import { t } from "../../i18n";
@@ -14,11 +14,12 @@ import { useDictationButtonState } from "./useDictationButtonState";
 
 /**
  * The web draws the original's Microphone glyph (its icon font, 20px), solid
- * while it connects or records.
+ * while it connects or records (live claude.ai bundle, 2026-10-16,
+ * c47a58ae1-m3PzpQYK.js: MicrophoneFilled when recording or connecting).
  */
 const micGlyph = (filled = false) =>
   surface === "web" ? (
-    <AppIcon name={filled ? "MicrophoneFilled" : "Microphone"} />
+    <Anthropicon name={filled ? "MicrophoneFilled" : "Microphone"} />
   ) : (
     <Mic size={16} strokeWidth={1.4} />
   );
@@ -61,8 +62,8 @@ type Props = {
   /** The recording's phase as it changes: the composer's placeholder follows it. */
   onPhase?: (phase: DictationPhase) => void;
   /**
-   * Settings → System → Dictation shortcut: starts or stops dictation while
-   * this composer has the keyboard; "" for none.
+   * Settings → System → Dictation shortcut (R-1410): starts or stops
+   * dictation while this composer has the keyboard; "" for none.
    */
   shortcut?: string;
   platform?: string;
@@ -77,7 +78,8 @@ type Props = {
   containTooltip?: boolean;
   /**
    * Right-click (Shift+F10) opens the microphone menu and the hint says so,
-   * where no ⌄ follows the microphone; with a ⌄ only that opens it.
+   * where no ⌄ follows the microphone (settingsMenu "contextMenu", live
+   * claude.ai bundle, 2026-10-16, c47a58ae1); with a ⌄ only that opens it.
    */
   contextMenu?: boolean;
 };
@@ -294,8 +296,8 @@ export function DictationButton({
 }
 
 /**
- * Unavailable microphone: the generic unavailable tooltip, not a
- * provider-specific explanation.
+ * Unavailable microphone (live claude.ai bundle, 2026-10-14, cb701cb65-DS3p4eMc):
+ * the generic unavailable tooltip, not a provider-specific explanation.
  */
 export function UnavailableDictationButton({
   reason: _reason,

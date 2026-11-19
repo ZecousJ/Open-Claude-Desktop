@@ -1,7 +1,8 @@
 /**
  * The account step after sign-up as pure functions (src/auth/ProfileStep.tsx
  * draws it, src/auth/ProfileStepGate.tsx decides when it shows), after the
- * original's combined "Let’s create your account" form.
+ * original's combined "Let’s create your account" form (live claude.ai
+ * bundle, 2026-10-12: cb31f3802 `q`, c02ff39a4 `A`/`j`).
  */
 import {
   ageOn,
@@ -12,7 +13,7 @@ import {
 
 export type ProfileField = "name" | "birthday" | "terms";
 
-/** The original's sentence under each field. */
+/** The original's sentence under each field (live claude.ai bundle, 2026-10-12). */
 export const profileErrors = {
   name: "Enter your name to continue",
   invalidDate: "Enter a valid date",

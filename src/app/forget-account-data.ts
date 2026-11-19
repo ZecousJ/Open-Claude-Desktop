@@ -1,10 +1,11 @@
 /**
  * What signing out forgets of the account on this device, besides its drafts
- * (composer/draft-store.ts): the choices and dismissals kept in the browser's
- * storage under keys of their own, so the next account to sign in does not see
- * the last one's repositories, model names or tips. The original clears a list
- * of such keys, and the persisted-store ones, on sign-out. The language and the
- * theme belong to the device and stay.
+ * (composer/draft-store.ts): the choices and dismissals kept in the
+ * browser's storage under keys of their own, so the next account to sign in
+ * does not see the last one's repositories, model names or tips. The
+ * original clears a list of such keys, and the persisted-store ones, on
+ * sign-out (live claude.ai bundle, 2026-10-16, shared-l-m-0 jP and lo).
+ * The language and the theme belong to the device and stay.
  *
  * A store that also holds its state in memory registers a reset with
  * `onForgetAccountData`.

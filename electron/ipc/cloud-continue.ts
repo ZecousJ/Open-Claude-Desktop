@@ -39,7 +39,7 @@ interface Saved extends CloudSavedWork {
   aheadOfUpstream?: number;
 }
 
-/** Why saving stopped, in the dialog's words. */
+/** Why saving stopped, in the dialog's words (live claude.ai bundle, 2026-10-12). */
 const blockedWords = {
   operation_in_progress:
     "A git operation is in progress in this folder. Finish or abort it, then check again.",

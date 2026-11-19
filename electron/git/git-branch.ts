@@ -1,14 +1,14 @@
 /**
  * The Git branch and remotes of a working folder, for the Code home's branch
- * chip and the Import GitHub issue row.
+ * chip (R-0338) and the Import GitHub issue row (R-0344, R-0350, R-0351).
  *
  * Only plain files under the repository's `.git` are read: no `git` process
  * runs, so nothing in the repository's configuration (hooks, `core.fsmonitor`,
  * credential helpers, includes) can execute or be followed.
  *
- * A folder on an SSH host (R9) can't be read that way; `workspaceGitWith` asks
- * the host's `git` instead, with the same safe settings as the Changes panel
- * (no fsmonitor, no pager, no optional locks).
+ * A folder on an SSH host (R9) can't be read that way; `workspaceGitWith`
+ * asks the host's `git` instead, with the same safe settings as the
+ * Changes panel (no fsmonitor, no pager, no optional locks).
  */
 import fs from "node:fs";
 import path from "node:path";

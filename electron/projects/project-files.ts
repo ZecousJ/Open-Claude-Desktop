@@ -1,15 +1,20 @@
 /**
- * The Files pane's reads: one folder's entries at a time and one file's text,
- * both strictly inside the session's folder. A path that leaves it (`..`, an
+ * The Files pane's reads (live claude.ai bundle, 2026-10-15: the Code
+ * "Files" pane): one folder's entries at a time and one file's text, both
+ * strictly inside the session's folder. A path that leaves it (`..`, an
  * absolute path, a link pointing outside) is refused.
  */
 import fs from "node:fs";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
+import { createContext, Script } from "node:vm";
+import { mentionSkippedFolders } from "../engine/composer-files";
 import type { ProjectWriteResult } from "../../shared/project-files";
+import { projectSearchMaxResults } from "../../shared/project-files";
 import type {
   ProjectEntry,
   ProjectFile,
+  ProjectSearchOptions,
   ProjectSearchResult,
 } from "../../shared/project-files";
 
@@ -18,6 +23,7 @@ export const projectFolderLimit = 2000;
 export const projectFileLimit = 2 * 1024 * 1024;
 const revisionOf = (data: Buffer) =>
   createHash("sha256").update(data).digest("hex");
+const skippedSearchFolders = new Set(mentionSkippedFolders);
 const isGitMetadata = (root: string, file: string) =>
   path.relative(fs.realpathSync(root), file).split(path.sep).includes(".git");
 const hookKeys = [
@@ -55,9 +61,14 @@ export function resolveInside(root: string, relative: string) {
     throw new Error("That path is outside the session's folder.");
   const realRoot = fs.realpathSync(root);
   const target = fs.realpathSync(path.join(realRoot, relative));
-  if (target !== realRoot && !target.startsWith(realRoot + path.sep))
+  if (!containedBy(realRoot, target))
     throw new Error("That path is outside the session's folder.");
   return target;
+}
+
+function containedBy(root: string, target: string) {
+  const relative = path.relative(root, target);
+  return relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
 }
 
 /** A folder's entries, folders first, then by name (as Finder sorts). */
@@ -73,7 +84,7 @@ export function listProjectFolder(
     let kind: ProjectEntry["kind"] = dirent.isDirectory() ? "folder" : "file";
     if (dirent.isSymbolicLink()) {
       try {
-        kind = fs.statSync(path.join(folder, dirent.name)).isDirectory()
+        kind = fs.statSync(resolveInside(root, path.join(relative, dirent.name))).isDirectory()
           ? "folder"
           : "file";
       } catch {
@@ -84,6 +95,7 @@ export function listProjectFolder(
       name: dirent.name,
       path: relative ? `${relative}/${dirent.name}` : dirent.name,
       kind,
+      ...(dirent.isSymbolicLink() ? { symlink: true } : {}),
     });
   }
   entries.sort(
@@ -224,30 +236,91 @@ export function writeProjectFile(
   }
 }
 
-/** Content search, capped at 200 lines and five per file. */
+// Match the complete line within the file limit, and collect only highlights
+// in the displayed excerpt. The timeout bounds slow expressions.
+const scanProjectRegexp = new Script(`(() => {
+  const matches = [];
+  for (let line = 0; line < lines.length && matches.length < limit; line++) {
+    const text = lines[line];
+    const hits = text.matchAll(pattern);
+    const first = hits.next().value;
+    if (!first) continue;
+    const start = Math.max(0, first.index - 200);
+    const end = Math.min(text.length, start + 1000);
+    const ranges = [];
+    for (let hit = first; hit && hit.index < end; hit = hits.next().value) {
+      const finish = hit.index + hit[0].length;
+      if (finish > hit.index)
+        ranges.push({ start: hit.index - start, end: Math.min(end, finish) - start });
+      if (finish >= end) break;
+    }
+    matches.push({
+      line: line + 1, column: first.index + 1,
+      preview: text.slice(start, end), previewMatches: ranges,
+    });
+  }
+  return matches;
+})()`);
+
+/** Content search. Ordinary callers keep the 200-line and five-per-file limits. */
 export async function searchProjectFiles(
   root: string,
   query: string,
+  options: ProjectSearchOptions = {},
 ): Promise<ProjectSearchResult> {
   const result: ProjectSearchResult = { matches: [], truncated: false };
-  const needle = query.trim().toLowerCase();
+  const limit = options.maxResults ?? 200;
+  // The renderer shows five rows per file and uses the sixth to show "more".
+  const perFile = options.filesPane ? 6 : options.strict ? Infinity : 5;
+  if (!Number.isInteger(limit) || limit < 1 || limit > projectSearchMaxResults)
+    throw Error("Invalid content search result limit.");
+  const needle = options.regexp ? query : query.trim();
   if (!needle) return result;
+  const insensitive = options.matchCase !== true;
+  const normalized = insensitive ? needle.toLowerCase() : needle;
   const realRoot = await fs.promises.realpath(root);
+  let pattern: RegExp | undefined;
+  if (options.regexp || options.wholeWord) {
+    const word = "[\\p{L}\\p{N}_]";
+    const literal = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const term = options.regexp ? needle : literal;
+    const before = options.wholeWord && (options.regexp || new RegExp(`^${word}`, "u").test(needle))
+      ? `(?<!${word}\\p{M}*)` : "";
+    const after = options.wholeWord && (options.regexp || new RegExp(`${word}\\p{M}*$`, "u").test(needle))
+      ? `(?!${word}|\\p{M})` : "";
+    try {
+      pattern = new RegExp(`${before}(?:${term})${after}`, insensitive ? "giu" : "gu");
+    } catch {
+      return { ...result, patternRefused: true };
+    }
+  }
+  const regexpContext = options.regexp
+    ? createContext({ lines: [] as string[], pattern, limit: 0 })
+    : undefined;
+  const strictPath = (relative: string) => {
+    const resolved = resolveInside(realRoot, relative);
+    if (!containedBy(realRoot, resolved))
+      throw Error("The project root changed during search.");
+    return resolved;
+  };
   const folders = [""];
   let visited = 0;
   while (folders.length) {
     const folder = folders.pop()!;
     let entries: fs.Dirent[];
     try {
-      entries = await fs.promises.readdir(path.join(realRoot, folder), {
+      entries = await fs.promises.readdir(options.strict ? strictPath(folder) : path.join(realRoot, folder), {
         withFileTypes: true,
       });
-    } catch {
+    } catch (error) {
+      if (options.strict) throw Error("A project folder could not be searched.", { cause: error });
       continue;
     }
     entries.sort((left, right) => left.name.localeCompare(right.name));
     for (const entry of entries) {
       if (entry.name === ".git" || entry.isSymbolicLink()) continue;
+      if (entry.isDirectory() && options.filesPane && skippedSearchFolders.has(entry.name))
+        continue;
       if (++visited > 20000) return { ...result, truncated: true };
       const relative = folder ? `${folder}/${entry.name}` : entry.name;
       if (entry.isDirectory()) {
@@ -256,27 +329,75 @@ export async function searchProjectFiles(
       }
       if (!entry.isFile()) continue;
       try {
-        const file = resolveInside(realRoot, relative);
+        const file = options.strict ? strictPath(relative) : resolveInside(realRoot, relative);
         const stat = await fs.promises.stat(file);
         if (stat.size > projectFileLimit) continue;
-        const data = await fs.promises.readFile(file);
+        let data: Buffer;
+        if (options.strict) {
+          const handle = await fs.promises.open(file, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+          try {
+            const before = await handle.stat();
+            if (!before.isFile() || before.dev !== stat.dev || before.ino !== stat.ino)
+              throw Error("Project file changed during search.");
+            if (before.size > projectFileLimit) continue;
+            const buffer = Buffer.alloc(projectFileLimit + 1);
+            let size = 0;
+            while (size < buffer.length) {
+              const next = await handle.read(buffer, size, buffer.length - size, size);
+              if (!next.bytesRead) break;
+              size += next.bytesRead;
+            }
+            const after = await handle.stat();
+            if (size > projectFileLimit || before.size !== after.size || before.mtimeMs !== after.mtimeMs ||
+              before.ctimeMs !== after.ctimeMs || strictPath(relative) !== file)
+              throw Error("Project file changed during search.");
+            const named = await fs.promises.lstat(file);
+            if (named.isSymbolicLink() || named.dev !== before.dev || named.ino !== before.ino)
+              throw Error("Project file changed during search.");
+            data = buffer.subarray(0, size);
+          } finally { await handle.close(); }
+        } else data = await fs.promises.readFile(file);
         if (data.subarray(0, 8000).includes(0)) continue;
         const lines = data.toString("utf8").split(/\r?\n/);
+        if (regexpContext) {
+          let matches: Omit<ProjectSearchResult["matches"][number], "path">[];
+          regexpContext.lines = lines;
+          regexpContext.limit = Math.min(perFile, limit - result.matches.length + 1);
+          try {
+            matches = structuredClone(
+              scanProjectRegexp.runInContext(regexpContext, { timeout: 250 }),
+            );
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ERR_SCRIPT_EXECUTION_TIMEOUT")
+              return { matches: [], truncated: false, patternRefused: true };
+            throw error;
+          }
+          for (const match of matches) {
+            if (result.matches.length === limit) return { ...result, truncated: true };
+            result.matches.push({ path: relative, ...match });
+          }
+          continue;
+        }
         let count = 0;
         for (const [index, preview] of lines.entries()) {
-          const hit = preview.toLowerCase().indexOf(needle);
+          if (pattern) pattern.lastIndex = 0;
+          const hit = pattern
+            ? (pattern.exec(preview)?.index ?? -1)
+            : (insensitive ? preview.toLowerCase() : preview).indexOf(normalized);
           if (hit === -1) continue;
-          if (result.matches.length === 200)
+          if (result.matches.length === limit)
             return { ...result, truncated: true };
           const start = Math.max(0, hit - 200);
           result.matches.push({
             path: relative,
             line: index + 1,
+            ...(options.strict ? { column: hit + 1 } : {}),
             preview: preview.slice(start, start + 1000),
           });
-          if (++count === 5) break;
+          if (++count === perFile) break;
         }
-      } catch {
+      } catch (error) {
+        if (options.strict) throw Error("A project file could not be searched.", { cause: error });
         continue;
       }
     }

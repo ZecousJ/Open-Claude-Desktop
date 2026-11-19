@@ -25,7 +25,7 @@ export const linearMethods = bridgeMethods<LinearAPI>({
   linearIssues: true,
 });
 
-// The issue's label and context.
+// The issue's label and context (live claude.ai bundle, 2026-10-14, cc43287c9-79FKhdho.js).
 export function linearIssueLabel(issue: LinearIssue) {
   return issue.title === issue.identifier
     ? issue.identifier

@@ -17,6 +17,7 @@
  * - Contexts, engines and running turns survive a dropped link: the tabs
  *   resync through Go once the link is back.
  */
+import { gzipSync } from "node:zlib";
 import {
   runnerLinkSubprotocol,
   webCloseCodes,
@@ -28,9 +29,11 @@ import {
 } from "../../shared/web-protocol";
 import {
   parseGoFrame,
+  runnerChunkBytes,
   type GoFrame,
   type LinkCapacity,
-  type RunnerFrame,
+  type RunnerChunkFrame,
+  type RunnerMessage,
 } from "../../shared/web-runner-frames";
 
 /** The socket the link needs (the global WebSocket, or a fake in tests). */
@@ -81,6 +84,7 @@ export class LinkRequestError extends Error {
 
 export interface LinkHandlers {
   welcome?(frame: Extract<GoFrame, { t: "welcome" }>): void;
+  codeRunExpired?(frame: Extract<GoFrame, { t: "code-run-expired" }>): void;
   call(frame: Extract<GoFrame, { t: "call" }>): void;
   cancel?(id: string): void;
   presence?(frame: Extract<GoFrame, { t: "presence" }>): void;
@@ -124,10 +128,11 @@ interface Pending {
 const clientCloseCode = webCloseCodes.normal;
 const baseBackoffMs = 1000;
 // At most 5 s between tries: a service restart (a deploy) takes ~30 s, and a
-// longer wait left the web without its runner for a minute after it was back.
-// One runner dialling every 5 s costs the service nothing.
+// longer wait left the web without its runner for a minute after it was back
+// (owner, 2026-10-03). One runner dialling every 5 s costs the service nothing.
 const maxBackoffMs = 5_000;
 const refusedBackoffMs = 60_000;
+const compressionThresholdBytes = 256 * 1024;
 
 export class ControlLink {
   private socket?: LinkSocket;
@@ -184,8 +189,9 @@ export class ControlLink {
       return;
     }
     this.socket = socket;
-    // A dial whose socket neither opens nor closes (the service restarting, a
-    // lost SYN) would otherwise wait forever: give up and dial again.
+    // A dial whose socket neither opens nor closes (the service restarting,
+    // a lost SYN) would otherwise wait forever: give up and dial again
+    // (2026-10-02, the link stayed down after a deploy).
     clearTimeout(this.waitOpen);
     this.waitOpen = setTimeout(() => {
       if (this.socket !== socket || this.open) return;
@@ -286,6 +292,9 @@ export class ControlLink {
       case "cancel":
         this.options.handlers.cancel?.(frame.id);
         return;
+      case "code-run-expired":
+        this.options.handlers.codeRunExpired?.(frame);
+        return;
       case "response": {
         const waiting = this.pending.get(frame.id);
         if (!waiting) return;
@@ -374,17 +383,71 @@ export class ControlLink {
     // Not unref'd: while the link is down this timer keeps the runner alive.
     this.retry = setTimeout(() => this.dial(), delay);
   }
-  private write(frame: RunnerFrame) {
-    if (!this.socket || !this.open) return false;
+  private write(frame: RunnerMessage) {
+    const socket = this.socket;
+    if (!socket || !this.open) return false;
+    let chunking = false;
     try {
-      this.socket.send(JSON.stringify(frame));
+      const text = JSON.stringify(frame);
+      const decodedBytes =
+        frame.t === "result" || frame.t === "event"
+          ? Buffer.byteLength(text)
+          : 0;
+      if (decodedBytes < compressionThresholdBytes) {
+        socket.send(text);
+        return true;
+      }
+      if (decodedBytes > webLimits.linkMessageBytes) return false;
+
+      const raw = Buffer.from(text);
+      const compressed = gzipSync(raw, { level: 1 });
+      const needsChunks = decodedBytes > webLimits.linkFrameBytes;
+      if (
+        !needsChunks &&
+        Math.ceil(compressed.length / 3) * 4 >= decodedBytes
+      ) {
+        socket.send(text);
+        return true;
+      }
+      const encoding = compressed.length < decodedBytes ? "gzip" : "identity";
+      const body = encoding === "gzip" ? compressed : raw;
+      const optionalChunks: string[] | undefined = needsChunks ? undefined : [];
+      chunking = needsChunks;
+      for (let offset = 0; offset < body.length; offset += runnerChunkBytes) {
+        const chunk: RunnerChunkFrame = {
+          t: "chunk",
+          offset,
+          totalBytes: body.length,
+          decodedBytes,
+          encoding,
+          data: body
+            .subarray(offset, offset + runnerChunkBytes)
+            .toString("base64"),
+        };
+        const chunkText = JSON.stringify(chunk);
+        if (optionalChunks) optionalChunks.push(chunkText);
+        else socket.send(chunkText);
+      }
+      if (optionalChunks) {
+        const wireBytes = optionalChunks.reduce(
+          (sum, chunk) => sum + chunk.length,
+          0,
+        );
+        if (wireBytes >= decodedBytes) {
+          socket.send(text);
+        } else {
+          chunking = true;
+          for (const chunk of optionalChunks) socket.send(chunk);
+        }
+      }
       return true;
     } catch {
+      if (chunking) this.redial("incomplete message");
       return false;
     }
   }
-  /** Sends a frame once Go welcomed this runner; false otherwise. */
-  send(frame: RunnerFrame) {
+  /** Queues the complete message on the current connection. */
+  send(frame: RunnerMessage) {
     return this.connected ? this.write(frame) : false;
   }
   /** Asks Go for a service (see webRunnerOps); rejects with LinkRequestError. */

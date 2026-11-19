@@ -1,10 +1,11 @@
 /*
- * Weekly usage limit banner above the home composer. Code: 40px #212121 strip
- * as wide as the composer, 10px below the chips and 6px above the composer.
- * 16px gauge 8px in, 13px white title, grey reset time 11px after it, a 20px
- * #383838 pill with 12px text and a 7.25px close cross centred 20px from the
- * right edge. Text sizes measured with the reference fonts: 13.5/13px came out
- * 4.7%/8.6% wider than the captures.
+ * Weekly usage limit banner above the home composer.
+ * Code (R-0338, R-Home-Code; 2x): 40px #212121 strip as wide as the composer,
+ * 10px below the chips and 6px above the composer. 16px gauge 8px in, 13px
+ * white title, grey reset time 11px after it, a 20px #383838 pill with 12px
+ * text and a 7.25px close cross centred 20px from the right edge. Text sizes
+ * measured with the reference fonts (fixture default since WP0b): 13.5/13px
+ * came out 4.7%/8.6% wider than the captures.
  */
 .usage-banner {
   display: flex;
@@ -77,9 +78,11 @@
 }
 
 /*
- * Chat and Cowork: a 44px outlined box the width of the composer, 8px above it,
- * on the page colour. 16px info icon 17px in, 14px warm-grey text 10px after
- * it, a 28px #2d2d2d pill with 14px text and an 8.8px white close cross.
+ * Chat and Cowork (R-Chat-首页, R-Cowork-首页; 2x): a 44px outlined box the
+ * width of the composer, 8px above it, on the page colour. 16px info icon
+ * 17px in, 14px warm-grey text 10px after it, a 28px #2d2d2d pill with 14px
+ * text and an 8.8px white close cross (15px measured 8% wider than the
+ * captures with the reference fonts).
  */
 .usage-banner.chat {
   height: 44px;
@@ -101,8 +104,8 @@
   background: #2d2d2d;
   font-size: 14px;
 }
-/* Continue after a failed reply: the clearer way on, in the page's primary
-   button colours (the New key / New task button). */
+/* Continue after a failed reply: the clearer way on (owner, 2026-10-03),
+   in the page's primary button colours (the New key / New task button). */
 .usage-banner.chat .usage-banner-more.usage-banner-primary {
   background: #fff;
   color: #111;
@@ -119,8 +122,9 @@
 }
 
 /*
- * Chat and Cowork in a conversation use the home box unchanged, 8px above the
- * composer. Narrowed by a side panel the icon goes, the text starts 16px in and
+ * Chat and Cowork in a conversation (S-0006, S-0008; 2x) use the home box
+ * unchanged, 8px above the composer. Narrowed by a side panel (S-0006
+ * progress panel, a 408px box) the icon goes, the text starts 16px in and
  * the pill moves to a second row: pill 12px from the left and bottom edges,
  * 40px from the top; the text and cross keep their home rows (80px in all).
  */
@@ -164,10 +168,11 @@
 }
 
 /*
- * Code in a conversation: the home strip's colours and first row (icon, 13px
- * title, grey reset time, cross all centred 20px from the top), with the reset
- * time wrapping under the title when it does not fit and the pill under the
- * text, 6px below it and 10px above the bottom edge.
+ * Code in a conversation (R-Code-会话行右键-Move-to-group, a 535px card;
+ * R-Code-Browser单面板, 329px; 2x): the home strip's colours and first row
+ * (icon, 13px title, grey reset time, cross all centred 20px from the
+ * top), with the reset time wrapping under the title when it does not fit
+ * and the pill under the text, 6px below it and 10px above the bottom edge.
  */
 .usage-banner.code:is(.conversation, .narrow) {
   display: grid;
@@ -202,7 +207,7 @@
   margin: 6px 0 0 5px;
 }
 
-/* With the banner the chips sit 10px above it and the mascot stands on it. */
+/* With the banner the chips sit 10px above it and the mascot stands on it (R-0338). */
 .workspace-bar:has(+ .usage-banner) {
   margin-bottom: 7px;
 }
@@ -232,8 +237,11 @@
 }
 
 /*
- * Get notified. In the two-row layouts (narrowed, Code conversation) both share
- * the second row, Get notified at the start and the pill at the end.
+ * Get notified (R-0314, W1920 1x: "Get notified" as an underlined grey
+ * link, then the "Get more usage" pill 12px after it, then ×). In the
+ * two-row layouts (narrowed, Code conversation) both share the second row,
+ * Get notified at the start and the pill at the end (no capture of that
+ * layout: provisional).
  */
 .usage-banner.chat.narrow .usage-banner-more.usage-banner-notify,
 .usage-banner.code:is(.conversation, .narrow)
@@ -249,7 +257,7 @@
   justify-self: end;
   margin-left: 0;
 }
-/* Get notified is an underlined grey link, not a pill. */
+/* R-0314: Get notified is an underlined grey link, not a pill. */
 .usage-banner .usage-banner-more.usage-banner-notify {
   height: auto;
   padding: 0 2px;
@@ -266,11 +274,11 @@
   color: var(--text-muted);
 }
 
-/* Each notice above the composer sits in a one-row grid (ComposerNotices): the
-   row opens from nothing over 300ms on the original's composer header curve
-   while the notice slides up 8px and fades in (its banner entrance), and closes
-   the same way when the notice goes. Source: the reference design 2.31226.1
-   static CSS/JS. A 3px clip margin keeps focus rings whole. */
+/* Each notice above the composer sits in a one-row grid (ComposerNotices):
+   the row opens from nothing over 300ms on the original's composer header
+   curve while the notice slides up 8px and fades in (its banner entrance),
+   and closes the same way when the notice goes. Source: desktop bundle
+   2.31226.1 static CSS/JS. A 3px clip margin keeps focus rings whole. */
 .composer-notice-slot {
   display: grid;
   grid-template-rows: 1fr;

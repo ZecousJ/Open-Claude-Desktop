@@ -31,7 +31,7 @@ const (
 	conversationBytes   = 1 << 20 // one conversation row (turns are separate)
 	artifactBytes       = webproto.TurnDocBytes
 	maxArtifactVersions = 20
-	searchTextBytes     = 64 << 10 // search text kept per turn
+	searchTextBytes     = 64 << 10 // legacy per-turn search text cap
 
 	// Pages of the list ops: the runner link carries frames of at most
 	// webproto.LinkFrameBytes.

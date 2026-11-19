@@ -1153,13 +1153,12 @@ turnstile:
 #    - Uses: generativelanguage.googleapis.com (AI Studio API)
 #    - 使用：generativelanguage.googleapis.com（AI Studio API）
 #
-# Default: the built-in Gemini CLI client, configured through GEMINI_CLI_OAUTH_CLIENT_ID / _SECRET
-# 默认：使用内置 Gemini CLI 客户端，凭证通过 GEMINI_CLI_OAUTH_CLIENT_ID / _SECRET 环境变量注入
+# Default: Uses Gemini CLI's public OAuth credentials (same as Google's official CLI tool)
+# 默认：使用 Gemini CLI 的公开 OAuth 凭证（与 Google 官方 CLI 工具相同）
 gemini:
   oauth:
     # OAuth 客户端配置说明：
-    # 1) 留空 client_id/client_secret：使用 Gemini CLI 内置 OAuth Client（其 client_id 与 client_secret 需通过环境变量注入）
-    #    - GEMINI_CLI_OAUTH_CLIENT_ID
+    # 1) 留空 client_id/client_secret：使用 Gemini CLI 内置 OAuth Client（其 client_secret 需通过环境变量注入）
     #    - GEMINI_CLI_OAUTH_CLIENT_SECRET
     # 2) 同时设置 client_id/client_secret：使用你自建的 OAuth Client（推荐，权限更完整）
     #

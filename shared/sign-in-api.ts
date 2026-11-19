@@ -1,24 +1,19 @@
 /**
- * The sign-in page's calls beyond email and password: the password reset email,
- * signing in with a code sent by email (a Claudex extension, offered only when
- * the administrator turned it on and the service can send email) and passkeys
- * (web only).
+ * The sign-in page's calls beyond email and password (package LOGIN):
+ * the password reset email, signing in with a code sent by email (a
+ * Claudex extension, offered only when the administrator turned it on and
+ * the service can send email) and passkeys (web only).
  *
  * Also what the desktop main process and the web bridge share: the public
  * sign-in options endpoint. The refusals with a page of their own are in
  * sign-in-states.ts.
  */
 import { bridgeMethods } from "./bridge-methods";
-import type { AuthStatus, PublicAccount, TwoFactorChallenge } from "./types";
+import type { PublicAccount, TwoFactorChallenge } from "./types";
 import type { EmailLinkRequest } from "./email-link";
 
 export interface SignInAPI {
-  /**
-   * Desktop, signed out, with no service chosen: signs in to the service at
-   * this address from now on, once it answers as one.
-   */
-  setServiceAddress(address: string): Promise<AuthStatus>;
-  /** Sends the password reset link. */
+  /** Sends the password reset link (Sub2API `forgot-password`). */
   requestPasswordReset(email: string): Promise<void>;
   /** Sets a new password with the emailed link's token (Sub2API `reset-password`). */
   resetPassword(email: string, token: string, password: string): Promise<void>;
@@ -135,7 +130,6 @@ export function atAccountCap(list: BrowserAccounts) {
 }
 
 export const signInMethods = bridgeMethods<SignInAPI>({
-  setServiceAddress: true,
   requestPasswordReset: true,
   resetPassword: true,
   sendSignInCode: true,

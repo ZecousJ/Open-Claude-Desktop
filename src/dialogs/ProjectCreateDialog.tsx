@@ -11,7 +11,7 @@ import { Spinner } from "../ui/Spinner";
 import type { Project } from "../../shared/types";
 import { Modal } from "../ui/Controls";
 import { WithTooltip } from "../ui/Tooltip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { MemoryIcon } from "../ui/SettingsIcons";
 import { formatText, t, useLocale } from "../i18n";
 import { memoryText, useMemory } from "../memory/useMemory";
@@ -28,7 +28,7 @@ export interface ProjectCreation {
   operationId?: string;
 }
 
-/** Cowork onboarding. */
+/** Cowork onboarding (live claude.ai bundle, 2026-10-14, c17beaa76). */
 export function ProjectCreateDialog({
   project,
   onChange,
@@ -144,7 +144,7 @@ export function ProjectCreateDialog({
               onClick={() => setStep("new")}
             />
             <CreateOption
-              icon={<AppIcon name="Projects" />}
+              icon={<Anthropicon name="Projects" />}
               title="Import a project"
               description="Bring a project you made in Chat over to Cowork."
               onClick={() => setStep("import")}
@@ -414,7 +414,7 @@ function CreateOption({
         <strong>{t(title)}</strong>
         <span>{t(description)}</span>
       </span>
-      <AppIcon name="CaretRight16" />
+      <Anthropicon name="CaretRight16" />
     </button>
   );
 }

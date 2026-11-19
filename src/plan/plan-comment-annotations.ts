@@ -8,7 +8,7 @@ interface TextNode {
   children?: TextNode[];
 }
 
-/** Flat text excludes code blocks and table whitespace. */
+/** Flat text excludes code blocks and table whitespace (live claude.ai bundle, 2026-10-14, cccc2cf0a-ClzhdM48.js). */
 export function planAnnotationPlugin(comments: readonly PlanComment[]) {
   return () => (tree: TextNode) => {
     const nodes: { node: TextNode; parent: TextNode; offset: number }[] = [];

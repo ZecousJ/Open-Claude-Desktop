@@ -1,12 +1,13 @@
 /* File drop overlay (DropOverlay.tsx). Timings, sizes and layers follow the
-   original's composer drop zone; Static CSS/JS. The accent is the blue of the
-   focus ring, as the original's fill accent (and Claudex's earlier drop rim,
-   #497cbf) is blue. */
+   original's composer drop zone; source: desktop bundle 2.31226.1 static
+   CSS/JS. The accent is the blue of the focus ring, as the original's fill
+   accent (and Claudex's earlier drop rim, #497cbf) is blue. */
 :root {
   --drop-accent: var(--focus-accent);
 }
 
-/* Card layers: dashed off-target, a 2px inset ring and 24px glow on-target. */
+/* Card layers (live claude.ai bundle, 2026-10-14, shared-5-DQt42NbL.js):
+   dashed off-target, a 2px inset ring and 24px glow on-target. */
 .composer:has(> .composer-drop-card) {
   position: relative;
 }
@@ -55,8 +56,9 @@
   opacity: 1;
 }
 
-/* Page: the window covered by its surface at 90% under a 0.1s fade, the
-   document pictogram over the label (text-primary), 8px apart, centred. */
+/* Page (live claude.ai bundle, 2026-10-16, shared-9 t5): the window covered
+   by its surface at 90% under a 0.1s fade, the document pictogram over the
+   label (text-primary), 8px apart, centred. */
 .composer-drop-page {
   position: fixed;
   z-index: 1000;

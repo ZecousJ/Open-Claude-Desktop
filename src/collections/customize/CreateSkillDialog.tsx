@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Spinner } from "../../ui/Spinner";
 import { Modal } from "../../ui/Controls";
 import { notAvailable } from "../../settings/unavailable";
@@ -12,12 +12,13 @@ export const nameAndDescriptionRequired =
   "Add a valid name and description before saving.";
 
 /**
- * Create a skill: a free-text name shown with the name it is saved as, a
- * description, the SKILL.md instructions in a numbered editor, a Draft badge,
- * Cancel and Create. Create checks the form when pressed (the original keeps it
- * enabled); leaving with changes asks "Discard this draft?". Add file is the
- * original's and disabled: Claudex skills are a single SKILL.md. Customize and
- * Settings → Skills share it.
+ * Create a skill (R-1106, R-1136, R-1605–R-1608, R-1613, R-1625, R-1583):
+ * a free-text name shown with the name it is saved as, a description, the
+ * SKILL.md instructions in a numbered editor, a Draft badge, Cancel and
+ * Create. Create checks the form when pressed (the original keeps it
+ * enabled); leaving with changes asks "Discard this draft?". Add file is
+ * the original's and disabled: Claudex skills are a single SKILL.md.
+ * Customize and Settings → Skills share it.
  */
 export function CreateSkillDialog({
   onClose,
@@ -102,7 +103,7 @@ export function CreateSkillDialog({
               className="create-skill-error"
               role="alert"
             >
-              <AppIcon name="WarningCircle" size={13} strokeWidth={1.8} />
+              <Anthropicon name="WarningCircle" size={13} strokeWidth={1.8} />
               {nameRequired}
             </small>
           ) : (

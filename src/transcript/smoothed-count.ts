@@ -10,9 +10,10 @@ const longestRiseMs = 3000;
 const tickMs = 100;
 
 /**
- * A count that climbs to each new value instead of jumping: it runs straight
- * from what it shows toward the new value over the time the last update took,
- * so steady updates read as a steady climb; a smaller value is taken at once.
+ * A count that climbs to each new value instead of jumping (live desktop
+ * 2.42304.2, the status line's token count): it runs straight from what it
+ * shows toward the new value over the time the last update took, so steady
+ * updates read as a steady climb; a smaller value is taken at once.
  */
 export function countSmoother() {
   let target: number | undefined;

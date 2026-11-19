@@ -35,10 +35,11 @@ function lineWidth(field: HTMLElement, text: string) {
 }
 
 /**
- * The conversation composer's single row and its two-row form: on one row the
- * text sits between the leading controls and the actions; once it needs more
- * room the text takes the whole width and the controls keep to a row under it.
- * The controls' widths are written to the row as --composer-lead-w and
+ * The conversation composer's single row and its two-row form (the
+ * original's composer, desktop bundle 2.31226.1): on one row the text sits
+ * between the leading controls and the actions; once it needs more room the
+ * text takes the whole width and the controls keep to a row under it. The
+ * controls' widths are written to the row as --composer-lead-w and
  * --composer-trail-w for its padding; the returned flag is the two-row form.
  */
 export function useComposerMorph(

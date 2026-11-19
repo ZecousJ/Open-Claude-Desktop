@@ -43,6 +43,7 @@ export type SshErrorCode =
   | SshLocalFailure
   | "ssh-missing"
   | "auth-failed"
+  | "auth-key-rejected"
   | "host-key-changed"
   | "host-unreachable"
   | "timeout"

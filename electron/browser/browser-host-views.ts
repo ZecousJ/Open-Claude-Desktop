@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import os from "node:os";
 import { pathToFileURL } from "node:url";
 import {
   type BrowserNavigateResult,
@@ -8,9 +9,9 @@ import {
   pageOrigin,
 } from "../../shared/browser";
 import { CdpDriver } from "./cdp";
-import { guardContents, navigationAllowed } from "./navigation-guard";
-import { faviconLimit } from "./browser-host-support";
-import { hostOf } from "./browser-host-support";
+import { guardContents, navigationAllowed, privateBrowserDestination } from "./navigation-guard";
+import { previewOriginUnsafe } from "../../shared/preview-origin";
+import { faviconLimit, hostOf, officialPreviewTabLimit } from "./browser-host-support";
 import type { BrowserHost } from "./browser-host";
 import type { HostView, Tab, Session } from "./browser-host";
 
@@ -22,16 +23,17 @@ export function ensureView(
 ): HostView {
   if (tab.view && !tab.view.webContents.isDestroyed()) return tab.view;
   const partition = this.deps.partition(session.conversationId, tab.state.url);
-  const view = this.deps.platform.createView(partition);
+  const pdf = tab.state.url === tab.writtenFileUrl && /\.pdf$/i.test(tab.state.url);
+  const view = this.deps.platform.createView(partition, pdf);
   tab.view = view;
   tab.partition = partition;
   const contents = view.webContents;
   tab.userAgent = contents.getUserAgent();
-  guardContents(contents, () => this.guardOptions(session), {
+  guardContents(contents, () => this.guardOptions(session, tab), {
     routeLink: (url) => {
-      if (!this.deps.routedLink) return false;
       const source = contents.getURL();
       const preview =
+        session.routePreviewLinks ??
         tab.linkRouting ??
         /^(?:file:|https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::|\/|$))/i.test(
           source,
@@ -42,7 +44,12 @@ export function ensureView(
       } catch {
         return false;
       }
-      this.deps.routedLink(url);
+      const owner = session.officialPreview;
+      if (session.routePreviewLinks && owner && this.deps.previewEvent)
+        this.deps.previewEvent(owner.window, session.conversationId, owner.id, "previewExternalLinkRequested", url);
+      else if (this.deps.routedLink)
+        this.deps.routedLink(url);
+      else return false;
       return true;
     },
     refused: (url, reason) => {
@@ -58,6 +65,7 @@ export function ensureView(
     },
     openTab: (url, foreground) => {
       if (this.sessions.get(session.conversationId) !== session) return;
+      if (session.officialPreview && session.tabs.length >= officialPreviewTabLimit) return;
       try {
         this.newTab(session.conversationId, url, foreground);
       } catch {
@@ -72,6 +80,9 @@ export function ensureView(
     this.changed(session);
   };
   contents.on("did-start-loading", () => {
+    if (session.picking?.tab === tab) this.cancelPick(session.conversationId);
+    tab.documentEpoch = (tab.documentEpoch ?? 0) + 1;
+    tab.previewCapture = undefined;
     tab.state.loading = true;
     tab.state.notice = undefined;
     update();
@@ -82,6 +93,7 @@ export function ensureView(
     clearTimeout(tab.stallTimer);
     update();
     const savedUrl = tab.state.url;
+    const epoch = tab.documentEpoch;
     if (this.deps.savePage && /^https?:/.test(savedUrl) && !tab.state.error)
       void contents
         .capturePage()
@@ -92,6 +104,8 @@ export function ensureView(
             this.disposed ||
             this.sessions.get(session.conversationId) !== session ||
             tab.state.url !== savedUrl ||
+            tab.documentEpoch !== epoch ||
+            tab.view !== view ||
             !session.tabs.includes(tab) ||
             tab !== this.activeTab(session)
           )
@@ -113,10 +127,12 @@ export function ensureView(
         .catch(() => {});
   });
   contents.on("did-navigate", (_event: unknown, url: string) => {
-    tab.state.url = url;
-    if (tab.partition !== this.deps.partition(session.conversationId, url)) {
+    const address = url === tab.writtenFileContent ? tab.writtenFileUrl ?? url : url;
+    tab.state.url = address;
+    if (tab.privateOrigin !== URL.parse(address)?.origin) tab.privateOrigin = undefined;
+    if (tab.partition !== this.deps.partition(session.conversationId, address)) {
       this.dropView(tab);
-      this.load(session, tab, url);
+      this.load(session, tab, address);
       return;
     }
     // Chromium commits its own error page at the failed address; the
@@ -124,7 +140,7 @@ export function ensureView(
     if (tab.state.error?.url !== url) tab.state.error = undefined;
     tab.state.crashed = false;
     tab.state.dialog = undefined;
-    tab.state.title = contents.getTitle() || hostOf(url) || newTabTitle;
+    tab.state.title = contents.getTitle() || hostOf(address) || newTabTitle;
     tab.state.faviconUrl = undefined;
     // The document arrived; finishing takes at most stallMs more.
     clearTimeout(tab.stallTimer);
@@ -196,6 +212,11 @@ export function ensureView(
     this.sync(session);
     this.changed(session);
   });
+  contents.on("audio-state-changed", ({ audible }: { audible: boolean }) => {
+    tab.state.audible = audible;
+    this.changed(session);
+  });
+  if (session.muted) contents.setAudioMuted?.(true);
   const driver = new CdpDriver(contents.debugger, {
     platform: this.deps.platform.platform,
     dialogOpened: (dialog) => {
@@ -215,17 +236,11 @@ export function ensureView(
     },
   });
   tab.driver = driver;
-  void driver
-    .attach()
-    .then(async () => {
-      if (session.viewport !== "desktop")
-        await driver.setViewport(session.viewport, tab.userAgent ?? "");
-      if (session.colorScheme !== "system")
-        await driver.setColorScheme(session.colorScheme);
-    })
-    .catch(() => {
-      // The page answers through Electron alone until the next attach.
-    });
+  void driver.attach().catch(() => {});
+  if (tab.state.viewport === undefined && session.viewport !== "desktop")
+    this.applyEmulation(session, tab, "viewport");
+  if ((tab.colorScheme ?? session.colorScheme) !== "system")
+    this.applyEmulation(session, tab, "color");
   this.sync(session);
   return view;
 }
@@ -248,7 +263,7 @@ export function load(
   if (tab.state.title === newTabTitle || !tab.state.title)
     tab.state.title = hostOf(url) || newTabTitle;
   // Load failures arrive as did-fail-load.
-  view.webContents.loadURL(url).catch(() => {});
+  view.webContents.loadURL((url === tab.writtenFileUrl && tab.writtenFileContent) || url).catch(() => {});
   this.sync(session);
   this.changed(session);
 }
@@ -263,20 +278,32 @@ export function navigate(
   conversationId: string,
   input: string,
   tabId?: string,
+  userAddressBar = false,
 ): BrowserNavigateResult {
   const session = this.session(conversationId);
-  const tab = this.tab(session, tabId);
+  const tab = session.tabs.find((entry) => entry.id === (tabId ?? session.activeTabId));
+  if (!tab) return { ok: false, message: "That tab is closed." };
   const address = normalizeAddress(input, { fileRoots: session.fileRoots });
   if (!address.ok) return address;
-  const decision = navigationAllowed(address.url, this.guardOptions(session));
+  const options = this.guardOptions(session);
+  const url = new URL(address.url);
+  const privateOrigin = userAddressBar && options.publicHostsOnly &&
+    /^https?:$/.test(url.protocol) && privateBrowserDestination(url) &&
+    !previewOriginUnsafe(url.href) ? url.origin : undefined;
+  const decision = navigationAllowed(address.url, privateOrigin
+    ? { ...options, privateOrigin } : options);
   if (!decision.allow)
     return {
       ok: false,
       message:
         decision.reason === "blocked"
           ? "Your administrator doesn't allow this site."
+          : decision.reason === "private"
+            ? "The Browser only opens public websites in SSH sessions."
           : "The built-in browser can't open that address.",
     };
+  if (privateOrigin) (tab.privateOrigins ??= new Set()).add(privateOrigin);
+  tab.privateOrigin = privateOrigin;
   this.load(session, tab, address.url);
   return address;
 }
@@ -301,7 +328,46 @@ export function openFile(
   return this.navigate(conversationId, pathToFileURL(file).href, tabId);
 }
 
-// Bind exports to the file the user opened, not a path supplied by the page.
+export function openWrittenFile(
+  this: BrowserHost,
+  conversationId: string,
+  file: string,
+  tabId: string,
+  contents: Buffer,
+) {
+  const session = this.session(conversationId);
+  const tab = this.tab(session, tabId);
+  if (this.guardOptions(session).publicHostsOnly)
+    return { ok: false };
+  const url = pathToFileURL(file).href;
+  const previousFolder = tab.writtenFileFolder;
+  let folder: string | undefined;
+  let source: string;
+  if (/\.(?:html?|svg)$/i.test(file)) {
+    const mime = /\.svg$/i.test(file) ? "image/svg+xml" : "text/html";
+    source = "data:" + mime + ";charset=utf-8;base64," + contents.toString("base64");
+  } else {
+    folder = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-written-preview-"));
+    try {
+      const preview = path.join(folder, path.basename(file));
+      fs.writeFileSync(preview, contents, { mode: 0o600, flag: "wx" });
+      source = pathToFileURL(preview).href;
+    } catch (error) {
+      fs.rmSync(folder, { recursive: true, force: true });
+      throw error;
+    }
+  }
+  if (tab.writtenFileUrl !== url && /\.pdf$/i.test(url)) this.dropView(tab);
+  tab.writtenFileUrl = url;
+  tab.writtenFileContent = source;
+  tab.writtenFileFolder = folder;
+  if (previousFolder) void fs.promises.rm(previousFolder, { recursive: true, force: true }).catch(() => {});
+  this.load(session, tab, url);
+  return { ok: true };
+}
+
+// Bind exports to the file the user opened, not a path supplied by the page
+// (desktop 2.37337.1, index.chunk-BWk6pVUt.js, Vfi).
 export async function exportFile(this: BrowserHost, conversationId: string) {
   const tab = this.activeTab(this.session(conversationId));
   const source = tab.exportSource;
@@ -326,25 +392,38 @@ export async function exportFile(this: BrowserHost, conversationId: string) {
   }
 }
 
-export function back(this: BrowserHost, conversationId: string) {
+export function back(this: BrowserHost, conversationId: string, tabId?: string) {
   const session = this.session(conversationId);
-  const contents = this.activeTab(session).view?.webContents;
-  if (contents?.navigationHistory.canGoBack())
-    contents.navigationHistory.goBack();
+  const tab = session.tabs.find((tab) => tab.id === (tabId ?? session.activeTabId));
+  const contents = tab?.view?.webContents;
+  if (!contents || !contents.navigationHistory.canGoBack()) return false;
+  restorePrivateOrigin(tab, contents.navigationHistory, -1);
+  contents.navigationHistory.goBack();
+  return true;
 }
 
-export function forward(this: BrowserHost, conversationId: string) {
+export function forward(this: BrowserHost, conversationId: string, tabId?: string) {
   const session = this.session(conversationId);
-  const contents = this.activeTab(session).view?.webContents;
-  if (contents?.navigationHistory.canGoForward())
-    contents.navigationHistory.goForward();
+  const tab = session.tabs.find((tab) => tab.id === (tabId ?? session.activeTabId));
+  const contents = tab?.view?.webContents;
+  if (!contents || !contents.navigationHistory.canGoForward()) return false;
+  restorePrivateOrigin(tab, contents.navigationHistory, 1);
+  contents.navigationHistory.goForward();
+  return true;
+}
+
+function restorePrivateOrigin(tab: Tab, history: NonNullable<Tab["view"]>["webContents"]["navigationHistory"], delta: number) {
+  if (!tab.privateOrigins || !history.getActiveIndex) return;
+  const url = history.getEntryAtIndex?.(history.getActiveIndex() + delta)?.url;
+  const origin = url && URL.parse(url)?.origin;
+  tab.privateOrigin = origin && tab.privateOrigins.has(origin) ? origin : undefined;
 }
 
 /** Reload; after a load error or crash, opens the address again. */
-export function reload(this: BrowserHost, conversationId: string) {
+export function reload(this: BrowserHost, conversationId: string, tabId?: string) {
   const session = this.session(conversationId);
-  const tab = this.activeTab(session);
-  if (!tab.state.url) return;
+  const tab = session.tabs.find((entry) => entry.id === (tabId ?? session.activeTabId));
+  if (!tab?.state.url) return false;
   if (
     tab.state.error ||
     tab.state.crashed ||
@@ -353,10 +432,10 @@ export function reload(this: BrowserHost, conversationId: string) {
   ) {
     const url = tab.state.error?.url || tab.state.url;
     if (tab.state.crashed) this.dropView(tab);
-    this.load(session, tab, url);
-    return;
+    return this.navigate(conversationId, url, tab.id).ok;
   }
   tab.view.webContents.reload();
+  return true;
 }
 
 export function stop(this: BrowserHost, conversationId: string) {

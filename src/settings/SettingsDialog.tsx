@@ -162,7 +162,7 @@ export function Settings({
   useEffect(() => setNavFocus(tab), [tab]);
   const [current, setCurrent] = useState(settings);
   const [search, setSearch] = useState("");
-  // The result list under the field shows while the field has focus.
+  // The result list under the field shows while the field has focus (R-1539).
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeHit, setActiveHit] = useState(0);
   // The row a search result points at, scrolled to once its page shows.
@@ -212,8 +212,8 @@ export function Settings({
     shown.current = tab;
     onTabChange?.(tab);
   }, [tab]);
-  // The open page stays in view in the narrow window's tab row and in a short
-  // page list.
+  // The open page stays in view in the narrow window's tab row (R-1567
+  // shows Claude Code scrolled into view) and in a short page list.
   useEffect(() => {
     nav.current
       ?.querySelector<HTMLElement>('[aria-current="page"]')
@@ -259,8 +259,8 @@ export function Settings({
   }, [found, tab]);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
-    // The dialog itself takes focus, with no ring and no caret in the search
-    // field; Tab then starts at the Close button.
+    // The dialog itself takes focus, with no ring and no caret in the
+    // search field (R-1567); Tab then starts at the Close button.
     dialog.current?.focus();
     // On window, so an open menu inside can stop Escape at the document first.
     const key = (event: KeyboardEvent) => {
@@ -301,8 +301,8 @@ export function Settings({
 
   const available = availableNavGroups(host, planUsage);
   const allTabs = available.flatMap((group) => group.tabs);
-  // The search lists its results in a popover under the field; the page list
-  // itself stays whole.
+  // The search lists its results in a popover under the field; the page
+  // list itself stays whole (R-1539, R-1540, R-1565).
   const results = search.trim()
     ? searchSettings(
         search,
@@ -344,8 +344,8 @@ export function Settings({
         tabIndex={-1}
         ref={dialog}
       >
-        {/* First in the tab order: Tab from the last control wraps to it. Narrow
-           windows show it beside the title. */}
+        {/* First in the tab order: Tab from the last control wraps to it
+            (R-1574). Narrow windows show it beside the title (R-1571). */}
         <button className="settings-close" aria-label="Close" onClick={onClose}>
           <X size={20} strokeWidth={1.5} />
         </button>
@@ -357,8 +357,8 @@ export function Settings({
             role={narrow ? "tablist" : undefined}
             ref={nav}
             onKeyDown={(event) => {
-              // Arrow keys move focus between pages without opening them;
-              // Enter or Space opens the focused one.
+              // Arrow keys move focus between pages without opening them
+              // (R-1570); Enter or Space opens the focused one.
               const keys = narrow
                 ? ["ArrowRight", "ArrowLeft"]
                 : ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"];

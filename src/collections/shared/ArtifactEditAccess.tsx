@@ -7,7 +7,7 @@ import { api } from "../../desktop-api";
 import { t } from "../../i18n";
 import { WithTooltip } from "../../ui/Tooltip";
 
-// .
+// (live claude.ai bundle, 2026-10-14, c432ce1d3-BOFg_sH3.js).
 export const editAccessMessages = {
   already_granted: "You already have edit access. Reload to start editing.",
   cooldown: "A recent request was declined. You can ask again later.",

@@ -57,16 +57,17 @@ type Component struct {
 	once sync.Once
 	b    Backends
 
-	reg     *registry
-	hubs    *hubs
-	devices deviceSet
-	runs    *runs
-	tokens  *tokenCache
-	signer  *signer
-	sums    uploadSums
-	gate    callGate
-	fires   fireLimiter
-	dropped atomic.Int64
+	reg            *registry
+	hubs           *hubs
+	devices        deviceSet
+	runs           *runs
+	tokens         *tokenCache
+	signer         *signer
+	sums           uploadSums
+	privateUploads privateUploadSet
+	gate           callGate
+	fires          fireLimiter
+	dropped        atomic.Int64
 
 	heartbeat   time.Duration
 	callTimeout time.Duration
@@ -124,6 +125,8 @@ func (c *Component) RegisterPublicRoutes(g *gin.RouterGroup) {
 	g.GET(RouteRunnerLink, c.runnerLink)
 	g.GET(RouteDeviceLink, c.deviceLink)
 	g.GET(RoutePreview, c.preview)
+	g.POST(RouteCodePreview, c.codePreview)
+	g.POST("/web/document-preview-token", c.verifyDocumentPreviewToken)
 	// A scheduled task's API trigger: the Bearer token is its credential.
 	g.POST(RouteRoutineFire, c.fireRoutine)
 }

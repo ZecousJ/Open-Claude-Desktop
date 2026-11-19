@@ -22,11 +22,6 @@ const LocalMcpImportDialog = lazyPiece(
   "LocalMcpImportDialog",
 );
 
-const CliImportDialog = lazyPiece(
-  () => import("../CliImportDialog"),
-  "CliImportDialog",
-);
-
 /** Rows Settings search finds on this page. */
 export { importLabels as searchLabels } from "./desktop-labels";
 
@@ -75,7 +70,6 @@ function DesktopImportTab({ onError, goTo, platform }: TabProps) {
   useLocale();
   const history = useLoaded(() => window.desktop.importHistory(), onError);
   const [wizard, setWizard] = useState(false);
-  const [cliImport, setCliImport] = useState(false);
   const [remoteBusy, setRemoteBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [removing, setRemoving] = useState<{
@@ -169,21 +163,6 @@ function DesktopImportTab({ onError, goTo, platform }: TabProps) {
         </Suspense>
       )}
       <Section>
-        <Row label="Import Claudex Code sessions">
-          <Button onClick={() => setCliImport(true)}>Import…</Button>
-        </Row>
-      </Section>
-      {cliImport && (
-        <Suspense fallback={null}>
-          <CliImportDialog
-            onClose={() => {
-              setCliImport(false);
-              void history.reload();
-            }}
-          />
-        </Suspense>
-      )}
-      <Section>
         <Row
           label="Import"
           description="Bring over conversations and projects from a Claudex export or from a data folder copied from another computer. Each import is a one-time copy and won’t sync."
@@ -193,7 +172,7 @@ function DesktopImportTab({ onError, goTo, platform }: TabProps) {
           </Button>
         </Row>
       </Section>
-      {/* Local export lives in Import. */}
+      {/* Local export lives in Import (live claude.ai bundle, 2026-10-14, c432d56b4). */}
       <Section>
         <Row
           label="Export"

@@ -12,6 +12,14 @@ type SearchOptions struct {
 	ProjectID       string
 	IncludeArchived bool
 	Limit           int // 1..50, default 20
+	Page            *SearchPage
+}
+
+// SearchPage applies filters and an offset for official clients.
+type SearchPage struct {
+	Offset      int    `json:"offset"`
+	Archive     string `json:"archive"`
+	StarredOnly bool   `json:"starredOnly"`
 }
 
 // SearchHit is one conversation that matches, with where it matched.
@@ -51,27 +59,53 @@ func (c *Component) Search(ctx context.Context, userID int64, query string, opt 
 	if opt.Limit > searchLimit {
 		opt.Limit = searchLimit
 	}
+	archive := "active"
+	offset := 0
+	starred := false
+	if opt.IncludeArchived {
+		archive = "all"
+	}
+	if opt.Page != nil {
+		archive, offset, starred = opt.Page.Archive, opt.Page.Offset, opt.Page.StarredOnly
+		if offset < 0 || offset > 100000 || (archive != "all" && archive != "active" && archive != "archived") {
+			return nil, badRequest("The search page is not valid.")
+		}
+	}
 	if err := c.store.ok(); err != nil {
 		return nil, err
 	}
 	pattern := "%" + escapeLike(query) + "%"
-	rows, err := c.store.db.QueryContext(ctx, `WITH hits AS (
-    SELECT c.id, ''::text AS turn_id, ''::text AS text, 0 AS rank, 0 AS ordinal
-      FROM claudex_web_conversations c
-     WHERE c.user_id = $1 AND c.title ILIKE $2 ESCAPE '\'
-    UNION ALL
-    SELECT t.conversation_id, t.turn_id, t.search_text, 1, t.ordinal
-      FROM claudex_web_turns t
-     WHERE t.user_id = $1 AND t.branch_id = '' AND t.search_text ILIKE $2 ESCAPE '\'
+	rows, err := c.store.db.QueryContext(ctx, `WITH eligible AS MATERIALIZED (
+ SELECT c.* FROM claudex_web_conversations c
+ WHERE c.user_id = $1 AND ($3 = '' OR c.mode = $3)
+   AND ($6 = '' OR c.project_id = $6)
+   AND ($4 = 'all' OR ($4 = 'active' AND NOT c.archived) OR ($4 = 'archived' AND c.archived))
+   AND (NOT $8 OR c.pinned)
+), texts AS MATERIALIZED (
+ SELECT t.conversation_id, t.turn_id, t.ordinal,
+   CASE WHEN octet_length(t.search_text) BETWEEN 65533 AND 65536 OR t.search_text = '' THEN
+     COALESCE(t.doc->'turn'->>'prompt', '') || E'\n' || COALESCE((
+       SELECT string_agg(item->>'text', E'\n' ORDER BY ord)
+       FROM jsonb_array_elements(CASE WHEN jsonb_typeof(t.doc->'turn'->'items') = 'array'
+         THEN t.doc->'turn'->'items' ELSE '[]'::jsonb END) WITH ORDINALITY AS i(item, ord)
+       WHERE item->>'type' = 'agentMessage' AND jsonb_typeof(item->'text') = 'string'
+     ), '')
+   ELSE t.search_text END AS text
+ FROM claudex_web_turns t JOIN eligible c ON c.id = t.conversation_id
+ WHERE t.user_id = $1 AND t.branch_id = ''
+), hits AS (
+ SELECT c.id, ''::text AS turn_id, ''::text AS text, 1 AS rank, 0 AS ordinal
+ FROM eligible c WHERE c.title ILIKE $2 ESCAPE '\'
+ UNION ALL
+ SELECT t.conversation_id, t.turn_id, t.text, 0, t.ordinal
+ FROM texts t WHERE t.text ILIKE $2 ESCAPE '\'
 ), first AS (
-    SELECT DISTINCT ON (id) id, turn_id, text FROM hits ORDER BY id, rank, ordinal
+ SELECT DISTINCT ON (id) id, turn_id, text FROM hits ORDER BY id, rank, ordinal, turn_id
 )
 SELECT c.id, c.title, c.mode, c.project_id, c.archived, c.updated_ms, f.turn_id, f.text
-  FROM first f JOIN claudex_web_conversations c ON c.user_id = $1 AND c.id = f.id
- WHERE ($3 = '' OR c.mode = $3) AND ($4 OR NOT c.archived)
-   AND ($6 = '' OR c.project_id = $6)
- ORDER BY c.updated_ms DESC, c.id
- LIMIT $5`, userID, pattern, opt.Mode, opt.IncludeArchived, opt.Limit, opt.ProjectID)
+FROM first f JOIN eligible c ON c.id = f.id
+ORDER BY c.updated_ms DESC, c.id
+LIMIT $5 OFFSET $7`, userID, pattern, opt.Mode, archive, opt.Limit, opt.ProjectID, offset, starred)
 	if err != nil {
 		return nil, failed(err)
 	}

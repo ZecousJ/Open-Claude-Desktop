@@ -1,10 +1,10 @@
 /*
  * The checkout page (CheckoutPage.tsx), laid out after the owner's Stripe
- * Checkout reference: two halves, the order column ending 60px left of the
- * middle and the form column starting 60px right of it, both 280–380px wide;
- * 36px from the top. The summary half is a shade apart from the form half in
- * either theme; the button is Claudex's own #c6613f where the merchant's colour
- * stood.
+ * Checkout reference (2026-10-02, 1000 CSS px wide): two halves, the order
+ * column ending 60px left of the middle and the form column starting 60px
+ * right of it, both 280–380px wide; 36px from the top. The summary half is
+ * a shade apart from the form half in either theme; the button is Claudex's
+ * own #c6613f where the merchant's colour stood.
  */
 .checkout-page {
   --checkout-summary-bg: #1c1c1b;

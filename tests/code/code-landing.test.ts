@@ -188,6 +188,7 @@ test("discard_kept_worktree and clean_up_worktrees ask first and act only when a
   try {
     const tree = path.join(root, "tree");
     fs.mkdirSync(tree);
+    fs.writeFileSync(path.join(tree, ".git"), `gitdir: ${path.join(root, "x")}`);
     const worktree = {
       path: tree,
       branch: "claudex/x",
@@ -199,6 +200,8 @@ test("discard_kept_worktree and clean_up_worktrees ask first and act only when a
     const calls: string[][] = [];
     const git = async (_cwd: string, args: string[]) => {
       calls.push(args);
+      if (args[0] === "rev-parse")
+        return root + "\n" + (args.includes("HEAD") ? "refs/heads/claudex/x\n" : "");
       return "";
     };
     let answer = "decline";

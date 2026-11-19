@@ -15,8 +15,8 @@
   flex-direction: column;
   align-items: center;
   padding-top: 215.5px;
-  /* The dialog backdrop and motion of .overlay: 50% black, no blur, 200ms
-     fades. */
+  /* The dialog backdrop and motion of .overlay (80-dialogs-responsive.css,
+     desktop bundle 2.31226.1): 50% black, no blur, 200ms fades. */
   background: #00000080;
   animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
 }
@@ -122,8 +122,9 @@
   border-bottom: 1px solid #353535;
 }
 /* The mode glyph before the input, and Actions mode's bordered chip with the
-   keyboard glyph and the clear cross: border-0.5 rounded-lg p-0.5 ps-2, pulled
-   6px up and down and 8px left. */
+   keyboard glyph and the clear cross: border-0.5 rounded-lg p-0.5 ps-2,
+   pulled 6px up and down and 8px left (live claude.ai bundle, 2026-10-16,
+   c2771e1f6-B2qqRLkw Qp). */
 .search-mode-glyph {
   display: flex;
   flex-shrink: 0;
@@ -222,7 +223,9 @@
   text-overflow: ellipsis;
 }
 /* Archived: the original's neutral xxs Badge with an Archive glyph in the
-   time's place. */
+   time's place (live claude.ai bundle, 2026-10-16, ce8be540f Gn; shared-frame
+   Badge: 16px high, 4px corners, 4px gap and inset, 10px medium text,
+   alpha-1 fill, text-secondary). */
 .search-row-tag {
   display: inline-flex;
   flex-shrink: 0;
@@ -404,7 +407,7 @@
 }
 
 :root[data-theme="light"] .search-palette-overlay {
-  /* The 39% shade measured behind the light dialogs. */
+  /* No light capture: the 39% shade measured behind the light dialogs (R-1289). */
   background: rgb(0 0 0 / 39%);
 }
 :root[data-theme="light"] .search-palette-modes {
@@ -479,8 +482,8 @@
   background: #efefed;
   color: #3d3d3a;
 }
-/* Found words in bold, a quoted excerpt 8px after the title in the 13px grey of
-   the headings, and the date bucket on the right. */
+/* R-1161: found words in bold, a quoted excerpt 8px after the title in the
+   13px grey of the headings, and the date bucket on the right. */
 .search-row-title strong {
   font-weight: 600;
 }
@@ -501,14 +504,15 @@
   color: var(--text-strong);
 }
 
-/* The web version: the panel's top at 20.15% of the window with the switch 12px
-   above it; 20px round, #20201f, a 0.5px white-20% edge and 0 25px 50px -12px
-   of shadow; the field 17.6px 10px 14.4px 24px; filters 28px high, 10px sides,
-   14/20 500, #898781 until chosen; a 0.5px white-10% rule; rows 36px, 8px 12px,
-   8px round, a 20px icon 8px from the title, #c3c2b7, the highlighted one
-   #f0efec on white 7.5%; section titles 12/17 #898781 at 12px 14px 8px. The
-   switch: 194×35, 9px round on #20201f, the chosen pill white 10% with a
-   white-10% inset rim. */
+/* The web version (live claude.ai, 2026-09-29, 1636×897 dark): the panel's
+   top at 20.15% of the window with the switch 12px above it; 20px round,
+   #20201f, a 0.5px white-20% edge and 0 25px 50px -12px of shadow; the
+   field 17.6px 10px 14.4px 24px; filters 28px high, 10px sides, 14/20 500,
+   #898781 until chosen; a 0.5px white-10% rule; rows 36px, 8px 12px, 8px
+   round, a 20px icon 8px from the title, #c3c2b7, the highlighted one
+   #f0efec on white 7.5%; section titles 12/17 #898781 at 12px 14px 8px.
+   The switch: 194×35, 9px round on #20201f, the chosen pill white 10%
+   with a white-10% inset rim. */
 :root[data-surface="web"] .search-palette-overlay {
   justify-content: center;
   padding: 16px;
@@ -668,8 +672,10 @@
   color: #f0efec;
 }
 
-/* The web version in light. The same cds tokens in their light values: surface
-   #fff, white alphas as #0b0b0b alphas, inks #0b0b0b / #52514e / #898781. */
+/* The web version in light (2026-10-07: the web rules above kept the dark
+   panel in light, and the chosen filter showed white on #f0f0ee). The same
+   cds tokens in their light values: surface #fff, white alphas as #0b0b0b
+   alphas, inks #0b0b0b / #52514e / #898781. */
 :root[data-surface="web"][data-theme="light"] .search-palette-modes {
   border-color: rgb(11 11 11 / 10%);
   background: #fff;
@@ -723,7 +729,7 @@
   color: #0b0b0b;
 }
 
-/* Drop target and title notice. */
+/* Drop target and title notice (live claude.ai bundle, 2026-10-14, c2771e1f6). */
 .search-palette-type-tabs {
   display: contents;
 }
@@ -852,7 +858,7 @@
 
 /* Placeholder rows while the results load: 36px rows (52px with a snippet),
    12px in and 8px above and below, 8px between the blocks, under a 37px
-   heading. */
+   heading (live claude.ai bundle, 2026-10-16, shared-19 Ll and XG). */
 .search-skeleton {
   display: flex;
   flex-direction: column;

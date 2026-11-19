@@ -83,7 +83,8 @@ function fallbackLines(previous: string[], lines: string[]): number[] {
   return matches;
 }
 
-// Attribute unchanged lines to their earlier write, not the version selected.
+// Attribute unchanged lines to their earlier write, not the version selected
+// (live claude.ai bundle, 2026-10-14, cd50800c7, Be / Ue).
 export function fileLineVersions(versions: Artifact[]): number[] {
   let previous: string[] = [];
   let attribution: number[] = [];

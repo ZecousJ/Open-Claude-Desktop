@@ -93,7 +93,7 @@
   padding: 12px 20px 24px;
 }
 
-/* Shortcut rows. */
+/* Shortcut rows (live claude.ai bundle, 2026-10-14, c518a31cc-Dvpyv79W). */
 .shortcuts-section {
   --shortcuts-secondary: #c3c2b7;
   --shortcuts-border: rgb(255 255 255 / 10%);
@@ -275,7 +275,8 @@
 :root[data-theme="light"] .release-notes-version li {
   color: #2b2b2b;
 }
-/* The group labels read #727270 and the notes #303030 at their darkest. */
+/* R-1270 (1x light): the group labels read #727270 and the notes #303030 at
+   their darkest. */
 :root[data-theme="light"] .release-notes-version h4 {
   color: #727270;
 }

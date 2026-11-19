@@ -1,8 +1,9 @@
 /*
  * The dialog frame Report artifact (ReportArtifactDialog, report-dialog.css)
  * builds on. It was first made for the Publish artifact dialog, which now
- * follows the live Publish modal (PublishArtifactModal); sized after the Share
- * session dialog.
+ * follows the live Publish modal (PublishArtifactModal); sized after the
+ * Share session dialog (R-Code-会话分享弹层, 512 × 311 CSS, 20 inset,
+ * radius 12, #212121 on #363636).
  */
 .publish-dialog-note a {
   color: #7da2e8;

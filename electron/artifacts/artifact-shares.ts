@@ -1,3 +1,4 @@
+import { listenOnLoopback } from "../loopback-ports";
 import { createServer, type Server } from "node:http";
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
@@ -21,11 +22,12 @@ export function sharePageCsp(nonce: string) {
 export const shareByline = "Content is user-generated and unverified.";
 /**
  * The page a local link opens: a bar with the artifact's title, then the
- * snapshot in a sandboxed frame. It follows the artifact viewer's own shell in
- * the form it takes without its interactive chrome (its degraded header): the
- * theme's colours, a 2.5rem bar with 12px sides and a hairline under it,
- * 13px/1.4 text, the title and the "user-generated" byline, and a 20px spinner
- * until the frame has loaded, which then fades in over 0.12s.
+ * snapshot in a sandboxed frame. It follows the artifact viewer's own shell
+ * (live claude.ai bundle, 2026-10-12: frame-shell.html's inline styles) in
+ * the form it takes without its interactive chrome (its degraded header):
+ * the theme's colours, a 2.5rem bar with 12px sides and a hairline under
+ * it, 13px/1.4 text, the title and the "user-generated" byline, and a 20px
+ * spinner until the frame has loaded, which then fades in over 0.12s.
  */
 export function sharePage(title: string, token: string, nonce: string) {
   const name = escapeHtml(title);
@@ -267,7 +269,7 @@ export class ArtifactShares {
     this.entries = this.entries.filter((entry) => entry.identity !== identity);
     if (this.entries.length !== before) this.save();
   }
-  async start() {
+  async start(accountUiPort?: number) {
     if (this.server) return;
     this.server = createServer((request, response) => {
       // No kept-alive sockets: a restart on the same port starts clean.
@@ -309,18 +311,11 @@ export class ArtifactShares {
       response.setHeader("Content-Security-Policy", sharePageCsp(nonce));
       response.end(sharePage(entry.title, entry.token!, nonce));
     });
-    const listen = (port: number) =>
-      new Promise<void>((resolve, reject) => {
-        this.server!.once("error", reject);
-        this.server!.listen(port, "127.0.0.1", () => {
-          this.server!.off("error", reject);
-          resolve();
-        });
-      });
+    const listen = (port: number) => listenOnLoopback(this.server!, port);
     try {
       const previous = this.savedPort();
       try {
-        await listen(previous ?? 0);
+        await listen(previous && previous !== accountUiPort ? previous : 0);
       } catch (error) {
         // Taken or refused: any free port will do.
         if (!previous) throw error;

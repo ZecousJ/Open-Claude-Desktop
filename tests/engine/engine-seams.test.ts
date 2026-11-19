@@ -14,14 +14,16 @@ import { passthroughMethods } from "../../electron/engine/mcp-servers";
 import { Store } from "../../electron/store/store";
 import { registerComposerHandlers } from "../../electron/ipc/composer";
 import { registerConversationHandlers } from "../../electron/ipc/conversations";
-import { createMemoryExtension } from "../../electron/memory/inject";
+import { createMemoryExtension, type CoworkAccountMemorySnapshot } from "../../electron/memory/inject";
 import { LocalMemoryStore } from "../../electron/memory/local-store";
+import { Melange, type MelangeSnapshot } from "../../electron/memory/melange";
 import { MemoryService } from "../../electron/memory/service";
 import { openPolicy } from "../../shared/client-policy";
 import { isSteeredMessage, threadTokenUsage } from "../../shared/agent-api";
 import { beginReplyBranch, selectReplyVersion } from "../../shared/branches";
 import type { AppContext } from "../../electron/app/app-context";
-import type { Attachment, Conversation, Turn } from "../../shared/types";
+import type { AppEvent, Attachment, Conversation, Turn } from "../../shared/types";
+import { newConversation } from "../../electron/engine/new-conversation";
 
 type Call = { method: string; params: any };
 
@@ -39,6 +41,7 @@ function turn(id: string, status: Turn["status"] = "completed"): Turn {
 function setup(
   answer: (method: string, params: any) => any = () => ({}),
   turns: Turn[] = [turn("t1")],
+  onEvent: (event: AppEvent) => void = () => {},
 ) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-e0-"));
   const store = new Store(root);
@@ -73,7 +76,7 @@ function setup(
     store,
     "unused",
     () => "",
-    () => {},
+    onEvent,
   );
   engine.policy = () => openPolicy;
   engine.ensure = async () => {};
@@ -104,6 +107,35 @@ function setup(
     },
   };
 }
+
+test("Code reports a settled turn only on the transition out of running", () => {
+  const settled: (string | undefined)[] = [];
+  const env = setup(() => ({}), [turn("t1", "inProgress")], (event) => {
+    if (event.type === "conversation") settled.push(event.settledCodeTurnId);
+  });
+  try {
+    const completed = { turn: { id: "t1", status: "completed" } };
+    env.notify("turn/completed", completed);
+    env.notify("turn/completed", completed);
+    assert.deepEqual(settled, ["t1", undefined]);
+  } finally {
+    env.close();
+  }
+});
+
+test("official session instructions persist and reach the real thread options after reopening", () => {
+  const env = setup();
+  try {
+    const provider = env.store.settings.providers[0];
+    const c = newConversation({ mode: "cowork", text: "hello", providerId: provider.id, model: provider.model, attachments: [], sessionInstructions: "BASE_COWORK\n\nPERSONAL_APPEND" }, provider, env.store.root, env.store.settings);
+    env.store.conversations.push(c);
+    env.store.flush();
+    const saved = new Store(env.store.root).conversation(c.id);
+    assert.equal(saved.sessionInstructions, c.sessionInstructions);
+    const options = env.engine.threadOptions(saved, provider, provider.model, "cowork");
+    assert.equal(options.developerInstructions.split(c.sessionInstructions!).length - 1, 1, "the full prompt is preserved once across turns/reopen");
+  } finally { env.close(); }
+});
 
 test("safeguard failures honor the host's Code setting for local and cloud sessions; off and limits pause", async () => {
   for (const [enabled, code, kind, scope, expected] of [
@@ -163,6 +195,28 @@ test("a repository engine follows its account host's safeguard scope", () => {
     assert.equal(peer.codeSafeguardScope, "cloud");
     env.engine.codeSafeguardScope = "local";
     assert.equal(peer.codeSafeguardScope, "local");
+  } finally {
+    env.close();
+  }
+});
+
+test("account connector credentials reach local and space MCP runtimes without reaching SSH", () => {
+  const env = setup();
+  try {
+    const url = "https://example.com/mcp";
+    env.store.settings.mcpServers = { protected: { url } };
+    const space = env.engine.createPeer({ environment: { kind: "space", spaceId: "repo" } });
+    const ssh = env.engine.createPeer({ environment: { kind: "ssh", hostId: "remote" } });
+    const config = (engine: Engine) => JSON.parse(engine.mcpConfig()).protected;
+    assert.equal(config(space).http_headers, undefined);
+    env.engine.connectorHeaders = (name) =>
+      name === "protected" ? { Authorization: "Bearer test-token", "X-Connector": "test" } : undefined;
+    assert.deepEqual(config(env.engine).http_headers, {
+      Authorization: "Bearer test-token",
+      "X-Connector": "test",
+    });
+    assert.deepEqual(config(space).http_headers, config(env.engine).http_headers);
+    assert.equal(config(ssh).http_headers, undefined);
   } finally {
     env.close();
   }
@@ -261,6 +315,169 @@ test("threadTokenUsage accepts Codex's report and nothing else", () => {
       reasoningOutputTokens: 0,
     },
   );
+});
+
+test("stop accepts a turn that completed while its interrupt was in flight", async () => {
+  const env = setup(
+    (method) => {
+      if (method === "turn/interrupt") {
+        env.notify("turn/completed", {
+          turn: { id: "t1", status: "completed" },
+        });
+        throw Error("no active turn to interrupt");
+      }
+      throw Error(`Unexpected ${method}`);
+    },
+    [turn("t1", "inProgress")],
+  );
+  try {
+    await env.engine.interrupt("c");
+    assert.equal(env.c.turns[0].status, "completed");
+    assert.deepEqual(
+      env.calls.map((call) => call.method),
+      ["turn/interrupt"],
+    );
+  } finally {
+    env.close();
+  }
+});
+
+test("stop reconciles a missed terminal notification with the exact turn in history", async () => {
+  const env = setup(
+    (method) => {
+      if (method === "turn/interrupt")
+        throw Error("no active turn to interrupt");
+      if (method === "thread/read")
+        return {
+          thread: {
+            id: "thread",
+            turns: [
+              {
+                id: "t1",
+                status: "completed",
+                items: [
+                  {
+                    id: "cmd",
+                    type: "commandExecution",
+                    status: "completed",
+                    exitCode: 0,
+                    aggregatedOutput: "finished",
+                  },
+                ],
+              },
+            ],
+          },
+        };
+      if (method === "thread/backgroundTerminals/list")
+        return { data: [], nextCursor: null };
+      throw Error(`Unexpected ${method}`);
+    },
+    [turn("t1", "inProgress")],
+  );
+  try {
+    await env.engine.interrupt("c");
+    assert.equal(env.c.turns[0].status, "completed");
+    assert.equal(env.c.turns[0].items[0].exitCode, 0);
+    assert.equal(
+      new Store(env.store.root).conversation("c").turns[0].status,
+      "completed",
+    );
+    assert.deepEqual(
+      env.calls.map((call) => call.method),
+      ["turn/interrupt", "thread/read", "thread/backgroundTerminals/list"],
+    );
+  } finally {
+    env.close();
+  }
+});
+
+test("stop terminates only background terminals from the interrupted turn", async () => {
+  const env = setup(
+    (method) => {
+      if (method === "turn/interrupt") return {};
+      if (method === "thread/backgroundTerminals/list")
+        return {
+          data: [
+            { itemId: "cmd-current", processId: "proc-current" },
+            { itemId: "cmd-other", processId: "proc-other" },
+          ],
+          nextCursor: null,
+        };
+      if (method === "thread/backgroundTerminals/terminate")
+        return { terminated: true };
+      throw Error(`Unexpected ${method}`);
+    },
+    [turn("t1", "inProgress")],
+  );
+  env.c.turns[0].items.push({
+    id: "cmd-current",
+    type: "commandExecution",
+    status: "inProgress",
+  });
+  try {
+    await env.engine.interrupt("c");
+    assert.deepEqual(
+      env.calls.map((call) => [call.method, call.params]),
+      [
+        ["turn/interrupt", { threadId: "thread", turnId: "t1" }],
+        ["thread/backgroundTerminals/list", { threadId: "thread", limit: 50 }],
+        [
+          "thread/backgroundTerminals/terminate",
+          { threadId: "thread", processId: "proc-current" },
+        ],
+      ],
+    );
+  } finally {
+    env.close();
+  }
+});
+
+test("stop preserves failures unless history proves that the same turn is terminal", async () => {
+  for (const history of [
+    { id: "thread", turns: [{ id: "t1", status: "inProgress" }] },
+    { id: "thread", turns: [{ id: "other", status: "completed" }] },
+    { id: "other-thread", turns: [{ id: "t1", status: "completed" }] },
+  ]) {
+    const env = setup(
+      (method) => {
+        if (method === "turn/interrupt")
+          throw Error("no active turn to interrupt");
+        if (method === "thread/read") return { thread: history };
+        throw Error(`Unexpected ${method}`);
+      },
+      [turn("t1", "inProgress")],
+    );
+    try {
+      await assert.rejects(
+        env.engine.interrupt("c"),
+        /no active turn to interrupt/,
+      );
+      assert.equal(env.c.turns[0].status, "inProgress");
+    } finally {
+      env.close();
+    }
+  }
+});
+
+test("a failed stop RPC still aborts the current upstream stream and reports the failure", async () => {
+  const env = setup(() => {
+    throw Error("RPC disconnected");
+  }, [turn("t1", "inProgress")]);
+  const aborted: string[] = [];
+  (env.engine as any).gateway = {
+    abortThread: (id: string) => aborted.push(id),
+  };
+  try {
+    await assert.rejects(env.engine.interrupt("c"), /RPC disconnected/);
+    assert.deepEqual(aborted, ["thread"]);
+    assert.deepEqual(
+      env.calls.map((call) => call.method),
+      ["turn/interrupt"],
+    );
+  } finally {
+    (env.engine as any).gateway = undefined;
+    env.close();
+  }
 });
 
 test("/compact runs as a turn of its own and leaves the previous turn alone", async () => {
@@ -491,6 +708,30 @@ test("a steer with no turn to take it returns null so the window sends it instea
   }
 });
 
+test("Code steering records the browser event when Codex reads the input", async () => {
+  const env = setup(() => ({ turnId: "t1" }), [turn("t1", "inProgress")]);
+  const eventId = "84bafc1d-a002-42d6-8a19-0a532f1ee4a1";
+  const inputHash = "a".repeat(64);
+  try {
+    const accepted = await env.engine.steerTurn("c", "browser input", [], {
+      eventId, inputHash, current: () => true,
+    });
+    assert.ok(accepted);
+    assert.notEqual(accepted.messageId, eventId);
+    assert.equal(env.c.turns[0].items.length, 0);
+    env.notify("item/completed", {
+      turnId: "t1",
+      item: { id: "user-input", type: "userMessage", clientId: accepted.messageId },
+    });
+    const [item] = env.c.turns[0].items;
+    assert.ok(isSteeredMessage(item));
+    assert.equal(item.officialCodeEventId, eventId);
+    assert.equal(item.officialCodeInputHash, inputHash);
+  } finally {
+    env.close();
+  }
+});
+
 test("a steered message the model never read is dropped with its turn", async () => {
   const env = setup(() => ({ turnId: "t1" }), [turn("t1", "inProgress")]);
   try {
@@ -580,6 +821,28 @@ test("unified Chat permissions survive Store restart and reach real engine threa
         env.close();
       }
     }
+  }
+});
+
+test("Code Auto and Manual send their reviewer to thread and turn execution", async () => {
+  for (const permission of ["auto", "manual"] as const) {
+    const env = setup(sendAnswer);
+    try {
+      env.c.mode = "code";
+      env.c.threadId = undefined;
+      env.c.codePermissionMode = permission;
+      env.c.turns[0].codePermissionMode = permission === "auto" ? "manual" : "auto";
+      const options = env.engine.threadOptions(env.c, env.store.settings.providers[0], "m", "code");
+      assert.equal(options.approvalsReviewer, permission === "auto" ? "auto_review" : "user");
+      await env.engine.send({ conversationId: "c", text: "Permission selection", mode: "code",
+        attachments: [], providerId: "p", model: "m" });
+      const start = env.calls.find(call => call.method === "thread/start")!;
+      const turn = env.calls.find(call => call.method === "turn/start")!;
+      assert.equal(start.params.approvalsReviewer, permission === "auto" ? "auto_review" : "user");
+      assert.equal(turn.params.approvalsReviewer, permission === "auto" ? "auto_review" : "user");
+      assert.equal(start.params.approvalPolicy, "on-request");
+      assert.equal(turn.params.approvalPolicy, "on-request");
+    } finally { env.close(); }
   }
 });
 
@@ -899,11 +1162,30 @@ test("Code output intent starts a real session with an unchanged prompt and pers
   }
 });
 
+test("official current-session send bypasses only the legacy new-task suggestion and preserves permissions",async()=>{
+ const env=setup(sendAnswer);
+ try{
+  env.store.settings.ccNewTaskPrompt='ask';env.c.codePermissionMode='manual';
+  let suggestions=0;(env.engine as any).sessionAssistance.unrelatedTask=async()=>{suggestions++;return true;};
+  const handlers=new Map<string,any>();
+  registerConversationHandlers((n,f)=>handlers.set(n,f),{engine:env.engine,store:env.store,selectedAttachments:new Map(),allowedFolder:(p:string)=>p} as any);
+  const result=await handlers.get('send')({conversationId:'c',continueCodeSession:true,text:'Continue this specific session',mode:'code',providerId:'p',model:'m',attachments:[]});
+  assert.equal(suggestions,0);assert.equal(result.codeNewTask,undefined);assert.equal(result.id,'c');
+  assert.equal(result.turns.at(-1).prompt,'Continue this specific session');
+  assert.equal(env.c.codePermissionMode,'manual');assert.equal(env.store.settings.ccNewTaskPrompt,'ask');
+  await assert.rejects(handlers.get('send')({continueCodeSession:true,text:'bad',mode:'code',providerId:'p',model:'m',attachments:[]}),/existing local Code/);
+ }finally{env.close();}
+});
+
 test("unrelated Code tasks ask, stay here, or start a fresh linked session", async () => {
   for (const choice of ["ask", "here", "new_session"] as const) {
     const env = setup(sendAnswer);
     try {
       env.store.settings.ccNewTaskPrompt = choice;
+      const accountFolder = path.join(env.store.root, "account-folder");
+      const sessionFolder = path.join(env.store.root, "session-folder");
+      env.c.additionalFolders = [accountFolder, sessionFolder];
+      env.c.codeSessionFolderGrants = [sessionFolder];
       const internals = env.engine as any;
       internals.sessionAssistance.unrelatedTask = async () => choice !== "here";
       const result = await env.engine.send({
@@ -929,6 +1211,8 @@ test("unrelated Code tasks ask, stay here, or start a fresh linked session", asy
         assert.notEqual(linked.id, "c");
         assert.equal(linked.parentSessionId, "c");
         assert.equal(linked.cwd, env.c.cwd);
+        assert.deepEqual(linked.additionalFolders, [accountFolder]);
+        assert.deepEqual(env.c.additionalFolders, [accountFolder, sessionFolder]);
         assert.equal(env.c.codeNewTask, undefined);
         assert.equal(env.c.turns.length, 1);
         assert.equal(env.store.settings.ccNewTaskPrompt, "new_session");
@@ -943,12 +1227,48 @@ test("unrelated Code tasks ask, stay here, or start a fresh linked session", asy
         assert.notEqual(result.id, "c");
         assert.equal(result.parentSessionId, "c");
         assert.equal(result.turns[0].prompt, "Build a separate project");
+        assert.deepEqual(result.additionalFolders, [accountFolder]);
         assert.equal(env.c.turns.length, 1);
       }
     } finally {
       env.close();
     }
   }
+});
+
+test("native unrelated task keeps its input receipt and never automatically replays a failed resolution", async () => {
+  const env = setup(sendAnswer);
+  try {
+    env.store.settings.ccNewTaskPrompt = "new_session";
+    const internals = env.engine as any;
+    internals.sessionAssistance.unrelatedTask = async () => true;
+    const result = await env.engine.send({
+      conversationId: "c", text: "A separate task", attachments: [], mode: "code", providerId: "p", model: "m",
+    }, undefined, false, { nativeNewTaskInput: { uuid: "native-1", createdAt: 123 } });
+    assert.match(result.codeNewTask!.id, /^task_[a-f0-9]{8}$/);
+    assert.deepEqual(result.codeNewTask!.nativeInput, { uuid: "native-1", createdAt: 123 });
+    assert.equal(result.id, "c");
+    env.engine.send = async () => { throw new Error("delivery uncertain"); };
+    await assert.rejects(env.engine.resolveCodeNewTask("c", result.codeNewTask!.id, "new_session"), /Open the original Code offer/);
+    await assert.rejects(env.engine.resolveCodeNewTask("c", result.codeNewTask!.id, "new_session", false, () => true), /delivery uncertain/);
+    assert.equal(env.c.codeNewTask, undefined);
+    await assert.rejects(env.engine.resolveCodeNewTask("c", result.codeNewTask!.id, "new_session"), /no longer available/);
+  } finally { env.close(); }
+});
+
+test("native new task starts a linked child with its original user message id", async () => {
+  const env = setup(sendAnswer);
+  try {
+    (env.engine as any).sessionAssistance.unrelatedTask = async () => true;
+    const result = await env.engine.send({
+      conversationId: "c", text: "A separate task", attachments: [], mode: "code", providerId: "p", model: "m",
+    }, undefined, false, { nativeNewTaskInput: { uuid: "native-2", createdAt: 123 } });
+    const child = await env.engine.resolveCodeNewTask("c", result.codeNewTask!.id, "new_session", false, () => true);
+    assert.equal(child.parentSessionId, "c");
+    assert.deepEqual(child.nativeSideSession, { taskId: result.codeNewTask!.id });
+    assert.equal(child.turns[0].officialCodeEventId, "native-2");
+    assert.equal(env.c.codeNewTask, undefined);
+  } finally { env.close(); }
 });
 
 test("Do it here resumes once, and failed starts restore the pending offer", async () => {
@@ -1411,6 +1731,11 @@ test("a loaded thread is loaded again only when its model's limits change", asyn
       ["thread/unsubscribe", "thread/resume", "turn/start"],
     );
     assert.equal(env.calls[1].params.config.model_context_window, 400_000);
+    assert.equal(
+      env.calls[1].params.excludeTurns,
+      true,
+      "reloading must not retransmit the stored history",
+    );
     env.calls.length = 0;
     await send("big");
     finish();
@@ -1436,10 +1761,15 @@ test("composer IPC validates its input and reaches only the engine seams", async
   const handlers = new Map<string, (...args: unknown[]) => unknown>();
   const seen: unknown[][] = [];
   const ctx = {
+    accountActivationIdentity: {},
+    accountRetiring: false,
+    activeAccount: { id: "inert-account" },
+    store: {},
     selectedAttachments: new Map([["a", image]]),
     engine: {
-      compactConversation: async (...args: unknown[]) => {
-        seen.push(["compact", ...args]);
+      compactConversation: async (conversationId: unknown, current: () => boolean, requestId: unknown, start: unknown) => {
+        assert.equal(current(), true);
+        seen.push(["compact", conversationId, requestId, start]);
         return {};
       },
       steerTurn: async (...args: unknown[]) => {
@@ -1447,7 +1777,9 @@ test("composer IPC validates its input and reaches only the engine seams", async
         return null;
       },
       forkConversation: async (...args: unknown[]) => {
-        seen.push(["fork", ...args]);
+        assert.equal(typeof args[4], "function");
+        assert.equal((args[4] as () => boolean)(), true);
+        seen.push(["fork", ...args.slice(0, 4)]);
         return {};
       },
       handOffConversation: async (...args: unknown[]) => {
@@ -1487,6 +1819,8 @@ test("composer IPC validates its input and reaches only the engine seams", async
     "linkChatGitHubRepository",
     "listSlashCommands",
     "mentionFiles",
+    "officialCodeClearHistory",
+    "officialReleaseCodeNewTask",
     "readCustomPrompt",
     "resolveCodeNewTask",
     "restoreRewindCode",
@@ -1495,7 +1829,9 @@ test("composer IPC validates its input and reaches only the engine seams", async
     "startReview",
     "steerTurn",
     "swapRewind",
+    "turnAttachment",
   ]);
+  assert.throws(() => handlers.get("officialCodeClearHistory")!("c", "clear"), /native session/);
   await handlers.get("compactConversation")!("c");
   await handlers.get("steerTurn")!("c", "more", ["a"]);
   await handlers.get("forkConversation")!("c");
@@ -1515,21 +1851,22 @@ test("composer IPC validates its input and reaches only the engine seams", async
     "/review release/1.2",
   );
   assert.deepEqual(seen, [
-    ["compact", "c"],
+    ["compact", "c", undefined, undefined],
     ["steer", "c", "more", [image]],
-    ["fork", "c", undefined, undefined],
-    ["fork", "c", "t", "go"],
+    ["fork", "c", undefined, undefined, undefined],
+    ["fork", "c", "t", "go", undefined],
     ["hand-off", "c"],
     ["shell", "c", "ls | wc -l"],
     ["side", "c", "side", "What was that?"],
     ["stop-side", "c", "side"],
     ["end-side", "c", "side"],
-    ["review", "c", { type: "uncommittedChanges" }, undefined],
+    ["review", "c", { type: "uncommittedChanges" }, undefined, undefined],
     [
       "review",
       "c",
       { type: "baseBranch", branch: "release/1.2" },
       "/review release/1.2",
+      undefined,
     ],
   ]);
   assert.throws(() => handlers.get("askSideChat")!("c", "side", 5));
@@ -1656,6 +1993,95 @@ test("R3 memory reaches a new Chat thread through the extension, never a Code on
   }
 });
 
+test("a Chat starts with current Melange memory and clears it on the next send after turning it off", async (t) => {
+  const env = setup(sendAnswer);
+  t.after(env.close);
+  const memory = new MemoryService({
+    store: new LocalMemoryStore(env.store.root),
+    policy: () => openPolicy,
+    changed: () => {},
+  });
+  const state: MelangeSnapshot = {
+    revision: 1,
+    state: {
+      mode: "melange",
+      files: [{ path: "profile.md", content: "Uses metric units.", updated_at: new Date().toISOString() }],
+    },
+  };
+  const melange = new Melange({
+    store: { load: async () => structuredClone(state), save: async () => assert.fail("Unexpected memory write") },
+    isCurrent: () => true,
+    complete: async () => assert.fail("Unexpected memory completion"),
+  });
+  env.engine.extensions.add(createMemoryExtension({ service: () => memory, melange: async () => melange }));
+  env.c.threadId = undefined;
+  env.c.mode = "chat";
+  const input = { conversationId: "c", text: "hi", mode: "chat", attachments: [], providerId: "p", model: "m" } satisfies Parameters<Engine["send"]>[0];
+  await env.engine.send(input);
+  const start = env.calls.find(call => call.method === "thread/start")!;
+  assert.match(start.params.developerInstructions, /Uses metric units/);
+  assert.ok(start.params.dynamicTools.some((tool: { name: string }) => tool.name === "cowork_memory"));
+  assert.ok(!start.params.dynamicTools.some((tool: { name: string }) => tool.name === "claudex_memory"));
+  env.notify("turn/completed", { threadId: "fresh", turn: { id: "new-turn", status: "completed" } });
+  state.state!.mode = "off";
+  await env.engine.send(input);
+  const followup = env.calls.filter(call => call.method === "turn/start").at(-1)!;
+  assert.match(followup.params.additionalContext["memory.update"].value, /turned off/);
+  assert.doesNotMatch(followup.params.collaborationMode.settings.developer_instructions, /Uses metric units/);
+});
+
+test("a Cowork turn reads and writes its shared account memory through the engine", async (t) => {
+  const env = setup(sendAnswer);
+  t.after(env.close);
+  const memory = new MemoryService({
+    store: new LocalMemoryStore(env.store.root),
+    policy: () => openPolicy,
+    changed: () => {},
+  });
+  t.after(() => memory.close());
+  await memory.setPrefs({ generate: true });
+  let repository: CoworkAccountMemorySnapshot = {
+    revision: "1", epoch: "0", updatedAt: null, entries: { "units.md": "Uses metric units" },
+  };
+  env.engine.extensions.add(createMemoryExtension({
+    service: () => memory,
+    coworkAccountMemory: {
+      async read() { return repository; },
+      async patch({ entries, expectedRevision, expectedEpoch }) {
+        assert.equal(expectedRevision, repository.revision);
+        assert.equal(expectedEpoch, repository.epoch);
+        repository = { ...repository, revision: "2", entries: { ...repository.entries, ...entries } };
+        return repository;
+      },
+    },
+  }));
+  env.c.threadId = undefined;
+  env.c.mode = "cowork";
+  await env.engine.send({
+    conversationId: "c", text: "Remember that I grow herbs", mode: "cowork",
+    attachments: [], providerId: "p", model: "m",
+  });
+  const start = env.calls.find((call) => call.method === "thread/start");
+  assert.match(start?.params.developerInstructions, /Uses metric units/);
+  assert.ok(start?.params.dynamicTools.some((tool: { name: string }) => tool.name === "cowork_memory"));
+  const respond = new Promise<unknown>((resolve) => {
+    Object.assign(env.engine.rpc!, { respond: (_: number, result: unknown) => resolve(result) });
+  });
+  env.engine.request({
+    id: 7,
+    method: "item/tool/call",
+    params: {
+      threadId: "fresh", turnId: "new-turn", callId: "call-1", tool: "cowork_memory",
+      arguments: { action: "save", path: "garden.md", content: "Grows herbs" },
+    },
+  });
+  assert.deepEqual(await respond, {
+    contentItems: [{ type: "inputText", text: '{"success":true}' }],
+    success: true,
+  });
+  assert.equal(repository.entries["garden.md"], "Grows herbs");
+});
+
 test("a captured picture goes where it was made and is not shown twice when the reply shares it as a file", async () => {
   const { createHash } = await import("node:crypto");
   const env = setup(() => ({}), [turn("t1", "inProgress")]);
@@ -1704,11 +2130,49 @@ test("a captured picture goes where it was made and is not shown twice when the 
         },
       ],
     } as any);
-    engine.signals.settleGeneratedImages("thread", running);
+    engine.signals.settleGeneratedImages(running);
     assert.deepEqual(
       running.items.map((item: any) => item.id),
       ["a1", "cmd1", "img1", "a2", "outputs-t1"],
     );
+  } finally {
+    env.close();
+  }
+});
+
+test("a late gateway image reopens with its completed turn while the next turn runs", () => {
+  const published: AppEvent[] = [];
+  const env = setup(() => ({}), [turn("t1", "inProgress")], (event) => published.push(event));
+  try {
+    env.c.mode = "chat";
+    env.engine.signals.imageRequest({ kind: "started", id: "api-request" });
+    env.notify("turn/completed", { turn: { id: "t1", status: "completed" } });
+    env.c.turns.push(turn("t2", "inProgress"));
+    const picture = Buffer.from("iVBORw0KGgo=", "base64");
+    const generated = {
+      threadId: "thread",
+      turnId: "t1",
+      callId: "image-1",
+      base64: picture.toString("base64"),
+      format: "png" as const,
+    };
+    env.engine.signals.generatedImage({ ...generated, turnId: "retired", callId: "unknown" });
+    env.engine.signals.generatedImage(generated);
+    env.engine.signals.generatedImage(generated);
+    env.engine.signals.generatedImage({
+      requestId: "api-request", callId: "api-image-1", base64: generated.base64, format: "png",
+    });
+    env.engine.signals.imageRequest({ kind: "finished", id: "api-request" });
+    env.engine.signals.generatedImage({
+      requestId: "api-request", callId: "retired-api-image", base64: generated.base64, format: "png",
+    });
+
+    const latest = published.filter((event) => event.type === "conversation").at(-1);
+    assert.deepEqual(latest?.conversation.turns.map((turn) => turn.items.map((item) => item.id)), [["image-1", "api-image-1"], []]);
+    const saved = new Store(env.store.root).conversation(env.c.id);
+    assert.deepEqual(saved.turns.map((turn) => turn.items.map((item) => item.id)), [["image-1", "api-image-1"], []]);
+    assert.equal(saved.turns[0].items[0].type, "imageGeneration");
+    assert.deepEqual(fs.readFileSync(saved.turns[0].items[0].savedPath), picture);
   } finally {
     env.close();
   }

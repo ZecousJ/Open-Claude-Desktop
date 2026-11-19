@@ -24,7 +24,8 @@ const item = z
 type Entry = z.infer<typeof item>;
 const lifetime = 30 * 86400000;
 
-/** Thirty-day retention, 20 per folder and 100 total. */
+/** Thirty-day retention, 20 per folder and 100 total (desktop 2.37337.1,
+ * index.chunk-BolytlRP.js:2644,2670). */
 export class TaskBacklog {
   constructor(
     private root: string,

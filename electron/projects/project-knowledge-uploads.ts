@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { ProjectKnowledgeCapacityError } from "../../shared/project-knowledge-errors";
 import {
   knowledgeDocumentExtensions,
   checkedKnowledgeEncoding,
@@ -11,13 +12,15 @@ import type {
   KnowledgeUploadCapabilities,
 } from "../../shared/project-knowledge-pending";
 import type { ProjectCapabilities } from "../../shared/project-access";
-import type { ProjectKnowledge } from "../../shared/collections-api";
+import { knowledgeFileLimitMessage, type ProjectKnowledge } from "../../shared/collections-api";
 import {
   ProjectKnowledgeStore,
   knowledgeFileLimit,
   knowledgeProjectLimit,
   knowledgeFileCount,
   knowledgePath,
+  syncKnowledgeDirectories,
+  writeKnowledgeFile,
 } from "./project-knowledge";
 import { documentText } from "../workspace/document-text";
 import { unzipSkill } from "../skills/skill-folder";
@@ -38,6 +41,7 @@ export interface ProjectKnowledgeUploadOwner {
   canEdit?(projectId: string): boolean;
 }
 const activeConversions = new Set<string>();
+const activeStages = new Map<string, Promise<Snapshot>>();
 const pendingId = /^[0-9a-f]{8}-[0-9a-f-]{27}$/;
 const extension = (name: string) => path.extname(name).slice(1).toLowerCase();
 
@@ -154,6 +158,17 @@ export class ProjectKnowledgeUploads {
       } catch {}
     }
   }
+  private syncJournal(projectId: string) {
+    const folder = this.folder(projectId);
+    const descriptor = process.platform === "win32"
+      ? fs.openSync(path.join(folder, "records.json"), fs.constants.O_WRONLY)
+      : fs.openSync(folder, fs.constants.O_RDONLY | fs.constants.O_DIRECTORY);
+    try {
+      fs.fsyncSync(descriptor);
+    } finally {
+      fs.closeSync(descriptor);
+    }
+  }
   private data(projectId: string, record: StoredPending): Buffer {
     const descriptor = fs.openSync(
       path.join(this.folder(projectId), `${record.id}.bin`),
@@ -230,6 +245,23 @@ export class ProjectKnowledgeUploads {
     projectId: string,
     files: { name: string; data: Uint8Array }[],
   ): Promise<Snapshot> {
+    this.check(projectId);
+    const key = path.resolve(this.folder(projectId));
+    const previous = activeStages.get(key);
+    const next = (previous?.catch(() => undefined) ?? Promise.resolve()).then(
+      () => this.stage(projectId, files),
+    );
+    activeStages.set(key, next);
+    try {
+      return await next;
+    } finally {
+      if (activeStages.get(key) === next) activeStages.delete(key);
+    }
+  }
+  private async stage(
+    projectId: string,
+    files: { name: string; data: Uint8Array }[],
+  ): Promise<Snapshot> {
     const owner = this.check(projectId);
     if (!Array.isArray(files) || !files.length || files.length > 12)
       throw Error("Choose up to 12 project files at a time.");
@@ -248,7 +280,7 @@ export class ProjectKnowledgeUploads {
         !(file.data instanceof Uint8Array) ||
         file.data.byteLength > knowledgeFileLimit
       )
-        throw Error("Project files can be up to 10 MB.");
+        throw Error(knowledgeFileLimitMessage);
       const document = (
         knowledgeDocumentExtensions as readonly string[]
       ).includes(extension(file.name));
@@ -263,22 +295,21 @@ export class ProjectKnowledgeUploads {
       };
     });
     const pending = records.filter((record) => record.status !== "completed");
-    if (
-      current.files.length + pending.length + checked.length >
-        knowledgeFileCount ||
-      current.bytes +
+    if (current.files.length + pending.length + checked.length > knowledgeFileCount)
+      throw new ProjectKnowledgeCapacityError("project_file_limit_reached", `A project can keep up to ${knowledgeFileCount} files.`);
+    if (current.bytes +
         pending.reduce((sum, record) => sum + record.bytes, 0) +
         checked.reduce((sum, file) => sum + file.data.length, 0) >
         knowledgeProjectLimit
     )
-      throw Error(
+      throw new ProjectKnowledgeCapacityError("project_storage_full",
         "Project file storage is full. Remove a file before adding more.",
       );
     for (const file of checked) {
       this.check(projectId, owner);
       if (!file.document) {
         if (extension(file.name) === "pdf") {
-          this.store.add(projectId, [{ name: file.name, data: file.data }]);
+          await this.store.add(projectId, [{ name: file.name, data: file.data }]);
           continue;
         }
         let needsEncoding = false;
@@ -288,7 +319,7 @@ export class ProjectKnowledgeUploads {
           needsEncoding = true;
         }
         if (!needsEncoding) {
-          this.store.add(projectId, [{ name: file.name, data: file.data }]);
+          await this.store.add(projectId, [{ name: file.name, data: file.data }]);
           continue;
         }
       }
@@ -299,29 +330,23 @@ export class ProjectKnowledgeUploads {
         document: file.document,
         status: file.document ? "extracting" : "encoding",
       };
-      const target = path.join(
-        this.folder(projectId, true),
-        `${record.id}.bin`,
-      );
-      const descriptor = fs.openSync(
-        target,
-        fs.constants.O_WRONLY |
-          fs.constants.O_CREAT |
-          fs.constants.O_EXCL |
-          fs.constants.O_NOFOLLOW,
-        0o600,
-      );
+      const folder = this.folder(projectId, true);
+      const target = path.join(folder, `${record.id}.bin`);
+      const projectFolder = path.dirname(folder);
       try {
-        fs.writeFileSync(descriptor, file.data);
-      } finally {
-        fs.closeSync(descriptor);
-      }
-      try {
+        await writeKnowledgeFile(target, file.data, true);
+        await syncKnowledgeDirectories([
+          projectFolder,
+          path.dirname(projectFolder),
+          this.store.root,
+        ]);
+        this.check(projectId, owner);
         this.write(projectId, [...this.read(projectId), record]);
       } catch (error) {
-        fs.unlinkSync(target);
+        await fs.promises.rm(target, { force: true });
         throw error;
       }
+      this.syncJournal(projectId);
       if (file.document) {
         try {
           await this.confirmEncoding(projectId, record.id, "extract", owner);
@@ -379,6 +404,7 @@ export class ProjectKnowledgeUploads {
     if (record.status === "completed") {
       if (record.encoding !== choice)
         throw Error("This pending file is no longer available.");
+      this.syncJournal(projectId);
       return this.list(projectId);
     }
     const conversion = path.join(this.folder(projectId), id);
@@ -406,16 +432,17 @@ export class ProjectKnowledgeUploads {
           folder,
           `document.${extension(record.name)}`,
         );
-        fs.writeFileSync(original, data, { flag: "wx", mode: 0o600 });
+        await fs.promises.writeFile(original, data, { flag: "wx", mode: 0o600 });
         text = await documentText(original, record.name);
       } else text = new TextDecoder(choice, { fatal: false }).decode(data);
       this.check(projectId, owner);
       const outputName = knowledgePath(
         record.document ? `${record.name}.txt` : record.name,
       );
-      this.store.add(projectId, [
+      await this.store.add(projectId, [
         { name: outputName, data: Buffer.from(text, "utf8") },
       ]);
+      this.check(projectId, owner);
       const records = this.read(projectId).filter(
         (entry) =>
           entry.id === id ||
@@ -436,8 +463,6 @@ export class ProjectKnowledgeUploads {
             : entry,
         ),
       );
-      fs.unlinkSync(path.join(this.folder(projectId), `${id}.bin`));
-      return this.list(projectId);
     } catch (error) {
       if (this.deps.owner() === owner) {
         const reason =
@@ -461,6 +486,8 @@ export class ProjectKnowledgeUploads {
       activeConversions.delete(conversion);
       if (folder) fs.rmSync(folder, { recursive: true, force: true });
     }
+    this.syncJournal(projectId);
+    return this.list(projectId);
   }
   removePending(projectId: string, id: string): Snapshot {
     this.check(projectId);

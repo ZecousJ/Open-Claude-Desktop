@@ -138,7 +138,7 @@ test("the heatmap shades each day against the busiest one, and leaves the future
   assert.equal(heatLevel(8, 10), 4);
   assert.equal(heatLevel(10, 10), 4);
   assert.equal(heatLevel(5, 0), 0);
-  // The grid runs on to Saturday.
+  // 2026-09-25 is a Friday: the grid runs on to Saturday.
   const grid = activityGrid([], now);
   assert.equal(grid.length, 182);
   assert.deepEqual(

@@ -7,7 +7,7 @@ import { SecurityFindings } from "./RoutinesPage";
 import { TemplateGrid } from "./RoutineCard";
 import { webRoutineTemplates, routineTemplates } from "./routine-templates";
 import { CardsSkeleton } from "../../ui/Skeleton";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { StopwatchArt, WaveRule } from "./RoutineArt";
 import { formatText } from "../../i18n";
 import { noMatchText, defaultRoutineFilter } from "./routine-list";
@@ -425,9 +425,10 @@ export function routinesView(kit: RoutinesViewKit) {
         ) : loading ? (
           <CardsSkeleton />
         ) : loadError ? (
-          // A centred alert with a secondary Retry.
+          // A centred alert with a secondary Retry (live claude.ai bundle,
+          // 2026-10-14: IAxBhl6i8Q, py-16).
           <div className="routines-load-error" role="alert">
-            <AppIcon name="Warning" size={20} aria-hidden="true" />
+            <Anthropicon name="Warning" size={20} aria-hidden="true" />
             {sourceFailures.map((source) => (
               <span key={source.source}>
                 {source.source === "remote"

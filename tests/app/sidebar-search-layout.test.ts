@@ -127,9 +127,9 @@ test("template menu kinds render their actual 16px official glyph in a labelled 
     const tile = document.querySelector(".nav-template-icon")!;
     assert.equal(tile.getAttribute("data-template"), kind);
     assert.equal(tile.getAttribute("aria-hidden"), "true");
-    const glyph = tile.querySelector(".app-icon")!;
-    assert.equal(glyph.getAttribute("data-icon"), name);
-    assert.equal(glyph.getAttribute("width"), "16");
+    const glyph = tile.querySelector(".anthropicon")!;
+    assert.equal(glyph.getAttribute("data-anthropicon"), name);
+    assert.match(glyph.getAttribute("style") ?? "", /font-size:calc\(16px/);
   }
 });
 
@@ -146,7 +146,7 @@ test("phone Search keeps one page inset instead of nesting two margins", async (
   );
   assert.match(
     css,
-    /\.app\.web \.sidebar \.web-sidebar-search \.app-icon \{\s*width: 20px;\s*height: 20px;/,
+    /\.app\.web \.sidebar \.web-sidebar-search \.anthropicon \{\s*width: 20px;\s*height: 20px;/,
   );
 });
 

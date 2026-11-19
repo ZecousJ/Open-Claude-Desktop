@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { act, createElement } from "react";
 import { parseHTML } from "linkedom";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { HostContext } from "../../src/host/HostContext";
 import { webHost, resolveHost } from "../../shared/host";
@@ -285,10 +285,7 @@ test("review: full page follows Contents, Settings hash, popstate and Your skill
       );
       assert.equal(document.querySelector('[role="dialog"]'), null);
       await click('.installed-skill-tabs a[href$="/contents"]');
-      assert.equal(
-        url(),
-        detail("release-notes", true) + "#settings/data-privacy-controls",
-      );
+      assert.equal(url(), detail("release-notes", true) + "#settings/data-privacy-controls");
       assert.match(
         document.querySelector(".installed-skill-reader")?.textContent ?? "",
         /release-notes/,
@@ -799,11 +796,13 @@ test("review: assembled page exposes each tab's specific Add name and the actual
         assert.ok(add, label);
         assert.equal(add.getAttribute("aria-haspopup"), "menu");
         assert.equal(
-          add.querySelector('[data-icon="Add"]')?.getAttribute("width"),
+          add.querySelector('[data-anthropicon="Add"]')?.getAttribute("width"),
           "20",
         );
         assert.equal(
-          add.querySelector('[data-icon="CaretDown"]')?.getAttribute("width"),
+          add
+            .querySelector('[data-anthropicon="CaretDown"]')
+            ?.getAttribute("width"),
           "16",
         );
       }

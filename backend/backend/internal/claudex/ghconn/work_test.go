@@ -228,8 +228,7 @@ func openPullRepo() map[string]any {
 }
 
 func setPull(repo map[string]any, key string, value any) {
-	pull, _ := repo["pullRequest"].(map[string]any)
-	pull[key] = value
+	repo["pullRequest"].(map[string]any)[key] = value
 }
 
 func TestPullRequestStateReviewsAndChecks(t *testing.T) {

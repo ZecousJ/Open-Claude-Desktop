@@ -42,15 +42,17 @@ export function defaultHiddenNavItemsFor(mode: Mode) {
 }
 
 /**
- * Dispatch lives in More. The unified chat's four primary collection links stay
- * visible, including for saved legacy preferences; API and Service status sit
- * with them on the sidebar in every mode.
+ * Dispatch lives in More. The unified chat's four primary collection links
+ * stay visible, including for saved legacy preferences (owner handover and
+ * live capture, 2026-10-16); API and Service status sit with them on the
+ * sidebar in every mode (owner, 2026-10-20).
  */
 export const defaultHiddenNavItems: readonly NavItemId[] = ["dispatch"];
 
 /**
- * The rows a surface offers, split into those shown and those moved into More.
- * Cowork has its own mode entry; it is not a Chat alias.
+ * The rows a surface offers, split into those shown and those moved into
+ * More (R-0018). Cowork has its own mode entry; it is not a Chat alias
+ * (live claude.ai bundle, 2026-10-14, shared-20-BCaQhdKH.js).
  */
 export function sidebarNav(
   mode: Mode,
@@ -59,8 +61,9 @@ export function sidebarNav(
 ) {
   const hiddenIds = hidden ?? defaultHiddenNavItemsFor(mode);
   // Claudex shares its scheduler across modes; Routines is the non-unified
-  // scheduler's Code label. Dispatch has no row; Customize and Scheduled live
-  // in More.
+  // scheduler's Code label (live claude.ai bundle, 2026-10-14, shared-20-BCaQhdKH.js; shared-16-CBfjFjLo.js).
+  // Dispatch has no row (owner, 2026-10-22); Customize and Scheduled live
+  // in More (owner, 2026-10-22: "自定义和定时任务塞到更多").
   const available = navItems.filter(
     (item) => item.surfaces.includes(mode) && item.id !== "dispatch",
   );
@@ -80,9 +83,9 @@ export function sidebarNav(
   };
 }
 
-/** Unified home fixes Scheduled in Code too. */
+/** Unified home fixes Scheduled in Code too (live claude.ai bundle, 2026-10-14, shared-l-0-DFIwPMy1.js). */
 export function isFixedNavItem(mode: Mode, id: NavItemId, _hub: boolean) {
-  // API and Service status are always on the sidebar.
+  // API and Service status are always on the sidebar (owner, 2026-10-20).
   if (id === "api" || id === "status") return true;
   return mode !== "code" && ["projects", "artifacts"].includes(id);
 }
@@ -101,7 +104,7 @@ export function navBadgeLabel(badge: NavBadge) {
   }
 }
 
-/** The selected hidden row names More. */
+/** The selected hidden row names More (live claude.ai bundle, 2026-10-14, shared-21-Cj1zQ-fC.js). */
 export function moreNavState<
   Item extends { id: string; label: string; badge?: NavBadge },
 >(items: readonly Item[], page: string, seen: readonly string[] = []) {

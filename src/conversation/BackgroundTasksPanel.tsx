@@ -83,11 +83,11 @@ export function commandItem(
 }
 
 /**
- * What the command printed, as its item has it, with the exit code when Codex
- * reported one; empty when unknown.
+ * What the command printed, as its item has it, with the exit code when
+ * Codex reported one (R-0655 "[exited with code 0]"); empty when unknown.
  */
 function finishedOutput(item: Item | undefined, stopped = false) {
-  // A stopped command that printed nothing reads "[killed]".
+  // R-0820: a stopped command that printed nothing reads "[killed]".
   if (!item) return stopped ? "\n[killed]" : "";
   const output =
     typeof item.aggregatedOutput === "string"
@@ -113,7 +113,7 @@ export function FinishedTerminal({
 }) {
   const [open, setOpen] = useState(false);
   const output = finishedOutput(item, task.status === "stopped");
-  // The card names what the command does, as the model said it.
+  // R-0820: the card names what the command does, as the model said it.
   const title =
     typeof item?.description === "string" && item.description.trim()
       ? item.description
@@ -146,9 +146,10 @@ export function FinishedTerminal({
 }
 
 /**
- * The Background tasks panel: the open conversation's running Workflow and
- * Agent tasks, background terminals and foreground command, and what finished.
- * Other conversations' tasks are not listed (G-51).
+ * The Background tasks panel (package WP5b): the open conversation's
+ * running Workflow and Agent tasks, background terminals and foreground
+ * command, and what finished (R-0646, R-0654–R-0656). Other conversations'
+ * tasks are not listed (G-51).
  */
 export function BackgroundTasksPanel({
   conversations,

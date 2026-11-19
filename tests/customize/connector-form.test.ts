@@ -22,7 +22,10 @@ import {
   ConnectorClients,
   connectorOAuthClient,
 } from "../../electron/connectors/connector-clients";
-import { probeConnector } from "../../electron/connectors/connector-probe";
+import {
+  ConnectorProbeError,
+  probeConnector,
+} from "../../electron/connectors/connector-probe";
 import {
   customConnectorEntry,
   mcpServerStates,
@@ -200,7 +203,17 @@ test("custom OAuth clients live in a private credential file, never a connector 
   assert.equal(new ConnectorClients(root).get("example"), undefined);
 });
 
-test("server probe uses bounded MCP initialization and reports OAuth without exposing responses", async () => {
+const initialization = {
+  jsonrpc: "2.0",
+  id: 1,
+  result: {
+    protocolVersion: "2025-03-26",
+    capabilities: { tools: {} },
+    serverInfo: { name: "fixture", version: "1" },
+  },
+};
+
+test("server probe uses MCP initialization and reports OAuth without exposing responses", async () => {
   for (const status of [200, 401, 403]) {
     const request = (async (address, init) => {
       assert.equal(address, "https://example.com/mcp");
@@ -208,10 +221,13 @@ test("server probe uses bounded MCP initialization and reports OAuth without exp
       assert.equal(init?.redirect, "error");
       assert.equal(JSON.parse(String(init?.body)).method, "initialize");
       assert.ok(init?.signal);
-      return new Response("private server response", { status });
+      return status === 200
+        ? Response.json(initialization)
+        : new Response("private server response", { status });
     }) as typeof fetch;
     assert.deepEqual(await probeConnector("https://example.com/mcp", request), {
       authRequired: status !== 200,
+      transport: "streamable-http",
     });
   }
   await assert.rejects(
@@ -227,6 +243,94 @@ test("server probe uses bounded MCP initialization and reports OAuth without exp
     ),
     /request failed/,
   );
+});
+
+test("OAuth probe suggests the registration method proved by server metadata", async () => {
+  const origin = "https://example.com";
+  const resource = origin + "/mcp";
+  for (const dynamic of [true, false]) {
+    const response = await probeConnector(resource, async (input) => {
+      const address = new URL(String(input));
+      if (address.pathname === "/mcp")
+        return new Response(null, { status: 401 });
+      if (address.pathname.startsWith("/.well-known/oauth-protected-resource"))
+        return Response.json({ resource, authorization_servers: [origin] });
+      assert.equal(address.pathname, "/.well-known/oauth-authorization-server");
+      return Response.json({
+        issuer: origin,
+        authorization_endpoint: origin + "/authorize",
+        token_endpoint: origin + "/token",
+        code_challenge_methods_supported: ["S256"],
+        ...(dynamic && { registration_endpoint: origin + "/register" }),
+      });
+    });
+    assert.deepEqual(response, {
+      authRequired: true,
+      transport: "streamable-http",
+      suggestedRegistration: dynamic ? "dcr" : "static_per_installation",
+    });
+  }
+});
+
+test("server probe verifies a streamable HTTP initialize event and rejects a successful ordinary web page", async () => {
+  const url = "https://example.com/mcp";
+  const answer = await probeConnector(
+    url,
+    async () =>
+      new Response(
+        `event: message\ndata: ${JSON.stringify({ ...initialization, id: 9 })}\n\nevent: message\ndata: ${JSON.stringify(initialization)}\n\n`,
+        { headers: { "Content-Type": "text/event-stream" } },
+      ),
+  );
+  assert.deepEqual(answer, {
+    authRequired: false,
+    transport: "streamable-http",
+  });
+  for (const response of [
+    new Response("<html>Ordinary website</html>"),
+    Response.json({ jsonrpc: "2.0", id: 1, result: {} }),
+    Response.json({ ...initialization, id: 9 }),
+  ]) {
+    await assert.rejects(
+      probeConnector(url, async () => response),
+      (error) =>
+        error instanceof ConnectorProbeError && error.failure === "not_found",
+    );
+  }
+});
+
+test("legacy SSE probe posts initialize to the server's announced endpoint and waits for the reply", async () => {
+  let events: ReadableStreamDefaultController<Uint8Array>;
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      events = controller;
+      controller.enqueue(
+        encoder.encode("event: endpoint\ndata: /messages?session=fixture\n\n"),
+      );
+    },
+  });
+  const answer = await probeConnector(
+    "https://example.com/sse",
+    async (url, init) => {
+      if (!init?.method) {
+        assert.equal(url, "https://example.com/sse");
+        return new Response(stream, {
+          headers: { "Content-Type": "text/event-stream" },
+        });
+      }
+      assert.equal(url, "https://example.com/messages?session=fixture");
+      assert.equal(init.method, "POST");
+      assert.equal(JSON.parse(String(init.body)).method, "initialize");
+      events.enqueue(
+        encoder.encode(
+          `event: message\ndata: ${JSON.stringify(initialization)}\n\n`,
+        ),
+      );
+      return new Response(null, { status: 202 });
+    },
+  );
+  assert.deepEqual(answer, { authRequired: false, transport: "sse" });
 });
 
 test("submission URL variants validate fixed lists, whole-host regexes, and customer templates", () => {
@@ -335,7 +439,7 @@ test("connector dialogs and submission URL editor remain lazy", () => {
   );
 });
 
-test("desktop OAuth tokens and custom clients are bound to their original server URL", (context) => {
+test("desktop OAuth tokens and custom clients are bound to their original server URL", async (context) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-scoped-client-"));
   context.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const resource = "https://example.com/mcp";
@@ -361,7 +465,17 @@ test("desktop OAuth tokens and custom clients are bound to their original server
   );
   assert.equal(clients.get("example", resource)?.clientSecret, "secret");
   assert.equal(clients.get("example", "https://other.test/mcp"), undefined);
-  forgetDesktopConnectorToken(root, "example", resource);
+  const deactivating: (() => void | Promise<void>)[] = [];
+  const ctx = {
+    activeAccount: { id: "fixture" },
+    store: { root, settings: { mcpServers: {} } },
+    onAccountDeactivating: (callback: () => void | Promise<void>) =>
+      deactivating.push(callback),
+  } as unknown as Parameters<typeof forgetDesktopConnectorToken>[0];
+  context.after(async () => {
+    for (const callback of deactivating) await callback();
+  });
+  await forgetDesktopConnectorToken(ctx, "example", resource);
   assert.equal(desktopConnectorHeaders(root, "example", resource), undefined);
 });
 
@@ -390,7 +504,7 @@ test("legacy SSE transport forwards MCP messages and never posts credentials to 
   const transport = await openSseConnector(
     "https://example.com/sse",
     request,
-    { Authorization: "Bearer private" },
+    { Authorization: "Bearer private", "x-tenant-id": "tenant" },
     (message) => received.push(message),
   );
   await transport.send({ jsonrpc: "2.0", id: 1, method: "initialize" });
@@ -398,6 +512,10 @@ test("legacy SSE transport forwards MCP messages and never posts credentials to 
   assert.equal(
     new Headers(calls[1].init?.headers).get("Authorization"),
     "Bearer private",
+  );
+  assert.deepEqual(
+    calls.map(({ init }) => new Headers(init?.headers).get("x-tenant-id")),
+    ["tenant", "tenant"],
   );
   controller.enqueue(
     encoder.encode(

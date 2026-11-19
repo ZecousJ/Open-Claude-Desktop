@@ -65,9 +65,9 @@ export function requestDraft(
 }
 
 /**
- * The confirmation `/schedule` shows before anything is saved: what will run,
- * when, where and on which model. Create routine saves it; Edit opens the full
- * editor with these values.
+ * The confirmation `/schedule` shows before anything is saved (R13-D; not
+ * captured: provisional): what will run, when, where and on which model.
+ * Create routine saves it; Edit opens the full editor with these values.
  */
 export function ScheduleConfirmCard({
   draft,

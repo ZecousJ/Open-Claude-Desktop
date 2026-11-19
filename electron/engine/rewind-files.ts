@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { parseUnifiedDiff } from "../../shared/diff-model";
 import type { RewindChange } from "../../shared/rewind-files";
 
 /**
@@ -10,70 +11,37 @@ import type { RewindChange } from "../../shared/rewind-files";
  * it is and counted as skipped.
  */
 
-const HUNK = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
-
 const contentOf = (text: string) => text.replace(/\r\n/g, "\n");
 
-interface Hunk {
-  oldStart: number;
-  /** The hunk's lines before (context and removed) and after (context and added). */
-  before: string[];
-  after: string[];
-}
-
-function hunksOf(diff: string): Hunk[] | undefined {
-  const hunks: Hunk[] = [];
-  let current: Hunk | undefined;
-  for (const line of diff.replace(/\r\n/g, "\n").split("\n")) {
-    const head = HUNK.exec(line);
-    if (head) {
-      current = { oldStart: Number(head[1]), before: [], after: [] };
-      hunks.push(current);
-      continue;
-    }
-    if (!current) continue;
-    if (line.startsWith("\\")) continue;
-    if (line.startsWith("+")) current.after.push(line.slice(1));
-    else if (line.startsWith("-")) current.before.push(line.slice(1));
-    else if (line.startsWith(" ") || line === "") {
-      current.before.push(line.slice(1));
-      current.after.push(line.slice(1));
-    }
-  }
-  return hunks.length ? hunks : undefined;
-}
-
-const sameAt = (lines: string[], at: number, want: string[]) =>
-  at >= 0 &&
-  at + want.length <= lines.length &&
-  want.every((line, i) => lines[at + i] === line);
-
-/** The text with an edit's hunks undone; undefined when they no longer match. */
 export function reverseDiff(text: string, diff: string): string | undefined {
-  const hunks = hunksOf(diff);
-  if (!hunks) return undefined;
-  const trailing = text.endsWith("\n");
-  const lines = contentOf(text).split("\n");
-  if (trailing) lines.pop();
-  // Last hunk first, so earlier positions stay right.
-  for (const hunk of [...hunks].reverse()) {
-    const guess = Math.max(0, hunk.oldStart - 1);
-    let at = -1;
-    for (let d = 0; d <= lines.length; d++) {
-      if (sameAt(lines, guess + d, hunk.after)) {
-        at = guess + d;
-        break;
-      }
-      if (d && sameAt(lines, guess - d, hunk.after)) {
-        at = guess - d;
-        break;
-      }
-      if (guess + d > lines.length && guess - d < 0) break;
+  const files = parseUnifiedDiff(diff, "file");
+  if (files.length !== 1 || !files[0].hunks.length) return undefined;
+  const lines = text.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+  for (const hunk of [...files[0].hunks].reverse()) {
+    const before = hunk.lines
+      .filter((line) => line.kind !== "add")
+      .map((line) => line.text + (line.ending ?? "\n"));
+    const after = hunk.lines
+      .filter((line) => line.kind !== "del")
+      .map((line) => line.text + (line.ending ?? "\n"));
+    if (before.length !== hunk.oldLines || after.length !== hunk.newLines)
+      return undefined;
+    const guess = Math.max(0, hunk.newStart - (hunk.newLines ? 1 : 0));
+    const matches = (at: number) =>
+      at >= 0 &&
+      at + after.length <= lines.length &&
+      after.every((line, i) => lines[at + i] === line);
+    let at = matches(guess) ? guess : -1;
+    if (at < 0 && after.length) {
+      const candidates = lines.flatMap((_, index) =>
+        matches(index) ? [index] : [],
+      );
+      if (candidates.length === 1) at = candidates[0];
     }
     if (at < 0) return undefined;
-    lines.splice(at, hunk.after.length, ...hunk.before);
+    lines.splice(at, after.length, ...before);
   }
-  return lines.join("\n") + (trailing ? "\n" : "");
+  return lines.join("");
 }
 
 const isLink = (file: string) => {

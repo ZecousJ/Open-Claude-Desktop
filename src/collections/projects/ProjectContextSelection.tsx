@@ -20,7 +20,8 @@ export function ProjectContextSelection({
   selected,
   setSelected,
 }: PrjContextSelectionProps) {
-  // The one checkbox selects or clears every file; its hint says which.
+  // The one checkbox selects or clears every file; its hint says which (live
+  // claude.ai bundle, 2026-10-16, shared-13: AW).
   const { props, tooltip } = useTooltip(
     selected.size < scope.length ? t("Select all") : t("Deselect all"),
     { placement: "below", disabled: !scope.length },

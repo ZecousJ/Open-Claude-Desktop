@@ -15,6 +15,7 @@ import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { build } from "esbuild";
 import { Gateway } from "../../electron/engine/gateway";
 import { Engine } from "../../electron/engine/engine";
 import { Store } from "../../electron/store/store";
@@ -504,6 +505,20 @@ test(
       assert.equal(command?.command, "echo greet-checked");
       assert.equal(command?.exitCode, 0);
       assert.equal(transcript.items.at(-1)?.text, "CHILD_DONE");
+      await host.stop();
+      store.settings.providers = [{ id: "e2e", name: "Fixture", model: MODEL, models: [], baseUrl: mock.url, protocol: "responses" }];
+      store.settings.activeProviderId = "e2e";
+      store.flush();
+      const restored = new Store(store.root);
+      const service = path.join(root, "provider-service.cjs");
+      await build({ entryPoints: ["server/provider-service.ts"], bundle: true, platform: "node", format: "cjs", target: "node22", outfile: service });
+      const cold = new Engine(restored, binary!, () => FAKE_KEY, () => {}, service);
+      try {
+        const before = mock.requests.length;
+        const reopened = await readWorkflowAgent({ store: restored, engine: cold }, conversation.id, childId);
+        assert.equal(reopened.items.at(-1)?.text, "CHILD_DONE");
+        assert.equal(mock.requests.length, before, "reading a cold child must not make a model request");
+      } finally { await cold.stop(); }
     } finally {
       releaseToolDescriptions(engine);
       await host.stop().catch(() => {});

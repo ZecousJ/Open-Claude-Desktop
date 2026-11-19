@@ -3,8 +3,10 @@ import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { build } from "esbuild";
-import "./build-quick-access.mjs";
-import "./build-notification-authorization.mjs";
+const edition = process.env.CLAUDEX_EDITION ?? "full";
+if (edition !== "local" && edition !== "full") throw Error("CLAUDEX_EDITION must be local or full.");
+await import("./build-quick-access.mjs");
+await import("./build-notification-authorization.mjs");
 const commitProperty = (format, fallback) => {
   try {
     return (
@@ -45,18 +47,12 @@ await build({
   external: ["electron"],
   sourcemap: true,
   define: {
+    __CLAUDEX_EDITION__: JSON.stringify(edition),
+    __CLAUDEX_SELF_HOSTED_SERVICE_URL__: JSON.stringify(process.env.CLAUDEX_SUB2API_URL || "http://127.0.0.1:18080"),
     __CLAUDEX_BUILD_TIMESTAMP__: JSON.stringify(
       commitProperty("%cI", new Date().toISOString()),
     ),
     __CLAUDEX_COMMIT_HASH__: JSON.stringify(commitProperty("%H", "unknown")),
-    // The service this build signs in to; none asks on the sign-in page.
-    __CLAUDEX_SERVICE_URL__: JSON.stringify(
-      process.env.CLAUDEX_SERVICE_URL ?? "",
-    ),
-    // The interface packs' signing key (base64 SPKI); none loads no packs.
-    __CLAUDEX_UI_PACK_PUBLIC_KEY__: JSON.stringify(
-      process.env.CLAUDEX_UI_PACK_PUBLIC_KEY ?? "",
-    ),
   },
 });
 await build({
@@ -68,13 +64,22 @@ await build({
   outfile: "dist-electron/preload.cjs",
   external: ["electron"],
 });
+// Static artifact previews use only their own narrow preload, never the official page shim.
+await build({
+  entryPoints: ["electron/official-ui/preview/static-preload.cjs"],
+  bundle: true, platform: "node", target: "node22", format: "cjs",
+  outfile: "dist-electron/static-artifact-preview-preload.cjs", external: ["electron"],
+});
 // The extra pages' own preloads (electron/extra-pages.ts): each exposes
 // only its page's calls.
 for (const name of [
   "find-preload",
   "quick-preload",
+  "checkout-preload",
+  "design-window-preload",
   "design-pdf-preload",
   "computer-use/teach-preload",
+  "official-ui/legacy-draft-preload",
 ])
   await build({
     entryPoints: [`electron/${name}.ts`],

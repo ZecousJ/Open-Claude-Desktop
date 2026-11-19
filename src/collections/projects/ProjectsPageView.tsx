@@ -321,7 +321,7 @@ export function projectsPageView(kit: ProjectsPageViewKit) {
             </div>
           ) : query?.trim() ? (
             // The original's no-match line: mt-10 text-center text-body
-            // text-muted.
+            // text-muted (live claude.ai bundle, 2026-10-14, c17beaa76).
             <p className="prj-none">
               {formatText("No projects matching “{query}”", {
                 query: query.trim(),

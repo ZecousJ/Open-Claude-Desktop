@@ -1,12 +1,13 @@
 import type { Conversation, Mode, Turn } from "../../shared/types";
 
 /**
- * Which of Edit and Restart a Cowork prompt shows. The original's message row
- * offers Edit on the conversation's last prompt only, and only while no reply
- * is being written; "Restart session from here" sits on a prompt on the same
- * terms. Neither is there for a prompt that is not a message to Claude (a
- * /compact turn, a Bash line or a review has nothing to send again). Code has
- * no such row: its prompts go back with Rewind to here in the right-click menu.
+ * Which of Edit and Restart a Cowork prompt shows. The original's message
+ * row (desktop bundle 2.31226.1, the chat message hook) offers Edit on the
+ * conversation's last prompt only, and only while no reply is being written;
+ * "Restart session from here" sits on a prompt on the same terms. Neither is
+ * there for a prompt that is not a message to Claude (a /compact turn, a Bash
+ * line or a review has nothing to send again). Code has no such row: its
+ * prompts go back with Rewind to here in the right-click menu.
  */
 export function coworkPromptActions(
   conversation: Pick<Conversation, "turns">,
@@ -22,6 +23,6 @@ export function coworkPromptActions(
   return { edit: true, restart: true };
 }
 
-/** What saving an edited Cowork prompt does. */
+/** What saving an edited Cowork prompt does (desktop bundle 2.31226.1). */
 export const coworkEditNote =
   "Saving sends this as your latest message and restarts from here.";

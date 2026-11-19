@@ -18,6 +18,7 @@ export function isToolUseLimitError(message: string | undefined) {
   );
 }
 
+// (live claude.ai bundle, 2026-10-14, shared-m-0-DxR427YZ.js)
 export const storageFullMessage =
   "Your disk is full. Free up space and try again.";
 
@@ -64,16 +65,25 @@ export function isContextLimitError(message: string | undefined) {
 }
 
 /**
- * Codex reports a dropped stream it is about to retry as an error with
- * willRetry set, e.g. "Reconnecting... 2/5". Returns the attempt text shown
- * under the reply, or undefined when there is nothing to show.
+ * Codex's retryable stream errors carry the attempt in "Reconnecting... 2/5".
  */
-export function reconnectAttempt(message: string | undefined) {
-  const match = /(\d+)\s*\/\s*(\d+)/.exec(message ?? "");
-  return match ? `${match[1]}/${match[2]}` : undefined;
+export function reconnectAttempt(message: unknown) {
+  if (typeof message !== "string") return;
+  const match = /^Reconnecting\.\.\. (\d+)\/(\d+)$/.exec(message);
+  if (!match) return;
+  const attempt = Number(match[1]);
+  const maxRetries = Number(match[2]);
+  if (Number.isSafeInteger(maxRetries) && attempt >= 1 && attempt <= maxRetries)
+    return { attempt, maxRetries };
 }
 
 export type RetryCause = "authentication_failed" | "rate_limit" | "overloaded";
+
+export interface StreamRetry {
+  attempt: number;
+  maxRetries: number;
+  cause?: RetryCause;
+}
 
 /** The short headline of a retried failure, as both status lines word it. */
 export const retryCauseHeadlines = {
@@ -83,8 +93,9 @@ export const retryCauseHeadlines = {
 } as const satisfies Record<RetryCause, string>;
 
 /**
- * What a retried failure was, as the original names it in "{cause}. Retrying
- * …": sign-in, rate limit or a busy server; anything else is "Request failed".
+ * What a retried failure was, as the original names it in "{cause}.
+ * Retrying …" (live claude.ai bundle, 2026-10-14, shared-17 ZJ): sign-in,
+ * rate limit or a busy server; anything else is "Request failed".
  */
 export function retryCause(text: string | undefined): RetryCause | undefined {
   if (!text) return undefined;

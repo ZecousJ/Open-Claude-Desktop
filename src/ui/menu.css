@@ -1,14 +1,15 @@
 /*
  * Floating menus (src/ui/Menu.tsx), measured from the sidebar filter and row
- * menus: 24px rows, 3px/4px vertical padding, dividers with 4px margins and 7px
- * insets, submenus 2px to the right.
+ * menus (R-0031, R-0044): 24px rows, 3px/4px vertical padding, dividers
+ * with 4px margins and 7px insets, submenus 2px to the right.
  */
 .menu {
   position: fixed;
   z-index: 200;
   box-sizing: border-box;
   min-width: 128px;
-  /* A long list scrolls inside the window, and the popup stops at 320px. */
+  /* A long list scrolls inside the window, and the popup stops at 320px
+     (live claude.ai bundle, 2026-10-16, shared-frame-6654oR3- ce and bY). */
   max-width: 320px;
   max-height: var(--available-height, calc(100vh - 16px));
   overflow-x: hidden;
@@ -19,11 +20,13 @@
   background: var(--surface-popover);
   box-shadow: var(--shadow);
   outline: none;
-  /* Compact density: 13px/19px text; the regular size and the web take the
-     comfortable 14px/20px below. */
+  /* Compact density: 13px/19px text (live claude.ai bundle, 2026-10-16,
+     c6a992d55 --cds-font-size-body / --cds-leading-body); the regular size
+     and the web take the comfortable 14px/20px below. */
   font-size: 13px;
   line-height: 19px;
-  /* Opens and closes at once: the original's menu popup has no transition. */
+  /* Opens and closes at once: the original's menu popup has no transition
+     (desktop bundle 2.31226.1). */
 }
 .menu > button {
   display: flex;
@@ -37,7 +40,8 @@
   white-space: nowrap;
   color: var(--text);
   /* The highlight moves from row to row at once: the original's menu item
-     carries no transition, where plain buttons fade their fill over 60ms. */
+     carries no transition (desktop bundle 2.31226.1), where plain buttons
+     fade their fill over 60ms. */
   transition: none;
 }
 /* An item with a description line under its label grows to two lines. */
@@ -79,20 +83,23 @@
   outline: none;
   box-shadow: none;
 }
-/* A value or hint is cut at 160px, never squeezing the label. */
+/* A value or hint is cut at 160px, never squeezing the label (the
+   original's `max-w-[160px] shrink-0 truncate`, desktop bundle 2.31226.1). */
 .menu > button > small {
   flex: none;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  /* text-footnote text-muted: 12px/15px compact, 13px/17px comfortable. */
+  /* text-footnote text-muted: 12px/15px compact, 13px/17px comfortable
+     (live claude.ai bundle, 2026-10-16, shared-frame-6654oR3-). */
   font-size: 12px;
   line-height: 15px;
   color: var(--text-muted);
 }
 /* The shortcut's outer span is text-footnote, which wins over the keycap's
-   text-caption. */
+   text-caption (live claude.ai bundle, 2026-10-16, shared-frame-6654oR3-
+   eJ and ye). */
 .menu > button > kbd {
   font-family: inherit;
   font-size: 12px;
@@ -104,13 +111,15 @@
   margin-right: -4px;
   color: #8a8987;
 }
-/* fill-accent #2a78d6, the same in both themes. */
+/* fill-accent #2a78d6, the same in both themes (live claude.ai bundle,
+   2026-10-16, c6a992d55 --cds-blue-450). */
 .menu > button > .menu-check {
   color: var(--link-text);
 }
 .menu > button.danger {
-  /* text-danger, #ec7e7e in dark; the global .danger rule is !important and
-     reads the same variable. */
+  /* text-danger, #ec7e7e in dark (live claude.ai bundle, 2026-10-16,
+     c6a992d55-DtPVsf7Q.css); the global .danger rule is !important and reads
+     the same variable. */
   color: var(--danger);
 }
 /* A highlighted Delete row is filled red with white text: R-1010 (light,
@@ -130,7 +139,8 @@
   cursor: default;
 }
 .menu > .menu-heading {
-  /* text-footnote font-medium text-muted with py-1: 4 + 15 + 4 = 23px. */
+  /* text-footnote font-medium text-muted with py-1: 4 + 15 + 4 = 23px
+     (live claude.ai bundle, 2026-10-16, shared-frame-6654oR3- xE). */
   padding: 4px 7px;
   font-size: 12px;
   font-weight: 500;
@@ -143,7 +153,8 @@
   border: 0;
   background: #373737;
 }
-/* size="regular": 32px rows, 14px text 14px from the rim, a 24px grey heading. */
+/* size="regular" (R-1110 Add, R-1137 filter, R-1139 sort; Windows 1x):
+   32px rows, 14px text 14px from the rim, a 24px grey heading. */
 .menu.regular {
   font-size: 14px;
   line-height: 20px;
@@ -199,8 +210,8 @@
 :root[data-theme="light"] .menu > button > .menu-check {
   color: #2a78d6;
 }
-/* A row's settings gear: shown while the row is hovered or highlighted, in the
-   row's grey icon colour. */
+/* A row's settings gear (R-0386 Local, Default): shown while the row is
+   hovered or highlighted, in the row's grey icon colour. */
 .menu > button > .menu-gear {
   display: none;
   flex: 0 0 auto;
@@ -222,15 +233,18 @@
 }
 
 /* A searchable submenu (Add to project): the search row follows the composer
-   add menu's project search: 40px, a 16px glyph, 14px text over a rule. */
-/* The popup is at least 240px wide. */
+   add menu's project search (R-0228, composer-add-menu.css): 40px, a 16px
+   glyph, 14px text over a rule. */
+/* The popup is at least 240px wide (min-w-60; live claude.ai bundle,
+   2026-10-16, shared-16-BiJCywSO.js SearchablePopup). */
 .menu[data-searchable] {
   min-width: 240px;
 }
-/* A searchable menu (Add to project): the popup search runs edge to edge over
-   the first row, no glyph, 8px above and below its text, a rule under it and
-   4px before the rows: 12px in at 13px/19px compact (36px high), 16px in at
-   14px/20px comfortable (37px). */
+/* A searchable menu (Add to project): the popup search runs edge to edge
+   over the first row, no glyph, 8px above and below its text, a rule under
+   it and 4px before the rows: 12px in at 13px/19px compact (36px high),
+   16px in at 14px/20px comfortable (37px) (live claude.ai bundle,
+   2026-10-16, shared-frame-6654oR3- aO). */
 .menu > .menu-search {
   display: flex;
   align-items: center;
@@ -274,14 +288,15 @@
 }
 
 /*
- * On a touch phone (a coarse pointer under 640px) a web menu is a sheet at the
- * * the screen's full width, rounded 12px at the top only, up to 90% of the
- *   screen's height, the home indicator's safe area (at least 8px) under the
- *   last row; a 32px band on top carries a 36 by 4 pill; it rises 0.3s with the
- *   sheet ease-out over a 50% black scrim (40% in light). Rows take its
- *   comfortable large size: 40px high, 12px in, rounded 10px, 15/22 text. A
- *   submenu is a second sheet over it; the first steps back (scale 0.94, 12px
- *   up) and dims, as its covered sheets.
+ * On a touch phone (a coarse pointer under 640px) a web menu is a sheet at
+ * the bottom of the screen, as the live claude.ai bundle presents its menus
+ * there (2026-10-12): the screen's full width, rounded 12px at the top
+ * only, up to 90% of the screen's height, the home indicator's safe area
+ * (at least 8px) under the last row; a 32px band on top carries a 36 by 4
+ * pill; it rises 0.3s with the sheet ease-out over a 50% black scrim (40%
+ * in light). Rows take its comfortable large size: 40px high, 12px in,
+ * rounded 10px, 15/22 text. A submenu is a second sheet over it; the first
+ * steps back (scale 0.94, 12px up) and dims, as its covered sheets.
  */
 .menu-sheet-scrim {
   display: none;
@@ -416,8 +431,9 @@
     transition: none;
   }
 }
-/* A row's trailing xxs button, 20px tall and 6px in, nudged 2px into the row's
-   end padding. */
+/* A row's trailing xxs button (live claude.ai bundle, 2026-10-15, cf580efe9
+   `fi`: a dev server's Run in fill-secondary, Stop in fill-danger), 20px
+   tall and 6px in, nudged 2px into the row's end padding. */
 .menu > button > .menu-trailing-button {
   display: inline-flex;
   height: 20px;
@@ -457,10 +473,10 @@
   background: rgb(11 11 11 / 10%);
 }
 
-/* The conversation row menu shows its single-key hints on the web too, over the
-   web sheet's important hide; the menu is portaled to <body>, so its own
-   classes and attributes outweigh that rule. A coarse pointer hides them as
-   there ("pointer-coarse:hidden"). */
+/* The conversation row menu shows its single-key hints on the web too (live
+   claude.ai, 2026-10-20), over the web sheet's important hide; the menu is
+   portaled to <body>, so its own classes and attributes outweigh that rule.
+   A coarse pointer hides them as there ("pointer-coarse:hidden"). */
 :root[data-surface="web"]
   .menu.row-menu.compact.u-scroll-fade-y[role="menu"][aria-label]
   > button

@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { DeviceTrustStore } from "../../electron/remote-control/device-trust-store";
 import { CoworkDevices } from "../../src-web/bridge/cowork-devices";
+import { BrowserDeviceTrustClient } from "../../src-web/bridge/device-trust-client";
 
 test("a computer lets another device read and tighten its device access, never loosen it", (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-trust-"));
@@ -80,4 +81,40 @@ test("the web's Account merges every online computer's device access and sends o
   assert.equal((await devices.revokeTrusted("mac:phone")).trusted.length, 0);
   assert.ok(calls.includes('mac:deviceTrustRevoke:["phone"]'));
   assert.ok(!calls.some((call) => call.startsWith("old:")));
+});
+
+test("a device request waiting on its key cannot resume after A to B to A", async () => {
+  const pair = await crypto.subtle.generateKey("Ed25519", true, ["sign", "verify"]);
+  let opened!: () => void;
+  let release!: (key: CryptoKeyPair) => void;
+  const openedKey = new Promise<void>((resolve) => { opened = resolve; });
+  const heldKey = new Promise<CryptoKeyPair>((resolve) => { release = resolve; });
+  let activation = { account: "A" };
+  const calls: string[] = [];
+  const trust = new BrowserDeviceTrustClient(() => activation.account, "test", async () => {
+    opened();
+    return heldKey;
+  });
+  const devices = new CoworkDevices({
+    captureActivation() {
+      const opening = activation;
+      return () => {
+        if (activation !== opening) throw new DOMException("The active account changed.", "AbortError");
+      };
+    },
+    async json(path) {
+      calls.push(path);
+      return {};
+    },
+  }, () => {}, trust);
+  const pending = devices.revokeTrusted("pc:phone");
+  const refused = assert.rejects(pending, { name: "AbortError" });
+  await openedKey;
+  activation = { account: "B" };
+  devices.clear();
+  activation = { account: "A" };
+  devices.clear();
+  release(pair);
+  await refused;
+  assert.deepEqual(calls, []);
 });

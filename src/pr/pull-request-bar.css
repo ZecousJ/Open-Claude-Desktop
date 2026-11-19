@@ -1,12 +1,14 @@
 /*
- * The branch row above the Code composer: a 40px band, 8px inside, 10px radius,
- * 5px between its parts, filled with the ghost-fill tint (--alpha-1). A merged
- * pull request tints it purple, one in the merge queue yellow (the original's
- * --cds-bg-git-*: the text colour at 20%). The repository and branch chips end
- * in an ellipsis; below 320px of row the repository chip goes. The git colours
- * (--git-*) are the original's --cds-text-git-* values, defined with the
- * sidebar's PR glyphs (sidebar.css). Controls are the 24px chips of the
- * workspace bar (workspace-bar.css), the closest analogue the app has.
+ * The branch row above the Code composer (desktop bundle 2.31226.1; live
+ * claude.ai bundle, 2026-10-12, shared-6 `Tg`): a 40px band, 8px inside,
+ * 10px radius, 5px between its parts, filled with the ghost-fill tint
+ * (--alpha-1). A merged pull request tints it purple, one in the merge
+ * queue yellow (the original's --cds-bg-git-*: the text colour at 20%). The
+ * repository and branch chips end in an ellipsis; below 320px of row the
+ * repository chip goes. The git colours (--git-*) are the original's
+ * --cds-text-git-* values, defined with the sidebar's PR glyphs
+ * (sidebar.css). Controls are the 24px chips of the workspace bar
+ * (workspace-bar.css), the closest analogue the app has.
  */
 :root {
   --warning: #db9300;
@@ -57,8 +59,9 @@
 .pr-glyph[data-state="unknown"] {
   margin-right: 6px;
 }
-/* The number is muted and takes its state's colour on hover; a merged or queued
-   row shows it in that colour. */
+/* The number is muted and takes its state's colour on hover; a merged or
+   queued row shows it in that colour (cb1afaa4b: text-muted with the tint's
+   hover, the tint itself under an accent). */
 .pr-number {
   flex: none;
   margin-right: 12px;
@@ -247,8 +250,8 @@
   gap: 4px;
 }
 
-/* The conflict glyph is a button in the conflicts colour; it opens Ask Claude
-   to fix. */
+/* The conflict glyph is a button (c219730b0: ghost, icon only, xxs) in the
+   conflicts colour; it opens Ask Claude to fix. */
 .pr-conflict {
   align-items: center;
   justify-content: center;
@@ -263,10 +266,10 @@
 }
 
 /* The row's popovers open above their button with the floating menus' box
-   (src/ui/menu.css). The CI panel is at least 220px, 4px across and 6px down
-   its edges, rows the control's 28px; the header 8px across, 3px down; counts
-   in body text (13/19) with a 14px icon box; the conflict panel 288px with 12px
-   inside. */
+   (src/ui/menu.css). Layout from the live claude.ai bundle, 2026-10-12:
+   the CI panel is at least 220px, 4px across and 6px down its edges, rows
+   the control's 28px; the header 8px across, 3px down; counts in body text
+   (13/19) with a 14px icon box; the conflict panel 288px with 12px inside. */
 .pr-popover-anchor {
   position: relative;
   display: inline-flex;
@@ -412,7 +415,7 @@
 .pr-ci-switch-label:hover {
   background: var(--fill-ghost-hover);
 }
-/* Under the switch's label, indented past the switch. */
+/* Under the switch's label, indented past the switch (cb1afaa4b `Ca`). */
 .pr-ci-switch-note {
   max-width: 180px;
   margin: 0 8px 4px calc(28.8px + 16px);
@@ -420,7 +423,9 @@
   font-size: 12px;
   line-height: 1.375;
 }
-/* The xs switch; the track colours are the Settings switch's (settings.css). */
+/* The xs switch (live claude.ai bundle, 2026-10-12: --cds-switch-h--xs 1rem,
+   1.8 times as wide, 2px inside, the knob 4px less than the height); the
+   track colours are the Settings switch's (settings.css). */
 .pr-switch {
   position: relative;
   flex: none;
@@ -497,9 +502,10 @@
 .pr-ghost.pr-options[aria-expanded="true"] {
   background: var(--alpha-2);
 }
-/* Review chips: whose turn — 24px, 3px gap, 5px sides, medium body text; "Your
-   turn" on bg-accent in text-accent, "Their turn" muted; the label hides when
-   the row is narrow — and the open threads' count with an accent Chat glyph. */
+/* Review chips (live claude.ai bundle, 2026-10-14): whose turn — 24px,
+   3px gap, 5px sides, medium body text; "Your turn" on bg-accent in
+   text-accent, "Their turn" muted; the label hides when the row is narrow —
+   and the open threads' count with an accent Chat glyph. */
 .pr-turn {
   display: inline-flex;
   flex: none;

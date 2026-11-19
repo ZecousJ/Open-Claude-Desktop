@@ -180,8 +180,9 @@ export function applyRoute(
         // Filled in, never sent; the text leaves the address.
         const prompt = route.prompt;
         app.newChat(chatMode);
-        // On the Cowork home it opens a quick task window while there is room,
-        // with the caution band of a prompt from outside.
+        // On the Cowork home it opens a quick task window while there is
+        // room (live claude.ai bundle, 2026-10-12: shared-20, the "url"
+        // source), with the caution band of a prompt from outside.
         if (chatMode !== "cowork" || !openAddressPrompt(prompt))
           app.setText(prompt);
         return "/new";
@@ -201,9 +202,9 @@ export function applyRoute(
       const conversation = app.snapshot.conversations.find(
         (c) => c.id === route.id && !c.incognito,
       );
-      // Gone (deleted, another account's, or an incognito chat that ended): as
-      // the original, an error notice and the address replaced by a new one,
-      // not a "Page not found".
+      // Gone (deleted, another account's, or an incognito chat that ended):
+      // as the original (live claude.ai bundle, 2026-10-12), an error notice
+      // and the address replaced by a new one, not a "Page not found".
       if (!conversation) {
         if (route.kind === "code-chat" && codeAvailable) {
           app.report(new Error("That session is no longer available."));

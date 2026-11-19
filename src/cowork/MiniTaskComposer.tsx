@@ -29,7 +29,7 @@ import {
 } from "../composer/attachment-limits";
 import { MenuSheetScrim } from "../composer/MenuSheetScrim";
 import { isComposingKey } from "../ui/ime";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { t } from "../i18n";
 import { requestFolderAccess } from "./useFolderAccess";
 import { MiniComposerControls } from "./MiniComposerControls";
@@ -47,14 +47,16 @@ export interface MiniTaskPlace {
 }
 
 /**
- * A task window's composer: a 12px rounded field with a 0.5px rim on the raised
- * surface, its rim strong while it has the focus. Above the words, the caution
- * band for a prompt that came from outside and the attachments; the words; then
- * a row with the project or folder (icon only, a badge once chosen) and, for a
- * quick task, the permission mode (icon only), and at its end the model and
- * Send message. Files paste or drop into it. A spun-off task keeps the folder
- * of the task it comes from, and a prompt from outside always asks first, so
- * those show no place or permission picker.
+ * A task window's composer (live claude.ai bundle, 2026-10-12: the mini
+ * compose window's compact Cowork composer, c6eb5f8cf dn): a 12px rounded
+ * field with a 0.5px rim on the raised surface, its rim strong while it has
+ * the focus. Above the words, the caution band for a prompt that came from
+ * outside and the attachments; the words; then a row with the project or
+ * folder (icon only, a badge once chosen) and, for a quick task, the
+ * permission mode (icon only), and at its end the model and Send message.
+ * Files paste or drop into it. A spun-off task keeps the folder of the task
+ * it comes from, and a prompt from outside always asks first, so those
+ * show no place or permission picker.
  */
 export function MiniTaskComposer({
   placeholder,
@@ -216,7 +218,7 @@ export function MiniTaskComposer({
       submit();
     }
   };
-  // Queue while uploads finish.
+  // Queue while uploads finish (live claude.ai bundle, 2026-10-14, c04e7453f-Cg2yRCdu.js).
   const uploading = pending.some((file) => file.status === "uploading");
   const uploadFailed = pending.some((file) => file.status === "error");
   const hasContent = Boolean(text.trim() || attachments.length || uploading);
@@ -266,7 +268,7 @@ export function MiniTaskComposer({
     >
       {unsafe && (
         <div className="mini-composer-caution" role="status" aria-live="polite">
-          <AppIcon name="Warning" />
+          <Anthropicon name="Warning" />
           <span>
             Use caution before running this prompt. Malicious content could
             trick Claudex into attempting harmful actions or sharing your data.

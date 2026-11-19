@@ -14,9 +14,13 @@ export function show(
   this: BrowserHost,
   conversationId: string,
   window: HostWindow,
-  bounds?: BrowserBounds,
+  bounds?: BrowserBounds & { radius?: number; parked?: boolean },
+  claimant?: string,
 ) {
+  if (window.isDestroyed()) return false;
   const session = this.session(conversationId);
+  if (claimant !== undefined && session.shown?.claimant !== undefined &&
+      session.shown.claimant !== claimant) return false;
   // A window shows one conversation's panel: another one's page leaves.
   for (const other of this.sessions.values())
     if (other !== session && other.shown?.window === window) {
@@ -32,9 +36,11 @@ export function show(
     bounds:
       bounds ??
       (session.shown?.window === window ? session.shown.bounds : undefined),
+    claimant: claimant ?? session.shown?.claimant,
   };
   this.watch(window);
   this.sync(session);
+  return true;
 }
 
 /** The panel closed: its pages stay open (Claude can keep using them) but leave the window. */
@@ -42,12 +48,16 @@ export function hide(
   this: BrowserHost,
   conversationId: string,
   window?: HostWindow,
+  claimant?: string,
 ) {
   const session = this.sessions.get(conversationId);
-  if (!session || (window && session.shown?.window !== window)) return;
+  if (!session || (window && session.shown?.window !== window) ||
+      (claimant !== undefined && session.shown?.claimant !== undefined &&
+        session.shown.claimant !== claimant)) return false;
   session.shown = undefined;
   session.occluded = false;
   this.sync(session);
+  return true;
 }
 
 /**
@@ -87,7 +97,7 @@ export async function occlude(
 /**
  * The page's box in the window's own pixels (the app page may be zoomed):
  * the placeholder while the panel is open, else the last one, else the
- * default size. The phone viewport is centred at the phone's width.
+ * default size.
  */
 export function viewBounds(this: BrowserHost, session: Session): BrowserBounds {
   const shown = session.shown;
@@ -105,19 +115,11 @@ export function viewBounds(this: BrowserHost, session: Session): BrowserBounds {
       height: Math.max(1, Math.round(shown.bounds.height * zoom)),
     };
   }
-  const base = session.lastBounds ?? {
+  return session.lastBounds ?? {
     x: 0,
     y: 0,
     ...defaultPageSize,
   };
-  const frame = viewportFrame(session.viewport);
-  if (frame && base.width > frame.width)
-    return {
-      ...base,
-      x: base.x + Math.round((base.width - frame.width) / 2),
-      width: frame.width,
-    };
-  return base;
 }
 
 export function windowShowsPages(this: BrowserHost, window: HostWindow) {
@@ -129,18 +131,50 @@ export function windowShowsPages(this: BrowserHost, window: HostWindow) {
  * other page goes to the parking window.
  */
 export function sync(this: BrowserHost, session: Session) {
-  // A window closing (quitting, say) can be gone before its last event's look
-  // comes round: nothing is drawn into it then.
+  // A window closing (quitting, say) can be gone before its last event's
+  // look comes round: nothing is drawn into it then (owner, 2026-10-21:
+  // "Object has been destroyed" in sync on quit).
   if (session.shown?.window.isDestroyed()) session.shown = undefined;
   const shown = session.shown;
-  const bounds = this.viewBounds(session);
+  const base = this.viewBounds(session);
   const active = session.tabs.find((tab) => tab.id === session.activeTabId);
   let parking: ParkingWindow | undefined;
   for (const tab of session.tabs) {
     const view = tab.view;
     if (!view || view.webContents.isDestroyed()) continue;
+    const viewport = tab.state.viewport;
+    const frame = viewportFrame(viewport ?? session.viewport);
+    let bounds = base;
+    let scale: number | undefined;
+    if (viewport && typeof viewport === "object") {
+      scale = Math.min(1, base.width / viewport.width, base.height / viewport.height);
+      const width = Math.max(1, Math.round(viewport.width * scale));
+      const height = Math.max(1, Math.round(viewport.height * scale));
+      bounds = {
+        x: base.x + Math.round((base.width - width) / 2),
+        y: base.y + Math.round((base.height - height) / 2),
+        width,
+        height,
+      };
+    } else if (frame && base.width > frame.width) {
+      bounds = {
+        ...base,
+        x: base.x + Math.round((base.width - frame.width) / 2),
+        width: frame.width,
+      };
+    }
+    const applied = tab.appliedViewport;
+    if (viewport !== undefined && (
+      applied?.viewport !== viewport ||
+      Math.abs((applied.scale ?? 1) - (scale ?? 1)) > 0.01 ||
+      (applied.scale === 1) !== (scale === 1)
+    )) {
+      tab.appliedViewport = { viewport, scale };
+      this.applyEmulation(session, tab, "viewport");
+    }
     const onScreen =
       !!shown?.bounds &&
+      !shown.bounds.parked &&
       !session.occluded &&
       tab === active &&
       !!tab.state.url &&
@@ -165,6 +199,7 @@ export function sync(this: BrowserHost, session: Session) {
       tab.attachedTo = target;
     }
     view.setBounds(bounds);
+    view.setBorderRadius?.(shown?.bounds?.radius ?? 0);
   }
 }
 

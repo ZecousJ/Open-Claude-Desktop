@@ -1,3 +1,4 @@
+import { shortcutRegistrationFailure } from "./desktop-shortcut-error";
 import {
   app,
   globalShortcut,
@@ -11,6 +12,7 @@ import fs from "node:fs";
 import { quickEntryDictationSupported } from "./quick-access";
 import { nativeTranslator } from "./native-i18n";
 import { preference } from "../../shared/settings-extras";
+import { normalizeAccelerator } from "../../shared/accelerator";
 import { wantsKeepAwake } from "../engine/attention-rules";
 import {
   translateMenu,
@@ -44,8 +46,8 @@ export function translate(this: DesktopIntegration): (text: string) => string {
 }
 
 /**
- * The Dock icon's menu: rebuilt when the sessions or the requests waiting
- * change.
+ * The Dock icon's menu (macOS; desktop 2.37337.1 Yqn): rebuilt when the
+ * sessions or the requests waiting change.
  */
 export function refreshDockMenu(this: DesktopIntegration) {
   if (process.platform !== "darwin" || !this.ready || !app.dock) return;
@@ -80,6 +82,12 @@ export function refreshDockMenu(this: DesktopIntegration) {
 export function updateKeepAwake(this: DesktopIntegration) {
   if (!this.ready) return;
   const settings = this.options.settings();
+  const desktop = settings ?? this.options.devicePreferences?.() ?? {};
+  const sessions = settings ? this.options.conversations() : [];
+  for (const id of this.manualCodeKeepAwake) {
+    if (!sessions.some((c) => c.id === id && !c.archived))
+      this.manualCodeKeepAwake.delete(id);
+  }
   const now = this.now();
   // Code work holds the computer awake with the original's grace, stall
   // and limit (attention-rules.ts); the next change is checked by timer.
@@ -93,33 +101,29 @@ export function updateKeepAwake(this: DesktopIntegration) {
     this.keepAwakeTimer = setTimeout(() => this.updateKeepAwake(), next + 50);
     this.keepAwakeTimer.unref?.();
   }
-  const wanted =
-    !!settings &&
-    wantsKeepAwake({
-      keepAwake: preference(settings, "keepAwake"),
-      keepAwakeWhileCoding: preference(settings, "keepAwakeWhileCoding"),
-      keepAwakeOnBattery: preference(settings, "keepAwakeOnBattery"),
-      onBattery: powerMonitor.isOnBatteryPower(),
-      codeRunning: this.work.holding(now),
-      sessionKeepAwake: this.options
-        .conversations()
-        .some((c) => c.mode === "code" && c.keepAwake && !c.archived),
-    });
+  const onBattery = powerMonitor.isOnBatteryPower();
+  const keepAwakeWhileCoding = preference(desktop, "keepAwakeWhileCoding");
+  const keepAwakeOnBattery = preference(desktop, "keepAwakeOnBattery");
+  const codeRunning = !!settings && this.work.holding(now);
+  const wanted = wantsKeepAwake({
+    keepAwake: preference(desktop, "keepAwake") ||
+      (!!settings && preference(settings, "remoteControlStayReachable") && this.options.remoteServing?.() === true),
+    keepAwakeWhileCoding,
+    keepAwakeOnBattery,
+    onBattery,
+    codeRunning,
+    sessionKeepAwake: this.manualCodeKeepAwake.size > 0 ||
+      sessions.some((c) => c.mode === "code" && c.keepAwake && !c.archived),
+  });
   if (wanted && this.blocker === undefined)
     this.blocker = powerSaveBlocker.start("prevent-app-suspension");
   if (!wanted && this.blocker !== undefined) {
     powerSaveBlocker.stop(this.blocker);
     this.blocker = undefined;
   }
-  const codeHold = Boolean(
-    settings &&
-    preference(settings, "keepAwakeWhileCoding") &&
-    this.work.holding(now) &&
-    (!powerMonitor.isOnBatteryPower() ||
-      preference(settings, "keepAwakeOnBattery")),
-  );
+  const codeHold = codeRunning && keepAwakeWhileCoding && (!onBattery || keepAwakeOnBattery);
   if (this.codeHold || codeHold) {
-    for (const conversation of this.options.conversations()) {
+    for (const conversation of sessions) {
       if (
         conversation.mode !== "code" ||
         conversation.environment?.kind === "space" ||
@@ -138,12 +142,7 @@ export function updateKeepAwake(this: DesktopIntegration) {
   }
   if (this.codeHold && !codeHold) {
     const completed = this.awakeNotices.release(
-      Boolean(
-        settings &&
-        preference(settings, "keepAwakeWhileCoding") &&
-        (!powerMonitor.isOnBatteryPower() ||
-          preference(settings, "keepAwakeOnBattery")),
-      ),
+      !!settings && keepAwakeWhileCoding && (!onBattery || keepAwakeOnBattery),
     );
     if (completed)
       this.options.keptAwake?.(completed.sessionId, completed.heldMs);
@@ -204,33 +203,42 @@ export function updateShortcuts(
   accelerators: string[],
   voice = "",
 ) {
-  if (voice && accelerators.includes(voice))
-    throw Error(
-      `${voice} is used by another app. Choose a different shortcut.`,
-    );
-  const next = new Set([...accelerators, voice].filter(Boolean));
+  const identity = (key: string) => normalizeAccelerator(key, process.platform);
+  const voiceKey = voice && identity(voice);
+  if (voiceKey && accelerators.some((key) => identity(key) === voiceKey))
+    throw shortcutRegistrationFailure(voice);
+
+  const previous = new Map([...this.shortcuts].map((key) => [identity(key), key]));
+  const next = new Set<string>();
   const added: string[] = [];
-  for (const accelerator of next) {
-    if (this.shortcuts.has(accelerator)) continue;
-    if (
-      !globalShortcut.register(accelerator, () => {
+  try {
+    for (const accelerator of [...accelerators, voice].filter(Boolean)) {
+      const key = identity(accelerator);
+      const current = previous.get(key);
+      if (current) {
+        next.add(current);
+        continue;
+      }
+      if (!globalShortcut.register(accelerator, () => {
         const settings = this.options.settings();
         if (
           settings &&
           quickEntryDictationSupported() &&
-          preference(settings, "quickEntryDictationShortcut") === accelerator
+          identity(preference(settings, "quickEntryDictationShortcut")) === key
         )
           this.options.quickEntryDictation?.("toggle");
         else this.openQuickEntry();
-      })
-    ) {
-      for (const registered of added) globalShortcut.unregister(registered);
-      throw Error(
-        `${accelerator} is used by another app. Choose a different shortcut.`,
-      );
+      }))
+        throw shortcutRegistrationFailure(accelerator);
+      added.push(accelerator);
+      previous.set(key, accelerator);
+      next.add(accelerator);
     }
-    added.push(accelerator);
+  } catch (error) {
+    for (const accelerator of added) globalShortcut.unregister(accelerator);
+    throw error;
   }
+
   for (const accelerator of this.shortcuts)
     if (!next.has(accelerator)) globalShortcut.unregister(accelerator);
   this.shortcuts = next;

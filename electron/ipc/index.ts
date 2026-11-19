@@ -1,8 +1,9 @@
 import { registerPrivacyDataHandlers } from "./privacy-data";
 /**
- * Registers every IPC domain with the same AppContext. Each domain has its
- * own file here and its bridge list in `shared/<domain>-api.ts`; a new call
- * goes in its domain's file. Sign-in calls are registered by main
+ * Registers every IPC domain with the same AppContext. Each domain's file
+ * (and its `shared/<domain>-api.ts` bridge list) belongs to one package
+ * (docs/ui-workpackages.md); a package adds calls in its own file and never
+ * edits this one or `electron/main.ts`. Sign-in calls are registered by main
  * (local accounts) or `remote/host.ts` (Sub2API accounts).
  */
 import type { AppContext, IpcHandle } from "../app/app-context";
@@ -23,6 +24,7 @@ import { registerCollectionHandlers } from "./collections";
 import { registerComposerHandlers } from "./composer";
 import { registerConversationHandlers } from "./conversations";
 import { registerDiagnosticsHandlers } from "./diagnostics";
+import { registerProductFeedbackHandlers } from "./product-feedback";
 import { registerModelCatalogHandlers } from "./model-catalog";
 import { registerPanelHandlers } from "./panels";
 import { registerPolicyHandlers } from "./policy";
@@ -48,9 +50,11 @@ import { registerWorkspaceTrustHandlers } from "./workspace-trust";
 import { registerAppUpdateHandlers } from "./app-update";
 import { registerAnnouncementHandlers } from "./announcements";
 import { registerOnboardingHandlers } from "./onboarding";
+import { registerZecousMigrationHandlers } from "./zecous-migration";
 import { registerAccountProfileHandlers } from "./account-profile";
 import { registerUsageStatsHandlers } from "./usage-stats";
 import { registerServiceStatusHandlers } from "./service-status";
+import { loadKnowledgeCatalog, registerKnowledgeHandlers } from "./knowledge";
 import { registerApiKeyHandlers } from "./api-keys";
 import { registerGitHubHandlers } from "./github";
 import { registerLinearHandlers } from "./linear";
@@ -61,17 +65,41 @@ import { registerCloudContinueHandlers } from "./cloud-continue";
 import { registerSimulatorHandlers } from "./simulators";
 import { registerSessionLoopHandlers } from "./session-loops";
 import { registerTaskBacklogHandlers } from "./task-backlog";
+import { registerOfficialGitHandlers } from "./official-git";
+import { registerCodePullRequestHandlers } from "./code-pull-requests";
+import { registerOfficialFileHandlers } from "./official-files";
+import { registerOfficialAttachmentHandlers } from "./official-attachments";
+import { registerOfficialSessionFolder } from './official-session-folder';
 
 export function registerIpc(
   handle: IpcHandle,
   ctx: AppContext,
-  options?: { mcpLogs?: Parameters<typeof registerMcpSettingsHandlers>[2] },
+  options?: {
+    mcpLogs?: Parameters<typeof registerMcpSettingsHandlers>[2];
+    prepareExtensionUpgrade?: Parameters<typeof registerSettingsDesktopHandlers>[2];
+    publishExtensionServers?: Parameters<typeof registerSettingsDesktopHandlers>[3];
+    prepareExtensionMaintenance?: Parameters<typeof registerSettingsDesktopHandlers>[4];
+    dispatchOfficialLayout?: Parameters<typeof registerWindowsHandlers>[3];
+  },
 ) {
+  registerOfficialFileHandlers(handle, ctx);
+  registerOfficialAttachmentHandlers(handle, ctx);
+  registerOfficialSessionFolder(handle,ctx);
   registerChatDevicesUnavailable(handle);
   registerDispatchHandlers(handle, ctx);
   registerCloudEnvironmentHandlers(handle, ctx);
-  // Conversations, projects and folders.
+  // Retire asynchronous imports even when the same account/store is reactivated.
+  let conversationAccountGeneration = 0;
+  ctx.onAccountActivated(() => { conversationAccountGeneration++; });
+  ctx.onAccountDeactivating(() => { conversationAccountGeneration++; });
+  registerCodePullRequestHandlers(handle, ctx, () => conversationAccountGeneration);
+  // Conversations, projects and folders (C7, WP4b).
   registerConversationHandlers(handle, {
+    accountGeneration: () => conversationAccountGeneration,
+    knowledgeCatalog: () => loadKnowledgeCatalog(ctx),
+    get accountActivationIdentity() { return ctx.accountActivationIdentity; },
+    get accountRetiring() { return ctx.accountRetiring; },
+    get activeAccount() { return ctx.activeAccount; },
     get scheduler() {
       return ctx.scheduler;
     },
@@ -85,14 +113,13 @@ export function registerIpc(
       return ctx.replyFeedback;
     },
     selectedAttachments: ctx.selectedAttachments,
+    policy: () => ctx.policy(),
     allowedFolder: (folder) => ctx.allowedFolder(folder),
     noActive: () => ctx.noActive(),
     closeTerminals: async (id) => {
       await ctx.terminals?.closeConversation(id);
     },
     push: (event) => ctx.push(event),
-    cliConfigDir: () =>
-      ctx.spaceSandbox ? `${ctx.store.root}/claude-config` : undefined,
     get services() {
       return ctx.services;
     },
@@ -100,16 +127,17 @@ export function registerIpc(
   registerWorkspaceHandlers(handle, ctx);
   registerComposerHandlers(handle, ctx);
   registerCodeUsageHandlers(handle, ctx);
-  // Transcript and agents.
+  // Transcript and agents (WP5a).
   registerWorkflowHandlers(handle, ctx);
   registerAgentHandlers(handle, ctx);
-  // Tool panels.
-  registerTerminalHandlers(handle, () => ctx.terminals!);
+  // Tool panels (WP5b).
+  registerTerminalHandlers(handle, () => ctx.terminals!, ctx);
   registerBackgroundTerminalHandlers(handle, ctx);
   registerSessionLoopHandlers(handle, ctx);
   registerTaskBacklogHandlers(handle, ctx);
   registerPanelHandlers(handle, ctx);
-  // Artifacts.
+  registerOfficialGitHandlers(handle, ctx);
+  // Artifacts (WP6).
   registerArtifactHandlers(handle, {
     get root() {
       return ctx.store.root;
@@ -140,14 +168,14 @@ export function registerIpc(
     },
     ctx,
   );
-  // Collection pages.
+  // Collection pages (WP7).
   registerCollectionHandlers(handle, ctx);
-  // Window shell and links.
+  // Window shell and links (WP1).
   registerExternalLinkHandlers(handle, ctx);
-  // Settings pages.
+  // Settings pages (WP2, WP3).
   registerSettingsAccountHandlers(handle, ctx);
   registerPrivacyDataHandlers(handle, ctx);
-  registerSettingsDesktopHandlers(handle, ctx);
+  registerSettingsDesktopHandlers(handle, ctx, options?.prepareExtensionUpgrade, options?.publishExtensionServers, options?.prepareExtensionMaintenance);
   registerMcpSettingsHandlers(handle, ctx, options?.mcpLogs);
   registerCodeEmailHandlers(handle, ctx);
   // Service data (C2, C4, C5, C6, C7).
@@ -174,14 +202,15 @@ export function registerIpc(
   });
   registerSpeechHandlers(handle, ctx);
   registerDiagnosticsHandlers(handle, ctx);
+  registerProductFeedbackHandlers(handle, ctx);
   registerEditCommandHandlers(handle, ctx);
   registerSupportBundleHandlers(handle, ctx);
   registerOfficeAddinHandlers(handle, ctx);
-  // Hosted sharing (R1), separate
+  // Round two (docs/ui-workpackages.md §9): hosted sharing (R1), separate
   // conversation windows (R2), memory (R3), Research and site icons (R4/R5),
   // SSH environments (R9), computer use (R10), Cowork folder access (R11).
   registerSharingHandlers(handle, ctx);
-  registerWindowsHandlers(handle, ctx);
+  registerWindowsHandlers(handle, ctx, undefined, options?.dispatchOfficialLayout);
   registerMemoryHandlers(handle, ctx);
   registerArtifactCompleteHandlers(handle, ctx);
   registerResearchHandlers(handle, ctx);
@@ -191,19 +220,21 @@ export function registerIpc(
   registerCoworkHandlers(handle, ctx);
   // Code's workspace trust, recorded in Codex's own config.
   registerWorkspaceTrustHandlers(handle, ctx);
-  // Claudex's own updates.
+  // Claudex's own updates and the ZecousAI sign-in hint (package OTA).
   registerAppUpdateHandlers(handle, ctx);
   registerGitHubHandlers(handle, ctx);
   registerLinearHandlers(handle, ctx);
   registerApiKeyHandlers(handle, ctx);
   registerAnnouncementHandlers(handle, ctx);
   registerOnboardingHandlers(handle, ctx);
+  registerZecousMigrationHandlers(handle, ctx);
   registerAccountProfileHandlers(handle, ctx);
   registerCloudSyncHandlers(handle, ctx);
   // Continue a local Code session in the cloud.
   registerCloudContinueHandlers(handle, ctx);
   registerUsageStatsHandlers(handle, ctx);
   registerServiceStatusHandlers(handle, ctx);
+  registerKnowledgeHandlers(handle, ctx);
   // Mobile simulators in Code: the panes and Claude's device tools.
   registerSimulatorHandlers(handle, ctx);
 }

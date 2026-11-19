@@ -11,9 +11,9 @@ export const isRunning = (c?: Conversation) =>
   c?.turns.some((t) => t.status === "inProgress") ?? false;
 
 /**
- * Whether an update means a reply finished while its chat was not on screen, so
- * the row should show as unread. Incognito chats and chats that are already
- * unread are left alone.
+ * Whether an update means a reply finished while its chat was not on screen,
+ * so the row should show as unread (R-0038). Incognito chats and chats that
+ * are already unread are left alone.
  */
 export function finishedUnseen(
   previous: Conversation | undefined,

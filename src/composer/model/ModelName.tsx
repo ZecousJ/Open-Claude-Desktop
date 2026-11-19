@@ -12,7 +12,7 @@ export function ModelName({ model }: { model: string }) {
   );
 }
 
-/** The tag after a fast tier's name. */
+/** The tag after a fast tier's name (R-0357). */
 export function FastTag() {
   return <span className="code-fast-tag">Fast</span>;
 }

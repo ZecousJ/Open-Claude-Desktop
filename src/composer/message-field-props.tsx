@@ -198,8 +198,8 @@ export function messageFieldPropsOf(kit: MessageFieldPropsOfKit) {
                   ? reviewNotes.length && !running
                     ? "Address these review comments"
                     : running
-                      ? // While a turn runs (the reference design,
-                        // How to send and how to queue.
+                      ? // While a turn runs (live claude.ai bundle,
+                        // 2026-10-14): how to send and how to queue.
                         formatText(
                           "{sendKey} to send, {queueKey} to queue for later",
                           {
@@ -223,8 +223,9 @@ export function messageFieldPropsOf(kit: MessageFieldPropsOfKit) {
         setBashMode(true);
         return;
       }
-      // "/name " that names exactly one listed command turns into its chip and
-      // what follows is the argument.
+      // "/name " that names exactly one listed command turns into its chip
+      // and what follows is the argument (live claude.ai bundle, 2026-10-16,
+      // shared-5 slash_command_menu.auto_resolved).
       const resolved =
         mode === "code" && !pendingSlash && !bash
           ? autoResolveSlash(text, e.target.value, slashCommands)
@@ -429,7 +430,8 @@ export function messageFieldPropsOf(kit: MessageFieldPropsOfKit) {
           setSlashDismissed(true);
           return;
         }
-        // Tab chooses the lit row as Enter does.
+        // Tab chooses the lit row as Enter does (live claude.ai bundle,
+        // 2026-10-16, shared-5: the menu's keys are Tab or Enter).
         if (
           (e.key === "Enter" ||
             (e.key === "Tab" &&
@@ -445,9 +447,10 @@ export function messageFieldPropsOf(kit: MessageFieldPropsOfKit) {
           return;
         }
       }
-      // ⌥⌘↵ (Ctrl+Alt+Enter elsewhere) sends the draft in a forked session, as
-      // `/fork <prompt>`. A fork carries no attachments, so with files attached
-      // the key keeps its new line.
+      // ⌥⌘↵ (Ctrl+Alt+Enter elsewhere) sends the draft in a forked session,
+      // as `/fork <prompt>` (live claude.ai bundle, 2026-10-12: the Code
+      // composer's forkSession send). A fork carries no attachments, so
+      // with files attached the key keeps its new line.
       if (
         forkSendAvailable &&
         e.key === "Enter" &&

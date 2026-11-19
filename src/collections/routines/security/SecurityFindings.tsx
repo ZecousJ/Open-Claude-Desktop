@@ -104,11 +104,12 @@ function triageEntries(
 }
 
 /**
- * A security-review routine's findings: the list with its filters, Export all
- * findings and Run scan; a finding opens to its detail, triage and export
- * (FindingDetail.tsx). The list comes from the routine's finished runs
- * (shared/security-review.ts), read each time this opens and whenever a run
- * changes.
+ * A security-review routine's findings (not captured: the structure follows
+ * the original's Security findings, desktop bundle 2.31226.1): the list with
+ * its filters, Export all findings and Run scan; a finding opens to its
+ * detail, triage and export (FindingDetail.tsx). The list comes from the
+ * routine's finished runs (shared/security-review.ts), read each time this
+ * opens and whenever a run changes.
  */
 export default function SecurityFindings({
   routine: initial,

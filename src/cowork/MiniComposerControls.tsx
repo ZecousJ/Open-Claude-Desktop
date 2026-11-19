@@ -1,9 +1,9 @@
 import { t } from "../i18n";
 import { SubmitPill } from "../composer/SubmitPill";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import "../composer/composer-core.css";
 
-// Mini composer actions.
+// Mini composer actions (live claude.ai bundle, 2026-10-14, c04e7453f-Cg2yRCdu.js).
 export function MiniComposerControls({
   running = false,
   hasContent,
@@ -27,7 +27,8 @@ export function MiniComposerControls({
   onSend: () => void;
   onStop?: () => void;
 }) {
-  // The draft's button.
+  // The draft's button (live claude.ai bundle, 2026-10-16, c6eb5f8cf: brand,
+  // ArrowUp, icon only, "Start task", off while empty, busy while starting).
   if (start)
     return (
       <button
@@ -46,7 +47,7 @@ export function MiniComposerControls({
             className="mini-composer-spinner waiting"
           />
         ) : (
-          <AppIcon name="ArrowUp" />
+          <Anthropicon name="ArrowUp" />
         )}
       </button>
     );
@@ -62,7 +63,7 @@ export function MiniComposerControls({
           aria-busy={stopping || undefined}
           onClick={onStop}
         >
-          <AppIcon name="Stop" />
+          <Anthropicon name="Stop" />
         </button>
       }
       send={
@@ -80,7 +81,7 @@ export function MiniComposerControls({
               className="mini-composer-spinner waiting"
             />
           ) : (
-            <AppIcon name="ComposerSend" />
+            <Anthropicon name="ComposerSend" />
           )}
         </button>
       }

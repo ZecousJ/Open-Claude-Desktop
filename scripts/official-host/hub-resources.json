@@ -1,0 +1,14 @@
+{
+  "revision": "claudex-local-hub-resources-v1",
+  "buildId": "79979f1379",
+  "gate": "claude_ai_hub_web_delivery",
+  "entrySha256": "ce94d803291a660353231052c263d612e58f4e8060688317ba711be8673bec8a",
+  "localEntry": "claudex-local-hub-entry.js",
+  "body": "f7dbf2189abc654956d1c9f6cd025ec23f575dea4a7d99d4-NBJlq7sJ.js",
+  "bodySha256": "06181192d0913e979ee2bd32ad3d83219e49ab69517b3d6e0931f1bf97224df2",
+  "descriptorHash": "HZNCSrd0",
+  "catalogueFiles": 4080,
+  "catalogueSha256": "d349b7d406b1eac23acaaf73a1ceb177abfff0c0e42b7c3b14c33a19ecde2bf6",
+  "loader": "shared-l-m-0-COo7i6eq.js",
+  "loaderSha256": "b2e9940d2ab800aff424c6186baebb21dc28835fb2eb2524231db8852e646142"
+}

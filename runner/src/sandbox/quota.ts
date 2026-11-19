@@ -1,4 +1,4 @@
-// Resource quotas for runner sandboxes.
+// Resource quotas for runner sandboxes (W-GVISOR, W-RUN 4.1 and 9.1).
 //
 // - cgroup limits: the runsc driver puts `ociResources(limits)` into each
 //   sandbox's OCI spec, so containerd's runsc shim (or runsc itself) creates a

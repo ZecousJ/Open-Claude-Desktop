@@ -70,10 +70,6 @@ func openDB(t *testing.T, dsn string) *sql.DB {
 	return db
 }
 
-// sharingMigrations are written to run again safely; claudex_0066 is a plain
-// ALTER that the migration runner applies once.
-var sharingMigrations = []string{"claudex_0060_sharing.sql", "claudex_0061_share_invites.sql", "claudex_0062_share_report_details.sql", "claudex_0063_artifact_edit_requests.sql", "claudex_0065_artifact_reports.sql", "claudex_0067_code_sharing_settings.sql"}
-
 func applySharingMigration(t *testing.T, db *sql.DB, names ...string) {
 	t.Helper()
 	for _, name := range names {
@@ -100,9 +96,9 @@ func freshDB(t *testing.T) *sql.DB {
 	db := openDB(t, u.String())
 	_, err = db.Exec(`CREATE TABLE users (id BIGSERIAL PRIMARY KEY, email VARCHAR(255) NOT NULL DEFAULT '', deleted_at TIMESTAMPTZ NULL)`)
 	require.NoError(t, err)
-	applySharingMigration(t, db, sharingMigrations...)
-	applySharingMigration(t, db, sharingMigrations...) // idempotent
-	applySharingMigration(t, db, "claudex_0066_share_invite_roles.sql")
+	applySharingMigration(t, db, "claudex_0060_sharing.sql", "claudex_0060_sharing.sql",
+		"claudex_0061_share_invites.sql", "claudex_0062_share_report_details.sql",
+		"claudex_0063_artifact_edit_requests.sql", "claudex_0066_share_invite_roles.sql")
 	_, err = db.Exec(`INSERT INTO users (email) SELECT 'user' || g || '@example.com' FROM generate_series(1, 9) AS g`)
 	require.NoError(t, err)
 	return db

@@ -155,8 +155,8 @@ test("other native platforms keep the same incognito single-column workspace", (
         winner(app, "grid-template-columns")?.value,
         "minmax(0, 1fr)",
       );
-      // The Chat frame is the same on every desktop platform, so its incognito
-      // rule wins there too.
+      // The Chat frame is the same on every desktop platform (owner,
+      // 2026-10-20), so its incognito rule wins there too.
       assert.equal(
         winner(app, "grid-template-columns")?.selector,
         ".app:not(.web).mode-chat.incognito-app.sidebar-hidden",

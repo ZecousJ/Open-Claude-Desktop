@@ -17,15 +17,17 @@ import { notAvailable } from "./unavailable";
 import "./active-sessions.css";
 
 /**
- * * every signed-in session of the account with its device, location, when it
- *   was created and last updated, and a ⋮ menu that logs this session out or
- *   terminates another one after a confirmation. While it loads the table shows
- *   three placeholder rows; when it cannot load, one muted line replaces it;
- *   ten rows a page.
+ * Settings → Account → Active sessions, as the live claude.ai bundle draws
+ * it (2026-10-12): every signed-in session of the account with its device,
+ * location, when it was created and last updated, and a ⋮ menu that logs
+ * this session out or terminates another one after a confirmation. While
+ * it loads the table shows three placeholder rows; when it cannot load, one
+ * muted line replaces it; ten rows a page.
  *
- * Claudex's sessions are the desktop app on each computer, the web app in each
- * browser and the phone apps. The service may supply location metadata; without
- * it the original falls back to "Unknown".
+ * Claudex's sessions are the desktop app on each computer, the web app in
+ * each browser and the phone apps (shared/active-sessions.ts). The service
+ * may supply location metadata; without it the original falls back to
+ * "Unknown" (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh).
  */
 
 /** Rows a page (the original's 10). */

@@ -22,7 +22,8 @@ const UNAVAILABLE_WAIT_S = 10;
 
 /**
  * The page in place of the app when it could not start: the account or the
- * workspace did not load. The product's mark over a serif
+ * workspace did not load (live claude.ai bundle, 2026-10-12, its
+ * bootstrap-connection-error page). The product's mark over a serif
  * headline and a secondary line, centred, and below them:
  * - service down (a 5xx, or the service's own refusal): "Claudex is
  *   temporarily unavailable", "We’re working on it — try again in a

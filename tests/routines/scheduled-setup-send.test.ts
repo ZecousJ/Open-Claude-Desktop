@@ -19,7 +19,7 @@ import {
   type ScheduleRequest,
 } from "../../src/collections/routines/schedule-request";
 import { formatWebRoute } from "../../src/web/routes";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { openPolicy } from "../../shared/client-policy";
 import type { CoreDesktopAPI, Conversation } from "../../shared/types";
 import type { ScheduledTaskSetupIntent } from "../../shared/scheduled-task-setup";

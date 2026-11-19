@@ -39,10 +39,26 @@ export function saveTask(
       return structuredClone(this.listedTask(same));
     }
   }
-  const fields = validate(input);
-  const existing = fields.id
-    ? this.schedules.find((task) => task.id === fields.id)
+  const existing = input?.id
+    ? this.schedules.find((task) => task.id === input.id)
     : undefined;
+  const fields = validate(
+    existing
+      ? {
+          ...input,
+          ...(existing.mode === input.mode &&
+            existing.executionLocation === input.executionLocation && {
+              ...(!Object.hasOwn(input, "repositories") &&
+              input.repository?.url === existing.repository?.url
+                ? { repositories: existing.repositories }
+                : {}),
+              ...(!Object.hasOwn(input, "codeConnectorSelections")
+                ? { codeConnectorSelections: existing.codeConnectorSelections }
+                : {}),
+            }),
+        }
+      : input,
+  );
   if (fields.id && !existing)
     throw new Error("This scheduled task no longer exists.");
   if (existing) this.assertMigrationUnlocked(existing.id);
@@ -136,8 +152,14 @@ export function saveTask(
     permission: undefined,
     triggers: undefined,
     repository: undefined,
+    repositories: undefined,
+    codeConnectorSelections: undefined,
     cloudEnvironmentId: undefined,
     autoFixPullRequests: undefined,
+    useWorktree: undefined,
+    sourceBranch: undefined,
+    codePermissionMode: undefined,
+    effort: undefined,
     // Kept unless the form sent a list; changing where it runs clears it.
     alwaysAllowed: existing?.alwaysAllowed,
     ...fields,

@@ -1,8 +1,8 @@
 /**
- * Background download of an update: resumes a partial file with an HTTP Range
- * request, retries dropped connections with backoff and accepts the file only
- * when its SHA-256 matches the release's. No Electron imports, so tests run it
- * against a local server.
+ * Background download of an update (package OTA): resumes a partial file
+ * with an HTTP Range request, retries dropped connections with backoff and
+ * accepts the file only when its SHA-256 matches the release's. No Electron
+ * imports, so tests run it against a local server.
  */
 import { createHash } from "node:crypto";
 import fs from "node:fs";

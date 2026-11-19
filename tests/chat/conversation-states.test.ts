@@ -63,8 +63,9 @@ test("the output limit is recognised from the gateway and Responses wording", ()
   assert(!isToolUseLimitError(undefined));
   assert(!isLengthLimitError("HTTP 502"));
   assert(!isLengthLimitError(undefined));
-  assert.equal(reconnectAttempt("Reconnecting... 2/5"), "2/5");
+  assert.deepEqual(reconnectAttempt("Reconnecting... 2/5"), { attempt: 2, maxRetries: 5 });
   assert.equal(reconnectAttempt("stream disconnected"), undefined);
+  assert.equal(reconnectAttempt("HTTP route /2/5"), undefined);
 });
 
 test("limit notices use the neutral frame and conditional Max effort guidance", () => {
@@ -123,7 +124,7 @@ test("failed, limited, stopped and reconnecting turns say what happened", () => 
     outcome(turn({ status: "failed", stopReason: "length" }), false),
     />Continue</,
   );
-  // The original keeps the cut-off text after Stop and says nothing.
+  // R-0812: the original keeps the cut-off text after Stop and says nothing.
   assert.equal(
     outcome(
       turn({
@@ -231,11 +232,23 @@ test("engine events record reconnects, the output limit and restarts", () => {
       });
     send("error", {
       willRetry: true,
-      error: { message: "Reconnecting... 1/5" },
+      error: {
+        message: "Reconnecting... 1/5",
+        codexErrorInfo: { responseStreamDisconnected: { httpStatusCode: 429 } },
+      },
     });
     assert.equal(c.turns[0].reconnecting, "1/5");
+    assert.deepEqual(c.turns[0].streamRetry, { attempt: 1, maxRetries: 5, cause: "rate_limit" });
+    send("error", {
+      turnId: "old-turn",
+      willRetry: true,
+      error: { message: "Reconnecting... 2/5" },
+    });
+    assert.equal(c.turns[0].streamRetry?.attempt, 1);
     send("item/agentMessage/delta", { itemId: "m", delta: "Hi" });
     assert.equal(c.turns[0].reconnecting, undefined);
+    assert.equal(c.turns[0].streamRetry, undefined);
+    send("error", { willRetry: true, error: { message: "Reconnecting... 2/5" } });
     send("turn/completed", {
       turn: {
         id: "turn",
@@ -245,6 +258,9 @@ test("engine events record reconnects, the output limit and restarts", () => {
     });
     assert.equal(c.turns[0].status, "failed");
     assert.equal(c.turns[0].stopReason, "length");
+    assert.equal(c.turns[0].streamRetry, undefined);
+    send("error", { willRetry: true, error: { message: "Reconnecting... 2/5" } });
+    assert.equal(c.turns[0].streamRetry, undefined);
 
     for (const detail of [
       { status: "failed", error: { code: "tool_use_limit" } },
@@ -257,13 +273,33 @@ test("engine events record reconnects, the output limit and restarts", () => {
       assert.equal(c.turns[0].stopReason, "tool_use_limit");
     }
 
+    const stopped = turn({ id: "stopped", status: "inProgress" });
+    c.turns.push(stopped);
+    send("item/agentMessage/delta", { turnId: "stopped", itemId: "partial", delta: "visible" });
+    send("error", { turnId: "stopped", willRetry: true, error: { message: "Reconnecting... 1/5" } });
+    send("error", { turnId: "stopped", willRetry: true, error: { message: "Reconnecting... 2/5" } });
+    send("turn/completed", { turnId: "stopped", turn: { id: "stopped", status: "interrupted" } });
+    assert.equal(stopped.items.find((item) => item.id === "partial")?.text, "visible");
+
+    const completed = turn({ id: "completed", status: "inProgress" });
+    c.turns.push(completed);
+    send("item/agentMessage/delta", { turnId: "completed", itemId: "old", delta: "old" });
+    send("error", { turnId: "completed", willRetry: true, error: { message: "Reconnecting... 1/5" } });
+    send("item/agentMessage/delta", { turnId: "completed", itemId: "new", delta: "new" });
+    send("turn/completed", { turnId: "completed", turn: { id: "completed", status: "completed" } });
+    assert.deepEqual(completed.items.map((item) => item.text), ["new"]);
+
     // A turn still running when the app closed reopens as interrupted.
-    c.turns.push(turn({ id: "open", status: "inProgress" }));
+    c.turns.push(turn({
+      id: "open", status: "inProgress", reconnecting: "2/5",
+      streamRetry: { attempt: 2, maxRetries: 5 },
+    }));
     store.flush();
     const reopened = new Store(root).conversation("c").turns.at(-1)!;
     assert.equal(reopened.status, "interrupted");
     assert.equal(reopened.stopReason, "restart");
     assert.equal(reopened.error, undefined);
+    assert.equal(reopened.streamRetry, undefined);
 
     // History saved by earlier versions kept a note as the error instead.
     c.turns.push(

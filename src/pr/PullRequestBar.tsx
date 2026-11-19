@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../desktop-api";
 import type { Conversation } from "../../shared/types";
+import { preference } from "../../shared/settings-extras";
 import type {
   GitHubPullRequest,
   PullRequestAction,
@@ -36,7 +37,6 @@ import {
   readPullRequest,
 } from "./pr-status-store";
 import { PrStateGlyph } from "./PrStateGlyph";
-import { useAutoArchive } from "./auto-archive";
 import { openPullRequest } from "./open-pull-request";
 import "./pull-request-bar.css";
 import { pullRequestBarView } from "./PullRequestBarView";
@@ -75,7 +75,7 @@ export const repositoryName = (repository: string | undefined, cwd?: string) =>
     .pop() ||
   "";
 
-/** Where Merge is: idle, reading the request, or confirming. */
+/** Where Merge is (cb1afaa4b `Po`): idle, reading the request, or confirming. */
 export type MergeStep =
   | { phase: "idle" }
   | { phase: "checking" }
@@ -84,17 +84,18 @@ export type MergeStep =
 export const running = "Claudex is working — wait for the turn to finish";
 
 /**
- * The branch row above the Code composer: the session's repository and branch,
- * how much it changes (opens the Changes panel), and Create PR. Create PR does
+ * The branch row above the Code composer (desktop bundle 2.31226.1; live
+ * claude.ai bundle, 2026-10-12): the session's repository and branch, how
+ * much it changes (opens the Changes panel), and Create PR. Create PR does
  * not call GitHub itself: it asks Claude to commit, push and open the pull
- * request (`/create-pr`), as the original does for a session in a folder, and
- * the row then follows the pull request Claude names in its reply: its state
- * glyph (open, draft, approved, changes requested, conflicts, queued, merged,
- * closed), the CI chip and its panel (checks by state, auto-merge,
+ * request (`/create-pr`), as the original does for a session in a folder,
+ * and the row then follows the pull request Claude names in its reply: its
+ * state glyph (open, draft, approved, changes requested, conflicts, queued,
+ * merged, closed), the CI chip and its panel (checks by state, auto-merge,
  * auto-archive), and the changes GitHub allows from here: Mark ready for a
- * draft, and Merge, with a confirmation, for an approved request whose checks
- * passed. (The original keeps those two in its session rail, which Claudex does
- * not have; the row is where this window shows the request.)
+ * draft, and Merge, with a confirmation, for an approved request whose
+ * checks passed. (The original keeps those two in its session rail, which
+ * Claudex does not have; the row is where this window shows the request.)
  */
 export default function PullRequestBar({
   conversation,
@@ -117,9 +118,13 @@ export default function PullRequestBar({
   const [merge, setMerge] = useState<MergeStep>({ phase: "idle" });
   const [busy, setBusy] = useState<PullRequestAction>();
   const [announcement, setAnnouncement] = useState("");
-  const autoArchive = useAutoArchive(conversation.id, app.snapshot.settings);
+  const autoArchive =
+    !conversation.codeAutoArchiveExempt &&
+    (conversation.prAutoArchive ??
+      preference(app.snapshot.settings, "prAutoArchive"));
   const more = useRef<HTMLButtonElement>(null);
-  // ⌥⌘G (Ctrl+Alt+G elsewhere) opens the session's pull request. Matched by the
+  // ⌥⌘G (Ctrl+Alt+G elsewhere) opens the session's pull request (live
+  // claude.ai bundle, 2026-10-12: open_code_session_pr). Matched by the
   // physical key, because Option+G types another character on macOS.
   const openKey = useRef<() => void>(() => {});
   const openPage = (url: string) => {
@@ -261,7 +266,8 @@ export default function PullRequestBar({
         ),
       );
   };
-  // Convert to draft.
+  // Convert to draft (live claude.ai bundle, 2026-10-14: the open request's
+  // menu, "Couldn’t convert the pull request to draft…" when it fails).
   const convertToDraft = async (target: GitHubPullRequest) => {
     setBusy("draft");
     const result = await change(target, "draft");
@@ -279,8 +285,8 @@ export default function PullRequestBar({
       setAnnouncement(actionAnnouncements.ready);
     else app.notify(actionFailureMessage("ready", result.reason));
   };
-  // Merge reads the request again first, so what is merged is what the person
-  // saw; then it asks to confirm.
+  // Merge reads the request again first, so what is merged is what the
+  // person saw; then it asks to confirm (cb1afaa4b `Po`).
   const startMerge = async () => {
     if (!ref || merge.phase !== "idle") return;
     setMerge({ phase: "checking" });

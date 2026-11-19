@@ -5,8 +5,7 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	"github.com/tidwall/gjson"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,9 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/apicompat"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
+	"github.com/tidwall/gjson"
 )
 
 func TestAdaptResponsesClientToolsForAnthropic_FlattensNamespace(t *testing.T) {
@@ -454,22 +455,11 @@ func TestHandleResponsesStreamingResponse_CompactSSEFormat(t *testing.T) {
 }
 
 func TestOpus55ResponsesSignedThinkingBufferedAndStreamed(t *testing.T) {
-	payload := strings.Join([]string{
-		"event: message_start\n" + `data: {"type":"message_start","message":{"id":"msg_1","model":"claude-opus-5-5","content":[],"usage":{"input_tokens":10}}}`,
-		"event: content_block_start\n" + `data: {"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":""}}`,
-		"event: content_block_delta\n" + `data: {"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"signed"}}`,
-		"event: content_block_stop\n" + `data: {"type":"content_block_stop","index":0}`,
-		"event: content_block_start\n" + `data: {"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}`,
-		"event: content_block_delta\n" + `data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ok"}}`,
-		"event: content_block_stop\n" + `data: {"type":"content_block_stop","index":1}`,
-		"event: message_delta\n" + `data: {"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":5}}`,
-		"event: message_stop\n" + `data: {"type":"message_stop"}`,
-	}, "\n\n") + "\n\n"
 	for _, stream := range []bool{false, true} {
 		rec := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rec)
 		c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", nil)
-		resp := &http.Response{StatusCode: 200, Header: http.Header{}, Body: io.NopCloser(strings.NewReader(payload))}
+		resp := &http.Response{StatusCode: 200, Header: http.Header{}, Body: io.NopCloser(strings.NewReader(opus55ResponsesThinkingStream()))}
 		svc := &GatewayService{}
 		var err error
 		if stream {
@@ -479,8 +469,88 @@ func TestOpus55ResponsesSignedThinkingBufferedAndStreamed(t *testing.T) {
 		}
 		require.NoError(t, err)
 		require.Contains(t, rec.Body.String(), "anthropic-thinking-v1:")
+		require.Contains(t, rec.Body.String(), "internal thinking")
 		require.Contains(t, rec.Body.String(), "public-opus")
 		require.Contains(t, rec.Body.String(), `"text":"ok"`)
+	}
+}
+
+func opus55ResponsesThinkingStream() string {
+	return strings.Join([]string{
+		"event: message_start\n" + `data: {"type":"message_start","message":{"id":"msg_1","model":"claude-opus-5-5","content":[],"usage":{"input_tokens":10}}}`,
+		"event: content_block_start\n" + `data: {"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":""}}`,
+		"event: content_block_delta\n" + `data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"internal thinking"}}`,
+		"event: content_block_delta\n" + `data: {"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"signed"}}`,
+		"event: content_block_stop\n" + `data: {"type":"content_block_stop","index":0}`,
+		"event: content_block_start\n" + `data: {"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}`,
+		"event: content_block_delta\n" + `data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ok"}}`,
+		"event: content_block_stop\n" + `data: {"type":"content_block_stop","index":1}`,
+		"event: message_delta\n" + `data: {"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":5}}`,
+		"event: message_stop\n" + `data: {"type":"message_stop"}`,
+	}, "\n\n") + "\n\n"
+}
+
+func TestOpus55CodeResponsesKeepsSignedThinkingPrivate(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	for _, native := range []bool{false, true} {
+		for _, stream := range []bool{false, true} {
+			t.Run(fmt.Sprintf("native=%t/stream=%t", native, stream), func(t *testing.T) {
+				upstream := &httpUpstreamRecorder{}
+				cache := &reasoningRecordingCache{}
+				gateway := &GatewayService{cfg: &config.Config{}, httpUpstream: upstream, cache: cache}
+				openAI := &OpenAIGatewayService{cfg: rawChatCompletionsTestConfig(), httpUpstream: upstream, cache: cache}
+				account := &Account{ID: 1, Platform: PlatformAnthropic, Type: AccountTypeAPIKey, Credentials: map[string]any{"api_key": "fixture-key"}}
+				if native {
+					account = nativeAnthropicTestAccount()
+				}
+				forward := func(body string) string {
+					t.Helper()
+					upstream.resp = &http.Response{StatusCode: 200, Header: http.Header{}, Body: io.NopCloser(strings.NewReader(opus55ResponsesThinkingStream()))}
+					rec := httptest.NewRecorder()
+					c, _ := gin.CreateTestContext(rec)
+					c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", strings.NewReader(body))
+					c.Request.Header.Set("X-Claudex-Product", "code")
+					var err error
+					if native {
+						_, err = openAI.Forward(context.Background(), c, account, []byte(body))
+					} else {
+						_, err = gateway.ForwardAsResponses(context.Background(), c, account, []byte(body), nil)
+					}
+					require.NoError(t, err)
+					require.Equal(t, http.StatusOK, rec.Code)
+					require.True(t, strings.HasSuffix(upstream.lastReq.URL.Path, "/v1/messages"), upstream.lastReq.URL.Path)
+					return rec.Body.String()
+				}
+				wire := forward(fmt.Sprintf(`{"model":"claude-opus-5-5","input":"hello","stream":%t}`, stream))
+				require.NotContains(t, wire, "internal thinking")
+				require.NotContains(t, wire, "anthropic-thinking-v1:")
+				require.NotContains(t, wire, "response.reasoning_summary_")
+				result := gjson.Parse(wire)
+				if stream {
+					for _, line := range strings.Split(wire, "\n") {
+						if payload, ok := strings.CutPrefix(line, "data: "); ok {
+							event := gjson.Parse(payload)
+							if event.Get("type").String() == "response.completed" {
+								result = event.Get("response")
+							}
+						}
+					}
+				}
+				reasoning := result.Get("output.0")
+				require.Equal(t, "reasoning", reasoning.Get("type").String())
+				require.NotEmpty(t, reasoning.Get("id").String())
+				require.JSONEq(t, `[]`, reasoning.Get("summary").Raw)
+				replayRef := reasoning.Get("encrypted_content").String()
+				require.NotEmpty(t, replayRef)
+				answer := result.Get("output.1")
+				require.Equal(t, "ok", answer.Get("content.0.text").String())
+				forward(fmt.Sprintf(`{"model":"claude-opus-5-5","input":[{"type":"message","role":"user","content":"hello"},{"type":"reasoning","summary":[],"content":null,"encrypted_content":%q},%s,{"type":"message","role":"user","content":"continue"}]}`, replayRef, answer.Raw))
+				blocks := gjson.GetBytes(upstream.lastBody, "messages.1.content")
+				require.Equal(t, "internal thinking", blocks.Get("0.thinking").String())
+				require.Equal(t, "signed", blocks.Get("0.signature").String())
+				require.Equal(t, "ok", blocks.Get("1.text").String())
+			})
+		}
 	}
 }
 

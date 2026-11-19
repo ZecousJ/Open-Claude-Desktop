@@ -9,10 +9,8 @@ import { Modal } from "../../ui/Controls";
 import { formatText, t, useLocale } from "../../i18n";
 import "./knowledge-encoding.css";
 
-/**
- * Lazy source-backed encoding choice. Preview is inert reference text. Closing
- * leaves the durable pending file.
- */
+/** Lazy source-backed encoding choice (O16 c7a51f85b-B_WZFn_7).
+ * Preview is inert reference text. Closing leaves the durable pending file. */
 export function KnowledgeEncodingDialog({
   projectId,
   file,

@@ -15,6 +15,7 @@ import { useElectronShim, wsServer } from "./runner-core-support.test.ts";
 // Built before useElectronShim makes the platform read "linux" (esbuild
 // picks its native binary by platform).
 const outdir = fs.mkdtempSync(path.join(os.tmpdir(), "runner-dist-"));
+test.after(() => fs.rmSync(outdir, { recursive: true, force: true }));
 execFileSync(
   process.execPath,
   ["scripts/build-runner.mjs", "--outdir", outdir],
@@ -202,7 +203,7 @@ test("attachments no conversation uses are removed after 30 days", () => {
   assert.deepEqual(fs.readdirSync(folder).sort(), ["kept", "new"]);
 });
 
-test("the built runner links to the service and says which methods it serves", async () => {
+test("the built runner advertises official Web actions for an independent memory opt-in", async (t) => {
   for (const file of [
     "runner.mjs",
     "provider-service.cjs",
@@ -213,6 +214,16 @@ test("the built runner links to the service and says which methods it serves", a
   assert.equal(
     /require\(["']electron["']\)|from ["']electron["']/.test(bundle),
     false,
+  );
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "runner-official-ui-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, "data"));
+  for (const name of ["conversation-protocol.json", "bootstrap-defaults.json"])
+    fs.writeFileSync(path.join(root, "data", name), "{}");
+  assert.throws(
+    () => parseConfig(env({ CLAUDEX_RUNNER_OFFICIAL_UI_MEMORY_CONTROLS: "1" })),
+    /require an official UI bundle/,
   );
 
   let hello: any;
@@ -234,39 +245,49 @@ test("the built runner links to the service and says which methods it serves", a
       }
     };
   });
-  const state = fs.mkdtempSync(path.join(os.tmpdir(), "runner-state-"));
-  const child = spawn(process.execPath, [path.join(outdir, "runner.mjs")], {
-    env: {
-      PATH: process.env.PATH,
-      CLAUDEX_RUNNER_SERVICE_URL: server.url,
-      CLAUDEX_RUNNER_TOKEN: "runner-token-0123456789",
-      CLAUDEX_RUNNER_DRIVER: "none",
-      CLAUDEX_RUNNER_CODEX: "/bin/false",
-      CLAUDEX_RUNNER_STATE_DIR: state,
-    },
-    stdio: ["ignore", "ignore", "pipe"],
-  });
-  let stderr = "";
-  child.stderr!.on("data", (chunk) => (stderr += chunk));
-  try {
-    const start = Date.now();
-    while (!hello && Date.now() - start < 15_000)
-      await new Promise((r) => setTimeout(r, 50));
-    assert.ok(hello, `no hello; runner said: ${stderr}`);
-    assert.equal(authorization, "Bearer runner-token-0123456789");
-    assert.deepEqual(hello.methods, [...remoteMethods]);
-    assert.deepEqual(hello.capacity, { engines: 1, users: 20 });
-    assert.match(stderr, /without a sandbox/);
-  } finally {
-    const exited =
-      child.exitCode !== null
-        ? Promise.resolve(child.exitCode)
-        : new Promise<number | null>((resolve) =>
-            child.on("exit", (code) => resolve(code)),
-          );
-    child.kill("SIGTERM");
-    assert.equal(await exited, 0, stderr);
-    await server.close();
-    fs.rmSync(outdir, { recursive: true, force: true });
+  t.after(() => server.close());
+  for (const mode of ["default", "read-only", "memory"] as const) {
+    await t.test(mode, async (t) => {
+      hello = undefined;
+      const state = fs.mkdtempSync(path.join(os.tmpdir(), "runner-state-"));
+      t.after(() => fs.rmSync(state, { recursive: true, force: true }));
+      const child = spawn(process.execPath, [path.join(outdir, "runner.mjs")], {
+        env: {
+          PATH: process.env.PATH,
+          ...env({
+            CLAUDEX_RUNNER_SERVICE_URL: server.url,
+            CLAUDEX_RUNNER_DRIVER: "none",
+            CLAUDEX_RUNNER_CODEX: "/bin/false",
+            CLAUDEX_RUNNER_STATE_DIR: state,
+            ...(mode !== "default" ? { CLAUDEX_RUNNER_OFFICIAL_UI_ROOT: root } : {}),
+            ...(mode === "memory" ? { CLAUDEX_RUNNER_OFFICIAL_UI_MEMORY_CONTROLS: "1" } : {}),
+          }),
+        },
+        stdio: ["ignore", "ignore", "pipe"],
+      });
+      let stderr = "";
+      child.stderr!.on("data", (chunk) => (stderr += chunk));
+      try {
+        const start = Date.now();
+        while (!hello && Date.now() - start < 15_000)
+          await new Promise((r) => setTimeout(r, 50));
+        assert.ok(hello, `no hello; runner said: ${stderr}`);
+        assert.equal(authorization, "Bearer runner-token-0123456789");
+        const methods = [...remoteMethods];
+        if (mode !== "default") methods.push("officialUiRead");
+        if (mode === "memory") methods.push("officialUiAction");
+        assert.deepEqual(hello.methods, methods.sort());
+        assert.ok(hello.methods.includes("turnAttachment"));
+        assert.equal(hello.methods.includes("chooseFolder"), false);
+        assert.deepEqual(hello.capacity, { engines: 1, users: 20 });
+        assert.match(stderr, /without a sandbox/);
+      } finally {
+        const exited = child.exitCode !== null
+          ? Promise.resolve(child.exitCode)
+          : new Promise<number | null>((resolve) => child.on("exit", resolve));
+        child.kill("SIGTERM");
+        assert.equal(await exited, 0, stderr);
+      }
+    });
   }
 });

@@ -5,12 +5,13 @@ import {
 } from "../../shared/settings-extras";
 
 /**
- * Settings → Claude Code → Appearance → Transcript text size. The choice goes
- * on the document as `data-chat-text-size` (s, m or l; useAppearance), which
- * sizes the transcript's rows, the Code composer's prompt and a Markdown
- * document's column (transcript-text-size.css). A sent prompt, a reply and the
- * queued messages carry `data-text-size` as the original's messages do: "sm"
- * for Small, "lg" for Large and nothing for Medium, so Medium keeps the sizes
+ * Settings → Claude Code → Appearance → Transcript text size (live
+ * claude.ai bundle, 2026-10-12). The choice goes on the document as
+ * `data-chat-text-size` (s, m or l; useAppearance), which sizes the
+ * transcript's rows, the Code composer's prompt and a Markdown document's
+ * column (transcript-text-size.css). A sent prompt, a reply and the queued
+ * messages carry `data-text-size` as the original's messages do: "sm" for
+ * Small, "lg" for Large and nothing for Medium, so Medium keeps the sizes
  * the transcript was drawn at.
  */
 export type MessageTextSize = "sm" | "lg";

@@ -1,4 +1,4 @@
-/* Disabled CDS rows. */
+/* Disabled CDS rows (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js, Tx). */
 .code-model-menu button[aria-disabled="true"],
 .code-model-submenu button[aria-disabled="true"] {
   opacity: 0.4;
@@ -18,7 +18,8 @@
   box-shadow: var(--shadow);
   color: var(--text);
   font:
-    13px/20px -apple-system,
+    13px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -45,7 +46,7 @@
   font: inherit;
   white-space: nowrap;
   /* Rows appear highlighted at once and have no pressed look: the original's
-     menu rows. */
+     menu rows (desktop bundle 2.31226.1 static CSS/JS). */
   transition: none;
 }
 .code-model-menu button:not([aria-disabled="true"]):hover,
@@ -85,7 +86,8 @@
   margin-right: 2.5px;
   color: #8c8c8b;
   font:
-    12px/20px -apple-system,
+    12px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -97,7 +99,7 @@
 .code-model-branch {
   position: relative;
 }
-/* Holds the list and the note beside it, so the list may scroll. */
+/* Holds the list and the note beside it, so the list may scroll (R-0356). */
 .code-model-more {
   position: absolute;
   z-index: 48;
@@ -134,7 +136,7 @@
   button:not([aria-disabled="true"]):focus-visible {
   background: #f0ede7;
 }
-/* A fast tier's tag follows its name. */
+/* A fast tier's tag follows its name (R-0357). */
 .code-fast-tag {
   display: inline-block;
   margin-left: 5px;
@@ -151,9 +153,9 @@
   color: #8a5a10;
 }
 
-/* A 47px box (two 20px lines, 3.5px above and below, 9px sideways) in the
-   menu's own fill and rim, 4px right of the list, centred on the highlighted
-   row; wraps at about 195px. */
+/* R-0356: a 47px box (two 20px lines, 3.5px above and below, 9px sideways)
+   in the menu's own fill and rim, 4px right of the list, centred on the
+   highlighted row; wraps at about 195px. */
 .code-model-tip {
   /* Fixed on <body> (CodeModelMenu ModelTip) and above every layer. */
   position: fixed;
@@ -168,7 +170,8 @@
   box-shadow: 0 12px 28px #0007;
   color: #e5e5e3;
   font:
-    13px/20px -apple-system,
+    13px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   pointer-events: none;
@@ -179,9 +182,9 @@
   color: #3d3c3a;
 }
 
-/* A main-menu model with its description: the name over its description in the
-   menu's grey, like the Chat menu's two-line rows; the menu stays narrow and a
-   long description ends in an ellipsis. */
+/* A main-menu model with its description (owner, 2026-10-02): the name over
+   its description in the menu's grey, like the Chat menu's two-line rows;
+   the menu stays narrow and a long description ends in an ellipsis. */
 .code-model-menu {
   max-width: 340px;
 }
@@ -215,8 +218,9 @@
 .code-model-menu .model-vendor-switch > button > span {
   flex: 0 1 auto;
 }
-/* More models' search: a borderless field, a rule across the popup, and "No
-   matches" in muted footnote text. */
+/* More models' search (live claude.ai bundle, 2026-10-14: SearchablePopup):
+   a borderless field, a rule across the popup, and "No matches" in muted
+   footnote text. */
 .code-model-search {
   box-sizing: border-box;
   display: block;

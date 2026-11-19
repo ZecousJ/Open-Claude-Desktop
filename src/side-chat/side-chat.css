@@ -1,9 +1,10 @@
 /*
- * The side chat card: 400px wide, 16px from the conversation's lower right, at
- * most 560px tall, rounded 16px with a 0.5px strong rim and a two-layer shadow.
- * It opens and closes over 200ms, growing from 95% out of its lower right
- * corner. Header, list and field are separated by 0.5px rules. Loaded with the
- * panel, on first use.
+ * The side chat card (desktop bundle 2.31226.1 static CSS/JS, the Chat side
+ * chat): 400px wide, 16px from the conversation's lower right, at most 560px
+ * tall, rounded 16px with a 0.5px strong rim and a two-layer shadow. It
+ * opens and closes over 200ms, growing from 95% out of its lower right
+ * corner. Header, list and field are separated by 0.5px rules. Loaded with
+ * the panel, on first use.
  */
 .side-chat {
   position: absolute;
@@ -25,7 +26,7 @@
   transform-origin: bottom right;
   animation: side-chat-in var(--motion-base) ease-out;
 }
-/* Dark: surface-3, gray-800. */
+/* Dark: surface-3, gray-800 (live claude.ai bundle, 2026-10-16). */
 :root:not([data-theme="light"]) .side-chat {
   background: #20201f;
 }
@@ -71,7 +72,8 @@
   border-bottom: 0.5px solid var(--border);
 }
 /* "Sees N messages from main chat ... read-only" between the header and the
-   list. */
+   list (live claude.ai bundle, 2026-10-16, shared-15 mI: gap-1.5 px-3 py-2
+   border-b-0.5 bg-bg-100/60, caption type). */
 .side-chat-inherited {
   display: flex;
   flex-shrink: 0;
@@ -178,7 +180,8 @@
   padding: 8px 12px;
   border-radius: 12px;
   /* bg-neutral-30 on a bg-surface-3 card: gray-870 on gray-800 in dark, gray-30
-     on white in light, so a dark bubble is darker than its card. */
+     on white in light (live claude.ai bundle, 2026-10-16, c6a992d55-DtPVsf7Q.css),
+     so a dark bubble is darker than its card. */
   background: #111;
   color: var(--text);
   overflow-wrap: anywhere;

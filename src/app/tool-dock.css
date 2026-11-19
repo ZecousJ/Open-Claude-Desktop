@@ -1,9 +1,10 @@
 /* The Code tool dock (app/ToolDock.tsx): the original with every window open
-   has Background tasks, Changes and Browser stacked in one column and Terminal
-   in a column of its own, each card 8px from the window's edges and 10px from
-   the next. Two stacked cards share the height evenly; with all three, Changes
-   takes half and the others a quarter each. A dragged row divider sets the
-   shares instead (--tool-row-<card> on the column). */
+   (owner's capture, 2026-10-03) has Background tasks, Changes and Browser
+   stacked in one column and Terminal in a column of its own, each card 8px
+   from the window's edges and 10px from the next. Two stacked cards share
+   the height evenly (R-Code-Browser面板: Changes and Browser); with all
+   three, Changes takes half and the others a quarter each. A dragged row
+   divider sets the shares instead (--tool-row-<card> on the column). */
 .workspace > .chat-layout > .tool-dock {
   position: absolute;
   z-index: 11;
@@ -132,10 +133,10 @@
   -webkit-app-region: no-drag;
 }
 
-/* Split panes, after the original's. With two or more cards the one not focused
-   dims (filter opacity .75 and saturate .85 over 120ms) and shows its header
-   buttons only while hovered (120ms). A card opened beside others fades in over
-   180ms on the snap curve. */
+/* Split panes, after the original's (desktop bundle 2.31226.1). With two
+   or more cards the one not focused dims (filter opacity .75 and saturate
+   .85 over 120ms) and shows its header buttons only while hovered (120ms).
+   A card opened beside others fades in over 180ms on the snap curve. */
 .tool-dock-column > .work-panel,
 .tool-dock > .work-panel,
 .tool-dock > .tool-dock-column {
@@ -217,9 +218,10 @@
   }
 }
 
-/* An expanded card covers the conversation column, 8px from the sidebar edge.
-   The dock grows there over 200ms (ToolDock.tsx) while the other cards fold to
-   nothing and fade, and on Restore they unfold back. */
+/* An expanded card covers the conversation column, 8px from the sidebar
+   edge (as the Terminal did alone, R-0882). The dock grows there over
+   200ms (ToolDock.tsx) while the other cards fold to nothing and fade, and
+   on Restore they unfold back. */
 .workspace > .chat-layout > .tool-dock:has(.expanded) {
   left: 8px;
   max-width: none;

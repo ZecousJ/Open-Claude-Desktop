@@ -82,8 +82,9 @@ app.whenReady().then(async () => {
       [16, 24, 32, 48, 64, 128, 256].map((size) => ({ size, png: png[size] })),
     ),
   );
-  // The web tab icon is the mark alone; only the home-screen icon keeps the app
-  // icon's plate.
+  // The web tab icon is the mark alone (public-web/favicon.svg and
+  // favicon-32.png, owner 2026-10-03); only the home-screen icon keeps the
+  // app icon's plate.
   const web = path.join(root, "public-web");
   fs.writeFileSync(path.join(web, "apple-touch-icon.png"), png[180]);
   console.log("icons written");

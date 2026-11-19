@@ -7,7 +7,7 @@ const sizes = {
   lg: { box: 20, stroke: 2 },
 };
 
-// CDS Spinner.
+// CDS Spinner (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js).
 export function Spinner({
   size = "sm",
   delay = 0,

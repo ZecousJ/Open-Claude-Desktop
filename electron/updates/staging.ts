@@ -1,7 +1,7 @@
 /**
- * The staged update in `<userData>/updates`: the verified installer or zip,
- * `staged.json` naming it, and `apply-result.json` that the install helper
- * writes after Claudex quits. No Electron imports.
+ * The staged update in `<userData>/updates` (package OTA): the verified
+ * installer or zip, `staged.json` naming it, and `apply-result.json` that
+ * the install helper writes after Claudex quits. No Electron imports.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -9,9 +9,8 @@ import type { UpdateKind } from "../../shared/app-update";
 import { compareVersions } from "../../shared/client-policy-rules";
 import { validClaudexVersion } from "../../shared/claudex-contract";
 
-export interface StagedUpdate {
+interface StagedFile {
   version: string;
-  kind: UpdateKind;
   /** Absolute path of the verified file inside the updates folder. */
   file: string;
   sha256: string;
@@ -20,11 +19,22 @@ export interface StagedUpdate {
   attempts: number;
 }
 
+export type InstallableUpdate = StagedFile &
+  (
+    | { kind: Exclude<UpdateKind, "win-app"> }
+    | { kind: "win-app"; prepared: string; sourceVersion: string }
+  );
+
+export type StagedUpdate =
+  InstallableUpdate | (StagedFile & { kind: "win-app"; prepared?: undefined });
+
 /** What the install helper reports. */
 export interface ApplyResult {
   ok: boolean;
   version: string;
   error?: string;
+  prepared?: string;
+  attempts?: number;
 }
 
 /** Installs of one version that may fail before the updater stops trying it. */
@@ -63,10 +73,22 @@ const updateKinds: UpdateKind[] = [
 
 /** The staged update, when its record is well formed and its file is inside `dir`. */
 export function readStaged(dir: string): StagedUpdate | undefined {
-  const value = readJson(stagedFile(dir)) as Partial<StagedUpdate> | undefined;
-  if (!value || typeof value !== "object") return undefined;
-  const { version, file, sha256, stagedAt, attempts } = value;
-  const kind = updateKinds.find((known) => known === value.kind);
+  const raw = readJson(stagedFile(dir));
+  if (!raw || typeof raw !== "object") return undefined;
+  const value: Record<string, unknown> = Object.fromEntries(
+    Object.entries(raw),
+  );
+  const {
+    version,
+    file,
+    sha256,
+    stagedAt,
+    attempts,
+    prepared,
+    sourceVersion,
+    kind: rawKind,
+  } = value;
+  const kind = updateKinds.find((known) => known === rawKind);
   if (
     !validClaudexVersion(version) ||
     !kind ||
@@ -76,13 +98,32 @@ export function readStaged(dir: string): StagedUpdate | undefined {
     !/^[0-9a-f]{64}$/.test(sha256)
   )
     return undefined;
-  return {
+  const staged = {
     version,
-    kind,
     file: path.resolve(file),
     sha256,
     stagedAt: typeof stagedAt === "number" ? stagedAt : 0,
     attempts: typeof attempts === "number" ? attempts : 0,
+  };
+  if (kind !== "win-app") return { ...staged, kind };
+  if (
+    typeof prepared !== "string" ||
+    !path.isAbsolute(prepared) ||
+    !validClaudexVersion(sourceVersion)
+  )
+    return { ...staged, kind };
+  const result = readApplyResult(dir);
+  return {
+    ...staged,
+    kind,
+    prepared,
+    sourceVersion,
+    attempts:
+      result?.prepared === prepared &&
+      result.version === version &&
+      result.attempts !== undefined
+        ? result.attempts
+        : staged.attempts,
   };
 }
 
@@ -104,6 +145,8 @@ export function readApplyResult(dir: string): ApplyResult | undefined {
   return {
     ok: value.ok,
     version: value.version,
+    ...(typeof value.prepared === "string" ? { prepared: value.prepared } : {}),
+    ...(typeof value.attempts === "number" ? { attempts: value.attempts } : {}),
     ...(typeof value.error === "string" && value.error
       ? { error: value.error.slice(0, 300) }
       : {}),
@@ -131,8 +174,9 @@ export function clearFailed(dir: string) {
 
 /**
  * Removes a file the update left, or leaves it for the next start when it
- * can't: on Windows a file in use (the installer still running after the person
- * opened it themselves) can't be removed, and that failed Claudex's start.
+ * can't: on Windows a file in use (the installer still running after the
+ * person opened it themselves) can't be removed, and that failed Claudex's
+ * start ("EPERM ... Claudex-Setup-0.0.33.exe"; owner, 2026-10-22).
  */
 function removeQuietly(file: string) {
   try {
@@ -196,7 +240,14 @@ export function launchDecision(
     clearStaged(dir);
     return { action: "none" };
   }
-  if (!fs.existsSync(staged.file)) {
+  if (
+    !fs.existsSync(staged.file) &&
+    !(
+      staged.kind === "win-app" &&
+      staged.prepared &&
+      fs.existsSync(staged.prepared)
+    )
+  ) {
     clearStaged(dir);
     return { action: "none" };
   }

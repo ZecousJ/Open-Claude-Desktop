@@ -1,7 +1,7 @@
 /**
  * The search labels of every Settings page. Each page file exports
- * `searchLabels`; a package adding a page's labels appends one import and one
- * entry here.
+ * `searchLabels`; a package adding a page's labels appends one import and
+ * one entry here (packages WP2, WP3, C4, C5 each own their lines).
  */
 import type { SearchIndex } from "./registry";
 import { searchLabels as account } from "../tabs/Account";

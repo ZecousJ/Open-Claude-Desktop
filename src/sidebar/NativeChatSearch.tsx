@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { useT } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { keyName, ShortcutPlatform } from "../ui/Tooltip";
 
 /**
@@ -21,7 +21,7 @@ export function NativeChatSearch({ onSearch }: { onSearch: () => void }) {
         onClick={onSearch}
       >
         <span className="native-chat-search-leading" aria-hidden="true">
-          <AppIcon name="Search" size={16} />
+          <Anthropicon name="Search" size={16} />
         </span>
         <span className="native-chat-search-label">{t("Search")}</span>
         <kbd aria-hidden="true">{keyName(platform, "mod")} K</kbd>

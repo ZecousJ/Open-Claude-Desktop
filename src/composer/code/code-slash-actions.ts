@@ -6,6 +6,8 @@ import type {
   Theme,
 } from "../../../shared/types";
 import { codeEffortLevels } from "../../../shared/code-effort";
+import { isConversationModel } from "../../../shared/model-catalog-api";
+import { parseCodeAutoCompact } from "../../../shared/official-code-context";
 import { formatText, t } from "../../i18n";
 
 type Actions = {
@@ -101,7 +103,8 @@ export function executeCodeSlashCommand(
       actions.effort();
       break;
     case "plan":
-      // On every platform, like the permission menu's Plan.
+      // On every platform, like the permission menu's Plan (live claude.ai
+      // bundle, 2026-10-16, shared-8: local modes default, acceptEdits, plan).
       actions.plan({
         codeSandbox: "read-only",
         autoAcceptEdits: false,
@@ -208,7 +211,7 @@ export function executeCodeSlashCommand(
       else actions.unavailable("Open a session to review its changes.");
       break;
     case "cd":
-      // A worktree session keeps its folder.
+      // Live claude.ai bundle, 2026-10-14: a worktree session keeps its folder.
       actions.unavailable(
         actions.inWorktree
           ? "This session runs in an isolated worktree, so its folder can't be changed."
@@ -249,7 +252,9 @@ export function resolveCodeSlashArgument(
       (item): item is Provider => Boolean(item),
     )) {
       const model = [provider.model, ...provider.models].find(
-        (candidate) => candidate.toLowerCase() === value.toLowerCase(),
+        (candidate) =>
+          isConversationModel(candidate) &&
+          candidate.toLowerCase() === value.toLowerCase(),
       );
       if (model) return { kind: "model", providerId: provider.id, model };
     }
@@ -270,16 +275,8 @@ export function resolveCodeSlashArgument(
         };
   }
   if (name === "autocompact") {
-    if (value.toLowerCase() === "auto")
-      return { kind: "autocompact", tokens: 0 };
-    const count = /^(\d+(?:\.\d+)?)\s*([km])?$/i.exec(value.replace(/,/g, ""));
-    const tokens = count
-      ? Math.round(
-          Number(count[1]) *
-            ({ k: 1_000, m: 1_000_000 }[count[2]?.toLowerCase() ?? ""] ?? 1),
-        )
-      : 0;
-    return tokens >= 1_000 && tokens <= 100_000_000
+    const tokens = parseCodeAutoCompact(value);
+    return tokens !== undefined
       ? { kind: "autocompact", tokens }
       : { kind: "error", message: `Unknown auto-compact setting: ${value}` };
   }

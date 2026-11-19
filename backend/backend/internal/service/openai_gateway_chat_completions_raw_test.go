@@ -499,6 +499,185 @@ func TestForwardAsRawChatCompletions_SilentRefusalTriggersFailover(t *testing.T)
 	require.Empty(t, rec.Body.String())
 }
 
+func TestForwardAsChatCompletions_RawEmptyCompletionFailsOverBeforeWrite(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	for _, tc := range []struct {
+		name     string
+		stream   bool
+		response string
+	}{
+		{"stream without usage", true, `data: {"choices":[{"delta":{"role":"assistant"},"finish_reason":null}]}` + "\n\n" +
+			`data: {"choices":[{"delta":{"content":""},"finish_reason":"stop"}]}` + "\n\ndata: [DONE]\n\n"},
+		{"stream with zero usage", true, `data: {"choices":[{"delta":{"role":"assistant"},"finish_reason":"stop"}]}` + "\n\n" +
+			`data: {"choices":[],"usage":{"prompt_tokens":0,"completion_tokens":0,"total_tokens":0}}` + "\n\ndata: [DONE]\n\n"},
+		{"stream with empty placeholders", true, `data: {"choices":[{"delta":{"role":"assistant","reasoning_content":"","tool_calls":[{"index":0,"id":"","type":"function","function":{"name":"","arguments":""}}],"function_call":null},"finish_reason":"stop"}],"usage":{}}` + "\n\n"},
+		{"done only", true, "data: [DONE]\n\n"},
+		{"buffered without usage", false, `{"object":"chat.completion","choices":[]}`},
+		{"buffered with zero usage", false, `{"choices":[{"message":{"role":"assistant","content":null},"finish_reason":"stop"}],"usage":{"prompt_tokens":0,"completion_tokens":0,"total_tokens":0}}`},
+		{"buffered without choices", false, `{"usage":{"total_tokens":0}}`},
+		{"buffered empty body", false, ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			rec, c, result, err := forwardRawChatCompletionTestResponse(t, tc.stream, tc.response)
+			var failoverErr *UpstreamFailoverError
+			require.ErrorAs(t, err, &failoverErr)
+			require.Nil(t, result)
+			require.Equal(t, http.StatusBadGateway, failoverErr.StatusCode)
+			require.True(t, failoverErr.ShouldRetryNextAccount())
+			require.True(t, IsOpenAISilentRefusalErrorBody(failoverErr.ResponseBody))
+			require.False(t, c.Writer.Written())
+			require.False(t, rec.Flushed)
+			require.Empty(t, rec.Body.String())
+		})
+	}
+}
+
+func TestForwardAsChatCompletions_RawPreservesOutputAndTerminalStatus(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	for _, tc := range []struct {
+		name    string
+		payload string
+		want    string
+	}{
+		{"refusal", `"refusal":"I cannot help"`, `"refusal":"I cannot help"`},
+		{"reasoning", `"reasoning":"thinking"`, `"reasoning":"thinking"`},
+		{"legacy function call", `"function_call":{"name":"lookup","arguments":"{}"}`, `"function_call"`},
+		{"audio", `"audio":{"data":"YQ=="}`, `"data":"YQ=="`},
+		{"second choice", `"content":"answer"`, `"content":"answer"`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, stream := range []bool{false, true} {
+				key := "message"
+				if stream {
+					key = "delta"
+				}
+				payload := fmt.Sprintf(`{"choices":[{"index":0,"%s":{},"finish_reason":"stop"},{"index":1,"%s":{%s},"finish_reason":"stop"}],"usage":{"prompt_tokens":0,"completion_tokens":0}}`, key, key, tc.payload)
+				if stream {
+					payload = "data: " + payload + "\n\ndata: [DONE]\n\n"
+				}
+				rec, _, result, err := forwardRawChatCompletionTestResponse(t, stream, payload)
+				require.NoError(t, err)
+				require.NotNil(t, result)
+				require.Contains(t, rec.Body.String(), tc.want)
+			}
+		})
+	}
+	for _, reason := range []string{"length", "content_filter"} {
+		t.Run(reason, func(t *testing.T) {
+			payload := `{"choices":[{"finish_reason":"` + reason + `"}],"usage":{"total_tokens":0}}`
+			for _, stream := range []bool{false, true} {
+				response := payload
+				if stream {
+					response = "data: " + payload + "\n\n"
+				}
+				rec, _, result, err := forwardRawChatCompletionTestResponse(t, stream, response)
+				require.NoError(t, err)
+				require.NotNil(t, result)
+				require.Contains(t, rec.Body.String(), payload)
+			}
+		})
+	}
+}
+
+func TestForwardAsChatCompletions_RawPreservesReportedUsage(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	stream := `data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":2,"total_tokens":5}}` + "\n\n" +
+		`data: {"choices":[],"usage":{"prompt_tokens":0,"completion_tokens":0,"total_tokens":0}}` + "\n\ndata: [DONE]\n\n"
+	rec, _, result, err := forwardRawChatCompletionTestResponse(t, true, stream)
+	require.NoError(t, err)
+	require.Equal(t, 3, result.Usage.InputTokens)
+	require.Equal(t, 2, result.Usage.OutputTokens)
+	require.Equal(t, stream, rec.Body.String())
+
+	buffered := `{"choices":[],"usage":{"total_tokens":5}}`
+	rec, _, result, err = forwardRawChatCompletionTestResponse(t, false, buffered)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.Equal(t, buffered, rec.Body.String())
+}
+
+func TestForwardAsChatCompletions_RawPreservesExplicitUpstreamErrors(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	const payload = `{"error":{"code":"content_policy_violation","message":"Request blocked"},"choices":[],"usage":{"total_tokens":0}}`
+	for _, tc := range []struct {
+		name     string
+		stream   bool
+		response string
+	}{
+		{"stream", true, "event: error\ndata: " + payload + "\n\n"},
+		{"stream without event name", true, "data: " + payload + "\n\n"},
+		{"buffered", false, payload},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			rec, _, result, err := forwardRawChatCompletionTestResponse(t, tc.stream, tc.response)
+			var failoverErr *UpstreamFailoverError
+			require.NotErrorAs(t, err, &failoverErr)
+			require.ErrorContains(t, err, "Request blocked")
+			require.Nil(t, result)
+			require.Equal(t, tc.response, rec.Body.String())
+		})
+	}
+}
+
+func TestForwardAsChatCompletions_RawResetAfterEmptyUsageKeepsReadError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	reset := errors.New("connection reset by peer")
+	upstreamBody := &openAIChatStreamReadErrorCloser{
+		payload: []byte("data: {\"choices\":[],\"usage\":{\"total_tokens\":0}}\n\n"),
+		err:     reset,
+	}
+	rec, c, result, err := forwardRawChatCompletionTestBody(t, true, upstreamBody)
+	var failoverErr *UpstreamFailoverError
+	require.ErrorAs(t, err, &failoverErr)
+	require.Equal(t, OpenAIUpstreamStreamReadErrorCode, gjson.GetBytes(failoverErr.ResponseBody, "error.code").String())
+	require.Nil(t, result)
+	require.False(t, c.Writer.Written())
+	require.Empty(t, rec.Body.String())
+}
+
+func TestForwardAsChatCompletions_RawEmptyDoneDoesNotReadPastTerminal(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	upstreamBody := &openAIChatStreamReadErrorCloser{
+		payload: []byte("data: [DONE]\n\n"),
+		err:     errors.New("read past [DONE]"),
+	}
+	rec, c, result, err := forwardRawChatCompletionTestBody(t, true, upstreamBody)
+	var failoverErr *UpstreamFailoverError
+	require.ErrorAs(t, err, &failoverErr)
+	require.True(t, IsOpenAISilentRefusalErrorBody(failoverErr.ResponseBody))
+	require.Nil(t, result)
+	require.False(t, c.Writer.Written())
+	require.Empty(t, rec.Body.String())
+}
+
+func forwardRawChatCompletionTestResponse(t *testing.T, stream bool, response string) (*httptest.ResponseRecorder, *gin.Context, *OpenAIForwardResult, error) {
+	t.Helper()
+	return forwardRawChatCompletionTestBody(t, stream, io.NopCloser(strings.NewReader(response)))
+}
+
+func forwardRawChatCompletionTestBody(t *testing.T, stream bool, response io.ReadCloser) (*httptest.ResponseRecorder, *gin.Context, *OpenAIForwardResult, error) {
+	t.Helper()
+	body := []byte(fmt.Sprintf(`{"model":"deepseek-v4-pro","messages":[{"role":"user","content":"hello"}],"stream":%t}`, stream))
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", bytes.NewReader(body))
+	contentType := "application/json"
+	if stream {
+		contentType = "text/event-stream"
+	}
+	upstream := &httpUpstreamRecorder{resp: &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     http.Header{"Content-Type": []string{contentType}},
+		Body:       response,
+	}}
+	svc := &OpenAIGatewayService{cfg: rawChatCompletionsTestConfig(), httpUpstream: upstream}
+	account := rawChatCompletionsTestAccount()
+	account.Extra = map[string]any{openai_compat.ExtraKeyResponsesSupported: false}
+	result, err := svc.ForwardAsChatCompletions(c.Request.Context(), c, account, body, "", "")
+	require.Equal(t, "/v1/chat/completions", upstream.lastReq.URL.Path)
+	return rec, c, result, err
+}
+
 func TestForwardAsRawChatCompletions_SilentRefusalToolCallsExempt(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

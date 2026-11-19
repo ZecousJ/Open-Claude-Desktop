@@ -179,10 +179,15 @@ export function gitHubFetcher(
     cwd: string,
     signal?: AbortSignal,
   ) {
+    const outcome = repository.outcome;
+    const source =
+      outcome?.kind === "reuse"
+        ? `refs/heads/${outcome.branch}`
+        : repository.ref;
     const grant = parseCloneGrant(
       await options.transport.request("github.clone", userId, {
         url: repository.url,
-        ...(repository.ref ? { ref: repository.ref } : {}),
+        ...(source ? { ref: source } : {}),
       }),
     );
     const budget = Math.min(maxCloneMs, grant.expiresAt - now());
@@ -195,7 +200,7 @@ export function gitHubFetcher(
     try {
       const helper = path.join(temp, "askpass.sh");
       fs.writeFileSync(helper, askpass, { mode: 0o700 });
-      const ref = grant.ref ?? repository.ref;
+      const ref = grant.ref ?? source;
       // A ref git's clone can't check out (Continue in cloud's upload, a
       // commit) is fetched after it.
       const pinned = Boolean(ref && pinnedRef(ref));
@@ -230,7 +235,9 @@ export function gitHubFetcher(
           "credential.helper=",
           "clone",
           "--quiet",
-          ...(ref && !pinned ? ["--branch", ref] : []),
+          ...(ref && !pinned
+            ? ["--branch", ref.replace(/^refs\/heads\//, "")]
+            : []),
           ...(pinned ? ["--no-checkout"] : []),
           "--",
           grant.url,
@@ -239,6 +246,8 @@ export function gitHubFetcher(
         env,
       );
       if (ref && pinned) {
+        const branch =
+          outcome?.kind === "create" ? outcome.branch : repository.branch;
         await step(
           [
             "-C",
@@ -259,9 +268,15 @@ export function gitHubFetcher(
             cwd,
             "checkout",
             "--quiet",
-            ...(repository.branch ? ["-B", repository.branch] : ["--detach"]),
+            ...(branch ? ["-B", branch] : ["--detach"]),
             "FETCH_HEAD",
           ],
+          base,
+        );
+      } else if (outcome?.kind === "create") {
+        await step(["-C", cwd, "branch", "--move", outcome.branch], base);
+        await step(
+          ["-C", cwd, "branch", "--unset-upstream", outcome.branch],
           base,
         );
       }

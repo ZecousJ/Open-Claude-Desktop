@@ -4,37 +4,38 @@
  * leaves as a runner-link `event` frame. Go numbers the events (seq), keeps
  * the resume ring and fans them out to the user's tabs.
  *
- * Pages to open (payments) leave as `open-url` frames. A frame the link would
- * refuse (over `webLimits.linkFrameBytes`) is dropped and logged: the tab
+ * Pages to open (payments) leave as `open-url` frames. A message the link would
+ * refuse (over `webLimits.linkMessageBytes`) is dropped and logged: the tab
  * catches up from the next event or a snapshot.
  */
 import type { AppEvent } from "../../shared/types";
 import { webLimits } from "../../shared/web-protocol";
-import { type RunnerFrame } from "../../shared/web-runner-frames";
+import { type RunnerMessage } from "../../shared/web-runner-frames";
 import { Coalescer } from "./coalesce";
 
 export interface FrameSink {
   /** Sends a frame when the link is up; false when it is not. */
-  send(frame: RunnerFrame): boolean;
+  send(frame: RunnerMessage): boolean;
 }
 
 export interface EventHubOptions {
   sink: FrameSink;
   delayMs?: number;
-  maxFrameBytes?: number;
+  maxMessageBytes?: number;
   log?: (message: string) => void;
 }
 
 export class EventHub {
   private users = new Map<number, Coalescer>();
   private readonly delayMs: number;
-  private readonly maxFrameBytes: number;
+  private readonly maxMessageBytes: number;
   private readonly log: (message: string) => void;
   /** Events sent and dropped since start (the runner's load report). */
   readonly counts = { sent: 0, dropped: 0 };
   constructor(private options: EventHubOptions) {
     this.delayMs = options.delayMs ?? webLimits.coalesceMs;
-    this.maxFrameBytes = options.maxFrameBytes ?? webLimits.linkFrameBytes;
+    this.maxMessageBytes =
+      options.maxMessageBytes ?? webLimits.linkMessageBytes;
     this.log = options.log ?? ((message) => console.error(message));
   }
   private coalescer(userId: number) {
@@ -49,12 +50,12 @@ export class EventHub {
     return found;
   }
   private sendEvent(userId: number, event: AppEvent) {
-    const frame: RunnerFrame = { t: "event", userId, event };
+    const frame: RunnerMessage = { t: "event", userId, event };
     const bytes = Buffer.byteLength(JSON.stringify(frame));
-    if (bytes > this.maxFrameBytes) {
+    if (bytes > this.maxMessageBytes) {
       this.counts.dropped++;
       this.log(
-        `claudex-runner: dropped a ${event.type} event of ${bytes} bytes (over the link frame limit)`,
+        `claudex-runner: dropped a ${event.type} event of ${bytes} bytes (over the link message limit)`,
       );
       return;
     }

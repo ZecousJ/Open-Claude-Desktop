@@ -32,6 +32,15 @@ func ensureBootstrapSecrets(ctx context.Context, client *ent.Client, cfg *config
 		return fmt.Errorf("nil config")
 	}
 
+	if !cfg.RunsControlPlane() {
+		stored, err := client.SecuritySecret.Query().Where(securitysecret.KeyEQ(securitySecretKeyJWT)).Only(ctx)
+		if err != nil {
+			return fmt.Errorf("read provisioned JWT secret: %w", err)
+		}
+		cfg.JWT.Secret = strings.TrimSpace(stored.Value)
+		return nil
+	}
+
 	cfg.JWT.Secret = strings.TrimSpace(cfg.JWT.Secret)
 	if cfg.JWT.Secret != "" {
 		storedSecret, err := createSecuritySecretIfAbsent(ctx, client, securitySecretKeyJWT, cfg.JWT.Secret)

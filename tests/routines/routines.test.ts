@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { Scheduler } from "../../electron/routines/scheduler";
 import { routineJitterSeconds } from "../../electron/routines/scheduler-support";
+import { routineSessionInput } from "../../electron/routines/routine-session";
 import { createHash } from "node:crypto";
 import { nextWakeAt } from "../../shared/routines";
 import { routineCompletionNotices } from "../../shared/routine-notices";
@@ -78,6 +79,57 @@ const withRoutines = (
   scheduledTasks: ClientPolicy["scheduledTasks"],
   extra: Partial<ClientPolicy> = {},
 ): ClientPolicy => ({ ...openPolicy, scheduledTasks, ...extra });
+
+test("a cold hosted scheduler runs a due task once with its saved configuration", async (t) => {
+  const root = temporary(t);
+  let now = NOW;
+  const inputs: ReturnType<typeof routineSessionInput>[] = [];
+  const options = {
+    now: () => now,
+    isBusy: () => false,
+    run: async (task: Parameters<typeof routineSessionInput>[0]) => {
+      inputs.push(routineSessionInput(task));
+      return conversation();
+    },
+  };
+  const at = NOW + 60_000;
+  const task = new Scheduler(root, options).save(routine({
+    repeat: { kind: "once", at }, executionLocation: "remote", effort: "high", disableJitter: true,
+  }));
+  now = at + 3500;
+  const scheduler = new Scheduler(root, { ...options, startupGraceMs: 60_000 });
+  await scheduler.tick();
+  await scheduler.tick();
+  assert.equal(inputs.length, 1);
+  assert.equal(inputs[0].scheduledTaskId, task.id);
+  assert.equal(inputs[0].effort, "high");
+  assert.equal(scheduler.runs(task.id)[0].trigger, "schedule");
+  assert.equal(scheduler.list()[0].enabled, false);
+});
+
+test("local Code routine worktree, branch and permission survive save and dispatch", async (t) => {
+  const root = temporary(t);
+  const options = {
+    now: () => NOW,
+    isBusy: () => false,
+    run: async (task: Parameters<typeof routineSessionInput>[0]) => {
+      assert.equal(routineSessionInput(task).worktree, true);
+      assert.equal(routineSessionInput(task).worktreeBranch, "review/base");
+      assert.equal(routineSessionInput(task).codePermissionMode, "plan");
+      assert.equal(routineSessionInput(task).scheduledPermission, undefined);
+      assert.equal(task.prompt, "Review code\n\nOnly this run");
+      return conversation();
+    },
+  };
+  const task = new Scheduler(root, options).save(routine({
+    cwd: root, repeat: { kind: "manual" }, useWorktree: true,
+    sourceBranch: "review/base", codePermissionMode: "plan", prompt: "Review code",
+  }));
+  const reopened = new Scheduler(root, options);
+  await reopened.runNow(task.id, "Only this run", true);
+  assert.equal(reopened.list()[0].prompt, "Review code");
+  assert.equal(reopened.runs(task.id)[0].trigger, "manual");
+});
 
 test("jitter is stable, persisted and respected by both scheduler and runner wake time", async (context) => {
   const root = temporary(context);

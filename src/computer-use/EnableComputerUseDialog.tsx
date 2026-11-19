@@ -7,9 +7,10 @@ import { PermissionRow } from "./PermissionRow";
 import { saveComputerUseSettings } from "./useComputerUse";
 
 /**
- * "Turn on computer use?": what Claudex will do, the Keep in mind list and the
- * research-preview line, Cancel and Turn on; then, on a Mac still missing a
- * permission, "Grant macOS permissions" with the two rows and Done.
+ * "Turn on computer use?" (live claude.ai bundle, 2026-10-14, cf958f08d C):
+ * what Claudex will do, the Keep in mind list and the research-preview
+ * line, Cancel and Turn on; then, on a Mac still missing a permission,
+ * "Grant macOS permissions" with the two rows and Done.
  */
 export function EnableComputerUseDialog({
   platform,

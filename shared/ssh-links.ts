@@ -16,7 +16,7 @@ export const sshLinkErrors = {
   truncated: "Couldn’t open link. Use a shorter link.",
 } as const;
 
-/** Query validation. */
+/** Query validation (live claude.ai bundle, 2026-10-14, shared-28-C6BwLgEK). */
 export function parseSshLink(
   query: URLSearchParams,
 ):

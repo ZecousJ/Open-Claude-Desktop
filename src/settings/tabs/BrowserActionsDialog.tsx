@@ -3,7 +3,7 @@ import { t } from "../../i18n";
 import { SettingsModal } from "../controls";
 import "./browser-actions-dialog.css";
 
-/** Browser warning. */
+/** Browser warning (live claude.ai bundle, 2026-10-14, c1f04f7e1-BY11zgRA). */
 export function BrowserActionsDialog({
   onClose,
   onAllow,

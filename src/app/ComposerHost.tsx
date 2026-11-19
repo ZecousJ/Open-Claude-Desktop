@@ -1,5 +1,7 @@
 import { useAppDraft } from "../composer/draft-text";
 import type { ComposerField } from "../composer/composer-field";
+import { useKnowledgeBases } from "../knowledge/KnowledgeControls";
+import { HUANER_TECH, hiwonderKnowledgeEnabled } from "../../shared/knowledge-api";
 import { api } from "../desktop-api";
 import { exportConversation } from "../conversation/conversation-export";
 import { Suspense, useEffect, type RefObject } from "react";
@@ -85,6 +87,7 @@ export function ComposerHost({
     app.policy,
     active?.connectorOverrides ?? app.composerDraft.draftConnectors,
   );
+  const knowledgeBases = useKnowledgeBases();
   const openLink = useOpenLink();
   const effort = app.effort ?? active?.effort ?? app.project?.defaultEffort;
   const sessionPermissions =
@@ -249,6 +252,17 @@ export function ComposerHost({
             !searchIntegrationEnabled,
           ).catch(report)
         }
+        knowledge={
+          knowledgeBases.length
+            ? {
+                bases: knowledgeBases,
+                active: active
+                  ? selectedKnowledgeBases(active)
+                  : app.composerDraft.draftKnowledge,
+                onToggle: (id) => void toggleKnowledge(app, id).catch(report),
+              }
+            : undefined
+        }
         draftIdentity={`${activeId ?? app.draftSession}:${app.mode}`}
         artifact={app.artifact}
         narrow={Boolean(app.artifact || app.panel)}
@@ -340,8 +354,8 @@ export function ComposerHost({
 }
 
 /**
- * Grows the composer with its text: Code up to 380 px, Chat and Cowork up to
- * 370 px, which makes the whole box 434 px.
+ * Grows the composer with its text: Code up to 380 px (R-0379), Chat and
+ * Cowork up to 370 px, which makes the whole box 434 px (R-0238).
  */
 export function useComposerAutosize(
   composer: RefObject<ComposerField | null>,
@@ -386,12 +400,13 @@ function fitComposer(field: ComposerField, mode: Mode) {
     field.resizeToContent();
     return;
   }
-  // Measured at height 0, not "auto": a flex item at "auto" stretches to its
-  // row, so a row held tall by a sibling read back as a 380px text area.
+  // Measured at height 0, not "auto": a flex item at "auto" stretches to
+  // its row, so a row held tall by a sibling (the desktop Code composer
+  // right after a send, 2026-10-20) read back as a 380px text area.
   field.style.height = "0px";
   const height = Math.min(field.scrollHeight, mode === "code" ? 380 : 370);
   field.style.height = height + "px";
-  // The Chat/Cowork home moves its block up as the box grows.
+  // The Chat/Cowork home moves its block up as the box grows (R-0238).
   field
     .closest<HTMLElement>(".chat-home")
     ?.style.setProperty("--composer-grow", `${Math.max(0, height - 22)}px`);
@@ -421,6 +436,27 @@ function currentProvider(app: AppController) {
 function currentProtocol(app: AppController) {
   const provider = currentProvider(app);
   return provider && modelProtocol(provider, app.model);
+}
+
+/** Turns a knowledge base on or off for the open chat, or the new chat's draft. */
+function selectedKnowledgeBases(conversation: NonNullable<AppController["active"]>) {
+  const other = (conversation.knowledgeBases ?? []).filter(id => id !== HUANER_TECH);
+  return hiwonderKnowledgeEnabled(conversation) ? [...other, HUANER_TECH] : other;
+}
+
+async function toggleKnowledge(app: AppController, id: string) {
+  const { active } = app;
+  const current = active
+    ? selectedKnowledgeBases(active)
+    : app.composerDraft.draftKnowledge;
+  const next = current.includes(id)
+    ? current.filter((value) => value !== id)
+    : [...current, id];
+  if (active)
+    app.upsert(
+      await api.updateConversation(active.id, { knowledgeBases: next }),
+    );
+  else app.composerDraft.setDraftKnowledge(next);
 }
 
 async function toggleWebSearch(app: AppController) {
@@ -475,7 +511,8 @@ function researchBlocked(app: AppController, catalog: ModelCatalog | null) {
       active?.connectorOverrides ?? app.composerDraft.draftConnectors,
     ),
   });
-  // Model compatibility still gates Research in the official app.
+  // Model compatibility still gates Research in the official app
+  // (live claude.ai bundle, 2026-10-14, shared-5-DQt42NbL).
   if (reason === "service")
     return "Enable a search integration to use research";
   if (reason === "model") return "Select a different model to use this feature";
@@ -483,8 +520,8 @@ function researchBlocked(app: AppController, catalog: ModelCatalog | null) {
 }
 
 /**
- * "Create project <name>" in the Add to project menu: a project with that name
- * and no description, chosen for the composer at once.
+ * "Create project <name>" in the Add to project menu (R-0228): a project with
+ * that name and no description, chosen for the composer at once.
  */
 async function createNamedProject(app: AppController, name: string) {
   const saved = await createMoveProject(app, name);

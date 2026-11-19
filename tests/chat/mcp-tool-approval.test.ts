@@ -321,6 +321,18 @@ function engineWith(servers: Record<string, unknown>) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-mcp-always-"));
   const store = new Store(root);
   store.settings.mcpServers = servers;
+  store.conversations.push({
+    id: approval().conversationId,
+    mode: "chat",
+    title: "Connector approval",
+    providerId: "test",
+    model: "test",
+    pinned: false,
+    archived: false,
+    createdAt: 1,
+    updatedAt: 1,
+    turns: [],
+  });
   const responses: unknown[] = [];
   const engine = new Engine(
     store,
@@ -342,7 +354,7 @@ function engineWith(servers: Record<string, unknown>) {
   };
 }
 
-test("Always allow keeps the tool's approval mode in the connector's settings, without a restart", () => {
+test("Always allow keeps the tool's approval mode for the next runtime", () => {
   const { engine, store, responses, done } = engineWith({
     linear: { url: "https://linear.example/mcp" },
   });
@@ -354,15 +366,14 @@ test("Always allow keeps the tool's approval mode in the connector's settings, w
     engine.onMcpServersRemembered = () => saved++;
     engine.approve(41, approvalResponse(open, "always"));
     assert.deepEqual(responses, [
-      { action: "accept", content: null, _meta: { persist: "always" } },
+      { action: "accept", content: null, _meta: null },
     ]);
     assert.deepEqual(store.settings.mcpServers.linear, {
       url: "https://linear.example/mcp",
       tools: { create_issue: { approval_mode: "approve" } },
     });
     assert.equal(saved, 1);
-    // The agent already has the choice: the next send does not restart it.
-    assert.equal((engine as any).startedMcp, (engine as any).runtimeKey());
+    assert.notEqual((engine as any).startedMcp, (engine as any).runtimeKey());
   } finally {
     done();
   }
@@ -425,6 +436,18 @@ test("the engine hands a window only the persist choices it can keep", () => {
     assert.deepEqual(shaped("linear"), ["session", "always"]);
     assert.deepEqual(shaped("claudex_notes"), ["session"]);
     assert.deepEqual(shaped("linear", false), []);
+    engine.policy = () => openPolicy;
+    const prompt = (persist: unknown) =>
+      (engine as any).offeredParams({
+        method: "mcpServer/elicitation/request",
+        params: params(persist),
+      })._meta.persist;
+    assert.deepEqual(prompt([]), ["always"]);
+    engine.store.settings.mcpServers.linear = {
+      url: "https://linear.example/mcp",
+      default_tools_approval_mode: "prompt",
+    };
+    assert.deepEqual(prompt([]), []);
     // A form's field order travels beside the schema, for clients that decode it unordered.
     const form = (engine as any).offeredParams({
       method: "mcpServer/elicitation/request",

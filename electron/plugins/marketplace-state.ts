@@ -11,9 +11,11 @@ export interface MarketplaceSyncState {
   syncedCommit?: string;
   autoSync?: boolean;
   syncError?: string;
+  userAdded?: true;
 }
 
-// Local refresh metadata mirrors lastUpdated in known marketplaces.
+// Local refresh metadata mirrors lastUpdated in known marketplaces (2.37337.1
+// desktop bundle, index.chunk-BWk6pVUt.js: Ocn, refreshMarketplace).
 export class MarketplaceState {
   constructor(private root: () => string) {}
 
@@ -43,6 +45,7 @@ export class MarketplaceState {
         } catch {}
         states[name] = {
           source,
+          ...(saved.userAdded === true ? { userAdded: true } : {}),
           ...(typeof saved.lastUpdated === "number" &&
           Number.isFinite(saved.lastUpdated)
             ? { lastUpdated: saved.lastUpdated }
@@ -130,10 +133,14 @@ export class MarketplaceState {
       if (/spawn git ENOENT/.test(String(error))) syncError = "Git is required";
       source = undefined;
     }
+    const normalizedSource = (value: string | undefined) => value?.replace(/\.git\/?$|\/$/, "");
+    const userAdded = state?.userAdded === true && !!source &&
+      normalizedSource(source) === normalizedSource(state.source);
     return {
       ...marketplace,
       ...(lastUpdated ? { lastUpdated } : {}),
       ...state,
+      userAdded: userAdded ? true : undefined,
       ...(source ? { source } : {}),
       ...(syncedCommit ? { syncedCommit } : {}),
       ...(syncError ? { syncError } : {}),

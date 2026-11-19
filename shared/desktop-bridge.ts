@@ -41,12 +41,14 @@ import { signInMethods } from "./sign-in-api";
 import { apiKeysMethods } from "./api-keys-api";
 import { announcementsMethods } from "./announcements-api";
 import { onboardingMethods } from "./onboarding-api";
+import { zecousMigrationMethods } from "./zecous-migration-api";
 import { cloudSyncMethods } from "./cloud-sync-api";
 import { chatDevicesMethods } from "./chat-devices-api";
 import { cloudEnvironmentsMethods } from "./cloud-environments-api";
 import { cloudContinueMethods } from "./cloud-continue-api";
 import { usageStatsMethods } from "./usage-stats-api";
 import { serviceStatusMethods } from "./service-status-api";
+import { knowledgeMethods } from "./knowledge-api";
 import { githubMethods } from "./github-api";
 import { linearMethods } from "./linear-api";
 import { simulatorsMethods } from "./simulators-api";
@@ -61,6 +63,7 @@ export const coreMethods = bridgeMethods<Omit<CoreDesktopAPI, "onEvent">>({
   previewResumeSession: true,
   resumeSession: true,
   authStatus: true,
+  setupLocalProvider: true,
   registerAccount: true,
   loginAccount: true,
   logoutAccount: true,
@@ -71,6 +74,7 @@ export const coreMethods = bridgeMethods<Omit<CoreDesktopAPI, "onEvent">>({
   snapshot: true,
   conversationTurns: true,
   searchConversations: true,
+  referenceFonts: true,
   copyText: true,
   copyImage: true,
   saveSettings: true,
@@ -109,7 +113,7 @@ export const coreMethods = bridgeMethods<Omit<CoreDesktopAPI, "onEvent">>({
   windowAction: true,
 });
 
-/** Each domain's calls. */
+/** Each domain's calls, by the package that owns them (docs/ui-workpackages.md). */
 export const domainMethods = {
   "privacy-data": privacyDataMethods,
   "desktop-extensions": extensionLifecycleMethods,
@@ -135,6 +139,7 @@ export const domainMethods = {
   artifacts: artifactsMethods,
   collections: collectionsMethods,
   "external-links": externalLinksMethods,
+  // Round two (docs/ui-workpackages.md §9); S0 added the stubs.
   sharing: sharingMethods,
   windows: windowsMethods,
   memory: memoryMethods,
@@ -145,9 +150,9 @@ export const domainMethods = {
   cowork: coworkMethods,
   // Code's "Trust this workspace?" and Codex's trusted projects.
   "workspace-trust": workspaceTrustMethods,
-  // Claudex's own updates.
+  // Claudex's own updates (package OTA).
   "app-update": appUpdateMethods,
-  // The sign-in page's other ways in.
+  // The sign-in page's other ways in (package LOGIN).
   "sign-in": signInMethods,
   // The GitHub connection of Code on the web (package W-GITHUB).
   github: githubMethods,
@@ -157,9 +162,13 @@ export const domainMethods = {
   announcements: announcementsMethods,
   // The first-run onboarding after sign-up.
   onboarding: onboardingMethods,
+  // The one-time move from ZecousAI.
+  "zecous-migration": zecousMigrationMethods,
   // The account's activity: totals, providers, trend, models, requests.
   "usage-stats": usageStatsMethods,
   "service-status": serviceStatusMethods,
+  // Knowledge bases for the agent (shared/knowledge-api.ts).
+  knowledge: knowledgeMethods,
   // Moving the desktop's conversations to the cloud (docs/cloud-sync.md P5).
   "cloud-sync": cloudSyncMethods,
   "chat-devices": chatDevicesMethods,

@@ -73,17 +73,12 @@ func searchText(turn json.RawMessage) string {
 		return ""
 	}
 	parts := []string{t.Prompt}
-	n := len(t.Prompt)
 	for _, it := range t.Items {
-		if n > searchTextBytes {
-			break
-		}
 		if it.Type == "agentMessage" && it.Text != "" {
 			parts = append(parts, it.Text)
-			n += len(it.Text) + 1
 		}
 	}
-	return clean(truncateUTF8(strings.Join(parts, "\n"), searchTextBytes))
+	return clean(strings.Join(parts, "\n"))
 }
 
 // Cursors are opaque to the runner: base64url of a small JSON value.

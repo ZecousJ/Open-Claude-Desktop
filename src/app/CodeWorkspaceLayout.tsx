@@ -154,9 +154,10 @@ export function CodeWorkspaceLayout({
     });
     return () => observer.disconnect();
   }, []);
-  // An open artifact or file shows as its own tile without being in the dock
-  // (ToolPanelHost adds it), so it counts as shown here too: when it closes,
-  // its tile gives its room back.
+  // An open artifact or file shows as its own tile without being in the
+  // dock (ToolPanelHost adds it), so it counts as shown here too: when it
+  // closes, its tile gives its room back (owner, 2026-10-21: closing a
+  // file's preview left the right side black).
   const dock = app.toolPanels.dock;
   const visible = useMemo(
     () =>

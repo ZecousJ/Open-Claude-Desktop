@@ -2,8 +2,8 @@
    after the app's own stylesheets. Measurements are from S-0006 (2x) where
    the design says "测"; the rest is provisional. */
 
-/* Composer chip: 31×31 right of "+", #09203f with a #7fa0d3 icon; the light
-   colours are provisional (Q1). */
+/* Composer chip (R-0285): 31×31 right of "+", #09203f with a #7fa0d3 icon;
+   the light colours are provisional (Q1). */
 .research-chip {
   display: grid;
   flex: none;
@@ -36,8 +36,9 @@
 :root[data-theme="light"] .research-chip:hover {
   background: #d6e3f8;
 }
-/* A chip that turns its mode off shows an × in place of its icon while hovered.
-   The × is drawn here so every such chip gets it. */
+/* A chip that turns its mode off shows an × in place of its icon while
+   hovered (the original's removable toolbar chip; desktop bundle 2.31226.1
+   static CSS/JS). The × is drawn here so every such chip gets it. */
 .research-chip {
   position: relative;
 }
@@ -64,7 +65,8 @@
   }
 }
 
-/* Research surfaces and timeline. */
+/* Research surfaces and timeline (live claude.ai bundle, 2026-10-14,
+   c4cedde1a-kzLnDSk3, cf454cdcb-Dzns4eFc; CDS tokens from rules.json). */
 .research-card,
 .research-panel {
   --cds-border: rgb(255 255 255 / 10%);

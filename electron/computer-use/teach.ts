@@ -3,7 +3,7 @@ import { app, BrowserWindow, ipcMain, screen } from "electron";
 import type { ComputerUseTeachStep } from "../../shared/computer-use";
 import { teachHtml } from "./teach-page";
 
-/** Click-through teaching tooltip. */
+/** Click-through teaching tooltip (desktop 2.37337.1, index.chunk-BWk6pVUt.js). */
 export class TeachOverlay {
   private win?: BrowserWindow;
   private pending?: (answer: "next" | "exit") => void;

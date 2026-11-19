@@ -20,6 +20,7 @@ import {
   type RunnerFrame,
 } from "../../shared/web-runner-frames";
 import { type TurnDoc } from "../../shared/web-docs";
+import { decodeWireValue } from "../../shared/web-wire";
 import { deviceRegistrationBody } from "../../shared/claudex-contract";
 import { requestJson } from "../../electron/sub2api/http";
 import { RemoteAccounts } from "../../electron/sub2api/identity";
@@ -160,8 +161,12 @@ test(
       models: { status: 200, body: { data: [{ id: "gpt-5.5" }] } },
     });
     const gatewayKeys: string[] = [];
+    let chatWithCoarseLocation = false;
     mock.route("POST", "/v1/responses", (request) => {
       gatewayKeys.push(String(request.headers.authorization));
+      const input = JSON.stringify(request.body);
+      if (input.includes("Say hello.") && input.includes("Fixtureville, Testland, ZZ"))
+        chatWithCoarseLocation = true;
       return {
         status: 200,
         body: sse("Hello from the mock gateway."),
@@ -169,8 +174,9 @@ test(
       };
     });
     await mock.start();
+    const loginDir = fs.mkdtempSync(path.join(os.tmpdir(), "runner-e2e-login-"));
     const signIn = await new RemoteAccounts(
-      fs.mkdtempSync(path.join(os.tmpdir(), "runner-e2e-login-")),
+      loginDir,
       mock.url,
       fakeCipher,
     ).login(user.email, user.password);
@@ -213,7 +219,9 @@ test(
                       },
                     ),
                   }
-                : await web.request(frame.op, frame.userId!, frame.body);
+                : frame.op === "location.get"
+                  ? { city: "Fixtureville", region: "Testland", country: "ZZ" }
+                  : await web.request(frame.op, frame.userId!, frame.body);
             send({ t: "response", id: frame.id, ok: true, value });
           } catch (error) {
             send({
@@ -243,6 +251,7 @@ test(
           ? { CLAUDEX_RUNNER_PATH_DIRS: process.env.CLAUDEX_E2E_PATH_DIRS }
           : {}),
         CLAUDEX_RUNNER_STATE_DIR: state,
+        CLAUDEX_RUNNER_OFFICIAL_UI_ROOT: path.resolve("build/official-ui"),
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -301,6 +310,26 @@ test(
       await until(() => !!done(), "the turn to complete");
       const turn = (done()!.event as any).conversation.turns[0];
       assert.match(JSON.stringify(turn.items), /Hello from the mock gateway\./);
+      assert.ok(chatWithCoarseLocation, "the isolated Chat must use the account's coarse location");
+      const officialAccount = decodeWireValue(await call("officialUiRead", { method: "GET", path: "/api/account" })) as { status: number; body: Uint8Array };
+      const org = JSON.parse(Buffer.from(officialAccount.body).toString("utf8")).memberships[0].organization.uuid;
+      const official = decodeWireValue(await call("officialUiRead", { method: "GET", path: `/api/organizations/${org}/chat_conversations_v2` })) as { status: number; body: Uint8Array };
+      assert.equal(official.status, 200);
+      const officialList = JSON.parse(Buffer.from(official.body).toString("utf8"));
+      assert.ok(officialList.data.some((row: { uuid: string }) => row.uuid === conversation.id), "the official Web adapter did not list the runner conversation");
+      // The Web bridge reaches the same account-bound skill editor through
+      // the real runner and the real Codex skill catalogue.
+      await call("saveSkill", { name: "runner-e2e-skill", description: "Test skill", instructions: "Before edit" });
+      const groups = await call("listSkills");
+      const skill = groups.flatMap((group: any) => group.skills ?? []).find((item: any) => item.name === "runner-e2e-skill");
+      assert.ok(skill?.path, "the created skill was not listed");
+      assert.equal(fs.realpathSync(skill.path), fs.realpathSync(path.join(state, "users", String(user.id), "profile", "codex-home", "skills", "runner-e2e-skill", "SKILL.md")));
+      await call("editSkill", skill.path, '---\nname: "runner-e2e-skill"\ndescription: "Test skill"\n---\n\nAfter edit\n');
+      const edited = await call("readSkill", skill.path);
+      assert.match(JSON.stringify(edited), /After edit/);
+      const officialSkills = decodeWireValue(await call("officialUiRead", { method: "GET", path: `/api/organizations/${org}/skills/list-skills` })) as { status: number; body: Uint8Array };
+      assert.equal(officialSkills.status, 200);
+      assert.ok(JSON.parse(Buffer.from(officialSkills.body).toString("utf8")).skills.some((item: { name: string }) => item.name === "runner-e2e-skill"));
       // The model was called with the user's web key, never anything else.
       const key = mock.keys.find((k) => k.user_id === user.id)!.key;
       assert.ok(gatewayKeys.length >= 1);
@@ -329,6 +358,8 @@ test(
       for (const socket of linkSockets) socket.destroy();
       await mock.close();
       if (!prebuilt) fs.rmSync(outdir, { recursive: true, force: true });
+      fs.rmSync(state, { recursive: true, force: true });
+      fs.rmSync(loginDir, { recursive: true, force: true });
       assert.equal(code, 0, stderr);
     }
   },

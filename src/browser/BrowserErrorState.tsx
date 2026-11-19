@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { BrowserTabState } from "../../shared/browser";
 import { describeLoadError } from "../../shared/browser";
 import { t } from "../i18n";
 import { PreviewGlyph } from "./preview-glyphs";
 
 /**
- * A page that could not be shown: the reason in words ("localhost refused to
- * connect."), Try again, and Open in the system browser (What's new: say
- * clearly why and offer the system browser). A crashed page offers Reload.
+ * A page that could not be shown (not captured: visual-provisional): the
+ * reason in words ("localhost refused to connect."), Try again, and Open
+ * in the system browser (What's new: say clearly why and offer the system
+ * browser). A crashed page offers Reload.
  */
 export function BrowserErrorState({
   tab,
@@ -25,7 +26,7 @@ export function BrowserErrorState({
   if (tab.crashed && !tab.error)
     return (
       <div className="browser-error" role="alert">
-        <AppIcon
+        <Anthropicon
           name="Warning"
           size={20}
           strokeWidth={1.5}
@@ -45,7 +46,12 @@ export function BrowserErrorState({
   if (blocked) return null;
   return (
     <div className="browser-error" role="alert">
-      <AppIcon name="Warning" size={20} strokeWidth={1.5} aria-hidden="true" />
+      <Anthropicon
+        name="Warning"
+        size={20}
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
       <h3>{title}</h3>
       <p>{detail}</p>
       {!blocked && (
@@ -63,8 +69,9 @@ export function BrowserErrorState({
 }
 
 /**
- * A site the administrator blocks: a strip over the page, role status, the sm
- * Warning glyph and the line in body text-warning on bg-warning, px-md py-sm,
+ * A site the administrator blocks (live claude.ai bundle, 2026-10-15,
+ * cf580efe9 `Zi`): a strip over the page, role status, the sm Warning
+ * glyph and the line in body text-warning on bg-warning, px-md py-sm,
  * 5px apart.
  */
 export function BlockedSiteStrip() {

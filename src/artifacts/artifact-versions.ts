@@ -21,10 +21,11 @@ export function versionIdOf(version: Artifact & { versionId?: string }) {
 
 /*
  * An artifact's versions. Every turn that writes a generated file keeps a
- * snapshot of it (its text, or its bytes under a digest), so a file the agent
- * rewrote has one version per write on the conversation's current branch:
- * version 1 is the first, the last is "Latest". Artifacts in a reply's code
- * blocks and library copies have no history.
+ * snapshot of it (its text, or its bytes under a digest), so a file the
+ * agent rewrote has one version per write on the conversation's current
+ * branch: version 1 is the first, the last is "Latest" (the original's
+ * "v{n} · Latest" switcher, desktop bundle 2.31226.1). Artifacts in a
+ * reply's code blocks and library copies have no history.
  */
 
 /**

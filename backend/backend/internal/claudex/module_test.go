@@ -18,6 +18,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/claudex/onboarding"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/routinemail"
 	webusage "github.com/Wei-Shaw/sub2api/internal/claudex/web/usage"
+	"github.com/Wei-Shaw/sub2api/internal/config"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -68,6 +69,34 @@ func (f fullFeature) SettingKeys() []string {
 type bareFeature struct{}
 
 func (bareFeature) Name() string { return "bare" }
+
+type workerFeature struct {
+	name    string
+	started *[]string
+}
+
+func (f workerFeature) Name() string { return f.name }
+func (f workerFeature) Start(context.Context) {
+	*f.started = append(*f.started, f.name)
+}
+
+func TestModuleStartsWorkersForServerRole(t *testing.T) {
+	for _, tc := range []struct {
+		role config.ServerRole
+		want []string
+	}{
+		{config.ServerRoleFull, []string{core.NameUsage, webusage.Name, core.NameWebHost}},
+		{config.ServerRoleModelGateway, []string{core.NameUsage, webusage.Name}},
+	} {
+		t.Run(string(tc.role), func(t *testing.T) {
+			var started []string
+			m := NewModule(Deps{Config: &config.Config{Server: config.ServerConfig{Role: tc.role}}})
+			m.Install(workerFeature{core.NameUsage, &started}, workerFeature{webusage.Name, &started}, workerFeature{core.NameWebHost, &started})
+			m.start()
+			require.ElementsMatch(t, tc.want, started)
+		})
+	}
+}
 
 type envelope struct {
 	Code   any             `json:"code"`
@@ -247,6 +276,7 @@ func (privateFeature) RegisterUserRoutes(g *gin.RouterGroup) {
 	}
 	g.POST("/diagnostics", echo)
 	g.POST("/feedback", echo)
+	g.POST("/product-feedback", echo)
 	g.POST("/payment/checkout-links", echo)
 	g.POST("/devices", echo)
 	// Round 2 (B-S): R1 snapshots and R3 memory text.
@@ -254,6 +284,9 @@ func (privateFeature) RegisterUserRoutes(g *gin.RouterGroup) {
 	g.PUT("/shares/:id", echo)
 	g.POST("/sharing/shared-with-me/:token/report", echo)
 	g.PUT("/memory/docs/:scope", echo)
+	g.PUT("/memory/controls/:scope", echo)
+	g.PUT("/memory/melange", echo)
+	g.PUT("/memory/cowork", echo)
 	g.POST("/memory/edits", echo)
 	g.PUT("/memory/prefs", echo)
 }
@@ -268,11 +301,15 @@ func TestPrivateBodiesNeverReachTheAuditLog(t *testing.T) {
 	for _, route := range []struct{ method, path string }{
 		{http.MethodPost, "/api/v1/claudex/diagnostics"},
 		{http.MethodPost, "/api/v1/claudex/feedback"},
+		{http.MethodPost, "/api/v1/claudex/product-feedback"},
 		{http.MethodPost, "/api/v1/claudex/payment/checkout-links"},
 		{http.MethodPost, "/api/v1/claudex/shares"},
 		{http.MethodPut, "/api/v1/claudex/shares/42"},
 		{http.MethodPost, "/api/v1/claudex/sharing/shared-with-me/tok/report"},
 		{http.MethodPut, "/api/v1/claudex/memory/docs/global"},
+		{http.MethodPut, "/api/v1/claudex/memory/controls/global"},
+		{http.MethodPut, "/api/v1/claudex/memory/melange"},
+		{http.MethodPut, "/api/v1/claudex/memory/cowork"},
 		{http.MethodPost, "/api/v1/claudex/memory/edits"},
 	} {
 		audit.bodies = nil
@@ -315,12 +352,13 @@ func TestProvideModuleInstallsEveryComponent(t *testing.T) {
 		require.NotNil(t, m)
 		require.Equal(t, []string{
 			core.NameWebConsole, core.NameRelease, core.NamePolicy, core.NameCatalog, core.NameDevices,
-			core.NameUsage, core.NameRefusal, core.NameVoice, core.NameFeedback, core.NameMemory, core.NameBootstrap,
+			core.NameUsage, core.NameRefusal, core.NameVoice, core.NameFeedback, "product-feedback", core.NameMemory, core.NameBootstrap,
 			core.NamePayment, core.NameSharing, core.NameWebSearchGuard,
 			core.NameWeb, core.NameWebStore, core.NameWebHost, core.NameCloud, core.NameGitHub, webusage.Name, core.NameSignIn,
 			core.NameAnnouncements,
+			core.NameZecousMigration,
 			core.NameServiceStatus,
-			core.NameAccountGuard, core.NameAccountProfile,
+			core.NameKnowledge, core.NameAccountGuard, core.NameAccountProfile,
 			onboarding.Name,
 			routinemail.Name,
 		}, m.FeatureNames())
@@ -330,7 +368,7 @@ func TestProvideModuleInstallsEveryComponent(t *testing.T) {
 		require.NotNil(t, env.Peers.Sessions)
 		require.NotNil(t, env.Peers.Release)
 		require.NotNil(t, env.Now)
-		require.Len(t, env.Components, 27)
+		require.Len(t, env.Components, len(m.FeatureNames()))
 		require.True(t, env.Installed(core.NamePayment))
 		require.False(t, env.Installed("nope"))
 		// B1 (cross-package edit): implemented components add bootstrap sections;
@@ -452,6 +490,7 @@ func (deviceStub) LookupByDeviceID(context.Context, int64, string) (*core.Device
 func (deviceStub) Check(context.Context, int64, time.Time, string) claudexhook.SessionState {
 	return claudexhook.Revoked
 }
+func (deviceStub) InvalidateSession(int64, string) {}
 
 // hookFeature implements every hook provider and gateway interface.
 type hookFeature struct {

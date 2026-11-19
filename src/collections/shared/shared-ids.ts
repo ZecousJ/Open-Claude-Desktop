@@ -11,7 +11,8 @@ export function sharedConversationIds(shares: HostedShare[]) {
 }
 
 /**
- * Which conversations the account has shared, kept current while `enabled`.
+ * Which conversations the account has shared, kept current while `enabled`
+ * (live claude.ai bundle, 2026-10-12: the chats page marks them "Shared").
  * Empty where the service hosts no sharing.
  */
 export function useSharedConversationIds(enabled: boolean) {

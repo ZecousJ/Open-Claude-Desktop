@@ -3,9 +3,10 @@ import type { GitHubPullRequest } from "../../shared/github-api";
 export { pullRequestIsLive } from "../../shared/pull-request-status";
 
 /**
- * What the Code session's branch row offers: the PR button is Create PR, or
- * Commit changes when the folder has no GitHub remote, or nothing once the
- * branch has a pull request. Why it is greyed out is the tooltip on the button.
+ * What the Code session's branch row offers (desktop bundle 2.31226.1): the
+ * PR button is Create PR, or Commit changes when the folder has no GitHub
+ * remote, or nothing once the branch has a pull request. Why it is greyed
+ * out is the tooltip on the button.
  */
 
 /** Which of the split button's choices the person last made. */
@@ -61,8 +62,8 @@ export function prAction(input: {
       label,
       disabled: "Already on the base branch — check out a feature branch first",
     };
-  // A cloud session's branch must be on GitHub first; a local one is pushed
-  // when the PR is made.
+  // A cloud session's branch must be on GitHub first (live claude.ai
+  // bundle, 2026-10-14); a local one is pushed when the PR is made.
   if (cloud && status.pushed === false)
     return {
       kind: "create",
@@ -83,8 +84,9 @@ export function prAction(input: {
 }
 
 /**
- * The row's tint: a merged request tints the whole row purple, one in the merge
- * queue yellow; either hides the row's diff, CI and buttons.
+ * The row's tint (live claude.ai bundle, 2026-10-12, shared-6 `Tg`): a
+ * merged request tints the whole row purple, one in the merge queue yellow;
+ * either hides the row's diff, CI and buttons.
  */
 export function rowAccent(
   pr: GitHubPullRequest | undefined,

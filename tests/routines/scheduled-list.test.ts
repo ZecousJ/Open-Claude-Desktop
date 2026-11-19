@@ -215,7 +215,9 @@ for (const host of [taskWebHost, desktopHost]) {
       );
       assert.deepEqual(
         items.map((item) =>
-          item.querySelector("[data-icon]")?.getAttribute("data-icon"),
+          item
+            .querySelector("[data-anthropicon]")
+            ?.getAttribute("data-anthropicon"),
         ),
         ["Chat", "Settings"],
       );
@@ -414,7 +416,10 @@ test("both card variants name their action by the exact task title and use the S
       ),
     );
     assert.match(html, /aria-label="More options for Review · 夸我"/);
-    assert.match(html, /class="routine-more"[^]*data-icon="DotsVertical"/);
+    assert.match(
+      html,
+      /class="routine-more"[^]*data-anthropicon="DotsVertical"/,
+    );
     assert.doesNotMatch(html, /Review · 夸我 actions/);
     assert.equal(html.includes("routine-native-item"), host.kind === "desktop");
     assert.doesNotMatch(
@@ -438,7 +443,7 @@ test("native card action metrics use the Source default icon Button without over
   );
   assert.match(
     nativeCss,
-    /\.routine-native-item \.routine-more > \[data-icon\]\s*\{\s*width: 20px;\s*height: 20px;/,
+    /\.routine-native-item \.routine-more > \[data-anthropicon\]\s*\{\s*width: 20px;\s*height: 20px;/,
   );
   assert.doesNotMatch(nativeCss, /routine-web-item/);
   assert.match(

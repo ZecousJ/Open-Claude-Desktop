@@ -1,7 +1,8 @@
 /**
- * Apps that reach beyond themselves: a terminal or editor runs commands, a file
- * manager touches any file, system settings change the system. The access card
- * warns under these rows.
+ * Apps that reach beyond themselves: a terminal or editor runs commands, a
+ * file manager touches any file, system settings change the system. The
+ * access card warns under these rows (live claude.ai bundle, 2026-10-14,
+ * c0b9fcb09: the same lists and the three warnings).
  */
 import type { ComputerUseAppRef } from "../../shared/computer-use";
 

@@ -9,10 +9,11 @@ import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
 import type { Settings } from "../../shared/types";
-import type {
-  CustomizeSkill,
-  SkillContents,
-  SkillFile,
+import {
+  knowledgeFileLimitMessage,
+  type CustomizeSkill,
+  type SkillContents,
+  type SkillFile,
 } from "../../shared/collections-api";
 import type { AppContext, IpcHandle } from "../app/app-context";
 import { assertSkillPathPrivate } from "../skills/skill-private";
@@ -24,7 +25,12 @@ import {
   DesignSystemStore,
   designSystemPrompt,
 } from "../artifacts/design-systems";
-import { PluginService } from "../plugins/plugins";
+import { PluginService, type PluginRpc } from "../plugins/plugins";
+import { OrganizationPlugins } from "../plugins/organization-plugins";
+import { OrganizationPluginPackages } from "../plugins/organization-plugin-package";
+import type { Engine } from "../engine/engine";
+import { Sub2ApiError } from "../sub2api/http";
+import { organizationRuntimeCandidates } from "../../shared/official-organization-catalog";
 import {
   CustomizeSearchService,
   customizeSkillSearchHits,
@@ -36,6 +42,7 @@ import {
 import { MarketplaceState } from "../plugins/marketplace-state";
 import { preference } from "../../shared/settings-extras";
 import { DirectorySubmissions } from "../connectors/directory-submissions";
+import { assertAccountOperationCurrent } from "../account/operation-lease";
 import {
   ProjectKnowledgeDrive,
   knowledgeDriveFileInput,
@@ -54,6 +61,7 @@ import {
   knowledgeExtensions,
   knowledgeFileLimit,
   ProjectKnowledgeStore,
+  knowledgeTextName,
 } from "../projects/project-knowledge";
 import { PluginUploads } from "../plugins/plugin-upload";
 import { pluginUploadInput } from "../../shared/plugin-upload-input";
@@ -76,19 +84,48 @@ const skillFileListLimit = 200;
 export function readSkillContents(skillPath: string): SkillContents {
   const stat = fs.lstatSync(skillPath);
   if (!stat.isFile()) throw new Error("This skill's SKILL.md is missing.");
-  const text = fs
-    .readFileSync(skillPath)
-    .subarray(0, skillMarkdownLimit)
-    .toString("utf8");
+  // Read a bounded snapshot, rather than loading an arbitrarily large file
+  // before truncating it. A replaced/symlinked SKILL.md is not a valid snapshot.
+  const fd = fs.openSync(
+    skillPath,
+    fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0),
+  );
+  let text: string;
+  let markdownTruncated = false;
+  try {
+    const opened = fs.fstatSync(fd);
+    if (!opened.isFile() || opened.dev !== stat.dev || opened.ino !== stat.ino)
+      throw new Error("This skill changed while it was being read.");
+    markdownTruncated = opened.size > skillMarkdownLimit;
+    const buffer = Buffer.alloc(Math.min(opened.size, skillMarkdownLimit));
+    let offset = 0;
+    while (offset < buffer.length) {
+      const n = fs.readSync(fd, buffer, offset, buffer.length - offset, offset);
+      if (!n) break;
+      offset += n;
+    }
+    const after = fs.fstatSync(fd);
+    if (
+      after.size !== opened.size ||
+      after.mtimeMs !== opened.mtimeMs ||
+      after.ctimeMs !== opened.ctimeMs ||
+      offset !== buffer.length
+    )
+      throw new Error("This skill changed while it was being read.");
+    text = buffer.toString("utf8");
+  } finally {
+    fs.closeSync(fd);
+  }
   const markdown = text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "").trim();
   const folder = path.dirname(skillPath);
   const files: SkillContents["files"] = [];
-  let truncated = false;
+  let truncated = markdownTruncated;
   const walk = (dir: string, depth: number) => {
     let entries: fs.Dirent[];
     try {
       entries = fs.readdirSync(dir, { withFileTypes: true });
     } catch {
+      truncated = true;
       return;
     }
     entries.sort((a, b) => a.name.localeCompare(b.name));
@@ -97,6 +134,7 @@ export function readSkillContents(skillPath: string): SkillContents {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         if (depth < 4) walk(full, depth + 1);
+        else truncated = true;
       } else if (entry.isFile()) {
         if (files.length >= skillFileListLimit) {
           truncated = true;
@@ -124,17 +162,51 @@ export function readSkillFileContents(
   relative: string,
 ): SkillFile {
   const folder = fs.realpathSync(path.dirname(skillPath));
-  const target = fs.realpathSync(path.resolve(folder, relative));
+  const requested = path.resolve(folder, relative);
+  const target = fs.realpathSync(requested);
   if (!target.startsWith(folder + path.sep))
     throw new Error("That file is outside the skill's folder.");
-  if (!fs.statSync(target).isFile()) throw new Error("That is not a file.");
-  const bytes = fs.readFileSync(target).subarray(0, skillFileLimit);
-  const binary = bytes.includes(0);
-  return {
-    text: binary ? "" : bytes.toString("utf8"),
-    truncated: !binary && fs.statSync(target).size > skillFileLimit,
-    binary,
-  };
+  const initial = fs.lstatSync(target);
+  if (!initial.isFile()) throw new Error("That is not a file.");
+  const fd = fs.openSync(
+    target,
+    fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0),
+  );
+  try {
+    const opened = fs.fstatSync(fd);
+    const same = (value: fs.Stats) =>
+      value.isFile() &&
+      value.dev === opened.dev &&
+      value.ino === opened.ino &&
+      value.size === opened.size &&
+      value.mtimeMs === opened.mtimeMs &&
+      value.ctimeMs === opened.ctimeMs;
+    if (!same(initial))
+      throw new Error("This skill file changed while it was being read.");
+    const bytes = Buffer.alloc(Math.min(opened.size, skillFileLimit));
+    let offset = 0;
+    while (offset < bytes.length) {
+      const n = fs.readSync(fd, bytes, offset, bytes.length - offset, offset);
+      if (!n) break;
+      offset += n;
+    }
+    if (
+      offset !== bytes.length ||
+      !same(fs.fstatSync(fd)) ||
+      fs.realpathSync(path.dirname(skillPath)) !== folder ||
+      fs.realpathSync(requested) !== target ||
+      !same(fs.lstatSync(target))
+    )
+      throw new Error("This skill file changed while it was being read.");
+    const binary = bytes.includes(0);
+    return {
+      text: binary ? "" : bytes.toString("utf8"),
+      truncated: !binary && opened.size > skillFileLimit,
+      binary,
+    };
+  } finally {
+    fs.closeSync(fd);
+  }
 }
 
 /** The connection and model a routine on "Default" runs with. */
@@ -204,11 +276,11 @@ export async function customizeSkills(
 }
 
 /**
- * Collection pages: Customize's skill list and routines. The scheduler enforces
- * the administrator's `scheduledTasks` policy; the folder must be one the
- * person chose, and "Default" resolves to the active connection's model. R13-D
- * adds a routine's run history, custom sidebar groups, project knowledge files
- * and a skill's contents.
+ * Collection pages (package WP7): Customize's skill list and routines. The
+ * scheduler enforces the administrator's `scheduledTasks` policy; the
+ * folder must be one the person chose, and "Default" resolves to the
+ * active connection's model. R13-D adds a routine's run history, custom
+ * sidebar groups, project knowledge files and a skill's contents.
  */
 export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
   registerRoutineMigrationHandlers(handle, ctx, defaultModelChoice);
@@ -241,7 +313,11 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
       uploadService = {
         owner,
         value: new ProjectKnowledgeUploads(
-          new ProjectKnowledgeStore(store.root, () => store.projects),
+          new ProjectKnowledgeStore(store.root, () => {
+            if (owner !== knowledgeOwner())
+              throw new Error("The signed-in account changed. Try again.");
+            return store.projects;
+          }),
           {
             owner: knowledgeOwner,
             canEdit: (projectId) => {
@@ -329,6 +405,13 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
   handle("readProjectKnowledge", (project: unknown, name: unknown) =>
     knowledge().read(id.parse(project), knowledgeFileName.parse(name)),
   );
+  handle("confirmProjectKnowledgeUpload", (project: unknown, input: unknown) =>
+    knowledge().confirmUpload(id.parse(project), z.object({
+      name: knowledgeFileName,
+      bytes: z.number().int().nonnegative().max(knowledgeFileLimit),
+      addedAt: z.number().nonnegative().max(8.64e15),
+    }).parse(input)),
+  );
   handle("addProjectKnowledge", async (project: unknown) => {
     const store = knowledge();
     const projectId = id.parse(project);
@@ -346,16 +429,17 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
     store.assertCanEdit(projectId);
     if (result.canceled || !result.filePaths.length)
       return knowledgeUploads().list(projectId);
-    const files = result.filePaths.map((file) => {
-      const stat = fs.statSync(file);
+    const files: { name: string; data: Buffer }[] = [];
+    for (const file of result.filePaths) {
+      const stat = await fs.promises.stat(file);
       if (!stat.isFile())
         throw new Error(`${path.basename(file)} isn't a file.`);
       if (stat.size > knowledgeFileLimit)
         throw new Error(
-          `${path.basename(file)} is too large. Project files can be up to 10 MB.`,
+          `${path.basename(file)} is too large. ${knowledgeFileLimitMessage}`,
         );
-      return { name: path.basename(file), data: fs.readFileSync(file) };
-    });
+      files.push({ name: path.basename(file), data: await fs.promises.readFile(file) });
+    }
     store.prune();
     return mutateKnowledge(projectId, () => store.add(projectId, files));
   });
@@ -369,7 +453,7 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
             .instanceof(Uint8Array)
             .refine(
               (data) => data.byteLength <= knowledgeFileLimit,
-              "Project files can be up to 10 MB.",
+              knowledgeFileLimitMessage,
             ),
         }),
       )
@@ -398,14 +482,14 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
       .object({
         name: z.string().max(200),
         text: z.string().min(1).max(knowledgeFileLimit),
+        displayName: z.string().min(1).max(200).optional(),
       })
       .parse(raw);
-    const trimmed = file.name.trim();
-    const name = /\.(md|txt)$/i.test(trimmed) ? trimmed : `${trimmed}.md`;
+    const name = knowledgeTextName(file.name);
     const projectId = id.parse(project);
     return mutateKnowledge(projectId, () =>
       knowledge().add(projectId, [
-        { name, data: Buffer.from(file.text, "utf8") },
+        { name, data: Buffer.from(file.text, "utf8"), displayName: file.displayName },
       ]),
     );
   });
@@ -443,28 +527,21 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
         .min(1)
         .max(200)
         .parse(raw);
-      const loaded = await readKnowledgeRepositoryFiles(
-        id.parse(repository),
-        files,
+      const repo = id.parse(repository);
+      const loaded = await readKnowledgeRepositoryFiles(repo, files);
+      return mutateKnowledge(projectId, () =>
+        store.add(projectId, loaded.map((file, index) => ({
+          ...file,
+          source: {
+            provider: "github",
+            repository: repo,
+            branch: ref,
+            path: files[index].name,
+            status: "idle",
+            lastSyncedAt: Date.now(),
+          },
+        }))),
       );
-      store.add(projectId, loaded);
-      store.setSources(
-        projectId,
-        Object.fromEntries(
-          files.map((file) => [
-            `${repository}/${file.name}`,
-            {
-              provider: "github" as const,
-              repository: id.parse(repository),
-              branch: ref,
-              path: file.name,
-              status: "idle" as const,
-              lastSyncedAt: Date.now(),
-            },
-          ]),
-        ),
-      );
-      return knowledgeUploads().list(projectId);
     },
   );
   handle("syncProjectKnowledge", (project: unknown, name: unknown) => {
@@ -683,6 +760,46 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
         ? undefined
         : (ctx.engine as { codexHome?: string }).codexHome,
   );
+  const activePlugins = () => {
+    const { store, engine, accountActivationIdentity } = ctx;
+    const home = pluginHome();
+    const current = () =>
+      !ctx.accountRetiring &&
+      ctx.store === store &&
+      ctx.engine === engine &&
+      ctx.accountActivationIdentity === accountActivationIdentity;
+    assertAccountOperationCurrent(current);
+    const acquire = async (): Promise<PluginRpc> => {
+      assertAccountOperationCurrent(current);
+      if (!engine.rpc) {
+        const provider = store.settings.providers.find(
+          item => item.id === store.settings.activeProviderId,
+        );
+        if (!provider)
+          throw Error("Choose a model connection so the agent can start.");
+        await engine.ensure(provider, { interactive: false, current });
+      }
+      assertAccountOperationCurrent(current);
+      const rpc = engine.rpc;
+      if (!rpc) throw Error("The agent isn't running.");
+      const currentRuntime = () => current() && engine.rpc === rpc;
+      return {
+        call: async (method, params) => {
+          assertAccountOperationCurrent(currentRuntime);
+          const result = await rpc.call(method, params);
+          assertAccountOperationCurrent(currentRuntime);
+          return result;
+        },
+      };
+    };
+    let runtime: ReturnType<typeof acquire> | undefined;
+    return new PluginService(
+      () => (runtime ??= acquire()),
+      () => home,
+      new MarketplaceState(() => store.root),
+      () => preference(store.settings, "networkEgress"),
+    );
+  };
   let syncTimer: ReturnType<typeof setInterval> | undefined;
   let syncing: Promise<void> | undefined;
   ctx.onAccountActivated(() => {
@@ -707,6 +824,88 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
     await syncing;
   });
   handle("listPlugins", () => plugins.list());
+  const organizationPlugins = new OrganizationPlugins();
+  const organizationPluginId = z.string().regex(/^plugin_[a-f0-9]{24}$/);
+  const organizationPluginActivation = (target = ctx.engine, turnCurrent?: () => boolean) => {
+    const { remote, store, engine, accountActivationIdentity } = ctx;
+    if (!remote?.ready || (!ctx.window && !ctx.organizationPluginsOnRunner) || engine.environment?.kind === "ssh") return undefined;
+    const peer = target !== engine;
+    const peerRpc = peer ? target.rpc : undefined;
+    if (peer && (!ctx.organizationPluginsOnRunner || target.environment.kind !== "space" || !peerRpc)) return undefined;
+    const current = () => !ctx.accountRetiring && ctx.remote === remote && ctx.store === store &&
+      ctx.engine === engine && ctx.accountActivationIdentity === accountActivationIdentity &&
+      turnCurrent?.() !== false && (!peer || target.rpc === peerRpc);
+    assertAccountOperationCurrent(current);
+    const rpc = peerRpc ? async (): Promise<PluginRpc> => ({
+      async call(method, params) {
+        assertAccountOperationCurrent(current);
+        const result = await peerRpc.call(method, params);
+        assertAccountOperationCurrent(current);
+        return result;
+      },
+    }) : activePlugins().rpc;
+    return {
+      root: peer ? target.spaceRoot : store.root,
+      packages: new OrganizationPluginPackages(remote.backend.client, remote.session, current),
+      rpc,
+      current,
+      sandboxReadable: ctx.organizationPluginsOnRunner === true,
+    };
+  };
+  let pendingOrganizationReconciliation: { identity: unknown; result: Promise<void> } | undefined;
+  const reconcileOrganizationPlugins = (activation: NonNullable<ReturnType<typeof organizationPluginActivation>>) => {
+    const identity = ctx.accountActivationIdentity;
+    if (pendingOrganizationReconciliation?.identity === identity && pendingOrganizationReconciliation)
+      return pendingOrganizationReconciliation.result;
+    const result = organizationPlugins.reconcile(activation).finally(() => {
+      if (pendingOrganizationReconciliation?.result === result) pendingOrganizationReconciliation = undefined;
+    });
+    pendingOrganizationReconciliation = { identity, result };
+    return result;
+  };
+  ctx.onAccountActivated(() => {
+    if (!ctx.organizationPluginsOnRunner) return;
+    const primary = ctx.engine;
+    primary.prepareOrganizationPlugins = async (target: Engine, turnCurrent) => {
+      if (target.environment.kind !== "space") return false;
+      const account = organizationPluginActivation(primary, turnCurrent);
+      const conversation = organizationPluginActivation(target, turnCurrent);
+      if (!account || !conversation) throw Error("The organization plugin runtime is unavailable.");
+      try {
+        return await organizationPlugins.syncForConversation(account, conversation);
+      } catch (error) {
+        if (error instanceof Sub2ApiError && error.status === 404 && error.code !== "CLAUDEX_PLUGIN_ORGANIZATION_NOT_FOUND" &&
+          [account.root, conversation.root].every(root => {
+            const directory = path.join(root, "organization-plugins");
+            return !fs.existsSync(directory) || !fs.readdirSync(directory).some(name => /^plugin_[a-f0-9]{24}$/.test(name));
+          })) return false;
+        throw error;
+      }
+    };
+  });
+  handle("readOrganizationPluginStates", (candidates: unknown) => {
+    const activation = organizationPluginActivation();
+    if (!activation) return undefined;
+    const rows = organizationRuntimeCandidates.parse(candidates);
+    return reconcileOrganizationPlugins(activation).then(() => organizationPlugins.states(rows, activation));
+  });
+  handle("readOrganizationPluginDetails", (id: unknown) => {
+    const activation = organizationPluginActivation();
+    if (!activation) return undefined;
+    return organizationPlugins.details(organizationPluginId.parse(id), activation);
+  });
+  handle("setOrganizationPluginEnabled", (id: unknown, enabled: unknown) => {
+    const activation = organizationPluginActivation();
+    if (!activation)
+      throw Error("Organization plugin installation requires a local desktop runtime.");
+    return organizationPlugins.setEnabled(organizationPluginId.parse(id), z.boolean().parse(enabled), activation);
+  });
+  handle("removeOrganizationPlugin", (id: unknown) => {
+    const activation = organizationPluginActivation();
+    if (!activation)
+      throw Error("Organization plugin removal requires a local desktop runtime.");
+    return organizationPlugins.remove(organizationPluginId.parse(id), activation);
+  });
   const uploads = new PluginUploads(async () => {
     await plugins.list();
     return ctx.engine.rpc!;
@@ -716,12 +915,18 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
     uploads.command(pluginUploadInput.parse(raw), ctx.store.root, pluginHome()),
   );
   const submissions = () => {
-    const remote = ctx.remote;
-    if (!remote) throw new Error("Failed to submit. You can try again.");
+    const { remote, store, accountActivationIdentity } = ctx;
+    if (!remote) throw Error("The directory service is unavailable.");
+    const current = () => !ctx.accountRetiring && ctx.remote === remote &&
+      ctx.store === store && ctx.accountActivationIdentity === accountActivationIdentity;
+    assertAccountOperationCurrent(current);
     return new DirectorySubmissions((route, init) =>
-      remote.session.authorized((token) =>
-        remote.backend.client.directoryRequest(token, route, init),
-      ),
+      remote.session.authorized(async (token) => {
+        assertAccountOperationCurrent(current);
+        const result = await remote.backend.client.directoryRequest(token, route, init);
+        assertAccountOperationCurrent(current);
+        return result;
+      }, current),
     );
   };
   // The cursor owns a snapshot of real account inventory. Retiring the
@@ -814,5 +1019,5 @@ export function registerCollectionHandlers(handle: IpcHandle, ctx: AppContext) {
     }
     return search.search(request);
   });
-  registerDirectoryHandlers({ ctx, handle, plugins, submissions });
+  registerDirectoryHandlers({ ctx, handle, plugins, activePlugins, submissions });
 }

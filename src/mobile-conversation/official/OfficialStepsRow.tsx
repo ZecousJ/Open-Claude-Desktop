@@ -23,7 +23,7 @@ import { generatedImageArtifact } from "../../transcript/tools/SessionToolView";
 import { useConversationServices } from "../../conversation/ConversationServices";
 import { AppContext } from "../../app/AppContext";
 import { Markdown } from "../../ui/components";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { lazyPiece } from "../../ui/lazy-piece";
 import { t, tf, useT } from "../../i18n";
 import { OfficialSheet, useSheetStack, type SheetPage } from "./OfficialSheet";
@@ -61,7 +61,7 @@ function StepIcon({ kind }: { kind: IconKind }) {
     return <SiteIcon host={kind.slice(5)} size={20} />;
   switch (kind) {
     case "tool":
-      return <AppIcon name="Tool" />;
+      return <Anthropicon name="Tool" />;
     case "command":
       return <SquareTerminal size={20} strokeWidth={1.5} />;
     case "file":
@@ -76,9 +76,10 @@ function StepIcon({ kind }: { kind: IconKind }) {
 }
 
 /**
- * The steps row's leading stack of the tools used: at most three distinct ones,
- * each a 20 dp circle overlapping the last by 8 dp with a 2 dp ring, as the
- * reply row's sources stack draws its favicons. Thoughts add no icon.
+ * The steps row's leading stack of the tools used (D/qyw.java:990-1066): at
+ * most three distinct ones, each a 20 dp circle overlapping the last by 8 dp
+ * with a 2 dp ring, as the reply row's sources stack draws its favicons
+ * (D/uo1.java:153-190). Thoughts add no icon.
  */
 function IconStack({ items }: { items: Item[] }) {
   const kinds = [
@@ -96,7 +97,7 @@ function IconStack({ items }: { items: Item[] }) {
   );
 }
 
-/** A finished step's status mark in the sheet. */
+/** A finished step's status mark in the sheet (D/s41.java:486-638). */
 function stepMark(item: Item, live: boolean) {
   if (live && itemIsRunning(item)) return "running";
   if (item.lifecycleStatus === "interrupted") return t("Step stopped");
@@ -104,7 +105,7 @@ function stepMark(item: Item, live: boolean) {
   return undefined;
 }
 
-/** The Request / Response page of a step. */
+/** The Request / Response page of a step (D/ujo.java:60-96). */
 function ToolContentPage({ item }: { item: Item }) {
   useT();
   const content = stepContent(item);
@@ -149,14 +150,14 @@ function ToolContentPage({ item }: { item: Item }) {
 }
 
 /**
- * Chat's steps group as the official app draws it: one collapsed row, 20 dp in,
- * 8 × 12 dp padding, the stack of tools used, then "N steps" (or a lone step's
- * own words, or "Thought for 12s"), 15 sp tertiary, one line, and the 16 dp
- * caret. While the reply works the label is the thinking verb, changing every 8
- * s with the 1.5 s shimmer, or the running step's words. A tap opens the
- * Collapsed Tools sheet at its Summary page; a step opens its Thinking,
- * ToolContent or Sources page. Pages the steps wrote follow as their cards, as
- * on the web.
+ * Chat's steps group as the official app draws it (chat-transcript.md §4.4):
+ * one collapsed row, 20 dp in, 8 × 12 dp padding, the stack of tools used,
+ * then "N steps" (or a lone step's own words, or "Thought for 12s"), 15 sp
+ * tertiary, one line, and the 16 dp caret. While the reply works the label
+ * is the thinking verb, changing every 8 s with the 1.5 s shimmer, or the
+ * running step's words. A tap opens the Collapsed Tools sheet (§4.5) at its
+ * Summary page; a step opens its Thinking, ToolContent or Sources page.
+ * Pages the steps wrote follow as their cards, as on the web.
  */
 export function OfficialStepsRow({
   items,
@@ -295,7 +296,7 @@ export function OfficialStepsRow({
                 <span className="official-step-mark">{mark}</span>
               ) : action ? (
                 <span className="official-step-caret" aria-hidden="true">
-                  <AppIcon name="CaretRight" />
+                  <Anthropicon name="CaretRight" />
                 </span>
               ) : null}
             </>
@@ -378,7 +379,7 @@ export function OfficialStepsRow({
           {label}
           {openable && (
             <span className="official-steps-caret" aria-hidden="true">
-              <AppIcon name="CaretRight" />
+              <Anthropicon name="CaretRight" />
             </span>
           )}
         </button>

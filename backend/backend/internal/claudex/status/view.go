@@ -211,6 +211,7 @@ func BuildOverview(channels []Channel, counts []DayCounts, latest map[key][]stri
 	for _, c := range counts {
 		byKey[key{c.MonitorID, c.Model}] = append(byKey[key{c.MonitorID, c.Model}], c)
 	}
+	incidents = matchIncidentChannels(channels, incidents)
 	// The incidents open in each slot, and which channel they touch.
 	type slotIncident struct {
 		id       int64

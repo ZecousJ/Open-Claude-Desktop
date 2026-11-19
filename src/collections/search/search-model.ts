@@ -7,12 +7,12 @@ import type {
 import type { Routine } from "../../../shared/routines";
 import type { Artifact } from "../../ui/ArtifactTypes";
 import type { HistorySearchHit } from "../../../shared/history-search";
-import type { AppIconName } from "../../ui/app-icon";
+import type { AnthropiconName } from "../../ui/anthropicons";
 import type { SearchEntrypoint } from "./palette-events";
 import { actionGroups, rankPaletteActions } from "./action-ranking";
 import { sessionPullRequest } from "../../../shared/pull-request";
 
-/** Contextual input copy. */
+/** Contextual input copy (live claude.ai bundle, 2026-10-14, c2771e1f6; live web 2026-10-20). */
 export function palettePlaceholder(
   entrypoint: SearchEntrypoint,
   mode: Mode,
@@ -23,14 +23,14 @@ export function palettePlaceholder(
       ? "Search sessions and projects"
       : "Search chats and projects";
   if (entrypoint === "actions") return "Search actions";
-  // The bundle still words an unfiltered palette "Search or start a chat" / "…
-  // a session" in one context, but the live web shows "Search" in Chat and Code
-  // alike.
+  // The bundle still words an unfiltered palette "Search or start a chat" /
+  // "… a session" in one context, but the live web shows "Search" in Chat
+  // and Code alike (live claude.ai, 2026-10-20).
   void filtered;
   return "Search";
 }
 
-/** Screen-reader result announcement. */
+/** Screen-reader result announcement (live claude.ai bundle, 2026-10-14, c2771e1f6). */
 export function paletteResultMessage(count: number) {
   return count === 0
     ? "No results found"
@@ -39,14 +39,14 @@ export function paletteResultMessage(count: number) {
       : "{count} results available";
 }
 
-/** The filter tabs of ⌘K search, in order. */
+/** The filter tabs of ⌘K search (R-对话搜索-弹窗), in order. */
 export const searchFilters = [
   ["all", "All"],
   ["artifacts", "Artifacts"],
   ["chats", "Sessions"],
   ["sessions", "Code"],
   ["projects", "Projects"],
-  // Live claude.ai names the tab after the Scheduled page.
+  // Live claude.ai (2026-09-29) names the tab after the Scheduled page.
   ["routines", "Scheduled"],
 ] as const;
 export type SearchFilter = (typeof searchFilters)[number][0] | "tasks";
@@ -57,10 +57,8 @@ export type SearchRow =
       kind: "conversation";
       title: string;
       conversation: Conversation;
-      /**
-       * With a query: the words it matched, and a quoted excerpt when a word
-       * was found only in a prompt or reply.
-       */
+      /** With a query: the words it matched, and a quoted excerpt when a
+          word was found only in a prompt or reply (R-1161). */
       terms?: string[];
       snippet?: string;
     }
@@ -75,7 +73,7 @@ export type PaletteAction = {
   kind: "action";
   title: string;
   mode?: Mode;
-  icon?: AppIconName;
+  icon?: AnthropiconName;
   group: "navigation" | "chat" | "project" | "settings" | "general";
   searchHints?: readonly string[];
   /** Keep the empty default palette compact; Actions still lists every command. */
@@ -91,10 +89,9 @@ export interface SearchSection {
   rows: SearchRow[];
 }
 
-/**
- * The fitted empty palette's actual row budget, not a fixed result count. Trim
- * Actions first, then Recents, retaining at least one row in either group.
- */
+/** The fitted empty palette's actual row budget, not a fixed result count.
+ * Live web c2771e1f6-pBHmXflN.js:6449–6494: trim Actions first, then
+ * Recents, retaining at least one row in either group. */
 export function paletteSectionsHeight(sections: SearchSection[]) {
   return sections.reduce(
     (height, section) =>
@@ -117,12 +114,10 @@ export function fitPaletteSections(sections: SearchSection[], height = 440) {
   return fitted;
 }
 
-/**
- * Search ranks only timestamps the stored record actually supplies. A project
- * has no updatedAt in Claudex's API, so its known createdAt is the available
- * fallback; do not pretend it was just touched. Scheduled tasks rank by their
- * last run or creation.
- */
+/** Search ranks only timestamps the stored record actually supplies. A
+ * project has no updatedAt in Claudex's API, so its known createdAt is the
+ * available fallback; do not pretend it was just touched. Scheduled tasks
+ * rank by their last run or creation (live web c2771e1f6:3922). */
 export function searchRowTime(row: SearchRow): number | undefined {
   const time =
     row.kind === "conversation"
@@ -137,11 +132,9 @@ export function searchRowTime(row: SearchRow): number | undefined {
   return typeof time === "number" && Number.isFinite(time) ? time : undefined;
 }
 
-/**
- * O16: full query prefix, complete lexical title/PR/snippet, then other
- * matches. Actions lead organic rows in the same tier without changing Fuse
- * order.
- */
+/** O16 ce8be540f-Skpcbts3:101–142, cf6507c5a-DERah7M_:1972–1992:
+ * full query prefix, complete lexical title/PR/snippet, then other matches.
+ * Actions lead organic rows in the same tier without changing Fuse order. */
 export function paletteQueryRank(row: SearchRow, query: string): 0 | 1 | 2 {
   const needle = query.trim().toLowerCase();
   const title = row.title.trim().toLowerCase();
@@ -183,8 +176,8 @@ function mergePaletteQueryRows(
         ...actions.filter((row) => ranks.get(row) === rank),
         ...newestRows(organic.filter((row) => ranks.get(row) === rank)),
       ])
-      // Gf's maxOrganicItems default is 7; filter suggestion rows are projected
-      // separately and do not consume this budget.
+      // Gf's maxOrganicItems default is 7 (O16 c2771e1f6:4345); filter
+      // suggestion rows are projected separately and do not consume this budget.
       .slice(0, 7)
   );
 }
@@ -240,7 +233,8 @@ export const quickActions: Extract<SearchRow, { kind: "action" }>[] = [
 
 /**
  * What Compose can send to: a new session in the current mode, and from Chat a
- * new Code session.
+ * new Code session (the live Compose lists its send rows, ↑↓ moving between
+ * them: live claude.ai bundle, 2026-10-16, c2771e1f6).
  */
 export function composeTargets(mode: Mode) {
   return mode === "code"
@@ -266,9 +260,9 @@ export function conversationMatches(c: Conversation, terms: string[]) {
 }
 
 /**
- * A conversation is found by any of the words; the more words it holds the
- * higher it ranks. When the title lacks a found word, the row quotes about 32
- * characters of the prompt or reply around it.
+ * R-1161: a conversation is found by any of the words; the more words it
+ * holds the higher it ranks. When the title lacks a found word, the row
+ * quotes about 32 characters of the prompt or reply around it.
  */
 export function conversationHit(c: Conversation, terms: string[]) {
   const texts = conversationTexts(c);
@@ -317,8 +311,10 @@ export function markTerms(text: string, terms: string[]) {
 }
 
 /**
- * Just now under 5 minutes, Past hour under an hour, Today, Yesterday, Past
- * week, Past month, Past year; older than a year has no label at all.
+ * R-1161's date column, as the live bundle words it (2026-10-16,
+ * ce8be540f-Skpcbts3 kn): Just now under 5 minutes, Past hour under an hour,
+ * Today, Yesterday, Past week, Past month, Past year; older than a year has no
+ * label at all.
  */
 export function relativeBucket(time: number, now = Date.now()) {
   if (Number.isNaN(time)) return null;
@@ -377,8 +373,8 @@ export function searchSections(
     }));
   const actions = rankPaletteActions(actionsForSurface, query);
   if (entrypoint === "actions") {
-    // Actions bypasses organic type filters. Each group retains the query's
-    // Fuse rank in the source group order.
+    // O16 c2771e1f6-B2qqRLkw Gf: Actions bypasses organic type filters.
+    // Each group retains the query's Fuse rank in the source group order.
     return actionGroups.flatMap(([group, title]) => {
       const rows = actions.filter((action) => action.group === group);
       return rows.length ? [{ title, rows }] : [];
@@ -457,17 +453,17 @@ export function searchSections(
   }
   if (!terms.length) {
     const rows = newestRows(Object.values(lists).flat());
-    // Search's dedicated entrypoint lists 25 recent rows without the default
-    // palette's Active/Actions projection.
+    // Search's dedicated entrypoint lists 25 recent rows without the
+    // default palette's Active/Actions projection (c2771e1f6:5000/5410).
     if (entrypoint === "search")
       return rows.length ? [{ title: "", rows: rows.slice(0, 25) }] : [];
     const active = recent.filter((c) =>
       c.turns.some((turn) => turn.status === "inProgress"),
     );
     const recentRows = rows.slice(0, 9);
-    // The official fit tries up to five marked leads, reducing that count only
-    // if keeping one Recent and one Action still exceeds the budget. Claudex
-    // currently has a real Running mark only.
+    // The official fit tries up to five marked leads, reducing that count
+    // only if keeping one Recent and one Action still exceeds the budget
+    // (c2771e1f6:9120–9125). Claudex currently has a real Running mark only.
     let sections: SearchSection[] = [];
     for (let count = Math.min(active.length, 5); count >= 0; count--) {
       const leads = active.slice(0, count).map(conversationRow);

@@ -38,7 +38,7 @@ test("unified home's fixed collection rows include Scheduled in Code; other Code
   assert.equal(isFixedNavItem("code", "artifacts", true), false);
   assert.equal(isFixedNavItem("code", "scheduled", true), false);
   assert.equal(isFixedNavItem("chat", "projects", false), true);
-  // API and Service status always sit on the sidebar.
+  // API and Service status always sit on the sidebar (owner, 2026-10-20).
   assert.equal(isFixedNavItem("chat", "api", true), true);
   assert.equal(isFixedNavItem("code", "status", false), true);
   assert.deepEqual(toggleNavItem(hidden, "projects", false, true), hidden);

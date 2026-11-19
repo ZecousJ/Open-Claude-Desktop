@@ -5,7 +5,7 @@ import { useTooltip } from "../ui/Tooltip";
 import type { DictationPhase } from "../composer/voice/DictationButton";
 import { artifactChatLabel } from "./related-sessions";
 import { Minimize2 } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { PopOutChatIcon } from "./FloatingChatPanel";
 import { artifactNoteKeyOf } from "./artifact-metadata";
 import { readComments } from "./ArtifactChrome";
@@ -113,15 +113,15 @@ export function useArtifactChromeActions(kit: UseArtifactChromeActionsKit) {
     versions,
   } = kit;
   const comments = saved.comments ?? [];
-  // The comment button says how many comments are still open, and shows a dot
-  // for them while not commenting.
+  // The comment button says how many comments are still open, and shows a
+  // dot for them while not commenting (desktop bundle 2.31226.1).
   const openCount = openCommentCount(comments);
   const openLabel = formatText(
     openCount === 1 ? "{count} open comment" : "{count} open comments",
     { count: openCount },
   );
-  // Comment and its ⌄ have no text, so they carry the same delayed tooltip as
-  // Expand and Close.
+  // Comment and its ⌄ have no text, so they carry the same delayed tooltip
+  // as Expand and Close (R-0999; the closest captured analogue is R-1068's).
   const [showComments, setShowComments] = useState(false);
   const commentLabel = !saved.readOnly
     ? commentMode
@@ -180,7 +180,7 @@ export function useArtifactChromeActions(kit: UseArtifactChromeActionsKit) {
         }
         onClick={standalone ? openStandaloneChat : onExpand}
       >
-        {chatFloating ? <Minimize2 size={14} /> : <AppIcon name="Chats" />}
+        {chatFloating ? <Minimize2 size={14} /> : <Anthropicon name="Chats" />}
         {t(chatFloating || standalone ? "Chat" : "Show chat")}
       </button>
       {onToggleChatFloat && (
@@ -340,10 +340,11 @@ export function useArtifactChromeActions(kit: UseArtifactChromeActionsKit) {
     setDraft(undefined);
     setMenu(undefined);
   }
-  // Keyboard, after the original's: C alone starts and ends commenting unless a
-  // field has the keys; Esc steps back, first from a draft, then from comment
-  // mode, then from the list. Both act only while focus is in this panel or
-  // nowhere, and not under a dialog or a menu, which take Esc first.
+  // Keyboard, after the original's (desktop bundle 2.31226.1): C alone
+  // starts and ends commenting unless a field has the keys; Esc steps back,
+  // first from a draft, then from comment mode, then from the list. Both
+  // act only while focus is in this panel or nowhere, and not under a
+  // dialog or a menu, which take Esc first.
   const keys = useRef({
     draft,
     commentMode,
@@ -392,7 +393,9 @@ export function useArtifactChromeActions(kit: UseArtifactChromeActionsKit) {
         if (state.draft) setDraft(undefined);
         else if (state.commentMode) setCommentMode(false);
         else if (state.showComments) setShowComments(false);
-        // With nothing else to step back from, Escape in the viewer closes it.
+        // With nothing else to step back from, Escape in the viewer closes
+        // it (live claude.ai bundle, 2026-10-12: the viewer's Escape, then
+        // the focus goes back to what opened it).
         else if (
           event.target instanceof Element &&
           event.target.closest(".artifact-panel") &&

@@ -1,13 +1,21 @@
+import { readOwnedTurnAttachment } from "./owned-turn-attachment";
+import { releaseOfficialCodeNewTask, updateOfficialCodeCloudOffer } from "./official-code-new-task";
+import { codeSideSessionPlacement } from "../../shared/official-code-side-session";
+import { codeModelProposalAction, codeModelProposalId } from "../../shared/official-code-model-proposal";
+import { actOnCodeModelProposal } from "../engine/code-model-proposals";
 import type { EnvironmentRef } from "../../shared/types";
 import {
   linkChatGitHubRepository,
   registerChatGitHub,
 } from "../git/chat-github";
+import { rewindCodeFiles } from "../engine/code-file-rewind";
+import { beginCodeSessionLifecycle, assertCodeSessionSendAvailable } from "../conversations/code-lifecycle-guard";
 import { restoreFiles } from "../engine/rewind-files";
 import { rewindChanges } from "../../shared/rewind-files";
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
+import { incognitoDraftId, prepareIncognitoUploadFolder } from "../workspace/incognito-upload";
 import type { AppContext, IpcHandle } from "../app/app-context";
 import type {
   CustomSlashCommand,
@@ -19,11 +27,32 @@ import {
   storeAttachment,
 } from "../engine/composer-files";
 import { maxSideQuestionLength } from "../engine/side-chat-model";
+import { officialCodeSendStart, type CodeSendStart } from "../engine/code-send-start";
+import { changeCodeClearHistory, switchCodeRewindMark } from "../engine/engine-history";
 import {
   contextSources,
   environmentInput,
   workspaceFsFor,
 } from "../workspace/workspace-fs";
+
+const codeRewindTarget = z.union([z.string().min(1).max(200), z.object({ turnId: z.string().min(1).max(200), itemId: z.string().min(1).max(500) }).strict()]);
+
+const attachmentMimes: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  bmp: "image/bmp",
+  pdf: "application/pdf",
+  txt: "text/plain",
+  md: "text/markdown",
+  csv: "text/csv",
+  json: "application/json",
+};
+const attachmentMime = (name: string) =>
+  attachmentMimes[path.extname(name).slice(1).toLowerCase()] ??
+  "application/octet-stream";
 
 /** A branch or commit given to `/review`: a plain name, never an option. */
 const reviewRef = z
@@ -50,9 +79,10 @@ export const reviewTarget = z.discriminatedUnion("type", [
 ]);
 
 /**
- * Composer calls: pasted and dropped attachments, image thumbnails, @ file
- * lists limited to the folders the person chose, compact and steer. Their
- * bridge names are declared in `shared/composer-api.ts`.
+ * Composer calls (package WP4a): pasted and dropped attachments, image
+ * thumbnails, @ file lists limited to the folders the person chose,
+ * compact and steer. Their bridge names are declared in
+ * `shared/composer-api.ts`.
  */
 export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
   const githubReady = registerChatGitHub(ctx);
@@ -64,6 +94,13 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
     },
   );
   const id = z.string().min(1).max(500);
+  // The adapter persists the original input in its visible held-message
+  // queue before releasing this legacy, otherwise invisible suggestion.
+  handle(
+    "officialReleaseCodeNewTask",
+    (rawId: unknown, rawOffer: unknown, rawText: unknown) =>
+      releaseOfficialCodeNewTask(ctx, rawId, rawOffer, rawText),
+  );
   handle(
     "resolveCodeNewTask",
     (
@@ -79,23 +116,111 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
         z.boolean().optional().parse(remember),
       ),
   );
+  handle("officialResolveCodeNewTask", (rawId: unknown, rawOffer: unknown, rawChoice: unknown, current: unknown, rawPlacement?: unknown) => {
+    if (typeof current !== "function" || !current()) throw Error("Code session is no longer available.");
+    const conversationId = id.parse(rawId);
+    const offerId = id.parse(rawOffer);
+    if (ctx.store.conversation(conversationId).codeNewTask?.nativeInput === undefined)
+      throw Error("This suggestion is no longer available.");
+    const placement = codeSideSessionPlacement.optional().parse(rawPlacement);
+    return ctx.engine.resolveCodeNewTask(conversationId, offerId, z.enum(["here", "new_session"]).parse(rawChoice), false, () => current() === true, placement);
+  });
+  handle("officialUpdateCodeCloudOffer", (rawId: unknown, rawOffer: unknown, operation: unknown, current: unknown) => {
+    if (typeof current !== "function" || !current()) throw Error("Code session is no longer available.");
+    return updateOfficialCodeCloudOffer(ctx, rawId, rawOffer, operation);
+  });
+  handle("officialCodeModelProposal", (parentId: unknown, taskId: unknown, action: unknown, current: unknown) => {
+    if (typeof current !== "function" || !current()) throw Error("The Code session is no longer available.");
+    return actOnCodeModelProposal(ctx, z.string().uuid().parse(parentId),
+      codeModelProposalId.parse(taskId), codeModelProposalAction.parse(action), () => current() === true);
+  });
   const known = (attachmentId: string) => {
     const found = ctx.selectedAttachments.get(attachmentId);
     if (!found)
       throw new Error("This attachment is no longer available. Add it again.");
     return found;
   };
-  handle("compactConversation", (conversationId: unknown) =>
-    ctx.engine.compactConversation(id.parse(conversationId)),
-  );
-  handle("rewindConversation", (conversationId: unknown, turnId: unknown) =>
-    ctx.engine.rewindConversation(
-      id.parse(conversationId),
-      turnId === undefined || turnId === null
-        ? undefined
-        : z.string().min(1).max(200).parse(turnId),
-    ),
-  );
+  handle("compactConversation", (conversationId: unknown, requestId: unknown,
+    extra?: { [officialCodeSendStart]?: CodeSendStart }) => {
+    const accountEngine = ctx.engine, store = ctx.store, identity = ctx.accountActivationIdentity,
+      accountId = ctx.activeAccount?.id;
+    const sessionId = id.parse(conversationId);
+    const start = extra?.[officialCodeSendStart];
+    const engineForSession = () => ctx.remote && start ? ctx.engineFor(sessionId) : ctx.engine;
+    const engine = engineForSession();
+    const current = () => identity !== undefined && identity === ctx.accountActivationIdentity &&
+      ctx.accountRetiring === false && ctx.store === store && ctx.engine === accountEngine &&
+      engineForSession() === engine && !!accountId && ctx.activeAccount?.id === accountId;
+    if (!current()) throw Error("The account changed. Reopen the conversation before compacting.");
+    return engine.compactConversation(sessionId, current,
+      requestId === undefined ? undefined : id.parse(requestId), start);
+  });
+  handle("officialCodeClearHistory", (rawId: unknown, rawAction: unknown, nativeLease?: () => boolean) => {
+    if (typeof nativeLease !== "function") throw Error("This Code operation requires the native session.");
+    const accountEngine = ctx.engine, store = ctx.store, identity = ctx.accountActivationIdentity,
+      owner = ctx.activeAccount?.id, conversation = store.conversation(id.parse(rawId));
+    const remote = conversation.environment?.kind === "ssh" || conversation.environment?.kind === "wsl";
+    const engine = remote ? ctx.engineFor(conversation.id) : accountEngine;
+    const current = () => identity !== undefined && identity === ctx.accountActivationIdentity &&
+      ctx.accountRetiring === false && ctx.store === store && ctx.engine === accountEngine &&
+      (!remote || ctx.engines.running(conversation.id) === engine) &&
+      !!owner && ctx.activeAccount?.id === owner &&
+      (!conversation.sessionAuthors || (conversation.sessionAuthors.ownerAccountUuid === owner &&
+        conversation.sessionAuthors.viewerAccountUuid === owner)) &&
+      nativeLease();
+    return changeCodeClearHistory(engine, conversation.id, z.enum(["clear", "restore"]).parse(rawAction), current);
+  });
+  handle("rewindConversation", (conversationId: unknown, turnId: unknown) => {
+    const engine = ctx.engine, store = ctx.store, identity = ctx.accountActivationIdentity,
+      accountId = ctx.activeAccount?.id;
+    const current = () => identity !== undefined && identity === ctx.accountActivationIdentity &&
+      ctx.accountRetiring === false && ctx.store === store && ctx.engine === engine &&
+      !!accountId && ctx.activeAccount?.id === accountId;
+    if (!current()) throw Error("The account changed. Reopen the conversation before rewinding.");
+    return engine.rewindConversation(id.parse(conversationId),
+      turnId === undefined || turnId === null ? undefined : codeRewindTarget.parse(turnId), current);
+  });
+  handle("officialCodeSwitchRewindMark", (rawId: unknown, markId: unknown, lease?: () => boolean) => {
+    if (typeof lease !== "function") throw Error("This Code operation requires the native session.");
+    const engine = ctx.engine, store = ctx.store, identity = ctx.accountActivationIdentity,
+      owner = ctx.activeAccount?.id, c = store.conversation(id.parse(rawId));
+    const current = () => identity !== undefined && identity === ctx.accountActivationIdentity &&
+      ctx.accountRetiring === false && ctx.store === store && ctx.engine === engine &&
+      !!owner && ctx.activeAccount?.id === owner &&
+      (!c.sessionAuthors || c.sessionAuthors.ownerAccountUuid === owner) && lease();
+    return switchCodeRewindMark(engine, c.id, z.string().min(1).max(500).parse(markId), current);
+  });
+  handle("officialCodeRewindFiles", (conversationId: unknown, turnId: unknown, dryRun: unknown, lease?: () => boolean) => {
+    if (typeof lease !== "function" || !lease()) throw Error("The Code session is no longer available.");
+    const c = ctx.store.conversation(id.parse(conversationId));
+    if (c.mode !== "code" || !c.cwd || c.incognito || c.cloudHosted || c.cloudEnvironmentId ||
+        c.environment && c.environment.kind !== "local" ||
+        c.sessionAuthors && c.sessionAuthors.ownerAccountUuid !== ctx.activeAccount?.id)
+      throw Error("An owned local Code session is required.");
+    ctx.store.assertLocalCodeLifecycleAvailable();
+    assertCodeSessionSendAvailable(c);
+    ctx.engine.assertIdle(c.id);
+    if (ctx.engine.pendingSend) throw Error("Wait for the pending Code task before restoring files.");
+    const target = codeRewindTarget.parse(turnId);
+    const index = c.turns.findIndex(turn => turn.id === (typeof target === "string" ? target : target.turnId));
+    if (index < 0) throw Error("The file restore prompt no longer exists.");
+    const turns = c.turns.slice(index);
+    if (typeof target !== "string") {
+      const itemIndex = turns[0].items.findIndex(item => item.id === target.itemId);
+      if (itemIndex < 0) throw Error("The file restore prompt no longer exists.");
+      turns[0] = { ...turns[0], items: turns[0].items.slice(itemIndex) };
+    }
+    const release = beginCodeSessionLifecycle(c);
+    try {
+      const preview = z.boolean().parse(dryRun);
+      const result = rewindCodeFiles(rewindChanges(turns), c.cwd, preview);
+      if (!preview && result.canRewind) {
+        ctx.store.commitLocalCodeHistory(c, { codeFilesRewoundTo: target, updatedAt: Date.now() }, undefined, lease);
+        ctx.engine.changed(c, true);
+      }
+      return result;
+    } finally { release(); }
+  });
   handle("restoreRewindCode", (conversationId: unknown, turnId: unknown) => {
     const c = ctx.store.conversation(id.parse(conversationId));
     if (
@@ -114,9 +239,15 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
     if (index < 0) throw new Error("Nothing to rewind to yet");
     return restoreFiles(rewindChanges(c.turns.slice(index)), c.cwd);
   });
-  handle("swapRewind", (conversationId: unknown) =>
-    ctx.engine.swapRewind(id.parse(conversationId)),
-  );
+  handle("swapRewind", (conversationId: unknown) => {
+    const engine = ctx.engine, store = ctx.store, identity = ctx.accountActivationIdentity,
+      accountId = ctx.activeAccount?.id;
+    const current = () => identity !== undefined && identity === ctx.accountActivationIdentity &&
+      ctx.accountRetiring === false && ctx.store === store && ctx.engine === engine &&
+      !!accountId && ctx.activeAccount?.id === accountId;
+    if (!current()) throw Error("The account changed. Reopen the conversation before undoing rewind.");
+    return engine.swapRewind(id.parse(conversationId), current);
+  });
   handle("runShellCommand", (conversationId: unknown, command: unknown) =>
     ctx.engine.runShellCommand(
       id.parse(conversationId),
@@ -125,27 +256,57 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
   );
   handle(
     "startReview",
-    (conversationId: unknown, target: unknown, prompt: unknown) =>
-      ctx.engine.startReview(
+    (conversationId: unknown, target: unknown, prompt: unknown, options?: {
+      [officialCodeSendStart]?: CodeSendStart;
+      uuid?: string;
+    }) => {
+      const engine = ctx.engine;
+      const store = ctx.store;
+      const identity = ctx.accountActivationIdentity;
+      const start = options?.[officialCodeSendStart];
+      return engine.startReview(
         id.parse(conversationId),
         reviewTarget.parse(target),
         prompt === undefined || prompt === null
           ? undefined
           : z.string().max(10000).parse(prompt),
-      ),
+        start ? {
+          start,
+          uuid: id.parse(options?.uuid),
+          current: () => ctx.engine === engine && ctx.store === store &&
+            ctx.accountActivationIdentity === identity && !ctx.accountRetiring,
+        } : undefined,
+      );
+    },
   );
   handle("forkConversation", (conversationId: unknown, options: unknown) => {
     const parsed = z
       .object({
         turnId: z.string().min(1).max(200).optional(),
+        branchId: z.string().min(1).max(200).optional(),
         prompt: z.string().max(200000).optional(),
+        conversationId: z.string().uuid().optional(),
+        cwd: z.string().min(1).max(32768).optional(),
+        before: z.union([
+          z.object({ turnId: z.string().min(1).max(200), itemId: z.string().min(1).max(500).optional() }).strict(),
+          z.object({ turnId: z.string().min(1).max(200), importedRowId: z.string().min(1).max(500) }).strict(),
+        ]).optional(),
       })
       .optional()
       .parse(options ?? undefined);
-    return ctx.engine.forkConversation(
+    const engine = ctx.engine, store = ctx.store, identity = ctx.accountActivationIdentity,
+      accountId = ctx.activeAccount?.id;
+    const current = () => identity !== undefined && identity === ctx.accountActivationIdentity &&
+      ctx.accountRetiring === false && ctx.store === store && ctx.engine === engine &&
+      !!accountId && ctx.activeAccount?.id === accountId;
+    if (!current()) throw Error("The account changed. Reopen the conversation before forking.");
+    return engine.forkConversation(
       id.parse(conversationId),
       parsed?.turnId,
       parsed?.prompt,
+      parsed?.branchId,
+      current,
+      parsed,
     );
   });
   handle("handOffConversation", (conversationId: unknown) =>
@@ -181,16 +342,39 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
     },
   );
   handle(
+    "officialCoworkSteer",
+    (conversationId: unknown, raw: unknown, current: () => boolean) => {
+      const input = z.strictObject({
+        text: z.string().max(200000),
+        attachmentIds: z.array(z.string().max(500)).max(12),
+        messageId: z.string().min(1).max(500).optional(),
+      }).parse(raw);
+      const store = ctx.store;
+      const engine = ctx.engine;
+      const conversation = store.conversation(id.parse(conversationId));
+      if (conversation.mode !== "cowork" || conversation.cloudHosted ||
+          typeof current !== "function" || !current())
+        throw Error("The Cowork session changed before sending.");
+      assertCodeSessionSendAvailable(conversation);
+      return engine.steerTurn(
+        conversation.id, input.text, input.attachmentIds.map(known), undefined,
+        { eventId: input.messageId, current: () =>
+          current() && ctx.store === store && ctx.engine === engine &&
+          !ctx.accountRetiring && store.conversations.includes(conversation) },
+      );
+    },
+  );
+  handle(
     "addAttachmentData",
     (name: unknown, data: unknown, options: unknown) => {
       if (!(data instanceof Uint8Array) || data.byteLength > 64 * 1024 * 1024)
         throw new Error("This file can't be attached.");
-      const { pasted } = z
-        .object({ pasted: z.boolean().optional() })
+      const { pasted, incognitoDraft } = z
+        .object({ pasted: z.boolean().optional(), incognitoDraft: incognitoDraftId.optional() })
         .optional()
         .parse(options) ?? { pasted: false };
       const attachment = storeAttachment(
-        path.join(ctx.store.root, "attachments"),
+        incognitoDraft ? prepareIncognitoUploadFolder(ctx.store.root, incognitoDraft) : path.join(ctx.store.root, "attachments"),
         z.string().min(1).max(500).parse(name),
         data,
         ctx.policy(),
@@ -203,6 +387,15 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
   handle("attachmentPreview", (attachmentId: unknown) =>
     imagePreview(known(id.parse(attachmentId))),
   );
+  handle("turnAttachment", (conversationId: unknown, attachmentId: unknown) => {
+    const found = readOwnedTurnAttachment(ctx.store, id.parse(conversationId), id.parse(attachmentId));
+    if (!found) return null;
+    return {
+      name: found.attachment.name,
+      mime: attachmentMime(found.attachment.name),
+      data: found.data,
+    };
+  });
   handle("mentionFiles", (scope: unknown, query: unknown) => {
     const { conversationId, folder, environment } = z
       .object({
@@ -225,29 +418,17 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
     }
     if (!root) return [];
     const text = z.string().max(300).parse(query);
-    if (where?.kind !== "ssh") return mentionFiles(root, text);
+    if (where?.kind !== "ssh" && where?.kind !== "wsl") return mentionFiles(root, text);
     return workspaceFsFor(contextSources(ctx), where).mentionFiles(root, text);
   });
-  // The prompts folder as it really is, and only while it stays inside the
-  // profile: a link put in its place (on a runner the agent can write
-  // codex-home) reads nothing.
-  const promptsFolder = () => {
-    const folder = path.join(ctx.store.root, "codex-home", "prompts");
-    try {
-      const real = fs.realpathSync(folder);
-      const root = fs.realpathSync(ctx.store.root);
-      return real.startsWith(root + path.sep) ? real : "";
-    } catch {
-      return "";
-    }
-  };
   handle(
     "listSlashCommands",
     async (scope: unknown): Promise<SlashCommandList> => {
-      const { conversationId, folder } = z
+      const { conversationId, folder, strictSources } = z
         .object({
           conversationId: z.string().min(1).max(500).optional(),
           folder: z.string().min(1).max(4096).optional(),
+          strictSources: z.boolean().optional(),
         })
         .parse(scope ?? {});
       let cwd: string | undefined;
@@ -256,15 +437,35 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
         ctx.allowedFolder(folder);
         cwd = folder;
       }
-      const prompts = listCustomPrompts(promptsFolder());
+      const prompts = listCustomPrompts(customPromptsFolder(ctx.store.root, strictSources), strictSources);
       let skills: CustomSlashCommand[] = [];
       try {
-        const listed = await ctx.engine.rpc?.call(
+        const engineForSession = () => conversationId ? ctx.engineFor(conversationId) : ctx.engine;
+        const engine = engineForSession();
+        const store = ctx.store;
+        const identity = ctx.accountActivationIdentity;
+        const current = () => engineForSession() === engine && ctx.store === store &&
+          ctx.accountActivationIdentity === identity && !ctx.accountRetiring;
+        if (strictSources && !engine.rpc) {
+          const providerId = conversationId
+            ? store.conversation(conversationId).providerId
+            : store.settings.activeProviderId;
+          const provider = store.settings.providers.find((item) => item.id === providerId);
+          if (!provider) throw Error("The model service is unavailable.");
+          await engine.ensure(provider, { interactive: false, current });
+        }
+        const rpc = engine.rpc;
+        const listed = await rpc?.call(
           "skills/list",
           cwd ? { cwds: [cwd] } : {},
         );
+        if (strictSources && (!current() || engine.rpc !== rpc))
+          throw Error("The account or Code connection changed. Try again.");
+        if (strictSources && (!Array.isArray(listed?.data) || listed.data.some((group: unknown) => !group || typeof group !== "object" || !Array.isArray((group as { skills?: unknown }).skills) || ((group as {errors?: unknown[]}).errors?.length ?? 0) > 0)))
+          throw Error("The skill command catalog is unavailable or malformed.");
         skills = slashSkills(listed?.data ?? []);
-      } catch {
+      } catch (error) {
+        if (strictSources) throw error;
         // The runtime is starting or stopped: the palette lists prompts only.
       }
       const taken = new Set(prompts.map((prompt) => prompt.name));
@@ -278,8 +479,21 @@ export function registerComposerHandlers(handle: IpcHandle, ctx: AppContext) {
     },
   );
   handle("readCustomPrompt", (name: unknown) =>
-    readCustomPrompt(promptsFolder(), z.string().max(200).parse(name)),
+    readCustomPrompt(customPromptsFolder(ctx.store.root), z.string().max(200).parse(name)),
   );
+}
+
+export function customPromptsFolder(profileRoot: string, strict = false) {
+  try {
+    const real = fs.realpathSync(path.join(profileRoot, "codex-home", "prompts"));
+    const root = fs.realpathSync(profileRoot);
+    if (real.startsWith(root + path.sep)) return real;
+    if (strict) throw Error("The prompt catalog is outside the active profile.");
+    return "";
+  } catch (error) {
+    if (strict && (error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    return "";
+  }
 }
 
 /** Bigger prompt files are not offered (and never read whole). */
@@ -332,9 +546,11 @@ function promptText(file: string) {
     );
     const stat = fs.fstatSync(handle);
     if (!stat.isFile() || stat.size > maxPromptBytes) return;
-    return new TextDecoder("utf-8", { fatal: true }).decode(
-      fs.readFileSync(handle),
-    );
+    const buffer = Buffer.alloc(maxPromptBytes + 1);
+    const size = fs.readSync(handle, buffer, 0, buffer.length, 0);
+    const after = fs.fstatSync(handle);
+    if (size > maxPromptBytes || size !== stat.size || after.size !== stat.size || after.mtimeMs !== stat.mtimeMs || after.ctimeMs !== stat.ctimeMs) return;
+    return new TextDecoder("utf-8", { fatal: true }).decode(buffer.subarray(0, size));
   } catch {
     return;
   } finally {
@@ -343,17 +559,21 @@ function promptText(file: string) {
 }
 
 /** `<folder>/<name>.md` custom prompts, sorted by name. */
-export function listCustomPrompts(folder: string): CustomSlashCommand[] {
+export function listCustomPrompts(folder: string, strict = false): CustomSlashCommand[] {
   if (!folder) return [];
   let names: string[];
   try {
     names = fs.readdirSync(folder);
-  } catch {
+  } catch (error) {
+    if (strict && (error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     return [];
   }
   const prompts: CustomSlashCommand[] = [];
   for (const file of names.sort()) {
-    if (prompts.length >= maxPrompts) break;
+    if (prompts.length >= maxPrompts) {
+      if (strict) throw Error("The prompt catalog exceeds its limit.");
+      break;
+    }
     if (!file.endsWith(".md")) continue;
     const name = file.slice(0, -3);
     if (!slashNamePattern.test(name)) continue;
@@ -401,3 +621,4 @@ export function slashSkills(groups: unknown): CustomSlashCommand[] {
     }
   return skills.sort((a, b) => a.name.localeCompare(b.name));
 }
+

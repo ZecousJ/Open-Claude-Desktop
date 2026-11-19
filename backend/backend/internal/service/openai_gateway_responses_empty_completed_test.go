@@ -113,6 +113,98 @@ func TestOpenAIResponsesEmptyCompletedWithUsageSucceeds(t *testing.T) {
 	require.Equal(t, 3, result.Usage.InputTokens)
 }
 
+func TestOpenAIResponsesCompletedWithZeroOrMissingUsage(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	for _, mode := range []struct {
+		name        string
+		passthrough bool
+		stream      bool
+		upstreamSSE bool
+	}{
+		{name: "transformed stream", stream: true, upstreamSSE: true},
+		{name: "passthrough stream", passthrough: true, stream: true, upstreamSSE: true},
+		{name: "transformed buffered SSE", upstreamSSE: true},
+		{name: "passthrough buffered SSE", passthrough: true, upstreamSSE: true},
+		{name: "transformed buffered JSON"},
+		{name: "passthrough buffered JSON", passthrough: true},
+	} {
+		t.Run(mode.name, func(t *testing.T) {
+			for _, tc := range []struct {
+				name        string
+				fields      string
+				earlyEvent  string
+				wantOutput  string
+				inputTokens int
+			}{
+				{name: "zero usage", fields: `"output":[],"usage":{"input_tokens":0,"output_tokens":0,"total_tokens":0}`},
+				{name: "null error", fields: `"output":[],"error":null`},
+				{name: "positive usage", fields: `"output":[],"usage":{"input_tokens":3,"output_tokens":0,"total_tokens":3}`, inputTokens: 3},
+				{name: "tool call without usage", fields: `"output":[{"type":"function_call","id":"fc_1","call_id":"call_1","name":"list_files","arguments":"{}"}]`, wantOutput: "list_files"},
+				{name: "text without usage", fields: `"output":[{"type":"message","id":"msg_1","role":"assistant","content":[{"type":"output_text","text":"answer"}]}]`, wantOutput: "answer"},
+				{
+					name:       "text emitted before empty terminal",
+					fields:     `"output":[],"usage":{"input_tokens":0,"output_tokens":0}`,
+					earlyEvent: `{"type":"response.output_text.delta","output_index":0,"content_index":0,"delta":"answer"}`,
+					wantOutput: "answer",
+				},
+				{
+					name:        "usage emitted before zero terminal",
+					fields:      `"output":[],"usage":{"input_tokens":0,"output_tokens":0}`,
+					earlyEvent:  `{"type":"response.in_progress","response":{"usage":{"input_tokens":3}}}`,
+					inputTokens: 3,
+				},
+			} {
+				if tc.earlyEvent != "" && !mode.upstreamSSE {
+					continue
+				}
+				t.Run(tc.name, func(t *testing.T) {
+					body := `{"model":"gpt-5.6-sol","input":"hello","stream":false}`
+					if mode.stream {
+						body = `{"model":"gpt-5.6-sol","input":"hello","stream":true}`
+					}
+					contentType := "application/json"
+					payload := `{"id":"resp_test","object":"response","status":"completed",` + tc.fields + `}`
+					if mode.upstreamSSE {
+						contentType = "text/event-stream"
+						preamble := "data: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_test\",\"status\":\"in_progress\"}}\n\n"
+						if tc.earlyEvent != "" {
+							preamble += "data: " + tc.earlyEvent + "\n\n"
+						}
+						payload = preamble + `data: {"type":"response.completed","response":` + payload + "}\n\n"
+					}
+					upstream := &httpUpstreamRecorder{resp: &http.Response{
+						StatusCode: http.StatusOK,
+						Header:     http.Header{"Content-Type": []string{contentType}},
+						Body:       io.NopCloser(strings.NewReader(payload)),
+					}}
+					svc := newOpenAIImageGenerationControlTestService(upstream)
+					c, recorder := newOpenAIImageGenerationControlTestContext(true, "codex_cli_rs/0.144.1")
+					account := newOpenAIImageGenerationControlTestAccount()
+					account.Extra = map[string]any{"openai_passthrough": mode.passthrough}
+
+					result, err := svc.Forward(context.Background(), c, account, []byte(body))
+					if tc.wantOutput == "" && tc.inputTokens == 0 {
+						var failover *UpstreamFailoverError
+						require.ErrorAs(t, err, &failover)
+						require.Equal(t, http.StatusBadGateway, failover.StatusCode)
+						require.Nil(t, result)
+						require.Empty(t, recorder.Body.String())
+						require.False(t, c.Writer.Written())
+						return
+					}
+					require.NoError(t, err)
+					require.NotNil(t, result)
+					require.Equal(t, tc.inputTokens, result.Usage.InputTokens)
+					require.Contains(t, recorder.Body.String(), `"status":"completed"`)
+					if tc.wantOutput != "" {
+						require.Contains(t, recorder.Body.String(), tc.wantOutput)
+					}
+				})
+			}
+		})
+	}
+}
+
 func TestOpenAIResponsesCompletedEventIsEmpty(t *testing.T) {
 	cases := []struct {
 		name  string
@@ -162,7 +254,12 @@ func TestOpenAIResponsesCompletedEventIsEmpty(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			require.Equal(t, tc.want, openAIResponsesCompletedEventIsEmpty([]byte(tc.data), tc.usage))
+			usage := tc.usage
+			if usage == nil {
+				usage = &OpenAIUsage{}
+			}
+			(&OpenAIGatewayService{}).parseSSEUsageBytes([]byte(tc.data), usage)
+			require.Equal(t, tc.want, openAIResponsesCompletionIsEmpty([]byte(tc.data), usage))
 		})
 	}
 }

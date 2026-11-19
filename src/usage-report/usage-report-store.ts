@@ -2,11 +2,12 @@ import { useSyncExternalStore } from "react";
 import type { Conversation, Turn } from "../../shared/types";
 
 /**
- * Usage reports posted in a Code session's transcript: the context popover's
- * "See detailed breakdown", the Usage panel's See breakdown and /usage add a
- * "/usage" prompt and the usage report under the session's latest turn. As in
- * the live app they are the window's own rows: nothing is sent to the model or
- * kept with the conversation, and they are gone after a reload.
+ * Usage reports posted in a Code session's transcript (live claude.ai
+ * bundle, 2026-10-12): the context popover's "See detailed breakdown", the
+ * Usage panel's See breakdown and /usage add a "/usage" prompt and the usage
+ * report under the session's latest turn. As in the live app they are the
+ * window's own rows: nothing is sent to the model or kept with the
+ * conversation, and they are gone after a reload.
  */
 export interface PostedUsageReport {
   id: string;

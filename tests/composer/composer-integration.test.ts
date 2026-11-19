@@ -15,7 +15,7 @@ import type { ComposerField } from "../../src/composer/composer-field";
 import {
   createFixtureDesktop,
   fixtureSettings,
-} from "../../scripts/preview/app-fixture";
+} from "../../scripts/fidelity/app-fixture";
 import type { Conversation, Settings } from "../../shared/types";
 import type { ModelCatalog } from "../../shared/model-catalog-api";
 import { desktopHost, webHost, type HostInfo } from "../../shared/host";
@@ -436,8 +436,8 @@ test("actual web reply Composer keeps the pinned Dictate/caret group and uses ef
   await withComposer(
     { props: { active: active("cowork") } },
     async ({ document, click }) => {
-      // Dictate, then voice mode as the reply split button with the microphone
-      // caret.
+      // Dictate, then voice mode as the reply split button with the
+      // microphone caret (live claude.ai, 2026-10-20).
       const group = document.querySelector(".composer-chin-voice")!;
       assert.ok(
         group.querySelector(".chin-voice-controls [aria-label=Dictate]"),
@@ -980,7 +980,8 @@ test("main web and native incognito homes retain ordinary voice, project and per
           ".composer-chin-leading .cowork-options > button",
         )!;
         assert.equal(
-          project.querySelector(":scope > span:not([data-icon])")?.textContent,
+          project.querySelector(":scope > span:not([data-anthropicon])")
+            ?.textContent,
           host.kind === "desktop" ? "Project or folder" : "Project",
         );
         assert.equal(
@@ -1039,8 +1040,8 @@ test("main incognito replies preserve host voice composition and the two real pe
         },
       },
       async ({ document, click }) => {
-        // Both keep voice mode beside Dictate; the web's is the reply split
-        // button.
+        // Both keep voice mode beside Dictate; the web's is the reply
+        // split button (live claude.ai, 2026-10-20).
         assert.ok(
           document.querySelector(".composer-chin-voice .voice-mode-button"),
         );
@@ -1175,7 +1176,10 @@ test("native main Chat Add has the captured available rows and delegates a draft
         ...menu.querySelectorAll(
           ":scope > button, :scope > .composer-add-branch > button",
         ),
-      ].map((node) => node.querySelector("span:not([data-icon])")?.textContent);
+      ].map(
+        (node) =>
+          node.querySelector("span:not([data-anthropicon])")?.textContent,
+      );
       assert.deepEqual(labels, [
         "Upload or add files",
         "Add folder",
@@ -1189,7 +1193,7 @@ test("native main Chat Add has the captured available rows and delegates a draft
         menu.textContent ?? "",
         /Record a skill|Add to project|GitHub|Web search|Thinking/,
       );
-      assert.ok(menu.querySelector('[data-icon="FolderPlus"]'));
+      assert.ok(menu.querySelector('[data-anthropicon="FolderPlus"]'));
       await click(".composer-add-native-chat > button:nth-child(2)");
       assert.equal(picked, 1);
       assert.equal(document.querySelector(".composer-add-menu"), null);
@@ -1314,7 +1318,7 @@ test("web, independent embedded Chat, and Code retain their existing Add project
       );
       assert.equal(
         document.querySelector(
-          '.composer-add-native-chat [data-icon="FolderPlus"]',
+          '.composer-add-native-chat [data-anthropicon="FolderPlus"]',
         ),
         null,
       );

@@ -91,7 +91,7 @@ export async function sendDraft(
   app: AppController,
   options: { later?: boolean } = {},
 ) {
-  // A Code session's diff comments go with the message.
+  // A Code session's diff comments go with the message (review-comments.ts).
   const notes =
     app.active?.mode === "code" && !app.running
       ? reviewComments(app.active.id)
@@ -148,7 +148,7 @@ export async function runShell(app: AppController, command: string) {
   }
 }
 
-/** After a reply stopped at the output limit, asks it to go on. */
+/** After a reply stopped at the output limit, asks it to go on (R-0580). */
 export function continueResponse(app: AppController) {
   return submitTurn(app, "Continue", [], false);
 }
@@ -396,6 +396,11 @@ async function submitTurn(
       toolSearchMode: !activeId
         ? app.composerDraft?.draftToolSearchMode
         : undefined,
+      // A new chat's knowledge bases; a conversation keeps its own.
+      knowledgeBases:
+        !activeId && app.composerDraft?.draftKnowledge.length
+          ? app.composerDraft.draftKnowledge
+          : undefined,
       projectId: app.projectId,
       cwd: app.cwd,
       additionalFolders:
@@ -551,9 +556,10 @@ async function submitTurn(
 }
 
 /**
- * Asks to trust the Code folder a send was refused for and sends the same
- * message again once it is trusted (once). Cancel leaves the draft in the
- * composer.
+ * Asks to trust the Code folder a send was refused for (live claude.ai
+ * bundle, 2026-10-12: cc43287c9 :52966-52985 checks before a local start)
+ * and sends the same message again once it is trusted (once). Cancel leaves
+ * the draft in the composer.
  */
 async function trustAndResend(
   app: AppController,

@@ -26,11 +26,12 @@ function fileSize(bytes: number) {
 }
 
 /**
- * Privacy → Uploaded files: "← Privacy", the title and what deleting does, then
- * Name (with its size under it), Uploaded, Surface, Location ("1 chat", or —
- * when no chat holds it), the trash, and a chevron that lists the chats.
- * Deleting is the same undoable removal as Shared chats ("Deleting “…”…" with
- * Undo). The list is the attachment copies this host stores for the account.
+ * Privacy → Uploaded files (live claude.ai, 2026-10-19): "← Privacy", the
+ * title and what deleting does, then Name (with its size under it),
+ * Uploaded, Surface, Location ("1 chat", or — when no chat holds it), the
+ * trash, and a chevron that lists the chats. Deleting is the same undoable
+ * removal as Shared chats ("Deleting “…”…" with Undo). The list is the
+ * attachment copies this host stores for the account.
  */
 export default function UploadedFilesManager({
   owner,

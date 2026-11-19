@@ -3,19 +3,21 @@ import { ChevronDown, X } from "../ui/glyphs";
 import type { Question } from "./QuestionsBody";
 import { Keycap } from "./ApprovalActions";
 import { useKeyGuard } from "./key-guard";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { ReasonTooltip } from "../ui/Tooltip";
 import { formatText, t } from "../i18n";
 
 /**
- * Agent questions (request_user_input) as the original's question card: one
- * question per page with an "n/N" badge, collapse ⌄ and close ✕ in the header;
- * each option is a full-width row with its description and a keycap (1…n);
- * Other is the last row with its own field. Clicking an option selects it; Next
- * advances and Submit sends every answered or skipped page. The keys only
- * choose: 1…n pick an option, n+1 the Other row, ↑ ↓ move between them, and
- * Enter or ⌘↩ moves on. Back, Skip, and Next/Submit sit under the rows. Codex
- * questions take one answer each, so there are no checkboxes.
+ * Agent questions (request_user_input) as the original's question card
+ * (R-0607–R-0612, R-0804, 2x): one question per page with an "n/N" badge,
+ * collapse ⌄ and close ✕ in the header; each option is a full-width row
+ * with its description and a keycap (1…n); Other is the last row with its
+ * own field. Clicking an option selects it; Next advances and Submit sends
+ * every answered or skipped page. The keys only choose: 1…n pick an
+ * option, n+1 the Other row, ↑ ↓ move between them, and Enter or ⌘↩ moves
+ * on. Back, Skip, and Next/Submit sit under the rows. Codex questions take
+ * one answer each, so there are no checkboxes (Claude's multi-select pages
+ * in R-0608 have no Codex counterpart).
  */
 export function QuestionsCard({
   questions,
@@ -173,7 +175,8 @@ export function QuestionsCard({
     <>
       <header className="question-card-header">
         <h3 className="approval-title">{q.question}</h3>
-        {/* Several questions page with carets around "{position} of {count}". */}
+        {/* Several questions page with carets around "{position} of
+            {count}" (live claude.ai bundle, 2026-10-14). */}
         {questions.length > 1 && (
           <span className="question-card-pager">
             <button
@@ -184,7 +187,7 @@ export function QuestionsCard({
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => setPage(page - 1)}
             >
-              <AppIcon name="CaretLeft16" />
+              <Anthropicon name="CaretLeft16" />
             </button>
             <span>
               {formatText("{position} of {count}", {
@@ -200,7 +203,7 @@ export function QuestionsCard({
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => setPage(page + 1)}
             >
-              <AppIcon name="CaretRight16" />
+              <Anthropicon name="CaretRight16" />
             </button>
           </span>
         )}
@@ -338,7 +341,7 @@ export function QuestionsCard({
 /** The Other row's answer is kept apart from the option labels. */
 const otherMark = "\u0000other";
 
-// Submit requires every page to be answered or explicitly skipped.
+// Submit requires every page to be answered or explicitly skipped (live claude.ai bundle, 2026-10-14, c2f6611a3-CHXoKeox).
 export function questionCardProgress(
   questions: Question[],
   page: number,

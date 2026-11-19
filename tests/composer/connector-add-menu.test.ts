@@ -36,8 +36,8 @@ test("with the right to add a custom connector, Add connector opens Browse conne
       "Browse connectors",
       "Add custom connector",
     ]);
-    assert.ok(panel.querySelector('[data-icon="Library"]'));
-    assert.ok(panel.querySelector('[data-icon="DotsHorizontal"]'));
+    assert.ok(panel.querySelector('[data-anthropicon="Library"]'));
+    assert.ok(panel.querySelector('[data-anthropicon="DotsHorizontal"]'));
     await act(async () => panel.querySelectorAll("button")[1]!.click());
     await act(async () => panel.querySelectorAll("button")[0]!.click());
     assert.deepEqual(calls, ["custom", "browse"]);

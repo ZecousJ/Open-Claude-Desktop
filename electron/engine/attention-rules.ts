@@ -13,9 +13,10 @@ import { mcpToolApproval } from "../../shared/mcp-tool-approval";
 import { routineCompletionNotices } from "../../shared/routine-notices";
 
 /**
- * A desktop notification, as the system integration shows it. The words and the
- * rules below follow the original's notification service: main-process banners
- * are English there too.
+ * A desktop notification, as the system integration shows it. The words and
+ * the rules below follow the original's notification service (live
+ * claude.ai desktop bundle, 2026-10-12): main-process banners are English
+ * there too.
  */
 export interface Notice {
   title: string;
@@ -247,7 +248,7 @@ export function scheduledApprovalNotice(
 
 const finished = ["completed", "failed", "interrupted"];
 
-/** More than two attention runs collapse. */
+/** More than two attention runs collapse (live claude.ai bundle, 2026-10-14, c101fef3f-3O20yB2x.js). */
 export function groupedScheduleNotices(notices: Notice[]): Notice[] {
   if (notices.length <= 2) return notices;
   return [

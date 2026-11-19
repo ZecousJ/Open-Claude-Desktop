@@ -36,6 +36,8 @@ const remoteFolder = z
     "Choose an absolute folder.",
   );
 
+export const trustFromDetectedProject = Symbol("trust from detected Code project");
+
 /** What a send is checked against (electron/ipc/conversations.ts). */
 export interface WorkspaceTrustGate {
   /**
@@ -128,15 +130,16 @@ export function registerWorkspaceTrustHandlers(
   };
   handle(
     "checkWorkspaceTrust",
-    async (raw: unknown, rawPlace?: unknown): Promise<WorkspaceTrust> => {
+    async (raw: unknown, rawPlace?: unknown, interactive: unknown = true): Promise<WorkspaceTrust> => {
       const place = trustPlace.parse(rawPlace ?? undefined);
       if (!place) return store.check(folderPath.parse(raw));
       return hostEngine(place).engine.remoteWorkspaceTrust(
         remoteFolder.parse(raw) || undefined,
+        z.boolean().parse(interactive),
       );
     },
   );
-  handle("saveWorkspaceTrust", async (raw: unknown, rawPlace?: unknown) => {
+  handle("saveWorkspaceTrust", async (raw: unknown, rawPlace?: unknown, source?: unknown) => {
     const place = trustPlace.parse(rawPlace ?? undefined);
     if (place) {
       const folder = remoteFolder.parse(raw) || undefined;
@@ -146,9 +149,13 @@ export function registerWorkspaceTrustHandlers(
       return engine.trustRemoteWorkspace(folder);
     }
     const folder = folderPath.parse(raw);
+    const active = ctx.store;
+    const detected = source === trustFromDetectedProject;
     // Only a folder the person chose or already works in.
-    ctx.allowedFolder(folder);
+    if (!detected) ctx.allowedFolder(folder);
     await store.trust(folder);
+    if (ctx.store !== active) throw Error("The account changed while trusting a workspace.");
+    if (detected) active.grantLocalFolders([folder]);
     changed();
     return store.check(folder);
   });

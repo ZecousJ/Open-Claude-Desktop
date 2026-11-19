@@ -693,7 +693,9 @@ test("a terminal of an SSH conversation runs on the host, in its folder, with it
     assert.match(exec.params.command[2], /--rcfile/);
     assert.match(exec.params.env.CLAUDEX_SI_BASHRC, /133;C/);
     assert.equal(exec.params.cwd, hostFolder);
-    assert.equal(exec.params.sandboxPolicy.type, "workspaceWrite");
+    // A Linux host's shell runs outside Codex's sandbox, whose new session
+    // would take the terminal from it (terminal-sessions.ts).
+    assert.equal(exec.params.sandboxPolicy.type, "dangerFullAccess");
     assert.equal(exec.params.env.CLAUDEX_GATEWAY_TOKEN, null);
     assert.equal(
       s.localRpc.calls.filter((call) => call.method === "command/exec").length,

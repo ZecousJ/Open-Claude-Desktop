@@ -1,8 +1,9 @@
 /**
- * Duplicate and Rename for skills and plugins. The dialog proposes a name for
- * the copy, shows the name it is saved as, and the main process refuses a name
- * that is taken with the live wording, so the dialog can show the refusal under
- * the field as the original does.
+ * Duplicate and Rename for skills and plugins (live claude.ai bundle,
+ * 2026-10-12: "Duplicate skill", "Rename skill", "Duplicate plugin"). The
+ * dialog proposes a name for the copy, shows the name it is saved as, and
+ * the main process refuses a name that is taken with the live wording, so
+ * the dialog can show the refusal under the field as the original does.
  */
 
 /** The longest skill or plugin name (the live dialogs' maxLength). */
@@ -66,13 +67,14 @@ export function copyName(
 }
 
 /**
- * Rename plugin's refusals: the dialog shows these under the field; anything
- * else reads as `pluginRenameFailed`.
+ * Rename plugin's refusals (live claude.ai bundle, 2026-10-12,
+ * c24c8737b `Ic`): the dialog shows these under the field; anything else
+ * reads as `pluginRenameFailed`.
  */
 export const renameSameName = "Choose a name different from the current one.";
 export const nameUnusable = "That name can’t be used. Choose a different one.";
 export const pluginRenameFailed = "Plugin rename failed. You can try again.";
-/** Duplicate plugin's failure. */
+/** Duplicate plugin's failure (live claude.ai bundle, 2026-10-16, c24c8737b). */
 export const pluginDuplicateFailed =
   "Plugin duplicate failed. You can try again.";
 export const pluginRenameBusy =
@@ -103,11 +105,12 @@ export interface PluginRenamePlan {
 }
 
 /**
- * Rename plugin's choice between a new name and a new display name: a plugin
- * whose display name is its name takes the typed text as both (the name
- * slugged); one with a display name of its own keeps it when a plain name is
- * typed, and keeps its name when other text is typed (only the display name
- * changes). `title` is the plugin's own display name, or "" when it has none.
+ * Rename plugin's choice between a new name and a new display name (live
+ * claude.ai bundle, 2026-10-12, c24c8737b `jc`): a plugin whose display
+ * name is its name takes the typed text as both (the name slugged); one
+ * with a display name of its own keeps it when a plain name is typed, and
+ * keeps its name when other text is typed (only the display name changes).
+ * `title` is the plugin's own display name, or "" when it has none.
  */
 export function pluginRenamePlan(
   typedText: string,

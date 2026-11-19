@@ -1,6 +1,6 @@
 /* Math, remote images and link confirmation in replies. R-0523/R-0524/R-0584/
-   sizes follow the surrounding reply styles (chat-markdown.md) and are
-   provisional. */
+   R-0535 have no original capture yet: sizes follow the surrounding reply
+   styles (chat-markdown.md) and are provisional. */
 .markdown .katex {
   font-size: 1.05em;
 }
@@ -39,7 +39,8 @@
   background: #1f1f1e;
   color: #a6a59f;
   font:
-    13px/20px -apple-system,
+    13px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   vertical-align: middle;

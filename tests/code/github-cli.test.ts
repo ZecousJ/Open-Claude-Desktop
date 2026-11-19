@@ -5,6 +5,12 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import type { Conversation } from "../../shared/types";
+import { readDesktopArchivePullRequests } from "../../electron/conversations/auto-archive-pull-requests";
 import {
   getIssue,
   getPullRequest,
@@ -13,6 +19,7 @@ import {
   problemOf,
   pullRequestAction,
   pullRequestActionArgs,
+  readPullRequestChecks,
   type GhResult,
   type GhRunner,
 } from "../../electron/git/github-cli";
@@ -40,6 +47,146 @@ const issue = (number: number, extra = {}) => ({
   html_url: `https://github.com/octo/hello/issues/${number}`,
   labels: [{ name: "bug" }, "plain"],
   ...extra,
+});
+
+const checkHead = "c".repeat(40);
+const checkTarget = "repos/octo/hello";
+const checkCommit = `${checkTarget}/commits/${checkHead}`;
+const checkPull = ok({
+  state: "open",
+  head: { sha: checkHead, repo: { full_name: "contrib/hello" } },
+  base: { ref: "main" },
+  mergeable: true,
+  mergeable_state: "blocked",
+  auto_merge: null,
+});
+
+test("PR checks report the current workflow attempt, check links and commit statuses", async () => {
+  const job = {
+    name: "Tests",
+    status: "completed",
+    conclusion: "failure",
+    app: { slug: "github-actions" },
+    details_url: "https://github.com/octo/hello/actions/runs/7",
+  };
+  const workflow = { workflow_id: 1, event: "pull_request", name: "CI" };
+  const run = fake({
+    [`${checkTarget}/pulls/3`]: checkPull,
+    [`${checkCommit}/check-runs`]: ok([
+      { check_runs: [{ ...job, id: 1, check_suite: { id: 8 } }] },
+      {
+        check_runs: [
+          { ...job, id: 2, conclusion: "cancelled", check_suite: { id: 9 } },
+          { ...job, id: 3, check_suite: { id: 10 } },
+        ],
+      },
+    ]),
+    [`${checkCommit}/status`]: ok([
+      { statuses: [{ context: "Deployment", state: "pending" }] },
+    ]),
+    [`${checkTarget}/actions/runs`]: ok([
+      {
+        workflow_runs: [
+          {
+            ...workflow,
+            check_suite_id: 8,
+            head_repository: { full_name: "contrib/hello" },
+          },
+          {
+            ...workflow,
+            check_suite_id: 9,
+            head_repository: { full_name: "contrib/hello" },
+          },
+          {
+            ...workflow,
+            check_suite_id: 10,
+            head_repository: { full_name: "unrelated/hello" },
+          },
+        ],
+      },
+    ]),
+  });
+  const result = await readPullRequestChecks("octo/hello", 3, run.run);
+  assert.partialDeepStrictEqual(result, {
+    success: true,
+    headSha: checkHead,
+    prState: "OPEN",
+    mergeable: "MERGEABLE",
+    mergeStateStatus: "BLOCKED",
+    autoMergeEnabled: false,
+    checks: [
+      {
+        name: "Tests",
+        state: "CANCELLED",
+        bucket: "cancel",
+        url: job.details_url,
+        checkRunId: 2,
+        workflowName: "CI",
+        appSlug: "github-actions",
+      },
+      { name: "Deployment", state: "PENDING", bucket: "pending" },
+    ],
+  });
+  assert.equal(result.success && result.checks.length, 2);
+});
+
+test("PR checks distinguish a confirmed empty list from an unreadable one", async () => {
+  const responses = {
+    [`${checkTarget}/pulls/3`]: checkPull,
+    [`${checkCommit}/check-runs`]: ok([{ check_runs: [] }]),
+    [`${checkCommit}/status`]: ok([{ statuses: [] }]),
+  };
+  const empty = await readPullRequestChecks(
+    "octo/hello",
+    3,
+    fake(responses).run,
+  );
+  assert.partialDeepStrictEqual(empty, { success: true, checks: [] });
+  const refused = await readPullRequestChecks(
+    "octo/hello",
+    3,
+    fake({
+      ...responses,
+      [`${checkCommit}/status`]: fail("gh: Forbidden (HTTP 403)"),
+    }).run,
+  );
+  assert.deepEqual(refused, {
+    success: false,
+    error: "gh: Forbidden (HTTP 403)",
+    transient: false,
+  });
+  const invalid = await readPullRequestChecks(
+    "octo/hello",
+    3,
+    fake({
+      ...responses,
+      [`${checkCommit}/status`]: ok({ status: [] }),
+    }).run,
+  );
+  assert.deepEqual(invalid, {
+    success: false,
+    error: "Could not parse PR checks.",
+  });
+});
+
+test("PR checks tell the renderer when gh needs installation or sign-in", async () => {
+  const missing = await readPullRequestChecks("octo/hello", 3, async () => ({
+    code: 127,
+    stdout: "",
+    stderr: "",
+    missing: true,
+  }));
+  assert.partialDeepStrictEqual(missing, {
+    success: false,
+    error: "gh CLI not found in PATH",
+  });
+  const signedOut = await readPullRequestChecks("octo/hello", 3, async () =>
+    fail("gh: Bad credentials (HTTP 401)"),
+  );
+  assert.partialDeepStrictEqual(signedOut, {
+    success: false,
+    error: "gh is not authenticated. Run gh auth login.",
+  });
 });
 
 test("the list asks for what involves the person until they type", async () => {
@@ -224,6 +371,44 @@ const graphRepo = (patch: Record<string, unknown> = {}) => ({
     },
     ...patch,
   },
+});
+
+test("Code binds an assistant's tag when authenticated GitHub confirms its repository and branch", async (t) => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-pr-binding-"));
+  t.after(() => fs.rmSync(cwd, { recursive: true, force: true }));
+  execFileSync("git", ["init", "--initial-branch=feature", cwd], { stdio: "ignore" });
+  execFileSync("git", ["-C", cwd, "remote", "add", "origin", "https://github.com/octo/hello.git"]);
+  const url = (number: number) => `https://github.com/octo/hello/pull/${number}`;
+  const tag = (url: string) => `<pr-created>${url}</pr-created>`;
+  const conversation: Conversation = {
+    id: "pr-binding", title: "Review", mode: "code", cwd, providerId: "p", model: "m",
+    createdAt: 1, updatedAt: 2, archived: false, pinned: false,
+    turns: [{
+      id: "turn", prompt: tag(url(3)), status: "completed", createdAt: 2, attachments: [],
+      items: [{ id: "reply", type: "agentMessage", text: [
+        url(2), tag(url(4)), tag(url(5)), tag(url(6)), tag(url(7)),
+        tag("https://github.com/other/repo/pull/9"),
+      ].join("\n") }],
+    }],
+  };
+  const calls: number[] = [];
+  const run: GhRunner = async args => {
+    const number = Number(args.at(-1)?.split("=")[1]);
+    calls.push(number);
+    if (number === 4) return fail("gh: Could not resolve to a PullRequest");
+    return ok({ data: { repository: graphRepo({
+      number, url: url(number), viewerDidAuthor: true, createdAt: "2026-11-15T10:00:00Z",
+      headRepository: { nameWithOwner: number === 6 ? "someone/hello" : "octo/hello" },
+      headRefName: number === 5 ? "different-branch" : "feature",
+    }) } });
+  };
+  const bindings = await readDesktopArchivePullRequests(conversation, undefined, run);
+  assert.deepEqual(calls.sort(), [4, 5, 6, 7]);
+  assert.partialDeepStrictEqual(bindings, [{
+    number: 7, repository: "octo/hello", headRepository: "octo/hello", url: url(7),
+    headRef: "feature", baseRef: "main", own: true, createdAt: Date.parse("2026-11-15T10:00:00Z"),
+  }]);
+  assert.equal(bindings?.length, 1);
 });
 
 test("a pull request is read in one GraphQL call with its reviews, conflicts and checks", async () => {

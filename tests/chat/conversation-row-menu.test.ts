@@ -240,7 +240,8 @@ test("Chat row menu starts with Open in new window (R-0044-0083)", () => {
     "—",
     "Delete D",
   ]);
-  // A Cowork task's menu leads with Open as quick task and a rule.
+  // A Cowork task's menu leads with Open as quick task and a rule (live
+  // claude.ai bundle, 2026-10-12, shared-16).
   const cowork = build(conversation({ mode: "cowork" }), { newWindow: false });
   assert.deepEqual(outline(cowork.entries).slice(0, 5), [
     "Open as quick task",

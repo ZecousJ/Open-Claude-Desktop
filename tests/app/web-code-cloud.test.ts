@@ -136,7 +136,7 @@ const buttons = (host: HostInfo) =>
   );
 
 test("a cloud Code session has no Terminal or Browser and keeps Changes", () => {
-  // Changes, Files and Share.
+  // Live claude.ai Code on the web, 2026-10-21: Changes, Files and Share.
   const html = buttons(cloudWeb);
   assert.doesNotMatch(html, /aria-label="Terminal"/);
   assert.doesNotMatch(html, /aria-label="Browser"/);

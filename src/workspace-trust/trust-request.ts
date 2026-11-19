@@ -9,10 +9,11 @@ import {
 
 /**
  * "Trust this workspace?" (shared/workspace-trust-api.ts), as the live
- * * one question at a time, shown by the oldest mounted host (the primary
- *   pane's composer when split panes each mount one); a second request for the
- *   same workspace waits for the same answer and one for another workspace is
- *   declined. With no host mounted the request is declined.
+ * claude.ai bundle, 2026-10-12 asks it (ce2cf86ad `requestTrustOutcome`):
+ * one question at a time, shown by the oldest mounted host (the primary
+ * pane's composer when split panes each mount one); a second request for
+ * the same workspace waits for the same answer and one for another
+ * workspace is declined. With no host mounted the request is declined.
  */
 export type TrustOutcome = "accepted" | "declined";
 
@@ -105,7 +106,7 @@ type Bridge = Pick<
   "checkWorkspaceTrust" | "saveWorkspaceTrust"
 >;
 
-/** Why trust couldn't be settled. */
+/** Why trust couldn't be settled (live claude.ai bundle, 2026-10-12). */
 export const trustCheckFailed =
   "Couldn’t check whether this workspace is trusted. Try again.";
 export const trustSaveFailed =

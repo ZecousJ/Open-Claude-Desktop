@@ -1,6 +1,6 @@
 import type { Conversation } from "../../shared/types";
 
-/** Issue order and conditions. */
+/** Issue order and conditions (live claude.ai bundle, 2026-10-14, shared-6-0KJX7m7Q.js). */
 export const negativeCategories = [
   { id: "ui_bug", label: "UI bug" },
   { id: "overactive_refusal", label: "Overactive refusal" },

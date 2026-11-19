@@ -19,9 +19,9 @@ export function textSaveError(error: unknown) {
 export type TextDraft = { name: string; text: string };
 
 /**
- * Add text content: Title ("Name your content") and Content ("Type or paste in
- * content..."), both required when Add Content is pressed; saved as a Markdown
- * file.
+ * Add text content (live claude.ai bundle, 2026-10-12): Title ("Name your
+ * content") and Content ("Type or paste in content..."), both required when
+ * Add Content is pressed; saved as a Markdown file.
  */
 export function AddTextDialog({
   draft,
@@ -79,11 +79,12 @@ export function AddTextDialog({
 const dropExitMs = 200;
 
 /**
- * What a file drag shows over the project's rail: the rail blurs under the page
- * colour at 60%, with a dashed accent rim while the drag is elsewhere in the
- * window and a solid ring with a soft glow once it is over the rail (red when
- * the files can't be added), three tilted icons and "Drop files here to add to
- * project knowledge" (or why it is refused).
+ * What a file drag shows over the project's rail (live claude.ai bundle,
+ * 2026-10-12, the knowledge drop zone overlay): the rail blurs under the
+ * page colour at 60%, with a dashed accent rim while the drag is elsewhere
+ * in the window and a solid ring with a soft glow once it is over the rail
+ * (red when the files can't be added), three tilted icons and "Drop files
+ * here to add to project knowledge" (or why it is refused).
  */
 export function KnowledgeDropOverlay({
   state,
@@ -130,7 +131,7 @@ export function KnowledgeDropOverlay({
   );
 }
 
-/** The empty Context box's picture: a sheet over a smaller one. */
+/** The empty Context box's picture (R-1213): a sheet over a smaller one. */
 export function ContextSheets() {
   return (
     <svg

@@ -1,19 +1,23 @@
-/* Composer core: column width, attachments, drop target, queued messages and
-   the @ file list. Only the column width and the Pasted card are measured; the
-   rest has no original capture and is provisional. */
+/* Composer core (package WP4a): column width, attachments, drop target, queued
+   messages and the @ file list. Only the column width and the Pasted card are
+   measured; the rest has no original capture and is provisional. */
 
-/* The conversation composer is 768 wide and the Code composer stays 768 in a
-   900px window (G-57: 66..832), where the narrow-window rule used to stretch it
-   to the window minus 48. Beside a side panel the narrowed frames keep their
-   own widths; the home composers keep theirs. */
+/* The conversation composer is 768 wide (AGENT-UI-GAPS G-35: approval card
+   319–1087 at 1351, 2x; S-0006 Chat notice 323–1091) and the Code composer
+   stays 768 in a 900px window (G-57: 66..832), where the narrow-window rule
+   used to stretch it to the window minus 48. Beside a side panel the
+   narrowed frames keep their own widths; the home composers keep theirs. */
 .chat-layout:not(:has(> .artifact-panel, > .work-panel))
   .composer-wrap.conversation-composer {
   width: min(var(--chat-column-measure, 768px), calc(100% - 48px));
 }
 
-/* The Chat and Cowork conversation frame's Stop and Send: the reply composer's
-   32px ghost buttons, 8px in from the frame like every control in it, Send a
-   bare return glyph on no fill. */
+/* The Chat and Cowork conversation frame's Stop and Send: the reply
+   composer's 32px ghost buttons, 8px in from the frame like every control
+   in it, Send a bare return glyph on no fill (live claude.ai bundle,
+   2026-10-12; owner's capture 2026-10-12-chat-conversation-composer.png at
+   2.2x: the glyph's centre 24px from the frame's right edge and 24px from
+   its top). */
 .conversation-input-actions .send-button.plain {
   width: 32px;
   height: 32px;
@@ -27,7 +31,8 @@
 .conversation-input-actions .send-button.plain:hover:not(:disabled) {
   background: var(--fill-ghost-hover);
 }
-/* Disabled CDS ghost controls keep their transparent fill and dim the ink. */
+/* Disabled CDS ghost controls keep their transparent fill and dim the ink
+   (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js). */
 .conversation-input-actions .send-button.plain:disabled {
   background: transparent;
   opacity: var(--opacity-disabled);
@@ -37,8 +42,9 @@
   color: #0b0b0b;
 }
 
-/* Reply PrimaryAction uses the comfortable CDS control, not the legacy home's
-   animated capsule. */
+/* Reply PrimaryAction uses the comfortable CDS control, not the legacy
+   home's animated capsule (live claude.ai bundle, 2026-10-14,
+   shared-5-DQt42NbL.js; shared-frame-B1JORnF0.js). */
 .composer-reply-submit {
   display: flex;
   flex-shrink: 0;
@@ -91,11 +97,13 @@
     scale var(--motion-fast) ease-out;
 }
 
-/* Send, Stop and the microphone. Stop fades in and out over 75ms after 50ms.
-   Send and the microphone share one place and cross-fade in 60ms; the one
-   hidden leaves the flow, so the place is as wide as what shows. In Code, Send
-   folds to nothing while a turn runs with no draft, its width, opacity and gap
-   after Stop moving in 120ms. */
+/* Send, Stop and the microphone (the original's primary action; source:
+   desktop bundle 2.31226.1 static CSS/JS). Stop fades in and out over 75ms
+   after 50ms (live claude.ai bundle, 2026-10-14, shared-9
+   animate-composer-control-in: duration .075, delay .05, easeOut). Send and the microphone share one place and cross-fade in 60ms;
+   the one hidden leaves the flow, so the place is as wide as what shows. In
+   Code, Send folds to nothing while a turn runs with no draft, its width,
+   opacity and gap after Stop moving in 120ms. */
 .composer-stop-slot {
   display: flex;
   flex: none;
@@ -141,8 +149,8 @@
   visibility: hidden;
   pointer-events: none;
 }
-/* Home: the microphone and tucked caret span 47px, followed by the separate
-   32px voice action. */
+/* Home: the microphone and tucked caret span 47px, followed by the
+   separate 32px voice action (live /new, 2026-10-16). */
 .composer-wrap:not(.code-composer)
   :is(.composer-idle-slot, .composer-home-voice)
   .cowork-voice-controls.with-options {
@@ -228,8 +236,9 @@
 }
 
 /* Toolbar indicator chips (Research, knowledge bases; ChipPresence.tsx): 50ms
-   after the mode turns on the chip fades in over 75ms while its place opens, so
-   the controls after it slide aside; it goes the same way. */
+   after the mode turns on the chip fades in over 75ms while its place opens,
+   so the controls after it slide aside; it goes the same way. Source:
+   desktop bundle 2.31226.1 static CSS/JS. */
 .composer-chip-slot {
   display: grid;
   flex: none;
@@ -397,10 +406,11 @@
   animation: none;
 }
 .attachment-remove {
-  /* The original's remove button: 20px, 8px out past the card's corner, a
-     hairline rim over a 90% fill with a small backdrop blur, muted ink that
-     brightens on hover. It fades in with the card's hover or focus in 150ms; on
-     a screen without hover it always shows, on a 50% fill. */
+  /* The original's remove button (desktop bundle 2.31226.1 static CSS/JS):
+     20px, 8px out past the card's corner, a hairline rim over a 90% fill
+     with a small backdrop blur, muted ink that brightens on hover. It fades
+     in with the card's hover or focus in 150ms; on a screen without hover it
+     always shows, on a 50% fill. */
   position: absolute;
   top: -8px;
   right: -8px;
@@ -438,9 +448,10 @@
     background: rgb(42 42 42 / 50%);
   }
 }
-/* An image card is as large as a file card, 120 x 120 with the Pasted card's
-   face and rim, the picture centred whole inside it. The capture's "Low res"
-   chip has no known rule for when it shows, so it is not drawn. */
+/* R-1094 (Windows 1x, light): an image card is as large as a file card, 120 x
+   120 with the Pasted card's face and rim, the picture centred whole inside
+   it (Code's R-0380 card is the same size). The capture's "Low res" chip has
+   no known rule for when it shows, so it is not drawn. */
 .attachment-thumbnail {
   position: relative;
   flex: none;
@@ -466,7 +477,7 @@
   height: 100%;
   object-fit: contain;
 }
-/* Loading and uploading overlays. */
+/* Loading and uploading overlays (live claude.ai bundle, 2026-10-14, c6c6902dd-D3XJjarO). */
 .attachment-image-loading,
 .attachment-image-uploading {
   position: absolute;
@@ -558,8 +569,8 @@
 }
 
 /* The @ file list takes the slash list's frame, wider for paths. */
-/* 559 wide, 5px in from the composer's left edge, its bottom 9.5px into the
-   composer; folder glyph 12px, 24px rows. */
+/* R-0382 (2x): 559 wide, 5px in from the composer's left edge, its bottom
+   9.5px into the composer; folder glyph 12px, 24px rows. */
 .mention-palette {
   left: 5px;
   bottom: calc(100% - 9.5px);
@@ -606,9 +617,9 @@
   position: relative;
 }
 
-/* File tiles share the Pasted card's box, 12px apart in one row that scrolls
-   sideways; the name is 14px on up to two lines with an ellipsis, the detail
-   12px grey under it. */
+/* R-1093 (Windows 1x): file tiles share the Pasted card's box, 12px apart in
+   one row that scrolls sideways; the name is 14px on up to two lines with an
+   ellipsis, the detail 12px grey under it. */
 .attachment-list:has(.attachment-tile, .attachment-thumbnail) {
   flex-wrap: nowrap;
   gap: 12px;
@@ -659,7 +670,8 @@
 
 /* A home suggestion pointed at (prompt-preview.ts): its prompt shows over the
    editor in two muted lines, fading in over 150ms, and the draft and its
-   placeholder are hidden meanwhile. Static CSS/JS. */
+   placeholder are hidden meanwhile. Source: desktop bundle 2.31226.1 static
+   CSS/JS. */
 .composer-input-row:has(> .composer-prompt-preview) {
   position: relative;
 }
@@ -758,7 +770,11 @@
   -webkit-box-decoration-break: clone;
 }
 
-/* The prompt history's header. */
+/* The prompt history's header (live claude.ai bundle, 2026-10-14: the
+   composer header, "flex min-h-[h-control-nested] items-center gap-xs
+   text-footnote text-muted"; the query in the UI mono face in
+   text-primary with a pulsing bar; "Search history:" red when nothing
+   matches; the key hints fade in over 300ms). */
 .composer-history-hint {
   display: flex;
   min-width: 0;
@@ -816,7 +832,9 @@
     transition: none;
   }
 }
-/* Review comments waiting to go with the message. */
+/* Review comments waiting to go with the message (live claude.ai bundle,
+   2026-10-14: a quote chip badged "Comment", named "Review comment on
+   {where}", removable). */
 .review-comment-chips {
   display: flex;
   flex-wrap: wrap;
@@ -875,7 +893,8 @@
   color: #184f95;
 }
 
-/* Submit capsule. */
+/* Submit capsule (live claude.ai bundle, 2026-10-14,
+   c04e7453f-Cg2yRCdu.js; c6a992d55-D8h3Fpj5.css). */
 /* The live trigger sits flush with the toolbar's start ([&_button]:!ms-0). */
 .composer-add-trigger {
   margin-inline-start: 0;
@@ -889,7 +908,7 @@
   overflow: hidden;
   height: 32px;
   /* As the 8px Send inside it: a 16px capsule clipped the square Send to a
-     circle. */
+     circle (live claude.ai, 2026-10-20: no wrapper rounds or clips it). */
   border-radius: 8px;
   color: #898781;
 }
@@ -928,7 +947,8 @@
   height: 32px;
   padding: 0;
   border: 0;
-  /* The live app's brand Send is a rounded square. */
+  /* The live app's brand Send is a rounded square (claude.ai, 2026-10-20:
+     32px, radius 8px, fill #c6613f). */
   border-radius: 8px;
   background: #c6613f;
   color: #fff;

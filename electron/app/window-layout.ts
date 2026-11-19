@@ -9,7 +9,7 @@ export type LayoutDispatchResult =
   | { kind: "result"; result: LayoutCommandResult }
   | { kind: "no_window" | "not_listening" | "timeout" };
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, fga / mga).
 export class WindowLayoutCommands {
   private listening = new WeakSet<WebContents>();
   private registered = new WeakSet<WebContents>();

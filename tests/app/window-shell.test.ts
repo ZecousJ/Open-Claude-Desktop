@@ -343,10 +343,10 @@ test("each surface and place has its notice frame", () => {
     );
   const home = render("chat", "home");
   assert.match(home, /class="usage-banner chat home warning"/);
-  assert.match(home, /class="[^"]*app-icon usage-banner-icon"/);
+  assert.match(home, /class="anthropicon usage-banner-icon"/);
   assert.match(home, /Get more usage/);
   assert.match(home, /aria-label="Dismiss"/);
-  // Narrowed by a side panel, Chat drops the icon.
+  // Narrowed by a side panel, Chat drops the icon (S-0006 progress panel).
   const narrow = render("chat", "narrow");
   assert.match(narrow, /usage-banner chat narrow warning/);
   assert.doesNotMatch(narrow, /usage-banner-icon/);
@@ -428,7 +428,7 @@ test("a notice marked read stays read until the service confirms it", () => {
 });
 
 test("the sign-in page says the session ended, as the original does", () => {
-  // One line whatever ended it.
+  // live claude.ai bundle, 2026-10-12: one line whatever ended it.
   assert.deepEqual(signedOutNotice({ reason: "revoked", message: "" }), {
     title: "Your session ended. Log in again to continue.",
     reason: "revoked",

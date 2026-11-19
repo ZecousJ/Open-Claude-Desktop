@@ -1,16 +1,18 @@
 /*
- * Chat and Cowork's queued messages in the composer's dock: the live claude.ai
- * bundle's ChatComposerQueuedMessages. Values are the bundle's Tailwind classes
- * at the comfortable density claude.ai draws Chat in: a list `-my-1 py-1
- * gap-xs` (8px between rows) that scrolls past min(40vh, 22rem), rows
- * right-aligned; the bubble is Claudex's own Chat prompt bubble
- * (chat-transcript.css: 12px radius, 12px 16px, 15/20) with the queued
- * message's muted text (`rJ.queued: text-muted`). The actions are 24px ghost
- * icon buttons (h-control--xs), 6px (ps-xs / pe-xs) from the bubble,
- * bottom-aligned in a band as tall as one line of the bubble (pad-md * 2 + the
- * line). They show as a message's actions do (chat-transcript.css --reveal-*):
- * after the pointer rests 100ms, in over 120ms, out over 60ms; at once with
- * focus inside; always on a touch screen. Loaded with the first queued message.
+ * Chat and Cowork's queued messages in the composer's dock: the live
+ * claude.ai bundle's ChatComposerQueuedMessages (2026-10-12, `ccff1868a`,
+ * rows `cdf347a37`, list `shared-2` vq). Values are the bundle's Tailwind
+ * classes at the comfortable density claude.ai draws Chat in: a list
+ * `-my-1 py-1 gap-xs` (8px between rows) that scrolls past
+ * min(40vh, 22rem), rows right-aligned; the bubble is Claudex's own Chat
+ * prompt bubble (chat-transcript.css: 12px radius, 12px 16px, 15/20) with
+ * the queued message's muted text (`rJ.queued: text-muted`). The actions
+ * are 24px ghost icon buttons (h-control--xs), 6px (ps-xs / pe-xs) from the
+ * bubble, bottom-aligned in a band as tall as one line of the bubble
+ * (pad-md * 2 + the line). They show as a message's actions do
+ * (chat-transcript.css --reveal-*): after the pointer rests 100ms, in over
+ * 120ms, out over 60ms; at once with focus inside; always on a touch
+ * screen. Loaded with the first queued message.
  */
 .chat-queued {
   position: relative;
@@ -63,7 +65,8 @@
   max-width: 85%;
 }
 /* With the actions at the bubble's left the row keeps room for them there,
-   yielding up to 15% of the row to a long message. */
+   yielding up to 15% of the row to a long message (live bundle:
+   --cds-queued-reserve and --cds-queued-yield). */
 .chat-queued-message[data-reserve] {
   box-sizing: border-box;
   max-width: 100%;
@@ -174,7 +177,7 @@
 .chat-queued-action[aria-busy="true"] > svg {
   opacity: 0;
 }
-/* A busy Send now keeps its place and spins. */
+/* A busy Send now keeps its place and spins (queued-message-bar.css). */
 .chat-queued-spinner {
   position: absolute;
   inset: 0;
@@ -206,7 +209,7 @@
   );
   animation: spin 1s linear infinite;
 }
-/* "✓ Sent": the check drawn in from the left. */
+/* "✓ Sent" (queued-message-bar.css): the check drawn in from the left. */
 .chat-queued-sent {
   display: flex;
   align-items: center;

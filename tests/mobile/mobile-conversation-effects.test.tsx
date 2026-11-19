@@ -135,6 +135,43 @@ function surfaceHarness() {
   return { ...env, events, bridge, state, click, respond };
 }
 
+test("a mobile Chat stop preserves text and gives only the latest stopped reply a retry", async () => {
+  const env = surfaceHarness();
+  const stopped = {
+    ...env.state.conversation.turns[0],
+    status: "interrupted",
+    userStopped: true,
+  } satisfies ConversationRenderState["conversation"]["turns"][number];
+  const render = async (turns: ConversationRenderState["conversation"]["turns"]) =>
+    act(async () => env.root.render(
+      createElement(ConversationSurface, {
+        state: { ...env.state, conversation: { ...env.state.conversation, turns } },
+        bridge: env.bridge,
+        onApplied() {},
+      }),
+    ));
+  const notice = () => env.document.querySelector(".official-stopped-reply");
+  try {
+    await render([stopped]);
+    assert.match(env.document.body.textContent ?? "", /Answer/);
+    assert.match(notice()?.textContent ?? "", /response was interrupted/);
+    assert.equal(notice()?.querySelector("button")?.textContent, "Try again");
+    await env.click(".official-stopped-reply button");
+    const request = env.events.at(-1);
+    assert.ok(request?.type === "retryResponse");
+    assert.equal(request.payload.turnId, stopped.id);
+    await env.respond({});
+    await render([stopped, { ...env.state.conversation.turns[0], id: "next" }]);
+    assert.match(notice()?.textContent ?? "", /response was interrupted/);
+    assert.equal(notice()?.querySelector("button"), null);
+    await render([{ ...stopped, userStopped: false }]);
+    assert.equal(notice(), null);
+  } finally {
+    await act(async () => env.root.unmount());
+    env.restore();
+  }
+});
+
 test("real transcript Retry declines quietly and later success clears only its own failure", async () => {
   const env = surfaceHarness();
   const retry = '.message-actions button[aria-label="Retry"]';

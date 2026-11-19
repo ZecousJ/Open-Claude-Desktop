@@ -112,7 +112,14 @@ func (s *OpenAIGatewayService) forwardResponsesViaRawChatCompletions(
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.sendCCUpstreamRequest(ctx, c, account, targetURL, chatBody, clientStream, apiKey, account.GetOpenAIUserAgent(), "")
+	budget := ccFirstOutputBudget{startTime: startTime, model: originalModel}
+	if reasoningEffort != nil {
+		budget.effort = *reasoningEffort
+	}
+	if clientStream && account.Platform == PlatformOpenAI {
+		budget.timeout = s.openAIFirstOutputTimeout(budget.effort)
+	}
+	resp, err := s.sendCCUpstreamRequest(ctx, c, account, targetURL, chatBody, clientStream, apiKey, account.GetOpenAIUserAgent(), "", budget)
 	if err != nil {
 		return nil, err
 	}
@@ -127,14 +134,15 @@ func (s *OpenAIGatewayService) forwardResponsesViaRawChatCompletions(
 	}
 
 	if clientStream {
-		return s.streamChatCompletionsAsResponses(c, resp, originalModel, customTools, functionTools, toolSearch, namespaceTools, billingModel, upstreamModel, reasoningEffort, serviceTier, startTime)
+		return s.streamChatCompletionsAsResponses(c, resp, account, originalModel, customTools, functionTools, toolSearch, namespaceTools, billingModel, upstreamModel, reasoningEffort, serviceTier, startTime)
 	}
-	return s.bufferChatCompletionsAsResponses(c, resp, originalModel, customTools, functionTools, toolSearch, namespaceTools, billingModel, upstreamModel, reasoningEffort, serviceTier, startTime)
+	return s.bufferChatCompletionsAsResponses(c, resp, account, originalModel, customTools, functionTools, toolSearch, namespaceTools, billingModel, upstreamModel, reasoningEffort, serviceTier, startTime)
 }
 
 func (s *OpenAIGatewayService) bufferChatCompletionsAsResponses(
 	c *gin.Context,
 	resp *http.Response,
+	account *Account,
 	originalModel string,
 	customTools map[string]bool,
 	functionTools map[string]bool,
@@ -151,7 +159,30 @@ func (s *OpenAIGatewayService) bufferChatCompletionsAsResponses(
 	if err != nil {
 		return nil, err
 	}
-	responsesResp := apicompat.ChatCompletionsResponseToResponses(ccResp, originalModel, customTools, functionTools, toolSearch, namespaceTools)
+	if len(ccResp.Error) > 0 && string(ccResp.Error) != "null" {
+		payload, _ := json.Marshal(map[string]json.RawMessage{"error": ccResp.Error})
+		message := extractOpenAISSEErrorMessage(payload)
+		if openAIStreamFailedEventShouldFailover(payload, message) {
+			return nil, s.newOpenAIStreamFailoverErrorWithModel(c, account, false, requestID, payload, message, upstreamModel, resp.Header)
+		}
+		writeOpenAIResponsesFallbackError(c, http.StatusBadRequest, "invalid_request_error", sanitizeUpstreamErrorMessage(message))
+		MarkResponseCommitted(c)
+		return nil, errors.New(message)
+	}
+	if len(ccResp.Choices) > 0 && (ccResp.Choices[0].FinishReason == "content_filter" || ccResp.Choices[0].Message.Refusal != "") {
+		message := extractOpenAISSEErrorMessage(ccPolicyFailurePayload())
+		writeOpenAIResponsesFallbackError(c, http.StatusBadRequest, "invalid_request_error", message)
+		MarkResponseCommitted(c)
+		return nil, errors.New(message)
+	}
+	var cachePrivateReasoning apicompat.CachePrivateReasoning
+	if isClaudexCodeResponsesRequest(c) {
+		cachePrivateReasoning = s.setReasoningContent
+	}
+	responsesResp := apicompat.ChatCompletionsResponseToResponsesWithReasoningCache(ccResp, originalModel, customTools, functionTools, toolSearch, namespaceTools, cachePrivateReasoning)
+	if !ccResponsesHasOutput(responsesResp) && usage.InputTokens == 0 && usage.OutputTokens == 0 {
+		return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, requestID)
+	}
 	s.cacheReasoningItemsFromOutput(responsesResp.Output)
 
 	if s.responseHeaderFilter != nil {
@@ -177,6 +208,7 @@ func (s *OpenAIGatewayService) bufferChatCompletionsAsResponses(
 func (s *OpenAIGatewayService) streamChatCompletionsAsResponses(
 	c *gin.Context,
 	resp *http.Response,
+	account *Account,
 	originalModel string,
 	customTools map[string]bool,
 	functionTools map[string]bool,
@@ -196,11 +228,35 @@ func (s *OpenAIGatewayService) streamChatCompletionsAsResponses(
 	state.FunctionTools = functionTools
 	state.ToolSearchDeclared = toolSearch
 	state.NamespaceTools = namespaceTools
+	if isClaudexCodeResponsesRequest(c) {
+		state.CachePrivateReasoning = s.setReasoningContent
+	}
 	clientDisconnected := false
+	outputStarted := false
+	var pending []apicompat.ResponsesStreamEvent
+	firstOutputBody, _ := resp.Body.(*ccFirstOutputBody)
 
 	writeEvents := func(events []apicompat.ResponsesStreamEvent) {
 		if clientDisconnected || len(events) == 0 {
 			return
+		}
+		if !outputStarted {
+			pending = append(pending, events...)
+			for _, event := range events {
+				if !openAIStreamEventIsMetadata(event.Type) {
+					outputStarted = true
+					break
+				}
+			}
+			if !outputStarted {
+				return
+			}
+			if firstOutputBody != nil && firstOutputBody.stopWait() {
+				outputStarted = false
+				return
+			}
+			events = pending
+			pending = nil
 		}
 		writeStreamHeaders()
 		for _, event := range events {
@@ -229,8 +285,12 @@ func (s *OpenAIGatewayService) streamChatCompletionsAsResponses(
 		s.cacheReasoningItemsFromEvents(events)
 		writeEvents(events)
 	})
+	if firstOutputBody != nil && firstOutputBody.stopWait() && c.Request.Context().Err() == nil {
+		budget := firstOutputBody.budget
+		return nil, s.newOpenAIFirstOutputTimeoutError(c.Request.Context(), c, account, opsUpstreamProxyID(account), opsUpstreamProxyName(account), budget.startTime, originalModel, budget.effort, budget.timeout, "chat_stream", resp.Header)
+	}
 
-	if scan.Err != nil {
+	result := func() *OpenAIForwardResult {
 		return &OpenAIForwardResult{
 			RequestID:                   requestID,
 			UpstreamHeaders:             resp.Header,
@@ -244,23 +304,62 @@ func (s *OpenAIGatewayService) streamChatCompletionsAsResponses(
 			Stream:                      true,
 			Duration:                    time.Since(startTime),
 			FirstTokenMs:                scan.FirstTokenMs,
-		}, fmt.Errorf("stream usage incomplete: %w", scan.Err)
+		}
+	}
+	fail := func(payload []byte, failure error) (*OpenAIForwardResult, error) {
+		message := sanitizeUpstreamErrorMessage(failure.Error())
+		if !outputStarted && c.Request.Context().Err() == nil &&
+			(len(payload) == 0 || openAIStreamFailedEventShouldFailover(payload, message)) {
+			return nil, s.newOpenAIStreamFailoverErrorWithModel(c, account, false, requestID, payload, message, upstreamModel, resp.Header)
+		}
+		if c.Request.Context().Err() != nil || clientDisconnected {
+			return result(), failure
+		}
+		s.recordOpenAIStreamUpstreamError(c, account, false, requestID, "stream_failed", payload, message)
+		if len(payload) == 0 {
+			payload = []byte(`{"error":{"code":"server_error","type":"upstream_error"}}`)
+		}
+		payload, _ = sanitizeOpenAIResponseFailedEventForClient(payload, "error", outputStarted)
+		code := gjson.GetBytes(payload, "error.code").String()
+		if code == "" {
+			code = gjson.GetBytes(payload, "response.error.code").String()
+		}
+		if code == "" {
+			code = "server_error"
+		}
+		if sourceMessage := extractOpenAISSEErrorMessage(payload); sourceMessage != "" {
+			message = sanitizeUpstreamErrorMessage(sourceMessage)
+		}
+		writeEvents([]apicompat.ResponsesStreamEvent{{
+			Type: "response.failed", SequenceNumber: state.SequenceNumber,
+			Response: &apicompat.ResponsesResponse{
+				ID: state.ResponseID, Object: "response", CreatedAt: state.Created,
+				Model: originalModel, Status: "failed", Output: []apicompat.ResponsesOutput{},
+				Usage: state.Usage, Error: &apicompat.ResponsesError{Code: code, Message: message},
+			},
+		}})
+		if !clientDisconnected {
+			MarkResponseCommitted(c)
+			MarkOpsStreamError(c, code, message, openAIStreamFailedEventSemanticStatus(payload, message))
+		}
+		return result(), failure
+	}
+	if scan.Err != nil {
+		return fail(scan.ErrorPayload, fmt.Errorf("stream usage incomplete: %w", scan.Err))
+	}
+	if state.FinishReason == "content_filter" {
+		payload := ccPolicyFailurePayload()
+		return fail(payload, errors.New(extractOpenAISSEErrorMessage(payload)))
+	}
+	if state.Text.Len() == 0 && state.Reasoning.Len() == 0 && len(state.ToolCalls) == 0 &&
+		scan.Usage.InputTokens == 0 && scan.Usage.OutputTokens == 0 {
+		return nil, newOpenAIResponsesEmptyCompletedFailoverError(c, account, requestID)
+	}
+	if !scan.SawDone && state.FinishReason == "" {
+		return fail(nil, errors.New("Upstream chat completion stream ended before its finish reason"))
 	}
 	if err := state.ValidateToolCallArguments(); err != nil {
-		return &OpenAIForwardResult{
-			RequestID:                   requestID,
-			UpstreamHeaders:             resp.Header,
-			Usage:                       scan.Usage,
-			Model:                       originalModel,
-			BillingModel:                billingModel,
-			UpstreamModel:               upstreamModel,
-			ReasoningEffort:             reasoningEffort,
-			UpstreamResponseServiceTier: observedUpstreamResponseServiceTier(c),
-			ServiceTier:                 resolvedOpenAIUpstreamServiceTier(c, serviceTier),
-			Stream:                      true,
-			Duration:                    time.Since(startTime),
-			FirstTokenMs:                scan.FirstTokenMs,
-		}, fmt.Errorf("invalid tool call arguments from upstream: %w", err)
+		return fail(nil, fmt.Errorf("invalid tool call arguments from upstream: %w", err))
 	}
 
 	finalEvents := apicompat.FinalizeChatCompletionsResponsesStream(state)
@@ -295,6 +394,24 @@ func (s *OpenAIGatewayService) streamChatCompletionsAsResponses(
 	}, nil
 }
 
+func ccPolicyFailurePayload() []byte {
+	return []byte(`{"error":{"code":"content_policy_violation","type":"invalid_request_error","message":"Upstream declined to provide a response"}}`)
+}
+
+func ccResponsesHasOutput(resp *apicompat.ResponsesResponse) bool {
+	for _, item := range resp.Output {
+		if item.Type != "message" {
+			return true
+		}
+		for _, part := range item.Content {
+			if part.Text != "" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func chatChunkStartsResponsesOutput(chunk *apicompat.ChatCompletionsChunk) bool {
 	if chunk == nil {
 		return false
@@ -307,25 +424,15 @@ func chatChunkStartsResponsesOutput(chunk *apicompat.ChatCompletionsChunk) bool 
 	return false
 }
 
-// responsesReasoningCacheTTL 是 reasoning 缓存（按 reasoning item id）的过期时间。
-// Codex 会话可能跨多天恢复历史，取 7 天。
-const responsesReasoningCacheTTL = 7 * 24 * time.Hour
-
 // reasoningContentByID 按 reasoning item id 回查缓存的 reasoning 全文，供
 // Responses→CC 桥接在客户端不回传明文 summary（encrypted-only reasoning
 // item）时回注 reasoning_content。任何失败都 fail-open 返回 ""（维持桥接原
 // 行为），因为缓存只是优化而非正确性前提。
 func (s *OpenAIGatewayService) reasoningContentByID(itemID string) string {
-	if s == nil || s.cache == nil {
+	if s == nil {
 		return ""
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	content, err := s.cache.GetReasoningContent(ctx, itemID)
-	if err != nil {
-		return ""
-	}
-	return content
+	return (responsesReasoningCache{store: s.cache}).get(itemID)
 }
 
 // recacheReasoningItemsFromInput 把请求历史里带明文 summary 的 reasoning item
@@ -387,21 +494,8 @@ func (s *OpenAIGatewayService) cacheReasoningItem(item *apicompat.ResponsesOutpu
 	s.setReasoningContent(item.ID, strings.Join(parts, "\n"))
 }
 
-// setReasoningContent 写入缓存，使用 detached ctx：客户端断连后仍在 drain
-// 上游流（计费需要），此时的 reasoning 也是后续轮次回注所依赖的，不能随
-// 请求 ctx 一起取消。失败仅记日志，不影响转发。
 func (s *OpenAIGatewayService) setReasoningContent(itemID, content string) {
-	if s == nil || s.cache == nil {
-		return
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	if err := s.cache.SetReasoningContent(ctx, itemID, content, responsesReasoningCacheTTL); err != nil {
-		logger.L().Warn("openai responses chat fallback: cache reasoning content failed",
-			zap.Error(err),
-			zap.String("item_id", itemID),
-		)
-	}
+	(responsesReasoningCache{store: s.cache}).set(itemID, content)
 }
 
 // deepSeekChatReasoningPlaceholderText 是 Chat Completions 侧 thinking-mode

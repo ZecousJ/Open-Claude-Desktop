@@ -363,7 +363,7 @@ test("the snapshot tells the web app about the environment and the modes", async
     environments: [
       { id: "default", name: "Default", network: "trusted", isDefault: true },
     ],
-    // Bypass too: every session runs in its own sandbox.
+    // Bypass too: every session runs in its own sandbox (owner, 2026-10-03).
     permissionModes: ["auto", "manual", "acceptEdits", "plan", "bypass"],
   });
   // No Code, no environment; and the web app keeps what the runner says.

@@ -1,4 +1,4 @@
-/* max-w-[30rem], gap-md, body/footnote. */
+/* live claude.ai bundle, 2026-10-14, c887e9f0f-D29tVawB.js: max-w-[30rem], gap-md, body/footnote. */
 .modal.chrome-import {
   width: 30rem;
   max-width: calc(100vw - 32px);
@@ -76,7 +76,8 @@
   justify-content: flex-end;
   gap: 0.25rem;
 }
-/* A warning Badge (sm) after a sensitive site. */
+/* A warning Badge (sm) after a sensitive site (c887e9f0f Ae: Bank or
+   payments, Email, Sign-in provider). */
 .chrome-import-tag {
   flex: none;
   display: inline-flex;
@@ -93,7 +94,7 @@
   line-height: 14px;
   white-space: nowrap;
 }
-/* Don't show again: a plain footnote-sized muted link. */
+/* Don't show again: a plain footnote-sized muted link (c224804cc). */
 .chrome-import-dismiss {
   margin-inline-end: auto;
   padding: 0;

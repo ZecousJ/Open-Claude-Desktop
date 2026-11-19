@@ -193,7 +193,7 @@ test("usage units, decimals and USD formatting follow the app locale", async () 
         new Intl.NumberFormat(locale, {
           style: "currency",
           currency: "USD",
-          // "$", not "US$".
+          // "$", not "US$" (owner, 2026-10-09: the API page's total cost).
           currencyDisplay: "narrowSymbol",
           minimumFractionDigits: 4,
           maximumFractionDigits: 4,

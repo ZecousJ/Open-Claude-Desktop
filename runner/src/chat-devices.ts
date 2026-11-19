@@ -24,6 +24,12 @@ import { installMethods } from "./install-methods";
 import { scopeOf } from "./chat-devices-support";
 import * as chatDevicesRouting from "./chat-devices-routing";
 
+export interface OfficialCoworkDeviceSend {
+  owner: string;
+  current(): boolean;
+  title?: string;
+}
+
 export interface Opened {
   conversation: Conversation;
   approvals: Approval[];
@@ -144,6 +150,7 @@ export class ChatDeviceController {
     binding: Pick<ChatDeviceBinding, "deviceId">,
     method: string,
     input: Record<string, unknown>,
+    check?: () => void,
   ) {
     this.current();
     if (this.relayTrustVersion === undefined) await this.directory();
@@ -151,6 +158,7 @@ export class ChatDeviceController {
     if (proof && !this.host.trustScope) throw new Error(chatDeviceUnavailable);
     const raw = async (method: DeviceMethod, args: unknown[]) => {
       this.current();
+      check?.();
       const value = await this.host.request("device.call", {
         version: 1,
         deviceId: binding.deviceId,
@@ -159,6 +167,7 @@ export class ChatDeviceController {
         ...(proof ? { scope: scopeOf(this.host.accountScope) } : {}),
       });
       this.current();
+      check?.();
       return value;
     };
     const args = [{ ...scopeOf(this.host.accountScope), ...input }];
@@ -171,6 +180,7 @@ export class ChatDeviceController {
         )
       : await raw(method as DeviceMethod, args);
     this.current();
+    check?.();
     return value;
   }
   target(id: string) {
@@ -225,9 +235,11 @@ export class ChatDeviceController {
     }
     return result;
   }
-  async send(raw: unknown): Promise<Conversation> {
+  async send(raw: unknown, officialCowork?: OfficialCoworkDeviceSend): Promise<Conversation> {
     const input = chatDeviceSendInput.parse(raw);
     this.scope(input.accountScope, input.organizationId);
+    if (officialCowork && (input.mode !== "cowork" || !officialCowork.current()))
+      throw Error("The Cowork account changed before sending.");
     const logicalId = input.conversationId ?? input.requestId;
     const prior = this.pending.get(logicalId);
     if (prior?.requestId === input.requestId) return prior.promise;
@@ -240,6 +252,7 @@ export class ChatDeviceController {
     const promise = this.submit(
       input as ChatDeviceSendInput,
       logicalId,
+      officialCowork,
     ).finally(() => {
       if (this.pending.get(logicalId)?.promise === promise)
         this.pending.delete(logicalId);
@@ -294,7 +307,7 @@ export class ChatDeviceController {
         this.retryDelay = 500;
       } catch (error) {
         this.retryDelay = Math.min(30_000, this.retryDelay * 2);
-        if (!this.disposed && this.host.current()) {
+        if (!this.disposed && this.host.current() && !this.changes.has(conversation.id)) {
           const waiting = {
             ...conversation,
             chatDeviceError:
@@ -321,6 +334,42 @@ export class ChatDeviceController {
       return await this.migrate(input);
     } finally {
       this.changes.delete(input.conversationId);
+    }
+  }
+  async deleteCowork(
+    conversation: Conversation,
+    current: () => boolean,
+    deleteMirror: (current: () => boolean) => Promise<void>,
+  ) {
+    const id = conversation.id;
+    const binding = this.binding(conversation);
+    if (conversation.mode !== "cowork" || !binding)
+      throw new Error("This Cowork session has no device binding.");
+    if (this.changes.has(id) || this.pending.has(id))
+      throw new Error("The Chat device is busy. Try again in a moment.");
+    const unchanged = () => current() && this.target(id) === conversation &&
+      conversation.chatDeviceBinding === binding &&
+      !conversation.turns.some((turn) => turn.status === "inProgress");
+    const check = () => {
+      this.current();
+      if (!unchanged()) throw new Error("The Cowork session changed before it could be removed.");
+    };
+    this.changes.add(id);
+    try {
+      await this.refreshing;
+      check();
+      await this.call(binding, "chatDeviceRelease", {
+        remoteConversationId: binding.remoteConversationId,
+      }, check);
+      await deleteMirror(unchanged);
+      for (const [approvalId, approval] of this.approvals) {
+        if (approval.logicalId !== id) continue;
+        this.approvals.delete(approvalId);
+        this.host.push({ type: "approval-resolved", id: approvalId });
+      }
+      this.host.push({ type: "resync" });
+    } finally {
+      this.changes.delete(id);
     }
   }
   dispose() {

@@ -409,8 +409,7 @@ func TestBuildAuthorizationURL_WithProjectID(t *testing.T) {
 }
 
 func TestBuildAuthorizationURL_UsesBuiltinSecretFallback(t *testing.T) {
-	// CLAUDEX: the built-in client's secret comes only from the environment.
-	t.Setenv(GeminiCLIOAuthClientSecretEnv, "test-built-in-secret")
+	t.Setenv(GeminiCLIOAuthClientSecretEnv, "")
 
 	authURL, err := BuildAuthorizationURL(
 		OAuthConfig{},
@@ -690,21 +689,15 @@ func TestEffectiveOAuthConfig_WhitespaceTriming(t *testing.T) {
 func TestEffectiveOAuthConfig_NoEnvSecret(t *testing.T) {
 	t.Setenv(GeminiCLIOAuthClientSecretEnv, "")
 
-	// CLAUDEX: no secret is built in, so the built-in client is reported as not configured.
-	_, err := EffectiveOAuthConfig(OAuthConfig{}, "code_assist")
-	if err == nil || !strings.Contains(err.Error(), "GEMINI_CLI_OAUTH_CLIENT_SECRET_MISSING") {
-		t.Fatalf("不设置环境变量时应报 GEMINI_CLI_OAUTH_CLIENT_SECRET_MISSING，实际: %v", err)
+	cfg, err := EffectiveOAuthConfig(OAuthConfig{}, "code_assist")
+	if err != nil {
+		t.Fatalf("不设置环境变量时应回退到内置 secret，实际报错: %v", err)
 	}
-}
-
-func TestEffectiveOAuthConfig_NoClientID(t *testing.T) {
-	t.Setenv(GeminiCLIOAuthClientSecretEnv, "test-built-in-secret")
-	old := GeminiCLIOAuthClientID
-	GeminiCLIOAuthClientID = ""
-	t.Cleanup(func() { GeminiCLIOAuthClientID = old })
-
-	if _, err := EffectiveOAuthConfig(OAuthConfig{}, "code_assist"); err == nil {
-		t.Fatal("未配置内置 client_id 时应报错")
+	if strings.TrimSpace(cfg.ClientSecret) == "" {
+		t.Error("ClientSecret 不应为空")
+	}
+	if cfg.ClientID != GeminiCLIOAuthClientID {
+		t.Errorf("ClientID 应回退为内置客户端 ID，实际: %q", cfg.ClientID)
 	}
 }
 

@@ -10,7 +10,8 @@ import type {
   GitHubReviewResult,
 } from "../../shared/github-review";
 
-// PR reads and writes. Checks must belong to this PR before rerun.
+// PR reads and writes (desktop 2.37337.1, index.chunk-BolytlRP.js:15796,
+// 15811, 16181, 15280, 15322). Checks must belong to this PR before rerun.
 export async function githubReview(
   raw: GitHubReviewRequest,
   run: GhRunner = runGh,

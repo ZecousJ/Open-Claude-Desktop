@@ -1,9 +1,10 @@
-/* The serif the original draws its greetings, titles and artifact names in is a
-   private font read from a Claude installation when there is one
-   (electron/app/reference-fonts.ts). Everywhere else, and on the web, Source
-   Serif 4 (Adobe, SIL Open Font License 1.1, THIRD_PARTY_NOTICES.md) stands in:
-   a variable text serif of the same cut, so the 360/320 weights the original
-   asks for exist. */
+/* The serif the original draws its greetings, titles and artifact names
+   in is a private font read from a Claude installation when there is one
+   ("Claudex Reference Serif", electron/app/reference-fonts.ts). Everywhere
+   else, and on the web, Source Serif 4 (Adobe, SIL Open Font License 1.1,
+   THIRD_PARTY_NOTICES.md) stands in: a variable text serif of the same
+   cut, so the 360/320 weights the original asks for exist (owner,
+   2026-10-20: an open serif in place of the "Claudex Serif", Georgia fallback). */
 @font-face {
   font-family: "Claudex Serif";
   src: url("../assets/fonts/SourceSerif4Variable-Roman.ttf.woff2")
@@ -22,7 +23,9 @@
 }
 :root {
   color-scheme: dark;
-  /* The page, sidebar and surfaces in effect. */
+  /* The page, sidebar and surfaces in effect (surface-1 #151515 and
+     surface-3 #20201f of the original's dark block; live claude.ai bundle,
+     2026-10-16, c6a992d55-DtPVsf7Q.css). */
   --bg: #151515;
   --sidebar: #111111;
   --surface: #202020;
@@ -30,7 +33,9 @@
   --surface-hover: #2b2b2b;
   --surface-selected: #343434;
   --input: #202020;
-  /* surface-popover: the original's gray-800, for menus, popovers and drawers. */
+  /* surface-popover: the original's gray-800 (live claude.ai bundle,
+     2026-10-16, c6a992d55-DtPVsf7Q.css: --cds-surface-popover), for menus,
+     popovers and drawers. */
   --surface-popover: #20201f;
   --text: #f0efec;
   --text-strong: #f0efec;
@@ -44,23 +49,29 @@
   --accent-soft: #38271f;
   --accent-text: #edb092;
   --link-text: #6da7ec;
-  /* The original's fill-primary and on-primary. */
+  /* The original's fill-primary and on-primary (live claude.ai bundle,
+     2026-10-14: #fff on #0b0b0b in dark, #0b0b0b on #fff in light). */
   --primary: #ffffff;
   --primary-text: #0b0b0b;
-  /* The original's danger and success roles. */
+  /* The original's danger and success roles (live claude.ai bundle,
+     2026-10-14: text-danger red-300, bg-danger red-800, text-success
+     green-400 in dark; red-600, red-100, green-600 in light). */
   --danger: #ec7e7e;
   --danger-bg: #3c0e0e;
-  /* The original's warning role. */
+  /* The original's warning role (live claude.ai bundle, 2026-10-14:
+     text-warning yellow-300 dark / yellow-600 light, fill-warning
+     yellow-200). */
   --warning: #db9300;
   --warning-fill: #fab219;
   --success: #0ca30c;
-  /* shadow-popover. */
+  /* shadow-popover (live claude.ai bundle, 2026-10-14). */
   --shadow: 0 8px 24px #00000052, 0 2px 6px #0003;
-  /* Desktop frame. */
+  /* Desktop frame (live claude.ai bundle, 2026-10-14, shared-styles-BDdb-EXC.css). */
   --sidebar-width: 288px;
   --titlebar-height: 48px;
-  /* The original's UI sans stack, with Microsoft YaHei kept before the generic
-     family so Chinese text on Windows does not fall back to a serif. */
+  /* The original's UI sans stack (live claude.ai bundle, 2026-10-14), with
+     Microsoft YaHei kept before the generic family so Chinese text on
+     Windows does not fall back to a serif. */
   font-family:
     ui-sans-serif,
     system-ui,
@@ -74,8 +85,10 @@
     "Apple SD Gothic Neo",
     "Microsoft YaHei",
     sans-serif;
-  /* The root keeps the browser's size, as the original's does, so a rem means
-     16px as in its Tailwind values; the app's 14px text is set on body. */
+  /* The root keeps the browser's size, as the original's does (live
+     claude.ai bundle, 2026-10-16, c6a992d55-DtPVsf7Q.css: html font-size
+     100%), so a rem means 16px as in its Tailwind values; the app's 14px text
+     is set on body. */
   font-size: 100%;
   font-weight: 400;
   font-synthesis: none;
@@ -88,10 +101,11 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  /* Page #fcfcfa, sidebar #fbfbf9, cards and the composer #fff, hairlines
-     #e2e2e0, hover fills #f3f3f1, selected rows #edece8, secondary text
-     #82817f. The original's light theme is neutral grey; the earlier warm cream
-     values came from the web app and matched no capture. */
+  /* Measured from the light captures (R-0220, R-0025, R-1028, R-0546): page
+     #fcfcfa (the live bundle: gray-10 #fcfcfb), sidebar #fbfbf9, cards and the composer #fff, hairlines #e2e2e0,
+     hover fills #f3f3f1, selected rows #edece8, secondary text #82817f. The
+     original's light theme is neutral grey; the earlier warm cream values
+     came from the web app and matched no capture. */
   --bg: #fcfcfb;
   --sidebar: #fbfbf9;
   --surface: #ffffff;
@@ -100,7 +114,8 @@
   --surface-selected: #edece8;
   --input: #ffffff;
   --surface-popover: #ffffff;
-  /* The original's light text steps. */
+  /* The original's light text steps (live claude.ai bundle, 2026-10-14:
+     neutral-900, -600, -400). */
   --text: #0b0b0b;
   --text-strong: #0a0a0a;
   --text-secondary: #52514e;
@@ -123,8 +138,9 @@
 
 /*
  * Motion. The original's design system times everything from one scale
- * (60/120/200/300/450ms) and a few curves; its "out" is (.165,.84,.44,1), not
- * the CSS ease-out keyword (0,0,.58,1). static CSS.
+ * (60/120/200/300/450ms) and a few curves; its "out" is (.165,.84,.44,1),
+ * not the CSS ease-out keyword (0,0,.58,1). Source: desktop bundle 2.31226.1
+ * static CSS.
  */
 :root {
   --motion-fast: 60ms;
@@ -138,9 +154,9 @@
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
   --ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  /* The original's button spring: it passes 1 about a quarter of the way in,
-     peaks near 1.09 and settles. Pressed controls spring back on it over
-     --motion-slow. */
+  /* The original's button spring (--cds-btn-spring, desktop bundle 2.31226.1
+     static CSS): it passes 1 about a quarter of the way in, peaks near 1.09
+     and settles. Pressed controls spring back on it over --motion-slow. */
   --ease-spring: linear(
     0,
     0.2459,
@@ -199,11 +215,11 @@
 }
 
 /*
- * Translucent fills. A ghost control's hover and selection are the text colour
- * at a low alpha (dark: white 7.5% / 15%, light: #0b0b0b 5% / 10%), so they
- * read the same on the page, a card or a popover; an opaque hex only matches
- * the surface it was measured on. --alpha-1/2 are the 5% and 10% steps of the
- * same colour.
+ * Translucent fills. A ghost control's hover and selection are the text
+ * colour at a low alpha (dark: white 7.5% / 15%, light: #0b0b0b 5% / 10%), so
+ * they read the same on the page, a card or a popover; an opaque hex only
+ * matches the surface it was measured on. --alpha-1/2 are the 5% and 10%
+ * steps of the same colour. Source: desktop bundle 2.31226.1 static CSS.
  */
 :root {
   --alpha-ink: #ffffff;
@@ -236,9 +252,9 @@ body,
 }
 /*
  * No CSS minimum width: the window's own minimum (electron/main.ts) keeps it
- * usable, and with the page zoomed in the viewport is narrower than that in CSS
- * px, as in the original's W969 captures at 1.2 zoom, where the page still fits
- * the window.
+ * usable, and with the page zoomed in the viewport is narrower than that in
+ * CSS px, as in the original's W969 captures at 1.2 zoom (808 CSS px wide,
+ * R-0981), where the page still fits the window.
  */
 button,
 input,
@@ -253,10 +269,10 @@ button {
   cursor: pointer;
   -webkit-app-region: no-drag;
 }
-/* Controls in a scrolling list keep no region of their own: they never sit in a
-   drag area where they show, and a no-drag box still counts where a control
-   scrolled out of view lies, under the title bar, so the window could not be
-   dragged from the bar's middle. */
+/* Controls in a scrolling list keep no region of their own: they never sit
+   in a drag area where they show, and a no-drag box still counts where a
+   control scrolled out of view lies, under the title bar, so the window
+   could not be dragged from the bar's middle (owner, 2026-10-22). */
 .messages-scroll :is(button, input, textarea, select, a),
 .sidebar-scroll :is(button, input, a) {
   -webkit-app-region: initial;
@@ -279,23 +295,23 @@ textarea:disabled {
   cursor: default;
   opacity: var(--opacity-disabled);
 }
-/* A disabled text field dims like a disabled button instead of taking the
-   browser's fixed grey. */
+/* R-1624 (no capture): a disabled text field dims like a disabled button
+   instead of taking the browser's fixed grey. */
 input:disabled:not([type="checkbox"], [type="radio"], [type="range"]),
 textarea:disabled {
   cursor: default;
   opacity: var(--opacity-disabled);
 }
-/* Keyboard focus is three layers: a 1px gap in the page colour on the control's
-   edge, a 1px accent ring outside it and a soft 6px accent glow (the original's
-   --cds-focus-shadow: accent #2a78d6 in both themes, the glow #184f95 at 60% in
-   dark and #cde2fb in light). Source: the reference design 2.31226.1 static
-   CSS. The 1px #497cbf ring of R-0119/R-0310/R-1004 was its accent ring alone.
-   Here the ring is the outline and the gap and glow are the shadow
-   (--focus-halo), so a control that sets its own box-shadow, or its own
-   outline, still shows a ring, and forced colours keep it. --focus-shadow is
-   all three as shadows; --focus is the accent, for controls that draw an
-   outline of their own. */
+/* Keyboard focus is three layers: a 1px gap in the page colour on the
+   control's edge, a 1px accent ring outside it and a soft 6px accent glow
+   (the original's --cds-focus-shadow: accent #2a78d6 in both themes, the glow
+   #184f95 at 60% in dark and #cde2fb in light). Source: desktop bundle
+   2.31226.1 static CSS. The 1px #497cbf ring of R-0119/R-0310/R-1004 was its
+   accent ring alone. Here the ring is the outline and the gap and glow are
+   the shadow (--focus-halo), so a control that sets its own box-shadow, or
+   its own outline, still shows a ring, and forced colours keep it.
+   --focus-shadow is all three as shadows; --focus is the accent, for
+   controls that draw an outline of their own. */
 :root {
   --focus-accent: #2a78d6;
   --focus-glow: rgb(24 79 149 / 60%);
@@ -319,9 +335,10 @@ button[data-initial-focus]:focus {
 }
 /* A dialog's first focused button (Modal sets data-initial-focus, as the
    original's ConfirmationDialog does) shows the ring whatever moved focus
-   there; a mouse click that opened the dialog leaves :focus-visible off. A
-   danger button's ring is red: the same three layers on the danger fill, its
-   glow red-600 at 60% in dark and red-100 in light. */
+   there; a mouse click that opened the dialog leaves :focus-visible off.
+   A danger button's ring is red: the same three layers on the danger fill,
+   its glow red-600 at 60% in dark and red-100 in light (--cds-focus-shadow-danger,
+   desktop bundle 2.31226.1). */
 :root {
   --focus-danger: #d03b3b;
   --focus-danger-glow: rgb(142 38 38 / 60%);
@@ -338,13 +355,16 @@ button[data-initial-focus]:focus {
     inset 0 0 0 1px var(--bg),
     0 0 6px 1px var(--focus-danger-glow);
 }
-/* A text or choice field's rim. At rest the rim is the ink at 10%, on hover
-   20%, drawn over the field's own fill: #363636 / #4d4d4d on the dark #202020
-   field and #e6e6e6 / #cecece on the light white one, which the Settings fields
-   measured from captures (#3b3b3b / #4a4a4a dark, #e0e0e0 / --border-strong
-   light) agree with. An invalid field's rim is red-450 #d03b3b in both themes;
-   focused, it keeps the red rim and takes the danger glow (--focus-danger-glow)
-   where a valid field shows its blue rim. */
+/* A text or choice field's rim (live claude.ai bundle, 2026-10-12: the
+   field's ring is --cds-border, its hover ring --cds-border-strong and its
+   invalid ring the danger fill). At rest the rim is the ink at 10%, on hover
+   20%, drawn over the field's own fill: #363636 / #4d4d4d on the dark
+   #202020 field and #e6e6e6 / #cecece on the light white one, which the
+   Settings fields measured from captures (#3b3b3b / #4a4a4a dark, #e0e0e0 /
+   --border-strong light) agree with. An invalid field's rim is red-450
+   #d03b3b in both themes; focused, it keeps the red rim and takes the
+   danger glow (--focus-danger-glow) where a valid field shows its blue
+   rim. */
 :root {
   --field-rim: var(--alpha-2);
   --field-rim-hover: var(--alpha-3);
@@ -445,7 +465,8 @@ h2,
 h3 {
   font-weight: 550;
 }
-/* b and strong are font-bold in the original. */
+/* b and strong are font-bold in the original (live claude.ai bundle,
+   2026-10-14: 600). */
 b,
 strong {
   font-weight: 600;
@@ -453,7 +474,8 @@ strong {
 p {
   line-height: 1.7;
 }
-/* Prose links take the original's text-accent everywhere. */
+/* Prose links take the original's text-accent everywhere (live claude.ai
+   bundle, 2026-10-14: blue-300 dark, blue-600 light). */
 a {
   color: var(--link-text);
   text-decoration-color: color-mix(in srgb, var(--link-text) 60%, transparent);
@@ -462,8 +484,11 @@ a {
 svg {
   flex-shrink: 0;
 }
-/* The font roles the stylesheets name. Here they are the app's own stacks, so a
-   rule that reads one of them gets a family, not an invalid declaration. */
+/* The font roles the stylesheets name (live claude.ai bundle, 2026-10-16,
+   c6a992d55-DtPVsf7Q.css: --font-ui, --font-mono and --font-ui-serif, which
+   are its Anthropic sans, mono and serif faces). Here they are the app's own
+   stacks, so a rule that reads one of them gets a family, not an invalid
+   declaration. */
 :root {
   --font-ui:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -474,14 +499,15 @@ svg {
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
   --font-ui-serif:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   --font-serif: var(--font-ui-serif);
 }
 pre,
 code,
 .mono,
 .path {
-  /* The original's monospace stack. */
+  /* The original's monospace stack (live claude.ai bundle, 2026-10-14). */
   font-family:
     var(--code-font-custom,) ui-monospace,
     SFMono-Regular,
@@ -512,14 +538,17 @@ kbd {
 ::selection {
   background: rgb(78 126 179 / 0.6);
 }
-/* The query selected in the Settings search field reads solid #3269d6 with
-   white text; the only light capture, so it stands for all light text. */
+/* R-1626 (light, 1x): the query selected in the Settings search field reads
+   solid #3269d6 with white text; the only light capture, so it stands for
+   all light text. */
 :root[data-theme="light"] ::selection {
   background: #3269d6;
   color: #fff;
 }
-/* Scrollbars. Windows too: the live front-end draws thin bars on every platform
-   (*{scrollbar-width:thin}), not the system's wide ones with arrows. :root:root
+/* Scrollbars (live claude.ai bundle, 2026-10-14: 8px; the thumb alpha-3,
+   20% ink, alpha-4 35% under the pointer; fully rounded). Windows too: the
+   live front-end draws thin bars on every platform (*{scrollbar-width:thin}),
+   not the system's wide ones with arrows (owner, 2026-10-22). :root:root
    keeps the weight the old Windows exception gave these rules. */
 :root:root ::-webkit-scrollbar {
   width: 8px;
@@ -564,8 +593,8 @@ kbd {
 .spin {
   animation: spin 1s linear infinite;
 }
-/* A primary button that is working keeps its size and colour, hides its label
-   and shows a spinner in the middle. */
+/* R-1603 (R-1153 busy capture): a primary button that is working keeps its
+   size and colour, hides its label and shows a spinner in the middle. */
 button.busy {
   position: relative;
 }

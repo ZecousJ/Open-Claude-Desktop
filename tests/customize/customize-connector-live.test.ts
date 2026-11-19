@@ -28,8 +28,8 @@ import {
   relatedConnectors,
 } from "../../src/settings/directory/connector-detail-model";
 import ConnectorDetail from "../../src/settings/tabs/ConnectorDetail";
-import { collectionsFixture } from "../../scripts/preview/fixtures/collections";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { collectionsFixture } from "../../scripts/fidelity/fixtures/collections";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 
 const published: ApprovedDirectoryEntry = {
   id: "service-example",

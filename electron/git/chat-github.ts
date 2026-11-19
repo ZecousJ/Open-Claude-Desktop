@@ -36,7 +36,8 @@ const readInput = z
         !/[\x00-\x1f\x7f\\]/.test(input.path)),
   );
 
-// Chat links a repository, not a downloaded snapshot.
+// Chat links a repository, not a downloaded snapshot (live claude.ai bundle,
+// 2026-10-14, c23f22bfb-Bq6uLUoL.js; c72f14f34-DDGz-5eN.js).
 export async function readChatGitHub(
   input: ChatGitHubRead,
   run: GhRunner = runGh,

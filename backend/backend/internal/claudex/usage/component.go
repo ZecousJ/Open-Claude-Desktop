@@ -22,7 +22,6 @@ package usage
 import (
 	"context"
 	"database/sql"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -51,9 +50,7 @@ type Component struct {
 	started        atomic.Bool
 
 	// spend keeps the monthly spend limits (spend.go); nil uses store.
-	spend        spendStore
-	spendMu      sync.Mutex
-	spendEntries map[int64]spendEntry
+	spend spendStore
 
 	// productNotes and productsStore keep usage by product (products.go).
 	productNotes  productNotes

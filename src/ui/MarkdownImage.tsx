@@ -13,10 +13,10 @@ type ImageProps = { src?: string | Blob; alt?: string };
 
 /**
  * A remote image in model output. Nothing is fetched until the person chooses
- * Load image, so a reply cannot reveal that it was read; the main process then
- * fetches it as a data: URL the page policy accepts. The administrator can turn
- * remote images off or limit them to some sites; the placeholder then says so
- * instead of offering to load.
+ * Load image, so a reply cannot reveal that it was read (R-0584); the main
+ * process then fetches it as a data: URL the page policy accepts. The
+ * administrator can turn remote images off or limit them to some sites; the
+ * placeholder then says so instead of offering to load.
  */
 /*
  * Passed to react-markdown directly (not wrapped in a closure) so that a

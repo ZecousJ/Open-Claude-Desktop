@@ -106,11 +106,12 @@ export type OpenDialog =
   | { kind: "import"; useImported?: boolean };
 
 /**
- * The Code Browser panel: a card with the tab strip and the dev servers,
- * settings, expand and close buttons, the address row, and the page. The page
- * itself is the main process's native view laid over `.browser-viewport`; the
- * card draws what is not a page (a new tab, a load error, a crash) and stands
- * in a still while an app menu or dialog covers the page.
+ * The Code Browser panel (package R8-D; R-Code-Browser*): a card with the
+ * tab strip and the dev servers, settings, expand and close buttons, the
+ * address row, and the page. The page itself is the main process's native
+ * view laid over `.browser-viewport`; the card draws what is not a page
+ * (a new tab, a load error, a crash) and stands in a still while an app
+ * menu or dialog covers the page.
  */
 export function BrowserPanel({
   conversation,
@@ -192,8 +193,9 @@ export function BrowserPanel({
       active = false;
     };
   }, [bridge, id, menu, dialog, env.settings.browserKeepCookies, tab?.url]);
-  // A refused address belongs to the tab it was typed in; a sketch belongs to
-  // the page it was drawn on.
+  // A refused address belongs to the tab it was typed in; a sketch belongs
+  // to the page it was drawn on (live claude.ai bundle, 2026-10-12: the
+  // sketch ends when the tab changes).
   useEffect(() => {
     setMessage("");
     setSketch(undefined);
@@ -313,8 +315,9 @@ export function BrowserPanel({
   };
 
   /**
-   * ⇧⌘X: starts sketch mode on a page that is on screen, ending Select element
-   * first, with a still of the page to draw on; while it is on, asks to end it.
+   * ⇧⌘X (live claude.ai bundle, 2026-10-12: toggleSketchMode): starts
+   * sketch mode on a page that is on screen, ending Select element first,
+   * with a still of the page to draw on; while it is on, asks to end it.
    */
   const toggleSketch = () => {
     if (sketch) {

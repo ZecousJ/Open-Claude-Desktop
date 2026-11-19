@@ -48,14 +48,17 @@ export function codePermissionModeOf(
 }
 
 /** A permission chosen during a running turn applies to the following turn. */
+export function codeExecutionPermissionMode(conversation: Conversation) {
+  const turn = conversation.turns.at(-1);
+  return (turn?.status === "inProgress" ? turn.codePermissionMode : undefined) ??
+    conversation.codePermissionMode;
+}
+
 export function codeExecutionSettings(
   settings: Settings,
   conversation: Conversation,
 ): Settings {
-  if (conversation.mode !== "code") return settings;
-  const turn = conversation.turns.at(-1);
-  const mode =
-    (turn?.status === "inProgress" ? turn.codePermissionMode : undefined) ??
-    conversation.codePermissionMode;
-  return codeSessionSettings(settings, mode);
+  return conversation.mode === "code"
+    ? codeSessionSettings(settings, codeExecutionPermissionMode(conversation))
+    : settings;
 }

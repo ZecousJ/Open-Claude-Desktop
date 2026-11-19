@@ -36,13 +36,14 @@ const storage = () => {
 };
 
 /**
- * The ideas under the Cowork home's composer: a heading whose shuffle button
- * names the set and steps to the next one, an X that hides the ideas for good
+ * The ideas under the Cowork home's composer (live claude.ai bundle,
+ * 2026-10-12, the Cowork suggestions): a heading whose shuffle button names
+ * the set and steps to the next one, an X that hides the ideas for good
  * (shown while the ideas are pointed at or focused), three rows that each
- * preview their prompt in the composer and fill it when clicked, with a caret
- * on hover, and "Customize with plugins" under them, which opens the Plugins
- * page. Self-contained, with its own styles, so the home can place it wherever
- * its layout puts the ideas.
+ * preview their prompt in the composer and fill it when clicked, with a
+ * caret on hover, and "Customize with plugins" under them, which opens the
+ * Plugins page. Self-contained, with its own styles, so the home can place
+ * it wherever its layout puts the ideas.
  */
 export default function CoworkIdeas({
   onPick,

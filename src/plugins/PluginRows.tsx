@@ -139,8 +139,9 @@ export function PluginRows({
 }
 
 /**
- * Discover's plugins as the live directory cards, for the real marketplace
- * entries: + installs, Try installs and starts a chat with it.
+ * Discover's plugins as the live directory cards (claude.ai, 2026-10-19:
+ * tile, name, two-line description, byline, "Try" and +), for the real
+ * marketplace entries: + installs, Try installs and starts a chat with it.
  */
 export function PluginCards({
   entries,

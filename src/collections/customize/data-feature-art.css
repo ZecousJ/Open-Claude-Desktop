@@ -1,4 +1,5 @@
 .customize-data-illustration {
+  position: relative;
   display: block;
   flex-shrink: 0;
   width: 128px;
@@ -6,11 +7,39 @@
   color: var(--text);
 }
 .customize-data-illustration > svg {
-  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: scale(1.2);
+  transform-origin: center;
+  overflow: hidden;
+}
+.customize-data-flipbook {
+  transform-box: view-box;
+  animation-name: customize-data-flipbook;
+  animation-timing-function: steps(var(--customize-data-steps), jump-none);
+  animation-iteration-count: infinite;
 }
 .customize-data-highlight {
   fill: #629987;
 }
 :root[data-theme="light"] .customize-data-highlight {
   fill: #bcd1ca;
+}
+@keyframes customize-data-flipbook {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--customize-data-span));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .customize-data-flipbook {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .customize-data-flipbook {
+  animation: none;
 }

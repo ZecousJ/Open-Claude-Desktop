@@ -13,8 +13,10 @@ import {
   openTargets,
   isOpenableUrl,
 } from "./web-protocol";
-import { fail } from "./web-wire";
+import { base64ToBytes, fail } from "./web-wire";
 import type { Json, WebRpcError, LinkUser } from "./web-protocol";
+
+export const codeRunCapacityMethod = "claudexCodeRunCapacity";
 
 export interface LinkCapacity {
   /** Engines this runner may run at once. */
@@ -23,8 +25,8 @@ export interface LinkCapacity {
   users: number;
 }
 
-/** claudex-runner → Go. */
-export type RunnerFrame =
+/** A complete claudex-runner → Go message. */
+export type RunnerMessage =
   | {
       t: "hello";
       v: number;
@@ -73,6 +75,21 @@ export type RunnerFrame =
   | { t: "ping" }
   | { t: "pong" };
 
+export const runnerChunkBytes = 1024 * 1024;
+const runnerChunkEncodings = ["gzip", "identity"] as const;
+
+/** A contiguous slice of a runner result or event. */
+export interface RunnerChunkFrame {
+  t: "chunk";
+  offset: number;
+  totalBytes: number;
+  decodedBytes: number;
+  encoding: (typeof runnerChunkEncodings)[number];
+  data: string;
+}
+
+export type RunnerFrame = RunnerMessage | RunnerChunkFrame;
+
 /** Go → claudex-runner. */
 export type GoFrame =
   | {
@@ -80,6 +97,7 @@ export type GoFrame =
       v: number;
       runnerId: string;
       heartbeatMs: number;
+      codeRunCapacity?: boolean;
     }
   /** Run one remote-runner bridge method for a user. */
   | {
@@ -94,6 +112,7 @@ export type GoFrame =
     }
   /** The caller went away; the runner may stop the call. */
   | { t: "cancel"; id: string }
+  | { t: "code-run-expired"; id: string; userId: number }
   /** Answer to a `request`. */
   | {
       t: "response";
@@ -102,8 +121,14 @@ export type GoFrame =
       value?: unknown;
       error?: WebRpcError;
     }
-  /** The user's tabs: count and whether one is focused. */
-  | { t: "presence"; userId: number; tabs: number; focused: boolean }
+  /** The user's tab count, focus, and the tab that just disconnected. */
+  | {
+      t: "presence";
+      userId: number;
+      tabs: number;
+      focused: boolean;
+      detachedTabId?: string;
+    }
   /**
    * The user signed out everywhere (revoke-all, password change) or was
    * removed from the allow-list: drop the context and its credentials.
@@ -133,6 +158,7 @@ export const webRunnerOps = [
   "store.conversations.list",
   "store.conversations.get",
   "store.conversations.put",
+  "store.conversations.rewind",
   "store.conversations.delete",
   "store.turns.list",
   "store.turns.put",
@@ -154,6 +180,8 @@ export const webRunnerOps = [
   "routine.api-token",
   "device.list",
   "device.call",
+  "run.acquire",
+  "run.finish",
 ] as const;
 
 export type WebRunnerOp = (typeof webRunnerOps)[number];
@@ -179,7 +207,8 @@ export function isUserOp(op: string) {
     op.startsWith("key.") ||
     op.startsWith("location.") ||
     op.startsWith("routine.") ||
-    op.startsWith("device.")
+    op.startsWith("device.") ||
+    op.startsWith("run.")
   );
 }
 
@@ -249,6 +278,25 @@ export function parseRunnerFrame(text: string | Json): RunnerFrame {
         event: event as unknown as AppEvent,
       };
     }
+    case "chunk": {
+      const offset = integer(json.offset, "offset");
+      const totalBytes = integer(json.totalBytes, "totalBytes", 1);
+      const decodedBytes = integer(json.decodedBytes, "decodedBytes", 1);
+      const encoding = oneOf(json.encoding, runnerChunkEncodings, "encoding");
+      const data = string(json.data, "data");
+      if (
+        totalBytes > webLimits.linkMessageBytes ||
+        decodedBytes > webLimits.linkMessageBytes ||
+        (encoding === "identity" && decodedBytes !== totalBytes)
+      )
+        fail("invalid chunk message size");
+      if (data.length > Math.ceil(runnerChunkBytes / 3) * 4)
+        fail("chunk is too large");
+      const size = base64ToBytes(data).byteLength;
+      if (size === 0 || size > runnerChunkBytes || size > totalBytes - offset)
+        fail("invalid chunk size");
+      return { t: "chunk", offset, totalBytes, decodedBytes, encoding, data };
+    }
     case "open-url": {
       const url = string(json.url, "url");
       if (!isOpenableUrl(url)) fail("url must be https or same-origin");
@@ -297,6 +345,9 @@ export function parseGoFrame(text: string | Json): GoFrame {
         v: integer(json.v, "v", 1),
         runnerId: string(json.runnerId, "runnerId"),
         heartbeatMs: integer(json.heartbeatMs, "heartbeatMs", 1000),
+        ...(json.codeRunCapacity === undefined ? {} : {
+          codeRunCapacity: boolean(json.codeRunCapacity, "codeRunCapacity"),
+        }),
       };
     case "call": {
       const user = object(json.user, "user");
@@ -311,6 +362,13 @@ export function parseGoFrame(text: string | Json): GoFrame {
         if (!isWebTabId(user.tabId)) fail("user.tabId has the wrong shape");
         linkUser.tabId = user.tabId;
       }
+      if (user.webSession !== undefined) {
+        const session = object(user.webSession, "user.webSession");
+        linkUser.webSession = {
+          id: string(session.id, "user.webSession.id"),
+          issuedAt: integer(session.issuedAt, "user.webSession.issuedAt"),
+        };
+      }
       return {
         t: "call",
         id: frameId(json.id),
@@ -322,15 +380,22 @@ export function parseGoFrame(text: string | Json): GoFrame {
     }
     case "cancel":
       return { t: "cancel", id: frameId(json.id) };
+    case "code-run-expired":
+      return { t: "code-run-expired", id: frameId(json.id), userId: userId(json.userId) };
     case "response":
       return { t: "response", id: frameId(json.id), ...outcome(json) };
-    case "presence":
+    case "presence": {
+      const { detachedTabId } = json;
+      if (detachedTabId !== undefined && !isWebTabId(detachedTabId))
+        fail("presence.detachedTabId has the wrong shape");
       return {
         t: "presence",
         userId: userId(json.userId),
         tabs: integer(json.tabs, "tabs"),
         focused: boolean(json.focused, "focused"),
+        ...(detachedTabId === undefined ? {} : { detachedTabId }),
       };
+    }
     case "user-signed-out":
       return {
         t: "user-signed-out",

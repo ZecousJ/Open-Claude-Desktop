@@ -73,7 +73,7 @@ func (s *OpenAIGatewayService) forwardResponsesViaNativeAnthropic(
 		return nil, err
 	}
 	responsesReq.Model = upstreamModel
-	anthropicReq, err := apicompat.ResponsesToAnthropicRequest(&responsesReq)
+	anthropicReq, err := apicompat.ResponsesToAnthropicRequestWithReasoningCache(&responsesReq, privateAnthropicThinkingCache(c, s.cache).get)
 	if err != nil {
 		writeResponsesError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
 		return nil, fmt.Errorf("convert responses to anthropic: %w", err)
@@ -280,7 +280,7 @@ func (s *OpenAIGatewayService) handleResponsesBufferedFromNativeAnthropic(
 	if claude.IsOpus55(upstreamModel) {
 		finalResp.Model = upstreamModel
 	}
-	responsesResp := apicompat.AnthropicToResponsesResponse(finalResp)
+	responsesResp := apicompat.AnthropicToResponsesResponseWithReasoningCache(finalResp, privateAnthropicThinkingCache(c, s.cache).set)
 	responsesResp.Model = originalModel
 
 	if s.responseHeaderFilter != nil {
@@ -339,6 +339,7 @@ func (s *OpenAIGatewayService) handleResponsesStreamingFromNativeAnthropic(
 	state := apicompat.NewAnthropicEventToResponsesState()
 	state.Model = originalModel
 	state.PreserveThinkingSignatures = claude.IsOpus55(upstreamModel)
+	state.CachePrivateReasoning = privateAnthropicThinkingCache(c, s.cache).set
 	clientToolRestorer := apicompat.NewResponsesClientToolStreamRestorer(clientToolMapping)
 
 	var usage ClaudeUsage

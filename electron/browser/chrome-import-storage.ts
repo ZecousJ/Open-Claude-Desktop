@@ -6,7 +6,8 @@ export type ImportedStorage = Map<string, { key: string; value: string }[]>;
 const maxBytes = 64 * 1024 * 1024;
 const blockBytes = 32768;
 
-// Read-only snapshot, manifest, WAL and SSTable decoding.
+// Read-only snapshot, manifest, WAL and SSTable decoding (desktop 2.37337.1,
+// index.chunk-DsYy5tSo.js, _e / ve / ye / Se / Ce / Te).
 class Reader {
   private offset = 0;
   constructor(private data: Buffer) {}

@@ -1,8 +1,8 @@
 /**
- * The connector directory's entries: a local copy of the connectors the
- * original's Discover shows, with their topic and type. Details merge approved
- * service entries when available; remote servers without a published URL use
- * Add custom connector.
+ * The connector directory's entries (R-1380–R-1382, R-1591, R-1592): a
+ * local copy of the connectors the original's Discover shows, with their
+ * topic and type. Details merge approved service entries when available;
+ * remote servers without a published URL use Add custom connector.
  */
 import type { DirectoryIcon } from "./directory-icon";
 import type {
@@ -235,7 +235,7 @@ export function connectorServer(
   );
 }
 
-/** Topic submenu entries, in the original's order. */
+/** Topic submenu entries, in the original's order (R-1592). */
 export const connectorTopics = [
   "AI models & agents",
   "APIs",

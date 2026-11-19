@@ -24,7 +24,7 @@ import "./task-folder-browser.css";
 
 type ExecutionBrowser = Extract<BrowserCapability, { kind: "execution" }>;
 
-/** Fuse ranking with primary-prefix priority. */
+/** O/c2b74c150-rgc4gx7X:20–70: Fuse ranking with primary-prefix priority. */
 function filterFolderNames(names: string[], query: string): string[] {
   const needle = query.trim().toLowerCase();
   if (!needle) return names;

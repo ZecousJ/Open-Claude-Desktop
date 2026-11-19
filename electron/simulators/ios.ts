@@ -107,6 +107,7 @@ export class IosDriver implements DeviceDriver {
   }
 
   async slowAnimations(id: string, on?: boolean) {
+    // Desktop 2.37337.1, index.chunk-BSfNb_Uc.js:3020–3051.
     const notification = "com.apple.UIKit.SimulatorSlowMotionAnimationState";
     const args = ["simctl", "spawn", id, "notifyutil"];
     if (on !== undefined)

@@ -91,9 +91,9 @@ export interface GitHubIssuesResult {
 }
 
 /**
- * A pull request's lifecycle: open, a draft, waiting in a merge queue, merged
- * or closed. What its glyph shows also weighs reviews and conflicts
- * (shared/pull-request-status.ts).
+ * A pull request's lifecycle (live claude.ai bundle, 2026-10-12): open, a
+ * draft, waiting in a merge queue, merged or closed. What its glyph shows
+ * also weighs reviews and conflicts (shared/pull-request-status.ts).
  */
 export type PullRequestState =
   "open" | "draft" | "queued" | "merged" | "closed";
@@ -131,6 +131,8 @@ export interface GitHubPullRequest {
   /** The branch the request merges into, and the one it comes from. */
   baseRef: string;
   headRef: string;
+  headRepository?: string;
+  createdAt?: number;
   /** The head commit; a merge names it so a newer push is never merged unseen. */
   headSha?: string;
   review?: PullRequestReview;
@@ -172,8 +174,9 @@ export interface GitHubPullRequestResult {
 }
 
 /**
- * What the branch row can change on a pull request: merge it, turn auto-merge
- * on or off, mark a draft ready for review, or convert it back to a draft.
+ * What the branch row can change on a pull request (live claude.ai bundle,
+ * 2026-10-12): merge it, turn auto-merge on or off, mark a draft ready for
+ * review, or convert it back to a draft.
  */
 export type PullRequestAction =
   "merge" | "autoMergeOn" | "autoMergeOff" | "ready" | "draft";
@@ -255,6 +258,7 @@ export interface GitHubAPI {
   githubRepositories(input?: {
     query?: string;
     page?: number;
+    perPage?: number;
   }): Promise<GitHubRepositoriesPage>;
   githubBranches(input: {
     /** "owner/name" */

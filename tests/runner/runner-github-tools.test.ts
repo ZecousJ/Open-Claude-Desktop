@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -9,8 +10,17 @@ import {
   originUrl,
   ownRepository,
   validBranch,
+  type GitHubToolsOptions,
 } from "../../runner/src/github-tools";
-import { repositorySpaceId } from "../../runner/src/github-workspace";
+import { repositorySpaceId, runGit } from "../../runner/src/github-workspace";
+import {
+  persistSessionPullRequest,
+  recordPullRequest,
+} from "../../runner/src/session-git";
+import { LinkRequestError } from "../../runner/src/control-link";
+import { createPrPrompt } from "../../shared/pull-request";
+import type { DynamicToolResult } from "../../electron/engine/engine-extensions";
+import { memoryWebstore, useElectronShim } from "./runner-core-support.test";
 
 function session(url: string, origin = url) {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "gh-tools-"));
@@ -236,5 +246,414 @@ test("a push asks for the pull request the user's settings open automatically", 
   assert.match(
     autoPullRequestStep("draft", "feature", "main").next!,
     /as a draft.*draft true/,
+  );
+});
+
+const repoUrl = "https://github.com/a/b.git";
+const pushGrant = {
+  url: repoUrl,
+  username: "x-access-token",
+  token: "secret-token",
+  expiresAt: new Date(Date.now() + 60_000).toISOString(),
+  repository: "a/b",
+  defaultBranch: "release",
+  canPush: true,
+};
+const pull = {
+  number: 14,
+  html_url: "https://github.com/a/b/pull/14",
+  title: "Make the change",
+  state: "open",
+  draft: false,
+  head_ref: "topic/remote",
+  head_repository: "a/b",
+  base_ref: "release",
+  created_at: "2026-09-10T11:12:00Z",
+};
+
+function payload(answer: DynamicToolResult | undefined) {
+  assert.equal(answer?.success, true, JSON.stringify(answer));
+  const item = answer?.contentItems[0];
+  assert.ok(item?.type === "inputText");
+  return JSON.parse(item.text);
+}
+
+test("an authenticated Git push creates and links the configured draft PR", async (t) => {
+  useElectronShim();
+  const { CloudStore } = await import("../../runner/src/cloud-store");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "gh-auto-pull-"));
+  const transport = memoryWebstore();
+  const open = (profile: string) =>
+    CloudStore.open({ root: path.join(root, profile), userId: 7, transport });
+  const store = await open("profile");
+  t.after(async () => {
+    await store.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  const cwd = path.join(root, "session");
+  const remote = path.join(root, "remote.git");
+  const git = (...argv: string[]) =>
+    execFileSync("git", argv, { encoding: "utf8" }).trim();
+  git("init", "-q", "-b", "feature", cwd);
+  git("init", "--bare", "-q", remote);
+  git("-C", cwd, "remote", "add", "origin", repoUrl);
+  git(
+    "-C",
+    cwd,
+    "-c",
+    "user.name=Test",
+    "-c",
+    "user.email=test@example.test",
+    "commit",
+    "--allow-empty",
+    "-qm",
+    "Feature",
+  );
+  const commit = git("-C", cwd, "rev-parse", "HEAD");
+  const input = call(cwd, repositorySpaceId(repoUrl), "push", {
+    remote_branch: pull.head_ref,
+  });
+  input.conversation.title = "\nMake the change\n";
+  input.conversation.branch = "feature";
+  Object.assign(input.conversation, {
+    providerId: "test",
+    model: "test",
+    createdAt: 1,
+    updatedAt: 2,
+    pinned: false,
+    archived: false,
+  });
+  store.conversations.push(input.conversation);
+  let existing: typeof pull | null = null;
+  let writes = 0;
+  let publications = 0;
+  input.changed = () => {
+    publications++;
+  };
+  const tools = gitHubTools({
+    userId: 7,
+    tempRoot: root,
+    transport: {
+      async request(op, user, body) {
+        assert.equal(user, 7);
+        if (op === "github.push") return pushGrant;
+        assert.equal(op, "github.api");
+        assert.equal(
+          git("--git-dir", remote, "rev-parse", "refs/heads/topic/remote"),
+          commit,
+        );
+        if (
+          typeof body === "object" &&
+          body &&
+          "action" in body &&
+          body.action === "pr.byHead"
+        ) {
+          assert.deepEqual(body, {
+            url: repoUrl,
+            action: "pr.byHead",
+            head: "topic/remote",
+            headRepository: "a/b",
+            base: "release",
+          });
+          return { pull_request: existing };
+        }
+        assert.deepEqual(body, {
+          url: repoUrl,
+          action: "pr.create",
+          head: "topic/remote",
+          headRepository: "a/b",
+          base: "release",
+          title: "Make the change",
+          body: "",
+          draft: true,
+        });
+        writes++;
+        existing = { ...pull, draft: true };
+        return existing;
+      },
+    },
+    runGit: async (run) =>
+      runGit({
+        ...run,
+        argv: run.argv.includes("push")
+          ? [
+              "-c",
+              "protocol.file.allow=always",
+              ...run.argv.map((arg) => (arg === repoUrl ? remote : arg)),
+            ]
+          : run.argv,
+      }),
+    automaticPullRequests: {
+      settings: () => ({ prAutoCreate: true }),
+      async save(conversation, pr) {
+        await persistSessionPullRequest(store, conversation, pr, () =>
+          store.conversations.includes(conversation),
+        );
+      },
+    },
+  });
+  const pushed = payload(await tools.handleDynamicTool!(input));
+  assert.equal(pushed.pushed, "feature → a/b:topic/remote");
+  assert.deepEqual(pushed.pull_request, {
+    url: pull.html_url,
+    number: 14,
+    draft: true,
+    created: true,
+  });
+  assert.equal(input.conversation.gitState.pushed.sha, commit);
+  assert.deepEqual(input.conversation.pullRequests, [
+    {
+      repository: "a/b",
+      url: pull.html_url,
+      number: 14,
+      title: "Make the change",
+      state: "draft",
+      headRef: "topic/remote",
+      baseRef: "release",
+      headRepository: "a/b",
+      own: true,
+      openedBySession: true,
+      createdAt: Date.parse(pull.created_at),
+      checkedAt: input.conversation.pullRequests[0].checkedAt,
+    },
+  ]);
+  assert.equal(publications, 2);
+  assert.equal(
+    payload(await tools.handleDynamicTool!(input)).pull_request.created,
+    false,
+  );
+  assert.equal(writes, 1);
+  assert.equal(input.conversation.pullRequests.length, 1);
+  assert.equal(input.conversation.pullRequests[0].openedBySession, true);
+  const reopened = await open("reopened");
+  try {
+    assert.deepEqual(
+      reopened.conversation(input.conversation.id).pullRequests,
+      input.conversation.pullRequests,
+    );
+  } finally {
+    await reopened.close();
+  }
+});
+
+type AutomaticSettings = ReturnType<
+  NonNullable<GitHubToolsOptions["automaticPullRequests"]>["settings"]
+>;
+const draftSetting = () => ({ prAutoCreate: true });
+const readySetting = () => ({ prAutoCreate: true, prAutoCreateDraft: false });
+
+function automaticToolCase(
+  t: { after(cleanup: () => void): void },
+  settings: () => AutomaticSettings,
+  provider: (action: unknown, body: unknown) => unknown,
+  failPush = false,
+) {
+  const { cwd, spaceId } = session(repoUrl);
+  t.after(() => fs.rmSync(cwd, { recursive: true, force: true }));
+  const input = call(cwd, spaceId, "push", { remote_branch: pull.head_ref });
+  input.conversation.title = "草".repeat(90);
+  input.conversation.autoPullRequest = "draft";
+  let pushes = 0;
+  const actions: unknown[] = [];
+  const tools = gitHubTools({
+    userId: 7,
+    transport: {
+      async request(op, _user, body) {
+        if (op === "github.push") return pushGrant;
+        assert.ok(body && typeof body === "object" && "action" in body);
+        actions.push(body.action);
+        return provider(body.action, body);
+      },
+    },
+    runGit: async ({ argv }) => {
+      if (!argv.includes("push")) return { code: 0, stderr: "" };
+      pushes++;
+      return { code: failPush ? 1 : 0, stderr: "push refused" };
+    },
+    automaticPullRequests: {
+      settings,
+      async save(conversation, pr) {
+        recordPullRequest(conversation, pr);
+      },
+    },
+  });
+  return { tools, input, actions, pushCount: () => pushes };
+}
+
+test("an existing open PR is linked without changing its draft status", async (t) => {
+  const { tools, input } = automaticToolCase(t, draftSetting, (action) => {
+    assert.equal(action, "pr.byHead");
+    return { pull_request: pull };
+  });
+  const result = payload(await tools.handleDynamicTool!(input));
+  assert.deepEqual(result.pull_request, {
+    url: pull.html_url,
+    number: 14,
+    draft: false,
+    created: false,
+  });
+  assert.equal(input.conversation.pullRequests[0].own, undefined);
+  assert.equal(input.conversation.pullRequests[0].openedBySession, undefined);
+});
+
+test("a PR for another base cannot satisfy automatic creation", async (t) => {
+  const { tools, input, actions } = automaticToolCase(t, draftSetting, () => ({
+    pull_request: { ...pull, base_ref: "main" },
+  }));
+  const result = payload(await tools.handleDynamicTool!(input));
+  assert.equal(result.pull_request, undefined);
+  assert.equal(
+    result.pull_request_error,
+    "GitHub could not confirm the pull request.",
+  );
+  assert.equal(input.conversation.pullRequests, undefined);
+  assert.deepEqual(actions, ["pr.byHead"]);
+});
+
+test("a duplicate provider response links the concurrent PR and keeps the push successful", async (t) => {
+  let opened = false;
+  const { tools, input, pushCount } = automaticToolCase(
+    t,
+    readySetting,
+    (action, body) => {
+      if (action === "pr.byHead") return { pull_request: opened ? pull : null };
+      assert.deepEqual(body, {
+        url: repoUrl,
+        action: "pr.create",
+        head: pull.head_ref,
+        headRepository: "a/b",
+        base: "release",
+        title: "草".repeat(85),
+        body: "",
+        draft: false,
+      });
+      opened = true;
+      throw new LinkRequestError({
+        code: "CLAUDEX_GITHUB_REFUSED",
+        message: "A pull request already exists.",
+      });
+    },
+  );
+  const result = payload(await tools.handleDynamicTool!(input));
+  assert.equal(result.pull_request.created, false);
+  assert.equal(result.pull_request_error, undefined);
+  assert.equal(input.conversation.pullRequests[0].url, pull.html_url);
+  assert.equal(pushCount(), 1);
+});
+
+test("a refused PR is reported separately from its successful push", async (t) => {
+  const { tools, input, pushCount } = automaticToolCase(
+    t,
+    readySetting,
+    (action) => {
+      if (action === "pr.byHead") return { pull_request: null };
+      throw new LinkRequestError({
+        code: "CLAUDEX_GITHUB_REFUSED",
+        message: "No commits between release and topic/remote.",
+      });
+    },
+  );
+  const result = payload(await tools.handleDynamicTool!(input));
+  assert.match(result.pushed, /a\/b:topic\/remote$/);
+  assert.equal(
+    result.pull_request_error,
+    "No commits between release and topic/remote.",
+  );
+  assert.equal(input.conversation.pullRequests, undefined);
+  assert.equal(pushCount(), 1);
+});
+
+test("automatic PR creation requires a successful push and active approval", async (t) => {
+  await t.test("off overrides the old continuation", async (t) => {
+    const { tools, input, actions } = automaticToolCase(
+      t,
+      () => ({ prAutoCreate: false }),
+      () => assert.fail("unexpected GitHub API call"),
+    );
+    const result = payload(await tools.handleDynamicTool!(input));
+    assert.equal(result.next, undefined);
+    assert.equal(result.pull_request, undefined);
+    assert.deepEqual(actions, []);
+  });
+  await t.test("an unset setting preserves the old continuation", async (t) => {
+    const { tools, input, actions } = automaticToolCase(
+      t,
+      () => ({}),
+      () => assert.fail("unexpected GitHub API call"),
+    );
+    const result = payload(await tools.handleDynamicTool!(input));
+    assert.match(result.next, /draft true, base release/);
+    assert.deepEqual(actions, []);
+  });
+  await t.test("a failed push never starts GitHub PR requests", async (t) => {
+    const { tools, input, actions } = automaticToolCase(
+      t,
+      draftSetting,
+      () => assert.fail("unexpected GitHub API call"),
+      true,
+    );
+    assert.equal((await tools.handleDynamicTool!(input))?.success, false);
+    assert.deepEqual(actions, []);
+  });
+  await t.test("the default branch is skipped", async (t) => {
+    const { tools, input, actions } = automaticToolCase(t, draftSetting, () =>
+      assert.fail("unexpected GitHub API call"),
+    );
+    const result = payload(
+      await tools.handleDynamicTool!({
+        ...input,
+        arguments: { remote_branch: "release" },
+      }),
+    );
+    assert.equal(result.branch, "release");
+    assert.equal(result.pull_request, undefined);
+    assert.deepEqual(actions, []);
+  });
+  await t.test(
+    "the explicit command keeps its chosen draft status",
+    async (t) => {
+      const { tools, input, actions } = automaticToolCase(t, draftSetting, () =>
+        assert.fail("unexpected GitHub API call"),
+      );
+      const result = payload(
+        await tools.handleDynamicTool!({
+          ...input,
+          turn: {
+            id: "u",
+            prompt: createPrPrompt({
+              branch: "feature",
+              draft: false,
+              cloud: true,
+            }),
+            status: "inProgress",
+            attachments: [],
+            items: [],
+            createdAt: 0,
+          },
+        }),
+      );
+      assert.equal(result.pull_request, undefined);
+      assert.deepEqual(actions, []);
+    },
+  );
+  await t.test(
+    "disabling the setting during the lookup stops creation",
+    async (t) => {
+      let settings: AutomaticSettings = draftSetting();
+      const { tools, input, actions } = automaticToolCase(
+        t,
+        () => settings,
+        (action) => {
+          assert.equal(action, "pr.byHead");
+          settings = { prAutoCreate: false };
+          return { pull_request: null };
+        },
+      );
+      assert.equal(
+        payload(await tools.handleDynamicTool!(input)).pull_request,
+        undefined,
+      );
+      assert.deepEqual(actions, ["pr.byHead"]);
+    },
   );
 });

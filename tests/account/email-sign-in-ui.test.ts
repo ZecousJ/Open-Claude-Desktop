@@ -12,7 +12,7 @@ test("the mailbox accent applies to its 32px font icon", async () => {
   const markup = renderToStaticMarkup(
     createElement(Mailbox, { size: 32, className: "signin-mailbox-icon" }),
   );
-  assert.match(markup, /<svg[^>]*width="32"[^>]*data-icon="Mailbox"/);
+  assert.match(markup, /<span[^>]*data-anthropicon="Mailbox"/);
   assert.match(markup, /signin-mailbox-icon/);
   const css = readFileSync(
     new URL("../../src/auth/sign-in.css", import.meta.url),
@@ -110,6 +110,7 @@ test("mailbox, timed code entry, requesting-window callback and cross-device fal
         logins.push(args);
         return account;
       },
+      signInEmailHint: async () => "ada@example.com",
     },
     matchMedia: () => ({
       matches: false,
@@ -117,8 +118,6 @@ test("mailbox, timed code entry, requesting-window callback and cross-device fal
       removeEventListener() {},
     }),
   });
-  // React listens for input events only where the document has them.
-  (document as unknown as { oninput: null }).oninput = null;
   const { createRoot } = await import("react-dom/client");
   const { default: SignInPage } = await import("../../src/auth/SignInPage");
   const root = createRoot(document.querySelector("main")!);
@@ -150,18 +149,6 @@ test("mailbox, timed code entry, requesting-window callback and cross-device fal
     context.mock.timers.enable({ apis: ["setTimeout"] });
     await act(async () => render("first"));
     await click("Get started");
-    // Enter the email: the prototype's setter goes round React's value
-    // tracker, so the input event reads as a change.
-    await act(async () => {
-      const field = document.querySelector<HTMLInputElement>(
-        'input[type="email"]',
-      )!;
-      Object.getOwnPropertyDescriptor(
-        Object.getPrototypeOf(field),
-        "value",
-      )!.set!.call(field, "ada@example.com");
-      field.dispatchEvent(new window.Event("input", { bubbles: true }));
-    });
     await act(async () =>
       document
         .querySelector("form")!

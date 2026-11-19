@@ -9,7 +9,8 @@ import {
 
 /**
  * The Code composer's / palette: what the line typed so far asks for, the
- * commands that match it, and a chosen command's argument hint.
+ * commands that match it (built in, plus the custom prompts and skills read
+ * each time the palette opens, R-0401), and a chosen command's argument hint.
  */
 export function useCodeSlashList({
   query,

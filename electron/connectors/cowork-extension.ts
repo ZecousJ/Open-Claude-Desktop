@@ -1,22 +1,22 @@
 /**
- * Folders added to a Cowork task (R11-D). The person adds a folder to a running
- * Cowork conversation (the Progress card's Context "+" or "Add folder" under
- * the composer); the access dialog records it as one of the task's added
- * folders (`electron/cowork-folders.ts`). This engine extension (S1's registry)
- * hands those folders to Codex:
+ * Folders added to a Cowork task (R11-D). The person adds a folder to a
+ * running Cowork conversation (the Progress card's Context "+" or "Add
+ * folder" under the composer); the access dialog records it as one of the
+ * task's added folders (`electron/cowork-folders.ts`). This engine extension
+ * (S1's registry) hands those folders to Codex:
  * - as extra writable roots of a workspace-write (Auto) turn, through
- *   turn/start `sandboxPolicy.writableRoots` (SP-3: the policy sticks to later
- *   turns and a narrower one takes roots away, so the engine sends the full
- *   list on every turn). Cowork turns run with full access, so the folders are
- *   named for the model only.
- * - as turn context naming the folders, once per thread and again whenever the
- *   list changes (developer instructions are fixed at thread/start).
+ *   turn/start `sandboxPolicy.writableRoots` (SP-3: the policy sticks to
+ *   later turns and a narrower one takes roots away, so the engine sends the
+ *   full list on every turn). Cowork turns run with full access (no permission
+ *   modes since 2026-09-29), so the folders are named for the model only.
+ * - as turn context naming the folders, once per thread and again whenever
+ *   the list changes (developer instructions are fixed at thread/start).
  *
  * Every folder is checked again before each turn: a folder that no longer
- * exists, or that Cowork may no longer use, is left out. Paths are real paths,
- * so a symbolic link swapped after the grant doesn't widen anything. The model
- * can't add folders itself: only the person's click in the window reaches the
- * grant.
+ * exists, or that Cowork may no longer use, is left out. Paths are real
+ * paths, so a symbolic link swapped after the grant doesn't widen anything.
+ * The model can't add folders itself: only the person's click in the window
+ * reaches the grant.
  */
 import { onThisMachine, type Conversation } from "../../shared/types";
 import type { AppContext } from "../app/app-context";

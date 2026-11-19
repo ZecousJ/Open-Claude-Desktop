@@ -1,5 +1,5 @@
 import { SegmentedControl } from "../../ui/SegmentedControl";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import {
   useContext,
   useEffect,
@@ -104,7 +104,9 @@ export function RoutineSourcePicker({
       segments={sources.map((value) => ({
         value,
         label: t(value === "chat" ? "Chat" : "Code"),
-        icon: <AppIcon name={value === "chat" ? "Chats" : "Code"} size={16} />,
+        icon: (
+          <Anthropicon name={value === "chat" ? "Chats" : "Code"} size={16} />
+        ),
         disabled:
           Boolean(draft.projectId || draft.securityReview) && value !== source,
       }))}

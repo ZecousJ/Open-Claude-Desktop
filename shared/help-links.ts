@@ -35,7 +35,5 @@ export function helpUrl(slug?: HelpSlug, serviceOrigin?: string): string {
     (location && /^https?:$/.test(location.protocol)
       ? location.origin
       : defaultClaudexServiceUrl);
-  const page = `/help${slug ? `/${slug}` : ""}`;
-  // A build without a service, signed out: the path alone.
-  return origin ? new URL(page, origin).href : page;
+  return new URL(`/help${slug ? `/${slug}` : ""}`, origin).href;
 }

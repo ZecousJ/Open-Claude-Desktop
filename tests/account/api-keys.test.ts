@@ -305,7 +305,7 @@ test("a model the catalog gives a group shows even when the group's key does not
 
 test("each key carries what the service has charged for it in all", () => {
   const keys = apiKeysFrom([
-    { id: 7, name: "社区论坛", key: "sk-87aaaaaaaa0cdf", group_id: 2 },
+    { id: 7, name: "幻尔论坛", key: "sk-87aaaaaaaa0cdf", group_id: 2 },
     { id: 8, name: "new", key: "sk-88bbbbbbbbbbbb", group_id: 2 },
   ]);
   const costed = withKeyCosts(keys, {

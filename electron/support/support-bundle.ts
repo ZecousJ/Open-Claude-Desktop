@@ -8,6 +8,11 @@ import { z } from "zod";
 import { nativeTranslator } from "../app/native-i18n";
 import { preference } from "../../shared/settings-extras";
 import type { AppContext, IpcHandle } from "../app/app-context";
+import type { BrowserWindow } from "electron";
+import type {
+  SupportBundlePreview,
+  SupportSystemInfo,
+} from "../../shared/support-bundle-api";
 
 const maxLogBytes = 256 * 1024;
 const maxBundleLogBytes = 2 * 1024 * 1024;
@@ -22,6 +27,7 @@ export function redactSupportLog(value: string, home = os.homedir()) {
       /((?:api[_-]?key|token|password|secret|authorization|cookie)\s*["']?\s*[:=]\s*["']?)[^\s,"'}]+/gi,
       "$1<redacted>",
     )
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "<redacted>")
     .replace(/\bsk-[A-Za-z0-9_-]+/g, "<redacted>");
 }
 
@@ -75,8 +81,91 @@ export async function supportLogLines(directory: string) {
   return lines;
 }
 
-// Explicit, local export is separate from automatic coded diagnostics.
-// Screenshots are opaque, window-scoped, expiring tokens.
+interface SupportArchive {
+  preview: SupportBundlePreview;
+  zip: Buffer;
+}
+
+function supportSystemInfo(appVersion: string): SupportSystemInfo {
+  return {
+    appVersion,
+    platform: process.platform,
+    osRelease: os.release(),
+    arch: process.arch,
+  };
+}
+
+export async function buildSupportArchive({
+  appVersion,
+  logDirectory,
+  screenshot,
+}: {
+  appVersion: string;
+  logDirectory: string;
+  screenshot?: Buffer;
+}): Promise<SupportArchive> {
+  const { default: JSZip } = await import("jszip");
+  const zip = new JSZip();
+  const logs = await supportLogLines(logDirectory);
+  const manifest = {
+    bundleId: randomUUID(),
+    generatedAt: new Date().toISOString(),
+    system: supportSystemInfo(appVersion),
+    includedScreenshot: !!screenshot,
+  };
+  zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+  zip.file("logs.txt", logs.join("\n"));
+  if (screenshot) zip.file("screenshot.png", screenshot);
+  const bytes = await zip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+  });
+  return {
+    zip: bytes,
+    preview: {
+      referenceId: manifest.bundleId,
+      sizeBytes: bytes.length,
+      previewLines: [JSON.stringify(manifest), ...logs],
+    },
+  };
+}
+
+function supportArchiveFilename(id: string) {
+  const stamp = new Date()
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace("T", "-")
+    .slice(0, 13);
+  return `claudex-diagnostic-${id.slice(0, 8)}-${stamp}.zip`;
+}
+
+export async function saveSupportArchive({
+  window,
+  archive,
+  locale,
+  current,
+}: {
+  window: BrowserWindow;
+  archive: SupportArchive;
+  locale: string;
+  current: () => boolean;
+}) {
+  const translate = await nativeTranslator(locale);
+  if (!current()) return;
+  const result = await dialog.showSaveDialog(window, {
+    defaultPath: path.join(
+      app.getPath("downloads"),
+      supportArchiveFilename(archive.preview.referenceId),
+    ),
+    filters: [{ name: translate("Zip archive"), extensions: ["zip"] }],
+  });
+  if (!current() || result.canceled || !result.filePath) return;
+  await fs.writeFile(result.filePath, archive.zip, { mode: 0o600 });
+  return result.filePath;
+}
+
+// Explicit, local export is separate from automatic coded diagnostics. Screenshots
+// are opaque, window-scoped, expiring tokens (desktop 2.37337.1, index.chunk-BWk6pVUt.js).
 export function registerSupportBundleHandlers(
   handle: IpcHandle,
   ctx: AppContext,
@@ -86,8 +175,7 @@ export function registerSupportBundleHandlers(
     {
       screenshot?: { token: string; png: Buffer; expiresAt: number };
       bundle?: {
-        id: string;
-        zip: Buffer;
+        archive: SupportArchive;
         expiresAt: number;
         savedPath?: string;
       };
@@ -108,13 +196,7 @@ export function registerSupportBundleHandlers(
     return value;
   };
   ctx.onAccountDeactivating(() => states.clear());
-  const systemInfo = () => ({
-    appVersion: ctx.appVersion,
-    platform: process.platform,
-    osRelease: os.release(),
-    arch: process.arch,
-  });
-  handle("getSupportSystemInfo", systemInfo);
+  handle("getSupportSystemInfo", () => supportSystemInfo(ctx.appVersion));
   handle("captureFeedbackScreenshot", async () => {
     const contents = ctx.window?.webContents;
     if (!contents || contents.isDestroyed())
@@ -135,64 +217,46 @@ export function registerSupportBundleHandlers(
     const screenshot = input.screenshotToken ? target.screenshot : undefined;
     if (input.screenshotToken && screenshot?.token !== input.screenshotToken)
       throw new Error("Screenshot expired. Capture it again.");
-    const { default: JSZip } = await import("jszip");
-    const zip = new JSZip();
-    const id = randomUUID();
-    const logDirectory = ctx.window
-      ? app.getPath("logs")
-      : path.join(ctx.store.root, "logs");
-    const logs = await supportLogLines(logDirectory);
-    const manifest = {
-      bundleId: id,
-      generatedAt: new Date().toISOString(),
-      system: systemInfo(),
-      includedScreenshot: !!screenshot,
-    };
-    zip.file("manifest.json", JSON.stringify(manifest, null, 2));
-    zip.file("logs.txt", logs.join("\n"));
-    if (screenshot) zip.file("screenshot.png", screenshot.png);
-    const bytes = await zip.generateAsync({
-      type: "nodebuffer",
-      compression: "DEFLATE",
+    const key = ctx.window?.webContents.id;
+    const archive = await buildSupportArchive({
+      appVersion: ctx.appVersion,
+      logDirectory: ctx.window
+        ? app.getPath("logs")
+        : path.join(ctx.store.root, "logs"),
+      screenshot: screenshot?.png,
     });
-    if (states.get(ctx.window?.webContents.id) !== target)
-      throw new Error("Report cancelled.");
-    target.bundle = { id, zip: bytes, expiresAt: Date.now() + expiresAfter };
+    if (states.get(key) !== target) throw new Error("Report cancelled.");
+    target.bundle = { archive, expiresAt: Date.now() + expiresAfter };
     delete target.screenshot;
-    return {
-      referenceId: id,
-      sizeBytes: bytes.length,
-      previewLines: [JSON.stringify(manifest), ...logs],
-    };
+    return archive.preview;
   });
   handle("exportSupportBundle", async (raw: unknown) => {
     const id = z.string().uuid().parse(raw);
-    const bundle = state().bundle;
-    if (!bundle || bundle.id !== id)
+    const target = state();
+    const bundle = target.bundle;
+    if (!bundle || bundle.archive.preview.referenceId !== id)
       throw new Error("Report expired. Generate it again.");
-    const stamp = new Date()
-      .toISOString()
-      .replace(/[-:]/g, "")
-      .replace("T", "-")
-      .slice(0, 13);
-    const filename = `claudex-diagnostic-${id.slice(0, 8)}-${stamp}.zip`;
-    if (!ctx.window) return { filename, base64: bundle.zip.toString("base64") };
-    const translate = await nativeTranslator(
-      preference(ctx.store.settings, "locale"),
-    );
-    const result = await dialog.showSaveDialog(ctx.window, {
-      defaultPath: path.join(app.getPath("downloads"), filename),
-      filters: [{ name: translate("Zip archive"), extensions: ["zip"] }],
+    const window = ctx.window;
+    if (!window)
+      return {
+        filename: supportArchiveFilename(id),
+        base64: bundle.archive.zip.toString("base64"),
+      };
+    const key = window.webContents.id;
+    const savedPath = await saveSupportArchive({
+      window,
+      archive: bundle.archive,
+      locale: preference(ctx.store.settings, "locale"),
+      current: () => states.get(key)?.bundle === bundle,
     });
-    if (result.canceled || !result.filePath) return {};
-    await fs.writeFile(result.filePath, bundle.zip, { mode: 0o600 });
-    bundle.savedPath = result.filePath;
-    return { savedPath: result.filePath };
+    if (!savedPath) return {};
+    bundle.savedPath = savedPath;
+    return { savedPath };
   });
   handle("revealSupportBundle", (raw: unknown) => {
     const id = z.string().uuid().parse(raw);
     const bundle = state().bundle;
-    if (bundle?.id === id && bundle.savedPath)
+    if (bundle?.archive.preview.referenceId === id && bundle.savedPath)
       shell.showItemInFolder(bundle.savedPath);
   });
   handle("discardSupportBundle", () =>

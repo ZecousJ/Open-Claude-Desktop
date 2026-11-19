@@ -1,5 +1,5 @@
-/* The reference design, shared-23-RHw-hr47.js: checklist rows, border-300/400,
- surface-0 and neutral-30. */
+/* Live claude.ai bundle, 2026-10-14, shared-23-RHw-hr47.js:
+   checklist rows, border-300/400, surface-0 and neutral-30. */
 .home-checklist {
   --checklist-border: rgb(255 255 255 / 10%);
   --checklist-hover: #0b0b0b;
@@ -116,7 +116,8 @@
   color: var(--text);
 }
 
-/* Finance chips and menu. */
+/* Finance chips and menu (live claude.ai bundle, 2026-10-14,
+   shared-23-RHw-hr47.js). */
 .finance-starters {
   --finance-chip-hover: rgb(255 255 255 / 14%);
   --finance-chip-accent: #6da7ec;

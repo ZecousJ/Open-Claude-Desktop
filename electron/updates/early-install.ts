@@ -1,4 +1,4 @@
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, update-downloaded).
 export class EarlyUpdateInstall {
   private downloaded = false;
   private windowOpened = false;

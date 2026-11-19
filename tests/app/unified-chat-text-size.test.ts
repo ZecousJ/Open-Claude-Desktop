@@ -6,7 +6,7 @@ import { parseHTML } from "linkedom";
 import postcss from "postcss";
 import { parse as parseSelector, type Selector } from "css-what";
 import type { Conversation } from "../../shared/types";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { ConversationTranscript } from "../../src/transcript/ConversationTranscript";
 import { preloadMarkdownRenderer } from "../../src/ui/MarkdownRenderer";

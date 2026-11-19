@@ -1,3 +1,4 @@
+import { applyGatewayEffort } from "./gateway-effort";
 import { upstreamModel } from "../../shared/tool-search-mode";
 import {
   toolStartFromResponse,
@@ -6,8 +7,10 @@ import {
 import {
   generatedImageFromResponse,
   type GeneratedImageEvent,
+  type ImageRequestEvent,
 } from "../../server/image-observer";
 import http from "node:http";
+import { knowledgeRoutePattern } from "../../shared/knowledge-api";
 import { randomUUID, randomBytes, timingSafeEqual } from "node:crypto";
 import type { Protocol, Provider, UsageRecord } from "../../shared/types";
 import type { RequestLimiter } from "../../server/request-limiter";
@@ -21,7 +24,10 @@ import {
   type GatewayRefusal,
 } from "../../server/sub2api-errors";
 import { claudexHeaders } from "../../shared/claudex-contract";
-import { routeForModel } from "../../shared/provider-routes";
+import {
+  routeForAutomaticImages,
+  routeForModel,
+} from "../../shared/provider-routes";
 import {
   augmentToolSchemas,
   toolDescriptionFromResponse,
@@ -42,6 +48,7 @@ import { withoutEmptyImageCalls } from "../../server/drawing-turn";
 import { endpoint, toChat, streamChatResponse } from "./gateway-chat";
 import * as gatewayImages from "./gateway-images";
 import { installMethods } from "./install-methods";
+import * as gatewayKnowledge from "./gateway-knowledge";
 import {
   maxRefusalBodyChars,
   Json,
@@ -75,8 +82,42 @@ export function productHeader(
 }
 /** Largest request body accepted from Codex. */
 const maxRequestBytes = 32 * 1024 * 1024;
-/** Upstream model requests are cancelled after this long. */
-const upstreamTimeoutMs = 10 * 60_000;
+const sidePathPattern = /^\/v1\/side\/([a-f0-9]{64})\/responses$/;
+const sideEventTypes = new Set([
+  "response.created", "response.in_progress", "response.queued",
+  "response.completed", "response.failed", "response.incomplete", "response.metadata",
+  "response.output_item.added", "response.output_item.done",
+  "response.content_part.added", "response.content_part.done",
+  "response.output_text.delta", "response.output_text.done", "response.output_text.annotation.added",
+  "response.refusal.delta", "response.refusal.done",
+  "response.reasoning_summary_part.added", "response.reasoning_summary_part.done",
+  "response.reasoning_summary_text.delta", "response.reasoning_summary_text.done",
+  "response.reasoning_text.delta", "response.reasoning_text.done", "error",
+]);
+
+function assertSideTextEvent(event: Json) {
+  const allowedPart = (part: Json) =>
+    part && (part.type === "output_text" || part.type === "refusal");
+  const allowedItem = (item: Json) => item && (
+    item.type === "reasoning" ||
+    (item.type === "message" && item.role === "assistant" &&
+      Array.isArray(item.content) && item.content.every(allowedPart))
+  );
+  if ((event.type === "response.output_item.added" || event.type === "response.output_item.done") &&
+      !allowedItem(event.item))
+    throw new Error("The side question received an unsupported tool call.");
+  if (event.response?.output !== undefined &&
+      (!Array.isArray(event.response.output) || !event.response.output.every(allowedItem)))
+    throw new Error("The side question received unsupported output.");
+  if (event.type === "response.completed" && !Array.isArray(event.response?.output))
+    throw new Error("The side question completion is unavailable.");
+  if ((event.type === "response.content_part.added" || event.type === "response.content_part.done") &&
+      !allowedPart(event.part))
+    throw new Error("The side question received unsupported content.");
+  if (typeof event.type !== "string" || !sideEventTypes.has(event.type))
+    throw new Error("The side question received an unsupported response event.");
+}
+const upstreamIdleTimeoutMs = 10 * 60_000;
 /**
  * Ledger counters from Responses or Chat Completions usage. Usage is known
  * only when the provider reported both input and output tokens.
@@ -110,6 +151,7 @@ export interface GatewayObservers {
   onWebSources?: (event: WebSourcesEvent) => void;
   /** A picture the built-in image tool made (server/image-observer.ts). */
   onGeneratedImage?: (event: GeneratedImageEvent) => void;
+  onImageRequest?: (event: ImageRequestEvent) => void;
   /** A file write the model has begun (shared/tool-start.ts). */
   onToolStart?: (event: ToolStartEvent) => void;
 }
@@ -125,6 +167,16 @@ export class Gateway {
   private threadRequests = new Map<string, Set<AbortController>>();
   /** Each thread's product, as the main process told it (bounded). */
   private threadProducts = new Map<string, "code" | "cowork" | "chat">();
+  private sidePaths = new Map<string, Set<string>>();
+  openSidePath(): string {
+    if (this.sidePaths.size >= 64) throw new Error("Too many side questions are open.");
+    const token = randomBytes(32).toString("hex");
+    this.sidePaths.set(token, new Set());
+    return token;
+  }
+  closeSidePath(token: string) {
+    this.sidePaths.delete(token);
+  }
   setThreadProduct(threadId: string, product: "code" | "cowork" | "chat") {
     this.threadProducts.delete(threadId);
     this.threadProducts.set(threadId, product);
@@ -144,30 +196,46 @@ export class Gateway {
     /** A Sub2API refusal (limit, balance, plan or key), already in plain English. */
     public onRefusal?: (refusal: GatewayRefusal) => void,
     private observers: GatewayObservers = {},
+    private idleTimeoutMs = upstreamIdleTimeoutMs,
   ) {}
   /** How requests are rewritten; the main process updates it (requestOptions). */
   requestOptions: GatewayRequestOptions = defaultRequestOptions;
   setRequestOptions(options: GatewayRequestOptions) {
     this.requestOptions = {
+      ...(options.modelEfforts
+        ? {
+            modelEfforts: options.modelEfforts.map((item) => ({
+              model: item.model,
+              efforts: [...item.efforts],
+            })),
+          }
+        : {}),
       describeTools: options.describeTools,
       xSearchModels: [...options.xSearchModels],
-      ...(options.imageModel ? { imageModel: options.imageModel } : {}),
     };
   }
   /** Reports what one stream event says to the observers; never throws. */
-  observe(event: Json, threadId: string | undefined) {
+  observe(event: Json, threadId: string | undefined, turnId?: string, imageRequestId?: string) {
     try {
       const description = toolDescriptionFromResponse(event, threadId);
       if (description) this.observers.onToolDescription?.(description);
       const sources = webSourcesFromResponse(event, threadId);
       if (sources) this.observers.onWebSources?.(sources);
-      const image = generatedImageFromResponse(event, threadId);
+      const image = generatedImageFromResponse(event, threadId, turnId, imageRequestId);
       if (image) this.observers.onGeneratedImage?.(image);
       const started = toolStartFromResponse(event, threadId);
       if (started) this.observers.onToolStart?.(started);
     } catch {
       /* Observation never affects the forwarded response. */
     }
+  }
+
+  startImageRequest(threadId?: string) {
+    const observe = this.observers.onImageRequest;
+    if (!observe) return;
+    const id = randomUUID();
+    observe({ id, kind: "started", threadId });
+    return { id, finish: () => observe({ id, kind: "finished" }) };
   }
   /**
    * The request as sent upstream: shell tools asked for a description (R7)
@@ -176,7 +244,9 @@ export class Gateway {
    */
   private rewrite(request: Json, protocol: Protocol) {
     const options = this.requestOptions;
-    const sent = withoutEmptyImageCalls(request);
+    const sent = withoutEmptyImageCalls(
+      applyGatewayEffort(request, options.modelEfforts),
+    );
     let rewritten = options.describeTools ? augmentToolSchemas(sent) : sent;
     if (protocol === "responses")
       rewritten = augmentWebSearchRequest(rewritten, {
@@ -213,37 +283,63 @@ export class Gateway {
   }
   /** Streams a Responses body to Codex unchanged while observing usage and child-agent prompts. */
   private async forwardResponses(
-    upstream: Response,
+    body: ReadableStream<Uint8Array> | null,
     res: http.ServerResponse,
     threadId: string | undefined,
     onUsage: (usage: Json) => void,
     remote: boolean,
+    side = false,
+    onEvent?: (event: Json) => void,
+    turnId?: string,
   ) {
-    if (!upstream.body) throw new Error("The response was empty.");
-    const [forward, inspect] = upstream.body.tee();
+    if (!body) throw new Error("The response was empty.");
+    if (side) {
+      let terminal = false;
+      for await (const event of readSSE(body)) {
+        // Provider transport diagnostics carry no answer and need not reach the side client.
+        if (
+          ["response.metadata", "codex.response.metadata", "responsesapi.websocket_timing"].includes(event.type)
+        ) continue;
+        assertSideTextEvent(event);
+        onEvent?.(event);
+        if (event.type === "response.completed" && event.response?.usage)
+          onUsage(event.response.usage);
+        if (["response.completed", "response.failed", "response.incomplete", "error"].includes(event.type))
+          terminal = true;
+        if (!res.destroyed) res.write(sseFrame(event));
+      }
+      if (!terminal && !res.destroyed)
+        throw new Error("The side question response ended before completion.");
+      return;
+    }
+    const [forward, inspect] = body.tee();
     const observed = (async () => {
       try {
         for await (const event of readSSE(inspect)) {
+          onEvent?.(event);
           if (event.type === "response.completed" && event.response?.usage)
             onUsage(event.response.usage);
           // Sub2API ends a started stream with response.failed when a limit hits mid-request.
           if (remote && event.type === "response.failed") {
             const refusal = describeStreamRefusal(event.response?.error);
-            if (refusal) this.onRefusal?.(refusal);
+            if (refusal) this.onRefusal?.({ ...refusal, threadId, ...(turnId ? { turnId } : {}) });
           }
           const prompt = agentPromptFromResponse(event, threadId);
           if (prompt) this.onAgentPrompt?.(prompt);
-          this.observe(event, threadId);
+          this.observe(event, threadId, turnId);
         }
       } catch {
         /* The model response is forwarded unchanged even if accounting is absent. */
       }
     })();
-    for await (const chunk of forward as any) {
-      if (res.destroyed) break;
-      res.write(chunk);
+    try {
+      for await (const chunk of forward as any) {
+        if (res.destroyed) break;
+        res.write(chunk);
+      }
+    } finally {
+      await observed;
     }
-    await observed;
   }
   private async handle(req: http.IncomingMessage, res: http.ServerResponse) {
     if (!this.isAuthorized(req)) {
@@ -251,6 +347,11 @@ export class Gateway {
       return;
     }
     const route = req.url?.split("?")[0];
+    const side = sidePathPattern.exec(route ?? "");
+    if (side && (!this.sidePaths.has(side[1]) || req.url !== route)) {
+      res.writeHead(404).end();
+      return;
+    }
     if (
       req.method === "POST" &&
       (route === "/v1/images/generations" || route === "/v1/images/edits")
@@ -262,14 +363,22 @@ export class Gateway {
       );
       return;
     }
-    if (req.method !== "POST" || route !== "/v1/responses") {
+    // Knowledge bases (shared/knowledge-api.ts): the agent's MCP client talks
+    // to the service's relay through here, with the account's key added.
+    const knowledge = route ? knowledgeRoutePattern.exec(route) : null;
+    if (knowledge) {
+      await this.handleKnowledge(req, res, knowledge[1]);
+      return;
+    }
+    if (req.method !== "POST" || (route !== "/v1/responses" && !side)) {
       res
         .writeHead(404)
         .end(JSON.stringify({ error: { message: "Unsupported endpoint" } }));
       return;
     }
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), upstreamTimeoutMs);
+    const idleFailure = new Error("The model service timed out while waiting for data.");
+    const timeout = setTimeout(() => controller.abort(idleFailure), this.idleTimeoutMs);
     res.on("close", () => controller.abort());
     const startedAt = Date.now();
     // Filled in as the request progresses; used for redaction and the usage record.
@@ -285,6 +394,7 @@ export class Gateway {
     // Last Chat bridge event state, so a mid-stream failure ends the same response.
     let lastResponse: Json | undefined;
     let nextSequence = 0;
+    let terminal = false;
     let releaseLimit: (() => void) | undefined;
     try {
       const raw = await readBody(req, maxRequestBytes);
@@ -296,6 +406,19 @@ export class Gateway {
       const request = JSON.parse(raw.toString());
       if (!request || typeof request !== "object" || Array.isArray(request))
         throw new Error("The request must be a JSON object.");
+      if (side) {
+        const turnId = request.client_metadata?.turn_id;
+        const turns = this.sidePaths.get(side[1]);
+        if (!turns || typeof turnId !== "string" || !/^[\w.:-]{1,255}$/.test(turnId) ||
+            turns.has(turnId) || turns.size >= 10000) {
+          failureStatus = 409;
+          throw new Error("This side question request cannot be repeated.");
+        }
+        turns.add(turnId);
+        request.tools = [];
+        delete request.tool_choice;
+        delete request.parallel_tool_calls;
+      }
       // A model's twin that preloads connector tools (Tool access) is the
       // same model upstream (shared/tool-search-mode.ts).
       if (typeof request.model === "string")
@@ -304,6 +427,9 @@ export class Gateway {
         model = request.model.slice(0, 200);
       const requestThread =
         request.client_metadata?.thread_id ?? request.prompt_cache_key;
+      const requestTurn = request.client_metadata?.turn_id;
+      const turnId = typeof requestTurn === "string" && /^[\w.:-]{1,255}$/.test(requestTurn)
+        ? requestTurn : undefined;
       if (typeof requestThread === "string" && requestThread) {
         threadId = requestThread;
         this.trackThread(threadId, controller);
@@ -315,8 +441,8 @@ export class Gateway {
       protocol = provider.protocol;
       // Auto mode's reviewer asks for Codex's own review model, which no
       // service group offers (403 here, and every reviewed action was then
-      // rejected as "unacceptable risk"): it reviews with the account's model
-      // instead.
+      // rejected as "unacceptable risk"): it reviews with the account's
+      // model instead (owner, 2026-10-22: a web Chat couldn't write a file).
       if (
         typeof request.model === "string" &&
         /^codex-auto-review\b/.test(request.model) &&
@@ -327,13 +453,18 @@ export class Gateway {
       }
       // An account with several service groups sends each model with its
       // group's key and protocol (MG); without that key, the plan group's.
-      const route = routeForModel(provider, request.model);
+      const drawing = isDrawingModel(model);
+      const automaticDrawing = drawing && provider.backend === "sub2api";
+      const route = automaticDrawing
+        ? routeForAutomaticImages(provider)
+        : routeForModel(provider, request.model);
       if (route) {
         const routeKey = route.primary ? "" : current.keyFor?.(route.keyId);
         if (route.primary || routeKey) protocol = route.protocol;
         if (routeKey) apiKey = routeKey;
       }
       if (
+        !automaticDrawing &&
         provider.models.length &&
         !new Set([provider.model, ...provider.models]).has(request.model)
       ) {
@@ -342,7 +473,7 @@ export class Gateway {
       }
       // A picture model's conversation: each message is answered with a
       // picture from the image endpoint (server/drawing-turn.ts).
-      if (isDrawingModel(model)) {
+      if (drawing) {
         failureStatus = 429;
         releaseLimit = this.limiter?.acquire();
         failureStatus = 502;
@@ -350,6 +481,7 @@ export class Gateway {
           provider,
           apiKey,
           threadId,
+          turnId,
           signal: controller.signal,
           onUsage: (usage) => {
             upstreamUsage = usage;
@@ -394,6 +526,7 @@ export class Gateway {
         },
       );
       httpStatus = upstream.status;
+      timeout.refresh();
       if (!upstream.ok) {
         const text = redact(await upstream.text(), apiKey);
         const detail = text.slice(0, 4000);
@@ -408,7 +541,7 @@ export class Gateway {
               )
             : undefined;
         if (refusal) {
-          this.onRefusal?.(refusal);
+          this.onRefusal?.({ ...refusal, threadId, ...(turnId ? { turnId } : {}) });
           res
             .writeHead(upstream.status, { "Content-Type": "application/json" })
             .end(
@@ -440,40 +573,62 @@ export class Gateway {
       const onUsage = (usage: Json) => {
         upstreamUsage = usage;
       };
+      const activeBody = upstream.body?.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+        transform(chunk, stream) {
+          timeout.refresh();
+          stream.enqueue(chunk);
+        },
+      }));
       if (protocol === "chat")
         await streamChatResponse(
-          upstream,
+          new Response(activeBody),
           (event) => {
+            if (side) assertSideTextEvent(event);
             if (event.response) lastResponse = event.response;
             nextSequence = event.sequence_number + 1;
             if (!res.destroyed) res.write(sseFrame(event));
-            this.observe(event, threadId);
+            this.observe(event, threadId, turnId);
           },
           mapping,
           request.model,
           onUsage,
-          (event) => this.observe(event, threadId),
+          (event) => {
+            if (side) assertSideTextEvent(event);
+            this.observe(event, threadId, turnId);
+          },
         );
       else
         await this.forwardResponses(
-          upstream,
+          activeBody ?? null,
           res,
           threadId,
           onUsage,
           provider.backend === "sub2api",
+          !!side,
+          (event) => {
+            if (event.response) lastResponse = event.response;
+            if (Number.isSafeInteger(event.sequence_number))
+              nextSequence = event.sequence_number + 1;
+            if (["response.completed", "response.failed", "response.incomplete", "error"].includes(event.type))
+              terminal = true;
+          },
+          turnId,
         );
       res.end();
     } catch (error) {
       httpStatus = failureStatus;
       if (!res.destroyed && !res.writableEnded) {
+        const failure = controller.signal.reason === idleFailure ? idleFailure : error;
         const message = redact(
-          error instanceof Error ? error.message : String(error),
+          failure instanceof Error ? failure.message : String(failure),
           apiKey,
         );
         // Once streaming has begun, the failure must arrive as a stream event.
-        if (res.headersSent)
+        if (res.headersSent && terminal)
+          res.end();
+        else if (res.headersSent)
           res.end(
-            sseFrame({
+            (protocol === "responses" && !side ? "\n\n" : "") + sseFrame({
               type: "response.failed",
               sequence_number: nextSequence,
               response: {
@@ -525,6 +680,7 @@ export class Gateway {
     return this.url;
   }
   async close() {
+    this.sidePaths.clear();
     if (this.server) {
       this.server.closeAllConnections();
       await new Promise<void>((r) => this.server!.close(() => r()));
@@ -533,7 +689,10 @@ export class Gateway {
   }
 }
 
-export interface Gateway {}
+export interface Gateway {
+  handleKnowledge: OmitThisParameter<typeof gatewayKnowledge.handleKnowledge>;
+}
+installMethods(Gateway.prototype, gatewayKnowledge);
 
 export interface Gateway {
   observeDrawnImages: OmitThisParameter<

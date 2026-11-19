@@ -18,7 +18,7 @@ import { nameRequired } from "../collections/customize/CreateSkillDialog";
 import { pluginErrorText } from "./plugin-model";
 import { isPluginOperationRetired, usePluginOwner } from "./usePlugins";
 
-/** Refusals the dialog shows as they are. */
+/** Refusals the dialog shows as they are (live c24c8737b `Pc`/`Ic`). */
 const shownAsIs = new Set([
   pluginNameTaken,
   renameSameName,
@@ -29,9 +29,10 @@ const shownAsIs = new Set([
 ]);
 
 /**
- * What a failed rename shows under the field: the known refusals as they are,
- * anything else as "Plugin rename failed. You can try again.". A plugin that is
- * gone answers `"gone"`: live shows that as a notice and closes.
+ * What a failed rename shows under the field (live claude.ai bundle,
+ * 2026-10-12, c24c8737b `Kc` onError): the known refusals as they are,
+ * anything else as "Plugin rename failed. You can try again.". A plugin
+ * that is gone answers `"gone"`: live shows that as a notice and closes.
  */
 export function renameFailureText(error: unknown): string | "gone" {
   const text = pluginErrorText(error).replace(/^Error: /, "");
@@ -61,8 +62,9 @@ function ownTitle(plugin: PluginEntry): string {
 }
 
 /**
- * Rename plugin: "Rename plugin", a Name field ("New plugin name") holding the
- * display name (or the name), "Saved as <name>", the same-name refusal once the
+ * Rename plugin (live claude.ai bundle, 2026-10-12, c24c8737b `Kc`/`qc`):
+ * "Rename plugin", a Name field ("New plugin name") holding the display
+ * name (or the name), "Saved as <name>", the same-name refusal once the
  * person has typed, Cancel / Rename, then "Renamed to {pluginName}" and the
  * renamed plugin's page. Built on Claudex's name dialog (Duplicate plugin's).
  */

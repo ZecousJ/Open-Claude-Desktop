@@ -12,7 +12,8 @@ import { RepositoryMenu } from "./RepositoryMenu";
 import { BranchMenu } from "./repository-menu-parts";
 import "./chat-github.css";
 
-// Repository-only Chat linking.
+// Repository-only Chat linking (live claude.ai bundle, 2026-10-14,
+// c23f22bfb-Bq6uLUoL.js; c72f14f34-DDGz-5eN.js).
 export function ChatGitHubDialog({
   onClose,
   onAttach,

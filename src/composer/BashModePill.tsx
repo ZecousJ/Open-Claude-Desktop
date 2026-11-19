@@ -1,6 +1,9 @@
 import "./bash-mode.css";
 
-/** Bash mode's marker beside Send; it loads with the mode. */
+/**
+ * Bash mode's marker beside Send (desktop bundle 2.31226.1: a small "bash"
+ * pill titled "Run as a shell command"); it loads with the mode.
+ */
 export function BashModePill() {
   return (
     <span

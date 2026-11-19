@@ -15,8 +15,9 @@ export function sessionFoldersChoosable(conversation: Conversation) {
 let browsing = false;
 
 /**
- * Add folder to session. The first folder becomes the working folder of a
- * session without one; the rest are added to it.
+ * Add folder to session (live claude.ai bundle, 2026-10-14, cc43287c9 and
+ * ce5658dc8: browseFolders with several folders). The first folder becomes
+ * the working folder of a session without one; the rest are added to it.
  */
 export function chooseSessionFolders(
   conversation: Conversation,

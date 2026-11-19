@@ -1,7 +1,7 @@
 import type { Item } from "./types";
 import { isWebFetch } from "./web-fetch-item";
 
-/** Fetch failures. */
+/** Fetch failures (live claude.ai bundle, 2026-10-14, shared-17-DZw1BgLL.js). */
 export const webFetchErrors: Record<string, string> = {
   INVALID_URL: "The URL provided is invalid",
   URL_NOT_FOUND: "Could not find this URL",

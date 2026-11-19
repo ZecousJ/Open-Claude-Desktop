@@ -2,12 +2,13 @@
 
 /*
  * Current native Chat/Cowork uses the unified frame's full-bleed variant.
- * O16/shared-styles-DG9uV_so.css:5163–5215,5563–5571; sidebar body in. Keep
- * this native non-Code only: Code's accepted native frame and the browser
- * sidebar retain their own rules. This stylesheet must be awaited before the
- * native renderer's first paint. On every desktop platform, as Code's frame
- * (native-code-home.css): the original's web variant has no platform split, and
- * the owner wants Windows and Linux like macOS; only the titlebar controls'
+ * O16/shared-styles-DG9uV_so.css:5163–5215,5563–5571; sidebar body in
+ * shared-22-BigoWF7j.js:21114. Keep this native non-Code only: Code's
+ * accepted native frame and the browser sidebar retain their own rules.
+ * This stylesheet must be awaited before the native renderer's first paint.
+ * On every desktop platform, as Code's frame (native-code-home.css): the
+ * original's web variant has no platform split, and the owner wants
+ * Windows and Linux like macOS (2026-10-20); only the titlebar controls'
  * margins stay macOS's (the traffic-light spacer).
  */
 .app:not(.web).mode-chat {
@@ -31,11 +32,10 @@
   height: 46px;
   padding-top: 2px;
 }
-/*
- * The mode switch lives in the titlebar. The source body consequently has no
- * direct df-pills child and uses pt-1, not its base pt-3.. With Search's mt-1
- * this gives the observed 54px top (46 + 4 + 4), without a manual positional
- * correction.
+/* The mode switch lives in the titlebar. The source body consequently has
+ * no direct df-pills child and uses pt-1, not its base pt-3.
+ * shared-styles-DG9uV_so.css:4363–4365. With Search's mt-1 this gives the
+ * observed 54px top (46 + 4 + 4), without a manual positional correction.
  */
 .app:not(.web).mode-chat .sidebar-body {
   padding-top: 4px;
@@ -52,9 +52,8 @@
   left: calc(var(--sidebar-width) - 6px);
 }
 
-/*
- * fieldAboveNew and recentsHeaderIcon are mutually exclusive in the source
- * layout resolver.
+/* fieldAboveNew and recentsHeaderIcon are mutually exclusive in the source
+ * layout resolver (shared-21-DI_JOKFI.js:6812–6814).
  */
 .app:not(.web).mode-chat .recents-search {
   display: none;
@@ -125,10 +124,9 @@
   margin: 0;
 }
 
-/*
- * Compact df-search-field: O16/shared-21-DI_JOKFI.js:6816–6896; density tokens
- * focus/hover:3009–3037. Sidebar's existing 8px sibling gap supplies the source
- * wrapper's mb-2.
+/* Compact df-search-field: O16/shared-21-DI_JOKFI.js:6816–6896;
+ * density tokens shared-styles-DG9uV_so.css:3705–3718, focus/hover:3009–3037.
+ * Sidebar's existing 8px sibling gap supplies the source wrapper's mb-2.
  */
 .app:not(.web).mode-chat .native-chat-search-wrap {
   flex: none;
@@ -165,7 +163,7 @@
   height: 24px;
   margin-inline-start: 2px;
 }
-.app:not(.web).mode-chat .native-chat-search-leading .app-icon {
+.app:not(.web).mode-chat .native-chat-search-leading .anthropicon {
   width: 16px;
   height: 16px;
 }

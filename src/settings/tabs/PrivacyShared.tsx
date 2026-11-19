@@ -15,8 +15,9 @@ import { sharedArtifactsNote, sharedDate, sharedChatAudience } from "./Privacy";
 
 /**
  * Privacy → Shared chats: Name (opens the shared page; who can open it
- * underneath), Date shared, Location (Open chat) and Unshare, which takes the
- * row away at once with Undo on the toast.
+ * underneath), Date shared, Location (Open chat) and Unshare, which takes
+ * the row away at once with Undo on the toast (live claude.ai bundle,
+ * 2026-10-12).
  */
 export function SharedChatsPage({
   owner,
@@ -194,9 +195,10 @@ export function SharedChatsTable({
 }
 
 /**
- * Privacy → Shared artifacts: the same table with Date published and Unpublish.
- * Claudex's artifact links are not tied to a chat, so Location says where the
- * link opens: "Public" (the Claudex service) or "This computer".
+ * Privacy → Shared artifacts: the same table with Date published and
+ * Unpublish (live claude.ai bundle, 2026-10-12). Claudex's artifact links
+ * are not tied to a chat, so Location says where the link opens: "Public"
+ * (the Claudex service) or "This computer".
  */
 export function SharedArtifactsPage({
   owner,

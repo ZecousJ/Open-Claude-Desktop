@@ -279,18 +279,19 @@ test("microphone caret names the actual control and idle dimensions allow the fu
       renderToStaticMarkup(
         createElement(VoiceOptionsButton, { menuVariant: variant }),
       ),
-    ).document.querySelector<HTMLElement>('[data-icon="CaretDown"]')!;
+    ).document.querySelector<HTMLElement>('[data-anthropicon="CaretDown"]')!;
   const assertIdleGlyph = (glyph: HTMLElement) => {
-    assert.equal(glyph.getAttribute("width"), "12");
+    assert.equal(glyph.tagName, "SPAN", "the actual font glyph remains a span");
+    assert.equal(glyph.style.fontSize, "calc(12px * var(--cds-rem-scale, 1))");
   };
   assertIdleGlyph(caret("idle"));
   const legacy = caret("legacy");
-  assert.equal(legacy.getAttribute("width"), "13");
-  assert.equal(caret().getAttribute("width"), "13");
+  assert.equal(legacy.style.fontSize, "calc(13px * var(--cds-rem-scale, 1))");
+  assert.equal(caret().style.fontSize, "calc(13px * var(--cds-rem-scale, 1))");
   assert.throws(
     () => assertIdleGlyph(legacy),
     { code: "ERR_ASSERTION" },
-    "the previous 13px output must fail the actual idle glyph check",
+    "the previous 13px font output must fail the actual idle glyph check",
   );
   const css = readFileSync("src/composer/microphone-menu.css", "utf8");
   assert.match(css, /\.microphone-menu-idle\s*\{[^}]*width:\s*max-content/);

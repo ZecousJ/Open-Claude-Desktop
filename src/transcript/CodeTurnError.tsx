@@ -75,19 +75,23 @@ const setupFailures = {
 } satisfies Record<SetupFailure, CodeFailure>;
 
 /**
- * A cloud session whose start failed. A message sent next fetches the
- * repository again (Conversation.pendingSetup), so the hint's "Try again" is
- * that.
+ * A cloud session whose start failed (live claude.ai bundle, 2026-10-12:
+ * `init_upstream_error` when the repository's host could not be reached,
+ * `init_failed` otherwise). A message sent next fetches the repository
+ * again (Conversation.pendingSetup), so the hint's "Try again" is that.
  */
 export function setupFailure(kind: SetupFailure): CodeFailure {
   return setupFailures[kind];
 }
 
 /**
- * A failed Code turn's headline and hint, from the engine's error text. The
- * service's status page the original names in some hints is Anthropic's; those
- * hints are used in their form without it. An error of no known kind is
- * "Something went wrong" and a stalled stream "The response stopped arriving".
+ * A failed Code turn's headline and hint (live claude.ai bundle,
+ * 2026-10-12: the Code session's turn-error categories), from the engine's
+ * error text. The service's status page the original names in some hints
+ * is Anthropic's; those hints are used in their form without it. An error
+ * of no known kind is "Something went wrong" and a stalled stream "The
+ * response stopped arriving" (live bundle, 2026-10-16, shared-14: the
+ * unknown-code fallback and gateway_stream_stalled).
  */
 export function codeFailure(
   error: string | undefined,
@@ -100,7 +104,7 @@ export function codeFailure(
       hintWithoutRetry: storageFullMessage,
     };
   const text = (error ?? "").toLowerCase();
-  // Image-size failures have recovery hints.
+  // Image-size failures have recovery hints (live claude.ai bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2).
   if (
     /exceeds the dimension limit|image[^\n]*(?:too large|exceeds.*(?:size|dimension))/.test(
       text,
@@ -144,11 +148,12 @@ export function codeFailure(
 }
 
 /**
- * A failed Code turn: an outlined card at least 480px wide, a header strip on
- * the faint fill with the warning glyph and the headline, the hint under it in
- * the secondary ink, and the actions at its foot, on the right. The original's
- * "View details" (the engine's raw error) is left out: the transcript never
- * shows the engine's own text (src/reply-failure.ts).
+ * A failed Code turn (live claude.ai bundle, 2026-10-12, the Code session's
+ * turn-error card): an outlined card at least 480px wide, a header strip on
+ * the faint fill with the warning glyph and the headline, the hint under it
+ * in the secondary ink, and the actions at its foot, on the right. The
+ * original's "View details" (the engine's raw error) is left out: the
+ * transcript never shows the engine's own text (src/reply-failure.ts).
  */
 export function CodeTurnError({
   failure,

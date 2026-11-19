@@ -13,7 +13,9 @@ import type {
 } from "../../shared/sharing-api";
 
 /**
- * Publish: whether the shown version of an artifact has a public link on the
+ * Publish (live claude.ai bundle, 2026-10-12: the artifact pane's Publish
+ * button, its `publishCheck` and `wasUnpublished`, and the Publish modal):
+ * whether the shown version of an artifact has a public link on the
  * Claudex service. The modal itself loads lazily (PublishArtifactModal).
  */
 
@@ -82,10 +84,10 @@ export async function hostedArtifactShare(
  */
 export type PublishCheck = "pending" | "failed" | "ok";
 
-/** Why Publish is off after the version's check failed. */
+/** Why Publish is off after the version's check failed (live claude.ai bundle, 2026-10-12). */
 export const publishCheckFailedReason =
   "Couldn’t check whether this artifact is already published. Reload the page to try again.";
-/** Why Publish is off for a version that was unpublished. */
+/** Why Publish is off for a version that was unpublished (live claude.ai bundle, 2026-10-12). */
 export const previouslyUnpublishedReason =
   "This artifact was previously unpublished. Create a new artifact to publish again.";
 

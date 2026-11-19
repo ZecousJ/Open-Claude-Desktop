@@ -1007,7 +1007,7 @@ func TestAdminDevicesRevokeAndRevokeAll(t *testing.T) {
 	oldTok := h.token(u)
 	regTok := h.token(u)
 	dev := newDeviceID()
-	d := h.mustRegister(regTok, dev, `{"device_name":"Ada's MacBook Pro","platform":"darwin","arch":"arm64","app_version":"1.3.2"}`)
+	d := h.mustRegister(regTok, dev, `{"device_name":"Zecous's MacBook Pro","platform":"darwin","arch":"arm64","app_version":"1.3.2"}`)
 
 	// Admin list: hints only, filters, pagination.
 	rec := h.do(http.MethodGet, fmt.Sprintf("/api/v1/admin/claudex/devices?user_id=%d&status=active&q=%s", u.ID, "macbook"), "", nil, "")
@@ -1026,7 +1026,7 @@ func TestAdminDevicesRevokeAndRevokeAll(t *testing.T) {
 	it := list.Items[0]
 	require.Equal(t, d.Device.ID, it.ID)
 	require.Equal(t, u.Email, it.UserEmail)
-	require.Equal(t, "Ada's MacBook Pro", it.DeviceName)
+	require.Equal(t, "Zecous's MacBook Pro", it.DeviceName)
 	require.Equal(t, g.Name, it.GroupName)
 	require.Equal(t, "sk-…"+d.APIKey.Key[len(d.APIKey.Key)-4:], it.APIKeyHint)
 	require.Equal(t, "active", it.APIKeyStatus)

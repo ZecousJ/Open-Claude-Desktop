@@ -1,10 +1,10 @@
 Version: 2026-10-12 · Effective October 12, 2026
 
-Welcome to Claudex. These Terms of Service ("Terms") are an agreement between you and [Operator] ("we", "us") about your use of Claudex: the desktop apps, the mobile apps, the web app, the API and every related service we provide (together, the "Services"). Please read them carefully. By creating an account, or by using the Services, you agree to these Terms. If you do not agree, do not use the Services.
+Welcome to Claudex. These Terms of Service ("Terms") are an agreement between you and ZecousAI ("ZecousAI", "we", "us") about your use of Claudex: the desktop apps, the mobile apps, the web app, the API and every related service we provide (together, the "Services"). Please read them carefully. By creating an account, or by using the Services, you agree to these Terms. If you do not agree, do not use the Services.
 
 ## 1. Who we are and what Claudex is
 
-Claudex is operated by [Operator]. It lets you chat with, work alongside and write code with artificial intelligence models. The models are provided by third-party model providers; Claudex sends your requests to them on your behalf and returns their responses.
+Claudex is operated by ZecousAI. It lets you chat with, work alongside and write code with artificial intelligence models. The models are provided by third-party model providers; Claudex sends your requests to them on your behalf and returns their responses.
 
 Some features are only available on some devices, in some regions or for some accounts, and we may add, change or remove features over time.
 
@@ -70,7 +70,7 @@ The Services work with services that we do not control, such as model providers,
 
 ## 8. Our rights in the Services
 
-[Operator] and its licensors own the Services, including the software, design and branding of Claudex. We give you a limited, personal, non-exclusive, non-transferable and revocable right to use the Services in line with these Terms. You may not copy, modify or distribute the Services except as these Terms or the applicable open-source licences allow.
+ZecousAI and its licensors own the Services, including the software, design and branding of Claudex. We give you a limited, personal, non-exclusive, non-transferable and revocable right to use the Services in line with these Terms. You may not copy, modify or distribute the Services except as these Terms or the applicable open-source licences allow.
 
 ## 9. Suspension and termination
 
@@ -82,11 +82,11 @@ The Services work with services that we do not control, such as model providers,
 
 ## 10. Disclaimers
 
-The Services are provided "as is" and "as available". To the fullest extent the law allows, [Operator] makes no warranties of any kind, express or implied, including warranties of merchantability, fitness for a particular purpose, title and non-infringement, and does not warrant that the Services will be uninterrupted, secure or error-free, or that Content will be accurate or kept without loss. Model providers may change or withdraw models at any time.
+The Services are provided "as is" and "as available". To the fullest extent the law allows, ZecousAI makes no warranties of any kind, express or implied, including warranties of merchantability, fitness for a particular purpose, title and non-infringement, and does not warrant that the Services will be uninterrupted, secure or error-free, or that Content will be accurate or kept without loss. Model providers may change or withdraw models at any time.
 
 ## 11. Limitation of liability
 
-To the fullest extent the law allows, [Operator] will not be liable for any indirect, incidental, special, consequential or punitive damages, or for any loss of profits, revenue, data or goodwill, arising from or relating to the Services or these Terms, even if we were told such damages were possible. Our total liability for any claim relating to the Services or these Terms is limited to the greater of the amount you paid to add to your balance in the six months before the claim arose and USD 100. Some places do not allow these limits; where they do not, they apply only as far as the law allows.
+To the fullest extent the law allows, ZecousAI will not be liable for any indirect, incidental, special, consequential or punitive damages, or for any loss of profits, revenue, data or goodwill, arising from or relating to the Services or these Terms, even if we were told such damages were possible. Our total liability for any claim relating to the Services or these Terms is limited to the greater of the amount you paid to add to your balance in the six months before the claim arose and USD 100. Some places do not allow these limits; where they do not, they apply only as far as the law allows.
 
 ## 12. Changes to these Terms
 
@@ -94,12 +94,12 @@ We may update these Terms from time to time. The version and date at the top sho
 
 ## 13. General
 
-**Contact.** Questions, notices and requests about these Terms or your account go to [Operator] at [contact email].
+**Contact.** Questions, notices and requests about these Terms or your account go to ZecousAI at [2243140006@qq.com](mailto:2243140006@qq.com).
 
-**Entire agreement.** These Terms, together with any policies they refer to, are the whole agreement between you and [Operator] about the Services.
+**Entire agreement.** These Terms, together with any policies they refer to, are the whole agreement between you and ZecousAI about the Services.
 
 **Severability and waiver.** If any part of these Terms cannot be enforced, the rest stays in effect. Not enforcing a part of these Terms is not a waiver of our right to do so later.
 
 **Assignment.** You may not transfer your rights or obligations under these Terms. We may transfer ours as part of a reorganisation, merger or sale of the Services.
 
-**Governing law.** These Terms are governed by the laws that apply where [Operator] is established, without regard to conflict-of-law rules, and nothing in them takes away rights that the law of your place of residence gives you and that cannot be waived by agreement.
+**Governing law.** These Terms are governed by the laws that apply where ZecousAI is established, without regard to conflict-of-law rules, and nothing in them takes away rights that the law of your place of residence gives you and that cannot be waived by agreement.

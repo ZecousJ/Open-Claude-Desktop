@@ -13,6 +13,7 @@ import type { DesignSystem } from "../../shared/collections-api";
 import {
   FontLicensesContent,
   FontLicensesDialog,
+  hasLoadedReferenceFonts,
   openDyslexicLicenseNotice,
 } from "../../src/settings/FontLicensesDialog";
 import { ClaudeCodeTab } from "../../src/settings/tabs/ClaudeCode";
@@ -44,8 +45,8 @@ test("Sync describes merged chats while retaining the real cloud-sync switch", (
 });
 
 test("Settings radios use 6px corners independently from the 7px animated thumb", () => {
-  // Current live General DOM: transparent radios30×30 r6, track32 r8. Thumb
-  // calc(--cds-radius -1px)=7px.
+  // Current live General DOM: transparent radios30×30 r6, track32 r8.
+  // shared-frame-6654oR3-.js:17594: thumb calc(--cds-radius -1px)=7px.
   const css = source("src/settings/settings.css");
   assert.match(css, /\.settings-segmented \{[^}]*--segmented-radius: 7px/);
   assert.match(
@@ -118,15 +119,21 @@ test("font notices quote the shipped OpenDyslexic metadata and distinguish unbun
     source("THIRD_PARTY_NOTICES.md"),
     /OpenDyslexic changes and additional glyphs are licensed under the Creative Commons Attribution 3\.0/,
   );
-  const web = renderToStaticMarkup(
-    createElement(FontLicensesContent, { onError() {} }),
-  );
+  const content = (referenceFonts: boolean) =>
+    renderToStaticMarkup(
+      createElement(FontLicensesContent, { referenceFonts, onError() {} }),
+    );
+  const web = content(false);
   assert.match(web, /data-no-translate="true"/);
   assert.match(web, /System fonts are supplied by your operating system/);
   assert.match(web, /OpenDyslexic 2\.001/);
   assert.match(web, /href="https:\/\/opendyslexic.org\/legal\/"/);
   assert.match(web, /OpenDyslexic website/);
   assert.doesNotMatch(web, /Reference fonts are loaded/);
+  assert.match(
+    content(true),
+    /Reference fonts are loaded from your own desktop installation/,
+  );
 });
 
 test("the license link opens its real author-provided destination", async () => {
@@ -158,6 +165,7 @@ test("the license link opens its real author-provided destination", async () => 
     await act(async () =>
       root.render(
         createElement(FontLicensesContent, {
+          referenceFonts: false,
           onError(error) {
             throw error;
           },
@@ -173,6 +181,83 @@ test("the license link opens its real author-provided destination", async () => 
       else Reflect.deleteProperty(globalThis, key);
     }
   }
+});
+
+test("font notices require the successful load marker, follow its changes and release the observer", async () => {
+  const { window, document } = parseHTML(
+    "<html><body><main></main></body></html>",
+  );
+  document.documentElement.dataset.motion = "reduced";
+  window.desktop = { referenceFonts: async () => [] } as never;
+  assert.equal(desktopHost.capabilities.referenceFonts, true);
+  assert.deepEqual(await window.desktop.referenceFonts(), []);
+  assert.equal(hasLoadedReferenceFonts(document.documentElement), false);
+  for (const value of ["false", "TRUE", "1", ""]) {
+    document.documentElement.dataset.referenceFonts = value;
+    assert.equal(hasLoadedReferenceFonts(document.documentElement), false);
+  }
+  delete document.documentElement.dataset.referenceFonts;
+  let disconnected = 0;
+  class ObservedMutationObserver extends window.MutationObserver {
+    disconnect() {
+      disconnected++;
+      super.disconnect();
+    }
+  }
+  const globals = {
+    window,
+    document,
+    MutationObserver: ObservedMutationObserver,
+    IS_REACT_ACT_ENVIRONMENT: true,
+  };
+  const saved = new Map(
+    Object.keys(globals).map((key) => [
+      key,
+      Object.getOwnPropertyDescriptor(globalThis, key),
+    ]),
+  );
+  for (const [key, value] of Object.entries(globals))
+    Object.defineProperty(globalThis, key, {
+      configurable: true,
+      writable: true,
+      value,
+    });
+  const { createRoot } = await import("react-dom/client");
+  const root = createRoot(document.querySelector("main")!);
+  try {
+    await act(async () =>
+      root.render(
+        createElement(
+          HostContext.Provider,
+          { value: desktopHost },
+          createElement(FontLicensesDialog, {
+            onClose() {},
+            onError(error) {
+              throw error;
+            },
+          }),
+        ),
+      ),
+    );
+    const notice = () =>
+      document.querySelector('[role="dialog"]')!.textContent!;
+    assert.doesNotMatch(notice(), /Reference fonts are loaded/);
+    await act(async () => {
+      document.documentElement.dataset.referenceFonts = "true";
+    });
+    assert.match(notice(), /Reference fonts are loaded/);
+    await act(async () => {
+      delete document.documentElement.dataset.referenceFonts;
+    });
+    assert.doesNotMatch(notice(), /Reference fonts are loaded/);
+  } finally {
+    await act(() => root.unmount());
+    for (const [key, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
+    }
+  }
+  assert.equal(disconnected, 1, "the dialog's font observer is disconnected");
 });
 
 test("Design systems show real counts, standalone provenance and written dates without invented sharing", () => {

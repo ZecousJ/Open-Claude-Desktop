@@ -119,7 +119,7 @@ test("help overrides stay valid and desktop/research/short disclaimer variants r
   ])
     assert.match(
       disclaimer({ help }).querySelector("a")!.getAttribute("href")!,
-      /^(https?:.*)?\/help\/support$/,
+      /^https?:.*\/help\/support$/,
     );
   assert.match(
     disclaimer({}, false).textContent ?? disclaimer({}, false).toString(),
@@ -720,12 +720,13 @@ test("unified Chat on both hosts adds Activity while Code keeps its existing hea
       if (activity) {
         assert.ok(activity.classList.contains("session-activity-toggle"));
         assert.equal(
-          Boolean(activity.querySelector('[data-icon="File"]')),
+          Boolean(activity.querySelector('[data-anthropicon="File"]')),
           web || mode === "chat",
         );
       }
       if (mode === "code") {
-        // The web's cloud sessions have no terminal.
+        // The web's cloud sessions have no terminal (live claude.ai Code,
+        // 2026-10-21: Changes, Files and Share).
         assert.equal(
           Boolean(document.querySelector('[aria-label="Terminal"]')),
           !web,
@@ -835,7 +836,7 @@ test("empty panel Close and the ordinary Chat Activity toggle call their real ha
     const toggle = env.document.querySelector<HTMLElement>(
       'button[aria-label="Activity panel"]',
     )!;
-    assert.ok(toggle.querySelector('[data-icon="File"]'));
+    assert.ok(toggle.querySelector('[data-anthropicon="File"]'));
     await env.click(toggle);
     await env.click(
       env.document.querySelector<HTMLElement>(

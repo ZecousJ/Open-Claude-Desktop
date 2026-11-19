@@ -295,9 +295,9 @@ export function useTerminalPanelActions(kit: UseTerminalPanelActionsKit) {
         : []),
     ];
   }
-  // The card's left edge drags like the Background rail's: the width is
-  // published as --terminal-panel-width and, once set, replaces the 299px
-  // default (terminal-panel.css). Expanded, the card is full width.
+  // The card's left edge drags like the Background rail's (R-0887): the
+  // width is published as --terminal-panel-width and, once set, replaces the
+  // 299px default (terminal-panel.css). Expanded, the card is full width.
   const panelRef = useRef<HTMLElement>(null);
   const { width, setWidth, persist } = useStoredPanelWidth(
     "terminal",
@@ -311,7 +311,7 @@ export function useTerminalPanelActions(kit: UseTerminalPanelActionsKit) {
   );
   const active = sessions.find((session) => session.id === activeId);
   // One terminal is just "Terminal"; with more, the title becomes a row of
-  // "Terminal N" tabs, each with its own ×.
+  // "Terminal N" tabs, each with its own × (R-0882, R-0885, R-0890).
   for (const session of sessions) tabNumber(conversationId, session.id);
   const label = (session: TerminalSessionInfo) =>
     tabLabel(

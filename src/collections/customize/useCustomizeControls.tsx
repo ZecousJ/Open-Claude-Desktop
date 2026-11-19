@@ -229,8 +229,8 @@ export function useCustomizeControls(kit: UseCustomizeControlsKit) {
       checkedRole: "radio",
       onSelect: () => openConnectorCategory(undefined),
     },
-    // All categories, a taxonomy section, and Everyday life are separate
-    // groups, each followed by a separator.
+    // O16 c86c18ff2 la: All categories, a taxonomy section, and
+    // Everyday life are separate groups, each followed by a separator.
     { separator: true },
     ...connectorCategoryGroups().flatMap((group): MenuEntry[] => [
       ...(group.prefix === "everyday-life-"

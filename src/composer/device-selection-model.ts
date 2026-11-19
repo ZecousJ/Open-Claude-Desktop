@@ -3,13 +3,13 @@ import type { Conversation } from "../../shared/types";
 
 /**
  * The current bridge can continue an existing Cowork task on its owning
- * computer. It cannot elect a computer for a new Chat, move a conversation, or
- * carry Chat's model and permission choice to DeviceMethods.newSession.
+ * computer. It cannot elect a computer for a new Chat, move a conversation,
+ * or carry Chat's model and permission choice to DeviceMethods.newSession.
  *
- * Keep those operations unavailable until a real binding API exists. A checkbox
- * must describe a verified binding, not an unimplemented intention.
- * Js:3391–3540; the bridge currently exposes only CoworkDevices.route for
- * already-bound Cowork conversations.
+ * Keep those operations unavailable until a real binding API exists. A
+ * checkbox must describe a verified binding, not an unimplemented intention.
+ * Reference: live 1016 c752b32f8-DAUZaYF8.js:3391–3540; the bridge currently
+ * exposes only CoworkDevices.route for already-bound Cowork conversations.
  */
 type DeviceConversation = Pick<
   Conversation,

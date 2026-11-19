@@ -1,6 +1,8 @@
 package service
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -53,7 +55,39 @@ func writeOpenAIUpstreamClientError(c *gin.Context, statusCode int, body []byte,
 	}
 	errorPayload["message"] = message
 
-	c.JSON(statusCode, gin.H{"error": errorPayload})
+	writeOpenAIErrorResponse(c, statusCode, gin.H{"error": errorPayload})
+}
+
+func writeOpenAIErrorResponse(c *gin.Context, statusCode int, payload gin.H) {
+	body, err := json.Marshal(payload)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if writeOpenAIResponseFailureIfStreaming(c, statusCode, body) {
+		return
+	}
+	MarkResponseCommitted(c)
+	c.Data(statusCode, "application/json; charset=utf-8", body)
+}
+
+func writeOpenAIResponseFailureIfStreaming(c *gin.Context, statusCode int, body []byte) bool {
+	heartbeatCommitted := StopOpenAICompactSSEKeepaliveCommitted(c)
+	if !heartbeatCommitted && !(c.Writer.Written() && strings.HasPrefix(c.Writer.Header().Get("Content-Type"), "text/event-stream")) {
+		return false
+	}
+	message := extractOpenAISSEErrorMessage(body)
+	errType := gjson.GetBytes(body, "error.type").String()
+	code := extractUpstreamErrorCode(body)
+	MarkOpsStreamFailure(c, errType, code, message, statusCode)
+	MarkResponseCommitted(c)
+	frame := buildOpenAIResponseFailedSSE("", c.GetString("ops_model"), body, message)
+	if _, err := fmt.Fprint(c.Writer, frame); err != nil {
+		_ = c.Error(err)
+		return true
+	}
+	c.Writer.Flush()
+	return true
 }
 
 // WriteOpenAIUpstreamClientError preserves a structured deterministic upstream

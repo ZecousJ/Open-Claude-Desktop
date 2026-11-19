@@ -9,8 +9,9 @@ export const titleOutMs = 200;
 /** Each character of the new title fades in this long after the one before. */
 export const titleStaggerMs = 30;
 /**
- * The new title counts as written once its last character has started and a
- * little more has passed: four characters' worth, as in the original.
+ * The new title counts as written once its last character has started and
+ * a little more has passed: four characters' worth, as in the original
+ * (source: desktop bundle 2.31226.1 static JS).
  */
 export const titleRevealMs = (characters: number) =>
   (characters + 4) * titleStaggerMs;

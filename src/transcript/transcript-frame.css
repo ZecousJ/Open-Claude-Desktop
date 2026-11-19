@@ -1,10 +1,10 @@
 /* The transcript's frame: scroll fade, scrollbars, title-bar insets, footer. (part of chat-transcript.css) */
-/* Static reference: Motion and unobserved states are intentionally not marked
-   verified. */
+/* Static reference: fidelity/observations/chat-markdown.md.
+   Motion and unobserved states are intentionally not marked verified. */
 /* R-0437 / R-0430 (2.629 px/CSS, 885px viewport): the code block, and so the
    reply column, is 563px wide in a 643.5px main area - 40px margins with the
-   11px scrollbar gutter counted in - and at Actual Size 1747 the card is 736px:
-   min(736, main - 80). */
+   11px scrollbar gutter counted in - and at Actual Size 1747 the card is
+   736px (normalized-command-hover-007): min(736, main - 80). */
 .mode-chat .messages {
   /* Existing 58px insets leave Prose 32px inside the selected dock width. */
   width: min(calc(var(--chat-column-measure, 768px) + 26px), 100%);
@@ -49,7 +49,7 @@
   background: #5d5d5d;
   background-clip: padding-box;
 }
-/* #aeaeae. */
+/* R-0546 (light): #aeaeae. */
 :root[data-theme="light"]:root
   .mode-chat
   .messages-scroll::-webkit-scrollbar-thumb {
@@ -63,15 +63,17 @@
 .sidebar-hidden:is(.win32, .linux) .chat-header {
   padding-left: 122px;
 }
-/* Windows and Linux: the caption buttons (three of 46, fixed at the window's
-   top right, 90-reference-foundation.css) sit over the title bar's right end,
-   so its buttons stop 10px before them, as the incognito ghost does. With a
-   tool panel open the caption buttons are over the panel instead. */
+/* Windows and Linux: the caption buttons (three of 46, fixed at the
+   window's top right, 90-reference-foundation.css) sit over the title
+   bar's right end, so its buttons stop 10px before them, as the incognito
+   ghost does (owner report, 2026-10-08: Share and ⋮ were under − □ ×).
+   With a tool panel open the caption buttons are over the panel instead. */
 .app:is(.win32, .linux):not(.web) .workspace > .chat-header {
   padding-right: 148px;
   /* The room moves with the panel's slide (ui/spring-panels.ts) instead of
-     switching at one end of it; the left room keeps the sidebar's slide
-     (sidebar.css), which this rule would otherwise drop. */
+     switching at one end of it (owner, 2026-10-14: closing a panel carried
+     the buttons under − □ × and snapped them back); the left room keeps the
+     sidebar's slide (sidebar.css), which this rule would otherwise drop. */
   transition:
     padding-right 380ms cubic-bezier(0.2, 0, 0, 1),
     padding-left 150ms cubic-bezier(0.2, 0, 0, 1);
@@ -104,8 +106,9 @@
   top: 44px;
 }
 :is(.mode-chat, .mode-cowork) .has-conversation .chat-composer {
-  /* Current dock: 48px frame, 8px gap, 24px chin and 8px to the bottom. The
-     12px before the frame is wrapper headroom, outside that dock. */
+  /* Current dock: 48px frame, 8px gap, 24px chin and 8px to the bottom.
+     The 12px before the frame is wrapper headroom, outside that dock
+     (official live DOM, 2026-10-18, 1440×900). */
   padding: 12px 0 8px;
 }
 :is(.mode-chat, .mode-cowork) .has-conversation .composer {
@@ -147,7 +150,7 @@
   font-size: 12px;
   line-height: 20px;
 }
-/* The disclaimer keeps the footer's grey and underlines on hover. */
+/* R-0579: the disclaimer keeps the footer's grey and underlines on hover. */
 .conversation-disclaimer a {
   color: inherit;
   text-decoration: none;

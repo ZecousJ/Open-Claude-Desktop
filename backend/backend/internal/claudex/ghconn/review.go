@@ -20,13 +20,15 @@ func (c *Component) serveAutoFixFacts(ctx context.Context, userID int64, token, 
 	}
 	const query = `query($owner: String!, $name: String!, $number: Int!) {
  repository(owner: $owner, name: $name) { pullRequest(number: $number) {
- state headRefOid
+ state headRefOid mergeable
  commits(last: 1) { nodes { commit { statusCheckRollup { contexts(first: 100) { nodes {
  __typename ... on CheckRun { name conclusion } ... on StatusContext { context state }
  } } } } } }
  reviewThreads(first: 100) { nodes { isResolved comments(last: 20) { nodes {
- databaseId viewerDidAuthor body path line originalLine author { login }
+ databaseId viewerDidAuthor authorAssociation body path line originalLine author { login }
  } } } }
+ comments(last: 20) { nodes { databaseId viewerDidAuthor authorAssociation body author { login } } }
+ reviews(last: 20) { nodes { databaseId viewerDidAuthor authorAssociation state body author { login } } }
  } } }`
 	var response struct {
 		Data struct {

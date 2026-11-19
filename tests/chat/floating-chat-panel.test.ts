@@ -57,7 +57,7 @@ test("while the chat floats, Pop out chat is pressed, Chat collapses and Close r
   });
   assert.match(floating, /aria-label="Pop out chat"[^>]*aria-pressed="true"/);
   assert.doesNotMatch(floating, /class="star"/);
-  assert.match(floating, /data-icon="Collapse"[^]*Chat/);
+  assert.match(floating, /data-anthropicon="Collapse"[^]*Chat/);
   assert.match(floating, /aria-label="Close"/);
 });
 
@@ -94,7 +94,7 @@ test("the stylesheet lifts the page's own conversation into the card, one window
     css,
     /\.chat-layout:has\(> \.file-viewer\[data-chat-float="true"\]\)\s*> \.chat-main\.has-conversation \{[^}]*visibility: visible;[^}]*position: absolute;[^}]*z-index: 14;/,
   );
-  // 15px in, 418×482, 12px corners.
+  // Measured from R-1047-1048 (W1920 at 1x): 15px in, 418×482, 12px corners.
   assert.match(
     css,
     /\.floating-chat-frame \{[^}]*left: 15px;[^}]*bottom: 15px;[^}]*width: min\(418px, calc\(100% - 30px\)\);[^}]*height: min\(482px, calc\(100% - 64px\)\);[^}]*border-radius: 12px;/,

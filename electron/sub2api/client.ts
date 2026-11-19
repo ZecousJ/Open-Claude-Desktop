@@ -1,3 +1,5 @@
+import { parseUsageWindowRead } from "./usage-window-read";
+import { profileBalance } from "./profile-balance";
 import {
   parseNativeSessionList,
   parseRelease,
@@ -6,6 +8,7 @@ import {
   type ClaudexWebSessionList,
 } from "../../shared/claudex-contract";
 import { privacyPolicyUrl } from "../../shared/sign-in-api";
+import { serviceAnnouncementsPath } from "../../shared/announcements-api";
 import {
   requestJson,
   requestJsonResult,
@@ -48,17 +51,6 @@ export interface PublicSettings {
   purchaseUrl: string;
   /** User-visible custom menu items with a web address (console: 系统设置 → 自定义菜单). */
   menuItems: { label: string; url: string }[];
-}
-/** `GET /api/v1/announcements`: notices the service shows this user. */
-export interface RemoteAnnouncement {
-  id: number;
-  title: string;
-  content: string;
-  notifyMode: string;
-  startsAt: number | null;
-  endsAt: number | null;
-  readAt: number | null;
-  createdAt: number;
 }
 export interface RemoteUser {
   id: number;
@@ -137,39 +129,38 @@ function group(value: unknown): RemoteGroup | undefined {
     status: text(data.status, 50),
   };
 }
-function window(value: unknown): UsageWindow | undefined {
-  const data = object(value);
-  const resetsAt = time(data.resets_at);
-  if (!Object.keys(data).length || resetsAt === null) return undefined;
-  return {
-    limitUsd: count(data.limit_usd),
-    usedUsd: count(data.used_usd),
-    percentage: Math.max(0, Math.min(100, count(data.percentage))),
-    resetsAt,
-  };
-}
+
 /** Items are `{subscription, progress}` in current Sub2API; older builds return the progress alone. */
 export function parseProgress(value: unknown): SubscriptionProgress[] {
-  return list(value).flatMap((raw) => {
-    const item = object(raw);
-    const progress = object(item.progress ?? item);
-    const subscription = object(item.subscription);
+  if (!Array.isArray(value)) malformed();
+  const row = (raw: unknown): Json => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) malformed();
+    return raw as Json;
+  };
+  const seen = new Set<number>();
+  return value.map((raw) => {
+    const item = row(raw);
+    const wrapped = Object.hasOwn(item, "progress");
+    const progress = wrapped ? row(item.progress) : item;
+    const subscription = wrapped ? row(item.subscription) : {};
     const id = progress.id ?? subscription.id;
-    if (!Number.isSafeInteger(id)) return [];
+    const validId = (v: unknown): v is number => Number.isSafeInteger(v) && Number(v) > 0;
+    if (!validId(id) ||
+        (progress.id !== undefined && !validId(progress.id)) ||
+        (subscription.id !== undefined && (!validId(subscription.id) || subscription.id !== id))) malformed();
+    if (seen.has(id)) malformed();
+    seen.add(id);
     const groupId = subscription.group_id;
-    return [
-      {
-        subscriptionId: id as number,
-        groupId: Number.isSafeInteger(groupId) ? (groupId as number) : null,
-        groupName:
-          text(progress.group_name, 100) ||
-          text(object(subscription.group).name, 100),
-        expiresAt: time(progress.expires_at ?? subscription.expires_at),
-        daily: window(progress.daily),
-        weekly: window(progress.weekly),
-        monthly: window(progress.monthly),
-      },
-    ];
+    if (groupId !== undefined && groupId !== null && !validId(groupId)) malformed();
+    return {
+      subscriptionId: id,
+      groupId: validId(groupId) ? groupId : null,
+      groupName: text(progress.group_name, 100) || text(object(subscription.group).name, 100),
+      expiresAt: time(progress.expires_at ?? subscription.expires_at),
+      daily: parseUsageWindowRead(progress.daily),
+      weekly: parseUsageWindowRead(progress.weekly),
+      monthly: parseUsageWindowRead(progress.monthly),
+    };
   });
 }
 
@@ -256,29 +247,14 @@ export class Sub2ApiClient {
         .map(({ label, url }) => ({ label, url })),
     };
   }
-  async announcements(accessToken: string): Promise<RemoteAnnouncement[]> {
-    return list(await this.call("/announcements", { token: accessToken }))
-      .flatMap((raw) => {
-        const data = object(raw);
-        if (!Number.isSafeInteger(data.id) || typeof data.title !== "string")
-          return [];
-        return [
-          {
-            id: data.id as number,
-            title: text(data.title, 200),
-            content: text(data.content, 20000),
-            notifyMode: text(data.notify_mode, 20),
-            startsAt: time(data.starts_at),
-            endsAt: time(data.ends_at),
-            readAt: time(data.read_at),
-            createdAt: time(data.created_at) ?? 0,
-          },
-        ];
-      })
-      .slice(0, 50);
+  announcements(accessToken: string, responseChars?: number): Promise<unknown> {
+    return this.call(serviceAnnouncementsPath, {
+      token: accessToken,
+      responseChars,
+    });
   }
   async markAnnouncementRead(accessToken: string, id: number) {
-    await this.call(`/announcements/${id}/read`, {
+    await this.call(`${serviceAnnouncementsPath}/${id}/read`, {
       method: "POST",
       token: accessToken,
       body: {},
@@ -292,6 +268,11 @@ export class Sub2ApiClient {
   async profile(accessToken: string): Promise<RemoteProfile> {
     const data = await this.call("/user/profile", { token: accessToken });
     return profile(data) ?? malformed();
+  }
+  /** Identity-only settings read; no missing monetary value is synthesized. */
+  async readProfileIdentity(accessToken: string): Promise<RemoteUser> {
+    const data = await this.call("/user/profile", { token: accessToken });
+    return user(data) ?? malformed();
   }
   async codeSharingSettings(
     accessToken: string,
@@ -314,13 +295,13 @@ export class Sub2ApiClient {
   async updateUsername(
     accessToken: string,
     username: string,
-  ): Promise<RemoteProfile> {
+  ): Promise<RemoteUser> {
     const data = await this.call("/user", {
       method: "PUT",
       token: accessToken,
       body: { username },
     });
-    return profile(data) ?? malformed();
+    return user(data) ?? malformed();
   }
   async redeem(accessToken: string, code: string): Promise<RedeemedCode> {
     const data = object(
@@ -514,6 +495,7 @@ function parseSubscriptions(value: unknown): RemoteSubscription[] {
   });
 }
 function profile(value: unknown): RemoteProfile | undefined {
-  const base = user(value);
-  return base && { ...base, balance: count(object(value).balance) };
+  const data = object(value), base = user(value);
+  const balance = Object.hasOwn(data, "balance") ? profileBalance(data.balance) : undefined;
+  return base && balance !== undefined ? { ...base, balance } : undefined;
 }

@@ -56,8 +56,9 @@ export function useChatLifecycle({
       .then(upsert)
       .catch(report);
   // Opening a chat reads it. While it is on screen, an unread mark another
-  // window or device set (the reply finished where it was not shown) is read at
-  // once; one set here by hand stays until the next visit.
+  // window or device set (the reply finished where it was not shown) is read
+  // at once (owner, 2026-10-04: the open chat showed the blue dot); one set
+  // here by hand stays until the next visit.
   const visited = useRef<string | undefined>(undefined);
   useEffect(() => {
     const open = page === "chat" ? active?.id : undefined;

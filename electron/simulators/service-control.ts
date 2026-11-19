@@ -177,7 +177,7 @@ export async function perform(
   if (answer !== "granted")
     return text(
       answer === "declined"
-        ? `The user declined to let Claudex use ${label}. Don't try again unless they ask.`
+        ? `The user declined to let Claude use ${label}. Don't try again unless they ask.`
         : answer === "timeout"
           ? `The user didn't answer the request to use ${label}. Ask them to answer it before you try again.`
           : `Access to ${label} was asked for or declined a moment ago. Wait for the user before trying again.`,

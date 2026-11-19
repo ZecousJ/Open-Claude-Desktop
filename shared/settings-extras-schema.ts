@@ -1,19 +1,20 @@
 /**
- * Validation of the Settings-page preferences, spread into the main process's
- * settings schema. A new preference is added to `SettingsPreferences` and
- * `preferenceDefaults` in `settings-extras.ts` and validated here;
- * `electron/main.ts` does not change. Kept apart from `settings-extras.ts` so
- * the window's bundle does not include zod.
+ * Validation of the Settings-page preferences (package WP2), spread into the
+ * main process's settings schema. A new preference is added to
+ * `SettingsPreferences` and `preferenceDefaults` in `settings-extras.ts` and
+ * validated here; `electron/main.ts` does not change. Kept apart from
+ * `settings-extras.ts` so the window's bundle does not include zod.
  */
 import { hasPrimaryModifier, validAccelerator } from "./accelerator";
 import { envFileLimit } from "./env-file";
 import { validBranchPrefix } from "./branch-prefix";
 import { localeIds } from "./locales";
+import { officialChineseLocales } from "./official-appearance-capability";
 import { notificationLevelValues } from "./notification-levels";
 import { z } from "zod";
 import { capabilityTips } from "./chat-suggestions";
 import { homeChecklistTasks } from "./home-starters";
-import { remoteFolderValid, remoteFoldersLimit } from "./remote-devices";
+import { remoteControlSpawnModes, remoteFolderValid, remoteFoldersLimit } from "./remote-devices";
 import {
   allowedSiteValid,
   browserAllowedSitesLimit,
@@ -26,6 +27,21 @@ import {
   type SettingsPreferences,
   type WorkType,
 } from "./settings-extras";
+
+const dictationAccelerator = z
+  .string()
+  .max(100)
+  .refine(
+    (value) => value === "" || validAccelerator(value),
+    "Choose a shortcut with a modifier key.",
+  )
+  .superRefine((value, context) => {
+    if (value && !/^F\d+$/.test(value) && !hasPrimaryModifier(value))
+      context.addIssue({
+        code: "custom",
+        message: `Dictation shortcut "${value}" needs a Command or Control modifier`,
+      });
+  });
 
 export const preferenceFields = {
   extensionAutoUpdates: z.boolean().optional(),
@@ -42,6 +58,7 @@ export const preferenceFields = {
     .object({
       chipsOverride: z.enum(["show", "hide"]).optional(),
       prosumer_checklist_hide_prompt_chips: z.boolean().optional(),
+      claudeai_fsi_skill_chips: z.boolean().optional(),
       prosumer_checklist_v2: z
         .partialRecord(z.enum(homeChecklistTasks), z.boolean())
         .optional(),
@@ -101,16 +118,7 @@ export const preferenceFields = {
   switchModelsOnFlag: z.boolean().optional(),
   modelAutoFallback: z.boolean().optional(),
   locationMetadata: z.boolean().optional(),
-  autoArchiveDays: z
-    .union([
-      z.literal(0),
-      z.literal(1),
-      z.literal(2),
-      z.literal(7),
-      z.literal(14),
-      z.literal(30),
-    ])
-    .optional(),
+  autoArchiveDays: z.number().int().min(0).max(365).optional(),
   codeOutputStyle: z.string().max(100).optional(),
   remoteControlNewSessions: z.boolean().optional(),
   taskPermission: z.enum(taskPermissions).optional(),
@@ -136,20 +144,16 @@ export const preferenceFields = {
   notificationSound: z.enum(["system", "none"]).optional(),
   aiArtifacts: z.boolean().optional(),
   chatExecution: z.boolean().optional(),
+  chatWebSearch: z.boolean().optional(),
   artifacts: z.boolean().optional(),
   designSystem: z.string().max(100).optional(),
-  locale: z.enum(localeIds).optional(),
+  locale: z.enum([...localeIds, ...officialChineseLocales]).optional(),
   apiGroups: z
     .record(
       z.string().min(1).max(40),
       z.number().int().min(1).max(2_147_483_647),
     )
     .refine((groups) => Object.keys(groups).length <= 30)
-    .optional(),
-  imageModel: z
-    .string()
-    .max(200)
-    .regex(/^[\w.:/-]*$/)
     .optional(),
   networkEgress: z.boolean().optional(),
   egressAllowlist: z.enum(["none", "packages", "all"]).optional(),
@@ -183,45 +187,46 @@ export const preferenceFields = {
   keepAwake: z.boolean().optional(),
   /** The platform's offered accelerators are checked in `electron/settings-preferences.ts`. */
   quickAccessShortcut: z.string().max(100).optional(),
+  legacyQuickEntryEnabled: z.boolean().optional(),
   quickEntryShortcut: z.string().max(100).optional(),
   quickEntryDictationShortcut: z
     .string()
     .max(100)
     .refine(
       (value) =>
-        value === "off" || value === "capslock" || validAccelerator(value),
+        ["", "off", "capslock", "double-tap-capslock"].includes(value) ||
+        validAccelerator(value),
       "Choose a shortcut with a modifier key.",
     )
     .optional(),
   dictationShortcut: z
-    .string()
-    .max(100)
-    .refine(
-      (value) => value === "" || validAccelerator(value),
-      "Choose a shortcut with a modifier key.",
-    )
-    .superRefine((value, context) => {
-      if (value && !hasPrimaryModifier(value))
-        context.addIssue({
-          code: "custom",
-          message: `Dictation shortcut "${value}" needs a Command or Control modifier`,
-        });
-    })
+    .union([dictationAccelerator, z.object({ accelerator: dictationAccelerator })])
     .optional(),
   disabledSkills: z.array(z.string().min(1).max(4096)).max(1000).optional(),
   helpImproveClaudex: z.boolean().optional(),
   disableNonessentialServices: z.boolean().optional(),
   browserTools: z.boolean().optional(),
+  codeBrowserTools: z.boolean().optional(),
+  chromeExtensionEnabled: z.boolean().optional(),
   allowAllBrowserActions: z.boolean().optional(),
   browserOpenLinksInApp: z.boolean().optional(),
   cloudSync: z.boolean().optional(),
   remoteControl: z.boolean().optional(),
+  remoteControlStayReachable: z.boolean().optional(),
   dispatchOnboarded: z.boolean().optional(),
   dispatchMobileNotifications: z.boolean().optional(),
   remoteFolders: z
     .array(z.string().refine(remoteFolderValid))
     .max(remoteFoldersLimit)
     .optional(),
+  remoteControlSpawnMode: z.enum(remoteControlSpawnModes).optional(),
+  remoteFolderSpawnModes: z.array(z.strictObject({
+    folder: z.string().refine(remoteFolderValid),
+    mode: z.enum(remoteControlSpawnModes),
+  })).max(remoteFoldersLimit).refine(
+    (rows) => new Set(rows.map(({ folder }) => folder)).size === rows.length,
+    "Choose one worktree setting for each Remote Control folder.",
+  ).optional(),
   browserKeepCookies: z
     .enum(
       browserKeepCookiesOptions.map((o) => o.value) as [

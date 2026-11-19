@@ -17,10 +17,11 @@ const dateFormat = new Intl.DateTimeFormat("en-US", {
 });
 
 /**
- * What's new: the administrator's announcements first, then the service's notes
- * for its newest release (Markdown without raw HTML or remote images), then the
- * bundled Claudex release notes, each a dated entry with its version pill.
- * Opening the sheet marks the notices read.
+ * What's new (R-0006–R-0008, R-0358): the administrator's announcements
+ * first, then the service's notes for its newest release (Markdown without
+ * raw HTML or remote images), then the bundled Claudex release notes, each
+ * a dated entry with its version pill. Opening the sheet marks the notices
+ * read.
  */
 export function ReleaseNotesDialog({ onClose }: { onClose: () => void }) {
   const { items, unread, markRead } = useAnnouncements();

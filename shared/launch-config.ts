@@ -6,7 +6,7 @@
  *       "configurations": [{ "name": "web", "runtimeExecutable": "npm",
  *                            "runtimeArgs": ["run", "dev"], "port": 5173 }] }
  *
- * A configuration may also give `url` (a local address to open instead of
+ * A configuration may also give `url` (an HTTP(S) address to open instead of
  * http://localhost:<port>), `cwd` (a folder inside the project) and `env`.
  * A configuration with `url` and no `runtimeExecutable` attaches to a server
  * that is already running and starts nothing.
@@ -16,7 +16,8 @@
  * splitting and showing a command line. The command never runs through a
  * shell.
  */
-import type { LaunchConfiguration } from "./browser";
+import { isPrivateNetworkHost, type LaunchConfiguration } from "./browser";
+import { previewOriginUnsafe } from "./preview-origin";
 
 export const launchConfigVersion = "0.0.1";
 /** Where configurations are written, relative to the session's folder. */
@@ -47,6 +48,7 @@ export interface LaunchEntry extends Omit<
   "runtimeExecutable"
 > {
   runtimeExecutable?: string;
+  autoPort?: boolean;
 }
 
 export interface LaunchFile {
@@ -92,20 +94,42 @@ export function urlPort(url: URL) {
  * The address a configuration opens: its `url`, or http://localhost:<port>;
  * undefined when it gives neither.
  */
-export function launchUrl(entry: Pick<LaunchEntry, "url" | "port">) {
+export function launchUrl(entry: LaunchEntry) {
   if (entry.url) return entry.url;
-  if (entry.port) return `http://localhost:${entry.port}`;
+  const port = launchPort(entry);
+  if (port) return `http://localhost:${port}`;
   return undefined;
 }
 
-/** The port to wait for: `port`, or the one in `url`. */
-export function launchPort(entry: Pick<LaunchEntry, "url" | "port">) {
+function configuredPort(value: unknown) {
+  const port =
+    typeof value === "string" && /^\d{1,5}$/.test(value.trim())
+      ? Number(value)
+      : value;
+  return typeof port === "number" &&
+    Number.isInteger(port) &&
+    port >= 1 &&
+    port <= 65535
+    ? port
+    : undefined;
+}
+
+/** The local port to wait for, even when the browser opens an external URL. */
+export function launchPort(entry: LaunchEntry) {
   if (entry.port) return entry.port;
-  if (!entry.url) return undefined;
-  try {
-    return urlPort(new URL(entry.url));
-  } catch {
-    return undefined;
+  const url = entry.url && URL.parse(entry.url);
+  if (url && isLocalHostname(url.hostname)) return urlPort(url);
+  const fromEnvironment = configuredPort(entry.env?.PORT);
+  if (fromEnvironment) return fromEnvironment;
+  for (const [index, arg] of (entry.runtimeArgs ?? []).entries()) {
+    const inline = /^(?:--port=|-p=?)(\d{1,5})$/.exec(arg);
+    const port = configuredPort(
+      inline?.[1] ??
+        (arg === "--port" || arg === "-p"
+          ? entry.runtimeArgs?.[index + 1]
+          : undefined),
+    );
+    if (port) return port;
   }
 }
 
@@ -126,38 +150,44 @@ export function launchEntryProblem(
   if (name.length > launchLimits.name || /[\u0000-\u001f]/.test(name))
     return `${label}: the name is too long or has control characters.`;
   const named = `"${name}"`;
-  const exe = entry.runtimeExecutable;
+  const { runtimeExecutable: exe, program } = entry;
   if (exe !== undefined) {
     if (typeof exe !== "string" || !exe.trim())
       return `${named}: "runtimeExecutable" must be a command, like "npm".`;
     if (exe.length > launchLimits.executable || /[\u0000\n\r]/.test(exe))
       return `${named}: "runtimeExecutable" is too long or has line breaks.`;
   }
-  const args = entry.runtimeArgs;
-  if (args !== undefined) {
+  if (
+    program !== undefined &&
+    (typeof program !== "string" ||
+      !program.trim() ||
+      program.length > launchLimits.arg ||
+      /[\u0000\n\r]/.test(program))
+  )
+    return `${named}: "program" must be a file path.`;
+  for (const [field, args] of [
+    ["runtimeArgs", entry.runtimeArgs],
+    ["args", entry.args],
+  ] as const) {
+    if (args === undefined) continue;
     if (!Array.isArray(args) || args.some((arg) => typeof arg !== "string"))
-      return `${named}: "runtimeArgs" must be a list of strings.`;
+      return `${named}: "${field}" must be a list of strings.`;
     if (args.length > launchLimits.args)
-      return `${named}: "runtimeArgs" can have at most ${launchLimits.args} items.`;
+      return `${named}: "${field}" can have at most ${launchLimits.args} items.`;
     if (
       args.some(
         (arg: string) => arg.length > launchLimits.arg || arg.includes("\0"),
       )
     )
       return `${named}: an argument is too long.`;
-    if (exe === undefined)
-      return `${named}: "runtimeArgs" needs a "runtimeExecutable".`;
+    if (exe === undefined && program === undefined)
+      return `${named}: "${field}" needs a "runtimeExecutable" or "program".`;
   }
-  const port = entry.port;
-  if (port !== undefined) {
-    if (
-      typeof port !== "number" ||
-      !Number.isInteger(port) ||
-      port < 1 ||
-      port > 65_535
-    )
-      return `${named}: "port" must be a number from 1 to 65535.`;
-  }
+  const port = configuredPort(entry.port);
+  if (entry.port !== undefined && port === undefined)
+    return `${named}: "port" must be a number from 1 to 65535.`;
+  if (entry.autoPort !== undefined && typeof entry.autoPort !== "boolean")
+    return `${named}: "autoPort" must be true or false.`;
   const url = entry.url;
   if (url !== undefined) {
     if (typeof url !== "string" || url.length > launchLimits.url)
@@ -170,14 +200,18 @@ export function launchEntryProblem(
     }
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:")
       return `${named}: "url" must start with http:// or https://.`;
-    if (!isLocalHostname(parsed.hostname))
-      return `${named}: "url" must be on this computer (localhost).`;
+    const local = isLocalHostname(parsed.hostname);
+    if (
+      !local &&
+      (isPrivateNetworkHost(parsed.hostname) || previewOriginUnsafe(url))
+    )
+      return `${named}: "url" must be localhost or a public address.`;
     if (parsed.username || parsed.password)
       return `${named}: "url" can't include a user name or password.`;
-    if (typeof port === "number" && urlPort(parsed) !== port)
+    if (local && port !== undefined && urlPort(parsed) !== port)
       return `${named}: the port in "url" doesn't match "port".`;
   }
-  if (exe === undefined && url === undefined)
+  if (exe === undefined && program === undefined && url === undefined)
     return `${named} needs a "runtimeExecutable" (or a "url" of a server that is already running).`;
   const cwd = entry.cwd;
   if (cwd !== undefined) {
@@ -228,14 +262,41 @@ export function cleanEntry(raw: Record<string, unknown>): LaunchEntry {
   const entry: LaunchEntry = { name: String(raw.name).trim() };
   if (typeof raw.runtimeExecutable === "string")
     entry.runtimeExecutable = raw.runtimeExecutable.trim();
-  if (Array.isArray(raw.runtimeArgs))
-    entry.runtimeArgs = [...(raw.runtimeArgs as string[])];
-  if (typeof raw.port === "number") entry.port = raw.port;
+  const args = Array.isArray(raw.runtimeArgs) ? [...raw.runtimeArgs] : [];
+  if (typeof raw.program === "string") {
+    entry.runtimeExecutable ??= "node";
+    args.push(raw.program);
+  }
+  if (Array.isArray(raw.args)) args.push(...raw.args);
+  if (args.length || Array.isArray(raw.runtimeArgs)) entry.runtimeArgs = args;
+  const port = configuredPort(raw.port);
+  if (port !== undefined) entry.port = port;
+  if (typeof raw.autoPort === "boolean") entry.autoPort = raw.autoPort;
   if (typeof raw.url === "string") entry.url = raw.url;
   if (typeof raw.cwd === "string") entry.cwd = raw.cwd;
   if (raw.env && typeof raw.env === "object")
     entry.env = { ...(raw.env as Record<string, string>) };
   return entry;
+}
+
+function nameFileEntry(raw: unknown) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const entry = raw as Record<string, unknown>;
+  if (entry.name !== undefined && entry.name !== "") return entry;
+  const hasCommand = typeof entry.runtimeExecutable === "string" ||
+    typeof entry.program === "string";
+  const args = [
+    ...(Array.isArray(entry.runtimeArgs) ? entry.runtimeArgs : []),
+    ...(typeof entry.program === "string" ? [entry.program] : []),
+    ...(Array.isArray(entry.args) ? entry.args : []),
+  ];
+  const last = args.at(-1);
+  const commandName = typeof last === "string"
+    ? last.replace(/\.[^.]+$/, "").replaceAll(":", "-")
+    : "";
+  let name = typeof entry.url === "string" ? URL.parse(entry.url)?.host : undefined;
+  if (hasCommand) name = commandName.length >= 2 ? commandName : "preview";
+  return name ? { ...entry, name } : entry;
 }
 
 /**
@@ -330,15 +391,16 @@ export function parseLaunchConfig(text: string): LaunchParseResult {
   };
   const names = new Set<string>();
   configurations.forEach((raw, index) => {
-    let problem = launchEntryProblem(raw, index);
+    const named = nameFileEntry(raw);
+    let problem = launchEntryProblem(named, index);
     if (!problem && result.configurations.length >= launchLimits.configurations)
       problem = `launch.json can have at most ${launchLimits.configurations} configurations.`;
     if (!problem) {
-      const key = String((raw as { name: string }).name)
+      const key = String((named as { name: string }).name)
         .trim()
         .toLowerCase();
       if (names.has(key))
-        problem = `two configurations are named "${(raw as { name: string }).name}".`;
+        problem = `two configurations are named "${(named as { name: string }).name}".`;
       names.add(key);
     }
     if (problem) {
@@ -346,7 +408,7 @@ export function parseLaunchConfig(text: string): LaunchParseResult {
       result.error ??= `launch.json: ${problem}`;
       return;
     }
-    result.configurations.push(cleanEntry(raw as Record<string, unknown>));
+    result.configurations.push(cleanEntry(named as Record<string, unknown>));
   });
   return result;
 }
@@ -371,9 +433,10 @@ export function upsertLaunchConfig(
   const configurations: unknown[] = [];
   let replaced = false;
   for (const existing of kept) {
+    const named = nameFileEntry(existing);
     const name =
-      existing && typeof existing === "object" && "name" in existing
-        ? String((existing as { name: unknown }).name)
+      named && typeof named === "object" && "name" in named
+        ? String(named.name)
             .trim()
             .toLowerCase()
         : "";

@@ -107,7 +107,8 @@ export function useProgressPanelState(kit: UseProgressPanelStateKit) {
     local && (
       <button
         className="progress-section-action"
-        // Each folder's button, alone or in a group, is "Go to folder".
+        // Each folder's button, alone or in a group, is "Go to folder" (live
+        // claude.ai bundle, 2026-10-12).
         aria-label="Go to folder"
         title={path}
         onClick={() =>

@@ -4,9 +4,10 @@ import "./empty-state.css";
 import { Spinner } from "./Spinner";
 
 /**
- * The original's one empty state: a pictogram (md, 96px), a headline, a line
- * under it and a secondary button, centred in a column 12px apart. Every empty
- * surface that the original draws with it uses this.
+ * The original's one empty state (live claude.ai bundle, 2026-10-14,
+ * shared-2 G3): a pictogram (md, 96px), a headline, a line under it and a
+ * secondary button, centred in a column 12px apart. Every empty surface
+ * that the original draws with it uses this.
  */
 export function EmptyState({
   pictogram,

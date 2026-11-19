@@ -5,7 +5,7 @@ import fs from "node:fs";
 import type { ChatWindowState } from "./chat-windows";
 import { toolPaneKinds } from "../../shared/tool-pane";
 import { z } from "zod";
-/** Size a first window opens at. */
+/** Size a first window opens at (the Artifact pop-out's size, R-1005). */
 export const defaultChatWindowSize = { width: 900, height: 700 };
 
 /** The smallest window the conversation column and composer still fit. */
@@ -24,7 +24,7 @@ export const stateSchema = z.object({
   }),
 });
 
-// .
+// (live desktop 2.37337.1, index.chunk-BWk6pVUt.js, WTn / sEn).
 export const layoutSchema = z.object({
   version: z.literal(1),
   windows: z

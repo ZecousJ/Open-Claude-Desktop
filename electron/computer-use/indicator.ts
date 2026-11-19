@@ -1,6 +1,6 @@
 /**
- * Click-through full-display glow and flashing badge. Escape stops control;
- * screenshots omit it.
+ * Click-through full-display glow and flashing badge (desktop 2.37337.1,
+ * index.chunk-BWk6pVUt.js:171750). Escape stops control; screenshots omit it.
  */
 import { BrowserWindow, globalShortcut, screen } from "electron";
 import { indicatorHtml } from "./indicator-page";

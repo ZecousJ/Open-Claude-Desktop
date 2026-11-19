@@ -12,6 +12,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { build } from "esbuild";
+import { openPolicy } from "../../shared/client-policy";
+import { registerResources } from "../../electron/official-ui/native/resources";
 import type { SshEvent, SshHost, SshStatus } from "../../shared/ssh-api";
 import { AskpassBroker } from "../../electron/ssh/askpass";
 import {
@@ -661,12 +663,25 @@ test("the IPC domain saves hosts, connects, lists and records remote folders, an
   const eventListeners: ((event: any) => void)[] = [];
   const deactivating: (() => Promise<void> | void)[] = [];
   let sshRemote = true;
+  let trusted = false;
+  let permissionModes = openPolicy.permissionModes;
+  const provider = { id: "active", model: "gpt-user", models: ["gpt-project", "gpt-work", "out-of-group"] };
+  const otherProvider = { id: "other", model: "gpt-other", models: [] };
+  let catalog: { items: { id: string }[] } | null = {
+    items: ["gpt-user", "gpt-project", "gpt-work", "gpt-other"].map(id => ({ id })),
+  };
   const ctx = {
     dataRoot: temp("cxd-"),
+    store: { settings: { providers: [otherProvider, provider], activeProviderId: provider.id } },
+    remote: { ready: true, modelCatalog: () => catalog },
     providerServiceScript: path.join(root, "provider-service.cjs"),
     services: {} as Record<string, unknown>,
     remoteFolders: new Map<string, Set<string>>(),
-    policy: () => ({ sshRemote }),
+    policy: () => ({ ...openPolicy, sshRemote, permissionModes }),
+    engines: {
+      all: () => [],
+      forEnvironment: () => ({ remoteWorkspaceTrust: async (folder: string) => ({ trusted, folder: fs.realpathSync(folder) }) }),
+    },
     onAccountActivated: (cb: () => void) => {
       queueMicrotask(cb);
       return () => {};
@@ -686,6 +701,7 @@ test("the IPC domain saves hosts, connects, lists and records remote folders, an
   });
   const call = (name: string, ...args: unknown[]) =>
     handlers.get(name)!(...args);
+  t.after(async () => { for (const cb of deactivating) await cb(); });
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.ok(ctx.services.ssh, "the service is shared for R9-S2/S3");
 
@@ -700,6 +716,15 @@ test("the IPC domain saves hosts, connects, lists and records remote folders, an
   });
   const listed = await call("sshListHosts");
   assert.deepEqual(listed.hosts, [saved]);
+  const original = { id: saved.id, name: saved.label, sshHost: saved.destination, source: "desktop" };
+  const draft = { id: "from-original-ui", name: "Draft", sshHost: "staging", source: "desktop" };
+  await call("officialSetSshConfigs", [original, draft]);
+  assert.deepEqual((await call("sshListHosts")).hosts.map((row: { id: string }) => row.id), [saved.id, draft.id]);
+  await assert.rejects(call("officialSetSshConfigs", []), /Refresh/);
+  await call("officialSetSshConfigs", [original, { ...draft, name: "Edited" }]);
+  assert.equal((await call("sshListHosts")).hosts[1].label, "Edited");
+  await call("officialSetSshConfigs", [original]);
+  assert.deepEqual((await call("sshListHosts")).hosts, [saved]);
   assert.equal(typeof listed.sshAvailable, "boolean");
   // Saved destinations are not suggested again.
   if (listed.sshAvailable) assert.deepEqual(listed.suggestions, ["staging"]);
@@ -721,6 +746,91 @@ test("the IPC domain saves hosts, connects, lists and records remote folders, an
   const home = await call("sshListDirectory", saved.id);
   assert.equal(home.path, fs.realpathSync(fakeHome));
   assert.deepEqual(home.entries, [{ name: "code", kind: "folder" }]);
+  const nativeHandlers = new Map<string, (...args: unknown[]) => unknown>();
+  registerResources({
+    ctx: { account: () => ({ id: "account" }), localCall: call },
+    on: (name: string, fn: (...args: unknown[]) => unknown) => nativeHandlers.set(name, fn),
+  } as never);
+  const resolveSettings = nativeHandlers.get("LocalSessions.resolveSSHSettings")!;
+  const unrestricted = { disableBypassPermissionsMode: undefined, disableAutoMode: undefined };
+  const project = fs.realpathSync(path.join(fakeHome, "code", "app"));
+  const userSettings = path.join(fakeHome, ".claude", "settings.json");
+  const projectSettings = path.join(project, ".claude", "settings.json");
+  const localSettings = path.join(project, ".claude", "settings.local.json");
+  fs.mkdirSync(path.dirname(userSettings), { recursive: true });
+  fs.mkdirSync(path.dirname(projectSettings), { recursive: true });
+  fs.writeFileSync(userSettings, JSON.stringify({ permissions: { defaultMode: "manual" }, model: "gpt-user" }));
+  fs.writeFileSync(projectSettings, JSON.stringify({ permissions: { defaultMode: "acceptEdits" }, model: "gpt-project" }));
+  fs.writeFileSync(localSettings, JSON.stringify({
+    permissions: { defaultMode: "plan" }, model: "gpt-work", availableModels: ["gpt-work"], fastMode: true,
+  }));
+  await call("sshDisconnect", saved.id);
+  assert.deepEqual(await resolveSettings(original, project), {
+    ...unrestricted,
+    defaultPermissionMode: { value: "default", source: "user", path: userSettings },
+    model: { value: "gpt-user", source: "user", path: userSettings },
+  });
+  trusted = true;
+  assert.deepEqual(await resolveSettings(original, project, { boundedManagedSettingsWait: true }), {
+    ...unrestricted,
+    defaultPermissionMode: { value: "plan", source: "projectLocal", path: localSettings },
+    model: { value: "gpt-work", source: "projectLocal", path: localSettings },
+  });
+  assert.deepEqual(await resolveSettings(original, "~/code/app"), {
+    ...unrestricted,
+    defaultPermissionMode: { value: "plan", source: "projectLocal", path: localSettings },
+    model: { value: "gpt-work", source: "projectLocal", path: localSettings },
+  });
+  for (const mode of ["auto", "bypassPermissions", "dontAsk", "unrecognized"]) {
+    fs.writeFileSync(localSettings, JSON.stringify({ permissions: { defaultMode: mode }, model: false }));
+    assert.deepEqual(await resolveSettings(original, project), {
+      ...unrestricted,
+      defaultPermissionMode: { value: "acceptEdits", source: "project", path: projectSettings },
+      model: { value: "gpt-project", source: "project", path: projectSettings },
+    });
+  }
+  for (const model of ["foreign-alias", "out-of-group", "gpt-other"]) {
+    fs.writeFileSync(localSettings, JSON.stringify({ model }));
+    assert.deepEqual(await resolveSettings(original, project), {
+      ...unrestricted,
+      defaultPermissionMode: { value: "acceptEdits", source: "project", path: projectSettings },
+    });
+  }
+  fs.writeFileSync(localSettings, JSON.stringify({ model: "gpt-work" }));
+  ctx.remote.ready = false;
+  assert.deepEqual(await resolveSettings(original, project), {
+    ...unrestricted,
+    defaultPermissionMode: { value: "acceptEdits", source: "project", path: projectSettings },
+  });
+  ctx.remote.ready = true;
+  catalog = null;
+  assert.deepEqual(await resolveSettings(original, project), {
+    ...unrestricted,
+    defaultPermissionMode: { value: "acceptEdits", source: "project", path: projectSettings },
+    model: { value: "gpt-work", source: "projectLocal", path: localSettings },
+  });
+  fs.writeFileSync(localSettings, "{}");
+  fs.writeFileSync(projectSettings, "{broken");
+  assert.deepEqual(await resolveSettings(original, project), {
+    ...unrestricted,
+    defaultPermissionMode: { value: "default", source: "user", path: userSettings },
+    model: { value: "gpt-user", source: "user", path: userSettings },
+  });
+  permissionModes = ["manual", "plan"];
+  assert.deepEqual(await resolveSettings(original, project), {
+    ...unrestricted,
+    defaultPermissionMode: { value: "default", source: "user", path: userSettings },
+    disableAutoMode: { value: "disable", source: "managed", path: "client-policy" },
+    model: { value: "gpt-user", source: "user", path: userSettings },
+  });
+  permissionModes = openPolicy.permissionModes;
+  fs.rmSync(userSettings);
+  fs.rmSync(projectSettings);
+  fs.rmSync(localSettings);
+  assert.deepEqual(await resolveSettings(original, project), unrestricted);
+  const unavailable = await call("sshSaveHost", { label: "Unavailable", destination: "deny@box", sshPath: fakeSsh });
+  assert.deepEqual(await resolveSettings({ id: unavailable.id, sshHost: unavailable.destination }, project), unrestricted);
+  await call("sshDeleteHost", unavailable.id);
   await assert.rejects(
     call("sshListDirectory", saved.id, "~/nope"),
     /doesn't exist/,

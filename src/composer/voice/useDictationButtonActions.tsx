@@ -51,9 +51,9 @@ export function useDictationButtonActions(kit: UseDictationButtonActionsKit) {
   holdRef.current = hold;
   useEffect(() => {
     if (!shortcut) return;
-    // With "Hold to record" the shortcut records while it is held and stops
-    // when its key or a modifier is let go; without it the shortcut starts and
-    // stops the recording.
+    // With "Hold to record" (the microphone menu, R-0404) the shortcut records
+    // while it is held and stops when its key or a modifier is let go; without
+    // it the shortcut starts and stops the recording.
     let held: string | undefined;
     const key = (event: KeyboardEvent) => {
       if (!pressMatches(event, shortcut, platform)) return;

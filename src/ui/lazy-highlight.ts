@@ -4,8 +4,10 @@ import type { Pluggable } from "unified";
 /**
  * Syntax highlighting (highlight.js through lowlight, about 75 kB gzip) loads
  * the first time something on screen has code, not with the page, as the
- * original loads its highlighter with the views that need it. Until it arrives
- * code shows as plain text in the same box, and the views redraw highlighted.
+ * original loads its highlighter with the views that need it (desktop bundle
+ * 2.31226.1: shiki sits in the conversation and file-view chunks, never in
+ * the entry). Until it arrives code shows as plain text in the same box, and
+ * the views redraw highlighted.
  */
 type Lowlight = ReturnType<typeof import("lowlight").createLowlight>;
 

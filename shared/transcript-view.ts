@@ -1,8 +1,10 @@
 /**
- * A Code session's transcript view. Normal folds runs of tool calls into one
- * row and keeps thinking in its "Thought process" step; Thinking lists every
- * step on its own and shows the thinking text in the transcript; Verbose does
- * that too and opens every tool row.
+ * A Code session's transcript view (live claude.ai bundle, 2026-10-12: the
+ * session's Transcript view menu, Ctrl+O and Settings → Claude Code →
+ * Default transcript view). Normal folds runs of tool calls into one row and
+ * keeps thinking in its "Thought process" step; Thinking lists every step on
+ * its own and shows the thinking text in the transcript; Verbose does that
+ * too and opens every tool row.
  */
 export type TranscriptView = "normal" | "thinking" | "verbose";
 

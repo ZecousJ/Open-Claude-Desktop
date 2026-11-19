@@ -18,14 +18,14 @@ import { setLocale } from "../../src/i18n";
 import { formatWebRoute, parseWebRoute, siteZone } from "../../src/web/routes";
 
 test("help links use the service origin, never its API path", () => {
-  assert.equal(helpUrl("support"), "/help/support");
+  assert.equal(helpUrl("support"), "https://claudex.zecous.cn/help/support");
   assert.equal(
     helpUrl("memory", "https://service.example/api/v1"),
     "https://service.example/help/memory",
   );
   configureHelpOrigin("https://configured.example/api");
   assert.equal(helpUrl("support"), "https://configured.example/help/support");
-  configureHelpOrigin("https://claudex.example.com");
+  configureHelpOrigin("https://claudex.zecous.cn");
 });
 
 test("every help target has a public route and an article", () => {
@@ -54,7 +54,7 @@ test("public help renders translated articles, live domain defaults and a useful
       value: {
         pathname,
         search: "",
-        origin: "https://claudex.example.com",
+        origin: "https://claudex.zecous.cn",
         protocol: "https:",
       },
     });
@@ -79,7 +79,7 @@ test("public help renders translated articles, live domain defaults and a useful
     assert.match(render("/help/support"), /service administrator/);
     const main = readFileSync("src/main.tsx", "utf8");
     assert.match(main, /lazyPiece\(\(\) => import\("\.\/help\/HelpPage"\)/);
-    assert.ok(main.indexOf("{helpPage ?") < main.indexOf("<AuthGate />"));
+    assert.ok(main.indexOf("{helpPage ?") < main.indexOf("<AuthGate renderApp={App} />"));
     for (const locale of locales.filter((entry) => entry.id !== "en-US")) {
       await setLocale(locale.id);
       for (const article of helpArticles)

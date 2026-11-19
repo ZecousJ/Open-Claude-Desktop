@@ -6,6 +6,7 @@ import { routineEnvironment } from "../../shared/routine-environment";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { taskPermissions } from "../../shared/settings-extras";
+import { codeEffortLevels } from "../../shared/code-effort";
 import {
   frequencyFor,
   nextRun,
@@ -114,6 +115,31 @@ export function validate(input: RoutineInput): RoutineInput {
     !taskPermissions.includes(input.permission)
   )
     throw new Error("Choose a permission mode.");
+  if (
+    (input.useWorktree !== undefined &&
+      typeof input.useWorktree !== "boolean") ||
+    (input.useWorktree &&
+      (input.mode !== "code" ||
+        !input.cwd ||
+        input.executionLocation === "remote")) ||
+    (input.sourceBranch !== undefined &&
+      (!input.useWorktree ||
+        typeof input.sourceBranch !== "string" ||
+        !input.sourceBranch.trim() ||
+        input.sourceBranch.length > 255))
+  )
+    throw new Error("Choose a local Code worktree and source branch.");
+  if (
+    input.codePermissionMode !== undefined &&
+    (input.mode !== "code" ||
+      !["inherit", "acceptEdits", "plan"].includes(input.codePermissionMode))
+  )
+    throw new Error("Choose a Code permission mode.");
+  if (
+    input.effort !== undefined &&
+    (input.mode !== "code" || !codeEffortLevels.includes(input.effort))
+  )
+    throw new Error("Choose a Code effort.");
   const alwaysAllowed =
     input.alwaysAllowed === undefined
       ? undefined
@@ -144,17 +170,59 @@ export function validate(input: RoutineInput): RoutineInput {
   if (input.triggers !== undefined && !triggers)
     throw new Error("Invalid scheduled task.");
   if (routineHasNoTrigger(triggers)) throw new Error("Select a trigger.");
-  const repository = input.repository;
-  if (
-    repository !== undefined &&
-    (!repository ||
+  const validateRepository = (
+    repository: NonNullable<RoutineInput["repository"]>,
+  ) => {
+    if (
+      !repository ||
       typeof repository !== "object" ||
       typeof repository.url !== "string" ||
       !/^https:\/\/[^\s]{1,500}$/.test(repository.url) ||
       (repository.ref !== undefined &&
-        (typeof repository.ref !== "string" || repository.ref.length > 250)))
+        (typeof repository.ref !== "string" || repository.ref.length > 250))
+    )
+      throw new Error("Choose a repository.");
+    return {
+      url: repository.url,
+      ...(repository.ref ? { ref: repository.ref } : {}),
+    };
+  };
+  if (
+    input.repositories !== undefined &&
+    (input.mode !== "code" ||
+      !Array.isArray(input.repositories) ||
+      input.repositories.length > 10)
   )
-    throw new Error("Choose a repository.");
+    throw new Error("Choose up to ten Code repositories.");
+  const repositories = input.repositories?.map(validateRepository);
+  if (
+    repositories &&
+    new Set(repositories.map((row) => row.url.toLowerCase())).size !==
+      repositories.length
+  )
+    throw new Error("Choose each repository once.");
+  const repository = repositories
+    ? repositories[0]
+    : input.repository && validateRepository(input.repository);
+  const selections = input.codeConnectorSelections;
+  if (
+    selections !== undefined &&
+    (input.mode !== "code" ||
+      !Array.isArray(selections) ||
+      selections.length > 100 ||
+      selections.some(
+        (row) =>
+          !row ||
+          typeof row.key !== "string" ||
+          !row.key ||
+          row.key.length > 500 ||
+          typeof row.url !== "string" ||
+          !row.url ||
+          row.url.length > 4000,
+      ) ||
+      new Set(selections.map((row) => row.key)).size !== selections.length)
+  )
+    throw new Error("Choose valid Code connectors.");
   if (
     input.cloudEnvironmentId !== undefined &&
     (typeof input.cloudEnvironmentId !== "string" ||
@@ -164,12 +232,14 @@ export function validate(input: RoutineInput): RoutineInput {
   return {
     ...(input.id ? { id: input.id } : {}),
     ...(triggers ? { triggers } : {}),
-    ...(repository
+    ...(repository ? { repository } : {}),
+    ...(repositories ? { repositories } : {}),
+    ...(selections
       ? {
-          repository: {
-            url: repository.url,
-            ...(repository.ref ? { ref: repository.ref } : {}),
-          },
+          codeConnectorSelections: selections.map(({ key, url }) => ({
+            key,
+            url,
+          })),
         }
       : {}),
     ...(input.cloudEnvironmentId
@@ -213,6 +283,13 @@ export function validate(input: RoutineInput): RoutineInput {
     ...(input.defaultModel ? { defaultModel: true } : {}),
     ...(input.securityReview ? { securityReview: true } : {}),
     ...(input.permission ? { permission: input.permission } : {}),
+    ...(input.useWorktree
+      ? { useWorktree: true, sourceBranch: input.sourceBranch }
+      : {}),
+    ...(input.codePermissionMode
+      ? { codePermissionMode: input.codePermissionMode }
+      : {}),
+    ...(input.effort ? { effort: input.effort } : {}),
     ...(alwaysAllowed ? { alwaysAllowed } : {}),
   };
 }
@@ -220,7 +297,7 @@ export function validate(input: RoutineInput): RoutineInput {
 /** Said when a one-time routine is saved on, or switched on at, a moment that has passed. */
 export const routineOncePastMessage = "Choose a time in the future.";
 
-/** Deterministic dispatch delay. */
+/** Deterministic dispatch delay (desktop 2.37337.1, index.chunk-BWk6pVUt.js:237836,241451). */
 export function routineJitterSeconds(task: Routine, now: number): number {
   if (
     task.disableJitter !== false ||

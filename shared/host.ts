@@ -1,6 +1,6 @@
 /**
  * Where the renderer runs: the Electron desktop app or the web app served by
- * the Claudex service (docs/architecture.md).
+ * the Claudex service (docs: SCRATCH/impl/web/PLAN.md §0, §2 row 14).
  *
  * Two things describe a host:
  * - `surface`, a build constant, picks layout variants (window chrome, the
@@ -40,6 +40,8 @@ export interface HostCapabilities {
   systemIntegration: boolean;
   /** Restart the Codex engine from the app. */
   engineRestart: boolean;
+  /** Fonts read from a local Claude installation. */
+  referenceFonts: boolean;
   /** The app's own update check and download. */
   appUpdates: boolean;
   /** Cowork running in a cloud sandbox (web). */
@@ -60,6 +62,7 @@ export interface HostCapabilities {
   scheduledTasks: boolean;
   /** Protocol feature: must be advertised by the actual main/runner backend. */
   codeSessionPermissions?: boolean;
+  nativeSendReceipts?: boolean;
 }
 
 export type HostCapability = keyof HostCapabilities;
@@ -107,6 +110,8 @@ export interface RepositoryRef {
    * as (Continue in cloud: the desktop's branch); detached when missing.
    */
   branch?: string;
+  /** The branch a Cloud Code session will publish to in this repository. */
+  outcome?: { kind: "create" | "reuse"; branch: string };
 }
 
 export interface HostInfo {
@@ -135,6 +140,7 @@ export const desktopHost: HostInfo = Object.freeze({
     windowChrome: true,
     systemIntegration: true,
     engineRestart: true,
+    referenceFonts: true,
     appUpdates: true,
     cloudCowork: false,
     cloudCode: false,
@@ -162,6 +168,7 @@ export const webHost: HostInfo = Object.freeze({
     windowChrome: false,
     systemIntegration: false,
     engineRestart: false,
+    referenceFonts: false,
     appUpdates: false,
     cloudCowork: false,
     cloudCode: false,
@@ -190,6 +197,7 @@ export const shellOnlyCapabilities: readonly HostCapability[] = Object.freeze([
   "windowChrome",
   "popOutWindows",
   "systemIntegration",
+  "referenceFonts",
   "appUpdates",
 ]);
 

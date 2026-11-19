@@ -17,6 +17,10 @@ import {
   editorMarkup,
 } from "../../src/artifacts/blank-artifact-model";
 import { BlankArtifactPanel } from "../../src/artifacts/BlankArtifactPanel";
+import {
+  BlankDesignCanvas,
+  type BlankDesignConversation,
+} from "../../src/artifacts/BlankDesignCanvas";
 import { collectArtifacts } from "../../src/artifacts/artifact-collection";
 import { createBlankArtifact } from "../../src/artifacts/create-blank-artifact";
 import { retireBlankArtifactCreates } from "../../src/artifacts/blank-artifact-request";
@@ -129,6 +133,27 @@ async function mounted(
     artifact,
     errors,
     render,
+    renderDesign: async (
+      lastTurn?: BlankDesignConversation["lastTurn"],
+      updatedAt = pair.conversation.updatedAt,
+    ) =>
+      env.render(
+        h(
+          StrictMode,
+          {},
+          h(BlankDesignCanvas, {
+            accountId: app.accountId,
+            owner: app.controllerScope,
+            bridge: env.window.desktop,
+            conversation: {
+              id: pair.conversation.id,
+              blankArtifact: pair.document.artifact,
+              updatedAt,
+              lastTurn,
+            },
+          }),
+        ),
+      ),
     setApp: (next: AppController) => {
       app = next;
     },
@@ -319,6 +344,223 @@ test("Design artboards and elements are genuine saved SVG, and Dashboard exposes
   assert.match(svg, /data-artboard="1"/);
   assert.match(svg, /fill="#c96442"/);
   assert.equal(e.store.conversations[0].turns.length, 0);
+});
+const agentDesign =
+  '<svg xmlns="http://www.w3.org/2000/svg"><g data-artboard="1"><text>Agent design</text></g></svg>';
+
+test("Design reloads another client's saved SVG before the first Chat turn", async (t) => {
+  const e = await mounted(t, "design");
+  await e.renderDesign();
+  await saved(e, "the initial Design canvas");
+  assert.equal(
+    e.document.querySelector(".blank-design-canvas [data-artboard]"),
+    null,
+  );
+
+  const result = await e.bridge.saveBlankArtifact({
+    conversationId: e.pair.conversation.id,
+    artifactId: e.pair.document.artifact.id,
+    expectedRevision: e.pair.document.revision,
+    content: agentDesign,
+  });
+  assert.equal(result.status, "saved");
+  const conversation = e.store.conversation(e.pair.conversation.id);
+  assert.equal(conversation.turns.length, 0);
+  await e.renderDesign(undefined, conversation.updatedAt);
+  assert.equal(
+    e.document.querySelector(".blank-design-canvas [data-artboard] text")
+      ?.textContent,
+    "Agent design",
+  );
+});
+
+test("Design refreshes a pending first read on turn completion and ignores the late older bytes", async (t) => {
+  const e = await mounted(t, "design"),
+    oldRead = deferred<void>(),
+    bridge = e.window.desktop;
+  t.after(() => oldRead.resolve());
+  let terminal = false,
+    terminalReads = 0;
+  e.window.desktop = {
+    ...bridge,
+    readBlankArtifact: async (input) => {
+      const hold = !terminal;
+      const document = await bridge.readBlankArtifact(input);
+      if (hold) await oldRead.promise;
+      else terminalReads++;
+      return document;
+    },
+  };
+  const turn = { id: randomUUID() };
+  await e.renderDesign({ ...turn, status: "inProgress" });
+  assert.match(e.document.body.textContent!, /Loading artifact/);
+  fs.writeFileSync(e.file(), agentDesign);
+  terminal = true;
+  await e.renderDesign({ ...turn, status: "completed" });
+  assert.match(
+    e.document.querySelector(".blank-design-canvas")?.textContent ?? "",
+    /Agent design/,
+  );
+  await act(async () => oldRead.resolve());
+  await e.renderDesign({ ...turn, status: "completed" });
+  assert.match(
+    e.document.querySelector(".blank-design-canvas")?.textContent ?? "",
+    /Agent design/,
+  );
+  assert.equal(terminalReads, 1);
+});
+
+test("Design pauses draft autosave during a turn and preserves the draft if the completed turn changed the file", async (t) => {
+  const e = await mounted(t, "design"),
+    turn = { id: randomUUID() };
+  const held = holdSaves(e);
+  t.after(held.drain);
+  await e.renderDesign();
+  await saved(e, "the Design canvas read");
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  await e.click('[aria-label="Artboard"]');
+  await e.renderDesign({ ...turn, status: "inProgress" });
+  await act(async () => t.mock.timers.tick(1_000));
+  assert.equal(held.started(), 0);
+  assert.notEqual(
+    e.document.querySelector(".blank-save-status")?.textContent,
+    "Saving…",
+  );
+  assert.equal(
+    e.document.querySelector<HTMLButtonElement>('[aria-label="Artboard"]')
+      ?.disabled,
+    true,
+  );
+  assert.ok(e.document.querySelector(".blank-design-canvas [data-artboard]"));
+
+  fs.writeFileSync(e.file(), agentDesign);
+  held.release();
+  await e.renderDesign({ ...turn, status: "completed" });
+  await act(async () => t.mock.timers.tick(1_000));
+  assert.match(
+    e.document.querySelector('[role="alert"]')?.textContent ?? "",
+    /saved file changed/,
+  );
+  assert.notEqual(
+    e.document.querySelector(".blank-save-status")?.textContent,
+    "Saving…",
+  );
+  assert.ok(e.document.querySelector(".blank-design-canvas [data-artboard]"));
+  assert.doesNotMatch(
+    e.document.querySelector(".blank-design-canvas")!.textContent!,
+    /Agent design/,
+  );
+  assert.equal(fs.readFileSync(e.file(), "utf8"), agentDesign);
+});
+
+test("Design keeps editor controls and saved edits while an automatic refresh is pending", async (t) => {
+  const e = await mounted(t, "design"),
+    oldRead = deferred<void>(),
+    bridge = e.window.desktop;
+  t.after(() => oldRead.resolve());
+  let holdRead = false;
+  e.window.desktop = {
+    ...bridge,
+    readBlankArtifact: async (input) => {
+      const document = await bridge.readBlankArtifact(input);
+      if (holdRead) await oldRead.promise;
+      return document;
+    },
+  };
+  const turn = { id: randomUUID() };
+  await e.renderDesign({ ...turn, status: "inProgress" });
+  await saved(e, "the Design canvas read");
+  const properties = '[aria-label="Properties"]';
+  await e.click(properties);
+  assert.equal(
+    e.document.querySelector(properties)?.getAttribute("aria-pressed"),
+    "true",
+  );
+  holdRead = true;
+  await e.renderDesign({ ...turn, status: "completed" });
+  assert.equal(
+    e.document.querySelector(properties)?.getAttribute("aria-pressed"),
+    "true",
+  );
+  await e.click('[aria-label="Artboard"]');
+  await saved(e, "the local Design edit saved during refresh");
+  await act(async () => oldRead.resolve());
+  assert.ok(e.document.querySelector(".blank-design-canvas [data-artboard]"));
+  assert.ok(e.document.querySelector(".blank-properties"));
+  assert.match(fs.readFileSync(e.file(), "utf8"), /data-artboard="1"/);
+});
+
+test("Design queues a terminal refresh through a pending save and a send lease uses the refreshed revision", async (t) => {
+  const e = await mounted(t, "design"),
+    refresh = deferred<void>(),
+    bridge = e.window.desktop;
+  t.after(() => refresh.resolve());
+  let refreshStarted = false,
+    holdRead = false;
+  e.window.desktop = {
+    ...bridge,
+    readBlankArtifact: async (input) => {
+      const document = await bridge.readBlankArtifact(input);
+      if (holdRead) {
+        refreshStarted = true;
+        await refresh.promise;
+      }
+      return document;
+    },
+  };
+  const held = holdSaves(e);
+  t.after(held.drain);
+  await e.renderDesign();
+  await saved(e, "the Design canvas read");
+  await e.click('[aria-label="Artboard"]');
+  held.write();
+  await waitFor(
+    "the unacknowledged Design file save",
+    () => held.persisted() === 1,
+  );
+  const turn = { id: randomUUID() };
+  await e.renderDesign({ ...turn, status: "inProgress" });
+  fs.writeFileSync(e.file(), agentDesign);
+  holdRead = true;
+  await e.renderDesign({ ...turn, status: "completed" });
+  assert.equal(refreshStarted, false);
+  assert.ok(e.document.querySelector(".blank-design-canvas [data-artboard]"));
+  assert.doesNotMatch(
+    e.document.querySelector(".blank-design-canvas")!.textContent!,
+    /Agent design/,
+  );
+
+  const { prepareScopedBlankEditors } =
+    await import("../../src/artifacts/blank-artifact-flush");
+  let lease!: ReturnType<typeof prepareScopedBlankEditors>;
+  let settled = false;
+  await act(async () => {
+    lease = prepareScopedBlankEditors({
+      account: e.getApp().accountId,
+      bridge: e.window.desktop,
+      conversationId: e.pair.conversation.id,
+      artifactId: e.pair.document.artifact.id,
+      current: () => true,
+    });
+    void lease.then(() => {
+      settled = true;
+    });
+    held.acknowledge();
+  });
+  await waitFor("the queued terminal refresh", () => refreshStarted);
+  assert.equal(settled, false);
+  await act(async () => refresh.resolve());
+  const prepared = await completion("the refreshed send lease", lease);
+  const newest = await bridge.readBlankArtifact({
+    conversationId: e.pair.conversation.id,
+    artifactId: e.pair.document.artifact.id,
+  });
+  assert.equal(prepared.expected?.revision, newest.revision);
+  assert.match(
+    e.document.querySelector(".blank-design-canvas")!.textContent!,
+    /Agent design/,
+  );
+  await act(async () => prepared.release());
 });
 test("Dashboard page/source radios preserve the real initial file and do not invent content", async (t) => {
   const e = await mounted(t, "dashboard");

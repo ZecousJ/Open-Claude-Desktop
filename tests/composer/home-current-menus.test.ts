@@ -148,7 +148,7 @@ test("current web Add menu omits duplicate project/search/thinking roots, keeps 
         ),
       ].map((button) =>
         button
-          .querySelector(":scope > span:not([data-icon])")
+          .querySelector(":scope > span:not([data-anthropicon])")
           ?.textContent?.trim(),
       );
     await render(menu("web-chat"));
@@ -214,9 +214,11 @@ test("current web Permission mode contains exactly two real radio actions; legac
     const check = document.querySelector<HTMLElement>(
       ".task-permission-check",
     )!;
-    assert.equal(check.tagName.toLowerCase(), "svg");
-    assert.equal(check.getAttribute("data-icon"), "Check");
-    assert.equal(check.getAttribute("width"), "20");
+    assert.equal(check.tagName, "SPAN");
+    assert.equal(check.dataset.anthropicon, "Check");
+    assert.equal(check.style.fontSize, "calc(20px * var(--cds-rem-scale, 1))");
+    assert.equal(check.style.fontWeight, "566.7");
+    assert.equal(check.textContent?.codePointAt(0), 57403);
     assert.deepEqual(
       rows.map(
         (button) => button.querySelector(".menu-item-text > span")?.textContent,

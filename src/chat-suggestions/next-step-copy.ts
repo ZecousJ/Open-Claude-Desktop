@@ -3,7 +3,7 @@ import type {
   NextStepScenario,
 } from "../../shared/chat-suggestions";
 
-// .
+// (live claude.ai bundle, 2026-10-14, c0783ec14-FMloPyZ8.js).
 export const nextStepCopy: Record<
   NextStepOffer,
   { caption: string; chip: string; prompts: Record<NextStepScenario, string> }

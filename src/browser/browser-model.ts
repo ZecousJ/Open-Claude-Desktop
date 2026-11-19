@@ -20,9 +20,10 @@ import type { SidePanel } from "../conversation/ToolSidePanel";
 // The title bar's Browser toggle
 
 /**
- * Whether the Code title bar shows the Browser (globe) toggle: a desktop build
- * (the web app has no built-in browser), a Code conversation, the administrator
- * has not turned the browser off. With Browser tools off it remains a Preview.
+ * Whether the Code title bar shows the Browser (globe) toggle: a desktop
+ * build (the web app has no built-in browser), a Code conversation, the
+ * administrator has not turned the browser off. With Browser tools off it
+ * remains a Preview (live claude.ai bundle, 2026-10-14, cf580efe9-gW7kJXTJ.js).
  */
 export function browserToggleShown({
   mode,
@@ -34,7 +35,11 @@ export function browserToggleShown({
   capability: boolean;
   policyEnabled: boolean;
   settings: Record<string, unknown> | undefined;
-  /** A conversation in the cloud has no Browser on this computer. */
+  /**
+   * A conversation in the cloud has no Browser on this computer (owner,
+   * 2026-10-22: a cloud chat's panel said "This conversation doesn't
+   * exist.").
+   */
   cloudHosted?: boolean;
 }) {
   return (

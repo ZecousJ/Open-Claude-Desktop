@@ -132,8 +132,8 @@ test("cloud rows select and edit independently, creation is enabled; legacy sear
     ),
   );
   assert.equal(cloud.searchable, undefined);
-  // The start card: Local's rows, then Cloud, Remote Control and SSH (when it
-  // can be used) as submenus; id-named workspaces are left out.
+  // The start card (live desktop, 2026-10-21): Local's rows, then Cloud,
+  // Remote Control and SSH (when it can be used) as submenus; id-named workspaces are left out.
   const expanded = expandedEnvironmentMenu(entries, [
     { label: "Developer", onSelect() {} },
     { label: "a70a78e6-45e6-4a7e-ad58-9369ec2b6208", onSelect() {} },

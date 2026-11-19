@@ -1,8 +1,10 @@
-/* The Code landing's sections: 24px above, 56px below, 40px between sections; a
-   section's header (h2 in body primary, then Show {count} more in muted) 8px
-   over its list; rows 4px apart on alpha-1 (alpha-2 on hover), rounded-lg, 6px
-   by 5px inside, 8px gaps; a 5px dot in a 16px slot and the state in footnote,
-   the title in body primary, the time in footnote muted. */
+/* The Code landing's sections (live claude.ai bundle, 2026-10-15,
+   cc43287c9 kH/AH/$V/tH): 24px above, 56px below, 40px between sections;
+   a section's header (h2 in body primary, then Show {count} more in muted)
+   8px over its list; rows 4px apart on alpha-1 (alpha-2 on hover),
+   rounded-lg, 6px by 5px inside, 8px gaps; a 5px dot in a 16px slot and
+   the state in footnote, the title in body primary, the time in footnote
+   muted. */
 .code-landing {
   display: flex;
   width: 100%;

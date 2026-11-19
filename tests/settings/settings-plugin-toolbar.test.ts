@@ -134,8 +134,12 @@ test("Discover retains Filter and Sort before its catalogue loads", () => {
   for (const name of ["Filter", "Sort"])
     assert.ok(document.querySelector(`button[aria-label="${name}"]`));
   for (const name of ["Filter", "Sort", "Add"])
-    assert.ok(document.querySelector(`[data-icon="${name}"][width="20"]`));
-  assert.ok(document.querySelector('[data-icon="CaretDown"][width="16"]'));
+    assert.ok(
+      document.querySelector(`[data-anthropicon="${name}"][style*="20px"]`),
+    );
+  assert.ok(
+    document.querySelector('[data-anthropicon="CaretDown"][style*="16px"]'),
+  );
 });
 
 test("Plugins toolbar measurements stay private to its lazy Settings page", () => {

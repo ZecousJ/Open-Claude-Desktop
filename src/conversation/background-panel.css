@@ -1,9 +1,9 @@
-/* The Background tasks panel: the panel, its task cards, background terminals
-   and finished tasks. Moved from workflow.css, which keeps the workflow cards
-   and agent tables shown inside it. Loaded right after workflow.css, so the
-   cascade is unchanged. */
+/* The Background tasks panel (package WP5b): the panel, its task cards,
+   background terminals and finished tasks. Moved from workflow.css (WP5a),
+   which keeps the workflow cards and agent tables shown inside it. Loaded
+   right after workflow.css, so the cascade is unchanged. */
 /* Loop cards: p-md, gap-sm, gap-1.25, pb-0.75, text-body/footnote and
-   bg-alpha-1. */
+   bg-alpha-1 (live claude.ai bundle, 2026-10-14, cccc2cf0a-ClzhdM48.js). */
 .session-loop-task {
   display: flex;
   flex-direction: column;
@@ -86,8 +86,8 @@
   border: 1px solid #2b2b2b;
   border-radius: 10px;
 }
-/* "Background tasks" 10px from the card edge, 17px below its top; the list
-   follows. */
+/* R-0646: "Background tasks" 10px from the card edge, 17px below its top;
+   the list follows. */
 .background-tasks-panel > header {
   height: 24px;
   min-height: 24px;
@@ -142,7 +142,9 @@
 .background-tasks-scroll h3 {
   margin: 2.5px 0 6.5px;
   color: var(--text-muted);
-  font: 12px/18px sans-serif;
+  font:
+    12px/18px "Claudex Reference Sans",
+    sans-serif;
 }
 .background-task {
   padding: 8px 8px 12px;
@@ -348,7 +350,8 @@
   background: #464646;
   color: #e6e6e6;
 }
-/* Clear finished tasks in the header. */
+/* Clear finished tasks in the header (live claude.ai bundle, 2026-10-15:
+   ghost Trash, at the disabled opacity while nothing finished). */
 .background-tasks-panel > header .background-clear[aria-disabled="true"] {
   opacity: 0.4;
   cursor: default;
@@ -422,7 +425,7 @@
 :root[data-theme="light"] .background-task-title button:hover:not(:disabled) {
   background: #c8c3ba;
 }
-/* The back arrow centre sits 16px from the card edge. */
+/* R-0786 独立侧栏初态: the back arrow centre sits 16px from the card edge. */
 .background-tasks-panel.agent-transcript-panel > header {
   padding-left: 4px;
 }
@@ -430,10 +433,11 @@
   color: #5f5b54;
 }
 
-/* "Background tasks appear here" and "No terminal open" are drawn as the
-   Changes panel's empty state: the words centred in the card, 13px #f0f0f0; the
-   Background tasks one has the original's AgentsSimple glyph (24px in a 28px
-   box, muted) over its line. */
+/* "Background tasks appear here" and "No terminal open" (R-0678, R-0893: no
+   capture) are drawn as the Changes panel's empty state (R-0874): the words
+   centred in the card, 13px #f0f0f0; the Background tasks one has the
+   original's AgentsSimple glyph (24px in a 28px box, muted) over its line
+   (desktop bundle 2.31226.1). */
 .background-tasks-panel .panel-empty > p {
   margin: 0;
   font-size: inherit;
@@ -452,7 +456,7 @@
   font-size: 13px;
   text-align: center;
 }
-.background-tasks-panel .panel-empty > .app-icon {
+.background-tasks-panel .panel-empty > .anthropicon {
   margin: 2px;
 }
 /* A failed agent's status word in the danger colour. */

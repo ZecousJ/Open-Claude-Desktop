@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import type { ArtifactOutputKind } from "../../shared/artifact-output";
 import { t, formatText } from "../i18n";
 import { Menu, type MenuPosition } from "../ui/Menu";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import "./code-output-intent.css";
 
 const labels: Record<ArtifactOutputKind, string> = {
@@ -58,7 +58,7 @@ export function CodeOutputIntent({
           entries={[
             {
               label: removeLabels[kind],
-              icon: <AppIcon name="XBase" size={16} />,
+              icon: <Anthropicon name="XBase" size={16} />,
               onSelect: onRemove,
             },
           ]}

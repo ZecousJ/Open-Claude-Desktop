@@ -2,9 +2,10 @@
    Measured from R-0805-Code编辑app-js审批卡 / 创建utils-js / 运行node-app (2x, 1164px wide):
    card 1px #323232 border, radius 8, #1a1a1a; title ink 18.5px below the top edge;
    blocks 11px apart; buttons 24px tall, 24px below the last block, 11px above the bottom. */
-/* The whole card is 13px text on 20px lines, path labels 12px; content is inset
-   12px from the border on both sides (G-10, G-35). */
-/* 12px inside, rounded-card (radius + 4px = 10px), bg-surface-panel with
+/* R-0805 (2x): the whole card is 13px text on 20px lines, path labels 12px;
+   content is inset 12px from the border on both sides (G-10, G-35). */
+/* Live claude.ai bundle, 2026-10-14 (the approval card in the dock):
+   12px inside, rounded-card (radius + 4px = 10px), bg-surface-panel with
    shadow-panel-sm (a 1px ring of 10% white inside, the small shadow). */
 .approval-card {
   --approval-mono: var(--code-font-custom,) Menlo, Consolas, monospace;
@@ -20,16 +21,18 @@
   color: #c8c8c4;
   /* text-body at the default density: 13px on 19px lines. */
   font:
-    13px/19px -apple-system,
+    13px/19px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   transform-origin: top;
   animation: approval-promote 220ms var(--ease-out-cubic);
   container-type: inline-size;
 }
-/* A card that comes to the front grows out of the first ghost's place: opacity
-   .75, 6px up, 97%. Requests already waiting when the conversation opens skip
-   it. */
+/* A card that comes to the front grows out of the first ghost's place:
+   opacity .75, 6px up, 97% (source: desktop bundle 2.31226.1 static CSS,
+   code-approval-promote; R-0805 had read it as a 4px drop from 0 in 120ms).
+   Requests already waiting when the conversation opens skip it. */
 @keyframes approval-promote {
   from {
     opacity: 0.75;
@@ -133,7 +136,8 @@
   font-weight: 580;
   line-height: 19px;
   overflow-wrap: anywhere;
-  /* A long command is cut at two lines. */
+  /* A long command is cut at two lines (live claude.ai bundle, 2026-10-14:
+     line-clamp-2 on the title). */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -145,7 +149,7 @@
   line-height: 20px;
   overflow-wrap: anywhere;
 }
-/* Path label sits 6.5px under the path box and 5.5px over its diff. */
+/* Path label sits 6.5px under the path box and 5.5px over its diff (R-0805 app.js). */
 .approval-text.approval-path {
   margin-top: 6.5px;
   font-size: 12px;
@@ -177,8 +181,8 @@
   display: flex;
   gap: 12px;
 }
-/* No reference: the label column fits "Network" in the 12px monospace instead
-   of breaking it (provisional layout). */
+/* No reference (R-0619 not captured): the label column fits "Network" in the
+   12px monospace instead of breaking it (provisional layout). */
 .approval-permissions dt {
   flex: none;
   min-width: 56px;
@@ -203,8 +207,9 @@
   flex: 1;
   margin-left: -10px;
 }
-/* A card 420px wide or less stacks its buttons, one per row at full width; the
-   ⌄ half of Allow once stays beside it. */
+/* A card 420px wide or less stacks its buttons, one per row at full width;
+   the ⌄ half of Allow once stays beside it (desktop bundle 2.31226.1,
+   @container (width<=420px)). */
 @container (width <= 420px) {
   .approval-actions {
     display: grid;
@@ -231,9 +236,10 @@
   height: 24px;
   padding: 0 2px 0 8px;
   border: 0;
-  /* The design system's buttons: h-control 24px, the radius 6px, secondary on
-     fill-secondary (10% white, 14% on hover), primary on fill-primary (#fff,
-     #e1e0d9 on hover; #0b0b0b and #2c2c2a in light). */
+  /* The design system's buttons (live claude.ai bundle, 2026-10-14):
+     h-control 24px, the radius 6px, secondary on fill-secondary (10%
+     white, 14% on hover), primary on fill-primary (#fff, #e1e0d9 on
+     hover; #0b0b0b and #2c2c2a in light). */
   border-radius: 6px;
   background: rgb(255 255 255 / 10%);
   color: var(--text);
@@ -255,7 +261,8 @@
     scale var(--motion-fast) ease-out;
 }
 /* Keyboard focus is the shared ring (00-foundation.css: the original's
-   shadow-focus); a disabled button dims like every disabled control. */
+   shadow-focus); a disabled button dims like every disabled control
+   (--cds-opacity-disabled, 0.4; 0.55 had no capture). */
 .approval-button:disabled {
   opacity: var(--opacity-disabled);
   cursor: default;
@@ -270,7 +277,7 @@
 .approval-button[data-primary]:active:not(:disabled) {
   background: #dcdcda;
 }
-/* The ⌄ half of Allow once, joined to it by a 1px rule. */
+/* R-0613: the ⌄ half of Allow once, joined to it by a 1px rule. */
 .approval-button[data-primary]:has(+ .approval-once-more) {
   border-radius: 5px 0 0 5px;
 }
@@ -298,7 +305,7 @@
 .approval-button-label + .approval-keys {
   margin-left: 4.5px;
 }
-/* ⌘ cap 17px, Esc 26.5px. */
+/* R-0805: ⌘ cap 17px, Esc 26.5px. */
 .approval-key {
   display: inline-grid;
   place-items: center;
@@ -325,9 +332,9 @@
   color: #2b2b2a;
 }
 
-/* The plan card: the title with its Open plan link at the right, and the
-   revision field, which takes the settings inputs' fill and rim, three lines
-   tall. */
+/* The plan card (desktop bundle 2.31226.1, ExitPlanMode): the title with its
+   Open plan link at the right, and the revision field, which takes the
+   settings inputs' fill and rim, three lines tall. */
 .plan-card-header {
   display: flex;
   align-items: baseline;
@@ -489,12 +496,12 @@
   color: #141413;
 }
 
-/* Question card: 768 wide like the composer; header 50px with an "n/N" badge
-   (#c69a5d on #2d1b05) 12px in, the 14px title 8px after it and ⌄ ✕ at the
-   right; option rows #242424, radius 6, 12px from the card edge, 5px apart,
-   label 14px #f9f9f9 and description 13px #92918f 8.5px in, keycap 8.5px from
-   the right; Other holds a 30px field 8px in; Back, Skip and Next/Submit 24px
-   buttons under the rows. */
+/* Question card (R-0607–R-0612, 2x): 768 wide like the composer; header
+   50px with an "n/N" badge (#c69a5d on #2d1b05) 12px in, the 14px title 8px
+   after it and ⌄ ✕ at the right; option rows #242424, radius 6, 12px from
+   the card edge, 5px apart, label 14px #f9f9f9 and description 13px
+   #92918f 8.5px in, keycap 8.5px from the right; Other holds a 30px field
+   8px in; Back, Skip and Next/Submit 24px buttons under the rows. */
 .approval-card.question-card {
   padding: 0 0 12px;
 }
@@ -509,7 +516,9 @@
   flex: 1;
   font-size: 14px;
 }
-/* "{position} of {count}" between its carets: caption text, muted. */
+/* "{position} of {count}" between its carets: caption text, muted
+   (live claude.ai bundle, 2026-10-14: "flex items-center gap-xs
+   text-caption text-muted"). */
 .question-card-pager {
   display: flex;
   flex: none;
@@ -571,7 +580,9 @@ button.question-card-option:focus-visible,
   background: #2c2c2c;
 }
 /* An option row presses to 99% over 100ms and shows keyboard focus as the
-   accent line inside its edge on the hover fill, without the glow. */
+   accent line inside its edge on the hover fill, without the glow (the
+   original's question row: active:scale-[0.99] transition-transform
+   duration-100, focus-visible inset 1px accent; desktop bundle 2.31226.1). */
 button.question-card-option {
   transition:
     background-color var(--motion-fast) var(--ease-out),
@@ -642,14 +653,15 @@ button.question-card-option:focus-visible {
 :root[data-theme="light"] .approval-button.approval-once-more {
   border-left-color: #3a3a37;
 }
-/* The focused Other field has the blue focus rim. */
+/* R-0608: the focused Other field has the blue focus rim. */
 .question-card-input:focus {
   border-color: var(--focus);
   box-shadow: none;
 }
 
-/* The branch setup question: epitaxy-setup-card uses max-w-[420px], gap-md,
-   rounded-xl, border, bg-surface-1, p-md and shadow-sm. */
+/* The branch setup question (live claude.ai bundle, 2026-10-14,
+   c1c1ec7b9): epitaxy-setup-card uses max-w-[420px], gap-md, rounded-xl,
+   border, bg-surface-1, p-md and shadow-sm. */
 .branch-setup-card {
   display: flex;
   width: 100%;
@@ -737,11 +749,12 @@ button.question-card-option:focus-visible {
   background: #f3f2ee;
 }
 
-/* "Run workflow?": icon box beside the question and its note, the four steps on
+/* "Run workflow?" (WorkflowApprovalCard; live claude.ai bundle 2026-10-14,
+   ce2992ba3): icon box beside the question and its note, the four steps on
    a numbered rail in a bordered box (24px numbers, a 1px line between them,
-   12px gap to the text, 12px under each step), then the buttons. The card is
-   rounded-card on surface-panel with p-lg; borders and the rail are the border
-   token, the numbers sit on surface-2, muted text is text-muted. */
+   12px gap to the text, 12px under each step), then the buttons. The card
+   is rounded-card on surface-panel with p-lg; borders and the rail are the
+   border token, the numbers sit on surface-2, muted text is text-muted. */
 .approval-card.workflow-approval {
   padding: 12px;
   border-radius: 10px;

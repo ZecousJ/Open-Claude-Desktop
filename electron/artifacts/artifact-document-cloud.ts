@@ -7,6 +7,7 @@ import type {
   DocumentConnector,
 } from "../../shared/artifact-document";
 import { withArtifactConnector } from "./artifact-tools";
+import { savedConnectorHeaders } from "../connectors/connector-clients";
 
 const toolsInput = z.object({
   tools: z.array(
@@ -64,7 +65,7 @@ export function documentToolArguments(tool: Tool, input: DocumentCloudSave) {
   return args;
 }
 
-// Cloud export actions.
+// Cloud export actions (live claude.ai bundle, 2026-10-14, c547ae5e3-GTYn8RRi.js:1122).
 export class ArtifactDocumentCloud {
   constructor(
     private context: Pick<AppContext, "store" | "policy" | "connectors">,
@@ -121,6 +122,11 @@ export class ArtifactDocumentCloud {
       {
         fetch: this.context.connectors?.fetch,
         token: this.context.connectors?.getToken?.(input.server),
+        headers: savedConnectorHeaders(
+          this.context.store.root,
+          input.server,
+          config.url,
+        ),
         remoteOnly: Boolean(this.context.connectors),
       },
     );

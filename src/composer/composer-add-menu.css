@@ -11,7 +11,8 @@
   box-shadow: var(--shadow);
   color: var(--text);
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -100,15 +101,15 @@
 }
 .composer-add-submenu[data-add-panel="devices"]
   .composer-device-row
-  > [data-icon],
-.composer-add-submenu[data-add-panel="devices"] button > [data-icon] {
+  > [data-anthropicon],
+.composer-add-submenu[data-add-panel="devices"] button > [data-anthropicon] {
   color: inherit;
 }
 /* Current web root only: 226.375px shell, 4px gutter and 1px inner bottom
    ring. Rows and eligibility determine its height; submenus keep theirs. */
 .app.web:not(.mobile-conversation) .composer-add-menu.composer-add-web-chat {
-  /* The menu's start lines up with "+", 4px under it on /new and 4px above it
-     in a conversation (opens-above). */
+  /* Live, 2026-10-20: the menu's start lines up with "+", 4px under it on
+     /new and 4px above it in a conversation (opens-above). */
   left: 0;
   top: calc(100% + 4px);
   width: 226.375px;
@@ -225,7 +226,7 @@
   text-align: left;
   font: inherit;
   /* Rows appear highlighted at once and have no pressed look: the original's
-     menu rows. */
+     menu rows (desktop bundle 2.31226.1 static CSS/JS). */
   transition: none;
 }
 .composer-add-menu button:hover,
@@ -252,7 +253,7 @@
   margin: 0 -1px;
   stroke-width: 1.35;
 }
-/* sm, text-secondary. */
+/* sm, text-secondary (live claude.ai bundle, 2026-10-14, c9b54eb90-ALO4mYkL). */
 .composer-add-menu button > .composer-thinking-icon {
   flex-basis: 16px;
   width: 16px;
@@ -261,8 +262,8 @@
 }
 /* The label fills the row; an icon-font glyph is a span too, but keeps its
    20px slot (the Devices row's Computer glyph). */
-.composer-add-menu button > span:not([data-icon]),
-.composer-add-submenu button > span:not([data-icon]) {
+.composer-add-menu button > span:not([data-anthropicon]),
+.composer-add-submenu button > span:not([data-anthropicon]) {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -287,7 +288,8 @@
   margin-left: auto;
   color: #8f8e8a;
   font:
-    12px/20px -apple-system,
+    12px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   white-space: nowrap;
@@ -349,7 +351,8 @@
 :root[data-theme="light"] .composer-add-separator {
   background: #dedbd4;
 }
-/* Skills and Connectors submenu switches. */
+/* Skills and Connectors submenu switches (R-0268, R-0229: not captured;
+   drawn like the Code connectors submenu's switch, R-0354-0355). */
 .composer-add-submenu button > .composer-add-switch {
   position: relative;
   flex: 0 0 25.5px;
@@ -369,8 +372,8 @@
   background: #fff;
   transition: left var(--motion-snap) var(--ease-out);
 }
-/* An enabled connector's track is blue (the row rule above set the grey with
-   higher specificity, so every switch read as off). */
+/* R-0266: an enabled connector's track is blue (the row rule above set the
+   grey with higher specificity, so every switch read as off). */
 .composer-add-submenu button > .composer-add-switch[data-enabled="true"] {
   background: #3f76c8;
 }
@@ -383,7 +386,7 @@
   height: 16px;
   color: #d8d7d3;
 }
-.composer-add-submenu button > svg[data-icon="Connectors"] {
+.composer-add-submenu button > svg[data-anthropicon="Connectors"] {
   flex: 0 0 15px;
   width: 15px;
   height: 15px;
@@ -405,7 +408,7 @@
 :root[data-theme="light"]
   .composer-add-submenu
   button
-  > svg[data-icon="Connectors"] {
+  > svg[data-anthropicon="Connectors"] {
   color: #5f5d59;
 }
 /* Research that can't run here reads grey; hovering the row says why. */
@@ -418,10 +421,10 @@
   > span {
   color: #8a8780;
 }
-/* Row icons in the submenus take the connector glyph's size and colour; rows
-   Claudex cannot offer yet are greyed. */
-.composer-add-submenu button > svg[data-icon="Add"],
-.composer-add-submenu button > svg[data-icon="Search"] {
+/* R-0261, R-0266: row icons in the submenus take the connector glyph's
+   size and colour; rows Claudex cannot offer yet are greyed. */
+.composer-add-submenu button > svg[data-anthropicon="Add"],
+.composer-add-submenu button > svg[data-anthropicon="Search"] {
   flex: 0 0 15px;
   width: 15px;
   height: 15px;
@@ -435,13 +438,14 @@
 :root[data-theme="light"]
   .composer-add-submenu
   button
-  > svg:is([data-icon="Add"], [data-icon="Search"]) {
+  > svg:is([data-anthropicon="Add"], [data-anthropicon="Search"]) {
   color: #5f5d59;
 }
 
-/* The project submenu opens with "Search or create a project". No capture shows
-   its geometry, so the row follows the Cowork project menu's captured search
-   row and the rows the submenu already had. */
+/* R-0228: the project submenu opens with "Search or create a project". No
+   capture shows its geometry, so the row follows the Cowork project menu's
+   captured search row (R-Cowork-项目文件夹菜单: 40px, glyph and 14px text over
+   a rule, #908f8d) and the rows the submenu already had. */
 .composer-add-search {
   display: flex;
   align-items: center;
@@ -595,8 +599,8 @@
   padding-left: 24px;
 }
 
-.composer-add-menu button > [data-icon],
-.composer-add-submenu button > [data-icon] {
+.composer-add-menu button > [data-anthropicon],
+.composer-add-submenu button > [data-anthropicon] {
   flex: 0 0 20px;
 }
 

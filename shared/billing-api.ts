@@ -26,7 +26,7 @@ export interface BillingInfo {
 
 /**
  * Below this balance (US dollars) the composer warns that the balance is
- * running low and offers Add funds.
+ * running low and offers Add funds (owner, 2026-10-12).
  */
 export const lowBalanceUsd = 10;
 

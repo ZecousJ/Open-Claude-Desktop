@@ -137,7 +137,7 @@ export const idbCommands = {
   ],
 };
 
-/** Simulator's own shortcuts. */
+/** Simulator's own shortcuts (live claude.ai bundle, 2026-10-14, c49d37e5f). */
 export function simulatorShortcutScript(code: number, shift = false) {
   return `tell application "System Events"
 set previousProcess to first process whose frontmost is true

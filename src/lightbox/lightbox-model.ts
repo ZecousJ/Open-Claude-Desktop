@@ -24,7 +24,7 @@ export interface LightboxState {
   closing?: boolean;
 }
 
-/** A slide is 75vw wide and 32px from the next. */
+/** A slide is 75vw wide and 32px from the next (desktop bundle 2.31226.1). */
 export const SLIDE_VW = 75;
 export const SLIDE_GAP_PX = 32;
 
@@ -104,11 +104,11 @@ export function subscribeLightbox(listener: () => void) {
 }
 
 /*
- * Zoom: a click zooms the picture around the pointer to its natural size (at
- * least 2×), ctrl + wheel zooms by exp(−deltaY × 0.01) up to that size and lets
- * go below 1.05×, a drag of 4px or more pans, and the wheel pans while zoomed.
- * How far it may pan grows with the zoom, so a picture just past fitting cannot
- * be dragged away.
+ * Zoom (live claude.ai bundle, 2026-10-13): a click zooms the picture around
+ * the pointer to its natural size (at least 2×), ctrl + wheel zooms by
+ * exp(−deltaY × 0.01) up to that size and lets go below 1.05×, a drag of 4px
+ * or more pans, and the wheel pans while zoomed. How far it may pan grows
+ * with the zoom, so a picture just past fitting cannot be dragged away.
  */
 export const ZOOM_MIN_MAX = 2;
 export const ZOOM_DRAG_SLOP = 4;

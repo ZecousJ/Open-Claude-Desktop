@@ -1,9 +1,10 @@
 /* Session info, the card /status posts (src/session-info/SessionInfoCard.tsx).
-   "flex flex-col gap-md p-lg rounded-lg w-[360px]" with the card outline; the
-   head a 24px footnote row in text-primary with Copy session info; groups 16px
-   apart, each a medium text-secondary label over rows 6px apart: the label
-   muted, the value at the end, cut with an ellipsis (the session ID in the UI
-   mono face) and a small copy button after it. Colours as the usage card's. */
+   Live claude.ai bundle, 2026-10-14: "flex flex-col gap-md p-lg rounded-lg
+   w-[360px]" with the card outline; the head a 24px footnote row in
+   text-primary with Copy session info; groups 16px apart, each a medium
+   text-secondary label over rows 6px apart: the label muted, the value at
+   the end, cut with an ellipsis (the session ID in the UI mono face) and a
+   small copy button after it. Colours as the usage card's. */
 .session-info-card {
   display: flex;
   flex-direction: column;
@@ -106,7 +107,7 @@
   overflow-wrap: anywhere;
 }
 /* The MCP row's Manage (an inline link in the row's muted colour) and the
-   loading line. */
+   loading line (live claude.ai bundle, 2026-10-15, c1c1ec7b9 ZJ). */
 .session-info-manage {
   flex-shrink: 0;
   padding: 0;

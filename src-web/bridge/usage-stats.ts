@@ -12,6 +12,7 @@ import {
   validSessionQuery,
   type SessionUsageQuery,
   type UsageRange,
+  type UsageOverviewQuery,
   type UsageRecordQuery,
   type UsageStatsAPI,
 } from "../../shared/usage-stats-api";
@@ -33,9 +34,9 @@ export function createUsageStatsMethods(
   transport: Pick<WebTransport, "json">,
 ): { [K in keyof UsageStatsAPI]: Method } {
   return {
-    usageOverview: async () => {
+    usageOverview: async (query?: UsageOverviewQuery) => {
       const stats = data(
-        await transport.json(`/api/v1${usageStatsPaths.stats()}`),
+        await transport.json(`/api/v1${usageStatsPaths.stats(query?.timezone)}`),
       );
       // The limits are a courtesy: a service that can't say has none.
       const quotas = await transport
@@ -45,9 +46,10 @@ export function createUsageStatsMethods(
     },
     usageBreakdown: async (raw: UsageRange) => {
       const range = validRange(raw);
+      const reportingTimezone = range.timezone ?? timezone();
       const [trend, models] = await Promise.all([
-        transport.json(`/api/v1${usageStatsPaths.trend(range, timezone())}`),
-        transport.json(`/api/v1${usageStatsPaths.models(range, timezone())}`),
+        transport.json(`/api/v1${usageStatsPaths.trend(range, reportingTimezone)}`),
+        transport.json(`/api/v1${usageStatsPaths.models(range, reportingTimezone)}`),
       ]);
       return breakdownFrom(data(trend), data(models));
     },
@@ -55,7 +57,7 @@ export function createUsageStatsMethods(
       recordsFrom(
         data(
           await transport.json(
-            `/api/v1${usageStatsPaths.records(query, timezone())}`,
+            `/api/v1${usageStatsPaths.records(query, query.timezone ?? timezone())}`,
           ),
         ),
       ),

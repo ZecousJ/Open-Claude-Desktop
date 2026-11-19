@@ -30,11 +30,9 @@ export interface ConversationToolPickerProps {
   onClose: () => void;
 }
 
-/**
- * O16: connector selection followed by Customize <server>, tool search,
- * per-tool switches and any-enabled bulk Enable/Disable all. Authentication is
- * owned by the caller's actual host.
- */
+/** O16 cdeaafbfc-set8PyDY:576–749,767–927: connector selection followed by
+ * Customize <server>, tool search, per-tool switches and any-enabled bulk
+ * Enable/Disable all. Authentication is owned by the caller's actual host. */
 export function ConversationToolPicker(props: ConversationToolPickerProps) {
   useLocale();
   const { catalog, overrides, owner } = props;

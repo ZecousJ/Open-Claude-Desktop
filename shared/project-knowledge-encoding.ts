@@ -1,7 +1,5 @@
-/**
- * O16 140–153. The person verifies a 500-character preview before explicitly
- * accepting replacement decoding.
- */
+/** O16 c7a51f85b-B_WZFn_7:12–82, 140–153. The person verifies a
+ * 500-character preview before explicitly accepting replacement decoding. */
 export const knowledgeEncodings = [
   ["utf-8", "Default (UTF-8)"],
   ["windows-1252", "Western European (Windows-1252)"],

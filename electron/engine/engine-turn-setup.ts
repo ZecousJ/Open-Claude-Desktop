@@ -1,6 +1,7 @@
+import { retireCodeRewind } from "../../shared/code-rewind";
 import { blankArtifactOpeningContext } from "../../shared/blank-artifacts";
 import { resolveBlankArtifactFile } from "../artifacts/blank-artifact-files";
-import { codeExecutionSettings } from "../../shared/code-session-permissions";
+import { codeExecutionPermissionMode, codeExecutionSettings } from "../../shared/code-session-permissions";
 import { modelProtocol } from "../../shared/provider-routes";
 import {
   approvalPolicyFor,
@@ -24,6 +25,7 @@ import type { Conversation, Mode, Project, Provider } from "../../shared/types";
 import { projectKnowledgeInstructions } from "../projects/project-knowledge";
 import { designSystemInstructions } from "../artifacts/design-systems";
 import { type EngineTurnContext } from "./engine-extensions";
+import { workflowToolName } from "../workflows/tool-description";
 import { builtinMcpConfig } from "./engine-extensions";
 import { describeToolsInstruction } from "../../shared/tool-description";
 import {
@@ -82,6 +84,7 @@ export function queue(
     hostId: environment.hostId,
     text: input.text,
     attachments: input.attachments,
+    ...(input.inlineAttachmentDisplays === undefined ? {} : { inlineAttachmentDisplays: structuredClone(input.inlineAttachmentDisplays) }),
     mode: input.mode,
     providerId: provider.id,
     model: input.model,
@@ -90,10 +93,11 @@ export function queue(
   });
   c.turns = c.turns.filter((t) => t.id !== id);
   // A new message ends what a rewind set aside (Undo works until then).
-  delete c.rewind;
+  retireCodeRewind(c);
   c.turns.push({
     id,
     prompt: input.text,
+    ...(input.dispatchDeliveryId ? { dispatchDeliveryId: input.dispatchDeliveryId } : {}),
     ...(input.notificationTrigger
       ? { notificationTrigger: input.notificationTrigger }
       : {}),
@@ -101,6 +105,7 @@ export function queue(
       ? { notificationKey: input.notificationKey }
       : {}),
     attachments: input.attachments,
+    ...(input.inlineAttachmentDisplays === undefined ? {} : { inlineAttachmentDisplays: structuredClone(input.inlineAttachmentDisplays) }),
     items: [],
     status: "inProgress",
     reconnecting: waitingNote(this.launcher?.label || "the SSH host"),
@@ -119,6 +124,7 @@ export function canQueue(this: Engine, input: SendInput, retryTurnId?: string) {
     !!this.options.outbox &&
     !retryTurnId &&
     !input.incognito &&
+    !input.skillReferences?.length &&
     input.mode === "code"
   );
 }
@@ -207,16 +213,18 @@ export async function deliver(this: Engine) {
           conversationId: c.id,
           text: entry.text,
           attachments: entry.attachments,
+          ...(entry.inlineAttachmentDisplays === undefined ? {} : { inlineAttachmentDisplays: entry.inlineAttachmentDisplays }),
           mode: entry.mode,
           cwd: c.cwd,
           projectId: c.projectId,
           providerId: entry.providerId,
           model: entry.model,
           clientMessageId: entry.id,
+          ...(waiting.dispatchDeliveryId ? { dispatchDeliveryId: waiting.dispatchDeliveryId } : {}),
         },
         undefined,
         false,
-        { interactive: false },
+        { interactive: false, ...(waiting.dispatchDeliveryId ? { newTaskResolved: true } : {}) },
       );
     } catch (error) {
       if (outbox.get(entry.id)) {
@@ -242,7 +250,16 @@ export async function branchFrom(
   retryTurnId: string,
   editingPrompt: boolean,
   threadOptions: ThreadOptions,
+  hostCurrent?: () => boolean,
 ) {
+  const rpc = this.rpc;
+  const check = () => {
+    if (hostCurrent && (!hostCurrent() || this.rpc !== rpc))
+      throw new Error(
+        "The account or agent changed. A requested branch may already exist; check before retrying.",
+      );
+  };
+  check();
   const index = c.turns.findIndex((t) => t.id === retryTurnId);
   if (index < 0 || c.turns.some((t) => t.status === "inProgress"))
     throw new Error("This response cannot be retried right now.");
@@ -259,6 +276,7 @@ export async function branchFrom(
           lastTurnId: c.turns[index - 1].id,
           ...reloadOptions(threadOptions),
         });
+  check();
   if (!fork.thread?.id)
     throw new Error("The agent did not return a new reply thread.");
   // A fork starts per-thread MCP servers without offering their tools;
@@ -266,11 +284,15 @@ export async function branchFrom(
   // incognito thread cannot be loaded again.
   if (index > 0 && hasThreadMcp(threadOptions) && !c.incognito) {
     await this.rpc!.call("thread/unsubscribe", { threadId: fork.thread.id });
+    check();
     await this.rpc!.call("thread/resume", {
       threadId: fork.thread.id,
       ...reloadOptions(threadOptions),
+      excludeTurns: true,
     });
+    check();
   }
+  check();
   const source = c.turns[index];
   const promptGroupId =
     source.promptGroupId ?? source.responseGroupId ?? source.id;
@@ -290,6 +312,7 @@ export async function branchFrom(
   const responseGroupId = editingPrompt ? randomUUID() : replyGroup;
   this.loaded.add(c.threadId!);
   this.threadLimits.set(c.threadId!, limitsKey(threadOptions));
+  this.threadOrganizationPlugins.set(c.threadId!, this.organizationPluginRevision);
   return { responseGroupId, promptGroupId, promptVersionId };
 }
 
@@ -328,19 +351,34 @@ export async function ensureThread(
   this: Engine,
   c: Conversation,
   threadOptions: ThreadOptions,
+  hostCurrent?: () => boolean,
 ) {
+  const rpc = this.rpc;
+  const check = () => {
+    if (hostCurrent && (!hostCurrent() || this.rpc !== rpc))
+      throw new Error(
+        "The account or agent changed. A requested thread may already exist; check before retrying.",
+      );
+  };
+  check();
   const limits = limitsKey(threadOptions);
-  // An ephemeral thread cannot be reloaded with a different native tool
-  // policy; refuse reuse until a fresh incognito chat can apply it.
+  const pluginChanged = !!c.threadId &&
+    (this.threadOrganizationPlugins.get(c.threadId) ?? 0) !== this.organizationPluginRevision;
+  if (pluginChanged && c.incognito && c.threadId && this.loaded.has(c.threadId))
+    throw Error("Start a new incognito chat to apply the updated organization plugins.");
+  // An ephemeral Chat cannot reload updated instructions, knowledge or tool
+  // settings. Refuse reuse rather than recording context it never applied.
   if (
     c.incognito &&
     c.threadId &&
     this.loaded.has(c.threadId) &&
     this.threadLimits.get(c.threadId) !== limits &&
-    !chatExecutionEnabled(this.store.settings, c.mode)
+    (c.mode === "chat" || !chatExecutionEnabled(this.store.settings, c.mode))
   )
     throw new Error(
-      "Start a new incognito chat to apply the code execution setting.",
+      !chatExecutionEnabled(this.store.settings, c.mode)
+        ? "Start a new incognito chat to apply the code execution setting."
+        : "Start a new incognito chat to apply the updated context or settings.",
     );
   // A runner sandbox's folder is trusted before Codex loads its config.
   if (
@@ -349,19 +387,28 @@ export async function ensureThread(
     (!c.threadId || !this.loaded.has(c.threadId))
   )
     await this.trustCodexProject(String(threadOptions.cwd)).catch(() => {});
+  check();
   if (!c.threadId) {
     const result = await this.rpc!.call("thread/start", threadOptions);
+    check();
     c.threadId = result.thread.id;
     this.loaded.add(c.threadId!);
+    if (c.threadId && threadOptions.dynamicTools?.some((tool) => tool.name === workflowToolName))
+      this.workflowEnabledThreads.add(c.threadId);
   } else if (!this.loaded.has(c.threadId)) {
     this.assertIncognitoLive(c);
     await this.rpc!.call("thread/resume", {
       threadId: c.threadId,
       ...reloadOptions(threadOptions),
+      // Claudex already has this conversation's turns. Re-sending the full
+      // rollout in one RPC response can stall long-session recovery; only
+      // the model runtime needs to reload it, not the client transcript.
+      excludeTurns: true,
     });
+    check();
     this.loaded.add(c.threadId);
   } else if (
-    (this.threadLimits.get(c.threadId) ?? limitsKey()) !== limits &&
+    (pluginChanged || (this.threadLimits.get(c.threadId) ?? limitsKey()) !== limits) &&
     !c.incognito
   ) {
     // E0: a loaded thread keeps the limits it was loaded with, so another
@@ -370,16 +417,22 @@ export async function ensureThread(
     // could not be loaded again.)
     try {
       await this.rpc!.call("thread/unsubscribe", { threadId: c.threadId });
+      check();
       await this.rpc!.call("thread/resume", {
         threadId: c.threadId,
         ...reloadOptions(threadOptions),
+        excludeTurns: true,
       });
+      check();
     } catch (error) {
+      check();
       this.loaded.delete(c.threadId);
       throw error;
     }
   }
+  check();
   this.threadLimits.set(c.threadId!, limits);
+  this.threadOrganizationPlugins.set(c.threadId!, this.organizationPluginRevision);
 }
 
 /** thread/start, resume and fork options for a conversation's next turn. */
@@ -390,15 +443,20 @@ export function threadOptions(
   model: string,
   mode: Mode,
   project?: Project,
+  webSearchOverride?: boolean,
 ): ThreadOptions {
   const ctx = this.turnContext(c, provider, model, mode, project);
   const webSearch =
     this.policy().webSearch &&
     c.mode !== "code" &&
-    c.webSearch &&
+    (webSearchOverride ?? c.webSearch) &&
     modelProtocol(provider, model) === "responses";
   const instructions = [
     this.store.settings.instructions,
+    c.sessionInstructions,
+    mode === "code" && c.scratchFilesLeftIn &&
+      `Files from this session's scratch workspace may still be in ${JSON.stringify(c.scratchFilesLeftIn)}. Work on the files in the current folder first. If the user asks to recover a file, check the old scratch workspace for it. Reading that folder outside the current working directory may require the user's permission.`,
+    c.codeFilesRewoundTo && "The user restored files to an earlier point in this conversation. Edits described after that point may no longer be on disk. Check git status or the diff before relying on them, and do not redo those edits unless the user asks.",
     profileInstructions(this.store.settings),
     // Settings → Cowork → Global instructions.
     mode === "cowork" && this.store.settings.coworkInstructions,
@@ -430,6 +488,14 @@ export function threadOptions(
     .filter(Boolean)
     .join("\n\n");
   const dynamicTools = this.extensions.dynamicTools(ctx);
+  const codeEnvironment =
+    mode === "code" && !c.cloudHosted && !c.cloudEnvironmentId &&
+    this.environment.kind !== "space"
+      ? this.store.codeSessionEnvironmentVariables(
+          c.envScopeId,
+          this.environment.kind === "local",
+        )
+      : undefined;
   return {
     model,
     modelProvider: "claudex",
@@ -443,6 +509,12 @@ export function threadOptions(
         c.connectorOverrides,
         c.connectorToolOverrides,
       ),
+      // Codex keeps the previous override when resume omits this key.
+      ...(codeEnvironment !== undefined ? { "shell_environment_policy.set": codeEnvironment } : {}),
+      ...(mode === "code" && this.environment.kind === "local" &&
+        !this.sandboxNetwork && !ctx.settings.codePlanMode
+        ? { "features.request_permissions_tool": true, "features.exec_permission_approvals": true }
+        : {}),
       ...(mode === "chat" && !chatExecutionEnabled(this.store.settings, mode)
         ? { "features.multi_agent": false, "features.multi_agent_v2": false }
         : {}),
@@ -455,6 +527,7 @@ export function threadOptions(
       c.scheduledRun,
       c.asksFirst,
       c.scheduledPermission,
+      (c.turns.at(-1)?.status === "inProgress" ? c.turns.at(-1)?.codePermissionMode : undefined) ?? c.codePermissionMode,
     ),
     sandbox: ctx.sandbox,
     developerInstructions: instructions,
@@ -477,11 +550,17 @@ export function turnContext(
 ): EngineTurnContext {
   const settings = {
     ...codeExecutionSettings(this.store.settings, c),
+    ...(mode === "cowork" && c.coworkPermissionMode
+      ? { taskPermission: c.coworkPermissionMode }
+      : {}),
     ...(mode !== "code" && c.senderPermission
       ? { taskPermission: c.senderPermission }
       : {}),
     ...(mode !== "code" && c.deviceChatOrigin?.active
       ? { taskPermission: c.deviceChatOrigin.permission }
+      : {}),
+    ...(mode === "chat" && c.chatPermissionMode && !c.deviceChatOrigin?.active
+      ? { taskPermission: c.chatPermissionMode }
       : {}),
   };
   const chosen = effectiveTurnSandbox(
@@ -494,6 +573,7 @@ export function turnContext(
       c.scheduledRun,
       c.asksFirst,
       c.scheduledPermission,
+      codeExecutionPermissionMode(c),
     ),
   );
   // Code follows the session's Local sandbox and Strict sandbox choices.
@@ -625,6 +705,7 @@ export function turnExtras(this: Engine, ctx: EngineTurnContext) {
             ctx.conversation.scheduledRun,
             ctx.conversation.asksFirst,
             ctx.conversation.scheduledPermission,
+            (ctx.conversation.turns.at(-1)?.status === "inProgress" ? ctx.conversation.turns.at(-1)?.codePermissionMode : undefined) ?? ctx.conversation.codePermissionMode,
           ),
         }
       : {}),
@@ -651,3 +732,4 @@ export function contextConfig(this: Engine, providerId: string, model: string) {
     ...(compactAt ? { model_auto_compact_token_limit: compactAt } : {}),
   };
 }
+

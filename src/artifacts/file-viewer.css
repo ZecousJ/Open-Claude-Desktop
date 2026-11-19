@@ -1,4 +1,4 @@
-/* The panel keeps 321px at least and leaves the chat column 435px at least. */
+/* The panel keeps 321px at least and leaves the chat column 435px at least (R-0921, R-0923; PanelResizeHandle.tsx). */
 .workspace {
   --file-viewer-least: 331px;
   --file-viewer-inset: 433px;
@@ -51,7 +51,8 @@
   min-width: 0;
   margin: 0;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   color: #b9b8b3;
@@ -63,8 +64,8 @@
   color: #7e7e78;
 }
 /* Preview / Code: the shared segmented control (src/ui/SegmentedControl.tsx);
-   its sliding thumb is the chosen segment's #363636 fill, with the original's
-   inner ring and shadow. */
+   its sliding thumb is the chosen segment's #363636 fill, with the
+   original's inner ring and shadow (desktop bundle 2.31226.1). */
 .file-viewer .file-view-mode {
   --segmented-thumb: #363636;
   --segmented-thumb-ring: rgb(255 255 255 / 6%);
@@ -178,7 +179,11 @@
   background: #191919;
   text-align: left;
   color: var(--text);
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 }
 .file-document-card:hover {
   background: #252525;
@@ -224,11 +229,12 @@
   color: var(--code-foreground, var(--text));
 }
 /*
- * The file viewer's header in light: a white bar with a 1px #e5e5e5 rule, the
- * name #5f5f5f and " · PY" #8a8a8a, Copy as a white split button with a #e5e5e5
- * outline, black text, a #e5e5e5 divider and a #8a8a8a arrow, black expand and
- * close glyphs. The Preview/Code pair is a #f5f5f5 pill whose chosen half is
- * white (icons #2e2e2e, the other #90918c).
+ * The file viewer's header in light (R-1072/R-1081 and R-1073/R-1074, W1920
+ * at 1x): a white bar with a 1px #e5e5e5 rule, the name #5f5f5f and " · PY"
+ * #8a8a8a, Copy as a white split button with a #e5e5e5 outline, black text,
+ * a #e5e5e5 divider and a #8a8a8a arrow, black expand and close glyphs. The
+ * Preview/Code pair is a #f5f5f5 pill whose chosen half is white (icons
+ * #2e2e2e, the other #90918c).
  */
 :root[data-theme="light"] .file-viewer > header {
   border-bottom-color: #e5e5e5;
@@ -303,7 +309,8 @@
   height: 24px;
   color: #b8b7b1;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   border-radius: 5px;
@@ -348,7 +355,11 @@
   pointer-events: none;
   overflow: hidden;
   border-radius: 0 0 10px 10px;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 }
 .artifact-comment-layer button,
 .artifact-comment-layer textarea,
@@ -446,7 +457,8 @@
   outline: none;
   box-shadow: 0 0 0 2px #5794dc26;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   -webkit-app-region: no-drag;
@@ -517,8 +529,8 @@
   font-size: 13px;
   border-color: #4f86c8;
 }
-/* HTML sources tint only markup; embedded style content stays in the base text
-   colour. */
+/* Source view palette sampled from file-viewer-controls-001 @14s: HTML sources tint only markup;
+   embedded style content stays in the base text colour. */
 :root:not([data-theme="light"])
   .file-source[data-language="html"]
   .file-source-line
@@ -617,9 +629,10 @@
   height: 14px;
   color: #9a9a94;
 }
-/* Generating state: the header is 41px including its 1px rule, with only Expand
-   (16px icon) and Close (14px icon); their centres sit 47px and 19.5px left of
-   the panel's right border. The body shows a 20px ring with a brighter arc. */
+/* Generating state (artifact-create-001.mov @26.0s, 1x recording): the header is 41px
+   including its 1px rule, with only Expand (16px icon) and Close (14px icon); their
+   centres sit 47px and 19.5px left of the panel's right border. The body shows a 20px
+   ring with a brighter arc. */
 .artifact-panel.file-viewer > header.file-viewer-generating-header {
   height: 41px;
   min-height: 41px;
@@ -643,9 +656,9 @@
   background: var(--surface);
 }
 
-/* Native previews and the file card. No original capture exists for these;
-   sizes follow the file viewer's measured header, menu and source-view specs
-   and are provisional. */
+/* Native previews and the file card. No original capture exists for these (R-0941,
+   R-0986, R-1033–R-1036 are listed as not captured); sizes follow the file viewer's
+   measured header, menu and source-view specs and are provisional. */
 .file-copy-group > .small-action:only-child {
   border-radius: 6px;
 }
@@ -660,8 +673,8 @@
   background: var(--surface);
 }
 
-/* Refresh: the loaded page stays on screen at about 74% under a dim ring until
-   the reloaded page is ready. */
+/* Refresh (R-1006, W1202 at 1x): the loaded page stays on screen at about
+   74% under a dim ring until the reloaded page is ready. */
 .file-preview > .file-preview-stale {
   position: absolute;
   inset: 0;
@@ -674,9 +687,8 @@
   color: #55554f;
 }
 
-/* While the agent writes it, the card has the file's name, "Artifact" and
-   Open/Hide only. A card whose writing failed or stopped is muted, gives the
-   reason in the failure red of R-0823 and opens nothing. */
+/* R-0935: while the agent writes it, the card has the file's name, "Artifact"
+   and Open/Hide only. R-0949 (no capture): a card whose writing failed or stopped is muted, gives the reason in the failure red of R-0823 and opens nothing. */
 .artifact-document-card[data-state="failed"] .artifact-card-main {
   cursor: default;
 }
@@ -693,11 +705,12 @@
 }
 
 /*
- * A Code session's file panel. A 32px tab row: the tree toggle, the file's tab
- * (italic name, a preview tab, with ×) and at the right Search, More options,
- * Expand and Close; then a 32px path row with the eye. Source in 13px mono with
- * the gutter's numbers right-aligned; the options wrap or not, draw whitespace,
- * scroll past the end and set the tab width.
+ * A Code session's file panel (R-1062–R-1082, W1920 1x light; dark from
+ * R-1068/R-1070 dark). A 32px tab row: the tree toggle, the file's tab
+ * (italic name, a preview tab, with ×) and at the right Search, More
+ * options, Expand and Close; then a 32px path row with the eye. Source in
+ * 13px mono with the gutter's numbers right-aligned; the options wrap or
+ * not, draw whitespace, scroll past the end and set the tab width.
  */
 .artifact-panel.file-viewer.code-file-panel > header.code-file-header {
   display: flex;

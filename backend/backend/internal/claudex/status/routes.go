@@ -201,21 +201,21 @@ func (c *Component) adminUpdate(g *gin.Context) {
 		response.ErrorFrom(g, err)
 		return
 	}
-	in.Platform = "-"
+	var platform *string
 	if req.Platform != nil {
 		p, err := IncidentInput{Platform: *req.Platform}.normalize(false)
 		if err != nil {
 			response.ErrorFrom(g, err)
 			return
 		}
-		in.Platform = p.Platform
+		platform = &p.Platform
 	}
 	by, _ := core.Subject(g)
 	if by == 0 {
 		// Updates by 0 are the component's own; an administrator's must differ.
 		by = -1
 	}
-	inc, err := c.store.update(g.Request.Context(), id, in, by, c.now())
+	inc, err := c.store.update(g.Request.Context(), id, in, platform, by, c.now())
 	if err != nil {
 		response.ErrorFrom(g, errStoreFailed.WithCause(err))
 		return

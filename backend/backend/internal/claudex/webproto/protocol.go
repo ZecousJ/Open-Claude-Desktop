@@ -92,11 +92,14 @@ const (
 	RunnerLinkSubprotocol = "claudex.runner.v1"
 )
 
+const runnerChunkBytes = 1 << 20
+
 // Limits shared with the TypeScript side (webLimits).
 const (
 	RPCBodyBytes        = 1 << 20
 	UploadChunkBytes    = 1 << 20
 	LinkFrameBytes      = 16 << 20
+	LinkMessageBytes    = 64 << 20
 	TurnDocBytes        = 4 << 20
 	TicketTTL           = 30 * time.Second
 	PreviewSignatureTTL = 5 * time.Minute
@@ -252,6 +255,7 @@ var RunnerOps = []string{
 	"store.conversations.list",
 	"store.conversations.get",
 	"store.conversations.put",
+	"store.conversations.rewind",
 	"store.conversations.delete",
 	"store.turns.list",
 	"store.turns.put",
@@ -273,4 +277,6 @@ var RunnerOps = []string{
 	OpRoutineAPIToken,
 	"device.list",
 	"device.call",
+	"run.acquire",
+	"run.finish",
 }

@@ -1,4 +1,3 @@
-import { saveSub2ApiConfig } from "../../server/sub2api-config";
 import { type ClientPolicy } from "../../shared/client-policy";
 import {
   refusalFollowUp,
@@ -33,23 +32,20 @@ export function registerRemoteAccounts(
 ) {
   registerRemoteAuthHandlers(handle, {
     accounts,
+    get accountActivationIdentity() { return ctx.accountActivationIdentity; },
+    get accountRetiring() { return ctx.accountRetiring; },
+    get accountStore() { return ctx.store; },
     get activeAccount() {
       return ctx.activeAccount;
     },
     get session() {
       return ctx.remote?.ready ? ctx.remote.session : undefined;
     },
-    activate: (session, account) =>
-      activateRemote(ctx, accounts, lifecycle, session, account),
+    activate: (session, account, current, onPhase) =>
+      activateRemote(ctx, accounts, lifecycle, session, account, current, onPhase),
     deactivate: () => lifecycle.deactivate(),
     leaveDevice: async () => {
       if (ctx.remote?.ready) await ctx.remote.leaveDevice();
-    },
-    serviceChosen: async (baseUrl) => {
-      const { app } = await import("electron");
-      saveSub2ApiConfig(app.getPath("userData"), baseUrl);
-      // Update checks waited for a service (electron/updates/launch.ts).
-      (await import("../updates/launch")).startAppUpdates(ctx);
     },
     reloadCaller: () => {
       // Taken now: outside the call `ctx.window` is the main window.
@@ -78,7 +74,9 @@ export function handleRefusal(ctx: AppContext, refusal: GatewayRefusal) {
     remote?.claudex === true,
   );
   if (remote && follow.signOut) {
-    void remote.signOut("device-revoked");
+    void remote.signOut("device-revoked").catch(() => {
+      console.error("Account sign-out could not be confirmed.");
+    });
     return;
   }
   remote?.recordRefusal(refusal);
@@ -154,6 +152,8 @@ export function createPolicyHost(
       }),
     );
     // The catalog's context limits apply to this account's threads (E0).
+    ctx.engine.modelEfforts = (providerId, model) =>
+      remote.modelEfforts(providerId, model);
     ctx.engine.modelLimits = (providerId, model) =>
       remote.modelLimits(providerId, model);
     // Keys of the account's other service groups held in memory (MG).

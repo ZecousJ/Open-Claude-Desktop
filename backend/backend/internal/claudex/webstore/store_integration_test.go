@@ -37,35 +37,46 @@ var itDB *sql.DB
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
-	pg, err := testsupport.StartPostgres(ctx, "claudex_webstore_test")
-	if err != nil {
-		if testsupport.Skip(err) {
-			log.Printf("docker is not available; skipping the webstore integration tests: %v", err)
-			os.Exit(0)
+	var pg *testsupport.Postgres
+	var err error
+	if dsn := os.Getenv("CLAUDEX_WEBSTORE_TEST_DSN"); dsn != "" {
+		itDB, err = sql.Open("postgres", dsn)
+	} else {
+		pg, err = testsupport.StartPostgres(ctx, "claudex_webstore_test")
+		if err != nil {
+			if testsupport.Skip(err) {
+				log.Printf("docker is not available; skipping the webstore integration tests: %v", err)
+				os.Exit(0)
+			}
+			log.Fatalf("start postgres: %v", err)
 		}
-		log.Fatalf("start postgres: %v", err)
+		itDB, err = pg.Open(ctx)
 	}
-	itDB, err = pg.Open(ctx)
 	if err != nil {
 		log.Fatalf("open db: %v", err)
 	}
 	// A stand-in for the upstream users table (id, email, soft delete).
-	if _, err := itDB.ExecContext(ctx, `CREATE TABLE users (id BIGSERIAL PRIMARY KEY, email VARCHAR(255) NOT NULL DEFAULT '', deleted_at TIMESTAMPTZ NULL);
+	if _, err := itDB.ExecContext(ctx, `CREATE TABLE users (id BIGSERIAL PRIMARY KEY, email VARCHAR(255) NOT NULL DEFAULT '', username VARCHAR(100) NOT NULL DEFAULT '', deleted_at TIMESTAMPTZ NULL);
 INSERT INTO users (email) SELECT 'user' || g || '@example.com' FROM generate_series(1, 40) AS g;`); err != nil {
 		log.Fatalf("schema: %v", err)
 	}
-	ddl, err := migrations.FS.ReadFile("claudex_0081_web_store.sql")
-	if err != nil {
-		log.Fatalf("read migration: %v", err)
-	}
-	for i := 0; i < 2; i++ { // idempotent
-		if _, err := itDB.ExecContext(ctx, string(ddl)); err != nil {
-			log.Fatalf("migration run %d: %v", i, err)
+	for _, name := range []string{"claudex_0015_plugin_organizations.sql", "claudex_0081_web_store.sql",
+		"claudex_0185_organization_projects.sql", "claudex_0186_organization_project_knowledge.sql", "claudex_0187_attachment_objects.sql"} {
+		ddl, err := migrations.FS.ReadFile(name)
+		if err != nil {
+			log.Fatalf("read migration %s: %v", name, err)
+		}
+		for i := 0; i < 2; i++ {
+			if _, err := itDB.ExecContext(ctx, string(ddl)); err != nil {
+				log.Fatalf("migration %s run %d: %v", name, i, err)
+			}
 		}
 	}
 	code := m.Run()
 	_ = itDB.Close()
-	pg.Terminate(ctx)
+	if pg != nil {
+		pg.Terminate(ctx)
+	}
 	os.Exit(code)
 }
 
@@ -233,6 +244,160 @@ func TestRoundTripLikeCloudStore(t *testing.T) {
 	must(t, c, u, "store.projects.delete", map[string]any{"id": "p1"})
 	must(t, c, u, "store.projects.delete", map[string]any{"id": "p1"}) // idempotent
 	requireCountersExact(t, c, u)
+}
+
+func TestCodeRewindCommitsMetadataAndActiveTailTogether(t *testing.T) {
+	c := newIT(t, 0, 0)
+	accounts := users(t, 2)
+	owner, other := accounts[0], accounts[1]
+	id := "code-rewind"
+	code := json.RawMessage(bytes.Replace(conversationDoc(id, "Before"), []byte(`"mode":"chat"`), []byte(`"mode":"code","threadId":"original"`), 1))
+	must(t, c, owner, "store.conversations.put", map[string]any{"doc": code, "position": 0})
+	branch := "saved"
+	must(t, c, owner, "store.turns.put", map[string]any{"turns": []any{
+		turnDoc(id, nil, "first", 0, "Retained", "Retained response"),
+		turnDoc(id, nil, "second", 1, "Removed", "Removed response"),
+		turnDoc(id, nil, "third", 2, "Also removed", "Also removed response"),
+		turnDoc(id, &branch, "saved-turn", 1, "Saved", "Saved response"),
+	}})
+	rewound := json.RawMessage(bytes.Replace(code, []byte(`"threadId":"original"`), []byte(`"threadId":"forked"`), 1))
+	req := map[string]any{"doc": rewound, "position": 0, "keep": 1, "targetTurnId": "third"}
+	_, err := call(t, c, owner, "store.conversations.rewind", req)
+	require.Error(t, err)
+	before := must(t, c, owner, "store.conversations.get", map[string]any{"id": id})
+	require.JSONEq(t, string(code), string(before["doc"]))
+	turns := must(t, c, owner, "store.turns.list", map[string]any{"conversationId": id})
+	var history []webproto.TurnDoc
+	require.NoError(t, json.Unmarshal(turns["turns"], &history))
+	require.Len(t, history, 4)
+
+	req["targetTurnId"] = "second"
+	_, err = call(t, c, other, "store.conversations.rewind", req)
+	require.Error(t, err)
+	req["retained"] = turnDoc(id, nil, "second", 1, "Retained earlier input", "Retained earlier reply")
+	must(t, c, owner, "store.conversations.rewind", req)
+	turns = must(t, c, owner, "store.turns.list", map[string]any{"conversationId": id})
+	require.NoError(t, json.Unmarshal(turns["turns"], &history))
+	require.Len(t, history, 3)
+	require.Equal(t, "second", history[1].TurnID)
+	require.Contains(t, string(history[1].Turn), "Retained earlier reply")
+	require.NotContains(t, string(turns["turns"]), "Also removed")
+	requireCountersExact(t, c, owner)
+	delete(req, "retained")
+	must(t, c, owner, "store.conversations.rewind", req)
+	after := must(t, c, owner, "store.conversations.get", map[string]any{"id": id})
+	require.JSONEq(t, string(rewound), string(after["doc"]))
+	turns = must(t, c, owner, "store.turns.list", map[string]any{"conversationId": id})
+	require.NoError(t, json.Unmarshal(turns["turns"], &history))
+	require.Len(t, history, 2)
+	require.Equal(t, "first", history[0].TurnID)
+	require.Equal(t, "saved-turn", history[1].TurnID)
+	requireCountersExact(t, c, owner)
+}
+
+func TestDeleteProjectWithChats(t *testing.T) {
+	c := newIT(t, 0, 0)
+	ids := users(t, 2)
+	user, otherUser := ids[0], ids[1]
+	projectID := strings.Repeat("p", 128)
+	for _, u := range ids {
+		must(t, c, u, "store.projects.put", map[string]any{"project": map[string]any{"id": projectID}, "position": 0})
+	}
+	putConversation := func(u int64, id, projectID, mode string, archived bool) {
+		var doc map[string]any
+		require.NoError(t, json.Unmarshal(conversationDoc(id, id), &doc))
+		conversation := doc["conversation"].(map[string]any)
+		conversation["projectId"] = projectID
+		conversation["mode"] = mode
+		conversation["archived"] = archived
+		must(t, c, u, "store.conversations.put", map[string]any{"doc": doc, "position": 0})
+	}
+	putConversation(user, "chat", projectID, "chat", false)
+	putConversation(user, "archived", projectID, "chat", true)
+	putConversation(user, "cowork", projectID, "cowork", false)
+	putConversation(user, "code", projectID, "code", false)
+	putConversation(user, "standalone", "", "chat", false)
+	putConversation(user, "other-project", projectID+"-other", "chat", false)
+	putConversation(otherUser, "chat", projectID, "chat", false)
+	for _, u := range ids {
+		must(t, c, u, "store.turns.put", turnDoc("chat", nil, "t1", 0, "prompt", "reply"))
+		for _, version := range []string{"v1", "v2"} {
+			must(t, c, u, "store.artifacts.put", map[string]any{"artifact": map[string]any{
+				"id": "artifact", "conversationId": "chat", "content": version,
+			}})
+		}
+	}
+	ctx := context.Background()
+	file, err := c.BeginUpload(ctx, user, "account.txt", "text/plain", 5)
+	require.NoError(t, err)
+	_, err = c.WriteUpload(ctx, user, file.ID, 0, []byte("hello"))
+	require.NoError(t, err)
+	before, otherBefore := usageNow(t, c, user), usageNow(t, c, otherUser)
+	deleteBody := map[string]any{"id": projectID, "deleteChats": true}
+	got := must(t, c, user, "store.projects.delete", deleteBody)
+	require.JSONEq(t, `["archived","chat","cowork"]`, string(got["deletedConversationIds"]))
+	require.JSONEq(t, `[]`, string(must(t, c, user, "store.projects.list", nil)["projects"]))
+	for _, id := range []string{"archived", "chat", "cowork"} {
+		require.JSONEq(t, `null`, string(must(t, c, user, "store.conversations.get", map[string]any{"id": id})["doc"]))
+	}
+	for _, id := range []string{"standalone", "other-project"} {
+		require.NotEqual(t, "null", string(must(t, c, user, "store.conversations.get", map[string]any{"id": id})["doc"]))
+	}
+	got = must(t, c, user, "store.conversations.get", map[string]any{"id": "code"})
+	_, codeMeta, err := webproto.DecodeConversationDoc(got["doc"])
+	require.NoError(t, err)
+	require.Equal(t, "code", codeMeta.Mode)
+	require.Empty(t, codeMeta.ProjectID)
+	got = must(t, c, user, "store.search", map[string]any{"query": "code", "projectId": projectID})
+	require.JSONEq(t, `[]`, string(got["results"]))
+	_, err = call(t, c, user, "store.turns.list", map[string]any{"conversationId": "chat"})
+	require.Equal(t, ErrCodeNotFound, opCode(t, err))
+	_, err = call(t, c, user, "store.artifacts.list", map[string]any{"artifactId": "artifact"})
+	require.Equal(t, ErrCodeNotFound, opCode(t, err))
+	require.JSONEq(t, fmt.Sprintf(`[{"id":%q}]`, projectID), string(must(t, c, otherUser, "store.projects.list", nil)["projects"]))
+	require.Contains(t, string(must(t, c, otherUser, "store.turns.list", map[string]any{"conversationId": "chat"})["turns"]), "reply")
+	require.Contains(t, string(must(t, c, otherUser, "store.artifacts.list", map[string]any{"artifactId": "artifact"})["versions"]), "v2")
+	require.Equal(t, otherBefore, usageNow(t, c, otherUser))
+	require.Less(t, usageNow(t, c, user).DocBytes, before.DocBytes)
+	_, data, err := c.ReadFile(ctx, user, file.ID, 0, 5)
+	require.NoError(t, err)
+	require.Equal(t, "hello", string(data))
+	requireCountersExact(t, c, user)
+	requireCountersExact(t, c, otherUser)
+	got = must(t, c, user, "store.projects.delete", deleteBody)
+	require.JSONEq(t, `[]`, string(got["deletedConversationIds"]))
+
+	got = must(t, c, otherUser, "store.projects.delete", map[string]any{"id": projectID})
+	require.Empty(t, got)
+	require.JSONEq(t, `[]`, string(must(t, c, otherUser, "store.projects.list", nil)["projects"]))
+	require.Contains(t, string(must(t, c, otherUser, "store.conversations.get", map[string]any{"id": "chat"})["doc"]), fmt.Sprintf(`"projectId":%q`, projectID))
+	requireCountersExact(t, c, otherUser)
+}
+
+func TestDeleteProjectWithChatsRollsBack(t *testing.T) {
+	c := newIT(t, 0, 0)
+	user := users(t, 1)[0]
+	must(t, c, user, "store.projects.put", map[string]any{"project": map[string]any{"id": "project"}, "position": 0})
+	var doc map[string]any
+	require.NoError(t, json.Unmarshal(conversationDoc("chat", "Chat"), &doc))
+	doc["conversation"].(map[string]any)["projectId"] = "project"
+	must(t, c, user, "store.conversations.put", map[string]any{"doc": doc, "position": 0})
+	must(t, c, user, "store.turns.put", turnDoc("chat", nil, "t1", 0, "prompt", "reply"))
+	before := usageNow(t, c, user)
+	_, err := itDB.Exec(fmt.Sprintf(`ALTER TABLE claudex_web_store_usage ADD CONSTRAINT keep_test_project_usage
+CHECK (user_id <> %d OR doc_bytes >= %d)`, user, before.DocBytes))
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_, err := itDB.Exec(`ALTER TABLE claudex_web_store_usage DROP CONSTRAINT keep_test_project_usage`)
+		require.NoError(t, err)
+	})
+
+	_, err = call(t, c, user, "store.projects.delete", map[string]any{"id": "project", "deleteChats": true})
+	require.Equal(t, webproto.ErrCodeHandlerFailed, opCode(t, err))
+	require.JSONEq(t, `[{"id":"project"}]`, string(must(t, c, user, "store.projects.list", nil)["projects"]))
+	require.Contains(t, string(must(t, c, user, "store.turns.list", map[string]any{"conversationId": "chat"})["turns"]), "reply")
+	require.Equal(t, before, usageNow(t, c, user))
+	requireCountersExact(t, c, user)
 }
 
 func TestListsPage(t *testing.T) {
@@ -661,4 +826,42 @@ func TestCleanupPurgesDeletedAccountsAndStaleUploads(t *testing.T) {
 	requireCountersExact(t, c, kept)
 	entries, _ := os.ReadDir(filepath.Join(c.blobs.userDir(kept), "blobs"))
 	require.Len(t, entries, 1)
+}
+
+func TestSearchFullTextAndPaging(t *testing.T) {
+	c := newIT(t, 0, 0)
+	user := users(t, 1)[0]
+	for i, mode := range []string{"chat", "cowork", "code"} {
+		var doc map[string]any
+		require.NoError(t, json.Unmarshal(conversationDoc(fmt.Sprintf("full%d", i), "needle title"), &doc))
+		meta := doc["conversation"].(map[string]any)
+		meta["mode"], meta["projectId"], meta["archived"], meta["pinned"] = mode, "project", i == 1, i != 0
+		must(t, c, user, "store.conversations.put", map[string]any{"doc": doc, "position": i})
+		must(t, c, user, "store.turns.put", map[string]any{"turns": []any{turnDoc(fmt.Sprintf("full%d", i), nil, "turn", 0, strings.Repeat("a", 65540)+" needle body", "reply")}})
+	}
+	_, err := itDB.Exec(`UPDATE claudex_web_turns SET search_text = left(search_text, 65536) WHERE user_id = $1 AND conversation_id = 'full0'`, user)
+	require.NoError(t, err)
+	got := must(t, c, user, "store.search", map[string]any{"query": "needle", "mode": "chat", "projectId": "project"})
+	var hits []SearchHit
+	require.NoError(t, json.Unmarshal(got["results"], &hits))
+	require.Len(t, hits, 1)
+	require.Equal(t, "turn", hits[0].TurnID)
+	require.Contains(t, hits[0].Snippet, "needle body")
+	for i, mode := range []string{"chat", "cowork", "code"} {
+		got = must(t, c, user, "store.search", map[string]any{"query": "needle body", "mode": mode, "page": map[string]any{"offset": 0, "archive": "all"}})
+		require.NoError(t, json.Unmarshal(got["results"], &hits))
+		require.Len(t, hits, 1)
+		require.Equal(t, fmt.Sprintf("full%d", i), hits[0].ConversationID)
+		require.Contains(t, hits[0].Snippet, "needle body")
+	}
+	got = must(t, c, user, "store.search", map[string]any{"query": "needle", "limit": 1, "page": map[string]any{"offset": 0, "archive": "archived", "starredOnly": true}})
+	require.NoError(t, json.Unmarshal(got["results"], &hits))
+	require.Len(t, hits, 1)
+	require.Equal(t, "full1", hits[0].ConversationID)
+	got = must(t, c, user, "store.search", map[string]any{"query": "needle", "limit": 1, "page": map[string]any{"offset": 1, "archive": "all"}})
+	require.NoError(t, json.Unmarshal(got["results"], &hits))
+	require.Len(t, hits, 1)
+	require.Equal(t, "full1", hits[0].ConversationID)
+	_, err = call(t, c, user, "store.search", map[string]any{"query": "needle", "page": map[string]any{"offset": 100001, "archive": "all"}})
+	require.Error(t, err)
 }

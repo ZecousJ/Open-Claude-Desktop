@@ -244,14 +244,14 @@ test("the release answer carries the pack only when it is complete", () => {
       ui: {
         version: "0.27.1",
         bridge: 1,
-        url: "https://claudex.example.com/downloads/claudex/ui/0.27.1/claudex-ui-0.27.1.zip",
+        url: "https://claudex.zecous.cn/downloads/claudex/ui/0.27.1/claudex-ui-0.27.1.zip",
         sha256: sha,
       },
     }).ui,
     {
       version: "0.27.1",
       bridge: 1,
-      url: "https://claudex.example.com/downloads/claudex/ui/0.27.1/claudex-ui-0.27.1.zip",
+      url: "https://claudex.zecous.cn/downloads/claudex/ui/0.27.1/claudex-ui-0.27.1.zip",
       sha256: sha,
     },
   );

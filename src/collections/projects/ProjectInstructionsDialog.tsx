@@ -15,7 +15,7 @@ import { AppContext } from "../../app/AppContext";
 import { Modal } from "../../ui/Controls";
 import "./project-overview.css";
 
-/** Project instructions. */
+/** Project instructions (live claude.ai bundle, 2026-10-14, c9b54eb90). */
 export function InstructionsDialog({
   project,
   onClose,
@@ -253,8 +253,8 @@ export function InstructionsDialog({
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
-        {/* The recommended tools as tiles with an Edit button, or Add tools
-           while there are none. */}
+        {/* Live c9b54eb90 `De`: the recommended tools as tiles with an Edit
+            button, or Add tools while there are none. */}
         {recommended.length > 0 ? (
           <div className="prj-recommended-tools">
             <p className="prj-recommended-title">{t("Recommended Tools:")}</p>

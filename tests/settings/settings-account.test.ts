@@ -68,8 +68,8 @@ function accountContext(remote: boolean, calls: string[]) {
   return {
     activeAccount: {
       id: "11111111-1111-4111-8111-111111111111",
-      email: "ada@example.com",
-      name: "Ada",
+      email: "zecous@example.com",
+      name: "Zecous",
     },
     remote: remote
       ? {
@@ -88,8 +88,8 @@ function accountContext(remote: boolean, calls: string[]) {
                 calls.push("delete remote account");
               },
               profile: async () => ({
-                username: "ada",
-                email: "ada@example.com",
+                username: "zecous",
+                email: "zecous@example.com",
               }),
             },
           },
@@ -162,7 +162,8 @@ test("deleting a local account uses its active session, not a password", async (
   );
   assert.match(markup, /<button[^>]*>Delete account<\/button>/);
   assert.match(markup, /Log out of this device/);
-  // "Delete your account" with a primary button, not a red one.
+  // The live claude.ai row (2026-10-12): "Delete your account" with a
+  // primary button, not a red one.
   assert.match(markup, />Delete your account</);
   assert.match(markup, /<button[^>]*primary[^>]*>Delete account<\/button>/);
   assert.doesNotMatch(markup, /<button[^>]*danger[^>]*>Delete account/);
@@ -190,7 +191,7 @@ test("Account has no Organization ID row, and revoke-all has no extra descriptio
     createElement(AccountSection, {
       profile: {
         kind: "remote",
-        fullName: "Ada",
+        fullName: "Zecous",
         email: "z@example.com",
         canDelete: false,
       },

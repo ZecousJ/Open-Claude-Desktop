@@ -11,17 +11,14 @@ import { CodeHomeSuggestionsSlot } from "./CodeHomeSuggestionsSlot";
 import { StartCardRow, StartCardRows, startRowOrder } from "./StartCardRows";
 import "./task-suggestions.css";
 
-/**
- * Seats in the start card's list: more tasks than that fold their tail into one
- * group row.
- */
+/** Seats in the start card's list (cc43287c9 j5): more tasks than that fold their tail into one group row. */
 const seats = 3;
 
-/**
- * Backlog rows put the prompt in the composer, never run it. The tasks are rows
- * of the start card's list, each with its own delete; past three they fold into
- * "N more suggested tasks" that opens a popup.
- */
+/** Backlog rows put the prompt in the composer, never run it (live claude.ai
+ * bundle, 2026-10-14, cc43287c9-79FKhdho.js:31435,31532,31620). The tasks are
+ * rows of the start card's list, each with its own delete; past three they
+ * fold into "N more suggested tasks" that opens a popup (live bundle,
+ * 2026-10-16, cc43287c9: Ure, Fre). */
 export function TaskSuggestions({
   cwd,
   conversation,

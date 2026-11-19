@@ -10,7 +10,7 @@ import {
   simulatorToggleShown,
 } from "../simulators/simulator-model";
 import { simulatorKinds, simulatorKindLabel } from "../../shared/simulators";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { isMacPlatform } from "../host/keys";
 import { filesPaneAvailable } from "../files/files-model";
 
@@ -31,9 +31,10 @@ export interface PaneSpec {
 }
 
 /**
- * The Code header's panes: Terminal (⌘J on macOS, Ctrl+` elsewhere), Changes
- * (⇧⌘D), Preview or Browser (⇧⌘B), the iOS and Android simulators and Files
- * (⇧⌘F), as ghost icon buttons (View options' own rows are its module's,
+ * The Code header's panes (live claude.ai bundle, 2026-10-14, the title
+ * bar's pane list): Terminal (⌘J on macOS, Ctrl+` elsewhere), Changes (⇧⌘D),
+ * Preview or Browser (⇧⌘B), the iOS and Android simulators and Files (⇧⌘F),
+ * as ghost icon buttons (View options' own rows are its module's,
  * src/code-view-options/CodeViewOptions.tsx).
  */
 export function useCodePanes(
@@ -71,11 +72,12 @@ export function useCodePanes(
       policyEnabled: browserPolicyOf(app.policy).enabled,
       settings,
     });
-  // The web's cloud sessions have neither a terminal nor a browser pane.
+  // The web's cloud sessions have neither a terminal nor a browser pane
+  // (live claude.ai Code, 2026-10-21: Changes, Files and Share).
   const panes: PaneSpec[] = [
     {
       id: "terminal",
-      icon: <AppIcon name="CommandLinePrompt" />,
+      icon: <Anthropicon name="CommandLinePrompt" />,
       label: "Terminal",
       shortcut: mac ? ["mod", "J"] : ["ctrl", "`"],
       active: isOpen("terminal"),
@@ -84,7 +86,7 @@ export function useCodePanes(
     },
     {
       id: "changes",
-      icon: <AppIcon name="ChangesPlusMinus" />,
+      icon: <Anthropicon name="ChangesPlusMinus" />,
       label: "Changes",
       shortcut: ["mod", "shift", "D"],
       active: isOpen("changes"),
@@ -94,9 +96,9 @@ export function useCodePanes(
   if (browser)
     panes.push({
       id: "browser",
-      icon: <AppIcon name="Globe" />,
+      icon: <Anthropicon name="Globe" />,
       // The original names the pane Preview while Browser tools are off.
-      label: settings.browserTools === false ? "Preview" : "Browser",
+      label: (settings.codeBrowserTools ?? settings.browserTools) === false ? "Preview" : "Browser",
       shortcut: ["mod", "shift", "B"],
       active: isOpen("browser"),
       toggle: toggle("browser"),
@@ -104,7 +106,7 @@ export function useCodePanes(
   if (filesPaneAvailable(conversation))
     panes.push({
       id: "files",
-      icon: <AppIcon name="Folder" />,
+      icon: <Anthropicon name="Folder" />,
       label: "Files",
       shortcut: ["mod", "shift", "F"],
       active: isOpen("files"),
@@ -123,7 +125,7 @@ export function useCodePanes(
     )
       panes.push({
         id: simulatorPanelId[kind],
-        icon: <AppIcon name="MobilePhone" />,
+        icon: <Anthropicon name="MobilePhone" />,
         label: simulatorKindLabel[kind],
         active: isOpen(simulatorPanelId[kind]),
         toggle: toggle(simulatorPanelId[kind]),

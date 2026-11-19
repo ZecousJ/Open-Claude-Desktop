@@ -3,17 +3,34 @@
  * redirect included, is checked here; so are the windows a page opens and
  * each request against the administrator's blocked domains.
  */
-import { fileAllowed, hostBlocked } from "../../shared/browser";
+import { fileAllowed, hostBlocked, isLocalDevHost, isPrivateNetworkHost } from "../../shared/browser";
+import { previewHostname, previewOriginUnsafe } from "../../shared/preview-origin";
+import { privateNetworkHost } from "./site-risk";
 
 export interface GuardOptions {
   /** Folders the person chose with Open HTML file… (their files may open). */
   fileRoots: readonly string[];
   /** The administrator's blocked domains (policy `browser.blockedDomains`). */
   blockedDomains: readonly string[];
+  writtenFileUrl?: string;
+  publicHostsOnly?: boolean;
+  privateOrigin?: string;
 }
 
 export type NavigationDecision =
-  { allow: true } | { allow: false; reason: "scheme" | "blocked" | "file" };
+  { allow: true } | { allow: false; reason: "scheme" | "blocked" | "file" | "private" };
+
+export function privateBrowserDestination(url: URL) {
+  const host = previewHostname(url.hostname);
+  return (
+    isLocalDevHost(host) ||
+    isPrivateNetworkHost(host) ||
+    privateNetworkHost(host) ||
+    previewOriginUnsafe(url.href) ||
+    (!host.includes(".") && !host.startsWith("[")) ||
+    host.endsWith(".internal")
+  );
+}
 
 /** Whether a page may load `url` in its main frame. */
 export function navigationAllowed(
@@ -31,6 +48,9 @@ export function navigationAllowed(
     case "https:":
       if (parsed.username || parsed.password)
         return { allow: false, reason: "scheme" };
+      if (options.publicHostsOnly && privateBrowserDestination(parsed) &&
+          options.privateOrigin !== parsed.origin)
+        return { allow: false, reason: "private" };
       return hostBlocked(parsed.host, options.blockedDomains)
         ? { allow: false, reason: "blocked" }
         : { allow: true };
@@ -39,7 +59,7 @@ export function navigationAllowed(
         ? { allow: true }
         : { allow: false, reason: "scheme" };
     case "file:":
-      return fileAllowed(parsed, options.fileRoots)
+      return !options.publicHostsOnly && (parsed.href === options.writtenFileUrl || fileAllowed(parsed, options.fileRoots))
         ? { allow: true }
         : { allow: false, reason: "file" };
     default:
@@ -72,12 +92,13 @@ export function windowOpenDecision(
  * Whether a request (any frame, any resource) goes to a blocked domain.
  * Chromium's own pages and data/blob resources are never blocked.
  */
-export function requestBlocked(url: string, blockedDomains: readonly string[]) {
-  if (!blockedDomains.length) return false;
+export function requestBlocked(url: string, blockedDomains: readonly string[], publicHostsOnly = false) {
+  if (!blockedDomains.length && !publicHostsOnly) return false;
   try {
     const parsed = new URL(url);
     if (!/^(?:https?|wss?):$/.test(parsed.protocol)) return false;
-    return hostBlocked(parsed.host, blockedDomains);
+    return hostBlocked(parsed.host, blockedDomains) ||
+      (publicHostsOnly && privateBrowserDestination(parsed));
   } catch {
     return false;
   }
@@ -118,7 +139,7 @@ export function guardContents(
   options: () => GuardOptions,
   handlers: {
     routeLink?(url: string): boolean;
-    refused(url: string, reason: "scheme" | "blocked" | "file"): void;
+    refused(url: string, reason: "scheme" | "blocked" | "file" | "private"): void;
     openTab(url: string, foreground: boolean): void;
   },
 ) {
@@ -159,6 +180,8 @@ export function guardContents(
  */
 export function subframeRefused(url: string, options: GuardOptions) {
   if (requestBlocked(url, options.blockedDomains)) return true;
-  if (/^\s*file:/i.test(url)) return !fileAllowed(url, options.fileRoots);
+  if (options.publicHostsOnly && requestBlocked(url, [], true) &&
+      options.privateOrigin !== URL.parse(url)?.origin) return true;
+  if (/^\s*file:/i.test(url)) return options.publicHostsOnly || (url !== options.writtenFileUrl && !fileAllowed(url, options.fileRoots));
   return /^\s*(?:chrome|devtools|chrome-extension):/i.test(url);
 }

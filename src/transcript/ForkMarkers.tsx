@@ -4,11 +4,15 @@ import type { Conversation, ConversationRewind } from "../../shared/types";
 import { Menu, type MenuPosition } from "../ui/Menu";
 import { currentLocale, formatText } from "../i18n";
 import { WithTooltip } from "../ui/Tooltip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 
 /*
- * Where a forked conversation came from, and where others were forked from this
- * one.
+ * Where a forked conversation came from, and where others were forked from
+ * this one (live claude.ai bundle, 2026-10-13, c1c1ec7b9: a muted caption
+ * with the ArrowSplitRight icon at the "sm" size, 16px;
+ * "Forked from {title}" opens the source, "Forked here: {title}" the fork,
+ * "{count} forks from here" a list of them; an archived fork reads
+ * "· Archived" and no longer opens).
  */
 
 type Lookup = (id: string) => Conversation | undefined;
@@ -29,7 +33,7 @@ export function ForkedFrom({
   const title = parent?.title ?? source.title;
   const body = (
     <>
-      <AppIcon name="ArrowSplitRight" />
+      <Anthropicon name="ArrowSplitRight" />
       <span>
         {title
           ? formatText("Forked from {title}", { title })
@@ -78,7 +82,7 @@ export function ForksHere({
     const [fork] = forks;
     const body = (
       <>
-        <AppIcon name="ArrowSplitRight" />
+        <Anthropicon name="ArrowSplitRight" />
         <span>
           {formatText("Forked here: {title}", { title: titleOf(fork) })}
         </span>
@@ -114,7 +118,7 @@ export function ForksHere({
           setMenu({ left: box.left, top: box.bottom + 4 });
         }}
       >
-        <AppIcon name="ArrowSplitRight" />
+        <Anthropicon name="ArrowSplitRight" />
         <span>
           {formatText("{count} forks from here", { count: forks.length })}
         </span>
@@ -139,9 +143,9 @@ export function ForksHere({
 }
 
 /**
- * Where a rewind cut the conversation: "Rewound here · {time}" with Undo
- * rewind, or after an undo "Rewind undone · {time}" with Redo rewind; the
- * button's tooltip says what it brings back.
+ * Where a rewind cut the conversation (desktop bundle 2.31226.1): "Rewound
+ * here · {time}" with Undo rewind, or after an undo "Rewind undone ·
+ * {time}" with Redo rewind; the button's tooltip says what it brings back.
  */
 export function RewindMarker({
   rewind,

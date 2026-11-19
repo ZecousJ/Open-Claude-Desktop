@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   BYTES_PER_SECOND,
+  DEFAULT_UPSTREAM_URL,
   audioSecondsToBytes,
   bytesToAudioSeconds,
   keyAvailable,
@@ -14,12 +15,10 @@ import {
 } from '../voiceForm'
 import type { VoiceSettingResponse } from '@/api/admin/claudex/voice'
 
-const TEST_URL = 'wss://transcribe.example.com/v1/audio/realtime/transcriptions'
-
 const stored: VoiceSettingResponse = {
   transcription: {
     enabled: true,
-    upstream_url: TEST_URL,
+    upstream_url: DEFAULT_UPSTREAM_URL,
     api_key_configured: true,
     api_key_masked: '********abcd',
     max_session_seconds: 300,
@@ -63,7 +62,7 @@ describe('voice form', () => {
     expect(voiceUpdateFromForm(form())).toEqual({
       transcription: {
         enabled: true,
-        upstream_url: TEST_URL,
+        upstream_url: DEFAULT_UPSTREAM_URL,
         max_session_seconds: 300,
         max_bytes: 9_600_000,
         idle_timeout_seconds: 30
@@ -97,11 +96,11 @@ describe('voice form', () => {
     expect(voiceUpdateFromForm(f).transcription).not.toHaveProperty('api_key')
   })
 
-  it('fills missing values with the server defaults (off, no key, no service)', () => {
+  it('fills missing values with the server defaults (off, no key, hiwonder URL)', () => {
     const f = voiceFormFromSetting(null)
     expect(f.enabled).toBe(false)
     expect(f.keyConfigured).toBe(false)
-    expect(f.upstreamUrl).toBe('')
+    expect(f.upstreamUrl).toBe('wss://hiwonder.cc/v1/audio/realtime/transcriptions')
     expect(voiceUpdateFromForm(f).transcription).toMatchObject({
       max_session_seconds: 300,
       max_bytes: 300 * 32000,
@@ -113,7 +112,6 @@ describe('voice form', () => {
   it('needs a key before dictation can be on', () => {
     const f = voiceFormFromSetting(null)
     f.enabled = true
-    f.upstreamUrl = TEST_URL
     expect(keyAvailable(f)).toBe(false)
     expect(validateVoiceForm(f)).toEqual({ 'transcription.api_key': 'keyRequired' })
     f.apiKey = 'sk-12345678'
@@ -179,7 +177,7 @@ describe('voice form', () => {
   })
 
   it.each([
-    ['wss://transcribe.example.com/v1/audio/realtime/transcriptions', true],
+    ['wss://hiwonder.cc/v1/audio/realtime/transcriptions', true],
     ['  wss://asr.example.com:8443/path?lang=en  ', true],
     ['ws://localhost:9000/asr', true],
     ['ws://127.0.0.1:9000/asr', true],

@@ -8,7 +8,7 @@ import {
 import { t } from "../i18n";
 import "./quick-access-shortcut.css";
 
-/** Or. */
+/** Or (live claude.ai bundle, 2026-10-14, c71860c77-yHKjimoi). */
 export function QuickAccessShortcut({
   value,
   platform,

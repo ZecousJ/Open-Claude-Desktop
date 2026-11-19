@@ -14,7 +14,8 @@ export interface NativeCrashReporter {
   addExtraParameter(key: string, value: string): void;
 }
 
-// Local Crashpad capture. No dump is uploaded to a service.
+// Local Crashpad capture (desktop 2.37337.1, index.pre.js:15302;
+// index.chunk-BWk6pVUt.js:167023). No dump is uploaded to a service.
 export function startNativeCrashes(
   reporter: NativeCrashReporter,
   productName: string,

@@ -1,4 +1,5 @@
-/** Launch server session data. */
+/** Launch server session data (live claude.ai bundle, 2026-10-14,
+ * cf580efe9-gW7kJXTJ.js, Q). */
 export function sessionDataConfirmation(clear: boolean) {
   return {
     title: clear ? "Clear session data?" : "Keep cookies?",
@@ -10,7 +11,7 @@ export function sessionDataConfirmation(clear: boolean) {
   };
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, c224804cc-DLNktehd.js).
 export function browsingDataConfirmation(shared: boolean) {
   return {
     title: "Clear browsing data?",

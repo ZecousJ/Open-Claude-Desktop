@@ -81,17 +81,14 @@ git clone <repo-url> "$env:CODEX_HOME\skills\api-image"
 
 更推荐让 key 放在环境变量里，不要在聊天里直接粘贴。临时切换只影响本次调用，不会写回你的 `auth.json` 或 `config.toml`，除非你明确要求 Codex 修改配置。
 
-## 关于 gpt-image-2
+## 生图接口
 
-这个 Skill 默认按 `gpt-image-2` 的官方图片 API 规则处理：
+Claudex 为每次请求自动选择生图模型。直连其他服务时，脚本默认发送 `gpt-image-2`，可以用 `--model` 指定模型。
 
 - 纯文生图走 `/images/generations`
 - 有参考图、输入图或 mask 时走 `/images/edits`
 - 官方 GPT Image models 默认读返回里的 `b64_json`
-- `gpt-image-2` 不支持透明背景
-- `gpt-image-2` 不需要、也不应该传 `input_fidelity`
-
-如果你的 Provider 对这些参数有自己的兼容层，以 Provider 的实际报错为准。
+- 透明背景与 `input_fidelity` 的支持情况由服务决定
 
 ## 目录
 

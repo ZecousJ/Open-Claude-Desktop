@@ -1,7 +1,7 @@
-/* The linked computer beside a chat's title: a ghost 28px Laptop button in the
-   muted ink, radius 7; its card 280 wide on surface-3, radius 12, a 1px 10%
-   ring and the popover shadow, 6px under the button with its right edge on the
-   button's. */
+/* The linked computer beside a chat's title (live claude.ai, 2026-10-21,
+   ce8b539d3): a ghost 28px Laptop button in the muted ink, radius 7; its
+   card 280 wide on surface-3, radius 12, a 1px 10% ring and the popover
+   shadow, 6px under the button with its right edge on the button's. */
 .computer-link {
   position: relative;
   display: inline-flex;

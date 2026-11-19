@@ -4,11 +4,15 @@ package handler
 import (
 	"context"
 	"errors"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/claudex/gatewayhook"
+	claudexhook "github.com/Wei-Shaw/sub2api/internal/claudex/hook"
+	claudexusage "github.com/Wei-Shaw/sub2api/internal/claudex/usage"
 	pkghttputil "github.com/Wei-Shaw/sub2api/internal/pkg/httputil"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/ip"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
@@ -19,10 +23,91 @@ import (
 	"go.uber.org/zap"
 )
 
+type imageModelAttempt struct {
+	publicModel string
+	request     *service.OpenAIImagesRequest
+	ctx         context.Context
+	mapping     service.ChannelMappingResult
+}
+
+type imageAccountSelection struct {
+	attempt  imageModelAttempt
+	slot     *service.AccountSelectionResult
+	decision service.OpenAIAccountScheduleDecision
+}
+
+type imageFailedAccounts struct {
+	all     map[int64]struct{}
+	byModel map[string]map[int64]struct{}
+}
+
+func (f imageFailedAccounts) forModel(model string) map[int64]struct{} {
+	if scoped := f.byModel[model]; len(scoped) > 0 {
+		excluded := maps.Clone(f.all)
+		maps.Copy(excluded, scoped)
+		return excluded
+	}
+	return f.all
+}
+
+func (f imageFailedAccounts) excludeModel(model string, accountID int64) {
+	if f.byModel[model] == nil {
+		f.byModel[model] = make(map[int64]struct{})
+	}
+	f.byModel[model][accountID] = struct{}{}
+}
+
+func (h *GatewayHandler) ClaudexImageModelIDs(ctx context.Context, group *service.Group) []string {
+	var models, prefixes []string
+	for _, listed := range h.gatewayService.ListedModelIDs(ctx, group) {
+		listed = strings.TrimSpace(listed)
+		if prefix, wildcard := strings.CutSuffix(listed, "*"); wildcard {
+			prefixes = append(prefixes, prefix)
+		} else if group.Platform == service.PlatformComposite || service.IsGPTImageGenerationModel(listed) {
+			models = append(models, listed)
+		}
+	}
+	if group.Platform == service.PlatformComposite && group.ModelAllowlistEnabled() {
+		var names []string
+		for _, entry := range group.ModelAllowlist.Models {
+			if name := strings.TrimSpace(entry); name != "" && !strings.HasSuffix(name, "*") {
+				names = append(names, name)
+			}
+		}
+		models = service.MergeModelIDs(models, names)
+	}
+	if len(prefixes) == 0 {
+		return models
+	}
+	var defaults []string
+	for _, model := range service.DefaultListingModelIDs(service.PlatformOpenAI) {
+		if !service.IsGPTImageGenerationModel(model) {
+			continue
+		}
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(model, prefix) {
+				defaults = append(defaults, model)
+				break
+			}
+		}
+	}
+	return service.MergeModelIDs(models, defaults)
+}
+
+func (h *OpenAIGatewayHandler) ClaudexImages(listedModels func(context.Context, *service.Group) []string, resolver *service.CompositeRouteResolver) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		h.images(c, listedModels, resolver)
+	}
+}
+
 // Images handles OpenAI Images API requests.
 // POST /v1/images/generations
 // POST /v1/images/edits
 func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
+	h.images(c, nil, nil)
+}
+
+func (h *OpenAIGatewayHandler) images(c *gin.Context, listedModels func(context.Context, *service.Group) []string, resolver *service.CompositeRouteResolver) {
 	// CLAUDEX: a picture arrives whole, often after more than a minute.
 	finishRequest := beginGroupFailoverRequestWithin(c, requestbudget.ImagesTotal)
 	defer finishRequest()
@@ -53,6 +138,23 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 	if !h.ensureResponsesDependencies(c, reqLog) {
 		return
 	}
+	automatic := listedModels != nil
+	if automatic {
+		if apiKey.Group == nil || apiKey.GroupID == nil {
+			service.MarkOpsClientBusinessLimited(c, service.OpsClientBusinessLimitedReasonAPIKeyGroupUnassigned)
+			h.errorResponse(c, http.StatusForbidden, "permission_error", "An assigned API key group is required")
+			return
+		}
+		switch apiKey.Group.Platform {
+		case service.PlatformComposite:
+			c.Request = c.Request.WithContext(service.WithResolvedTargetPlatform(c.Request.Context(), service.PlatformOpenAI))
+		case service.PlatformOpenAI:
+		default:
+			service.MarkOpsClientBusinessLimited(c, service.OpsClientBusinessLimitedReasonLocalFeatureGate)
+			h.errorResponse(c, http.StatusNotFound, "not_found_error", "Images API is not supported for this platform")
+			return
+		}
+	}
 
 	body, err := pkghttputil.ReadRequestBodyWithPrealloc(c.Request)
 	if err != nil {
@@ -68,35 +170,26 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 		return
 	}
 
-	if isMultipartImagesContentType(c.GetHeader("Content-Type")) {
-		setOpsRequestContext(c, "", false)
+	setOpsRequestContext(c, "", false)
+	var parsed *service.OpenAIImagesRequest
+	if automatic {
+		parsed, err = h.gatewayService.ParseClaudexImagesRequest(c, body)
 	} else {
-		setOpsRequestContext(c, "", false)
+		parsed, err = h.gatewayService.ParseOpenAIImagesRequest(c, body)
 	}
-
-	parsed, err := h.gatewayService.ParseOpenAIImagesRequest(c, body)
 	if err != nil {
 		h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", err.Error())
 		return
 	}
-	requestModel := parsed.Model
-	ensureCompositeTargetPlatform(c, apiKey, requestModel)
-	clientRequestModel := clientRequestedModel(c, requestModel)
-	routingModel := requestModel
-	if resolvedModel, ok := service.ResolvedUpstreamModelFromContext(c.Request.Context()); ok {
-		routingModel = resolvedModel
-	}
-	if !compositeTargetPlatformAllowed(c, apiKey, requestModel, service.PlatformOpenAI) {
+	publicModel := clientRequestedModel(c, parsed.Model)
+	if !automatic && !compositeTargetPlatformAllowed(c, apiKey, parsed.Model, service.PlatformOpenAI) {
 		h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "Model is not supported by this OpenAI-compatible endpoint for composite groups")
 		return
 	}
 
 	reqLog = reqLog.With(
-		zap.String("model", clientRequestModel),
-		zap.String("routing_model", routingModel),
 		zap.Bool("stream", parsed.Stream),
 		zap.Bool("multipart", parsed.Multipart),
-		zap.String("capability", string(parsed.RequiredCapability)),
 		zap.String("img_quality", parsed.Quality),
 		zap.String("img_size", parsed.Size),
 	)
@@ -105,9 +198,13 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 		h.errorResponse(c, http.StatusForbidden, "permission_error", service.ImageGenerationPermissionMessage())
 		return
 	}
-	if decision := h.checkSecurityAudit(c, reqLog, apiKey, subject, service.ContentModerationProtocolOpenAIImages, requestModel, parsed.ModerationBody()); decision != nil && !decision.AllowNextStage {
-		h.openAISecurityAuditError(c, decision)
-		return
+	moderationBody := parsed.ModerationBody()
+	if !automatic {
+		reqLog = imageModelLogger(reqLog, publicModel, parsed)
+		if decision := h.checkSecurityAudit(c, reqLog, apiKey, subject, service.ContentModerationProtocolOpenAIImages, parsed.Model, moderationBody); decision != nil && !decision.AllowNextStage {
+			h.openAISecurityAuditError(c, decision)
+			return
+		}
 	}
 	imageReleaseFunc, acquired := h.acquireImageGenerationSlot(c, streamStarted)
 	if !acquired {
@@ -117,10 +214,8 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 		defer imageReleaseFunc()
 	}
 
-	setOpsRequestContext(c, clientRequestModel, parsed.Stream)
+	setOpsRequestContext(c, publicModel, parsed.Stream)
 	setOpsEndpointContext(c, "", int16(service.RequestTypeFromLegacy(parsed.Stream, false)))
-
-	channelMapping, _ := h.gatewayService.ResolveChannelMappingAndRestrict(c.Request.Context(), apiKey.GroupID, routingModel)
 
 	if h.errorPassthroughService != nil {
 		service.BindErrorPassthroughService(c, h.errorPassthroughService)
@@ -151,65 +246,78 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 
 	sessionHash := h.gatewayService.GenerateExplicitSessionHash(c, body)
 	requestCtx := service.WithOpenAIImagesEndpoint(service.WithOpenAIImageGenerationIntent(c.Request.Context()))
+	var attempts []imageModelAttempt
+	if automatic {
+		attempts, err = h.claudexImageAttempts(requestCtx, apiKey, parsed, listedModels(requestCtx, apiKey.Group), resolver)
+		if err != nil {
+			reqLog.Warn("openai.images.model_route_resolution_failed", zap.Error(err))
+			h.handleStreamingAwareError(c, http.StatusInternalServerError, "server_error", "Failed to resolve composite model route", streamStarted)
+			return
+		}
+	} else {
+		mapping, _ := h.gatewayService.ResolveChannelMappingAndRestrict(requestCtx, apiKey.GroupID, parsed.Model)
+		attempts = []imageModelAttempt{{publicModel: publicModel, request: parsed, ctx: requestCtx, mapping: mapping}}
+	}
 
 	switchCount := 0
 	profitVetoCount := 0
-	failedAccountIDs := make(map[int64]struct{})
+	failedAccounts := imageFailedAccounts{all: make(map[int64]struct{}), byModel: make(map[string]map[int64]struct{})}
 	sameAccountRetryCount := make(map[int64]int)
 	var lastFailoverErr *service.UpstreamFailoverError
+	var lastUsageLimit *gatewayhook.RefusalDetail
+	auditedModel := ""
 	stopJSONKeepalive := func() {}
 	jsonKeepaliveStarted := false
 	defer func() { stopJSONKeepalive() }()
 
 	for {
-		reqLog.Debug("openai.images.account_selecting", zap.Int("excluded_account_count", len(failedAccountIDs)))
-		selection, scheduleDecision, err := h.gatewayService.SelectAccountWithSchedulerForImages(
-			requestCtx,
-			apiKey.GroupID,
-			sessionHash,
-			routingModel,
-			failedAccountIDs,
-			parsed.RequiredCapabilityForModel(channelMapping.MappedModel),
-		)
-		if err != nil {
+		reqLog.Debug("openai.images.account_selecting", zap.Int("switch_count", switchCount))
+		selected, err := h.selectImagesAccount(apiKey.GroupID, sessionHash, attempts, failedAccounts)
+		selection, scheduleDecision := selected.slot, selected.decision
+		if err != nil || selection == nil || selection.Account == nil {
 			if failoverClientGone(c) {
 				reqLog.Info("openai.images.account_select_aborted_client_disconnected", zap.Error(err))
 				return
 			}
-			reqLog.Warn("openai.images.account_select_failed",
-				zap.Error(err),
-				zap.Int("excluded_account_count", len(failedAccountIDs)),
-			)
-			if len(failedAccountIDs) == 0 {
-				cls := classifyNoAccountErrorFromGin(c, h.gatewayService, apiKey, clientRequestModel, routingModel, service.PlatformOpenAI)
-				if !cls.ModelNotFound {
-					markOpsRoutingCapacityLimitedIfNoAvailable(c, err)
-				}
-				message := cls.Message
-				if !cls.ModelNotFound {
-					message = "No available compatible accounts"
-				}
-				h.handleStreamingAwareError(c, cls.Status, cls.ErrType, message, streamStarted)
+			reqLog.Warn("openai.images.account_select_failed", zap.Error(err), zap.Int("switch_count", switchCount))
+			if err != nil && lastFailoverErr != nil {
+				h.handleFailoverExhausted(c, lastFailoverErr, streamStarted)
 				return
 			}
-			if lastFailoverErr != nil {
-				h.handleFailoverExhausted(c, lastFailoverErr, streamStarted)
-			} else {
-				h.handleFailoverExhaustedSimple(c, 502, streamStarted)
+			if err != nil && profitVetoCount > 0 {
+				h.handleFailoverExhaustedSimple(c, http.StatusBadGateway, streamStarted)
+				return
 			}
+			if lastUsageLimit != nil && (err == nil || isOpsNoAvailableAccountError(err)) {
+				h.refuseClaudexImageUsage(c, lastUsageLimit, streamStarted)
+				return
+			}
+			cls := noAccountErrorClassification{Status: http.StatusServiceUnavailable, ErrType: "api_error", Message: "No available image models"}
+			if !automatic {
+				cls = classifyNoAccountErrorFromGin(c, h.gatewayService, apiKey, publicModel, parsed.Model, service.PlatformOpenAI)
+				if !cls.ModelNotFound {
+					cls.Message = "No available compatible accounts"
+				}
+			}
+			if !cls.ModelNotFound && (err == nil || isOpsNoAvailableAccountError(err)) {
+				markOpsRoutingCapacityLimited(c)
+			} else if automatic {
+				cls.Message = "Service temporarily unavailable"
+			}
+			h.handleStreamingAwareError(c, cls.Status, cls.ErrType, cls.Message, streamStarted)
 			return
 		}
-		if selection == nil || selection.Account == nil {
-			cls := classifyNoAccountErrorFromGin(c, h.gatewayService, apiKey, clientRequestModel, routingModel, service.PlatformOpenAI)
-			if !cls.ModelNotFound {
-				markOpsRoutingCapacityLimited(c)
-			}
-			message := cls.Message
-			if !cls.ModelNotFound {
-				message = "No available compatible accounts"
-			}
-			h.handleStreamingAwareError(c, cls.Status, cls.ErrType, message, streamStarted)
-			return
+		attempt := selected.attempt
+		parsed := attempt.request
+		requestModel := parsed.Model
+		clientRequestModel := attempt.publicModel
+		channelMapping := attempt.mapping
+		requestCtx := attempt.ctx
+		c.Request = c.Request.WithContext(requestCtx)
+		setOpsRequestContext(c, clientRequestModel, parsed.Stream)
+		reqLog := reqLog
+		if automatic {
+			reqLog = imageModelLogger(reqLog, clientRequestModel, parsed)
 		}
 
 		reqLog.Debug("openai.images.account_schedule_decision",
@@ -222,7 +330,9 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 		)
 
 		account := selection.Account
-		if _, failed := failedAccountIDs[account.ID]; failed {
+		_, accountFailed := failedAccounts.all[account.ID]
+		_, modelFailed := failedAccounts.byModel[requestModel][account.ID]
+		if accountFailed || modelFailed {
 			if selection.ReleaseFunc != nil {
 				selection.ReleaseFunc()
 			}
@@ -233,14 +343,53 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 			}
 			return
 		}
-		sessionHash = ensureOpenAIPoolModeSessionHash(sessionHash, account)
 		reqLog.Debug("openai.images.account_selected", zap.Int64("account_id", account.ID), zap.String("account_name", account.Name))
 		setOpsSelectedAccount(c, account.ID, account.Platform)
+		service.ClearOpsUpstreamModel(c)
+		if automatic {
+			mappedModel := channelMapping.MappedModel
+			if mappedModel == "" {
+				mappedModel = requestModel
+			}
+			models := []string{clientRequestModel, requestModel, mappedModel}
+			if account.Type != service.AccountTypeAPIKey || !account.CodexDraws() {
+				models = append(models, account.GetMappedModel(mappedModel))
+			}
+			if err := claudexhook.PrecheckTurn(c.Request.Context(), subject.UserID, apiKey.ID, apiKey.GroupID, models); err != nil {
+				if selection.ReleaseFunc != nil {
+					selection.ReleaseFunc()
+				}
+				var limit *claudexusage.LimitError
+				if !errors.As(err, &limit) || limit.Detail == nil {
+					h.handleStreamingAwareError(c, http.StatusServiceUnavailable, "server_error", "Usage limits could not be checked", streamStarted)
+					return
+				}
+				if limit.Detail.RuleKind != claudexusage.KindModels {
+					h.refuseClaudexImageUsage(c, limit.Detail, streamStarted)
+					return
+				}
+				lastUsageLimit = limit.Detail
+				failedAccounts.excludeModel(requestModel, account.ID)
+				continue
+			}
+		}
+		sessionHash = ensureOpenAIPoolModeSessionHash(sessionHash, account)
+		if automatic && auditedModel != clientRequestModel {
+			c.Set(securityAuditCompletedContextKey, false)
+			if decision := h.checkSecurityAudit(c, reqLog, apiKey, subject, service.ContentModerationProtocolOpenAIImages, requestModel, moderationBody); decision != nil && !decision.AllowNextStage {
+				if selection.ReleaseFunc != nil {
+					selection.ReleaseFunc()
+				}
+				h.openAISecurityAuditError(c, decision)
+				return
+			}
+			auditedModel = clientRequestModel
+		}
 
 		accountReleaseFunc, slotResult := h.acquireResponsesAccountSlot(c, apiKey.GroupID, sessionHash, selection, parsed.Stream, &streamStarted, reqLog)
 		if slotResult == openAISlotAcquireProfitVetoed {
 			// Images 调度不装利润门，此分支实际不可达；防御性排除重选并受同一否决上限约束。
-			if !recordOpenAIProfitVeto(failedAccountIDs, account.ID, &profitVetoCount, true) {
+			if !recordOpenAIProfitVeto(failedAccounts.all, account.ID, &profitVetoCount, true) {
 				h.handleOpenAIProfitVetoExhausted(c, streamStarted, reqLog, profitVetoCount)
 				return
 			}
@@ -263,7 +412,7 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 					accountReleaseFunc()
 				}
 			}()
-			return h.gatewayService.ForwardImages(requestCtx, c, account, body, parsed, channelMapping.MappedModel)
+			return h.gatewayService.ForwardImages(requestCtx, c, account, parsed.Body, parsed, channelMapping.MappedModel)
 		}()
 		forwardDurationMs := time.Since(forwardStart).Milliseconds()
 		upstreamLatencyMs, _ := getContextInt64(c, service.OpsUpstreamLatencyMsKey)
@@ -333,7 +482,8 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 						)
 						return
 					}
-					if failoverErr.RetryableOnSameAccount {
+					modelUnavailable := automatic && service.IsOpenAIImagesModelUnavailable(failoverErr, account)
+					if failoverErr.RetryableOnSameAccount && !modelUnavailable {
 						retryLimit := effectiveSameAccountRetryLimit(failoverErr, account)
 						if sameAccountRetryAllowed(failoverErr, sameAccountRetryCount[account.ID], retryLimit) {
 							sameAccountRetryCount[account.ID]++
@@ -354,7 +504,11 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 						}
 					}
 					h.gatewayService.RecordOpenAIAccountSwitch()
-					failedAccountIDs[account.ID] = struct{}{}
+					if modelUnavailable {
+						failedAccounts.excludeModel(requestModel, account.ID)
+					} else {
+						failedAccounts.all[account.ID] = struct{}{}
+					}
 					lastFailoverErr = failoverErr
 
 					switchCount++
@@ -363,7 +517,7 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 						zap.Int64("account_id", account.ID),
 						zap.Int("upstream_status", failoverErr.StatusCode),
 						zap.Int("switch_count", switchCount),
-						zap.Int("excluded_accounts", len(failedAccountIDs)),
+						zap.Bool("model_unavailable", modelUnavailable),
 					)
 					continue
 				}
@@ -414,6 +568,7 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 			upstreamModel = result.UpstreamModel
 		}
 		sessionID := service.ExtractClientSessionID(c)
+		channelUsageFields := channelMapping.ToUsageFields(clientRequestModel, upstreamModel)
 		h.submitMandatoryUsageRecordTask(c.Request.Context(), func(ctx context.Context) {
 			if err := h.gatewayService.RecordUsage(ctx, &service.OpenAIRecordUsageInput{
 				Result:             result,
@@ -429,7 +584,7 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 				APIKeyService:      h.apiKeyService,
 				QuotaPlatform:      quotaPlatform,
 				SessionID:          sessionID,
-				ChannelUsageFields: clientRequestedUsageFields(c, channelMapping, requestModel, upstreamModel),
+				ChannelUsageFields: channelUsageFields,
 			}); err != nil {
 				logger.L().With(
 					zap.String("component", "handler.openai_gateway.images"),
@@ -448,6 +603,96 @@ func (h *OpenAIGatewayHandler) Images(c *gin.Context) {
 		)
 		return
 	}
+}
+
+func (h *OpenAIGatewayHandler) claudexImageAttempts(ctx context.Context, apiKey *service.APIKey, parsed *service.OpenAIImagesRequest, models []string, resolver *service.CompositeRouteResolver) ([]imageModelAttempt, error) {
+	var attempts []imageModelAttempt
+	for _, publicModel := range models {
+		if !apiKey.Group.ModelAllowlist.Allows(publicModel) {
+			continue
+		}
+		routingModel, attemptCtx := publicModel, ctx
+		if apiKey.Group.Platform == service.PlatformComposite {
+			decision, err := resolver.Resolve(ctx, apiKey.Group.ID, publicModel, service.CompositeRouteEndpointImages)
+			if err != nil {
+				return nil, err
+			}
+			if !decision.Matched || decision.TargetPlatform != service.PlatformOpenAI {
+				continue
+			}
+			routingModel = decision.UpstreamModel
+			attemptCtx = service.WithCompositeRouteDecision(ctx, decision)
+		} else if !service.IsGPTImageGenerationModel(publicModel) {
+			continue
+		}
+		request, err := parsed.WithSelectedModel(routingModel)
+		if err != nil {
+			continue
+		}
+		mapping, _ := h.gatewayService.ResolveChannelMappingAndRestrict(attemptCtx, apiKey.GroupID, routingModel)
+		attempts = append(attempts, imageModelAttempt{publicModel: publicModel, request: request, ctx: attemptCtx, mapping: mapping})
+	}
+	return attempts, nil
+}
+
+func (h *OpenAIGatewayHandler) selectImagesAccount(groupID *int64, sessionHash string, attempts []imageModelAttempt, failedAccounts imageFailedAccounts) (imageAccountSelection, error) {
+	var waiting imageAccountSelection
+	var noAccountErr error = service.ErrNoAvailableAccounts
+	for _, attempt := range attempts {
+		if err := attempt.ctx.Err(); err != nil {
+			return imageAccountSelection{}, err
+		}
+		slot, decision, err := h.gatewayService.SelectAccountWithSchedulerForImages(
+			attempt.ctx, groupID, sessionHash, attempt.request.Model, failedAccounts.forModel(attempt.request.Model),
+			attempt.request.RequiredCapabilityForModel(attempt.mapping.MappedModel),
+		)
+		if err != nil {
+			if !errors.Is(err, service.ErrNoAvailableAccounts) {
+				return imageAccountSelection{}, err
+			}
+			noAccountErr = err
+			continue
+		}
+		selected := imageAccountSelection{attempt: attempt, slot: slot, decision: decision}
+		if len(attempts) == 1 {
+			return selected, nil
+		}
+		if slot == nil || slot.Account == nil {
+			continue
+		}
+		if slot.Acquired {
+			return selected, nil
+		}
+		if slot.WaitPlan != nil && waiting.slot == nil {
+			waiting = selected
+		}
+	}
+	if waiting.slot != nil {
+		return waiting, nil
+	}
+	return imageAccountSelection{}, noAccountErr
+}
+
+func (h *OpenAIGatewayHandler) refuseClaudexImageUsage(c *gin.Context, detail *gatewayhook.RefusalDetail, streamStarted bool) {
+	code := claudexusage.CodeLimitExceeded
+	if detail.Reason == claudexusage.CodeSpendLimitExceeded {
+		code = detail.Reason
+	}
+	gatewayhook.SetDetail(c, detail)
+	c.Header("Retry-After", strconv.Itoa(detail.RetryAfterSeconds))
+	if streamStarted {
+		h.handleStreamingAwareErrorWithCode(c, http.StatusTooManyRequests, "rate_limit_error", code, detail.Message, true, false)
+		return
+	}
+	c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"code": code, "message": detail.Message, "claudex": detail})
+}
+
+func imageModelLogger(log *zap.Logger, publicModel string, parsed *service.OpenAIImagesRequest) *zap.Logger {
+	return log.With(
+		zap.String("model", publicModel),
+		zap.String("routing_model", parsed.Model),
+		zap.String("capability", string(parsed.RequiredCapability)),
+	)
 }
 
 func (h *OpenAIGatewayHandler) openAIImagesJSONKeepaliveInterval() time.Duration {

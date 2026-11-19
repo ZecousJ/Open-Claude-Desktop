@@ -2208,10 +2208,6 @@ func (m *mockConcurrencyCache) CleanupExpiredAccountSlotKeys(ctx context.Context
 	return nil
 }
 
-func (m *mockConcurrencyCache) CleanupStaleProcessSlots(ctx context.Context, activeRequestPrefix string) error {
-	return nil
-}
-
 func (m *mockConcurrencyCache) GetUsersLoadBatch(ctx context.Context, users []UserWithConcurrency) (map[int64]*UserLoadInfo, error) {
 	result := make(map[int64]*UserLoadInfo, len(users))
 	for _, user := range users {

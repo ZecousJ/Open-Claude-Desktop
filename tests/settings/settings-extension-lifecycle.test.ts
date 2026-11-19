@@ -12,6 +12,8 @@ import {
 import { installUnpackedExtension } from "../../electron/connectors/desktop-extension";
 import { openPolicy } from "../../shared/client-policy";
 import { redactMcpText } from "../../electron/connectors/mcp-connection-logs";
+import { mcpServersConfig } from "../../electron/engine/mcp-config";
+import { createExtensionReads } from "../../electron/official-ui/native/extensions-read";
 
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-b34-extension-"));
@@ -305,6 +307,8 @@ test("external paths, package symlinks, aliases, and administrator policy cannot
     f.policy = { ...openPolicy, desktopExtensionsEnabled: false };
     const details = f.lifecycle.details("demo");
     assert.equal(details.configurable, false);
+    assert.ok(details.blockedReason);
+    assert.equal(details.error, undefined);
     assert.equal(details.uninstallable, false);
     await assert.rejects(
       () => f.lifecycle.uninstall({ id: "demo", revision: details.revision }),
@@ -328,6 +332,10 @@ test("encrypted corruption and settings symlinks never fall back to plaintext or
     const file = path.join(folder, fs.readdirSync(folder)[0]);
     fs.writeFileSync(file, "broken ciphertext");
     assert.equal(f.lifecycle.details("demo").configurable, false);
+    assert.ok(f.lifecycle.details("demo").error);
+    f.policy = { ...openPolicy, desktopExtensionsEnabled: false };
+    assert.ok(f.lifecycle.details("demo").error);
+    f.policy = { ...openPolicy };
     assert.throws(() => f.lifecycle.runtimeConfig("demo", f.servers.demo));
     fs.unlinkSync(file);
     fs.symlinkSync(path.join(f.source, "manifest.json"), file);
@@ -338,6 +346,37 @@ test("encrypted corruption and settings symlinks never fall back to plaintext or
       fs.existsSync(path.join(f.source, "manifest.json")),
       "settings link target is never removed",
     );
+  } finally {
+    f.clean();
+  }
+});
+
+test("read-only policy retains the real installed extension inventory", async () => {
+  const f = fixture();
+  try {
+    configure(f);
+    const policy = { ...openPolicy, localMcpEditing: false };
+    f.policy = policy;
+    const reads = createExtensionReads({
+      account: () => ({ id: "owner" }),
+      sessionIdentity: () => "owner",
+      settings: () => ({ mcpServers: f.servers }),
+      call: async (name: string, id: string) => {
+        if (name === "desktopExtensions") return f.lifecycle.list();
+        if (name === "desktopExtension") return f.lifecycle.details(id);
+        if (name === "clientPolicy") return policy;
+        throw Error("unexpected call");
+      },
+    } as never);
+    const [extension] = await reads.installed();
+    assert.equal(extension.id, "demo");
+    assert.equal(extension.settings.isEnabled, true);
+    assert.equal(extension.settings.orgBlockedReason, undefined);
+    assert.equal(extension.settings.userConfig.label, "real label");
+    assert.equal(extension.settings.userConfig.token, undefined);
+    const folder = path.join(f.root, "desktop-extension-settings");
+    fs.writeFileSync(path.join(folder, fs.readdirSync(folder)[0]), "broken ciphertext");
+    await assert.rejects(reads.installed(), /could not be read/);
   } finally {
     f.clean();
   }
@@ -628,4 +667,302 @@ test("uninstall suppresses respawn during quiescence and rechecks account lease 
   } finally {
     f.clean();
   }
+});
+
+test("upgrading an owned package preserves encrypted settings and rolls back a refused publication", () => {
+  const f = fixture();
+  try {
+    configure(f);
+    const before = f.lifecycle.details("demo");
+    const manifestPath = path.join(f.source, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    manifest.version = "2.0";
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    fs.writeFileSync(
+      path.join(f.source, "server.cjs"),
+      "process.stdout.write('version-2')",
+    );
+    const perform = () =>
+      installUnpackedExtension({
+        source: f.source,
+        root: f.root,
+        allowed: () => true,
+        current: f.servers,
+        update: (value) => {
+          f.servers = value;
+        },
+        prepareUpgrade: (id, next, target) => f.lifecycle.prepareUpgrade(id, next, target),
+      });
+    const previousUpdate = f.lifecycle.options.update;
+    assert.equal(perform(), "demo");
+    const after = f.lifecycle.details("demo");
+    assert.equal(after.version, "2.0");
+    assert.deepEqual(after.savedSecrets, before.savedSecrets);
+    assert.equal(after.values.label, "real label");
+    const expanded = f.lifecycle.runtimeConfig("demo", f.servers.demo);
+    assert.equal(
+      (expanded?.env as Record<string, string>).TOKEN,
+      "synthetic-secret-123",
+    );
+    manifest.version = "3.0";
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    assert.throws(
+      () =>
+        installUnpackedExtension({
+          source: f.source,
+          root: f.root,
+          allowed: () => true,
+          current: f.servers,
+          prepareUpgrade: (id, next, target) => f.lifecycle.prepareUpgrade(id, next, target),
+          update: () => {
+            throw Error("Synthetic write refusal");
+          },
+        }),
+      /Synthetic write refusal/,
+    );
+    assert.equal(f.lifecycle.details("demo").version, "2.0");
+    assert.equal(
+      f.lifecycle.runtimeConfig("demo", f.servers.demo)?.env &&
+        (
+          f.lifecycle.runtimeConfig("demo", f.servers.demo)!.env as Record<
+            string,
+            string
+          >
+        ).TOKEN,
+      "synthetic-secret-123",
+    );
+    assert.equal(f.lifecycle.options.update, previousUpdate);
+  } finally {
+    f.clean();
+  }
+});
+
+test("upgrade migrates compatible values and keeps new required fields pending without exposing removed secrets", () => {
+  const f = fixture();
+  try {
+    configure(f);
+    const manifestPath = path.join(f.source, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    manifest.version = "2.0";
+    manifest.user_config = {
+      label: { type: "string", title: "Label", required: true },
+      token: {
+        type: "string",
+        title: "Token",
+        required: true,
+        sensitive: false,
+      },
+      region: { type: "string", title: "Region", required: true },
+    };
+    manifest.server.mcp_config.env = { TOKEN: "${user_config.token}" };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    const install = (update: (value: Record<string, unknown>) => void) =>
+      installUnpackedExtension({
+        source: f.source,
+        root: f.root,
+        allowed: () => true,
+        current: f.servers,
+        update,
+        prepareUpgrade: (id, next, target) => f.lifecycle.prepareUpgrade(id, next, target),
+      });
+    const settingsDir = path.join(f.root, "desktop-extension-settings");
+    const beforeFiles = fs.readdirSync(settingsDir).sort();
+    assert.throws(
+      () =>
+        install(() => {
+          throw Error("save refused");
+        }),
+      /save refused/,
+    );
+    assert.deepEqual(fs.readdirSync(settingsDir).sort(), beforeFiles);
+    assert.equal(f.lifecycle.details("demo").version, "1.0");
+    assert.equal(
+      install((value) => {
+        f.servers = value;
+      }),
+      "demo",
+    );
+    const result = f.lifecycle.details("demo");
+    assert.equal(result.version, "2.0");
+    assert.equal(result.enabled, false);
+    assert.equal(result.values.label, "real label");
+    assert.equal(result.values.token, undefined);
+    assert.equal(result.savedSecrets.includes("token"), false);
+    assert.equal(
+      JSON.stringify(result).includes("synthetic-secret-123"),
+      false,
+    );
+    const completed = f.lifecycle.save({
+      id: "demo",
+      revision: result.revision,
+      enabled: true,
+      values: { token: "replacement", region: "east" },
+    });
+    assert.equal(completed.enabled, true);
+    assert.equal(completed.values.token, "replacement");
+    assert.equal(completed.values.region, "east");
+  } finally {
+    f.clean();
+  }
+});
+
+test("official file and directory settings expand multiple paths into separate arguments", () => {
+  const f = fixture();
+  try {
+    const file = path.join(f.source, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    manifest.version = "2.0";
+    manifest.user_config = {
+      folders: {
+        type: "directory",
+        title: "Folders",
+        required: true,
+        multiple: true,
+      },
+      file: { type: "file", title: "File", required: true },
+    };
+    manifest.server.mcp_config = {
+      command: "unselected",
+      args: ["${user_config.folders}"],
+      env: { BASE: "base" },
+      platform_overrides: {
+        [process.platform]: {
+          command: process.execPath,
+          args: [
+            "${__dirname}/server.cjs",
+            "${user_config.folders}",
+            "${user_config.file}",
+            "${/}",
+          ],
+          env: { OVERRIDE: "yes" },
+        },
+      },
+    };
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    installUnpackedExtension({
+      source: f.source,
+      root: f.root,
+      allowed: () => true,
+      current: f.servers,
+      update: (value) => {
+        f.servers = value;
+      },
+      prepareUpgrade: (id, next, target) => f.lifecycle.prepareUpgrade(id, next, target),
+    });
+    const details = f.lifecycle.details("demo");
+    assert.equal(details.enabled, false);
+    assert.throws(
+      () =>
+        f.lifecycle.save({
+          id: "demo",
+          revision: details.revision,
+          enabled: true,
+          values: { folders: [], file: "/one" },
+        }),
+      /required/,
+    );
+    const saved = f.lifecycle.save({
+      id: "demo",
+      revision: details.revision,
+      enabled: true,
+      values: { folders: ["/first", "/second"], file: "/selected.txt" },
+    });
+    assert.deepEqual(saved.values.folders, ["/first", "/second"]);
+    const runtime = f.lifecycle.runtimeConfig("demo", f.servers.demo);
+    assert.equal(runtime?.command, process.execPath);
+    assert.deepEqual((runtime?.args as string[]).slice(1), [
+      "/first",
+      "/second",
+      "/selected.txt",
+      path.sep,
+    ]);
+    assert.deepEqual(runtime?.env, { BASE: "base", OVERRIDE: "yes" });
+  } finally {
+    f.clean();
+  }
+});
+
+test("missing extension variables cannot become literal undefined arguments", () => {
+  const f = fixture();
+  try {
+    const manifest = { server: { mcp_config: { command: process.execPath, args: ["${user_config.optional}"] } } };
+    assert.throws(() => f.lifecycle.expanded(f.source, manifest, {}));
+    manifest.server.mcp_config.args = ["${unknown}"];
+    assert.throws(() => f.lifecycle.expanded(f.source, manifest, {}));
+  } finally {
+    f.clean();
+  }
+});
+
+test("official system directory variables resolve for extensions without configuration", () => {
+  const f = fixture();
+  try {
+    const sourceManifest = path.join(f.source, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(sourceManifest, "utf8"));
+    delete manifest.user_config;
+    manifest.server.mcp_config = {
+      command: process.execPath,
+      args: ["${HOME}", "${DESKTOP}", "${DOCUMENTS}", "${DOWNLOADS}", "${/}"],
+    };
+    fs.writeFileSync(sourceManifest, JSON.stringify(manifest));
+    const dirs = {
+      HOME: "/home/user",
+      DESKTOP: "/home/user/Desktop",
+      DOCUMENTS: "/home/user/Documents",
+      DOWNLOADS: "/home/user/Downloads",
+    };
+    f.lifecycle.options.systemDirs = () => dirs;
+    installUnpackedExtension({
+      source: f.source,
+      root: f.root,
+      allowed: () => true,
+      current: f.servers,
+      update: (value) => {
+        f.servers = value;
+      },
+      prepareUpgrade: (id, next, target) => f.lifecycle.prepareUpgrade(id, next, target),
+    });
+    const runtime = f.lifecycle.runtimeConfig("demo", f.servers.demo);
+    assert.deepEqual(runtime?.args, [
+      dirs.HOME,
+      dirs.DESKTOP,
+      dirs.DOCUMENTS,
+      dirs.DOWNLOADS,
+      path.sep,
+    ]);
+  } finally {
+    f.clean();
+  }
+});
+
+test("UV extension runtime uses its selected executable and package directory without leaking internal metadata", () => {
+  const f = fixture();
+  try {
+    const file = path.join(f.source, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    manifest.version = "2.0";
+    delete manifest.user_config;
+    manifest.server.type = "uv";
+    manifest.server.mcp_config = { command: "uv", args: ["run", "server.py"] };
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    const name = installUnpackedExtension({
+      source: f.source, root: f.root, sourceKind: "local.mcpb", uvExecutable: process.execPath,
+      allowed: () => true, current: f.servers, update: value => { f.servers = value; },
+      prepareUpgrade: (id, next, target) => f.lifecycle.prepareUpgrade(id, next, target),
+    });
+    const server = f.servers[name] as Record<string, unknown>;
+    const runtime = f.lifecycle.runtimeConfig(name, server);
+    assert.equal(runtime?.command, process.execPath);
+    assert.equal(runtime?.cwd, server.claudex_extension);
+    const config = JSON.parse(mcpServersConfig({
+      servers: f.servers, policy: openPolicy, reserved: new Set(), environmentKind: "local",
+      remote: false, runtimeConfig: (id, raw) => f.lifecycle.runtimeConfig(id, raw),
+      launchConfig: (_id, entry) => entry, serviceScript: "/tmp/service.cjs", builtInNode: false,
+    }))[name];
+    assert.equal(config.command, process.execPath);
+    assert.equal(config.cwd, server.claudex_extension);
+    assert.equal(config.claudex_extension_id, undefined);
+    assert.equal(config.claudex_extension_manifest_name, undefined);
+    assert.equal(config.claudex_extension_uv, undefined);
+  } finally { f.clean(); }
 });

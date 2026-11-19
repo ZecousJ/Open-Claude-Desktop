@@ -6,6 +6,7 @@ import path from "node:path";
 import { RemoteAccounts } from "../../electron/sub2api/identity";
 import { remoteAccountId } from "../../electron/sub2api/identity-support";
 import { SessionFile } from "../../electron/sub2api/session";
+import { desktopCredentialStorage } from "../../electron/account/desktop-credential-storage";
 import { MockSub2Api, fakeCipher } from "../support/sub2api-mock";
 
 const alice = {
@@ -83,6 +84,49 @@ test("account ids are stable per service and user, and distinct across hosts", (
   );
 });
 
+test("macOS signs in and restores from a private local directory without calling OS storage", async () => {
+  await withMock({ users: [alice] }, async (mock, root) => {
+    const oldAccounts = new RemoteAccounts(root, mock.url, fakeCipher);
+    const oldLogin = await oldAccounts.login(alice.email, alice.password);
+    assert.equal(oldLogin.kind, "signedIn");
+    assert.ok(oldLogin.session.persist());
+    const oldFile = oldAccounts.file.filename;
+    const oldBytes = fs.readFileSync(oldFile);
+    const unavailable = () => assert.fail("Unexpected Keychain access");
+    const osCipher = {
+      isEncryptionAvailable: unavailable,
+      encryptString: unavailable,
+      decryptString: unavailable,
+    };
+    const accounts = () => {
+      const storage = desktopCredentialStorage(root, "darwin", osCipher);
+      return new RemoteAccounts(
+        root,
+        mock.url,
+        storage.cipher,
+        undefined,
+        undefined,
+        storage.root,
+      );
+    };
+    const local = accounts();
+    assert.equal(await local.restore(), undefined);
+    const signedIn = await local.login(alice.email, alice.password);
+    assert.equal(signedIn.kind, "signedIn");
+    assert.ok(signedIn.session.persist());
+    assert.equal(signedIn.account.id, oldLogin.account.id);
+    const firstToken = local.file.load()!.refreshToken;
+    const directory = path.dirname(local.file.filename);
+    assert.equal(fs.statSync(directory).mode & 0o777, 0o700);
+    assert.equal(fs.statSync(path.join(directory, "storage.key")).mode & 0o777, 0o600);
+    assert.equal(fs.statSync(local.file.filename).mode & 0o777, 0o600);
+    assert.equal(fs.readFileSync(local.file.filename).includes(firstToken), false);
+    assert.equal(await accounts().restore().then(result => result?.account.id), signedIn.account.id);
+    assert.notEqual(local.file.load()!.refreshToken, firstToken);
+    assert.deepEqual(fs.readFileSync(oldFile), oldBytes);
+  });
+});
+
 test("a refused saved session is removed, a wrong password is explained", async () => {
   await withMock({ users: [alice] }, async (mock, root) => {
     const accounts = new RemoteAccounts(root, mock.url, fakeCipher);
@@ -93,8 +137,37 @@ test("a refused saved session is removed, a wrong password is explained", async 
     if (result.kind !== "signedIn") throw Error("expected sign-in");
     result.session.persist();
     mock.refreshTokens.clear();
-    await assert.rejects(accounts.restore());
+    await assert.rejects(accounts.restore(undefined, "startup"));
     assert.equal(new SessionFile(root, fakeCipher).load(), undefined);
+    assert.equal(accounts.signedOutReason, "session-expired");
+    const again = await accounts.login(alice.email, alice.password);
+    assert.equal(again.kind, "signedIn");
+    assert.equal(accounts.signedOutReason, undefined);
+  });
+});
+
+test("a temporary refresh failure keeps the saved account available for retry", async () => {
+  await withMock({ users: [alice] }, async (mock, root) => {
+    let offline = false;
+    const accounts = new RemoteAccounts(root, mock.url, fakeCipher, (input, init) =>
+      offline && String(input).endsWith("/auth/refresh")
+        ? Promise.reject(Error("Fixture offline"))
+        : fetch(input, init),
+    );
+    const signIn = await accounts.login(alice.email, alice.password);
+    assert.equal(signIn.kind, "signedIn");
+    assert.ok(signIn.session.persist());
+    offline = true;
+    await assert.rejects(accounts.restore());
+    assert.equal(accounts.restorePending, true);
+    assert.equal(accounts.file.load()?.accountId, signIn.account.id);
+    assert.equal(accounts.signedOutReason, undefined);
+    const cached = await accounts.restore(undefined, "startup");
+    assert.equal(cached?.offline, true);
+    assert.deepEqual(cached?.account, signIn.account);
+    offline = false;
+    assert.equal((await accounts.restore())?.account.id, signIn.account.id);
+    assert.equal(accounts.restorePending, false);
   });
 });
 

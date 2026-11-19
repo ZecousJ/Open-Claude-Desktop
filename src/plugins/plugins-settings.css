@@ -1,5 +1,6 @@
-/* The modal toolbar uses a 22/28/580 h2, 16px title/segment gap, 32px controls,
-   and 8px tools. Keep these overrides private to the lazy Settings page. */
+/* Settings Plugins, live claude.ai 2026-10-18: the modal toolbar uses
+   a 22/28/580 h2, 16px title/segment gap, 32px controls, and 8px tools.
+   Keep these overrides private to the lazy Settings page. */
 .plugins-settings > .plugins-settings-header {
   position: sticky;
   top: -4px;
@@ -86,8 +87,10 @@
   background: #fff;
 }
 
-/* A narrow window: the title row is not pinned and has no fill, 16px under the
-   tabs, like the other list pages; the search is a 32px icon until it is used. */
+/* A narrow window (live claude.ai Settings → Plugins at 740 wide,
+   2026-10-21): the title row is not pinned and has no fill, 16px under the
+   tabs, like the other list pages; the search is a 32px icon until it is
+   used. */
 @media (max-width: 767.98px) {
   .plugins-settings > .plugins-settings-header,
   :root[data-theme="light"] .plugins-settings > .plugins-settings-header {

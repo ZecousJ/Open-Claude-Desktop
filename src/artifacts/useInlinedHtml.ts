@@ -5,7 +5,9 @@ import { inlineLocalAssets } from "../../shared/inline-assets";
 
 /**
  * An HTML artifact with the stylesheets and scripts the conversation wrote
- * beside it inline, as it previews and as it is published.
+ * beside it inline, as it previews and as it is published (owner,
+ * 2026-10-23: a published page from index.html + style.css + script.js
+ * showed bare markup).
  */
 export function useInlinedHtml(artifact: Artifact, html: boolean): Artifact {
   const conversation = useContext(AppContext)?.active;

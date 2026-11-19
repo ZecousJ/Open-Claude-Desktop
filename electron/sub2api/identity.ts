@@ -1,11 +1,12 @@
 import fs from "node:fs";
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
 import path from "node:path";
-import type { PublicAccount, RemoteSignInPolicy } from "../../shared/types";
+import type { AuthStatus, PublicAccount, RemoteSignInPolicy } from "../../shared/types";
 import type { StorageCipher } from "../engine/provider-credentials";
 import { Sub2ApiClient, type PublicSettings, type RemoteUser } from "./client";
 import { Sub2ApiError, type Fetch } from "./http";
 import { deviceId } from "./provision";
-import { ParkedSessions, RemoteSession, SessionFile } from "./session";
+import { ParkedSessions, RemoteSession, SessionFile, type SessionRecord } from "./session";
 import {
   desktopMaxAccounts,
   noBrowserAccounts,
@@ -41,7 +42,7 @@ export type SignIn =
 
 /** Sign-in against the operator's Sub2API service; replaces the local account registry. */
 export class RemoteAccounts {
-  client: Sub2ApiClient;
+  readonly client: Sub2ApiClient;
   private readonly registry: string;
   readonly file: SessionFile;
   /** The other signed-in accounts (Add account / Switch account). */
@@ -49,18 +50,20 @@ export class RemoteAccounts {
   private readonly addingFile: string;
   private known: KnownAccount[] = [];
   private settings?: { value: PublicSettings; at: number };
+  signedOutReason?: AuthStatus["signedOutReason"];
+  restorePending = false;
   challenge?: { tempToken: string; email: string; expiresAt: number };
   constructor(
     private root: string,
-    /** The service's address; empty until one is chosen. */
-    public baseUrl: string,
+    readonly baseUrl: string,
     cipher: StorageCipher,
-    private fetchImpl: Fetch = fetch,
+    fetchImpl: Fetch = fetch,
     public now: () => number = Date.now,
+    sessionRoot = root,
   ) {
     this.client = new Sub2ApiClient(baseUrl, fetchImpl);
-    this.file = new SessionFile(root, cipher);
-    this.parked = new ParkedSessions(root, cipher);
+    this.file = new SessionFile(sessionRoot, cipher);
+    this.parked = new ParkedSessions(sessionRoot, cipher);
     this.addingFile = path.join(root, "remote-adding.json");
     this.registry = path.join(root, "remote-accounts.json");
     try {
@@ -93,18 +96,6 @@ export class RemoteAccounts {
     } catch {
       this.known = [];
     }
-  }
-  /** A service has been chosen (a build without a default asks for one). */
-  get configured() {
-    return this.baseUrl !== "";
-  }
-  /** Signs in to another service from now on: the one the person entered. */
-  useService(baseUrl: string) {
-    this.baseUrl = baseUrl;
-    this.client = new Sub2ApiClient(baseUrl, this.fetchImpl);
-    this.settings = undefined;
-    this.kind = undefined;
-    this.challenge = undefined;
   }
   /** Someone has signed in to this service on this computer before. */
   get hasAccounts() {
@@ -212,6 +203,8 @@ export class RemoteAccounts {
   }
   remember(user: RemoteUser) {
     const id = remoteAccountId(this.baseUrl, user.id);
+    this.signedOutReason = undefined;
+    this.restorePending = false;
     this.known = [
       ...this.known.filter((item) => item.id !== id),
       {
@@ -227,10 +220,20 @@ export class RemoteAccounts {
     return id;
   }
 
-  // Several accounts at once (Add account / Switch account). The live claude.ai
-  // bundle keeps one session per account in the browser and its desktop app
-  // shows that same web page; Claudex keeps each account's session here instead
-  // (ParkedSessions).
+  cachedAccount(record: SessionRecord): PublicAccount | undefined {
+    const item = this.known.find((account) =>
+      account.id === record.accountId && account.baseUrl === this.baseUrl &&
+      account.userId === record.userId && !account.ended,
+    );
+    if (item) return publicAccount(item.id, {
+      id: item.userId, email: item.email, username: item.name ?? "",
+    });
+  }
+
+  // Several accounts at once (Add account / Switch account). The live
+  // claude.ai bundle (2026-10-12) keeps one session per account in the
+  // browser and its desktop app shows that same web page; Claudex keeps
+  // each account's session here instead (ParkedSessions).
 
   /** Whether this computer can keep accounts signed in beside the open one. */
   get canHoldAccounts() {
@@ -329,8 +332,10 @@ export class RemoteAccounts {
    * Keeps the open account signed in while the window leaves it (a switch,
    * or Add account with `adding`): its session moves to ParkedSessions.
    */
-  async park(session: RemoteSession, adding?: { email?: string }) {
-    const record = await session.detach();
+  async park(session: RemoteSession, adding?: { email?: string }, current?: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
+    const record = await session.detach(current);
+    assertAccountOperationCurrent(current);
     if (!this.parked.save(record))
       throw Error("Switching accounts needs this computer's secure storage.");
     this.file.clear();
@@ -344,7 +349,9 @@ export class RemoteAccounts {
    */
   async resume(
     accountId: string,
+    current?: AccountOperationCurrent,
   ): Promise<{ session: RemoteSession; account: PublicAccount }> {
+    assertAccountOperationCurrent(current);
     const record = this.parked.load(accountId);
     if (!record || record.baseUrl !== this.baseUrl) {
       this.markEnded(accountId);
@@ -361,20 +368,25 @@ export class RemoteAccounts {
       this.now,
     );
     try {
-      await session.refresh();
-      const user = await session.authorized((token) => this.client.me(token));
+      await session.refresh(current);
+      assertAccountOperationCurrent(current);
+      const user = await session.authorized((token) => this.client.me(token), current);
+      assertAccountOperationCurrent(current);
       if (remoteAccountId(this.baseUrl, user.id) !== accountId)
         throw new Sub2ApiError(401, "ACCOUNT_CHANGED", "");
       this.remember(user);
       return { session, account: publicAccount(accountId, user) };
     } catch (error) {
+      assertAccountOperationCurrent(current);
       if (error instanceof Sub2ApiError && error.status === 401) {
         session.end();
         this.markEnded(accountId);
         throw Error(signInAgainCode);
       }
       // Not reachable now: the account stays signed in for later.
-      this.parked.save(await session.detach());
+      const detached = await session.detach(current);
+      assertAccountOperationCurrent(current);
+      this.parked.save(detached);
       this.file.clear();
       throw signInError(error);
     }
@@ -383,18 +395,21 @@ export class RemoteAccounts {
    * An account signed in anew while an older session of it was parked:
    * the older one's refresh token is revoked (best effort) and forgotten.
    */
-  async dropParked(accountId: string) {
+  async dropParked(accountId: string, current?: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
     const record = this.parked.load(accountId);
     if (!record) return;
     this.parked.remove(accountId);
     await this.client.logout(record.refreshToken).catch(() => {});
+    assertAccountOperationCurrent(current);
   }
   /**
    * "Remove {email} from this device": a parked account signs out (the
    * service lets this device go, the refresh token is revoked) and is
    * forgotten here. Never throws for an unreachable service.
    */
-  async forget(accountId: string) {
+  async forget(accountId: string, current?: AccountOperationCurrent) {
+    assertAccountOperationCurrent(current);
     const record = this.parked.load(accountId);
     if (record) {
       const session = new RemoteSession(
@@ -404,22 +419,29 @@ export class RemoteAccounts {
         undefined,
         this.now,
       );
-      if ((await this.serviceKind()) === "claudex")
+      const kind = await this.serviceKind();
+      assertAccountOperationCurrent(current);
+      if (kind === "claudex")
         await session
           .authorized((token) =>
             this.client.revokeCurrentDevice(token, deviceId(this.root), 3_000),
-          )
+            current)
           .catch(() => {});
-      await session.logout().catch(() => {});
+      assertAccountOperationCurrent(current);
+      await session.logout(current).catch(() => {});
+      assertAccountOperationCurrent(current);
       this.parked.remove(accountId);
     }
+    assertAccountOperationCurrent(current);
     if (this.adding?.from === accountId) this.setAdding(undefined);
     this.known = this.known.filter((item) => item.id !== accountId);
     this.writeRegistry();
   }
-  async removeDeleted(accountId: string) {
+  async removeDeleted(accountId: string, current?: AccountOperationCurrent) {
     if (!/^[0-9a-f-]{36}$/.test(accountId)) throw Error("Unknown account.");
-    await this.forget(accountId);
+    assertAccountOperationCurrent(current);
+    await this.forget(accountId, current);
+    assertAccountOperationCurrent(current);
     fs.rmSync(path.join(this.root, "profiles", accountId), {
       recursive: true,
       force: true,

@@ -2,8 +2,9 @@ const listeners = new Set<(id: string, path: string) => void>();
 let pending: { id: string; path: string } | undefined;
 
 /**
- * Opens a file in a session's file pane from elsewhere. A pane that mounts
- * after the request picks it up.
+ * Opens a file in a session's file pane from elsewhere (a diff's Open file,
+ * live desktop 2.42304.2: the diff file header's ArrowUpRight and its menu).
+ * A pane that mounts after the request picks it up.
  */
 export function requestFileOpen(id: string, path: string) {
   pending = { id, path };

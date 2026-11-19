@@ -5,7 +5,7 @@ import {
   findingsByFile,
   parseReviewOutput,
 } from "../../src/review/review-output";
-import { parseReviewArguments } from "../../src/review/review-target";
+import { parseReviewArguments } from "../../shared/code-review-target";
 import {
   availableCodeSlashCommands,
   filterCodeSlashCommands,

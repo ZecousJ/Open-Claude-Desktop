@@ -14,7 +14,7 @@ export interface ConnectorUrlConfiguration {
   testServerUrl?: string;
 }
 
-// URL configuration validation.
+// URL configuration validation (live claude.ai bundle, 2026-10-14, ca00fcdfd-okHyn2P0.js:1513).
 export function connectorRegexError(pattern: string) {
   if (!pattern.trim()) return "This field is required";
   if (pattern.length > 200) return "200 characters or fewer";

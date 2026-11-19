@@ -207,7 +207,7 @@ export function registerArtifactHandlers(handle: Handle, context: Context) {
   });
 }
 
-/** AI-powered artifacts. */
+/** AI-powered artifacts (electron/artifact-complete.ts). */
 export function registerArtifactCompleteHandlers(
   handle: IpcHandle,
   ctx: AppContext,

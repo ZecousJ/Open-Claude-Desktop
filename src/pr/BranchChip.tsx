@@ -21,9 +21,10 @@ export function behindLabel(count: number, base: string) {
 }
 
 /**
- * The branch row's branch name as a menu button: Copy branch name, and Open
- * branch on GitHub while the session's pull request is open on github.com (the
- * original offers the page of a local session's branch only then). A click or a
+ * The branch row's branch name as a menu button (live claude.ai bundle,
+ * 2026-10-12, ca9ee6f68 hr): Copy branch name, and Open branch on GitHub
+ * while the session's pull request is open on github.com (the original
+ * offers the page of a local session's branch only then). A click or a
  * right click opens the menu; the tooltip stays the chip's.
  */
 export function BranchChip({
@@ -98,8 +99,9 @@ export function BranchChip({
 }
 
 /**
- * How many commits the base branch gained since the branch left it: ↓ and the
- * count, with "N commits behind {base}" as its tooltip and name.
+ * How many commits the base branch gained since the branch left it (live
+ * claude.ai bundle, 2026-10-12, cb1afaa4b ss): ↓ and the count, with
+ * "N commits behind {base}" as its tooltip and name.
  */
 export function BehindCount({ count, base }: { count: number; base: string }) {
   const label = behindLabel(count, base);

@@ -1,11 +1,14 @@
 /**
- * The panels beside the conversation open and close on a spring: a panel that
- * appears slides in from the right while the conversation column narrows with
- * it; one that leaves slides back out while the column widens with it. The
- * panels stay direct children of `.chat-layout` (many rules select them with
- * `>`), so this watches that element: an added panel is animated in place, a
- * removed one is put back for its exit and then removed. A panel replaced by
- * one of the same kind (another file in the viewer) is not animated.
+ * The panels beside the conversation open and close on a spring (owner,
+ * 2026-10-03): a panel that appears slides in from the right while the
+ * conversation column narrows with it; one that leaves slides back out
+ * while the column widens with it (owner, 2026-10-04: no overshoot, and the
+ * column follows the card frame by frame instead of jumping at an end).
+ * The panels stay direct children of `.chat-layout` (many rules select them
+ * with `>`), so this watches that element: an added panel is animated in
+ * place, a removed one is put back for its exit and then removed. A panel
+ * replaced by one of the same kind (another file in the viewer) is not
+ * animated.
  */
 
 /**
@@ -41,9 +44,10 @@ const isPanel = (node: Node): node is HTMLElement =>
 const floating = (el: HTMLElement) =>
   ["absolute", "fixed"].includes(getComputedStyle(el).position);
 /**
- * On a phone the file viewer and the tool panels are sheets over the lower part
- * of the screen and come up from the bottom on the same spring, the scrim
- * fading in with them (artifact-narrow.css, 95-web.css).
+ * On a phone the file viewer and the tool panels are sheets over the lower
+ * part of the screen and come up from the bottom on the same spring (owner,
+ * 2026-10-04), the scrim fading in with them (artifact-narrow.css,
+ * 95-web.css).
  */
 const rises = (el: HTMLElement) =>
   matchMedia("(max-width: 639.98px)").matches &&

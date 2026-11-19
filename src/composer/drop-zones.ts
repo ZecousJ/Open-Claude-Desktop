@@ -2,9 +2,11 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { dragHasFiles } from "./attachment-input";
 
 /**
- * File drop zones besides the composer's. A zone here is an element, such as a
- * project's knowledge rail; the composer's `useFileDrop` leaves drags and drops
- * over one alone.
+ * File drop zones besides the composer's (live claude.ai bundle,
+ * 2026-10-12: one registry routes a file drag to the innermost zone under
+ * the pointer; the page-wide composer zone gets it only where no such zone
+ * is). A zone here is an element, such as a project's knowledge rail; the
+ * composer's `useFileDrop` leaves drags and drops over one alone.
  */
 const zones = new Set<() => HTMLElement | null>();
 

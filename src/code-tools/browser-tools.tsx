@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { spaced, t, tc, formatText } from "../i18n";
 import { Square, ChevronRight } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { Item } from "../../shared/types";
 import { itemIsRunning } from "../../shared/activity";
 import { ActivityMark } from "../transcript/TurnActivity";
@@ -122,11 +122,12 @@ const note = (text: string, values: Record<string, string | number>) =>
   spaced(fill(text, values));
 
 /**
- * The row's title. Running rows use the present tense, finished rows the past,
- * and a failed row starts "Failed to …" as the original's does. "Listing
- * previews" and "Listed previews" are the original's words for the dev-server
- * list; the other rows follow the same pattern. Each sentence is a catalog
- * entry, so the rows follow the interface language.
+ * The row's title. Running rows use the present tense, finished rows the
+ * past, and a failed row starts "Failed to …" as the original's does
+ * ("Failed to run page script", R-0816). "Listing previews" and "Listed
+ * previews" are the original's words for the dev-server list (R-0815);
+ * the other rows follow the same pattern (no capture names them). Each
+ * sentence is a catalog entry, so the rows follow the interface language.
  */
 export function browserTitle(
   tool: string | undefined,
@@ -336,8 +337,8 @@ export function browserTitle(
         "Listed previews",
         "Failed to list previews",
       );
-    // The original's words (startPreview_running, _done, _failed): the
-    // server's name is the row's detail, not its title.
+    // The live desktop's words (2.42304.2: startPreview_running, _done,
+    // _failed): the server's name is the row's detail, not its title.
     case "preview_start":
       return pick(
         "Starting preview",
@@ -383,7 +384,7 @@ export function browserTitle(
   }
 }
 
-/** The call's arguments as "key: value" lines. */
+/** The call's arguments as "key: value" lines (R-0816 shows "expression: location.href"). */
 export function browserArgs(args: unknown): [string, string][] {
   const entries = Object.entries(object(args) ?? {});
   return entries.map(([key, value]) => [
@@ -393,10 +394,11 @@ export function browserArgs(args: unknown): [string, string][] {
 }
 
 /**
- * A call to Claude's Browser tools (R8-G) in the transcript: what it did in
- * words, the screenshot it took as a small picture at the row's right end, and
- * when opened its output, or the error in red, with the arguments as "key:
- * value" lines as in R-0816.
+ * A call to Claude's Browser tools (R8-G) in the transcript: what it did
+ * in words, the screenshot it took as a small picture at the row's right
+ * end (the size and rim of the picture the agent viewed, R-0873), and when
+ * opened its output, or the error in red, with the arguments as
+ * "key: value" lines as in R-0816.
  */
 export function BrowserToolView({ item }: { item: Item }) {
   const phase = browserPhase(item);
@@ -419,7 +421,7 @@ export function BrowserToolView({ item }: { item: Item }) {
           {phase === "running" ? (
             <ActivityMark phase="tools" />
           ) : phase === "failed" ? (
-            <AppIcon name="WarningCircle" size={15} />
+            <Anthropicon name="WarningCircle" size={15} />
           ) : phase === "stopped" ? (
             <Square size={13} />
           ) : null}

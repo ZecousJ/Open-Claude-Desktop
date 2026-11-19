@@ -1,6 +1,6 @@
 import type { Approval, Conversation } from "./types";
 
-// Folder-only requests use the add-folder card.
+// Folder-only requests use the add-folder card (live claude.ai bundle, 2026-10-14, ca44d5dae-DpdemcoK.js).
 export function coworkFolderRequest(
   approval: Approval,
   conversation?: Pick<Conversation, "mode">,

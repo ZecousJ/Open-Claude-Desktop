@@ -36,14 +36,16 @@ export function shareForToken(shares: HostedShare[], token: string) {
 /**
  * A chat someone shared with the signed-in account (/shared/<token>): the
  * prompts and replies the sharer's snapshot holds, read-only, in the
- * transcript's own message styles. Read as the address the sharer invited (the
- * service answers only for it); anyone else sees the same "isn't available" as
- * for a link that never existed. When the administrator takes reports, Report
- * opens Report chat.
+ * transcript's own message styles. Read as the address the sharer invited
+ * (the service answers only for it); anyone else sees the same "isn't
+ * available" as for a link that never existed. When the administrator takes
+ * reports, Report (the live snapshot view's flag button, live claude.ai
+ * bundle, 2026-10-12) opens Report chat.
  *
- * * "Ask Claudex your own question", which starts a new chat; or, for the
- *   person who shared it, "This is the read-only copy that you shared of your
- *   chat." with Open original chat when that chat is on this computer.
+ * Under the messages, as on the live claude.ai shared page (2026-10-12):
+ * "Ask Claudex your own question", which starts a new chat; or, for the
+ * person who shared it, "This is the read-only copy that you shared of
+ * your chat." with Open original chat when that chat is on this computer.
  */
 export function SharedChatPage() {
   const app = useApp();

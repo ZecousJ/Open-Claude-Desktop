@@ -201,15 +201,16 @@ export class SshHostStore {
       console.warn(`Skipped ${this.skipped} unreadable SSH connection(s).`);
   }
 
-  private persist() {
+  private persist(hosts = this.hosts) {
     fs.mkdirSync(path.dirname(this.file), { recursive: true });
     const temporary = `${this.file}.${process.pid}.tmp`;
     fs.writeFileSync(
       temporary,
-      `${JSON.stringify({ version: 1, hosts: this.hosts }, null, 2)}\n`,
+      `${JSON.stringify({ version: 1, hosts }, null, 2)}\n`,
       { mode: 0o600 },
     );
     fs.renameSync(temporary, this.file);
+    this.hosts = hosts;
     try {
       fs.chmodSync(this.file, 0o600);
     } catch {
@@ -228,8 +229,8 @@ export class SshHostStore {
 
   /** Adds a host, or changes the one with `input.id`. */
   save(input: SshHostInput): SshHost {
-    const fields = checkHostFields(input);
     if (input.id !== undefined) {
+      const fields = checkHostFields(input);
       const id = checkHostId(input.id);
       const index = this.hosts.findIndex((item) => item.id === id);
       if (index < 0) throw new Error("That SSH connection no longer exists.");
@@ -240,27 +241,33 @@ export class SshHostStore {
         createdAt: current.createdAt,
         lastUsedAt: current.lastUsedAt,
       });
-      this.hosts[index] = host;
-      this.persist();
+      const next = [...this.hosts];
+      next[index] = host;
+      this.persist(next);
       return { ...host };
     }
+    return this.add(input);
+  }
+
+  add(input: SshHostInput): SshHost {
+    const id = input.id === undefined ? randomUUID() : checkHostId(input.id);
+    if (this.hosts.some((item) => item.id === id))
+      throw new Error("That SSH connection already exists.");
     if (this.hosts.length >= MAX_HOSTS)
       throw new Error(`You can save up to ${MAX_HOSTS} SSH connections.`);
     const host = compact({
-      ...fields,
-      id: randomUUID(),
+      ...checkHostFields(input),
+      id,
       createdAt: this.now(),
     });
-    this.hosts.push(host);
-    this.persist();
+    this.persist([...this.hosts, host]);
     return { ...host };
   }
 
   delete(id: string): boolean {
-    const before = this.hosts.length;
-    this.hosts = this.hosts.filter((item) => item.id !== id);
-    if (this.hosts.length === before) return false;
-    this.persist();
+    const next = this.hosts.filter((item) => item.id !== id);
+    if (next.length === this.hosts.length) return false;
+    this.persist(next);
     return true;
   }
 

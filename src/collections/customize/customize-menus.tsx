@@ -191,7 +191,7 @@ export function customizeMenus(kit: CustomizeMenusKit) {
                   title: notAvailable,
                   onSelect: () => {},
                 },
-            // The original's screen recording; not in Claudex.
+            // R-1516: the original's screen recording; not in Claudex.
             {
               label: "Record your screen",
               icon: Video,

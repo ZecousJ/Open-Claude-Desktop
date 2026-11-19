@@ -1,15 +1,17 @@
 /**
- * Workspace trust for Code on this computer.
+ * Workspace trust for Code on this computer ("Trust this workspace?", live
+ * claude.ai bundle, 2026-10-12: c165c93f1 for the dialog, cc43287c9
+ * :52966-52985 for the submit check, ce2cf86ad for the trust store hooks).
  *
- * Claudex's agent is Codex, and Codex has its own trust: a project is trusted
- * when `projects."<root>".trust_level = "trusted"` is in its user config.toml,
- * where `<root>` is the folder's Git repository root (the main checkout for a
- * worktree) or the folder itself outside Git. Only a trusted project loads its
- * own `.codex/` config (model, sandbox, MCP servers), hooks and exec policy
- * rules; skills and AGENTS.md load either way. The main process records the
- * choice there (electron/workspace-trust.ts), so Codex honours it, and refuses
- * a Code send in a folder that isn't trusted with `workspaceTrustMessage`; the
- * window then asks and sends again.
+ * Claudex's agent is Codex, and Codex has its own trust: a project is
+ * trusted when `projects."<root>".trust_level = "trusted"` is in its user
+ * config.toml, where `<root>` is the folder's Git repository root (the main
+ * checkout for a worktree) or the folder itself outside Git. Only a trusted
+ * project loads its own `.codex/` config (model, sandbox, MCP servers),
+ * hooks and exec policy rules; skills and AGENTS.md load either way. The
+ * main process records the choice there (electron/workspace-trust.ts), so
+ * Codex honours it, and refuses a Code send in a folder that isn't trusted
+ * with `workspaceTrustMessage`; the window then asks and sends again.
  *
  * Desktop only: the web app's sessions run in the runner's sandboxes, which
  * trust their workspaces themselves (as the official web app, which has no
@@ -72,8 +74,9 @@ export interface WorkspaceTrustEvent {
 }
 
 /**
- * The error a Code send (or edit, retry) fails with in a folder that was never
- * trusted.
+ * The error a Code send (or edit, retry) fails with in a folder that was
+ * never trusted (live claude.ai bundle, 2026-10-12, shared-14 "+Q/7SdmHh0",
+ * with Codex for Claude Code).
  */
 export const workspaceTrustMessage = "Codex runs only in workspaces you trust.";
 

@@ -12,7 +12,7 @@ import {
 import { lazyPiece } from "../ui/lazy-piece";
 import { createPortal } from "react-dom";
 import { Check, Ellipsis } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { AppContext } from "../app/AppContext";
 import type { PluginEntry } from "../../shared/collections-api";
 import { copyName, pluginSlug } from "../../shared/duplicate-name";
@@ -372,15 +372,16 @@ export function PluginDetailDialog({
           </p>
         )}
         <div className="button-row plugin-detail-actions">
-          {/* Added: the neutral badge with a check once the plugin is set up. */}
+          {/* Added: the neutral badge with a check once the plugin is set up
+              (live claude.ai bundle, 2026-10-16, c24c8737b: whenSetUp). */}
           {actionKnown && current.installed && (
             <span className="connector-badge directory-review-badge plugin-detail-added">
               <Check size={14} aria-hidden="true" />
               Added
             </span>
           )}
-          {/* Update: when the installed version and the marketplace's are both
-             known; installing again updates it. */}
+          {/* Update (live c24c8737b): when the installed version and the
+              marketplace's are both known; installing again updates it. */}
           {actionKnown &&
             current.installed &&
             current.installedVersion &&
@@ -434,7 +435,7 @@ export function PluginDetailDialog({
                 else onTry?.(current);
               }}
             >
-              <AppIcon name="Chat" size={16} /> Try in chat
+              <Anthropicon name="Chat" size={16} /> Try in chat
             </button>
           )}
           {actions.length > 0 && (

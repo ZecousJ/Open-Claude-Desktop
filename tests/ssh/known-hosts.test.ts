@@ -64,7 +64,7 @@ test("tool grants bind resolved aliases to trusted keys and reject removed keys"
   }
 });
 
-// The WonderSim case: localhost:2222 was rebuilt.
+// The WonderSim case (owner, 2026-10-08): localhost:2222 was rebuilt.
 test("the old key of a host is removed and other hosts are kept", async (t) => {
   if (process.platform === "win32") return t.skip("POSIX fake ssh");
   try {

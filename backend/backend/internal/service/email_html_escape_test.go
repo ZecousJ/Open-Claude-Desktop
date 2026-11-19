@@ -28,8 +28,7 @@ func TestBuildVerifyCodeEmailBody_EscapesSiteName(t *testing.T) {
 	t.Run("normal_site_name_unchanged", func(t *testing.T) {
 		body := svc.buildVerifyCodeEmailBody("654321", "My Site")
 
-		// CLAUDEX: the restyled email shows the site name in its header cell.
-		assert.Contains(t, body, ">My Site</td>")
+		assert.Contains(t, body, "<h1>My Site</h1>")
 		assert.Contains(t, body, "654321")
 	})
 }
@@ -54,8 +53,7 @@ func TestBuildPasswordResetEmailBody_EscapesSiteName(t *testing.T) {
 		resetURL := "https://example.com/reset?token=xyz"
 		body := svc.buildPasswordResetEmailBody(resetURL, "Sub2API")
 
-		// CLAUDEX: the restyled email shows the site name in its header cell.
-		assert.Contains(t, body, ">Sub2API</td>")
+		assert.Contains(t, body, "<h1>Sub2API</h1>")
 		assert.Contains(t, body, resetURL)
 	})
 

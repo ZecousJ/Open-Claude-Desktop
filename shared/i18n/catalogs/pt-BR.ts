@@ -108,7 +108,7 @@ const catalog: Record<string, string> = {
   Max: "Máximo",
   "More models": "Mais modelos",
   "Image generation": "Geração de imagens",
-  "Image generation model": "Modelo de geração de imagens",
+  "Automatic selection": "Seleção automática",
   "Select model": "Selecionar modelo",
   "Incognito chats stay out of your history and search.":
     "Chats anônimos não aparecem no seu histórico nem na busca.",
@@ -1332,16 +1332,38 @@ const catalog: Record<string, string> = {
   "Review yesterday's commits and flag anything concerning.":
     "Revise os commits de ontem e sinalize qualquer coisa preocupante.",
   "System health check": "Verificação de integridade do sistema",
+  "Monitor infrastructure and services for errors, outages, and performance issues.":
+    "Monitore a infraestrutura e os serviços em busca de erros, quedas e problemas de desempenho.",
   "Issue triage": "Triagem de issues",
+  "Review and categorize incoming issues, bugs, and feature requests.":
+    "Revise e categorize issues, bugs e solicitações de recursos recebidos.",
   "PR review digest": "Resumo de revisão de PRs",
+  "Overview of open PRs, review status, and what needs attention.":
+    "Visão geral dos PRs abertos, do status das revisões e do que precisa de atenção.",
   "Dependency update check": "Verificação de atualização de dependências",
+  "Scan for outdated packages, security patches, and breaking changes.":
+    "Procure pacotes desatualizados, correções de segurança e mudanças incompatíveis.",
   "Flaky test tracker": "Rastreador de testes instáveis",
+  "Find tests that pass and fail intermittently across recent CI runs.":
+    "Encontre testes que passam e falham de forma intermitente nas execuções recentes de CI.",
   "Daily briefing": "Resumo diário",
+  "What needs your attention today across calendar, email, and messages.":
+    "O que precisa da sua atenção hoje entre agenda, e-mail e mensagens.",
   "Inbox triage": "Triagem da caixa de entrada",
+  "Categorize your inbox and draft replies to anything urgent.":
+    "Categorize sua caixa de entrada e rascunhe respostas para o que for urgente.",
   "Meeting prep": "Preparação para reuniões",
+  "A short brief before each meeting on your calendar, covering attendees, context, and agenda.":
+    "Um breve resumo antes de cada reunião da sua agenda, com participantes, contexto e pauta.",
   "Weekly review": "Revisão semanal",
+  "A Friday summary of what happened this week.":
+    "Um resumo de sexta-feira do que aconteceu na semana.",
   "Content ideas": "Ideias de conteúdo",
+  "Draft a few post ideas each week from the latest news in your industry.":
+    "Rascunhe algumas ideias de post por semana a partir das últimas notícias do seu setor.",
   "Monitor a topic": "Monitorar um tópico",
+  "Watch for news or mentions of a topic, competitor, or keyword.":
+    "Acompanhe notícias ou menções de um tópico, concorrente ou palavra-chave.",
   Frequency: "Frequência",
   "Add a model connection in Settings first.":
     "Adicione primeiro uma conexão de modelo em Configurações.",
@@ -1455,6 +1477,7 @@ const catalog: Record<string, string> = {
   Write: "Escrever",
   "Thought for {n}s": "Pensou por {n}s",
   "Waiting for your response": "Aguardando sua resposta",
+  "ran a command": "executou um comando",
   "ran {n} commands": "executou {n} comandos",
   "read a file": "leu um arquivo",
   "read {n} files": "leu {n} arquivos",
@@ -1464,6 +1487,7 @@ const catalog: Record<string, string> = {
   "created {n} files": "criou {n} arquivos",
   "edited a file": "editou um arquivo",
   "edited {n} files": "editou {n} arquivos",
+  "used a tool": "usou uma ferramenta",
   "used {n} tools": "usou {n} ferramentas",
   "searched the web": "pesquisou na web",
   "shared files": "compartilhou arquivos",
@@ -1618,6 +1642,7 @@ const catalog: Record<string, string> = {
   "Only you can open this link": "Somente você pode abrir este link",
   Copied: "Copiado",
   "Local workspace": "Espaço de trabalho local",
+  "Starting up…": "Iniciando…",
   "Started an agent": "Iniciou um agente",
   "Messaged an agent": "Enviou mensagem a um agente",
   "Resumed an agent": "Retomou um agente",
@@ -2018,6 +2043,8 @@ const catalog: Record<string, string> = {
   "memory settings": "configurações de memória",
   "Claudex hasn't written any memory from your chats yet. Your reflection shows here once it has.":
     "O Claudex ainda não escreveu nenhuma memória a partir dos seus chats. Sua reflexão aparecerá aqui quando isso acontecer.",
+  "For this reflection to work, you'll need to enable memory in":
+    "Para esta reflexão funcionar, você precisará ativar a memória em",
   "Based on your conversations in Claudex chat.":
     "Com base nas suas conversas no chat do Claudex.",
   "Core skills library for Claudex Code: TDD, debugging, collaboration patterns, and proven techniques.":
@@ -2972,7 +2999,26 @@ const catalog: Record<string, string> = {
     "Clientes compatíveis com OpenAI usam este endereço; clientes Anthropic usam sem /v1.",
   Rate: "Taxa",
   "Click a model to copy its ID": "Clique em um modelo para copiar o ID",
+  "ZecousAI users have all moved to the new Claudex":
+    "Os usuários do ZecousAI foram todos para o novo Claudex",
+  "Claudex is the fully upgraded ZecousAI platform, built to give you fuller and steadier service. Since September 4, OpenAI has been degrading and rate-limiting its models, and availability has dropped, so for ZecousAI users we have decided:":
+    "O Claudex é a plataforma ZecousAI totalmente renovada, para um serviço mais completo e estável. Desde 4 de setembro, a OpenAI vem degradando e limitando seus modelos e a disponibilidade caiu; por isso, para os usuários do ZecousAI, decidimos:",
+  "If you had any ZecousAI subscription on September 4, or started one after September 4, the subscription time you had left from September 4 on is turned into balance in proportion to its length and added to your Claudex balance.":
+    "Se você tinha uma assinatura do ZecousAI em 4 de setembro, ou começou uma depois de 4 de setembro, o tempo de assinatura que restava a partir de 4 de setembro é convertido em saldo proporcionalmente e somado ao seu saldo do Claudex.",
+  "If you had a ZecousAI balance on September 4, that day's balance is turned into balance and added to your Claudex balance (requests from September 4 on are not charged).":
+    "Se você tinha saldo no ZecousAI em 4 de setembro, o saldo desse dia é convertido e somado ao seu saldo do Claudex (as solicitações a partir de 4 de setembro não são cobradas).",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's official 1:1, so what you can use does not change.":
+    "Seu saldo do ZecousAI pode parecer menor no Claudex. O Claudex recarrega na nova taxa de ¥1 para $1, e os multiplicadores de modelo são bem menores que o 1:1 oficial do ZecousAI, então o que você pode usar não muda.",
+  "Moving adds {amount} to your Claudex balance ({balance} from your balance, {subscription} from your subscriptions).":
+    "A migração soma {amount} ao seu saldo do Claudex ({balance} do seu saldo, {subscription} das suas assinaturas).",
+  "Once you confirm, your ZecousAI subscription and balance are cleared and moved to Claudex. If you use the API, switch your request address and create new keys in the API tab at the top left.":
+    "Ao confirmar, sua assinatura e seu saldo do ZecousAI são zerados e levados para o Claudex. Se você usa a API, troque o endereço das solicitações e crie novas chaves na guia API, no canto superior esquerdo.",
+  "Confirm move": "Confirmar migração",
   "Moving…": "Migrando…",
+  "The move didn't go through. Try again.":
+    "A migração não foi concluída. Tente de novo.",
+  "Moved: {amount} added to your Claudex balance.":
+    "Migrado: {amount} somados ao seu saldo do Claudex.",
   "All changes": "Todas as alterações",
   "1 file": "1 arquivo",
   "Sync with the web": "Sincronizar com a web",
@@ -3845,6 +3891,7 @@ const catalog: Record<string, string> = {
   "Give me a puzzle": "Me dê um enigma",
   "Tell me something unexpected": "Me conte algo inesperado",
   "Debate a big question": "Debater uma grande questão",
+  "Play a word game": "Jogar um jogo de palavras",
   "Try a thought experiment": "Experimentar um experimento mental",
   "Read my draft for clarity, tone and structure, then rewrite it so it flows while keeping my voice. Here it is:\n\n":
     "Leia meu rascunho prestando atenção à clareza, ao tom e à estrutura e reescreva-o para que flua bem, mantendo a minha voz. Aqui está:\n\n",
@@ -4258,8 +4305,47 @@ const catalog: Record<string, string> = {
   "Refresh list": "Atualizar lista",
   "Couldn’t load branches.": "Não foi possível carregar os branches.",
   "No branches match": "Nenhum branch corresponde",
+  "Pick a task, any task": "Escolha uma tarefa, qualquer uma",
+  "Tidy up and get organized": "Arrume e organize",
+  "Plan for what’s ahead": "Planeje o que vem pela frente",
+  "Turn messy data into action": "Transforme dados bagunçados em ação",
   "Customize with plugins": "Personalizar com plugins",
   "On {deviceName}": "Em {deviceName}",
+  "Optimize my week": "Otimizar minha semana",
+  "Help me plan and optimize my week. I have my Google Calendar open and ready for you to review and edit.\n\nFirst, review my calendar and show me a summary:\n- Total meetings\n- Busiest days\n- Where I have gaps of 2+ hours\n\nBefore proposing changes, ask me about:\n- What I’m trying to accomplish this week\n- How much focus time I need and for what\n- Any deadlines or commitments not on my calendar\n- Which types of meetings I should decline or shorten\n- Personal commitments or boundaries I want to protect\n\nThen show me your top 3-5 proposed changes with explanations:\n- Focus blocks to add\n- Meetings to decline or reschedule\n- Time conflicts to resolve\n\nStart with the highest-impact changes first. Once I approve each change, make the edits directly in my calendar one at a time.":
+    "Ajude-me a planejar e otimizar minha semana. Estou com o Google Agenda aberto e pronto para você revisar e editar.\n\nPrimeiro, revise minha agenda e me mostre um resumo:\n- Total de reuniões\n- Dias mais cheios\n- Onde tenho intervalos livres de 2 horas ou mais\n\nAntes de propor mudanças, pergunte-me:\n- O que quero realizar esta semana\n- Quanto tempo de foco preciso e para quê\n- Prazos ou compromissos que não estão na minha agenda\n- Que tipos de reunião devo recusar ou encurtar\n- Compromissos pessoais ou limites que quero proteger\n\nDepois, mostre-me suas 3-5 principais propostas de mudança, com explicações:\n- Blocos de foco a adicionar\n- Reuniões a recusar ou remarcar\n- Conflitos de horário a resolver\n\nComece pelas mudanças de maior impacto. Assim que eu aprovar cada mudança, faça as edições diretamente na minha agenda, uma de cada vez.",
+  "Organize my screenshots": "Organizar minhas capturas de tela",
+  "Help me organize recent screenshots on my Desktop.\n\nFirst, scan my Desktop and count how many screenshots/images are there. Show me:\n- Total count\n- Date range (oldest to newest)\n\nThen, focus only on screenshots from the last 14 days. For each one:\n- Identify what it shows\n- Suggest a descriptive filename\n- Propose which folder it belongs in (or if it can be deleted)\n\nGroup similar screenshots together. Show me the plan before making any changes.\n\nAfter I approve, start by organizing just 10 files as a preview. If there are more than 10 files, check in with me before continuing with the rest.":
+    "Ajude-me a organizar as capturas de tela recentes na minha Mesa.\n\nPrimeiro, verifique minha Mesa e conte quantas capturas de tela/imagens existem. Mostre-me:\n- Total\n- Intervalo de datas (da mais antiga à mais recente)\n\nDepois, concentre-se apenas nas capturas dos últimos 14 dias. Para cada uma:\n- Identifique o que ela mostra\n- Sugira um nome de arquivo descritivo\n- Proponha em qual pasta ela deve ficar (ou se pode ser excluída)\n\nAgrupe capturas parecidas. Mostre-me o plano antes de fazer qualquer alteração.\n\nDepois que eu aprovar, comece organizando apenas 10 arquivos como prévia. Se houver mais de 10 arquivos, confirme comigo antes de continuar com o restante.",
+  "Find insights in files": "Encontrar insights em arquivos",
+  "Help me find patterns and insights across [my voice memos / meeting transcripts / documents / journal entries / specify folder]. I have messy, unstructured files and want to understand what themes are emerging.\n\nFirst, scan the folder and show me a summary:\n- Total files\n- Date range (oldest to newest)\n- Types of content\n\nBefore analyzing, ask me:\n- What I’m hoping to discover (recurring themes, contradictions, evolution of thinking, action items, or something else)\n- Whether certain files or time periods should be prioritized\n- What format would be most useful for the final analysis\n\nIf there are more than 20 files, start by analyzing just the 10 most recent files.\n\nShow me the top 3-5 patterns you found with 2-3 specific examples for each pattern. Once I confirm you’re on the right track, analyze the remaining files.":
+    "Ajude-me a encontrar padrões e insights em [meus memos de voz / transcrições de reuniões / documentos / registros de diário / especifique a pasta]. Tenho arquivos bagunçados e sem estrutura e quero entender quais temas estão surgindo.\n\nPrimeiro, verifique a pasta e me mostre um resumo:\n- Total de arquivos\n- Intervalo de datas (do mais antigo ao mais recente)\n- Tipos de conteúdo\n\nAntes de analisar, pergunte-me:\n- O que espero descobrir (temas recorrentes, contradições, evolução do meu pensamento, itens de ação ou outra coisa)\n- Se certos arquivos ou períodos devem ter prioridade\n- Qual formato seria mais útil para a análise final\n\nSe houver mais de 20 arquivos, comece analisando apenas os 10 mais recentes.\n\nMostre-me os 3-5 principais padrões que encontrou, com 2-3 exemplos específicos para cada um. Assim que eu confirmar que você está no caminho certo, analise os arquivos restantes.",
+  "Clean up my Downloads folder": "Limpar minha pasta Downloads",
+  "Help me organize my Downloads folder.\n\nFirst, scan and show me a summary:\n- Total files and total size\n- Files older than 30 days\n- Largest files taking up space\n\nBefore organizing, ask me:\n- What categories or folder structure would be most useful\n- Whether I want to delete or archive old files\n- If there are specific file types I want to prioritize (documents, images, installers, etc.)\n\nThen focus only on files older than 30 days first. Show me a proposed plan for these old files:\n- Categories to create\n- Files to delete (installers, duplicates, temp files)\n- Files to keep with where they should go\n\nAfter I approve, organize the first 15 old files as a preview. If there are more files, check in before continuing.":
+    "Ajude-me a organizar minha pasta Downloads.\n\nPrimeiro, verifique-a e me mostre um resumo:\n- Total de arquivos e tamanho total\n- Arquivos com mais de 30 dias\n- Os maiores arquivos ocupando espaço\n\nAntes de organizar, pergunte-me:\n- Quais categorias ou estrutura de pastas seriam mais úteis\n- Se quero excluir ou arquivar os arquivos antigos\n- Se há tipos de arquivo específicos que quero priorizar (documentos, imagens, instaladores etc.)\n\nDepois, concentre-se primeiro apenas nos arquivos com mais de 30 dias. Mostre-me um plano para esses arquivos antigos:\n- Categorias a criar\n- Arquivos a excluir (instaladores, duplicados, arquivos temporários)\n- Arquivos a manter e para onde devem ir\n\nDepois que eu aprovar, organize os primeiros 15 arquivos antigos como prévia. Se houver mais arquivos, confirme comigo antes de continuar.",
+  "Organize photos by event/date": "Organizar fotos por evento/data",
+  "Help me organize photos on my [Desktop/Downloads/specify location].\n\nFirst, scan the folder and show me a summary:\n- Total photos\n- Date range (oldest to newest)\n- Rough size breakdown\n\nBefore organizing, ask me:\n- How I’d like them organized (by date, by event, by person)\n- Whether there are specific events or time periods I should know about\n- What folder structure would work best\n- If any photos can be deleted (duplicates, blurry ones, screenshots)\n\nFocus only on photos from the last 3 months first. Show me a proposed plan with examples from 3-4 different groups so I can show you how I’d organize them.\n\nAfter I approve, organize just 20 photos as a preview. If there are more than 20, check in before continuing with the rest.":
+    "Ajude-me a organizar as fotos em [Mesa/Downloads/especifique o local].\n\nPrimeiro, verifique a pasta e me mostre um resumo:\n- Total de fotos\n- Intervalo de datas (da mais antiga à mais recente)\n- Divisão aproximada por tamanho\n\nAntes de organizar, pergunte-me:\n- Como quero organizá-las (por data, por evento, por pessoa)\n- Se há eventos ou períodos específicos que você deve conhecer\n- Qual estrutura de pastas funcionaria melhor\n- Se alguma foto pode ser excluída (duplicadas, borradas, capturas de tela)\n\nConcentre-se primeiro apenas nas fotos dos últimos 3 meses. Mostre-me um plano com exemplos de 3-4 grupos diferentes para que eu possa mostrar como eu as organizaria.\n\nDepois que eu aprovar, organize apenas 20 fotos como prévia. Se houver mais de 20, confirme comigo antes de continuar com o restante.",
+  "Help me organize and clean up my email inbox.\n\nFirst, scan my inbox and show me a summary:\n- Total unread emails\n- Emails older than 30 days\n- The main senders or types of emails\n\nBefore organizing, ask me:\n- What categories or folders I want to create\n- Which types of emails I want to archive or delete\n- Whether there are specific senders I want to prioritize or filter\n- Any email patterns I want to address (newsletters, promotions, etc.)\n\nFocus only on emails older than 30 days first — these are easiest to clean up. Show me a proposed plan:\n- Which emails to archive\n- Which to delete\n- Which need action\n\nIf there are more than 50 old emails, start with a batch of 20 so I can check your approach. Once I approve, process that batch.":
+    "Ajude-me a organizar e limpar minha caixa de entrada de e-mail.\n\nPrimeiro, verifique minha caixa de entrada e me mostre um resumo:\n- Total de e-mails não lidos\n- E-mails com mais de 30 dias\n- Os principais remetentes ou tipos de e-mail\n\nAntes de organizar, pergunte-me:\n- Quais categorias ou pastas quero criar\n- Que tipos de e-mail quero arquivar ou excluir\n- Se há remetentes específicos que quero priorizar ou filtrar\n- Quais padrões de e-mail quero tratar (newsletters, promoções etc.)\n\nConcentre-se primeiro apenas nos e-mails com mais de 30 dias — são os mais fáceis de limpar. Mostre-me um plano:\n- Quais e-mails arquivar\n- Quais excluir\n- Quais precisam de ação\n\nSe houver mais de 50 e-mails antigos, comece com um lote de 20 para que eu possa verificar sua abordagem. Depois que eu aprovar, processe esse lote.",
+  "Prep for my next meeting": "Preparar minha próxima reunião",
+  "I have a meeting with [a company] [tomorrow].\n\nBefore researching, ask me:\n- What the meeting is about\n- What I already know about them\n- What I’m trying to accomplish\n- What would be most useful to know going in\n\nThen research them and show me what you found:\n- Company overview\n- Recent news (last 3 months)\n- Key people I’ll be meeting with\n- Their LinkedIn for recent updates\n\nShow me an outline of the one-pager with the 3-5 most important points before writing the full doc. Once I approve, create the final one-pager.":
+    "Tenho uma reunião com [uma empresa] [amanhã].\n\nAntes de pesquisar, pergunte-me:\n- Sobre o que é a reunião\n- O que já sei sobre eles\n- O que estou tentando alcançar\n- O que seria mais útil saber antes da reunião\n\nDepois, pesquise sobre eles e me mostre o que encontrou:\n- Visão geral da empresa\n- Notícias recentes (últimos 3 meses)\n- Pessoas-chave com quem vou me reunir\n- O LinkedIn deles para atualizações recentes\n\nMostre-me um esboço do resumo de uma página com os 3-5 pontos mais importantes antes de escrever o documento completo. Depois que eu aprovar, crie o resumo final.",
+  "Plan my next vacation": "Planejar minhas próximas férias",
+  "Help me plan my next vacation.\n\nBefore researching, ask me:\n- Where I’m thinking of going (or if I’m open to suggestions)\n- When I want to travel and for how long\n- What my budget is\n- What kind of trip I’m looking for (relaxing, adventure, cultural, food-focused, etc.)\n\nThen research the top 3 destinations that fit my criteria and show me a comparison:\n- Estimated costs\n- Best time to visit\n- What makes each unique\n\nOnce I pick my top choice, research that destination in detail:\n- Check current flight prices\n- Find 3-4 accommodation options\n- Suggest a day-by-day outline\n\nShow me this proposed itinerary with estimated costs before creating the final trip plan.":
+    "Ajude-me a planejar minhas próximas férias.\n\nAntes de pesquisar, pergunte-me:\n- Para onde estou pensando em ir (ou se estou aberto a sugestões)\n- Quando quero viajar e por quanto tempo\n- Qual é o meu orçamento\n- Que tipo de viagem procuro (relaxante, de aventura, cultural, gastronômica etc.)\n\nDepois, pesquise os 3 destinos que mais se encaixam nos meus critérios e me mostre uma comparação:\n- Custos estimados\n- Melhor época para visitar\n- O que torna cada um único\n\nAssim que eu escolher meu favorito, pesquise esse destino em detalhes:\n- Verifique os preços atuais das passagens\n- Encontre 3-4 opções de hospedagem\n- Sugira um roteiro dia a dia\n\nMostre-me esse roteiro proposto com os custos estimados antes de criar o plano de viagem final.",
+  "Prepare for a job interview": "Preparar-me para uma entrevista de emprego",
+  "I have a job interview coming up for [role] at [company].\n\nBefore researching, ask me:\n- What the role is and what level\n- What I already know about the company\n- What I’m most nervous or uncertain about\n- If I have the job description or any interview details\n\nThen research the company and role, and show me what I found:\n- Company overview and recent news (last 6 months)\n- What this role typically involves\n- Common interview questions for this type of role\n- The interview team on LinkedIn (if you have names)\n\nShow me an outline covering these 3-5 topics before creating the full prep doc:\n- Key points about the company to mention\n- How my background connects to what they need\n- Questions I should ask them\n- 3-4 likely interview questions with suggested talking points\n\nOnce I approve, create a complete interview prep guide I can review before the interview.":
+    "Tenho uma entrevista de emprego em breve para [cargo] na [empresa].\n\nAntes de pesquisar, pergunte-me:\n- Qual é o cargo e de que nível\n- O que já sei sobre a empresa\n- O que mais me deixa nervoso ou inseguro\n- Se tenho a descrição da vaga ou algum detalhe da entrevista\n\nDepois, pesquise a empresa e o cargo e me mostre o que encontrou:\n- Visão geral da empresa e notícias recentes (últimos 6 meses)\n- O que esse cargo costuma envolver\n- Perguntas comuns em entrevistas para esse tipo de cargo\n- A equipe de entrevista no LinkedIn (se você tiver os nomes)\n\nMostre-me um esboço cobrindo estes 3-5 tópicos antes de criar o documento de preparação completo:\n- Pontos importantes sobre a empresa para mencionar\n- Como minha experiência se conecta ao que eles precisam\n- Perguntas que devo fazer a eles\n- 3-4 prováveis perguntas da entrevista com sugestões de pontos para a resposta\n\nDepois que eu aprovar, crie um guia completo de preparação para eu revisar antes da entrevista.",
+  "Catch me up on Slack": "Me atualizar no Slack",
+  "Help me catch up on what I’ve missed in Slack.\n\nBefore reading, ask me:\n- Which channels or DMs I should focus on (or check everything)\n- How far back to look (since yesterday, last week, specific date)\n- What I’m most concerned about missing (decisions, @mentions, urgent items, project updates)\n- Whether there are specific topics or people to prioritize\n\nThen scan those channels and show me a summary:\n- Total unread messages\n- Breakdown by channel\n\nFocus on messages that @mention me, contain decisions, or are marked urgent first.\n\nShow me the top 5 most important updates with context and links to the threads. If there are more than 30 unread messages total, start with these top 5 and ask if you should summarize more.":
+    "Ajude-me a me atualizar sobre o que perdi no Slack.\n\nAntes de ler, pergunte-me:\n- Em quais canais ou mensagens diretas devo me concentrar (ou se devo verificar tudo)\n- Até quando voltar (desde ontem, semana passada, uma data específica)\n- O que mais me preocupa perder (decisões, @menções, itens urgentes, atualizações de projetos)\n- Se há tópicos ou pessoas específicos a priorizar\n\nDepois, verifique esses canais e me mostre um resumo:\n- Total de mensagens não lidas\n- Divisão por canal\n\nConcentre-se primeiro nas mensagens que me @mencionam, contêm decisões ou estão marcadas como urgentes.\n\nMostre-me as 5 atualizações mais importantes com contexto e links para as conversas. Se houver mais de 30 mensagens não lidas no total, comece por essas 5 e pergunte se deve resumir mais.",
+  "Turn voice memos into a doc": "Transformar memos de voz em um documento",
+  "Help me turn my voice memos into an organized document. I have [voice memos / audio recordings] in [specify location] that I want transcribed and organized.\n\nFirst, scan the folder and show me:\n- How many audio files\n- Total duration\n- Date range\n\nBefore transcribing, ask me:\n- What these recordings are about\n- How I’d like them organized (chronologically, by topic, by theme)\n- Whether I want verbatim transcripts or cleaned-up summaries\n- What the final document should be (meeting notes, journal entries, ideas list, etc.)\n\nIf there are more than 5 recordings, start by transcribing just the 3 most recent ones. Show me the transcribed content and proposed organization structure.\n\nOnce I approve the approach, transcribe and organize the remaining recordings.":
+    "Ajude-me a transformar meus memos de voz em um documento organizado. Tenho [memos de voz / gravações de áudio] em [especifique o local] que quero transcrever e organizar.\n\nPrimeiro, verifique a pasta e me mostre:\n- Quantos arquivos de áudio existem\n- Duração total\n- Intervalo de datas\n\nAntes de transcrever, pergunte-me:\n- Sobre o que são essas gravações\n- Como quero organizá-las (em ordem cronológica, por assunto, por tema)\n- Se quero transcrições literais ou resumos revisados\n- O que o documento final deve ser (notas de reunião, registros de diário, lista de ideias etc.)\n\nSe houver mais de 5 gravações, comece transcrevendo apenas as 3 mais recentes. Mostre-me o conteúdo transcrito e a estrutura de organização proposta.\n\nAssim que eu aprovar a abordagem, transcreva e organize as gravações restantes.",
+  "Pull data into a spreadsheet": "Levar dados para uma planilha",
+  "I’m on a page with [job listings / products / directory entries] I want to extract.\n\nFirst, scan the page and show me what you see:\n- How many items total\n- What fields are available (title, price, location, description, etc.)\n\nBefore extracting, ask me:\n- Which fields I want in the spreadsheet\n- If there are any I should skip\n\nThen show me a preview with the first 3-5 items extracted so I can confirm the format looks right.\n\nIf there are more than 20 items on this page, extract them in batches of 10. If there are multiple pages, just do the first page and check with you before continuing.":
+    "Estou em uma página com [vagas de emprego / produtos / itens de um diretório] que quero extrair.\n\nPrimeiro, verifique a página e me mostre o que você vê:\n- Quantos itens há no total\n- Quais campos estão disponíveis (título, preço, local, descrição etc.)\n\nAntes de extrair, pergunte-me:\n- Quais campos quero na planilha\n- Se há algum que devo pular\n\nDepois, mostre-me uma prévia com os primeiros 3-5 itens extraídos para que eu confirme se o formato está certo.\n\nSe houver mais de 20 itens nesta página, extraia-os em lotes de 10. Se houver várias páginas, faça apenas a primeira e confirme comigo antes de continuar.",
   "Show empty groups": "Mostrar grupos vazios",
   "Drag or move sessions here": "Arraste ou mova sessões para cá",
   "“{groupName}” will be removed. Nothing is in it.":
@@ -4626,6 +4712,7 @@ const catalog: Record<string, string> = {
   "Started Claudex Code": "Claudex Code iniciado",
   "Start Claudex Code": "Iniciar o Claudex Code",
   "In progress": "Em andamento",
+  "Starting session…": "Iniciando a sessão…",
   "Unable to connect to repository": "Não foi possível conectar ao repositório",
   "Claudex couldn’t reach GitHub to fetch your repository. Try again in a moment.":
     "O Claudex não conseguiu acessar o GitHub para buscar seu repositório. Tente novamente em instantes.",
@@ -4903,8 +4990,8 @@ const catalog: Record<string, string> = {
     "Não é possível adicionar pastas ao conhecimento do projeto.",
   "{name} can't be added: project files can be text files or PDFs.":
     "Não é possível adicionar {name}: os arquivos do projeto podem ser arquivos de texto ou PDFs.",
-  "{name} is too large. Project files can be up to 10 MB.":
-    "{name} é grande demais. Os arquivos do projeto podem ter até 10 MB.",
+  "{name} is too large. Project files can be up to {limit} MB.":
+    "{name} é grande demais. Os arquivos do projeto podem ter até {limit} MB.",
   "This project no longer exists.": "Este projeto não existe mais.",
   "Trust this workspace?": "Confiar neste espaço de trabalho?",
   "Codex may read, write, or execute files in this folder. Only proceed if you trust this workspace.":
@@ -5281,6 +5368,8 @@ const catalog: Record<string, string> = {
   "We’ll use this to verify your account":
     "Usaremos isso para verificar sua conta",
   "Enter your birthdate": "Insira sua data de nascimento",
+  "I agree to ZecousAI’s {terms} and {aup}.":
+    "Concordo com os {terms} e a {aup} da ZecousAI.",
   "Terms of Service": "Termos de Serviço",
   "Acceptable Use Policy": "Política de Uso Aceitável",
   "Enter your name to continue": "Insira seu nome para continuar",
@@ -6977,6 +7066,44 @@ const catalog: Record<string, string> = {
   "Create an interactive app that ": "Crie um aplicativo interativo que ",
   "Turn this idea into a diagram, chart, or visual: ":
     "Transforme esta ideia em um diagrama, gráfico ou visual: ",
+  "Template Creator": "Criador de modelos",
+  "Deck Checker": "Verificador de apresentações",
+  "DCF Valuation": "Avaliação DCF",
+  "Earnings Analysis": "Análise de resultados",
+  "All Finance Skills": "Todas as habilidades financeiras",
+  "Company Profile": "Perfil da empresa",
+  "Pitch Deck": "Apresentação de proposta",
+  "Initiating Coverage": "Início de cobertura",
+  "Competitive Analysis": "Análise competitiva",
+  "3-Statement Model": "Modelo de três demonstrações",
+  "Comps Analysis": "Análise de comparáveis",
+  "Datapack Builder": "Criador de pacotes de dados",
+  "Enable skill to continue": "Ative a habilidade para continuar",
+  "The skill “{skillName}” needs to be enabled to use this prompt. Enable it now?":
+    "A habilidade “{skillName}” precisa estar ativada para usar este prompt. Ativar agora?",
+  "Enable skill": "Ativar habilidade",
+  "Create a reusable skill from our firm's template using anthropic-ppt-template-creator. Extract layouts, placeholders, and formatting standards. [attach firm_brand_template.pptx]":
+    "Crie uma habilidade reutilizável com o modelo da nossa empresa usando anthropic-ppt-template-creator. Extraia layouts, espaços reservados e padrões de formatação. [anexar firm_brand_template.pptx]",
+  "QC the attached management presentation using anthropic-fsi-deck-checker. Check for number consistency, data-narrative alignment, and formatting issues. [attach ProjectBravo_Mgmt_Presentation.pptx]":
+    "Verifique a qualidade da apresentação gerencial anexa com anthropic-fsi-deck-checker. Confira consistência dos números, alinhamento entre dados e narrativa e problemas de formatação. [anexar ProjectBravo_Mgmt_Presentation.pptx]",
+  "Create a DCF model for [ServiceNow] using anthropic-fsi-dcf-model-builder. Include 5-year projections, WACC calculation, terminal value via exit multiple, and sensitivity on discount rate and growth.":
+    "Crie um modelo DCF para [ServiceNow] com anthropic-fsi-dcf-model-builder. Inclua projeções de 5 anos, cálculo do WACC, valor terminal por múltiplo de saída e sensibilidade à taxa de desconto e ao crescimento.",
+  "Create an earnings update for [CrowdStrike]'s Q3 FY2025 results using anthropic-fsi-earnings-analysis. Cover beat/miss vs. consensus, key drivers, guidance changes, and updated thesis.":
+    "Crie uma atualização dos resultados do 3º trimestre do ano fiscal de 2025 de [CrowdStrike] com anthropic-fsi-earnings-analysis. Aborde desvios do consenso, fatores-chave, mudanças nas projeções e tese atualizada.",
+  "Create a single-slide strip profile for [Snowflake] using anthropic-fsi-strip-profile. Include business overview, key metrics, valuation multiples, stock chart, and top shareholders.":
+    "Crie um perfil de [Snowflake] em um único slide com anthropic-fsi-strip-profile. Inclua visão geral, métricas-chave, múltiplos de avaliação, gráfico de ações e principais acionistas.",
+  "Populate the attached pitch deck template with data from the Excel file using anthropic-fsi-pitch-deck. Map financials to appropriate slides and maintain formatting. [attach template.pptx and financials.xlsx]":
+    "Preencha o modelo de apresentação anexo com os dados do Excel usando anthropic-fsi-pitch-deck. Mapeie os dados financeiros aos slides adequados e mantenha a formatação. [anexar template.pptx e financials.xlsx]",
+  "Creating company research on [MongoDB] using anthropic-fsi-initiating-coverage. Start with Task 1 covering business model, competitive positioning, and key investment thesis points.":
+    "Crie uma análise de [MongoDB] com anthropic-fsi-initiating-coverage. Comece pela tarefa 1 sobre modelo de negócios, posicionamento competitivo e pontos-chave da tese de investimento.",
+  "Create a competitive landscape analysis for [Datadog] using anthropic-fsi-competitive-analysis. Include a 2x2 positioning matrix against Splunk, Dynatrace, New Relic, and Elastic, with competitive moats and strategic implications.":
+    "Crie uma análise competitiva de [Datadog] com anthropic-fsi-competitive-analysis. Inclua uma matriz 2x2 frente a Splunk, Dynatrace, New Relic e Elastic, barreiras competitivas e implicações estratégicas.",
+  "Build an integrated 3-statement model using anthropic-fsi-3-statements. Populate the attached template with [Salesforce]'s FY2022-2024 historicals from their 10-K and project through FY2027. [attach template.xlsx and CRM 10-K.pdf]":
+    "Crie um modelo integrado de três demonstrações com anthropic-fsi-3-statements. Preencha o modelo com dados históricos de 2022–2024 de [Salesforce] do 10-K e projete até 2027. [anexar template.xlsx e CRM 10-K.pdf]",
+  "Build a comps analysis for [Shopify] using anthropic-fsi-comps-analysis. Include 10 peers with EV/Revenue, EV/EBITDA, and P/E on LTM and NTM basis, plus implied valuation ranges.":
+    "Crie uma análise de comparáveis de [Shopify] com anthropic-fsi-comps-analysis. Inclua 10 pares com EV/Receita, EV/EBITDA e P/L em bases LTM e NTM e faixas de avaliação implícitas.",
+  "Build a data pack for our IC using anthropic-fsi-datapack-builder. Standardize financials from the attached CIM including ARR growth, net retention, and rule of 40 metrics. [attach ProjectAlpha_CIM.pdf]":
+    "Crie um pacote de dados para nosso comitê de investimentos com anthropic-fsi-datapack-builder. Padronize os dados financeiros do CIM anexo, incluindo crescimento ARR, retenção líquida e regra dos 40. [anexar ProjectAlpha_CIM.pdf]",
   "Get this as a document you can edit and share.":
     "Tenha isto como um documento que você pode editar e compartilhar.",
   "Create a document": "Criar um documento",
@@ -7454,11 +7581,577 @@ const catalog: Record<string, string> = {
   file: "arquivo",
   "Couldn’t fetch the file. This connector is no longer available.":
     "Não foi possível buscar o arquivo. Este conector não está mais disponível.",
+  "Hey Claudex, could you {prompt}? Use any connector that would be helpful, and get started once you’ve gathered enough info.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Olá Claudex, você poderia {prompt}? Use qualquer conector útil e comece assim que reunir informações suficientes.\n\nSe fizer sentido, crie algo que possamos ver juntos, como um visual, uma lista ou algo interativo.",
+  "Hey Claudex, could you help me {prompt}? Start researching right away, and use any tools you think would help. Let me know if you need any other context.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Olá Claudex, pode me ajudar a {prompt}? Comece a pesquisar agora e use as ferramentas que ajudarem. Avise se precisar de mais contexto.\n\nSe fizer sentido, crie algo que possamos ver juntos, como um visual, uma lista ou algo interativo.",
+  "Hi Claudex! Could you {prompt}? If you need more information from me, ask me 1-2 key questions right away. If you think I should give you more context or upload anything to help you do a better job, let me know. Use any tools you have access to—like Google Drive, web search, etc.—if they’ll help.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive. Thanks for your help!":
+    "Olá Claudex! Você poderia {prompt}? Se precisar de mais informações, faça 1 ou 2 perguntas essenciais agora. Avise se devo dar mais contexto ou enviar algo para ajudar. Use ferramentas disponíveis, como Google Drive ou busca na web, se forem úteis.\n\nSe fizer sentido, crie algo que possamos ver juntos, como um visual, uma lista ou algo interativo. Obrigado pela ajuda!",
+  "Help me pick the right career for me": "Escolher a carreira certa para mim",
+  "Choose a career path based on my astrology":
+    "Escolher uma carreira com base na minha astrologia",
+  "Give me a work persona based on my favorite books":
+    "Criar uma persona profissional com meus livros favoritos",
+  "Help me role play a talk with my boss": "Simular uma conversa com meu chefe",
+  "Give me pointers on being a better manager":
+    "Dar dicas para ser um gestor melhor",
+  "Write a job description for my dream life":
+    "Escrever uma descrição de cargo para minha vida dos sonhos",
+  "Update my resume or LinkedIn": "Atualizar meu currículo ou LinkedIn",
+  "Develop my professional skills":
+    "Desenvolver minhas habilidades profissionais",
+  "Navigate workplace challenges": "Enfrentar desafios no trabalho",
+  "Plan my career growth": "Planejar meu crescimento profissional",
+  "Improve my work-life balance":
+    "Melhorar meu equilíbrio entre vida e trabalho",
+  "Network more effectively": "Fazer networking com mais eficácia",
+  "Request a raise or promotion": "Pedir aumento ou promoção",
+  "Create effective cover letters": "Criar cartas de apresentação eficazes",
+  "Identify transferable skills": "Identificar habilidades transferíveis",
+  "Analyze industry trends": "Analisar tendências do setor",
+  "Practice salary negotiations": "Praticar negociações salariais",
+  "Build my personal brand": "Construir minha marca pessoal",
+  "Handle difficult colleagues": "Lidar com colegas difíceis",
+  "Develop leadership abilities": "Desenvolver habilidades de liderança",
+  "Manage workplace stress": "Gerenciar o estresse no trabalho",
+  "Explore career transitions": "Explorar transições de carreira",
+  "Draft professional emails": "Redigir e-mails profissionais",
+  "Prepare presentations": "Preparar apresentações",
+  "Build team communication": "Construir a comunicação da equipe",
+  "Improve public speaking": "Melhorar a oratória",
+  "Track professional accomplishments": "Acompanhar conquistas profissionais",
+  "Handle performance reviews": "Lidar com avaliações de desempenho",
+  "Understand workplace politics": "Entender a política no trabalho",
+  "Create workplace boundaries": "Criar limites no trabalho",
+  "Find mentorship opportunities": "Encontrar oportunidades de mentoria",
+  "Manage remote work": "Gerenciar o trabalho remoto",
+  "Develop executive presence": "Desenvolver presença executiva",
+  "Handle workplace feedback": "Lidar com feedback no trabalho",
+  "Analyze job descriptions": "Analisar descrições de cargos",
+  "Create professional goals": "Criar metas profissionais",
+  "Plan continuing education": "Planejar educação continuada",
+  "Strengthen workplace relationships": "Fortalecer relações no trabalho",
+  "Improve technical skills": "Melhorar habilidades técnicas",
+  "Manage project timelines": "Gerenciar cronogramas de projetos",
+  "Handle workplace conflicts": "Lidar com conflitos no trabalho",
+  "Prepare for promotions": "Preparar para promoções",
+  "Balance multiple projects": "Equilibrar vários projetos",
+  "Summarize my top projects this quarter":
+    "Resumir meus principais projetos do trimestre",
+  "Analyze my writing style based on my docs":
+    "Analisar meu estilo de escrita pelos meus documentos",
+  "Give me a TLDR on the new docs I’ve been given access to":
+    "Resumir os novos documentos a que recebi acesso",
+  "Identify what my top 3 priorities should be today":
+    "Identificar minhas três prioridades de hoje",
+  "Find which of my ideas have gained the most traction at work":
+    "Encontrar minhas ideias com mais adesão no trabalho",
+  "Tell me how my project focus has evolved over time":
+    "Mostrar como meu foco em projetos evoluiu",
+  "Locate documents that represent pivotal moments in my thinking":
+    "Localizar documentos que marquem viradas no meu pensamento",
+  "Surface unexpected connections across my different documents":
+    "Revelar conexões inesperadas entre meus documentos",
+  "Identify and visualize my most brilliant moments from my documents":
+    "Identificar e visualizar meus momentos mais brilhantes nos documentos",
+  "Look at my docs and tell me what kind of genre writer I could be":
+    "Dizer que gênero eu poderia escrever com base nos meus documentos",
+  "Reveal blind spots in my knowledge base":
+    "Revelar pontos cegos no meu conhecimento",
+  "What idea themes consistently appear across all my documents?":
+    "Quais temas aparecem sempre em todos os meus documentos?",
+  "Look at how my calendar has shifted this month compared to last":
+    "Comparar meu calendário deste mês com o anterior",
+  "Show me insights about my meeting attendance patterns":
+    "Mostrar insights sobre meus padrões de participação em reuniões",
+  "Tell me which recurring meetings take up most of my time":
+    "Dizer quais reuniões recorrentes tomam mais tempo",
+  "Analyze if my actual meetings align with my stated priorities":
+    "Analisar se minhas reuniões refletem minhas prioridades declaradas",
+  "Analyze my calendar for meeting optimization":
+    "Analisar meu calendário para otimizar reuniões",
+  "Tell me what my calendar reveals about my work-life balance":
+    "Dizer o que meu calendário revela sobre meu equilíbrio entre vida e trabalho",
+  "Identify how my calendar habits reflect my personal priorities":
+    "Identificar como meus hábitos de calendário refletem minhas prioridades",
+  "Show me how my seasonal patterns affect my scheduling and energy":
+    "Mostrar como padrões sazonais afetam minha agenda e energia",
+  "Reflect on my calendar as if I was 100 years old looking back at this time":
+    "Refletir sobre meu calendário como se aos 100 anos olhasse para esta época",
+  "Give me tips on how to organize my calendar":
+    "Dar dicas para organizar meu calendário",
+  "Transform my calendar into a fantasy quest journal":
+    "Transformar meu calendário em diário de aventura fantástica",
+  "Turn my calendar events into a poetic ‘day in the life’ narrative":
+    "Transformar meus eventos em narrativa poética de um dia na vida",
+  "Predict my next stress point by analyzing my calendar density patterns":
+    "Prever meu próximo pico de estresse pela densidade do calendário",
+  "Create a visual guide for calendar management based on my ennegram":
+    "Criar um guia visual de calendário baseado no meu eneagrama",
+  "Visualize where my time truly goes each week":
+    "Visualizar para onde meu tempo realmente vai toda semana",
+  "Analyze my email communication style":
+    "Analisar meu estilo de comunicação por e-mail",
+  "Tell me how I can optimize my inbox":
+    "Dizer como otimizar minha caixa de entrada",
+  "Pull out important points from my latest work emails":
+    "Extrair pontos importantes dos meus últimos e-mails de trabalho",
+  "Tell me which emails I subscribe to usually go unread":
+    "Dizer quais e-mails de assinatura costumo não ler",
+  "Tell me about my email organization habits":
+    "Descrever meus hábitos de organização de e-mail",
+  "See what emotional themes emerge from my email conversations":
+    "Ver quais temas emocionais surgem nas minhas conversas por e-mail",
+  "Let me know how I can be more persuasive in my emails":
+    "Dizer como ser mais persuasivo nos e-mails",
+  "Show me any tricks that can help me manage email":
+    "Mostrar truques para gerenciar e-mail",
+  "Write a pretend 1-page newspaper based on my integrations?":
+    "Escrever um jornal fictício de uma página com minhas integrações",
+  "If my email inbox was a reality TV show, who would be voted off the island first?":
+    "Se minha caixa de entrada fosse um reality, quem sairia primeiro?",
+  "Create a diplomatic response to my most challenging recent email thread":
+    "Criar uma resposta diplomática à conversa recente mais difícil",
+  "Generate a ‘personal brand statement’ based on how I communicate in email":
+    "Gerar uma declaração de marca pessoal pelo meu estilo de e-mail",
+  "Casually look through my work integrations to find people who seem to support my career growth":
+    "Olhar minhas integrações de trabalho para achar quem apoia minha carreira",
+  "Look through my emails and tell me where I’m avoiding something important":
+    "Ver meus e-mails e dizer onde evito algo importante",
+  "Create ‘missed connections’ personal ads based on my most interesting email exchanges":
+    "Criar anúncios de “conexões perdidas” com minhas trocas de e-mail mais interessantes",
+  "Have a philosophical discussion": "Ter uma discussão filosófica",
+  "Learn something unexpected": "Aprender algo inesperado",
+  "Solve an interesting problem": "Resolver um problema interessante",
+  "Discover a new perspective": "Descobrir uma nova perspectiva",
+  "Play a word game together": "Jogar um jogo de palavras juntos",
+  "Debate an ethical dilemma": "Debater um dilema ético",
+  "Explore a fascinating concept": "Explorar um conceito fascinante",
+  "Explore thought experiments": "Explorar experimentos mentais",
+  "Explore cognitive biases": "Explorar vieses cognitivos",
+  "Explore language evolution": "Explorar a evolução da linguagem",
+  "Explore mathematical paradoxes": "Explorar paradoxos matemáticos",
+  "Explore psychological phenomena": "Explorar fenômenos psicológicos",
+  "Explore architectural concepts": "Explorar conceitos arquitetônicos",
+  "Explore memory techniques": "Explorar técnicas de memória",
+  "Explore logical fallacies": "Explorar falácias lógicas",
+  "Explore ancient wisdom": "Explorar sabedoria antiga",
+  "Discuss future technologies": "Discutir tecnologias futuras",
+  "Discuss creative thinking techniques":
+    "Discutir técnicas de pensamento criativo",
+  "Discuss art interpretation": "Discutir interpretação artística",
+  "Discuss space exploration questions":
+    "Discutir questões de exploração espacial",
+  "Discuss musical innovations": "Discutir inovações musicais",
+  "Discuss food science": "Discutir ciência dos alimentos",
+  "Discuss symbolic communication": "Discutir comunicação simbólica",
+  "Discuss social dynamics": "Discutir dinâmicas sociais",
+  "Analyze historical turning points": "Analisar pontos de virada históricos",
+  "Analyze decision-making frameworks": "Analisar estruturas de decisão",
+  "Analyze literary themes": "Analisar temas literários",
+  "Analyze game theory applications": "Analisar aplicações da teoria dos jogos",
+  "Consider alternate histories": "Considerar histórias alternativas",
+  "Consider economic theories": "Considerar teorias econômicas",
+  "Consider environmental solutions": "Considerar soluções ambientais",
+  "Consider innovation patterns": "Considerar padrões de inovação",
+  "Create a fictional scenario": "Criar um cenário fictício",
+  "Investigate scientific mysteries": "Investigar mistérios científicos",
+  "Examine nature phenomena": "Examinar fenômenos naturais",
+  "Help me reflect on an experience": "Refletir sobre uma experiência",
+  "Help me work through a decision": "Refletir sobre uma decisão",
+  "Transform my personal goals into an actionable plan":
+    "Transformar meus objetivos pessoais em plano de ação",
+  "Roleplay difficult conversations I need to prepare for":
+    "Simular conversas difíceis que preciso preparar",
+  "Guide me through a decision-making framework for a life choice":
+    "Guiar por um modelo de decisão para uma escolha de vida",
+  "Plan my day or week": "Planejar meu dia ou semana",
+  "Help with decision making": "Ajudar na tomada de decisões",
+  "Generate gift or travel ideas": "Gerar ideias de presentes ou viagens",
+  "Improve my habits": "Melhorar meus hábitos",
+  "Manage my time better": "Gerenciar melhor meu tempo",
+  "Organize my living space": "Organizar meu espaço de vida",
+  "Improve sleep habits": "Melhorar os hábitos de sono",
+  "Build better relationships": "Construir relacionamentos melhores",
+  "Manage personal stress": "Gerenciar o estresse pessoal",
+  "Explore productivity systems": "Explorar sistemas de produtividade",
+  "Improve communication skills": "Melhorar habilidades de comunicação",
+  "Handle difficult conversations": "Lidar com conversas difíceis",
+  "Organize digital files": "Organizar arquivos digitais",
+  "Balance social commitments": "Equilibrar compromissos sociais",
+  "Track personal goals": "Acompanhar objetivos pessoais",
+  "Improve financial literacy": "Melhorar a educação financeira",
+  "Manage household tasks": "Gerenciar tarefas domésticas",
+  "Improve time management": "Melhorar a gestão do tempo",
+  "Create a routine for a goal": "Criar uma rotina para uma meta",
+  "Create a personal development plan":
+    "Criar um plano de desenvolvimento pessoal",
+  "Create a personal budget": "Criar um orçamento pessoal",
+  "Create family activities": "Criar atividades familiares",
+  "Create reading lists": "Criar listas de leitura",
+  "Create cleaning routines": "Criar rotinas de limpeza",
+  "Create morning routines": "Criar rotinas matinais",
+  "Create family traditions": "Criar tradições familiares",
+  "Create personal boundaries": "Criar limites pessoais",
+  "Develop exercise routines": "Desenvolver rotinas de exercício",
+  "Develop mindfulness practices": "Desenvolver práticas de atenção plena",
+  "Develop personal hobbies": "Desenvolver hobbies pessoais",
+  "Develop self-care practices": "Desenvolver práticas de autocuidado",
+  "Develop parenting strategies":
+    "Desenvolver estratégias de criação dos filhos",
+  "Plan healthy meals": "Planejar refeições saudáveis",
+  "Plan special celebrations": "Planejar celebrações especiais",
+  "Plan home improvements": "Planejar melhorias da casa",
+  "Plan educational pursuits": "Planejar projetos educacionais",
+  "Plan retirement activities": "Planejar atividades de aposentadoria",
+  "Help me identify my creative style": "Identificar meu estilo criativo",
+  "Quiz me on how to give good design feedback in a crit":
+    "Testar como dou bons feedbacks em críticas de design",
+  "Design a chracter profile based on my creative super power":
+    "Projetar um perfil de personagem baseado no meu superpoder criativo",
+  "Generate a list of powerful words to use in a client presentation":
+    "Gerar palavras impactantes para uma apresentação a clientes",
+  "Reimagine this everyday object for a radically different culture":
+    "Reimaginar este objeto cotidiano para uma cultura radicalmente diferente",
+  "Design an experience that changes how people perceive time":
+    "Projetar uma experiência que mude a percepção do tempo",
+  "Create something inspired by the most beautiful mistake":
+    "Criar algo inspirado no erro mais bonito",
+  "Design an interactive installation based on my personal values":
+    "Projetar uma instalação interativa baseada nos meus valores",
+  "Create a visual language for emotions that have no names":
+    "Criar uma linguagem visual para emoções sem nome",
+  "Design something that bridges ancient techniques and futuristic concepts":
+    "Projetar algo que una técnicas antigas e conceitos futuristas",
+  "Design an experience that transforms digital connections into physical ones":
+    "Projetar uma experiência que transforme conexões digitais em físicas",
+  "Outline an ideation workshop that will blow away my creative team":
+    "Esboçar uma oficina de ideias que impressione minha equipe criativa",
+  "Help me design a creative offsite that will be legendary":
+    "Projetar um retiro criativo lendário",
+  "Analyze my design aesthetic from examples":
+    "Analisar minha estética de design com exemplos",
+  "Test my eye for detail with examples":
+    "Testar minha atenção aos detalhes com exemplos",
+  "Quiz me on design principles and theory":
+    "Testar meus conhecimentos de princípios e teoria do design",
+  "Transform my concept into a detailed design specification":
+    "Transformar meu conceito em especificação de design detalhada",
+  "Help me make something more user-friendly":
+    "Ajudar a tornar algo mais fácil de usar",
+  "Brainstorm creative concepts": "Idealizar conceitos criativos",
+  "Generate design inspiration from history":
+    "Gerar inspiração de design a partir da história",
+  "Translate a brief into design items":
+    "Traduzir um briefing em itens de design",
+  "Research good typography systems": "Pesquisar bons sistemas tipográficos",
+  "Generate illustration ideas": "Gerar ideias de ilustração",
+  "Generate packaging concepts": "Gerar conceitos de embalagens",
+  "Generate animation concepts": "Gerar conceitos de animação",
+  "Create a style guide": "Criar um guia de estilo",
+  "Create on-trend color palettes": "Criar paletas de cores em alta",
+  "Create mood boards": "Criar painéis de inspiração",
+  "Create logo variations": "Criar variações de logotipo",
+  "Create social media templates": "Criar modelos para redes sociais",
+  "Create website structures": "Criar estruturas de sites",
+  "Create portfolio presentations": "Criar apresentações de portfólio",
+  "Create content strategies": "Criar estratégias de conteúdo",
+  "Develop brand personas": "Desenvolver personas de marca",
+  "Develop storytelling frameworks": "Desenvolver estruturas narrativas",
+  "Develop naming conventions": "Desenvolver convenções de nomenclatura",
+  "Develop marketing campaigns": "Desenvolver campanhas de marketing",
+  "Develop product narratives": "Desenvolver narrativas de produtos",
+  "Develop editorial calendars": "Desenvolver calendários editoriais",
+  "Plan milestones for a creative project":
+    "Planejar marcos de um projeto criativo",
+  "Plan friction-free user experience flows":
+    "Planejar fluxos de experiência sem atrito",
+  "Plan content calendars": "Planejar calendários de conteúdo",
+  "Plan a creative brainstorm with clients":
+    "Planejar uma sessão criativa com clientes",
+  "Plan videogame storyboards": "Planejar storyboards de videogames",
+  "Plan photography shoots": "Planejar ensaios fotográficos",
+  "Write a solid creative brief": "Escrever um briefing criativo sólido",
+  "Write compelling copy": "Escrever textos persuasivos",
+  "Write creative prompts for LLMs": "Escrever prompts criativos para LLMs",
+  "Design a presentation layout": "Projetar um layout de apresentação",
+  "Design email newsletters": "Projetar boletins por e-mail",
+  "Design event materials": "Projetar materiais para eventos",
+  "Generate character concepts for fiction":
+    "Gerar conceitos de personagens de ficção",
+  "Test my negotiation tactics with scenarios":
+    "Testar minhas táticas de negociação com cenários",
+  "Quiz me on my business skills": "Testar minhas habilidades de negócios",
+  "Help me develop and hone a strategy":
+    "Desenvolver e aperfeiçoar uma estratégia",
+  "Map the unexpected connections between unrelated market trends":
+    "Mapear conexões inesperadas entre tendências de mercado sem relação",
+  "Reimagine my business as if it were founded 100 years in the future":
+    "Reimaginar meu negócio como se fosse fundado daqui a 100 anos",
+  "Design a strategy game based on my business challenges":
+    "Projetar um jogo de estratégia com meus desafios empresariais",
+  "Develop a business ecosystem inspired by my personal passions":
+    "Desenvolver um ecossistema de negócios inspirado nas minhas paixões",
+  "Create a business model canvas that breaks every conventional rule":
+    "Criar um canvas de modelo de negócios que quebre todas as convenções",
+  "Design a strategy inspired by patterns found in nature":
+    "Projetar uma estratégia inspirada em padrões naturais",
+  "Analyze market opportunities": "Analisar oportunidades de mercado",
+  "Improve operational efficiency": "Melhorar a eficiência operacional",
+  "Draft a pitch or proposal": "Rascunhar um pitch ou proposta",
+  "Build financial projections": "Elaborar projeções financeiras",
+  "Conduct competitor analysis": "Realizar análise da concorrência",
+  "Analyze business metrics": "Analisar métricas de negócios",
+  "Analyze great investment pitches": "Analisar ótimos pitches de investimento",
+  "Research top go-to-market strategies":
+    "Pesquisar as melhores estratégias de entrada no mercado",
+  "Develop a business plan": "Desenvolver um plano de negócios",
+  "Develop pricing strategies": "Desenvolver estratégias de preços",
+  "Develop KPI dashboards": "Desenvolver painéis de KPI",
+  "Develop stakeholder communications":
+    "Desenvolver comunicações com partes interessadas",
+  "Develop risk assessments": "Desenvolver avaliações de riscos",
+  "Develop client proposals": "Desenvolver propostas para clientes",
+  "Develop brand positioning": "Desenvolver um posicionamento de marca",
+  "Develop sustainability initiatives":
+    "Desenvolver iniciativas de sustentabilidade",
+  "Develop distribution strategies": "Desenvolver estratégias de distribuição",
+  "Create a marketing strategy": "Criar uma estratégia de marketing",
+  "Create customer personas": "Criar personas de clientes",
+  "Create sales presentations": "Criar apresentações de vendas",
+  "Create business processes": "Criar processos de negócios",
+  "Create strategic partnerships": "Criar parcerias estratégicas",
+  "Create recruiting strategies": "Criar estratégias de recrutamento",
+  "Create vendor evaluations": "Criar avaliações de fornecedores",
+  "Create business pivots": "Criar mudanças de rumo empresarial",
+  "Create revenue forecasts": "Criar previsões de receita",
+  "Create customer journeys": "Criar jornadas de clientes",
+  "Plan product launches": "Planejar lançamentos de produtos",
+  "Plan market research": "Planejar pesquisas de mercado",
+  "Plan organizational structure": "Planejar a estrutura organizacional",
+  "Plan budget allocations": "Planejar alocações orçamentárias",
+  "Plan business scaling strategies":
+    "Planejar estratégias de expansão do negócio",
+  "Plan expansion opportunities": "Planejar oportunidades de expansão",
+  "Plan business acquisitions": "Planejar aquisições de empresas",
+  "Design growth frameworks": "Projetar estruturas de crescimento",
+  "Craft a manifesto that captures the essence of my boldest ideas":
+    "Criar um manifesto que capture minhas ideias mais ousadas",
+  "Help me develop my unique voice as a writer":
+    "Desenvolver minha voz única como escritor",
+  "Help me identify my writing weaknesses":
+    "Identificar meus pontos fracos na escrita",
+  "Create a piece that blends two completely different writing styles":
+    "Criar um texto que misture dois estilos totalmente diferentes",
+  "Reimagine a piece of my writing as an edge-of-your-seat thriller":
+    "Reimaginar um texto meu como suspense de tirar o fôlego",
+  "Compare my writing style to famous authors":
+    "Comparar meu estilo com autores famosos",
+  "Craft something that reads differently depending on the reader’s mood":
+    "Escrever algo que mude conforme o humor do leitor",
+  "Write something in the voice of my favorite historical figure":
+    "Escrever na voz da minha figura histórica favorita",
+  "Help me develop a unique voice for an audience":
+    "Desenvolver uma voz única para um público",
+  "Edit my content": "Editar meu conteúdo",
+  "Brainstorm creative ideas": "Gerar ideias criativas",
+  "Research topics for my writing": "Pesquisar temas para meus textos",
+  "Improve my writing style": "Melhorar meu estilo de escrita",
+  "Draft an outline for my project": "Esboçar um roteiro para meu projeto",
+  "Create a content strategy": "Criar uma estratégia de conteúdo",
+  "Create engaging headlines": "Criar títulos atraentes",
+  "Create social media posts": "Criar postagens para redes sociais",
+  "Create blog article series": "Criar uma série de artigos de blog",
+  "Create interview questions": "Criar perguntas de entrevista",
+  "Create persuasive arguments": "Criar argumentos persuasivos",
+  "Create user documentation": "Criar documentação de usuário",
+  "Create presentation scripts": "Criar roteiros de apresentação",
+  "Create FAQ resources": "Criar recursos de perguntas frequentes",
+  "Create technical explanations": "Criar explicações técnicas",
+  "Develop character profiles": "Desenvolver perfis de personagens",
+  "Develop content calendars": "Desenvolver calendários de conteúdo",
+  "Develop brand voice guides": "Desenvolver guias de voz da marca",
+  "Develop podcast scripts": "Desenvolver roteiros de podcast",
+  "Develop content templates": "Desenvolver modelos de conteúdo",
+  "Develop content briefs": "Desenvolver briefings de conteúdo",
+  "Develop instructional content": "Desenvolver conteúdos didáticos",
+  "Develop editorial guidelines": "Desenvolver diretrizes editoriais",
+  "Draft email newsletters": "Escrever boletins por e-mail",
+  "Write compelling CTAs": "Escrever chamadas à ação convincentes",
+  "Write product descriptions": "Escrever descrições de produtos",
+  "Write video scripts": "Escrever roteiros de vídeo",
+  "Write executive summaries": "Escrever resumos executivos",
+  "Write case studies": "Escrever estudos de caso",
+  "Write speech drafts": "Escrever rascunhos de discursos",
+  "Write marketing copy": "Escrever textos de marketing",
+  "Write grant proposals": "Escrever propostas de subsídio",
+  "Write event descriptions": "Escrever descrições de eventos",
+  "Design a learning challenge that pushes my creative boundaries":
+    "Criar um desafio de aprendizado que amplie meus limites criativos",
+  "Explain a concept in simple terms": "Explicar um conceito em termos simples",
+  "Help me understand a complex topic from scratch":
+    "Ajudar a entender um tema complexo do zero",
+  "Create a curriculum inspired by my favorite cultural movement":
+    "Criar um currículo inspirado no meu movimento cultural favorito",
+  "Develop a learning approach that embraces beautiful contradictions":
+    "Desenvolver uma abordagem de aprendizado que abrace belas contradições",
+  "Transform a dry subject into something fascinating":
+    "Transformar um tema árido em algo fascinante",
+  "Develop a learning framework based on my personal heroes":
+    "Desenvolver um modelo de aprendizado baseado nos meus heróis",
+  "Create a knowledge map that reveals surprising patterns in what I know":
+    "Criar um mapa que revele padrões surpreendentes no que sei",
+  "Transform these notes into a structured summary":
+    "Transformar estas notas em um resumo estruturado",
+  "Help me make sense of these ideas": "Ajudar a entender estas ideias",
+  "Find patterns in my research": "Encontrar padrões na minha pesquisa",
+  "Explain a complex topic simply":
+    "Explicar um tema complexo de forma simples",
+  "Create a study plan": "Criar um plano de estudos",
+  "Design a lesson or curriculum": "Projetar uma aula ou currículo",
+  "Compare learning resources": "Comparar recursos de aprendizado",
+  "Find the best books on a subject":
+    "Encontrar os melhores livros sobre um tema",
+  "Prepare for an exam or interview": "Preparar para uma prova ou entrevista",
+  "Create effective flashcards": "Criar cartões de estudo eficazes",
+  "Develop learning objectives": "Desenvolver objetivos de aprendizado",
+  "Summarize my academic papers": "Resumir meus artigos acadêmicos",
+  "Create assessment questions": "Criar questões de avaliação",
+  "Develop research methodologies": "Desenvolver metodologias de pesquisa",
+  "Create learning timelines": "Criar cronogramas de aprendizado",
+  "Design educational activities": "Projetar atividades educativas",
+  "Develop concept maps": "Desenvolver mapas conceituais",
+  "Create good lecture notes": "Criar boas notas de aula",
+  "Design presentation visuals": "Projetar elementos visuais de apresentação",
+  "Develop learning frameworks": "Desenvolver estruturas de aprendizado",
+  "Create annotated bibliographies": "Criar bibliografias comentadas",
+  "Design learning journals": "Projetar diários de aprendizado",
+  "Develop discussion prompts": "Desenvolver temas de discussão",
+  "Create educational games": "Criar jogos educativos",
+  "Develop teaching strategies": "Desenvolver estratégias de ensino",
+  "Create educational rubrics": "Criar rubricas educacionais",
+  "Design learning modules": "Projetar módulos de aprendizado",
+  "Develop critical analyses": "Desenvolver análises críticas",
+  "Design research questions": "Projetar perguntas de pesquisa",
+  "Develop reflection exercises": "Desenvolver exercícios de reflexão",
+  "Create study summaries": "Criar resumos de estudo",
+  "Design learning portfolios": "Projetar portfólios de aprendizado",
+  "Create feedback for student work": "Criar feedback para trabalhos de alunos",
+  "Design learning challenges": "Projetar desafios de aprendizado",
+  "Find credible sources for my research":
+    "Encontrar fontes confiáveis para minha pesquisa",
+  "Provide evidence-based insights for my topic":
+    "Fornecer informações baseadas em evidências sobre meu tema",
+  "Look over my code and give me tips": "Revisar meu código e dar dicas",
+  "Vibe code with me": "Fazer vibe coding comigo",
+  "Quiz me on python code": "Testar meus conhecimentos de Python",
+  "Evaluate my coding style based on a snippet":
+    "Avaliar meu estilo de programação por um trecho",
+  "Tell me what programming paradigm suits my thinking style":
+    "Dizer qual paradigma combina com meu modo de pensar",
+  "Assess my approach to debugging problems":
+    "Avaliar minha abordagem de depuração",
+  "Challenge me with increasingly difficult coding puzzles":
+    "Propor desafios de programação cada vez mais difíceis",
+  "Help me develop a personal learning roadmap for coding":
+    "Ajudar a criar um roteiro pessoal de aprendizado de programação",
+  "Help me turn a screenshot into working code":
+    "Transformar uma captura em código funcional",
+  "Design a game that teaches coding concepts through storytelling":
+    "Projetar um jogo que ensine programação por histórias",
+  "Invent a coding language based on my favorite hobby":
+    "Inventar uma linguagem baseada no meu hobby favorito",
+  "Design a digital pet that grows based on my coding habits":
+    "Criar um pet digital que cresça conforme meus hábitos de programação",
+  "Create a coding Easter egg that would make my team smile":
+    "Criar um easter egg no código que faça a equipe sorrir",
+  "Build an app based on my idea": "Criar um aplicativo com minha ideia",
+  "Debug my code and give me tips": "Depurar meu código e dar dicas",
+  "Design a software architecture": "Projetar uma arquitetura de software",
+  "Explain a programming concept": "Explicar um conceito de programação",
+  "Plan a development roadmap": "Planejar um roteiro de desenvolvimento",
+  "Write unit test cases": "Escrever testes unitários",
+  "Create API documentation": "Criar documentação de API",
+  "Design database schemas": "Projetar esquemas de banco de dados",
+  "Develop coding standards": "Desenvolver padrões de programação",
+  "Develop code reviews to speed me up":
+    "Desenvolver revisões de código para me agilizar",
+  "Create technical specifications": "Criar especificações técnicas",
+  "Design UI/UX wireframes": "Projetar wireframes UI/UX",
+  "Develop deployment strategies": "Desenvolver estratégias de implantação",
+  "Create refactoring plans": "Criar planos de refatoração",
+  "Design microservices": "Projetar microsserviços",
+  "Develop algorithm solutions": "Desenvolver soluções algorítmicas",
+  "Create security protocols": "Criar protocolos de segurança",
+  "Design feature flags": "Projetar sinalizadores de recursos",
+  "Develop performance benchmarks": "Desenvolver benchmarks de desempenho",
+  "Create debugging workflows": "Criar fluxos de depuração",
+  "Design data structures": "Projetar estruturas de dados",
+  "Develop integration strategies": "Desenvolver estratégias de integração",
+  "Create dependency maps": "Criar mapas de dependências",
+  "Design error handling": "Projetar tratamento de erros",
+  "Develop CI/CD pipelines": "Desenvolver pipelines CI/CD",
+  "Create technical diagrams": "Criar diagramas técnicos",
+  "Design scalability plans": "Projetar planos de escalabilidade",
+  "Develop project estimates": "Desenvolver estimativas de projetos",
+  "Create code snippets": "Criar trechos de código",
+  "Design logging systems": "Projetar sistemas de logs",
+  "Develop technical debt analysis": "Desenvolver análise de dívida técnica",
+  "Create monitoring solutions": "Criar soluções de monitoramento",
   "From Calendar": "Do Agenda",
   "From Gmail": "Do Gmail",
   "From Drive": "Do Drive",
   Integration: "Integração",
   "Choose a valid connector.": "Escolha um conector válido.",
+  "Research how to write documentation that people will actually want to read":
+    "Pesquisar como escrever documentação que as pessoas queiram ler",
+  "Find the best way to explain our product to new users, use my docs as needed":
+    "Encontrar a melhor forma de explicar nosso produto a novos usuários, usando meus documentos se necessário",
+  "Navigate the maze of healthcare compliance requirements":
+    "Entender os requisitos de conformidade na saúde",
+  "Find the best tools for managing remote team communication":
+    "Encontrar as melhores ferramentas de comunicação para equipes remotas",
+  "Go deep on the secret behind companies with amazing customer service":
+    "Investigar o segredo das empresas com atendimento excepcional",
+  "Discover fresh angles on my writing based on my docs":
+    "Descobrir novos ângulos de escrita nos meus documentos",
+  "Dive deep on what travel trends will be for the next five years":
+    "Investigar as tendências de viagem dos próximos cinco anos",
+  "Understand what’s happening with tariffs right now":
+    "Entender o cenário atual das tarifas",
+  "Find the weird science behind everyday products people love":
+    "Descobrir a ciência curiosa dos produtos cotidianos adorados",
+  "Research and deliver findings relevant to me as a time-traveler from 2050":
+    "Pesquisar descobertas relevantes para mim como viajante de 2050",
+  "Find the most compelling stories about an important topic from my docs":
+    "Encontrar histórias interessantes sobre um tema importante nos meus documentos",
+  "Determine my main competitors based on my docs and show me what my competitors are doing differently this year":
+    "Identificar meus concorrentes pelos meus documentos e o que fazem diferente este ano",
+  "Identify the most important performance differences between the latest accelerators from nvidia, google, and amazon?":
+    "Identificar diferenças de desempenho dos novos aceleradores da Nvidia, Google e Amazon",
+  "Extract the most actionable insights from my meeting notes that I’m not acting on":
+    "Extrair das notas de reunião as ideias práticas que ainda não apliquei",
+  "Come up with novel ideas for projects based on my docs":
+    "Propor projetos inovadores com base nos meus documentos",
+  "Map the evolution of sleep research in the past decade":
+    "Mapear a evolução da pesquisa sobre sono na última década",
+  "Identify emerging patterns in human and machine relationships":
+    "Identificar padrões emergentes nas relações entre humanos e máquinas",
+  "Compare researchers’ disagreements about climate solutions":
+    "Comparar divergências de pesquisadores sobre soluções climáticas",
+  "Examine how fermentation discoveries changed ancient diets":
+    "Examinar como a fermentação mudou as dietas antigas",
+  "Find how humans realized teeth need cleaning":
+    "Descobrir como os humanos perceberam que precisavam limpar os dentes",
+  "Explore why we even developed singing (is it just happy noises?)":
+    "Explorar por que desenvolvemos o canto (só sons felizes?)",
+  "Track invention of the idea of “free time” - when did that start?":
+    "Rastrear a origem do “tempo livre”: quando começou?",
+  "Research how money became a thing": "Pesquisar como surgiu o dinheiro",
+  "Discover how humans figured out “those mushrooms = bad idea”":
+    "Descobrir como os humanos perceberam “esses cogumelos = má ideia”",
+  "Investigate when we realized trees could talk (chemically)":
+    "Investigar quando descobrimos que árvores conversam quimicamente",
   "Google Calendar": "Google Agenda",
   Gmail: "Gmail",
   "Loading artifact…": "Carregando artefato…",
@@ -8598,6 +9291,8 @@ const catalog: Record<string, string> = {
     "Falha ao verificar atualizações: {error}",
   "Claudex is working in {count} sessions. Quitting now will interrupt that work.":
     "O Claudex está trabalhando em {count} sessões. Sair agora interromperá esse trabalho.",
+  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking claudex.zecous.cn — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from claudex.zecous.cn.":
+    "O Claudex não conseguiu acessar o servidor de atualizações. Se você estiver em uma rede corporativa, um firewall ou proxy pode estar bloqueando claudex.zecous.cn — peça à equipe de TI para liberá-lo. Caso contrário, verifique sua conexão e tente novamente, ou baixe a versão mais recente em claudex.zecous.cn.",
   "Microsoft Office": "Microsoft Office",
   "Get the add-in": "Obter o suplemento",
   "Diagnostic Report": "Relatório de diagnóstico",
@@ -9179,6 +9874,8 @@ const catalog: Record<string, string> = {
   "Claudex Serif": "Claudex Serif",
   "An independent desktop client.": "Um cliente desktop independente.",
   "Internal only": "Somente interno",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's previous 1:1, so what you can use does not change.":
+    "Seu saldo do ZecousAI pode parecer menor no Claudex. O Claudex recarrega na nova taxa de ¥1 para $1, e os multiplicadores de modelo são bem menores que o 1:1 oficial do ZecousAI, então o que você pode usar não muda.",
   "Make sure you trust a plugin before installing or using it. Uploaded plugins are not controlled by Claudex, and Claudex cannot verify that they will work as intended. See each plugin’s homepage for more information.":
     "Confie no plugin antes de instalar ou usar. Os plugins enviados não são controlados pela Claudex, que não pode verificar se funcionarão como esperado. Consulte a página de cada plugin para mais informações.",
   "Community marketplace": "Marketplace da comunidade",
@@ -9227,6 +9924,8 @@ const catalog: Record<string, string> = {
     "Não foi possível desativar o controle remoto",
   "Remote Control couldn’t connect":
     "Não foi possível conectar o controle remoto",
+  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or claudex.zecous.cn.":
+    "A conexão não foi restabelecida após limpar a sessão. Ative novamente para continuar usando esta sessão pelo celular ou claudex.zecous.cn.",
   "Claudex Code stopped, so Remote Control turned off with it.":
     "O Claudex Code parou e o controle remoto foi desativado.",
   "Sign in again. Remote Control retries with your next message.":
@@ -10298,6 +10997,7 @@ const catalog: Record<string, string> = {
   "This removes your feedback, including any conversation excerpt sent with it. It does not delete your chat.":
     "Isso remove seu feedback, incluindo qualquer trecho da conversa enviado com ele. Seu chat não é excluído.",
   "from {name}": "de {name}",
+  // Customize directory categories (2026-10-20).
   "Developer tools": "Ferramentas para desenvolvedores",
   Creativity: "Criatividade",
   "Education & research": "Educação e pesquisa",
@@ -10305,6 +11005,7 @@ const catalog: Record<string, string> = {
   Communication: "Comunicação",
   "Scientific research": "Pesquisa científica",
   Security: "Segurança",
+  // Usage popover (2026-10-20).
   "Balance and usage": "Saldo e uso",
   "Last 7 days": "Últimos 7 dias",
   "Turn on Allow bypass permissions mode in Settings to use it.":
@@ -10325,11 +11026,15 @@ const catalog: Record<string, string> = {
   "Delete {count}": "Excluir {count}",
   "Ask your administrator for the installer.":
     "Peça o instalador ao seu administrador.",
+  // Add menu failure sentence (2026-10-20)
   "Design systems couldn’t be loaded. Refresh to try again.":
     "Não foi possível carregar os sistemas de design. Atualize a página e tente novamente.",
+  // Skip all approvals connector list (2026-10-20)
   "Already allowed": "Já permitido",
+  // Attachment drop notice (2026-10-20)
   "Folders can't be attached. Drop files instead.":
     "Não é possível anexar pastas. Solte arquivos no lugar.",
+  // Attachment refusals, the live sentences (2026-10-20)
   "“{fileName}” is {fileSize}, over the {sizeLimit} MB limit. Choose a smaller file.":
     "“{fileName}” tem {fileSize}, acima do limite de {sizeLimit} MB. Escolha um arquivo menor.",
   "“{fileName}” can’t be attached in this chat yet — this file type isn’t supported here. You can paste its contents into the message instead.":
@@ -10340,6 +11045,7 @@ const catalog: Record<string, string> = {
     "{name} não pode ser anexado: seu administrador não permite este tipo de arquivo.",
   "Your administrator has turned off attachments.":
     "Seu administrador desativou os anexos.",
+  // /copy (2026-10-20)
   "Copy Claudex’s latest reply, or /copy 2 or higher for an earlier one":
     "Copia a última resposta do Claudex, ou /copy 2 ou mais para uma anterior",
   "Claudex is still replying. Send /copy when the reply is done.":
@@ -10349,6 +11055,7 @@ const catalog: Record<string, string> = {
     "Resposta copiada para a área de transferência.",
   "Couldn’t copy the reply to the clipboard. Try again.":
     "Não foi possível copiar a resposta para a área de transferência. Tente novamente.",
+  // Slash command notices (2026-10-20)
   "/{name} can't be run here.": "/{name} não pode ser executado aqui.",
   "Plan mode is not available in this Windows permission menu.":
     "O modo de plano não está disponível neste menu de permissões do Windows.",
@@ -10545,6 +11252,7 @@ const catalog: Record<string, string> = {
   "Rename chat": "Renomear chat",
   "Rename task": "Renomear tarefa",
   "Project name is required": "O nome do projeto é obrigatório",
+  // Notices and focus reminders (menus-overlays toasts).
   "You’ve hit your limit for Claudex messages. Limits will reset at {time}.":
     "Você atingiu seu limite de mensagens do Claudex. Os limites serão redefinidos às {time}.",
   "You’re sending messages too quickly. Try again at {time}.":
@@ -10561,6 +11269,7 @@ const catalog: Record<string, string> = {
   "It’s your quiet hours until {time}. You set this time limit in Settings → Time and focus.":
     "Seu horário de silêncio vai até {time}. Você definiu esse limite de tempo em Configurações → Tempo e foco.",
   "{x} hr": "{x} h",
+  // Search palette (menus-overlays).
   "Past hour": "Última hora",
   "Search mode": "Modo de pesquisa",
   "Actions mode": "Modo de ações",
@@ -10588,6 +11297,7 @@ const catalog: Record<string, string> = {
     "Você atingiu seu limite de mensagens do Claudex. Os limites serão redefinidos às {at}.",
   "Too many requests right now. Try again at {at}.":
     "Muitas solicitações no momento. Tente novamente às {at}.",
+  // SSH connection banner (host in the sentence)
   "Connecting to {host}…": "Conectando a {host}…",
   "Setting up Claudex on {host}…": "Configurando o Claudex em {host}…",
   "Reconnecting to {host}…": "Reconectando a {host}…",
@@ -10596,7 +11306,9 @@ const catalog: Record<string, string> = {
   "Can’t reach {host}: {reason}": "Não foi possível acessar {host}: {reason}",
   "Not connected to {host}.": "Não conectado a {host}.",
   "this host": "este host",
+  // Quick Entry input placeholder
   "What can I help you with today?": "Como posso ajudar você hoje?",
+  // Update menu, update dialogs and update notices
   "Check for Updates…": "Verificar atualizações…",
   "Checking for Updates…": "Verificando atualizações…",
   "Downloading Update…": "Baixando atualização…",
@@ -10629,6 +11341,7 @@ const catalog: Record<string, string> = {
   "Your administrator no longer supports this version. Install Claudex {version}.":
     "Seu administrador não oferece mais suporte a esta versão. Instale o Claudex {version}.",
   "Claudex {version} is available.": "O Claudex {version} está disponível.",
+  // What's new section titles
   "release-section|New": "Novidades",
   "release-section|Improved": "Melhorias",
   "release-section|Fixed": "Correções",
@@ -10847,6 +11560,8 @@ const catalog: Record<string, string> = {
     "Este rascunho é longo demais para ser movido. Encurte-o ou copie-o primeiro.",
   "This artifact is being updated. Try again when the reply finishes.":
     "Este artefato está sendo atualizado. Tente novamente quando a resposta terminar.",
+  "This knowledge base can't be reached right now.":
+    "Não é possível acessar esta base de conhecimento no momento.",
   "Choose a PNG, JPEG, GIF or WebP image smaller than 1 MB.":
     "Escolha uma imagem PNG, JPEG, GIF ou WebP com menos de 1 MB.",
   "Voice mode needs dictation and a window that can read aloud.":
@@ -11106,193 +11821,8 @@ const catalog: Record<string, string> = {
   "Started preview": "Prévia iniciada",
   "Couldn’t start preview": "Não foi possível iniciar a prévia",
   "status|Thinking": "Pensando",
-  "Compare the leading note-taking apps for a small team and recommend one":
-    "Comparar os principais apps de anotações para uma equipe pequena e recomendar um",
-  "Find out what makes onboarding emails work and sum up the patterns":
-    "Descobrir o que torna eficazes os e-mails de boas-vindas e resumir os padrões",
-  "Look into how other cities run successful bike-share programs":
-    "Pesquisar como outras cidades fazem o compartilhamento de bicicletas dar certo",
-  "Gather the latest evidence on four-day work weeks and weigh it up":
-    "Reunir as evidências mais recentes sobre a semana de quatro dias e pesá-las",
-  "Survey open-source tools for monitoring a small web service":
-    "Levantar ferramentas de código aberto para monitorar um pequeno serviço web",
-  "Research how to price a new subscription product fairly":
-    "Pesquisar como definir um preço justo para um novo produto por assinatura",
-  "Explain how a hash map works and build a tiny one in Python":
-    "Explicar como funciona um mapa de hash e criar um pequeno em Python",
-  "Write a script that renames photos by the date they were taken":
-    "Escrever um script que renomeie fotos pela data em que foram tiradas",
-  "Review a function I paste for bugs and readability":
-    "Revisar uma função que eu colar em busca de bugs e problemas de legibilidade",
-  "Turn a messy shell one-liner into a readable, commented script":
-    "Transformar um comando de shell confuso em um script legível e comentado",
-  "Design a database schema for a small library app":
-    "Projetar o esquema de banco de dados de um pequeno app de biblioteca",
-  "Build a simple to-do list page with HTML, CSS and JavaScript":
-    "Criar uma página simples de lista de tarefas com HTML, CSS e JavaScript",
-  "Teach me the basics of statistics with everyday examples":
-    "Me ensinar o básico de estatística com exemplos do dia a dia",
-  "Make a two-week plan for learning everyday Spanish phrases":
-    "Montar um plano de duas semanas para aprender frases comuns em espanhol",
-  "Quiz me on the main events of the French Revolution":
-    "Me fazer perguntas sobre os principais fatos da Revolução Francesa",
-  "Explain how vaccines train the immune system, step by step":
-    "Explicar passo a passo como as vacinas treinam o sistema imunológico",
-  "Help me understand compound interest with a worked example":
-    "Me ajudar a entender juros compostos com um exemplo resolvido",
-  "Summarize a classic book I name, chapter by chapter":
-    "Resumir capítulo por capítulo um clássico que eu escolher",
-  "Draft a friendly announcement for a team offsite":
-    "Escrever um anúncio simpático para um encontro fora do escritório",
-  "Tighten a paragraph I paste so it says more with fewer words":
-    "Enxugar um parágrafo que eu colar para dizer mais com menos palavras",
-  "Write three subject lines for a newsletter about our latest release":
-    "Escrever três assuntos para uma newsletter sobre nossa versão mais recente",
-  "Outline a blog post about lessons from a project that failed":
-    "Fazer o roteiro de um post sobre lições de um projeto que deu errado",
-  "Turn my bullet points into a short, clear project update":
-    "Transformar meus tópicos em uma atualização de projeto curta e clara",
-  "Write a thank-you note to a mentor":
-    "Escrever um bilhete de agradecimento para um mentor",
-  "Map the strengths and weaknesses of entering a new market":
-    "Mapear os pontos fortes e fracos de entrar em um novo mercado",
-  "Build a simple pricing comparison against three competitors":
-    "Fazer uma comparação simples de preços com três concorrentes",
-  "Draft quarterly goals with measurable results for a small team":
-    "Escrever metas trimestrais com resultados mensuráveis para uma equipe pequena",
-  "List the risks in a product launch plan and how to reduce them":
-    "Listar os riscos de um plano de lançamento e como reduzi-los",
-  "Sketch a one-page business plan for a neighborhood café":
-    "Esboçar um plano de negócios de uma página para um café de bairro",
-  "Prepare talking points for a budget review meeting":
-    "Preparar pontos de fala para uma reunião de revisão de orçamento",
-  "Suggest colors and fonts for a calm meditation app":
-    "Sugerir cores e fontes para um app de meditação tranquilo",
-  "Brainstorm names and taglines for a home-baking business":
-    "Pensar em nomes e slogans para um negócio de doces caseiros",
-  "Design a simple logo concept as an SVG":
-    "Criar um esboço simples de logotipo em SVG",
-  "Plan a mood board for a beach-themed birthday party":
-    "Planejar um mood board para uma festa de aniversário com tema de praia",
-  "Write a short story that starts with a lost umbrella":
-    "Escrever um conto que comece com um guarda-chuva perdido",
-  "Lay out a poster for a community clean-up day":
-    "Diagramar um cartaz para um dia de limpeza do bairro",
-  "Plan a week of quick, healthy dinners with a shopping list":
-    "Planejar uma semana de jantares rápidos e saudáveis com lista de compras",
-  "Help me make a monthly budget I can actually stick to":
-    "Me ajudar a fazer um orçamento mensal que eu consiga seguir de verdade",
-  "Plan a relaxed three-day trip to a city I choose":
-    "Planejar uma viagem tranquila de três dias para uma cidade que eu escolher",
-  "Suggest a beginner workout I can do at home":
-    "Sugerir um treino para iniciantes que eu possa fazer em casa",
-  "Help me sort out a cluttered closet in one weekend":
-    "Me ajudar a arrumar um guarda-roupa bagunçado em um fim de semana",
-  "Come up with gift ideas for a friend who loves hiking":
-    "Dar ideias de presente para uma amiga que adora fazer trilhas",
-  "Help me prepare answers to common interview questions":
-    "Me ajudar a preparar respostas para perguntas comuns de entrevista",
-  "Review my resume summary and make it sharper":
-    "Revisar o resumo do meu currículo e deixá-lo mais forte",
-  "Plan how to ask my manager for a raise":
-    "Planejar como pedir um aumento ao meu gestor",
-  "Explore careers for someone who loves both data and people":
-    "Explorar carreiras para quem gosta tanto de dados quanto de pessoas",
-  "Draft a polite message turning down a job offer":
-    "Escrever uma mensagem educada recusando uma oferta de emprego",
-  "Set goals for my first 90 days in a new role":
-    "Definir metas para meus primeiros 90 dias em um novo cargo",
-  "Tell me something surprising about octopuses":
-    "Me contar algo surpreendente sobre polvos",
-  "Teach me a card trick I can learn in five minutes":
-    "Me ensinar um truque de cartas que dá para aprender em cinco minutos",
-  "Invent a game I can play with things around the house":
-    "Inventar um jogo com coisas que tenho em casa",
-  "Explain a famous paradox in plain words":
-    "Explicar um paradoxo famoso em palavras simples",
-  "Recommend a hobby after asking me a few questions":
-    "Recomendar um hobby depois de me fazer algumas perguntas",
-  "Write a riddle and let me guess the answer":
-    "Me propor uma charada e me deixar adivinhar a resposta",
-  "Summarize the most recent document in my Drive":
-    "Resumir o documento mais recente do meu Drive",
-  "Find my notes on an upcoming project in Drive and pull out the action items":
-    "Encontrar no Drive minhas anotações sobre um projeto próximo e extrair as tarefas",
-  "Turn a spreadsheet in my Drive into a short written summary":
-    "Transformar uma planilha do meu Drive em um breve resumo escrito",
-  "Check my recent Drive documents for anything waiting on me":
-    "Verificar se meus documentos recentes do Drive têm algo esperando por mim",
-  "Look at my calendar and plan focus time for this week":
-    "Olhar minha agenda e planejar tempo de foco para esta semana",
-  "Prepare me for my next meeting with a short briefing":
-    "Me preparar para a próxima reunião com um breve resumo",
-  "Find an hour this week for a planning session":
-    "Encontrar uma hora nesta semana para uma sessão de planejamento",
-  "Sum up how much of last week went to meetings":
-    "Resumir quanto da semana passada foi para reuniões",
-  "Summarize the unread emails in my inbox":
-    "Resumir os e-mails não lidos da minha caixa de entrada",
-  "Draft replies to emails that have waited more than two days":
-    "Escrever respostas para e-mails que esperam há mais de dois dias",
-  "Find emails about upcoming travel and list the details":
-    "Encontrar e-mails sobre viagens próximas e listar os detalhes",
-  "Combine my email, calendar and Drive into a briefing for today":
-    "Juntar meu e-mail, minha agenda e o Drive em um resumo para hoje",
-  "Hey Claudex, could you {prompt}? Use the connectors that help, and start once you have what you need.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Oi, Claudex, você poderia {prompt}? Use os conectores que ajudarem e comece assim que tiver o necessário.\n\nSe fizer sentido, crie algo que possamos ver juntos, como um gráfico, um checklist ou uma pequena página interativa.",
-  "Hey Claudex, could you help me {prompt}? Start researching straight away with any tools that help, and tell me if you need more context.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Oi, Claudex, você poderia me ajudar a {prompt}? Comece a pesquisar agora com as ferramentas que ajudarem e me avise se precisar de mais contexto.\n\nSe fizer sentido, crie algo que possamos ver juntos, como um gráfico, um checklist ou uma pequena página interativa.",
-  "Hi Claudex! Could you {prompt}? If something important is missing, ask me one or two questions first, and tell me if a file or more context would help. Use any tools you have, such as web search or connected files, when they help.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page. Thanks!":
-    "Olá, Claudex! Você poderia {prompt}? Se faltar algo importante, me faça primeiro uma ou duas perguntas e diga se um arquivo ou mais contexto ajudaria. Use as ferramentas que tiver, como a pesquisa na web ou arquivos conectados, quando ajudarem.\n\nSe fizer sentido, crie algo que possamos ver juntos, como um gráfico, um checklist ou uma pequena página interativa. Obrigado!",
-  "Start with something small": "Começar por algo pequeno",
-  "Help me plan my week. Ask what is on my plate and what matters most, then lay out a day-by-day plan with time for focused work and room for surprises.":
-    "Me ajude a planejar minha semana. Pergunte o que tenho para fazer e o que é mais importante, e depois monte um plano dia a dia com tempo para foco e espaço para imprevistos.",
-  "Sort my screenshots": "Organizar minhas capturas de tela",
-  "Go through the screenshots in my selected folder and sort them into subfolders by topic. Propose the folder names and show me the plan before moving anything.":
-    "Veja as capturas de tela da minha pasta selecionada e separe-as por assunto em subpastas. Sugira os nomes das pastas e me mostre o plano antes de mover qualquer coisa.",
-  "Spot patterns in my files": "Encontrar padrões nos meus arquivos",
-  "Read the documents in my selected folder and tell me what stands out: recurring themes, open questions and anything that looks out of date. Fit it on one page.":
-    "Leia os documentos da minha pasta selecionada e me diga o que se destaca: temas recorrentes, perguntas em aberto e o que parece desatualizado. Caiba em uma página.",
-  "Clear the clutter": "Arrumar a bagunça",
-  "Tidy my Downloads folder": "Arrumar minha pasta de Downloads",
-  "Look through my Downloads folder and suggest what to keep, file away or delete. Group similar files, point out large or duplicate ones, and wait for my go-ahead before changing anything.":
-    "Veja minha pasta de Downloads e sugira o que manter, arquivar ou excluir. Agrupe arquivos parecidos, aponte os grandes ou duplicados e espere minha aprovação antes de mudar qualquer coisa.",
-  "Group photos by date": "Agrupar fotos por data",
-  "Organize the photos in my selected folder into folders by year and month, using the date each one was taken. Show me the plan first and never delete a photo.":
-    "Organize as fotos da minha pasta selecionada em pastas por ano e mês, pela data em que foram tiradas. Mostre o plano primeiro e nunca exclua uma foto.",
-  "Get my inbox under control": "Colocar minha caixa de entrada em ordem",
-  "Help me get my inbox under control. Group what is waiting by urgency, draft short replies for the quick ones, and list what needs a decision from me.":
-    "Me ajude a colocar minha caixa de entrada em ordem. Agrupe o que está pendente por urgência, escreva respostas curtas para o que é rápido e liste o que precisa de uma decisão minha.",
-  "Get ready for what’s next": "Preparar-se para o que vem",
-  "Prepare for my next meeting": "Preparar minha próxima reunião",
-  "Help me prepare for my next meeting. Ask who it is with and what it is about, then gather the relevant notes and files and give me a short briefing with questions to raise.":
-    "Me ajude a preparar minha próxima reunião. Pergunte com quem é e sobre o quê, reúna as anotações e arquivos relevantes e me dê um resumo curto com perguntas para levantar.",
-  "Plan a getaway": "Planejar uma viagem curta",
-  "Help me plan a short trip. Ask about my dates, budget and the kind of places I enjoy, then suggest a day-by-day plan and a packing list.":
-    "Me ajude a planejar uma viagem curta. Pergunte minhas datas, orçamento e o tipo de lugar de que gosto, e sugira um roteiro dia a dia e uma lista do que levar.",
-  "Get ready for an interview": "Me preparar para uma entrevista",
-  "Help me get ready for a job interview. Ask about the role and the company, go over likely questions with me, help me shape my answers and suggest questions I can ask them.":
-    "Me ajude a me preparar para uma entrevista de emprego. Pergunte sobre a vaga e a empresa, revise comigo as perguntas prováveis, ajude a lapidar minhas respostas e sugira perguntas que eu possa fazer.",
-  "Make sense of scattered information": "Organizar informações espalhadas",
-  "Catch me up on team chat": "Me atualizar no chat da equipe",
-  "Catch me up on what I missed in my team’s chat. Summarize the main discussions and decisions, point out anything that mentions me, and list what I should reply to.":
-    "Me atualize sobre o que perdi no chat da minha equipe. Resuma as principais conversas e decisões, aponte onde fui mencionado e liste o que devo responder.",
-  "Turn voice notes into a document": "Transformar notas de voz em documento",
-  "Turn the voice notes in my selected folder into a tidy document. Transcribe them, group related points under headings and list any action items at the end.":
-    "Transforme as notas de voz da minha pasta selecionada em um documento organizado. Transcreva, agrupe os pontos relacionados sob títulos e liste as tarefas no fim.",
-  "Collect figures into a spreadsheet": "Reunir números em uma planilha",
-  "Pull the figures scattered across the files in my selected folder into one spreadsheet. Show me the columns you plan to use before you start, and note where each value came from.":
-    "Reúna em uma única planilha os números espalhados pelos arquivos da minha pasta selecionada. Mostre as colunas que pretende usar antes de começar e indique de onde veio cada valor.",
-  "Connect to a Claudex service": "Conectar a um serviço Claudex",
-  "Enter the address of the service you sign in to.":
-    "Digite o endereço do serviço em que você entra.",
-  "Service address": "Endereço do serviço",
-  "No Claudex service answered at this address. Check it and try again.":
-    "Nenhum serviço Claudex respondeu neste endereço. Verifique e tente novamente.",
-  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking it — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from your Claudex service's website.":
-    "O Claudex não conseguiu acessar o servidor de atualizações. Em uma rede corporativa, um firewall ou proxy pode estar bloqueando-o: peça à equipe de TI para liberá-lo. Caso contrário, verifique sua conexão e tente de novo, ou baixe a versão mais recente no site do seu serviço Claudex.",
-  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or the web.":
-    "A conexão não foi restabelecida após limpar a sessão. Ative novamente para continuar usando esta sessão pelo celular ou pela web.",
-  "I agree to the {terms} and {aup}.": "Concordo com os {terms} e a {aup}.",
 };
+// Preserve the native error contract while reusing the translated recovery advice.
+catalog["The Claudex service is unreachable. Check your connection."] =
+  catalog["Couldn’t reach the service. Check your connection, then try again."];
 export default catalog;

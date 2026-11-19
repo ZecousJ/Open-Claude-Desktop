@@ -46,6 +46,7 @@
     "rpcBodyBytes": 1048576,
     "uploadChunkBytes": 1048576,
     "linkFrameBytes": 16777216,
+    "linkMessageBytes": 67108864,
     "turnDocBytes": 4194304,
     "ticketTtlMs": 30000,
     "previewSignatureTtlMs": 300000,
@@ -90,6 +91,7 @@
     "store.conversations.list",
     "store.conversations.get",
     "store.conversations.put",
+    "store.conversations.rewind",
     "store.conversations.delete",
     "store.turns.list",
     "store.turns.put",
@@ -110,6 +112,8 @@
     "routine.token",
     "routine.api-token",
     "device.list",
-    "device.call"
+    "device.call",
+    "run.acquire",
+    "run.finish"
   ]
 }

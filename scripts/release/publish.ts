@@ -1,28 +1,33 @@
 /**
- * Publishes built Claudex files to Cloudflare R2 and
- * prints what to paste into the admin pages (docs/releasing.md).
+ * Publishes built Claudex (and ZecousAI bridge) files to Cloudflare R2 and
+ * prints what to paste into the admin pages (docs/ota.md).
  *
- *   npx tsx scripts/release/publish.ts --claudex release
- *       [--notes notes.md] [--minimum 0.0.1]
- *       [--download-base https://claudex.example.com/downloads]
+ *   npx tsx scripts/release/publish.ts --claudex release [--bridge tools/zecous-bridge/out]
+ *       [--notes notes.md] [--minimum 0.0.1] [--public-base https://all.zecous.cn]
+ *       [--download-base https://claudex.zecous.cn/downloads]
  *       [--json out.json] [--upload]
  *
  * Dry run by default: computes SHA-256, prints object keys, public URLs, the
  * Claudex release JSON (PUT /api/v1/admin/claudex/release, or the admin
- * release page). `--upload` also uploads, with credentials only from the environment:
+ * release page) and ZecousAI's desktop_update_releases rows (API bodies and
+ * SQL). `--upload` also uploads, with credentials only from the environment:
  * R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
  */
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import {
+  bridgeArtifacts,
   claudexArtifacts,
   claudexReleasePayload,
+  defaultPublicBase,
   encodeKeyPath,
+  publicUrl,
   claudexDownloadUrl,
   defaultDownloadBase,
   r2Credentials,
   signV4,
+  zecousRows,
   type Artifact,
   type PlatformKey,
 } from "./release-lib";
@@ -33,6 +38,7 @@ const option = (name: string) => {
   return index >= 0 ? argv[index + 1] : undefined;
 };
 const upload = argv.includes("--upload");
+const publicBase = option("public-base") ?? defaultPublicBase;
 const downloadBase = option("download-base") ?? defaultDownloadBase;
 
 const listFiles = (dir: string): string[] =>
@@ -91,8 +97,11 @@ async function put(artifact: Artifact, digest: string) {
 }
 
 const claudexDir = option("claudex");
-if (!claudexDir) {
-  console.error("usage: publish.ts --claudex <release dir> [--upload]");
+const bridgeDir = option("bridge");
+if (!claudexDir && !bridgeDir) {
+  console.error(
+    "usage: publish.ts --claudex <release dir> [--bridge <tools/zecous-bridge/out>] [--upload]",
+  );
   process.exit(2);
 }
 
@@ -103,6 +112,21 @@ if (claudexDir) {
   claudexVersion = found.version;
   artifacts.push(...found.artifacts);
 }
+const bridgeVersion = JSON.parse(
+  fs.readFileSync(
+    path.join(
+      import.meta.dirname,
+      "..",
+      "..",
+      "tools",
+      "zecous-bridge",
+      "package.json",
+    ),
+    "utf8",
+  ),
+).version as string;
+if (bridgeDir)
+  artifacts.push(...bridgeArtifacts(listFiles(bridgeDir), bridgeVersion));
 
 const digests = new Map<Artifact, string>();
 for (const artifact of artifacts) {
@@ -139,6 +163,23 @@ if (claudexVersion) {
     minimumVersion: option("minimum"),
     releaseNotesMd: notes ? fs.readFileSync(notes, "utf8") : "",
   });
+}
+if (bridgeDir) {
+  const win = artifacts.find((item) =>
+    item.key.endsWith(`ZecousAI-Setup-${bridgeVersion}.exe`),
+  )!;
+  const mac =
+    artifacts.find((item) => item.platform === "darwin-arm64") ??
+    artifacts.find((item) => item.platform === "darwin-universal");
+  output.zecousai = zecousRows({
+    bridgeVersion,
+    winPackageUrl: publicUrl(publicBase, win.key),
+    macPackageUrl: mac ? publicUrl(publicBase, mac.key) : undefined,
+  });
+  if (!mac)
+    console.warn(
+      "\nNo Claudex darwin-arm64 zip given: the ZecousAI macOS row is left out.",
+    );
 }
 const json = JSON.stringify(output, null, 2);
 console.log(`\n${json}`);

@@ -11,6 +11,7 @@ import { acceptsSkillFile, skillFileTypes } from "../../shared/skill-upload";
 import { Button, Row, Section } from "./controls";
 import { skillSourceFiles } from "./skill-import-files";
 
+// (live claude.ai bundle, 2026-10-14, index.chunk-Cr5NCWCa / index.chunk-BdEDnJvL)
 export function SkillImport({
   onError,
   onSkills,

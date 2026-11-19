@@ -21,7 +21,7 @@ function conversation(patch: Partial<Conversation> = {}): Conversation {
     archived: false,
     providerId: "p",
     model: "gpt-6.1",
-    cwd: "/Users/ada/Developer/claudex",
+    cwd: "/Users/zecous/Developer/claudex",
     tokenUsage: {
       last: { totalTokens: 108_000 },
       modelContextWindow: 200_000,
@@ -41,7 +41,7 @@ function conversation(patch: Partial<Conversation> = {}): Conversation {
               {
                 id: "g1",
                 name: "desktop-ui-hot-update.md",
-                path: "/Users/ada/Developer/claudex/docs/desktop-ui-hot-update.md",
+                path: "/Users/zecous/Developer/claudex/docs/desktop-ui-hot-update.md",
                 language: "markdown",
                 operation: "create",
                 state: "ready",
@@ -117,13 +117,13 @@ test("the session rail lists additional folders and uses recorded branch and wor
   const html = render(
     conversation({
       additionalFolders: [
-        "/Users/ada/Developer/docs",
-        "/Users/ada/Developer/claudex",
+        "/Users/zecous/Developer/docs",
+        "/Users/zecous/Developer/claudex",
       ],
       branch: "feature/rail",
     }),
   );
-  assert.match(html, /Additional folder\n\/Users\/ada\/Developer\/docs/);
+  assert.match(html, /Additional folder\n\/Users\/zecous\/Developer\/docs/);
   assert.match(html, />docs<\/span>/);
   assert.match(html, /aria-haspopup="menu"[^>]*><span>feature\/rail<\/span>/);
   const worktree = render(

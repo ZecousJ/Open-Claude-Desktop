@@ -1,7 +1,8 @@
 /*
- * View options at the end of the title bar: a DotsVertical ghost button in
- * text-secondary (#c3c2b7 dark, #52514e light); open, it takes the control fill
- * (10% white or ink) and text-primary.
+ * View options at the end of the title bar (live claude.ai bundle,
+ * 2026-10-14): a DotsVertical ghost button in text-secondary (#c3c2b7 dark,
+ * #52514e light); open, it takes the control fill (10% white or ink) and
+ * text-primary.
  */
 .header-actions .conversation-more {
   color: var(--text-secondary);
@@ -27,17 +28,18 @@
   background: rgb(11 11 11 / 10%);
   color: #0b0b0b;
 }
-/* Share without hosted sharing: in place, greyed like other unavailable
-   controls, its tooltip says why. */
+/* Share without hosted sharing (R-0517, R-0546): in place, greyed like other
+   unavailable controls, its tooltip says why. */
 .conversation-share-button.unavailable {
   opacity: 0.45;
   cursor: default;
 }
 
 /*
- * A Code session's folder chip: 19.6px, #2d2d2f, radius 5, 13px #9f9d99 text
- * 5.4px in, 13.75px after the title's chevron. When the header is narrow (a
- * side panel open) it shrinks to a 21.7px chip with the folder glyph; the panel
+ * A Code session's folder chip (R-0627, R-0628; W969 at 2.4 px per CSS
+ * px): 19.6px, #2d2d2f, radius 5, 13px #9f9d99 text 5.4px in, 13.75px after
+ * the title's chevron. When the header is narrow (a side panel open) it
+ * shrinks to a 21.7px chip with the folder glyph (R-0628); the panel
  * toggles fold into View options (src/header/useHeaderFold.ts).
  */
 .chat-header {
@@ -77,7 +79,8 @@
   color: var(--text-secondary);
 }
 
-/* The rule after Show / Hide session rail. */
+/* The rule after Show / Hide session rail (live claude.ai bundle,
+   2026-10-14: h-4 w-px bg-border, white 10% dark, ink 10% light). */
 .panel-toggle-rule {
   width: 1px;
   height: 16px;
@@ -88,7 +91,9 @@
   background: rgb(11 11 11 / 10%);
 }
 
-/* A shared Code session's "Shared". */
+/* A shared Code session's "Shared" (live claude.ai bundle, 2026-10-14: a
+   secondary button, the audience glyph before the word; fill-secondary 10%
+   white, 14% on hover). */
 .header-actions .icon-button.conversation-share-button.shared {
   width: auto;
   gap: 4px;

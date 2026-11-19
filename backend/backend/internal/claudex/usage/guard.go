@@ -37,9 +37,9 @@ const (
 	// rule of the group (conservative: a limited model may hide in a place
 	// the model extraction does not see).
 	modeRequest checkMode = iota
-	// modeHandshake: a Responses WebSocket upgrade has no model yet; only the
-	// rules covering every model apply, each turn is checked through H14.
-	modeHandshake
+	// The handler checks the selected model through H14 for each Responses
+	// WebSocket turn or automatic Images attempt.
+	modeAllModels
 )
 
 // breach is an exceeded rule.
@@ -64,8 +64,8 @@ func (c *Component) OnRequest(g *gin.Context, apiKey *service.APIKey) bool {
 	c.noteProduct(g)
 	groupID := keyGroupID(apiKey)
 	mode := modeRequest
-	if isResponsesUpgrade(g) {
-		mode = modeHandshake
+	if isResponsesUpgrade(g) || gatewayhook.IsClaudexImagesRequest(g) {
+		mode = modeAllModels
 	}
 	ctx := g.Request.Context()
 	b := c.check(ctx, userID, groupID, mode, func() []string {
@@ -178,22 +178,20 @@ func (c *Component) check(ctx context.Context, userID int64, groupID *int64, mod
 		return nil
 	}
 	var candidates []string
-	needModels := false
-	for _, r := range rules {
-		if !r.allModels {
-			needModels = true
-			break
+	if mode == modeRequest {
+		for _, r := range rules {
+			if !r.allModels {
+				candidates = modelNameForms(models()...)
+				break
+			}
 		}
-	}
-	if needModels {
-		candidates = modelNameForms(models()...)
 	}
 	applicable := make([]*activeRule, 0, len(rules))
 	ids := make([]int64, 0, len(rules))
 	for _, r := range rules {
 		switch {
 		case r.allModels:
-		case len(candidates) == 0 && mode == modeHandshake:
+		case mode == modeAllModels:
 			continue
 		case len(candidates) == 0:
 			// No model name found: every per-model rule applies.

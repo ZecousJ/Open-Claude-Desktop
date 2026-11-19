@@ -69,10 +69,8 @@
   margin: 4px 8px;
   background: var(--border);
 }
-/*
- * Source danger ink is role-danger-300 in dark and -600 in light, preserving
- * disabled behavior.
- */
+/* Source danger ink is role-danger-300 in dark and -600 in light
+ * (c6a992d55 CSS:66422,66428,67133,67422), preserving disabled behavior. */
 :root:not([data-surface="web"])
   body
   .menu.native-conversation-title-menu

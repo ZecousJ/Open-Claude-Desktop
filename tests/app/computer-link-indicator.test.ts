@@ -32,7 +32,7 @@ test("a chat linked to a computer shows the live Laptop indicator beside its tit
   const plain = unknown.querySelector(".computer-link-trigger")!;
   assert.equal(plain.getAttribute("aria-label"), "Studio Mac");
   assert.equal(plain.getAttribute("data-status"), null);
-  assert.ok(plain.querySelector('[data-icon="Laptop"]'));
+  assert.ok(plain.querySelector('[data-anthropicon="Laptop"]'));
   const online = render(
     chat({
       linkedToComputer: true,

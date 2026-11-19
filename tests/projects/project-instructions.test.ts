@@ -198,7 +198,7 @@ test("instructions preserve whitespace, retry, clear, cancel, and save recommend
       document.querySelector<HTMLButtonElement>(".secondary")!.click(),
     );
     assert.equal(closed, 1);
-    // Recommended tools show as tiles with Edit.
+    // Recommended tools show as tiles with Edit (live c9b54eb90 De).
     assert.equal(
       document.querySelector(".prj-recommended-title")?.textContent,
       "Recommended Tools:",

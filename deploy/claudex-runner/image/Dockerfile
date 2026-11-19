@@ -1,7 +1,7 @@
 # claudex-sandbox: the root file system of every gVisor sandbox on a runner
 # host (W-GVISOR, W-RUN 4.1). Built on a development machine or in CI with
 # build.sh, shipped as a rootfs tarball, unpacked read-only on the runner by
-# install-image.sh. Not built on the production server.
+# install-image.sh. Never built on DC6.
 #
 # Contents: Debian 12 slim, git and common build tools, Python 3, Node 24
 # (also used by the in-sandbox bridge), and the Linux build of Codex pinned

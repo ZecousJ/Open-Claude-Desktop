@@ -10,6 +10,7 @@ package usage_test
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -27,6 +28,7 @@ import (
 	servermiddleware "github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/server/routes"
 	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/Wei-Shaw/sub2api/migrations"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
@@ -81,10 +83,9 @@ func (c *clock) now() time.Time { return c.t }
 
 // setup wires the component like claudex.ProvideModule does (guard, H8 and
 // H14 hooks) into the real gateway routes, plus its user and admin routes.
-func setup(t *testing.T) (*gin.Engine, *usage.Component, *clock) {
+func setup(t *testing.T, db *sql.DB) (*gin.Engine, *usage.Component, *clock) {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	db := usage.NewIntegrationDB(t)
 	clk := &clock{t: t0}
 	env := &core.Env{Deps: core.Deps{DB: db}, Now: clk.now}
 	env.Peers.Plans = plans{}
@@ -182,7 +183,7 @@ func wsUpgrade(r http.Handler, path, key string) *httptest.ResponseRecorder {
 }
 
 func TestSessionRuleRefusesEveryGatewayEntryAfterABreach(t *testing.T) {
-	r, _, clk := setup(t)
+	r, _, clk := setup(t, usage.NewIntegrationDB(t))
 	ruleID := createRule(t, r, `{"group_id":4,"kind":"session","limit_usd":0.01}`)
 
 	// First request passes the rule (the zero-value handler behind it may
@@ -263,7 +264,7 @@ func TestSessionRuleRefusesEveryGatewayEntryAfterABreach(t *testing.T) {
 }
 
 func TestPerModelRuleFollowsDuplicateKeysMappedNamesAndTurns(t *testing.T) {
-	r, c, clk := setup(t)
+	r, c, clk := setup(t, usage.NewIntegrationDB(t))
 	createRule(t, r, `{"group_id":4,"kind":"models","label":"Opus","model_patterns":["claude-opus-*"],"window_seconds":604800,"limit_usd":20,"sort_order":10}`)
 
 	// The client asked for an alias; the request was billed as Opus.
@@ -287,6 +288,62 @@ func TestPerModelRuleFollowsDuplicateKeysMappedNamesAndTurns(t *testing.T) {
 	require.NotEqual(t, http.StatusTooManyRequests, wsUpgrade(r, "/v1/responses", "sk-device").Code)
 	require.Error(t, claudexhook.PrecheckTurn(context.Background(), 11, 77, ptr(int64(4)), []string{"gpt-5.4", "claude-opus-4"}))
 	require.NoError(t, claudexhook.PrecheckTurn(context.Background(), 11, 77, ptr(int64(4)), []string{"gpt-5.4"}))
+}
+
+func TestMonthlySpendLimitFollowsBilledLedger(t *testing.T) {
+	db := usage.NewIntegrationDB(t)
+	r, _, clk := setup(t, db)
+	ctx := context.Background()
+	migration, err := migrations.FS.ReadFile("claudex_0031_spend_limits.sql")
+	require.NoError(t, err)
+	_, err = db.ExecContext(ctx, string(migration))
+	require.NoError(t, err)
+	_, err = db.ExecContext(ctx, `CREATE TABLE usage_logs (
+		user_id BIGINT NOT NULL, actual_cost NUMERIC(20,10) NOT NULL, created_at TIMESTAMPTZ NOT NULL
+	); CREATE INDEX ON usage_logs (user_id, created_at)`)
+	require.NoError(t, err)
+
+	october := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	_, err = db.ExecContext(ctx, `INSERT INTO usage_logs VALUES
+		(11, 49.7499999999, $1), (11, 90, $2), (11, 10, $3), (12, 90, $1)`, t0, t0.AddDate(0, -1, 0), october)
+	require.NoError(t, err)
+	const path = "/api/v1/claudex/spend-limit"
+	type settings struct {
+		LimitUSD *float64  `json:"limit_usd"`
+		UsedUSD  float64   `json:"used_usd"`
+		ResetsAt time.Time `json:"resets_at"`
+	}
+	read := func(method, body string) settings {
+		t.Helper()
+		rec := call(r, method, path, "", body)
+		require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+		var envelope struct{ Data settings }
+		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &envelope))
+		return envelope.Data
+	}
+	request := func() *httptest.ResponseRecorder {
+		return call(r, http.MethodPost, "/v1/chat/completions", "sk-user", `{"model":"gpt-5.5"}`)
+	}
+
+	require.Equal(t, settings{UsedUSD: 49.7499999999, ResetsAt: october}, read(http.MethodGet, ""))
+	require.Equal(t, settings{LimitUSD: ptr(0.0), UsedUSD: 49.7499999999, ResetsAt: october}, read(http.MethodPut, `{"limit_usd":0}`))
+	require.Equal(t, usage.CodeSpendLimitExceeded, refusalOf(t, request()).Code)
+	require.Equal(t, settings{LimitUSD: ptr(50.0), UsedUSD: 49.7499999999, ResetsAt: october}, read(http.MethodPut, `{"limit_usd":50}`))
+	require.NotEqual(t, http.StatusTooManyRequests, request().Code)
+
+	_, err = db.ExecContext(ctx, `INSERT INTO usage_logs VALUES (11, 0.2500000001, $1)`, t0)
+	require.NoError(t, err)
+	ref := refusalOf(t, request())
+	require.Equal(t, usage.CodeSpendLimitExceeded, ref.Code)
+	require.Equal(t, 50.0, *ref.Claudex.UsedUSD)
+	require.Error(t, claudexhook.PrecheckTurn(ctx, 11, 79, ptr(int64(4)), []string{"gpt-5.5"}))
+	require.Equal(t, settings{LimitUSD: ptr(50.0), UsedUSD: 50, ResetsAt: october}, read(http.MethodGet, ""))
+
+	clk.t = october
+	require.NotEqual(t, http.StatusTooManyRequests, request().Code)
+	november := october.AddDate(0, 1, 0)
+	require.Equal(t, settings{UsedUSD: 10, ResetsAt: november}, read(http.MethodPut, `{"limit_usd":null}`))
+	require.Equal(t, settings{UsedUSD: 10, ResetsAt: november}, read(http.MethodGet, ""))
 }
 
 func ptr[T any](v T) *T { return &v }

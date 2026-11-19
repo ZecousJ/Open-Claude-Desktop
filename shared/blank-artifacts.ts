@@ -27,7 +27,12 @@ export interface CreateBlankArtifactInput {
   name: string;
   providerId: string;
   model: string;
+  retryInFlight?: true;
 }
+export const blankArtifactCreateInFlightCode =
+  "CLAUDEX_ARTIFACT_CREATE_IN_FLIGHT";
+export const blankArtifactCreateUnconfirmedCode =
+  "CLAUDEX_ARTIFACT_CREATE_UNCONFIRMED";
 export interface BlankArtifactInput {
   conversationId: string;
   artifactId: string;

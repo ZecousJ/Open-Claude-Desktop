@@ -7,6 +7,16 @@ import { ProjectKnowledgeStore } from "./project-knowledge";
 const refused = () =>
   new Error("Failed to prepare project context. You can try again.");
 const exists = () => new Error("Project context already exists.");
+const receiptFile = "creation-receipt.json";
+export interface PreparedProjectContext {
+  commit(resumable?: boolean): void;
+  rollback(): void;
+}
+
+export function hasPreparedProjectContext(root: string, id: string): boolean {
+  return /^[A-Za-z0-9_-]{1,100}$/.test(id) &&
+    !!stat(path.join(root, "projects", id, receiptFile))?.isFile();
+}
 function stat(file: string) {
   try {
     return fs.lstatSync(file);
@@ -40,11 +50,11 @@ function tree(folder: string): { relative: string; stat: fs.Stats }[] {
 /** Stage and validate all initial context before any project metadata is
  * published. The account's existing ProjectKnowledgeStore owns type, UTF-8,
  * PDF-header, file-size, count and total-byte validation. */
-export function prepareProjectContext(
+export async function prepareProjectContext(
   root: string,
   project: Project,
   input: ProjectContextInput,
-): { commit(): void; rollback(): void } {
+): Promise<PreparedProjectContext> {
   directory(root);
   const accountRoot = fs.realpathSync(root);
   const accountIdentity = directory(accountRoot);
@@ -80,7 +90,7 @@ export function prepareProjectContext(
   const stageProject = path.join(stageRoot, "projects", project.id);
   try {
     const store = new ProjectKnowledgeStore(stageRoot, () => [project]);
-    store.add(project.id, files);
+    await store.add(project.id, files);
     tree(stageProject);
   } catch (error) {
     fs.rmSync(stageRoot, { recursive: true, force: true });
@@ -92,6 +102,7 @@ export function prepareProjectContext(
   let projectsIdentity: fs.Stats | undefined;
   let owned: { relative: string; stat: fs.Stats }[] = [];
   let state: "prepared" | "committed" | "rolled-back" = "prepared";
+  const receipt = project.creationReceipt;
   const cleanStage = () => {
     if (same(stat(stageRoot), stageIdentity))
       fs.rmSync(stageRoot, { recursive: true, force: true });
@@ -160,15 +171,25 @@ export function prepareProjectContext(
     }
   };
   return {
-    commit() {
+    commit(resumable = false) {
       if (state === "committed") return;
       if (state !== "prepared") throw refused();
       try {
         if (!same(directory(accountRoot), accountIdentity)) throw refused();
         if (!stat(projectsRoot)) fs.mkdirSync(projectsRoot, { mode: 0o700 });
         projectsIdentity = directory(projectsRoot);
-        if (stat(target)) throw exists();
         if (!same(directory(stageRoot), stageIdentity)) throw refused();
+        if (stat(target)) {
+          const marker = path.join(target, receiptFile);
+          if (!resumable || !receipt || !stat(target)?.isDirectory() || !stat(marker)?.isFile() ||
+              fs.readFileSync(marker, "utf8") !== JSON.stringify(receipt) ||
+              !stat(path.join(target, "knowledge"))?.isDirectory()) throw exists();
+          owned = tree(target).filter(entry => !!entry.relative);
+          targetIdentity = directory(target);
+          state = "committed";
+          cleanStage();
+          return;
+        }
         const stagedEntries = tree(stageProject);
         // mkdir is an exclusive reservation. rename alone may replace an
         // existing empty directory on POSIX and is not a no-replace primitive.
@@ -180,21 +201,24 @@ export function prepareProjectContext(
           throw error;
         }
         targetIdentity = directory(target);
-        const sources = "knowledge-sources.json";
-        fs.renameSync(
-          path.join(stageProject, sources),
-          path.join(target, sources),
-        );
-        owned.push({
-          relative: sources,
-          stat: fs.lstatSync(path.join(target, sources)),
-        });
+        for (const metadata of ["knowledge-sources.json", "knowledge-names.json"]) {
+          const from = path.join(stageProject, metadata);
+          if (!stat(from)) continue;
+          const to = path.join(target, metadata);
+          fs.renameSync(from, to);
+          owned.push({ relative: metadata, stat: fs.lstatSync(to) });
+        }
         if (stat(path.join(target, "knowledge"))) throw exists();
         fs.renameSync(
           path.join(stageProject, "knowledge"),
           path.join(target, "knowledge"),
         );
         owned = stagedEntries.filter((entry) => !!entry.relative);
+        if (resumable && receipt) {
+          const marker = path.join(target, receiptFile);
+          fs.writeFileSync(marker, JSON.stringify(receipt), { mode: 0o600 });
+          owned.push({ relative: receiptFile, stat: fs.lstatSync(marker) });
+        }
         state = "committed";
         cleanStage();
       } catch (error) {

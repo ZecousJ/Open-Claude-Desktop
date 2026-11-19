@@ -1,9 +1,9 @@
 /*
- * The repository and branch menus of the web Code home (W-GITHUB). They use the
- * Cowork "Project or folder" menu (cowork-options.css) as is; only the place
- * differs: they open 6px above their chip, as the workspace menus do, instead
- * of below it. The original's repository menu was not captured, so nothing here
- * is measured beyond that menu.
+ * The repository and branch menus of the web Code home (W-GITHUB). They use
+ * the Cowork "Project or folder" menu (cowork-options.css) as is; only the
+ * place differs: they open 6px above their chip, as the workspace menus do
+ * (R-0341), instead of below it. The original's repository menu was not
+ * captured, so nothing here is measured beyond that menu.
  */
 .cowork-menu.repository-menu {
   top: auto;
@@ -28,10 +28,11 @@
 }
 
 /*
- * The list's empty and problem messages and their links: a line over footnote
- * lines 4px apart (`flex flex-col gap-1`), links in the primary text colour
- * with an underline on hover, an external one followed by a 16px ↗ 4px after
- * its words (`gap-xs`). "Load more" is a footnote link under the rows.
+ * The list's empty and problem messages and their links (live claude.ai
+ * bundle, 2026-10-12): a line over footnote lines 4px apart (`flex
+ * flex-col gap-1`), links in the primary text colour with an underline on
+ * hover, an external one followed by a 16px ↗ 4px after its words
+ * (`gap-xs`). "Load more" is a footnote link under the rows.
  */
 .repository-menu-note {
   display: flex;

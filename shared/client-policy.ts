@@ -1,7 +1,7 @@
 import type { Settings } from "./types";
 import { codeSandboxFor } from "./sandbox-policy";
 
-/** Code permission modes in the order of the picker. */
+/** Code permission modes in the order of the picker (R-0376). */
 export type PermissionMode =
   "auto" | "manual" | "acceptEdits" | "plan" | "bypass";
 /**
@@ -167,12 +167,8 @@ export interface BrowserPolicy {
   blockedDomains: string[];
 }
 
-/**
- * Computer use. Absent (an older service) means off, like the pending,
- * offline and locked policies: it stays off until a service allows it.
- */
+/** Limits on desktop Computer Use actions. */
 export interface ComputerUsePolicy {
-  enabled: boolean;
   /** Full control of the screen besides app-by-app access. */
   allowFullControl: boolean;
   /** Apps (bundle ids or program names) computer use may never act on. */
@@ -312,7 +308,6 @@ export const openPolicy: ClientPolicy = {
   sshRemote: true,
   codexRuntimeMirror: null,
   computerUse: {
-    enabled: true,
     allowFullControl: true,
     deniedApps: [],
     maxActionsPerTurn: null,
@@ -320,9 +315,7 @@ export const openPolicy: ClientPolicy = {
   revision: 0,
 };
 
-/** Computer use while no service has allowed it. */
-const computerUseOff: ComputerUsePolicy = {
-  enabled: false,
+const defaultComputerUseLimits: ComputerUsePolicy = {
   allowFullControl: false,
   deniedApps: [],
   maxActionsPerTurn: null,
@@ -330,7 +323,7 @@ const computerUseOff: ComputerUsePolicy = {
 
 /**
  * Before the service's policy arrives: changing which programs run on this
- * computer (local MCP servers) and computer use wait; everything else stays
+ * computer (local MCP servers) waits; everything else stays
  * usable (SSH, the browser, memory; the memory and SSH packages hold back
  * their own server writes and mirror downloads while `pending`).
  */
@@ -338,7 +331,7 @@ export const pendingPolicy: ClientPolicy = {
   ...openPolicy,
   localMcpEditing: false,
   developerModeEnabled: false,
-  computerUse: computerUseOff,
+  computerUse: defaultComputerUseLimits,
   pending: true,
 };
 
@@ -388,7 +381,7 @@ export const lockedPolicy: ClientPolicy = {
   browser: { ...openBrowser },
   sshRemote: false,
   codexRuntimeMirror: null,
-  computerUse: computerUseOff,
+  computerUse: defaultComputerUseLimits,
   revision: 0,
 };
 
@@ -436,10 +429,10 @@ export function browserHostBlocked(
 export const sshRemoteAllowed = (policy: Pick<ClientPolicy, "sshRemote">) =>
   policy.sshRemote !== false;
 
-/** The computer-use policy in force; off unless a policy allows it. */
+/** The computer-use limits in force. */
 export const computerUsePolicyOf = (
   policy: Pick<ClientPolicy, "computerUse">,
-): ComputerUsePolicy => policy.computerUse ?? computerUseOff;
+): ComputerUsePolicy => policy.computerUse ?? defaultComputerUseLimits;
 
 type ModeSettings = Pick<
   Settings,

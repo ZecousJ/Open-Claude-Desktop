@@ -1,3 +1,5 @@
+import { safeguardFlagged } from "../../shared/safeguard-fallback";
+import { validGatewayEfforts } from "../../shared/gateway-signals";
 import { modelProtocol } from "../../shared/provider-routes";
 import { applyUsageHold } from "../../shared/usage-hold";
 import {
@@ -10,6 +12,7 @@ import { isOutboxTurn } from "../ssh/outbox";
 import { grokModel } from "./engine-support";
 import type {} from "./engine-method-types";
 import type { Engine } from "./engine";
+import type { GatewayRefusal } from "../../server/sub2api-errors";
 
 /** The thread of this engine's one running turn; undefined for none or several. */
 export function runningThread(this: Engine): string | undefined {
@@ -46,7 +49,16 @@ export function requestOptions(
   const models = [...new Set([provider.model, ...provider.models])].filter(
     Boolean,
   );
+  const modelEfforts = models.flatMap((model) => {
+    const efforts = this.modelEfforts(provider.id, model);
+    return model.length <= 200 && validGatewayEfforts(efforts)
+      ? [{ model, efforts: [...efforts] }]
+      : [];
+  });
+  if (modelEfforts.length > 500)
+    throw Error("The model effort catalog exceeds the supported limit.");
   return {
+    modelEfforts,
     describeTools: this.describeTools,
     xSearchModels: this.xSearchAllowed()
       ? models.filter((model) => {
@@ -58,29 +70,55 @@ export function requestOptions(
           );
         })
       : [],
-    ...(this.imageModel() ? { imageModel: this.imageModel() } : {}),
   };
 }
 
+/** Compare contract semantics, not catalog ordering or object identity. */
+function effortContractKey(
+  options: Pick<GatewayRequestOptions, "modelEfforts">,
+) {
+  return JSON.stringify(
+    (options.modelEfforts ?? [])
+      .map((item) => ({ model: item.model, efforts: [...item.efforts].sort() }))
+      .sort((a, b) => (a.model < b.model ? -1 : a.model > b.model ? 1 : 0)),
+  );
+}
 /** Sends changed request options to the running gateway. */
 export async function syncRequestOptions(this: Engine, provider: Provider) {
   const options = this.requestOptions(provider);
   const key = JSON.stringify(options);
   if (!this.gateway || key === this.sentRequestOptions) return;
+  let acknowledged: Pick<GatewayRequestOptions, "modelEfforts"> = {};
+  try {
+    acknowledged = JSON.parse(this.sentRequestOptions || "{}");
+  } catch {
+    /* No acknowledged contract. */
+  }
+  const effortChanged =
+    effortContractKey(acknowledged) !== effortContractKey(options);
   try {
     await this.gateway.setRequestOptions(options);
     this.sentRequestOptions = key;
   } catch {
-    // The gateway keeps its previous options; the next send tries again.
+    // Never send using stale known effort rules (including removal to unknown).
+    if (effortChanged)
+      throw new Error(
+        "Model effort settings could not be synchronized. Try again before sending.",
+      );
+    // Preserve historical behavior for unrelated options; next send retries.
   }
 }
 
-export function changed(this: Engine, c: Conversation, immediate = false) {
+export function changed(this: Engine, c: Conversation, immediate = false, settledCodeTurnId?: string) {
   this.store.schedule();
   if (immediate) {
     clearTimeout(this.notificationTimer.get(c.id));
     this.notificationTimer.delete(c.id);
-    this.emit({ type: "conversation", conversation: structuredClone(c) });
+    this.emit({
+      type: "conversation",
+      conversation: structuredClone(c),
+      ...(settledCodeTurnId && { settledCodeTurnId }),
+    });
   } else if (!this.notificationTimer.has(c.id))
     this.notificationTimer.set(
       c.id,
@@ -153,15 +191,56 @@ export function clearApprovals(this: Engine, conversationId?: string) {
 }
 
 /** A failed turn's error, in the service's own words when it refused the request during this turn. */
+function isFiveHourRefusal(refusal: GatewayRefusal) {
+  return refusal.exceeded && refusal.reason === "session" &&
+    refusal.claudex?.reason === "RULE_LIMIT" &&
+    refusal.claudex.ruleKind === "session" && refusal.claudex.window === "5h" &&
+    Number.isSafeInteger(refusal.resetsAt);
+}
+
+function applyCodeLimit(conversation: Conversation, turn: Turn, refusal: GatewayRefusal) {
+  if (conversation.mode !== "code" || !isFiveHourRefusal(refusal)) return;
+  const prior = turn.usageHold;
+  applyUsageHold(turn, refusal);
+  if (!turn.usageHold) return;
+  turn.usageHold.window = "five_hour";
+  turn.usageHold.providerId = conversation.providerId;
+  turn.usageHold.model = conversation.model;
+  if (prior?.resetsAt === turn.usageHold.resetsAt && prior.continuationId)
+    turn.usageHold.continuationId = prior.continuationId;
+}
+
+/** Gateway IPC can arrive before or after Codex reports a failed turn. */
+export function recordCodeLimitRefusal(this: Engine, refusal: GatewayRefusal) {
+  if (!refusal.threadId || !refusal.turnId || !isFiveHourRefusal(refusal)) return;
+  const conversation = this.store.conversations.find((row) => row.threadId === refusal.threadId);
+  const turn = conversation?.turns.at(-1);
+  if (!conversation || !turn || turn.id !== refusal.turnId ||
+    (turn.status !== "failed" && turn.status !== "inProgress") || turn.userStopped ||
+    (turn.stopReason && turn.stopReason !== "usage_limit"))
+    return;
+  applyCodeLimit(conversation, turn, refusal);
+  if (conversation.mode === "code" && turn.status === "failed")
+    this.changed(conversation, true);
+}
+
 export function refusalText(
   this: Engine,
   turn: Turn,
   error: string | undefined,
+  threadId?: string,
 ) {
   if (isStorageFullError(error)) return storageFullMessage;
-  const refusal = this.lastRefusal;
-  if (error && refusal && refusal.at >= turn.createdAt)
-    applyUsageHold(turn, refusal);
+  const possible = this.lastRefusal;
+  const refusal = possible && (!safeguardFlagged(possible) || (threadId !== undefined && possible.threadId === threadId))
+    ? possible : undefined;
+  if (error && refusal && refusal.at >= turn.createdAt) {
+    const conversation = threadId && refusal.threadId === threadId &&
+      refusal.turnId === turn.id && isFiveHourRefusal(refusal) &&
+      this.store.conversations.find((row) => row.threadId === threadId && row.turns.at(-1) === turn);
+    if (conversation) applyCodeLimit(conversation, turn, refusal);
+    else if (turn.usageHold?.window !== "five_hour") applyUsageHold(turn, refusal);
+  }
   return error && refusal && refusal.at >= turn.createdAt
     ? refusal.message
     : error;

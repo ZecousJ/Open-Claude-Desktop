@@ -21,7 +21,8 @@ export function artifactVersionLabel(number: number, createdAt: number) {
   });
 }
 
-/** Access and version sharing. */
+/** Access and version sharing (live claude.ai bundle, 2026-10-14,
+ * cbf06ff40-doWHt5am.js and c6f91d293-B9fI1Qrn.js). */
 export function ArtifactShareDialog({
   input,
   latestInput = input,
@@ -321,7 +322,7 @@ export function ArtifactShareDialog({
                     )}
                   </strong>
                   <small>
-                    {/* PublicLine and invitedLine. */}
+                    {/* Live claude.ai bundle, 2026-10-16, ca768caa9: publicLine and invitedLine. */}
                     {t(
                       audience === "link"
                         ? "People with the link can view, but not edit."

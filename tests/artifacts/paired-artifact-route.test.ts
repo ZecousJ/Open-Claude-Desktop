@@ -19,7 +19,7 @@ import { registerBlankArtifactHandlers } from "../../electron/ipc/blank-artifact
 import type { AppContext as BackendContext } from "../../electron/app/app-context";
 import type { CreatedBlankArtifact } from "../../shared/blank-artifacts";
 import type { Snapshot, Conversation } from "../../shared/types";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { HostContext } from "../../src/host/HostContext";
 import { webHost } from "../../shared/host";

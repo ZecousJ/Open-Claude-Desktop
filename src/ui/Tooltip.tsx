@@ -29,8 +29,9 @@ import { usePresence } from "./usePresence";
 import { surface } from "../../shared/host";
 
 /**
- * The web app shows no keyboard shortcuts in its menus and hints; its tooltips
- * do, as the original's.
+ * The web app shows no keyboard shortcuts in its menus and hints; its
+ * tooltips do, as the original's (shared-frame-6654oR3-, 2026-10-16: a
+ * tooltip's shortcut has no platform check).
  */
 export const showsShortcuts = surface !== "web";
 
@@ -52,8 +53,8 @@ const otherKeys: Record<string, string> = {
 export const keyName = (platform: string, key: string) =>
   (platform === "darwin" ? macKeys : otherKeys)[key] ?? key;
 
-// Windows and Linux write a combination as words in the system's order, joined
-// with "+": Ctrl+Shift+I, Ctrl+N.
+// Windows and Linux write a combination as words in the system's order,
+// joined with "+": Ctrl+Shift+I (R-0002), Ctrl+N (R-0011).
 const otherOrder = ["mod", "ctrl", "alt", "shift"];
 
 /**
@@ -116,7 +117,7 @@ type Options = {
   disabled?: boolean;
   /**
    * A second, smaller line under the label: the Code home's working-directory
-   * chip shows its path there, cut at the front when it is long.
+   * chip shows its path there (R-0405), cut at the front when it is long.
    */
   detail?: string;
 };
@@ -130,11 +131,11 @@ export const pathTail = (path: string, keep = 37) =>
  * and render `tooltip` next to it. It is drawn in a portal so the sidebar's
  * overflow does not clip it, and replaces the native `title`.
  *
- * As the original's Tooltip: it fades in and grows from 98% over 120ms on the
- * snap curve, from the side facing its button, and leaves the same way; one
- * shown at once while another is up skips the motion. The pointer may move onto
- * it without closing it, and scrolling anything that holds the button closes
- * it.
+ * As the original's Tooltip (desktop bundle 2.31226.1): it fades in and
+ * grows from 98% over 120ms on the snap curve, from the side facing its
+ * button, and leaves the same way; one shown at once while another is up
+ * skips the motion. The pointer may move onto it without closing it, and
+ * scrolling anything that holds the button closes it.
  */
 export function useTooltip(
   label: string,
@@ -300,14 +301,18 @@ export function useTooltip(
 }
 
 /**
- * A shortcut written inside a menu row: "⌘ U" with a space on macOS, "Ctrl+U"
- * elsewhere.
+ * A shortcut written inside a menu row: "⌘ U" with a space on macOS,
+ * "Ctrl+U" elsewhere (R-0392 on Windows).
  */
 export function shortcutText(platform: string, keys: string[]): string {
   return shortcutParts(platform, keys).join(platform === "darwin" ? " " : "");
 }
 
-/** A multi-line tooltip's content: each row its words and its own keys. */
+/**
+ * A multi-line tooltip's content: each row its words and its own keys (live
+ * claude.ai bundle, 2026-10-16, c1958b152 `rf`: label and keys 6px apart,
+ * the rows 4px apart).
+ */
 export function TooltipRows({
   platform,
   rows,
@@ -368,15 +373,19 @@ export function WithTooltip({
 }
 
 /**
- * Why a disabled menu item or list option cannot be used, as the original shows
- * it, instead of the browser's slow native `title`. Without a reason the
- * element is drawn as it is. A disabled button still receives pointer events,
- * which open it; `children` gets the handlers to spread onto (or call from) the
- * element's own.
+ * Why a disabled menu item or list option cannot be used, as the original
+ * shows it (desktop bundle 2.31226.1: a multi-line Tooltip on the item's
+ * right, linked with aria-describedby), instead of the browser's slow native
+ * `title`. Without a reason the element is drawn as it is. A disabled button
+ * still receives pointer events, which open it; `children` gets the handlers
+ * to spread onto (or call from) the element's own.
  *
  * `wrap` puts the element in a focusable span that carries the handlers
- * instead, so a keyboard reaches the reason of a native disabled button, which
- * cannot take focus; `children` then gets no handlers.
+ * instead (the original's disabled-reason wrapper: tabIndex 0 while there is
+ * a reason, aria-describedby pointing at it, live claude.ai bundle,
+ * 2026-10-16, shared-frame-6654oR3- ZL), so a keyboard reaches the reason of
+ * a native disabled button, which cannot take focus; `children` then gets no
+ * handlers.
  */
 export function ReasonTooltip({
   reason,

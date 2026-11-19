@@ -41,7 +41,7 @@ fi
 # Semver build metadata, as in deploy/claudex-server/Dockerfile.
 VERSION="$base+claudex.$rev"
 upstream=$(sed -n 's/^[[:space:]]*UpstreamCommit[[:space:]]*=[[:space:]]*"\([0-9a-f]*\)".*/\1/p' "$FORK/backend/internal/claudex/module.go")
-source_url=${SOURCE_URL:-https://github.com/ZecousJ/Open-Claude-Desktop}
+source_url=${SOURCE_URL:-https://github.com/ZecousJ/claudex}
 
 echo "Building the admin console (pnpm, frozen lockfile)"
 (cd "$FORK/frontend" && pnpm install --frozen-lockfile && pnpm run build)

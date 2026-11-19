@@ -30,11 +30,12 @@ const CommentDictation = lazyPiece(
 
 /*
  * One comment of the All comments list as a thread, after the original's
- * comment cards: the first comment with Resolve/Reopen and a Comment options
- * menu (Edit, Delete thread), its replies each with a Reply actions menu (Edit,
- * Delete), an "edited" mark where the text was changed, and a reply field
- * underneath. Enter sends and Shift+Enter breaks the line; replying to a
- * resolved thread reopens it. Deleting asks first, in the original's words.
+ * comment cards (desktop bundle 2.31226.1): the first comment with
+ * Resolve/Reopen and a Comment options menu (Edit, Delete thread), its
+ * replies each with a Reply actions menu (Edit, Delete), an "edited" mark
+ * where the text was changed, and a reply field underneath. Enter sends and
+ * Shift+Enter breaks the line; replying to a resolved thread reopens it.
+ * Deleting asks first, in the original's words.
  */
 
 /** Enter without Shift sends; a key that only confirms an IME composition does not. */

@@ -127,7 +127,7 @@ test("expanded thoughts expose a separate accessible quote action", () => {
   );
   assert.match(html, /role="group" aria-label="Thinking actions"/);
   assert.match(html, /aria-label="Copy as quote"/);
-  assert.match(html, /class="[^"]*\bapp-icon\b/);
+  assert.match(html, /class="anthropicon"/);
 });
 
 test("pending input labels appear on the status and pending tool row", () => {

@@ -11,7 +11,7 @@ import { projectTemplates } from "./project-templates";
 import { formatText, t } from "../i18n";
 import { useProjectCreationCapabilities } from "../collections/projects/project-detail-read";
 import { Modal } from "../ui/Controls";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useHostCapability } from "../host/HostContext";
 import "../collections/projects/projects.css";
 import "./project-classic-context.css";
@@ -21,10 +21,12 @@ import {
 } from "./ProjectCreateDialog";
 
 /**
- * Chat's Create a project. Existing projects open Project settings. The folder
- * field needs folders on this computer (`localFolders`): the web app's projects
- * keep their instructions and knowledge only. Desktop creation uses Cowork
- * onboarding.
+ * Chat's Create a project (R-0190–R-0195: what you are working on, what you are
+ * trying to achieve, Use a folder). Existing projects open Project settings
+ * (live claude.ai bundle, 2026-10-14, c57eefbba-Z8dldrXK.js).
+ * The folder field needs folders on this computer (`localFolders`): the
+ * web app's projects keep their instructions and knowledge only. Desktop
+ * creation uses Cowork onboarding (live claude.ai bundle, 2026-10-14, c17beaa76).
  */
 export function ProjectEditorDialog({
   project,
@@ -104,9 +106,10 @@ export function ProjectEditorDialog({
       (value) => t(value.description) === project.description,
     ),
   );
-  // The capture has Create project enabled on the blank form: the original
-  // checks on click. An empty name puts the cursor back in the name field and
-  // "Project name is required" shows under it.
+  // The capture (R-0190-0195 AX) has Create project enabled on the blank
+  // form: the original checks on click. An empty name puts the cursor back
+  // in the name field and "Project name is required" shows under it (live
+  // claude.ai bundle, 2026-10-16, c4a0274e5).
   const [missing, setMissing] = useState(false);
   const nameError = useId();
   // The dialog focuses its first control (the close button) after this
@@ -245,7 +248,7 @@ export function ProjectEditorDialog({
             />
             {missing && !project.name.trim() && (
               <span className="prj-field-error" id={nameError} role="alert">
-                <AppIcon name="WarningCircle" size={16} />
+                <Anthropicon name="WarningCircle" size={16} />
                 <span>{t("Project name is required")}</span>
               </span>
             )}

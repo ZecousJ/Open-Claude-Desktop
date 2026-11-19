@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createElement } from "react";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import { AccountTab } from "../../src/settings/tabs/Account";
 import { routineDom } from "../support/routine-dom";
 

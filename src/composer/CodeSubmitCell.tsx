@@ -1,10 +1,10 @@
 import { useState, type ReactNode } from "react";
 
 /**
- * The Code prompt's send cell: Stop and Send stacked in one grid cell, only one
- * of them shown. When they swap, the one leaving fades out over 80ms and is
- * hidden at the end; the one coming fades in over 120ms after an 80ms wait. The
- * first render does not fade.
+ * The Code prompt's send cell (live claude.ai bundle, 2026-10-12): Stop and
+ * Send stacked in one grid cell, only one of them shown. When they swap, the
+ * one leaving fades out over 80ms and is hidden at the end; the one coming
+ * fades in over 120ms after an 80ms wait. The first render does not fade.
  */
 export function CodeSubmitCell({
   showStop,

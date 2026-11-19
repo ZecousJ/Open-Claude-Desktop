@@ -30,7 +30,7 @@ export type Row = {
   message?: string;
 };
 
-/** Upload plugins. */
+/** Upload plugins (live claude.ai bundle, 2026-10-14, c76f00e40-B1RzVuyC). */
 export function PluginUploadDialog({
   onClose,
   onUploaded,

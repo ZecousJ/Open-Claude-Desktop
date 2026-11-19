@@ -9,7 +9,8 @@ const owners = new WeakMap<
 >();
 const watched = new WeakSet<WebContents>();
 
-// Claimed history belongs to the focused editor, not embedded pages.
+// Claimed history belongs to the focused editor, not embedded pages
+// (live claude.ai bundle, 2026-10-14, shared-23-RHw-hr47.js).
 export function routeEditCommand(
   command: EditCommand,
   contents = webContents.getFocusedWebContents(),

@@ -1,7 +1,7 @@
 import { bridgeMethods } from "./bridge-methods";
 import type { CloudNetworkLevel } from "./host";
 
-/** Cloud editor. */
+/** Cloud editor (live claude.ai bundle, 2026-10-14, c73f2f585). */
 export interface CloudEnvironmentConfig {
   id: string;
   name: string;

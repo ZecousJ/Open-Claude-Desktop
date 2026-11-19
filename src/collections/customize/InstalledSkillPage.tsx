@@ -27,7 +27,7 @@ import {
 import { Menu, type MenuEntry, type MenuPosition } from "../../ui/Menu";
 import { Markdown } from "../../ui/Markdown";
 import { Spinner } from "../../ui/Spinner";
-import { AppIcon } from "../../ui/app-icon";
+import { AnthropiconGlyph } from "../../ui/AnthropiconGlyph";
 import { ResizeHandle } from "../../ui/ResizeHandle";
 import {
   skillFileTree,
@@ -115,7 +115,7 @@ export function InstalledSkillPage({
       : []),
   ];
   // The person, or the publisher the host reported; nothing is drawn when the
-  // host reports neither.
+  // host reports neither (live bundle c24c8737b: the row exists only with a creator).
   const creator =
     skill.own || skill.provenance?.source === "you"
       ? t("You")
@@ -132,7 +132,11 @@ export function InstalledSkillPage({
       </a>
       <header className="installed-skill-head">
         <span className="installed-skill-icon" aria-hidden="true">
-          <AppIcon name="Scroll" size={20} />
+          <AnthropiconGlyph
+            name="Scroll"
+            size={20}
+            style={{ fontWeight: 433.25 }}
+          />
         </span>
         <div className="installed-skill-identity">
           <h2 id={titleId} data-no-translate>

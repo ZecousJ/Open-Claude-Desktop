@@ -41,21 +41,42 @@ export async function settleWithin(
  * `totalMs`. Always resolves; `timedOut` lists the steps that were given up on.
  */
 export async function runShutdown(
-  steps: { name: string; run: () => Promise<unknown> | unknown }[],
+  steps: {
+    name: string;
+    run: () => Promise<unknown> | unknown;
+    cancel?: () => void;
+  }[],
   { stepMs = shutdownStepMs, totalMs = shutdownTotalMs } = {},
-): Promise<{ timedOut: string[] }> {
-  const timedOut: string[] = [];
+): Promise<{ timedOut: string[]; failed: string[] }> {
+  const timedOut: string[] = [],
+    failed: string[] = [];
+  let cancelled = false;
+  let current: (typeof steps)[number] | undefined;
   const all = (async () => {
     for (const step of steps) {
+      if (cancelled) break;
+      current = step;
       let work: Promise<unknown>;
       try {
-        work = Promise.resolve(step.run());
+        work = Promise.resolve(step.run()).catch(() => {
+          failed.push(step.name);
+        });
       } catch {
+        failed.push(step.name);
+        current = undefined;
         continue;
       }
-      if (await settleWithin(work, stepMs)) timedOut.push(step.name);
+      if (await settleWithin(work, stepMs)) {
+        timedOut.push(step.name);
+        step.cancel?.();
+      }
+      current = undefined;
     }
   })();
-  if (await settleWithin(all, totalMs)) timedOut.push("shutdown");
-  return { timedOut };
+  if (await settleWithin(all, totalMs)) {
+    timedOut.push("shutdown");
+    cancelled = true;
+    current?.cancel?.();
+  }
+  return { timedOut: [...timedOut], failed: [...failed] };
 }

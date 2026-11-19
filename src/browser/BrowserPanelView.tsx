@@ -362,7 +362,9 @@ export function browserPanelView(kit: BrowserPanelViewKit) {
           (!state.toolsAvailable && policyAllowsTools ? (
             <BrowserToolsOff
               onTurnOn={() =>
-                run(() => env.onPreference({ browserTools: true }))
+                run(() => env.onPreference(
+                  conversation.mode === "code" ? { codeBrowserTools: true } : { browserTools: true },
+                ))
               }
             />
           ) : (

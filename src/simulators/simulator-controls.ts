@@ -1,7 +1,7 @@
 /**
- * The pure rules behind the device's menus, control bar, frame counter and log
- * drawer. Kept apart from the components so tests can check them without a
- * window.
+ * The pure rules behind the device's menus, control bar, frame counter and
+ * log drawer (live claude.ai bundle, 2026-10-12, `c49d37e5f`). Kept apart
+ * from the components so tests can check them without a window.
  */
 import {
   logLevelAtLeast,
@@ -26,10 +26,10 @@ export type ControlShortcut =
   | "volumeDown";
 
 /**
- * The control bar's and Device menu's shortcuts while the screen has the focus:
- * ⌘S Save screenshot, ⇧⌘H Home, ⇧⌘R Recents (Android), ⇧⌘A Appearance → Toggle
- * and Rotate right (iOS), and Back (⇧⌘B, Android). Matches the focused device
- * controls.
+ * The control bar's and Device menu's shortcuts while the screen has the
+ * focus: ⌘S Save screenshot, ⇧⌘H Home, ⇧⌘R Recents (Android), ⇧⌘A
+ * Appearance → Toggle and Rotate right (iOS), and Back (⇧⌘B, Android).
+ * Matches the focused device controls (live claude.ai bundle, 2026-10-14, c49d37e5f).
  */
 export function controlShortcut(
   event: {
@@ -47,8 +47,8 @@ export function controlShortcut(
     : event.ctrlKey && !event.metaKey;
   if (!mod || event.altKey) return undefined;
   const key = event.key.toLowerCase();
-  // The side buttons: ⌘L Lock, and ⌘↑ ⌘↓ the volume where the device has it
-  // (Android here).
+  // The side buttons (live claude.ai bundle, 2026-10-15, c49d37e5f `_p`):
+  // ⌘L Lock, and ⌘↑ ⌘↓ the volume where the device has it (Android here).
   if (!event.shiftKey) {
     if (key === "s") return "screenshot";
     if (key === "l") return "lock";
@@ -132,7 +132,7 @@ export const menuLogLevels: readonly SimulatorLogLevel[] = [
 /** The most lines the drawer keeps (older ones are dropped from the view). */
 export const drawerLineLimit = 5000;
 
-/** A level's name; Android's Default is Warning. */
+/** A level's name; Android's Default is Warning (live bundle: `Ku`). */
 export function logLevelName(level: SimulatorLogLevel, kind: SimulatorKind) {
   if (kind === "android" && level === "default") return "Warning";
   return {
@@ -145,7 +145,7 @@ export function logLevelName(level: SimulatorLogLevel, kind: SimulatorKind) {
   }[level];
 }
 
-/** The level column's short form; Default has none on iOS. */
+/** The level column's short form; Default has none on iOS (live bundle: `qu`). */
 export function logLevelTag(level: SimulatorLogLevel, kind: SimulatorKind) {
   if (kind === "android" && level === "default") return "warn";
   return level === "default" ? "" : level;
@@ -171,7 +171,7 @@ export function filterLogs(
   );
 }
 
-/** "09:41:07.123" in the computer's time zone. */
+/** "09:41:07.123" in the computer's time zone (live bundle: `Au`). */
 export function logTime(ts: number) {
   const date = new Date(ts);
   const two = (value: number) => String(value).padStart(2, "0");
@@ -216,7 +216,7 @@ export function scopeColumnChars(labels: readonly string[]) {
   return Math.max(4, Math.min(28, widest)) + 2;
 }
 
-/** Scope column bounds. */
+/** Scope column bounds (live claude.ai bundle, 2026-10-14, c49d37e5f-DgR6t8R5.js, Wd). */
 export function clampScopeWidth(width: number) {
   return Number.isFinite(width)
     ? Math.min(640, Math.max(48, Math.round(width)))

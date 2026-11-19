@@ -105,6 +105,26 @@ test("keeps valid configurations and names the first problem", () => {
   assert.equal(result.invalid.length, 2);
 });
 
+test("launch.json infers names for unnamed commands and attached URLs", () => {
+  const parsed = parseLaunchConfig(JSON.stringify({
+    configurations: [
+      { program: "server.cjs", port: 3000 },
+      { runtimeExecutable: "npm", runtimeArgs: ["run", "preview:fixture"], port: 4000 },
+      { url: "http://localhost:5000/docs" },
+    ],
+  }));
+  assert.equal(parsed.error, undefined);
+  assert.deepEqual(parsed.configurations.map(({ name }) => name), [
+    "server", "preview-fixture", "localhost:5000",
+  ]);
+  const saved = JSON.parse(upsertLaunchConfig(parsed, {
+    name: "server", runtimeExecutable: "node", runtimeArgs: ["other.cjs"], port: 3000,
+  }));
+  assert.equal(saved.configurations.length, 3);
+  assert.deepEqual(saved.configurations[0].runtimeArgs, ["other.cjs"]);
+  assert.equal(saved.configurations[1].name, undefined);
+});
+
 test("checks every field of a configuration", () => {
   const ok = { name: "web", runtimeExecutable: "npm", port: 3000 };
   assert.equal(launchEntryProblem(ok), undefined);
@@ -118,8 +138,9 @@ test("checks every field of a configuration", () => {
     [{ ...ok, port: 0 }, /from 1 to 65535/],
     [{ ...ok, port: 3000.5 }, /from 1 to 65535/],
     [{ ...ok, url: "ftp://localhost:3000" }, /http:\/\/ or https/],
-    [{ ...ok, url: "https://example.com" }, /on this computer/],
-    [{ ...ok, url: "http://192.168.1.2:3000" }, /on this computer/],
+    [{ ...ok, url: "http://192.168.1.2:3000" }, /public address/],
+    [{ ...ok, url: "http://169.254.169.254" }, /public address/],
+    [{ ...ok, autoPort: "true" }, /must be true or false/],
     [{ ...ok, url: "http://user:pw@localhost:3000" }, /user name/],
     [{ ...ok, url: "http://localhost:4000" }, /doesn't match "port"/],
     [{ ...ok, url: "not a url" }, /valid address/],
@@ -158,6 +179,23 @@ test("checks every field of a configuration", () => {
     undefined,
   );
   assert.equal(launchEntryProblem({ ...ok, cwd: "apps/./web" }), undefined);
+  assert.equal(launchEntryProblem({ ...ok, url: "https://example.com/page" }), undefined);
+});
+
+test("normalizes the program and args fields and keeps public attachment URLs independent of the local port", () => {
+  const parsed = parseLaunchConfig(JSON.stringify({ configurations: [
+    { name: "program", program: "${workspaceFolder}/server.cjs", args: ["--port", "4567"], autoPort: true },
+    { name: "mixed", runtimeExecutable: "node", runtimeArgs: ["--no-warnings"], program: "server.cjs", args: ["--port=4568"], port: "4568" },
+    { name: "public", url: "https://example.com/page?preview=1" },
+  ] }));
+  assert.equal(parsed.error, undefined);
+  const [program, mixed, attached] = parsed.configurations;
+  assert.deepEqual(program, { name: "program", runtimeExecutable: "node", runtimeArgs: ["${workspaceFolder}/server.cjs", "--port", "4567"], autoPort: true });
+  assert.equal(launchPort(program), 4567);
+  assert.deepEqual(mixed.runtimeArgs, ["--no-warnings", "server.cjs", "--port=4568"]);
+  assert.equal(mixed.port, 4568);
+  assert.equal(launchPort(attached), undefined);
+  assert.equal(launchUrl(attached), "https://example.com/page?preview=1");
 });
 
 test("local host names", () => {

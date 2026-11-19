@@ -1,4 +1,4 @@
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { Conversation, Project } from "../../shared/types";
 import type { MenuEntry } from "../ui/Menu";
 
@@ -10,10 +10,12 @@ export type ProjectEntryHandlers = {
 };
 
 /**
- * Add to project / Change project (Projects), then Remove from project On its
- * own row when the conversation is in one. The list is searchable and always
- * offered: "New project" heads it, typing ends it with "Create project {name}",
- * and with no projects it says "No projects yet". Creating opens the new
+ * Add to project / Change project (Projects), then Remove from project
+ * (ProjectsX; live claude.ai, 2026-10-20) on its own row
+ * when the conversation is in one (live claude.ai bundle, 2026-10-12, the
+ * chat menu's project rows). The list is searchable and always offered:
+ * "New project" heads it, typing ends it with "Create project {name}", and
+ * with no projects it says "No projects yet". Creating opens the new
  * project dialog with the name and moves the conversation there.
  */
 export function projectEntries(
@@ -25,7 +27,7 @@ export function projectEntries(
   return [
     {
       label: c.projectId ? "Change project" : "Add to project",
-      icon: <AppIcon name="Projects" size={20} />,
+      icon: <Anthropicon name="Projects" size={20} />,
       searchable: create ? "Search or create a project" : "Search projects",
       ...(create
         ? {
@@ -50,7 +52,7 @@ export function projectEntries(
       ? [
           {
             label: "Remove from project",
-            icon: <AppIcon name="ProjectsX" size={20} />,
+            icon: <Anthropicon name="ProjectsX" size={20} />,
             onSelect: () => on.moveToProject(null),
           },
         ]

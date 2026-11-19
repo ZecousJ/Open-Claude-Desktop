@@ -76,7 +76,7 @@ func TestRPCRefusals(t *testing.T) {
 
 	h.runner()
 	// A method the runner did not list, and the runner-internal one.
-	for _, m := range []string{"openFolder", previewMethod, "Bad-Name"} {
+	for _, m := range []string{"openFolder", previewMethod, verifyDocumentPreviewTokenMethod, "Bad-Name"} {
 		status, res = h.rpc(userA, m)
 		require.Equal(t, http.StatusNotFound, status, m)
 		require.Equal(t, webproto.ErrCodeMethodUnavailable, res.Error.Code, m)
@@ -380,6 +380,112 @@ func TestPresenceReachesTheRunner(t *testing.T) {
 	for _, p := range fr.framesOf("presence") {
 		require.Equal(t, userA, p.UserID)
 	}
+}
+
+func TestRunnerRelinkResyncsLiveAndResumingTabs(t *testing.T) {
+	h := newHost(t)
+	local := h.runner()
+	code, _ := h.rpc(userA, "listThings")
+	require.Equal(t, http.StatusOK, code)
+	const returningUser int64 = 303
+	code, _ = h.rpc(returningUser, "listThings")
+	require.Equal(t, http.StatusOK, code)
+	token, err := newRunnerToken()
+	require.NoError(t, err)
+	rec, err := h.dir.Create(context.Background(), "second", 0, hashRunnerToken(token))
+	require.NoError(t, err)
+	second, err := h.dialRunner(token, defaultMethods, echoCalls)
+	require.NoError(t, err)
+	_, res := h.rpc(userB, "listThings")
+	require.Equal(t, userB, decodeEcho(t, res).User)
+	require.Equal(t, rec.LinkID(), second.welcome.RunnerID)
+	require.Len(t, second.framesOf("call"), 1)
+
+	tabsA := []*fakeTab{h.openTab(userA, "tab-a-000001", nil), h.openTab(userA, "tab-a-000002", nil)}
+	seqA := *tabsA[0].ready().Seq
+	require.Equal(t, seqA, *tabsA[1].ready().Seq)
+	tabB := h.openTab(userB, "tab-b-000001", nil)
+	seqB := *tabB.ready().Seq
+	const returningTabID = "tab-c-000001"
+	returningTab := h.openTab(returningUser, returningTabID, nil)
+	lastSeq := *returningTab.ready().Seq
+
+	_ = local.conn.CloseNow()
+	waitFor(t, "assigned runner unavailable", func() bool {
+		code, _ := h.rpc(userA, "listThings")
+		return code == http.StatusServiceUnavailable
+	})
+	require.NoError(t, returningTab.conn.Close(websocket.StatusNormalClosure, ""))
+	waitFor(t, "returning tab detached", func() bool {
+		return len(h.c.hubs.tabsOf(returningUser)) == 0
+	})
+	local = h.runner()
+	update := json.RawMessage(`{"type":"conversation","conversation":{"id":"after-relink"}}`)
+	local.event(userA, update)
+	for _, tab := range tabsA {
+		waitFor(t, "conversation on the existing socket", func() bool {
+			events := tab.of("event")
+			return len(events) > 0 && bytes.Equal(events[len(events)-1].Event, update)
+		})
+		events := tab.of("event")
+		require.Len(t, events, 2)
+		require.Equal(t, seqA+1, *events[0].Seq)
+		require.JSONEq(t, `{"type":"resync"}`, string(events[0].Event))
+		require.Equal(t, seqA+2, *events[1].Seq)
+	}
+
+	second.event(userB, update)
+	waitFor(t, "conversation from the second runner", func() bool {
+		events := tabB.of("event")
+		return len(events) > 0 && bytes.Equal(events[len(events)-1].Event, update)
+	})
+	events := tabB.of("event")
+	require.Len(t, events, 1)
+	require.Equal(t, seqB+1, *events[0].Seq)
+
+	resumed := h.openTab(returningUser, returningTabID, &lastSeq)
+	ready := resumed.ready()
+	require.True(t, *ready.Resumed)
+	require.Equal(t, lastSeq+1, *ready.Seq)
+	waitFor(t, "replayed resync", func() bool { return len(resumed.of("event")) > 0 })
+	replayed := resumed.of("event")
+	require.Len(t, replayed, 1)
+	require.Equal(t, lastSeq+1, *replayed[0].Seq)
+	require.JSONEq(t, `{"type":"resync"}`, string(replayed[0].Event))
+}
+
+func TestPresenceReportsDetachedTabAndKeepsItsReplacement(t *testing.T) {
+	h := newHost(t)
+	fr := h.runner()
+	h.rpc(userA, "listThings")
+	const firstID = "tab-a-000001"
+	const secondID = "tab-a-000002"
+	first := h.openTab(userA, firstID, nil)
+	first.ready()
+	second := h.openTab(userA, secondID, nil)
+	second.ready()
+	replacement := h.openTab(userA, firstID, nil)
+	replacement.ready()
+	require.Equal(t, websocket.StatusNormalClosure, first.closeCode())
+
+	_ = second.conn.Close(websocket.StatusNormalClosure, "")
+	waitFor(t, "second tab detached", func() bool {
+		p := fr.framesOf("presence")
+		return len(p) > 0 && *p[len(p)-1].Tabs == 1 && p[len(p)-1].DetachedTabID == secondID
+	})
+	_ = replacement.conn.Close(websocket.StatusNormalClosure, "")
+	waitFor(t, "both tabs detached", func() bool {
+		p := fr.framesOf("presence")
+		return len(p) > 0 && *p[len(p)-1].Tabs == 0
+	})
+	var detached []string
+	for _, p := range fr.framesOf("presence") {
+		if p.DetachedTabID != "" {
+			require.Equal(t, userA, p.UserID)
+			detached = append(detached, p.DetachedTabID)
+		}
+	}
+	require.Equal(t, []string{secondID, firstID}, detached)
 }
 
 func TestRunnerLinkAuthentication(t *testing.T) {

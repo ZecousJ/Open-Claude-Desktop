@@ -65,7 +65,7 @@ test("chat title menu adds to a project, then offers Change project", () => {
     false,
     actions(log),
   );
-  // Remove from project is its own row.
+  // Live claude.ai bundle (2026-10-12): Remove from project is its own row.
   assert.deepEqual(labels(inProject).slice(0, 4), [
     "Unpin",
     "Rename",

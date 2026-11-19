@@ -35,7 +35,7 @@ const languages: Record<string, string> = {
   ".sql": "sql",
 };
 /** Binary outputs kept as profile snapshots; the renderer decides which it can preview. */
-const binaryTypes: Record<string, string> = {
+export const generatedFileBinaryTypes: Readonly<Record<string, string>> = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -134,7 +134,7 @@ export function snapshotFile(
   blobs?: GeneratedBlobs,
 ): number {
   const extension = path.extname(file.name).toLowerCase();
-  const mime = blobs ? binaryTypes[extension] : undefined;
+  const mime = blobs ? generatedFileBinaryTypes[extension] : undefined;
   let descriptor: number | undefined;
   try {
     if (!languages[extension] && !mime)
@@ -278,7 +278,7 @@ function plannedFiles(
 
 /** Which allowance of `itemBudgets` a file's snapshot counts against. */
 function allowanceOf(name: string, blobs: GeneratedBlobs | undefined) {
-  return blobs && binaryTypes[path.extname(name).toLowerCase()]
+  return blobs && generatedFileBinaryTypes[path.extname(name).toLowerCase()]
     ? ("binary" as const)
     : ("text" as const);
 }
@@ -336,7 +336,7 @@ export async function captureGeneratedFilesWith(
     if (!wanted) continue;
     const allowance = allowanceOf(file.name, blobs);
     const extension = posix.extname(file.name).toLowerCase();
-    const mime = blobs ? binaryTypes[extension] : undefined;
+    const mime = blobs ? generatedFileBinaryTypes[extension] : undefined;
     try {
       if (!languages[extension] && !mime)
         throw new Error("Preview is not available for this file type.");
@@ -369,7 +369,7 @@ export async function captureGeneratedFilesWith(
 
 /** What a Chat or Cowork turn hands over: documents, data, images, pages. */
 const outputTypes = new Set([
-  ...Object.keys(binaryTypes),
+  ...Object.keys(generatedFileBinaryTypes),
   ".md",
   ".markdown",
   ".html",
@@ -383,8 +383,9 @@ const outputTypes = new Set([
   ".mermaid",
 ]);
 /**
- * What a Code turn hands over as cards: documents only. Source, pages and data
- * a Code turn writes are its changes (the Changes panel).
+ * What a Code turn hands over as cards (owner, 2026-10-08: a Word report a
+ * script wrote stayed a file name in the reply): documents only. Source,
+ * pages and data a Code turn writes are its changes (the Changes panel).
  */
 export const codeOutputTypes = new Set([
   ".docx",

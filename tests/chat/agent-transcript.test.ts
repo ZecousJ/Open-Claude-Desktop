@@ -193,6 +193,20 @@ test("transcript access is limited to children recorded in this account conversa
     assert.equal(child.context, "Child-specific synthetic instructions");
     assert.equal(child.model, "fixture-child-model");
     assert.equal(calls, 2);
+    store.conversations[0].cwd = root;
+    store.settings.providers = [{ id: "fixture", name: "Fixture", model: "fixture-model", models: [], baseUrl: "http://localhost", protocol: "responses" }];
+    let active = true, reads = 0;
+    const cold = {
+      state: { state: "stopped" }, rpc: undefined,
+      owns: () => true,
+      ensure: async (_provider: unknown, options: { current: () => boolean }) => {
+        active = false;
+        options.current();
+        reads++;
+      },
+    } as unknown as Engine;
+    await assert.rejects(readWorkflowAgent({ store, engine: cold, current: () => active }, "parent", "child-id"), /account|connection/i);
+    assert.equal(reads, 0);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

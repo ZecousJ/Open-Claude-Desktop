@@ -168,8 +168,7 @@ export function workspaceBarView(kit: WorkspaceBarViewKit) {
             />
           )}
         </button>
-        {/* Hover or keyboard focus: "Working directory" over the path, above the
-           chip. */}
+        {/* Hover or keyboard focus: "Working directory" over the path, above the chip (R-0405). */}
         <WithTooltip
           label="Working directory"
           detail={cwd ? pathTail(cwd) : undefined}

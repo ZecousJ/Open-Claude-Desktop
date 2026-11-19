@@ -33,12 +33,12 @@ export const dictationAudioFormat = {
 } as const;
 /** Largest chunk `dictationAudio` takes (about two seconds). */
 export const maxDictationChunkBytes = 64 * 1024;
-/** Recording limit. */
+/** Recording limit (live claude.ai bundle, 2026-10-14, cd27cb2c4-D55jUwpI). */
 export const defaultDictationSeconds = 600;
-/** Credential ceiling. */
+/** Credential ceiling (desktop 2.37337.1, index.chunk-C4ifgXCF). */
 export const maxDictationSeconds = 43_200;
 
-/** Dictation stops itself after this long without a new word. */
+/** Dictation stops itself after this long without a new word (live claude.ai bundle, 2026-10-16, shared-9-eoxSi7VI). */
 export const dictationSilenceSeconds = 60;
 
 export function dictationRecordingSeconds(maxSeconds: number | null) {

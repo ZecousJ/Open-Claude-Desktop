@@ -45,10 +45,12 @@ export function isChatStep(item: Item) {
   return (
     item.type === "commandExecution" ||
     item.type === "fileChange" ||
-    // A picture the agent looked at is a step, not a card.
+    // A picture the agent looked at is a step, not a card (live claude.ai:
+    // "Check the generated image  red_circle.png").
     item.type === "imageView" ||
     item.type === "imageGeneration" ||
-    // A search is a step too: "Searched the web latest stable Rust release".
+    // A search is a step too: "Searched the web  latest stable Rust release"
+    // (live claude.ai, 2026-09-30).
     item.type === "webSearch" ||
     TOOL_TYPES.includes(item.type) ||
     (item.type === "reasoning" &&
@@ -56,11 +58,11 @@ export function isChatStep(item: Item) {
   );
 }
 
-/** Finished group labels. */
+/** Finished group labels (live claude.ai bundle, 2026-10-14, shared-10-C9_UFbV-). */
 export function chatStepsSummary(items: Item[], notes = true) {
   const commands = items.filter((item) => item.type === "commandExecution");
   const steps = items.filter((item) => toolKind(item));
-  // One command that did not finish says so.
+  // One command that did not finish says so (R-0728 wording).
   if (notes && steps.length === 1 && commands.length === 1) {
     if (commands[0].lifecycleStatus === "interrupted")
       return t("Command stopped");
@@ -155,8 +157,9 @@ export function mergeRows<T>(
 }
 
 /**
- * The quiet working dots at the end of a running step's row; with the pointer
- * on the row (or focus) they give way to its caret.
+ * The quiet working dots at the end of a running step's row; with the
+ * pointer on the row (or focus) they give way to its caret (the original's
+ * quiet status; source: desktop bundle 2.31226.1 static CSS/JS).
  */
 function StepEnd({ running }: { running: boolean }) {
   if (!running) return <ChevronRight size={12} aria-hidden="true" />;
@@ -194,10 +197,11 @@ export function ChatStep({
   );
   const bodyId = useId();
   const running = live && itemIsRunning(item);
-  // A running step with something to show peeks at it, dimmed and faded at the
-  // bottom; it opens fully when clicked and folds away when done. Folded again
-  // by hand while it still runs, it peeks again, and the peek follows what is
-  // being written: its newest lines, not the first few.
+  // A running step with something to show peeks at it, dimmed and faded at
+  // the bottom; it opens fully when clicked and folds away when done.
+  // Folded again by hand while it still runs, it peeks again (owner,
+  // 2026-10-22), and the peek follows what is being written: its newest
+  // lines, not the first few.
   const peeking = running && userOpen !== true;
   const peekShown = useLinger(peeking, STEP_MOTION_MS);
   const peek = useRef<HTMLDivElement>(null);
@@ -274,7 +278,8 @@ export function ChatStep({
   );
   if (item.type === "imageView" && typeof item.path === "string") {
     const path: string = item.path;
-    // The viewed picture's thumbnail at the row's right end, opening it large.
+    // The viewed picture's thumbnail at the row's right end, opening it large
+    // (owner, 2026-10-03; Code's R-0873 row).
     return (
       <div className="chat-step chat-step-viewed-image">
         <button

@@ -1,4 +1,5 @@
-/* Cowork onboarding and CDS fields. */
+/* Cowork onboarding and CDS fields (live claude.ai bundle, 2026-10-14,
+   c17beaa76, c259d3b84, shared-frame-B1JORnF0). */
 .modal.prj-create {
   --create-surface: #20201f;
   --create-tile: #151515;
@@ -287,7 +288,8 @@
   opacity: 0.4;
 }
 
-/* Import picker and previews. */
+/* Import picker and previews (live claude.ai bundle, 2026-10-14,
+   c17beaa76, shared-frame-B1JORnF0). */
 .prj-import-context,
 .modal.prj-create .prj-import-picker {
   display: flex;

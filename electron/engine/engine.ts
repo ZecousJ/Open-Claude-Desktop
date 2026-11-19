@@ -41,6 +41,7 @@ import type {
 } from "../../shared/types";
 import { type ModelContextLimits } from "../../shared/agent-api";
 import type { RoutineAllowed } from "../../shared/routines";
+import type { McpServerState } from "../../shared/settings-desktop-api";
 import { EngineExtensions, type EngineExtension } from "./engine-extensions";
 import { PendingItemPatches } from "./item-patches";
 import {
@@ -57,6 +58,7 @@ import {
 import * as engineLifecycle from "./engine-lifecycle";
 import { installMethods } from "./install-methods";
 import type {} from "./engine-method-types";
+import type { RemoteConnectorSkillResolver } from "./skill-invocation";
 import * as engineTurnSetup from "./engine-turn-setup";
 import * as engineSend from "./engine-send";
 import * as engineEvents from "./engine-events";
@@ -67,8 +69,12 @@ import * as engineTrust from "./engine-trust";
 import * as engineAgents from "./engine-agents";
 import * as engineGuards from "./engine-guards";
 import * as engineStatus from "./engine-status";
+import { dynamicWorkflowsEnabled, supportsCodeUltracode } from "../../shared/code-session-settings";
+import { workflowExtensionId } from "../workflows/extension";
+import { rolloutOffersWorkflow } from "../workflows/workflow-thread";
 export class Engine {
   rpc?: CodexRPC;
+  remoteConnectorSkill?: RemoteConnectorSkillResolver;
   gateway?: ProviderServiceClient;
   state: Snapshot["engine"] = { state: "stopped" };
   /**
@@ -117,7 +123,10 @@ export class Engine {
     target: (threadId) => this.signalTarget(threadId),
     patchItem: (c, threadId, itemId, patch) =>
       this.patchItem(c, threadId, itemId, patch),
-    changed: (c) => this.changed(c),
+    changed: (c, durable) => {
+      this.changed(c, durable);
+      if (durable) this.store.flush();
+    },
     gatewaySignal: (signal, target) =>
       this.extensions.gatewaySignal(signal, target),
     remote: () => Boolean(this.launcher),
@@ -135,10 +144,11 @@ export class Engine {
     emit: (event) => this.emit(event),
     assertModel: (provider, model) => this.assertModel(provider, model),
     ensure: (provider) => this.ensure(provider),
+    mcpServerNames: () => Object.keys(JSON.parse(this.mcpConfig())),
     threadOptions: (c, provider, model, mode, project) =>
       this.threadOptions(c, provider, model, mode, project),
     loaded: (threadId) => this.loaded.has(threadId),
-    ensureThread: (c, options) => this.ensureThread(c, options),
+    ensureThread: (c, options, current) => this.ensureThread(c, options, current),
   });
   titleOffers: TitleOfferGenerator;
   sessionAssistance: CodeSessionAssistance;
@@ -169,7 +179,7 @@ export class Engine {
    */
   earlyTurn?: Turn;
   /** Stops the repository fetch of a cloud session's start (interrupt). */
-  setupAbort?: { conversationId: string; abort: AbortController };
+  setupAbort?: { conversationId: string; turn?: Turn; abort: AbortController };
   notificationTimer = new Map<string, NodeJS.Timeout>();
   intentionalStop = false;
   windowsSandbox: WindowsSandbox;
@@ -217,15 +227,20 @@ export class Engine {
    * like the provider's own session key. The remote host binds it.
    */
   groupKeys: (providerId: string) => Record<string, string> = () => ({});
-  /** The limits key each loaded native thread was started or resumed with. */
+  /** The working directory and configuration key for each loaded native thread. */
   threadLimits = new Map<string, string>();
+  threadOrganizationPlugins = new Map<string, number>();
+  organizationPluginRevision = 0;
+  prepareOrganizationPlugins?: (target: Engine, current: () => boolean) => Promise<boolean>;
   /** Steered messages Codex has not handed to the model yet, by client id. */
   steers = new Map<
     string,
-    { turnId: string; text: string; attachments: Attachment[] }
+    { turnId: string; text: string; attachments: Attachment[]; officialCode?: import("../../shared/official-code-followup").OfficialCodeSteer; officialCoworkEventId?: string }
   >();
   /** The MCP servers, extension environment and config the running agent was started with. */
+  startedModelEfforts: import("../../shared/gateway-signals").GatewayModelEfforts[] = [];
   startedMcp = "";
+  startedMcpServers = "";
   /**
    * Round-two feature hooks (S1): instructions, dynamic tools, per-thread MCP
    * servers, thread config and extra writable folders. Feature packages add
@@ -248,15 +263,31 @@ export class Engine {
    * A model's built-in search abilities from the service's model catalog;
    * undefined when the catalog says nothing (R45). Bound by the host.
    */
+  /** Cached catalog effort contract; undefined means model metadata is unknown. */
+  modelEfforts: (providerId: string, model: string) => string[] | undefined =
+    () => undefined;
+  admitCodeRun?: (conversation: Conversation, start: import("./code-send-start").CodeSendStart) =>
+    Promise<import("./code-send-start").CodeRunAdmission | undefined>;
+  codeUltracodeAvailable(providerId: string, model: string): boolean {
+    return this.extensions.has(workflowExtensionId) &&
+      dynamicWorkflowsEnabled(this.store.settings, this.policy()) &&
+      supportsCodeUltracode(this.modelEfforts(providerId, model));
+  }
+  readonly workflowEnabledThreads = new Set<string>();
+  async codeUltracodeThreadAvailable(conversation: Conversation): Promise<boolean> {
+    const threadId = conversation.threadId;
+    if (!threadId) return true;
+    const owner = this.elsewhereFor(conversation.id);
+    if (owner) return owner.codeUltracodeThreadAvailable(conversation);
+    if (this.workflowEnabledThreads.has(threadId)) return true;
+    if (!await rolloutOffersWorkflow(this.codexHome, threadId)) return false;
+    this.workflowEnabledThreads.add(threadId);
+    return true;
+  }
   searchCapabilities: (
     providerId: string,
     model: string,
-  ) => { xSearch?: boolean } | undefined = () => undefined;
-  /**
-   * The image model every picture is made with (sidebar → API); "" keeps
-   * each request's own. Bound by the host.
-   */
-  imageModel: () => string = () => "";
+  ) => { xSearch?: boolean; webSearch?: "native" | "none" } | undefined = () => undefined;
   /** The request options last sent to the running gateway. */
   sentRequestOptions = "";
   constructor(
@@ -294,7 +325,10 @@ export class Engine {
         }),
       (id) =>
         this.store.conversations.find((conversation) => conversation.id === id),
-      (conversation) => this.changed(conversation, true),
+      (conversation) => {
+        this.store.flush();
+        this.changed(conversation, true);
+      },
     );
     this.extensions.add(chatSuggestionsExtension());
     this.extensions.add(codeNotificationsExtension(() => this.store.settings));
@@ -416,9 +450,14 @@ export class Engine {
       ? this.environment.hostId
       : undefined;
   }
+  get remoteTrustId() {
+    return this.environment.kind === "wsl"
+      ? `wsl:${this.environment.distro.toLowerCase()}`
+      : this.sshHostId;
+  }
   /** The trusted projects of an SSH host's Codex, kept on this computer. */
   get sshTrust() {
-    return this.sshHostId
+    return this.remoteTrustId
       ? new SshWorkspaceTrustStore(sshWorkspaceTrustFile(this.store.root))
       : undefined;
   }
@@ -456,14 +495,30 @@ export class Engine {
       options,
     );
     peer.policy = () => this.policy();
+    if (peer.environment.kind === "space" && !peer.launcher) {
+      peer.connectorHeaders = (name) => this.connectorHeaders?.(name);
+      peer.connectorAuthStatus = (name, url) => this.connectorAuthStatus?.(name, url);
+      peer.connectorAuthorizationRejected = (name, url, token) =>
+        this.connectorAuthorizationRejected?.(name, url, token);
+      peer.remoteConnectorSkill = input => {
+        if (!this.remoteConnectorSkill)
+          throw Error("Remote connector skill invocation is not available on this host.");
+        return this.remoteConnectorSkill(input);
+      };
+    }
     peer.mcpMaintenance = () => this.mcpMaintenance?.() ?? false;
     peer.modelLimits = (providerId, model) =>
       this.modelLimits(providerId, model);
     peer.groupKeys = (providerId) => this.groupKeys(providerId);
+    peer.modelEfforts = (providerId, model) =>
+      this.modelEfforts(providerId, model);
+    peer.admitCodeRun = this.admitCodeRun;
     peer.searchCapabilities = (providerId, model) =>
       this.searchCapabilities(providerId, model);
-    peer.imageModel = () => this.imageModel();
-    for (const extension of this.peerExtensions) peer.extensions.add(extension);
+    peer.prepareOrganizationPlugins = this.prepareOrganizationPlugins;
+    for (const extension of this.peerExtensions)
+      if (!peer.launcher || extension.id !== workflowExtensionId)
+        peer.extensions.add(extension);
     Object.defineProperty(peer, "describeTools", {
       get: () => this.describeTools,
       set: () => {},
@@ -497,6 +552,8 @@ export class Engine {
   mcpMaintenance?: () => boolean;
   /** Extra request headers of a connector, by name (the web's bearer tokens). */
   connectorHeaders?: (name: string) => Record<string, string> | undefined;
+  connectorAuthStatus?: (name: string, url: string) => McpServerState["oauthStatus"];
+  connectorAuthorizationRejected?: (name: string, url: string, token: string) => void;
   /** Installed only by the native owner. Undefined means no protected package launch. */
   mcpRuntimeConfig?: (
     name: string,

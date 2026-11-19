@@ -7,7 +7,7 @@ import {
   elicitationResult,
   problemMessage,
   type FormField,
-} from "../../src/approval/elicitation-form";
+} from "../../shared/elicitation-form";
 
 /**
  * The cases the desktop, the iOS Core and the Android app all pass

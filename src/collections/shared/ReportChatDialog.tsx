@@ -25,9 +25,10 @@ export function sharedChatReport(
 }
 
 /**
- * Report chat for a chat shared with the account: the report form with "Opt out
- * of training on this report", sent to the administrator's report queue with
- * the choice. The live page then shows its confirmation screen.
+ * Report chat for a chat shared with the account (the live snapshot view's
+ * Report, live claude.ai bundle, 2026-10-12): the report form with "Opt out
+ * of training on this report", sent to the administrator's report queue
+ * with the choice. The live page then shows its confirmation screen.
  */
 export function ReportChatDialog({
   token,

@@ -44,13 +44,13 @@ export function copyAllowed(
 }
 
 /**
- * Share chat: a 480px popover under the header with the title and a close
- * button, "Only messages up until now will be shared", the invite field, "Who
- * has access" with the access row and the owner, the usage note, and the
- * settings button beside a black Copy link. The access row opens "Share chat
- * settings", where the access is chosen: Only people invited or Anyone with the
- * link. Invitations use the service's real email protocol; no organization
- * directory is invented.
+ * Share chat (live claude.ai, 2026-09-30, light): a 480px popover under the
+ * header with the title and a close button, "Only messages up until now
+ * will be shared", the invite field, "Who has access" with the access row
+ * and the owner, the usage note, and the settings button beside a black
+ * Copy link. The access row opens "Share chat settings", where the access
+ * is chosen: Only people invited or Anyone with the link. Invitations use
+ * the service's real email protocol; no organization directory is invented.
  */
 export function ChatSharePopover({
   status,
@@ -372,7 +372,8 @@ export function ChatSharePopover({
                   <Settings2 size={20} strokeWidth={1.5} />
                 </button>
                 {/* With nothing shared yet, Copy link makes a link only the
-                   people invited can open and copies it. */}
+                people invited can open and copies it (live claude.ai
+                bundle, 2026-10-12). */}
                 <button
                   type="button"
                   className="chat-share-copy"

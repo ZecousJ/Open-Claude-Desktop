@@ -12,10 +12,11 @@ import {
 import { gitEnvironment, safeGitConfig } from "../git/working-tree";
 
 /**
- * An image file's two sides for the Changes panel's View image: the version
- * before the change and the one after, as `data:` URLs, read from the
- * repository (or, for the working tree, the file itself). Missing on a side
- * that has no such file; refused past 10 MB.
+ * An image file's two sides for the Changes panel's View image (live
+ * claude.ai bundle, 2026-10-14): the version before the change and the one
+ * after, as `data:` URLs, read from the repository (or, for the working
+ * tree, the file itself). Missing on a side that has no such file; refused
+ * past 10 MB.
  */
 export const imageTypes: Record<string, string> = {
   png: "image/png",
@@ -28,7 +29,7 @@ export const imageTypes: Record<string, string> = {
   avif: "image/avif",
   svg: "image/svg+xml",
 };
-const maxBytes = 10 * 1024 * 1024;
+export const maxImageBytes = 10 * 1024 * 1024;
 
 export function imageType(file: string) {
   return imageTypes[path.extname(file).slice(1).toLowerCase()];
@@ -43,7 +44,7 @@ const gitBytes = (cwd: string, args: string[]) =>
         cwd,
         encoding: "buffer",
         timeout: 30_000,
-        maxBuffer: maxBytes + 1,
+        maxBuffer: maxImageBytes + 1,
         windowsHide: true,
         env: { ...process.env, ...gitEnvironment },
       },
@@ -57,8 +58,18 @@ const gitText = async (cwd: string, args: string[]) =>
 export const workspaceTop = (cwd: string) =>
   gitText(cwd, ["rev-parse", "--show-toplevel"]);
 
+export function gitImageAtRevision(top: string, file: string, rev: string) {
+  return gitBytes(top, [
+    "show",
+    "--no-textconv",
+    "--no-ext-diff",
+    `${rev}:${file}`,
+    "--",
+  ]);
+}
+
 const dataUrl = (bytes: Buffer | null, type: string) =>
-  bytes && bytes.length <= maxBytes
+  bytes && bytes.length <= maxImageBytes
     ? `data:${type};base64,${bytes.toString("base64")}`
     : null;
 
@@ -78,7 +89,7 @@ export async function changedImage(
     return null;
   const top = await gitText(cwd, ["rev-parse", "--show-toplevel"]);
   if (!top) return null;
-  const at = (ref: string) => gitBytes(top, ["show", `${ref}:${relative}`]);
+  const at = (ref: string) => gitImageAtRevision(top, relative, ref);
   if (scope.kind === "commit") {
     if (!validCommitId(scope.sha)) return null;
     return dataUrl(
@@ -94,7 +105,7 @@ export async function changedImage(
       if (path.relative(fs.realpathSync(top), real).startsWith(".."))
         return null;
       const stat = fs.statSync(real);
-      if (!stat.isFile() || stat.size > maxBytes) return null;
+      if (!stat.isFile() || stat.size > maxImageBytes) return null;
       return dataUrl(fs.readFileSync(real), type);
     } catch {
       return null;

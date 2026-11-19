@@ -5,7 +5,10 @@ import AddConnectorDialog from "../../src/settings/tabs/AddConnectorDialog";
 import ConnectorDetail from "../../src/settings/tabs/ConnectorDetail";
 import { ConnectorReconnectRows } from "../../src/composer/ConnectorReconnectRows";
 import { AppContext, type AppController } from "../../src/app/AppContext";
-import type { McpServerState } from "../../shared/settings-desktop-api";
+import type {
+  ConnectorProbe,
+  McpServerState,
+} from "../../shared/settings-desktop-api";
 import { routineDom } from "../support/routine-dom";
 const configured = { fixture: { url: "https://fixture.invalid/mcp" } };
 const runtime: McpServerState = {
@@ -33,7 +36,10 @@ async function fixture(bridge: Partial<Window["desktop"]> = {}) {
           listeners.delete(listener);
         };
       },
-      probeConnector: async () => ({ authRequired: true }),
+      probeConnector: async () => ({
+        authRequired: true,
+        transport: "streamable-http",
+      }),
       addCustomConnector: async () => ({ servers: [runtime], configPath: "" }),
       mcpServers: async () => ({ servers: [runtime], configPath: "" }),
       connectConnector: async () => {},
@@ -99,7 +105,7 @@ async function fillWizard(f: Awaited<ReturnType<typeof fixture>>) {
 }
 
 test("actual wizard probes, advances only on a valid result, freezes pending fields and retries create without losing input", async () => {
-  const probe = deferred<{ authRequired: boolean }>(),
+  const probe = deferred<ConnectorProbe>(),
     create = deferred<{ servers: McpServerState[]; configPath: string }>();
   const calls: unknown[] = [],
     added: unknown[] = [];
@@ -130,7 +136,9 @@ test("actual wizard probes, advances only on a valid result, freezes pending fie
       true,
     );
     assert.equal(calls.length, 1);
-    await act(async () => probe.resolve({ authRequired: true }));
+    await act(async () =>
+      probe.resolve({ authRequired: true, transport: "streamable-http" }),
+    );
     assert.match(f.document.body.textContent!, /Step 2 of 2/);
     assert.match(f.document.body.textContent!, /Sign in now/);
     await f.event(f.document.querySelector("form")!, "submit");
@@ -152,7 +160,7 @@ test("wizard account changes clear credentials and late probe/create success and
   for (const phase of ["probe", "create"] as const)
     for (const failure of [false, true]) {
       const pending = deferred<
-          { authRequired: boolean } | { servers: McpServerState[] }
+          ConnectorProbe | { servers: McpServerState[] }
         >(),
         added: unknown[] = [];
       let begun = false;
@@ -161,7 +169,7 @@ test("wizard account changes clear credentials and late probe/create success and
           ? {
               probeConnector: () => {
                 begun = true;
-                return pending.promise as Promise<{ authRequired: boolean }>;
+                return pending.promise as Promise<ConnectorProbe>;
               },
             }
           : {
@@ -208,7 +216,7 @@ test("wizard account changes clear credentials and late probe/create success and
           else
             pending.resolve(
               phase === "probe"
-                ? { authRequired: true }
+                ? { authRequired: true, transport: "streamable-http" }
                 : { servers: [runtime] },
             );
         });

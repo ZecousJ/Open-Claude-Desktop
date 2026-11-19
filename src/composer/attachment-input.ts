@@ -2,14 +2,15 @@ import type { Attachment } from "../../shared/types";
 import "../../shared/composer-api";
 
 /**
- * Pasting and dropping into the composer. Files go through the main process's
- * attachment rules (`addAttachmentData`); long pasted text becomes a Pasted
- * card instead of filling the composer.
+ * Pasting and dropping into the composer (R-0241, R-0245, R-0284). Files go
+ * through the main process's attachment rules (`addAttachmentData`); long
+ * pasted text becomes a Pasted card instead of filling the composer.
  */
 
 /**
- * Pasted text of at least this many UTF-8 bytes is kept as a Pasted attachment;
- * shorter text goes into the box.
+ * Pasted text of at least this many UTF-8 bytes is kept as a Pasted
+ * attachment; shorter text goes into the box (live claude.ai bundle,
+ * 2026-10-16, shared-28 V3=4096 with FG: the Blob's byte size).
  */
 export const pastedTextThreshold = 4_096;
 
@@ -73,10 +74,11 @@ export async function addPastedText(text: string): Promise<Attachment> {
 }
 
 /**
- * Keeps a terminal selection as an excerpt card (Attach selection as context).
- * The original adds a quote snippet named after the terminal tab; here it is a
- * Pasted-style card whose text file carries the selection, since the composer
- * has no inline quote chips.
+ * Keeps a terminal selection as an excerpt card (Attach selection as
+ * context). The original adds a quote snippet named after the terminal tab
+ * (desktop bundle 2.31226.1: the card shows the tab's name and the badge
+ * "Excerpt"); here it is a Pasted-style card whose text file carries the
+ * selection, since the composer has no inline quote chips.
  */
 export async function addTerminalExcerpt(
   text: string,

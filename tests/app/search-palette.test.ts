@@ -118,7 +118,7 @@ test("input copy follows the entrypoint, Code context and selected filter", () =
   );
   assert.equal(palettePlaceholder("actions", "code", true), "Search actions");
   assert.equal(palettePlaceholder("default", "chat", true), "Search");
-  // The unfiltered palette says Search in Chat and Code.
+  // Live web, 2026-10-20: the unfiltered palette says Search in Chat and Code.
   assert.equal(palettePlaceholder("default", "code", false), "Search");
   assert.equal(palettePlaceholder("default", "cowork", false), "Search");
 });
@@ -183,7 +183,7 @@ test("the Actions group heading reads plain Actions, without a caret", () => {
     '[role="group"][aria-label="Actions"] h3 > button',
   )!;
   assert.equal(button.textContent?.replace(/\p{Co}/gu, ""), "Actions");
-  assert.equal(button.querySelector('[data-icon="CaretRight"]'), null);
+  assert.equal(button.querySelector('[data-anthropicon="CaretRight"]'), null);
 });
 
 test("result announcements use plain placeholders, never ICU plurals", () => {

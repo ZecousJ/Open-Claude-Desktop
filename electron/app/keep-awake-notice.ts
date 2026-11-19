@@ -1,4 +1,4 @@
-/** Completed work held awake for 10 minutes while away. */
+/** Completed work held awake for 10 minutes while away (desktop 2.37337.1, index.chunk-BWk6pVUt.js:160103). */
 export class KeepAwakeNoticeTracker {
   private sessions = new Map<string, { since: number; awayMs: number }>();
   private completed?: { sessionId: string; heldMs: number };

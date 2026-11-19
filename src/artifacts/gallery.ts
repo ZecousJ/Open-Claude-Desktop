@@ -2,14 +2,17 @@ import type { Artifact } from "../ui/ArtifactTypes";
 import { artifactKind } from "./artifact-kind";
 import { currentLocale, formatText, t } from "../i18n";
 
-/** The Artifacts list's type filter. */
+/** The Artifacts list's type filter (R-Artifacts-类型筛选). */
 export type GalleryType = "web" | "document" | "diagram" | "data" | "code";
 
 export type ArtifactOwner = "all" | "pinned" | "yours" | "shared" | "projects";
-/** Group by: None (Last edited), Date edited, Owner or Type. */
+/**
+ * Group by (live claude.ai /artifacts, 2026-10-21, ?group=…): None (Last
+ * edited), Date edited, Owner or Type.
+ */
 export type ArtifactGroup = "none" | "date" | "owner" | "type";
 
-/** Library tabs. */
+/** Library tabs (live claude.ai bundle, 2026-10-14, c230724a2-D4h5gIjn.js). */
 export function matchesOwner(artifact: Artifact, owner: ArtifactOwner) {
   switch (owner) {
     case "pinned":
@@ -96,8 +99,10 @@ export function gallerySection(time: number, now: number) {
 
 /** "4h ago", "yesterday", "Sep 22" — after "Viewed" or "Updated". */
 export function galleryTime(time: number, now: number) {
-  // The time that has passed decides first: a change at 23:50 read at 00:10 is
-  // 20 minutes ago, not yesterday. Only a day or more is told by the calendar.
+  // The time that has passed decides first (live claude.ai bundle,
+  // 2026-10-16, shared-2-eLUYRxI6 bL: seconds, then the unit): a change at
+  // 23:50 read at 00:10 is 20 minutes ago, not yesterday. Only a day or more
+  // is told by the calendar.
   if (now - time < day) {
     const minutes = Math.floor((now - time) / 60_000);
     if (minutes < 1) return "just now";

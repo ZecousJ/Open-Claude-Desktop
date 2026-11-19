@@ -5,7 +5,8 @@ import "./model-switch-note.css";
 
 /**
  * After safeguards flagged a message the reply came from another model:
- * "Switched to {toName}".
+ * "Switched to {toName}" (live claude.ai bundle, 2026-10-14,
+ * shared-6-0KJX7m7Q: X9srkOvske, a text-sm line).
  */
 export function ModelSwitchNote({ model }: { model: string }) {
   const catalog = useModelCatalog();

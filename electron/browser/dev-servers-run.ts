@@ -1,13 +1,18 @@
 import { type ChildProcess } from "node:child_process";
 import fs from "node:fs";
+import { createServer } from "node:net";
 import path from "node:path";
 import type { DevServerState } from "../../shared/browser";
 import {
   formatCommandLine,
+  isLocalHostname,
   launchPort,
   launchUrl,
   localUrlsIn,
+  type LaunchEntry,
 } from "../../shared/launch-config";
+import { isReservedLoopbackPort, listenOnLoopback } from "../loopback-ports";
+import { portInPackageScript } from "./dev-server-detect";
 import {
   LogBuffer,
   scrubEnv,
@@ -24,7 +29,74 @@ import type {
   ServerRecord,
 } from "./dev-servers";
 
-// ---- Starting and stopping ----
+function workspacePath(value: string, folder: string) {
+  return value.replace(/\$\{workspace(?:Folder|Root)\}/g, () => folder);
+}
+
+async function unusedPort(
+  preferred: number,
+  unavailable: (port: number) => boolean,
+) {
+  const socket = createServer();
+  const bind = async (candidate: number) => {
+    const port = await listenOnLoopback(socket, candidate);
+    await new Promise<void>((resolve, reject) => {
+      socket.close((error) => (error ? reject(error) : resolve()));
+    });
+    return port;
+  };
+  for (
+    let candidate = preferred + 1;
+    candidate <= Math.min(preferred + 20, 65535);
+    candidate++
+  ) {
+    if (unavailable(candidate) || isReservedLoopbackPort(candidate)) continue;
+    try {
+      return await bind(candidate);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== "EADDRINUSE" && code !== "EACCES") throw error;
+    }
+  }
+  let port;
+  do {
+    port = await bind(0);
+  } while (unavailable(port));
+  return port;
+}
+
+function replacePortArgs(args: string[], port: number) {
+  return args.map((arg, index) => {
+    if (/^\d{1,5}$/.test(arg) && ["--port", "-p"].includes(args[index - 1]))
+      return String(port);
+    return arg.replace(
+      /^(--port=|-p=?)\d{1,5}$/,
+      (_, flag: string) => flag + port,
+    );
+  });
+}
+
+function canReassignPort(entry: LaunchEntry, cwd: string, port: number) {
+  if (entry.autoPort !== undefined) return entry.autoPort;
+  const runner = path
+    .basename((entry.runtimeExecutable ?? "").replaceAll("\\", "/"))
+    .replace(/\.(?:cmd|bat|exe)$/i, "")
+    .toLowerCase();
+  if (!["npm", "pnpm", "yarn", "bun"].includes(runner)) return true;
+  if (launchPort({ name: entry.name, runtimeArgs: entry.runtimeArgs }))
+    return true;
+  const [verb, name] = entry.runtimeArgs ?? [];
+  const script = verb === "run" || verb === "run-script" ? name : verb;
+  if (!script || script.startsWith("-")) return false;
+  try {
+    const manifestFile = path.join(cwd, "package.json");
+    if (fs.statSync(manifestFile).size > 512 * 1024) return false;
+    const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+    return portInPackageScript(manifest?.scripts ?? {}, script) !== port;
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Starts a configuration and waits until its port answers (or the address
@@ -63,7 +135,14 @@ export async function start(
   if (!records) this.records.set(conversationId, (records = new Map()));
   const existing = records.get(lower(entry.name));
   if (existing?.starting) return existing.starting;
-  if (existing && existing.status === "running" && existing.key === key)
+  if (
+    existing &&
+    existing.status === "running" &&
+    existing.key === key &&
+    existing.entry.port === entry.port &&
+    existing.entry.autoPort === entry.autoPort &&
+    existing.entry.url === entry.url
+  )
     return this.state(existing);
   if (existing && existing.child && existing.status === "running")
     // launch.json changed while it ran: stop the old command first.
@@ -74,13 +153,20 @@ export async function start(
     entry,
     key,
     status: "starting",
+    startedAt: Date.now(),
     logs: existing?.logs ?? new LogBuffer(),
   };
   records.set(lower(entry.name), record);
   const run = this.run(record, folder, by, options).finally(() => {
     record.starting = undefined;
+    if (
+      record.port !== undefined &&
+      this.startingPorts.get(record.port) === record
+    )
+      this.startingPorts.delete(record.port);
   });
   record.starting = run;
+  if (record.status === "starting") this.emit(conversationId);
   return run;
 }
 
@@ -92,16 +178,39 @@ export async function run(
   options: DevServerStartOptions,
 ): Promise<DevServerState> {
   const { conversationId, entry, key } = record;
-  const port = launchPort(entry);
-  if (port) record.port = port;
+  let port =
+    launchPort(entry) ??
+    (entry.runtimeExecutable && entry.autoPort === true ? 3000 : undefined);
+  if (port !== undefined) record.port = port;
   const url = launchUrl(entry);
   if (url) record.url = url;
   record.error = undefined;
+  const stillStarting = () => {
+    if (this.disposed || this.current(record) !== record)
+      throw new Error("The dev server was stopped.");
+    return record.status === "starting";
+  };
+  const prepare = async () => {
+    try {
+      await this.deps.beforeStart?.(conversationId, record.name);
+    } catch (error) {
+      if (stillStarting())
+        this.fail(
+          record,
+          `Couldn't prepare "${entry.name}": ${errorText(error)}`,
+        );
+    }
+  };
 
   // A configuration with only a url opens a server started elsewhere.
   if (!entry.runtimeExecutable) {
-    await this.deps.beforeStart?.(conversationId, record.name);
-    const open = port ? await this.portOpen(port) : false;
+    await prepare();
+    if (!stillStarting()) return this.state(record);
+    const open =
+      !!url &&
+      (!isLocalHostname(new URL(url).hostname) ||
+        (port !== undefined && (await this.portOpen(port))));
+    if (!stillStarting()) return this.state(record);
     record.status = open ? "running" : "failed";
     if (!open) record.error = `Nothing is running at ${url}.`;
     this.emit(conversationId);
@@ -110,7 +219,9 @@ export async function run(
 
   let cwd: string;
   try {
-    cwd = fs.realpathSync(path.resolve(folder, entry.cwd ?? "."));
+    cwd = fs.realpathSync(
+      path.resolve(folder, workspacePath(entry.cwd ?? ".", folder)),
+    );
     if (!this.inside(folder, cwd))
       throw new Error(`"cwd" must be a folder inside this session's folder.`);
     if (!fs.statSync(cwd).isDirectory())
@@ -165,16 +276,74 @@ export async function run(
     this.emit(conversationId);
   }
 
-  const portBusy = port ? await this.portOpen(port) : false;
-  if (this.disposed || this.current(record) !== record)
-    throw new Error("The dev server was stopped.");
-  if (record.status !== "starting") return this.state(record);
-  if (portBusy)
-    return this.fail(
-      record,
-      `Port ${port} is already in use. Stop whatever is using it, or change the port in launch.json.`,
-      false,
-    );
+  const preferredPort = port;
+  if (port !== undefined) {
+    const canReassign = canReassignPort(entry, cwd, port);
+    if (!canReassign && by === "person") {
+      const conflict = [
+        ...(this.records.get(conversationId)?.values() ?? []),
+      ].find(
+        (other) =>
+          other !== record &&
+          other.port === port &&
+          other.entry.runtimeExecutable &&
+          (other.status === "starting" || other.status === "running"),
+      );
+      if (conflict) {
+        await this.stop(conversationId, conflict.name);
+        if (!stillStarting()) return this.state(record);
+      }
+    }
+    const other = this.startingPorts.get(port);
+    const claimed = other?.status === "starting";
+    if (!claimed) this.startingPorts.set(port, record);
+    const portBusy = claimed || (await this.portOpen(port));
+    if (!stillStarting()) return this.state(record);
+    if (portBusy) {
+      if (!canReassign)
+        return this.fail(
+          record,
+          `Port ${port} is already in use. Stop whatever is using it, or change the port in launch.json.`,
+          false,
+        );
+      if (!claimed) this.startingPorts.delete(port);
+      try {
+        const reserved = new Set(
+          this.configurations(conversationId)
+            .filter(
+              (candidate) =>
+                candidate.autoPort === false || !candidate.runtimeExecutable,
+            )
+            .map(launchPort),
+        );
+        const unavailable = (candidate: number) =>
+          reserved.has(candidate) || this.startingPorts.has(candidate);
+        do {
+          port = await unusedPort(port, unavailable);
+        } while (unavailable(port));
+      } catch (error) {
+        if (!stillStarting()) return this.state(record);
+        return this.fail(
+          record,
+          `Couldn't choose a preview port: ${errorText(error)}`,
+        );
+      }
+      if (!stillStarting()) return this.state(record);
+      this.startingPorts.set(port, record);
+      record.port = port;
+      record.logs.note(
+        `Port ${preferredPort} is in use. Starting on port ${port}.`,
+      );
+    }
+    if (!url) record.url = `http://localhost:${port}`;
+    else if (port !== preferredPort) {
+      const adjusted = new URL(url);
+      if (isLocalHostname(adjusted.hostname)) {
+        adjusted.port = String(port);
+        record.url = adjusted.href;
+      }
+    }
+  }
 
   const baseEnv = scrubEnv(this.deps.env ?? process.env);
   const separator = this.platform === "win32" ? ";" : ":";
@@ -193,15 +362,17 @@ export async function run(
   // Frameworks that open a browser tab by themselves (Create React App) don't.
   baseEnv.BROWSER = "none";
   const env = { ...baseEnv, ...(entry.env ?? {}) };
-  if (this.disposed || this.current(record) !== record)
-    throw new Error("The dev server was stopped.");
-  if (record.status !== "starting") return this.state(record);
-
-  await this.deps.beforeStart?.(conversationId, record.name);
-  if (this.disposed || this.current(record) !== record)
-    throw new Error("The dev server was stopped.");
-  let command = entry.runtimeExecutable;
-  let args = entry.runtimeArgs ?? [];
+  if (port !== undefined) env.PORT = String(port);
+  if (!stillStarting()) return this.state(record);
+  await prepare();
+  if (!stillStarting()) return this.state(record);
+  const runtimeFolder = this.deps.executionPath?.(folder) ?? folder;
+  let command = workspacePath(entry.runtimeExecutable, runtimeFolder);
+  let args = (entry.runtimeArgs ?? []).map((arg) =>
+    workspacePath(arg, runtimeFolder),
+  );
+  if (port !== undefined && port !== preferredPort)
+    args = replacePortArgs(args, port);
   let verbatim = false;
   if (this.platform === "win32")
     ({ command, args, verbatim } = windowsCommand(command, args, env, cwd));
@@ -224,7 +395,6 @@ export async function run(
   }
   record.child = child;
   record.pid = child.pid;
-  record.startedAt = Date.now();
   record.stopping = false;
   record.logs.note(
     `$ ${formatCommandLine(entry.runtimeExecutable, entry.runtimeArgs)}`,
@@ -272,7 +442,7 @@ export async function run(
   if (record.child !== child || record.status !== "starting")
     return this.state(record);
   if (!port && printedUrl) {
-    record.url = printedUrl;
+    record.url ??= printedUrl;
     try {
       record.port = Number(new URL(printedUrl).port) || undefined;
     } catch {
@@ -392,9 +562,9 @@ export async function stop(
     return;
   }
   if (!record.child) {
-    if (record.status === "running" || record.status === "starting") {
-      // Opened from a url only, or not spawned yet: nothing of ours runs.
+    if (record.status !== "stopped") {
       record.status = "stopped";
+      record.error = undefined;
       this.emit(conversationId);
     }
     return;

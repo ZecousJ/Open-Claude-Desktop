@@ -17,12 +17,12 @@ const labels: Record<FolderChangesAction, string> = {
 };
 
 /**
- * Uncommitted changes on {branch}: the folder has changes and another branch
- * was chosen. Cancel, or a split button whose menu picks Stash changes (the
- * default), Commit as WIP or Discard changes; Discard asks again ("Discard
- * uncommitted changes?", Back or a red Discard). The changed files are counted
- * under the question, and other running sessions in the folder are warned
- * about.
+ * Uncommitted changes on {branch} (live claude.ai bundle, 2026-10-14): the
+ * folder has changes and another branch was chosen. Cancel, or a split
+ * button whose menu picks Stash changes (the default), Commit as WIP or
+ * Discard changes; Discard asks again ("Discard uncommitted changes?", Back
+ * or a red Discard). The changed files are counted under the question, and
+ * other running sessions in the folder are warned about.
  */
 export default function DirtyTreeDialog({
   folder,

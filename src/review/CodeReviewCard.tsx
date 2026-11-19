@@ -13,7 +13,7 @@ import {
 } from "./review-output";
 import "./code-review.css";
 
-/** "1 finding" / "3 findings": the official card's count. */
+/** "1 finding" / "3 findings": the official card's count (desktop bundle 2.31226.1). */
 const findingCount = (count: number) =>
   count === 1 ? t("1 finding") : formatText("{count} findings", { count });
 

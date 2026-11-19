@@ -8,7 +8,7 @@ import { desktopHost, webHost } from "../../shared/host";
 import { openPolicy } from "../../shared/client-policy";
 import type { Routine, RoutineListResult } from "../../shared/routines";
 import type { Conversation, AppEvent } from "../../shared/types";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { CoworkTasksPanel } from "../../src/cowork/CoworkTasksPanel";
 import CoworkActiveSection from "../../src/cowork/CoworkActiveSection";
 import { CoworkTasksPanelOverlay } from "../../src/cowork/CoworkTasksPanelOverlay";

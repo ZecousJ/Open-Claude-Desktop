@@ -1,7 +1,8 @@
 import type { Item } from "../../shared/types";
 import { itemIsRunning } from "../../shared/activity";
 
-// The browser tools' running words on the status line.
+// The browser tools' running words on the status line (live desktop
+// 2.42304.2, shared-130: openPage_running, startPreview_running, …).
 const browserVerbs: Record<string, string> = {
   navigate: "Opening a page",
   screenshot: "Capturing page",

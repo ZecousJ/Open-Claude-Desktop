@@ -29,5 +29,7 @@ export function routineEnvironmentKey(environment?: EnvironmentRef): string {
     ? "local"
     : environment.kind === "ssh"
       ? `ssh:${environment.hostId}`
-      : `space:${environment.spaceId}`;
+      : environment.kind === "wsl"
+        ? `wsl:${environment.distro.toLowerCase()}`
+        : `space:${environment.spaceId}`;
 }

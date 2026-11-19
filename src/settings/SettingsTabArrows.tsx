@@ -1,6 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import { formatText } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { reducedMotion } from "../ui/page-fade";
 
 /** The arrows' room at each end of the row (the original's calc(0.5rem +
@@ -8,11 +8,12 @@ import { reducedMotion } from "../ui/page-fade";
 const ARROW_ROOM = 40;
 
 /**
- * The narrow window's page tabs scroll sideways with a ghost arrow at each end
- * that has more: 32px CaretLeft / CaretRight buttons, out of the tab order,
- * over the row's first and last 32px; the row fades out over 20px before each
- * one. A press moves by the row's width less both arrows' room, and lands on
- * the end when less than that room would be left.
+ * The narrow window's page tabs scroll sideways with a ghost arrow at each
+ * end that has more (live claude.ai, 2026-10-21, shared-10 Mk and its pager):
+ * 32px CaretLeft / CaretRight buttons, out of the tab order, over the row's
+ * first and last 32px; the row fades out over 20px before each one. A press
+ * moves by the row's width less both arrows' room, and lands on the end when
+ * less than that room would be left.
  */
 export function SettingsTabArrows({
   nav,
@@ -69,7 +70,7 @@ export function SettingsTabArrows({
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => page("start")}
         >
-          <AppIcon name="CaretLeft" size={20} />
+          <Anthropicon name="CaretLeft" size={20} />
         </button>
       )}
       {ends.end && (
@@ -81,7 +82,7 @@ export function SettingsTabArrows({
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => page("end")}
         >
-          <AppIcon name="CaretRight" size={20} />
+          <Anthropicon name="CaretRight" size={20} />
         </button>
       )}
     </>

@@ -9,7 +9,7 @@ import {
   FinishedTerminal,
 } from "./BackgroundTasksPanel";
 import { WithTooltip } from "../ui/Tooltip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import type { WorkflowSummary } from "../../shared/workflow-model";
 import type { Conversation, BackgroundTerminalInfo } from "../../shared/types";
 import type { FinishedBackgroundTerminal } from "../../shared/panels-api";
@@ -111,7 +111,8 @@ export function backgroundTasksPanelView(kit: BackgroundTasksPanelViewKit) {
       <header>
         <strong>Background tasks</strong>
         <div>
-          {/* Clear finished tasks. */}
+          {/* Clear finished tasks (live claude.ai bundle, 2026-10-15: the
+              header's ghost Trash, aria-disabled while nothing finished). */}
           <button
             className="background-clear"
             aria-label={t("Clear finished tasks")}
@@ -327,7 +328,7 @@ export function backgroundTasksPanelView(kit: BackgroundTasksPanelViewKit) {
           !foreground.length && (
             // The original's empty state: an agents glyph over one line.
             <div className="panel-empty">
-              <AppIcon name="AgentsSimple" />
+              <Anthropicon name="AgentsSimple" />
               <p>Background tasks appear here</p>
             </div>
           )}

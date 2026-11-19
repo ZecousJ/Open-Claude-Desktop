@@ -1,4 +1,5 @@
-/* Chat and Cowork composer. Code's composer keeps its own rules. */
+/* Chat and Cowork composer (live claude.ai at 1228×739, dark; fidelity/observations/live/
+   official-chat-home-dark*.json). Code's composer keeps its own rules. */
 .composer-wrap:not(.code-composer) .composer {
   padding: 8px;
   min-height: 0;
@@ -11,9 +12,10 @@
     box-shadow var(--motion-base) var(--ease-standard),
     opacity var(--motion-base) var(--ease-standard);
 }
-/* Its shadow by state: a 4px 20px drop of black 3.5% and a 1px inner rim of
-   white 10%; the rim white 20% while hovered (not over one of its buttons);
-   focused, the drop 7.5% and the rim 20%. */
+/* Its shadow by state (live claude.ai, 2026-10-01, shadow-composer): a 4px
+   20px drop of black 3.5% and a 1px inner rim of white 10%; the rim white
+   20% while hovered (not over one of its buttons); focused, the drop 7.5%
+   and the rim 20%. */
 :root:not([data-theme="light"]) .composer-wrap:not(.code-composer) .composer {
   background: #20201f;
   box-shadow:
@@ -63,8 +65,10 @@
   border-radius: 8px;
 }
 /* Send on the home composer: a 32px square, #c6613f, 20px arrow. In a
-   conversation Send stays the plain return glyph on no fill, draft or not, so
-   `.plain` keeps composer-core.css's rules. */
+   conversation Send stays the plain return glyph on no fill, draft or not
+   (owner's desktop captures, 2026-10-12: home "123" shows the clay square
+   and arrow, the conversation row the bare return glyph), so `.plain` keeps
+   composer-core.css's rules. */
 .composer-wrap:not(.code-composer) .send-button:not(.plain) {
   width: 32px;
   height: 32px;
@@ -148,7 +152,7 @@
   > .voice-mode-chevron {
   color: #898781;
 }
-/* Light keeps its captured rim as an inset ring like dark. */
+/* Light keeps its captured rim (R-0220: #dddddb) as an inset ring like dark. */
 :root[data-theme="light"] .composer-wrap:not(.code-composer) .composer,
 :root[data-theme="light"]
   .composer-wrap:not(.code-composer)
@@ -166,19 +170,24 @@
   }
 }
 
-/* The conversation composer: one 48px row, 8px in on every side: the editor
-   with its line centred, then Stop and Send. The frame holds nothing before the
-   text since "+" and the microphone moved to the row under it; the text starts
-   6px in from the frame's padding. Chat and Cowork only: Code's box stays one
-   20px line in a conversation as on its new-task page. */
+/* The conversation composer (live claude.ai, 1482×597): one 48px row, 8px in
+   on every side: the editor with its line centred, then Stop and Send. The
+   frame holds nothing before the text since "+" and the microphone moved to
+   the row under it (live claude.ai bundle, 2026-10-12: the reply composer's
+   controls relocated to its chin); the text starts 6px in from the frame's
+   padding (owner's capture 2026-10-12-chat-conversation-composer.png at
+   2.2x: "123" from 14px). Chat and Cowork only: Code's box stays one 20px
+   line in a conversation as on its new-task page (live claude.ai/code,
+   2026-10-02: 40px either way). */
 .composer-wrap.conversation-composer:not(.code-composer) .composer-input-row {
   position: relative;
   display: block;
   min-height: 32px;
-  /* One row: the text before the actions, which keep to the row's bottom right
-     corner (useComposerMorph.ts measures them). Two rows, once the draft needs
-     the room: the text takes the width and the actions a 32px row 8px under it.
-     The padding moves in 200ms on the standard curve. */
+  /* One row: the text before the actions, which keep to the row's bottom
+     right corner (useComposerMorph.ts measures them). Two rows, once the
+     draft needs the room: the text takes the width and the actions a 32px
+     row 8px under it. The padding moves in 200ms on the standard curve.
+     Source: desktop bundle 2.31226.1 static CSS/JS. */
   padding: 0 var(--composer-trail-w, 0px) 0 6px;
   transition: padding var(--motion-base) var(--ease-standard);
 }
@@ -214,9 +223,11 @@
   transition: none;
 }
 
-/* The row under the Chat and Cowork frame. Owner's captures
-   2026-10-12-chat-*-composer.png at 2.2x: the row's centre 20px under the
-   frame; its text 13px. */
+/* The row under the Chat and Cowork frame (live claude.ai bundle,
+   2026-10-12: the composer's chin, "flex min-h-control items-center
+   text-footnote text-secondary mt-2", its controls the 24px xs size).
+   Owner's captures 2026-10-12-chat-*-composer.png at 2.2x: the row's centre
+   20px under the frame; its text 13px. */
 .composer-wrap:not(.code-composer) .composer-chin {
   display: flex;
   align-items: center;
@@ -280,9 +291,11 @@
   min-width: 24px;
   border-radius: 6px;
 }
-/* In a conversation: "+" and the microphone at the left, the disclaimer centred
-   on the frame, the model at the right. "+" starts 7px in; the model's label
-   ends 18px before the frame's right edge. */
+/* In a conversation: "+" and the microphone at the left, the disclaimer
+   centred on the frame, the model at the right. "+" starts 7px in; the
+   model's label ends 18px before the frame's right edge (the capture: "+"
+   centred 19px in, the disclaimer centred on the frame, the last label
+   ending 17.7px in). */
 .composer-wrap.conversation-composer:not(.code-composer) .composer-chin {
   display: flex;
   justify-content: space-between;
@@ -295,7 +308,9 @@
   margin: 0 3px 0 auto;
 }
 /* The note is laid over the chin, centred, at its own width; ChinDisclaimer
-   moves it to clear the controls or shows it above the frame. */
+   moves it to clear the controls or shows it above the frame (live
+   claude.ai bundle, 2026-10-20: "absolute inset-x-0 flex h-control
+   items-center justify-center", the note "whitespace-nowrap"). */
 .composer-wrap.conversation-composer .composer-chin {
   position: relative;
 }
@@ -451,11 +466,12 @@
     min-height: 24px;
   }
 }
-/* On the home: the place picker's label 17px in (its chip pads it 9px in a row
-   inset 8px, cowork-options.css). The model pill and the permission button sit
-   2px apart, the button ending 8px before the frame's right edge (10px as a
-   lone glyph). The row keeps the 40px the Cowork options row took under the
-   frame, so Ideas stay where they were measured. */
+/* On the home: the place picker's label 17px in (its chip pads it 9px in
+   a row inset 8px, cowork-options.css). The model pill and the permission
+   button sit 2px apart, the button ending 8px before the frame's right edge
+   (10px as a lone glyph) (live claude.ai /new, 2026-10-21: "ms-auto flex
+   gap-0.5"). The row keeps the 40px the Cowork options row took under the
+   frame (R-0411–R-0413), so Ideas stay where they were measured. */
 .composer-wrap:not(.code-composer) .composer-chin[data-place="home"] {
   padding: 0 0 8px;
 }
@@ -498,9 +514,10 @@
   height: 24px;
   border-radius: 6px;
 }
-/* The microphone 4px after "+" (the chin's "ms-1"), 24px with a 16px glyph; the
-   ⌄ after it 14px wide. Voice mode, shown in Chat while the draft is empty,
-   takes the same 24px square. */
+/* The microphone 4px after "+" (the chin's "ms-1"), 24px with a 16px
+   glyph; the ⌄ after it 14px wide (the capture: its centre 19px after the
+   microphone's). Voice mode, shown in Chat while the draft is empty, takes
+   the same 24px square. */
 .composer-wrap:not(.code-composer) .composer-chin .composer-chin-voice {
   display: flex;
   align-items: center;
@@ -563,8 +580,8 @@
   height: 24px;
   margin: 0;
 }
-/* A separate voice action is a single ghost button, not a double-hover split
-   button. */
+/* A separate voice action is a single ghost button, not a double-hover
+   split button (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN.js). */
 .composer-wrap:not(.code-composer)
   .composer-chin
   .voice-mode-button.standalone {
@@ -640,8 +657,8 @@
   .dictation-button.pill::before {
   border-radius: 6px;
 }
-/* The model: a 24px ghost pill, its name in the primary ink and the effort
-   muted. */
+/* The model: a 24px ghost pill, its name in the primary ink and the
+   effort muted (the capture: "Haiku 5.5" #f0efec, "Medium" #898781). */
 .composer-wrap:not(.code-composer) .composer-chin .model-effort-anchor {
   margin: 0;
 }
@@ -659,7 +676,10 @@
   .model-button {
   line-height: 19px;
 }
-/* Inks. The capture samples the dark ones. */
+/* Inks (live claude.ai bundle, 2026-10-12: the chin's buttons text-secondary,
+   the model's name text-primary, its effort, the ⌄s and the disclaimer
+   text-muted; dark #c3c2b7 / #f0efec / #898781, light #52514e / #0b0b0b /
+   #898781). The capture samples the dark ones. */
 :root:not([data-theme="light"])
   .composer-wrap:not(.code-composer)
   .composer-chin
@@ -709,7 +729,9 @@
 }
 
 /* A task's permission mode at the chin's right, after the model: the mode's
-   name only, a 24px ghost button in the chin's secondary ink. */
+   name only, a 24px ghost button in the chin's secondary ink (live claude.ai
+   bundle, 2026-10-12: the picker's ghost trigger with compactTrigger,
+   hideIcon, hideCaret and the inherited chin text size). */
 .composer-wrap:not(.code-composer) .composer-chin .task-permission-trigger {
   display: inline-flex;
   flex: none;
@@ -747,7 +769,8 @@
   gap: 8px;
   flex: none;
 }
-/* What is typed reads #f0efec, the placeholder #898781. */
+/* What is typed reads #f0efec, the placeholder #898781 (live claude.ai,
+   2026-10-01). */
 :root:not([data-theme="light"])
   .composer-wrap:not(.code-composer)
   .composer
@@ -760,7 +783,8 @@
   textarea::placeholder {
   color: #898781;
 }
-/* Its buttons' ink: Add, Dictate and voice mode #f0efec. */
+/* Its buttons' ink (live claude.ai, 2026-10-01): Add, Dictate and voice
+   mode #f0efec. */
 :root:not([data-theme="light"])
   .composer-wrap:not(.code-composer)
   .composer

@@ -82,7 +82,7 @@ function textShape(
   return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="548640" y="${top}"/><a:ext cx="11094720" cy="${height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln></p:spPr><p:txBody><a:bodyPr wrap="square"><a:spAutoFit/></a:bodyPr><a:lstStyle/>${lines.map((line) => `<a:p><a:r><a:rPr lang="en-US" sz="${size}"/><a:t xml:space="preserve">${xml(line)}</a:t></a:r></a:p>`).join("")}</p:txBody></p:sp>`;
 }
 
-/** Individual decks can export to PowerPoint. */
+/** Individual decks can export to PowerPoint (live claude.ai bundle, 2026-10-14, c2f1a3e62-DLXfwzn6.js:3647). */
 export async function presentationBytes(slides: PresentationSlide[]) {
   if (!slides.length) throw new Error("The request failed.");
   const zip = new JSZip();

@@ -190,7 +190,8 @@ export function AccountDeviceSettings({
         tightNote
         note="Devices that can control your local machine through remote sessions."
       >
-        {/* With none, the heading and its note stand alone. */}
+        {/* With none, the heading and its note stand alone (live
+            claude.ai, 2026-10-21). */}
         {trust.value && trust.value.trusted.length > 0 && (
           <table
             className="account-local-devices account-trusted-devices"

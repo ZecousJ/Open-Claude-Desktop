@@ -49,7 +49,7 @@ func TestRunMailGoesToTheCallerOnly(t *testing.T) {
 		}
 		return ""
 	}
-	w := post(router(c, 7), `{"task":"Daily <digest>","outcome":"completed","summary":"3 items","link":"https://claudex.example.com/c/1","to":"other@example.com"}`)
+	w := post(router(c, 7), `{"task":"Daily <digest>","outcome":"completed","summary":"3 items","link":"https://claudex.zecous.cn/c/1","to":"other@example.com"}`)
 	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), `"sent":true`) {
 		t.Fatalf("status %d %s", w.Code, w.Body.String())
 	}

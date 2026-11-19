@@ -53,7 +53,8 @@ const conversation = (id: string, running: boolean) =>
     ],
   }) as unknown as Conversation;
 
-// One message is a band with Send now, Edit in composer and Remove from queue.
+// Live claude.ai bundle, 2026-10-12 (QueuedMessageBar): one message is a band
+// with Send now, Edit in composer and Remove from queue.
 test("one queued message is a band with its three actions", () => {
   const html = render({ entries: [entry("a", "Run   the\ntests")] });
   assert.match(html, /class="queued-bar-band"/);

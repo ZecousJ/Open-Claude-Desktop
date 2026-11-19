@@ -20,7 +20,6 @@ import {
   maxDictationSeconds,
   type DictationProgress,
   type DictationStart,
-  type VoiceAvailability,
 } from "../../shared/voice-api";
 import { eventsSubprotocols, webAuthRoutes } from "../../shared/web-protocol";
 import type { WebAuth } from "./auth";
@@ -44,12 +43,19 @@ const pcmBytesPerSecond =
 const idleMs = 10_000;
 const connectTimeoutMs = 10_000;
 /** How long the service may take to send the last transcript after `finish`. */
-const finishTimeoutMs = 15_000;
+export const webDictationFinishTimeoutMs = 15_000;
+
+export function webDictationRecordingSeconds(maxSeconds: unknown) {
+  const max = typeof maxSeconds === "number" && Number.isFinite(maxSeconds) && maxSeconds > 0
+    ? Math.floor(maxSeconds) : null;
+  return Math.min(dictationRecordingSeconds(max), max ?? maxDictationSeconds, maxDictationSeconds);
+}
 
 interface Session {
   id: string;
   requestId: string;
   socket: SocketLike;
+  activation: object;
   text: string;
   partial: string;
   bytes: number;
@@ -57,18 +63,32 @@ interface Session {
   failure?: Error;
   finishing: boolean;
   settle?: (error?: Error) => void;
+  cancelOpening?: (error: Error) => void;
   idle?: unknown;
+  observer?: DictationObserver;
+}
+
+interface DictationObserver {
+  progress(progress: DictationProgress): void;
+  fail(): void;
 }
 
 export class WebDictation {
   private session?: Session;
+  private offAuth: () => void;
+  private disposed = false;
 
   constructor(
     private env: WebEnv,
     private auth: WebAuth,
-    /** A remote-runner call (voiceAvailability). */
-    private call: (method: string, args: unknown[]) => Promise<unknown>,
-  ) {}
+    private readAvailability: () => Promise<unknown>,
+  ) {
+    this.offAuth = auth.onChange(() => {
+      const session = this.session;
+      if (session && session.activation !== auth.activationIdentity)
+        this.end(session, new DOMException("The active account changed.", "AbortError"));
+    });
+  }
 
   private url() {
     const origin = new URL(this.env.origin);
@@ -76,61 +96,72 @@ export class WebDictation {
     return `${scheme}//${origin.host}${realtimeTranscriptionsPath}`;
   }
 
-  async start(input?: unknown): Promise<DictationStart> {
+  async start(input?: unknown, observer?: DictationObserver): Promise<DictationStart> {
+    const activation = this.auth.activationIdentity;
+    if (!activation) throw bridgeError(dictationMessages.disconnected);
+    const current = () => {
+      if (this.disposed) throw new DOMException("Dictation was cancelled.", "AbortError");
+      if (this.auth.activationIdentity !== activation)
+        throw new DOMException("The active account changed.", "AbortError");
+    };
+    current();
     const options = dictationStartOptions(input);
-    const availability = (await this.call(
-      "voiceAvailability",
-      [],
-    )) as VoiceAvailability | null;
-    if (!availability?.transcription)
+    const availability = await this.readAvailability();
+    current();
+    if (!availability || typeof availability !== "object" ||
+        !("transcription" in availability) || availability.transcription !== true)
       throw bridgeError(dictationMessages.unavailable);
     this.end(this.session);
-    const maxSeconds = Math.min(
-      dictationRecordingSeconds(availability.maxSeconds),
-      availability.maxSeconds && availability.maxSeconds > 0
-        ? Math.floor(availability.maxSeconds)
-        : maxDictationSeconds,
-      maxDictationSeconds,
-    );
+    const maxSeconds = webDictationRecordingSeconds("maxSeconds" in availability ? availability.maxSeconds : null);
     const { ticket } = await this.auth.ticket(webAuthRoutes.voiceTicket);
+    current();
     const socket = this.env.openSocket(this.url(), eventsSubprotocols(ticket));
     socket.binaryType = "arraybuffer";
     const session: Session = {
       id: this.env.randomId(),
       requestId: this.env.randomId(),
       socket,
+      activation,
       text: "",
       partial: "",
       bytes: 0,
       maxSeconds,
       finishing: false,
+      observer,
     };
     this.session = session;
     await new Promise<void>((resolve, reject) => {
       const timer = this.env.timers.setTimeout(() => {
-        reject(bridgeError(dictationMessages.disconnected));
+        session.cancelOpening?.(bridgeError(dictationMessages.disconnected));
       }, connectTimeoutMs);
+      session.cancelOpening = (error) => {
+        this.env.timers.clearTimeout(timer);
+        session.cancelOpening = undefined;
+        reject(error);
+      };
       socket.onopen = () => {
         this.env.timers.clearTimeout(timer);
+        session.cancelOpening = undefined;
         resolve();
       };
       socket.onclose = () => {
-        this.env.timers.clearTimeout(timer);
         // The upgrade was refused (no ticket, voice off, limits reached):
         // a browser cannot read why.
-        reject(bridgeError(dictationMessages.disconnected));
+        session.cancelOpening?.(bridgeError(dictationMessages.disconnected));
       };
       socket.onerror = () => {};
     }).catch((error) => {
       this.end(session);
       throw error;
     });
+    current();
     if (this.session !== session) {
       this.end(session);
       throw bridgeError("Dictation was cancelled.");
     }
     socket.onmessage = (message) => {
-      if (typeof message.data === "string") this.receive(session, message.data);
+      if (this.session === session && this.auth.activationIdentity === activation &&
+          typeof message.data === "string") this.receive(session, message.data);
     };
     socket.onclose = (event) => this.closed(session, event.code, event.reason);
     socket.send(
@@ -169,8 +200,10 @@ export class WebDictation {
         session.partial = "";
         break;
       case "done":
-        this.done(session);
-        break;
+        if (session.observer && !session.finishing)
+          this.fail(session, bridgeError(dictationMessages.disconnected));
+        else this.done(session);
+        return;
       case "error":
         this.fail(
           session,
@@ -179,12 +212,15 @@ export class WebDictation {
             message.code || undefined,
           ),
         );
-        break;
+        return;
+      default:
+        return;
     }
+    session.observer?.progress({ text: session.text, partial: session.partial });
   }
 
   private closed(session: Session, code: number, reason: string) {
-    if (session.finishing) this.done(session);
+    if (session.finishing && (!session.observer || code === 1000)) this.done(session);
     else if (!session.failure)
       this.fail(
         session,
@@ -201,6 +237,7 @@ export class WebDictation {
     session.failure = error;
     this.closeSocket(session);
     session.settle?.(error);
+    session.observer?.fail();
   }
 
   private done(session: Session) {
@@ -215,8 +252,7 @@ export class WebDictation {
 
   private closeSocket(session: Session) {
     const socket = session.socket;
-    socket.onmessage = null;
-    socket.onclose = null;
+    socket.onmessage = socket.onopen = socket.onclose = socket.onerror = null;
     try {
       socket.close(1000, "done");
     } catch {
@@ -233,7 +269,14 @@ export class WebDictation {
 
   private touch(session: Session) {
     this.env.timers.clearTimeout(session.idle);
-    session.idle = this.env.timers.setTimeout(() => this.end(session), idleMs);
+    session.idle = this.env.timers.setTimeout(() => {
+      if (session.observer) this.fail(session, bridgeError(dictationMessages.disconnected));
+      else this.end(session);
+    }, idleMs);
+  }
+
+  get bufferedAmount() {
+    return this.session?.socket.bufferedAmount ?? 0;
   }
 
   async audio(sessionId: string, pcm: Uint8Array): Promise<DictationProgress> {
@@ -255,6 +298,8 @@ export class WebDictation {
       this.end(session);
       throw bridgeError(dictationMessages.disconnected);
     }
+    if (session.observer && this.bufferedAmount + pcm.byteLength > pcmBytesPerSecond * 10)
+      throw bridgeError(dictationMessages.disconnected);
     session.bytes += pcm.byteLength;
     this.touch(session);
     if (pcm.byteLength) session.socket.send(pcm);
@@ -272,8 +317,8 @@ export class WebDictation {
     }
     return new Promise<string>((resolve, reject) => {
       const timer = this.env.timers.setTimeout(
-        () => this.done(session),
-        finishTimeoutMs,
+        () => this.interruptedFinish(session),
+        webDictationFinishTimeoutMs,
       );
       session.settle = (error) => {
         this.env.timers.clearTimeout(timer);
@@ -287,7 +332,7 @@ export class WebDictation {
           JSON.stringify({ type: "finish", requestId: session.requestId }),
         );
       } catch {
-        this.done(session);
+        this.interruptedFinish(session);
       }
     });
   }
@@ -296,11 +341,23 @@ export class WebDictation {
     if (this.session?.id === sessionId) this.end(this.session);
   }
 
-  private end(session: Session | undefined) {
+  dispose() {
+    this.disposed = true;
+    this.offAuth();
+    this.end(this.session);
+  }
+
+  private interruptedFinish(session: Session) {
+    if (session.observer) this.fail(session, bridgeError(dictationMessages.disconnected));
+    else this.done(session);
+  }
+
+  private end(session: Session | undefined, reason: Error = bridgeError("Dictation was cancelled.")) {
     if (!session) return;
     if (this.session === session) this.session = undefined;
     session.finishing = true;
-    session.settle = undefined;
+    session.cancelOpening?.(reason);
+    session.settle?.(reason);
     this.env.timers.clearTimeout(session.idle);
     this.closeSocket(session);
   }

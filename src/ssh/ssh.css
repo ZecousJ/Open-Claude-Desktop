@@ -1,4 +1,4 @@
-/* mt-3, gap-sm, text-footnote text-secondary. */
+/* mt-3, gap-sm, text-footnote text-secondary (live claude.ai bundle, 2026-10-14, c3f9f1667-By41brQy). */
 .ssh-link-details {
   display: flex;
   flex-direction: column;
@@ -12,9 +12,10 @@
   color: var(--text-secondary);
 }
 /*
- * SSH environments (R9-S5). Sizes follow the environment chip, the Code usage
- * banner and the app's form dialogs, with the existing tokens. Provisional
- * until references exist.
+ * SSH environments (R9-S5). None of these states was captured (R-0386 is
+ * missing): sizes follow the environment chip (R-0341), the Code usage
+ * banner and the app's form dialogs (R-1289), with the existing tokens.
+ * Provisional until references exist (fidelity/observations/ssh-environment.md).
  */
 
 /* Environment chip on a host: a 16px server icon, or a 12px spinner in its
@@ -192,7 +193,7 @@
   justify-content: flex-end;
   margin-top: 16px;
 }
-/* Ghost text-danger, sm:me-auto. */
+/* Ghost text-danger, sm:me-auto (live claude.ai bundle, 2026-10-14, c3f9f1667-By41brQy.js). */
 .ssh-host-form .ssh-delete-connection {
   color: var(--danger);
   background: transparent;
@@ -338,7 +339,7 @@
   margin-right: 4px;
 }
 
-/* : mt-2 rounded bg-surface-1 px-3 py-2 text-code. */
+/* (live claude.ai bundle, 2026-10-14, c3f9f1667-By41brQy.js): mt-2 rounded bg-surface-1 px-3 py-2 text-code. */
 .ssh-technical-details summary {
   font-size: 12px;
   line-height: 15px;

@@ -1,14 +1,16 @@
-/* 299px panel 8px from the window edge (size and position in
-   92-reference-panels.css); "Plan" 13px #c6c5c0 at the top left; "TASKS" 10px
-   #8c8b89 capitals; 13px/19px steps 6px apart, text 20px after the 16px status
-   glyph; open steps #efefef, the running one #eeeeee, done ones #c3c2bd struck
-   through. */
+/* Plan side panel, from R-Code-Plan面板-运行中-原版 and 第三阶段运行中 (2x, 1164px window):
+   299px panel 8px from the window edge (size and position in
+   92-reference-panels.css); "Plan" 13px #c6c5c0 at the top left; "TASKS"
+   10px #8c8b89 capitals; 13px/19px steps 6px apart, text 20px after the 16px
+   status glyph; open steps #efefef, the running one #eeeeee, done ones
+   #c3c2bd struck through. */
 .work-panel.plan-panel {
   border: 1px solid #2c2c2c;
   border-radius: 10px;
   background: #1a1a1a;
   font:
-    13px/19px -apple-system,
+    13px/19px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -85,9 +87,9 @@
   margin-top: 1.5px;
   color: #8c8b89;
 }
-/* The open ring is 12px across and the done check #c1c0bc; the running ring
-   keeps its dim track (the audit's 11.5×8.5 dark ink is the arc's frame, not a
-   missing ring). */
+/* R-Code-Plan面板 (2x): the open ring is 12px across and the done check
+   #c1c0bc; the running ring keeps its dim track (the audit's 11.5×8.5 dark
+   ink is the arc's frame, not a missing ring). */
 .plan-step-icon[data-status="inProgress"] {
   color: #c8c8c3;
 }
@@ -112,8 +114,9 @@
   }
 }
 
-/* The progress rail: a 2px rail from under each glyph to the next one, 10% ink,
-   20% along the part already walked. */
+/* The progress rail (PlanSteps.tsx; desktop bundle 2.31226.1): a 2px rail
+   from under each glyph to the next one, 10% ink, 20% along the part
+   already walked. */
 .plan-rail {
   position: absolute;
   top: 17.5px;
@@ -309,7 +312,8 @@
   color: #141413;
 }
 /* The step icons' dark greys vanish on white: the running ring reads the
-   secondary text and the done check the weak step. */
+   secondary text and the done check the weak step (--cds-text-secondary,
+   --cds-text-muted; live claude.ai bundle, 2026-10-16, rules.json). */
 :root[data-theme="light"] .plan-step-icon[data-status="inProgress"] {
   color: var(--text-secondary);
 }

@@ -50,9 +50,6 @@ type ConcurrencyCache interface {
 	// 清理过期槽位（后台任务）
 	CleanupExpiredAccountSlots(ctx context.Context, accountID int64) error
 	CleanupExpiredAccountSlotKeys(ctx context.Context) error
-
-	// 启动时清理旧进程遗留槽位与等待计数
-	CleanupStaleProcessSlots(ctx context.Context, activeRequestPrefix string) error
 }
 
 type APIKeyConcurrencyCache interface {
@@ -200,20 +197,9 @@ func initRequestIDPrefix() string {
 	return "r" + strconv.FormatUint(fallback, 36)
 }
 
-func RequestIDPrefix() string {
-	return requestIDPrefix
-}
-
 func generateRequestID() string {
 	seq := requestIDCounter.Add(1)
 	return requestIDPrefix + "-" + strconv.FormatUint(seq, 36)
-}
-
-func (s *ConcurrencyService) CleanupStaleProcessSlots(ctx context.Context) error {
-	if s == nil || s.cache == nil {
-		return nil
-	}
-	return s.cache.CleanupStaleProcessSlots(ctx, RequestIDPrefix())
 }
 
 const (
@@ -721,7 +707,7 @@ func (s *ConcurrencyService) CleanupExpiredAccountSlots(ctx context.Context, acc
 }
 
 // StartSlotCleanupWorker starts a background cleanup worker for expired account slots.
-func (s *ConcurrencyService) StartSlotCleanupWorker(_ AccountRepository, interval time.Duration) {
+func (s *ConcurrencyService) StartSlotCleanupWorker(interval time.Duration) {
 	if s == nil || s.cache == nil || interval <= 0 {
 		return
 	}

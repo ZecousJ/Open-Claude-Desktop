@@ -4,11 +4,11 @@ import { isComposingKey } from "../ui/ime";
 import { cleanArtifactName } from "./artifact-name";
 
 /**
- * Rename artifact, from the Artifacts page: a dialog with the name selected in
- * a field, Cancel and Save. Save stays disabled until the name, cleaned of
- * control characters and extra blanks, is not empty and differs from the
- * current one. The reference's other rename (the artifact panel's title) edits
- * in place.
+ * Rename artifact, from the Artifacts page (desktop bundle 2.31226.1): a
+ * dialog with the name selected in a field, Cancel and Save. Save stays
+ * disabled until the name, cleaned of control characters and extra blanks,
+ * is not empty and differs from the current one. The reference's other
+ * rename (the artifact panel's title) edits in place.
  */
 export function RenameArtifactDialog({
   name,

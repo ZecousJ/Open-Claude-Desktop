@@ -1,17 +1,21 @@
 /*
- * Desktop and developer Settings pages: Claude Code, Cowork, System, Skills,
- * Connectors. Measured from R-1360, R-1387, R-1399 and R-设置-Skills-顶部-深色;
+ * Desktop and developer Settings pages (package WP3): Claude Code, Cowork,
+ * System, Skills, Connectors. Measured from R-1360, R-1387, R-1399 and
+ * R-设置-Skills-顶部-深色 (fidelity/observations/settings-desktop.md);
  * dialogs and lists without a capture are provisional.
  */
 
-/* A row that belongs to the one above: indented 16px, no description. */
+/* A row that belongs to the one above (R-1360-03 "Keep awake on battery
+   power", R-1360-04 "Strict sandbox mode"): indented 16px (R-1360-03: 32
+   image px at 2x), no description. */
 .desktop-subrow {
   border-top: 1px solid #262626;
 }
 .desktop-subrow > .settings-row {
   padding-left: 16px;
 }
-/* Create as draft under Create pull requests automatically: ps-6. */
+/* Create as draft under Create pull requests automatically: ps-6 (live
+   claude.ai bundle, 2026-10-15, c71860c77). */
 .desktop-subrow-ps6 > .settings-row {
   padding-left: 24px;
 }
@@ -19,13 +23,14 @@
   border-top: 1px solid #262626;
 }
 
-/* A row with only a label (Desktop app version, Keep awake on battery power) is
-   44 tall, not the 56 of rows with a description. */
+/* A row with only a label (Desktop app version, Keep awake on battery
+   power) is 44 tall, not the 56 of rows with a description (R-1399-01,
+   R-1360-03: 12 + 20 + 12). */
 .desktop-page .settings-row:not(:has(.settings-row-text > p)) {
   min-height: 44px;
 }
 
-/* Cowork files: the folder path as an underlined link. */
+/* Cowork files: the folder path as an underlined link (R-1387-01). */
 .desktop-path-link {
   display: inline;
   padding: 0;
@@ -42,7 +47,8 @@
   color: #9bbdf0;
 }
 
-/* TextLink. */
+/* TextLink (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js;
+   rules.json: cds-text-link and cds-text-link-underline). */
 .settings-row-text p a.code-bypass-security-link {
   color: #6da7ec;
   border-radius: 2px;
@@ -66,15 +72,15 @@
   color: #a3a29f;
   line-height: 20px;
 }
-/* Skills: Add, rows, badges. */
-/* List pages' title row: the title sits 4px higher than the shared header puts
-   it, and the row reaches the content's right edge (the close button is above
-   it). */
+/* Skills: Add (R-设置-Skills-顶部: white, 30 tall, radius 8), rows, badges. */
+/* List pages' title row (R-设置-{Skills,Plugins,Connectors}-顶部): the title
+   sits 4px higher than the shared header puts it, and the row reaches the
+   content's right edge (the close button is above it). */
 .desktop-list > .settings-page-header {
   margin-top: -5px;
   margin-right: 0;
 }
-/* Add: 90×31 with "+ Add ⌄". */
+/* Add: 90×31 with "+ Add ⌄" (R-设置-Skills-顶部: 180×62 image px at 2x). */
 .desktop-add-button {
   display: inline-flex;
   align-items: center;
@@ -122,7 +128,8 @@
   color: #c7c7c5;
   cursor: pointer;
 }
-/* Filter and sort beside the search. Colours as Customize's. */
+/* Filter and sort beside the search (R-1513: 32px boxes 8 apart, 12 before
+   Add; the search's right edge 8 before the first). Colours as Customize's. */
 .settings-page-tools {
   display: flex;
   align-items: center;
@@ -162,7 +169,7 @@
   background: #cce4fe;
   color: #47698e;
 }
-/* The SKILL.md date at a row's right end. */
+/* The SKILL.md date at a row's right end (R-1513, as Customize's). */
 .desktop-skill-date {
   flex: none;
   margin-right: 12px;
@@ -180,8 +187,9 @@
   margin: 24px 0 0;
   color: #a3a29f;
 }
-/* The Add custom connector form follows the dialogs' form layout; its buttons
-   sit on the right like the other Settings dialogs'. */
+/* The Add custom connector form follows the dialogs' form layout (labels
+   18 apart, R-1289); its buttons sit on the right like the other Settings
+   dialogs'. */
 .desktop-skill-form > label {
   font-size: 14px;
   font-weight: 600;
@@ -214,7 +222,8 @@
 }
 
 :root[data-theme="light"] .desktop-subrow,
-:root[data-theme="light"] /* Create as draft under Create pull requests automatically: ps-6. */
+:root[data-theme="light"] /* Create as draft under Create pull requests automatically: ps-6 (live
+   claude.ai bundle, 2026-10-15, c71860c77). */
 .desktop-subrow-ps6 > .settings-row {
   padding-left: 24px;
 }
@@ -240,8 +249,9 @@
   color: #5e5d59;
 }
 
-/* Connectors. Header buttons side by side; an action column on the right; a
-   server's tools listed under its row with a switch each. */
+/* Connectors (R13-D; R-1375–R-1383 not captured: provisional). Header
+   buttons side by side; an action column on the right; a server's tools
+   listed under its row with a switch each. */
 .desktop-connector-actions {
   display: flex;
   gap: 8px;
@@ -335,8 +345,8 @@
   color: #6b6a66;
 }
 
-/* Trusted Cowork folders: each folder a rounded row (folder icon, the full path
-   on one line, an × button) 4px apart. */
+/* Trusted Cowork folders (desktop bundle 2.31226.1): each folder a rounded
+   row (folder icon, the full path on one line, an × button) 4px apart. */
 .desktop-trusted {
   display: flex;
   flex-direction: column;
@@ -394,7 +404,7 @@
 .modal > .button-row.desktop-trusted-actions {
   justify-content: space-between;
 }
-/* A skill row opens its page: the tile and text are one button. */
+/* A skill row opens its page (R-1515): the tile and text are one button. */
 .desktop-skill-open {
   display: flex;
   flex: 1;
@@ -411,10 +421,11 @@
   display: block;
   min-width: 0;
 }
-/* Tool permissions: a 14px semibold title and 13px muted line; the group row
-   (chevron, label, count pill) with its 32px bordered menu button at the right;
-   56px tool rows whose right end is a 30px #f3f3f1 tray of three 28px icon
-   buttons, the chosen one a white chip. Dark: the Settings list colours. */
+/* Tool permissions (R-1379, Windows 1x light): a 14px semibold title and
+   13px muted line; the group row (chevron, label, count pill) with its
+   32px bordered menu button at the right; 56px tool rows whose right end
+   is a 30px #f3f3f1 tray of three 28px icon buttons, the chosen one a
+   white chip. Dark: the Settings list colours. */
 .tool-permissions {
   padding: 4px 0 0 18px;
 }
@@ -539,10 +550,11 @@
   background: #fff;
   color: #141413;
 }
-/* Connector directory: "← Connectors" 13px over "All connectors"; the filter
-   button beside the search; cards with a verified check or a grey Community
-   pill and a blue New pill after the name; the empty state's magnifier, 14px
-   line and Reset filters. */
+/* Connector directory (R-1380–R-1382, R-1591, R-1592, Windows 1x light):
+   "← Connectors" 13px over "All connectors"; the filter button beside the
+   search (blue fill while a filter narrows, as R-1317); cards with a
+   verified check or a grey Community pill and a blue New pill after the
+   name; the empty state's magnifier, 14px line and Reset filters. */
 .connectors-back {
   display: inline-flex;
   align-items: center;
@@ -683,13 +695,14 @@
   box-shadow: inset 0 0 0 1px #e0e0de;
   color: #141413;
 }
-/* Top connectors sits 53px under the header's centre line. */
+/* R-1380: Top connectors sits 53px under the header's centre line. */
 .customize-directory-head.connector-top-head {
   margin-top: 22px;
 }
-/* Shortcut field: 222×30, a #d9d9d6 rim with radius 6, the shortcut centred in
-   14px, the clear button (a filled 15px circle with a white ×) 10px from the
-   right end. Recording turns the rim orange. */
+/* Shortcut field (R-1424, Windows 1x light): 222×30, a #d9d9d6 rim with
+   radius 6, the shortcut centred in 14px, the clear button (a filled
+   15px circle with a white ×) 10px from the right end. Recording turns
+   the rim orange (the Quick Entry capture's focused state). */
 .shortcut-recorder {
   position: relative;
   display: inline-flex;
@@ -748,7 +761,8 @@
   color: #b9403b;
 }
 
-/* Discover's banner sits 10px higher on the Settings pages than on Customize. */
+/* Discover's banner sits 10px higher on the Settings pages than on Customize
+   (R-1126 W1920: 104 under the frame top, the header row 16 above it). */
 .desktop-list > .customize-feature {
   margin-top: 12px;
 }
@@ -760,15 +774,17 @@
 .desktop-list .customize-directory-cards {
   margin-top: 12px;
 }
-/* Categories are two 386px columns 12 apart in the modal, whatever the window
-   width. */
+/* Categories are two 386px columns 12 apart in the modal (R-1518
+   categories-bottom), whatever the window width. */
 .desktop-list .customize-categories {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-top: 10px;
 }
-/* The title row stays put while a list page scrolls beneath it. Its 16px gap is
-   padding so nothing shows through it. */
+/* The title row stays put while a list page scrolls beneath it (R-1518 top,
+   middle and categories-bottom at W1920: the header is fixed and the
+   scrollbar starts under it). Its 16px gap is padding so nothing shows
+   through it. */
 .desktop-list > .settings-page-header {
   position: sticky;
   top: -3px;
@@ -797,8 +813,9 @@
   color: #767674;
 }
 
-/* Cowork → Global instructions edited in the page: a 256px monospace box under
-   the explanation, the count and buttons at the right. */
+/* Cowork → Global instructions edited in the page (desktop bundle 2.31226.1):
+   a 256px monospace box under the explanation, the count and buttons at
+   the right. */
 .cowork-instructions {
   display: flex;
   flex-direction: column;
@@ -827,8 +844,9 @@
   color: var(--danger);
 }
 
-/* Settings → Skills / Plugins: the "Add your first …" card sits right under the
-   title row's 16px, not Customize's 28px. */
+/* Settings → Skills / Plugins: the "Add your first …" card sits right
+   under the title row's 16px (live claude.ai Settings, 2026-10-21: the
+   card at 184 under a row ending at 168), not Customize's 28px. */
 .desktop-list > .customize-callout.customize-yours-callout {
   margin-top: 0;
 }

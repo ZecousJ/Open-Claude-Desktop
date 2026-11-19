@@ -1,13 +1,14 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { t } from "../i18n";
 import { ChevronRight, Plus } from "../ui/glyphs";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 
 /**
- * Connectors → Add connector › in the add menu: with the right to add a custom
- * connector it opens a submenu of Browse connectors (Library) and Add custom
- * connector (DotsHorizontal); without it the row is Browse connectors alone,
- * with no chevron.
+ * Connectors → Add connector › in the add menu (live claude.ai bundle,
+ * 2026-10-16, c752b32f8 `fo`): with the right to add a custom connector it
+ * opens a submenu of Browse connectors (Library) and Add custom connector
+ * (DotsHorizontal); without it the row is Browse connectors alone, with no
+ * chevron.
  *
  * Like Tool access, the choices open beside the connectors list as a fixed
  * panel next to this row; in a phone sheet they open in place.
@@ -22,7 +23,7 @@ export function ConnectorAddMenu({
   /** The add menu is a phone sheet: the choices open in place. */
   sheet: boolean;
   canAddCustom: boolean;
-  /** With none yet the entry adds them. */
+  /** With none yet the entry adds them (live claude.ai bundle, 2026-10-16, c1958b152). */
   hasConnectors?: boolean;
   onBrowse: () => void;
   onAddCustom: () => void;
@@ -46,7 +47,7 @@ export function ConnectorAddMenu({
   if (!canAddCustom)
     return (
       <button role="menuitem" onClick={onBrowse}>
-        <AppIcon name={hasConnectors ? "Library" : "Plus"} size={20} />
+        <Anthropicon name={hasConnectors ? "Library" : "Plus"} size={20} />
         <span>{hasConnectors ? "Browse connectors" : "Add connectors"}</span>
       </button>
     );
@@ -71,11 +72,11 @@ export function ConnectorAddMenu({
   const items = (
     <>
       <button role="menuitem" onClick={onBrowse}>
-        <AppIcon name="Library" size={20} />
+        <Anthropicon name="Library" size={20} />
         <span>Browse connectors</span>
       </button>
       <button role="menuitem" onClick={onAddCustom}>
-        <AppIcon name="DotsHorizontal" size={20} />
+        <Anthropicon name="DotsHorizontal" size={20} />
         <span>Add custom connector</span>
       </button>
     </>

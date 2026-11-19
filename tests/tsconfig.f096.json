@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.f095.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/conversations/code-lifecycle-guard.ts",
+    "../electron/ipc/conversation-manage-handlers.ts",
+    "../electron/engine/engine-send.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "../electron/store/store.ts",
+    "../runner/src/cloud-store.ts",
+    "official-ui-code-management.test.ts",
+    "official-ui-code-management-original.test.ts",
+    "official-ui-code-stop-staging.test.ts",
+    "runner/official-code-mutation.test.ts"
+  ]
+}

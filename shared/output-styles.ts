@@ -4,7 +4,8 @@ export type OutputStyle = {
   builtIn?: boolean;
 };
 
-// Built-in Code styles and their prompts.
+// Built-in Code styles and their prompts (official Claude Code package,
+// 2.37337.1, src/constants/outputStyles.ts; live bundle, 2026-10-14).
 
 const explanatoryFeaturePrompt = `## Insights
 In order to encourage learning, before and after writing code, always provide brief educational explanations about implementation choices using (with backticks):

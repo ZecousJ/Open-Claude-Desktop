@@ -2,8 +2,9 @@ import type { ITheme } from "@xterm/xterm";
 
 /**
  * The terminal's colours: the original's claude-dark and claude-light code
- * themes as its terminal reads them: surface-2 behind, text-primary text, the
- * blue cursor, pink for magenta and purple for cyan, the bright greens and
+ * themes as its terminal reads them (live claude.ai bundle, 2026-10-15,
+ * c5d464fa3 and cf718f694): surface-2 behind, text-primary text, the blue
+ * cursor, pink for magenta and purple for cyan, the bright greens and
  * yellows as the plain ones.
  */
 const palettes = {

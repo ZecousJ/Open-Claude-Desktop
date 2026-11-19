@@ -159,6 +159,7 @@ type action struct {
 // every model of the channel passed its last two checks, unless an
 // administrator has changed them.
 func decide(channels []Channel, latest map[key][]string, open []Incident) []action {
+	open = matchIncidentChannels(channels, open)
 	type state struct{ total, down, healthy int }
 	byPlatform := map[string]*state{}
 	var order []string
@@ -243,10 +244,9 @@ func (c *Component) SyncIncidents(ctx context.Context) error {
 			}, true, 0, now)
 		} else {
 			_, err = c.store.update(ctx, a.resolve, IncidentInput{
-				Platform: "-",
-				Status:   StatusResolved,
-				Message:  "The channels are working normally again.",
-			}, 0, now)
+				Status:  StatusResolved,
+				Message: "The channels are working normally again.",
+			}, nil, 0, now)
 		}
 		if err != nil {
 			return err

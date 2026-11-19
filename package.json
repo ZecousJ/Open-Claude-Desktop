@@ -2,23 +2,19 @@
   "name": "claudex-desktop",
   "productName": "Claudex",
   "desktopName": "claudex.desktop",
-  "version": "0.0.38",
+  "version": "0.0.55",
   "private": true,
   "description": "Claude-inspired desktop workspace powered by the open-source Codex agent",
   "author": "Claudex contributors",
   "homepage": "https://github.com/ZecousJ/Open-Claude-Desktop",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ZecousJ/Open-Claude-Desktop.git"
-  },
-  "bugs": "https://github.com/ZecousJ/Open-Claude-Desktop/issues",
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "node scripts/dev.mjs",
+    "prepare:document-runtime": "node scripts/prepare-document-runtime.mjs",
     "build": "tsc --noEmit && vite build && node scripts/build.mjs",
-    "build:web": "tsc --noEmit -p tsconfig.web.json && node scripts/check-web-imports.mjs && vite build -c vite.web.config.ts && node scripts/check-web-bundle.mjs",
+    "build:web": "tsc --noEmit -p tsconfig.web.json && node scripts/check-web-imports.mjs && vite build -c vite.web.config.ts",
     "dev:web": "vite -c vite.web.config.ts",
     "check:web": "node scripts/check-web-imports.mjs && node scripts/check-web-bundle.mjs",
     "start": "electron .",
@@ -26,15 +22,14 @@
     "test:engine": "tsx scripts/smoke-engine.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"electron/**/*.ts\" \"shared/**/*.ts\" \"runner/src/**/*.ts\" \"server/**/*.ts\" \"src-web/**/*.{ts,tsx}\" \"tests/**/*.{ts,mts,mjs}\" \"scripts/**/*.{ts,mts,mjs,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"electron/**/*.ts\" \"shared/**/*.ts\" \"runner/src/**/*.ts\" \"server/**/*.ts\" \"src-web/**/*.{ts,tsx}\" \"tests/**/*.{ts,mts,mjs}\" \"scripts/**/*.{ts,mts,mjs,tsx}\"",
-    "package": "npm run build && node scripts/prepare-runtime.mjs && node scripts/computer-use/fetch-driver.mjs && electron-builder --publish never",
-    "package:mac": "npm run build && node scripts/prepare-runtime.mjs && node scripts/computer-use/fetch-driver.mjs darwin && electron-builder --mac zip --publish never && node -e \"require('fs').rmSync('release/mac-arm64',{recursive:true,force:true})\"",
-    "package:win": "npm run build && node scripts/prepare-runtime.mjs win32 x64 && node scripts/computer-use/fetch-driver.mjs win32 x64 && electron-builder --win nsis --x64 --publish never",
     "icons": "electron scripts/build-icons.mjs",
-    "build:mobile-conversation": "tsc --noEmit -p tsconfig.web.json && vite build -c vite.mobile-conversation.config.ts && node scripts/check-mobile-conversation.mjs",
-    "test:mobile-conversation": "node --import tsx --test tests/mobile-conversation.test.ts && node scripts/mobile-conversation/run-effects-tests.mjs",
-    "package:linux": "npm run build && node scripts/prepare-runtime.mjs linux x64 && node -e \"require('fs').mkdirSync('build/computer-use',{recursive:true})\" && electron-builder --linux deb rpm tar.gz --x64 --publish never && node scripts/prepare-runtime.mjs linux arm64 && electron-builder --linux deb rpm tar.gz --arm64 --publish never && node -e \"for (const d of ['release/linux-unpacked','release/linux-arm64-unpacked']) require('fs').rmSync(d,{recursive:true,force:true})\""
+    "build:chrome-native-host": "node scripts/build-chrome-native-host.mjs",
+    "package:local": "node scripts/package-edition.mjs local",
+    "package:full": "node scripts/package-edition.mjs full",
+    "build:runner": "node scripts/build-runner.mjs"
   },
   "dependencies": {
+    "@bufbuild/protobuf": "^2.16.0",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-html": "^6.4.12",
@@ -46,7 +41,9 @@
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.14",
     "@iarna/toml": "^2.2.5",
+    "@jitl/quickjs-singlefile-cjs-release-sync": "0.32.0",
     "@lezer/highlight": "^1.2.5",
+    "@xmldom/xmldom": "^0.8.15",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/addon-search": "0.16.0",
     "@xterm/xterm": "^6.0.0",
@@ -65,6 +62,7 @@
     "prosemirror-state": "^1.4.4",
     "prosemirror-view": "^1.42.6",
     "qrcode": "^1.5.4",
+    "quickjs-emscripten-core": "0.32.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
@@ -73,17 +71,20 @@
     "remark-cjk-friendly": "2.3.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "semver": "^7.8.5",
     "sucrase": "^3.35.1",
     "undici": "^7.30.0",
+    "yaml": "2.8.1",
     "zod": "^4.1.0"
   },
   "devDependencies": {
-    "@openai/codex": "0.144.1",
+    "@openai/codex": "0.149.1",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/semver": "^7.7.1",
     "@vitejs/plugin-react": "^6.0.0",
     "electron": "44.4.3",
     "electron-builder": "^26.0.12",
@@ -96,16 +97,10 @@
     "vite": "8.3.0"
   },
   "build": {
-    "appId": "dev.claudex.desktop",
+    "appId": "dev.openclaudex.full",
+    "afterSign": "./scripts/release/sign-macos.mjs",
     "productName": "Claudex",
-    "protocols": [
-      {
-        "name": "Claudex",
-        "schemes": [
-          "claudex"
-        ]
-      }
-    ],
+    "protocols": [],
     "directories": {
       "output": "release"
     },
@@ -132,10 +127,6 @@
         "to": "provider-service"
       },
       {
-        "from": "build/computer-use",
-        "to": "computer-use"
-      },
-      {
         "from": "build/icon.iconset/icon_32x32.png",
         "to": "tray-icon.png"
       },
@@ -158,6 +149,7 @@
     ],
     "asarUnpack": [
       "dist-electron/quick-access-monitor",
+      "dist-electron/device-key-mac",
       "dist-electron/notification-authorization.node"
     ],
     "mac": {
@@ -172,6 +164,12 @@
       "icon": "build/icon.icns"
     },
     "win": {
+      "extraResources": [
+        {
+          "from": "electron/official-ui/native/device-key-win.ps1",
+          "to": "device-key-win.ps1"
+        }
+      ],
       "target": [
         "nsis"
       ],
@@ -180,6 +178,7 @@
     },
     "nsis": {
       "artifactName": "Claudex-Setup-${version}.exe",
+      "include": "scripts/release/nsis-installer.nsh",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
@@ -214,7 +213,7 @@
       "executableName": "claudex",
       "icon": "build/icon.png",
       "category": "Development",
-      "maintainer": "Claudex contributors <https://github.com/ZecousJ/Open-Claude-Desktop>",
+      "maintainer": "Claudex <support@zecous.cn>",
       "vendor": "Claudex",
       "synopsis": "Claudex desktop",
       "description": "Claudex desktop app: chat, Cowork and Code.",

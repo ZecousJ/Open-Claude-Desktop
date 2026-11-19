@@ -1,8 +1,8 @@
 /**
- * Claudex's own updates: the main process checks the service's release
- * information, downloads and verifies the build in the background and stages
- * it; the sidebar then offers "Relaunch to update". The staged build is also
- * installed when the app quits.
+ * Claudex's own updates (package OTA, docs/ota.md): the main process checks
+ * the service's release information, downloads and verifies the build in the
+ * background and stages it; the sidebar then offers "Relaunch to update".
+ * The staged build is also installed when the app quits.
  *
  * On the web these calls do not exist (shared/web-bridge-methods.ts); the
  * window then shows no update button.
@@ -75,6 +75,11 @@ export interface AppUpdateAPI {
    * and chose to update anyway, so the quit does not ask again.
    */
   relaunchToUpdate(options?: { interrupt?: boolean }): Promise<void>;
+  /**
+   * The email the sign-in card starts with after moving from ZecousAI, or
+   * null. Never a secret; removed once an account signs in.
+   */
+  signInEmailHint(): Promise<string | null>;
 }
 
 export const appUpdateMethods = bridgeMethods<AppUpdateAPI>({
@@ -82,6 +87,7 @@ export const appUpdateMethods = bridgeMethods<AppUpdateAPI>({
   appEnvironment: true,
   checkForAppUpdate: true,
   relaunchToUpdate: true,
+  signInEmailHint: true,
 });
 
 /** Sent to every app window when the update status changes. */

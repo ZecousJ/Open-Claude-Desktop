@@ -115,7 +115,7 @@ function EnvironmentRow({
   );
 }
 
-/** Three recents, retaining the selection. */
+/** Three recents, retaining the selection (live claude.ai bundle, 2026-10-14, cc43287c9: x5). */
 export function recentEnvironmentRows(
   rows: RecentEnvironment[],
   selectedId: string,

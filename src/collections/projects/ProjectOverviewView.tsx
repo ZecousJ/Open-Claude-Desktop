@@ -1,7 +1,7 @@
 import { OverflowText } from "../../ui/OverflowText";
 import { Archive, Pencil, Plus, Clock, Pause, X } from "../../ui/glyphs";
 import { t, tc, currentLocale, formatText } from "../../i18n";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { WithTooltip } from "../../ui/Tooltip";
 import { IconButton } from "../../ui/Controls";
 import { WindowPinIcon } from "../../conversation-window/WindowPinIcon";
@@ -211,7 +211,7 @@ export function projectOverviewView(kit: ProjectOverviewViewKit) {
                     />
                   ) : (
                     <div className="prj-recents-empty">
-                      <AppIcon name="Chat" size={32} />
+                      <Anthropicon name="Chat" size={32} />
                       <p>
                         {t(
                           "Claudex references the same knowledge every time you talk to it in this project.",
@@ -329,9 +329,10 @@ export function projectOverviewView(kit: ProjectOverviewViewKit) {
                     </button>
                   </div>
                   {tasks.length ? (
-                    // A clock (a pause when paused), the name over its
-                    // schedule, an Active or Paused tag, and an X that slides
-                    // in on hover to unlink it.
+                    // A task row as the live claude.ai bundle (2026-10-12) draws
+                    // it: a clock (a pause when paused), the name over its
+                    // schedule, an Active or Paused tag, and an X that slides in
+                    // on hover to unlink it.
                     <ul className="prj-tasks">
                       {tasks.map((routine) => (
                         <li key={routine.id}>

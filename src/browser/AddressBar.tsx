@@ -31,12 +31,16 @@ export function addressParts(url: string) {
 }
 
 /**
- * The card's second row: Back, Forward, Reload (a spinner while loading), the
- * address field ("Type a URL") and, on the right, Select element (the viewport
- * is in the ⋮ menu, as the original's Viewport). At rest the field shows the
- * host and, muted, the path, centred; focused, the text slides left over 150ms
- * and becomes the whole URL to edit. Enter opens what is typed unless an input
- * method is composing (What's new), Escape puts the page's address back.
+ * The card's second row (R-Code-Browser单面板): Back, Forward, Reload
+ * (a spinner while loading), the address field ("Type a
+ * URL") and, on the right, Select element (the viewport is in the ⋮
+ * menu, as the original's Viewport). At rest
+ * the field shows the host and, muted, the path, centred; focused, the
+ * text slides left over 150ms and becomes the whole URL to edit (the
+ * original's address bar, live claude.ai bundle, 2026-10-14,
+ * cf550b864-BrIZWG9O.js). Enter opens what is
+ * typed unless an input method is composing (What's new), Escape puts the
+ * page's address back.
  */
 export function AddressBar({
   tab,
@@ -188,8 +192,9 @@ export function AddressBar({
         )}
       </div>
       {/* Select element says what it sends; while picking it becomes Exit
-         selection mode, and in sketch mode it reads Annotate with ⇧⌘X and ends
-         the sketch. */}
+          selection mode (desktop bundle 2.31226.1), and in sketch mode it
+          reads Annotate with ⇧⌘X and ends the sketch (live claude.ai
+          bundle, 2026-10-12). */}
       <WithTooltip
         label={
           sketching

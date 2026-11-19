@@ -1,15 +1,16 @@
 import { useEffect } from "react";
 
 /**
- * The web app's tab icon and browser colours (SCRATCH/impl/web/W-UI-design.md
- * §6.3): the Claudex mark alone, #d97757 strokes without the app icon's plate,
- * as SVG with a 32 px PNG for browsers without SVG icons, a 180 px
- * apple-touch-icon on a dark ground, and `theme-color` following the app's
- * theme.
+ * The web app's tab icon and browser colours
+ * (SCRATCH/impl/web/W-UI-design.md §6.3): the Claudex mark alone, #d97757
+ * strokes without the app icon's plate (owner, 2026-10-03), as SVG with a
+ * 32 px PNG for browsers without SVG icons, a 180 px
+ * apple-touch-icon on a dark ground, and `theme-color` following the
+ * app's theme.
  *
- * The files live in public-web/; `new URL(…, import.meta.url)` lets the web
- * build emit them under /assets/ (or inline them) without a change to its
- * configuration.
+ * The files live in public-web/; `new URL(…, import.meta.url)` lets the
+ * web build emit them under /assets/ (or inline them) without a change to
+ * its configuration.
  */
 export const faviconUrls = {
   svg: new URL("../../public-web/favicon.svg", import.meta.url).href,

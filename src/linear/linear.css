@@ -1,4 +1,5 @@
-/* flex-shrink-0 mt-0.5, text-body, text-footnote and gap-0.5. */
+/* flex-shrink-0 mt-0.5, text-body, text-footnote and gap-0.5
+ * (live claude.ai bundle, 2026-10-14, cc43287c9-79FKhdho.js). */
 .import-linear-issue {
   --linear-primary: #f0efec;
   --linear-muted: #898781;
@@ -41,10 +42,8 @@
 .import-linear-issue .import-issue-body li button[aria-selected="true"] {
   background: var(--linear-selected);
 }
-/*
- * Input size=sm: h-control--sm, pl-md, rounded, bg-fill-field,
- * shadow-field-ring.
- */
+/* Input size=sm: h-control--sm, pl-md, rounded, bg-fill-field,
+ * shadow-field-ring (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js). */
 .import-linear-issue .import-issue-search {
   height: 20px;
   padding: 0 8px;
@@ -82,11 +81,9 @@
   line-height: 15px;
 }
 
-/*
- * Wr: h-10 px-md gap-1.25, rounded-sm, bg-fill-secondary,
- * text-secondary-control; the remove control is size-4, -top-1.5 -end-1.5. CDS
- * colours resolved with audit/tokens.py.
- */
+/* Wr: h-10 px-md gap-1.25, rounded-sm, bg-fill-secondary, text-secondary-control;
+ * the remove control is size-4, -top-1.5 -end-1.5 (live claude.ai bundle,
+ * 2026-10-14, cc4a5adb7-mJKUf9Bm.js). CDS colours resolved with audit/tokens.py. */
 .linear-issue-pill {
   position: relative;
   display: inline-flex;

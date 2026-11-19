@@ -44,7 +44,7 @@ export function paneState(
   return { enabled: available && inCode, open: open && inCode };
 }
 
-/** File's contextual close. */
+/** File's contextual close (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, desktop 2.37337.1). */
 export function closeMenuTarget(
   mode: Mode,
   chatPage: boolean,
@@ -221,7 +221,8 @@ export function browserTabFor(
   if (command === "next-tab") return tabIds[(index + 1) % tabIds.length];
   if (command === "previous-tab")
     return tabIds[(Math.max(index, 0) - 1 + tabIds.length) % tabIds.length];
-  // ⌘9 is the last tab, however many there are.
+  // ⌘9 is the last tab, however many there are (live claude.ai bundle,
+  // 2026-10-12: selectBrowserTab9).
   if (typeof command === "object")
     return command.tab === 9 ? tabIds.at(-1) : tabIds[command.tab - 1];
   return undefined;

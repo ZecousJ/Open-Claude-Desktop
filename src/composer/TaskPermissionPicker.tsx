@@ -15,7 +15,7 @@ import {
 } from "../../shared/settings-extras";
 import { Menu, type MenuEntry, type MenuPosition } from "../ui/Menu";
 import { useTooltip } from "../ui/Tooltip";
-import { AppIcon, type AppIconName } from "../ui/app-icon";
+import { Anthropicon, type AnthropiconName } from "../ui/anthropicons";
 import { lazyPiece } from "../ui/lazy-piece";
 import { useDismiss } from "../ui/useDismiss";
 
@@ -53,10 +53,11 @@ const SkipAllApprovalsDialog = lazyPiece(
 );
 
 /**
- * A task's permission modes as the official unified home names them. Full
- * access is the official "Skip all approvals", which the owner kept for
- * native/task callers; the captured web Chat presentation offers only Manual
- * and Auto.
+ * A task's permission modes as the official unified home names them (live
+ * claude.ai bundle, 2026-10-12: the permission picker of a `hub` session,
+ * shared-8 YA()). Full access is the official "Skip all approvals", which
+ * the owner kept for native/task callers (2026-10-12); the captured web
+ * Chat presentation offers only Manual and Auto.
  */
 export const taskPermissionText: Record<
   TaskPermission,
@@ -75,20 +76,22 @@ export const taskPermissionText: Record<
   },
   bypass: {
     label: "Skip all approvals",
-    // The official compact trigger says "Skip", which reads as nothing on its
-    // own: the trigger names the mode in full.
+    // The official compact trigger says "Skip", which reads as nothing on
+    // its own (owner, 2026-10-12): the trigger names the mode in full.
     trigger: "Skip all approvals",
     description: "Claudex never pauses, even for unsafe actions.",
   },
 };
 
 /**
- * The same modes as a new task's composer in a task window names them, each
- * with the glyph its icon-only trigger shows.
+ * The same modes as a new task's composer in a task window names them (live
+ * claude.ai bundle, 2026-10-12: shared-8 YA() for a "cowork" session, the
+ * mini compose window's icon-only picker), each with the glyph its icon-only
+ * trigger shows.
  */
 export const windowPermissionText: Record<
   TaskPermission,
-  { label: string; description: string; glyph: AppIconName }
+  { label: string; description: string; glyph: AnthropiconName }
 > = {
   default: {
     label: "Manually approve",
@@ -108,7 +111,7 @@ export const windowPermissionText: Record<
 };
 
 // An unbound session uses Cowork copy; a bound hub session uses the shorter
-// labels.
+// labels (live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN.js oK).
 export const coworkPermissionText = {
   default: { ...taskPermissionText.default, ...windowPermissionText.default },
   auto: { ...taskPermissionText.auto, ...windowPermissionText.auto },
@@ -129,9 +132,10 @@ export function taskPermissionEntries(
   tooltips = false,
 ): MenuEntry[] {
   return [
-    // Without inline descriptions the popup has no "Permission mode" label, and
-    // each row is its 20px glyph and name with the description as a tooltip at
-    // the row's end.
+    // Without inline descriptions the popup has no "Permission mode" label,
+    // and each row is its 20px glyph and name with the description as a
+    // tooltip at the row's end (live claude.ai bundle, 2026-10-16,
+    // shared-8-kIxzyY2S.js T1: captioned follows inlineDescriptions).
     ...(tooltips ? [] : [{ heading: "Permission mode" }]),
     ...taskPermissions
       .filter((mode) => presentation !== "web-chat" || mode !== "bypass")
@@ -140,7 +144,10 @@ export function taskPermissionEntries(
         ...(tooltips
           ? {
               icon: (
-                <AppIcon name={windowPermissionText[mode].glyph} size={20} />
+                <Anthropicon
+                  name={windowPermissionText[mode].glyph}
+                  size={20}
+                />
               ),
               tooltip: text[mode].description,
             }
@@ -172,9 +179,11 @@ const menuWidth = 288;
 const menuRoom = 220;
 
 /**
- * The permission picker under a task's composer: its trigger is the mode's name
- * only (no glyph, no caret), its description the tooltip, and the menu opens
- * below it with each mode's description under its name.
+ * The permission picker under a task's composer: its trigger is the mode's
+ * name only (no glyph, no caret), its description the tooltip, and the
+ * menu opens below it with each mode's description under its name (live
+ * claude.ai bundle, 2026-10-12: the chin's picker with compactTrigger,
+ * hideIcon, hideCaret, inlineDescriptions and side "bottom").
  */
 export function TaskPermissionPicker({
   settings,
@@ -189,14 +198,15 @@ export function TaskPermissionPicker({
   settings: SettingsPreferences;
   onChange: (mode: TaskPermission) => void;
   /**
-   * Where the menu lines up with the trigger: its end with the trigger's end,
-   * opening leftwards.
+   * Where the menu lines up with the trigger: its end with the trigger's
+   * end, opening leftwards (live claude.ai /new, 2026-10-20).
    */
   align?: "start" | "end";
   /**
    * A task window's composer: the mode's glyph only, its name for screen
-   * readers and its description as the tooltip; the menu opens above, lined up
-   * with the trigger's end.
+   * readers and its description as the tooltip; the menu opens above,
+   * lined up with the trigger's end (live bundle: variant "new-task",
+   * iconOnly, side "top").
    */
   iconOnly?: boolean;
   sessionType?: "hub" | "cowork";
@@ -274,13 +284,13 @@ export function TaskPermissionPicker({
         }}
       >
         {iconOnly ? (
-          <AppIcon name={windowPermissionText[value].glyph} />
+          <Anthropicon name={windowPermissionText[value].glyph} />
         ) : (
           <>
             <span className="task-permission-label">
               {labels[value].trigger}
             </span>
-            <AppIcon
+            <Anthropicon
               className="task-permission-mobile-icon"
               name={windowPermissionText[value].glyph}
               size={16}

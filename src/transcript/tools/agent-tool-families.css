@@ -57,9 +57,9 @@
   color: var(--text-muted);
 }
 /* A pause or a compaction: the light row of every other tool (14/20 in the
-   rows' grey, 24px high, the text's 4px edge), with the 12px of air the rows
-   keep from text above and below. Code's rows are its own grey on its 10px
-   rhythm. */
+   rows' grey, 24px high, the text's 4px edge), with the 12px of air the
+   rows keep from text above and below (owner, 2026-10-03: no old 12px
+   event line left). Code's rows are its own grey on its 10px rhythm. */
 .agent-tool-event,
 .agent-collab-event {
   display: flex;
@@ -110,9 +110,9 @@
 .session-tool-body p {
   overflow-wrap: anywhere;
 }
-/* A generated picture under its row: the frame of the read-image thumbnail; its
-   size (240px tall, its own width) is provisional, the capture's thumbnail is
-   90px. */
+/* A generated picture under its row (R-0776, not captured): the frame of
+   the read-image thumbnail (R-0839: 1px edge, ~6px corners); its size (240px
+   tall, its own width) is provisional, the capture's thumbnail is 90px. */
 .generated-image-preview {
   display: block;
   width: fit-content;
@@ -138,16 +138,16 @@ div.generated-image-preview {
   outline: 1px solid var(--focus);
   outline-offset: 2px;
 }
-/* The compaction line is plain grey 14px text on the reply column, like the
-   command rows (#858580). */
+/* R-0835: the compaction line is plain grey 14px text on the reply column,
+   like the command rows (#858580). */
 .agent-tool-event.compaction-event {
   margin: 16px 0;
 }
 .mode-code .agent-tool-event.compaction-event {
   margin: 0;
 }
-/* The viewed picture at the row's right end, 111×62, radius 6, a 1px #3a3a38
-   rim, cover-cropped. */
+/* R-0873 (2x ÷2): the viewed picture at the row's right end, 111×62,
+   radius 6, a 1px #3a3a38 rim, cover-cropped. */
 .viewed-image-thumbnail {
   margin-left: auto;
 }

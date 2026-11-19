@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import type { AppEvent } from "../../shared/types";
 import { browserColorSchemes, type BrowserState } from "../../shared/browser";
 import { htmlDocument } from "../../src/artifacts/preview-document";

@@ -1,10 +1,11 @@
 import type { KeyboardEvent } from "react";
 
 /**
- * Where a vertical or horizontal arrow, Home or End moves among `count` stops
- * from `index`, or undefined for any other key. The vertical arrows loop round
- * the ends, as the original's sidebar does; the horizontal ones stop at the
- * ends of a row's controls.
+ * Where a vertical or horizontal arrow, Home or End moves among `count`
+ * stops from `index`, or undefined for any other key. The vertical arrows
+ * loop round the ends, as the original's sidebar does (desktop bundle
+ * 2.31226.1: aD's roving keys); the horizontal ones stop at the ends of a
+ * row's controls.
  */
 export function rovingStep(
   key: string,

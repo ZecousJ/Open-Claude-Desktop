@@ -1,5 +1,5 @@
 /* A reply's text: message tokens, headings, lists, tables, links, code blocks. (part of chat-transcript.css) */
-/* Message tokens. */
+/* Message tokens (live claude.ai bundle, 2026-10-14, c6a992d55-D8h3Fpj5.css). */
 .mode-chat,
 .mode-cowork {
   --cds-bg-neutral: rgb(255 255 255 / 5%);
@@ -35,23 +35,26 @@
   color: var(--cds-text-user-message-personal);
 }
 .mode-chat .user-message {
-  /* A long prompt's bubble is min(85%, 29.5rem) wide: 472px from a 555px column
-     up. */
+  /* A long prompt's bubble is min(85%, 29.5rem) wide: 472px from a 555px
+     column up (live claude.ai bundle, 2026-10-16, c6a992d55-DtPVsf7Q.css
+     --cds-message-bubble-measure). */
   max-width: min(85%, 29.5rem);
   border-radius: 12px;
   padding: 12px 16px;
-  /* The reply's first line starts 46px under the bubble (was 50 in zoomed
-     reference pixels). */
+  /* R-0496: the reply's first line starts 46px under the bubble (was 50 in
+     zoomed reference pixels). */
   margin-bottom: 41.6px;
   font-size: 15px;
   line-height: 20px;
   background: var(--cds-bg-user-message);
   color: var(--cds-text-primary);
 }
-/* A sent message's pictures keep their own proportions: a 120px tile until the
-   picture loads, then as large as the picture within the column, at most 320px
-   tall; two or more share a row at 240px / half the row (less the 8px gap) and
-   160px tall. A PDF or text file stays the 120px tile. */
+/* A sent message's pictures keep their own proportions (live claude.ai
+   bundle, 2026-10-16, c6a992d55-DtPVsf7Q.css [data-fit=natural]): a 120px
+   tile until the picture loads, then as large as the picture within the
+   column, at most 320px tall; two or more share a row at 240px / half the
+   row (less the 8px gap) and 160px tall. A PDF or text file stays the 120px
+   tile (R-0507). */
 .mode-chat .message-attachments {
   gap: 8px;
   align-items: flex-end;
@@ -86,8 +89,8 @@
   img {
   max-height: 160px;
 }
-/* The blank line of a prompt is an 8px paragraph gap (line pitch 20, across the
-   gap 28); further blank lines keep a line each. */
+/* R-0488: the blank line of a prompt is an 8px paragraph gap (line pitch 20,
+   across the gap 28); further blank lines keep a line each. */
 .mode-chat .user-message-text .prompt-paragraph + .prompt-paragraph {
   margin-top: 8px;
 }
@@ -100,9 +103,9 @@
 .mode-chat .assistant-message {
   display: block;
 }
-/* The feed numbers prompt and reply separately. A prompt row reserves its 24px
-   actions plus 8px gap, followed by another 8px before the reply; the visible
-   bubble-to-reply gap remains 40px. */
+/* The feed numbers prompt and reply separately (live 2026-10-16). A
+   prompt row reserves its 24px actions plus 8px gap, followed by another
+   8px before the reply; the visible bubble-to-reply gap remains 40px. */
 .user-message-article {
   position: relative;
   display: flow-root;
@@ -118,21 +121,24 @@
   outline: none;
   box-shadow: var(--focus-shadow);
 }
-/* Body ink peaks at #fbfaf6 and CJK text is set in a sans face (PingFang), not
-   a serif. */
+/* W969 captures (2.4 px/CSS, audit-2026-09-28-shell-chat.md): body ink peaks
+   at #fbfaf6 (R-0519, R-0520) and CJK text is set in a sans face (PingFang),
+   not a serif. */
 /* Source response serif is used whenever the host supplies that face;
    unavailable reference assets retain the existing system fallback. */
 .mode-chat .markdown {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
-  /* A reply is font-claude-response-body, 15/22. */
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
+  /* Live claude.ai, 2026-10-13: a reply is font-claude-response-body,
+     15/22 (it was 17/24 in the older captures). */
   font-size: 15px;
   font-optical-sizing: auto;
   line-height: 22px;
   color: var(--cds-text-primary);
 }
-/* H4, H5 and H6 share one 15px bold size (cap height 10px); H5 and H6 are the
-   dimmer #d2d1cd of the quote text. */
+/* R-0519, R-0581, R-0521: H4, H5 and H6 share one 15px bold size (cap height
+   10px); H5 and H6 are the dimmer #d2d1cd of the quote text. */
 .mode-chat .markdown h4,
 .mode-chat .markdown h5,
 .mode-chat .markdown h6 {
@@ -146,8 +152,8 @@
 .mode-chat .markdown h6 {
   color: #d2d1cd;
 }
-/* A 3px #2d2d2d rule exactly as tall as the quoted lines, text in #d2d1cd 13px
-   after the rule. */
+/* R-0521: a 3px #2d2d2d rule exactly as tall as the quoted lines, text in
+   #d2d1cd 13px after the rule. */
 .mode-chat .markdown blockquote {
   margin: 12px 0 16px 8px;
   padding: 0 0 0 10px;
@@ -158,8 +164,10 @@
   margin: 0;
   padding: 0;
 }
-/* A reply's links are blue in every mode, not the accent orange. Chat keeps its
-   own captured values below. */
+/* A reply's links are blue in every mode, not the accent orange (owner,
+   2026-10-02; live claude.ai/code: --cds-text-accent, #6da7ec dark, #184f95
+   light, the underline the same colour at 40% and solid on hover, 3px
+   below). Chat keeps its own captured values below. */
 .markdown a,
 .user-message-text a {
   color: #6da7ec;
@@ -175,7 +183,9 @@
 :root[data-theme="light"] .user-message-text a {
   color: #184f95;
 }
-/* Links take the original's text-accent, underlined in the same colour. */
+/* Links take the original's text-accent (live claude.ai bundle, 2026-10-14:
+   blue-300 #6da7ec dark, blue-600 #184f95 light; R-0520 had read #86ade8),
+   underlined in the same colour. */
 .mode-chat .markdown a,
 .mode-chat .user-message-text a {
   color: #6da7ec;
@@ -186,25 +196,27 @@
 :root[data-theme="light"] .mode-chat .user-message-text a {
   color: #184f95;
 }
-/* Long unbroken cell text stays on one line; the table scrolls. */
+/* R-0534: long unbroken cell text stays on one line; the table scrolls. */
 .mode-chat .markdown td,
 .mode-chat .markdown th {
   overflow-wrap: normal;
   word-break: normal;
 }
 
-/* Paragraph, heading and list spacing, sizes, the right-edge stop and the 2em
-   list indent are the live Prose rules in live-web/transcript.css; the older
-   captured margins that stood here are gone. Ordered numbers end 11.8px before
-   the text and right-align (10., 11., 12. start further left). */
+/* Paragraph, heading and list spacing, sizes, the right-edge stop and the
+   2em list indent are the live Prose rules in live-web/transcript.css (live
+   claude.ai bundle, 2026-10-16, c673fe961-Df8SFQF6.css and
+   c6a992d55-DtPVsf7Q.css); the older captured margins that stood here
+   (R-0430, R-0443-R-0445) are gone. Ordered numbers end 11.8px before the
+   text and right-align (10., 11., 12. start further left). */
 .mode-chat .markdown p {
   font-size: inherit;
   line-height: inherit;
 }
-/* Markers are dimmer than the text (#cdcdc5, ~80%) and sit 19.4px before it
-   (the browser's own markers sit 11px before): a 5.7px disc, a 6.5px ring at
-   the second level, a 5.3px square at the third. Ordered numbers end 11.8px
-   before the text and right-align. */
+/* R-0443-R-0445: markers are dimmer than the text (#cdcdc5, ~80%) and sit
+   19.4px before it (the browser's own markers sit 11px before): a 5.7px disc,
+   a 6.5px ring at the second level, a 5.3px square at the third. Ordered
+   numbers end 11.8px before the text and right-align. */
 .mode-chat .markdown ul:not(.contains-task-list) > li {
   list-style: none;
   position: relative;
@@ -269,9 +281,9 @@
   font: inherit;
   border-collapse: collapse;
 }
-/* Cells are top-aligned (the wrapped 002 row keeps 001's first line on its
-   top), no minimum width, 12.5px side padding, 7.4px above and below a 24px
-   line. */
+/* R-0446, R-0447, R-0448: cells are top-aligned (the wrapped 002 row keeps
+   001's first line on its top), no minimum width, 12.5px side padding, 7.4px
+   above and below a 24px line. */
 .mode-chat .markdown th,
 .mode-chat .markdown td {
   border: 0;
@@ -301,7 +313,7 @@
   display: contents;
   background: transparent;
   border: 0;
-  font-family: sans-serif;
+  font-family: "Claudex Reference Sans", sans-serif;
   font-size: 11px;
   line-height: 17px;
 }
@@ -363,9 +375,9 @@
 .mode-chat .plain-code .code-bar > span {
   display: none;
 }
-/* A block without a language wraps its long line ("...ccd88" over "6e6a0c6dcf")
-   and its buttons float over the text; a block with a language clips and
-   scrolls. */
+/* R-0527 (W969): a block without a language wraps its long line ("...ccd88"
+   over "6e6a0c6dcf") and its buttons float over the text; a block with a
+   language clips and scrolls (R-0529). */
 .mode-chat .plain-code pre {
   padding: 14px;
   white-space: pre-wrap;
@@ -386,7 +398,9 @@
     scale var(--motion-fast) ease-out;
 }
 /* Inline code is the danger text on a faint lighter face with a hairline rim,
-   in replies and in prompts alike. */
+   in replies and in prompts alike (live claude.ai bundle, 2026-10-16,
+   c6a992d55-DtPVsf7Q.css: code:not(pre code) takes --cds-text-danger on
+   alpha-1 with an alpha-2 border; the older R-0520 captures read #df9297). */
 .mode-chat .markdown :not(pre) > code,
 .mode-chat .user-message-text code {
   font-size: 14px;
@@ -431,8 +445,8 @@
 .hljs-variable.language_ {
   color: var(--code-keyword, #89ddff);
 }
-/* In the javascript block `console` is plain text; only the call (.log) is
-   blue. */
+/* R-0437: in the javascript block `console` is plain text; only the call
+   (.log) is blue. */
 .mode-chat
   .markdown
   code:is(.language-javascript, .language-js)
@@ -450,7 +464,7 @@
 .mode-chat .markdown:has(+ .message-actions) > :last-child {
   margin-bottom: 0;
 }
-/* 16px glyphs: icon boxes start on the text column. */
+/* 16px glyphs: icon boxes start on the text column (normalized-command-hover-007). */
 .mode-chat .small-action.icon-only > .reply-glyph {
   flex: none;
   width: 16px;
@@ -462,6 +476,6 @@
   /* R-0437 "15 minutes ago" is 74.6px wide (ours 82 at 12px), R-0463 "just
      now" 42.6px: 11px. */
   font-size: 11px;
-  /* The time starts 17.9-18.6px after the last icon's centre. */
+  /* R-0437, R-0463: the time starts 17.9-18.6px after the last icon's centre. */
   margin-left: 5.6px;
 }

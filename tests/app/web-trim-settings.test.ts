@@ -1,8 +1,8 @@
 /**
- * Desktop-only entry points are hidden in the web app (Settings navigation,
- * Developer/Extensions/Chrome/Connectors, Billing's payment wording, Settings
- * via /settings/<tab>, the project folder field and Customize), and the desktop
- * stays exactly as it was.
+ * W-TRIM1: desktop-only entry points are hidden in the web app (Settings
+ * navigation, Developer/Extensions/Chrome/Connectors, Billing's payment
+ * wording, Settings via /settings/<tab>, the project folder field and
+ * Customize), and the desktop stays exactly as it was.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -94,8 +94,8 @@ test("the desktop navigation keeps local Code Usage without a service plan", () 
     ["Settings", "Customize", "This computer"],
   );
   assert.deepEqual(ids(availableNavGroups(desktopHost, true)), ids(navGroups));
-  // Design systems under Customize; Claude Code, Cowork and Claude in Chrome
-  // under Products.
+  // The live claude.ai grouping (2026-10-14): Design systems under
+  // Customize; Claude Code, Cowork and Claude in Chrome under Products.
   assert.deepEqual(ids(navGroups.slice(1, 2)), [
     "skills",
     "connectors",
@@ -251,10 +251,10 @@ test("Connectors on the web changes nothing: no Edit config or Add custom connec
   assert.match(web, /Connectors/);
   assert.doesNotMatch(web, /Edit config/);
   assert.doesNotMatch(web, /Add custom connector/);
-  // The Add connector menu stays for Browse connectors; custom connectors say
-  // they aren't here.
+  // The Add connector menu stays for Browse connectors (live claude.ai
+  // bundle, 2026-10-14, c0e82e24a); custom connectors say they aren't here.
   assert.match(web, /Custom connectors aren’t available for this account\./);
-  // On the desktop both are in the Add ⌄ menu.
+  // On the desktop both are in the Add ⌄ menu (R-1376).
   const desktop = render(desktopHost, createElement(ConnectorsTab, tabProps));
   assert.match(desktop, /aria-haspopup="menu"[^>]*>.*Add/);
   assert.match(serviceNote, /service provides these connectors/);

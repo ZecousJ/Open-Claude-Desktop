@@ -195,7 +195,7 @@ func (c *Component) adminUpdate(g *gin.Context) {
 		response.ErrorFrom(g, err)
 		return
 	}
-	in, err := req.normalize()
+	in, err := req.Content.normalize()
 	if err != nil {
 		response.ErrorFrom(g, err)
 		return

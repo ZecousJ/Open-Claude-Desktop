@@ -3,7 +3,7 @@
  * OTA). Each is a fixed script that takes its values as arguments, so no
  * path is ever spliced into shell or PowerShell code. No Electron imports.
  *
- * macOS (with a backup and
+ * macOS (after ZecousAI's install-update-macos.sh, with a backup and
  * rollback): wait for the app to exit, unpack the zip with ditto next to
  * the bundle, check that it is Claudex at the expected version, move the
  * current bundle aside and the new one into place (renames on one volume),
@@ -77,6 +77,7 @@ export const windowsApplyScript = `param(
 )
 # Installs a staged Claudex update after Claudex quits (written by Claudex).
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 function Write-Result([bool]$ok, [string]$err) {
   $json = @{ ok = $ok; version = $Version; error = $err } | ConvertTo-Json -Compress
   [System.IO.File]::WriteAllText($Result, $json)
@@ -85,7 +86,8 @@ $exe = Join-Path $InstallDir $ExeName
 try { Wait-Process -Id $ProcessId -Timeout 120 -ErrorAction SilentlyContinue } catch {}
 if (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue) {
   Write-Result $false 'Claudex did not quit.'
-  if ($TaskName) { schtasks.exe /Delete /TN $TaskName /F 2>&1 | Out-Null }
+  Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue
+  if ($TaskName) { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue }
   exit 1
 }
 try {
@@ -97,85 +99,119 @@ try {
   Write-Result $false "$($_.Exception.Message)"
 }
 if ($Relaunch -eq '1' -and (Test-Path -LiteralPath $exe)) { Start-Process -FilePath $exe }
-if ($TaskName) { schtasks.exe /Delete /TN $TaskName /F 2>&1 | Out-Null }
+Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue
+if ($TaskName) { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue }
 `;
 
-/**
- * Windows app pack (app-pack.ts): after Claudex quits, the zip's files
- * become resources/, the Codex folder moving over from the old one; the old
- * folder comes back if anything fails. No new program runs, so Smart App
- * Control has nothing to block. Same parameters as windowsApplyScript, the
- * zip as -Installer.
- */
+export const windowsAsarVersionReader = `function Read-PackVersion([string]$folder) {
+  $asar = Join-Path $folder 'app.asar'
+  $reader = [System.IO.BinaryReader]::new([System.IO.File]::OpenRead($asar))
+  try {
+    # The ASAR header is two Pickles, with the file offsets relative to their end.
+    $null = $reader.ReadUInt32()
+    $headerSize = $reader.ReadUInt32()
+    $null = $reader.ReadUInt32()
+    $headerLength = $reader.ReadInt32()
+    $header = [System.Text.Encoding]::UTF8.GetString($reader.ReadBytes($headerLength)) | ConvertFrom-Json
+    $metadata = $header.files.'package.json'
+    $reader.BaseStream.Position = 8 + $headerSize + [long]$metadata.offset
+    ([System.Text.Encoding]::UTF8.GetString($reader.ReadBytes($metadata.size)) | ConvertFrom-Json).version
+  } finally { $reader.Dispose() }
+}`;
+
+/** Swaps in an app pack prepared next to the installed resources. */
 export const windowsAppPackScript = `param(
   [int]$ProcessId,
-  [string]$Installer,
   [string]$InstallDir,
   [string]$Relaunch,
   [string]$Result,
   [string]$Version,
   [string]$Staged,
   [string]$ExeName,
-  [string]$TaskName
+  [string]$TaskName,
+  [string]$Prepared,
+  [string]$CurrentVersion
 )
-# Applies a staged Claudex app pack after Claudex quits (written by Claudex).
 $ErrorActionPreference = 'Stop'
-function Write-Result([bool]$ok, [string]$err) {
-  $json = @{ ok = $ok; version = $Version; error = $err } | ConvertTo-Json -Compress
-  [System.IO.File]::WriteAllText($Result, $json)
-}
-# A program Claudex started may hold a file a moment longer.
+$ProgressPreference = 'SilentlyContinue'
 function Retry([scriptblock]$step) {
   for ($i = 0; ; $i++) {
     try { & $step; return } catch { if ($i -ge 30) { throw }; Start-Sleep -Seconds 2 }
   }
 }
+function Read-Record([string]$file) {
+  try { Get-Content -LiteralPath $file -Encoding UTF8 -Raw | ConvertFrom-Json } catch {}
+}
+${windowsAsarVersionReader}
+function Write-Result([bool]$ok, [string]$err) {
+  $json = @{ ok = $ok; version = $Version; prepared = $Prepared; attempts = $attempts; error = $err } | ConvertTo-Json -Compress
+  [System.IO.File]::WriteAllText($Result, $json)
+}
 $exe = Join-Path $InstallDir $ExeName
-try { Wait-Process -Id $ProcessId -Timeout 120 -ErrorAction SilentlyContinue } catch {}
-if (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue) {
-  Write-Result $false 'Claudex did not quit.'
-  if ($TaskName) { schtasks.exe /Delete /TN $TaskName /F 2>&1 | Out-Null }
-  exit 1
+function Reopen {
+  if ($Relaunch -eq '1' -and (Test-Path -LiteralPath $exe)) { Start-Process -FilePath $exe }
 }
 $res = Join-Path $InstallDir 'resources'
-$new = Join-Path $InstallDir 'resources.update'
-$old = Join-Path $InstallDir 'resources.previous'
+$new = "$Prepared.installing"
+$old = "$Prepared.previous"
 $kept = 'codex'
+$oldKept = Join-Path $old $kept
+$newKept = Join-Path $new $kept
+$lockFile = Join-Path $InstallDir '.claudex-update.lock'
+$lock = $null
+$installed = $false
+$err = ''
 try {
-  Remove-Item -LiteralPath $new, $old -Recurse -Force -ErrorAction SilentlyContinue
-  Expand-Archive -LiteralPath $Installer -DestinationPath $new -Force
-  if (-not (Test-Path -LiteralPath (Join-Path $new 'app.asar'))) { throw 'The app pack has no app.asar.' }
-  if (Test-Path -LiteralPath (Join-Path $res $kept)) {
-    Retry { Move-Item -LiteralPath (Join-Path $res $kept) -Destination (Join-Path $new $kept) }
-  }
-  Retry { Rename-Item -LiteralPath $res -NewName 'resources.previous' }
-  Rename-Item -LiteralPath $new -NewName 'resources'
-  Remove-Item -LiteralPath $old -Recurse -Force -ErrorAction SilentlyContinue
-  # Apps & features shows the version now installed.
-  # (The NSIS entry names the folder only in its UninstallString.)
-  $dirKey = $InstallDir.TrimEnd('\\') + '\\'
-  Get-ChildItem 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall' -ErrorAction SilentlyContinue | ForEach-Object {
-    $entry = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction SilentlyContinue
-    if ("$($entry.UninstallString)".IndexOf($dirKey, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
-      Set-ItemProperty -LiteralPath $_.PSPath -Name DisplayVersion -Value $Version
-      if ("$($entry.DisplayName)" -match '^Claudex \\d') { Set-ItemProperty -LiteralPath $_.PSPath -Name DisplayName -Value "Claudex $Version" }
-    }
-  }
-  Write-Result $true ''
-  Remove-Item -LiteralPath $Installer, $Staged -Force -ErrorAction SilentlyContinue
-} catch {
-  $err = "$($_.Exception.Message)"
+  try { Wait-Process -Id $ProcessId -Timeout 120 -ErrorAction SilentlyContinue } catch {}
+  $lock = Retry { [System.IO.File]::Open($lockFile, 'OpenOrCreate', 'ReadWrite', 'None') }
+  $record = Read-Record $Staged
+  if ($record.kind -ne 'win-app' -or $record.version -ne $Version -or $record.prepared -ne $Prepared -or $record.sourceVersion -ne $CurrentVersion) { return }
+  if (-not (Test-Path -LiteralPath $Prepared) -and -not (Test-Path -LiteralPath $new)) { return }
+  $receipt = Read-Record $Result
+  $attempts = [int]$record.attempts + 1
+  if ($receipt.version -eq $Version -and $receipt.prepared -eq $Prepared) { $attempts = [int]$receipt.attempts + 1 }
   try {
-    if (-not (Test-Path -LiteralPath $res) -and (Test-Path -LiteralPath $old)) { Rename-Item -LiteralPath $old -NewName 'resources' }
-    if (-not (Test-Path -LiteralPath (Join-Path $res $kept)) -and (Test-Path -LiteralPath (Join-Path $new $kept))) {
-      Move-Item -LiteralPath (Join-Path $new $kept) -Destination (Join-Path $res $kept)
+    if (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue) { throw 'Claudex did not quit.' }
+    $current = if (Test-Path -LiteralPath $old) { $old } else { $res }
+    if ((Read-PackVersion $current) -ne $CurrentVersion) {
+      try { Reopen } catch {}
+      return
     }
-    Remove-Item -LiteralPath $new -Recurse -Force -ErrorAction SilentlyContinue
-  } catch {}
-  Write-Result $false $err
+    if (-not (Test-Path -LiteralPath $new)) { [System.IO.Directory]::Move($Prepared, $new) }
+    if ((Read-PackVersion $new) -ne $Version) { throw "The prepared app pack isn't the expected version." }
+    if (-not (Test-Path -LiteralPath $old)) { Retry { [System.IO.Directory]::Move($res, $old) } }
+    if (Test-Path -LiteralPath $oldKept) { [System.IO.Directory]::Move($oldKept, $newKept) }
+    if (-not (Test-Path -LiteralPath $newKept -PathType Container)) { throw 'The installed Codex folder is missing.' }
+    [System.IO.Directory]::Move($new, $res)
+    $installed = $true
+  } catch {
+    $err = $_.Exception.Message
+    try {
+      if (Test-Path -LiteralPath $old) {
+        if ((Test-Path -LiteralPath $newKept) -and -not (Test-Path -LiteralPath $oldKept)) { [System.IO.Directory]::Move($newKept, $oldKept) }
+        if (-not (Test-Path -LiteralPath $res)) { [System.IO.Directory]::Move($old, $res) }
+      }
+      if (Test-Path -LiteralPath $new) { [System.IO.Directory]::Move($new, $Prepared) }
+    } catch { $err += " Rollback: $($_.Exception.Message)" }
+  }
+  try { Write-Result $installed $err } catch {}
+  Reopen
+  if ($installed) {
+    $dirKey = $InstallDir.TrimEnd('\\') + '\\'
+    Get-ChildItem 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall' -ErrorAction SilentlyContinue | ForEach-Object {
+      $entry = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction SilentlyContinue
+      if ("$($entry.UninstallString)".IndexOf($dirKey, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+        Set-ItemProperty -LiteralPath $_.PSPath -Name DisplayVersion -Value $Version -ErrorAction SilentlyContinue
+        if ("$($entry.DisplayName)" -match '^Claudex \\d') { Set-ItemProperty -LiteralPath $_.PSPath -Name DisplayName -Value "Claudex $Version" -ErrorAction SilentlyContinue }
+      }
+    }
+  }
+} finally {
+  if ($lock) { $lock.Dispose() }
+  if ($installed) { Remove-Item -LiteralPath $old -Recurse -Force -ErrorAction SilentlyContinue }
+  Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue
+  if ($TaskName) { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue }
 }
-if ($Relaunch -eq '1' -and (Test-Path -LiteralPath $exe)) { Start-Process -FilePath $exe }
-if ($TaskName) { schtasks.exe /Delete /TN $TaskName /F 2>&1 | Out-Null }
 `;
 
 export interface ApplyArguments {
@@ -191,6 +227,8 @@ export interface ApplyArguments {
   stagedRecord: string;
   /** Windows: the app's executable name in the install folder. */
   exeName?: string;
+  prepared?: string;
+  currentVersion?: string;
 }
 
 /** The program and arguments that run the macOS helper script. */
@@ -212,10 +250,8 @@ export function macApplyCommand(script: string, args: ApplyArguments) {
   };
 }
 
-/** The program and arguments that run the Windows helper script, hidden. */
-export function windowsApplyCommand(
-  script: string,
-  args: ApplyArguments,
+export function windowsPowerShellCommand(
+  args: string[],
   systemRoot = "C:\\Windows",
 ) {
   return {
@@ -233,12 +269,30 @@ export function windowsApplyCommand(
       "Bypass",
       "-WindowStyle",
       "Hidden",
+      ...args,
+    ],
+  };
+}
+
+export function windowsApplyCommand(
+  script: string,
+  args: ApplyArguments,
+  systemRoot?: string,
+) {
+  return windowsPowerShellCommand(
+    [
       "-File",
       script,
       "-ProcessId",
       String(args.pid),
-      "-Installer",
-      args.file,
+      ...(args.prepared
+        ? [
+            "-Prepared",
+            args.prepared,
+            "-CurrentVersion",
+            args.currentVersion ?? "",
+          ]
+        : ["-Installer", args.file]),
       "-InstallDir",
       args.target,
       "-Relaunch",
@@ -252,6 +306,17 @@ export function windowsApplyCommand(
       "-ExeName",
       args.exeName ?? "Claudex.exe",
     ],
+    systemRoot,
+  );
+}
+
+export function windowsHiddenCommand(
+  helper: { command: string; args: string[] },
+  systemRoot = "C:\\Windows",
+) {
+  return {
+    command: path.win32.join(systemRoot, "System32", "conhost.exe"),
+    args: ["--headless", helper.command, ...helper.args],
   };
 }
 
@@ -276,39 +341,23 @@ export function windowsTaskLaunchCommand(
   taskName: string,
   systemRoot = "C:\\Windows",
 ) {
-  const argument = [...helper.args, "-TaskName", taskName]
+  const hidden = windowsHiddenCommand(helper, systemRoot);
+  const argument = [...hidden.args, "-TaskName", taskName]
     .map(windowsArgument)
     .join(" ");
   const quoted = (value: string) => `'${value.replace(/'/g, "''")}'`;
   const script = [
     "$ErrorActionPreference = 'Stop'",
-    // Tasks an earlier update left behind go first.
-    "Get-ScheduledTask -TaskName 'Claudex Update *' -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue",
-    `$action = New-ScheduledTaskAction -Execute ${quoted(helper.command)} -Argument ${quoted(argument)}`,
+    `$action = New-ScheduledTaskAction -Execute ${quoted(hidden.command)} -Argument ${quoted(argument)}`,
     "$principal = New-ScheduledTaskPrincipal -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited",
     "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 30)",
     `Register-ScheduledTask -TaskName ${quoted(taskName)} -Action $action -Principal $principal -Settings $settings -Force | Out-Null`,
-    `Start-ScheduledTask -TaskName ${quoted(taskName)}`,
+    `try { Start-ScheduledTask -TaskName ${quoted(taskName)} } catch { Unregister-ScheduledTask -TaskName ${quoted(taskName)} -Confirm:$false -ErrorAction SilentlyContinue; throw }`,
   ].join("\n");
-  return {
-    command: path.win32.join(
-      systemRoot,
-      "System32",
-      "WindowsPowerShell",
-      "v1.0",
-      "powershell.exe",
-    ),
-    args: [
-      "-NoProfile",
-      "-NonInteractive",
-      "-ExecutionPolicy",
-      "Bypass",
-      "-WindowStyle",
-      "Hidden",
-      "-EncodedCommand",
-      Buffer.from(script, "utf16le").toString("base64"),
-    ],
-  };
+  return windowsPowerShellCommand(
+    ["-EncodedCommand", Buffer.from(script, "utf16le").toString("base64")],
+    systemRoot,
+  );
 }
 
 /**

@@ -4,12 +4,13 @@ import type { McpServerState } from "../../shared/settings-desktop-api";
 import { formatText } from "../i18n";
 
 /**
- * Session info, the card /status posts in a Code transcript: three groups of
- * rows. Session: Desktop app, Model (with effort), Permissions, Started and the
+ * Session info, the card /status posts in a Code transcript (live
+ * claude.ai bundle, 2026-10-14, the status card): three groups of rows.
+ * Session: Desktop app, Model (with effort), Permissions, Started and the
  * Session ID (cut to eight characters, copyable; the full ID in the copied
- * report, with the Desktop session ID). Environment: Host (an SSH host), Folder
- * (the home folder as "~"), Additional folders, MCP servers (by state) and
- * Sandbox. Account: Signed in as.
+ * report, with the Desktop session ID). Environment: Host (an SSH host),
+ * Folder (the home folder as "~"), Additional folders, MCP servers (by
+ * state) and Sandbox. Account: Signed in as.
  */
 export interface InfoRow {
   id: string;
@@ -151,8 +152,8 @@ export function sessionInfoGroups({
       value: formatText("SSH · {host}", { host: sshHost }),
     });
   const home = sshHost ? undefined : environment?.home;
-  // A session in its own worktree: Folder is where it started, Worktree where
-  // it works.
+  // A session in its own worktree: Folder is where it started, Worktree
+  // where it works (live claude.ai bundle, 2026-10-14).
   const origin = c.worktree?.origin ?? c.cwd;
   if (origin)
     place.push({

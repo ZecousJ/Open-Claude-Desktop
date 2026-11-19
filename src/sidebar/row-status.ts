@@ -4,7 +4,11 @@ import {
   type PullRequestDisplayState,
 } from "../../shared/pull-request-status";
 
-/** What a row's dot says, in words. */
+/**
+ * What a row's dot says, in words (desktop bundle 2.31226.1, the session
+ * status names: Awaiting input, Awaiting answer, Running, Unread response,
+ * Idle, Done, and Archived for an archived row).
+ */
 export type RowStatus = {
   /** The dot's modifier class; "" is the idle ring. */
   dot: "attention" | "working" | "unread" | "";
@@ -47,8 +51,9 @@ export function rowStatus(
     };
   if (state.working)
     return { dot: "working", label: "Running", archived: false };
-  // a Code session with a pull request shows its state; a merged or closed one
-  // does so even over an unread reply, an open one gives way to it.
+  // Live claude.ai bundle, 2026-10-12 (shared-8 `pf`): a Code session with a
+  // pull request shows its state; a merged or closed one does so even over
+  // an unread reply, an open one gives way to it.
   const prState =
     c.mode === "code" && pr && pr.state !== "none" ? pr : undefined;
   const settled = prState?.state === "merged" || prState?.state === "closed";

@@ -270,8 +270,8 @@ export function ArtifactCommentsPane({
               role="menu"
               aria-label="Filter comments"
             >
-              {/* An artifact here is one page, so the page scope is fixed to all
-                 pages, as the reference shows it. */}
+              {/* An artifact here is one page, so the page scope is fixed
+                    to all pages, as the reference shows it (R-1020). */}
               <button role="menuitemradio" aria-checked={false} disabled>
                 This page
               </button>
@@ -305,7 +305,7 @@ export function ArtifactCommentsPane({
             <div className="artifact-comments-empty">
               {comments.length ? (
                 // The original's line and, after it, a link that shows the
-                // resolved ones.
+                // resolved ones (desktop bundle 2.31226.1).
                 <p>
                   {t("No open comments.")}{" "}
                   <button

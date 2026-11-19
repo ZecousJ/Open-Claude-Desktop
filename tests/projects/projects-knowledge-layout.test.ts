@@ -302,7 +302,7 @@ test("switching files during a delayed read rejects the old result and keeps HTM
     assert.equal(env.document.querySelector("pre")?.textContent, markup);
     assert.equal(
       env.document.querySelector(
-        ".prj-knowledge-preview-pane script, .prj-knowledge-preview-pane svg:not([data-icon])",
+        ".prj-knowledge-preview-pane script, .prj-knowledge-preview-pane svg:not([data-anthropicon])",
       ),
       null,
     );
@@ -534,7 +534,7 @@ for (const state of ["failed", "inaccessible"] as const)
     try {
       const status = env.document.querySelector(".prj-context-row small")!;
       assert.equal(
-        Boolean(status.querySelector('[data-icon="Warning"]')),
+        Boolean(status.querySelector('[data-anthropicon="Warning"]')),
         state === "failed",
       );
       assert.equal(

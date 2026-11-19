@@ -14,10 +14,12 @@ const tickMs = 30_000;
 export const snoozeMinutes = 15;
 
 /**
- * Settings → Time and focus. A corner notice, in the app's toast box, when the
- * set time of use in a row has passed (Snooze adds 15 minutes, dismissing
- * starts the count again), and once per quiet period while it lasts. Nothing is
- * blocked.
+ * Settings → Time and focus (live claude.ai, 2026-09-29: "Get a nudge to
+ * take a break from Claude. You can snooze or adjust anytime." and "Set
+ * time limits for Claude. You can dismiss or adjust anytime."). A corner
+ * notice, in the app's toast box, when the set time of use in a row has
+ * passed (Snooze adds 15 minutes, dismissing starts the count again), and
+ * once per quiet period while it lasts. Nothing is blocked.
  */
 export function FocusNotices({ settings }: { settings: Settings }) {
   const t = useT();

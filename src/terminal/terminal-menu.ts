@@ -2,7 +2,9 @@ import type { MenuEntry } from "../ui/Menu";
 
 /**
  * What Attach selection as context takes from the terminal: the selection
- * without the blanks around it, or nothing when only blanks are selected.
+ * without the blanks around it, or nothing when only blanks are selected
+ * (desktop bundle 2.31226.1 trims the text and offers the item only for a
+ * selection with something in it).
  */
 export function attachableSelection(selection: string) {
   const text = selection.trim();
@@ -10,10 +12,11 @@ export function attachableSelection(selection: string) {
 }
 
 /**
- * The terminal's own keys, shown in its menu: Attach selection as context ⇧⌘L
- * (Ctrl+Shift+L elsewhere); Copy and Paste ⌘C and ⌘V on macOS, Ctrl+Shift+C and
- * Ctrl+Shift+V elsewhere, where Ctrl+C and Ctrl+V go to the shell; Select all
- * ⌘A on macOS only.
+ * The terminal's own keys, shown in its menu (live claude.ai bundle,
+ * 2026-10-12): Attach selection as context ⇧⌘L (Ctrl+Shift+L elsewhere);
+ * Copy and Paste ⌘C and ⌘V on macOS, Ctrl+Shift+C and Ctrl+Shift+V
+ * elsewhere, where Ctrl+C and Ctrl+V go to the shell; Select all ⌘A on
+ * macOS only.
  */
 export function terminalShortcuts(mac: boolean) {
   return {

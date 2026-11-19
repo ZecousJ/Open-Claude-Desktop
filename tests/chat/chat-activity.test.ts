@@ -43,8 +43,8 @@ test("completed tool and continuing thought share one root disclosure without re
   const turn = base();
   const html = render(turn);
   assert.equal((html.match(/class="chat-steps"/g) ?? []).length, 1);
-  // The turn's verb heads the group while it works (G-04); the finished command
-  // is a step in the open card.
+  // The turn's verb heads the group while it works (G-04); the finished
+  // command is a step in the open card (live claude.ai).
   assert.match(html, new RegExp(turnVerb(turn)));
   assert.match(
     html,
@@ -95,8 +95,8 @@ test("commentary keeps independent tool groups in chronological order", () => {
   assert(html.indexOf("Between commands") < html.indexOf(turnVerb(turn)));
 });
 
-// Rag_search, rag_read, a reasoning item without a summary, rag_search,
-// rag_read ×2 and a command were two groups.
+// Live, 2026-10-08: rag_search, rag_read, a reasoning item without a
+// summary, rag_search, rag_read ×2 and a command were two groups.
 test("connector calls stay one group across a thought between them", () => {
   const tool = (id: string, name: string) => ({
     id,
@@ -164,7 +164,7 @@ test("reasoning headings, or else the summary's first sentence, update the statu
     html,
     /chat-step-text"><span class="activity-label" data-shimmer="tools"><span class="shimmer-text"[^>]*>A paragraph that is not a status heading\.</,
   );
-  // Thoughts open by default.
+  // Thoughts open by default (live claude.ai bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2.js).
   assert.match(html, /class="chat-step" data-open="true"/);
   assert.doesNotMatch(html, /class="chat-step-peek"/);
   assert.match(html, /class="quiet-dots"/);

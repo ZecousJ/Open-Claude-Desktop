@@ -394,8 +394,8 @@ test("a sidebar click on a conversation with its own window focuses that window"
 });
 
 test("the app menu builds while signed out (no store): startup must not fail", async () => {
-  // 0.0.31 read the menu's language from ctx.store.settings while nobody was
-  // signed in and quit with "Claudex couldn't start".
+  // 2026-10-20: 0.0.31 read the menu's language from ctx.store.settings while
+  // nobody was signed in and quit with "Claudex couldn't start".
   const { connectAppMenu, installAppMenu, rebuildAppMenu } =
     (await import("../../electron/app/app-menu")) as any;
   const signedOut = {

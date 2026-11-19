@@ -66,6 +66,7 @@ test("copy, fonts and window buttons", async () => {
   assert.deepEqual(tab.clipboard, ["hello"]);
   await bridge.api.copyImage("data:image/png;base64,aW1hZ2U=");
   assert.deepEqual(tab.clipboard, ["hello", "data:image/png;base64,aW1hZ2U="]);
+  assert.deepEqual(await bridge.api.referenceFonts(), []);
   await bridge.api.windowAction("close");
 });
 
@@ -144,6 +145,24 @@ test("attachments: the picker follows the policy and files go to the runner", as
   assert.deepEqual(await bridge.api.chooseAttachments(), []);
 });
 
+test("a file selected after an account switch stays outside the new account", async (t) => {
+  const { bridge, tab, service, calls } = await withPolicy(policy());
+  t.after(() => bridge.dispose());
+  let select!: (files: typeof tab.files) => void;
+  tab.env.pickFiles = () => new Promise((resolve) => { select = resolve; });
+  const pending = bridge.api.chooseAttachments();
+  const check = assert.rejects(pending, { name: "AbortError" });
+  service.valid.add("account-b");
+  await bridge.auth.adopt({ access_token: "account-b", expires_in: 3600,
+    account: { id: "43", email: "b@example.invalid", name: "B" } });
+  let read = false;
+  select([{ name: "old-account.txt", type: "text/plain", size: 1,
+    bytes: async () => { read = true; return new Uint8Array([65]); } }]);
+  await check;
+  assert.equal(read, false);
+  assert.ok(!calls.some((call) => call.method === "addAttachmentData"));
+});
+
 test("attachments turned off are refused before the picker opens", async () => {
   const { bridge, tab } = await withPolicy(
     policy({ attachments: { maxBytes: null, types: [] } }),
@@ -182,6 +201,17 @@ test("exports download: Markdown from the conversation, the account archive from
   assert.equal(await bridge.api.exportData(), "claudex-export-2026-09-26.zip");
   const archive = tab.requests.at(-1)!;
   assert.equal(archive.headers.get("authorization"), "Bearer at-1");
+  const range = {
+    conversations_start_date: "2026-09-01T00:00:00.000Z",
+    conversations_end_date: "2026-09-27T00:00:00.000Z",
+  };
+  await bridge.api.exportData(range);
+  const ranged = tab.requests.at(-1)!;
+  assert.deepEqual(
+    Object.fromEntries(new URL(ranged.url, "https://claudex.example").searchParams),
+    range,
+  );
+  assert.equal(ranged.headers.get("authorization"), "Bearer at-1");
   await assert.rejects(bridge.api.exportConversation("gone"), /not found/);
 });
 

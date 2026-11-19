@@ -69,7 +69,10 @@ export function normalizeResult(result: any): ComputerUseToolResult {
 }
 
 export class OpenComputerUseDriver implements ComputerDriver {
-  constructor(private host: DriverHost) {}
+  constructor(
+    private host: DriverHost,
+    private onAccessibilityDenied?: () => void,
+  ) {}
 
   async listApps(mode: DriverMode): Promise<DriverApp[]> {
     const result = normalizeResult(
@@ -98,13 +101,29 @@ export class OpenComputerUseDriver implements ComputerDriver {
   ): Promise<ComputerUseToolResult> {
     if (!(openComputerUseTools as readonly string[]).includes(tool))
       throw new Error(`The driver has no ${tool} tool.`);
-    return normalizeResult(
+    const result = normalizeResult(
       await this.host.request(
         "tools/call",
         { name: tool, arguments: args },
         mode,
       ),
     );
+    // A process that was refused may retain its old Accessibility state after approval.
+    if (result.isError && result.content.some(
+      item => item.type === "text" &&
+        item.text.startsWith("Accessibility permission is required."),
+    )) {
+      this.onAccessibilityDenied?.();
+      await this.host.stop();
+      return {
+        isError: true,
+        content: [{
+          type: "text",
+          text: "macOS denied Accessibility for Open Computer Use. In Claudex, go to Settings → System → Computer use and choose Open System Settings beside Accessibility. That opens the installed driver's permission guide. Ask the person to finish granting access before retrying.",
+        }],
+      };
+    }
+    return result;
   }
 
   stop() {

@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { recordAgentsStopped } from "../../shared/agent-messages";
+import { codeApprovalIsStopping } from "../engine/code-interrupt-scope";
 import {
   type DynamicToolCall,
   type DynamicToolResult,
@@ -27,6 +28,18 @@ export async function handle(
   const conversation = call.conversation;
   const turn = call.turn;
   if (!turn) throw new Error("The workflow has no turn to report to.");
+  const { threadId, turnId } = call;
+  const target = { threadId, turnId };
+  const current = () =>
+    !conversation.archived &&
+    conversation.threadId === threadId &&
+    conversation.turns.at(-1) === turn &&
+    turn.id === turnId &&
+    turn.status === "inProgress" &&
+    !turn.userStopped &&
+    !codeApprovalIsStopping(conversation, target);
+  if (!current())
+    throw new Error("The workflow's Code turn is no longer active.");
   const args =
     call.arguments && typeof call.arguments === "object"
       ? (call.arguments as Record<string, unknown>)
@@ -43,8 +56,10 @@ export async function handle(
     throw new Error(
       "Dynamic workflows are turned off (Settings → Claudex Code). Do the work yourself.",
     );
-  const { source, origin } = this.scriptFor(args, conversation.cwd);
-  const { meta, body } = parseWorkflowScript(source);
+  const { source, origin } = this.scriptFor(args, conversation);
+  const { meta, body } = await parseWorkflowScript(source);
+  if (!current())
+    throw new Error("The workflow's Code turn is no longer active.");
   // Asked first, except in a session that bypasses permissions (unless
   // the organization requires approval each time).
   const managed = policy.workflowApprovalRequired === true;
@@ -52,6 +67,7 @@ export async function handle(
     const answer = await this.options.engine.requestAppApproval(
       conversation.id,
       {
+        ...target,
         serverName: workflowApprovalServer,
         mode: "form",
         message: `Allow Claudex to run a dynamic workflow ${meta.name}?`,
@@ -81,13 +97,16 @@ export async function handle(
         ],
         success: false,
       };
+    if (!current())
+      throw new Error("The workflow's Code turn is no longer active.");
   }
   const resumeFrom =
     typeof args.resumeFromRunId === "string" && args.resumeFromRunId.trim()
       ? args.resumeFromRunId.trim()
       : undefined;
-  const cached = resumeFrom ? this.journal(resumeFrom) : [];
-  if (resumeFrom) this.runDir(resumeFrom); // validates the id
+  const hostedOwner =
+    conversation.environment?.kind === "space" ? conversation.id : undefined;
+  const cached = resumeFrom ? this.journal(resumeFrom, hostedOwner) : [];
 
   const id = `wf_${crypto.randomBytes(8).toString("hex")}`;
   const dir = this.runDir(id);
@@ -123,13 +142,12 @@ export async function handle(
   this.runs.set(id, state);
 
   const logs: string[] = [];
-  let currentPhase: string | undefined = meta.phases[0]?.title;
   let agentCount = 0;
   let failed = 0;
   const occurrences = new Map<string, number>();
   const journalFile = path.join(dir, "journal.jsonl");
 
-  const agent = async (prompt: string, opts: AgentOptions) => {
+  const agent = async (prompt: string, opts: AgentOptions, currentPhase?: string) => {
     const base = crypto
       .createHash("sha256")
       .update(JSON.stringify([prompt, opts]))
@@ -181,17 +199,18 @@ export async function handle(
           item.workflowLog = [...logs.slice(-50)];
           state.changed();
         },
-        phase: (title) => {
-          currentPhase = title;
-        },
+        loadWorkflow: (name) =>
+          this.scriptFor({ name }, conversation).source,
       },
       {
         args: args.args,
+        initialPhase: meta.phases[0]?.title,
         concurrency: workflowConcurrency,
         maxAgents: maxWorkflowAgents,
         signal: state.controller.signal,
       },
     );
+    if (state.controller.signal.aborted) throw new WorkflowStopped();
     outcome = { ok: true, value };
   } catch (error) {
     outcome = {

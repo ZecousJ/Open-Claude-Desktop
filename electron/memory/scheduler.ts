@@ -91,8 +91,13 @@ export class MemoryScheduler {
 
   /** One check: runs the summary when memory is on, the app is idle and a run is due (or forced). */
   async tick(force = false): Promise<void> {
-    if (this.stopped || this.running) return;
+    if (this.stopped) return;
+    if (this.running) {
+      if (force) this.plan(soonMs, true);
+      return;
+    }
     let next = checkMs;
+    let continueBatch = false;
     if (this.deps.enabled() && (force || this.due())) {
       if (this.deps.busy()) {
         // Look again shortly, keeping a forced run forced.
@@ -102,7 +107,10 @@ export class MemoryScheduler {
         this.running = true;
         try {
           const result = await this.deps.run();
-          if (result.more) next = moreMs;
+          if (result.more) {
+            next = moreMs;
+            continueBatch = true;
+          }
         } catch (error) {
           console.error(
             "Memory summary failed:",
@@ -113,6 +121,6 @@ export class MemoryScheduler {
         }
       }
     }
-    if (!this.stopped) this.plan(next);
+    if (!this.stopped && this.handle === undefined) this.plan(next, continueBatch);
   }
 }

@@ -1,10 +1,11 @@
 /**
- * The usage report's figures, from what Claudex knows: the plan's windows, the
- * service's record of the session's requests by model
- * (shared/usage-stats-api.ts `sessionUsage`), Codex's own token totals when the
- * service has none, and the transcript (active time, lines). A figure Claudex
- * does not have is left out, never shown as zero. Pure, so the wording is unit
- * tested.
+ * The usage report's figures (live claude.ai bundle, 2026-10-12, the
+ * transcript's usage card and its Copy report text), from what Claudex
+ * knows: the plan's windows, the service's record of the session's requests
+ * by model (shared/usage-stats-api.ts `sessionUsage`), Codex's own token
+ * totals when the service has none, and the transcript (active time, lines).
+ * A figure Claudex does not have is left out, never shown as zero. Pure, so
+ * the wording is unit tested.
  */
 import type { Conversation, Turn } from "../../shared/types";
 import type { TokenUsageBreakdown } from "../../shared/agent-api";

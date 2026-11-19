@@ -1,10 +1,11 @@
 /* Chat's steps group: rows, cards, running steps, thoughts, searches, outcomes. (part of chat-transcript.css) */
-/* Chat's steps group. The row: 6px round, 14/20 sans; while the reply works the
-   20px dots sit at the text's edge and the label starts 32px in, then the row
-   slides back (200ms, ease-out) and reads the summary in #c3c2b7; elapsed
-   #898781; a 12px chevron (down when open). About 12px of air above and below,
-   as between text and tool rows in the official transcript. The card: 8px under
-   the row, 4px left of the label, with the CDS card radius and ring; each step
+/* Chat's steps group (live claude.ai, 2026-09-29, dark). The row: 6px
+   round, 14/20 sans; while the reply works the 20px dots sit at the text's
+   edge and the label starts 32px in, then the row slides back (200ms,
+   ease-out) and reads the summary in #c3c2b7; elapsed #898781; a 12px
+   chevron (down when open). About 12px of air above and below, as between
+   text and tool rows in the official transcript. The card: 8px under the
+   row, 4px left of the label, with the CDS card radius and ring; each step
    8px 12px, one 14/20 line in #898781 with the file it touched in #f0efec,
    rules of white 10% between steps; the running step shimmers. */
 .chat-steps {
@@ -18,14 +19,20 @@
   --steps-rim: rgb(11 11 11 / 10%);
   --steps-ring-inner: 0px;
   --steps-ring-outer: 1px;
-  /* The original's timeline curve for opening, closing and arriving rows. */
+  /* The original's timeline curve for opening, closing and arriving rows
+     (cubic-bezier(0.19, 1, 0.22, 1), 200ms; source: desktop bundle
+     2.31226.1 static CSS/JS). */
   --steps-ease: cubic-bezier(0.19, 1, 0.22, 1);
   /* The status block: 6px above and below, the row 4px in (the text's
      edge). The same 12px of air above and below the label, as between
      text and tool rows in the official transcript (the owner's reference). */
   margin: 0;
   padding: 6px 0 6px 4px;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 }
 :root:not([data-theme="light"]) .chat-steps {
   --steps-label: #c3c2b7;
@@ -72,8 +79,8 @@ button.chat-steps-head {
   top: 6px;
 }
 /* When the group finishes its dots hold, then fade (420ms, the second half);
-   the summary waits 210ms for them (ActivityLabel). Source: the reference
-   design 2.31226.1 static CSS. Reduced motion: they go at once. */
+   the summary waits 210ms for them (ActivityLabel). Source: desktop bundle
+   2.31226.1 static CSS. Reduced motion: they go at once. */
 .chat-steps-mark-depart {
   display: flex;
   animation: steps-mark-depart 420ms linear forwards;
@@ -113,7 +120,9 @@ button.chat-steps-head {
 button.chat-steps-head:not(:disabled):is(:hover, :focus-visible) {
   color: var(--steps-hover);
 }
-/* A row's focus ring is the accent line inside its edge, without the glow. */
+/* A row's focus ring is the accent line inside its edge, without the glow
+   (the original's row toggle: an inset 1px accent shadow; desktop bundle
+   2.31226.1). */
 .chat-steps-head:focus-visible {
   outline: 1px solid var(--focus);
   outline-offset: -1px;
@@ -124,22 +133,23 @@ button.chat-steps-head:not(:disabled):is(:hover, :focus-visible) {
 .chat-step-collapse {
   --expand-ease: var(--steps-ease);
 }
-/* The card sits 4px left of the label: the whole opening moves, so its clip
-   (overflow hidden for the open and close) starts at the card's own edge and
-   keeps the card's left ring. */
+/* The card sits 4px left of the label: the whole opening moves, so its
+   clip (overflow hidden for the open and close) starts at the card's own
+   edge and keeps the card's left ring (owner, 2026-10-22: it was cut off
+   when only the card moved). */
 .chat-steps-collapse {
   margin-left: -4px;
 }
 .chat-steps-card-wrap {
   padding: 8px 0 6px;
   padding-inline-start: var(--steps-indent);
-  /* Leaving cells. */
+  /* Leaving cells (live claude.ai bundle, 2026-10-14, shared-9-DeK5IbyG.js). */
   transition: padding-inline-start 400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .chat-steps[data-running] .chat-steps-card-wrap {
   transition-duration: 200ms;
 }
-/* Fetch cell tokens. */
+/* Fetch cell tokens (live claude.ai bundle, 2026-10-14, shared-13-CALRr8Bn.js). */
 .chat-step-row.web-fetch-row {
   height: 42px;
   font-size: 13px;
@@ -150,7 +160,7 @@ button.chat-steps-head:not(:disabled):is(:hover, :focus-visible) {
 :root:not([data-theme="light"]) .chat-step-row.web-fetch-row {
   color: #898781;
 }
-/* Group caption. */
+/* Group caption (live claude.ai bundle, 2026-10-14, shared-13-CALRr8Bn.js). */
 .thinking-tool-recap {
   color: #898781;
   font-size: 14px;
@@ -175,7 +185,8 @@ button.chat-steps-head:not(:disabled):is(:hover, :focus-visible) {
 .web-fetch-row > img {
   flex-shrink: 0;
 }
-/* Card radius and theme-dependent inner/outer ring. */
+/* Card radius and theme-dependent inner/outer ring (live claude.ai bundle,
+   2026-10-14, shared-9-DeK5IbyG). */
 .chat-steps-card {
   display: flex;
   flex-direction: column;
@@ -307,8 +318,8 @@ button.chat-step-row:not(:disabled):is(:hover, :focus-visible) {
 .chat-step-text {
   min-width: 0;
 }
-/* Thinking detail actions: flex items-start gap-xs; h-[1lh] shrink-0
-   items-center. */
+/* Thinking detail actions (live claude.ai bundle, 2026-10-14,
+   shared-9-DeK5IbyG): flex items-start gap-xs; h-[1lh] shrink-0 items-center. */
 .chat-step-thinking-detail {
   display: flex;
   align-items: flex-start;
@@ -374,10 +385,11 @@ button.chat-step-row:not(:disabled):is(:hover, :focus-visible) {
 .chat-step[data-open] > .chat-step-row svg {
   transform: rotate(90deg);
 }
-/* A running step's row ends with three quiet dots: 3px #d97757, 3.5px apart,
-   each rising in and fading over 1.9s, 150ms after the one before; with the
-   pointer on the row (or focus) they give way to the caret over 200ms. Reduced
-   motion: the dots stand still. */
+/* A running step's row ends with three quiet dots: 3px #d97757, 3.5px
+   apart, each rising in and fading over 1.9s, 150ms after the one before;
+   with the pointer on the row (or focus) they give way to the caret over
+   200ms (the original's quiet status; source: desktop bundle 2.31226.1
+   static CSS/JS). Reduced motion: the dots stand still. */
 .chat-step-end {
   display: inline-grid;
   place-items: center;
@@ -449,9 +461,11 @@ button.chat-step-row:not(:disabled):is(:hover, :focus-visible) {
 .chat-step-body .command-card {
   margin-top: 0;
 }
-/* A running step peeks at what it shows: 72px of it, dimmed to 60% and fading
-   out downwards, full strength under the pointer; a click opens it all. It
-   opens over 250ms and folds away when the step is done. */
+/* A running step peeks at what it shows: 72px of it, dimmed to 60% and
+   fading out downwards, full strength under the pointer; a click opens it
+   all. It opens over 250ms and folds away when the step is done (the
+   original's half-collapsed block; source: desktop bundle 2.31226.1 static
+   JS). */
 /* The peek shows the newest lines (it follows the writing to its end), so
    it fades toward the older lines above. */
 .chat-step-peek {
@@ -541,9 +555,10 @@ button.chat-step-row:not(:disabled):is(:hover, :focus-visible) {
 .chat-step-tool > * {
   margin: 0;
 }
-/* A connector call in the card is a step row like the others: the row's 8px
-   12px, 8px gap, muted ink and 12px chevron; opened, its frame sits in the
-   body's 12px margins as a command's card does. */
+/* A connector call in the card is a step row like the others (owner,
+   2026-10-08: its plain-activity row sat flush left at 24px tall): the
+   row's 8px 12px, 8px gap, muted ink and 12px chevron; opened, its frame
+   sits in the body's 12px margins as a command's card does. */
 .chat-step-tool > .activity.is-plain > summary {
   width: 100%;
   min-height: 0;
@@ -689,7 +704,8 @@ button.chat-step-row:not(:disabled):is(:hover, :focus-visible) {
 }
 
 /* One finished search is its own row: the label, then the query in brighter
-   ink; its results open under it in the card. */
+   ink; its results open under it in the card (live claude.ai, 2026-09-30:
+   14px rows 32px high, the title in the muted ink and the host at the right). */
 .chat-steps-head .lone-step {
   display: inline-flex;
   align-items: baseline;
@@ -709,8 +725,9 @@ button.chat-step-row:not(:disabled):is(:hover, :focus-visible) {
   color: var(--steps-muted);
 }
 
-/* A settled step group's outcome, 4px after its row: "Failed" in the danger
-   ink, "Stopped" in the secondary. */
+/* A settled step group's outcome, 4px after its row (claude.ai 2026-10-01,
+   the turn status row): "Failed" in the danger ink, "Stopped" in the
+   secondary. */
 .chat-steps-outcome {
   flex-shrink: 0;
   margin-left: -4px;

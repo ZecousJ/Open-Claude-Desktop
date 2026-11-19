@@ -71,7 +71,8 @@ export function ProjectKnowledgeActions({
       )}
       {canEdit &&
         (knowledgeFull(knowledge) && !busy ? (
-          // Full: the + stays, disabled, and says why.
+          // Full: the + stays, disabled, and says why (live claude.ai
+          // bundle, 2026-10-12, the uploader's over-limit reason).
           <WithTooltip label={t(capacityReason)}>
             {(props) => (
               <button

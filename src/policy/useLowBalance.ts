@@ -2,12 +2,12 @@ import { useEffect, useSyncExternalStore } from "react";
 import { lowBalanceUsd } from "../../shared/billing-api";
 
 /**
- * The account's balance for the low-balance notice, from the same Billing read
- * Settings uses. One reader serves every mounted composer: it reads on first
- * use, after each turn (the main process's "weekly-usage" event, at most every
- * `turnGapMs`, the last one always read), when the account changed and when a
- * payment completed. Whether the service sells balance (Add funds) is read with
- * it.
+ * The account's balance for the low-balance notice (owner, 2026-10-12:
+ * warn below $10), from the same Billing read Settings uses. One reader
+ * serves every mounted composer: it reads on first use, after each turn
+ * (the main process's "weekly-usage" event, at most every `turnGapMs`, the
+ * last one always read), when the account changed and when a payment
+ * completed. Whether the service sells balance (Add funds) is read with it.
  */
 export interface BalanceSnapshot {
   /** US dollars; null until read, or for an account without billing. */

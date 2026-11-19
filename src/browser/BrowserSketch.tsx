@@ -174,13 +174,16 @@ const pngBytes = (canvas: HTMLCanvasElement) =>
   );
 
 /**
- * Sketch mode on the Browser's page: the page stands still as the picture taken
- * when it started, at its own size from the top, with the marks drawn over it
- * and, in a strip under it, the sketch bar 10px above the bottom: the tools,
- * the inks (or the redaction styles), Undo ⌘Z, Redo ⇧⌘Z, Clear all, Close and
- * Add to chat. Add to chat flattens the marks into the picture and attaches it
- * ("preview-annotation.png", or the plain "preview-screenshot.png" when nothing
- * was drawn); Esc or Close with marks asks "Discard your annotations?" first.
+ * Sketch mode on the Browser's page (live claude.ai bundle, 2026-10-12:
+ * toggleSketchMode ⇧⌘X, the preview pane's sketch layer and the shared
+ * sketch canvas): the page stands still as the picture taken when it
+ * started, at its own size from the top, with the marks drawn over it and,
+ * in a strip under it, the sketch bar 10px above the bottom: the tools, the
+ * inks (or the redaction styles), Undo ⌘Z, Redo ⇧⌘Z, Clear all, Close and
+ * Add to chat. Add to chat flattens the marks into the picture and attaches
+ * it ("preview-annotation.png", or the plain "preview-screenshot.png" when
+ * nothing was drawn); Esc or Close with marks asks "Discard your
+ * annotations?" first.
  */
 export function BrowserSketch({
   backdrop,

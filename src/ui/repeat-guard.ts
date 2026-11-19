@@ -1,9 +1,10 @@
 /*
- * A held Enter does not press a button again and again. The original's Button,
- * Switch, Checkbox and confirmation buttons swallow the auto-repeat of Enter
- * and Space, so holding Enter on a dialog's focused confirm button deletes
- * once, and holding it on a switch does not flip it back and forth. Done once
- * for the whole window rather than control by control.
+ * A held Enter does not press a button again and again. The original's
+ * Button, Switch, Checkbox and confirmation buttons swallow the auto-repeat
+ * of Enter and Space (desktop bundle 2.31226.1: `e.repeat && e.preventDefault()`),
+ * so holding Enter on a dialog's focused confirm button deletes once, and
+ * holding it on a switch does not flip it back and forth. Done once for the
+ * whole window rather than control by control.
  */
 
 /** What can be pressed with Enter or Space and must act once per press. */

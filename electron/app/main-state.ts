@@ -1,5 +1,6 @@
+import { AccountRetirement } from "../account/account-retirement";
 import { desktopConnectorLink } from "../../shared/connector-links";
-import { parseDeepLink } from "../../shared/deep-links";
+import { parseDeepLink, type DeepLink } from "../../shared/deep-links";
 import { parseEmailLink } from "../../shared/email-link";
 import type { RemoteAccounts } from "../sub2api/identity";
 import { quickWindowFor } from "./quick-window-main";
@@ -11,6 +12,7 @@ import { TerminalController } from "../terminal/terminal-controller";
 import { ArtifactShares } from "../artifacts/artifact-shares";
 import { ArtifactLibrary } from "../artifacts/artifact-library";
 import { BackgroundHistory } from "../conversations/background-history";
+import type { startAutoArchive } from "../conversations/auto-archive";
 import { Accounts } from "../account/accounts";
 import { ProviderCredentials } from "../engine/provider-credentials";
 import { ReplyFeedback } from "../conversations/reply-feedback";
@@ -19,22 +21,33 @@ import { McpConfigFile } from "../connectors/mcp-config-file";
 import type { Settings, PublicAccount } from "../../shared/types";
 import { type PolicyHost, type RemoteHost } from "../remote/host";
 
+interface PendingDeepLink {
+  href: string;
+  link: DeepLink;
+  activation?: number;
+}
+
+const launchDeepLink = process.argv.flatMap((href): PendingDeepLink[] => {
+  const link = parseDeepLink(href);
+  return link ? [{ href, link }] : [];
+}).at(0);
+
 /** The state main.ts keeps while the app runs. */
 export const mainState = {
+  accountRetirement: new AccountRetirement(),
   window: undefined as BrowserWindow | undefined,
   /**
-   * Startup has created the main window. Until then nothing else may make one:
-   * a window opened while the account is still being restored found no IPC
-   * handlers and showed the boot error page beside the real window.
+   * Startup has created the main window. Until then nothing else may make
+   * one: a window opened while the account is still being restored found no
+   * IPC handlers and showed the boot error page beside the real window
+   * (2026-10-20, after an update restart).
    */
   started: false,
   store: undefined as unknown as Store,
   engine: undefined as unknown as Engine,
   pendingConnectorLink: process.argv.map(desktopConnectorLink).find(Boolean) as
     string | undefined,
-  /** A claudex:// link that started the app (Windows, Linux), opened once the window loads. */
-  pendingDeepLink: process.argv.find((arg) => parseDeepLink(arg)) as
-    string | undefined,
+  pendingDeepLink: launchDeepLink,
   pendingEmailLink: process.argv.find((arg) => parseEmailLink(arg)) as
     string | undefined,
   artifactShares: undefined as unknown as ArtifactShares,
@@ -68,10 +81,10 @@ export const mainState = {
   quickEntry: undefined as ReturnType<typeof quickWindowFor> | undefined,
   /** Developer → Edit config: the MCP servers as a file in the account's folder. */
   mcpConfig: undefined as McpConfigFile | undefined,
-  /** The administrator's Claudex policy for the signed-in account (docs/self-hosting.md). */
+  /** The administrator's Claudex policy for the signed-in account (docs/admin-backend.md). */
   policyHost: undefined as PolicyHost | undefined,
   // Settings → Claude Code → Archive inactive sessions, for the active account.
-  stopAutoArchive: undefined as (() => void) | undefined,
+  autoArchive: undefined as ReturnType<typeof startAutoArchive> | undefined,
   /** The settings last sent to the window: what its next save is compared with. */
   rendererBase: undefined as Settings | undefined,
   /** Saves servers from the MCP configuration file; the runtime restarts once it is idle. */

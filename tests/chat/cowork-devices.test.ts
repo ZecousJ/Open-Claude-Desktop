@@ -309,4 +309,13 @@ test("a computer's Remote Control Code sessions are listed on the web and open o
     state: string;
   };
   assert.equal(git.state, "no-folder");
+  // The rail polls its loops every second; the service has no such session.
+  assert.deepEqual(
+    await relay.route("listSessionLoops", ["code-1"], notRouted),
+    [],
+  );
+  assert.equal(
+    await relay.route("stopSessionLoop", ["code-1", "loop-1"], notRouted),
+    false,
+  );
 });

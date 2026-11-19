@@ -142,7 +142,7 @@ export function useAppState(kit: UseAppStateKit) {
   const [projectEditor, setProjectEditor] = useState<Project>();
   const [projectAssignee, setProjectAssignee] = useState<string>();
   const [releaseNotes, setReleaseNotes] = useState(false);
-  // The home link disappears once the current notes have been opened.
+  // The home link disappears once the current notes have been opened (R-0008).
   const [notesSeen, setNotesSeen] = useState(() => {
     try {
       return localStorage.getItem(notesSeenKey) === releaseNotesVersion;

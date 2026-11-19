@@ -34,6 +34,7 @@ export async function run(
       const state = host.state(id);
       return ok(
         state.tabs
+          .filter((tab) => this.tabAvailable(host, id, tab))
           .map((tab) => tabLine(tab, tab.id === state.activeTabId))
           .join("\n") || "No tabs.",
       );
@@ -42,12 +43,14 @@ export async function run(
       const args = parseArgs(name, raw);
       if (!args.url) {
         const tab = host.newTab(id, undefined, true);
+        this.deps.reveal?.(id);
         return ok(`Opened a new tab (${tab}).`);
       }
       const url = await this.addressFor(call, args.url);
       this.assertExecution(id, call);
       this.assertNavigation(id, url, call);
       const tab = host.newTab(id, url, true);
+      this.deps.reveal?.(id);
       await this.waitForLoad(host, id, tab);
       return ok(this.pageSummary(host, id, tab, "Opened", call));
     }
@@ -261,9 +264,15 @@ export async function run(
     }
     case "resize": {
       const args = parseArgs(name, raw);
-      if (this.deps.permissions.routine(id))
-        for (const tab of host.state(id).tabs)
+      if (
+        this.deps.publicHostsOnly?.(id) ||
+        this.deps.permissions.routine(id)
+      ) {
+        for (const tab of host.state(id).tabs) {
+          this.assertPageAvailable(host, id, tab.id);
           this.assertNavigation(id, tab.url, call);
+        }
+      }
       await host.setViewport(id, args.viewport);
       return ok(
         typeof args.viewport === "object"
@@ -293,7 +302,7 @@ export async function run(
     }
     case "preview_list": {
       parseArgs(name, raw);
-      const port = this.devServers(service);
+      const port = this.devServers(service, id);
       const config = port.launchConfig(id);
       const servers = port.list(id);
       const lines = servers.map(devServerLine);
@@ -306,16 +315,21 @@ export async function run(
         );
       return ok(lines.join("\n"));
     }
-    case "preview_start":
-      return this.previewStart(service, call, parseArgs(name, raw).name);
+    case "preview_start": {
+      const args = parseArgs(name, raw);
+      if ("url" in args) return this.navigate(service, call, args);
+      if (this.deps.publicHostsOnly?.(id))
+        throw new ToolError("preview_start needs a public website URL in an SSH session.");
+      return this.previewStart(service, call, args.name);
+    }
     case "preview_stop": {
       const args = parseArgs(name, raw);
-      await this.devServers(service).stop(id, args.name);
+      await this.devServers(service, id).stop(id, args.name);
       return ok(`Stopped ${args.name}.`);
     }
     case "preview_logs": {
       const args = parseArgs(name, raw);
-      let lines = await this.devServers(service).logs(
+      let lines = await this.devServers(service, id).logs(
         id,
         args.name,
         args.lines ?? 200,

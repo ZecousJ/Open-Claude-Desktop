@@ -21,10 +21,12 @@ function shimmerClock() {
 }
 
 /**
- * Text a highlight crosses while something works: the text keeps its own colour
- * and a copy laid over it, clipped to the glyphs, carries a 120° band that
- * sweeps across in 3s, resting a moment at each end (chat-transcript.css,
- * "Shimmer text"). The copy is hidden from assistive technology and selection.
+ * Text a highlight crosses while something works (the original's
+ * ShimmerText; source: desktop bundle 2.31226.1 static CSS/JS): the text
+ * keeps its own colour and a copy laid over it, clipped to the glyphs,
+ * carries a 120° band that sweeps across in 3s, resting a moment at each
+ * end (chat-transcript.css, "Shimmer text"). The copy is hidden from
+ * assistive technology and selection.
  */
 export function ShimmerText({
   children,

@@ -106,7 +106,6 @@ test("web and native home portal their environment cards into distinct captured 
     assert.equal(selections, 1);
     assert.equal(focusRequests, 1);
 
-    await import("../../src/code-home/NativeCliImportCard");
     await act(async () =>
       root.render(
         createElement(

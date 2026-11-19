@@ -1,4 +1,5 @@
-/* A working button keeps its label and shows a spinner over it. */
+/* A working button keeps its label and shows a spinner over it (live bundle,
+   2026-10-16, shared-frame: label opacity-0, busyLabel sr-only). */
 .busy-label {
   display: inline-grid;
   align-items: center;

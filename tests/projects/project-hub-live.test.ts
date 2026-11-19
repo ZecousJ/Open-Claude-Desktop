@@ -8,7 +8,7 @@ import type { ProjectKnowledge } from "../../shared/collections-api";
 import type { MemoryStatus } from "../../shared/memory-api";
 import type { Routine } from "../../shared/routines";
 import { ProjectHubCards } from "../../src/collections/projects/ProjectHubCards";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import { setLocale, t } from "../../src/i18n";
 
 const project: Project = {

@@ -2,6 +2,7 @@ import { ChatDeviceController } from "./chat-devices";
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
+import type { NotificationSettings } from "../../shared/official-notification-preferences";
 import type {
   AppEvent,
   Attachment,
@@ -33,6 +34,7 @@ import { type PolicyHost } from "../../electron/remote/host";
 import { registerIpc } from "../../electron/ipc/index";
 import { weeklyUsageTurns } from "../../electron/ipc/usage";
 import { remoteAccountId } from "../../electron/sub2api/identity-support";
+import { coworkMemoryService as makeCoworkMemoryService, engineCoworkMemory } from "./official-cowork-memory";
 import { CloudStore, type StoreTransport } from "./cloud-store";
 import { WebPreviews } from "./previews";
 import { WebRemoteHost, type WebSession } from "./web-remote-host";
@@ -41,10 +43,7 @@ import {
   queryRoutineList,
   readRoutine,
 } from "../../electron/routines/routine-query";
-import type {
-  ConnectorHost,
-  McpConfigLike,
-} from "../../electron/app/app-context";
+import type { ConnectorHost } from "../../electron/app/app-context";
 import { ConnectorOAuth } from "./connector-oauth";
 import { ConnectorTokens } from "./connectors";
 import type { UserNetwork } from "./net-policy-compile";
@@ -52,6 +51,8 @@ import type { CloudEnvironmentConfig } from "../../shared/cloud-environments-api
 import { preference } from "../../shared/settings-extras";
 import type { WorkingTreeHost } from "../../electron/git/working-tree";
 import { type PrepareWorkspace } from "./code-workspace";
+import type { SandboxDriver } from "./sandbox/driver";
+import { reconcileOfficialCodeTerminals } from "./official-code-terminals";
 import type { Fetch } from "../../electron/sub2api/http";
 import { routineMailer } from "../../electron/routines/routine-mail";
 import {
@@ -60,6 +61,7 @@ import {
 } from "../../electron/account/code-email";
 import { noWindows, NoIntegration, WebMcpConfig } from "./web-app-support";
 import * as webContextActivate from "./web-context-activate";
+import { CodeAutoArchive } from "./code-auto-archive";
 import { installMethods } from "./install-methods";
 import * as webContextCodeSessions from "./web-context-code-sessions";
 import * as webContextSettings from "./web-context-settings";
@@ -68,8 +70,10 @@ import * as webContextLifecycle from "./web-context-lifecycle";
 /** What a context needs from the runner around it. */
 export interface WebRuntime {
   captureArtifactScreenshot?(html: string): Promise<string>;
+  imageSize?(bytes: Buffer): Promise<{ width: number; height: number } | undefined>;
   /** Base URL of the Claudex service for user APIs and the /v1 gateway. */
   serviceUrl: string;
+  publicUrl?: string;
   /** Runner state directory; users live in `<stateDir>/users/<id>`. */
   stateDir: string;
   /**
@@ -90,6 +94,8 @@ export interface WebRuntime {
     attachments: string;
     /** `<profile>/projects`: project knowledge files, mounted read-only. */
     projects: string;
+    accountSkills?: import("./sandbox/driver").SandboxMount;
+    organizationPluginSources?: string;
     /**
      * An isolated space's own sandbox (docs/cloud-sync.md): its id, unique
      * per user and space; absent for the user's shared sandbox.
@@ -99,6 +105,8 @@ export interface WebRuntime {
   }): string;
   /** A space's sandbox stopped: what `codexBinary` opened for it closes. */
   releaseSandbox?(userId: number, sandboxId: string): void;
+  /** The outer sandbox that contains commands launched by Codex. */
+  sandboxDriver?: SandboxDriver["name"];
   /**
    * Restricted commands keep the sandbox's network: gVisor (the runsc
    * driver) limits it itself and cannot give a command its own (#22).
@@ -108,12 +116,12 @@ export interface WebRuntime {
   version: string;
   /** The webstore and key requests (the runner link). */
   transport: StoreTransport;
+  codeRunCapacity?: import("./code-run-capacity").CodeRunCapacity;
   /** The user's events leave here (event hub → link). */
   publish(userId: number, event: AppEvent): void;
   /** Called when a context closes itself (sign-out). */
   closed?(ctx: WebAppContext): void;
-  /** Refuses a connector address the runner may not reach (connectors.ts). */
-  connectorGuard?: (url: string) => Promise<void>;
+  connectorNetwork?: import("./net-policy").NetPolicy;
   /**
    * The user's own network settings for their sandbox (Settings →
    * Capabilities), at activation and whenever they change; the runner
@@ -125,6 +133,7 @@ export interface WebRuntime {
    * the runner wakes the user then even with no page open (routine-wakes.ts).
    */
   wake?(userId: number, at: number | undefined): void;
+  wakeCodeArchive?(userId: number, at: number | undefined): void;
   /** The host capabilities the web app shows (Snapshot.host). */
   host?: HostInfo;
   /**
@@ -139,12 +148,14 @@ export interface WebRuntime {
   workingTree?: (input: {
     userId: number;
     storeRoot: string;
+    spaceId?: string;
   }) => WorkingTreeHost;
   fetch?: Fetch;
   log?: (message: string) => void;
 }
 
 export class WebAppContext implements AppContext {
+  readonly organizationPluginsOnRunner = true;
   readonly userId: number;
   readonly dataRoot: string;
   readonly appVersion: string;
@@ -155,6 +166,8 @@ export class WebAppContext implements AppContext {
   activeAccount: PublicAccount | undefined;
   remote: WebRemoteHost | undefined;
   session!: WebSession;
+  readonly coworkMemoryService: ReturnType<typeof makeCoworkMemoryService>;
+  readonly coworkAccountMemory: ReturnType<typeof engineCoworkMemory>;
   /** Scheduled-task e-mail for this user (electron/routine-mail.ts). */
   routineMail = routineMailer(
     () =>
@@ -206,7 +219,8 @@ export class WebAppContext implements AppContext {
   readonly terminals = undefined;
   /** Scheduled tasks (Scheduled page): the desktop's scheduler on this user's profile. */
   scheduler: Scheduler | undefined = undefined;
-  readonly mcpConfig: McpConfigLike = new WebMcpConfig(this);
+  readonly codeAutoArchive = new CodeAutoArchive(this);
+  readonly mcpConfig = new WebMcpConfig(this);
   /** Settings → Connectors on the web: an address check and the bearer tokens. */
   connectors!: ConnectorHost;
   connectorTokens!: ConnectorTokens;
@@ -232,7 +246,16 @@ export class WebAppContext implements AppContext {
   /** Tabs Go reports open for this user. */
   tabs = 0;
   /** Go said the user signed out: no new calls; closes once idle. */
-  signedOut = false;
+  private signedOutValue = false;
+  private officialActivation = {};
+  private accountActivated = false;
+  get signedOut() { return this.signedOutValue; }
+  set signedOut(value: boolean) {
+    if (value !== this.signedOutValue) this.officialActivation = {};
+    this.signedOutValue = value;
+  }
+  /** Changes on sign-out and reactivation, even for the same account. */
+  officialSessionIdentity() { return this.officialActivation; }
   closedFlag = false;
   policyHost?: PolicyHost;
   rendererBase?: Settings;
@@ -242,6 +265,7 @@ export class WebAppContext implements AppContext {
   readonly ratingListeners = new Listeners<ReplyRated>();
   private readonly eventListeners = new Listeners<AppEvent>();
   readonly settingsListeners = new Listeners<Settings>();
+  readonly preparedListeners = new Listeners<void>();
   readonly activatedListeners = new Listeners<PublicAccount>();
   readonly deactivatingListeners = new Listeners<void>();
   readonly log: (message: string) => void;
@@ -251,7 +275,7 @@ export class WebAppContext implements AppContext {
       accountScope: String(this.userId),
       root: this.store.root,
       trustScope: remoteAccountId(this.runtime.serviceUrl, this.userId),
-      current: () => !this.closed,
+      current: () => !this.accountRetiring,
       conversations: () => this.store.conversations,
       settings: () => this.store.settings,
       attachment: (id) => this.selectedAttachments.get(id),
@@ -290,6 +314,9 @@ export class WebAppContext implements AppContext {
     readonly runtime: WebRuntime,
     userId: number,
   ) {
+    this.coworkMemoryService = makeCoworkMemoryService(runtime.serviceUrl, runtime.fetch);
+    this.coworkAccountMemory = engineCoworkMemory(this.coworkMemoryService,
+      (call) => this.session.authorized(call));
     this.userId = userId;
     this.dataRoot = path.join(runtime.stateDir, "users", String(userId));
     fs.mkdirSync(this.dataRoot, { recursive: true, mode: 0o700 });
@@ -307,11 +334,11 @@ export class WebAppContext implements AppContext {
    */
   static async open(
     runtime: WebRuntime,
-    input: { userId: number; accessToken: string; register: RegisterHandlers },
+    input: WebContextOpenInput,
   ): Promise<WebAppContext> {
     const ctx = new WebAppContext(runtime, input.userId);
     try {
-      await ctx.activate(input.accessToken, input.register);
+      await ctx.activate(input);
     } catch (error) {
       await ctx.close().catch(() => {});
       throw error;
@@ -375,6 +402,8 @@ export class WebAppContext implements AppContext {
     void this.policyHost?.source.refresh();
   }
   push(event: AppEvent) {
+    if (event.type === "conversation" || event.type === "resync")
+      void reconcileOfficialCodeTerminals(this);
     this.codeEmails.observe(event);
     this.eventListeners.emit(event);
     this.runtime.publish(this.userId, event);
@@ -382,14 +411,21 @@ export class WebAppContext implements AppContext {
   onWindowFocus(cb: () => void) {
     return this.focusListeners.add(cb);
   }
+  onAccountPrepared(cb: () => void) {
+    return this.preparedListeners.add(cb);
+  }
   onAccountActivated(cb: (account: PublicAccount) => void) {
     const remove = this.activatedListeners.add(cb);
     const account = this.activeAccount;
-    if (account)
+    if (account && this.accountActivated)
       queueMicrotask(() => {
         if (this.activeAccount === account) cb(account);
       });
     return remove;
+  }
+  finishAccountActivation(account: PublicAccount) {
+    this.accountActivated = true;
+    this.activatedListeners.emit(account);
   }
   onAccountDeactivating(cb: () => void | Promise<void>) {
     return this.deactivatingListeners.add(cb);
@@ -417,18 +453,27 @@ export class WebAppContext implements AppContext {
   setAccessToken(token: string) {
     this.session?.setAccessToken(token);
   }
+  get accountActivationIdentity() {
+    return this.officialSessionIdentity();
+  }
+  get accountRetiring() {
+    return this.closedFlag || this.signedOut || !this.activeAccount;
+  }
   get closed() {
     return this.closedFlag;
   }
+  melangeModelCalls = 0;
   /** Some engine of the user runs a turn. */
   busy() {
     return (
-      !!this.engine && (this.engines.isBusy() || !!this.scheduler?.pendingWork)
+      !!this.engine && (this.engines.isBusy() || !!this.scheduler?.pendingWork ||
+        this.codeAutoArchive.checking ||
+        this.services.memory?.service.synthesizing === true || this.melangeModelCalls > 0)
     );
   }
   /** The engine's codex runs (it holds memory). */
   engineRunning() {
-    return !!this.engine && this.engine.state.state !== "stopped";
+    return this.engines.all().some((engine) => engine.state.state !== "stopped");
   }
   /** Stops the engine (idle or evicted); the next turn starts it again. */
   async stopEngine() {
@@ -500,8 +545,18 @@ export const coreHandlerNames = [
   "setReplyFeedback",
 ];
 
-/** Registers a user's IPC handlers (the dispatcher's allow-listed handle). */
-export type RegisterHandlers = (ctx: WebAppContext) => void;
+export type WebAccountSettings = Readonly<{
+  accountId: PublicAccount["id"];
+  settings: Readonly<Required<NotificationSettings>>;
+}>;
+
+export interface WebContextOpenInput {
+  userId: number;
+  accessToken: string;
+  register: (ctx: WebAppContext) => void;
+  accountSettingsReady?: (account: WebAccountSettings) => void;
+  shellReady?: (ctx: WebAppContext) => Promise<never>;
+}
 
 /** registerIpc and the core calls for one context, through `handle`. */
 export function registerWebHandlers(ctx: WebAppContext, handle: IpcHandle) {

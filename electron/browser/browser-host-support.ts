@@ -3,6 +3,7 @@ import { type BrowserTabState, newTabTitle } from "../../shared/browser";
 
 /** A page Claude opens before the panel was ever shown gets this size. */
 export const defaultPageSize = { width: 1024, height: 768 } as const;
+export const officialPreviewTabLimit = 9;
 
 export function blankTabState(id: string): BrowserTabState {
   return {

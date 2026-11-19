@@ -10,13 +10,11 @@ import {
 import type { MenuPosition } from "../ui/Menu";
 import { lazyPiece } from "../ui/lazy-piece";
 import { useDismiss } from "../ui/useDismiss";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useTooltip } from "../ui/Tooltip";
 
-/**
- * The same anchored popup opens to the left when the phone's row action has no
- * room at its right.
- */
+/** The same anchored popup opens to the left when the phone's row action
+ * has no room at its right (live phone DOM, 2026-10-16). */
 export function navCreatePosition(
   box: Pick<DOMRect, "left" | "right" | "top">,
   width: number,
@@ -32,10 +30,8 @@ export function navCreatePosition(
   };
 }
 
-/**
- * Current official template-menu tiles, read from the live DOM on 20px tint,
- * 5px corners and a 16px font glyph.
- */
+/** Current official template-menu tiles, read from the live DOM on
+ * 2026-10-16: 20px tint, 5px corners and a 16px font glyph. */
 export function NavTemplateIcon({
   kind,
 }: {
@@ -49,7 +45,7 @@ export function NavTemplateIcon({
   } as const;
   return (
     <span className="nav-template-icon" data-template={kind} aria-hidden="true">
-      <AppIcon name={names[kind]} size={16} />
+      <Anthropicon name={names[kind]} size={16} />
     </span>
   );
 }
@@ -101,7 +97,7 @@ export function createNavCreateMenu(load: () => Promise<PopupModule>) {
             );
           }}
         >
-          <AppIcon name="Add" size={16} />
+          <Anthropicon name="Add" size={16} />
         </button>
         {tip.tooltip}
         {position && (

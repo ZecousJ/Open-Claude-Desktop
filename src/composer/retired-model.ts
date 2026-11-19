@@ -15,8 +15,11 @@ export interface RetiredModel {
 }
 
 /**
- * A Chat or Cowork conversation whose model the service no longer offers.
- * Nothing while the providers have not loaded, or for Code.
+ * A Chat or Cowork conversation whose model the service no longer offers
+ * (live claude.ai bundle, 2026-10-12, shared-8 model selector: once the
+ * models have loaded and the conversation's model is not among them, it is
+ * legacy; new replies use the stored default and the menu says so at its
+ * head). Nothing while the providers have not loaded, or for Code.
  */
 export function retiredModel(
   conversation: Pick<Conversation, "mode" | "providerId" | "model"> | undefined,
@@ -54,7 +57,7 @@ export function retiredModel(
   };
 }
 
-/** The model menu's head line. */
+/** The model menu's head line (live claude.ai bundle string, 2026-10-12). */
 export const retiredModelNotice = (legacy: string, current: string) =>
   formatText(
     "{legacyModel} is no longer available. New replies will use {defaultModel}.",

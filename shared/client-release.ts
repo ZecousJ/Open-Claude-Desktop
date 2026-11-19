@@ -1,9 +1,11 @@
 /**
- * This build against the service's release information: when an update stops
- * sending, what Check for Updates says, and the release notes What's new shows.
+ * This build against the service's release information (package WP1): when
+ * an update stops sending, what Check for Updates says, and the release
+ * notes What's new shows.
  */
 import type { ClientPolicy, ClientUpdate } from "./client-policy";
 
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js)
 export const automaticUpdateNotice = {
   title: "Update Available",
   message:

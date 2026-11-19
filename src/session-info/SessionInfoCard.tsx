@@ -14,7 +14,7 @@ import { modelLabel } from "../composer/model/code-model-choices";
 import { useConversationServices } from "../conversation/ConversationServices";
 import { currentLocale, formatText, t, tc, useT } from "../i18n";
 import { fastModeState } from "../composer/code/code-fast-mode";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import {
   sessionInfoGroups,
   sessionInfoReport,
@@ -57,7 +57,7 @@ function CopyButton({
       {copied ? (
         <Check size={14} aria-hidden="true" />
       ) : (
-        <AppIcon name="Copy" />
+        <Anthropicon name="Copy" />
       )}
     </button>
   );
@@ -99,8 +99,10 @@ function Row({ row, onManageMcp }: { row: InfoRow; onManageMcp?: () => void }) {
 }
 
 /**
- * The Session info card /status posts in a Code transcript. See
- * session-info-model.ts for the rows.
+ * The Session info card /status posts in a Code transcript (live claude.ai
+ * bundle, 2026-10-14: "Session info" with Copy session info over the
+ * Session, Environment and Account groups; 360px, 16px inside, footnote
+ * text). See session-info-model.ts for the rows.
  */
 export function SessionInfoCard({
   conversation,
@@ -150,7 +152,8 @@ export function SessionInfoCard({
       sessionInfoGroups({
         conversation,
         environment,
-        // A fast tier reads as its model with "{effort} · Fast".
+        // A fast tier reads as its model with "{effort} · Fast" (live
+        // claude.ai bundle, 2026-10-14).
         model: modelLabel(catalog, fast.on ? fast.target : conversation.model),
         effort: fast.on
           ? formatText("{effort} · Fast", { effort: t(effortLabel) })

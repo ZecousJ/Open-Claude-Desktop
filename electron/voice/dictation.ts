@@ -119,18 +119,20 @@ export class DictationSessions {
     const options = dictationStartOptions(input);
     const ctx = this.ctx;
     if (!ctx.policy().voice) throw Error(voiceOff);
+    const store = ctx.store;
     const availability = voiceAvailability(ctx);
     const provider = activeProvider(ctx);
     if (!availability.transcription || !provider)
       throw Error("Dictation isn't available right now.");
     await this.end(this.session);
+    if (ctx.store !== store) throw Error("Dictation was cancelled.");
     const maxSeconds = Math.min(
       dictationRecordingSeconds(availability.maxSeconds),
       availability.maxSeconds ?? maxDictationSeconds,
     );
     const client = new ProviderServiceClient(
       ctx.providerServiceScript,
-      ctx.store.root,
+      store.root,
       provider,
       ctx.remote?.sessionKey(provider.id) ?? "",
       ctx.credentials.vaultKey,
@@ -142,7 +144,7 @@ export class DictationSessions {
     const session: Session = {
       id: randomUUID(),
       client,
-      store: ctx.store,
+      store,
       maxBytes: maxSeconds * pcmBytesPerSecond,
       received: 0,
       queue: Promise.resolve(),

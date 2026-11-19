@@ -1,6 +1,8 @@
 /* Collapse and expand, the floating card, the edge hint (part of sidebar.css) */
-/* Collapsed sidebar: a 6px accent dot on the toggle while a chat is unread or a
-   request waits. */
+/* Collapsed sidebar: a 6px accent dot on the toggle while a chat is unread
+   or a request waits (live claude.ai, 2026-10-21, shared-22: the chrome
+   bar's toggle takes indicator size-1.5 rounded-full bg-fill-accent while
+   the sidebar is hidden; placement from the index note "top right"). */
 .collapsed-chrome > .icon-button.has-dot::after {
   content: "";
   position: absolute;
@@ -12,11 +14,12 @@
   background: var(--focus-accent);
 }
 
-/* Collapse / expand. On the desktop the column and the sidebar switch at once,
-   with no slide: the original's desktop frame gives its sidebar `transition:
-   none` when it collapses, and R-0021 (Windows, 1x) already shows the final
-   layout in the first screenshot after a click. The title-bar buttons do not
-   move: the floating copy takes the sidebar's place in the same frame. */
+/* Collapse / expand. On the desktop the column and the sidebar switch at
+   once, with no slide: the original's desktop frame gives its sidebar
+   `transition: none` when it collapses (source: desktop bundle 2.31226.1
+   static CSS), and R-0021 (Windows, 1x) already shows the final layout in
+   the first screenshot after a click. The title-bar buttons do not move:
+   the floating copy takes the sidebar's place in the same frame. */
 .sidebar {
   width: var(--sidebar-width);
 }
@@ -29,7 +32,8 @@
 /* The sidebar slides (the web app's slide; its phone drawer slides over the
    page, 95-web.css): 150ms with the column, only while toggling, so resizing
    the window stays direct; the floating copy hands back when the slide ends.
-   The desktop slides too. */
+   The desktop slides too (owner, 2026-10-14: switching at once made the
+   title bar's icons jump). */
 .app.sidebar-animating {
   transition: grid-template-columns 150ms cubic-bezier(0.2, 0, 0, 1);
 }
@@ -48,9 +52,10 @@
   transition: visibility 0s linear 150ms;
 }
 /* What sits under the floating controls takes their room (the padding the
-   sidebar-hidden rules give it) with the same slide: at once, the first frame
-   pushed a conversation's title bar right while the column was still there, and
-   its buttons jumped under the caption buttons and back. */
+   sidebar-hidden rules give it) with the same slide: at once, the first
+   frame pushed a conversation's title bar right while the column was still
+   there, and its buttons jumped under the caption buttons and back (owner,
+   2026-10-14, Windows). */
 .app.sidebar-animating
   :is(
     .chat-header,
@@ -103,10 +108,11 @@
  * floating toggle: 280px wide, at most 70% of the window tall, 6px from the
  * window's left edge and 8px under the toggle, radius 8 with the popover
  * shadow. Resting the pointer on the left edge or the toggle brings it up:
- * opacity over 140ms (ease) and a settle from 6px up and 98% over 180ms on the
- * snap curve, from its top-left corner. The transitions apply only once
- * `data-peek` is set, a frame after collapsing, so hiding the docked sidebar
- * does not animate. The web app keeps its drawer.
+ * opacity over 140ms (ease) and a settle from 6px up and 98% over 180ms on
+ * the snap curve, from its top-left corner (source: desktop bundle
+ * 2.31226.1 static CSS). The transitions apply only once `data-peek` is set,
+ * a frame after collapsing, so hiding the docked sidebar does not animate.
+ * The web app keeps its drawer.
  */
 .app.sidebar-hidden:not(.web) .sidebar {
   position: fixed;
@@ -170,13 +176,14 @@
     0 16px 40px #00000014;
 }
 /*
- * The web's peek. Wider than a phone, the collapsed sidebar comes up as a panel
- * at the window's left edge, its stored width and the page's full height, on
- * the popover fill with its 0.5px CDS border and the popover shadow, over no
- * scrim: it fades in over 0.14s (ease) while it slides the last 4px in from the
- * left over 0.18s on the snap curve. The floating controls stay over its head.
- * This look applies once `data-peek` is set, after the docked sidebar's slide
- * out (AppSidebar armMs).
+ * The web's peek (live claude.ai bundle, 2026-10-12: the web frame's
+ * collapsed sidebar). Wider than a phone, the collapsed sidebar comes up as
+ * a panel at the window's left edge, its stored width and the page's full
+ * height, on the popover fill with its 0.5px CDS border and the popover
+ * shadow, over no scrim: it fades in over 0.14s (ease) while it slides the
+ * last 4px in from the left over 0.18s on the snap curve. The floating
+ * controls stay over its head. This look applies once `data-peek` is set,
+ * after the docked sidebar's slide out (AppSidebar armMs).
  */
 @media (min-width: 640px) {
   .app.web.sidebar-hidden .sidebar[data-peek] {
@@ -239,9 +246,9 @@
   .sidebar[data-peek="open"] {
   transition: none;
 }
-/* The left edge's hint: an 8px strip slides in while the pointer is near the
-   edge and widens to 24px once resting there will open the card; it goes when
-   the card opens. */
+/* The left edge's hint: an 8px strip slides in while the pointer is near
+   the edge and widens to 24px once resting there will open the card; it
+   goes when the card opens (source: desktop bundle 2.31226.1 static CSS). */
 .sidebar-edge-hint {
   position: fixed;
   z-index: 21;

@@ -36,7 +36,7 @@ import {
   useRoutineDetail,
 } from "../../src/collections/routines/useRoutineQuery";
 import { routineDom } from "../support/routine-dom";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 
 const task = (id: string, patch: Partial<Routine> = {}): Routine => ({
   id,

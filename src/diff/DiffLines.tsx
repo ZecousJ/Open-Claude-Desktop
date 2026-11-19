@@ -5,8 +5,8 @@ import { useLowlight } from "../ui/lazy-highlight";
 import { t } from "../i18n";
 
 /**
- * Numbered, coloured diff rows: line number, +/− mark, syntax-highlighted code
- * with the changed words emphasised.
+ * Numbered, coloured diff rows: line number, +/− mark, syntax-highlighted
+ * code with the changed words emphasised (R-0805, R-0874).
  */
 export function DiffLines({
   lines,
@@ -19,7 +19,7 @@ export function DiffLines({
 }: {
   lines: DiffLine[];
   language?: string;
-  /** New files put the + before the number. */
+  /** New files put the + before the number (R-0805 utils.js card). */
   markFirst?: boolean;
   /** Whether the words that changed within a line are emphasised. */
   words?: boolean;
@@ -107,10 +107,11 @@ export function DiffLines({
 }
 
 /**
- * Side by side: the old file's lines on the left, the new file's on the right,
- * each with its own number and mark; a change's removed and added lines pair up
- * row by row. A row's kind is its left side's change, else its right side's, so
- * the change keys (F7) land on it.
+ * Side by side (live claude.ai bundle, 2026-10-14: the Changes pane's Diff
+ * layout): the old file's lines on the left, the new file's on the right,
+ * each with its own number and mark; a change's removed and added lines
+ * pair up row by row. A row's kind is its left side's change, else its
+ * right side's, so the change keys (F7) land on it.
  */
 export function SplitDiffLines({
   lines,

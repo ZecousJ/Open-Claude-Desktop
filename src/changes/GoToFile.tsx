@@ -16,13 +16,14 @@ import {
 } from "./changes-keys";
 
 /**
- * Go to file: a square ghost Search button in the Changes header ("Go to file",
- * ⌘P) whose popup searches the changed files ("Search changed files"), at most
- * 100 rows with "{n} more files. Keep typing to narrow." under them and "No
+ * Go to file (live claude.ai bundle, 2026-10-12, cccc2cf0a `jv`): a square
+ * ghost Search button in the Changes header ("Go to file", ⌘P) whose popup
+ * searches the changed files ("Search changed files"), at most 100 rows
+ * with "{n} more files. Keep typing to narrow." under them and "No
  * matching files" when nothing matches; Enter takes the first match and a
  * picked file scrolls into place. The popup is 22rem wide, aligned to the
- * button's end, below it unless there is less than 200px there and more above.
- * The menus' surface and search row stand in for its styles.
+ * button's end, below it unless there is less than 200px there and more
+ * above. The menus' surface and search row stand in for its styles.
  */
 export function GoToFile({
   files,

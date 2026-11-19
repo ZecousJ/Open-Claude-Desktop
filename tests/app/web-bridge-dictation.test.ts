@@ -11,6 +11,7 @@ import {
   readRealtimeMessage,
 } from "../../src-web/bridge/realtime-message";
 import { FakeClock, flush, signedInBridge } from "./web-bridge-fakes.test.ts";
+import { createOfficialWebDictation } from "../../src-web/official/dictation";
 
 const samples = [
   "not json",
@@ -204,4 +205,78 @@ test("an abandoned dictation closes after 10 s without audio", async () => {
     bridge.api.dictationAudio(sessionId, new Uint8Array(2)),
     /Dictation has ended/,
   );
+});
+
+const officialAddress =
+  "wss://claudex.example/api/ws/speech_to_text/voice_stream?encoding=linear16&sample_rate=16000&channels=1&language=zh-CN";
+
+test("the original composer receives the last words once after a normal relay close", async () => {
+  const { bridge, tab, clock } = await dictationSetup(true, 10);
+  const dictation = createOfficialWebDictation({
+    env: tab.env, auth: bridge.auth, readAvailability: bridge.api.voiceAvailability,
+    isCurrent: () => true,
+  });
+  try {
+    await dictation.refresh();
+    assert.equal(dictation.host.getSnapshot(), true);
+    assert.equal(dictation.host.recordingMillis(), 9_000);
+    assert.ok(dictation.host.drainMillis > 3_000);
+    const before = tab.sockets.length;
+    const composer = dictation.host.open(officialAddress);
+    const seen: unknown[] = [];
+    composer.onmessage = ({ data }) => seen.push(JSON.parse(String(data)));
+    await flush();
+    assert.equal(tab.sockets.length, before + 1);
+    const relay = tab.sockets.at(-1)!;
+    relay.open();
+    await flush();
+    assert.equal(composer.readyState, 1);
+    assert.equal(relay.frames()[0].language, "zh-CN");
+    composer.send(new Uint8Array([1, 2, 3, 4]).subarray(2));
+    assert.deepEqual(relay.sent[1], Uint8Array.of(3, 4));
+    relay.receive({ type: "partial", text: "今天" });
+    relay.receive({ type: "final", text: "今天" });
+    composer.send('{"type":"CloseStream"}');
+    assert.equal(relay.frames().at(-1).type, "finish");
+    await clock.advance(3_000);
+    relay.receive({ type: "final", text: "见面" });
+    relay.drop(1000);
+    await flush();
+    assert.deepEqual(seen.slice(-2), [
+      { type: "TranscriptText", data: "今天见面" },
+      { type: "TranscriptEndpoint" },
+    ]);
+    assert.equal(seen.filter((event) => JSON.stringify(event).includes("TranscriptText")).length, 1);
+    assert.equal(composer.readyState, 3);
+  } finally {
+    dictation.dispose();
+    bridge.dispose();
+  }
+});
+
+test("retiring the original frame during availability lookup starts no socket or ticket request", async () => {
+  const { bridge, tab } = await dictationSetup();
+  type Availability = Awaited<ReturnType<typeof bridge.api.voiceAvailability>>;
+  let release: (availability: Availability) => void = () => {};
+  const pending = new Promise<Availability>((resolve) => { release = resolve; });
+  let checks = 0;
+  const dictation = createOfficialWebDictation({
+    env: tab.env, auth: bridge.auth,
+    readAvailability: () => ++checks === 1 ? bridge.api.voiceAvailability() : pending,
+    isCurrent: () => true,
+  });
+  try {
+    await dictation.refresh();
+    const count = tab.sockets.length;
+    const recording = dictation.host.open(officialAddress);
+    dictation.dispose();
+    release({ transcription: true, maxSeconds: 30, maxTranscriptionBytes: null });
+    await flush();
+    assert.equal(recording.readyState, 3);
+    assert.equal(tab.sockets.length, count);
+    assert.equal(tab.requests.some((request) => request.url.endsWith("/auth/voice-ticket")), false);
+  } finally {
+    dictation.dispose();
+    bridge.dispose();
+  }
 });

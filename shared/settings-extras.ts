@@ -1,6 +1,7 @@
 import type { TranscriptView } from "./transcript-view";
 import { previewOrigin, previewOriginUnsafe } from "./preview-origin";
 import { isLocalDevHost } from "./browser";
+import type { RemoteControlSpawnMode, RemoteFolderSpawnMode } from "./remote-devices";
 
 /**
  * Settings added with the long Settings pages (Account, General, Claude Code,
@@ -15,8 +16,9 @@ import type {
 /**
  * "What best describes your work?" (Settings → Account) and the onboarding's
  * "What kind of work do you do?" share one list: the original's work_function
- * roles in its order. The values are the original's, and the service stores the
- * same ones (backend internal/claudex/onboarding).
+ * roles in its order (live claude.ai bundle, 2026-10-12: shared-4 `Ok`, with
+ * the labels of `Dk`). The values are the original's, and the service stores
+ * the same ones (backend internal/claudex/onboarding).
  */
 export type WorkType =
   | "Product Management"
@@ -90,8 +92,9 @@ export function normalizeWorkType(value: unknown): WorkType | undefined {
 }
 
 /**
- * Settings → Claude Code → Appearance → Transcript text size: Small, Medium or
- * Large.
+ * Settings → Claude Code → Appearance → Transcript text size: Small, Medium
+ * or Large (live claude.ai bundle, 2026-10-12: `chatTextSize`, "s" | "m" |
+ * "l", Medium by default).
  */
 export type TranscriptTextSize = "s" | "m" | "l";
 /** Settings → Claude Code → Transcript width: Narrow, Medium, Wide. */
@@ -175,21 +178,23 @@ export interface SettingsPreferences {
    * enabled_model_auto_fallback, on unless turned off).
    */
   modelAutoFallback?: boolean;
-  /** Default-on enabled_geolocation. */
+  /** Default-on enabled_geolocation (live claude.ai bundle, 2026-10-14, c71860c77-BxbFlsvr). */
   locationMetadata?: boolean;
   /** Claude Code → Archive inactive sessions: days without activity, 0 never. */
-  autoArchiveDays?: 0 | 1 | 2 | 7 | 14 | 30;
+  autoArchiveDays?: number;
   /** Claude Code → Output style: the style new Code sessions start with ("" default). */
   codeOutputStyle?: string;
   /**
    * Claude Code → Connect new sessions to Remote Control: new Code sessions
-   * start reachable from the phone; the session's own switch can still turn it
-   * off.
+   * start reachable from the phone (on, the owner's default, 2026-10-06);
+   * the session's own switch can still turn it off.
    */
   remoteControlNewSessions?: boolean;
   /**
-   * The permission mode of tasks started from the home. Full access is
-   * Claudex's third mode, kept by the owner.
+   * The permission mode of tasks started from the home (live claude.ai
+   * bundle, 2026-10-12: the unified home's Manual / Auto picker, draft
+   * "default" = Manual). Full access is Claudex's third mode, kept by the
+   * owner (2026-10-12).
    */
   taskPermission?: TaskPermission;
   /** Whether Cowork may run tasks that use this computer. */
@@ -216,6 +221,7 @@ export interface SettingsPreferences {
   aiArtifacts?: boolean;
   /** Chat execution and file tools; independent of Code and Cowork. */
   chatExecution?: boolean;
+  chatWebSearch?: boolean;
   /** Chat artifact creation when execution is disabled. */
   artifacts?: boolean;
   capabilityTipState?: import("./chat-suggestions").ArtifactTipPacing;
@@ -243,11 +249,6 @@ export interface SettingsPreferences {
    * uses the plan group when it is the provider's, else its first group.
    */
   apiGroups?: Record<string, number>;
-  /**
-   * The image model pictures are made with (sidebar → API → Image
-   * generation); "" uses the drawing group's first model.
-   */
-  imageModel?: string;
   /** The interface language (a `shared/locales.ts` id); Simplified Chinese until chosen. */
   locale?: string;
   /**
@@ -282,14 +283,16 @@ export interface SettingsPreferences {
   keepAwake?: boolean;
   /** Global accelerator that brings Claudex forward with a new chat; "" for none. */
   quickAccessShortcut?: string;
+  /** Allow the legacy global Quick Entry shortcut on hosts without native Quick Entry. */
+  legacyQuickEntryEnabled?: boolean;
   /** Quick access: double-tap Option/Alt, off, or a custom accelerator. */
   quickEntryShortcut?: string;
   quickEntryDictationShortcut?: string;
   /**
-   * Starts or stops dictation in the composer being typed in: an accelerator,
-   * "" for none.
+   * Starts or stops dictation in the composer being typed in (R-1410,
+   * R-1411): an accelerator, "" for none.
    */
-  dictationShortcut?: string;
+  dictationShortcut?: DictationShortcutPreference;
   /** SKILL.md paths the user switched off; re-applied at every runtime start. */
   disabledSkills?: string[];
   /**
@@ -298,7 +301,7 @@ export interface SettingsPreferences {
    * administrator collects them. Off until the user turns it on.
    */
   helpImproveClaudex?: boolean;
-  /** Telemetry control. */
+  /** Telemetry control (live claude.ai bundle, 2026-10-14, c6f6cf4c2-Dbp5GpN7.js:4666). */
   disableNonessentialServices?: boolean;
   /**
    * Settings → Claude Code → Browser → Browser tools (R8): Claude may start
@@ -307,12 +310,16 @@ export interface SettingsPreferences {
    * it off.
    */
   browserTools?: boolean;
+  /** The original Code Browser tools switch, separate from the Cowork switch. */
+  codeBrowserTools?: boolean;
+  /** Desktop Chrome sharing is enabled for this account. */
+  chromeExtensionEnabled?: boolean;
   /** Allow browser actions on any website without asking in new sessions. */
   allowAllBrowserActions?: boolean;
   /**
    * Links in Code sessions open in the built-in browser (the panel on the
    * right) instead of the default browser. On unless turned off, as in the
-   * original desktop app.
+   * original desktop app (owner, 2026-10-02).
    */
   browserOpenLinksInApp?: boolean;
   /**
@@ -321,10 +328,12 @@ export interface SettingsPreferences {
    */
   cloudSync?: boolean;
   /**
-   * The account's phones can open, continue, stop and approve this computer's
-   * Code sessions while Claudex runs here. On unless turned off.
+   * The account's phones can open, continue, stop and approve this
+   * computer's Code sessions while Claudex runs here (remote-control/,
+   * owner 2026-10-06). On unless turned off.
    */
   remoteControl?: boolean;
+  remoteControlStayReachable?: boolean;
   dispatchOnboarded?: boolean;
   dispatchMobileNotifications?: boolean;
   /**
@@ -333,6 +342,8 @@ export interface SettingsPreferences {
    * Remote Control"). Adding one trusts it for Codex.
    */
   remoteFolders?: string[];
+  remoteControlSpawnMode?: RemoteControlSpawnMode;
+  remoteFolderSpawnModes?: RemoteFolderSpawnMode[];
   /** Keep cookies: how long the built-in browser keeps cookies and logins. */
   browserKeepCookies?: BrowserKeepCookies;
   /**
@@ -344,9 +355,9 @@ export interface SettingsPreferences {
   /** Auto-verify changes: Claude checks UI changes in the browser before finishing. */
   browserAutoVerify?: boolean;
   /**
-   * Code home → Local ▾ → Edit local environment: .env text whose variables the
-   * agent runtime starts with, so Code sessions on this computer see them. Read
-   * when the runtime starts.
+   * Code home → Local ▾ → Edit local environment (R-0386): .env text whose
+   * variables the agent runtime starts with, so Code sessions on this
+   * computer see them. Read when the runtime starts.
    */
   localEnvironmentVariables?: string;
   /**
@@ -363,43 +374,50 @@ export interface SettingsPreferences {
    * prompt and a Markdown document's column (src/transcript-text-size.ts).
    */
   transcriptTextSize?: TranscriptTextSize;
-  /** The widest the transcript and composer columns go: 768, 960 or 1280px. */
+  /**
+   * The widest the transcript and composer columns go: 768, 960 or 1280px
+   * (live claude.ai bundle, 2026-10-14: transcriptWidth, Narrow by
+   * default; src/settings/appearance.css).
+   */
   transcriptWidth?: TranscriptWidth;
   preferredBrowser?: "built_in";
   /**
-   * The face of the whole interface: Anthropic Sans (the reference face when a
-   * local Claude installation lends it), the system's, or OpenDyslexic.
+   * The face of the whole interface: Anthropic Sans (the reference face
+   * when a local Claude installation lends it), the system's, or
+   * OpenDyslexic (live claude.ai bundle, 2026-10-14: interfaceFont).
    */
   interfaceFont?: InterfaceFont;
   codeLightTheme?: CodeLightTheme;
   codeDarkTheme?: CodeDarkTheme;
   /**
-   * Settings → Claude Code → Default transcript view: the view Code sessions
-   * open in; a session's own Transcript view menu (or Ctrl+O) changes only that
-   * session.
+   * Settings → Claude Code → Default transcript view: the view Code
+   * sessions open in; a session's own Transcript view menu (or Ctrl+O)
+   * changes only that session (live claude.ai bundle, 2026-10-12).
    */
   defaultTranscriptView?: TranscriptView;
   ccdThinkingSummaryOnDemand?: boolean;
   coworkThinkingMode?: "standard" | "extended";
   /**
    * Settings → Claude Code → Pull requests → Auto-archive after PR merge or
-   * close: a Code session is archived once the pull request it made is merged
-   * or closed. A session's own switch (the CI popover's) overrides it.
+   * close (live claude.ai bundle, 2026-10-12): a Code session is archived
+   * once the pull request it made is merged or closed. A session's own
+   * switch (the CI popover's) overrides it.
    */
   prAutoArchive?: boolean;
   /** …Open pull requests in browser: PR links skip the built-in browser. */
   prOpenInBrowser?: boolean;
   /**
-   * …Create pull requests automatically: a cloud session opens a pull request
-   * after a push without asking; Create as draft opens it as a draft.
+   * …Create pull requests automatically (live claude.ai bundle, 2026-10-15,
+   * c71860c77): a cloud session opens a pull request after a push without
+   * asking; Create as draft opens it as a draft.
    */
   prAutoCreate?: boolean;
   /** …Auto-fix pull requests: a session's new pull request is watched (electron/pr-autofix.ts). */
   prAutoFix?: boolean;
   prAutoCreateDraft?: boolean;
   /**
-   * The folder chip's Worktree switch: new local Code sessions start in their
-   * own worktree.
+   * The folder chip's Worktree switch (live claude.ai bundle, 2026-10-14):
+   * new local Code sessions start in their own worktree.
    */
   codeWorktree?: boolean;
   /**
@@ -478,8 +496,12 @@ export function parseAllowedSite(
   return { site };
 }
 
+export type DictationShortcutPreference = string | { accelerator: string };
+
+export const defaultDictationShortcut = "CommandOrControl+D";
+
 export const preferenceDefaults: Required<
-  Omit<SettingsPreferences, "workType">
+  Omit<SettingsPreferences, "workType" | "codeBrowserTools">
 > = {
   extensionAutoUpdates: true,
   extensionBuiltInNode: true,
@@ -488,7 +510,7 @@ export const preferenceDefaults: Required<
   profilePhotoEnabled: false,
   homeStarters: {},
   notifyResponses: false,
-  // Scheduled tasks is the only notification on by default.
+  // R-设置-General-顶部: Scheduled tasks is the only notification on by default.
   notifySchedules: true,
   notifySchedulesEmail: false,
   codeLocalSandbox: true,
@@ -498,7 +520,8 @@ export const preferenceDefaults: Required<
   notifyCodePermissions: true,
   notifyCodeUpdates: false,
   notifyCodeEmail: false,
-  // On: Bypass stays available as it was; the original starts it off.
+  // On: Bypass stays available as it was (owner, 2026-10-03: Bypass on the
+  // web); the original starts it off.
   allowBypassPermissions: true,
   classifySessionStates: true,
   ccPromptSuggestions: true,
@@ -511,21 +534,23 @@ export const preferenceDefaults: Required<
   remoteControlNewSessions: true,
   taskPermission: "default",
   computerAccess: true,
-  // On by default, as the original's "Keep computer awake while Claude works"
-  // and "Keep awake on battery power".
+  // On by default, as the original's "Keep computer awake while Claude
+  // works" and "Keep awake on battery power" (live claude.ai bundle,
+  // 2026-10-12: default true for both).
   keepAwakeWhileCoding: true,
   keepAwakeOnBattery: true,
-  // Dynamic workflows on, medium size, "ultracode" heard.
+  // Dynamic workflows on, medium size, "ultracode" heard (owner, 2026-10-14).
   workflows: {},
   drawAttention: false,
-  // Banners for every kind, with the system sound; read through
-  // shared/notification-levels.ts.
+  // Banners for every kind, with the system sound (live claude.ai bundle,
+  // 2026-10-12); read through shared/notification-levels.ts.
   notificationLevels: {},
   notificationSound: "system",
-  // As on claude.ai: visualizations on; AI artifacts off, since every call an
-  // artifact makes spends the account's quota.
+  // As on claude.ai (2026-09-29): visualizations on; AI artifacts off, since
+  // every call an artifact makes spends the account's quota.
   aiArtifacts: false,
   chatExecution: true,
+  chatWebSearch: true,
   artifacts: true,
   capabilityTipState: { sessionsSinceLastShow: 0, ledger: {}, dismissed: [] },
   inlineVisualizations: true,
@@ -533,7 +558,6 @@ export const preferenceDefaults: Required<
   connectorSearch: true,
   designSystem: "",
   apiGroups: {},
-  imageModel: "",
   locale: "zh-CN",
   networkEgress: true,
   egressAllowlist: "packages",
@@ -541,30 +565,36 @@ export const preferenceDefaults: Required<
   breakReminderMinutes: 0,
   quietHours: { days: [], start: "22:00", end: "07:00" },
   coworkInstructions: "",
-  // On, as the original.
+  // On, as the original (live claude.ai bundle, 2026-10-14: menuBar default true).
   menuBar: true,
   keepAwake: false,
   // Alt+Space off macOS (desktop client 2.37337.1: ERe, the default global
   // shortcut); macOS opens Quick Entry by the Option double tap and ignores it.
   quickAccessShortcut: "Alt+Space",
+  legacyQuickEntryEnabled: true,
   quickEntryShortcut: "double-tap-option",
   quickEntryDictationShortcut: "off",
-  dictationShortcut: "CommandOrControl+D",
+  dictationShortcut: defaultDictationShortcut,
   disabledSkills: [],
   helpImproveClaudex: false,
   disableNonessentialServices: false,
   // R8 design 5.1: Browser tools on (as the original), links in the default browser.
   browserTools: true,
-  // Every site without a question, unless turned off in Settings; the
-  // administrator's blocked domains and local-only policy still apply.
+  // Every site without a question, unless turned off in Settings (owner,
+  // 2026-10-22); the administrator's blocked domains and local-only policy
+  // still apply.
   allowAllBrowserActions: true,
   browserOpenLinksInApp: true,
   cloudSync: true,
   remoteControl: true,
+  remoteControlStayReachable: false,
   dispatchOnboarded: false,
   dispatchMobileNotifications: false,
   remoteFolders: [],
+  remoteControlSpawnMode: "same-dir",
+  remoteFolderSpawnModes: [],
   browserKeepCookies: "until-quit",
+  chromeExtensionEnabled: false,
   browserAllowedSites: [],
   browserAutoVerify: false,
   localEnvironmentVariables: "",
@@ -598,6 +628,11 @@ export function preference<K extends keyof typeof preferenceDefaults>(
   return (settings[key] ?? preferenceDefaults[key]) as any;
 }
 
+export function dictationAccelerator(settings: SettingsPreferences) {
+  const shortcut = preference(settings, "dictationShortcut");
+  return typeof shortcut === "string" ? shortcut : shortcut.accelerator;
+}
+
 export const coworkInstructionsLimit = 10000;
 
 /**
@@ -612,7 +647,7 @@ export function profileInstructions(
   // One line, without quotes that could end the sentence early.
   const name = (settings.name ?? "").replace(/[\s"“”]+/g, " ").trim();
   // Named, not greeted: a reply that opens with the name reads like a form
-  // letter.
+  // letter (the owner's review, 2026-09-29).
   if (name)
     lines.push(
       `The user's name is "${name.slice(0, 100)}". Use it only where a person naturally would; never open a reply with it.`,

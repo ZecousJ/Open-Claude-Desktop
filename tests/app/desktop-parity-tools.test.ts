@@ -29,7 +29,7 @@ test("support exports mask credentials/home and collect bounded warnings, not ar
   try {
     await fs.writeFile(
       path.join(directory, "app.log"),
-      "INFO harmless\nWARN token=private\nERROR Bearer secret\n",
+      "INFO harmless\nWARN token=private\nERROR Bearer secret\nWARN signed in as person@example.com\n",
     );
     await fs.writeFile(
       path.join(directory, "secret.json"),
@@ -42,6 +42,7 @@ test("support exports mask credentials/home and collect bounded warnings, not ar
     assert.deepEqual(await supportLogLines(directory), [
       "WARN token=<redacted>",
       "ERROR Bearer <redacted>",
+      "WARN signed in as <redacted>",
     ]);
     assert.equal(
       redactSupportLog(

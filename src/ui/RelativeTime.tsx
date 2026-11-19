@@ -6,10 +6,11 @@ import { WithTooltip } from "./Tooltip";
 const ABSOLUTE_AFTER_SECONDS = 168 * 3600;
 
 /**
- * A moment as the original's relative time writes it: "just now" under a
- * minute, then minutes, hours and days rounded to the nearest, "yesterday" for
- * one day (the locale's own words), and from a week on a short date, with the
- * year only when it is not this one ("Oct 5", "Oct 5, 2025").
+ * A moment as the original's relative time writes it (desktop bundle
+ * 2.31226.1, shared RelativeTime): "just now" under a minute, then minutes,
+ * hours and days rounded to the nearest, "yesterday" for one day (the
+ * locale's own words), and from a week on a short date, with the year only
+ * when it is not this one ("Oct 5", "Oct 5, 2025").
  */
 export function relativeTime(
   createdAt: number,

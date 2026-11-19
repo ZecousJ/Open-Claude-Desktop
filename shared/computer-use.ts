@@ -76,7 +76,7 @@ export interface ComputerUseActivity {
 
 /** Why computer use can't be used right now. */
 export type ComputerUseUnavailableReason =
-  "policy" | "platform" | "driver" | "unsupported";
+  "platform" | "driver" | "unsupported";
 
 export interface ComputerUseState {
   /** Policy, platform and driver all allow computer use. */
@@ -98,7 +98,7 @@ export interface ComputerUseState {
 export type ComputerUsePermissionKind = "accessibility" | "screen";
 
 export const defaultComputerUseSettings: ComputerUseSettings = {
-  enabled: false,
+  enabled: true,
   mode: "background",
   unhideApps: true,
   deniedApps: [],

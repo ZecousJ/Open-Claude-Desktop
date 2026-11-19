@@ -28,8 +28,9 @@
 :root[data-theme="light"] .mode-code .code-plan-row {
   color: #52514e;
 }
-/* A turn's changes (CodeFileChange.tsx): "Changes N files +a −d" with a caret
-   that turns in 60ms, opening to the files, three before "Show N more". */
+/* A turn's changes (CodeFileChange.tsx): "Changes  N files  +a −d" with a
+   caret that turns in 60ms, opening to the files, three before "Show N
+   more" (desktop bundle 2.31226.1). */
 .mode-code .code-turn-changes-caret {
   flex: none;
   transition: rotate var(--motion-fast) var(--ease-out);
@@ -37,9 +38,12 @@
 .mode-code .code-turn-changes[data-open] .code-turn-changes-caret {
   rotate: 90deg;
 }
-/* The row is the toggle's: its hit area covers the whole row, the line counts
-   let clicks through, and Undo (latest turn, a small ghost button like Show
-   more) sits above it, 4px before the counts. */
+/* The row is the toggle's: its hit area covers the whole row, the line
+   counts let clicks through, and Undo (latest turn, a small ghost button
+   like Show more) sits above it, 4px before the counts (live claude.ai
+   bundle, 2026-10-12: before:absolute before:inset-0 on the trigger,
+   pointer-events-none on the meta, pointer-events-auto on the action,
+   gap-1). */
 .mode-code .code-turn-changes-row {
   position: relative;
   display: flex;
@@ -133,7 +137,7 @@
   outline-offset: 3px;
   border-radius: 3px;
 }
-/* The running description keeps the sweep; "View live output" is #f4f4f4. */
+/* R-0646: the running description keeps the sweep; "View live output" is #f4f4f4. */
 .mode-code .code-background-row .code-command-label {
   color: #bcbcba;
   -webkit-text-fill-color: transparent;
@@ -158,9 +162,9 @@
   }
 }
 
-/* Expanded group: a 1px #2d2d2d bordered list, one row per call 36px tall with
-   a hairline between, label 8.5px in. An open row keeps its card or diff below
-   the label inside the list. */
+/* Expanded group (R-0794-0800, W969 2.4 px/CSS): a 1px #2d2d2d bordered list,
+   one row per call 36px tall with a hairline between, label 8.5px in. An open
+   row keeps its card or diff below the label inside the list. */
 .mode-code .code-tool-group-items {
   margin: 6px 0 0;
   border: 1px solid #2d2d2d;
@@ -183,8 +187,9 @@
 .mode-code .code-tool-group-items > .code-command[open] {
   padding-bottom: 8px;
 }
-/* A background command's row is a button: the list's full width and row height
-   like the others. */
+/* A background command's row is a button: the list's full width and row
+   height like the others (owner, 2026-10-09: it sat shorter, its hairline
+   stopping where its text ended). */
 .mode-code .code-tool-group-items > .code-background-row {
   box-sizing: border-box;
   width: 100%;
@@ -204,16 +209,17 @@
   border-color: var(--border);
 }
 
-/* Connector and dynamic tool rows: the row opens onto its result as plain
-   14px/20px text, 24px under the label's centre (the body starts 4px into the
-   35.67px row); a failed call's error is red, then each argument reads "name:
-   value" with a 12px monospace name (#969696) over a #cecece value, 25px under
-   the last line. */
+/* Connector and dynamic tool rows (R-0816-0837 capture, 2.0 px/CSS): the row
+   opens onto its result as plain 14px/20px text, 24px under the label's
+   centre (the body starts 4px into the 35.67px row); a failed call's error
+   is red, then each argument reads "name: value" with a 12px monospace name
+   (#969696) over a #cecece value, 25px under the last line. */
 .mode-code .code-tool-call-body {
   margin-top: -4px;
   color: #c7c7c5;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -264,15 +270,17 @@
 
 .mode-code .code-file-change-body {
   display: grid;
-  /* One column no wider than the reply: an auto track grew to the long path and
-     the code's longest line and ran past the column. */
+  /* One column no wider than the reply: an auto track grew to the long
+     path and the code's longest line and ran past the column (owner,
+     2026-10-22). */
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   margin-top: 6px;
 }
-/* The written file's path is one line: its folders give way to an ellipsis so
-   the file's name stays, a copy button at its end; its lines wrap under the
-   code column as the Changes panel's do. */
+/* The written file's path is one line: its folders give way to an ellipsis
+   so the file's name stays, a copy button at its end (live desktop
+   2.42304.2); its lines wrap under the code column as the Changes panel's
+   do (owner, 2026-10-09: a long paragraph was cut off at the card's edge). */
 .mode-code .code-file-diff-path-row {
   display: flex;
   align-items: center;
@@ -300,8 +308,8 @@
 .mode-code .code-file-diff-path-row > .small-action {
   flex: none;
 }
-/* 13px lines on a 20px pitch in an 8px-round box, the tint on the code only,
-   the numbers on the page. */
+/* The live desktop's diff in a transcript: 13px lines on a 20px pitch in an
+   8px-round box, the tint on the code only, the numbers on the page. */
 .mode-code .code-file-diff .diff-lines {
   font-size: 13px;
   line-height: 20px;
@@ -334,9 +342,10 @@
   color: #e5616f;
 }
 
-/* A finished Code reply ends with the spinner's largest frame, still: 17px, its
-   left edge on the text's ink edge, its centre 72.5px below the ink top of the
-   last line; the badge starts 27.5px right of the text's ink edge. */
+/* A finished Code reply ends with the spinner's largest frame, still (R-0831,
+   R-0646): 17px, its left edge on the text's ink edge, its centre 72.5px below
+   the ink top of the last line (R-Code-失败后回复仍运行 72.5, R-0646 72.25);
+   the badge starts 27.5px right of the text's ink edge (R-0646). */
 .code-turn-status.code-turn-end {
   margin-top: 43.5px;
   padding-left: 28.5px;
@@ -344,7 +353,7 @@
 .code-turn-end > .code-end-star {
   left: -0.55px;
 }
-/* Blue "1 running task" badge, 20px tall, #0b1f40 with #88a7de text. */
+/* R-0646: blue "1 running task" badge, 20px tall, #0b1f40 with #88a7de text. */
 .code-running-badge {
   height: 20px;
   padding: 0 6.5px 0 7px;
@@ -433,8 +442,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* A written file's path opens it in the file panel: a link-like button in the
-   path's own style. */
+/* A written file's path opens it in the file panel (R-1075): a link-like
+   button in the path's own style. */
 .mode-code .code-file-open {
   display: block;
   padding: 0;
@@ -445,8 +454,8 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-/* "Asking <header> ⌄" (the tool label, running shimmer) with the question under
-   it in the reply's text colour. */
+/* R-0811: "Asking <header> ⌄" (the tool label, running shimmer) with the
+   question under it in the reply's text colour. */
 .mode-code .asking-row > summary {
   list-style: none;
 }
@@ -461,8 +470,8 @@
 :root[data-theme="light"] .mode-code .asking-row > p {
   color: #3d3d3a;
 }
-/* An earlier Code reply's toolbar (Copy, Fork, Pin, time) shows while the turn
-   is hovered or focused; the latest keeps its star. */
+/* R-0638: an earlier Code reply's toolbar (Copy, Fork, Pin, time) shows
+   while the turn is hovered or focused; the latest keeps its star. */
 .mode-code .code-reply-actions {
   opacity: 0;
   transition: opacity 120ms;
@@ -471,8 +480,8 @@
 .mode-code .code-reply-actions:focus-within {
   opacity: 1;
 }
-/* "Failed to write" in red, then the file name in the text colour; open, the
-   reason in red under it. */
+/* R-0823 (W969, light and dark): "Failed to write" in red, then the file
+   name in the text colour; open, the reason in red under it. */
 .mode-code .code-file-failed .code-command-label {
   color: var(--text);
 }
@@ -495,10 +504,10 @@
   color: #8f2d2a;
 }
 
-/* Fork markers: "Forked from {title}" above a forked session, "Forked here:
-   {title}" / "{count} forks from here" under the turn a fork continued from. A
-   muted 12px caption with the split arrow, 4px apart; one that opens a session
-   turns primary on hover. */
+/* Fork markers (desktop bundle 2.31226.1): "Forked from {title}" above a
+   forked session, "Forked here: {title}" / "{count} forks from here" under
+   the turn a fork continued from. A muted 12px caption with the split
+   arrow, 4px apart; one that opens a session turns primary on hover. */
 .fork-marker {
   display: flex;
   min-width: 0;
@@ -544,10 +553,11 @@
   opacity: 0.4;
 }
 
-/* A 28px row, 6px between caret, "Changes" (body, primary) and the file count
-   (caption, muted); then Undo (a small ghost button, caption) 4px before the
-   line counts (body, tabular, 2px apart). Undo keeps none of the Show more
-   button's top margin, so everything sits on one line. */
+/* A turn's changes row as live claude.ai draws it (2026-10-13, turn edits
+   card): a 28px row, 6px between caret, "Changes" (body, primary) and the
+   file count (caption, muted); then Undo (a small ghost button, caption)
+   4px before the line counts (body, tabular, 2px apart). Undo keeps none of
+   the Show more button's top margin, so everything sits on one line. */
 .mode-code .code-turn-changes-row {
   min-height: 28px;
 }
@@ -610,7 +620,9 @@
 :root[data-theme="light"] .code-diff-del {
   color: #cd2054;
 }
-/* The pill. */
+/* The pill (live desktop 2.42304.2, DiffIndicator: an 18px chip rounded a
+   quarter of its height, caption text in medium weight with tabular
+   figures, each count 6px in on its own 20% tint of its colour). */
 .code-diff-stat[data-variant="pill"] {
   align-self: center;
   gap: 0;
@@ -636,13 +648,15 @@
   background: color-mix(in srgb, currentColor 20%, transparent);
 }
 
-/* A turn's edits card: 4px above, an 8px-round card with a 1px inset border,
-   8px in and 4px top and bottom; each row 28px high, 4px in, its hover fill 5px
-   round across the row, 6px between icon, name and folder; the name in body
-   text, the folder in caption, muted; at the end Undo, then the counts and a
-   14px caret 10px apart. */
-/* A turn's files outside a repository: a 45px card, round 10, its type badge
-   (the attachment label's), the name and the size. */
+/* A turn's edits card (CodeFileChange.tsx CodeTurnChanges; live claude.ai
+   bundle, 2026-10-13, at the default density): 4px above, an 8px-round
+   card with a 1px inset border, 8px in and 4px top and bottom; each row
+   28px high, 4px in, its hover fill 5px round across the row, 6px between
+   icon, name and folder; the name in body text, the folder in caption,
+   muted; at the end Undo, then the counts and a 14px caret 10px apart. */
+/* A turn's files outside a repository (owner's capture of the live
+   desktop, 2026-10-22, measured at 1.16 px a point): a 45px card, round
+   10, its type badge (the attachment label's), the name and the size. */
 .turn-file-cards {
   display: flex;
   flex-wrap: wrap;
@@ -704,7 +718,9 @@
   font-size: 13px;
   line-height: 18px;
 }
-/* The see-all form. */
+/* The see-all form (live desktop 2.42304.2+, 2026-10-22, pye/r0/i0:
+   rounded-card, px-md py-xs, gap-1; rows -mx-pad-xs px-md min-h-7; the
+   head h-control px-xs; a 1px alpha-2 rule to 1px from the card's edge). */
 .turn-edits-card {
   margin-top: 4px;
   display: flex;
@@ -900,8 +916,10 @@
 }
 
 /* A finished Workflow tool run (WorkflowRunRow): "Ran workflow", its
-   description and Stopped/Failed in one 3px-gapped line, the description cut
-   with an ellipsis. Colours are the plan row's. */
+   description and Stopped/Failed in one 3px-gapped line, the description
+   cut with an ellipsis (live claude.ai bundle, 2026-10-14: flex
+   self-start max-w-full items-center gap-0.75; the label and description
+   text-secondary, Failed text-danger). Colours are the plan row's. */
 .mode-code .code-workflow-run {
   display: flex;
   align-self: flex-start;

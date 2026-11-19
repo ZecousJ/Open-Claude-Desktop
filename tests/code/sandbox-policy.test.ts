@@ -32,7 +32,7 @@ test("stored Chat, Cowork and Code retain the sandbox selected for the actual pe
 });
 
 test("a task's permission mode picks its sandbox and who answers its requests", () => {
-  // Manual is the default.
+  // Manual is the default (live claude.ai bundle: draftPermissionMode "default").
   assert.equal(taskSandboxFor({}), "workspace-write");
   assert.equal(approvalsReviewerFor("cowork", {}), "user");
   assert.equal(approvalsReviewerFor("chat", {}), "user");
@@ -72,14 +72,17 @@ test("a task's permission mode picks its sandbox and who answers its requests", 
     approvalsReviewerFor("cowork", { taskPermission: "auto" }, false, true),
     "user",
   );
-  // Only tasks have a reviewer; Code keeps its own permission modes.
+  // Code uses its own session permission instead of the task preference.
   assert.equal(
     approvalsReviewerFor("code", { taskPermission: "auto" }),
     "user",
   );
+  assert.equal(approvalsReviewerFor("code", {}, false, false, undefined, "auto"), "auto_review");
+  for (const mode of ["manual", "acceptEdits", "plan", "bypass"] as const)
+    assert.equal(approvalsReviewerFor("code", {}, false, false, undefined, mode), "user");
 });
 
-test("Bypass permissions is Codex full access only in confirmed folders", () => {
+test("an explicit bypass session grants full access after account opt-in", () => {
   const settings = {
     codeSandbox: "danger-full-access" as const,
     codePlanMode: false,
@@ -89,6 +92,8 @@ test("Bypass permissions is Codex full access only in confirmed folders", () => 
   assert.equal(codeSandboxFor(settings, "/work/sandbox"), "danger-full-access");
   assert.equal(codeSandboxFor(settings, "/work/other"), "workspace-write");
   assert.equal(codeSandboxFor(settings), "workspace-write");
+  assert.equal(codeSandboxFor(settings, "/work/other", "bypass"), "danger-full-access");
+  assert.equal(codeSandboxFor({ ...settings, allowBypassPermissions: false }, "/work/other", "bypass"), "workspace-write");
   assert.equal(
     codeSandboxFor({ ...settings, codePlanMode: true }, "/work/sandbox"),
     "read-only",

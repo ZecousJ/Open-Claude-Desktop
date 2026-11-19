@@ -24,11 +24,11 @@ func TestValidateRejectsEveryOutOfRangeField(t *testing.T) {
 		field string
 		edit  func(*TranscriptionSettings)
 	}{
-		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = ""; t.Enabled = true }},
-		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "https://transcribe.example.com/v1" }},
-		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "ws://transcribe.example.com/v1" }},
-		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "wss://user:pw@transcribe.example.com/v1" }},
-		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "wss://transcribe.example.com/v1?api_key=x" }},
+		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "" }},
+		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "https://hiwonder.cc/v1" }},
+		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "ws://hiwonder.cc/v1" }},
+		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "wss://user:pw@hiwonder.cc/v1" }},
+		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "wss://hiwonder.cc/v1?api_key=x" }},
 		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "wss:///nohost" }},
 		{"transcription.upstream_url", func(t *TranscriptionSettings) { t.UpstreamURL = "wss://h/" + strings.Repeat("a", 2048) }},
 		{"transcription.max_session_seconds", func(t *TranscriptionSettings) { t.MaxSessionSeconds = 9 }},
@@ -37,10 +37,7 @@ func TestValidateRejectsEveryOutOfRangeField(t *testing.T) {
 		{"transcription.max_bytes", func(t *TranscriptionSettings) { t.MaxBytes = 3600*32000 + 1 }},
 		{"transcription.idle_timeout_seconds", func(t *TranscriptionSettings) { t.IdleTimeoutSeconds = 4 }},
 		{"transcription.idle_timeout_seconds", func(t *TranscriptionSettings) { t.IdleTimeoutSeconds = 301 }},
-		{"transcription.api_key", func(t *TranscriptionSettings) {
-			t.UpstreamURL = "wss://transcribe.example.com/v1"
-			t.Enabled = true
-		}},
+		{"transcription.api_key", func(t *TranscriptionSettings) { t.Enabled = true }},
 	} {
 		s := defaultSettings()
 		tc.edit(&s.Transcription)

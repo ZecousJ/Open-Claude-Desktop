@@ -7,7 +7,7 @@ import {
 } from "../../shared/cloud-environments-api";
 import { cloudEnvironmentInput } from "../../shared/cloud-environments-input";
 
-/** Cloud profiles stay in the account. */
+/** Cloud profiles stay in the account (live claude.ai bundle, 2026-10-14, c28ccf1ab). */
 export class CloudEnvironments {
   constructor(private root: string) {}
 

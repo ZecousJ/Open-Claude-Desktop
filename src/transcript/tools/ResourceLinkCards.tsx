@@ -11,7 +11,7 @@ import { useConversationServices } from "../../conversation/ConversationServices
 import { t } from "../../i18n";
 import "../../ui/markdown-parity.css";
 
-// .
+// (live claude.ai bundle, 2026-10-14, shared-13-CALRr8Bn.js, shared-10-C9_UFbV-.js).
 export function ResourceLinkCards({
   item,
   links,

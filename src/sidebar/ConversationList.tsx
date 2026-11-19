@@ -62,10 +62,12 @@ export const DragPinTip = lazyPiece(
 );
 
 /**
- * Rows a section shows. Pinned and Code's recents show 20, then "Show N more"
- * reveals 20 at a time (the pinned list's and Code's truncateAt of 20). Chat's
- * recents are capped at 20 with no Show more; View all opens the rest, as the
- * Chats and tasks list behind the search panel shows.
+ * Rows a section shows (live claude.ai bundle, 2026-10-12). Pinned and
+ * Code's recents show 20, then "Show N more" reveals 20 at a time (the
+ * pinned list's and Code's truncateAt of 20). Chat's recents are capped at
+ * 20 with no Show more; View all opens the rest, as the Chats and tasks
+ * list behind the search panel shows (R-对话搜索-弹窗: 20 rows, then View
+ * all).
  */
 export const rowBatch = sidebarRowBatch;
 
@@ -78,16 +80,21 @@ export type ReorderInput = {
 
 /**
  * A section opens and closes over 150ms on the CSS ease-out curve, as the
- * original's sidebar groups do.
+ * original's sidebar groups do (source: desktop bundle 2.31226.1 static CSS;
+ * sidebar.css .sidebar-group-rows).
  */
 export const groupMs = 150;
 
 /**
  * Pinned and recent conversations. The Pinned section is always there; a row
  * dragged over it is pinned where it is dropped, and a pinned row released
- * anywhere else is unpinned. Recents keep their order by activity. Grouped by
- * custom groups, a row dragged over a group (or Ungrouped) moves there on
- * release, as Move to group does. Ctrl+Alt+P pins or unpins the focused row.
+ * anywhere else is unpinned (owner's claude.ai recording, 2026-10-10: a
+ * filled copy of the row follows the pointer, the pinned rows slide apart to
+ * leave a gap where it would land, and outside the section the copy turns
+ * into a red "Release to unpin"). Recents keep their order by activity.
+ * Grouped by custom groups, a row dragged over a group (or Ungrouped) moves
+ * there on release, as Move to group does (live claude.ai bundle,
+ * 2026-10-12). Ctrl+Alt+P pins or unpins the focused row.
  */
 export function ConversationList({
   conversations,
@@ -160,11 +167,14 @@ export function ConversationList({
   // "New group…" from a row's menu asks for the name in a dialog.
   const [namingFor, setNamingFor] = useState<Conversation | Conversation[]>();
   const [newSection, setNewSection] = useState(false);
-  // The list's scrollbar shows only while it scrolls.
+  // The list's scrollbar shows only while it scrolls (R-0077 asks for the
+  // original's overlay bar; R-0044 shows an overflowing list with none at
+  // rest, the pointer over a row).
   const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(scrollTimer.current), []);
   // The bar itself takes room from the rows while the list overflows; the
-  // overlay bar of the original does not, so the list gives that room back.
+  // overlay bar of the original does not, so the list gives that room back
+  // (rows end 8px from the edge with or without a bar, R-0044).
   const list = useRef<HTMLDivElement>(null);
   const roving = useRovingFocus(list);
   const measureGutter = () => {
@@ -193,19 +203,22 @@ export function ConversationList({
       : projects.filter((project) => project.pinned && !project.archivedAt);
   const groupBy = effectiveGroupBy(mode, filter.groupBy);
   const customGroups = useConversationGroups();
-  // A release into Pinned shows the row in its new place at once, and the list
-  // stands so until the reordered list arrives; `landed` tells when it has, and
-  // `release` puts the list back to its layout.
+  // A release into Pinned shows the row in its new place at once, and the
+  // list stands so until the reordered list arrives (desktop bundle
+  // 2.31226.1: the drop's transientPinKey / transientUnpinKey); `landed`
+  // tells when it has, and `release` puts the list back to its layout.
   const [pending, setPending] = useState<{
     id: string;
     landed: (list: Conversation[]) => boolean;
     release: () => void;
   }>();
   /**
-   * A release over a custom group: the row shows in the group at once, a shut
-   * heading opens to show it, and the group it left keeps its heading while
-   * empty. A pinned row is unpinned on the way, as the original's assignment
-   * does; its place stays empty until the list without its pin arrives.
+   * A release over a custom group (live claude.ai bundle, 2026-10-12: the
+   * drag's group drop and the assignment it makes): the row shows in the
+   * group at once, a shut heading opens to show it, and the group it left
+   * keeps its heading while empty. A pinned row is unpinned on the way, as
+   * the original's assignment does; its place stays empty until the list
+   * without its pin arrives.
    */
   const dropIntoGroup = (
     source: Conversation,

@@ -22,7 +22,7 @@ const escapeHtml = (text: string) =>
       ]!,
   );
 
-/** . */
+/** (live claude.ai bundle, 2026-10-14, AboutWindow-Dbt8VUuM.js). */
 export function aboutVersionText(
   version: string,
   commitHash?: string,
@@ -41,7 +41,7 @@ export function copiedAboutVersionText(
   return `${name} ${version} ${buildDate?.toISOString() ?? ""}`.trim();
 }
 
-/** The window's document. */
+/** The window's document (live claude.ai bundle, 2026-10-14, AboutWindow-Dbt8VUuM.js). */
 export function aboutPage(options: {
   name: string;
   version: string;
@@ -51,10 +51,18 @@ export function aboutPage(options: {
   locale?: string;
   translate?: (text: string) => string;
   icon?: string;
-  /** Whether Help and Get support have a page to open. */
-  links: boolean;
+  platform: NodeJS.Platform;
 }) {
   const name = escapeHtml(options.name);
+  const platformNames: Partial<Record<NodeJS.Platform, string>> = {
+    darwin: "Mac",
+    win32: "Windows",
+    linux: "Linux",
+  };
+  const platformName = platformNames[options.platform];
+  const heading = platformName
+    ? `${name}&nbsp;<em>for </em>${platformName}`
+    : name;
   const translate = options.translate ?? ((text: string) => text);
   const version = aboutVersionText(
     options.version,
@@ -78,9 +86,7 @@ export function aboutPage(options: {
     }),
   );
   const button = (label: string, href: string) =>
-    options.links
-      ? `<a class="button" href="${href}">${escapeHtml(translate(label))}</a>`
-      : `<span class="button off" aria-disabled="true">${escapeHtml(translate(label))}</span>`;
+    `<a class="button" href="${href}">${escapeHtml(translate(label))}</a>`;
   return `<!doctype html>
 <html lang="${escapeHtml(options.locale ?? "en")}">
 <head>
@@ -167,12 +173,11 @@ h2 {
 .button:hover { background: var(--hover); box-shadow: none; }
 .button:active { transform: scale(0.985); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.button.off { opacity: 0.5; }
 </style>
 </head>
 <body>
 ${options.icon ? `<img src="${options.icon}" alt="" draggable="false">` : ""}
-<h2>${name}&nbsp;<em>for </em>Mac</h2>
+<h2>${heading}</h2>
 <h3 class="version" style="font-weight: 400"><a id="version" href="${aboutActions.copy}" aria-label="${copyLabel}">${versionLabel}</a></h3>
 <p class="build-date">${options.buildDate ? `<time datetime="${buildDate.toISOString()}">${buildDateText}</time>` : ""}</p>
 <span id="copy-status" class="sr-only" role="status" aria-live="polite"></span>

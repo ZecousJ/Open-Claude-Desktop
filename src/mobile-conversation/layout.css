@@ -1,4 +1,4 @@
-/* The reference look for the phones (Chat, and Code's session rows). */
+/* The official Claude Android look for the phones (Chat, and Code's session rows). */
 @import "./official.css";
 /* Native owns the header, safe-area insets, keyboard and composer. The shared
    surface fills only the transcript slot. Chat's official values live in

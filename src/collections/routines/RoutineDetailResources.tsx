@@ -14,7 +14,7 @@ import { AppContext } from "../../app/AppContext";
 import { requestProject } from "../open-requests";
 import { useHost } from "../../host/HostContext";
 import { formatText, t } from "../../i18n";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { lazyPiece } from "../../ui/lazy-piece";
 import {
   routineWorkspaceMessages,
@@ -137,8 +137,9 @@ export function RoutineDetailResources({
   const linked = routine.projectId && !(unlink?.scope === scope && unlink.done);
   const local = routine.executionLocation !== "remote";
   const ssh = routine.environment?.kind === "ssh";
-  // Code's Runs with is a Code-source section. Ordinary unified Chat's Model
-  // section is read-only/migrated only, not every task.
+  // Code's Runs with is a Code-source section (cd3378dac:2877–2920).
+  // Ordinary unified Chat's Model section is read-only/migrated only
+  // (ccd3f68fe:3262; J = migrated/readOnlyNotice at1640), not every task.
   const showModel = routine.mode === "code";
   const folders = local
     ? [
@@ -454,14 +455,14 @@ export function RoutineDetailResources({
             {t("Folders")}
             {device?.scope === scope && device.name && (
               <span className="routine-detail-device">
-                <AppIcon name="Laptop" size={12} />
+                <Anthropicon name="Laptop" size={12} />
                 {formatText("On {name}", { name: device.name })}
               </span>
             )}
           </h2>
           {folders.map((folder) => (
             <div className="routine-detail-folder-row" key={folder}>
-              <AppIcon name="Folder" size={16} />
+              <Anthropicon name="Folder" size={16} />
               <bdi dir="ltr" title={folder} data-no-translate>
                 {folder}
               </bdi>
@@ -483,7 +484,7 @@ export function RoutineDetailResources({
                     role="img"
                     aria-label={t("Allowed for this task on this computer")}
                   >
-                    <AppIcon name="Check" size={16} />
+                    <Anthropicon name="Check" size={16} />
                   </span>
                 ) : (
                   <button
@@ -501,7 +502,7 @@ export function RoutineDetailResources({
                     )}
                     onClick={() => void allowFolder()}
                   >
-                    <AppIcon name="Warning" size={16} />
+                    <Anthropicon name="Warning" size={16} />
                   </button>
                 ))}
             </div>

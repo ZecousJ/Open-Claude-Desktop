@@ -1,6 +1,6 @@
 //go:build unit
 
-// CLAUDEX: ZMIG — sign-in with passwords imported from another service.
+// CLAUDEX: ZMIG — sign-in with passwords imported from ZecousAI.
 
 package service
 

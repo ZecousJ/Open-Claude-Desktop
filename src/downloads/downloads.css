@@ -1,8 +1,8 @@
-/* The downloads page (src/downloads/DownloadsPage.tsx), from
-   claude.ai/downloads and the cds tokens in its stylesheet: surface-3 frame
-   around a surface-1 card, font-large-bold titles, font-base text, subgrid rows
-   split by 1px borders, fill-secondary buttons. Light values are the tokens'
-   .cds-root ones, dark the prefers-color-scheme ones. */
+/* The downloads page (src/downloads/DownloadsPage.tsx), from claude.ai/downloads
+   (captured 2026-10-07) and the cds tokens in its stylesheet: surface-3 frame
+   around a surface-1 card, font-large-bold titles, font-base text, subgrid
+   rows split by 1px borders, fill-secondary buttons. Light values are the
+   tokens' .cds-root ones, dark the prefers-color-scheme ones. */
 .dl {
   --dl-page: #151515;
   --dl-surface-3: #20201f;
@@ -15,7 +15,9 @@
   --dl-fill-hover: rgb(255 255 255 / 14%);
   --dl-fill-ring: transparent;
   --dl-apple: #fff;
-  --dl-serif: "Claudex Serif", Georgia, "Times New Roman", serif;
+  --dl-serif:
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "Times New Roman",
+    serif;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
@@ -95,9 +97,9 @@
   text-align: center;
   color: var(--dl-text);
 }
-/* Entrance: 500ms ease-out; the title from opacity 0 and 12px (translate-y-3)
-   down, each card from opacity 0 and 16px (translate-y-4) down, delayed 80ms
-   per card. Reduced motion shows them at once. */
+/* Entrance (cc20c35ef): 500ms ease-out; the title from opacity 0 and 12px
+   (translate-y-3) down, each card from opacity 0 and 16px (translate-y-4)
+   down, delayed 80ms per card. Reduced motion shows them at once. */
 .dl-title,
 .dl-card {
   opacity: 0;

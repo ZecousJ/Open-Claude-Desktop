@@ -9,6 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	ClaudexImageGenerations = "/claudex/images/generations"
+	ClaudexImageEdits       = "/claudex/images/edits"
+)
+
+func IsClaudexImagesRequest(c *gin.Context) bool {
+	return c.Request.Method == http.MethodPost &&
+		(c.FullPath() == "/v1"+ClaudexImageGenerations || c.FullPath() == "/v1"+ClaudexImageEdits)
+}
+
 // nonBillableRoutes lists the gateway routes (method + route template) that
 // never consume usage: token counting, usage and billing introspection, model
 // lists, and reads, cancellations or deletions of image, video and Seedance
@@ -28,6 +38,10 @@ func init() {
 		add(http.MethodGet, prefix+"/models", prefix+"/models/:model")
 	}
 	add(http.MethodGet, "/v1/usage", "/v1/sub2api/billing", "/antigravity/v1/usage", "/antigravity/models")
+	// The knowledge-base MCP relay draws no model usage.
+	add(http.MethodGet, KnowledgeRoute)
+	add(http.MethodPost, KnowledgeRoute)
+	add(http.MethodDelete, KnowledgeRoute)
 	add(http.MethodGet, "/backend-api/codex/models")
 	for _, prefix := range []string{"/v1beta", "/antigravity/v1beta"} {
 		add(http.MethodGet, prefix+"/models", prefix+"/models/:model")

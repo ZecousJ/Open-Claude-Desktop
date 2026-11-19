@@ -1,19 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
-import { defaultClaudexServiceUrl } from "../shared/claudex-service";
+declare const __CLAUDEX_SELF_HOSTED_SERVICE_URL__: string;
 
 /**
  * The Claudex service accounts sign in to: sign-in, plans, models and quota
- * come from it. There are no local accounts: without a file or
- * CLAUDEX_SUB2API_URL the app uses the build's default service, and a build
- * without one has none until the person enters its address.
+ * come from it. There are no local accounts (owner, 2026-10-02): without a
+ * file or CLAUDEX_SUB2API_URL the app uses the default Claudex service.
  */
 export interface Sub2ApiConfig {
   version: 1;
-  /**
-   * Origin (and optional path prefix) of the Sub2API service, no trailing
-   * slash; empty while no service is chosen.
-   */
+  /** Origin (and optional path prefix) of the Sub2API service, no trailing slash. */
   baseUrl: string;
 }
 
@@ -65,7 +61,7 @@ export function saveSub2ApiConfig(root: string, baseUrl: string) {
   return config;
 }
 
-/** The file wins over `CLAUDEX_SUB2API_URL`; neither means the build's default service (or none). */
+/** The file wins over `CLAUDEX_SUB2API_URL`; neither means the default service. */
 export function loadSub2ApiConfig(
   root: string,
   env: NodeJS.ProcessEnv = process.env,
@@ -88,9 +84,11 @@ export function loadSub2ApiConfig(
         "Sub2API backend configuration cannot be read; it has not been overwritten.",
       );
   }
-  const fallback = env.CLAUDEX_SUB2API_URL || defaultClaudexServiceUrl;
   return {
     version: 1,
-    baseUrl: fallback ? normalizeSub2ApiUrl(fallback) : "",
+    baseUrl: normalizeSub2ApiUrl(
+      env.CLAUDEX_SUB2API_URL || (typeof __CLAUDEX_SELF_HOSTED_SERVICE_URL__ === "undefined"
+        ? "http://127.0.0.1:18080" : __CLAUDEX_SELF_HOSTED_SERVICE_URL__),
+    ),
   };
 }

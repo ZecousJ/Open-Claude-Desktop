@@ -77,6 +77,7 @@ async function gateway(
   protocol: Provider["protocol"] = "chat",
   apiKey = "local-mock-secret",
   recordUsage?: (record: UsageRecord) => void,
+  idleTimeoutMs?: number,
 ) {
   const bridge = new Gateway(
     () => ({
@@ -91,6 +92,7 @@ async function gateway(
       apiKey,
     }),
     recordUsage,
+    undefined, undefined, undefined, undefined, idleTimeoutMs,
   );
   await bridge.start();
   t.after(() => bridge.close());
@@ -106,6 +108,46 @@ async function gateway(
     });
   return { bridge, post };
 }
+
+test("upstream silence closes its socket and retains the started response identity", async (t) => {
+  let closed!: () => void;
+  const upstreamClosed = new Promise<void>(resolve => { closed = resolve; });
+  const baseUrl = await mockServer(t, async (req, res) => {
+    await requestBody(req);
+    res.once("close", closed);
+    res.writeHead(200, { "content-type": "text/event-stream" });
+    res.write(frame({ type: "response.created", sequence_number: 0, response: {
+      id: "resp_idle", status: "in_progress", output: [],
+    } }));
+    res.write(frame({ type: "response.output_text.delta", sequence_number: 1, delta: "partial" }));
+  });
+  const { post } = await gateway(t, baseUrl, "responses", undefined, undefined, 250);
+  const reply = await post({ model: "mock-model", input: "hello" });
+  const result = await events(reply.body!);
+  await upstreamClosed;
+  assert.deepEqual(result.map(row => row.type), ["response.created", "response.output_text.delta", "response.failed"]);
+  assert.equal(result[1].delta, "partial");
+  assert.equal(result[2].response.id, "resp_idle");
+  assert.equal(result[2].sequence_number, 2);
+  assert.match(result[2].response.error.message, /timed out/);
+});
+
+test("arriving provider bytes keep a response alive across several idle periods", async (t) => {
+  const baseUrl = await mockServer(t, async (req, res) => {
+    await requestBody(req);
+    res.writeHead(200, { "content-type": "text/event-stream" });
+    for (let i = 0; i < 5; i++) {
+      res.write(frame({ type: "response.output_text.delta", delta: String(i) }));
+      await new Promise(resolve => setTimeout(resolve, 75));
+    }
+    res.end(frame({ type: "response.completed", response: { id: "resp_active" } }));
+  });
+  const { post } = await gateway(t, baseUrl, "responses", undefined, undefined, 250);
+  const reply = await post({ model: "mock-model", input: "hello" });
+  const result = await events(reply.body!);
+  assert.deepEqual(result.slice(0, -1).map(row => row.delta), ["0", "1", "2", "3", "4"]);
+  assert.equal(result.at(-1)?.type, "response.completed");
+});
 
 test("endpoint accepts configured API roots and full routes without duplicating paths", () => {
   assert.equal(
@@ -827,6 +869,52 @@ test("gateway forwards translated Chat requests and injects provider credentials
   assert.equal(result.at(-1)!.response.output[0].content[0].text, "桥接成功");
 });
 
+test("Code Chat bridge does not expose raw reasoning as a summary or answer", async (t) => {
+  const baseUrl = await mockServer(t, async (req, res) => {
+    const body = await requestBody(req);
+    const content = body.messages[0].content === "with answer" ? "Answer" : "";
+    res.writeHead(200, { "content-type": "text/event-stream" });
+    res.end(
+      frame({
+        choices: [{ delta: { reasoning_content: "private reasoning" } }],
+      }) +
+        frame({
+          choices: [
+            {
+              delta: { reasoning: "private alias", content },
+              finish_reason: "stop",
+            },
+          ],
+        }) +
+        frame("[DONE]"),
+    );
+  });
+  const { bridge, post } = await gateway(t, baseUrl);
+  bridge.setThreadProduct("code-thread", "code");
+  for (const input of ["with answer", "without answer"]) {
+    const response = await post({
+      model: "test-model",
+      prompt_cache_key: "code-thread",
+      input,
+      reasoning: { effort: "high", summary: "auto" },
+      stream: true,
+    });
+    assert.equal(response.status, 200);
+    const wire = await response.text();
+    assert.doesNotMatch(wire, /private reasoning|private alias/);
+    const result = await events(byteStream(wire));
+    const completed = result.at(-1);
+    assert.equal(completed?.type, "response.completed");
+    assert.deepEqual(
+      completed.response.output.map((item: Json) => [
+        item.type,
+        item.content?.[0]?.text,
+      ]),
+      input === "with answer" ? [["message", "Answer"]] : [],
+    );
+  }
+});
+
 test("Responses mode preserves the complete upstream request and raw SSE bytes", async (t) => {
   let received: Json = {};
   const wire =
@@ -1407,4 +1495,123 @@ test("Auto mode's reviewer reviews with the account's model, not Codex's review 
   assert.notEqual(response.status, 403);
   await response.text();
   assert.equal(upstreamModel, "assigned-model");
+});
+
+test("side gateway strips tools and blocks unsolicited tool output for both protocols", async t => {
+  for (const protocol of ["responses", "chat"] as const) {
+    await t.test(protocol, async t => {
+      let received: Json = {};
+      let malicious = false;
+      const baseUrl = await mockServer(t, async (req, res) => {
+        received = await requestBody(req);
+        res.writeHead(200, { "content-type": "text/event-stream" });
+        if (protocol === "chat") {
+          res.end(frame(malicious
+            ? { choices: [{ delta: { tool_calls: [{ index: 0, id: "call", function: { name: "exec_command", arguments: "{}" } }] }, finish_reason: "tool_calls" }] }
+            : { choices: [{ delta: { content: "safe" }, finish_reason: "stop" }] }) + frame("[DONE]"));
+        } else {
+          res.end(frame({ type: "response.created", response: { id: "r", status: "in_progress", output: [] } }) +
+            frame(malicious
+              ? { type: "response.output_item.added", output_index: 0, item: { type: "function_call", name: "exec_command", call_id: "call" } }
+              : { type: "response.output_text.delta", item_id: "m", output_index: 0, content_index: 0, delta: "safe" }) +
+            frame({ type: "response.completed", response: { id: "r", status: "completed", output: [] } }));
+        }
+      });
+      const { bridge } = await gateway(t, baseUrl, protocol);
+      const capability = bridge.openSidePath();
+      let turn = 0;
+      const send = (token: string, suffix = "responses", turnId = `turn-${++turn}`) =>
+        fetch(`${bridge.url}/side/${token}/${suffix}`, {
+          method: "POST",
+          headers: { "content-type": "application/json", authorization: `Bearer ${bridge.token}` },
+          body: JSON.stringify({
+            model: "mock-model",
+            input: [{ role: "user", content: [{ type: "input_text", text: "question" }] }],
+            stream: true,
+            client_metadata: { turn_id: turnId },
+            tools: [{ type: "function", name: "exec_command", parameters: { type: "object", properties: {} } }],
+            tool_choice: "auto",
+          }),
+        });
+      assert.equal((await send("0".repeat(64))).status, 404);
+      assert.equal((await send(capability, "images/generations")).status, 404);
+      const good = await send(capability, "responses", "first");
+      const goodEvents = await events(good.body!);
+      assert.ok(goodEvents.some(event => event.type === "response.output_text.delta" && event.delta === "safe"));
+      assert.equal((received.tools ?? []).length, 0);
+      assert.equal(received.tool_choice, undefined);
+      assert.equal((await send(capability, "responses", "first")).status, 409);
+      const missingTurn = await fetch(`${bridge.url}/side/${capability}/responses`, {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${bridge.token}` },
+        body: JSON.stringify({ model: "mock-model", input: [], stream: true }),
+      });
+      assert.equal(missingTurn.status, 409);
+      malicious = true;
+      const bad = await send(capability);
+      const badEvents = await events(bad.body!);
+      assert.ok(badEvents.some(event => event.type === "response.failed"));
+      assert.ok(!badEvents.some(event => event.item?.type === "function_call"));
+      bridge.closeSidePath(capability);
+      assert.equal((await send(capability)).status, 404);
+      const beforeRestart = bridge.openSidePath();
+      await bridge.close();
+      await bridge.start();
+      assert.equal((await send(beforeRestart)).status, 404,
+        "restarting a gateway must invalidate its earlier side paths");
+    });
+  }
+});
+
+test("interrupting a side thread aborts its upstream request without affecting another thread", { timeout: 5000 }, async t => {
+  const closed = new Map<string, () => void>();
+  const stopped = new Map(["side", "main"].map(name => [name, new Promise<void>(resolve => closed.set(name, resolve))]));
+  const baseUrl = await mockServer(t, async (req, res) => {
+    const body = await requestBody(req);
+    const name = body.client_metadata?.thread_id;
+    res.on("close", () => closed.get(name)?.());
+    res.writeHead(200, { "content-type": "text/event-stream" });
+    res.write(frame({ type: "response.created", sequence_number: 0, response: { id: name, status: "in_progress", output: [] } }));
+  });
+  const { bridge, post } = await gateway(t, baseUrl, "responses");
+  const capability = bridge.openSidePath();
+  const side = await fetch(`${bridge.url}/side/${capability}/responses`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${bridge.token}`, "content-type": "application/json" },
+    body: JSON.stringify({ model: "mock-model", stream: true, input: [], client_metadata: { thread_id: "side", turn_id: "side-turn" } }),
+  });
+  const main = await post({ model: "mock-model", stream: true, input: [], client_metadata: { thread_id: "main", turn_id: "main-turn" } });
+  const sideReader = side.body!.getReader();
+  const mainReader = main.body!.getReader();
+  await Promise.all([sideReader.read(), mainReader.read()]);
+  let mainClosed = false;
+  void stopped.get("main")!.then(() => { mainClosed = true; });
+  bridge.abortThread("side");
+  await stopped.get("side");
+  assert.equal(mainClosed, false);
+  bridge.abortThread("main");
+  await stopped.get("main");
+  await Promise.all([sideReader.cancel().catch(() => {}), mainReader.cancel().catch(() => {})]);
+  sideReader.releaseLock();
+  mainReader.releaseLock();
+});
+
+test("side gateway discards provider diagnostic events without forwarding their contents",async t=>{
+ const baseUrl=await mockServer(t,async(req,res)=>{await requestBody(req);res.writeHead(200,{"content-type":"text/event-stream"});res.end(
+  frame({type:"codex.response.metadata",headers:{authorization:"synthetic-secret"},item:{type:"function_call",name:"exec_command"}})+
+  frame({type:"response.created",response:{id:"r",status:"in_progress",output:[]}})+
+  frame({type:"response.output_text.delta",delta:"safe"})+
+  frame({type:"responsesapi.websocket_timing",timing_metrics:{private:"synthetic-secret"}})+
+  frame({type:"response.metadata",metadata:{private:"synthetic-secret"}})+
+  frame({type:"response.completed",response:{id:"r",status:"completed",output:[{type:"message",role:"assistant",content:[{type:"output_text",text:"safe"}]}]}}));});
+ const {bridge}=await gateway(t,baseUrl,"responses"),capability=bridge.openSidePath();
+ const response=await fetch(`${bridge.url}/side/${capability}/responses`,{method:"POST",headers:{authorization:`Bearer ${bridge.token}`,"content-type":"application/json"},body:JSON.stringify({model:"mock-model",stream:true,input:[],client_metadata:{turn_id:"test"},tools:[{type:"function",name:"exec_command"}]})});
+ const result=await events(response.body!);assert.ok(result.some(event=>event.type==="response.completed"));assert.ok(result.some(event=>event.type==="response.output_text.delta"&&event.delta==="safe"));assert.doesNotMatch(JSON.stringify(result),/synthetic-secret|exec_command|websocket_timing|codex.response.metadata/);
+});
+
+test("side gateway still rejects unknown provider event types",async t=>{
+ const baseUrl=await mockServer(t,async(req,res)=>{await requestBody(req);res.writeHead(200,{"content-type":"text/event-stream"});res.end(frame({type:"provider.unknown",item:{type:"function_call",name:"exec_command"}}));});
+ const {bridge}=await gateway(t,baseUrl,"responses"),capability=bridge.openSidePath();
+ const response=await fetch(`${bridge.url}/side/${capability}/responses`,{method:"POST",headers:{authorization:`Bearer ${bridge.token}`,"content-type":"application/json"},body:JSON.stringify({model:"mock-model",stream:true,input:[],client_metadata:{turn_id:"unknown"}})});
+ const result=await events(response.body!);assert.ok(result.some(event=>event.type==="response.failed"));assert.ok(!result.some(event=>event.item?.type==="function_call"));
 });

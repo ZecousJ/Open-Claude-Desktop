@@ -1,7 +1,7 @@
 /**
- * .env text as the Local environment editor takes it: KEY=value lines, `#`
- * comments, an optional `export ` prefix, and values wrapped in quotes, which
- * may span lines.
+ * .env text as the Local environment editor takes it (R-0386): KEY=value
+ * lines, `#` comments, an optional `export ` prefix, and values wrapped in
+ * quotes, which may span lines.
  */
 export const envFileLimit = 20000;
 
@@ -14,14 +14,58 @@ export const managedEnvNames = [
 ];
 const reserved = new Set(managedEnvNames);
 
-// The original's .env line.
 const envLine =
-  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
+  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\[\s\S]|[^"\\])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
+
+const doubleQuoted = /^((?:\\[\s\S]|[^"\\])*)"/;
+const escapes: Record<string, string> = {
+  n: "\n",
+  r: "\r",
+  '"': '"',
+  "\\": "\\",
+};
+
+export function formatEnvFile(values: Record<string, string>): string {
+  return Object.entries(values)
+    .map(([name, value]) => {
+      if (value === value.trim() && !/^['"`]|[#\r\n]/.test(value))
+        return `${name}=${value}`;
+      const escaped = value.replace(/[\\"\r\n]/g, (char) => {
+        if (char === "\n") return "\\n";
+        if (char === "\r") return "\\r";
+        return `\\${char}`;
+      });
+      return `${name}="${escaped}"`;
+    })
+    .join("\n");
+}
+
+export function envNameProblem(name: string) {
+  const values = { name };
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name))
+    return {
+      message:
+        "Invalid key \u201c{name}\u201d. Use letters, numbers, and underscores only.",
+      values,
+    };
+  if (name === "__proto__")
+    return {
+      message: "\u201c{name}\u201d can't be used as a variable name.",
+      values,
+    };
+  if (reserved.has(name.toUpperCase()))
+    return {
+      message:
+        "\u201c{name}\u201d is managed by Claudex and cannot be overridden.",
+      values,
+    };
+}
 
 /**
- * What is wrong with the editor's text, as the original says it: a line that is
- * not KEY=value, a name with other characters, or a name Claudex sets itself.
- * While typing, a last line that is only a name is let through.
+ * What is wrong with the editor's text, as the original says it (live
+ * claude.ai bundle, 2026-10-14): a line that is not KEY=value, a name with
+ * other characters, or a name Claudex sets itself. While typing, a last
+ * line that is only a name is let through.
  */
 export function envFileProblem(
   text: string,
@@ -47,24 +91,8 @@ export function envFileProblem(
   const normalized = text.replace(/\r\n?/g, "\n");
   for (const match of normalized.matchAll(envLine)) names.add(match[1]);
   for (const name of names) {
-    const values = { name };
-    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name))
-      return {
-        message:
-          "Invalid key \u201c{name}\u201d. Use letters, numbers, and underscores only.",
-        values,
-      };
-    if (name === "__proto__")
-      return {
-        message: "\u201c{name}\u201d can't be used as a variable name.",
-        values,
-      };
-    if (reserved.has(name.toUpperCase()))
-      return {
-        message:
-          "\u201c{name}\u201d is managed by Claudex and cannot be overridden.",
-        values,
-      };
+    const problem = envNameProblem(name);
+    if (problem) return problem;
   }
 }
 
@@ -79,7 +107,18 @@ export function parseEnvFile(text: string): Record<string, string> {
     const [, name, rest] = match;
     let value = rest.trimStart();
     const quote = value[0];
-    if (quote === '"' || quote === "'") {
+    if (quote === '"') {
+      let body = value.slice(1);
+      let quoted = doubleQuoted.exec(body);
+      while (!quoted && i + 1 < lines.length) {
+        body += "\n" + lines[++i];
+        quoted = doubleQuoted.exec(body);
+      }
+      value = (quoted?.[1] ?? body).replace(
+        /\\([nr"\\])/g,
+        (_, char: string) => escapes[char],
+      );
+    } else if (quote === "'" || quote === "`") {
       let body = value.slice(1);
       let end = body.indexOf(quote);
       while (end < 0 && i + 1 < lines.length) {
@@ -87,8 +126,6 @@ export function parseEnvFile(text: string): Record<string, string> {
         end = body.indexOf(quote);
       }
       value = end < 0 ? body : body.slice(0, end);
-      if (quote === '"')
-        value = value.replace(/\\n/g, "\n").replace(/\\"/g, '"');
     } else {
       value = value.replace(/\s+#.*$/, "").trimEnd();
     }

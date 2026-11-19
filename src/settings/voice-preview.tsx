@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { loadVoices, speechPreferences } from "../voice/speech";
 
 /**
- * Voice → Style's hover preview: resting on a voice's mark for 150ms plays a
- * sample in that voice, leaving it or closing the list stops it. The original
- * plays a recorded clip of each of its voices; Claudex's voices are this
- * computer's, so the sample is said by the voice itself.
+ * Voice → Style's hover preview (live claude.ai bundle, 2026-10-14): resting
+ * on a voice's mark for 150ms plays a sample in that voice, leaving it or
+ * closing the list stops it. The original plays a recorded clip of each of
+ * its voices; Claudex's voices are this computer's, so the sample is said
+ * by the voice itself.
  */
 export const previewDelayMs = 150;
 

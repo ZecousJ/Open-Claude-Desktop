@@ -1,8 +1,8 @@
 /**
- * Bridge calls behind Settings → Account and Privacy; the main process
- * validates every argument. Billing is in `shared/billing-api.ts` (C5) and the
- * desktop pages in `shared/settings-desktop-api.ts`; their types are
- * re-exported here for older imports.
+ * Bridge calls behind Settings → Account and Privacy (package WP2); the main
+ * process validates every argument. Billing is in `shared/billing-api.ts`
+ * (C5) and the desktop pages in `shared/settings-desktop-api.ts` (WP3); their
+ * types are re-exported here for older imports.
  */
 import { bridgeMethods } from "./bridge-methods";
 import type {
@@ -71,6 +71,12 @@ export interface SharedArtifact {
   createdAt?: number;
 }
 
+/** Conversation creation times retained in an account export. Omit a bound for all dates on that side. */
+export interface AccountExportOptions {
+  conversations_start_date?: string;
+  conversations_end_date?: string;
+}
+
 export interface SettingsAccountAPI {
   deleteStoredCodeSessions(): Promise<void>;
   codeSharingSettings(patch?: {
@@ -82,7 +88,7 @@ export interface SettingsAccountAPI {
   /** Deletes the current account and its data using its signed-in session. */
   deleteAccount(): Promise<{ hasAccounts: boolean }>;
   /** Saves a .zip of the account's conversations, projects and settings; null when cancelled. */
-  exportData(): Promise<string | null>;
+  exportData(options?: AccountExportOptions): Promise<string | null>;
   /**
    * Settings → Import (desktop only): the locations added so far (a Claudex
    * export or a copied data folder), each with what it holds.

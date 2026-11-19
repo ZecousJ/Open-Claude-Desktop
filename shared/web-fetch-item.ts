@@ -7,7 +7,7 @@ export function isWebFetch(item: Item) {
   );
 }
 
-/** Fetch result titles. */
+/** Fetch result titles (live claude.ai bundle, 2026-10-14, shared-17-DZw1BgLL.js). */
 export function webFetchPage(item: Item) {
   const input = item.arguments ?? item.input;
   const url =

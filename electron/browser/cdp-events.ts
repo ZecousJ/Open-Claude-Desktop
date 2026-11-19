@@ -139,11 +139,7 @@ export function message(this: CdpDriver, method: string, params: any) {
       }
       break;
     case "Overlay.inspectNodeRequested":
-      if (this.pick) {
-        const pick = this.pick;
-        this.pick = undefined;
-        pick.resolve(Number(params?.backendNodeId));
-      }
+      this.pick?.resolve(Number(params?.backendNodeId));
       break;
   }
 }

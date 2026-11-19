@@ -6,7 +6,7 @@ import { parseHTML } from "linkedom";
 import {
   createFixtureDesktop,
   fixtureSnapshot,
-} from "../../scripts/preview/app-fixture";
+} from "../../scripts/fidelity/app-fixture";
 import { desktopHost, webHost, type HostInfo } from "../../shared/host";
 import { AppContext, type AppController } from "../../src/app/AppContext";
 import { HostContext } from "../../src/host/HostContext";
@@ -271,8 +271,9 @@ test("actual local account Usage action opens Settings Usage and the real statis
     await page.click(page.document.querySelector("button.profile")!);
     const usage = [...page.document.querySelectorAll('[role="menuitem"]')].find(
       (element) =>
-        element.querySelector("span:not([data-icon])")?.textContent?.trim() ===
-        "Usage",
+        element
+          .querySelector("span:not([data-anthropicon])")
+          ?.textContent?.trim() === "Usage",
     )!;
     assert.ok(usage, "the actual account menu exposes Usage");
     await page.click(usage);
@@ -300,8 +301,9 @@ test("actual web service-plan Usage action keeps the service page without local 
     await page.click(page.document.querySelector("button.profile")!);
     const usage = [...page.document.querySelectorAll('[role="menuitem"]')].find(
       (element) =>
-        element.querySelector("span:not([data-icon])")?.textContent?.trim() ===
-        "Usage",
+        element
+          .querySelector("span:not([data-anthropicon])")
+          ?.textContent?.trim() === "Usage",
     )!;
     await page.click(usage);
     assert.deepEqual(page.actions, ["settings:usage"]);
@@ -333,7 +335,7 @@ for (const [surfaceName, host] of [
         ].find(
           (element) =>
             element
-              .querySelector("span:not([data-icon])")
+              .querySelector("span:not([data-anthropicon])")
               ?.textContent?.trim() === "Settings",
         )!;
         assert.ok(settings);
@@ -363,7 +365,7 @@ test("a web account without measurable usage hides Usage and never starts a Code
       [...page.document.querySelectorAll('[role="menuitem"]')].some(
         (element) =>
           element
-            .querySelector("span:not([data-icon])")
+            .querySelector("span:not([data-anthropicon])")
             ?.textContent?.trim() === "Usage",
       ),
       false,

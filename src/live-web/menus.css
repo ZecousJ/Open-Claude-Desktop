@@ -1,7 +1,8 @@
-/* #20201f with a 1px #ffffff1a inset ring and no drop shadow, radius 12, 4px
+/* Model menu, live claude.ai (2026-09-29, dark; fidelity/observations/live/official-model-menu-dark.json):
+   #20201f with a 1px #ffffff1a inset ring and no drop shadow, radius 12, 4px
    inside; 294.5px wide with a 286.5px row per model (50px: name 14/20 over a
-   13/17 description, padding 6px 10px 7px, radius 8), a 1px #ffffff1a rule with
-   4px 10px margins, and 32px rows (Effort ›, More models ›). */
+   13/17 description, padding 6px 10px 7px, radius 8), a 1px #ffffff1a rule
+   with 4px 10px margins, and 32px rows (Effort ›, More models ›). */
 :root:not([data-theme="light"]) .model-menu,
 :root:not([data-theme="light"]) .model-submenu {
   border: 0;

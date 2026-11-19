@@ -6,6 +6,7 @@ import {
   type HomeChecklistTask,
   type HomeStarters as StarterSettings,
 } from "../../shared/home-starters";
+import type { CustomizeSkill } from "../../shared/collections-api";
 import type { Mode } from "../../shared/types";
 import { useApp } from "../app/AppContext";
 import { formatText, useT } from "../i18n";
@@ -14,8 +15,10 @@ import StarterPrompts from "./StarterPrompts";
 import {
   legacyHomeStartersAllowed,
   homeStarterContextAllowed,
+  starterPromptsForced,
   starterPromptsVisible,
 } from "./visibility";
+import { FinanceStarters, hasFinanceSkills } from "./FinanceStarters";
 import "./home-starters.css";
 import { useExplicitFolderSelection } from "../composer/explicit-folder-selection";
 import {
@@ -45,8 +48,8 @@ const prompts: Partial<Record<HomeChecklistTask, string>> = {
 };
 const seen = new Set<string>();
 
-// The home checklist and starter chips; persisted preferences decide what
-// shows.
+// Checklist and competing skills surface (live claude.ai bundle, 2026-10-14,
+// shared-23-RHw-hr47.js). Persisted preferences replace the server experiments.
 type HomeStartersProps = {
   onPick: (prompt: string, submit?: boolean) => void;
   conversationCount: number;
@@ -88,9 +91,26 @@ function EligibleHomeStarters({
   const app = useApp();
   const t = useT();
   const config = app.snapshot.settings.homeStarters ?? {};
+  const [skills, setSkills] = useState<CustomizeSkill[]>();
   const [memory, setMemory] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
   const chipsAllowed = legacyHomeStartersAllowed(homeShaped, targetKind);
+  const enabled = chipsAllowed && !!config.claudeai_fsi_skill_chips;
+  useEffect(() => {
+    if (!enabled) return;
+    let current = true;
+    void window.desktop.customizeSkills().then(
+      (rows) => {
+        if (current) setSkills(rows ?? []);
+      },
+      () => {
+        if (current) setSkills([]);
+      },
+    );
+    return () => {
+      current = false;
+    };
+  }, [enabled]);
   const persist = (change: (value: StarterSettings) => StarterSettings) =>
     app.updatePreference({
       homeStarters: change(app.latest.current?.settings.homeStarters ?? config),
@@ -150,7 +170,14 @@ function EligibleHomeStarters({
     else if (key === "connect_tools") app.openSettingsTab("connectors");
     else if (key === "prosumer_import_memory") setMemory(true);
   };
-  const blocked = showing && config.prosumer_checklist_hide_prompt_chips;
+  const forced =
+    starterPromptsForced() &&
+    /@(anthropic\.com|sillylittleguy\.org)$/.test(accountEmail ?? "");
+  const skillSurface = enabled && hasFinanceSkills(skills ?? []);
+  const blocked =
+    !forced &&
+    ((showing && config.prosumer_checklist_hide_prompt_chips) ||
+      (enabled && skills === undefined));
   const rows = checklistRows(config);
   return (
     <>
@@ -214,12 +241,33 @@ function EligibleHomeStarters({
           ))}
         </div>
       )}
+      {chipsAllowed &&
+        !blocked &&
+        !forced &&
+        skillSurface &&
+        config.chipsOverride !== "hide" && (
+          <FinanceStarters
+            skills={skills!}
+            onPick={onPick}
+            onEnabled={(path) =>
+              setSkills((value) =>
+                value?.map((skill) =>
+                  skill.path === path ? { ...skill, enabled: true } : skill,
+                ),
+              )
+            }
+          />
+        )}
       {starterPromptsVisible({
         conversationCount,
+        accountEmail,
+        force: forced,
         hideStarterChips: !chipsAllowed,
         override: config.chipsOverride,
         checklistShowing: showing,
         hideForChecklist: config.prosumer_checklist_hide_prompt_chips,
+        skillsLoading: enabled && skills === undefined,
+        skillSurface,
       }) && <StarterPrompts onPick={(prompt) => onPick(prompt, true)} />}
       {memory && (
         <Suspense fallback={null}>

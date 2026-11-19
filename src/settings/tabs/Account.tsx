@@ -52,7 +52,7 @@ export const searchLabels = [
   "Active sessions",
 ];
 
-/** The suggestions the empty Instructions box cycles through. */
+/** The suggestions the empty Instructions box cycles through (desktop bundle 2.31226.1). */
 const instructionPlaceholders = [
   "e.g. keep explanations brief and to the point",
   "e.g. when learning new concepts, I find analogies particularly helpful",
@@ -81,8 +81,8 @@ const isProfile = (value: unknown): value is AccountProfile =>
   typeof value.canDelete === "boolean";
 
 /**
- * Account. No Organization ID row (owner decision 12): a Claudex account has no
- * organization to show.
+ * Account (R-1323–R-1337). No Organization ID row (owner decision 12): a
+ * Claudex account has no organization to show.
  */
 export function AccountTab({
   settings,
@@ -295,8 +295,8 @@ export function AccountTab({
 }
 
 /**
- * The Account section. Both local and remote accounts delete themselves using
- * their active session.
+ * The Account section. Both local and remote accounts delete themselves
+ * using their active session (live claude.ai bundle, 2026-10-14, c71860c77-nwdfnuRh).
  */
 export function AccountSection({
   profile,
@@ -335,9 +335,9 @@ export function AccountSection({
       )}
       {profile &&
         (profile.canDelete ? (
-          // The reference design row for an account that can delete itself:
-          // "Delete your account" and a primary Delete account button. What it
-          // removes is said in the dialog.
+          // The live claude.ai bundle's row for an account that can delete
+          // itself (2026-10-12): "Delete your account" and a primary
+          // Delete account button. What it removes is said in the dialog.
           <Row label="Delete your account">
             <Button primary size="regular" onClick={onDelete}>
               Delete account

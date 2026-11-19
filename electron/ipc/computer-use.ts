@@ -43,7 +43,7 @@ import {
 } from "../computer-use/installed-apps";
 import { PermissionMonitor } from "../computer-use/permissions";
 import { ScreenshotStore } from "../computer-use/screenshots";
-import type { ComputerUseService } from "../computer-use/service";
+import type { ComputerUseService, ComputerUseSettingsState } from "../computer-use/service";
 import {
   ComputerUseSettingsStore,
   settingsPatchSchema,
@@ -152,12 +152,13 @@ class AccountComputerUse {
       incognito: Boolean(conversation.incognito),
       running: last?.status === "inProgress",
       turnId: last?.id,
-      remote: conversation.environment?.kind === "ssh",
+      remote: conversation.environment?.kind === "ssh" || (conversation.mode === "chat" &&
+        Boolean(conversation.linkedToComputer || conversation.chatDeviceBinding || conversation.deviceChatOrigin?.active)),
       unattended: this.unattended.has(id),
     };
   }
 
-  state(): ComputerUseState {
+  settingsState(): ComputerUseSettingsState {
     const policy = computerUsePolicyOf(this.ctx.policy());
     const reason = this.broker.unavailableReason();
     return {
@@ -170,9 +171,11 @@ class AccountComputerUse {
       ...(process.platform === "darwin"
         ? { permissions: this.shared.permissions.current() }
         : {}),
-      activity: this.broker.currentActivity(),
-      requests: this.broker.requests(),
     };
+  }
+
+  state(): ComputerUseState {
+    return { ...this.settingsState(), activity: this.broker.currentActivity(), requests: this.broker.requests() };
   }
 }
 
@@ -231,11 +234,18 @@ export function registerComputerUseHandlers(
     process.platform === "darwin" || process.platform === "win32"
       ? readDriverManifest(driverDir())
       : undefined;
+  const driverApp = manifest?.platform === "darwin"
+    ? path.resolve(manifest.dir, manifest.executable, "../../..")
+    : undefined;
+  const permissions = new PermissionMonitor(driverApp?.endsWith(".app") ? driverApp : undefined);
   const shared: SharedParts = {
     driver: manifest
-      ? new OpenComputerUseDriver(new DriverHost({ manifest }))
+      ? new OpenComputerUseDriver(new DriverHost({ manifest }), () => {
+          permissions.reportDriverAccessibilityDenied();
+          ctx.push({ type: "computer-use", permissions: permissions.current() });
+        })
       : undefined,
-    permissions: new PermissionMonitor(),
+    permissions,
     installed: new InstalledApps(),
     indicator: new FullControlIndicator(
       () => void account?.broker.stop(),
@@ -328,8 +338,11 @@ export function registerComputerUseHandlers(
   );
 
   const service: ComputerUseService = {
+    settingsState: () => account?.settingsState() ?? structuredClone(unavailableComputerUse),
+    currentActivity: () => account?.broker.currentActivity() ?? null,
     instructions: computerUseInstructions,
     enabledFor: (id) => Boolean(account?.broker.enabledFor(id)),
+    revokeGrant: async (id, appId) => account?.broker.revokeGrant(id, appId),
     mcpServer: (id) => {
       if (!account?.broker.enabledFor(id) || !shared.control.address)
         return undefined;
@@ -422,8 +435,6 @@ export function registerComputerUseHandlers(
   handle("saveComputerUseSettings", async (patch: unknown) => {
     const active = current();
     const reason = active.broker.unavailableReason();
-    if (reason === "policy")
-      throw new Error("Computer use is turned off by your administrator.");
     if (reason)
       throw new Error("Computer use isn't available on this computer.");
     const parsed = settingsPatchSchema.parse(patch);
@@ -433,8 +444,12 @@ export function registerComputerUseHandlers(
     )
       throw new Error("Your administrator doesn't allow full control.");
     active.settings.save(parsed);
-    await active.broker.settingsChanged();
-    changed();
+    try {
+      await active.broker.settingsChanged();
+    } finally {
+      if (account === active) changed();
+    }
+    if (account !== active) throw Error("The account changed.");
     return active.state();
   });
   handle("computerUseInstalledApps", async () => {

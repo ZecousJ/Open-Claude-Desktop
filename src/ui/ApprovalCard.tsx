@@ -24,7 +24,7 @@ import {
   elicitationContent,
   elicitationFields,
   type FormValues,
-} from "../approval/elicitation-form";
+} from "../../shared/elicitation-form";
 import {
   ApprovalActions,
   useApprovalShortcuts,
@@ -57,9 +57,9 @@ const FolderAccessDialog = lazyPiece(
 );
 
 /**
- * Pending Codex request docked above the composer: command, file edit, extra
- * permissions, MCP form or URL, or agent questions. Each button sends the
- * matching protocol response.
+ * Pending Codex request docked above the composer: command, file edit,
+ * extra permissions, MCP form or URL, or agent questions (R-0805, R-0619,
+ * R-0633–R-0637). Each button sends the matching protocol response.
  */
 export function ApprovalCard({
   approval,
@@ -237,7 +237,8 @@ export function ApprovalCard({
             ? browser.title
             : tool
               ? // "Allow Claude to use {label}?" with the connector before
-                // the tool, as its row names it.
+                // the tool, as its row names it (live claude.ai bundle,
+                // 2026-10-14: the generic action and subject title).
                 `Allow Claudex to use ${[tool.connector ?? tool.server, tool.title?.replace(/_+/g, " ")].filter(Boolean).join(": ") || "this tool"}?`
               : kind === "elicitation"
                 ? url

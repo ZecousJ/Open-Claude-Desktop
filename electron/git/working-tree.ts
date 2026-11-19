@@ -5,35 +5,33 @@ import type { DiffScope, WorkingTreeChanges } from "../../shared/types";
 import {
   ask,
   branchCommits,
-  defaultBaseBranch,
-  mainRemote,
-  resolveBase,
-  validBranchName,
   validCommitId,
+  workingTreeBase,
 } from "./git-scope";
 
 /**
- * Read-only `git` queries behind the Changes panel. The folder is one the agent
- * writes to, so repository config must not run programs here: no fsmonitor
- * hook, external diff or textconv driver.
+ * Read-only `git` queries behind the Changes panel ("main → working tree", R-0874).
+ * The folder is one the agent writes to, so repository config must not run
+ * programs here: no fsmonitor hook, external diff or textconv driver.
  *
- * The queries run where the folder is: on this computer (`localWorkingTree`) or
- * on an SSH host (`RemoteWorkspace` in electron/ssh/remote-workspace.ts, R9),
- * which implements the same `WorkingTreeHost`.
+ * The queries run where the folder is: on this computer (`localWorkingTree`)
+ * or on an SSH host (`RemoteWorkspace` in electron/ssh/remote-workspace.ts,
+ * R9), which implements the same `WorkingTreeHost`.
  */
 const MAX_DIFF = 2_000_000;
 const MAX_UNTRACKED = 50;
 const MAX_UNTRACKED_BYTES = 512_000;
-const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+export const emptyGitTree = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 
 /**
  * Runs one read-only `git` query in `cwd` and resolves with its output when
- * the exit code is in `okCodes` (default: 0 only).
+ * the exit code is in `okCodes` (default: 0 only). `maxOutput` bounds stdout in bytes.
  */
 export type GitRunner = (
   cwd: string,
   args: string[],
   okCodes?: number[],
+  maxOutput?: number,
 ) => Promise<string>;
 
 /** The `-c` settings every query starts with (no hooks, colours or quoting). */
@@ -83,7 +81,7 @@ export function isTransportError(error: unknown) {
   );
 }
 
-const localGit: GitRunner = (cwd, args, okCodes = [0]) =>
+const localGit: GitRunner = (cwd, args, okCodes = [0], maxOutput = 16 * MAX_DIFF) =>
   new Promise<string>((resolve, reject) => {
     execFile(
       "git",
@@ -91,7 +89,7 @@ const localGit: GitRunner = (cwd, args, okCodes = [0]) =>
       {
         cwd,
         timeout: 30_000,
-        maxBuffer: 16 * MAX_DIFF,
+        maxBuffer: maxOutput,
         windowsHide: true,
         env: { ...process.env, ...gitEnvironment },
       },
@@ -162,7 +160,8 @@ function orEmpty(error: unknown): string {
 }
 
 /**
- * The folder's changes in the scope the panel asks for:
+ * The folder's changes in the scope the panel asks for (live claude.ai
+ * bundle, 2026-10-12, the Changes panel's "Diff scope" menu):
  * - "branch" (All changes): the working tree, untracked files included,
  *   against the point where the branch left its base (`scope.base`, else
  *   the repository's default branch, on the remote when it has one);
@@ -188,25 +187,8 @@ export async function workingTreeChanges(
     return { state: "not-git", ...empty };
   }
   const unit = `-U${Math.max(0, Math.min(10_000, Math.floor(context)))}`;
-  const head = await git(top, ["rev-parse", "--verify", "-q", "HEAD"], [0, 1])
-    .then((out) => out.trim())
-    .catch(orEmpty);
-  const branch = head
-    ? (await git(top, ["rev-parse", "--abbrev-ref", "HEAD"])).trim()
-    : (
-        await git(top, ["symbolic-ref", "--short", "HEAD"]).catch(orEmpty)
-      ).trim();
-  const named = branch && branch !== "HEAD" ? branch : undefined;
-  const remote = await mainRemote(git, top);
-  const defaultBase = await defaultBaseBranch(git, top, remote, named);
-  const baseName = validBranchName(scope.base) ? scope.base : defaultBase;
-  const baseRef = head
-    ? await resolveBase(git, top, remote, baseName)
-    : undefined;
-  // Where the branch left its base; none when they share no commit.
-  const mergeBase = baseRef
-    ? await ask(git, top, ["merge-base", baseRef, "HEAD"])
-    : head;
+  const { head, named, defaultBase, baseName, baseRef, mergeBase } =
+    await workingTreeBase(git, top, scope.base);
   const baseUnknown = Boolean(baseRef && !mergeBase);
   const commits =
     baseRef && mergeBase ? await branchCommits(git, top, baseRef) : [];
@@ -234,7 +216,7 @@ export async function workingTreeChanges(
     if (sha) {
       const parent =
         (await ask(git, top, ["rev-parse", "--verify", "-q", `${sha}^`])) ||
-        EMPTY_TREE;
+        emptyGitTree;
       let diff = await git(top, [
         "diff",
         "--no-ext-diff",
@@ -269,7 +251,7 @@ export async function workingTreeChanges(
     "--no-ext-diff",
     "--no-textconv",
     unit,
-    against || EMPTY_TREE,
+    against || emptyGitTree,
     "--",
   ]);
   const untracked = (

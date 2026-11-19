@@ -6,7 +6,7 @@ import {
 } from "../../shared/accelerator";
 import { formatText } from "../i18n";
 
-/** What a refused shortcut says. */
+/** What a refused shortcut says (desktop bundle 2.31226.1). */
 export const shortcutProblems = {
   reserved:
     "This shortcut is reserved for common actions. Try a different combination.",
@@ -17,8 +17,9 @@ export const shortcutProblems = {
 };
 
 /**
- * Why the system refused a recorded shortcut: another app holds it (the desktop
- * integration's registration error), else it isn't supported.
+ * Why the system refused a recorded shortcut: another app holds it (the
+ * desktop integration's registration error), else it isn't supported
+ * (live claude.ai bundle, 2026-10-12, the shortcut field's save failure).
  */
 export function refusedShortcut(error: unknown): keyof typeof shortcutProblems {
   const message = error instanceof Error ? error.message : String(error);
@@ -26,13 +27,14 @@ export function refusedShortcut(error: unknown): keyof typeof shortcutProblems {
 }
 
 /**
- * A shortcut field: the shortcut centred in a 30px box, "Set shortcut" while
- * there is none, and a clear button at its right end. While the box has focus
- * the frame is orange and the next key press is recorded: a combination with a
- * modifier or a function key becomes the shortcut; a bare key, a combination of
- * common actions (Command+Q, Control+C…), one the `check` refuses or one the
- * system refuses when it is saved says why and keeps the old shortcut. Escape
- * or leaving the field keeps the old one.
+ * A shortcut field (R-1424, desktop bundle 2.31226.1): the shortcut centred
+ * in a 30px box, "Set shortcut" while there is none, and a clear button at
+ * its right end. While the box has focus the frame is orange and the next
+ * key press is recorded: a combination with a modifier or a function key
+ * becomes the shortcut; a bare key, a combination of common actions
+ * (Command+Q, Control+C…), one the `check` refuses or one the system
+ * refuses when it is saved says why and keeps the old shortcut. Escape or
+ * leaving the field keeps the old one.
  */
 export function ShortcutRecorder({
   label,

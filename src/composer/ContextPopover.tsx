@@ -9,25 +9,27 @@ import {
   windowPercent,
   type PlanUsageState,
 } from "./usage-meter";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import "./context-popover.css";
 
 /**
  * The popover the Code context ring opens, in the live 360px usage panel's
- * frame. The live panel holds only the plan limits; Claudex shows what its
- * accounts have:
+ * frame (claude.ai, 2026-10-20: radius 10, #20201f, a 1px white-10% ring;
+ * each section a 12/15 muted heading row, then rows of a label and a muted
+ * value, a window's 4px meter under it). The live panel holds only the plan
+ * limits; Claudex shows what its accounts have (owner, 2026-10-20):
  *
  * - in a session, the context window: the summary, a 4px bar and Compact
  *   session (before the first reply, "Send a message to see context usage.");
- * - the balance and what was spent today and over the last 7 days, with a link
- *   to Settings → Usage, and the group's limits, if it has any, as the live
- *   panel's rows with their reset time, percent and meter;
- * - in a session, "See detailed breakdown", which posts the usage report in the
- *   session's transcript (`onShowUsageReport`, src/usage-report).
+ * - the balance and what was spent today and over the last 7 days, with a
+ *   link to Settings → Usage, and the group's limits, if it has any, as the
+ *   live panel's rows with their reset time, percent and meter;
+ * - in a session, "See detailed breakdown", which posts the usage report in
+ *   the session's transcript (`onShowUsageReport`, src/usage-report).
  *
- * Not built, with reasons: the live context header expands into a per-category
- * card (system prompt, tools, MCP tools, memory files, messages), which Codex
- * does not report.
+ * Not built, with reasons: the live context header expands into a
+ * per-category card (system prompt, tools, MCP tools, memory files,
+ * messages), which Codex does not report.
  */
 export function ContextPopover({
   usage,
@@ -210,7 +212,7 @@ function BalanceSection({
             title="View usage in Settings"
             onClick={onUsageSettings}
           >
-            <AppIcon name="ArrowRight" size={12} />
+            <Anthropicon name="ArrowRight" size={12} />
           </button>
         )}
       </div>

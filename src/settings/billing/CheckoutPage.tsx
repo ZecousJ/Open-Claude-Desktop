@@ -11,10 +11,10 @@ export interface SummaryLine {
 }
 
 /**
- * The checkout as a page of its own, laid out like Stripe Checkout: the order
- * on the left (who is paid, the amount due, its lines), the form on the right;
- * one column on a phone. Escape and the back arrow leave it; focus starts on
- * the right.
+ * The checkout as a page of its own, laid out like Stripe Checkout (the
+ * owner's reference, 2026-10-02): the order on the left (who is paid, the
+ * amount due, its lines), the form on the right; one column on a phone.
+ * Escape and the back arrow leave it; focus starts on the right.
  */
 export function CheckoutPage({
   merchant,

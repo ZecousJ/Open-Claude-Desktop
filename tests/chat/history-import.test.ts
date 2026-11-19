@@ -424,6 +424,7 @@ test("the import calls only take ids from the window, and say so to the web", as
   registerSettingsAccountHandlers((name, fn) => handlers.set(name, fn), {
     store: here,
     onAccountDeactivating: () => () => {},
+    onAccountActivated: () => () => {},
     push: (event: unknown) => pushed.push(event),
   } as unknown as AppContext);
   for (const name of [

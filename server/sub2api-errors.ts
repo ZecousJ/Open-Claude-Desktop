@@ -1,3 +1,4 @@
+import { safeguardFlagged } from "../shared/safeguard-fallback";
 import type { LimitReason } from "../shared/usage-api";
 import {
   parseRefusal,
@@ -20,6 +21,8 @@ import {
 export interface GatewayRefusal extends GatewayRefusalDetails {
   status: number;
   code: string;
+  threadId?: string;
+  turnId?: string;
   reason?: LimitReason;
   exceeded: boolean;
   /** The device key was refused; the main process provisions it again. */
@@ -217,21 +220,21 @@ export interface RefusalFollowUp {
   reprovision: boolean;
   signOut: boolean;
   refreshRelease: boolean;
-  /** The window-wide notice this refusal calls for, if any. */
+  /** The window-wide notice this refusal calls for (R-0127), if any. */
   globalLimit?: GlobalLimitKind;
 }
 export type GlobalLimitKind = "session" | "rate-limit";
 
 /**
  * What the main process does after a refusal besides the banner: issue the
- * device key again, end the remote session, read the release information again
- * (an update is required; its download address comes only from the release
- * information, never from the refusal), or show the window's global limit
- * notice.
+ * device key again, end the remote session, read the release information
+ * again (an update is required; its download address comes only from the
+ * release information, never from the refusal), or show the window's
+ * global limit notice (R-0127).
  *
- * `claudexService` says the answer came from a Claudex service: only then are
- * its explanations acted on (on an older service the fields could come from an
- * upstream relay), and only its refusals sign the device out.
+ * `claudexService` says the answer came from a Claudex service: only then
+ * are its explanations acted on (on an older service the fields could come
+ * from an upstream relay), and only its refusals sign the device out.
  */
 export function refusalFollowUp(
   refusal: GatewayRefusal,
@@ -262,9 +265,9 @@ export function refusalFollowUp(
 }
 
 /**
- * The 5-hour session limit (every model is refused until it resets) and the
- * service's request rate limit. Per-model, weekly and account refusals keep
- * only the banner.
+ * The refusals R-0127's corner notice is for: the 5-hour session limit
+ * (every model is refused until it resets) and the service's request rate
+ * limit. Per-model, weekly and account refusals keep only the banner.
  */
 function globalLimitOf(
   refusal: GatewayRefusal,
@@ -301,6 +304,16 @@ function describeLegacyRefusal(
     invalidKey,
     message: text,
   });
+  if ((status === 0 || status === 400 || status === 403 || status === 422) &&
+      safeguardFlagged({ code })) {
+    return {
+      status,
+      code,
+      exceeded: false,
+      invalidKey: false,
+      message: "The model service flagged this message.",
+    };
+  }
   if (
     upper === "INVALID_API_KEY" ||
     (status === 401 && /invalid api key/.test(lower))

@@ -1,23 +1,25 @@
 import { useState } from "react";
 import { acceleratorLabel } from "../../shared/accelerator";
+import {
+  defaultDictationShortcut,
+  type DictationShortcutPreference,
+} from "../../shared/settings-extras";
 import { SelectField } from "./controls";
 import { ShortcutRecorder } from "./ShortcutRecorder";
 
-export const defaultDictationShortcut = "CommandOrControl+D";
-
 /**
- * Dictation shortcut: a select with the default (Ctrl+D, ⌘D), Custom… and No
- * shortcut. Custom… swaps in a recorder; a recorded shortcut then shows as the
- * select's own first choice.
+ * Dictation shortcut (R-1410, R-1411, R-1576): a select with the default
+ * (Ctrl+D, ⌘D), Custom… and No shortcut. Custom… swaps in a recorder; a
+ * recorded shortcut then shows as the select's own first choice.
  */
 export function DictationShortcut({
   value,
   platform,
   onChange,
 }: {
-  value: string;
+  value: DictationShortcutPreference;
   platform: string;
-  onChange: (value: string) => void | Promise<void>;
+  onChange: (value: DictationShortcutPreference) => void | Promise<void>;
 }) {
   const [recording, setRecording] = useState(false);
   if (recording)
@@ -29,31 +31,43 @@ export function DictationShortcut({
         autoStart
         onCancel={() => setRecording(false)}
         onChange={async (next) => {
-          await onChange(next);
+          await onChange({ accelerator: next });
           setRecording(false);
         }}
       />
     );
-  const custom = value && value !== defaultDictationShortcut ? value : "";
+  const custom =
+    typeof value === "object"
+      ? value.accelerator
+      : value && value !== defaultDictationShortcut
+        ? value
+        : undefined;
   return (
-    <SelectField<string>
-      label="Dictation shortcut"
-      value={value}
-      options={[
-        {
-          value: defaultDictationShortcut,
-          label: acceleratorLabel(defaultDictationShortcut, platform),
-        },
-        ...(custom
-          ? [{ value: custom, label: acceleratorLabel(custom, platform) }]
-          : []),
-        { value: "custom", label: "Custom…" },
-        { value: "", label: "No shortcut" },
-      ]}
-      onChange={(next) => {
-        if (next === "custom") setRecording(true);
-        else onChange(next);
-      }}
-    />
+    <div>
+      <SelectField<string>
+        label="Dictation shortcut"
+        value={custom === undefined ? String(value) : "custom"}
+        options={[
+          {
+            value: defaultDictationShortcut,
+            label: acceleratorLabel(defaultDictationShortcut, platform),
+          },
+          { value: "custom", label: "Custom…" },
+          { value: "", label: "No shortcut" },
+        ]}
+        onChange={(next) => {
+          if (next === "custom") setRecording(true);
+          else onChange(next);
+        }}
+      />
+      {custom !== undefined && (
+        <ShortcutRecorder
+          label="Dictation shortcut"
+          value={custom}
+          platform={platform}
+          onChange={(accelerator) => onChange({ accelerator })}
+        />
+      )}
+    </div>
   );
 }

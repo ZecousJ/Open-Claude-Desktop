@@ -1,7 +1,8 @@
-/* Monthly spend limit: a 15/20 heading at weight 580 in the secondary ink, a
-   14/20 line and a 13/17 footnote in the same ink at the left, a 28px ghost
-   Manage (14px, 10px sides, radius 7) at the right; the dialog's field and
-   help. */
+/* Monthly spend limit (live claude.ai bundle, 2026-10-14, c71860c77 Xr;
+   measured on the live Usage page 2026-10-21): a 15/20 heading at weight
+   580 in the secondary ink, a 14/20 line and a 13/17 footnote in the same
+   ink at the left, a 28px ghost Manage (14px, 10px sides, radius 7) at the
+   right; the dialog's field and help (ce86a71c0). */
 .spend-limit {
   display: flex;
   align-items: flex-start;

@@ -1,4 +1,4 @@
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js, gate 3691521536).
 export const stealthIdleMs = 10 * 60_000;
 export const stealthRetryMs = 30_000;
 

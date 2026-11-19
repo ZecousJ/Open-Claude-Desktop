@@ -20,6 +20,8 @@ var unsafeSkillContent = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)(curl|wget|fetch)\b[^\n]*(\.ssh/id_|\.aws/credentials|\.codex/auth\.json)`),
 }
 
+const maxSkillScanBytes = 30 * 1024 * 1024
+
 var skillScanName = regexp.MustCompile(`^[a-z][a-z0-9-]{0,63}$`)
 
 func skillContentSafe(name string, content []byte) bool {
@@ -51,7 +53,7 @@ func (c *Component) scanSkill(g *gin.Context) {
 			Data []byte `json:"data"`
 		} `json:"files"`
 	}
-	g.Request.Body = http.MaxBytesReader(g.Writer, g.Request.Body, 30*1024*1024)
+	g.Request.Body = http.MaxBytesReader(g.Writer, g.Request.Body, 48*1024*1024)
 	if g.ShouldBindJSON(&body) != nil || len(body.Files) == 0 || len(body.Files) > 500 || !skillScanName.MatchString(body.Name) {
 		response.Error(g, 400, "Failed to submit. You can try again.")
 		return
@@ -59,8 +61,8 @@ func (c *Component) scanSkill(g *gin.Context) {
 	total := 0
 	for _, file := range body.Files {
 		total += len(file.Data)
-		if total > 20*1024*1024 || len(file.Path) > 4096 {
-			response.Error(g, 413, "Skills can be up to 500 files and 20 MB.")
+		if total > maxSkillScanBytes || len(file.Path) > 4096 {
+			response.Error(g, 413, "Skills can be up to 500 files and 30 MB.")
 			return
 		}
 		if !skillContentSafe(file.Path, file.Data) {

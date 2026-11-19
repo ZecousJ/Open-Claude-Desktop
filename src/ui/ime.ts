@@ -7,11 +7,12 @@ type KeyPress = {
 };
 
 /**
- * True while an input method is composing: the Enter that accepts a pinyin or
- * kana candidate (and the Escape that abandons it) belongs to the IME, not to
- * the field. Safari reports the composing Enter with `isComposing` already
- * false, but with the legacy keyCode 229. The original's inline rename and
- * settings fields skip these keys the same way.
+ * True while an input method is composing: the Enter that accepts a pinyin
+ * or kana candidate (and the Escape that abandons it) belongs to the IME,
+ * not to the field. Safari reports the composing Enter with `isComposing`
+ * already false, but with the legacy keyCode 229. The original's inline
+ * rename and settings fields skip these keys the same way (desktop bundle
+ * 2.31226.1: `!e.nativeEvent.isComposing`).
  */
 export function isComposingKey(
   event: Pick<KeyPress, "nativeEvent" | "keyCode">,

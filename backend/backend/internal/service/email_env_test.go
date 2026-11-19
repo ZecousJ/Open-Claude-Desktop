@@ -6,7 +6,7 @@ func envOf(values map[string]string) func(string) string {
 	return func(key string) string { return values[key] }
 }
 
-func TestSMTPFromEnvUsesClaudexVariables(t *testing.T) {
+func TestSMTPFromEnvUsesZecousAIVariables(t *testing.T) {
 	config := smtpConfigFromEnv(envOf(map[string]string{
 		"CLAUDEX_SMTP_FROM":     "team@example.com",
 		"CLAUDEX_SMTP_PASSWORD": "auth-code",

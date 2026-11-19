@@ -1,0 +1,25 @@
+.claudex-api-model-row {
+  flex-wrap: wrap;
+  row-gap: var(--cds-gap-xs);
+}
+
+.claudex-api-model-row > :first-child {
+  flex-basis: 9rem;
+}
+
+.claudex-api-model-row > [data-settings-control] {
+  max-inline-size: 100%;
+  margin-inline-start: auto;
+}
+
+.claudex-api-model-select {
+  inline-size: 9rem;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  flex-shrink: 1;
+}
+
+.claudex-api-model-select > span:not([aria-hidden]) {
+  inline-size: 100%;
+  justify-content: space-between;
+}

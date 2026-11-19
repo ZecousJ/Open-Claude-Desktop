@@ -1,4 +1,8 @@
-/** The question before quitting while tasks run, in the app's language. */
+/**
+ * The question before quitting while tasks run (desktop client 2.37337.1,
+ * index.chunk-BWk6pVUt.js: "Claude is still working", Quit anyway, Wait for
+ * Claude, Cancel), in the app's language.
+ */
 export function quitBusyDialog(
   translate: (text: string) => string,
   sessionCount: number,

@@ -195,7 +195,7 @@ test("web title menu aligns to its caret, clamps at both edges, and calls the re
       const share = [
         ...menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'),
       ].find((entry) => entry.textContent?.includes("Share session"))!;
-      assert.ok(share.querySelector('[data-icon="Share"]'));
+      assert.ok(share.querySelector('[data-anthropicon="Share"]'));
       await act(async () => {
         share.dispatchEvent(new window.Event("click", { bubbles: true }));
       });
@@ -411,7 +411,7 @@ test("a web Code session's title starts Rename and a separate caret opens its me
   );
   const menu = split.querySelector(".thread-menu-trigger")!;
   assert.equal(menu.getAttribute("aria-label"), "More options for Number 123");
-  assert.ok(menu.querySelector('[data-icon="CaretDown"]'));
+  assert.ok(menu.querySelector('[data-anthropicon="CaretDown"]'));
 });
 
 test("a web Code session's title menu is the cloud one: Open in ▸ Desktop app, Rename, Copy link, Transcript view, Edit cloud environment, Archive, Delete", () => {

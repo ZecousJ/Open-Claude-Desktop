@@ -36,7 +36,8 @@ export function ClaudeCodePullRequests({
           onChange={(prAutoCreate) => save({ prAutoCreate })}
         />
       </Row>
-      {/* Indented under it while it is on. */}
+      {/* Live claude.ai bundle, 2026-10-15 (c71860c77): indented under
+            it while it is on. */}
       {preference(settings, "prAutoCreate") && (
         <div className="desktop-subrow desktop-subrow-ps6">
           <Row
@@ -62,8 +63,8 @@ export function ClaudeCodePullRequests({
           onChange={(prAutoFix: boolean) => save({ prAutoFix })}
         />
       </Row>
-      {/* Archiving here only archives; Claudex sessions have no worktree to
-         remove. */}
+      {/* Live claude.ai bundle, 2026-10-12 (c71860c77): archiving here
+            only archives; Claudex sessions have no worktree to remove. */}
       {surface !== "web" && (
         <>
           <Row

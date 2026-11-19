@@ -28,8 +28,9 @@ export function citedSources(turn: Turn) {
 }
 
 /**
- * The reply row's sources chip: the favicons of up to three different sites, 20
- * dp, each overlapping the last by 8 dp with a 2 dp ring, then "N sources" in
+ * The reply row's sources chip (chat-transcript.md §4.8, D/uo1.java:153-190,
+ * D/qp.java:652-667): the favicons of up to three different sites, 20 dp,
+ * each overlapping the last by 8 dp with a 2 dp ring, then "N sources" in
  * 13 sp, 6 dp in from each side, at the row's end. A tap opens the sources
  * ("View sources"). Only replies that cite pages have one.
  */

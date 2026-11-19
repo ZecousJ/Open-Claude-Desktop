@@ -69,8 +69,8 @@ export function errorExplanation(code: SshErrorCode, host = "{host}"): string {
     case "auth-failed":
       return "The host didn't accept your key or password.";
     case "host-key-changed":
-      // The live app's warning: a changed key is trusted only for a reinstalled
-      // or re-keyed machine.
+      // The live app's warning (c3f9f1667): a changed key is trusted only
+      // for a reinstalled or re-keyed machine.
       return "The host's key changed since you last connected. Don't trust the new key unless the machine was reinstalled or re-keyed. If it was, remove the old key and try again.";
     case "host-unreachable":
       return "The host can't be reached from this network.";
@@ -106,8 +106,9 @@ export interface EnvironmentMenuOptions {
 }
 
 /**
- * SSH hosts, their edit actions and Add SSH connection…. The parent supplies
- * Cloud and Remote Control groups.
+ * SSH hosts, their edit actions and Add SSH connection… (live claude.ai
+ * bundle, 2026-10-14, ca690a791-yB5DVJdH.js). The parent supplies Cloud
+ * and Remote Control groups.
  */
 export function environmentMenu(options: EnvironmentMenuOptions): MenuEntry[] {
   const current = sshHostId(options.selected);
@@ -119,7 +120,7 @@ export function environmentMenu(options: EnvironmentMenuOptions): MenuEntry[] {
   entries.push({
     label: "SSH",
     value: selectedHost?.label,
-    // Searchable connections.
+    // Searchable connections (live claude.ai bundle, 2026-10-14, c0fd2fda3-SLPMNAHv.js).
     searchable: "Search",
     searchEmpty: "No matching connections",
     submenu: [
@@ -142,7 +143,7 @@ export function environmentMenu(options: EnvironmentMenuOptions): MenuEntry[] {
         noTranslate: true,
         title: hostAddress(host),
         checked: host.id === selectedHost?.id,
-        // Edit affordance.
+        // Edit affordance (live claude.ai bundle, 2026-10-14, cc43287c9-79FKhdho.js E3).
         settings: options.onEdit
           ? {
               label: "Edit connection…",

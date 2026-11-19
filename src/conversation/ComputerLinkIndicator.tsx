@@ -2,7 +2,7 @@ import { useContext, useEffect, useId, useRef, useState } from "react";
 import type { Conversation } from "../../shared/types";
 import { AppContext } from "../app/AppContext";
 import { formatText, t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import "./computer-link.css";
 
 type Status = "connected" | "away" | "signedOut" | undefined;
@@ -17,11 +17,13 @@ function linkStatus(c: Conversation): Status {
 }
 
 /**
- * The computer a chat is linked to, beside its title. Resting on it opens a
- * 280px card after 150ms: the computer's name, its status line (a green dot and
- * "Connected" with what that allows, an amber dot and "Asleep or app closed",
- * or plain "Linked" while unknown), a rule and Manage devices. The button
- * carries the status dot when there is one.
+ * The computer a chat is linked to, beside its title (live claude.ai,
+ * 2026-10-21, ce8b539d3 fo/uo/co: a ghost 28px Laptop button,
+ * data-testid cowork-computer-link-indicator). Resting on it opens a 280px
+ * card after 150ms: the computer's name, its status line (a green dot and
+ * "Connected" with what that allows, an amber dot and "Asleep or app
+ * closed", or plain "Linked" while unknown), a rule and Manage devices.
+ * The button carries the status dot when there is one.
  */
 export function ComputerLinkIndicator({
   conversation: c,
@@ -101,7 +103,7 @@ export function ComputerLinkIndicator({
         aria-expanded={open}
         data-status={line.dot ? status : undefined}
       >
-        <AppIcon name="Laptop" size={20} />
+        <Anthropicon name="Laptop" size={20} />
         {line.dot && (
           <span
             className={`computer-link-dot ${line.dot}`}

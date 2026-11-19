@@ -30,8 +30,8 @@ import {
 } from "../artifacts/related-sessions";
 
 // The file viewer loads the first time an artifact opens, off the first load,
-// as the original's viewer arrives with its own chunk; the Artifacts page is
-// its own route and loads when opened.
+// as the original's viewer arrives with its own chunk (desktop bundle
+// 2.31226.1); the Artifacts page is its own route and loads when opened.
 const loadArtifactViewer = () => import("../artifacts/FileViewer");
 const ArtifactPanel = lazyPiece(loadArtifactViewer, "ArtifactPanel");
 const ArtifactsPage = lazyPiece(
@@ -51,8 +51,8 @@ export function ArtifactPanelHost({ artifact }: { artifact: Artifact }) {
       );
   }, [artifact.conversationId, artifact.sourcePath]);
   useNarrowSidebar(app);
-  // Expanded, the conversation on screen beside the artifact can float over it;
-  // the Artifacts page has no conversation to float.
+  // Expanded, the conversation on screen beside the artifact can float over
+  // it (R-1047/R-1048); the Artifacts page has no conversation to float.
   const chatBeside = Boolean(
     app.active && (artifact.conversationId ?? app.activeId) === app.active.id,
   );
@@ -68,10 +68,10 @@ export function ArtifactPanelHost({ artifact }: { artifact: Artifact }) {
 }
 
 /**
- * In a very narrow window the viewer takes the sidebar's room while it is open
- * and gives it back on close, unless the user reopened the sidebar meanwhile.
- * Only the opening width counts: resizing later is left to the sidebar's own
- * auto-collapse.
+ * In a very narrow window the viewer takes the sidebar's room while it is
+ * open (R-0981, R-1029) and gives it back on close, unless the user
+ * reopened the sidebar meanwhile. Only the opening width counts: resizing
+ * later is left to the sidebar's own auto-collapse.
  */
 function useNarrowSidebar(app: AppController) {
   const sidebar = useRef(app.sidebarView);
@@ -91,8 +91,9 @@ export function ArtifactsRoute() {
   const app = useApp();
   const { snapshot, listed } = app;
   const openFromGallery = (value: Artifact) => {
-    // An artifact made in a conversation opens there, beside it; one without a
-    // conversation opens on its own page.
+    // An artifact made in a conversation opens there, beside it (live
+    // claude.ai /artifacts, 2026-10-21: /chat/<id>?artifact=<id>); one
+    // without a conversation opens on its own page.
     if (
       app.host?.kind === "web" &&
       !value.shareRequest &&
@@ -178,7 +179,7 @@ export function viewerProps(app: AppController) {
     onClose: () => closeArtifact(app),
     onError: app.report,
     onNotify: app.notify,
-    // Switch artifact in the title menu: the conversation's own.
+    // Switch artifact in the title menu (R-1050): the conversation's own.
     siblings: () => conversationArtifacts(app),
     onSwitch: (value: Artifact) =>
       openArtifact(app, { ...value, surface: "artifact" }),
@@ -305,7 +306,9 @@ export function openArtifact(app: AppController, value: Artifact) {
       };
     else if (file || !value.sourceDigest) {
       // A picture the agent viewed or drew is no file change of the branch
-      // (none is listed under its path): it opens from the snapshot it carries.
+      // (none is listed under its path): it opens from the snapshot it
+      // carries (owner, 2026-10-03: the skill's picture said "no longer
+      // available").
       app.report(
         new Error(
           file?.error ??
@@ -365,9 +368,11 @@ export function openArtifact(app: AppController, value: Artifact) {
 }
 
 /*
- * The viewer gives the focus back when it closes: to what opened it (the card,
- * a row), else to the composer when the focus was lost with the panel. Fields
- * do not count as openers: the composer is the fallback for them.
+ * The viewer gives the focus back when it closes: to what opened it (the
+ * card, a row), else to the composer when the focus was lost with the
+ * panel (live claude.ai bundle, 2026-10-12: setTriggerElement and
+ * restoreFocusToTrigger({ elseComposer })). Fields do not count as openers:
+ * the composer is the fallback for them.
  */
 let viewerTrigger: HTMLElement | null = null;
 const fields =
@@ -512,8 +517,8 @@ function requestArtifactDelete(app: AppController, value: Artifact) {
 }
 
 /**
- * Keeps an open generated file at its latest version, shows it generating while
- * the agent rewrites it, and closes it once it is gone.
+ * Keeps an open generated file at its latest version, shows it generating
+ * while the agent rewrites it (R-1027), and closes it once it is gone.
  */
 export function useGeneratedArtifactSync(
   conversations: Conversation[] | undefined,
@@ -534,8 +539,7 @@ export function useGeneratedArtifactSync(
       setArtifact(undefined);
       return;
     }
-    // While the agent rewrites the open file the panel shows its generating
-    // state.
+    // While the agent rewrites the open file the panel shows its generating state (R-1027).
     const generating = rewritingFile(c!.turns, artifact.sourcePath);
     if (
       current.sourceDigest !== artifact.sourceDigest ||
@@ -552,7 +556,7 @@ export function useGeneratedArtifactSync(
   }, [conversations, artifact]);
 }
 
-/** View thread on a comment message opens its artifact. */
+/** View thread on a comment message (R-1022) opens its artifact. */
 export function useArtifactThreadRequests() {
   const app = useApp();
   const latest = useRef(app);

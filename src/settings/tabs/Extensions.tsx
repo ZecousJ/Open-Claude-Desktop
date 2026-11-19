@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 import { Lightbulb, ChevronLeft } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Button, Row, Section, Toggle } from "../controls";
 import type { TabProps } from "../context";
 import { useHost } from "../../host/HostContext";
@@ -20,8 +20,9 @@ const InstalledExtensions = lazy(() => import("./InstalledExtensions"));
 export { extensionsLabels as searchLabels } from "./desktop-labels";
 
 /**
- * Extensions: the empty list, Browse extensions (the connectors directory, as
- * in the original), the .MCPB / .DXT drop target and Advanced settings.
+ * Extensions (R-1443–R-1451, Desktop app group): the empty list, Browse
+ * extensions (the connectors directory, as in the original), the .MCPB /
+ * .DXT drop target and Advanced settings.
  */
 export function ExtensionsTab({ goTo, settings, save, onError }: TabProps) {
   const host = useHost();
@@ -163,8 +164,8 @@ export function ExtensionsTab({ goTo, settings, save, onError }: TabProps) {
 }
 
 /**
- * Advanced settings: extension updates, the MCP Node.js choice, detected tools
- * and the developer install buttons.
+ * Advanced settings (R-1451): extension updates, the MCP Node.js choice,
+ * detected tools and the developer install buttons.
  */
 function ExtensionSettings({
   localMcp,
@@ -240,7 +241,7 @@ function ExtensionSettings({
       </Section>
       <Section title="Extension developer">
         <div className="directory-warning" role="note">
-          <AppIcon name="Warning" size={16} />
+          <Anthropicon name="Warning" size={16} />
           <div>
             <strong>Developer tools warning</strong>
             <p>

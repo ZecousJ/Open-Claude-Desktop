@@ -12,8 +12,10 @@ import "./session-setup.css";
 type Tense = "done" | "todo" | "doing";
 
 /**
- * A step's tense. The original words a failed step in the past tense; Claudex
- * keeps the plain form so a failed clone never reads as done.
+ * A step's tense. The original words a failed step in the past tense
+ * ("Cloned repository" with a red cross, live claude.ai bundle,
+ * 2026-10-12); Claudex keeps the plain form so a failed clone never reads
+ * as done.
  */
 function tense(status: SetupStepStatus): Tense {
   if (status === "completed") return "done";
@@ -21,7 +23,10 @@ function tense(status: SetupStepStatus): Tense {
   return "todo";
 }
 
-/** A step's words. */
+/**
+ * A step's words (live claude.ai bundle, 2026-10-12, the init checklist's
+ * step labels for a cloud container; "Claude Code" is Claudex Code here).
+ */
 export function setupStepLabel(
   step: Pick<SetupStep, "id" | "status">,
   repositories = 1,
@@ -115,10 +120,11 @@ function StepMark({ status }: { status: SetupStepStatus }) {
 }
 
 /**
- * A cloud Code session's start in its first turn: one row, "Initializing
- * session" or the step at hand, shimmering while it runs and red when a step
- * failed, whose caret opens the steps with their marks; it opens by itself on a
- * failure. A failed step shows what went wrong under it.
+ * A cloud Code session's start in its first turn (live claude.ai bundle,
+ * 2026-10-12, the init checklist): one row, "Initializing session" or the
+ * step at hand, shimmering while it runs and red when a step failed, whose
+ * caret opens the steps with their marks; it opens by itself on a failure.
+ * A failed step shows what went wrong under it.
  */
 export function SessionSetupSteps({ turn }: { turn: Turn }) {
   const setup = turn.setup;

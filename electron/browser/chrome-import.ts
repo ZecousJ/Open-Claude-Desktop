@@ -7,8 +7,10 @@ import {
 } from "./chrome-import-storage";
 import type {
   ChromeImportProfile,
+  ChromeImportPresence,
   ChromeImportResult,
   ChromeImportSite,
+  ChromeImportSiteResult,
   ImportedChromeLogin,
 } from "../../shared/chrome-import";
 import {
@@ -27,6 +29,8 @@ import {
   sensitiveSite,
 } from "./chrome-cookies";
 import { chromeEpoch } from "./chrome-cookies";
+
+let listingSites = false;
 
 export interface ChromeImportDeps {
   profiles(): Promise<ImportProfile[]>;
@@ -50,8 +54,10 @@ export interface ChromeImportDeps {
     allowed: (host: string) => boolean,
   ): Promise<ImportedStorage>;
   shared?(): { partition: string; jar: ImportJar };
-  /** The person confirms; "timeout" after 2 minutes without an answer. */
-  authorize?(profile: ChromeImportProfile): Promise<boolean | "timeout">;
+  authorize?(
+    profile: ChromeImportProfile,
+    lifetime: AbortSignal,
+  ): Promise<ChromeImportPresence>;
   /** The confirmation is Touch ID. */
   touchId?(): boolean;
   target(
@@ -69,6 +75,7 @@ export class ChromeImport {
     string,
     {
       conversationId: string;
+      callerId?: number;
       profile: ImportProfile;
       sites: Set<string>;
       expires: number;
@@ -78,7 +85,10 @@ export class ChromeImport {
     string,
     (ImportedChromeLogin & { storageOrigins?: string[] })[]
   > = {};
-  private disposed = false;
+  private lifetime = new AbortController();
+  private get disposed() {
+    return this.lifetime.signal.aborted;
+  }
   private writes: Promise<unknown> = Promise.resolve();
   private mutations: Promise<unknown> = Promise.resolve();
   private loading: Promise<void>;
@@ -142,7 +152,23 @@ export class ChromeImport {
   }
   async sites(
     conversationId: string,
-    profileId: string,
+    profileId?: string,
+    callerId?: number,
+  ) {
+    if (this.disposed) return { ok: false, error: "presence_left" } as const;
+    if (listingSites) return { ok: false, error: "busy" } as const;
+    listingSites = true;
+    try {
+      return await this.listSites(conversationId, profileId, callerId);
+    } finally {
+      listingSites = false;
+    }
+  }
+
+  private async listSites(
+    conversationId: string,
+    profileId?: string,
+    callerId?: number,
   ): Promise<
     ChromeImportResult<{
       ticket: string;
@@ -151,18 +177,17 @@ export class ChromeImport {
       maxSites: number;
     }>
   > {
-    const profile = (await this.deps.profiles()).find(
-      (entry) => entry.id === profileId,
-    );
-    if (!profile || this.disposed) return { ok: false, error: "no_chrome" };
+    const profiles = await this.deps.profiles();
+    const profile =
+      profileId === undefined
+        ? (profiles.find((entry) => entry.lastUsed) ?? profiles[0])
+        : profiles.find((entry) => entry.id === profileId);
+    if (this.disposed) return { ok: false, error: "presence_left" };
+    if (!profile) return { ok: false, error: "no_chrome" };
     try {
-      const consent = this.deps.authorize
-        ? await this.deps.authorize(publicProfile(profile))
-        : true;
-      if (consent === "timeout")
-        return { ok: false, error: "presence_timed_out" };
-      if (!consent) return { ok: false, error: "keychain_denied" };
-      if (this.disposed) return { ok: false, error: "expired" };
+      const consent = await this.deps.authorize?.(publicProfile(profile), this.lifetime.signal);
+      if (this.disposed) return { ok: false, error: "presence_left" };
+      if (consent && consent !== "granted") return { ok: false, error: consent };
       const { rows } = await this.deps.read(profile);
       const sites = new Map<string, ChromeImportSite>();
       const domains = rows
@@ -202,9 +227,10 @@ export class ChromeImport {
         if (entry.expires <= now || entry.conversationId === conversationId)
           this.tickets.delete(ticket);
       const ticket = randomUUID();
-      if (this.disposed) return { ok: false, error: "expired" };
+      if (this.disposed) return { ok: false, error: "presence_left" };
       this.tickets.set(ticket, {
         conversationId,
+        callerId,
         profile,
         sites: new Set(sites.keys()),
         expires: now + 120_000,
@@ -234,9 +260,10 @@ export class ChromeImport {
     ticket: string,
     roots: string[],
     keep: boolean,
+    callerId?: number,
   ) {
     return this.exclusive(() =>
-      this.runImport(conversationId, ticket, roots, keep),
+      this.runImport(conversationId, ticket, roots, keep, callerId),
     );
   }
   private async runImport(
@@ -244,10 +271,12 @@ export class ChromeImport {
     ticket: string,
     roots: string[],
     keep: boolean,
+    callerId?: number,
   ): Promise<
     ChromeImportResult<{
-      results: { root: string; imported: number; failed: number }[];
+      results: ChromeImportSiteResult[];
       persistent: boolean;
+      storageCarried: boolean;
     }>
   > {
     const entry = this.tickets.get(ticket);
@@ -256,6 +285,7 @@ export class ChromeImport {
       !entry ||
       this.disposed ||
       entry.conversationId !== conversationId ||
+      entry.callerId !== callerId ||
       entry.expires <= this.now()
     )
       return { ok: false, error: "expired" };
@@ -277,7 +307,14 @@ export class ChromeImport {
       if (this.disposed || entry.expires <= this.now())
         return { ok: false, error: "expired" };
       const target = await this.deps.target(conversationId, keep);
-      const results = roots.map((root) => ({ root, imported: 0, failed: 0 }));
+      const results = roots.map((root) => ({
+        root,
+        found: 0,
+        imported: 0,
+        skippedExpired: 0,
+        failedDecrypt: 0,
+        failedSet: 0,
+      }));
       for (const row of rows) {
         const result = results.find((result) =>
           importHostMatches(
@@ -292,20 +329,30 @@ export class ChromeImport {
           this.disposed
         )
           continue;
+        result.found++;
+        const now = this.now() / 1000;
+        if (
+          row.has_expires &&
+          Number(row.expires_utc) / 1e6 - chromeEpoch <= now
+        ) {
+          result.skippedExpired++;
+          continue;
+        }
         const value = decryptChromeCookie(row, key, version);
-        const cookie =
-          value === undefined
-            ? undefined
-            : importedCookie(row, value, this.now() / 1000);
+        if (value === undefined) {
+          result.failedDecrypt++;
+          continue;
+        }
+        const cookie = importedCookie(row, value, now);
         if (!cookie) {
-          result.failed++;
+          result.failedSet++;
           continue;
         }
         try {
           await target.jar.cookies.set(cookie);
           result.imported++;
         } catch {
-          result.failed++;
+          result.failedSet++;
         }
       }
       const allowedStorage = (host: string) =>
@@ -349,7 +396,15 @@ export class ChromeImport {
       this.records[target.partition] = records;
       await this.save();
       this.deps.reload(conversationId);
-      return { ok: true, results, persistent: target.persistent };
+      return {
+        ok: true,
+        results: results.map((result) => ({
+          ...result,
+          failed: result.found - result.imported,
+        })),
+        persistent: target.persistent,
+        storageCarried: storageOrigins.length > 0,
+      };
     } catch {
       return { ok: false, error: "read_failed" };
     } finally {
@@ -463,36 +518,40 @@ export class ChromeImport {
       return true;
     });
   }
-  remove(conversationId: string, root: string) {
+  remove(conversationId: string, root?: string) {
     return this.exclusive(() => this.runRemove(conversationId, root));
   }
-  private async runRemove(conversationId: string, root: string) {
+  private async runRemove(conversationId: string, root?: string) {
     await this.loading;
     const { partition, jar } = await this.deps.target(conversationId, false);
-    if (!this.records[partition]?.some((record) => record.root === root))
-      return false;
-    const origins =
-      this.records[partition].find((record) => record.root === root)
-        ?.storageOrigins ?? [];
+    const records = this.records[partition] ?? [];
+    const removed = records.filter(
+      (record) => root === undefined || record.root === root,
+    );
+    if (!removed.length) return false;
+    const origins = removed.flatMap((record) => record.storageOrigins ?? []);
     if (origins.length) await this.deps.clearStorage?.(jar, origins);
-    for (const cookie of await jar.cookies.get({}))
+    for (const cookie of await jar.cookies.get({})) {
+      const host = cookie.domain?.replace(/^\./, "");
       if (
-        cookie.domain &&
-        importHostMatches(cookie.domain.replace(/^\./, ""), root)
+        host &&
+        removed.some((record) => importHostMatches(host, record.root))
       )
         await jar.cookies.remove(
-          `${cookie.secure ? "https" : "http"}://${cookie.domain.replace(/^\./, "")}${cookie.path ?? "/"}`,
+          `${cookie.secure ? "https" : "http"}://${host}${cookie.path ?? "/"}`,
           cookie.name,
         );
-    this.records[partition] = this.records[partition].filter(
-      (record) => record.root !== root,
-    );
+    }
+    this.records[partition] =
+      root === undefined
+        ? []
+        : records.filter((record) => record.root !== root);
     await this.save();
     this.deps.reload(conversationId);
     return true;
   }
   dispose() {
-    this.disposed = true;
+    this.lifetime.abort();
     this.tickets.clear();
   }
   clear() {

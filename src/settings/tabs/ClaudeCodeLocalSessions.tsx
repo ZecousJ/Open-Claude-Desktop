@@ -39,6 +39,7 @@ export function ClaudeCodeLocalSessions({
   save,
   settings,
 }: ClaudeCodePart2Props) {
+  const archiveDays = preference(settings, "autoArchiveDays");
   return (
     <Section title="Local sessions">
       <Row
@@ -124,7 +125,7 @@ export function ClaudeCodeLocalSessions({
           )}
         </>
       }
-      {/* The original's other local-session rows. */}
+      {/* R-1362–R-1364: the original's other local-session rows. */}
       <Row
         label="Prompt suggestions"
         description="Show a suggested next prompt in the message box after Claudex replies. Suggestions add a little to your usage."
@@ -141,21 +142,14 @@ export function ClaudeCodeLocalSessions({
       >
         <SelectField<string>
           label="Archive inactive sessions"
-          value={String(preference(settings, "autoArchiveDays"))}
+          value={String(archiveDays)}
           width={160}
-          options={[
-            { value: "0", label: "Never" },
-            { value: "1", label: "1 day" },
-            { value: "2", label: "2 days" },
-            { value: "7", label: "7 days" },
-            { value: "14", label: "14 days" },
-            { value: "30", label: "30 days" },
-          ]}
-          onChange={(value) =>
-            save({
-              autoArchiveDays: Number(value) as 0 | 1 | 2 | 7 | 14 | 30,
-            })
-          }
+          options={[...new Set([0, 1, 2, 7, 14, 30, archiveDays])].sort((a, b) => a - b)
+            .map(days => ({
+              value: String(days),
+              label: days === 0 ? "Never" : days === 1 ? "1 day" : `${days} days`,
+            }))}
+          onChange={(value) => save({ autoArchiveDays: Number(value) })}
         />
       </Row>
       <WorktreeLocationRow settings={settings} save={save} />

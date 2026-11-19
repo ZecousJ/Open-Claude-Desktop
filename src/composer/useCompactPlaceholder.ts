@@ -12,7 +12,8 @@ export function placeholderOverflows(
   );
 }
 
-// Fit the full placeholder before falling back.
+// Fit the full placeholder before falling back (live claude.ai bundle,
+// 2026-10-14, c0e82e24a-lPWvfDG4.js; shared-13-CALRr8Bn.js).
 export function useCompactPlaceholder(
   editor: RefObject<HTMLElement | null>,
   placeholder: string,

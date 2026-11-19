@@ -1,14 +1,15 @@
 import type { Conversation } from "../../shared/types";
 import { formatText, t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 
 /*
- * Where a handed-off session came from, and where it was handed off to. The The
- * reference design words a session Claude started (lineage kind hand_off or
- * side_session) "Started by Claudex from {title}" (shared-21, key +zUGSq16ni),
- * and, on the parent's side, maps hand-offs and forks alike to "Forked here:
- * {title}"; it has no "Handed off" wording. The markers share the fork markers'
- * frame (src/ForkMarkers.tsx).
+ * Where a handed-off session came from, and where it was handed off to.
+ * The live claude.ai bundle (2026-10-13) words a session Claude started
+ * (lineage kind hand_off or side_session) "Started by Claudex from {title}"
+ * (shared-21, key +zUGSq16ni), and, on the parent's side, maps hand-offs
+ * and forks alike to "Forked here: {title}" (c1c1ec7b9, VoRenoPbbh); it has
+ * no "Handed off" wording. The markers share the fork markers' frame
+ * (src/ForkMarkers.tsx).
  */
 
 type Lookup = (id: string) => Conversation | undefined;
@@ -29,7 +30,7 @@ export function HandedOffFrom({
   const title = parent?.title ?? source.title;
   const body = (
     <>
-      <AppIcon name="ArrowSplitRight" />
+      <Anthropicon name="ArrowSplitRight" />
       <span>
         {title
           ? formatText("Started by Claudex from {title}", { title })
@@ -75,7 +76,7 @@ export function HandedOffHere({
       {sessions.map((session) => {
         const body = (
           <>
-            <AppIcon name="ArrowSplitRight" />
+            <Anthropicon name="ArrowSplitRight" />
             <span>
               {formatText("Forked here: {title}", {
                 title: session.title || "Untitled session",

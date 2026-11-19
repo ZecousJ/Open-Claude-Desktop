@@ -42,7 +42,9 @@ export function CodeTile({
         }
       : workspace.rects.get(id);
   // On the web the conversation's card reaches into the window's end when
-  // nothing follows it, and gives way before a pane that does.
+  // nothing follows it, and gives way before a pane that does (live
+  // claude.ai Code, 2026-10-21: data-chat-gutter-end bleed and shave, the
+  // card 297..1279 alone and 297..682 beside Files at 1280 wide).
   const chatEnd =
     surface === "web" && id === "chat" && placed
       ? placed.left + placed.width >=
@@ -65,6 +67,18 @@ export function CodeTile({
       data-top-left={
         (placed &&
           placed.left <= codePaneConfig.padding + codePaneConfig.border + 1 &&
+          placed.top <= codePaneConfig.padding + codePaneConfig.border + 1) ||
+        undefined
+      }
+      // Under the window's caption buttons on Windows and Linux
+      // (code-workspace-layout.css).
+      data-top-right={
+        (placed &&
+          placed.left + placed.width >=
+            workspace.width -
+              codePaneConfig.padding -
+              codePaneConfig.border -
+              1 &&
           placed.top <= codePaneConfig.padding + codePaneConfig.border + 1) ||
         undefined
       }

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Modal } from "../../ui/Controls";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { t } from "../../i18n";
 
 /**
- * A new API token, shown once: "API token", a warning that it will not be shown
- * again, the token with its copy button, and Done. It does not close by Escape
- * or a press outside: Done is the way out.
+ * A new API token, shown once (live claude.ai bundle, 2026-10-21,
+ * c29d48294 Na): "API token", a warning that it will not be shown again,
+ * the token with its copy button, and Done. It does not close by Escape or
+ * a press outside: Done is the way out.
  */
 export function RoutineApiTokenDialog({
   token,
@@ -30,7 +31,7 @@ export function RoutineApiTokenDialog({
       disablePointerDismissal
     >
       <div className="routine-token-notice" role="note">
-        <AppIcon name="Warning" size={16} />
+        <Anthropicon name="Warning" size={16} />
         <p>{t(notice)}</p>
       </div>
       <div className="routine-token-row">
@@ -46,7 +47,7 @@ export function RoutineApiTokenDialog({
             void window.desktop.copyText(token).then(() => setCopied(true))
           }
         >
-          <AppIcon name={copied ? "Check" : "Copy"} size={16} />
+          <Anthropicon name={copied ? "Check" : "Copy"} size={16} />
         </button>
       </div>
       <div className="button-row">

@@ -28,7 +28,7 @@ export function knowledgePdfArtifact(
 }
 
 /** Project files remain reference data. HTML, SVG and source code are inert text;
- * only the existing isolated PDF runtime renders binary contents.
+ * the existing isolated PDF runtime renders PDFs.
  * Open/loading/error/nonrenderable: 1016 ca12e49f2-B8zRz5-9:1086,1850. */
 export function KnowledgePreviewDialog({
   projectId,
@@ -88,14 +88,19 @@ export function KnowledgePreviewDialog({
     };
   }, [projectId, file.name, bridge, attempt]);
   if (!current()) return null;
+  const reason = content?.kind === "unsupported" ? content.reason : undefined;
   const download = () => {
     if (!current() || !content || content.kind === "unsupported") return;
     const bytes =
       content.kind === "text"
         ? new TextEncoder().encode(content.text)
         : Uint8Array.from(atob(content.base64), (char) => char.charCodeAt(0));
+    const parts =
+      content.kind === "text" && bytes.length + 3 === content.bytes
+        ? [Uint8Array.of(0xef, 0xbb, 0xbf), bytes]
+        : [bytes];
     const url = URL.createObjectURL(
-      new Blob([bytes], { type: "application/octet-stream" }),
+      new Blob(parts, { type: "application/octet-stream" }),
     );
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -125,27 +130,34 @@ export function KnowledgePreviewDialog({
             <Spinner inheritColor size={20} />
             <span>{t("Loading file…")}</span>
           </div>
-        ) : content.kind === "unsupported" ? (
+        ) : content.kind === "unsupported" || content.kind === "binary" ? (
           <div className="prj-knowledge-preview-message">
             <p>{t("No preview")}</p>
             <span>
               {t(
-                content.reason === "too-large"
+                reason === "too-large"
                   ? "File is too large to preview"
-                  : content.reason === "encoding"
+                  : reason === "encoding"
                     ? "This file is not UTF-8 text."
-                    : content.reason === "invalid-pdf"
+                    : reason === "invalid-pdf"
                       ? "This PDF could not be previewed."
                       : "This file type can’t be previewed.",
               )}
             </span>
           </div>
-        ) : content.kind === "text" && /\.(csv|tsv)$/i.test(file.name) ? (
+        ) : (content.kind === "text" || content.kind === "utf16") &&
+          /\.(csv|tsv)$/i.test(file.name) ? (
           <KnowledgeTable text={content.text} file={file} />
-        ) : content.kind === "text" ? (
+        ) : content.kind === "text" || content.kind === "utf16" ? (
           <pre className="prj-knowledge-preview-text" tabIndex={0}>
             {content.text}
           </pre>
+        ) : content.kind === "image" ? (
+          <img
+            alt={file.name}
+            src={`data:${content.mime};base64,${content.base64}`}
+            style={{ display: "block", maxWidth: "100%" }}
+          />
         ) : (
           <KnowledgePdfPreview content={content} owns={current} />
         )}

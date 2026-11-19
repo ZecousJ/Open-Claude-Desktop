@@ -5,7 +5,7 @@ import type { KnowledgeDriveFile } from "../../../shared/collections-api";
 import { t, useT } from "../../i18n";
 import { Modal } from "../../ui/Controls";
 
-// Drive picker copy.
+// Drive picker copy (live claude.ai bundle, 2026-10-14, cb9e2fe50-C-qZWYxy.js).
 export function KnowledgeDriveDialog({
   projectId,
   servers,

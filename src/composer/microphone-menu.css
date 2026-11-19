@@ -1,9 +1,9 @@
-/* The ⌄ after the microphone: a 320 × 137 box with a 1px #383838 rim on
-   #20201e, radius 10, over a 12px #8c8c8b "Microphone" heading (24px), three
-   25px input rows at 13px, a 1px rule, 4px, and the 25px "Hold to record" row
-   with a blue 25.5 × 14 switch. Inset 3px like the Mode menu
-   (code-permission-menu.css, whose row hover and text colours it borrows); the
-   tick is that menu's blue. */
+/* The ⌄ after the microphone (R-0404, Code footer, 1x dark crop): a 320 × 137
+   box with a 1px #383838 rim on #20201e, radius 10, over a 12px #8c8c8b
+   "Microphone" heading (24px), three 25px input rows at 13px, a 1px rule,
+   4px, and the 25px "Hold to record" row with a blue 25.5 × 14 switch. Inset
+   3px like the Mode menu (code-permission-menu.css, whose row hover and text
+   colours it borrows); the tick is that menu's blue. */
 .microphone-menu {
   box-sizing: border-box;
   position: fixed;
@@ -16,7 +16,8 @@
   box-shadow: 0 12px 28px #0006;
   color: var(--text);
   font:
-    13px/17px -apple-system,
+    13px/17px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   outline: none;
@@ -44,7 +45,7 @@
   padding: 6px 10px;
   line-height: 20px;
 }
-/* GroupLabel; current live icon header24px. */
+/* shared-8-D8y0BqdN:10839 GroupLabel; current live icon header24px. */
 .microphone-status {
   box-sizing: border-box;
   display: flex;
@@ -166,7 +167,7 @@
   color: inherit;
   text-align: left;
   /* Rows appear highlighted at once and have no pressed look: the original's
-     menu rows. */
+     menu rows (desktop bundle 2.31226.1 static CSS/JS). */
   transition: none;
 }
 .microphone-menu button > span {

@@ -77,7 +77,11 @@ export type RowMenuAbilities = {
   fork?: boolean;
   /** Export: the transcript can be saved (not an incognito session). */
   export?: boolean;
-  /** Open as quick task is greyed: the task is the one on screen. */
+  /**
+   * Open as quick task is greyed: the task is the one on screen (live
+   * claude.ai bundle, 2026-10-12: openInComposerDisabled for the selected
+   * row).
+   */
   quickTaskDisabled?: boolean;
 };
 
@@ -112,11 +116,15 @@ export type RowMenuHandlers = {
   newProject?: (name: string) => void;
   toggleArchive: () => void;
   remove: () => void;
-  /** Open PR: the pull request the session made; absent without one. */
+  /**
+   * Open PR (live claude.ai bundle, 2026-10-12, ce4f4374c: first in Code's
+   * menu, key G): the pull request the session made; absent without one.
+   */
   openPr?: () => void;
   /**
-   * Open as quick task: the task in a task window on the Cowork page. Absent
-   * where there are no task windows.
+   * Open as quick task (live claude.ai bundle, 2026-10-12, shared-16: a
+   * Cowork task's menu leads with it, a rule under it): the task in a task
+   * window on the Cowork page. Absent where there are no task windows.
    */
   openAsQuickTask?: () => void;
   /** Open in ▸ Desktop app: a cloud Code session in the desktop app. */
@@ -138,8 +146,9 @@ export type RowMenuHandlers = {
 };
 
 /**
- * 144 wide as the Code menu; "Open in new window" needs 168 so it is not cut
- * off. The web's menu is 170.5 wide, with icons.
+ * 144 wide as the Code menu (R-0083); "Open in new window" needs 168 so it
+ * is not cut off (the Chat menu's width was not captured). The web's menu
+ * is 170.5 wide, with icons (live claude.ai, 2026-09-29).
  */
 export const rowMenuWidth = (entries: MenuEntry[]) =>
   globalThis.document?.documentElement.dataset.surface === "web"
@@ -260,13 +269,16 @@ export default function RowMenu({
   const openLink = useOpenLink();
   const pullRequest =
     c.mode === "code" && !c.incognito ? sessionPullRequest(c) : undefined;
-  // Move to group: the person's groups with the current one checked, then
-  // Ungrouped (when the conversation is in one) and New group…; the first nine
-  // take the keys 1 to 9.
+  // Move to group (R-Code-会话行右键-Move-to-group, R-0044-0083): the
+  // person's groups with the current one checked, then Ungrouped (when the
+  // conversation is in one) and New group…; the first nine take the keys
+  // 1 to 9 (desktop bundle 2.31226.1, lz).
   const groupId = groups.members[c.id];
-  // The group it leaves stays in view in this window, even once empty. A pinned
-  // conversation moved into a group leaves Pinned, as a drag into the group
-  // does.
+  // The group it leaves stays in view in this window, even once empty (live
+  // claude.ai bundle, 2026-10-12: the move keeps its source group).
+  // A pinned conversation moved into a group leaves Pinned, as a drag into
+  // the group does (live claude.ai bundle, 2026-10-12: the group assignment
+  // unpins its session).
   const moveTo = (target: string | null) => {
     if (c.pinned && target !== null) actions.onTogglePin(c);
     void window.desktop
@@ -512,7 +524,7 @@ export default function RowMenu({
     <>
       <Menu
         label={`Options for ${c.title}`}
-        // The web shows the single-key hints too.
+        // The web shows the single-key hints too (live claude.ai, 2026-10-20).
         showRootHints
         className="row-menu"
         entries={entries}

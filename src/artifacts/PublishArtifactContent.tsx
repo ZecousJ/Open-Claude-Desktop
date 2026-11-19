@@ -44,7 +44,7 @@ export function PublishArtifactContent({
           <div className="publish-artifact-status">
             <Globe size={18} aria-hidden="true" />
             <div>
-              {/* The published state. */}
+              {/* Live claude.ai bundle, 2026-10-16, c147e6f61: the published state. */}
               <h6>
                 {active ? "Published (Public)" : "Removed by the administrator"}
               </h6>
@@ -162,9 +162,10 @@ export function PublishArtifactContent({
 }
 
 /**
- * Get embed code: Allowed domains, saved when the field is left with a changed,
- * valid list ("Saved" then shows), the iframe code read-only, and Cancel (back
- * to the published link) and Copy code.
+ * Get embed code (live claude.ai bundle, 2026-10-12: the Publish dialog's
+ * embed settings): Allowed domains, saved when the field is left with a
+ * changed, valid list ("Saved" then shows), the iframe code read-only, and
+ * Cancel (back to the published link) and Copy code.
  */
 export function EmbedSettings({
   shareId,

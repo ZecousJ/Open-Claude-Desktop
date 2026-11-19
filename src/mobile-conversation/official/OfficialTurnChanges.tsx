@@ -2,19 +2,19 @@ import { useState } from "react";
 import type { Turn } from "../../../shared/types";
 import { shownPath, turnChangedFiles } from "../../code-tools/CodeFileChange";
 import { diffTotals } from "../../diff/diff-model";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { t, tf, useT } from "../../i18n";
 
-/** Files listed before "Show N more". */
+/** Files listed before "Show N more" (D/qcx.java: `v48.h1(list, 3)`). */
 const FIRST_FILES = 3;
 
 const basename = (path: string) =>
   path.split(/[\\/]/).filter(Boolean).at(-1) ?? path;
 
 /**
- * "+a −d" as one two-part pill: 11 sp / 550 text in g74.F on its 20 % tint,
- * then g74.e on its tint, 6 dp inside, 18 dp tall, 4.5 dp corners round the
- * pair.
+ * "+a −d" as one two-part pill (D/nix.java:17 `a`, `b`): 11 sp / 550 text in
+ * g74.F on its 20 % tint, then g74.e on its tint, 6 dp inside, 18 dp tall,
+ * 4.5 dp corners round the pair.
  */
 function DiffPill({
   additions,
@@ -50,12 +50,12 @@ function FilePath({ path }: { path: string }) {
 }
 
 /**
- * After a Code turn that changed files, the official turn-edits card: a 12 dp
- * bordered card holding one header row, the edit icon, "Edited {file}" (or
- * "Created {file}" for a new one; "Edited N files" for several), the line
- * totals, and Review, which opens the diff. With several files the first three
- * follow, each with its own totals and a caret, then "Show N more" / "Show
- * less". Undo is not on the phones.
+ * After a Code turn that changed files, the official turn-edits card (D/qcx.java
+ * `d`, `ccr_turn_edits_*`): a 12 dp bordered card holding one header row, the
+ * edit icon, "Edited {file}" (or "Created {file}" for a new one; "Edited N
+ * files" for several), the line totals, and Review, which opens the diff.
+ * With several files the first three follow, each with its own totals and a
+ * caret, then "Show N more" / "Show less". Undo is not on the phones.
  */
 export function OfficialTurnChanges({
   turn,
@@ -85,7 +85,7 @@ export function OfficialTurnChanges({
           const content = (
             <>
               <span className="official-edits-icon" aria-hidden="true">
-                <AppIcon name="Edit" />
+                <Anthropicon name="Edit" />
               </span>
               <span className="official-edits-text">{title}</span>
               <DiffPill
@@ -94,7 +94,7 @@ export function OfficialTurnChanges({
               />
             </>
           );
-          // Only a lone file's title opens it.
+          // Only a lone file's title opens it (D/qcx.java: `cgbVar` set).
           return single ? (
             <button
               type="button"
@@ -126,7 +126,7 @@ export function OfficialTurnChanges({
                   deletions={file.deletions}
                 />
                 <span className="official-edits-caret" aria-hidden="true">
-                  <AppIcon name="CaretRight" />
+                  <Anthropicon name="CaretRight" />
                 </span>
               </button>
             </li>
@@ -147,7 +147,7 @@ export function OfficialTurnChanges({
                   data-open={all || undefined}
                   aria-hidden="true"
                 >
-                  <AppIcon name="CaretDownSmall" />
+                  <Anthropicon name="CaretDownSmall" />
                 </span>
               </button>
             </li>

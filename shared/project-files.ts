@@ -1,8 +1,28 @@
 /** The Files pane's shapes (electron/project-files.ts reads them). */
 
 export interface ProjectSearchResult {
-  matches: { path: string; line: number; preview: string }[];
+  matches: {
+    path: string;
+    line: number;
+    column?: number;
+    preview: string;
+    previewMatches?: { start: number; end: number }[];
+  }[];
   truncated: boolean;
+  patternRefused?: boolean;
+}
+
+/** The original Files pane asks for extra rows before grouping them by file. */
+export const projectSearchMaxResults = 241;
+
+export interface ProjectSearchOptions {
+  strict?: boolean;
+  maxResults?: number;
+  /** The Code Files pane groups rows and searches the same paths as file mentions. */
+  filesPane?: true;
+  matchCase?: boolean;
+  wholeWord?: boolean;
+  regexp?: boolean;
 }
 
 export interface ProjectEntry {
@@ -10,6 +30,7 @@ export interface ProjectEntry {
   /** Relative to the session's folder, with "/" between parts. */
   path: string;
   kind: "file" | "folder";
+  symlink?: true;
 }
 
 export interface ProjectFile {

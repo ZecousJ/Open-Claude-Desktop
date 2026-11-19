@@ -1,10 +1,10 @@
 import { useCallback, useSyncExternalStore } from "react";
 
 /**
- * The Code session rail's remembered state: whether it shows
- * ("persisted.epitaxy.sessionRailShown", shown unless hidden) and, per session,
- * which cards are folded ("epitaxy.sessionRailSections"). Kept in this window's
- * local storage.
+ * The Code session rail's remembered state (live claude.ai bundle,
+ * 2026-10-14): whether it shows ("persisted.epitaxy.sessionRailShown",
+ * shown unless hidden) and, per session, which cards are folded
+ * ("epitaxy.sessionRailSections"). Kept in this window's local storage.
  */
 const shownKey = "claudex.sessionRail.shown";
 const foldKey = "claudex.sessionRail.folds";
@@ -54,10 +54,11 @@ export function useRailShown(): [boolean, (shown: boolean) => void] {
 }
 
 /*
- * Where the rail is now: a column beside the conversation while it is shown and
+ * Where the rail is now (live claude.ai bundle, 2026-10-21, the Code
+ * session view): a column beside the conversation while it is shown and
  * fits; when it does not fit, the header's toggle raises it over the
- * conversation for that session, until the toggle lowers it or the rail fits
- * again. The toggle is pressed while the rail is on screen either way.
+ * conversation for that session, until the toggle lowers it or the rail
+ * fits again. The toggle is pressed while the rail is on screen either way.
  */
 let railFits = false;
 let raisedFor: string | null = null;

@@ -107,6 +107,14 @@ const payments = (types?: string[]): MockOptions => ({
   payment: { enabled: true, types, plans: [proPlan] },
 });
 
+function deferred() {
+  let resolve = () => {};
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 test("Billing lists nothing to buy when the service has payments off", async (t) => {
   const { billing, mock } = await start(t);
   assert.equal(await billing.checkout(), null);
@@ -171,6 +179,31 @@ test("an https pay_url opens in the system browser and the order is followed", a
   // Opened again from the page's "Open again".
   await run.billing.reopen(started.order.id);
   assert.equal(run.opened.length, 2);
+});
+
+test("a payment page that arrives after sign-out does not open", async (t) => {
+  const run = await start(t, payments());
+  const entered = deferred();
+  const release = deferred();
+  run.mock.route("POST", "/api/v1/payment/orders", async () => {
+    entered.resolve();
+    await release.promise;
+    return ok({
+      order_id: 51,
+      amount: 20,
+      pay_amount: 20,
+      status: "PENDING",
+      payment_type: "alipay",
+      pay_url: "https://pay.example.test/alipay/51",
+    });
+  });
+  const payment = run.billing.start({ method: "alipay", amount: 20 });
+  const rejected = assert.rejects(payment, /account changed/);
+  await entered.promise;
+  run.signOut();
+  release.resolve();
+  await rejected;
+  assert.deepEqual(run.opened, []);
 });
 
 test("a QR code is handed to the window, not opened", async (t) => {

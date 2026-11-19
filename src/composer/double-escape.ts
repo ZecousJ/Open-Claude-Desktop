@@ -1,4 +1,4 @@
-// Empty-editor recall.
+// Empty-editor recall (live claude.ai bundle, 2026-10-14, shared-7-CO8eplZ3.js).
 export function doubleEscape() {
   let armed: number | undefined;
   return (

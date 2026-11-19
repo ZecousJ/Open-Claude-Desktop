@@ -142,6 +142,22 @@ export class PluginService {
     await (await this.rpc()).call("plugin/uninstall", { pluginId: id });
   }
 
+  async setEnabled(id: string, enabled: boolean) {
+    const plugin = await this.find(id);
+    if (!plugin.installed || (enabled && !plugin.installable))
+      throw Error("This plugin can't be changed.");
+    if (plugin.enabled !== enabled)
+      await (await this.rpc()).call("config/batchWrite", {
+        edits: [{
+          keyPath: "plugins",
+          value: { [plugin.id]: { enabled } },
+          mergeStrategy: "upsert",
+        }],
+        reloadUserConfig: true,
+      });
+    return enabled;
+  }
+
   async addMarketplace(source: unknown) {
     if (!this.networkAllowed()) throw new Error("Network access required");
     const repository = marketplaceSource(source);
@@ -150,19 +166,24 @@ export class PluginService {
     ).call("marketplace/add", {
       source: repository,
     });
-    if (result?.marketplaceName)
-      this.syncState?.update(result.marketplaceName, {
+    const name = text(result?.marketplaceName, 200);
+    if (name && result?.alreadyAdded !== true)
+      this.syncState?.update(name, {
         source: repository.startsWith("https://")
           ? repository
           : `https://github.com/${repository}`,
         lastUpdated: Date.now(),
+        userAdded: true,
       });
+    return { name, alreadyAdded: result?.alreadyAdded === true };
   }
 
-  async removeMarketplace(name: string) {
+  async removeMarketplace(name: string, userAddedOnly = false) {
     if (!name.trim() || name.length > 200)
       throw new Error("That marketplace name is not valid.");
     const catalog = await this.list();
+    if (userAddedOnly && !catalog.marketplaces.some(row => row.name === name && row.userAdded === true))
+      throw Error("This marketplace was not added by the current account.");
     for (const plugin of catalog.plugins.filter(
       (entry) => entry.marketplace === name && entry.installed,
     ))
@@ -173,12 +194,16 @@ export class PluginService {
     this.syncState?.update(name);
   }
 
-  async upgradeMarketplaces(name?: string) {
+  async upgradeMarketplaces(name?: string, userAddedOnly = false) {
     const names = this.syncState
       ? (await this.list()).marketplaces
-          .filter((entry) => !name || entry.name === name)
+          .filter(
+            (entry) => (!name || entry.name === name) && (!userAddedOnly || entry.userAdded),
+          )
           .map((entry) => entry.name)
       : [];
+    if (userAddedOnly && (!name || !names.includes(name)))
+      throw Error("This marketplace was not added by the current account.");
     if (name && this.syncState && !names.length)
       throw new Error("That marketplace name is not valid.");
     let result;

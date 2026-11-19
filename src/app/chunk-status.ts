@@ -1,11 +1,13 @@
 /**
- * What a script or stylesheet that did not load says about the build, after the
- * original's chunk recovery: the status of the failed file (the one the browser
- * recorded, else the server is asked again), where a 404 or 410 means "Claude
- * was updated"; and, in Chromium, whether the script itself arrived and only
- * something it imports failed. Shared by each lazily loaded piece
- * (src/app/chunk-recovery.ts) and the web's stale-build reload
- * (src-web/stale-build.ts); calls for one file while one is in flight share it.
+ * What a script or stylesheet that did not load says about the build, after
+ * the original's chunk recovery (live claude.ai bundle, 2026-10-12,
+ * shared-l-p-m-5 `Rx`/`Hx`/`Ux`/`Lx`): the status of the failed file (the
+ * one the browser recorded, else the server is asked again), where a 404 or
+ * 410 means "Claude was updated"; and, in Chromium, whether the script
+ * itself arrived and only something it imports failed. Shared by each
+ * lazily loaded piece (src/app/chunk-recovery.ts) and the web's stale-build
+ * reload (src-web/stale-build.ts); calls for one file while one is in
+ * flight share it.
  */
 
 /** The original gives the server 2.5 s to answer before giving up. */

@@ -1,6 +1,7 @@
-/* A code block's run output: 5px under the block, a rounded-lg outlined box at
-   most 160px tall, code text in text-secondary padded 10px + 1ch across and 5px
-   down; Open in terminal a ghost glyph at its top right. */
+/* A code block's run output (c19e90103 `pf`): 5px under the block, a
+   rounded-lg outlined box at most 160px tall, code text in text-secondary
+   padded 10px + 1ch across and 5px down; Open in terminal a ghost glyph at
+   its top right. */
 .code-run-output {
   position: relative;
   margin-top: 5px;

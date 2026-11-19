@@ -231,8 +231,8 @@ test("saved web task cards use real detail links and a distinct More action whil
   );
   assert.equal(
     document
-      .querySelector(".routine-more [data-icon]")
-      ?.getAttribute("data-icon"),
+      .querySelector(".routine-more [data-anthropicon]")
+      ?.getAttribute("data-anthropicon"),
     "DotsVertical",
   );
   assert.equal(document.querySelector(".routine-card button"), null);

@@ -16,10 +16,8 @@ export const paletteFilterLabels: Record<PaletteFilterKey, string> = {
   actions: "Actions",
 };
 
-/**
- * Empty-input Backspace removes the last logical filter in the live order;
- * date is the active time-window field.
- */
+/** Empty-input Backspace removes the last logical filter in the live order
+ * (c2771e1f6:10886–10903); date is the active time-window field. */
 export function removeLastPaletteFilter(
   filters: PaletteFilters,
 ): PaletteFilters {
@@ -58,8 +56,8 @@ export function filterPicker(
   query: string,
 ): { key?: PaletteFilterKey; query: string } | undefined {
   if (query.startsWith("/")) return { query: query.slice(1).trim() };
-  // The live parser aliases active/when to the displayed date: token, from to
-  // owner, and repository to repo.
+  // The live parser aliases active/when to the displayed date: token,
+  // from to owner, and repository to repo (ce8be540f:550–579).
   const match =
     /^(owner|from|date|when|active|repo|repository|project|type|archived|is|actions):\s*(.*)$/i.exec(
       query,
@@ -129,7 +127,8 @@ export function paletteFilterOptions(
               : [{ key, value: "true", label: paletteFilterLabels[key] }];
   const typed = picker.query.toLocaleLowerCase();
   return options.filter((option) => {
-    // Published command aliases remain usable when a displayed label differs.
+    // Published command aliases remain usable when a displayed label
+    // differs (ce8be540f:401–433,591–596,627–648).
     const hints = !key
       ? fieldHints[option.key]
       : key === "owner"

@@ -14,8 +14,8 @@ export function starterConnectorId(
   return starterConnectorIds.find((id) => id === value);
 }
 
-// Authenticated integrations gate prompts. Match connector identity, never a
-// name substring.
+// Authenticated integrations gate prompts (live claude.ai bundle, 2026-10-14,
+// c00a93a61-CqDD2kKQ.js:17). Match connector identity, never a name substring.
 export function starterIntegrations(
   servers: readonly McpServerState[],
 ): StarterIntegration[] {

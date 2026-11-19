@@ -87,9 +87,11 @@ type EditView struct {
 // MemoryView is GET /api/v1/claudex/memory.
 type MemoryView struct {
 	Status
-	Limits Limits     `json:"limits"`
-	Docs   []DocView  `json:"docs"`
-	Edits  []EditView `json:"edits"`
+	Limits               Limits            `json:"limits"`
+	Docs                 []DocView         `json:"docs"`
+	Edits                []EditView        `json:"edits"`
+	ControlsVersions     map[string]string `json:"controls_versions"`
+	EmptyControlsVersion string            `json:"empty_controls_version"`
 }
 
 // DeleteResult answers the deletes.
@@ -176,17 +178,21 @@ func scopeParam(raw string) (string, error) {
 
 // readJSON decodes a JSON object with only the fields of v.
 func readJSON(g *gin.Context, v any) error {
-	if g.Request.ContentLength > maxBodyBytes {
-		return ErrTooLarge
+	return readBoundedJSON(g, v, maxBodyBytes, ErrTooLarge)
+}
+
+func readBoundedJSON(g *gin.Context, v any, maxBytes int64, tooLarge error) error {
+	if g.Request.ContentLength > maxBytes {
+		return tooLarge
 	}
 	if g.Request.Body == nil {
 		return invalid("body", "json", "The request body must be a JSON object.")
 	}
-	raw, err := io.ReadAll(http.MaxBytesReader(g.Writer, g.Request.Body, maxBodyBytes))
+	raw, err := io.ReadAll(http.MaxBytesReader(g.Writer, g.Request.Body, maxBytes))
 	if err != nil {
-		var tooLarge *http.MaxBytesError
-		if errors.As(err, &tooLarge) {
-			return ErrTooLarge
+		var maxBytesError *http.MaxBytesError
+		if errors.As(err, &maxBytesError) {
+			return tooLarge
 		}
 		return invalid("body", "read", "Couldn't read the request body.")
 	}
@@ -195,7 +201,8 @@ func readJSON(g *gin.Context, v any) error {
 	if err := dec.Decode(v); err != nil {
 		return invalid("body", "json", "The request body must be a JSON object with the documented fields.")
 	}
-	if dec.More() {
+	var extra any
+	if err := dec.Decode(&extra); err != io.EOF {
 		return invalid("body", "json", "The request body must be a single JSON object.")
 	}
 	return nil
@@ -221,17 +228,13 @@ func (c *Component) getMemory(g *gin.Context) {
 		return
 	}
 	ctx := g.Request.Context()
-	docs, err := c.store.docs(ctx, userID, scope)
+	snapshot, err := c.store.snapshot(ctx, userID, scope)
 	if err != nil {
 		response.ErrorFrom(g, errStoreFailed.WithCause(err))
 		return
 	}
-	edits, err := c.store.edits(ctx, userID, scope)
-	if err != nil {
-		response.ErrorFrom(g, errStoreFailed.WithCause(err))
-		return
-	}
-	view := MemoryView{Status: st, Limits: serverLimits, Docs: make([]DocView, 0, len(docs)), Edits: make([]EditView, 0, len(edits))}
+	docs, edits := snapshot.Docs, snapshot.Edits
+	view := MemoryView{Status: st, Limits: serverLimits, Docs: make([]DocView, 0, len(docs)), Edits: make([]EditView, 0, len(edits)), ControlsVersions: snapshot.Versions, EmptyControlsVersion: snapshot.EmptyVersion}
 	for _, d := range docs {
 		view.Docs = append(view.Docs, c.docView(d))
 	}
@@ -262,31 +265,29 @@ func (c *Component) putPrefs(g *gin.Context) {
 		response.ErrorFrom(g, invalid("body", "required", "Send search_chats, generate or both."))
 		return
 	}
-	st, err := c.requestStatus(g, userID)
+	ctx := g.Request.Context()
+	platform, _, _, _ := core.ClientInfo(g)
+	policy, err := c.policy(ctx, userID, nil, platform)
 	if err != nil {
-		response.ErrorFrom(g, err)
+		response.ErrorFrom(g, errPolicyUnavailable.WithCause(err))
 		return
 	}
-	next := st.Prefs
-	if body.SearchChats != nil {
-		if *body.SearchChats && !st.Allowed.SearchChats {
-			response.ErrorFrom(g, disabledFor("search_chats"))
-			return
-		}
-		next.SearchChats = *body.SearchChats
+	policy = policy.normalized()
+	if body.SearchChats != nil && *body.SearchChats && !policy.SearchChats {
+		response.ErrorFrom(g, disabledFor("search_chats"))
+		return
 	}
-	if body.Generate != nil {
-		if *body.Generate && !st.Allowed.Generate {
-			response.ErrorFrom(g, disabledFor("generate"))
-			return
-		}
-		next.Generate = *body.Generate
+	if body.Generate != nil && *body.Generate && !policy.Generate {
+		response.ErrorFrom(g, disabledFor("generate"))
+		return
 	}
-	if _, err := c.store.setPrefs(g.Request.Context(), userID, next.SearchChats, next.Generate); err != nil {
+	if err := c.store.setPrefs(ctx, userID, prefsWrite{
+		SearchChats: body.SearchChats, Generate: body.Generate, DefaultOn: policy.DefaultOn,
+	}); err != nil {
 		response.ErrorFrom(g, errStoreFailed.WithCause(err))
 		return
 	}
-	st, err = c.requestStatus(g, userID)
+	st, err := c.requestStatus(g, userID)
 	if err != nil {
 		response.ErrorFrom(g, err)
 		return
@@ -312,10 +313,11 @@ func (c *Component) putDoc(g *gin.Context) {
 		return
 	}
 	var body struct {
-		Content      *string `json:"content"`
-		Source       *string `json:"source"`
-		BaseRevision *int64  `json:"base_revision"`
-		EditsUpto    *int64  `json:"edits_upto"`
+		Content             *string `json:"content"`
+		Source              *string `json:"source"`
+		BaseRevision        *int64  `json:"base_revision"`
+		EditsUpto           *int64  `json:"edits_upto"`
+		BaseControlsVersion *string `json:"base_controls_version"`
 	}
 	if err := readJSON(g, &body); err != nil {
 		response.ErrorFrom(g, err)
@@ -350,7 +352,7 @@ func (c *Component) putDoc(g *gin.Context) {
 		response.ErrorFrom(g, disabledFor("memory"))
 		return
 	}
-	if *body.Source == SourceGenerated && !st.Allowed.Generate {
+	if *body.Source == SourceGenerated && !st.Effective.Generate {
 		response.ErrorFrom(g, disabledFor("generate"))
 		return
 	}
@@ -361,7 +363,8 @@ func (c *Component) putDoc(g *gin.Context) {
 	}
 	saved, err := c.store.saveDoc(g.Request.Context(), userID, docWrite{
 		Scope: scope, ContentEnc: sealed, ContentBytes: len(*body.Content), Source: *body.Source,
-		BaseRevision: *body.BaseRevision, EditsUpto: body.EditsUpto, MaxScopes: MaxScopes,
+		BaseRevision: *body.BaseRevision, EditsUpto: body.EditsUpto, MaxScopes: MaxScopes, BaseControlsVersion: body.BaseControlsVersion,
+		RequireGenerate: *body.Source == SourceGenerated,
 	})
 	if err != nil {
 		response.ErrorFrom(g, writeError(err))
@@ -391,8 +394,7 @@ func (c *Component) deleteDoc(g *gin.Context) {
 	response.Success(g, DeleteResult{DeletedDocs: docs, DeletedEdits: edits})
 }
 
-// DELETE /api/v1/claudex/memory (Reset memory): every document and edit of
-// the user; the switches stay.
+// DELETE /api/v1/claudex/memory clears stored memory and keeps preferences.
 func (c *Component) deleteAll(g *gin.Context) {
 	userID, ok := subject(g)
 	if !ok {
@@ -529,7 +531,14 @@ func sealError(err error) error {
 
 func writeError(err error) error {
 	var conflictErr *conflictError
+	var controlsErr *controlsConflictError
 	switch {
+	case errors.As(err, &controlsErr):
+		reason := "CLAUDEX_MEMORY_CONTROLS_CONFLICT"
+		if controlsErr.Reset {
+			reason = "CLAUDEX_MEMORY_CONTROLS_RESET"
+		}
+		return infraerrors.Conflict(reason, "Memory changed. Reload it before saving.")
 	case errors.As(err, &conflictErr):
 		return conflict(conflictErr.Current)
 	case errors.Is(err, errScopeLimit):

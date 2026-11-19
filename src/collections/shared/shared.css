@@ -46,7 +46,8 @@
 .shared-head h1 {
   margin: 0;
   font:
-    500 24px/32px "Claudex Serif",
+    500 24px/32px "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -74,7 +75,7 @@
 .shared-disclaimer button {
   flex-shrink: 0;
 }
-/* . */
+/* (live claude.ai bundle, 2026-10-14, c2bb74286-B-gpbZ4d.js). */
 .artifact-edit-access {
   display: inline-flex;
   flex-shrink: 0;
@@ -127,7 +128,8 @@
 .shared-state h1 {
   margin: 0;
   font:
-    500 24px/32px "Claudex Serif",
+    500 24px/32px "Claudex Reference Serif",
+    "Claudex Serif",
     Georgia,
     "PingFang SC",
     "Microsoft YaHei",
@@ -140,7 +142,10 @@
   font-size: 14px;
   line-height: 20px;
 }
-/* Under the messages, held at the bottom while they scroll. */
+/* Under the messages, held at the bottom while they scroll (live claude.ai
+   shared page, 2026-10-12: a centred primary button 16px from the edges;
+   for the sharer a notice with its action, in the connection notice card's
+   look, which is Claudex's notice-with-action analogue). */
 .shared-continue {
   position: sticky;
   bottom: 0;

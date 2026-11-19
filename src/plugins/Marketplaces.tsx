@@ -221,7 +221,8 @@ function MarketplaceRow({
   );
 }
 
-// Options and uninstall confirmation.
+// Options and uninstall confirmation (live claude.ai bundle, 2026-10-14,
+// c6a2a31c4-kqWKJyeH.js: Hl, Ql).
 export default function Marketplaces({
   plugins,
   onAdd,

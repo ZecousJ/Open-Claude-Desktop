@@ -1,9 +1,10 @@
 /**
- * Claude's headless iOS builds. A build is `xcrun xcodebuild … build` into a
- * derived data folder of its own under the system's temporary folder; its
- * output goes to a log file, its compile errors are kept as they arrive, and
- * once it succeeds the built .app is found under Build/Products. One build per
- * project at a time.
+ * Claude's headless iOS builds (live claude.ai bundle, 2026-10-15: the iOS
+ * Simulator server's `build` tool, `build` and `build_status`). A build is
+ * `xcrun xcodebuild … build` into a derived data folder of its own under
+ * the system's temporary folder; its output goes to a log file, its
+ * compile errors are kept as they arrive, and once it succeeds the built
+ * .app is found under Build/Products. One build per project at a time.
  */
 import fs from "node:fs";
 import path from "node:path";

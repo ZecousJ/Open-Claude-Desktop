@@ -117,8 +117,8 @@ test("server states list tools, switched-off ones and the sign-in state", () => 
   );
   assert.equal(state.authStatus, "notLoggedIn");
   assert.deepEqual(state.toolList, [
-    { name: "read", description: "", enabled: true },
-    { name: "search", description: "Find pages", enabled: true },
+    { name: "read", description: "", enabled: true, definition:{name:"read"} },
+    { name: "search", description: "Find pages", enabled: true, definition:{name:"search",description:"Find pages"} },
     { name: "write", description: "", enabled: false },
   ]);
   const [unknown] = mcpServerStates(

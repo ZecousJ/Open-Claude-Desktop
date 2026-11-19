@@ -55,7 +55,9 @@
   min-height: 36px;
 }
 /* The bar spans what shows of the tile, so it folds its buttons there, while
-   the transcript keeps its 320px column under the next card. */
+   the transcript keeps its 320px column under the next card (live
+   claude.ai Code, 2026-10-21, 900 wide: the title bar 233px, the column
+   320px). */
 .code-chat-content > .chat-header {
   max-width: var(--tile-width, none);
 }
@@ -94,6 +96,39 @@
 .code-workspace-layout > .code-pane-divider {
   inset: auto;
   -webkit-app-region: no-drag;
+}
+/* Windows and Linux: the caption buttons (three of 46, fixed at the window's
+   top right, 90-reference-foundation.css) sit over the top-right tile's
+   bar, so its buttons stop before them, as the title bar's do
+   (transcript-frame.css: the conversation's keep 10px more). The expanded
+   pane fills the workspace, so it is that tile too (owner report,
+   2026-10-30: Files' search and close were under − □ ×). In the split view
+   only the last column's top pane is under them (split-view.css), never the
+   first column's primary pane. */
+.app:is(.win32, .linux):not(.web)
+  .code-tile[data-top-right]:not(
+    .split-pane[data-caption-clear] .code-tile,
+    .app[data-split]:not([data-split-cols="1"]) > .workspace .code-tile
+  ) {
+  --top-right-clearance: 138px;
+}
+.app:is(.win32, .linux):not(.web)
+  .code-tile[data-top-right]:not(
+    .split-pane[data-caption-clear] .code-tile,
+    .app[data-split]:not([data-split-cols="1"]) > .workspace .code-tile
+  )
+  > :is(.work-panel, .file-viewer)
+  > header {
+  padding-right: 138px;
+}
+.app:is(.win32, .linux):not(.web)
+  .code-tile[data-top-right]:not(
+    .split-pane[data-caption-clear] .code-tile,
+    .app[data-split]:not([data-split-cols="1"]) > .workspace .code-tile
+  )
+  > .code-chat-content
+  > .chat-header {
+  padding-right: 148px;
 }
 .code-pane-move {
   position: absolute;

@@ -8,8 +8,10 @@ export interface SideChatAvailability {
 }
 
 /**
- * Where a side chat can be started. Chat and Code have it; a Cowork task does
- * not.
+ * Where a side chat can be started (desktop bundle 2.31226.1: "Open a session
+ * to use side chat" when none is open, "Side chat is available once this
+ * session starts. Send your first message to start it." before the first
+ * reply). Chat and Code have it; a Cowork task does not.
  */
 export function sideChatAvailability(
   conversation: Pick<Conversation, "mode" | "threadId" | "turns"> | undefined,
@@ -60,7 +62,8 @@ export function inheritedMessageCount(
 
 /**
  * What "Branch to new chat" puts in the new conversation's composer: the side
- * question and its answer, to carry on from.
+ * question and its answer, to carry on from (source: desktop bundle
+ * 2.31226.1, "Continuing from a side question.").
  */
 export function branchDraft(question: string | undefined, answer: string) {
   return question === undefined

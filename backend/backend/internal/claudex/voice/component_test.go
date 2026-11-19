@@ -29,9 +29,6 @@ type memorySettingRepo struct {
 	values map[string]string
 }
 
-// testUpstreamURL is the transcription service the tests configure.
-const testUpstreamURL = "wss://transcribe.example.com/v1/audio/realtime/transcriptions"
-
 func newMemorySettingRepo() *memorySettingRepo {
 	return &memorySettingRepo{values: map[string]string{}}
 }
@@ -174,17 +171,17 @@ func TestResolveUpstreamNeedsAnEnabledStoredKey(t *testing.T) {
 	require.ErrorIs(t, err, ErrDisabled, "defaults: off, no key")
 
 	w, _ := do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice",
-		`{"transcription":{"upstream_url":"wss://transcribe.example.com/v1/audio/realtime/transcriptions","enabled":true,"api_key":"sk-test-0123456789abcdef","max_session_seconds":60,"max_bytes":64000,"idle_timeout_seconds":7}}`)
+		`{"transcription":{"enabled":true,"api_key":"fixture-1-aaaaaaaaaaaaaa","max_session_seconds":60,"max_bytes":64000,"idle_timeout_seconds":7}}`)
 	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 	up, err := ResolveUpstream()
 	require.NoError(t, err)
-	require.Equal(t, testUpstreamURL, up.URL)
-	require.Equal(t, "sk-test-0123456789abcdef", up.APIKey)
+	require.Equal(t, DefaultUpstreamURL, up.URL)
+	require.Equal(t, "fixture-1-aaaaaaaaaaaaaa", up.APIKey)
 	require.Equal(t, Limits{MaxBytes: 64000, MaxDuration: time.Minute, IdleTimeout: 7 * time.Second}, up.Limits)
 
 	// The stored document holds only the ciphertext.
 	raw := repo.values[SettingKey]
-	require.NotContains(t, raw, "sk-test-0123456789abcdef")
+	require.NotContains(t, raw, "fixture-1-aaaaaaaaaaaaaa")
 	require.Contains(t, raw, `"api_key_ciphertext"`)
 
 	// A different server key cannot read it: 503, not a silent upstream 401.
@@ -213,15 +210,15 @@ func TestAdminKeyIsWriteOnlyAndMasked(t *testing.T) {
 		SampleRate: 16000, Channels: 1, CanStoreAPIKey: true}, d.Billing)
 
 	// Turning on without a key is refused.
-	w, env = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice", `{"transcription":{"upstream_url":"wss://transcribe.example.com/v1/audio/realtime/transcriptions","enabled":true}}`)
+	w, env = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice", `{"transcription":{"enabled":true}}`)
 	require.Equal(t, http.StatusBadRequest, w.Code)
 	require.Equal(t, ReasonInvalid, env.Reason)
 	require.Equal(t, "transcription.api_key", env.Metadata["field"])
 
 	w, env = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice",
-		`{"transcription":{"upstream_url":"wss://transcribe.example.com/v1/audio/realtime/transcriptions","enabled":true,"api_key":"  sk-live-abcdefghijklmnop1234  "}}`)
+		`{"transcription":{"enabled":true,"api_key":"fixture-2-aaaaaaaaaaaaaaaaaaaaaa"}}`)
 	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
-	require.NotContains(t, w.Body.String(), "sk-live-abcdefghijklmnop1234")
+	require.NotContains(t, w.Body.String(), "fixture-3-aaaaaaaaaaaaaaaaaa")
 	require.NotContains(t, w.Body.String(), "ciphertext")
 	d = adminOf(t, env)
 	require.True(t, d.Transcription.Enabled)
@@ -245,14 +242,14 @@ func TestAdminKeyIsWriteOnlyAndMasked(t *testing.T) {
 	require.Equal(t, "transcription.api_key", env.Metadata["field"])
 	require.Equal(t, "required_for_new_upstream", env.Metadata["rule"])
 	w, env = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice",
-		`{"transcription":{"upstream_url":"wss://TRANSCRIBE.example.com/v1/asr/realtime"}}`)
+		`{"transcription":{"upstream_url":"wss://HIWONDER.cc/v1/asr/realtime"}}`)
 	require.Equal(t, http.StatusOK, w.Code, "same host, other path: %s", w.Body.String())
 	w, env = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice",
 		`{"transcription":{"upstream_url":"wss://other.example/v1","api_key":"sk-other-abcdefghijkl5678"}}`)
 	require.Equal(t, http.StatusOK, w.Code, "new host with a new key: %s", w.Body.String())
 	require.Equal(t, "********5678", adminOf(t, env).Transcription.APIKeyMasked)
 	w, _ = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice",
-		`{"transcription":{"upstream_url":"`+testUpstreamURL+`","api_key":"sk-live-abcdefghijklmnop1234"}}`)
+		`{"transcription":{"upstream_url":"`+DefaultUpstreamURL+`","api_key":"fixture-3-aaaaaaaaaaaaaaaaaa"}}`)
 	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 
 	// A short key shows no characters at all.
@@ -274,7 +271,7 @@ func TestAdminKeyIsWriteOnlyAndMasked(t *testing.T) {
 		`{"transcription":{"api_key":"sk-0123456789","clear_api_key":true}}`,
 		`{"transcription":{"model":"gpt-4o-transcribe"}}`,
 		`{"speech":{"enabled":true}}`,
-		`{"transcription":{"upstream_url":"https://transcribe.example.com/v1/audio/realtime/transcriptions"}}`,
+		`{"transcription":{"upstream_url":"https://hiwonder.cc/v1/audio/realtime/transcriptions"}}`,
 		`{"transcription":{"max_bytes":1}}`,
 		`not json`,
 	} {
@@ -288,7 +285,7 @@ func TestAdminRefusesKeysWithoutAFixedEncryptionKey(t *testing.T) {
 	cfg := fixedKeyConfig()
 	cfg.Totp.EncryptionKeyConfigured = false // auto-generated at start-up
 	_, r := newTestComponent(t, core.Deps{SettingRepo: newMemorySettingRepo(), Config: cfg})
-	w, env := do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice", `{"transcription":{"api_key":"sk-test-0123456789abcdef"}}`)
+	w, env := do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice", `{"transcription":{"api_key":"fixture-1-aaaaaaaaaaaaaa"}}`)
 	require.Equal(t, http.StatusBadRequest, w.Code)
 	require.Equal(t, ReasonEncryptionKeyMissing, env.Reason)
 
@@ -299,7 +296,7 @@ func TestAdminRefusesKeysWithoutAFixedEncryptionKey(t *testing.T) {
 	require.Contains(t, strings.Join(d.Warnings, "\n"), "TOTP_ENCRYPTION_KEY")
 
 	_, r = newTestComponent(t, core.Deps{SettingRepo: newMemorySettingRepo()}) // no config at all
-	w, env = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice", `{"transcription":{"api_key":"sk-test-0123456789abcdef"}}`)
+	w, env = do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice", `{"transcription":{"api_key":"fixture-1-aaaaaaaaaaaaaa"}}`)
 	require.Equal(t, http.StatusBadRequest, w.Code)
 	require.Equal(t, ReasonEncryptionKeyMissing, env.Reason)
 }
@@ -325,7 +322,7 @@ func TestAdminWarnings(t *testing.T) {
 	require.Equal(t, []string{"Group prices could not be checked; try again later."}, adminOf(t, env).Warnings)
 
 	// A key stored under another encryption key.
-	repo.values[SettingKey] = `{"transcription":{"upstream_url":"wss://transcribe.example.com/v1/audio/realtime/transcriptions","enabled":true,"api_key_ciphertext":"bm90IGEgcmVhbCBjaXBoZXJ0ZXh0IGF0IGFsbA==","api_key_hint":"abcd"}}`
+	repo.values[SettingKey] = `{"transcription":{"enabled":true,"api_key_ciphertext":"fixture-4-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","api_key_hint":"abcd"}}`
 	groups.err = nil
 	groups.groups = nil
 	_, env = do(t, r, http.MethodGet, "/api/v1/admin/claudex/voice", "")
@@ -350,7 +347,7 @@ func TestBootstrapSection(t *testing.T) {
 		"max_session_seconds":0,"max_bytes":0,"idle_timeout_seconds":0},"available":{"transcription":false}}`, string(b))
 
 	w, _ := do(t, r, http.MethodPut, "/api/v1/admin/claudex/voice",
-		`{"transcription":{"upstream_url":"wss://transcribe.example.com/v1/audio/realtime/transcriptions","enabled":true,"api_key":"sk-test-0123456789abcdef","max_session_seconds":90,"max_bytes":2880000,"idle_timeout_seconds":20}}`)
+		`{"transcription":{"enabled":true,"api_key":"fixture-1-aaaaaaaaaaaaaa","max_session_seconds":90,"max_bytes":2880000,"idle_timeout_seconds":20}}`)
 	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 	sections, err = c.BootstrapSections(context.Background(), nil)
 	require.NoError(t, err)
@@ -359,7 +356,7 @@ func TestBootstrapSection(t *testing.T) {
 		"audio":{"format":"pcm_s16le","sample_rate":16000,"channels":1},
 		"max_session_seconds":90,"max_bytes":2880000,"idle_timeout_seconds":20},"available":{"transcription":true}}`, string(b))
 	require.NotContains(t, string(b), "sk-test")
-	require.NotContains(t, string(b), "transcribe.example.com", "the upstream URL stays on the server")
+	require.NotContains(t, string(b), "hiwonder", "the upstream URL stays on the server")
 }
 
 func TestRecordSession(t *testing.T) {

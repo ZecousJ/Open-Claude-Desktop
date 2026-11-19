@@ -19,9 +19,10 @@ const kindLabels: Record<AttentionKind, string> = {
 };
 
 /**
- * A session's place on the landing: left out when archived, pinned or
- * incognito; blocked while it waits on the person; ready for review when its
- * pull request is new to them; unread; working while it runs.
+ * A session's place on the landing (live claude.ai bundle, 2026-10-15,
+ * cc43287c9 `cH`/`dH`): left out when archived, pinned or incognito;
+ * blocked while it waits on the person; ready for review when its pull
+ * request is new to them; unread; working while it runs.
  */
 export function attentionKind(
   c: Conversation,
@@ -60,9 +61,9 @@ export function attentionSessions(
 const weekMs = 6048e5;
 
 /**
- * Projects with something going on: an unread or running session, or activity
- * in the last 7 days; unread first, then running, then recent, newest first,
- * then by name.
+ * Projects with something going on (cc43287c9 `GV`): an unread or running
+ * session, or activity in the last 7 days; unread first, then running,
+ * then recent, newest first, then by name.
  */
 export function landingProjects(
   projects: readonly Project[],
@@ -162,10 +163,11 @@ function Section({
 }
 
 /**
- * The Code landing's sections under the composer: Sessions that need the person
- * (Needs input, Ready for review, Unread, Working) with Mark all as read,
- * Projects with something going on, and the sessions' Pull requests; each shows
- * 3 to 5 rows by the window's height, then Show {count} more. A section with
+ * The Code landing's sections under the composer (live claude.ai bundle,
+ * 2026-10-15, cc43287c9 `kH`): Sessions that need the person (Needs input,
+ * Ready for review, Unread, Working) with Mark all as read, Projects with
+ * something going on, and the sessions' Pull requests; each shows 3 to 5
+ * rows by the window's height, then Show {count} more. A section with
  * nothing in it is left out.
  */
 export function CodeLanding({

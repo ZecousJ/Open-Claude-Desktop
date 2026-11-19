@@ -5,4 +5,7 @@ export const memoryToolNamespace = "claudex_memory";
 
 /** A memory tool call (its row, MemoryToolView, loads when one shows). */
 export const isMemoryTool = (item: Item) =>
-  item.type === "dynamicToolCall" && item.namespace === memoryToolNamespace;
+  (item.type === "dynamicToolCall" && item.namespace === memoryToolNamespace) ||
+  (item.type === "mcpToolCall" &&
+    item.server === "claudex_chat_history" &&
+    (item.tool === "conversation_search" || item.tool === "recent_chats"));

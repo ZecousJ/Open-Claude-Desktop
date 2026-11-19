@@ -15,6 +15,7 @@ import * as brokerAccess from "./broker-access";
 import { installMethods } from "./install-methods";
 import * as brokerActions from "./broker-actions";
 import * as brokerDispatch from "./broker-dispatch";
+import { appKey } from "./app-tiers";
 
 /** What the broker needs to know about a conversation. */
 export interface BrokerConversation {
@@ -99,6 +100,7 @@ interface TurnState {
 
 interface PendingRequest {
   request: ComputerUseAccessRequest;
+  turnId: string | undefined;
   finish(answer: { allow: string[] } | "deny"): void;
 }
 
@@ -137,10 +139,9 @@ export class ComputerUseBroker {
   // Availability.
 
   /** Why computer use can't run at all, or undefined when it can. */
-  unavailableReason(): "policy" | "platform" | "driver" | undefined {
+  unavailableReason(): "platform" | "driver" | undefined {
     if (this.deps.platform !== "darwin" && this.deps.platform !== "win32")
       return "platform";
-    if (!this.deps.policy().enabled) return "policy";
     if (!this.deps.driverInstalled()) return "driver";
     return undefined;
   }
@@ -151,14 +152,10 @@ export class ComputerUseBroker {
     { permissions = true }: { permissions?: boolean } = {},
   ): string | undefined {
     const reason = this.unavailableReason();
-    if (reason === "policy")
-      return "Computer use is turned off by your administrator.";
     if (reason) return "Computer use isn't available on this computer.";
     if (!this.deps.settings().enabled)
       return "Computer use is turned off in Settings → System.";
     if (!conversation) return "This conversation can't use computer use.";
-    if (conversation.mode === "chat")
-      return "Computer use works in Code and Cowork conversations only.";
     if (conversation.remote)
       return "Computer use only works for conversations that run on this computer.";
     if (conversation.unattended) return "Routines can't use computer use.";
@@ -204,6 +201,23 @@ export class ComputerUseBroker {
 
   currentActivity() {
     return this.activity;
+  }
+
+  async revokeGrant(conversationId: string, appId: string) {
+    const key = appKey(appId);
+    if (!this.grants.get(conversationId)?.delete(key)) return;
+    this.scales.get(conversationId)?.delete(key);
+    if (
+      this.activity?.conversationId === conversationId &&
+      this.activity.app &&
+      appKey(this.activity.app.id) === key
+    )
+      this.setActivity(null);
+    if (
+      this.control?.conversationId === conversationId &&
+      (!this.control.app || appKey(this.control.app.id) === key)
+    )
+      await this.releaseControl();
   }
 
   // -------------------------------------------------------------------------

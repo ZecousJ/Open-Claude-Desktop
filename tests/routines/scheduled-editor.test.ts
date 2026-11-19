@@ -5,7 +5,7 @@ import { createElement as h, useState, act } from "react";
 import { routineDom } from "../support/routine-dom";
 import { desktopHost, webHost } from "../../shared/host";
 import { HostContext } from "../../src/host/HostContext";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import { ScheduledTaskDialog } from "../../src/collections/routines/ScheduledTaskDialog";
 import { RoutineEditor } from "../../src/collections/routines/RoutineEditor";
 import { RoutineContextFields } from "../../src/collections/routines/RoutineContextFields";
@@ -184,7 +184,8 @@ test("the conditional local description is required, while explicit-empty data r
         undefined,
         "source Vl requires a rendered local description",
       );
-      // Create stays enabled; pressing it marks the empty field.
+      // Create stays enabled; pressing it marks the empty field (live
+      // claude.ai bundle, 2026-10-21, c97b955f1: Tc).
       assert.equal(
         env.document.querySelector<HTMLButtonElement>('button[type="submit"]')!
           .disabled,

@@ -51,6 +51,7 @@ export interface UseConversationListActionsKit {
             archived?: boolean | undefined;
             projectId?: string | null | undefined;
             unread?: boolean | undefined;
+            knowledgeBases?: string[] | undefined;
             connectorOverrides?: Record<string, boolean> | undefined;
             connectorToolOverrides?:
               | Readonly<Record<string, Readonly<Record<string, boolean>>>>
@@ -229,21 +230,22 @@ export function useConversationListActions(kit: UseConversationListActionsKit) {
   } = kit;
   /**
    * Ctrl+Alt+P (Cmd+Option+P on macOS) pins or unpins the focused row: the
-   * original's "Pin / unpin session" key. `code`, because Option+P types
-   * another character on macOS.
+   * original's "Pin / unpin session" key (R-0126). `code`, because Option+P
+   * types another character on macOS.
    */
   const keyboardPin = (event: KeyboardEvent<HTMLElement>, c: Conversation) => {
     if (!event.altKey || event.shiftKey || !(event.ctrlKey || event.metaKey))
       return;
     if (event.code !== "KeyP") return;
     event.preventDefault();
-    // A held chord pins once.
+    // A held chord pins once (live claude.ai bundle, 2026-10-12).
     if (event.repeat) return;
     togglePin(c);
   };
 
-  // Move up and Move down on a pinned Code row: one place along Pinned, as a
-  // drop before the row above or after the row below.
+  // Move up and Move down on a pinned Code row: one place along Pinned, as
+  // a drop before the row above or after the row below (live claude.ai
+  // bundle, 2026-10-12: pinReorder).
   const pinReorderFor = (c: Conversation): PinReorder | undefined => {
     if (mode !== "code" || !c.pinned) return undefined;
     const index = pinned.findIndex((row) => row.id === c.id);
@@ -294,8 +296,10 @@ export function useConversationListActions(kit: UseConversationListActionsKit) {
       rowsFor={rowsFor}
     />
   );
-  // The copy of the dragged row that follows the pointer. Over a custom group
-  // the copy reads where a release takes it.
+  // The copy of the dragged row that follows the pointer.
+  // Over a custom group the copy reads where a release takes it (live
+  // claude.ai bundle, 2026-10-12: "Move to {label}", and "Ungroup" over
+  // Ungrouped, on the copy's own fill).
   const ghost = drag && (
     <DragGhost
       ghost={drag.ghost}
@@ -330,7 +334,9 @@ export function useConversationListActions(kit: UseConversationListActionsKit) {
         )
       : undefined;
   /**
-   * "Show N more" while rows are held back, "Show less" once they are all out.
+   * "Show N more" while rows are held back, "Show less" once they are all
+   * out (desktop bundle 2.31226.1: the row's labels and the announcements
+   * for readers).
    */
   const showMore = (
     section: "pinned" | "recent",
@@ -376,9 +382,9 @@ export function useConversationListActions(kit: UseConversationListActionsKit) {
   /**
    * The pinned rows. An empty section being dragged into says so (desktop
    * bundle 2.31226.1: the Pin row reading "Drop here", and "Let go" while a
-   * release would pin); after the release the row stands on it until the list
-   * has it. While the drag tip is up over an empty section, the row reads "Drag
-   * to pin".
+   * release would pin); after the release the row stands on it until the
+   * list has it. While the drag tip is up over an empty section, the row
+   * reads "Drag to pin" (live claude.ai bundle, 2026-10-12).
    */
   const pinnedList = () => (
     <div className="pinned-rows">

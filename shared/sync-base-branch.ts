@@ -1,6 +1,7 @@
 /**
  * Sync with base branch (electron/sync-base-branch.ts): the tool's names, its
- * answer, and the transcript row's words.
+ * answer, and the transcript row's words (live claude.ai bundle, 2026-10-15,
+ * c52b02f3f `$t`).
  */
 export const syncBaseNamespace = "claudex_host";
 export const syncBaseTool = "sync_with_base_branch";
@@ -9,14 +10,16 @@ export const discardKeptWorktreeTool = "discard_kept_worktree";
 export const cleanUpWorktreesTool = "clean_up_worktrees";
 /** Auto-fix and auto-archive for the session's pull request. */
 export const setPrMonitorTool = "set_pr_monitor";
+export const bindPrTool = "bind_pr";
+export const unbindPrTool = "unbind_pr";
 /** The first-turn Code setup question for choosing the working branch. */
 export const setupQuestionTool = "setup_question";
 export const setupQuestionServer = "claudex_setup_question";
 
 /**
- * What Claude asks to change, as the original phrases it: "turn on auto-fix and
- * turn off auto-archive for pull request #12", and the line on what
- * auto-archive does.
+ * What Claude asks to change, as the original phrases it (live claude.ai
+ * bundle, 2026-10-15, c1c1ec7b9): "turn on auto-fix and turn off
+ * auto-archive for pull request #12", and the line on what auto-archive does.
  */
 export function prMonitorQuestion(
   number: number,

@@ -20,9 +20,7 @@ func TestPublishedScreenshotPersistsAndRevokesWithShare(t *testing.T) {
 	data := "data:image/png;base64," + base64.StdEncoding.EncodeToString(imageBytes.Bytes())
 	var body map[string]any
 	require.NoError(t, json.Unmarshal([]byte(artifactBody("screenshot")), &body))
-	snapshot, ok := body["snapshot"].(map[string]any)
-	require.True(t, ok)
-	snapshot["screenshot"] = data
+	body["snapshot"].(map[string]any)["screenshot"] = data
 	raw, err := json.Marshal(body)
 	require.NoError(t, err)
 	res := f.do(http.MethodPost, "/api/v1/claudex/shares", string(raw))
@@ -45,8 +43,7 @@ func TestScreenshotRejectsInvalidDataAndPrivateShareDoesNotLeak(t *testing.T) {
 	f, _ := inviteFixture(t)
 	var body map[string]any
 	require.NoError(t, json.Unmarshal([]byte(artifactBody("private-screenshot")), &body))
-	snapshot, ok := body["snapshot"].(map[string]any)
-	require.True(t, ok)
+	snapshot := body["snapshot"].(map[string]any)
 	for _, data := range []string{"https://example.com/pixel.png", "data:image/png;base64,AAAA"} {
 		snapshot["screenshot"] = data
 		raw, err := json.Marshal(body)

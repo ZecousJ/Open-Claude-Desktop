@@ -78,18 +78,21 @@ export function compilePolicy(
     return WEB_PORTS.includes(port);
   };
 
+  const checkExcludedAddress = (value: bigint): Verdict => {
+    const v4 = embeddedV4(value);
+    const forms = v4 === undefined ? [value] : [value, V4_MAPPED | v4];
+    if (forms.some((form) => ownValues.includes(form)))
+      return { ok: false, reason: "own-address" };
+    if (forms.some((form) => deniedRanges.some((range) => inRange(form, range))))
+      return { ok: false, reason: "denied-address" };
+    return { ok: true };
+  };
+
   const checkAddress = (address: string): Verdict => {
     const value = ipToBigInt(address);
     if (value === undefined) return { ok: false, reason: "reserved" };
     const special = forbiddenAddress(address);
-    if (special) return { ok: false, reason: special };
-    const v4 = embeddedV4(value);
-    const forms = v4 === undefined ? [value] : [value, V4_MAPPED | v4];
-    if (forms.some((f) => ownValues.includes(f)))
-      return { ok: false, reason: "own-address" };
-    if (forms.some((f) => deniedRanges.some((r) => inRange(f, r))))
-      return { ok: false, reason: "denied-address" };
-    return { ok: true };
+    return special ? { ok: false, reason: special } : checkExcludedAddress(value);
   };
 
   const checkResolved = (address: string): Verdict => {
@@ -97,11 +100,10 @@ export function compilePolicy(
     if (
       value !== undefined &&
       level !== "full" &&
+      forbiddenAddress(address) === "reserved" &&
       fakeRanges.some((r) => inRange(value, r))
     ) {
-      if (ownValues.includes(value))
-        return { ok: false, reason: "own-address" };
-      return { ok: true };
+      return checkExcludedAddress(value);
     }
     return checkAddress(address);
   };

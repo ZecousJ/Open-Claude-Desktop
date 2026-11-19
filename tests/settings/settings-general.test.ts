@@ -83,7 +83,7 @@ test("notification switches read the preferences the desktop integration uses", 
   ].map((match) => [match[1], match[2]]);
   assert.deepEqual(switches, [
     ["Response completions", "true"],
-    // Scheduled tasks is on by default.
+    // R-设置-General-顶部: Scheduled tasks is on by default.
     ["Scheduled tasks", "true"],
     // A Code session's own notifications are off until turned on; Code
     // approval banners are independently persisted; unavailable cloud email
@@ -148,7 +148,7 @@ test("Settings search finds pages by their keywords and rows by their phrases", 
   assert.deepEqual(searchSettings("terse", pages, settingsSearchIndex), [
     { kind: "page", tab: "code", row: "Output style" },
   ]);
-  // The newer rows' phrases.
+  // Live claude.ai bundle, 2026-10-12: the newer rows' phrases.
   assert.deepEqual(searchSettings("monospace", pages, settingsSearchIndex), [
     { kind: "page", tab: "code", row: "Code font" },
   ]);
@@ -328,8 +328,8 @@ test("a search result scrolls to its row, or to the row holding the typed words"
 test("the model is told the name and work the user gave in Account", () => {
   assert.equal(profileInstructions({}), "");
   assert.equal(
-    profileInstructions({ name: "  Ada ", workType: "Design" }),
-    "The user's name is \"Ada\". Use it only where a person naturally would; never open a reply with it. The user's work: design.",
+    profileInstructions({ name: "  Zecous ", workType: "Design" }),
+    "The user's name is \"Zecous\". Use it only where a person naturally would; never open a reply with it. The user's work: design.",
   );
   assert.equal(
     profileInstructions({ name: 'Ann "Boss"\nLee', workType: "Other" }),

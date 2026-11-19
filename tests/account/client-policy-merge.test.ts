@@ -96,7 +96,7 @@ test("until the service answers, local MCP editing, Developer Mode and computer 
   assert.equal(localMcpEditing, false);
   assert.equal(developerModeEnabled, false);
   assert.equal(pending, true);
-  assert.equal(computerUse?.enabled, false);
+  assert.equal(computerUse?.allowFullControl, false);
   assert.deepEqual(rest, open);
   const servers = { docs: { command: "docs-mcp", enabled: true } };
   const before = { ...modeSettings, mcpServers: servers };

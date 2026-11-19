@@ -187,6 +187,37 @@ test("a failed unaccepted turn is not a delivery receipt", async (t) => {
   assert.equal(sends, 2);
   assert.equal(c.prAutoFix!.delivered, undefined);
 });
+test("CI wake uses an offered effort and retries a rejected setup", async (t) => {
+  const tick = clock(t);
+  const c = session();
+  const attempts: Input[] = [];
+  const h = context(c, async () => result(), async (input) => {
+    attempts.push(input);
+    if (attempts.length === 1) {
+      return { ...c, turns: [...c.turns, {
+        id: "rejected-wake",
+        prompt: input.text,
+        attachments: [],
+        items: [],
+        status: "failed",
+        sendFailed: true,
+        notificationTrigger: input.notificationTrigger,
+        notificationKey: input.notificationKey,
+        createdAt: Date.now(),
+      }] };
+    }
+    return c;
+  });
+  t.after(h.stop);
+  h.ctx.store.settings.codeEffort = "medium";
+  h.ctx.engine.modelEfforts = () => ["low", "high"];
+  await tick();
+  assert.equal(c.prAutoFix?.delivered, undefined);
+  await tick();
+  await tick();
+  assert.deepEqual(attempts.map(input => input.effort), ["low", "low"]);
+  assert.deepEqual(c.prAutoFix?.delivered, ["f:one:test"]);
+});
 test("pending cloud facts cannot wake an archived, removed or newly disabled session", async (t) => {
   const tick = clock(t);
   for (const change of [
@@ -208,6 +239,7 @@ test("pending cloud facts cannot wake an archived, removed or newly disabled ses
       },
     );
     const pending = tick();
+    await Promise.resolve();
     if (change === "archived") c.archived = true;
     if (change === "removed") h.data.conversations = [];
     if (change === "off") c.prAutoFix = { ci: false, comments: false };

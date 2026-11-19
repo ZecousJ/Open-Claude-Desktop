@@ -78,7 +78,7 @@ func TestOpenAIUpstreamAccessStateClassification(t *testing.T) {
 				return
 			}
 			require.True(t, (&OpenAIGatewayService{}).shouldFailoverOpenAIUpstreamResponse(newOpenAIUpstreamErrorTestAccount(), http.StatusForbidden, "", body))
-			require.True(t, shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusForbidden, body))
+			require.True(t, (&OpenAIGatewayService{}).shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusForbidden, body))
 
 			err := newOpenAIUpstreamFailoverError(http.StatusForbidden, nil, body, "", true)
 			require.True(t, err.IsCredentialFailure())
@@ -96,7 +96,7 @@ func TestOpenAIUpstreamAccessStateClassification(t *testing.T) {
 func TestOpenAIUpstreamAccessStateDoesNotScanEchoedJSON(t *testing.T) {
 	body := []byte(`{"error":{"code":"invalid_request_error","message":"Invalid input"},"echo":{"prompt":"my account is disabled"}}`)
 	require.False(t, isOpenAIUpstreamAccessStateError("", body))
-	require.False(t, shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusBadRequest, body))
+	require.False(t, (&OpenAIGatewayService{}).shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusBadRequest, body))
 }
 
 func TestOpenAIHTTPAccessStateDoesNotTrustBadRequestMessage(t *testing.T) {
@@ -106,7 +106,7 @@ func TestOpenAIHTTPAccessStateDoesNotTrustBadRequestMessage(t *testing.T) {
 	require.False(t, isOpenAIUpstreamAccessStateError("", body), "free-form stream messages are not durable account evidence")
 	require.False(t, isOpenAIHTTPUpstreamAccessStateError(http.StatusBadRequest, "", body))
 	require.False(t, svc.shouldFailoverOpenAIUpstreamResponse(newOpenAIUpstreamErrorTestAccount(), http.StatusBadRequest, "", body))
-	require.False(t, shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusBadRequest, body))
+	require.False(t, (&OpenAIGatewayService{}).shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusBadRequest, body))
 
 	err := newOpenAIUpstreamFailoverError(http.StatusBadRequest, nil, body, "", false)
 	require.False(t, err.IsCredentialFailure())
@@ -190,7 +190,7 @@ func TestOpenAICyberPolicyWrapped5xxNeverFailsOver(t *testing.T) {
 	body := []byte(`{"error":{"code":"cyber_policy","message":"blocked"}}`)
 	svc := &OpenAIGatewayService{}
 	require.False(t, svc.shouldFailoverOpenAIUpstreamResponse(newOpenAIUpstreamErrorTestAccount(), http.StatusBadGateway, "wrapped upstream failure", body))
-	require.False(t, shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusBadGateway, body))
+	require.False(t, (&OpenAIGatewayService{}).shouldFailoverOpenAIPassthroughResponse(&Account{Type: AccountTypeOAuth}, http.StatusBadGateway, body))
 }
 
 func TestOpenAICapacityFailoverCarriesSafeTerminalResponse(t *testing.T) {
@@ -479,6 +479,38 @@ func TestOpenAIStreamOAuthLike429GetsDeadlineWithoutImmediateRuntimeBlock(t *tes
 			require.True(t, err.RetryableOnSameAccount)
 			require.False(t, err.SameAccountRetryDeadline.IsZero())
 			require.False(t, svc.isOpenAIAccountRuntimeBlocked(account))
+		})
+	}
+}
+
+func TestOpenAIOpaqueInvalidRequestFailoverScope(t *testing.T) {
+	const opaque = `"code":"invalid_request","message":"请求参数不符合要求，请检查错误字段和输入内容。","type":"invalid_request_error"`
+	const body = `{"error":{` + opaque + `}}`
+	managed := &OpenAIGatewayService{accountRepo: &openAIStream403AccountRepo{}}
+	direct := &OpenAIGatewayService{}
+	account := newOpenAIUpstreamErrorTestAccount()
+	for _, tt := range []struct {
+		name    string
+		service *OpenAIGatewayService
+		account *Account
+		body    string
+		want    bool
+	}{
+		{name: "managed", service: managed, account: account, body: body, want: true},
+		{name: "direct", service: direct, account: account, body: body},
+		{name: "missing account", service: managed, body: body},
+		{name: "anthropic account", service: managed, account: &Account{Platform: PlatformAnthropic}, body: body},
+		{name: "named parameter", service: managed, account: account, body: `{"error":{` + opaque + `,"param":"input"}}`},
+		{name: "error detail", service: managed, account: account, body: `{"error":{` + opaque + `,"details":[{"field":"input"}]}}`},
+		{name: "top level detail", service: managed, account: account, body: `{"error":{` + opaque + `},"detail":"Invalid image URL"}`},
+		{name: "context window", service: managed, account: account, body: `{"error":{"code":"context_length_exceeded","message":"Maximum context length exceeded"}}`},
+		{name: "cyber policy", service: managed, account: account, body: `{"error":{"code":"cyber_policy","message":"Blocked by policy"}}`},
+		{name: "specific message", service: managed, account: account, body: `{"error":{"code":"invalid_request","type":"invalid_request_error","message":"Invalid input type for image_url"}}`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			body := []byte(tt.body)
+			require.Equal(t, tt.want, tt.service.shouldFailoverOpenAIUpstreamResponse(tt.account, http.StatusBadRequest, extractUpstreamErrorMessage(body), body))
+			require.Equal(t, tt.want, tt.service.shouldFailoverOpenAIPassthroughResponse(tt.account, http.StatusBadRequest, body))
 		})
 	}
 }

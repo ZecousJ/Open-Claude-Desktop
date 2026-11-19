@@ -26,9 +26,9 @@ import {
 import type { MenuEntry, Item, MenuSize } from "./Menu";
 
 /**
- * A searchable submenu's rows with its create row: "New project" and a rule on
- * top while nothing is typed, "Create project {name}" at the end once something
- * is.
+ * A searchable submenu's rows with its create row: "New project" and a rule
+ * on top while nothing is typed, "Create project {name}" at the end once
+ * something is (live claude.ai bundle, 2026-10-12).
  */
 export function withCreateRow(
   entries: MenuEntry[],
@@ -103,8 +103,10 @@ export function Submenu({
   const [query, setQuery] = useState("");
   const search = useRef<HTMLInputElement>(null);
   const [place, setPlace] = useState({ left, top });
-  // Inside the window: on the parent's left when there is no room on its right,
-  // and moved up when its rows would run past the bottom.
+  // Inside the window: on the parent's left when there is no room on its
+  // right, and moved up when its rows would run past the bottom (the
+  // original's popup flips and shifts, collisionPadding 10: Base UI
+  // `collisionAvoidance`, live claude.ai bundle, 2026-10-16).
   useLayoutEffect(() => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;

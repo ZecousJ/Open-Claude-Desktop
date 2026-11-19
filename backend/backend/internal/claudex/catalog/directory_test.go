@@ -19,7 +19,7 @@ func directoryFixture(t *testing.T) (*gin.Engine, sqlmock.Sqlmock) {
 	t.Helper()
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, mock.ExpectationsWereMet()); _ = db.Close() })
+	t.Cleanup(func() { require.NoError(t, mock.ExpectationsWereMet()); db.Close() })
 	c := New(&core.Env{Deps: core.Deps{DB: db}})
 	r := gin.New()
 	r.Use(func(g *gin.Context) { g.Set(string(middleware.ContextKeyUser), middleware.AuthSubject{UserID: 7}) })
@@ -38,6 +38,14 @@ func directoryRequest(r *gin.Engine, method, path, body string) *httptest.Respon
 
 func validSubmission() directoryInput {
 	return directoryInput{Kind: "plugin", Name: "Example", Slug: "example", URL: "https://example.com/plugins", Description: "Example", Email: "me@example.com", TermsAcknowledged: true, Tools: []string{}}
+}
+
+func validDirectoryInput(input directoryInput, submit bool) bool {
+	return validDirectoryDraft(input) && (!submit || directoryReady(input))
+}
+
+func directorySubmissionRows() *sqlmock.Rows {
+	return sqlmock.NewRows(strings.Split(directoryColumns, ", "))
 }
 
 func TestDirectoryURLConfiguration(t *testing.T) {
@@ -84,6 +92,22 @@ func TestDirectoryValidation(t *testing.T) {
 	require.False(t, validDirectoryInput(input, false))
 }
 
+func TestDirectoryRejectsCredentialsInDraftMetadata(t *testing.T) {
+	r, _ := directoryFixture(t)
+	for _, input := range []string{
+		`{"kind":"mcp","url":"https://user:secret@example.test"}`,
+		`{"kind":"mcp","original":{"data":{"server_spec":{"clientSecret":"private"}}}}`,
+		`{"kind":"mcp","original":{"data":{"remote":{"user_config":{"password":"private"}}}}}`,
+		`{"kind":"mcp","original":{"submission_data":{"test_server_url":"https://user:secret@example.test/mcp"}}}`,
+		`{"kind":"plugin","original":{"privacy_policy_url":"https://user:secret@example.test/privacy"}}`,
+		`{"kind":"mcp","original":[]}`,
+		`{"kind":"mcp","original":{"description":"` + strings.Repeat("x", 128*1024) + `"}}`,
+	} {
+		result := directoryRequest(r, "POST", "/user/directory/submissions", `{"input":`+input+`}`)
+		require.Equal(t, 400, result.Code, result.Body.String())
+	}
+}
+
 func TestDirectoryConnectorMetadata(t *testing.T) {
 	input := validSubmission()
 	input.SupportURL = "https://example.com/help"
@@ -105,17 +129,16 @@ func TestDirectoryCreateEditAndReview(t *testing.T) {
 	r, mock := directoryFixture(t)
 	id := "12345678-1234-4234-8234-123456789012"
 	input, _ := json.Marshal(validSubmission())
-	columns := []string{"id", "user_id", "input", "status", "reviewer_note", "updated_at"}
 	rows := func(status, note string) *sqlmock.Rows {
-		return sqlmock.NewRows(columns).AddRow(id, 7, input, status, note, time.Now())
+		return directorySubmissionRows().AddRow(id, 7, input, status, note, time.Now(), time.Now(), nil)
 	}
 	mock.ExpectQuery(`INSERT INTO claudex_directory_submissions`).WithArgs(sqlmock.AnyArg(), int64(7), input, "submitted").WillReturnRows(rows("submitted", ""))
 	result := directoryRequest(r, "POST", "/user/directory/submissions", `{"input":`+string(input)+`,"submit":true}`)
 	require.Equal(t, 200, result.Code, result.Body.String())
-	mock.ExpectQuery(`UPDATE claudex_directory_submissions SET input=\$3,status=\$4,updated_at=NOW\(\) WHERE id=\$1 AND user_id=\$2 AND status IN \('draft','submitted'\) AND withdrawn_at IS NULL`).WithArgs(id, int64(7), input, "submitted").WillReturnError(sql.ErrNoRows)
+	mock.ExpectQuery(`UPDATE claudex_directory_submissions SET input=CASE`).WithArgs(id, int64(7), input, "submitted", true, false).WillReturnError(sql.ErrNoRows)
 	result = directoryRequest(r, "PUT", "/user/directory/submissions/"+id, `{"input":`+string(input)+`,"submit":true}`)
 	require.Equal(t, 409, result.Code)
-	mock.ExpectQuery(`UPDATE claudex_directory_submissions SET status=\$2,reviewer_note=\$3,reviewer_id=\$4`).WithArgs(id, "approved", "Looks good", int64(7), nil).WillReturnRows(rows("approved", "Looks good"))
+	mock.ExpectQuery(`UPDATE claudex_directory_submissions SET status=\$2,reviewer_note=\$3,reviewer_id=\$4`).WithArgs(id, "approved", "Looks good", int64(7), nil, nil).WillReturnRows(rows("approved", "Looks good"))
 	result = directoryRequest(r, "PUT", "/admin/directory/submissions/"+id+"/review", `{"status":"approved","note":"Looks good"}`)
 	require.Equal(t, 200, result.Code, result.Body.String())
 	require.Contains(t, result.Body.String(), `"reviewerNote":"Looks good"`)
@@ -124,10 +147,10 @@ func TestDirectoryCreateEditAndReview(t *testing.T) {
 func TestDirectoryUserIsolationPublicationAndWithdrawal(t *testing.T) {
 	r, mock := directoryFixture(t)
 	id := "12345678-1234-4234-8234-123456789012"
-	mock.ExpectQuery(`WHERE withdrawn_at IS NULL AND user_id=\$1`).WithArgs(int64(7)).WillReturnRows(sqlmock.NewRows([]string{"id", "user_id", "input", "status", "reviewer_note", "updated_at"}))
+	mock.ExpectQuery(`WHERE withdrawn_at IS NULL AND user_id=\$1`).WithArgs(int64(7)).WillReturnRows(directorySubmissionRows())
 	require.Equal(t, 200, directoryRequest(r, "GET", "/user/directory/submissions", "").Code)
 	input, _ := json.Marshal(validSubmission())
-	mock.ExpectQuery(`WHERE status='approved' AND withdrawn_at IS NULL`).WillReturnRows(sqlmock.NewRows([]string{"id", "input", "updated_at"}).AddRow(id, input, time.Now()))
+	mock.ExpectQuery(`WHERE status='approved' AND published_at IS NOT NULL AND withdrawn_at IS NULL`).WillReturnRows(sqlmock.NewRows([]string{"id", "input", "updated_at"}).AddRow(id, input, time.Now()))
 	result := directoryRequest(r, "GET", "/user/directory", "")
 	require.Equal(t, 200, result.Code)
 	require.Contains(t, result.Body.String(), "https://example.com/plugins")
@@ -159,6 +182,25 @@ func TestSkillServiceScan(t *testing.T) {
 	require.Contains(t, result.Body.String(), "didn’t pass the security scan")
 }
 
+func TestSkillServiceScanAcceptsThirtyMiB(t *testing.T) {
+	r, _ := directoryFixture(t)
+	for _, tc := range []struct {
+		bytes  int
+		status int
+	}{
+		{30 * 1024 * 1024, 200},
+		{30*1024*1024 + 1, 413},
+	} {
+		body, err := json.Marshal(map[string]any{
+			"name":  "example",
+			"files": []map[string]any{{"path": "SKILL.md", "data": make([]byte, tc.bytes)}},
+		})
+		require.NoError(t, err)
+		result := directoryRequest(r, "POST", "/user/skills/scan", string(body))
+		require.Equal(t, tc.status, result.Code, result.Body.String())
+	}
+}
+
 func TestDirectoryReviewGuards(t *testing.T) {
 	r, mock := directoryFixture(t)
 	id := "12345678-1234-4234-8234-123456789012"
@@ -166,7 +208,7 @@ func TestDirectoryReviewGuards(t *testing.T) {
 		result := directoryRequest(r, "PUT", "/admin/directory/submissions/"+id+"/review", `{"status":"`+status+`","note":"feedback"}`)
 		require.Equal(t, 400, result.Code)
 	}
-	mock.ExpectQuery(`WHERE id=\$1 AND status <> 'draft' AND withdrawn_at IS NULL`).WithArgs(id, "in_review", "Reviewing", int64(7), nil).WillReturnError(sql.ErrNoRows)
+	mock.ExpectQuery(`WHERE id=\$1 AND status <> 'draft' AND withdrawn_at IS NULL`).WithArgs(id, "in_review", "Reviewing", int64(7), nil, nil).WillReturnError(sql.ErrNoRows)
 	result := directoryRequest(r, "PUT", "/admin/directory/submissions/"+id+"/review", `{"status":"in_review","note":"Reviewing"}`)
 	require.Equal(t, 404, result.Code)
 	mock.ExpectExec(`WHERE id=\$1 AND user_id=\$2 AND withdrawn_at IS NULL`).WithArgs(id, int64(7)).WillReturnResult(sqlmock.NewResult(0, 1))
@@ -183,15 +225,14 @@ func TestDirectoryCurationIsReviewerOwnedAndPublished(t *testing.T) {
 	input.Curation = &curation
 	curated, _ := json.Marshal(input)
 	metadata, _ := json.Marshal(curation)
-	columns := []string{"id", "user_id", "input", "status", "reviewer_note", "updated_at"}
-	mock.ExpectQuery(`INSERT INTO claudex_directory_submissions`).WithArgs(sqlmock.AnyArg(), int64(7), clean, "submitted").WillReturnRows(sqlmock.NewRows(columns).AddRow(id, 7, clean, "submitted", "", time.Now()))
+	mock.ExpectQuery(`INSERT INTO claudex_directory_submissions`).WithArgs(sqlmock.AnyArg(), int64(7), clean, "submitted").WillReturnRows(directorySubmissionRows().AddRow(id, 7, clean, "submitted", "", time.Now(), time.Now(), nil))
 	result := directoryRequest(r, "POST", "/user/directory/submissions", `{"input":`+string(curated)+`,"submit":true}`)
 	require.Equal(t, 200, result.Code, result.Body.String())
 	require.NotContains(t, result.Body.String(), `"curation"`)
-	mock.ExpectQuery(`input=CASE WHEN \$5::jsonb IS NULL THEN input ELSE jsonb_set`).WithArgs(id, "approved", "", int64(7), string(metadata)).WillReturnRows(sqlmock.NewRows(columns).AddRow(id, 7, curated, "approved", "", time.Now()))
+	mock.ExpectQuery(`input=CASE WHEN \$5::jsonb IS NULL THEN input ELSE jsonb_set`).WithArgs(id, "approved", "", int64(7), string(metadata), nil).WillReturnRows(directorySubmissionRows().AddRow(id, 7, curated, "approved", "", time.Now(), time.Now(), time.Now()))
 	result = directoryRequest(r, "PUT", "/admin/directory/submissions/"+id+"/review", `{"status":"approved","note":"","curation":`+string(metadata)+`}`)
 	require.Equal(t, 200, result.Code, result.Body.String())
-	mock.ExpectQuery(`WHERE status='approved' AND withdrawn_at IS NULL`).WillReturnRows(sqlmock.NewRows([]string{"id", "input", "updated_at"}).AddRow(id, curated, time.Now()))
+	mock.ExpectQuery(`WHERE status='approved' AND published_at IS NOT NULL AND withdrawn_at IS NULL`).WillReturnRows(sqlmock.NewRows([]string{"id", "input", "updated_at"}).AddRow(id, curated, time.Now()))
 	result = directoryRequest(r, "GET", "/user/directory", "")
 	require.Equal(t, 200, result.Code, result.Body.String())
 	require.Contains(t, result.Body.String(), `"isTrending":true`)

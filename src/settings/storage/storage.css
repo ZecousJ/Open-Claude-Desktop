@@ -1,9 +1,10 @@
 /*
- * Settings → System → Storage and its cleanups: the dialog is the "lg" popup
- * (720 wide), its rows are settings rows split by 1px dividers, an area opens
- * "Details" with a 4px bar and legend of its kinds. Spacing is the settings
- * density Claudex's settings rows use (pad-md 12, gap-xs 8, gap-sm 12, gap-lg
- * 28, footnote 13/17); colours are the settings rows' own.
+ * Settings → System → Storage and its cleanups (live claude.ai bundle,
+ * 2026-10-12, c71860c77): the dialog is the "lg" popup (720 wide), its
+ * rows are settings rows split by 1px dividers, an area opens "Details"
+ * with a 4px bar and legend of its kinds. Spacing is the settings
+ * density Claudex's settings rows use (pad-md 12, gap-xs 8, gap-sm 12,
+ * gap-lg 28, footnote 13/17); colours are the settings rows' own.
  */
 .modal.storage-dialog {
   width: 720px;
@@ -130,11 +131,11 @@
 .storage-details-trigger:hover {
   color: var(--text);
 }
-.storage-details-trigger > .app-icon {
+.storage-details-trigger > .anthropicon {
   flex-shrink: 0;
   transition: transform var(--motion-fast) var(--ease-out);
 }
-.storage-details-trigger[aria-expanded="true"] > .app-icon {
+.storage-details-trigger[aria-expanded="true"] > .anthropicon {
   transform: rotate(90deg);
 }
 .storage-details-panel {

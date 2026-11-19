@@ -132,7 +132,7 @@ func newWebFixture(t *testing.T, enabled bool) *webFixture {
 	c, admin := newTestComponent(t, core.Deps{SettingRepo: repo, Config: fixedKeyConfig()})
 	if enabled {
 		w, _ := do(t, admin, http.MethodPut, "/api/v1/admin/claudex/voice",
-			`{"transcription":{"upstream_url":"wss://transcribe.example.com/v1/audio/realtime/transcriptions","enabled":true,"api_key":"sk-test-0123456789abcdef"}}`)
+			`{"transcription":{"enabled":true,"api_key":"fixture-1-aaaaaaaaaaaaaa"}}`)
 		require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 	}
 	f := &webFixture{t: t, c: c, now: time.Date(2026, 9, 28, 8, 0, 5, 0, time.UTC)}

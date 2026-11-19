@@ -114,10 +114,7 @@ export class ArtifactData {
     };
   }
 
-  /**
-   * The local account host approves quota requests instead of mailing
-   * Anthropic.
-   */
+  /** The local account host approves quota requests instead of mailing Anthropic (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0.js:14746). */
   requestLimit(identity: string): ArtifactDataUsage {
     const limits = this.limits();
     for (const line of artifactStorageLines(this.usage(identity))) {

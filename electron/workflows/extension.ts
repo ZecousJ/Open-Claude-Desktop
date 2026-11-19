@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { Conversation, Item, Turn } from "../../shared/types";
+import { supportsCodeUltracode } from "../../shared/code-session-settings";
 import {
   instructionOrder,
   type EngineExtension,
@@ -44,6 +45,7 @@ export interface WorkflowExtensionOptions {
   root: () => string;
   /** The app's settings now (a thread keeps the tool after it is turned off). */
   settings: () => EngineTurnContext["settings"];
+  modelEfforts?: (providerId: string, model: string) => readonly string[] | undefined;
   /** The administrator's policy now (workflows off, approval required). */
   policy?: () => {
     workflows?: boolean;
@@ -53,10 +55,14 @@ export interface WorkflowExtensionOptions {
   };
 }
 
-/** Ultracode for the turn: the effort's top stop, or the keyword in the prompt. */
-export function ultracodeFor(ctx: EngineTurnContext) {
+export function ultracodeFor(ctx: EngineTurnContext, sessionAvailable = false) {
+  const turn = ctx.conversation.turns.at(-1);
+  const selected = turn?.status === "inProgress"
+    ? turn.codeUltracode
+    : ctx.conversation.codeUltracode;
+  if (selected && sessionAvailable) return true;
   if (ctx.settings.codeEffort === "ultra") return true;
-  const prompt = ctx.conversation.turns.at(-1)?.prompt ?? "";
+  const prompt = turn?.prompt ?? "";
   return (
     workflowSettings(ctx.settings).keywordTrigger &&
     /\bultracode\b/i.test(prompt)
@@ -86,17 +92,29 @@ export class WorkflowRuns {
   private runsRoot() {
     return path.join(this.options.root(), "workflow-runs");
   }
-  runDir(id: string) {
+  runDir(id: string, conversationId?: string) {
     if (!/^wf_[a-z0-9]{6,32}$/.test(id))
       throw new Error("Unknown workflow run.");
-    return path.join(this.runsRoot(), id);
+    const dir = path.join(this.runsRoot(), id);
+    if (conversationId !== undefined) {
+      let owner: unknown;
+      try {
+        owner = JSON.parse(fs.readFileSync(path.join(dir, "run.json"), "utf8"))?.conversationId;
+      } catch {}
+      if (owner !== conversationId)
+        throw new Error("This workflow run is not part of the conversation.");
+    }
+    return dir;
   }
 
   /** The script of a call: inline, a saved workflow, or a file. */
   scriptFor(
     args: Record<string, unknown>,
-    cwd: string | undefined,
+    conversation: Pick<Conversation, "id" | "cwd" | "environment">,
   ): { source: string; origin: string } {
+    const { cwd } = conversation;
+    const hosted = conversation.environment?.kind === "space";
+    const homeWorkflows = hosted ? undefined : path.join(os.homedir(), ".claude", "workflows");
     if (typeof args.script === "string" && args.script.trim())
       return { source: args.script, origin: "inline" };
     if (typeof args.name === "string" && args.name.trim()) {
@@ -104,35 +122,40 @@ export class WorkflowRuns {
       if (!/^[\w.-]{1,80}$/.test(name))
         throw new Error("Unknown workflow name.");
       const places = [
-        cwd && path.join(cwd, ".claude", "workflows", `${name}.js`),
-        path.join(os.homedir(), ".claude", "workflows", `${name}.js`),
-      ].filter(Boolean) as string[];
-      const found = places.find((file) => fs.existsSync(file));
+        ...(cwd ? [{ file: path.join(cwd, ".claude", "workflows", `${name}.js`), root: cwd }] : []),
+        ...(homeWorkflows ? [{ file: path.join(homeWorkflows, `${name}.js`), root: homeWorkflows }] : []),
+      ];
+      const found = places.find(({ file }) => fs.existsSync(file));
       if (!found)
         throw new Error(
-          `No saved workflow named "${name}" (looked in .claude/workflows of the project and ~/.claude/workflows).`,
+          `No saved workflow named "${name}".`,
         );
       return {
-        source: readInside(found, [path.dirname(found)]),
-        origin: found,
+        source: readInside(found.file, [found.root]),
+        origin: found.file,
       };
     }
     if (typeof args.scriptPath === "string" && args.scriptPath.trim()) {
-      const file = path.resolve(cwd ?? os.homedir(), args.scriptPath.trim());
-      const allowed = [
-        this.runsRoot(),
-        cwd,
-        path.join(os.homedir(), ".claude", "workflows"),
-      ].filter(Boolean) as string[];
+      const file = path.resolve(cwd ?? (hosted ? this.options.root() : os.homedir()), args.scriptPath.trim());
+      const allowed = cwd ? [cwd] : [];
+      const runs = this.runsRoot();
+      const dir = path.dirname(file);
+      if (hosted) {
+        if (path.dirname(dir) === runs && path.basename(file) === "script.js")
+          allowed.push(this.runDir(path.basename(dir), conversation.id));
+      } else if (homeWorkflows) {
+        allowed.push(runs, homeWorkflows);
+      }
       return { source: readInside(file, allowed), origin: file };
     }
     throw new Error("Pass script, name or scriptPath.");
   }
 
-  journal(id: string): AgentRecord[] {
+  journal(id: string, conversationId?: string): AgentRecord[] {
+    const dir = this.runDir(id, conversationId);
     try {
       return fs
-        .readFileSync(path.join(this.runDir(id), "journal.jsonl"), "utf8")
+        .readFileSync(path.join(dir, "journal.jsonl"), "utf8")
         .split("\n")
         .filter(Boolean)
         .map((line) => JSON.parse(line));
@@ -225,25 +248,27 @@ export function createWorkflowExtension(
     order: instructionOrder.feature,
     runs,
     dynamicTools(ctx) {
-      if (!offered(ctx)) return;
+      if (ctx.mode !== "code") return;
       return [
         {
           type: "function",
           name: workflowToolName,
-          description: workflowToolDescription(
-            workflowSettings(ctx.settings).size,
-            false,
-          ),
+          description: workflowToolDescription(workflowSettings(ctx.settings).size),
           inputSchema: workflowToolInput,
         },
       ];
     },
     turnContext(ctx) {
       runs.sandboxes.set(ctx.conversation.id, ctx.sandbox);
-      if (!offered(ctx) || !ultracodeFor(ctx)) return;
+      if (ctx.mode !== "code") return;
+      if (!offered(ctx)) return {
+        ultracode: "Dynamic workflows are unavailable for this turn. Do the work directly.",
+      };
+      const supported = supportsCodeUltracode(options.modelEfforts?.(ctx.provider.id, ctx.model));
       return {
-        ultracode:
-          "Ultracode is ON for this turn: the user opted into multi-agent orchestration. For substantive work, author and run a workflow with the Workflow tool (one per phase when it helps: understand → design → implement → review), and verify findings adversarially before you rely on them. Answer conversational messages and trivial edits directly.",
+        ultracode: ultracodeFor(ctx, supported)
+          ? "Ultracode is ON for this turn: the user opted into multi-agent orchestration. For substantive work, author and run a workflow with the Workflow tool (one per phase when it helps: understand → design → implement → review), and verify findings adversarially before you rely on them. Answer conversational messages and trivial edits directly."
+          : "Ultracode is off for this turn. Instructions from earlier turns to run workflows by default do not apply. Run a workflow only if the user asks for one in this turn; the Ultracode keyword alone does not opt in.",
       };
     },
     async handleDynamicTool(call) {

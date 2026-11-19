@@ -263,8 +263,8 @@ export function ProjectsRoute() {
 }
 
 /**
- * The project page's composer: the app's own, as a new draft in the project, so
- * sending starts a chat there and opens it.
+ * The project page's composer (R-1203): the app's own, as a new draft in
+ * the project, so sending starts a chat there and opens it.
  */
 function ProjectComposer({ project }: { project: Project }) {
   const app = useApp();
@@ -279,8 +279,8 @@ function ProjectComposer({ project }: { project: Project }) {
 }
 
 /**
- * Archive project: it leaves the list for the Archived tab; its chats, tasks
- * and files stay.
+ * Archive project (live claude.ai bundle, 2026-10-14, c17beaa76): it leaves
+ * the list for the Archived tab; its chats, tasks and files stay.
  */
 export function confirmArchiveProject(app: AppController, project: Project) {
   app.setConfirm({
@@ -318,7 +318,7 @@ export function confirmArchiveProject(app: AppController, project: Project) {
   });
 }
 
-/** Confirmation title. */
+/** Confirmation title (live claude.ai bundle, 2026-10-14, shared-19-BG_pM4_W.js). */
 export function confirmDeleteProject(app: AppController, project: Project) {
   app.setConfirm({
     title: "Delete project?",

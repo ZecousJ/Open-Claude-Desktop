@@ -55,7 +55,8 @@
   justify-content: center;
   gap: 7px;
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   color: #e2e1de;
   font-size: clamp(24px, 18.4px + 1vw, 32px);
   font-weight: 400;
@@ -90,7 +91,9 @@
   font-size: 14px;
   color: #b7b7b7;
 }
-/* Light: the secondary button is an ink fill with the primary text. */
+/* Light: the secondary button is an ink fill with the primary text
+   (--cds-fill-control is alpha-2; live claude.ai bundle, 2026-10-16,
+   rules.json). */
 :root[data-theme="light"] .connection-notice > button:not(.icon-button) {
   background: var(--alpha-2);
   color: var(--text);
@@ -132,8 +135,8 @@
   color: var(--text);
   font-size: 16px;
   line-height: 22px;
-  /* The Chat/Cowork box stops at 434 px (18 lines visible, the tools row 56 px
-     under them) and scrolls inside; 370 px of text leaves ours at 434. */
+  /* R-0238: the Chat/Cowork box stops at 434 px (18 lines visible, the tools
+     row 56 px under them) and scrolls inside; 370 px of text leaves ours at 434. */
   max-height: 370px;
 }
 .composer-input-row textarea::placeholder {
@@ -177,9 +180,9 @@
 .mic-button:disabled {
   opacity: 0.8;
 }
-/* Send in the Chat and Cowork composers: a 31px square, radius 8, #b86845 with
-   a white 18px arrow in both themes. Code keeps its own (code-composer rules
-   below). */
+/* Send in the Chat and Cowork composers (R-0410, 2x ÷2; the same button on
+   claude.ai in light): a 31px square, radius 8, #b86845 with a white 18px
+   arrow in both themes. Code keeps its own (code-composer rules below). */
 .send-button {
   width: 31px;
   height: 31px;
@@ -189,9 +192,9 @@
 }
 /* Hover is not captured. The original's brand button goes from its fill
    (#c6613f) to the lighter clay #d97757; in this capture's colours (#c6613f
-   reads #b86845) that is #cb7d5c. The stop button, a neutral disc, steps toward
-   the frame by the same 15% the base rule uses instead of taking the brand
-   tint. */
+   reads #b86845) that is #cb7d5c. The stop button, a neutral disc, steps
+   toward the frame by the same 15% the base rule uses instead of taking the
+   brand tint. Source: desktop bundle 2.31226.1 static CSS. */
 .send-button:hover:not(:disabled) {
   background: #cb7d5c;
 }

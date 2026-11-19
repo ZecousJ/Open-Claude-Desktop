@@ -17,7 +17,7 @@ import { useApp } from "./AppContext";
 import { paneHandoffKey, savePaneHandoff } from "./pane-handoff";
 import { t } from "../i18n";
 import { deferFileTransition } from "../files/file-transitions";
-import { AppIcon } from "../ui/app-icon";
+import { AnthropiconGlyph } from "../ui/AnthropiconGlyph";
 
 const moveLabels: Record<CodeEdge, string> = {
   left: "Move to left",
@@ -445,7 +445,7 @@ export function NativePaneControls({
                       void popOut().catch(app.report);
                     }}
                   >
-                    <AppIcon name="WindowNew" size={16} />
+                    <AnthropiconGlyph name="WindowNew" size={16} />
                     <span>{t("Open in new window")}</span>
                   </button>
                 </>

@@ -2,7 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import type { Conversation, GeneratedFile } from "../../shared/types";
 import { GeneratedBlobs } from "./generated-blobs";
 
-// Only a version belonging to this artifact can be restored.
+// Only a version belonging to this artifact can be restored (desktop
+// 2.37337.1, index.chunk-BWk6pVUt.js:242990).
 export function artifactVersion(
   conversation: Conversation,
   filename: string,

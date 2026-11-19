@@ -2,12 +2,13 @@ import type { Conversation, Mode } from "../../shared/types";
 import { defaultFilter, pinnedRows, recentRows } from "../sidebar/listFilter";
 
 /**
- * Go ▸ Previous and Next Chat, Task or Session. The original steps through the
+ * Go ▸ Previous and Next Chat, Task or Session (desktop bundle 2.31226.1:
+ * the renderer's cycleSession handler). The original steps through the
  * sidebar's rows as they are drawn, pinned ones first, with one more stop in
  * front of them: the empty new chat, task or session. It wraps at both ends,
- * and from a page that is none of the rows (Settings, a conversation that is
- * not listed) the first step lands on the new chat, as from its stop. The items
- * are enabled whenever the list has a row.
+ * and from a page that is none of the rows (Settings, a conversation that
+ * is not listed) the first step lands on the new chat, as from its stop.
+ * The items are enabled whenever the list has a row.
  */
 
 /** Where a step lands: the new conversation, or a listed one. */
@@ -59,9 +60,11 @@ export function drawnIds(root: Pick<ParentNode, "querySelectorAll">) {
 }
 
 /**
- * ⌘1 to ⌘9 (Ctrl elsewhere), "Jump to chat" or "Jump to session": the sidebar's
- * row with that number, counted as cycling counts them. Undefined when the list
- * is shorter or that row is already open.
+ * ⌘1 to ⌘9 (Ctrl elsewhere), "Jump to chat" or "Jump to session": the
+ * sidebar's row with that number, counted as cycling counts them (live
+ * claude.ai bundle, 2026-10-12: the desktop's digit keys open the n-th row
+ * of the surface's recents; ⌘9 is the ninth row, not the last). Undefined
+ * when the list is shorter or that row is already open.
  */
 export function jumpTarget(
   ids: readonly string[],
@@ -74,11 +77,12 @@ export function jumpTarget(
 }
 
 /**
- * Who Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 belong to: the Browser pane listens
- * for its tab keys on the pane itself, so they switch its tabs only while the
- * focus is in the pane (its tab strip, address bar or page); everywhere else
- * the same keys switch chats. A focused select, combobox, listbox or
- * application widget keeps the keys for itself.
+ * Who Ctrl+Tab, Ctrl+Shift+Tab and ⌘1 to ⌘9 belong to (live claude.ai
+ * bundle, 2026-10-12): the Browser pane listens for its tab keys on the pane
+ * itself, so they switch its tabs only while the focus is in the pane (its
+ * tab strip, address bar or page); everywhere else the same keys switch
+ * chats. A focused select, combobox, listbox or application widget keeps
+ * the keys for itself.
  */
 export type ChatKeyOwner = "browser" | "chats" | "none";
 

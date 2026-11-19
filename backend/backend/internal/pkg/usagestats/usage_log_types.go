@@ -288,6 +288,7 @@ type UsageLogFilters struct {
 	ExcludeAdmins bool
 	StartTime     *time.Time
 	EndTime       *time.Time
+	TrendTimezone string
 	// ExactTotal requests exact COUNT(*) for pagination. Default false for fast large-table paging.
 	ExactTotal bool
 }

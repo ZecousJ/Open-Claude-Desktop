@@ -1,5 +1,6 @@
 import { validRoutineBrowserGrant } from "../../shared/routine-browser";
 import fs from "node:fs";
+import { parseCron } from "../../shared/cron";
 import path from "node:path";
 import type { Conversation, Schedule } from "../../shared/types";
 import { type ClientPolicy } from "../../shared/client-policy";
@@ -87,11 +88,13 @@ interface SchedulerOptions {
     run: { outcome: "completed" | "failed"; summary?: string; error?: string },
   ) => void;
   computerAccess?: () => boolean;
+  enabledModes?: () => Readonly<Record<Routine["mode"], boolean>> | undefined;
   isBusy: () => boolean;
   run: (schedule: Routine) => Promise<Conversation>;
   onChange?: (schedules: Schedule[]) => void;
   onError?: (error: unknown) => void;
   now?: () => number;
+  startupGraceMs?: number;
   /**
    * The administrator's policy now. With `scheduledTasks.enabled` false no
    * routine starts (saved ones wait, unchanged) and none can be added;
@@ -208,7 +211,8 @@ export class Scheduler {
         !this.migrationBlocked(task.id) &&
         task.enabled &&
         !scheduleOff(task) &&
-        routineDispatchAt(task) < this.now()
+        routineDispatchAt(task) <
+          this.now() - (this.options.startupGraceMs ?? 0)
       )
         this.skip(task, "missed");
   }
@@ -243,7 +247,10 @@ export class Scheduler {
   }
   preview(repeat: unknown): RoutineSchedulePreview {
     const rule = validRepeat(repeat);
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timeZone =
+      (rule.kind === "cron"
+        ? parseCron(rule.expression).timeZone
+        : undefined) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
     return {
       nextRunAt: nextRun(rule, this.now()) ?? null,
       ...(timeZone ? { timeZone } : {}),

@@ -11,6 +11,8 @@ export function sameEnvironment(a?: EnvironmentRef, b?: EnvironmentRef) {
   const y: EnvironmentRef = b ?? { kind: "local" };
   if (x.kind === "local") return y.kind === "local";
   if (x.kind === "space") return y.kind === "space" && x.spaceId === y.spaceId;
+  if (x.kind === "wsl")
+    return y.kind === "wsl" && x.distro.toLowerCase() === y.distro.toLowerCase();
   return y.kind === "ssh" && x.hostId === y.hostId;
 }
 
@@ -42,6 +44,9 @@ export interface EngineLaunch {
 export interface EngineLauncher {
   readonly sshHost?: SshHost;
   readonly sshToolBinding?: { endpointKey: string; hostKey: string };
+  readonly remoteExecutionId?: string;
+  remoteExecutionEnded?(id: string): Promise<boolean>;
+  terminalProcessExecutor?(): import("../terminal/terminal-process").TerminalProcessExecutor | undefined;
   readonly environment: EnvironmentRef;
   /** The place's name in messages. */
   readonly label: string;
@@ -61,7 +66,7 @@ export interface EngineLauncher {
   ): Promise<{ folder: string; root: string; sources: string[] }>;
   launch(input: EngineLaunchInput): Promise<EngineLaunch>;
   /** Codex answered initialize. */
-  started(): void;
+  started(keepExecutions?: string[]): void;
   /** Codex's process ended without being stopped. */
   exited(): void;
   /** Starting failed (the launch's own error, or Codex not answering). */

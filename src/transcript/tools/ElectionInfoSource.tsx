@@ -2,7 +2,7 @@ import { useOpenLink } from "../../ui/ExternalLinks";
 import { t } from "../../i18n";
 import "../../ui/markdown-parity.css";
 
-// .
+// (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js).
 export function ElectionInfoSource({ url }: { url: string }) {
   const openLink = useOpenLink();
   const [before, after] = t("Source: {source}").split("{source}");

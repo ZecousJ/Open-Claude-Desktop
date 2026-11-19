@@ -1,6 +1,14 @@
+import { localEdition } from "./edition";
+import { registerLocalProvider } from "./local-provider";
+import { desktopPreferences } from "../store/desktop-preferences";
+import {isDeepStrictEqual} from 'node:util';
+import {localeSaveStage,localeSaveFailure} from '../official-ui/api/locale-save-diagnostics';
 import { isDeviceExecutionCopy } from "../../shared/chat-devices-api";
 import { registerDeviceTrustHandlers } from "../remote-control/account-device-state";
 import { preference } from "../../shared/settings-extras";
+import { preferenceFields } from "../../shared/settings-extras-schema";
+import { remoteFolderValid } from "../../shared/remote-devices";
+import { completedReply } from "../../shared/branches";
 import { desktopHost } from "../../shared/host";
 import { copyNativeImage } from "./image-clipboard";
 import { nativeTheme, nativeImage, clipboard, ClipboardItem } from "electron";
@@ -21,9 +29,12 @@ import {
   currentAccountDevices,
   deviceLink,
   integration,
+  saveDeviceDesktopPreferences,
   policy,
   ratingListeners,
   settingsListeners,
+  sendSettings,
+  push,
   callerWindows,
   string,
   rendererSettings,
@@ -33,11 +44,16 @@ import {
   lifecycle,
 } from "../main";
 import { handle } from "./ipc-handle";
+import { desktopShortcuts } from "./desktop-integration";
+import { allowQuickEntryDictationShortcut } from "./quick-access";
+import { dispatchOfficialLayoutCommand } from "../official-ui/window";
 
 export function register() {
   registerDeviceTrustHandlers(handle, currentAccountDevices);
-  if (mainState.remoteAccounts)
+  if (localEdition) registerLocalProvider(handle);
+  else if (mainState.remoteAccounts)
     registerRemoteAccounts(handle, ctx, mainState.remoteAccounts, lifecycle);
+  handle("referenceFonts", () => []);
   handle("copyImage", (raw: unknown) =>
     copyNativeImage(
       raw,
@@ -105,23 +121,70 @@ export function register() {
   }));
   handle(
     "setReplyFeedback",
-    (conversationId: unknown, turnId: unknown, rating: unknown) => {
+    (conversationId: unknown, turnId: unknown, rating: unknown, options: unknown) => {
       const id = string.parse(conversationId),
         turn = string.parse(turnId);
-      const found = mainState.store
-        .conversation(id)
-        .turns.find((item) => item.id === turn);
-      if (!found || found.status !== "completed")
+      const found = completedReply(mainState.store.conversation(id), turn);
+      if (!found)
         throw Error("Only completed replies can be rated.");
       const value = z
         .union([z.literal("up"), z.literal("down"), z.null()])
         .parse(rating);
+      const policy = z.object({ localOnly: z.literal(true) }).strict().optional().parse(options);
       const all = mainState.replyFeedback.set(id, turn, value);
-      ratingListeners.emit({ conversationId: id, turnId: turn, rating: value });
+      ratingListeners.emit({ conversationId: id, turnId: turn, rating: value, ...policy });
       return all;
     },
   );
+  handle("saveOfficialThemeMode", (raw: unknown) => {
+    const theme = z.enum(["system", "light", "dark"]).parse(raw);
+    if (!mainState.activeAccount || mainState.accountRetirement.accountRetiring)
+      throw Error("This account window has retired.");
+    const changed = mainState.store.settings.theme !== theme;
+    if (changed) {
+      const next = { ...mainState.store.settings, theme };
+      mainState.store.write("settings.json", next);
+      mainState.store.settings = next;
+    }
+    nativeTheme.themeSource = theme;
+    if (changed) sendSettings();
+  });
+  handle("saveOfficialDispatchReceiving", (raw: unknown) => {
+    if (!mainState.activeAccount || mainState.accountRetirement.accountRetiring)
+      throw Error("This account window has retired.");
+    const patch = z.strictObject({
+      remoteControl: preferenceFields.remoteControl,
+      dispatchMobileNotifications: preferenceFields.dispatchMobileNotifications,
+      remoteFolders: preferenceFields.remoteFolders,
+      remoteFolderWorktree: z.strictObject({
+        folder: z.string().refine(remoteFolderValid),
+        enabled: z.boolean(),
+      }).optional(),
+    }).parse(raw);
+    const store = mainState.store;
+    const { remoteFolderWorktree, ...receiving } = patch;
+    const next = { ...store.settings, ...receiving };
+    const folders = preference(next, "remoteFolders");
+    if (remoteFolderWorktree && !folders.includes(remoteFolderWorktree.folder))
+      throw Error("This Remote Control folder is no longer shared.");
+    if (receiving.remoteFolders || remoteFolderWorktree) {
+      const overrides = preference(next, "remoteFolderSpawnModes").filter(
+        ({ folder }) => folders.includes(folder) && folder !== remoteFolderWorktree?.folder,
+      );
+      if (remoteFolderWorktree) overrides.push({
+        folder: remoteFolderWorktree.folder,
+        mode: remoteFolderWorktree.enabled ? "worktree" : "same-dir",
+      });
+      next.remoteFolderSpawnModes = overrides;
+    }
+    if (isDeepStrictEqual(store.settings, next)) return;
+    store.write("settings.json", next);
+    store.settings = next;
+    integration.refreshKeepAwake();
+    sendSettings();
+  });
   handle("saveSettings", async (raw: any, secrets: any = {}) => {
+    localeSaveStage("native-schema");
     // Skill switches are changed through their own calls, never by a save.
     const settings = mergeSavedSettings(
       mainState.store.settings,
@@ -142,6 +205,7 @@ export function register() {
     settings.activeProviderId =
       (!mainState.remote && mainState.operatorConfig?.activeProviderId) ||
       mainState.store.settings.activeProviderId;
+    localeSaveStage("native-policy");
     const refusal = settingsRefusal(
       mainState.store.settings,
       settings,
@@ -170,16 +234,24 @@ export function register() {
         codeFont: "",
         hiddenNavItems: [],
         // The permission picker's choice is read when a turn starts (and a
-        // running turn keeps the mode it started with), so changing it mid-turn
-        // neither restarts the engine nor is refused.
+        // running turn keeps the mode it started with), so changing it
+        // mid-turn neither restarts the engine nor is refused (owner,
+        // 2026-10-22: Bypass mid-turn also said "Wait for or stop the
+        // running task first.").
         codeSandbox: "",
         autoAcceptEdits: false,
         codePlanMode: false,
         bypassFolders: [],
       });
     const changedEngine =
-      engineSettings(settings) !== engineSettings(mainState.store.settings);
+      // Preserve the existing JSON projection (including omitted undefined
+      // fields), but do not treat property insertion order as an engine change.
+      !isDeepStrictEqual(
+        JSON.parse(engineSettings(settings)),
+        JSON.parse(engineSettings(mainState.store.settings)),
+      );
     if (changedEngine || Object.keys(parsedKeys).length) noActive();
+    localeSaveStage("native-validation");
     if (!settings.providers.some((p) => p.id === settings.activeProviderId))
       throw new Error("Choose a valid connection.");
     if (
@@ -192,15 +264,46 @@ export function register() {
         throw new Error("The MCP configuration is not valid.");
     }
     const before = mainState.store.settings;
+    settings.legacyQuickEntryEnabled ??= before.legacyQuickEntryEnabled;
+    settings.keepAwake ??= before.keepAwake;
+    settings.keepAwakeWhileCoding ??= before.keepAwakeWhileCoding;
+    settings.keepAwakeOnBattery ??= before.keepAwakeOnBattery;
+    settings.notificationLevels ??= before.notificationLevels;
+    settings.notificationSound ??= before.notificationSound;
+    settings.drawAttention ??= before.drawAttention;
+    const voiceShortcut = settings.quickEntryDictationShortcut;
+    if (voiceShortcut && voiceShortcut !== "off" && voiceShortcut !== before.quickEntryDictationShortcut) {
+      const store = mainState.store;
+      const generation = mainState.accountRetirement.accountActivationIdentity;
+      const allowed = await allowQuickEntryDictationShortcut(voiceShortcut);
+      if (mainState.store !== store || store.settings !== before ||
+          mainState.accountRetirement.accountActivationIdentity !== generation)
+        throw Error("Settings changed while enabling the voice shortcut. Try again.");
+      if (!allowed) return rendererSettings();
+    }
+    const integrationOptions = {
+      preserveShortcuts: isDeepStrictEqual(desktopShortcuts(before), desktopShortcuts(settings)),
+      observe: localeSaveStage,
+    };
     mainState.store.settings = settings;
     try {
-      integration.apply();
+      localeSaveStage("integration-before");
+      integration.apply(integrationOptions);
+      const desktop = desktopPreferences(settings);
+      if (!isDeepStrictEqual(desktopPreferences(before), desktop))
+        saveDeviceDesktopPreferences(desktop);
+      localeSaveStage("integration-after");
     } catch (error) {
+      localeSaveFailure(error);
+      localeSaveStage("rollback-before");
       mainState.store.settings = before;
-      integration.apply();
+      integration.apply(integrationOptions);
+      localeSaveStage("rollback-after");
       throw error;
     }
+    localeSaveStage("flush-before");
     mainState.store.flush();
+    localeSaveStage("flush-after");
     if (
       mainState.mcpConfig &&
       JSON.stringify(settings.mcpServers) !== JSON.stringify(before.mcpServers)
@@ -212,15 +315,34 @@ export function register() {
           mode: 0o600,
         },
       );
+    localeSaveStage("native-theme");
     nativeTheme.themeSource = settings.theme;
+    localeSaveStage("native-notify");
     settingsListeners.emit(mainState.store.settings);
+    if (
+      before.keepAwake !== settings.keepAwake ||
+      before.keepAwakeWhileCoding !== settings.keepAwakeWhileCoding ||
+      before.keepAwakeOnBattery !== settings.keepAwakeOnBattery ||
+      !isDeepStrictEqual(before.notificationLevels, settings.notificationLevels) ||
+      before.notificationSound !== settings.notificationSound ||
+      before.drawAttention !== settings.drawAttention ||
+      preference(before, "remoteControl") !== preference(settings, "remoteControl") ||
+      preference(before, "remoteControlStayReachable") !== preference(settings, "remoteControlStayReachable") ||
+      preference(before, "dispatchMobileNotifications") !== preference(settings, "dispatchMobileNotifications") ||
+      !isDeepStrictEqual(preference(before, "remoteFolders"), preference(settings, "remoteFolders"))
+    ) push({ type: "settings", settings: rendererSettings() });
+    localeSaveStage("device-refresh-before");
     deviceLink.refresh();
+    localeSaveStage("device-refresh-after");
     if (changedEngine || Object.keys(parsedKeys).length) {
+      localeSaveStage("native-engine-stop");
       await mainState.engine.stop();
+      localeSaveStage("native-engine-ensure");
       await mainState.engine.ensure(
         settings.providers.find((p) => p.id === settings.activeProviderId)!,
       );
     }
+    localeSaveStage("native-return");
     return rendererSettings();
   });
   handle("windowAction", (value: any, colors?: unknown) => {
@@ -251,7 +373,13 @@ export function register() {
   });
   // Every other call, domain by domain (electron/ipc/index.ts).
   registerIpc(handle, ctx, {
+    dispatchOfficialLayout: dispatchOfficialLayoutCommand,
     mcpLogs: { read: (name) => nativeExtensions.read(name) },
+    prepareExtensionUpgrade: (id, manifest, target) =>
+      nativeExtensions.lifecycle.prepareUpgrade(id, manifest, target),
+    prepareExtensionMaintenance: () => nativeExtensions.prepareMaintenance("installing"),
+    publishExtensionServers: (servers) =>
+      nativeExtensions.lifecycle.options.update(servers),
   });
   nativeExtensions.register(handle);
 }

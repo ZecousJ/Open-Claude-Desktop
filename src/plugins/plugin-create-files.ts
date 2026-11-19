@@ -7,7 +7,7 @@ export interface PluginDraftFile {
 }
 export const starterSkillPath = "skills/skill/SKILL.md";
 
-/** O16 the account-create editor seed. */
+/** O16 cdbe53168-BHBOva3v:3206–3221, the account-create editor seed. */
 export function pluginSkillSeed(name = "", description = "") {
   return [
     "---",

@@ -7,12 +7,15 @@ import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import test, { type TestContext } from "node:test";
+import { createPackage, extractFile } from "@electron/asar";
+import JSZip from "jszip";
 import {
   macAppBundle,
   planUpdate,
   relocationPlan,
   updateKindFor,
   updateMenuItem,
+  type UpdateRelease,
 } from "../../shared/app-update";
 import { runUpdateMenuAction } from "../../electron/updates/menu-action";
 import { appUpdateMethods } from "../../shared/app-update-api";
@@ -23,13 +26,16 @@ import {
   fileSha256,
 } from "../../electron/updates/download";
 import {
+  applyResultFile,
   clearStaged,
   launchDecision,
   pruneUpdates,
+  readApplyResult,
   readStaged,
   writeStaged,
   failedVersions,
 } from "../../electron/updates/staging";
+import { prepareWindowsAppPack } from "../../electron/updates/windows-pack";
 import { AppUpdater, updateCheckError } from "../../electron/updates/updater";
 import { installTarget, startInstall } from "../../electron/updates/apply";
 import { relocateBundle } from "../../electron/updates/relocate";
@@ -39,8 +45,10 @@ import {
   macApplyScript,
   macRelaunchScript,
   windowsApplyCommand,
+  windowsAppPackScript,
   windowsApplyScript,
 } from "../../electron/updates/scripts";
+import { prefilledEmail } from "../../src/auth/signInView";
 import { version as packageVersion } from "../../package.json";
 
 const sha = (data: Buffer | string) =>
@@ -55,12 +63,12 @@ function temporary(t: TestContext) {
 const release = (over: Record<string, string | null> = {}) => ({
   latestVersion: "0.0.2",
   downloadUrl:
-    "https://downloads.example.com/claudex/downloads/Claudex-0.0.2-arm64-mac.zip",
+    "https://all.zecous.cn/zecous/downloads/Claudex-0.0.2-arm64-mac.zip",
   sha256: "a".repeat(64),
   ...over,
 });
 
-test("versioning restarted at 0.0.1 (docs/releasing.md)", () => {
+test("versioning restarted at 0.0.1 (docs/ota.md)", () => {
   assert.match(packageVersion, /^0\.0\.[1-9]\d*$/);
 });
 
@@ -96,13 +104,11 @@ test("only a newer, https, checksummed build of the right type is planned", () =
   assert.equal(reason(release({ sha256: null })), "no-checksum");
   assert.equal(reason(release({ sha256: "xyz" })), "no-checksum");
   assert.equal(
-    reason(release({ downloadUrl: "http://downloads.example.com/a.zip" })),
+    reason(release({ downloadUrl: "http://all.zecous.cn/a.zip" })),
     "no-download",
   );
   assert.equal(
-    reason(
-      release({ downloadUrl: "https://user:pw@downloads.example.com/a.zip" }),
-    ),
+    reason(release({ downloadUrl: "https://user:pw@all.zecous.cn/a.zip" })),
     "no-download",
   );
   assert.equal(reason(release()), "download");
@@ -212,7 +218,7 @@ test("Restart to Update immediately uses the guarded restart without a notice", 
 test("manual update failures distinguish network guidance from other errors", () => {
   assert.match(
     updateCheckError(new Error("net::ERR_CONNECTION_REFUSED")),
-    /firewall or proxy.*your Claudex service's website/,
+    /firewall or proxy.*claudex\.zecous\.cn/,
   );
   assert.equal(
     updateCheckError(new Error("server returned 500")),
@@ -222,35 +228,29 @@ test("manual update failures distinguish network guidance from other errors", ()
 
 test("a misnamed bundle moves beside itself as Claudex.app", () => {
   assert.equal(
-    macAppBundle("/Applications/OtherName.app/Contents/MacOS/Claudex"),
-    "/Applications/OtherName.app",
+    macAppBundle("/Applications/ZecousAI.app/Contents/MacOS/Claudex"),
+    "/Applications/ZecousAI.app",
   );
   assert.equal(macAppBundle("C:\\Programs\\Claudex\\Claudex.exe"), undefined);
   const plan = (bundle: string, targetVersion?: string | null) =>
     relocationPlan({ bundle, version: "0.0.2", targetVersion });
   assert.deepEqual(plan("/Applications/Claudex.app"), { action: "none" });
-  assert.deepEqual(plan("/Applications/OtherName.app"), {
+  assert.deepEqual(plan("/Applications/ZecousAI.app"), {
     action: "rename",
     target: "/Applications/Claudex.app",
   });
   assert.deepEqual(
-    plan("/Applications/OtherName.app", "0.0.1").action,
+    plan("/Applications/ZecousAI.app", "0.0.1").action,
     "replace",
   );
-  assert.deepEqual(plan("/Applications/OtherName.app", null).action, "replace");
+  assert.deepEqual(plan("/Applications/ZecousAI.app", null).action, "replace");
+  assert.deepEqual(plan("/Applications/ZecousAI.app", "0.0.2").action, "defer");
+  assert.deepEqual(plan("/Applications/ZecousAI.app", "0.0.3").action, "defer");
   assert.deepEqual(
-    plan("/Applications/OtherName.app", "0.0.2").action,
-    "defer",
-  );
-  assert.deepEqual(
-    plan("/Applications/OtherName.app", "0.0.3").action,
-    "defer",
-  );
-  assert.deepEqual(
-    plan("/private/var/folders/x/AppTranslocation/1/d/OtherName.app"),
+    plan("/private/var/folders/x/AppTranslocation/1/d/ZecousAI.app"),
     { action: "none" },
   );
-  assert.deepEqual(plan("/Volumes/Claudex/OtherName.app"), { action: "none" });
+  assert.deepEqual(plan("/Volumes/Claudex/ZecousAI.app"), { action: "none" });
 });
 
 function fakeSpawn(
@@ -264,7 +264,7 @@ function fakeSpawn(
       unref() {},
       once(event: string, listener: (code?: number) => void) {
         if (event === "spawn") queueMicrotask(() => listener());
-        if (event === "exit") queueMicrotask(() => listener(exitCode));
+        if (event === "close") queueMicrotask(() => listener(exitCode));
       },
     };
   }) as never;
@@ -294,7 +294,7 @@ function fakeBundle(folder: string, name: string, version: string) {
 test("relocation renames, replaces an older Claudex.app or gives way to a newer one", (t) => {
   const run = (targetVersion?: string) => {
     const folder = temporary(t);
-    const ours = fakeBundle(folder, "OtherName.app", "0.0.2");
+    const ours = fakeBundle(folder, "ZecousAI.app", "0.0.2");
     if (targetVersion) fakeBundle(folder, "Claudex.app", targetVersion);
     const calls: { command: string; args: string[] }[] = [];
     const result = relocateBundle({
@@ -350,7 +350,7 @@ test("relocation renames, replaces an older Claudex.app or gives way to a newer 
 test("relocation keeps running in place when the folder can't be changed", (t) => {
   if (process.getuid?.() === 0) return t.skip("root can write anywhere");
   const folder = temporary(t);
-  const ours = fakeBundle(folder, "OtherName.app", "0.0.2");
+  const ours = fakeBundle(folder, "ZecousAI.app", "0.0.2");
   const scriptDir = path.join(temporary(t), "updates");
   const calls: { command: string; args: string[] }[] = [];
   fs.chmodSync(folder, 0o555);
@@ -610,14 +610,23 @@ test("installing re-verifies the file and passes paths as arguments, not code", 
   // ended with Claudex before it could install), with its paths quoted.
   assert.equal(calls.length, 1);
   const script = encodedScript(calls[0].args);
-  assert.match(script, /Register-ScheduledTask -TaskName 'Claudex Update 99'/);
-  assert.match(script, /Start-ScheduledTask -TaskName 'Claudex Update 99'/);
+  assert.match(
+    script,
+    /Register-ScheduledTask -TaskName 'Claudex Update 99 [a-f0-9-]+'/,
+  );
+  assert.match(
+    script,
+    /Start-ScheduledTask -TaskName 'Claudex Update 99 [a-f0-9-]+'/,
+  );
   assert.match(
     script,
     /-InstallDir "C:\\Users\\a b\\AppData\\Local\\Programs\\Claudex"/,
   );
   assert.match(script, /-Relaunch 1 /);
-  assert.match(script, /-ExeName Claudex\.exe -TaskName "Claudex Update 99"/);
+  assert.match(
+    script,
+    /-ExeName Claudex\.exe -TaskName "Claudex Update 99 [a-f0-9-]+"/,
+  );
   assert.equal(readStaged(dir)?.attempts, 1);
   // A file changed after verification is not installed.
   fs.writeFileSync(file, "tampered");
@@ -667,6 +676,8 @@ test("without the Task Scheduler the Windows helper starts directly", async (t) 
   assert.equal(calls.length, 2);
   assert.ok(calls[0].args.includes("-EncodedCommand"));
   const args = calls[1].args;
+  assert.equal(calls[1].command, "C:\\Windows\\System32\\conhost.exe");
+  assert.equal(args[0], "--headless");
   assert.ok(args.includes("-File"));
   assert.equal(args[args.indexOf("-InstallDir") + 1], "C:\\Claudex");
   assert.equal(args[args.indexOf("-Relaunch") + 1], "1");
@@ -800,6 +811,16 @@ test(
     );
   },
 );
+
+test("the sign-in card takes a suggested email only into an empty field", () => {
+  assert.equal(prefilledEmail("", "person@example.com"), "person@example.com");
+  assert.equal(
+    prefilledEmail("typed@example.com", "person@example.com"),
+    "typed@example.com",
+  );
+  assert.equal(prefilledEmail("", null), "");
+  assert.equal(prefilledEmail("", "not an email"), "");
+});
 
 test("the window leaves the update to Claudex while it checks, fetches or has staged it", async () => {
   const { selfUpdating, recheckFor } =
@@ -983,38 +1004,237 @@ test("Windows takes the app pack when it runs the same Electron with the same Co
   assert.equal(mac.action === "download" && mac.kind, "mac-zip");
 });
 
-test("an app pack installs through the scheduled task with the pack script", async (t) => {
-  const dir = temporary(t);
+async function appPackFixture(t: TestContext, version: string) {
+  const root = temporary(t);
+  const userData = path.join(root, "data");
+  const installDir = path.join(root, "app");
+  const dir = path.join(userData, "updates");
+  const source = path.join(root, "asar");
+  fs.mkdirSync(source);
+  fs.mkdirSync(path.join(installDir, "resources"), { recursive: true });
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(installDir, "resources", "old"), "installed");
+  fs.writeFileSync(
+    path.join(source, "package.json"),
+    JSON.stringify({ version }),
+  );
+  const asar = path.join(root, "app.asar");
+  await createPackage(source, asar);
+  const zip = new JSZip();
+  zip.file("app.asar", fs.readFileSync(asar));
+  zip.file("provider-service/main.js", "new service");
   const file = path.join(dir, "Claudex-0.0.3-x64-app.zip");
-  fs.writeFileSync(file, "pack");
+  const archive = await zip.generateAsync({ type: "nodebuffer" });
+  fs.writeFileSync(file, archive);
+  const kind = "win-app" as const;
   const staged = {
     version: "0.0.3",
-    kind: "win-app" as const,
+    kind,
     file,
-    sha256: sha("pack"),
+    sha256: sha(archive),
     stagedAt: 1,
     attempts: 0,
   };
+  const keep = "b".repeat(64);
+  const runtime = "44.4.3";
+  const options = {
+    userData,
+    currentVersion: "0.0.1",
+    platform: "win32",
+    arch: "x64",
+    packaged: true,
+    windowsInstallDir: installDir,
+    installed: async () => ({ runtime, keep }),
+    fetchRelease: async () => ({
+      latestVersion: staged.version,
+      downloadUrl: "https://x.example/Claudex-Setup-0.0.3.exe",
+      sha256: "c".repeat(64),
+      appPack: {
+        url: "https://x.example/Claudex-0.0.3-x64-app.zip",
+        sha256: staged.sha256,
+        runtime,
+        keep,
+      },
+    }),
+  };
+  const extract = async (source: string, prepared: string) => {
+    const payload = await JSZip.loadAsync(fs.readFileSync(source));
+    for (const [name, entry] of Object.entries(payload.files)) {
+      if (entry.dir) continue;
+      const dest = path.join(prepared, name);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, await entry.async("nodebuffer"));
+    }
+  };
+  const readVersion = async (prepared: string) =>
+    JSON.parse(
+      extractFile(path.join(prepared, "app.asar"), "package.json").toString(
+        "utf8",
+      ),
+    ).version;
+  return { dir, installDir, options, staged, extract, readVersion };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((complete) => {
+    resolve = complete;
+  });
+  return { promise, resolve };
+}
+
+test("a cached Windows app pack becomes ready only once extraction and version validation finish", async (t) => {
+  const { dir, installDir, options, staged, extract, readVersion } =
+    await appPackFixture(t, "0.0.3");
   writeStaged(dir, staged);
-  assert.equal(readStaged(dir)?.kind, "win-app");
+  const peek = deferred<UpdateRelease>();
+  const validation = deferred<void>();
+  const extracted = deferred<void>();
+  const updater = new AppUpdater({
+    ...options,
+    peekRelease: () => peek.promise,
+    prepareWindowsAppPack: (args) =>
+      prepareWindowsAppPack(args, async (file, prepared) => {
+        await extract(file, prepared);
+        extracted.resolve();
+        await validation.promise;
+        return readVersion(prepared);
+      }),
+  });
+  assert.equal(updater.staged(), undefined);
+  const check = updater.check();
+  await Promise.race([extracted.promise, check]);
+  assert.equal(updater.status().phase, "downloading");
+  assert.equal(updater.staged(), undefined);
+  validation.resolve();
+  assert.equal((await check).status.phase, "ready");
+  assert.equal(
+    new AppUpdater({ ...options, currentVersion: "0.0.2" }).staged(),
+    undefined,
+  );
+  const ready = updater.staged();
+  assert.ok(ready?.kind === "win-app");
+  assert.equal(path.dirname(ready.prepared), installDir);
+  assert.equal(await readVersion(ready.prepared), "0.0.3");
+  assert.equal(
+    fs.readFileSync(
+      path.join(ready.prepared, "provider-service", "main.js"),
+      "utf8",
+    ),
+    "new service",
+  );
+  assert.equal(
+    fs.readFileSync(path.join(installDir, "resources", "old"), "utf8"),
+    "installed",
+  );
+
+  const checkedAtQuit = updater.check();
+  updater.stop();
+  peek.resolve({
+    latestVersion: options.currentVersion,
+    downloadUrl: null,
+    sha256: null,
+  });
+  await checkedAtQuit;
+  assert.deepEqual(updater.staged(), ready);
+
   const calls: { command: string; args: string[] }[] = [];
+  fs.rmSync(ready.file);
   await startInstall({
     dir,
-    staged,
+    staged: ready,
     relaunch: true,
     pid: 77,
-    execPath: "C:\\Claudex\\Claudex.exe",
+    currentVersion: options.currentVersion,
+    execPath: path.join(installDir, "Claudex.exe"),
     platform: "win32",
     env: { SystemRoot: "C:\\Windows" },
     spawnImpl: fakeSpawn(calls),
   });
   assert.equal(calls.length, 1);
-  assert.match(
-    encodedScript(calls[0].args),
-    /Register-ScheduledTask -TaskName 'Claudex Update 77'/,
-  );
-  const script = fs.readFileSync(path.join(dir, "install-update.ps1"), "utf8");
-  assert.match(script, /Expand-Archive -LiteralPath \$Installer/);
-  assert.match(script, /\$kept = 'codex'/);
-  assert.doesNotMatch(script, /Start-Process -FilePath \$Installer/);
+  const launch = encodedScript(calls[0].args);
+  assert.match(launch, /conhost\.exe' -Argument '--headless /);
+  assert.ok(launch.includes(ready.prepared));
+
+  fs.rmSync(ready.prepared, { recursive: true });
+  assert.equal(updater.staged(), undefined);
+  assert.equal(updater.status().phase, "idle");
 });
+
+test("a Windows app pack with the wrong version is never ready", async (t) => {
+  const { installDir, options, extract, readVersion } = await appPackFixture(
+    t,
+    "0.0.4",
+  );
+  const updater = new AppUpdater({
+    ...options,
+    prepareWindowsAppPack: (args) =>
+      prepareWindowsAppPack(args, async (file, prepared) => {
+        await extract(file, prepared);
+        return readVersion(prepared);
+      }),
+  });
+  assert.equal((await updater.check()).status.phase, "error");
+  assert.equal(updater.staged(), undefined);
+  assert.deepEqual(fs.readdirSync(installDir), ["resources"]);
+});
+
+test(
+  "a failed Windows app pack swap restores the installed resources and Codex",
+  {
+    skip: process.platform !== "win32",
+  },
+  async (t) => {
+    const { dir, installDir, options, staged } = await appPackFixture(
+      t,
+      "0.0.3",
+    );
+    const resources = path.join(installDir, "resources");
+    const source = path.join(dir, "old");
+    fs.mkdirSync(source);
+    fs.writeFileSync(
+      path.join(source, "package.json"),
+      JSON.stringify({ version: options.currentVersion }),
+    );
+    await createPackage(source, path.join(resources, "app.asar"));
+    fs.mkdirSync(path.join(resources, "codex"));
+    fs.writeFileSync(path.join(resources, "codex", "keep"), "installed Codex");
+    const updater = new AppUpdater(options);
+    assert.equal((await updater.check()).status.phase, "ready");
+    const ready = updater.staged();
+    assert.ok(ready?.kind === "win-app");
+
+    fs.mkdirSync(path.join(ready.prepared, "codex"));
+    const helper = path.join(dir, "install-update-test.ps1");
+    fs.writeFileSync(helper, windowsAppPackScript);
+    const { command, args } = windowsApplyCommand(
+      helper,
+      {
+        pid: 2_147_483_647,
+        file: staged.file,
+        target: installDir,
+        relaunch: false,
+        resultFile: applyResultFile(dir),
+        version: staged.version,
+        stagedRecord: path.join(dir, "staged.json"),
+        currentVersion: options.currentVersion,
+        prepared: ready.prepared,
+      },
+      process.env.SystemRoot,
+    );
+    const applied = spawnSync(command, args, { windowsHide: true });
+    assert.equal(applied.status, 0, applied.stderr.toString("utf8"));
+    assert.equal(readApplyResult(dir)?.ok, false);
+    assert.equal(updater.staged()?.attempts, 1);
+    assert.equal(
+      fs.readFileSync(path.join(resources, "codex", "keep"), "utf8"),
+      "installed Codex",
+    );
+    const installed = JSON.parse(
+      extractFile(path.join(resources, "app.asar"), "package.json").toString(
+        "utf8",
+      ),
+    );
+    assert.equal(installed.version, options.currentVersion);
+  },
+);

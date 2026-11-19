@@ -9,7 +9,8 @@ interface SignInRecord {
   authStatus?: McpServerState["authStatus"];
 }
 
-// Record successful sign-ins, not polling times.
+// Record successful sign-ins, not polling times (live claude.ai bundle,
+// 2026-10-14, c40525e86-Cikuv2d9.js).
 export class ConnectorHistory {
   private readonly file: string;
   private records: Record<string, SignInRecord> = Object.create(null);

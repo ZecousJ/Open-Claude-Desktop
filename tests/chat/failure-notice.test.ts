@@ -59,3 +59,16 @@ test("a failed reply's reason is one plain sentence, never the engine's text", (
   assert.equal(failureMessage(undefined), "This response didn’t load.");
   assert.equal(failureMessage("something odd"), "This response didn’t load.");
 });
+
+test("upstream interrupted replies and rate limits keep their actionable reason", () => {
+  assert.equal(
+    failureMessage(
+      "stream disconnected before completion: Upstream response interrupted. Please retry.",
+    ),
+    "Claudex couldn’t finish this response. Try again in a moment.",
+  );
+  assert.equal(
+    failureMessage("Upstream rate limit exceeded, please retry later"),
+    "The service is busy right now. Wait a moment, then try again.",
+  );
+});

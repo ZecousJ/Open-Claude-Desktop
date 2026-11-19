@@ -342,7 +342,7 @@ test("the editor's draft holds the moment and the permission, and gives them bac
     activeProviderId: "p",
   };
   const draft = newDraft(NOW, undefined, "cowork");
-  // A new task starts on Auto.
+  // A new task starts on Auto (live claude.ai bundle, 2026-10-21, c97b955f1: ef).
   assert.equal(draft.permission, "auto");
   assert.equal(draft.kind, "daily");
   assert.equal(draft.at, new Date(2026, 9, 14, 13, 0).getTime());

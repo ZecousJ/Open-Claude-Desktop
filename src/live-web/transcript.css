@@ -1,5 +1,6 @@
 /*
- * Chat reply Prose flow and heading scale. Flow is evaluated in the receiving
+ * Chat reply Prose flow and heading scale (live claude.ai bundle,
+ * 2026-10-14, c6a992d55-D8h3Fpj5.css). Flow is evaluated in the receiving
  * element's em, including after another heading.
  */
 .mode-chat .markdown {
@@ -80,9 +81,11 @@
   ) {
   margin-top: 0;
 }
-/* Text keeps a 4px inset and stops short of the column's right edge by clamp(0,
-   (width - 384px) * .175, 56px): 56px in a 736px column. A list item,
-   definition or cell starts again from 0, so its text runs to its own edge. */
+/* Text keeps a 4px inset and stops short of the column's right edge by
+   clamp(0, (width - 384px) * .175, 56px): 56px in a 736px column (live
+   claude.ai bundle, 2026-10-16, c6a992d55-DtPVsf7Q.css
+   --cds-assistant-message-text-stop). A list item, definition or cell
+   starts again from 0, so its text runs to its own edge. */
 .mode-chat .markdown {
   --reply-text-stop: clamp(0px, (100% - 384px) * 0.175, 56px);
 }
@@ -172,9 +175,10 @@
 .mode-chat .markdown blockquote > p {
   padding: 0 var(--reply-text-stop) 0 0;
 }
-/* Tables: a 1px #ffffff1a frame, radius 8, 8px clear on the right; the header
-   row 5% white at weight 500; cells .4375em .75em on the text's own line
-   height. */
+/* Tables: a 1px #ffffff1a frame, radius 8, 8px clear on the right; the
+   header row 5% white at weight 500; cells .4375em .75em on the text's own
+   line height (live claude.ai bundle, 2026-10-16, c673fe961-Df8SFQF6.css:
+   a 15px/22px row is 35px, not the older capture's fixed 39). */
 .mode-chat .markdown-table {
   margin-top: var(--reply-flow);
   margin-bottom: 0;
@@ -209,15 +213,19 @@
   font-size: 14px;
   line-height: 22.75px;
 }
-/* Inline code: 0.9 of the text, #ec7e7e on 5% white, a hairline rim, radius
-   6.4px — the live markdown component's class, the same in every mode, so it no
-   longer depends on the window's mode class. The live page's root is 16px, so
-   0.9rem is 14.4px, 0.4rem 6.4px; the app's root is 14px (00-foundation.css),
-   so the radius is written in px; the size is 0.9em, which gives the live
-   14.4px in Chat and the live 12.6px in Code. */
+/* Inline code: 0.9 of the text, #ec7e7e on 5% white, a hairline rim, radius 6.4px —
+   the live markdown component's class (bg-text-200/5 border-0.5
+   border-border-300 text-danger-000 whitespace-pre-wrap rounded-[0.4rem]
+   px-1 py-px text-[0.9rem], live claude.ai bundle, 2026-10-13), the same in
+   every mode, so it no longer depends on the window's mode class. The live
+   page's root is 16px, so 0.9rem is 14.4px, 0.4rem 6.4px; the app's root is
+   14px (00-foundation.css), so the radius is written in px; the size is
+   0.9em, which gives the live 14.4px in Chat and the live 12.6px in Code
+   (claude.ai/code measured 2026-10-13: 14px text, 12.6px code). */
 .mode-code .markdown.markdown :not(pre) > code,
 .mode-code .user-message-text.user-message-text code {
-  /* Code: 0.9 of the text, never larger than the words beside it. */
+  /* Code: 0.9 of the text (claude.ai/code measured 2026-10-13: 14px text,
+     12.6px code), never larger than the words beside it. */
   font-size: 0.9em;
 }
 .markdown.markdown :not(pre) > code,
@@ -245,7 +253,8 @@
 :root:not([data-theme="light"]) .mode-chat .markdown a {
   color: #6da7ec;
 }
-/* List children use a third of flow. */
+/* List children use a third of flow (live claude.ai bundle, 2026-10-14,
+   c6a992d55-D8h3Fpj5.css). */
 .mode-chat
   .markdown.markdown
   li
@@ -271,15 +280,16 @@
 .mode-chat .markdown.markdown li > p {
   padding: 0;
 }
-/* The first message sits 24px under the title bar; the prompt bubble is 5%
-   white with #f0efec text, and the reply starts 40px under it. */
+/* The first message sits 24px under the title bar (the desktop captures'
+   15vh drop is gone on the live page); the prompt bubble is 5% white with
+   #f0efec text, and the reply starts 40px under it. */
 .mode-chat .messages {
   padding-top: 24px;
 }
-/* The feed starts at y60, 12px after the 48px header; its first article has
-   another 24px inset (y84). The native conversation WebView also has .app.web
-   and data-surface=web; exclude its .mobile-conversation wrapper to keep that
-   layout intact. */
+/* Live web 2026-10-16 at scrollTop 0: the feed starts at y60, 12px
+   after the 48px header; its first article has another 24px inset (y84).
+   The native conversation WebView also has .app.web and data-surface=web;
+   exclude its .mobile-conversation wrapper to keep that layout intact. */
 :root[data-surface="web"]
   .app.web.mode-chat:not(.mobile-conversation)
   .messages {
@@ -313,16 +323,17 @@
 }
 
 /*
- * Motion while a reply arrives:
+ * Motion while a reply arrives (live claude.ai, recorded frame by frame on
+ * 2026-09-29, fidelity/observations/live/stream-rec-chat.json; the reveal
+ * scheduler from the desktop bundle 2.31226.1 static JS):
  * - the sent prompt pops in: 450ms, cubic-bezier(0.34, 1.3, 0.64, 1), from
  *   opacity 0, scale 0.92 and 6px down;
  * - the reply's whole turn rises in when it appears, whether it starts with
- *   text or with tool rows: 1100ms on a spring that overshoots about 15%, from
- *   opacity 0 and 10px down (ConversationTranscript marks new turns);
+ *   text or with tool rows: 1100ms on a spring that overshoots about 15%,
+ *   from opacity 0 and 10px down (ConversationTranscript marks new turns);
  * - streamed words fade in chunk by chunk (src/ui/stream-reveal.ts): a word
  *   chunk over 200ms, linear, its delay set inline; a phrase over 500ms;
- * - the reply's toolbar fades in 120ms after a 100ms wait
- *   (chat-transcript.css).
+ * - the reply's toolbar fades in 120ms after a 100ms wait (chat-transcript.css).
  */
 @keyframes cds-um-enter {
   from {
@@ -407,9 +418,9 @@
   animation: none;
 }
 
-/* The star while a reply writes: its frames step through a dot, the growing
-   star, the full star and back in 720ms (the reference strip: 8 frames,
-   steps(8)); no opacity breathing. */
+/* The star while a reply writes (live claude.ai, 2026-09-29): its frames
+   step through a dot, the growing star, the full star and back in 720ms
+   (the reference strip: 8 frames, steps(8)); no opacity breathing. */
 .spark-mark {
   display: inline-block;
   width: 32px;
@@ -465,8 +476,8 @@
   }
 }
 
-/* Waiting row: 6px above and below, the 20px star 8px in and 4px down, the verb
-   38px in, 14px. */
+/* Waiting row (live claude.ai): 6px above and below, the 20px star 8px in and
+   4px down, the verb 38px in, 14px. */
 .mode-chat .pre-tool-activity,
 .mode-cowork .pre-tool-activity {
   padding-left: 38px;
@@ -477,10 +488,36 @@
   top: 2px;
 }
 
-/* The status row's working mark: a 20px square (WorkingKnot). */
+/* The status row's working dots (live claude.ai, 2026-09-29): a 20px square,
+   #d97757, the frames stepping at 30 a second (ClayMark), fading in 200ms. */
 .clay-mark {
+  display: inline-block;
   width: 20px;
   height: 20px;
+  overflow: hidden;
+  color: #d97757;
+  animation: clay-in var(--motion-base) var(--ease-out);
+}
+.clay-mark-strip {
+  display: block;
+  width: 20px;
+  animation-name: clay-strip;
+  animation-iteration-count: infinite;
+}
+.clay-mark-strip > svg {
+  display: block;
+  width: 20px;
+  height: 100%;
+}
+@keyframes clay-strip {
+  to {
+    transform: translateY(-100%);
+  }
+}
+@keyframes clay-in {
+  from {
+    opacity: 0;
+  }
 }
 .pre-tool-activity > .clay-mark {
   position: absolute;
@@ -506,10 +543,20 @@
 .activity-mark.clay > .clay-mark {
   display: block;
 }
+:root[data-motion="reduced"] .clay-mark,
+:root[data-motion="reduced"] .clay-mark-strip {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .clay-mark,
+  .clay-mark-strip {
+    animation: none;
+  }
+}
 
-/* The reply toolbar: 24px buttons on a 24px pitch, the first 2px left of the
-   text column, radius 6; the icon font's 16px glyphs (weight 533.25) in
-   #898781. */
+/* The reply toolbar (live claude.ai, 2026-10-01, from its DOM): 24px
+   buttons on a 24px pitch, the first 2px left of the text column, radius
+   6; the icon font's 16px glyphs (weight 533.25) in #898781. */
 :root[data-surface="web"] .mode-chat .message-actions {
   margin-left: -2px;
 }
@@ -524,7 +571,8 @@
   width: 16px;
   height: 16px;
 }
-/* A user message's actions and time are #898781. */
+/* A user message's actions and time are #898781 (live claude.ai,
+   2026-10-01). */
 :root[data-surface="web"] .user-message-actions {
   color: #898781;
 }
@@ -533,15 +581,15 @@
 }
 
 /*
- * A reply's vertical rhythm, as the original's code sets it:
- * - the text is a grid with 12px between blocks, where margins add up (nothing
- *   collapses): lists keep 12px under them (24px to what follows); h1 and h2
- *   12px above, h3–h6 8px, every heading -4px under (8px to its text); a rule
- *   12px above and under; the last block none;
- * - a step pill (6px padding round a 32px row): 12px of air above and below its
- *   label;
- * - the files a reply hands over are a column 8px apart, 16px under the text
- *   and 8px above the toolbar (which sits 8px further down).
+ * A reply's vertical rhythm, as the original's code sets it (claude.ai
+ * 2026-10-01, the markdown renderer and the message blocks):
+ * - the text is a grid with 12px between blocks, where margins add up
+ *   (nothing collapses): lists keep 12px under them (24px to what
+ *   follows); h1 and h2 12px above, h3–h6 8px, every heading -4px under
+ *   (8px to its text); a rule 12px above and under; the last block none;
+ * - a step pill (6px padding round a 32px row): 12px of air above and below its label;
+ * - the files a reply hands over are a column 8px apart, 16px under the
+ *   text and 8px above the toolbar (which sits 8px further down).
  */
 :root[data-surface="web"] .mode-chat .markdown.markdown {
   display: grid;
@@ -573,9 +621,9 @@
 :root[data-surface="web"] .mode-chat .markdown.markdown li > :is(ul, ol) {
   margin: 4px 0 0;
 }
-/* A step row keeps the same 12px of air above and below its label (its own 6px
-   padding and the row's): no extra margin under it, which made the gap below
-   twice the gap above. */
+/* A step row keeps the same 12px of air above and below its label (its own
+   6px padding and the row's): no extra margin under it, which made the gap
+   below twice the gap above (owner, 2026-10-03). */
 :root[data-surface="web"] .mode-chat .chat-steps {
   margin-bottom: 0;
 }
@@ -591,8 +639,8 @@
   > .file-document-card {
   margin: 0;
 }
-/* Download all is a button as wide as its words under the cards, not a bar
-   across the column. */
+/* Download all is a button as wide as its words under the cards (R-0956),
+   not a bar across the column. */
 :root[data-surface="web"]
   .mode-chat
   .file-change-result.output-files
@@ -601,8 +649,9 @@
   margin-bottom: 0;
 }
 
-/* A step group's row: the summary in the muted ink, its caret too (the outcome
-   word after it: chat-transcript.css). */
+/* A step group's row (claude.ai 2026-10-01, the turn status row): the
+   summary in the muted ink, its caret too (the outcome word after it:
+   chat-transcript.css). */
 :root[data-surface="web"] .chat-steps {
   --steps-label: #898781;
 }

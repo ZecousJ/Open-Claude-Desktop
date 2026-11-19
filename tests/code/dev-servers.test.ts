@@ -33,7 +33,7 @@ const serverScript = `
 import http from "node:http";
 import { spawn } from "node:child_process";
 const mode = process.env.FAKE_MODE || "serve";
-const port = Number(process.env.FAKE_PORT || 0);
+const port = Number(process.env.FAKE_PORT || process.env.PORT || 0);
 if (mode === "env") {
   console.log("ENV " + JSON.stringify(Object.keys(process.env).sort()));
   console.log("CWD " + process.cwd());
@@ -188,6 +188,43 @@ test("preview session data is prepared before each server restart, not when focu
   }
 });
 
+test("stopping during preview preparation cancels a process start or URL attach", async () => {
+  let entered!: () => void;
+  let release!: () => void;
+  const beforeStart = () => {
+    entered();
+    return new Promise<void>((resolve) => { release = resolve; });
+  };
+  const fixture = setup({ beforeStart });
+  const port = await freePort();
+  const outside = http.createServer((_request, response) => response.end("existing"));
+  await new Promise<void>((resolve) => outside.listen(0, "127.0.0.1", resolve));
+  const externalPort = (outside.address() as net.AddressInfo).port;
+  try {
+    fixture.writeConfig([
+      nodeServer(fixture.folder, "process", { FAKE_PORT: String(port) }, port),
+      { name: "attach", url: `http://localhost:${externalPort}` },
+    ]);
+    for (const name of ["process", "attach"]) {
+      const ready = new Promise<void>((resolve) => { entered = resolve; });
+      const pending = fixture.servers.start("c1", name);
+      await ready;
+      await fixture.servers.stop("c1", name);
+      release();
+      const cancelled = await pending;
+      assert.equal(cancelled.status, "stopped");
+      assert.equal(cancelled.pid, undefined);
+      assert.equal(fixture.servers.list("c1").find((server) => server.name === name)?.status, "stopped");
+    }
+    await assert.rejects(fetch(`http://127.0.0.1:${port}`));
+    assert.equal(await (await fetch(`http://127.0.0.1:${externalPort}`)).text(), "existing");
+  } finally {
+    await fixture.servers.dispose();
+    await new Promise<void>((resolve) => outside.close(() => resolve()));
+    fs.rmSync(fixture.folder, { recursive: true, force: true });
+  }
+});
+
 function alive(pid: number) {
   try {
     process.kill(pid, 0);
@@ -224,6 +261,8 @@ test("starts a server, waits for its port, keeps its logs and stops it", async (
   );
   const logs = await s.servers.logs("c1", "web");
   assert.match(logs[0], /^\$ /);
+  const entries=await s.servers.logEntries('c1','web');
+  assert.ok(entries.some(row=>row.stream==='stdout'&&row.line.includes('Local:')&&Number.isFinite(Date.parse(row.timestamp))));
   assert.ok(logs.includes(`Local: http://localhost:${port}/`), logs.join("|"));
   assert.equal((await s.servers.logs("c1", "web", 1)).length, 1);
   await s.servers.stop("c1", "web");
@@ -446,7 +485,7 @@ test("a port already in use is reported instead of starting", async () => {
   const port = (blocker.address() as net.AddressInfo).port;
   const s = setup();
   s.writeConfig([
-    nodeServer(s.folder, "web", { FAKE_PORT: String(port) }, port),
+    { ...nodeServer(s.folder, "web", { FAKE_PORT: String(port) }, port), autoPort: false },
   ]);
   const state = await s.servers.start("c1", "web");
   assert.equal(state.status, "failed");
@@ -464,6 +503,59 @@ test("a port already in use is reported instead of starting", async () => {
   assert.equal(gone.status, "failed");
   assert.match(gone.error ?? "", /Nothing is running/);
   await s.servers.dispose();
+});
+
+test("default autoPort uses PORT when another service owns the preferred port", async () => {
+  const fixture = setup();
+  const blocker = http.createServer((_request, response) => response.end("original"));
+  await new Promise<void>((resolve) => blocker.listen(0, "127.0.0.1", resolve));
+  const preferred = (blocker.address() as net.AddressInfo).port;
+  try {
+    fs.writeFileSync(path.join(fixture.folder, "package.json"), JSON.stringify({
+      scripts: { dev: "npm run serve:fixture", "serve:fixture": `node server.mjs --port ${preferred}` },
+    }));
+    fixture.writeConfig([
+      nodeServer(fixture.folder, "auto", {}, preferred),
+      { name: "script-pinned", runtimeExecutable: "npm", runtimeArgs: ["run", "dev"], port: preferred },
+    ]);
+    const pinned = await fixture.servers.start("c1", "script-pinned");
+    assert.equal(pinned.status, "failed");
+    assert.match(pinned.error ?? "", /already in use/);
+    const moved = await fixture.servers.start("c1", "auto");
+    assert.equal(moved.status, "running", moved.error);
+    assert.notEqual(moved.port, preferred);
+    assert.equal(await (await fetch(moved.url!)).text(), "ok");
+    assert.equal(await (await fetch(`http://127.0.0.1:${preferred}`)).text(), "original");
+    await fixture.servers.stop("c1", "auto");
+    await assert.rejects(fetch(moved.url!));
+  } finally {
+    await fixture.servers.dispose();
+    await new Promise<void>((resolve) => blocker.close(() => resolve()));
+    fs.rmSync(fixture.folder, { recursive: true, force: true });
+  }
+});
+
+test("a fixed port replaces only the running server in the same session", async () => {
+  const fixture = setup();
+  const port = await freePort();
+  try {
+    fixture.writeConfig([
+      nodeServer(fixture.folder, "first", {}, port),
+      { ...nodeServer(fixture.folder, "second", {}, port), autoPort: false },
+    ]);
+    const first = await fixture.servers.start("c1", "first");
+    const refused = await fixture.servers.start("c2", "second");
+    assert.equal(refused.status, "failed");
+    assert.equal(fixture.servers.list("c1").find((server) => server.name === "first")?.status, "running");
+    const second = await fixture.servers.start("c1", "second");
+    assert.equal(second.status, "running", second.error);
+    assert.notEqual(first.pid, second.pid);
+    assert.equal(fixture.servers.list("c1").find((server) => server.name === "first")?.status, "stopped");
+    assert.equal(await (await fetch(`http://127.0.0.1:${port}`)).text(), "ok");
+  } finally {
+    await fixture.servers.dispose();
+    fs.rmSync(fixture.folder, { recursive: true, force: true });
+  }
 });
 
 test("saves configurations to .claude/launch.json", async () => {
@@ -770,6 +862,8 @@ test("log lines: colours removed, carriage returns, bounded", () => {
   split.write("stdout", bytes.subarray(0, 1));
   split.write("stdout", bytes.subarray(1));
   assert.deepEqual(split.tail(), ["é"]);
+  split.write("stderr", "\0WSL preview ready\0\n");
+  assert.deepEqual(split.tail(), ["é", "WSL preview ready"]);
 });
 
 test("environment and PATH helpers", () => {

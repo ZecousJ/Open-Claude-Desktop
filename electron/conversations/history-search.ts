@@ -37,13 +37,19 @@ export function searchLocalConversations(
   const needle = input.query.toLocaleLowerCase();
   if (!needle) return { results: [] };
   const results: HistorySearchHit[] = [];
-  const ordered = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
+  const archive = input.page?.archive ?? (input.includeArchived ? "all" : "active");
+  const ordered = [...conversations].sort((a, b) =>
+    b.updatedAt - a.updatedAt || (a.id < b.id ? -1 : a.id === b.id ? 0 : 1));
+  let remainingOffset = input.page?.offset ?? 0;
   for (const c of ordered) {
+    // History and the search palette exclude temporary chats. Apply that
+    // eligibility before the cap so hidden matches cannot crowd out history.
+    if (c.incognito) continue;
     if (results.length >= input.limit) break;
-    if (c.archived && !input.includeArchived) continue;
+    if ((archive === "active" && c.archived) || (archive === "archived" && !c.archived)) continue;
+    if (input.page?.starredOnly && !c.pinned) continue;
     if (input.mode && c.mode !== input.mode) continue;
-    if (input.projectId && (c.projectId !== input.projectId || c.incognito))
-      continue;
+    if (input.projectId && c.projectId !== input.projectId) continue;
     const hit: HistorySearchHit = {
       conversationId: c.id,
       title: c.title,
@@ -72,8 +78,10 @@ export function searchLocalConversations(
       }
       if (found) break;
     }
-    if (found || c.title.toLocaleLowerCase().includes(needle))
-      results.push(hit);
+    if (found || c.title.toLocaleLowerCase().includes(needle)) {
+      if (remainingOffset) remainingOffset--;
+      else results.push(hit);
+    }
   }
   return { results };
 }

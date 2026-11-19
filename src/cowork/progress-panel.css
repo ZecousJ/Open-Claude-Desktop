@@ -17,7 +17,8 @@
   background: #262626;
   color: #e6e5e0;
   font:
-    13px/18px -apple-system,
+    13px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -47,7 +48,9 @@
       calc((b - 163.15) / 0.35) / 35%
   );
 }
-/* p-3 / px-3 pb-2; rounded-md border-0.5 bg-surface-3; max-h-72. */
+/* p-3 / px-3 pb-2; rounded-md border-0.5 bg-surface-3; max-h-72
+   (live claude.ai bundle, 2026-10-14, cc5a62f6f-DPxwNyrF.js,
+   cb34f9f5d-c8u0NVZO.js; success xs badge: shared-frame-B1JORnF0.js). */
 .progress-computer-heading {
   display: flex;
   align-items: center;
@@ -122,10 +125,11 @@
   line-height: round(1.25em, 1px);
   font-weight: 500;
 }
-/* 45px headings, 14px regular titles 12.5px from the card's left, the chevron
-   4px after the title; a collapsed Progress ends with "n of m" in #8c8b87. The
-   folder heading wraps its name and ends with the chevron and a folder button
-   (centres 42.5 and 23px from the card's right edge). */
+/* R-0853, R-0879, R-0928 (2x, ÷2): 45px headings, 14px regular titles 12.5px
+   from the card's left, the chevron 4px after the title; a collapsed
+   Progress ends with "n of m" in #8c8b87. The folder heading wraps its name
+   and ends with the chevron and a folder button (centres 42.5 and 23px from
+   the card's right edge). */
 .progress-section-header {
   display: flex;
   align-items: center;
@@ -244,8 +248,8 @@
   border-color: rgb(11 11 11 / 10%);
   background: rgb(11 11 11 / 5%);
 }
-/* The empty Progress picture: 26px rings joined by 8px dashes; the done ones
-   filled #30302e with a dim check. */
+/* The empty Progress picture (R-0879): 26px rings joined by 8px dashes; the
+   done ones filled #30302e with a dim check. */
 .progress-placeholder {
   display: flex;
   align-items: center;
@@ -274,9 +278,9 @@
 .progress-placeholder i[data-status="completed"] {
   background: #30302e;
 }
-/* One 32px row per step; a 24px disc, blue #4a7fdc with a white check when done
-   (the text struck through in #8c8b87), else #333 with the step's number; the
-   text 12px after the disc. */
+/* R-0853: one 32px row per step; a 24px disc, blue #4a7fdc with a white
+   check when done (the text struck through in #8c8b87), else #333 with the
+   step's number; the text 12px after the disc. */
 .progress-steps {
   display: grid;
   margin: 0;
@@ -316,8 +320,8 @@
   color: #8c8b87;
   text-decoration: line-through;
 }
-/* The folder's files, 32px rows with a 24px #2f2f2f tile and "name · KIND" (the
-   kind in #8c8b87). */
+/* R-0928: the folder's files, 32px rows with a 24px #2f2f2f tile and
+   "name · KIND" (the kind in #8c8b87). */
 .progress-list {
   display: grid;
   margin: 0;
@@ -358,7 +362,8 @@
 .progress-file-kind {
   color: #8c8b87;
 }
-/* Context's connectors as 24px #1f1f1f pills with a globe (Web search) or plug. */
+/* R-0879: Context's connectors as 24px #1f1f1f pills with a globe (Web
+   search) or plug. */
 .progress-chips {
   display: flex;
   flex-wrap: wrap;
@@ -381,8 +386,8 @@
 .progress-chips svg {
   color: #a3a29e;
 }
-/* The empty Context picture, 101x50 at the body's left edge, 16px above the
-   hint. */
+/* R-0853, R-0928: the empty Context picture, 101x50 at the body's left
+   edge, 16px above the hint. */
 .progress-context-picture {
   display: block;
   overflow: visible;
@@ -420,9 +425,9 @@
 :root[data-theme="light"] .progress-list button:hover {
   background: #ebe7e0;
 }
-/* An output the running turn made and that was not opened yet ends its row with
-   the unread dot of the Active list (#307cd9, cowork-active.css); it was
-   Claude-orange, which no capture uses for it. */
+/* R-0928 (no capture): an output the running turn made and that was not
+   opened yet ends its row with the unread dot of the Active list (#307cd9,
+   cowork-active.css); it was Claude-orange, which no capture uses for it. */
 .progress-new {
   flex: none;
   width: 6px;
@@ -431,7 +436,7 @@
   border-radius: 50%;
   background: #307cd9;
 }
-/* The folder button; hover as the list rows. */
+/* The folder button (R-0853); hover as the list rows. */
 .progress-section-action {
   display: grid;
   flex: none;
@@ -470,9 +475,10 @@
 :root[data-theme="light"] .progress-context-picture .raised {
   fill: #fffefa;
 }
-/* The empty Outputs picture: a 63x43 sheet with three bars over a rule, 16px
-   above the hint; the sheet #30302e with a #dedcd1 edge at 30% in dark, white
-   with #1f1e1d at 30% in light. */
+/* The empty Outputs picture (session-artifacts, desktop bundle 2.31226.1):
+   a 63x43 sheet with three bars over a rule, 16px above the hint; the sheet
+   #30302e with a #dedcd1 edge at 30% in dark, white with #1f1e1d at 30% in
+   light. */
 .progress-artifacts-picture {
   display: block;
   margin: 6px 0 12px -4px;
@@ -525,7 +531,8 @@
 .progress-folder-toggle svg {
   flex: none;
 }
-/* Resource rows. */
+/* Resource rows (live claude.ai bundle, 2026-10-14,
+   ce5658dc8-Dez48Sxz.js: ko; cc5a62f6f-DPxwNyrF.js: g). */
 .progress-panel {
   --resource-surface: #151515;
   --resource-secondary: #c3c2b7;

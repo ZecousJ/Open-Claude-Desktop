@@ -24,7 +24,7 @@ const suggestions = [
 ];
 
 // Personal connectors connect directly; Request/Requested is organization-only
-// .
+// (live claude.ai bundle, 2026-10-14, ce5658dc8-Dez48Sxz.js: jl, zl).
 export default function SuggestedConnectors() {
   const app = useContext(AppContext);
   const icons = useFavicons(suggestions.map((entry) => entry.host));

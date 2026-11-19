@@ -1,17 +1,19 @@
 /*
- * The original's artifact and file block.
+ * The original's artifact and file block (claude.ai "sheet" card,
+ * 2026-10-01; its rules and Tailwind classes resolved to values).
  *
- * Card: at most 520px, padding 6 16 8 20, a 20px gap, radius 12, a 0.5px rim
- * (alpha 20%, 35% hovered), a 1px drop shadow; a tint gradient (the tint's 10
- * at 10% light, its 800 at 15% dark; 40% / 33% hovered) over white 30% /
- * gray-830 30%, or, while its file is open, the tint's 800 at 5% / its 100 at
- * 10%. Grey cards keep no gradient. Tile: a 56px square; page and sheet behind
- * 72px tall from 10px down, radius 8, a 0.5px rim of the tint's 200 / 700 on
- * its 50 / 800, a white inset light (95% / 15%) and ring (40% / 5%), a white
- * sheen from the top left (55% / 8%); the glyph (the tint's 600 / 300, grey the
- * muted text) 20px in the page's top 54px. Title 15/20, kind 13/17 muted, 2px
- * apart, 4px down. Buttons 32px, radius 8, padding 0 12px, 14/20 on alpha 10%
- * (14% hovered).
+ * Card: at most 520px, padding 6 16 8 20, a 20px gap, radius 12, a 0.5px
+ * rim (alpha 20%, 35% hovered), a 1px drop shadow; a tint gradient (the
+ * tint's 10 at 10% light, its 800 at 15% dark; 40% / 33% hovered) over
+ * white 30% / gray-830 30%, or, while its file is open, the tint's 800 at
+ * 5% / its 100 at 10%. Grey cards keep no gradient.
+ * Tile: a 56px square; page and sheet behind 72px tall from 10px down,
+ * radius 8, a 0.5px rim of the tint's 200 / 700 on its 50 / 800, a white
+ * inset light (95% / 15%) and ring (40% / 5%), a white sheen from the top
+ * left (55% / 8%); the glyph (the tint's 600 / 300, grey the muted text)
+ * 20px in the page's top 54px.
+ * Title 15/20, kind 13/17 muted, 2px apart, 4px down. Buttons 32px,
+ * radius 8, padding 0 12px, 14/20 on alpha 10% (14% hovered).
  */
 .sheet-card {
   --sheet-rim: rgb(255 255 255 / 20%);
@@ -799,9 +801,9 @@
   }
 }
 
-/* Phones: Download is a 32px square with the 20px glyph, no fill; its word
-   stays for screen readers. */
-.sheet-card .generated-file-download .app-icon {
+/* Phones (live claude.ai below 640px wide, 2026-10-02): Download is a 32px
+   square with the 20px glyph, no fill; its word stays for screen readers. */
+.sheet-card .generated-file-download .anthropicon {
   display: none;
 }
 @media (max-width: 639.98px) {
@@ -821,7 +823,7 @@
     > button:first-child {
     color: var(--sheet-text);
   }
-  .sheet-card .generated-file-download .app-icon {
+  .sheet-card .generated-file-download .anthropicon {
     display: block;
   }
   .sheet-card .generated-file-download-label {

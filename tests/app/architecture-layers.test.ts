@@ -5,9 +5,10 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 /**
- * The layers: shared/ is the bottom and imports from no other layer; the main
- * process, the runner and the provider service never import the page (src/,
- * src-web/); the page never imports the main process, runner or service code.
+ * The layers (docs/architecture-review-2026-10-19.md): shared/ is the
+ * bottom and imports from no other layer; the main process, the runner and
+ * the provider service never import the page (src/, src-web/); the page
+ * never imports the main process, runner or service code.
  */
 const forbidden: Record<string, string[]> = {
   shared: ["src", "src-web", "electron", "runner", "server"],

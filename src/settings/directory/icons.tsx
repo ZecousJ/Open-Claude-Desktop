@@ -64,10 +64,10 @@ export function DirectoryTile({ icon }: { icon: DirectoryIcon }) {
 }
 
 /**
- * The stepped puzzle piece: an outlined notched head over a filled three-step
- * base, 69×77. `line` is the stroke width on screen (2px on the Extensions
- * page, 1.3px at 0.69 beside Add your first plugins, as measured), kept when
- * `scale` shrinks it.
+ * The stepped puzzle piece (R-1443 W1920 at 1x, traced from the capture): an
+ * outlined notched head over a filled three-step base, 69×77. `line` is the
+ * stroke width on screen (2px on the Extensions page, 1.3px at 0.69 beside
+ * Add your first plugins, as measured), kept when `scale` shrinks it.
  */
 function PuzzleArt({
   className,
@@ -101,7 +101,7 @@ function PuzzleArt({
   );
 }
 
-/** The piece over "No extensions installed". */
+/** The piece over "No extensions installed" (R-1443). */
 export function ExtensionsIllustration() {
   return (
     <PuzzleArt
@@ -111,7 +111,10 @@ export function ExtensionsIllustration() {
   );
 }
 
-/** The same piece at 0.69 beside "Add your first plugins". */
+/**
+ * The same piece at 0.69 beside "Add your first plugins" (R-1461 W1920:
+ * 48×53 at the banner's right, vertically centred).
+ */
 export function PluginsIllustration() {
   return (
     <PuzzleArt
@@ -123,11 +126,11 @@ export function PluginsIllustration() {
 }
 
 /**
- * The table with a trend badge on the Discover banner: the original's
- * hand-drawn table has a narrow first column, a wide second and a medium third,
- * and its badge (35px at 1x) sits inside the table's lower right corner,
- * measured from R-1116 (W840, 1x). One viewBox unit is 1.72px of a 1x page at
- * the Customize size (165px wide).
+ * The table with a trend badge on the Discover banner (R-1126, R-1149): the
+ * original's hand-drawn table has a narrow first column, a wide second and a
+ * medium third, and its badge (35px at 1x) sits inside the table's lower
+ * right corner, measured from R-1116 (W840, 1x). One viewBox unit is 1.72px
+ * of a 1x page at the Customize size (165px wide).
  */
 export function BannerIllustration() {
   return (

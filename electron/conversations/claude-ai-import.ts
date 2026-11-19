@@ -9,7 +9,8 @@ const exportIdPattern = /^[A-Za-z0-9_-]{16,256}$/;
 const maxBytes = 1024 * 1024 * 1024;
 const failure = "Your conversation export didn’t import";
 
-/** PKCE user:data_export grant and nonce export jobs. */
+/** PKCE user:data_export grant and nonce export jobs (desktop 2.37337.1,
+ * index.chunk-BWk6pVUt.js:276002,276038,276240,276595). */
 export class ClaudeAiImport {
   private controller?: AbortController;
   private credentials?: {

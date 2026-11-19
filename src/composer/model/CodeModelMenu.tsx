@@ -56,9 +56,9 @@ export function CodeModelMenu({
   // under More models (owner decision 11); without it the ids are listed.
   const catalog = useModelCatalog();
   const choices = codeModelChoices(providers, providerId, model, catalog);
-  // The provider switch, as in the Chat menu: with models of two or more
-  // makers, one maker's models show, in the menu and under More models; it
-  // opens on the current model's maker.
+  // The provider switch (owner, 2026-10-02), as in the Chat menu: with
+  // models of two or more makers, one maker's models show, in the menu and
+  // under More models; it opens on the current model's maker.
   const vendors = catalog?.items.length
     ? choiceVendors([...choices.quick, ...choices.more])
     : [];
@@ -81,13 +81,15 @@ export function CodeModelMenu({
     setEffortBranch(false);
   };
   const efforts = codeEffortsFor(catalog, model);
-  // The catalog marks each model's own default effort; the badge follows it.
+  // The catalog marks each model's own default effort; the badge follows it
+  // (live claude.ai bundle, 2026-10-16, shared-28 w$: `recommended` → Default).
   const recommendedEffort = catalog?.items.find(
     (item) => item.id === model,
   )?.defaultEffort;
   // Claude highlights the first older model as soon as the submenu opens.
   const [active, setActive] = useState(0);
-  // More models has a search box.
+  // More models has a search box (live claude.ai bundle, 2026-10-14:
+  // Search models; every word must appear in the name or the id).
   const [query, setQuery] = useState("");
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const found = more.filter((choice) => {
@@ -160,7 +162,7 @@ export function CodeModelMenu({
     };
     document.addEventListener("pointerdown", outside);
     // Opened by /model's second Enter the menu shows no highlight until an
-    // arrow key moves it, so the first focus is not "visible".
+    // arrow key moves it (R-0368), so the first focus is not "visible".
     requestAnimationFrame(() =>
       (
         root.current?.querySelector<HTMLElement>(
@@ -290,8 +292,8 @@ export function CodeModelMenu({
         />
       )}
       {/* Every maker's models share one grid cell and only the shown one is
-         visible, so the menu keeps the size of the longest list when the maker
-         switch changes. */}
+          visible, so the menu keeps the size of the longest list when the
+          maker switch changes (owner, 2026-10-20: it must not jump). */}
       <div className="code-model-quick-stack">
         {(vendors.length >= 2 ? vendors.map((v) => v.id) : [shownVendor]).map(
           (id) => {
@@ -339,8 +341,8 @@ export function CodeModelMenu({
                         onClick={() => select(choice)}
                         aria-disabled={choice.updateRequired || undefined}
                       >
-                        {/* Main-menu models carry their description; More models
-                           keep theirs in the tip beside the list. */}
+                        {/* Main-menu models carry their description (owner, 2026-10-02);
+              More models keep theirs in the tip beside the list. */}
                         <span>
                           <span className="code-model-name">
                             {choice.label ?? choice.name}
@@ -547,8 +549,9 @@ export function CodeModelMenu({
                 </button>
               )}
             </div>
-            {/* The highlighted model's note, beside the list, drawn above
-               everything so the sidebar or the window edge never covers it. */}
+            {/* The highlighted model's note, beside the list (R-0356), drawn
+                above everything so the sidebar or the window edge never
+                covers it. */}
             {/* Placed once the list has its place (a child lays out first). */}
             {morePlace &&
               found[active]?.description &&
@@ -563,8 +566,9 @@ export function CodeModelMenu({
           </div>
         )}
       </div>
-      {/* Fast mode: a switch row, left out when the model has no fast tier in
-         the catalog; it follows More models. */}
+      {/* Fast mode (live claude.ai bundle, 2026-10-14): a switch row, left
+          out when the model has no fast tier in the catalog; it follows
+          More models. */}
       {fast.available && (
         <button
           role="menuitemcheckbox"
@@ -591,10 +595,10 @@ export function CodeModelMenu({
 }
 
 /**
- * The More models note, portaled to <body> with a fixed position: 4px beside
- * the submenu on its outer side, centred on the highlighted row; where that
- * side has no room, 4px above the submenu (or below it); kept 8px inside the
- * window and never over the menu.
+ * The More models note (R-0356), portaled to <body> with a fixed position:
+ * 4px beside the submenu on its outer side, centred on the highlighted row;
+ * where that side has no room, 4px above the submenu (or below it); kept
+ * 8px inside the window and never over the menu.
  */
 function ModelTip({
   text,
@@ -675,8 +679,8 @@ function placeStyle(place: SubmenuPlace | undefined): React.CSSProperties {
 /**
  * Where a submenu goes on the window: 6px beside the menu, its bottom on its
  * row's; right when it fits (left first for a flipped menu), else the other
- * side, else the roomier one; always 8px inside the window. Never over the menu
- * itself.
+ * side, else the roomier one; always 8px inside the window. Never over the
+ * menu itself (2026-10-20: Effort pushed back inside covered the models).
  */
 function placeBeside(
   box: HTMLElement | null,

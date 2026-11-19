@@ -143,8 +143,8 @@ function useNotices(
     } else if (kind === "update") {
       const content = updateNotice(policy.update, dismissedUpdate);
       const update = policy.update;
-      // Claudex fetching or holding the update itself: Relaunch instead of the
-      // download page, nothing while it downloads.
+      // Claudex fetching or holding the update itself (package OTA):
+      // Relaunch instead of the download page, nothing while it downloads.
       const self = selfUpdating(appUpdate, update);
       if (content && update)
         notices.push({
@@ -186,9 +186,10 @@ function useNotices(
 }
 
 /**
- * A notice above the composer. It reads its own data: the usage status, the
- * administrator's announcements or the policy's update, and renders nothing
- * when there is nothing to say.
+ * A notice above the composer (package WP1's frozen interface; WP4a mounts
+ * it). It reads its own data: the usage status, the administrator's
+ * announcements or the policy's update, and renders nothing when there is
+ * nothing to say.
  */
 export function ComposerNotice({
   kind,
@@ -208,8 +209,8 @@ export function ComposerNotice({
 
 /**
  * Every notice that applies, stacked in `noticeOrder` (update first, usage
- * last), and the window's corner notice for a session or rate limit, which one
- * mounted composer places at the window's corner.
+ * last), and the window's corner notice for a session or rate limit
+ * (R-0127), which one mounted composer places at the window's corner.
  */
 export function ComposerNotices({
   kinds = noticeOrder,
@@ -236,7 +237,8 @@ export function ComposerNotices({
     <>
       {shown.map(({ item: notice, leaving }) => (
         // Each notice opens its row over 300ms and slides up 8px into it; a
-        // notice that goes closes its row again.
+        // notice that goes closes its row again (the original's composer
+        // header and banner; desktop bundle 2.31226.1 static CSS/JS).
         <div
           key={notice.content.kind}
           className="composer-notice-slot"

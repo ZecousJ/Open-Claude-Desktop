@@ -112,7 +112,7 @@
     opacity: 0;
   }
 }
-/* The reply face at 14/20: Claudex's chat serif. */
+/* The reply face (font-claude-response) at 14/20: Claudex's chat serif. */
 .manage-memory-text {
   font-family:
     "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;

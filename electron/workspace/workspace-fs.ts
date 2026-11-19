@@ -21,7 +21,8 @@ import {
 } from "../artifacts/generated-files";
 import { workspaceGit } from "../git/git-branch";
 import { localWorkingTree, type WorkingTreeHost } from "../git/working-tree";
-import { remoteWorkspace, type RemoteSources } from "../ssh/remote-workspace";
+import { remoteWorkspace, type RemoteSources, type RemoteWorkspace } from "../ssh/remote-workspace";
+import { wslWorkspace } from "../wsl/wsl";
 
 export interface WorkspaceFs extends WorkingTreeHost {
   readonly environment: EnvironmentRef;
@@ -51,8 +52,13 @@ function inside(root: string, file: string) {
 }
 
 /** An environment the window names (a new Code session's, a project's). */
-export const environmentInput = z.union([
-  z.object({ kind: z.literal("local") }).strict(),
+export const wslEnvironmentInput = z.object({
+  kind: z.literal("wsl"),
+  distro: z.string().min(1).max(100).regex(/^[^\0\r\n\\/]+$/),
+}).strict();
+
+export const remoteEnvironmentInput = z.union([
+  wslEnvironmentInput,
   z
     .object({
       kind: z.literal("ssh"),
@@ -60,6 +66,21 @@ export const environmentInput = z.union([
     })
     .strict(),
 ]);
+export const environmentInput = z.union([
+  z.object({ kind: z.literal("local") }).strict(),
+  remoteEnvironmentInput,
+]);
+
+export async function requireWslWorkspaceTrust(
+  engines: AppContext["engines"] | undefined,
+  folder: string,
+  environment: z.infer<typeof wslEnvironmentInput>,
+) {
+  if (process.platform !== "win32" || !engines)
+    throw Error("WSL is unavailable on this host.");
+  if (!(await engines.forEnvironment(environment).remoteWorkspaceTrust(folder, false)).trusted)
+    throw Error("The WSL workspace is not trusted.");
+}
 
 /** This computer's folders. */
 export const localWorkspaceFs: WorkspaceFs = {
@@ -127,8 +148,17 @@ export const localWorkspaceFs: WorkspaceFs = {
 /** The folder of an environment: this computer's, or an SSH host's. */
 export function workspaceFsFor(
   sources: RemoteSources,
+  environment: z.infer<typeof remoteEnvironmentInput>,
+): RemoteWorkspace;
+export function workspaceFsFor(
+  sources: RemoteSources,
+  environment: EnvironmentRef | undefined,
+): WorkspaceFs;
+export function workspaceFsFor(
+  sources: RemoteSources,
   environment: EnvironmentRef | undefined,
 ): WorkspaceFs {
+  if (environment?.kind === "wsl") return wslWorkspace(environment.distro);
   return environment?.kind === "ssh"
     ? remoteWorkspace(sources, environment.hostId)
     : localWorkspaceFs;

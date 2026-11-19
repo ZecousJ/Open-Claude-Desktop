@@ -1,4 +1,6 @@
 import type { Project } from "./types";
+export type ProjectMetadataPatch = Partial<Pick<Project, "name" | "description" | "pinned" | "instructions">>;
+
 export interface ProjectCapabilities {
   canEditInstructions: boolean;
   canEditKnowledgeBase: boolean;
@@ -15,6 +17,17 @@ export function ownedProjectCapabilities(
         canEditKnowledgeBase:
           project.capabilities?.canEditKnowledgeBase === true,
       };
+}
+export function isEditablePrivateChatProject(project: Project) {
+  return isPrivateChatProject(project) && !project.archivedAt;
+}
+function isPrivateChatProject(project: Project) {
+  return (project.kind ?? "chat") === "chat" &&
+    (project.visibility === undefined || project.visibility === "private");
+}
+export function canDeleteOwnedChatProject(project: Project) {
+  const rights = ownedProjectCapabilities(project);
+  return isPrivateChatProject(project) && rights.canEditInstructions && rights.canEditKnowledgeBase;
 }
 export type ProjectReadResult =
   | { status: "ready"; project: Project }

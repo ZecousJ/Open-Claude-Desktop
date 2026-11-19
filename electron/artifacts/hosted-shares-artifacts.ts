@@ -19,10 +19,14 @@ import {
 } from "./hosted-shares-support";
 import type { HostedShares } from "./hosted-shares";
 
-// ---- artifacts  Each version published gets a public link of its own that
-// keeps that version (it does not follow later changes), and Unpublish removes
-// the link of every version. A version is its content: the service sees a hash
-// of the artifact identity and of the version, never either one.
+// ---- artifacts
+//
+// Publish follows the live claude.ai bundle (2026-10-12: the artifact
+// pane's Publish button and Publish modal): each version published gets a
+// public link of its own that keeps that version (it does not follow
+// later changes), and Unpublish removes the link of every version. A
+// version is its content: the service sees a hash of the artifact
+// identity and of the version, never either one.
 
 /** The links this computer knows of one artifact (active or taken down). */
 export function artifactShares(
@@ -140,9 +144,8 @@ export async function artifactShareState(
   };
 }
 
-/**
- * Version links stay fixed; the latest link follows explicit/automatic shares.
- */
+/** Version links stay fixed; the latest link follows explicit/automatic shares
+ * (live claude.ai bundle, 2026-10-14, c6f91d293). */
 export async function shareArtifact(
   this: HostedShares,
   input: ArtifactShareInput,

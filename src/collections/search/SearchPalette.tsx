@@ -9,7 +9,7 @@ import {
 } from "../../ui/glyphs";
 import { AppContext } from "../../app/AppContext";
 import { controllerPaletteActions } from "./palette-actions";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { Attachment, Conversation, Mode } from "../../../shared/types";
 import { CodeIcon } from "../../ui/icons";
 import { ShortcutPlatform } from "../../ui/Tooltip";
@@ -53,7 +53,7 @@ export function RowIcon({ row }: { row: SearchRow }) {
   // and ChatAdd; stretching the old 16px SVG used the wrong optical size.
   if (row.kind === "action" && !row.mode)
     return (
-      <AppIcon
+      <Anthropicon
         name={row.icon ?? "Settings"}
         size={20}
         className="search-source-icon"
@@ -63,13 +63,15 @@ export function RowIcon({ row }: { row: SearchRow }) {
     (row.kind === "conversation" && row.conversation.mode === "code") ||
     (row.kind === "action" && row.mode === "code")
   )
-    return <AppIcon name="Code" size={20} className="search-source-icon" />;
+    return <Anthropicon name="Code" size={20} className="search-source-icon" />;
   if (row.kind === "action" && row.mode === "chat")
-    return <AppIcon name="ChatAdd" size={20} className="search-source-icon" />;
+    return (
+      <Anthropicon name="ChatAdd" size={20} className="search-source-icon" />
+    );
   const Icon =
     row.kind === "conversation"
       ? // Cowork is part of Chat now: its chats wear the chat glyph, as in
-        // the sidebar.
+        // the sidebar (live claude.ai, 2026-10-20).
         modeIcons[
           row.conversation.mode === "cowork" ? "chat" : row.conversation.mode
         ]
@@ -86,11 +88,11 @@ export function RowIcon({ row }: { row: SearchRow }) {
 }
 
 /**
- * ⌘K: Search over chats, tasks, sessions, projects, routines and artifacts with
- * ↑↓ / Enter, `/` for the next filter and → for a conversation's actions; Tab
- * switches to Compose, which starts a new chat, task or session from what is
- * typed. Only what Claudex has is listed: no New document / presentation /
- * design.
+ * ⌘K (R-对话搜索-弹窗, R-对话搜索-Compose标签, R-0117): Search over chats,
+ * tasks, sessions, projects, routines and artifacts with ↑↓ / Enter, `/`
+ * for the next filter and → for a conversation's actions; Tab switches to
+ * Compose, which starts a new chat, task or session from what is typed.
+ * Only what Claudex has is listed: no New document / presentation / design.
  */
 export function SearchPalette({
   mode = "chat",
@@ -316,8 +318,8 @@ export function SearchPalette({
     selectionContext.query !== query ||
     selectionContext.filter !== filter ||
     selectionContext.entrypoint !== entrypoint;
-  // Reset before commit, and anchor keyboard selection to the result identity
-  // while asynchronous rows arrive.
+  // O16 c2771e1f6-B2qqRLkw ig: reset before commit, and anchor keyboard
+  // selection to the result identity while asynchronous rows arrive.
   const anchorIndex =
     !selectionChanged && activeKey && !picker
       ? rows.findIndex((row) => row.key === activeKey)
@@ -424,7 +426,7 @@ export function SearchPalette({
   return searchPaletteViewView;
 }
 
-/** Found words in bold. */
+/** Found words in bold (R-1161). */
 export function Marked({ text, terms }: { text: string; terms: string[] }) {
   return (
     <>

@@ -4,7 +4,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { macAppBundle } from "../../shared/app-update";
 
-// .
+// (live claude.ai bundle, 2026-10-14, index.chunk-D92ipPvl.js).
 export const ownershipDeclineMs = 7 * 24 * 60 * 60_000;
 export const ownershipCopy = {
   title: "Fix required for auto-updates",

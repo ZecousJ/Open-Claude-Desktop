@@ -13,7 +13,7 @@ export const deleteAccountQuestion =
 export const deleteAccountFailure =
   "An error occurred while deleting your account. Please try again or contact support.";
 
-/** Two confirmations, initially focused on Cancel. */
+/** Two confirmations, initially focused on Cancel (live claude.ai bundle, 2026-10-14, c23cade21-BDjVxYsr). */
 export function DeleteAccountDialog({
   onClose,
   onDeleted,

@@ -11,6 +11,7 @@ import { EventEmitter } from "node:events";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import type { Conversation } from "../../shared/types";
 import type { BrowserSavedPage, BrowserState } from "../../shared/browser";
 import { panelsMethods } from "../../shared/panels-api";
@@ -65,6 +66,10 @@ class FakeContents extends EventEmitter {
   loading = false;
   reloads = 0;
   stops = 0;
+  focuses = 0;
+  focus() {
+    this.focuses++;
+  }
   openHandler?: (d: { url: string; disposition: string }) => { action: "deny" };
   debugger = new FakeDebugger();
   navigationHistory = {
@@ -230,6 +235,7 @@ function setup(
     savedPage: () => options.savedPage,
     savePage: options.savePage,
     blockedDomains: () => blocked,
+    publicHostsOnly: (id) => id === "ssh-1",
     toolsAvailable: () => true,
     devServers: (id) =>
       devServers
@@ -250,7 +256,7 @@ function setup(
       return () => (devServers = undefined);
     },
     devServers: () => devServers,
-    clearBrowsingData: async () => {},
+    clearBrowsingData: async () => false,
     clearPreviewData: async () => {},
     defaultBrowserName: () => "Google Chrome",
   };
@@ -286,6 +292,7 @@ function setup(
         conversation("code-2", "code"),
         conversation("chat-1", "chat"),
         conversation("cowork-1", "cowork"),
+        { ...conversation("ssh-1", "code"), environment: { kind: "ssh", hostId: "fixture" } },
       ],
     },
     callerWindow: () => window,
@@ -318,6 +325,160 @@ function setup(
   };
 }
 
+test("an agent file opens in its own Browser tab without granting its folder", () => {
+  const { host } = setup();
+  try {
+    const existing = host.newTab("code-1", "https://example.com/");
+    const preview = host.newTab("code-1");
+    const file = path.join(os.tmpdir(), "preview.html");
+    assert.deepEqual(host.openWrittenFile("code-1", file, preview, Buffer.from("<p>Preview</p>")), { ok: true });
+    assert.equal(host.state("code-1").tabs.find(tab => tab.id === existing)?.url, "https://example.com/");
+    assert.equal(host.state("code-1").tabs.find(tab => tab.id === preview)?.url, pathToFileURL(file).href);
+    assert.equal(host.navigate("code-1", pathToFileURL(path.join(os.tmpdir(), "neighbor.html")).href, preview).ok, false);
+    assert.deepEqual(host.session("code-1").fileRoots, []);
+  } finally {
+    host.dispose();
+  }
+});
+
+test("an SSH Browser accepts a typed desktop loopback address", async () => {
+  const { call, host } = setup();
+  try {
+    const local = "http://localhost:4317/page";
+    assert.equal(host.agentPageAvailable("ssh-1"), true);
+    assert.equal(host.navigate("ssh-1", local).ok, false);
+    assert.equal((await call("browserNavigate", "ssh-1", local)).ok, true);
+    assert.equal((await call("browserState", "ssh-1")).tabs[0].url, local);
+    assert.equal(host.agentPageAvailable("ssh-1"), false);
+    assert.equal((await call("browserNavigate", "ssh-1", "http://169.254.169.254/")).ok, false);
+    assert.equal((await call("browserNavigate", "ssh-1", "https://example.com/")).ok, true);
+    assert.equal(host.agentPageAvailable("ssh-1"), false);
+    const clean = host.newTab("ssh-1", "https://example.com/", true);
+    assert.equal(host.agentPageAvailable("ssh-1", clean), true);
+    await assert.rejects(call("devServersStart", "ssh-1", "web"), /SSH sessions/);
+  } finally {
+    host.dispose();
+  }
+});
+
+test("preview focus targets the caller's visible page and refuses hidden or other-window pages", async () => {
+  const { call, host, window, views } = setup();
+  try {
+    await call("browserNavigate", "code-1", "http://localhost:3000/");
+    assert.equal(await call("officialFocusBrowserPreview", "code-1"), false);
+    await call("browserSetBounds", "code-1", {
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 300,
+    });
+    assert.equal(await call("officialFocusBrowserPreview", "code-1"), true);
+    assert.equal(views[0].webContents.focuses, 1);
+    assert.equal(host.focus("code-1", new FakeWindow()), false);
+    await host.occlude("code-1", true);
+    assert.equal(host.focus("code-1", window), false);
+    host.hide("code-1", window);
+    assert.equal(host.focus("code-1", window), false);
+    assert.equal(views[0].webContents.focuses, 1);
+  } finally {
+    host.dispose();
+  }
+});
+
+test("official preview tab reorder and reopen preserve the selected tab and closed URL", async () => {
+  const { host } = setup();
+  try {
+    const first = host.newTab("code-1", "http://localhost:3000/first");
+    const second = host.newTab("code-1", "http://localhost:3000/second");
+    host.reorderTab("code-1", second, 0);
+    assert.equal(host.state("code-1").tabs[0].id, second);
+    assert.equal(host.state("code-1").activeTabId, second);
+    host.closeTab("code-1", second, true);
+    const reopened = host.reopenTab("code-1");
+    assert.ok(reopened);
+    assert.equal(host.state("code-1").tabs.at(-1)!.id, reopened);
+    assert.equal(
+      host.state("code-1").tabs.at(-1)!.url,
+      "http://localhost:3000/second",
+    );
+    host.closeTab("code-1", first, false);
+    assert.equal(host.reopenTab("code-1"), null);
+    assert.throws(() => host.reorderTab("code-1", reopened, 99), /Invalid tab/);
+  } finally {
+    host.dispose();
+  }
+});
+test("official close-all retains first tab and only explicit reopenable closes enter history",async()=>{
+ const {host,call}=setup();try{
+   const first=host.state("code-1").activeTabId;
+   host.navigate("code-1","http://localhost:3000/first");
+   const second=host.newTab("code-1","http://localhost:3000/second");
+   await call("browserCloseTab","code-1",second);assert.equal(host.reopenTab("code-1"),null);
+   host.newTab("code-1","http://localhost:3000/third");
+   await call("officialCloseAllBrowserTabs","code-1");
+   assert.equal(host.state("code-1").tabs.length,1);
+   assert.equal(host.state("code-1").tabs[0].id,first);
+   assert.equal(host.state("code-1").tabs[0].url,"http://localhost:3000/first");
+   assert.equal(host.reopenTab("code-1"),null);
+ }finally{host.dispose();}
+});
+
+test("official preview shortcuts only reach the owning visible window", async () => {
+  const { host, window, views } = setup(),
+    events: any[] = [];
+  try {
+    host.deps.previewEvent = (...args) => events.push(args);
+    host.navigate("code-1", "http://localhost:3000/");
+    host.show("code-1", window, { x: 0, y: 0, width: 400, height: 300 });
+    host.configurePreviewInput("code-1", window, "preview-local_code-1", {
+      chromeFocused: true,
+      armed: true,
+    });
+    let prevented = 0;
+    const e = {
+      preventDefault() {
+        prevented++;
+      },
+    };
+    assert.equal(
+      host.handlePreviewInput(
+        e,
+        { type: "keyDown", key: "l", meta: true },
+        views[0].webContents,
+      ),
+      true,
+    );
+    assert.equal(events[0][0], window);
+    assert.equal(events[0][3], "previewAddressBarShortcut");
+    host.handlePreviewInput(
+      e,
+      { type: "keyDown", key: "l", meta: true, isAutoRepeat: true },
+      views[0].webContents,
+    );
+    assert.equal(events.length, 1);
+    assert.equal(
+      host.handlePreviewInput(
+        e,
+        { type: "keyDown", key: "l", meta: true },
+        new FakeWindow(),
+      ),
+      false,
+    );
+    host.hide("code-1");
+    assert.equal(
+      host.handlePreviewInput(
+        e,
+        { type: "keyDown", key: "l", meta: true },
+        views[0].webContents,
+      ),
+      false,
+    );
+    assert.equal(prevented, 2);
+  } finally {
+    host.dispose();
+  }
+});
+
 test("clearing preview data uses its own bridge operation, not ordinary browsing data", async () => {
   const { call, service, host } = setup();
   const cleared: string[] = [];
@@ -326,6 +487,7 @@ test("clearing preview data uses its own bridge operation, not ordinary browsing
   };
   service.clearBrowsingData = async () => {
     cleared.push("browser");
+    return true;
   };
   await call("browserClearPreviewData");
   assert.deepEqual(cleared, ["preview"]);
@@ -334,8 +496,9 @@ test("clearing preview data uses its own bridge operation, not ordinary browsing
   let clearedSession: string | undefined;
   service.clearBrowsingData = async (id) => {
     clearedSession = id;
+    return false;
   };
-  await call("browserClearData", "code-1");
+  assert.equal(await call("officialClearPreviewBrowsingData", "code-1"), false);
   assert.equal(clearedSession, "code-1");
   host.dispose();
 });
@@ -415,6 +578,7 @@ test("Cowork clears the shared browser data through its own operation and respec
   };
   service.clearBrowsingData = async () => {
     cleared.push("all");
+    return true;
   };
   service.clearPreviewData = async () => {
     cleared.push("preview");
@@ -1085,6 +1249,39 @@ test("Select element returns the element the person clicked, or null when cancel
   assert.equal(t.host.state("code-1").picking, false);
 });
 
+test("preview capture fallback preserves the device-pixel PNG", async () => {
+  const t = setup();
+  await t.call("browserNavigate", "code-1", "localhost:5173/app");
+  const page = t.host.driver("code-1");
+  page.driver.waitForDocument = async () => {};
+  page.driver.screenshot = async () => {
+    throw Error("Model-sized screenshots cannot back the preview overlay");
+  };
+  const contents = t.views[0].webContents;
+  const png = Buffer.from("device-pixel-png");
+  contents.debugger.answers["Page.captureScreenshot"] = (params) => {
+    assert.deepEqual(params, {
+      format: "png",
+      fromSurface: false,
+      captureBeyondViewport: false,
+    });
+    return { data: png.toString("base64") };
+  };
+  for (const failed of [false, true]) {
+    contents.capturePage = async () => {
+      if (failed) throw Error("Native capture unavailable");
+      return {
+        isEmpty: () => true,
+        toJPEG: () => Buffer.alloc(0),
+        toPNG: () => Buffer.alloc(0),
+      };
+    };
+    assert.deepEqual(await t.call("browserCapture", "code-1"), {
+      pngBase64: png.toString("base64"),
+    });
+  }
+});
+
 test("screenshots, Open HTML file… and Open in browser", async () => {
   const t = setup();
   await assert.rejects(
@@ -1228,6 +1425,7 @@ test("dev server calls are refused until dev servers are connected, then passed 
       },
     ],
     launchConfig: () => ({}),
+    configurations: () => [{ name: "web", runtimeExecutable: "npm", runtimeArgs: ["run", "dev"], port: 5173 }],
     detect: async (id) => (calls.push(`detect ${id}`), []),
     save: async (id, config) => void calls.push(`save ${id} ${config.name}`),
     start: async (id, name) => (

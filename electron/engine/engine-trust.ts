@@ -56,7 +56,7 @@ export async function remoteWorkspaceTrust(
   interactive = true,
 ): Promise<WorkspaceTrust> {
   const launcher = this.launcher;
-  const hostId = this.sshHostId;
+  const hostId = this.remoteTrustId;
   if (!launcher?.workspaceTrust || !hostId)
     throw new Error("Workspace trust isn't available here.");
   const cwd = folder || (await launcher.defaultCwd?.());
@@ -81,7 +81,7 @@ export async function trustRemoteWorkspace(
 ): Promise<WorkspaceTrust> {
   const trust = await this.remoteWorkspaceTrust(folder);
   if (trust.trusted) return trust;
-  this.sshTrust!.trust(this.sshHostId!, trust.root);
+  this.sshTrust!.trust(this.remoteTrustId!, trust.root);
   if (folder) this.trustedRemoteFolders.add(folder);
   this.trustedRemoteFolders.add(trust.folder);
   // The running Codex there loads it now; the next start writes it again.

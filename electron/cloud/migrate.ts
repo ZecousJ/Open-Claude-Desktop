@@ -35,7 +35,7 @@ export interface MoveDeps {
 
 export const movedFile = "cloud-moved.json";
 
-function readMoved(root: string): Set<string> {
+export function readMoved(root: string): Set<string> {
   try {
     const value: unknown = JSON.parse(
       fs.readFileSync(path.join(root, movedFile), "utf8"),
@@ -78,7 +78,7 @@ function rolloutsByThread(root: string): Map<string, string> {
   return found;
 }
 
-/** Which conversations still move: Chat and Cowork, saved, idle, not moved. */
+/** Which conversations still move: saved, idle Chat and Cowork outside organization projects. */
 export function conversationsToMove(
   deps: Pick<MoveDeps, "store" | "inCloud">,
   moved = readMoved(deps.store.root),
@@ -87,6 +87,7 @@ export function conversationsToMove(
     .filter(
       (c) =>
         (c.mode === "chat" || c.mode === "cowork") &&
+        !c.projectOrganizationId &&
         !c.incognito &&
         !c.linkedToComputer &&
         !c.deviceChatOrigin &&
@@ -139,6 +140,7 @@ export async function moveToCloud(deps: MoveDeps) {
                   name: project.name,
                   description: project.description,
                   instructions: project.instructions,
+                  ...(project.template && { template: project.template }),
                   createdAt: project.createdAt,
                 },
               }

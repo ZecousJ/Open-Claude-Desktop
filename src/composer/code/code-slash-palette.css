@@ -18,7 +18,8 @@
   box-shadow: 0 12px 28px #0007;
   color: var(--text);
   font:
-    13px/20px -apple-system,
+    13px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -60,12 +61,13 @@
   background: #313131;
 }
 /* A row has no pressed look of its own: the original's menu rows keep the
-   highlight fill while pressed, and appear and go without a transition. */
+   highlight fill while pressed, and appear and go without a transition
+   (desktop bundle 2.31226.1 static CSS/JS). */
 .code-slash-list button {
   transition: none;
 }
-/* A custom prompt or skill: the name, then its source in grey at the row's
-   right edge. */
+/* A custom prompt or skill (R-0401, not captured; provisional): the name,
+   then its source in grey at the row's right edge. */
 .code-slash-list button:has(.code-slash-source) {
   display: flex;
   align-items: center;
@@ -103,7 +105,8 @@
   background: #020202;
   color: #fff;
   font:
-    13px/22px -apple-system,
+    13px/22px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   white-space: nowrap;
@@ -138,7 +141,8 @@
   display: flex;
   height: 20px;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   white-space: pre;
@@ -160,7 +164,8 @@
   flex: none;
   color: #8aa6df;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   white-space: nowrap;
@@ -176,7 +181,9 @@
   color: #8a9ab8;
 }
 
-/* Second Backspace on a bare command token selects it. */
+/* Second Backspace on a bare command token selects it (R-0366: the capture's
+   highlight, #032143, reaches 3px past the text at the ends and 1px above and
+   below). */
 .code-slash-token[data-selected] {
   background: #032143;
   box-shadow:

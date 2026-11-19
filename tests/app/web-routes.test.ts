@@ -544,7 +544,8 @@ test("conversation routes open the conversation or say it is not found", () => {
     "/chat/c1",
   );
 
-  // Gone: a notice, and a new chat in its place, not "Page not found".
+  // Gone: a notice, and a new chat in its place (live claude.ai bundle,
+  // 2026-10-12), not "Page not found".
   for (const id of ["missing", "i1"]) {
     ({ app, calls } = fakeApp({ page: "projects" }));
     assert.equal(applyRoute(app, { kind: "chat", id }, pop), "/new");
@@ -826,7 +827,7 @@ test("the tab icon and theme colour", () => {
   assert.equal(themeColor("light"), "#fcfcfb");
   assert.equal(themeColor(undefined), "#141414");
   // The tab icon is the Claudex app icon's mark alone, in its orange and
-  // without the plate, not Claude's mark.
+  // without the plate (owner, 2026-10-03), not Claude's mark.
   const svg = readFileSync(
     new URL("../../public-web/favicon.svg", import.meta.url),
     "utf8",

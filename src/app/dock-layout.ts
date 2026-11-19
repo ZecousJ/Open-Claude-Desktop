@@ -36,7 +36,8 @@ export function paneAtEdge(
         : row === layout[column].length - 1;
 }
 
-/** Move one pane without changing its siblings' order. */
+/** Move one pane without changing its siblings' order (live claude.ai bundle,
+ * 2026-10-14, c4db265df-DALs-XY0.js, Je). */
 export function moveDockPane(
   layout: DockLayout,
   pane: DockPanel,

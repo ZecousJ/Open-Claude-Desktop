@@ -30,6 +30,7 @@ const blank = (kind: "plugin" | "mcp"): DirectorySubmissionInput => ({
   tools: [],
 });
 
+// (live claude.ai bundle, 2026-10-14, cd9350303-DO34BzQM)
 export function DirectorySubmissionsPage({
   settings,
   kind,

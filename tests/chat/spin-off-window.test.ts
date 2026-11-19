@@ -53,8 +53,8 @@ const composer = (extra: Partial<Parameters<typeof MiniTaskComposer>[0]>) =>
     ...extra,
   });
 
-// A quick task's row has the place and permission as icons, then the model and
-// Start task.
+// Live claude.ai bundle, 2026-10-12 (c6eb5f8cf dn): a quick task's row has
+// the place and permission as icons, then the model and Start task.
 test("a quick task's composer: place and permission icons, model, Start task", () => {
   const html = render(
     composer({

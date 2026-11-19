@@ -31,8 +31,8 @@ export function dockPanelOf(element: Element | null): DockPanel | undefined {
 const toggles = new Map<DockPanel, () => void>();
 
 /**
- * A card's Expand / Restore, offered to ⇧⌘\. The card keeps its own expanded
- * state.
+ * A card's Expand / Restore, offered to ⇧⌘\ (live claude.ai bundle,
+ * 2026-10-12: toggleExpandPane). The card keeps its own expanded state.
  */
 export function usePaneExpandToggle(panel: DockPanel, toggle: () => void) {
   const latest = useRef(toggle);

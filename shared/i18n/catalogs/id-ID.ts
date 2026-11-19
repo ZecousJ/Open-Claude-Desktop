@@ -107,7 +107,7 @@ const catalog: Record<string, string> = {
   Max: "Maks",
   "More models": "Model lainnya",
   "Image generation": "Pembuatan gambar",
-  "Image generation model": "Model pembuatan gambar",
+  "Automatic selection": "Pemilihan otomatis",
   "Select model": "Pilih model",
   "Incognito chats stay out of your history and search.":
     "Obrolan penyamaran tidak muncul di riwayat dan pencarian Anda.",
@@ -1326,16 +1326,38 @@ const catalog: Record<string, string> = {
   "Review yesterday's commits and flag anything concerning.":
     "Tinjau commit kemarin dan tandai hal yang mengkhawatirkan.",
   "System health check": "Pemeriksaan kesehatan sistem",
+  "Monitor infrastructure and services for errors, outages, and performance issues.":
+    "Pantau infrastruktur dan layanan untuk mendeteksi kesalahan, gangguan, dan masalah performa.",
   "Issue triage": "Triase isu",
+  "Review and categorize incoming issues, bugs, and feature requests.":
+    "Tinjau dan kategorikan isu, bug, dan permintaan fitur yang masuk.",
   "PR review digest": "Ringkasan tinjauan PR",
+  "Overview of open PRs, review status, and what needs attention.":
+    "Gambaran umum PR yang terbuka, status tinjauan, dan hal yang perlu diperhatikan.",
   "Dependency update check": "Pemeriksaan pembaruan dependensi",
+  "Scan for outdated packages, security patches, and breaking changes.":
+    "Pindai paket yang usang, patch keamanan, dan perubahan yang merusak.",
   "Flaky test tracker": "Pelacak tes tidak stabil",
+  "Find tests that pass and fail intermittently across recent CI runs.":
+    "Temukan tes yang kadang lulus dan kadang gagal di eksekusi CI terbaru.",
   "Daily briefing": "Ringkasan harian",
+  "What needs your attention today across calendar, email, and messages.":
+    "Hal yang perlu Anda perhatikan hari ini dari kalender, email, dan pesan.",
   "Inbox triage": "Triase kotak masuk",
+  "Categorize your inbox and draft replies to anything urgent.":
+    "Kategorikan kotak masuk Anda dan susun draf balasan untuk yang mendesak.",
   "Meeting prep": "Persiapan rapat",
+  "A short brief before each meeting on your calendar, covering attendees, context, and agenda.":
+    "Ringkasan singkat sebelum setiap rapat di kalender Anda, mencakup peserta, konteks, dan agenda.",
   "Weekly review": "Tinjauan mingguan",
+  "A Friday summary of what happened this week.":
+    "Ringkasan hari Jumat tentang apa yang terjadi minggu ini.",
   "Content ideas": "Ide konten",
+  "Draft a few post ideas each week from the latest news in your industry.":
+    "Susun beberapa ide unggahan setiap minggu dari berita terbaru di industri Anda.",
   "Monitor a topic": "Pantau topik",
+  "Watch for news or mentions of a topic, competitor, or keyword.":
+    "Pantau berita atau sebutan tentang topik, pesaing, atau kata kunci.",
   Frequency: "Frekuensi",
   "Add a model connection in Settings first.":
     "Tambahkan koneksi model di Pengaturan terlebih dahulu.",
@@ -1448,6 +1470,7 @@ const catalog: Record<string, string> = {
   Write: "Tulis",
   "Thought for {n}s": "Berpikir selama {n} dtk",
   "Waiting for your response": "Menunggu respons Anda",
+  "ran a command": "menjalankan perintah",
   "ran {n} commands": "menjalankan {n} perintah",
   "read a file": "membaca file",
   "read {n} files": "membaca {n} file",
@@ -1457,6 +1480,7 @@ const catalog: Record<string, string> = {
   "created {n} files": "membuat {n} file",
   "edited a file": "mengedit file",
   "edited {n} files": "mengedit {n} file",
+  "used a tool": "menggunakan alat",
   "used {n} tools": "menggunakan {n} alat",
   "searched the web": "mencari di web",
   "shared files": "membagikan file",
@@ -1611,6 +1635,7 @@ const catalog: Record<string, string> = {
   "Only you can open this link": "Hanya Anda yang dapat membuka tautan ini",
   Copied: "Disalin",
   "Local workspace": "Ruang kerja lokal",
+  "Starting up…": "Memulai…",
   "Started an agent": "Memulai agen",
   "Messaged an agent": "Mengirim pesan ke agen",
   "Resumed an agent": "Melanjutkan agen",
@@ -2005,6 +2030,8 @@ const catalog: Record<string, string> = {
   "memory settings": "pengaturan memori",
   "Claudex hasn't written any memory from your chats yet. Your reflection shows here once it has.":
     "Claudex belum menulis memori apa pun dari obrolan Anda. Refleksi Anda akan muncul di sini setelah ada.",
+  "For this reflection to work, you'll need to enable memory in":
+    "Agar refleksi ini berfungsi, Anda perlu mengaktifkan memori di",
   "Based on your conversations in Claudex chat.":
     "Berdasarkan percakapan Anda di obrolan Claudex.",
   "Core skills library for Claudex Code: TDD, debugging, collaboration patterns, and proven techniques.":
@@ -2947,7 +2974,26 @@ const catalog: Record<string, string> = {
     "Klien yang kompatibel dengan OpenAI memakai alamat ini; klien Anthropic memakainya tanpa /v1.",
   Rate: "Tarif",
   "Click a model to copy its ID": "Klik model untuk menyalin ID-nya",
+  "ZecousAI users have all moved to the new Claudex":
+    "Pengguna ZecousAI sudah pindah semua ke Claudex yang baru",
+  "Claudex is the fully upgraded ZecousAI platform, built to give you fuller and steadier service. Since September 4, OpenAI has been degrading and rate-limiting its models, and availability has dropped, so for ZecousAI users we have decided:":
+    "Claudex adalah platform ZecousAI yang ditingkatkan sepenuhnya, untuk layanan yang lebih lengkap dan stabil. Sejak 4 September, OpenAI terus menurunkan kualitas dan membatasi modelnya sehingga ketersediaan menurun, jadi untuk pengguna ZecousAI kami memutuskan:",
+  "If you had any ZecousAI subscription on September 4, or started one after September 4, the subscription time you had left from September 4 on is turned into balance in proportion to its length and added to your Claudex balance.":
+    "Jika Anda punya langganan ZecousAI pada 4 September, atau memulainya setelah 4 September, sisa masa langganan sejak 4 September dikonversi menjadi saldo sesuai porsinya dan ditambahkan ke saldo Claudex Anda.",
+  "If you had a ZecousAI balance on September 4, that day's balance is turned into balance and added to your Claudex balance (requests from September 4 on are not charged).":
+    "Jika Anda punya saldo ZecousAI pada 4 September, saldo hari itu dikonversi dan ditambahkan ke saldo Claudex Anda (permintaan sejak 4 September tidak ditagih).",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's official 1:1, so what you can use does not change.":
+    "Saldo ZecousAI Anda mungkin terlihat lebih kecil di Claudex. Claudex mengisi ulang dengan kurs baru ¥1 untuk $1, dan pengali modelnya jauh lebih rendah dari 1:1 resmi ZecousAI, jadi yang bisa Anda pakai tidak berubah.",
+  "Moving adds {amount} to your Claudex balance ({balance} from your balance, {subscription} from your subscriptions).":
+    "Pindah akan menambah {amount} ke saldo Claudex Anda ({balance} dari saldo, {subscription} dari langganan).",
+  "Once you confirm, your ZecousAI subscription and balance are cleared and moved to Claudex. If you use the API, switch your request address and create new keys in the API tab at the top left.":
+    "Setelah Anda konfirmasi, langganan dan saldo ZecousAI Anda dikosongkan dan dipindahkan ke Claudex. Jika Anda memakai API, ganti alamat permintaan dan buat kunci baru di tab API kiri atas.",
+  "Confirm move": "Konfirmasi pindah",
   "Moving…": "Memindahkan…",
+  "The move didn't go through. Try again.":
+    "Pemindahan belum berhasil. Coba lagi.",
+  "Moved: {amount} added to your Claudex balance.":
+    "Pindah selesai: {amount} ditambahkan ke saldo Claudex Anda.",
   "All changes": "Semua perubahan",
   "1 file": "1 file",
   "Sync with the web": "Sinkronkan dengan web",
@@ -3812,7 +3858,7 @@ const catalog: Record<string, string> = {
   "Compare the alternatives": "Membandingkan alternatif",
   "Set goals for the quarter": "Menetapkan tujuan kuartal ini",
   "Plan a hard meeting": "Merencanakan rapat yang sulit",
-  "Plan my week": "Rencanakan minggu saya",
+  "Plan my week": "Merencanakan minggu saya",
   "Think through a choice": "Memikirkan sebuah pilihan",
   "Plan meals and shopping": "Merencanakan makanan dan belanja",
   "Sketch a trip": "Membuat sketsa perjalanan",
@@ -3820,6 +3866,7 @@ const catalog: Record<string, string> = {
   "Give me a puzzle": "Beri saya teka-teki",
   "Tell me something unexpected": "Ceritakan hal yang tak terduga",
   "Debate a big question": "Memperdebatkan pertanyaan besar",
+  "Play a word game": "Memainkan permainan kata",
   "Try a thought experiment": "Mencoba eksperimen pikiran",
   "Read my draft for clarity, tone and structure, then rewrite it so it flows while keeping my voice. Here it is:\n\n":
     "Bacalah draf saya dengan memperhatikan kejelasan, nada, dan struktur, lalu tulis ulang agar mengalir dengan tetap mempertahankan gaya saya. Ini drafnya:\n\n",
@@ -4228,8 +4275,47 @@ const catalog: Record<string, string> = {
   "Refresh list": "Muat ulang daftar",
   "Couldn’t load branches.": "Tidak dapat memuat cabang.",
   "No branches match": "Tidak ada cabang yang cocok",
+  "Pick a task, any task": "Pilih tugas apa saja",
+  "Tidy up and get organized": "Rapikan dan atur",
+  "Plan for what’s ahead": "Rencanakan yang akan datang",
+  "Turn messy data into action": "Ubah data berantakan menjadi tindakan",
   "Customize with plugins": "Sesuaikan dengan plugin",
   "On {deviceName}": "Di {deviceName}",
+  "Optimize my week": "Optimalkan minggu saya",
+  "Help me plan and optimize my week. I have my Google Calendar open and ready for you to review and edit.\n\nFirst, review my calendar and show me a summary:\n- Total meetings\n- Busiest days\n- Where I have gaps of 2+ hours\n\nBefore proposing changes, ask me about:\n- What I’m trying to accomplish this week\n- How much focus time I need and for what\n- Any deadlines or commitments not on my calendar\n- Which types of meetings I should decline or shorten\n- Personal commitments or boundaries I want to protect\n\nThen show me your top 3-5 proposed changes with explanations:\n- Focus blocks to add\n- Meetings to decline or reschedule\n- Time conflicts to resolve\n\nStart with the highest-impact changes first. Once I approve each change, make the edits directly in my calendar one at a time.":
+    "Bantu saya merencanakan dan mengoptimalkan minggu saya. Google Kalender saya sudah terbuka dan siap untuk Anda tinjau dan edit.\n\nPertama, tinjau kalender saya dan tunjukkan ringkasannya:\n- Jumlah total rapat\n- Hari tersibuk\n- Waktu kosong 2 jam atau lebih\n\nSebelum mengusulkan perubahan, tanyakan kepada saya:\n- Apa yang ingin saya capai minggu ini\n- Berapa banyak waktu fokus yang saya perlukan dan untuk apa\n- Tenggat atau komitmen yang tidak ada di kalender saya\n- Jenis rapat yang sebaiknya saya tolak atau persingkat\n- Komitmen pribadi atau batasan yang ingin saya jaga\n\nLalu tunjukkan 3-5 usulan perubahan teratas beserta penjelasannya:\n- Blok waktu fokus yang perlu ditambahkan\n- Rapat yang perlu ditolak atau dijadwalkan ulang\n- Bentrokan waktu yang perlu diselesaikan\n\nMulailah dari perubahan yang paling berdampak. Setelah saya menyetujui setiap perubahan, lakukan pengeditan langsung di kalender saya satu per satu.",
+  "Organize my screenshots": "Rapikan tangkapan layar saya",
+  "Help me organize recent screenshots on my Desktop.\n\nFirst, scan my Desktop and count how many screenshots/images are there. Show me:\n- Total count\n- Date range (oldest to newest)\n\nThen, focus only on screenshots from the last 14 days. For each one:\n- Identify what it shows\n- Suggest a descriptive filename\n- Propose which folder it belongs in (or if it can be deleted)\n\nGroup similar screenshots together. Show me the plan before making any changes.\n\nAfter I approve, start by organizing just 10 files as a preview. If there are more than 10 files, check in with me before continuing with the rest.":
+    "Bantu saya merapikan tangkapan layar terbaru di Desktop saya.\n\nPertama, pindai Desktop saya dan hitung ada berapa tangkapan layar/gambar. Tunjukkan kepada saya:\n- Jumlah total\n- Rentang tanggal (dari yang terlama hingga terbaru)\n\nLalu, fokus hanya pada tangkapan layar dari 14 hari terakhir. Untuk masing-masing:\n- Kenali apa yang ditampilkan\n- Sarankan nama file yang deskriptif\n- Usulkan folder tempatnya (atau apakah bisa dihapus)\n\nKelompokkan tangkapan layar yang mirip. Tunjukkan rencananya sebelum membuat perubahan apa pun.\n\nSetelah saya setujui, mulailah dengan merapikan 10 file saja sebagai pratinjau. Jika ada lebih dari 10 file, tanyakan kepada saya sebelum melanjutkan sisanya.",
+  "Find insights in files": "Temukan wawasan dalam file",
+  "Help me find patterns and insights across [my voice memos / meeting transcripts / documents / journal entries / specify folder]. I have messy, unstructured files and want to understand what themes are emerging.\n\nFirst, scan the folder and show me a summary:\n- Total files\n- Date range (oldest to newest)\n- Types of content\n\nBefore analyzing, ask me:\n- What I’m hoping to discover (recurring themes, contradictions, evolution of thinking, action items, or something else)\n- Whether certain files or time periods should be prioritized\n- What format would be most useful for the final analysis\n\nIf there are more than 20 files, start by analyzing just the 10 most recent files.\n\nShow me the top 3-5 patterns you found with 2-3 specific examples for each pattern. Once I confirm you’re on the right track, analyze the remaining files.":
+    "Bantu saya menemukan pola dan wawasan dalam [memo suara / transkrip rapat / dokumen / catatan harian saya / tentukan folder]. Saya punya file yang berantakan dan tidak terstruktur, dan ingin memahami tema apa yang muncul.\n\nPertama, pindai folder dan tunjukkan ringkasannya:\n- Jumlah total file\n- Rentang tanggal (dari yang terlama hingga terbaru)\n- Jenis konten\n\nSebelum menganalisis, tanyakan kepada saya:\n- Apa yang ingin saya temukan (tema berulang, kontradiksi, perkembangan pemikiran, butir tindakan, atau hal lain)\n- Apakah file atau periode tertentu perlu diprioritaskan\n- Format apa yang paling berguna untuk analisis akhir\n\nJika ada lebih dari 20 file, mulailah dengan menganalisis 10 file terbaru saja.\n\nTunjukkan 3-5 pola utama yang Anda temukan, masing-masing dengan 2-3 contoh spesifik. Setelah saya memastikan Anda berada di jalur yang benar, analisis file lainnya.",
+  "Clean up my Downloads folder": "Bersihkan folder Unduhan saya",
+  "Help me organize my Downloads folder.\n\nFirst, scan and show me a summary:\n- Total files and total size\n- Files older than 30 days\n- Largest files taking up space\n\nBefore organizing, ask me:\n- What categories or folder structure would be most useful\n- Whether I want to delete or archive old files\n- If there are specific file types I want to prioritize (documents, images, installers, etc.)\n\nThen focus only on files older than 30 days first. Show me a proposed plan for these old files:\n- Categories to create\n- Files to delete (installers, duplicates, temp files)\n- Files to keep with where they should go\n\nAfter I approve, organize the first 15 old files as a preview. If there are more files, check in before continuing.":
+    "Bantu saya merapikan folder Unduhan saya.\n\nPertama, pindai dan tunjukkan ringkasannya:\n- Jumlah total file dan ukuran total\n- File yang lebih lama dari 30 hari\n- File terbesar yang memakan ruang\n\nSebelum merapikan, tanyakan kepada saya:\n- Kategori atau struktur folder apa yang paling berguna\n- Apakah saya ingin menghapus atau mengarsipkan file lama\n- Apakah ada jenis file tertentu yang ingin saya prioritaskan (dokumen, gambar, penginstal, dll.)\n\nLalu fokus dulu hanya pada file yang lebih lama dari 30 hari. Tunjukkan usulan rencana untuk file-file lama ini:\n- Kategori yang akan dibuat\n- File yang akan dihapus (penginstal, duplikat, file sementara)\n- File yang akan disimpan beserta tempatnya\n\nSetelah saya setujui, rapikan 15 file lama pertama sebagai pratinjau. Jika masih ada file lain, tanyakan kepada saya sebelum melanjutkan.",
+  "Organize photos by event/date": "Atur foto menurut acara/tanggal",
+  "Help me organize photos on my [Desktop/Downloads/specify location].\n\nFirst, scan the folder and show me a summary:\n- Total photos\n- Date range (oldest to newest)\n- Rough size breakdown\n\nBefore organizing, ask me:\n- How I’d like them organized (by date, by event, by person)\n- Whether there are specific events or time periods I should know about\n- What folder structure would work best\n- If any photos can be deleted (duplicates, blurry ones, screenshots)\n\nFocus only on photos from the last 3 months first. Show me a proposed plan with examples from 3-4 different groups so I can show you how I’d organize them.\n\nAfter I approve, organize just 20 photos as a preview. If there are more than 20, check in before continuing with the rest.":
+    "Bantu saya mengatur foto di [Desktop/Unduhan/tentukan lokasi].\n\nPertama, pindai folder dan tunjukkan ringkasannya:\n- Jumlah total foto\n- Rentang tanggal (dari yang terlama hingga terbaru)\n- Perkiraan rincian ukuran\n\nSebelum mengatur, tanyakan kepada saya:\n- Bagaimana saya ingin foto-foto itu diatur (menurut tanggal, acara, atau orang)\n- Apakah ada acara atau periode tertentu yang perlu Anda ketahui\n- Struktur folder apa yang paling cocok\n- Apakah ada foto yang bisa dihapus (duplikat, buram, tangkapan layar)\n\nFokus dulu hanya pada foto dari 3 bulan terakhir. Tunjukkan usulan rencana dengan contoh dari 3-4 kelompok berbeda agar saya bisa menunjukkan bagaimana saya akan mengaturnya.\n\nSetelah saya setujui, atur 20 foto saja sebagai pratinjau. Jika ada lebih dari 20, tanyakan kepada saya sebelum melanjutkan sisanya.",
+  "Help me organize and clean up my email inbox.\n\nFirst, scan my inbox and show me a summary:\n- Total unread emails\n- Emails older than 30 days\n- The main senders or types of emails\n\nBefore organizing, ask me:\n- What categories or folders I want to create\n- Which types of emails I want to archive or delete\n- Whether there are specific senders I want to prioritize or filter\n- Any email patterns I want to address (newsletters, promotions, etc.)\n\nFocus only on emails older than 30 days first — these are easiest to clean up. Show me a proposed plan:\n- Which emails to archive\n- Which to delete\n- Which need action\n\nIf there are more than 50 old emails, start with a batch of 20 so I can check your approach. Once I approve, process that batch.":
+    "Bantu saya mengatur dan membersihkan kotak masuk email saya.\n\nPertama, pindai kotak masuk saya dan tunjukkan ringkasannya:\n- Jumlah total email yang belum dibaca\n- Email yang lebih lama dari 30 hari\n- Pengirim atau jenis email utama\n\nSebelum mengatur, tanyakan kepada saya:\n- Kategori atau folder apa yang ingin saya buat\n- Jenis email apa yang ingin saya arsipkan atau hapus\n- Apakah ada pengirim tertentu yang ingin saya prioritaskan atau saring\n- Pola email apa yang ingin saya tangani (buletin, promosi, dll.)\n\nFokus dulu hanya pada email yang lebih lama dari 30 hari — ini yang paling mudah dibersihkan. Tunjukkan usulan rencana:\n- Email mana yang diarsipkan\n- Mana yang dihapus\n- Mana yang perlu ditindaklanjuti\n\nJika ada lebih dari 50 email lama, mulailah dengan satu kelompok berisi 20 agar saya bisa memeriksa pendekatan Anda. Setelah saya setujui, proses kelompok itu.",
+  "Prep for my next meeting": "Siapkan rapat saya berikutnya",
+  "I have a meeting with [a company] [tomorrow].\n\nBefore researching, ask me:\n- What the meeting is about\n- What I already know about them\n- What I’m trying to accomplish\n- What would be most useful to know going in\n\nThen research them and show me what you found:\n- Company overview\n- Recent news (last 3 months)\n- Key people I’ll be meeting with\n- Their LinkedIn for recent updates\n\nShow me an outline of the one-pager with the 3-5 most important points before writing the full doc. Once I approve, create the final one-pager.":
+    "Saya ada rapat dengan [sebuah perusahaan] [besok].\n\nSebelum meriset, tanyakan kepada saya:\n- Rapat itu tentang apa\n- Apa yang sudah saya ketahui tentang mereka\n- Apa yang ingin saya capai\n- Apa yang paling berguna untuk diketahui sebelum rapat\n\nLalu riset tentang mereka dan tunjukkan apa yang Anda temukan:\n- Gambaran umum perusahaan\n- Berita terbaru (3 bulan terakhir)\n- Orang-orang penting yang akan saya temui\n- LinkedIn mereka untuk kabar terbaru\n\nTunjukkan kerangka ringkasan satu halaman dengan 3-5 poin terpenting sebelum menulis dokumen lengkapnya. Setelah saya setujui, buat ringkasan satu halaman finalnya.",
+  "Plan my next vacation": "Rencanakan liburan saya berikutnya",
+  "Help me plan my next vacation.\n\nBefore researching, ask me:\n- Where I’m thinking of going (or if I’m open to suggestions)\n- When I want to travel and for how long\n- What my budget is\n- What kind of trip I’m looking for (relaxing, adventure, cultural, food-focused, etc.)\n\nThen research the top 3 destinations that fit my criteria and show me a comparison:\n- Estimated costs\n- Best time to visit\n- What makes each unique\n\nOnce I pick my top choice, research that destination in detail:\n- Check current flight prices\n- Find 3-4 accommodation options\n- Suggest a day-by-day outline\n\nShow me this proposed itinerary with estimated costs before creating the final trip plan.":
+    "Bantu saya merencanakan liburan saya berikutnya.\n\nSebelum meriset, tanyakan kepada saya:\n- Ke mana saya berpikir untuk pergi (atau apakah saya terbuka untuk saran)\n- Kapan saya ingin bepergian dan berapa lama\n- Berapa anggaran saya\n- Jenis perjalanan apa yang saya cari (santai, petualangan, budaya, kuliner, dll.)\n\nLalu riset 3 destinasi teratas yang sesuai dengan kriteria saya dan tunjukkan perbandingannya:\n- Perkiraan biaya\n- Waktu terbaik untuk berkunjung\n- Apa yang membuat masing-masing unik\n\nSetelah saya memilih yang paling saya sukai, riset destinasi itu secara mendetail:\n- Periksa harga tiket pesawat saat ini\n- Temukan 3-4 pilihan akomodasi\n- Sarankan garis besar rencana per hari\n\nTunjukkan usulan rencana perjalanan ini beserta perkiraan biayanya sebelum membuat rencana perjalanan final.",
+  "Prepare for a job interview": "Bersiap untuk wawancara kerja",
+  "I have a job interview coming up for [role] at [company].\n\nBefore researching, ask me:\n- What the role is and what level\n- What I already know about the company\n- What I’m most nervous or uncertain about\n- If I have the job description or any interview details\n\nThen research the company and role, and show me what I found:\n- Company overview and recent news (last 6 months)\n- What this role typically involves\n- Common interview questions for this type of role\n- The interview team on LinkedIn (if you have names)\n\nShow me an outline covering these 3-5 topics before creating the full prep doc:\n- Key points about the company to mention\n- How my background connects to what they need\n- Questions I should ask them\n- 3-4 likely interview questions with suggested talking points\n\nOnce I approve, create a complete interview prep guide I can review before the interview.":
+    "Saya akan segera menghadapi wawancara kerja untuk [posisi] di [perusahaan].\n\nSebelum meriset, tanyakan kepada saya:\n- Posisinya apa dan di tingkat apa\n- Apa yang sudah saya ketahui tentang perusahaan itu\n- Apa yang paling membuat saya gugup atau ragu\n- Apakah saya punya deskripsi pekerjaan atau detail wawancara\n\nLalu riset perusahaan dan posisinya, dan tunjukkan apa yang Anda temukan:\n- Gambaran umum perusahaan dan berita terbaru (6 bulan terakhir)\n- Apa yang biasanya dilakukan dalam posisi ini\n- Pertanyaan wawancara umum untuk jenis posisi ini\n- Tim pewawancara di LinkedIn (jika Anda punya namanya)\n\nTunjukkan kerangka yang mencakup 3-5 topik ini sebelum membuat dokumen persiapan lengkap:\n- Poin penting tentang perusahaan yang perlu disebutkan\n- Bagaimana latar belakang saya terhubung dengan kebutuhan mereka\n- Pertanyaan yang sebaiknya saya ajukan kepada mereka\n- 3-4 kemungkinan pertanyaan wawancara beserta saran poin jawaban\n\nSetelah saya setujui, buat panduan persiapan wawancara lengkap yang bisa saya tinjau sebelum wawancara.",
+  "Catch me up on Slack": "Bantu saya mengejar kabar di Slack",
+  "Help me catch up on what I’ve missed in Slack.\n\nBefore reading, ask me:\n- Which channels or DMs I should focus on (or check everything)\n- How far back to look (since yesterday, last week, specific date)\n- What I’m most concerned about missing (decisions, @mentions, urgent items, project updates)\n- Whether there are specific topics or people to prioritize\n\nThen scan those channels and show me a summary:\n- Total unread messages\n- Breakdown by channel\n\nFocus on messages that @mention me, contain decisions, or are marked urgent first.\n\nShow me the top 5 most important updates with context and links to the threads. If there are more than 30 unread messages total, start with these top 5 and ask if you should summarize more.":
+    "Bantu saya mengejar hal-hal yang terlewat di Slack.\n\nSebelum membaca, tanyakan kepada saya:\n- Saluran atau DM mana yang perlu difokuskan (atau periksa semuanya)\n- Seberapa jauh ke belakang (sejak kemarin, minggu lalu, tanggal tertentu)\n- Apa yang paling saya khawatirkan terlewat (keputusan, @sebutan, hal mendesak, kabar proyek)\n- Apakah ada topik atau orang tertentu yang perlu diprioritaskan\n\nLalu pindai saluran tersebut dan tunjukkan ringkasannya:\n- Jumlah total pesan yang belum dibaca\n- Rincian per saluran\n\nFokus dulu pada pesan yang @menyebut saya, berisi keputusan, atau ditandai mendesak.\n\nTunjukkan 5 kabar terpenting beserta konteks dan tautan ke utasnya. Jika total pesan yang belum dibaca lebih dari 30, mulailah dengan 5 kabar ini dan tanyakan apakah perlu merangkum lebih banyak.",
+  "Turn voice memos into a doc": "Ubah memo suara menjadi dokumen",
+  "Help me turn my voice memos into an organized document. I have [voice memos / audio recordings] in [specify location] that I want transcribed and organized.\n\nFirst, scan the folder and show me:\n- How many audio files\n- Total duration\n- Date range\n\nBefore transcribing, ask me:\n- What these recordings are about\n- How I’d like them organized (chronologically, by topic, by theme)\n- Whether I want verbatim transcripts or cleaned-up summaries\n- What the final document should be (meeting notes, journal entries, ideas list, etc.)\n\nIf there are more than 5 recordings, start by transcribing just the 3 most recent ones. Show me the transcribed content and proposed organization structure.\n\nOnce I approve the approach, transcribe and organize the remaining recordings.":
+    "Bantu saya mengubah memo suara saya menjadi dokumen yang tertata. Saya punya [memo suara / rekaman audio] di [tentukan lokasi] yang ingin saya transkripsikan dan atur.\n\nPertama, pindai folder dan tunjukkan kepada saya:\n- Berapa banyak file audio\n- Durasi total\n- Rentang tanggal\n\nSebelum mentranskripsikan, tanyakan kepada saya:\n- Tentang apa rekaman-rekaman ini\n- Bagaimana saya ingin rekaman diatur (kronologis, per topik, per tema)\n- Apakah saya ingin transkrip kata per kata atau ringkasan yang sudah dirapikan\n- Dokumen akhirnya harus berupa apa (catatan rapat, catatan harian, daftar ide, dll.)\n\nJika ada lebih dari 5 rekaman, mulailah dengan mentranskripsikan 3 yang terbaru saja. Tunjukkan isi transkripsi dan usulan struktur pengaturannya.\n\nSetelah saya menyetujui pendekatannya, transkripsikan dan atur rekaman lainnya.",
+  "Pull data into a spreadsheet": "Tarik data ke spreadsheet",
+  "I’m on a page with [job listings / products / directory entries] I want to extract.\n\nFirst, scan the page and show me what you see:\n- How many items total\n- What fields are available (title, price, location, description, etc.)\n\nBefore extracting, ask me:\n- Which fields I want in the spreadsheet\n- If there are any I should skip\n\nThen show me a preview with the first 3-5 items extracted so I can confirm the format looks right.\n\nIf there are more than 20 items on this page, extract them in batches of 10. If there are multiple pages, just do the first page and check with you before continuing.":
+    "Saya sedang membuka halaman berisi [lowongan kerja / produk / entri direktori] yang ingin saya ekstrak.\n\nPertama, pindai halaman dan tunjukkan apa yang Anda lihat:\n- Berapa jumlah total item\n- Bidang apa saja yang tersedia (judul, harga, lokasi, deskripsi, dll.)\n\nSebelum mengekstrak, tanyakan kepada saya:\n- Bidang mana yang saya inginkan di spreadsheet\n- Apakah ada yang sebaiknya dilewati\n\nLalu tunjukkan pratinjau berisi 3-5 item pertama yang diekstrak agar saya bisa memastikan formatnya sudah benar.\n\nJika ada lebih dari 20 item di halaman ini, ekstrak per kelompok berisi 10. Jika ada beberapa halaman, kerjakan halaman pertama saja dan tanyakan dulu sebelum melanjutkan.",
   "Show empty groups": "Tampilkan grup kosong",
   "Drag or move sessions here": "Seret atau pindahkan sesi ke sini",
   "“{groupName}” will be removed. Nothing is in it.":
@@ -4588,6 +4674,7 @@ const catalog: Record<string, string> = {
   "Started Claudex Code": "Claudex Code dimulai",
   "Start Claudex Code": "Mulai Claudex Code",
   "In progress": "Sedang berlangsung",
+  "Starting session…": "Memulai sesi…",
   "Unable to connect to repository": "Tidak dapat terhubung ke repositori",
   "Claudex couldn’t reach GitHub to fetch your repository. Try again in a moment.":
     "Claudex tidak dapat menjangkau GitHub untuk mengambil repositori Anda. Coba lagi sebentar lagi.",
@@ -4865,8 +4952,8 @@ const catalog: Record<string, string> = {
     "Folder tidak dapat ditambahkan ke pengetahuan proyek.",
   "{name} can't be added: project files can be text files or PDFs.":
     "{name} tidak dapat ditambahkan: file proyek harus berupa file teks atau PDF.",
-  "{name} is too large. Project files can be up to 10 MB.":
-    "{name} terlalu besar. File proyek dapat berukuran hingga 10 MB.",
+  "{name} is too large. Project files can be up to {limit} MB.":
+    "{name} terlalu besar. File proyek dapat berukuran hingga {limit} MB.",
   "This project no longer exists.": "Proyek ini sudah tidak ada.",
   "Trust this workspace?": "Percayai ruang kerja ini?",
   "Codex may read, write, or execute files in this folder. Only proceed if you trust this workspace.":
@@ -5239,6 +5326,8 @@ const catalog: Record<string, string> = {
   "We’ll use this to verify your account":
     "Kami akan menggunakannya untuk memverifikasi akun Anda",
   "Enter your birthdate": "Masukkan tanggal lahir Anda",
+  "I agree to ZecousAI’s {terms} and {aup}.":
+    "Saya menyetujui {terms} dan {aup} ZecousAI.",
   "Terms of Service": "Ketentuan Layanan",
   "Acceptable Use Policy": "Kebijakan Penggunaan yang Dapat Diterima",
   "Enter your name to continue": "Masukkan nama Anda untuk melanjutkan",
@@ -6911,6 +7000,44 @@ const catalog: Record<string, string> = {
   "Create an interactive app that ": "Buat aplikasi interaktif yang ",
   "Turn this idea into a diagram, chart, or visual: ":
     "Ubah ide ini menjadi diagram, grafik, atau visual: ",
+  "Template Creator": "Pembuat Template",
+  "Deck Checker": "Pemeriksa Presentasi",
+  "DCF Valuation": "Valuasi DCF",
+  "Earnings Analysis": "Analisis Laba",
+  "All Finance Skills": "Semua Keterampilan Keuangan",
+  "Company Profile": "Profil Perusahaan",
+  "Pitch Deck": "Presentasi Proposal",
+  "Initiating Coverage": "Inisiasi Cakupan",
+  "Competitive Analysis": "Analisis Kompetitif",
+  "3-Statement Model": "Model Tiga Laporan Keuangan",
+  "Comps Analysis": "Analisis Perusahaan Pembanding",
+  "Datapack Builder": "Pembuat Paket Data",
+  "Enable skill to continue": "Aktifkan keterampilan untuk melanjutkan",
+  "The skill “{skillName}” needs to be enabled to use this prompt. Enable it now?":
+    "Keterampilan “{skillName}” harus diaktifkan untuk menggunakan prompt ini. Aktifkan sekarang?",
+  "Enable skill": "Aktifkan keterampilan",
+  "Create a reusable skill from our firm's template using anthropic-ppt-template-creator. Extract layouts, placeholders, and formatting standards. [attach firm_brand_template.pptx]":
+    "Buat keterampilan yang dapat digunakan kembali dari template perusahaan kami dengan anthropic-ppt-template-creator. Ekstrak tata letak, placeholder, dan standar format. [lampirkan firm_brand_template.pptx]",
+  "QC the attached management presentation using anthropic-fsi-deck-checker. Check for number consistency, data-narrative alignment, and formatting issues. [attach ProjectBravo_Mgmt_Presentation.pptx]":
+    "Periksa kualitas presentasi manajemen terlampir dengan anthropic-fsi-deck-checker. Periksa konsistensi angka, keselarasan data dan narasi, serta masalah format. [lampirkan ProjectBravo_Mgmt_Presentation.pptx]",
+  "Create a DCF model for [ServiceNow] using anthropic-fsi-dcf-model-builder. Include 5-year projections, WACC calculation, terminal value via exit multiple, and sensitivity on discount rate and growth.":
+    "Buat model DCF untuk [ServiceNow] dengan anthropic-fsi-dcf-model-builder. Sertakan proyeksi 5 tahun, perhitungan WACC, nilai terminal melalui kelipatan keluar, dan sensitivitas tingkat diskonto serta pertumbuhan.",
+  "Create an earnings update for [CrowdStrike]'s Q3 FY2025 results using anthropic-fsi-earnings-analysis. Cover beat/miss vs. consensus, key drivers, guidance changes, and updated thesis.":
+    "Buat pembaruan laba Q3 FY2025 [CrowdStrike] dengan anthropic-fsi-earnings-analysis. Bahas selisih terhadap konsensus, pendorong utama, perubahan panduan, dan tesis terbaru.",
+  "Create a single-slide strip profile for [Snowflake] using anthropic-fsi-strip-profile. Include business overview, key metrics, valuation multiples, stock chart, and top shareholders.":
+    "Buat profil ringkas satu slide untuk [Snowflake] dengan anthropic-fsi-strip-profile. Sertakan ikhtisar bisnis, metrik utama, kelipatan valuasi, grafik saham, dan pemegang saham utama.",
+  "Populate the attached pitch deck template with data from the Excel file using anthropic-fsi-pitch-deck. Map financials to appropriate slides and maintain formatting. [attach template.pptx and financials.xlsx]":
+    "Isi template presentasi terlampir dengan data Excel menggunakan anthropic-fsi-pitch-deck. Petakan data keuangan ke slide yang sesuai dan pertahankan formatnya. [lampirkan template.pptx dan financials.xlsx]",
+  "Creating company research on [MongoDB] using anthropic-fsi-initiating-coverage. Start with Task 1 covering business model, competitive positioning, and key investment thesis points.":
+    "Buat riset perusahaan [MongoDB] dengan anthropic-fsi-initiating-coverage. Mulai dari Tugas 1 yang mencakup model bisnis, posisi kompetitif, dan poin utama tesis investasi.",
+  "Create a competitive landscape analysis for [Datadog] using anthropic-fsi-competitive-analysis. Include a 2x2 positioning matrix against Splunk, Dynatrace, New Relic, and Elastic, with competitive moats and strategic implications.":
+    "Buat analisis lanskap kompetitif [Datadog] dengan anthropic-fsi-competitive-analysis. Sertakan matriks posisi 2x2 terhadap Splunk, Dynatrace, New Relic, dan Elastic, keunggulan defensif, serta implikasi strategis.",
+  "Build an integrated 3-statement model using anthropic-fsi-3-statements. Populate the attached template with [Salesforce]'s FY2022-2024 historicals from their 10-K and project through FY2027. [attach template.xlsx and CRM 10-K.pdf]":
+    "Bangun model tiga laporan keuangan terintegrasi dengan anthropic-fsi-3-statements. Isi template dengan data historis FY2022–2024 [Salesforce] dari 10-K dan proyeksikan hingga FY2027. [lampirkan template.xlsx dan CRM 10-K.pdf]",
+  "Build a comps analysis for [Shopify] using anthropic-fsi-comps-analysis. Include 10 peers with EV/Revenue, EV/EBITDA, and P/E on LTM and NTM basis, plus implied valuation ranges.":
+    "Buat analisis perusahaan pembanding [Shopify] dengan anthropic-fsi-comps-analysis. Sertakan 10 perusahaan dengan EV/Pendapatan, EV/EBITDA, dan P/E berbasis LTM serta NTM, beserta rentang valuasi tersirat.",
+  "Build a data pack for our IC using anthropic-fsi-datapack-builder. Standardize financials from the attached CIM including ARR growth, net retention, and rule of 40 metrics. [attach ProjectAlpha_CIM.pdf]":
+    "Buat paket data untuk komite investasi kami dengan anthropic-fsi-datapack-builder. Standarkan keuangan dari CIM terlampir, termasuk pertumbuhan ARR, retensi bersih, dan metrik aturan 40. [lampirkan ProjectAlpha_CIM.pdf]",
   "Get this as a document you can edit and share.":
     "Dapatkan ini sebagai dokumen yang bisa Anda edit dan bagikan.",
   "Create a document": "Buat dokumen",
@@ -7387,11 +7514,566 @@ const catalog: Record<string, string> = {
   file: "file",
   "Couldn’t fetch the file. This connector is no longer available.":
     "Tidak dapat mengambil file. Konektor ini tidak lagi tersedia.",
+  "Hey Claudex, could you {prompt}? Use any connector that would be helpful, and get started once you’ve gathered enough info.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Hai Claudex, bisakah kamu {prompt}? Gunakan konektor yang membantu dan mulai setelah informasi cukup terkumpul.\n\nJika sesuai, buat sesuatu yang bisa kita lihat bersama, seperti visual, daftar periksa, atau sesuatu yang interaktif.",
+  "Hey Claudex, could you help me {prompt}? Start researching right away, and use any tools you think would help. Let me know if you need any other context.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Hai Claudex, bisakah bantu saya {prompt}? Segera mulai riset dan gunakan alat yang membantu. Beri tahu jika perlu konteks lain.\n\nJika sesuai, buat sesuatu yang bisa kita lihat bersama, seperti visual, daftar periksa, atau sesuatu yang interaktif.",
+  "Hi Claudex! Could you {prompt}? If you need more information from me, ask me 1-2 key questions right away. If you think I should give you more context or upload anything to help you do a better job, let me know. Use any tools you have access to—like Google Drive, web search, etc.—if they’ll help.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive. Thanks for your help!":
+    "Hai Claudex! Bisakah kamu {prompt}? Jika perlu informasi lain, langsung ajukan 1–2 pertanyaan penting. Beri tahu jika saya perlu memberi konteks atau mengunggah sesuatu agar hasilnya lebih baik. Gunakan alat yang tersedia, seperti Google Drive atau pencarian web, jika membantu.\n\nJika sesuai, buat sesuatu yang bisa kita lihat bersama, seperti visual, daftar periksa, atau sesuatu yang interaktif. Terima kasih atas bantuannya!",
+  "Help me pick the right career for me":
+    "Bantu pilih karier yang tepat untuk saya",
+  "Choose a career path based on my astrology":
+    "Pilih jalur karier berdasarkan astrologi saya",
+  "Give me a work persona based on my favorite books":
+    "Beri persona kerja berdasarkan buku favorit saya",
+  "Help me role play a talk with my boss":
+    "Bantu simulasikan percakapan dengan atasan",
+  "Give me pointers on being a better manager":
+    "Beri tips menjadi manajer lebih baik",
+  "Write a job description for my dream life":
+    "Tulis deskripsi pekerjaan untuk hidup impian saya",
+  "Update my resume or LinkedIn": "Perbarui CV atau LinkedIn saya",
+  "Develop my professional skills": "Kembangkan keterampilan profesional saya",
+  "Navigate workplace challenges": "Hadapi tantangan di tempat kerja",
+  "Plan my career growth": "Rencanakan perkembangan karier saya",
+  "Improve my work-life balance": "Perbaiki keseimbangan kerja dan hidup saya",
+  "Network more effectively": "Bangun jejaring lebih efektif",
+  "Request a raise or promotion": "Minta kenaikan gaji atau promosi",
+  "Create effective cover letters": "Buat surat lamaran efektif",
+  "Identify transferable skills":
+    "Identifikasi keterampilan yang dapat dialihkan",
+  "Analyze industry trends": "Analisis tren industri",
+  "Practice salary negotiations": "Latih negosiasi gaji",
+  "Build my personal brand": "Bangun merek pribadi saya",
+  "Handle difficult colleagues": "Hadapi rekan kerja yang sulit",
+  "Develop leadership abilities": "Kembangkan kemampuan kepemimpinan",
+  "Manage workplace stress": "Kelola stres kerja",
+  "Explore career transitions": "Jelajahi peralihan karier",
+  "Draft professional emails": "Susun draf email profesional",
+  "Prepare presentations": "Siapkan presentasi",
+  "Build team communication": "Bangun komunikasi tim",
+  "Improve public speaking": "Tingkatkan kemampuan berbicara di depan umum",
+  "Track professional accomplishments": "Lacak pencapaian profesional",
+  "Handle performance reviews": "Hadapi tinjauan kinerja",
+  "Understand workplace politics": "Pahami politik kantor",
+  "Create workplace boundaries": "Buat batasan di tempat kerja",
+  "Find mentorship opportunities": "Cari peluang bimbingan",
+  "Manage remote work": "Kelola kerja jarak jauh",
+  "Develop executive presence": "Kembangkan wibawa eksekutif",
+  "Handle workplace feedback": "Tangani umpan balik kerja",
+  "Analyze job descriptions": "Analisis deskripsi pekerjaan",
+  "Create professional goals": "Buat tujuan profesional",
+  "Plan continuing education": "Rencanakan pendidikan berkelanjutan",
+  "Strengthen workplace relationships": "Perkuat hubungan kerja",
+  "Improve technical skills": "Tingkatkan keterampilan teknis",
+  "Manage project timelines": "Kelola jadwal proyek",
+  "Handle workplace conflicts": "Tangani konflik kerja",
+  "Prepare for promotions": "Persiapkan promosi",
+  "Balance multiple projects": "Seimbangkan beberapa proyek",
+  "Summarize my top projects this quarter":
+    "Ringkas proyek utama saya kuartal ini",
+  "Analyze my writing style based on my docs":
+    "Analisis gaya tulisan saya berdasarkan dokumen saya",
+  "Give me a TLDR on the new docs I’ve been given access to":
+    "Ringkas dokumen baru yang dapat saya akses",
+  "Identify what my top 3 priorities should be today":
+    "Identifikasi tiga prioritas utama saya hari ini",
+  "Find which of my ideas have gained the most traction at work":
+    "Cari ide saya yang paling diterima di tempat kerja",
+  "Tell me how my project focus has evolved over time":
+    "Jelaskan bagaimana fokus proyek saya berubah dari waktu ke waktu",
+  "Locate documents that represent pivotal moments in my thinking":
+    "Temukan dokumen yang menandai titik balik pemikiran saya",
+  "Surface unexpected connections across my different documents":
+    "Ungkap hubungan tak terduga antardokumen saya",
+  "Identify and visualize my most brilliant moments from my documents":
+    "Identifikasi dan visualisasikan momen paling cemerlang saya dari dokumen",
+  "Look at my docs and tell me what kind of genre writer I could be":
+    "Lihat dokumen saya dan tentukan genre tulisan yang cocok",
+  "Reveal blind spots in my knowledge base":
+    "Ungkap titik buta dalam pengetahuan saya",
+  "What idea themes consistently appear across all my documents?":
+    "Tema ide apa yang selalu muncul di seluruh dokumen saya?",
+  "Look at how my calendar has shifted this month compared to last":
+    "Lihat perubahan kalender saya bulan ini dibanding bulan lalu",
+  "Show me insights about my meeting attendance patterns":
+    "Tampilkan wawasan tentang pola kehadiran rapat saya",
+  "Tell me which recurring meetings take up most of my time":
+    "Tentukan rapat rutin yang paling menyita waktu saya",
+  "Analyze if my actual meetings align with my stated priorities":
+    "Analisis apakah rapat saya sesuai prioritas yang saya nyatakan",
+  "Analyze my calendar for meeting optimization":
+    "Analisis kalender saya untuk optimasi rapat",
+  "Tell me what my calendar reveals about my work-life balance":
+    "Jelaskan apa yang kalender ungkap tentang keseimbangan kerja dan hidup saya",
+  "Identify how my calendar habits reflect my personal priorities":
+    "Identifikasi bagaimana kebiasaan kalender mencerminkan prioritas pribadi saya",
+  "Show me how my seasonal patterns affect my scheduling and energy":
+    "Tunjukkan dampak pola musiman pada penjadwalan dan energi saya",
+  "Reflect on my calendar as if I was 100 years old looking back at this time":
+    "Renungkan kalender saya seolah saya berusia 100 tahun mengenang masa ini",
+  "Give me tips on how to organize my calendar":
+    "Beri tips mengatur kalender saya",
+  "Transform my calendar into a fantasy quest journal":
+    "Ubah kalender saya menjadi jurnal petualangan fantasi",
+  "Turn my calendar events into a poetic ‘day in the life’ narrative":
+    "Ubah acara kalender menjadi kisah puitis sehari dalam hidup",
+  "Predict my next stress point by analyzing my calendar density patterns":
+    "Prediksi titik stres berikutnya dari pola kepadatan kalender",
+  "Create a visual guide for calendar management based on my ennegram":
+    "Buat panduan visual pengelolaan kalender berdasarkan enneagram saya",
+  "Visualize where my time truly goes each week":
+    "Visualisasikan ke mana waktu saya sebenarnya pergi tiap minggu",
+  "Analyze my email communication style": "Analisis gaya komunikasi email saya",
+  "Tell me how I can optimize my inbox":
+    "Jelaskan cara mengoptimalkan kotak masuk saya",
+  "Pull out important points from my latest work emails":
+    "Ambil poin penting dari email kerja terbaru saya",
+  "Tell me which emails I subscribe to usually go unread":
+    "Tentukan email langganan yang biasanya tidak saya baca",
+  "Tell me about my email organization habits":
+    "Jelaskan kebiasaan pengaturan email saya",
+  "See what emotional themes emerge from my email conversations":
+    "Lihat tema emosional yang muncul dalam percakapan email saya",
+  "Let me know how I can be more persuasive in my emails":
+    "Jelaskan cara menulis email yang lebih persuasif",
+  "Show me any tricks that can help me manage email":
+    "Tunjukkan trik mengelola email",
+  "Write a pretend 1-page newspaper based on my integrations?":
+    "Tulis koran fiktif satu halaman dari integrasi saya",
+  "If my email inbox was a reality TV show, who would be voted off the island first?":
+    "Jika kotak masuk saya acara realitas, siapa yang tersingkir pertama?",
+  "Create a diplomatic response to my most challenging recent email thread":
+    "Buat balasan diplomatis untuk utas email terbaru yang paling sulit",
+  "Generate a ‘personal brand statement’ based on how I communicate in email":
+    "Buat pernyataan merek pribadi berdasarkan cara saya berkomunikasi lewat email",
+  "Casually look through my work integrations to find people who seem to support my career growth":
+    "Lihat integrasi kerja saya secara santai untuk mencari pendukung perkembangan karier",
+  "Look through my emails and tell me where I’m avoiding something important":
+    "Lihat email saya dan tunjukkan hal penting yang saya hindari",
+  "Create ‘missed connections’ personal ads based on my most interesting email exchanges":
+    "Buat iklan pribadi “pertemuan terlewat” dari pertukaran email paling menarik",
+  "Have a philosophical discussion": "Lakukan diskusi filosofis",
+  "Learn something unexpected": "Pelajari sesuatu yang tak terduga",
+  "Solve an interesting problem": "Pecahkan masalah menarik",
+  "Discover a new perspective": "Temukan perspektif baru",
+  "Play a word game together": "Main gim kata bersama",
+  "Debate an ethical dilemma": "Debatkan dilema etika",
+  "Explore a fascinating concept": "Jelajahi konsep menarik",
+  "Explore thought experiments": "Jelajahi eksperimen pikiran",
+  "Explore cognitive biases": "Jelajahi bias kognitif",
+  "Explore language evolution": "Jelajahi evolusi bahasa",
+  "Explore mathematical paradoxes": "Jelajahi paradoks matematika",
+  "Explore psychological phenomena": "Jelajahi fenomena psikologis",
+  "Explore architectural concepts": "Jelajahi konsep arsitektur",
+  "Explore memory techniques": "Jelajahi teknik ingatan",
+  "Explore logical fallacies": "Jelajahi kekeliruan logika",
+  "Explore ancient wisdom": "Jelajahi kearifan kuno",
+  "Discuss future technologies": "Diskusikan teknologi masa depan",
+  "Discuss creative thinking techniques": "Diskusikan teknik berpikir kreatif",
+  "Discuss art interpretation": "Diskusikan interpretasi seni",
+  "Discuss space exploration questions":
+    "Diskusikan pertanyaan eksplorasi ruang angkasa",
+  "Discuss musical innovations": "Diskusikan inovasi musik",
+  "Discuss food science": "Diskusikan ilmu pangan",
+  "Discuss symbolic communication": "Diskusikan komunikasi simbolis",
+  "Discuss social dynamics": "Diskusikan dinamika sosial",
+  "Analyze historical turning points": "Analisis titik balik sejarah",
+  "Analyze decision-making frameworks":
+    "Analisis kerangka pengambilan keputusan",
+  "Analyze literary themes": "Analisis tema sastra",
+  "Analyze game theory applications": "Analisis penerapan teori permainan",
+  "Consider alternate histories": "Pertimbangkan sejarah alternatif",
+  "Consider economic theories": "Pertimbangkan teori ekonomi",
+  "Consider environmental solutions": "Pertimbangkan solusi lingkungan",
+  "Consider innovation patterns": "Pertimbangkan pola inovasi",
+  "Create a fictional scenario": "Buat skenario fiksi",
+  "Investigate scientific mysteries": "Selidiki misteri ilmiah",
+  "Examine nature phenomena": "Teliti fenomena alam",
+  "Help me reflect on an experience": "Bantu saya merenungkan pengalaman",
+  "Help me work through a decision": "Bantu saya memikirkan keputusan",
+  "Transform my personal goals into an actionable plan":
+    "Ubah tujuan pribadi saya menjadi rencana tindakan",
+  "Roleplay difficult conversations I need to prepare for":
+    "Latih percakapan sulit yang perlu saya persiapkan",
+  "Guide me through a decision-making framework for a life choice":
+    "Pandu saya memakai kerangka keputusan untuk pilihan hidup",
+  "Plan my day or week": "Rencanakan hari atau minggu saya",
+  "Help with decision making": "Bantu pengambilan keputusan",
+  "Generate gift or travel ideas": "Buat ide hadiah atau perjalanan",
+  "Improve my habits": "Perbaiki kebiasaan saya",
+  "Manage my time better": "Kelola waktu saya lebih baik",
+  "Organize my living space": "Atur ruang tinggal saya",
+  "Improve sleep habits": "Perbaiki kebiasaan tidur",
+  "Build better relationships": "Bangun hubungan yang lebih baik",
+  "Manage personal stress": "Kelola stres pribadi",
+  "Explore productivity systems": "Jelajahi sistem produktivitas",
+  "Improve communication skills": "Tingkatkan kemampuan komunikasi",
+  "Handle difficult conversations": "Tangani percakapan sulit",
+  "Organize digital files": "Atur berkas digital",
+  "Balance social commitments": "Seimbangkan komitmen sosial",
+  "Track personal goals": "Lacak tujuan pribadi",
+  "Improve financial literacy": "Tingkatkan literasi keuangan",
+  "Manage household tasks": "Kelola tugas rumah tangga",
+  "Improve time management": "Perbaiki manajemen waktu",
+  "Create a routine for a goal": "Buat rutinitas untuk suatu tujuan",
+  "Create a personal development plan": "Buat rencana pengembangan pribadi",
+  "Create a personal budget": "Buat anggaran pribadi",
+  "Create family activities": "Buat aktivitas keluarga",
+  "Create reading lists": "Buat daftar bacaan",
+  "Create cleaning routines": "Buat rutinitas bersih-bersih",
+  "Create morning routines": "Buat rutinitas pagi",
+  "Create family traditions": "Buat tradisi keluarga",
+  "Create personal boundaries": "Buat batasan pribadi",
+  "Develop exercise routines": "Kembangkan rutinitas olahraga",
+  "Develop mindfulness practices": "Kembangkan latihan kesadaran penuh",
+  "Develop personal hobbies": "Kembangkan minat pribadi",
+  "Develop self-care practices": "Kembangkan praktik perawatan diri",
+  "Develop parenting strategies": "Kembangkan strategi pengasuhan",
+  "Plan healthy meals": "Rencanakan makanan sehat",
+  "Plan special celebrations": "Rencanakan perayaan khusus",
+  "Plan home improvements": "Rencanakan perbaikan rumah",
+  "Plan educational pursuits": "Rencanakan kegiatan pendidikan",
+  "Plan retirement activities": "Rencanakan aktivitas pensiun",
+  "Help me identify my creative style": "Bantu identifikasi gaya kreatif saya",
+  "Quiz me on how to give good design feedback in a crit":
+    "Uji cara saya memberi masukan desain yang baik dalam kritik",
+  "Design a chracter profile based on my creative super power":
+    "Rancang profil karakter berdasarkan kekuatan kreatif super saya",
+  "Generate a list of powerful words to use in a client presentation":
+    "Buat daftar kata kuat untuk presentasi klien",
+  "Reimagine this everyday object for a radically different culture":
+    "Bayangkan ulang benda sehari-hari ini untuk budaya sangat berbeda",
+  "Design an experience that changes how people perceive time":
+    "Rancang pengalaman yang mengubah persepsi waktu",
+  "Create something inspired by the most beautiful mistake":
+    "Buat sesuatu terinspirasi kesalahan terindah",
+  "Design an interactive installation based on my personal values":
+    "Rancang instalasi interaktif berdasarkan nilai pribadi saya",
+  "Create a visual language for emotions that have no names":
+    "Buat bahasa visual untuk emosi tanpa nama",
+  "Design something that bridges ancient techniques and futuristic concepts":
+    "Rancang sesuatu yang menjembatani teknik kuno dan konsep futuristis",
+  "Design an experience that transforms digital connections into physical ones":
+    "Rancang pengalaman yang mengubah koneksi digital menjadi fisik",
+  "Outline an ideation workshop that will blow away my creative team":
+    "Susun lokakarya ide yang memukau tim kreatif saya",
+  "Help me design a creative offsite that will be legendary":
+    "Bantu rancang acara kreatif luar kantor yang legendaris",
+  "Analyze my design aesthetic from examples":
+    "Analisis estetika desain saya dari contoh",
+  "Test my eye for detail with examples": "Uji kejelian saya dengan contoh",
+  "Quiz me on design principles and theory":
+    "Uji saya tentang prinsip dan teori desain",
+  "Transform my concept into a detailed design specification":
+    "Ubah konsep saya menjadi spesifikasi desain terperinci",
+  "Help me make something more user-friendly":
+    "Bantu saya membuat sesuatu lebih ramah pengguna",
+  "Brainstorm creative concepts": "Curah konsep kreatif",
+  "Generate design inspiration from history":
+    "Cari inspirasi desain dari sejarah",
+  "Translate a brief into design items": "Ubah ringkasan menjadi item desain",
+  "Research good typography systems": "Riset sistem tipografi yang baik",
+  "Generate illustration ideas": "Buat ide ilustrasi",
+  "Generate packaging concepts": "Buat konsep kemasan",
+  "Generate animation concepts": "Buat konsep animasi",
+  "Create a style guide": "Buat panduan gaya",
+  "Create on-trend color palettes": "Buat palet warna terkini",
+  "Create mood boards": "Buat papan suasana",
+  "Create logo variations": "Buat variasi logo",
+  "Create social media templates": "Buat templat media sosial",
+  "Create website structures": "Buat struktur situs web",
+  "Create portfolio presentations": "Buat presentasi portofolio",
+  "Create content strategies": "Buat strategi konten",
+  "Develop brand personas": "Kembangkan persona merek",
+  "Develop storytelling frameworks": "Kembangkan kerangka bercerita",
+  "Develop naming conventions": "Kembangkan konvensi penamaan",
+  "Develop marketing campaigns": "Kembangkan kampanye pemasaran",
+  "Develop product narratives": "Kembangkan narasi produk",
+  "Develop editorial calendars": "Kembangkan kalender editorial",
+  "Plan milestones for a creative project": "Rencanakan tonggak proyek kreatif",
+  "Plan friction-free user experience flows":
+    "Rencanakan alur pengalaman pengguna tanpa hambatan",
+  "Plan content calendars": "Rencanakan kalender konten",
+  "Plan a creative brainstorm with clients":
+    "Rencanakan curah ide kreatif bersama klien",
+  "Plan videogame storyboards": "Rencanakan papan cerita gim video",
+  "Plan photography shoots": "Rencanakan sesi fotografi",
+  "Write a solid creative brief": "Tulis ringkasan kreatif yang kuat",
+  "Write compelling copy": "Tulis teks persuasif",
+  "Write creative prompts for LLMs": "Tulis prompt kreatif untuk LLM",
+  "Design a presentation layout": "Rancang tata letak presentasi",
+  "Design email newsletters": "Rancang buletin email",
+  "Design event materials": "Rancang materi acara",
+  "Generate character concepts for fiction": "Buat konsep karakter fiksi",
+  "Test my negotiation tactics with scenarios":
+    "Uji taktik negosiasi saya dengan skenario",
+  "Quiz me on my business skills": "Uji keterampilan bisnis saya",
+  "Help me develop and hone a strategy": "Bantu kembangkan dan asah strategi",
+  "Map the unexpected connections between unrelated market trends":
+    "Petakan hubungan tak terduga antara tren pasar yang tidak terkait",
+  "Reimagine my business as if it were founded 100 years in the future":
+    "Bayangkan ulang bisnis saya seolah didirikan 100 tahun mendatang",
+  "Design a strategy game based on my business challenges":
+    "Rancang gim strategi berdasarkan tantangan bisnis saya",
+  "Develop a business ecosystem inspired by my personal passions":
+    "Kembangkan ekosistem bisnis terinspirasi minat pribadi saya",
+  "Create a business model canvas that breaks every conventional rule":
+    "Buat kanvas model bisnis yang mendobrak semua aturan konvensional",
+  "Design a strategy inspired by patterns found in nature":
+    "Rancang strategi terinspirasi pola alam",
+  "Analyze market opportunities": "Analisis peluang pasar",
+  "Improve operational efficiency": "Tingkatkan efisiensi operasional",
+  "Draft a pitch or proposal": "Susun draf presentasi atau proposal",
+  "Build financial projections": "Buat proyeksi keuangan",
+  "Conduct competitor analysis": "Lakukan analisis pesaing",
+  "Analyze business metrics": "Analisis metrik bisnis",
+  "Analyze great investment pitches":
+    "Analisis presentasi investasi yang hebat",
+  "Research top go-to-market strategies": "Riset strategi masuk pasar terbaik",
+  "Develop a business plan": "Kembangkan rencana bisnis",
+  "Develop pricing strategies": "Kembangkan strategi harga",
+  "Develop KPI dashboards": "Kembangkan dasbor KPI",
+  "Develop stakeholder communications":
+    "Kembangkan komunikasi pemangku kepentingan",
+  "Develop risk assessments": "Kembangkan penilaian risiko",
+  "Develop client proposals": "Kembangkan proposal klien",
+  "Develop brand positioning": "Kembangkan pemosisian merek",
+  "Develop sustainability initiatives": "Kembangkan inisiatif keberlanjutan",
+  "Develop distribution strategies": "Kembangkan strategi distribusi",
+  "Create a marketing strategy": "Buat strategi pemasaran",
+  "Create customer personas": "Buat persona pelanggan",
+  "Create sales presentations": "Buat presentasi penjualan",
+  "Create business processes": "Buat proses bisnis",
+  "Create strategic partnerships": "Buat kemitraan strategis",
+  "Create recruiting strategies": "Buat strategi rekrutmen",
+  "Create vendor evaluations": "Buat evaluasi pemasok",
+  "Create business pivots": "Buat perubahan arah bisnis",
+  "Create revenue forecasts": "Buat perkiraan pendapatan",
+  "Create customer journeys": "Buat perjalanan pelanggan",
+  "Plan product launches": "Rencanakan peluncuran produk",
+  "Plan market research": "Rencanakan riset pasar",
+  "Plan organizational structure": "Rencanakan struktur organisasi",
+  "Plan budget allocations": "Rencanakan alokasi anggaran",
+  "Plan business scaling strategies": "Rencanakan strategi penskalaan bisnis",
+  "Plan expansion opportunities": "Rencanakan peluang ekspansi",
+  "Plan business acquisitions": "Rencanakan akuisisi bisnis",
+  "Design growth frameworks": "Rancang kerangka pertumbuhan",
+  "Craft a manifesto that captures the essence of my boldest ideas":
+    "Tulis manifesto yang menangkap inti ide paling berani saya",
+  "Help me develop my unique voice as a writer":
+    "Bantu kembangkan suara khas saya sebagai penulis",
+  "Help me identify my writing weaknesses":
+    "Bantu identifikasi kelemahan tulisan saya",
+  "Create a piece that blends two completely different writing styles":
+    "Buat karya yang memadukan dua gaya tulisan sangat berbeda",
+  "Reimagine a piece of my writing as an edge-of-your-seat thriller":
+    "Ubah tulisan saya menjadi cerita menegangkan",
+  "Compare my writing style to famous authors":
+    "Bandingkan gaya tulisan saya dengan penulis terkenal",
+  "Craft something that reads differently depending on the reader’s mood":
+    "Tulis karya yang terasa berbeda sesuai suasana hati pembaca",
+  "Write something in the voice of my favorite historical figure":
+    "Tulis dengan suara tokoh sejarah favorit saya",
+  "Help me develop a unique voice for an audience":
+    "Bantu kembangkan suara khas untuk audiens",
+  "Edit my content": "Edit konten saya",
+  "Brainstorm creative ideas": "Curah ide kreatif",
+  "Research topics for my writing": "Riset topik untuk tulisan saya",
+  "Improve my writing style": "Perbaiki gaya tulisan saya",
+  "Draft an outline for my project": "Susun kerangka proyek saya",
+  "Create a content strategy": "Buat strategi konten",
+  "Create engaging headlines": "Buat judul menarik",
+  "Create social media posts": "Buat postingan media sosial",
+  "Create blog article series": "Buat seri artikel blog",
+  "Create interview questions": "Buat pertanyaan wawancara",
+  "Create persuasive arguments": "Buat argumen persuasif",
+  "Create user documentation": "Buat dokumentasi pengguna",
+  "Create presentation scripts": "Buat naskah presentasi",
+  "Create FAQ resources": "Buat sumber FAQ",
+  "Create technical explanations": "Buat penjelasan teknis",
+  "Develop character profiles": "Kembangkan profil karakter",
+  "Develop content calendars": "Kembangkan kalender konten",
+  "Develop brand voice guides": "Kembangkan panduan suara merek",
+  "Develop podcast scripts": "Kembangkan naskah podcast",
+  "Develop content templates": "Kembangkan templat konten",
+  "Develop content briefs": "Kembangkan ringkasan konten",
+  "Develop instructional content": "Kembangkan konten instruksional",
+  "Develop editorial guidelines": "Kembangkan pedoman editorial",
+  "Draft email newsletters": "Tulis buletin email",
+  "Write compelling CTAs": "Tulis ajakan bertindak yang menarik",
+  "Write product descriptions": "Tulis deskripsi produk",
+  "Write video scripts": "Tulis naskah video",
+  "Write executive summaries": "Tulis ringkasan eksekutif",
+  "Write case studies": "Tulis studi kasus",
+  "Write speech drafts": "Tulis draf pidato",
+  "Write marketing copy": "Tulis teks pemasaran",
+  "Write grant proposals": "Tulis proposal hibah",
+  "Write event descriptions": "Tulis deskripsi acara",
+  "Design a learning challenge that pushes my creative boundaries":
+    "Rancang tantangan belajar yang mendorong batas kreativitas saya",
+  "Explain a concept in simple terms":
+    "Jelaskan konsep dengan bahasa sederhana",
+  "Help me understand a complex topic from scratch":
+    "Bantu saya memahami topik rumit dari awal",
+  "Create a curriculum inspired by my favorite cultural movement":
+    "Buat kurikulum terinspirasi gerakan budaya favorit saya",
+  "Develop a learning approach that embraces beautiful contradictions":
+    "Kembangkan pendekatan belajar yang merangkul kontradiksi indah",
+  "Transform a dry subject into something fascinating":
+    "Ubah topik membosankan menjadi menarik",
+  "Develop a learning framework based on my personal heroes":
+    "Kembangkan kerangka belajar dari tokoh panutan saya",
+  "Create a knowledge map that reveals surprising patterns in what I know":
+    "Buat peta pengetahuan yang mengungkap pola mengejutkan dalam pengetahuan saya",
+  "Transform these notes into a structured summary":
+    "Ubah catatan ini menjadi ringkasan terstruktur",
+  "Help me make sense of these ideas": "Bantu saya memahami ide-ide ini",
+  "Find patterns in my research": "Temukan pola dalam riset saya",
+  "Explain a complex topic simply": "Jelaskan topik rumit secara sederhana",
+  "Create a study plan": "Buat rencana belajar",
+  "Design a lesson or curriculum": "Rancang pelajaran atau kurikulum",
+  "Compare learning resources": "Bandingkan sumber belajar",
+  "Find the best books on a subject": "Cari buku terbaik tentang suatu topik",
+  "Prepare for an exam or interview": "Persiapkan ujian atau wawancara",
+  "Create effective flashcards": "Buat kartu belajar yang efektif",
+  "Develop learning objectives": "Kembangkan tujuan belajar",
+  "Summarize my academic papers": "Ringkas makalah akademis saya",
+  "Create assessment questions": "Buat soal penilaian",
+  "Develop research methodologies": "Kembangkan metodologi riset",
+  "Create learning timelines": "Buat jadwal belajar",
+  "Design educational activities": "Rancang kegiatan pendidikan",
+  "Develop concept maps": "Kembangkan peta konsep",
+  "Create good lecture notes": "Buat catatan kuliah yang baik",
+  "Design presentation visuals": "Rancang visual presentasi",
+  "Develop learning frameworks": "Kembangkan kerangka belajar",
+  "Create annotated bibliographies": "Buat bibliografi beranotasi",
+  "Design learning journals": "Rancang jurnal belajar",
+  "Develop discussion prompts": "Kembangkan pemantik diskusi",
+  "Create educational games": "Buat gim edukatif",
+  "Develop teaching strategies": "Kembangkan strategi mengajar",
+  "Create educational rubrics": "Buat rubrik pendidikan",
+  "Design learning modules": "Rancang modul belajar",
+  "Develop critical analyses": "Kembangkan analisis kritis",
+  "Design research questions": "Rancang pertanyaan riset",
+  "Develop reflection exercises": "Kembangkan latihan refleksi",
+  "Create study summaries": "Buat ringkasan belajar",
+  "Design learning portfolios": "Rancang portofolio belajar",
+  "Create feedback for student work": "Buat umpan balik tugas siswa",
+  "Design learning challenges": "Rancang tantangan belajar",
+  "Find credible sources for my research":
+    "Cari sumber tepercaya untuk riset saya",
+  "Provide evidence-based insights for my topic":
+    "Berikan wawasan berbasis bukti untuk topik saya",
+  "Look over my code and give me tips": "Tinjau kode saya dan beri saran",
+  "Vibe code with me": "Lakukan vibe coding bersama saya",
+  "Quiz me on python code": "Uji saya tentang kode Python",
+  "Evaluate my coding style based on a snippet":
+    "Nilai gaya pemrograman saya dari cuplikan kode",
+  "Tell me what programming paradigm suits my thinking style":
+    "Tentukan paradigma pemrograman yang cocok dengan pola pikir saya",
+  "Assess my approach to debugging problems": "Nilai pendekatan debugging saya",
+  "Challenge me with increasingly difficult coding puzzles":
+    "Tantang saya dengan teka-teki kode yang makin sulit",
+  "Help me develop a personal learning roadmap for coding":
+    "Bantu buat peta belajar coding pribadi",
+  "Help me turn a screenshot into working code":
+    "Bantu ubah tangkapan layar menjadi kode yang berfungsi",
+  "Design a game that teaches coding concepts through storytelling":
+    "Rancang gim yang mengajarkan coding lewat cerita",
+  "Invent a coding language based on my favorite hobby":
+    "Ciptakan bahasa coding berdasarkan hobi favorit saya",
+  "Design a digital pet that grows based on my coding habits":
+    "Rancang hewan digital yang tumbuh sesuai kebiasaan coding saya",
+  "Create a coding Easter egg that would make my team smile":
+    "Buat easter egg kode yang membuat tim saya tersenyum",
+  "Build an app based on my idea": "Buat aplikasi berdasarkan ide saya",
+  "Debug my code and give me tips": "Debug kode saya dan beri saran",
+  "Design a software architecture": "Rancang arsitektur perangkat lunak",
+  "Explain a programming concept": "Jelaskan konsep pemrograman",
+  "Plan a development roadmap": "Rencanakan peta pengembangan",
+  "Write unit test cases": "Tulis pengujian unit",
+  "Create API documentation": "Buat dokumentasi API",
+  "Design database schemas": "Rancang skema basis data",
+  "Develop coding standards": "Kembangkan standar coding",
+  "Develop code reviews to speed me up":
+    "Kembangkan tinjauan kode untuk mempercepat pekerjaan saya",
+  "Create technical specifications": "Buat spesifikasi teknis",
+  "Design UI/UX wireframes": "Rancang wireframe UI/UX",
+  "Develop deployment strategies": "Kembangkan strategi penerapan",
+  "Create refactoring plans": "Buat rencana refaktorisasi",
+  "Design microservices": "Rancang layanan mikro",
+  "Develop algorithm solutions": "Kembangkan solusi algoritma",
+  "Create security protocols": "Buat protokol keamanan",
+  "Design feature flags": "Rancang flag fitur",
+  "Develop performance benchmarks": "Kembangkan tolok ukur kinerja",
+  "Create debugging workflows": "Buat alur debugging",
+  "Design data structures": "Rancang struktur data",
+  "Develop integration strategies": "Kembangkan strategi integrasi",
+  "Create dependency maps": "Buat peta dependensi",
+  "Design error handling": "Rancang penanganan kesalahan",
+  "Develop CI/CD pipelines": "Kembangkan pipeline CI/CD",
+  "Create technical diagrams": "Buat diagram teknis",
+  "Design scalability plans": "Rancang rencana skalabilitas",
+  "Develop project estimates": "Kembangkan estimasi proyek",
+  "Create code snippets": "Buat cuplikan kode",
+  "Design logging systems": "Rancang sistem pencatatan log",
+  "Develop technical debt analysis": "Kembangkan analisis utang teknis",
+  "Create monitoring solutions": "Buat solusi pemantauan",
   "From Calendar": "Dari Kalender",
   "From Gmail": "Dari Gmail",
   "From Drive": "Dari Drive",
   Integration: "Integrasi",
   "Choose a valid connector.": "Pilih konektor yang valid.",
+  "Research how to write documentation that people will actually want to read":
+    "Riset cara menulis dokumentasi yang ingin dibaca orang",
+  "Find the best way to explain our product to new users, use my docs as needed":
+    "Cari cara terbaik menjelaskan produk kepada pengguna baru, gunakan dokumen saya jika perlu",
+  "Navigate the maze of healthcare compliance requirements":
+    "Pahami kerumitan persyaratan kepatuhan layanan kesehatan",
+  "Find the best tools for managing remote team communication":
+    "Cari alat terbaik untuk komunikasi tim jarak jauh",
+  "Go deep on the secret behind companies with amazing customer service":
+    "Dalami rahasia perusahaan dengan layanan pelanggan luar biasa",
+  "Discover fresh angles on my writing based on my docs":
+    "Temukan sudut pandang baru untuk tulisan dari dokumen saya",
+  "Dive deep on what travel trends will be for the next five years":
+    "Dalami tren perjalanan lima tahun mendatang",
+  "Understand what’s happening with tariffs right now":
+    "Pahami perkembangan tarif saat ini",
+  "Find the weird science behind everyday products people love":
+    "Temukan sains unik di balik produk sehari-hari yang disukai",
+  "Research and deliver findings relevant to me as a time-traveler from 2050":
+    "Riset dan sajikan temuan bagi saya sebagai penjelajah waktu dari 2050",
+  "Find the most compelling stories about an important topic from my docs":
+    "Temukan kisah paling menarik tentang topik penting dari dokumen saya",
+  "Determine my main competitors based on my docs and show me what my competitors are doing differently this year":
+    "Identifikasi pesaing utama dari dokumen saya dan hal berbeda yang mereka lakukan tahun ini",
+  "Identify the most important performance differences between the latest accelerators from nvidia, google, and amazon?":
+    "Identifikasi perbedaan kinerja utama akselerator terbaru Nvidia, Google, dan Amazon",
+  "Extract the most actionable insights from my meeting notes that I’m not acting on":
+    "Ambil wawasan praktis dari catatan rapat yang belum saya terapkan",
+  "Come up with novel ideas for projects based on my docs":
+    "Buat ide proyek baru berdasarkan dokumen saya",
+  "Map the evolution of sleep research in the past decade":
+    "Petakan perkembangan riset tidur selama dekade terakhir",
+  "Identify emerging patterns in human and machine relationships":
+    "Identifikasi pola baru hubungan manusia dan mesin",
+  "Compare researchers’ disagreements about climate solutions":
+    "Bandingkan perbedaan pendapat peneliti tentang solusi iklim",
+  "Examine how fermentation discoveries changed ancient diets":
+    "Teliti bagaimana fermentasi mengubah pola makan kuno",
+  "Find how humans realized teeth need cleaning":
+    "Cari bagaimana manusia menyadari gigi perlu dibersihkan",
+  "Explore why we even developed singing (is it just happy noises?)":
+    "Jelajahi mengapa kita mengembangkan nyanyian (hanya suara gembira?)",
+  "Track invention of the idea of “free time” - when did that start?":
+    "Telusuri asal konsep “waktu luang”: kapan dimulai?",
+  "Research how money became a thing": "Teliti bagaimana uang muncul",
+  "Discover how humans figured out “those mushrooms = bad idea”":
+    "Cari bagaimana manusia tahu “jamur itu = ide buruk”",
+  "Investigate when we realized trees could talk (chemically)":
+    "Selidiki kapan kita sadar pohon berbicara secara kimiawi",
   "Google Calendar": "Google Kalender",
   Gmail: "Gmail",
   "Loading artifact…": "Memuat artefak…",
@@ -8523,6 +9205,8 @@ const catalog: Record<string, string> = {
   "Failed to check for updates: {error}": "Gagal memeriksa pembaruan: {error}",
   "Claudex is working in {count} sessions. Quitting now will interrupt that work.":
     "Claudex sedang bekerja dalam {count} sesi. Keluar sekarang akan menghentikan pekerjaan itu.",
+  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking claudex.zecous.cn — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from claudex.zecous.cn.":
+    "Claudex tidak dapat menjangkau server pembaruan. Jika Anda menggunakan jaringan kantor, firewall atau proxy mungkin memblokir claudex.zecous.cn — minta tim TI Anda untuk mengizinkannya. Jika tidak, periksa koneksi lalu coba lagi, atau unduh versi terbaru dari claudex.zecous.cn.",
   "Microsoft Office": "Microsoft Office",
   "Get the add-in": "Dapatkan add-in",
   "Diagnostic Report": "Laporan diagnostik",
@@ -9095,6 +9779,8 @@ const catalog: Record<string, string> = {
   "Claudex Serif": "Claudex Serif",
   "An independent desktop client.": "Klien desktop independen.",
   "Internal only": "Khusus internal",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's previous 1:1, so what you can use does not change.":
+    "Saldo ZecousAI Anda mungkin terlihat lebih kecil di Claudex. Claudex mengisi ulang dengan kurs baru ¥1 untuk $1, dan pengali modelnya jauh lebih rendah dari 1:1 resmi ZecousAI, jadi yang bisa Anda pakai tidak berubah.",
   "Make sure you trust a plugin before installing or using it. Uploaded plugins are not controlled by Claudex, and Claudex cannot verify that they will work as intended. See each plugin’s homepage for more information.":
     "Pastikan Anda memercayai plugin sebelum memasang atau menggunakannya. Plugin yang diunggah tidak dikendalikan oleh Claudex, yang tidak dapat memastikan plugin berfungsi sebagaimana mestinya. Lihat beranda setiap plugin untuk informasi selengkapnya.",
   "Community marketplace": "Marketplace komunitas",
@@ -9142,6 +9828,8 @@ const catalog: Record<string, string> = {
   "Remote Control couldn’t turn off":
     "Kontrol Jarak Jauh tidak dapat dinonaktifkan",
   "Remote Control couldn’t connect": "Kontrol Jarak Jauh tidak dapat terhubung",
+  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or claudex.zecous.cn.":
+    "Tidak terhubung kembali setelah sesi dibersihkan. Aktifkan kembali untuk terus menggunakan sesi ini dari ponsel atau claudex.zecous.cn.",
   "Claudex Code stopped, so Remote Control turned off with it.":
     "Claudex Code berhenti, sehingga Kontrol Jarak Jauh ikut nonaktif.",
   "Sign in again. Remote Control retries with your next message.":
@@ -10194,6 +10882,7 @@ const catalog: Record<string, string> = {
   "This removes your feedback, including any conversation excerpt sent with it. It does not delete your chat.":
     "Ini menghapus masukan Anda, termasuk kutipan percakapan yang dikirim bersamanya. Chat Anda tidak dihapus.",
   "from {name}": "dari {name}",
+  // Customize directory categories (2026-10-20).
   "Developer tools": "Alat pengembang",
   Creativity: "Kreativitas",
   "Education & research": "Pendidikan & riset",
@@ -10201,6 +10890,7 @@ const catalog: Record<string, string> = {
   Communication: "Komunikasi",
   "Scientific research": "Riset ilmiah",
   Security: "Keamanan",
+  // Usage popover (2026-10-20).
   "Balance and usage": "Saldo dan penggunaan",
   "Last 7 days": "7 hari terakhir",
   "Turn on Allow bypass permissions mode in Settings to use it.":
@@ -10221,11 +10911,15 @@ const catalog: Record<string, string> = {
   "Delete {count}": "Hapus {count}",
   "Ask your administrator for the installer.":
     "Minta penginstal kepada administrator Anda.",
+  // Add menu failure sentence (2026-10-20)
   "Design systems couldn’t be loaded. Refresh to try again.":
     "Sistem desain tidak dapat dimuat. Muat ulang halaman lalu coba lagi.",
+  // Skip all approvals connector list (2026-10-20)
   "Already allowed": "Sudah diizinkan",
+  // Attachment drop notice (2026-10-20)
   "Folders can't be attached. Drop files instead.":
     "Folder tidak dapat dilampirkan. Jatuhkan file sebagai gantinya.",
+  // Attachment refusals, the live sentences (2026-10-20)
   "“{fileName}” is {fileSize}, over the {sizeLimit} MB limit. Choose a smaller file.":
     "“{fileName}” berukuran {fileSize}, melebihi batas {sizeLimit} MB. Pilih file yang lebih kecil.",
   "“{fileName}” can’t be attached in this chat yet — this file type isn’t supported here. You can paste its contents into the message instead.":
@@ -10236,6 +10930,7 @@ const catalog: Record<string, string> = {
     "{name} tidak dapat dilampirkan: administrator Anda tidak mengizinkan jenis file ini.",
   "Your administrator has turned off attachments.":
     "Administrator Anda telah menonaktifkan lampiran.",
+  // /copy (2026-10-20)
   "Copy Claudex’s latest reply, or /copy 2 or higher for an earlier one":
     "Salin balasan terbaru Claudex, atau /copy 2 atau lebih untuk balasan sebelumnya",
   "Claudex is still replying. Send /copy when the reply is done.":
@@ -10244,6 +10939,7 @@ const catalog: Record<string, string> = {
   "Reply copied to clipboard.": "Balasan disalin ke papan klip.",
   "Couldn’t copy the reply to the clipboard. Try again.":
     "Balasan tidak dapat disalin ke papan klip. Coba lagi.",
+  // Slash command notices (2026-10-20)
   "/{name} can't be run here.": "/{name} tidak dapat dijalankan di sini.",
   "Plan mode is not available in this Windows permission menu.":
     "Mode rencana tidak tersedia di menu izin Windows ini.",
@@ -10431,6 +11127,7 @@ const catalog: Record<string, string> = {
   "Rename chat": "Ubah nama obrolan",
   "Rename task": "Ubah nama tugas",
   "Project name is required": "Nama proyek wajib diisi",
+  // Notices and focus reminders (menus-overlays toasts).
   "You’ve hit your limit for Claudex messages. Limits will reset at {time}.":
     "Anda telah mencapai batas pesan Claudex. Batas akan direset pada {time}.",
   "You’re sending messages too quickly. Try again at {time}.":
@@ -10447,6 +11144,7 @@ const catalog: Record<string, string> = {
   "It’s your quiet hours until {time}. You set this time limit in Settings → Time and focus.":
     "Sekarang jam tenang Anda hingga {time}. Anda menetapkan batas waktu ini di Pengaturan → Waktu dan fokus.",
   "{x} hr": "{x} jam",
+  // Search palette (menus-overlays).
   "Past hour": "Satu jam terakhir",
   "Search mode": "Mode pencarian",
   "Actions mode": "Mode tindakan",
@@ -10473,6 +11171,7 @@ const catalog: Record<string, string> = {
     "Anda telah mencapai batas pesan Claudex. Batas akan direset pada {at}.",
   "Too many requests right now. Try again at {at}.":
     "Terlalu banyak permintaan saat ini. Coba lagi pada {at}.",
+  // SSH connection banner (host in the sentence)
   "Connecting to {host}…": "Menyambung ke {host}…",
   "Setting up Claudex on {host}…": "Menyiapkan Claudex di {host}…",
   "Reconnecting to {host}…": "Menyambung ulang ke {host}…",
@@ -10481,7 +11180,9 @@ const catalog: Record<string, string> = {
   "Can’t reach {host}: {reason}": "Tidak dapat menjangkau {host}: {reason}",
   "Not connected to {host}.": "Tidak tersambung ke {host}.",
   "this host": "host ini",
+  // Quick Entry input placeholder
   "What can I help you with today?": "Apa yang bisa saya bantu hari ini?",
+  // Update menu, update dialogs and update notices
   "Check for Updates…": "Periksa Pembaruan…",
   "Checking for Updates…": "Memeriksa Pembaruan…",
   "Downloading Update…": "Mengunduh Pembaruan…",
@@ -10514,6 +11215,7 @@ const catalog: Record<string, string> = {
   "Your administrator no longer supports this version. Install Claudex {version}.":
     "Administrator Anda tidak lagi mendukung versi ini. Instal Claudex {version}.",
   "Claudex {version} is available.": "Claudex {version} tersedia.",
+  // What's new section titles
   "release-section|New": "Baru",
   "release-section|Improved": "Ditingkatkan",
   "release-section|Fixed": "Diperbaiki",
@@ -10733,6 +11435,8 @@ const catalog: Record<string, string> = {
     "Draf ini terlalu panjang untuk dipindahkan. Persingkat atau salin dulu.",
   "This artifact is being updated. Try again when the reply finishes.":
     "Artefak ini sedang diperbarui. Coba lagi setelah balasan selesai.",
+  "This knowledge base can't be reached right now.":
+    "Basis pengetahuan ini tidak dapat dijangkau saat ini.",
   "Choose a PNG, JPEG, GIF or WebP image smaller than 1 MB.":
     "Pilih gambar PNG, JPEG, GIF, atau WebP yang berukuran kurang dari 1 MB.",
   "Voice mode needs dictation and a window that can read aloud.":
@@ -10989,193 +11693,8 @@ const catalog: Record<string, string> = {
   "Started preview": "Pratinjau dimulai",
   "Couldn’t start preview": "Tidak dapat memulai pratinjau",
   "status|Thinking": "Berpikir",
-  "Compare the leading note-taking apps for a small team and recommend one":
-    "Bandingkan aplikasi catatan utama untuk tim kecil dan rekomendasikan satu",
-  "Find out what makes onboarding emails work and sum up the patterns":
-    "Cari tahu apa yang membuat email orientasi efektif dan rangkum polanya",
-  "Look into how other cities run successful bike-share programs":
-    "Selidiki bagaimana kota lain sukses menjalankan program sepeda sewa",
-  "Gather the latest evidence on four-day work weeks and weigh it up":
-    "Kumpulkan bukti terbaru tentang empat hari kerja seminggu dan timbang",
-  "Survey open-source tools for monitoring a small web service":
-    "Telusuri alat sumber terbuka untuk memantau layanan web kecil",
-  "Research how to price a new subscription product fairly":
-    "Teliti cara menetapkan harga yang adil untuk produk langganan baru",
-  "Explain how a hash map works and build a tiny one in Python":
-    "Jelaskan cara kerja hash map dan buat versi kecilnya di Python",
-  "Write a script that renames photos by the date they were taken":
-    "Tulis skrip yang mengganti nama foto berdasarkan tanggal pengambilannya",
-  "Review a function I paste for bugs and readability":
-    "Tinjau fungsi yang saya tempel untuk mencari bug dan masalah keterbacaan",
-  "Turn a messy shell one-liner into a readable, commented script":
-    "Ubah perintah shell satu baris yang berantakan menjadi skrip yang rapi dan berkomentar",
-  "Design a database schema for a small library app":
-    "Rancang skema basis data untuk aplikasi perpustakaan kecil",
-  "Build a simple to-do list page with HTML, CSS and JavaScript":
-    "Buat halaman daftar tugas sederhana dengan HTML, CSS, dan JavaScript",
-  "Teach me the basics of statistics with everyday examples":
-    "Ajari saya dasar-dasar statistik dengan contoh sehari-hari",
-  "Make a two-week plan for learning everyday Spanish phrases":
-    "Buat rencana dua minggu untuk belajar frasa bahasa Spanyol sehari-hari",
-  "Quiz me on the main events of the French Revolution":
-    "Beri saya kuis tentang peristiwa utama Revolusi Prancis",
-  "Explain how vaccines train the immune system, step by step":
-    "Jelaskan langkah demi langkah bagaimana vaksin melatih sistem imun",
-  "Help me understand compound interest with a worked example":
-    "Bantu saya memahami bunga majemuk dengan contoh perhitungan",
-  "Summarize a classic book I name, chapter by chapter":
-    "Rangkum buku klasik pilihan saya per bab",
-  "Draft a friendly announcement for a team offsite":
-    "Susun pengumuman yang ramah untuk acara tim di luar kantor",
-  "Tighten a paragraph I paste so it says more with fewer words":
-    "Padatkan paragraf yang saya tempel agar menyampaikan lebih banyak dengan lebih sedikit kata",
-  "Write three subject lines for a newsletter about our latest release":
-    "Tulis tiga judul email untuk buletin tentang rilis terbaru kami",
-  "Outline a blog post about lessons from a project that failed":
-    "Buat kerangka tulisan blog tentang pelajaran dari proyek yang gagal",
-  "Turn my bullet points into a short, clear project update":
-    "Ubah poin-poin saya menjadi kabar proyek yang singkat dan jelas",
-  "Write a thank-you note to a mentor":
-    "Tulis catatan terima kasih untuk mentor",
-  "Map the strengths and weaknesses of entering a new market":
-    "Petakan kekuatan dan kelemahan masuk ke pasar baru",
-  "Build a simple pricing comparison against three competitors":
-    "Buat perbandingan harga sederhana dengan tiga pesaing",
-  "Draft quarterly goals with measurable results for a small team":
-    "Susun target kuartalan dengan hasil terukur untuk tim kecil",
-  "List the risks in a product launch plan and how to reduce them":
-    "Daftar risiko rencana peluncuran produk dan cara menguranginya",
-  "Sketch a one-page business plan for a neighborhood café":
-    "Buat sketsa rencana bisnis satu halaman untuk kafe di lingkungan",
-  "Prepare talking points for a budget review meeting":
-    "Siapkan poin pembicaraan untuk rapat tinjauan anggaran",
-  "Suggest colors and fonts for a calm meditation app":
-    "Sarankan warna dan font untuk aplikasi meditasi yang menenangkan",
-  "Brainstorm names and taglines for a home-baking business":
-    "Cari ide nama dan slogan untuk usaha kue rumahan",
-  "Design a simple logo concept as an SVG":
-    "Rancang konsep logo sederhana dalam SVG",
-  "Plan a mood board for a beach-themed birthday party":
-    "Rencanakan mood board untuk pesta ulang tahun bertema pantai",
-  "Write a short story that starts with a lost umbrella":
-    "Tulis cerita pendek yang dimulai dengan payung yang hilang",
-  "Lay out a poster for a community clean-up day":
-    "Tata letak poster untuk hari bersih-bersih lingkungan",
-  "Plan a week of quick, healthy dinners with a shopping list":
-    "Rencanakan makan malam cepat dan sehat selama seminggu beserta daftar belanja",
-  "Help me make a monthly budget I can actually stick to":
-    "Bantu saya membuat anggaran bulanan yang benar-benar bisa saya jalani",
-  "Plan a relaxed three-day trip to a city I choose":
-    "Rencanakan perjalanan santai tiga hari ke kota pilihan saya",
-  "Suggest a beginner workout I can do at home":
-    "Sarankan latihan untuk pemula yang bisa saya lakukan di rumah",
-  "Help me sort out a cluttered closet in one weekend":
-    "Bantu saya merapikan lemari yang berantakan dalam satu akhir pekan",
-  "Come up with gift ideas for a friend who loves hiking":
-    "Cari ide hadiah untuk teman yang suka mendaki",
-  "Help me prepare answers to common interview questions":
-    "Bantu saya menyiapkan jawaban untuk pertanyaan wawancara umum",
-  "Review my resume summary and make it sharper":
-    "Tinjau ringkasan CV saya dan buat lebih tajam",
-  "Plan how to ask my manager for a raise":
-    "Rencanakan cara meminta kenaikan gaji kepada atasan",
-  "Explore careers for someone who loves both data and people":
-    "Jelajahi karier untuk orang yang menyukai data sekaligus manusia",
-  "Draft a polite message turning down a job offer":
-    "Susun pesan sopan untuk menolak tawaran kerja",
-  "Set goals for my first 90 days in a new role":
-    "Tetapkan target untuk 90 hari pertama saya di peran baru",
-  "Tell me something surprising about octopuses":
-    "Ceritakan hal mengejutkan tentang gurita",
-  "Teach me a card trick I can learn in five minutes":
-    "Ajari saya trik kartu yang bisa dipelajari dalam lima menit",
-  "Invent a game I can play with things around the house":
-    "Ciptakan permainan dengan barang-barang di rumah",
-  "Explain a famous paradox in plain words":
-    "Jelaskan paradoks terkenal dengan kata-kata sederhana",
-  "Recommend a hobby after asking me a few questions":
-    "Rekomendasikan hobi setelah menanyakan beberapa hal kepada saya",
-  "Write a riddle and let me guess the answer":
-    "Beri saya teka-teki dan biarkan saya menebak jawabannya",
-  "Summarize the most recent document in my Drive":
-    "Rangkum dokumen terbaru di Drive saya",
-  "Find my notes on an upcoming project in Drive and pull out the action items":
-    "Temukan catatan saya tentang proyek mendatang di Drive dan ambil daftar tindakannya",
-  "Turn a spreadsheet in my Drive into a short written summary":
-    "Ubah spreadsheet di Drive saya menjadi ringkasan tertulis singkat",
-  "Check my recent Drive documents for anything waiting on me":
-    "Periksa dokumen Drive terbaru saya untuk hal yang menunggu tanggapan saya",
-  "Look at my calendar and plan focus time for this week":
-    "Lihat kalender saya dan rencanakan waktu fokus minggu ini",
-  "Prepare me for my next meeting with a short briefing":
-    "Siapkan saya untuk rapat berikutnya dengan ringkasan singkat",
-  "Find an hour this week for a planning session":
-    "Cari satu jam minggu ini untuk sesi perencanaan",
-  "Sum up how much of last week went to meetings":
-    "Rangkum berapa banyak waktu minggu lalu yang habis untuk rapat",
-  "Summarize the unread emails in my inbox":
-    "Rangkum email yang belum dibaca di kotak masuk saya",
-  "Draft replies to emails that have waited more than two days":
-    "Susun balasan untuk email yang sudah menunggu lebih dari dua hari",
-  "Find emails about upcoming travel and list the details":
-    "Temukan email tentang perjalanan mendatang dan daftar detailnya",
-  "Combine my email, calendar and Drive into a briefing for today":
-    "Gabungkan email, kalender, dan Drive saya menjadi ringkasan untuk hari ini",
-  "Hey Claudex, could you {prompt}? Use the connectors that help, and start once you have what you need.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Hai Claudex, bisakah kamu {prompt}? Gunakan konektor yang membantu, dan mulai begitu informasinya cukup.\n\nKalau cocok, buat sesuatu yang bisa kita lihat bersama, seperti grafik, daftar periksa, atau halaman interaktif kecil.",
-  "Hey Claudex, could you help me {prompt}? Start researching straight away with any tools that help, and tell me if you need more context.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Hai Claudex, bisakah kamu membantu saya: {prompt}? Langsung mulai riset dengan alat yang membantu, dan beri tahu saya kalau perlu konteks tambahan.\n\nKalau cocok, buat sesuatu yang bisa kita lihat bersama, seperti grafik, daftar periksa, atau halaman interaktif kecil.",
-  "Hi Claudex! Could you {prompt}? If something important is missing, ask me one or two questions first, and tell me if a file or more context would help. Use any tools you have, such as web search or connected files, when they help.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page. Thanks!":
-    "Halo Claudex! Bisakah kamu {prompt}? Kalau ada informasi penting yang kurang, ajukan satu atau dua pertanyaan dulu, dan beri tahu saya apakah sebuah file atau konteks tambahan akan membantu. Gunakan alat yang kamu punya, seperti pencarian web atau file yang terhubung, bila membantu.\n\nKalau cocok, buat sesuatu yang bisa kita lihat bersama, seperti grafik, daftar periksa, atau halaman interaktif kecil. Terima kasih!",
-  "Start with something small": "Mulai dari yang kecil",
-  "Help me plan my week. Ask what is on my plate and what matters most, then lay out a day-by-day plan with time for focused work and room for surprises.":
-    "Bantu saya merencanakan minggu ini. Tanyakan apa saja pekerjaan saya dan mana yang paling penting, lalu susun rencana harian dengan waktu untuk fokus dan ruang untuk hal tak terduga.",
-  "Sort my screenshots": "Pilah tangkapan layar saya",
-  "Go through the screenshots in my selected folder and sort them into subfolders by topic. Propose the folder names and show me the plan before moving anything.":
-    "Telusuri tangkapan layar di folder pilihan saya dan kelompokkan ke subfolder per topik. Usulkan nama foldernya dan tunjukkan rencananya sebelum memindahkan apa pun.",
-  "Spot patterns in my files": "Temukan pola di file saya",
-  "Read the documents in my selected folder and tell me what stands out: recurring themes, open questions and anything that looks out of date. Fit it on one page.":
-    "Baca dokumen di folder pilihan saya dan beri tahu apa yang menonjol: tema yang berulang, pertanyaan yang belum terjawab, dan apa pun yang tampak usang. Cukup satu halaman.",
-  "Clear the clutter": "Bereskan yang berantakan",
-  "Tidy my Downloads folder": "Rapikan folder Unduhan saya",
-  "Look through my Downloads folder and suggest what to keep, file away or delete. Group similar files, point out large or duplicate ones, and wait for my go-ahead before changing anything.":
-    "Telusuri folder Unduhan saya dan sarankan mana yang disimpan, diarsipkan, atau dihapus. Kelompokkan file yang mirip, tandai file besar atau duplikat, dan tunggu persetujuan saya sebelum mengubah apa pun.",
-  "Group photos by date": "Kelompokkan foto menurut tanggal",
-  "Organize the photos in my selected folder into folders by year and month, using the date each one was taken. Show me the plan first and never delete a photo.":
-    "Atur foto di folder pilihan saya ke dalam folder per tahun dan bulan berdasarkan tanggal pengambilannya. Tunjukkan rencananya dulu dan jangan pernah menghapus foto.",
-  "Get my inbox under control": "Kendalikan kotak masuk saya",
-  "Help me get my inbox under control. Group what is waiting by urgency, draft short replies for the quick ones, and list what needs a decision from me.":
-    "Bantu saya mengendalikan kotak masuk. Kelompokkan yang menunggu menurut tingkat urgensi, buat draf balasan singkat untuk yang cepat, dan daftar hal yang perlu saya putuskan.",
-  "Get ready for what’s next": "Bersiap untuk yang akan datang",
-  "Prepare for my next meeting": "Siapkan rapat saya berikutnya",
-  "Help me prepare for my next meeting. Ask who it is with and what it is about, then gather the relevant notes and files and give me a short briefing with questions to raise.":
-    "Bantu saya menyiapkan rapat berikutnya. Tanyakan dengan siapa dan tentang apa, kumpulkan catatan dan file yang relevan, lalu beri saya ringkasan singkat beserta pertanyaan untuk diajukan.",
-  "Plan a getaway": "Rencanakan liburan singkat",
-  "Help me plan a short trip. Ask about my dates, budget and the kind of places I enjoy, then suggest a day-by-day plan and a packing list.":
-    "Bantu saya merencanakan perjalanan singkat. Tanyakan tanggal, anggaran, dan jenis tempat yang saya sukai, lalu sarankan rencana harian dan daftar barang bawaan.",
-  "Get ready for an interview": "Bersiap untuk wawancara",
-  "Help me get ready for a job interview. Ask about the role and the company, go over likely questions with me, help me shape my answers and suggest questions I can ask them.":
-    "Bantu saya bersiap untuk wawancara kerja. Tanyakan tentang posisi dan perusahaannya, latih pertanyaan yang mungkin muncul bersama saya, bantu rapikan jawaban saya, dan sarankan pertanyaan yang bisa saya ajukan.",
-  "Make sense of scattered information": "Pahami informasi yang tercecer",
-  "Catch me up on team chat": "Kabari saya soal obrolan tim",
-  "Catch me up on what I missed in my team’s chat. Summarize the main discussions and decisions, point out anything that mentions me, and list what I should reply to.":
-    "Kabari saya tentang apa yang terlewat di obrolan tim. Rangkum diskusi dan keputusan utama, tandai yang menyebut saya, dan daftar apa yang perlu saya balas.",
-  "Turn voice notes into a document": "Ubah catatan suara menjadi dokumen",
-  "Turn the voice notes in my selected folder into a tidy document. Transcribe them, group related points under headings and list any action items at the end.":
-    "Ubah catatan suara di folder pilihan saya menjadi dokumen yang rapi. Transkripsikan, kelompokkan poin terkait di bawah judul, dan daftar tindakan di bagian akhir.",
-  "Collect figures into a spreadsheet": "Kumpulkan angka ke spreadsheet",
-  "Pull the figures scattered across the files in my selected folder into one spreadsheet. Show me the columns you plan to use before you start, and note where each value came from.":
-    "Kumpulkan angka yang tersebar di file-file folder pilihan saya ke dalam satu spreadsheet. Tunjukkan kolom yang akan dipakai sebelum mulai, dan catat asal setiap nilai.",
-  "Connect to a Claudex service": "Hubungkan ke layanan Claudex",
-  "Enter the address of the service you sign in to.":
-    "Masukkan alamat layanan tempat Anda masuk.",
-  "Service address": "Alamat layanan",
-  "No Claudex service answered at this address. Check it and try again.":
-    "Tidak ada layanan Claudex yang menjawab di alamat ini. Periksa lalu coba lagi.",
-  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking it — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from your Claudex service's website.":
-    "Claudex tidak dapat menjangkau server pembaruan. Jika Anda di jaringan kantor, firewall atau proxy mungkin memblokirnya — minta tim TI Anda mengizinkannya. Jika tidak, periksa koneksi lalu coba lagi, atau unduh versi terbaru dari situs layanan Claudex Anda.",
-  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or the web.":
-    "Tidak terhubung kembali setelah sesi dibersihkan. Aktifkan lagi untuk terus memakai sesi ini dari ponsel atau web.",
-  "I agree to the {terms} and {aup}.": "Saya menyetujui {terms} dan {aup}.",
 };
+// Preserve the native error contract while reusing the translated recovery advice.
+catalog["The Claudex service is unreachable. Check your connection."] =
+  catalog["Couldn’t reach the service. Check your connection, then try again."];
 export default catalog;

@@ -125,29 +125,42 @@ export async function inspectElement(
 }
 
 export async function pickElement(this: CdpDriver) {
-  await this.ready();
-  this.pick?.resolve(undefined);
-  if (!this.domEnabled) {
-    await this.send("DOM.enable");
-    await this.send("Overlay.enable");
-    this.domEnabled = true;
-  }
+  this.cancelPick();
+  const pick = { resolve: (_node: number | undefined) => {}, armed: false };
   const chosen = new Promise<number | undefined>((resolve) => {
-    this.pick = { resolve };
+    pick.resolve = resolve;
   });
-  await this.send("Overlay.setInspectMode", {
-    mode: "searchForNode",
-    highlightConfig: {
-      showInfo: true,
-      showStyles: false,
-      contentColor: { r: 111, g: 168, b: 220, a: 0.45 },
-      paddingColor: { r: 147, g: 196, b: 125, a: 0.4 },
-      borderColor: { r: 59, g: 130, b: 246, a: 0.9 },
-      marginColor: { r: 246, g: 178, b: 107, a: 0.4 },
-    },
-  });
-  const backendNodeId = await chosen;
-  await this.send("Overlay.setInspectMode", { mode: "none" }).catch(() => {});
+  this.pick = pick;
+  let backendNodeId: number | undefined;
+  let requested = false;
+  try {
+    await this.ready();
+    if (this.pick !== pick) return null;
+    if (!this.domEnabled) {
+      await this.send("DOM.enable");
+      await this.send("Overlay.enable");
+      this.domEnabled = true;
+    }
+    if (this.pick !== pick) return null;
+    requested = true;
+    await this.send("Overlay.setInspectMode", {
+      mode: "searchForNode",
+      highlightConfig: {
+        showInfo: true,
+        showStyles: false,
+        contentColor: { r: 111, g: 168, b: 220, a: 0.45 },
+        paddingColor: { r: 147, g: 196, b: 125, a: 0.4 },
+        borderColor: { r: 59, g: 130, b: 246, a: 0.9 },
+        marginColor: { r: 246, g: 178, b: 107, a: 0.4 },
+      },
+    });
+    pick.armed = true;
+    backendNodeId = await chosen;
+  } finally {
+    if (this.pick === pick) this.pick = undefined;
+    if (requested && !this.pick)
+      await this.send("Overlay.setInspectMode", { mode: "none" }).catch(() => {});
+  }
   if (!backendNodeId) return null;
   const ref = this.refFor(backendNodeId);
   const details = await this.callOn(ref, elementDetails);
@@ -161,9 +174,12 @@ export async function pickElement(this: CdpDriver) {
   return { ...details, ref, screenshotPngBase64 } as {
     selector: string;
     tag: string;
+    id?: string;
     text: string;
     outerHTML: string;
     styles: Record<string, string>;
+    attributes?: Record<string, string>;
+    classes?: string[];
     box: { x: number; y: number; width: number; height: number };
     ref: string;
     screenshotPngBase64?: string;

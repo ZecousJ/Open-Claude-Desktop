@@ -8,7 +8,7 @@ import { transcriptTextSize } from "../../transcript/transcript-text-size";
 import type { TabProps } from "../context";
 import { Row, Segmented } from "../controls";
 
-/** General's appearance rows. */
+/** General's appearance rows (live claude.ai bundle, 2026-10-14, c0db37792-9AZ9M5rK). */
 export function TranscriptAppearance({
   settings,
   save,
@@ -18,7 +18,8 @@ export function TranscriptAppearance({
 }) {
   return (
     <>
-      {/* The live row has no description. */}
+      {/* The live row has no description (c0db37792 At: the registry's
+          row is drawn with its label alone). */}
       <Row label="Transcript text size">
         <Segmented<TranscriptTextSize>
           label="Transcript text size"

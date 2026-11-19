@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from "react";
  */
 function useMaximized() {
   const read = () =>
+    typeof window !== "undefined" &&
+    typeof screen !== "undefined" &&
     window.outerWidth >= screen.availWidth - 1 &&
     window.outerHeight >= screen.availHeight - 1;
   const [maximized, setMaximized] = useState(read);
@@ -21,7 +23,8 @@ function useMaximized() {
 /**
  * Minimize, maximize (restore once maximized) and close for the frameless
  * window outside macOS. The glyphs are Windows' own thin caption glyphs, 10px
- * with 1px lines, on 46px buttons.
+ * with 1px lines, on 46px buttons (R-1289 and R-0004, Windows 1x; the
+ * square's corners from R-0349 and R-0002).
  */
 const glyph = {
   width: 10,
@@ -39,6 +42,7 @@ const glyph = {
  */
 function nativeCaption() {
   return Boolean(
+    typeof navigator !== "undefined" &&
     (navigator as { windowControlsOverlay?: { visible?: boolean } })
       .windowControlsOverlay?.visible,
   );
@@ -104,14 +108,13 @@ function NativeCaption() {
 }
 
 export function WindowControls() {
-  const api = window.desktop;
   const maximized = useMaximized();
   if (nativeCaption()) return <NativeCaption />;
   return (
     <div className="window-controls">
       <button
         aria-label="Minimize"
-        onClick={() => void api.windowAction("minimize")}
+        onClick={() => void window.desktop.windowAction("minimize")}
       >
         <svg {...glyph}>
           <path d="M0 5.5h10" />
@@ -119,7 +122,7 @@ export function WindowControls() {
       </button>
       <button
         aria-label={maximized ? "Restore" : "Maximize"}
-        onClick={() => void api.windowAction("maximize")}
+        onClick={() => void window.desktop.windowAction("maximize")}
       >
         {maximized ? (
           <svg {...glyph}>
@@ -131,7 +134,7 @@ export function WindowControls() {
           </svg>
         )}
       </button>
-      <button aria-label="Close" onClick={() => void api.windowAction("close")}>
+      <button aria-label="Close" onClick={() => void window.desktop.windowAction("close")}>
         <svg {...glyph}>
           <path d="M0 0l10 10M10 0L0 10" />
         </svg>

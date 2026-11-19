@@ -176,9 +176,8 @@ func EffectiveOAuthConfig(cfg OAuthConfig, oauthType string) (OAuthConfig, error
 				secret = strings.TrimSpace(v)
 			}
 		}
-		// CLAUDEX: the built-in client id comes from the environment too.
-		if secret == "" || strings.TrimSpace(GeminiCLIOAuthClientID) == "" {
-			return OAuthConfig{}, infraerrors.Newf(http.StatusBadRequest, "GEMINI_CLI_OAUTH_CLIENT_SECRET_MISSING", "built-in Gemini CLI OAuth client is not configured; set %s and %s or provide a custom OAuth client", GeminiCLIOAuthClientIDEnv, GeminiCLIOAuthClientSecretEnv)
+		if secret == "" {
+			return OAuthConfig{}, infraerrors.Newf(http.StatusBadRequest, "GEMINI_CLI_OAUTH_CLIENT_SECRET_MISSING", "built-in Gemini CLI OAuth client_secret is not configured; set %s or provide a custom OAuth client", GeminiCLIOAuthClientSecretEnv)
 		}
 		effective.ClientID = GeminiCLIOAuthClientID
 		effective.ClientSecret = secret

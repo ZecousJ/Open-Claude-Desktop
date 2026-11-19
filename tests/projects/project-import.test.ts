@@ -6,6 +6,7 @@ import path from "node:path";
 import type { Project } from "../../shared/types";
 import { importChatProjects } from "../../electron/projects/project-create";
 import { ProjectKnowledgeStore } from "../../electron/projects/project-knowledge";
+import { Store } from "../../electron/store/store";
 import { importableChatProjects } from "../../shared/project-import";
 import { guardCall } from "../../runner/src/method-guard";
 import { useElectronShim } from "../runner/runner-core-support.test.ts";
@@ -22,7 +23,7 @@ const project: Project = {
   createdAt: 1,
 };
 
-function fixture(context: import("node:test").TestContext) {
+async function fixture(context: import("node:test").TestContext) {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "claudex-project-import-"),
   );
@@ -34,10 +35,10 @@ function fixture(context: import("node:test").TestContext) {
     { ...project, id: "chat-b", name: "Garden", instructions: "Water weekly." },
   ];
   const knowledge = new ProjectKnowledgeStore(root, () => projects);
-  knowledge.add(project.id, [
+  await knowledge.add(project.id, [
     { name: "notes.txt", data: Buffer.from("research") },
   ]);
-  knowledge.add("chat-b", [{ name: "notes.txt", data: Buffer.from("garden") }]);
+  await knowledge.add("chat-b", [{ name: "notes.txt", data: Buffer.from("garden") }]);
   return { root, location, projects, knowledge };
 }
 
@@ -54,8 +55,8 @@ test("only active Chat context projects are offered, not Cowork or SSH folders",
   );
 });
 
-test("imports independent knowledge bytes and instructions into a new folder", (context) => {
-  const { root, location, projects, knowledge } = fixture(context);
+test("imports independent knowledge bytes and instructions into a new folder", async (context) => {
+  const { root, location, projects, knowledge } = await fixture(context);
   const imported = importChatProjects(
     root,
     projects,
@@ -88,8 +89,8 @@ test("imports independent knowledge bytes and instructions into a new folder", (
   );
 });
 
-test("multiple sources retain conflicting file names and both instruction snapshots", (context) => {
-  const { root, location, projects } = fixture(context);
+test("multiple sources retain conflicting file names and both instruction snapshots", async (context) => {
+  const { root, location, projects } = await fixture(context);
   const imported = importChatProjects(
     root,
     projects,
@@ -111,8 +112,8 @@ test("multiple sources retain conflicting file names and both instruction snapsh
   );
 });
 
-test("rejects invalid, stale, duplicate or oversized imports before creating a folder", (context) => {
-  const { root, location, projects } = fixture(context);
+test("rejects invalid, stale, duplicate or oversized imports before creating a folder", async (context) => {
+  const { root, location, projects } = await fixture(context);
   for (const ids of [[], [project.id, project.id], ["gone"], ["../outside"]])
     assert.throws(() =>
       importChatProjects(root, projects, ids, location, "Invalid"),
@@ -141,8 +142,8 @@ test("rejects invalid, stale, duplicate or oversized imports before creating a f
   assert.deepEqual(fs.readdirSync(location), []);
 });
 
-test("symlink knowledge directories are refused and partially copied imports roll back", (context) => {
-  const { root, location, projects, knowledge } = fixture(context);
+test("symlink knowledge directories are refused and partially copied imports roll back", async (context) => {
+  const { root, location, projects, knowledge } = await fixture(context);
   const source = knowledge.folder("chat-b");
   fs.renameSync(source, `${source}-moved`);
   fs.symlinkSync(`${source}-moved`, source, "dir");
@@ -165,14 +166,15 @@ test("symlink knowledge directories are refused and partially copied imports rol
   );
 });
 
-test("saveProject IPC imports trusted profile context, pins the project, and never moves chats", (context) => {
-  const { root, location, projects } = fixture(context);
+test("saveProject IPC imports trusted profile context, pins the project, and never moves chats", async (context) => {
+  const { root, location, projects } = await fixture(context);
   const conversations = [{ id: "chat", projectId: project.id }];
   let flushed = 0;
   const store = {
     root,
     projects: [...projects],
     conversations,
+    confirmProjectSave: Store.prototype.confirmProjectSave,
     flush() {
       flushed++;
     },

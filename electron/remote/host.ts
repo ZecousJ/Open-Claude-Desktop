@@ -1,3 +1,7 @@
+import { ActivationCleanupUnconfirmed, activationFailurePhase, safeActivationFailureSummary, noteActivationPhase, activationFailureTrail, activationFailureCode, activationPriorFailure } from "../account/activation-failure";
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../account/operation-lease";
+import { accountForcedSignedOut } from "../app/account-transition-events";
+import { validGatewayEfforts } from "../../shared/gateway-signals";
 /**
  * Remote mode: a Sub2API account's session, plan, device key and models, and
  * the administrator's policy for the signed-in account (package C2).
@@ -9,7 +13,7 @@
  * the policy follows the service (with a cache on disk for offline starts).
  * An older Sub2API without the Claudex module keeps the legacy flow.
  */
-import type { PublicAccount } from "../../shared/types";
+import type { Provider, PublicAccount } from "../../shared/types";
 import type { GatewayRefusalDetails } from "../../shared/claudex-contract";
 import {
   settingsWithinPolicy,
@@ -17,6 +21,7 @@ import {
   type ClientUpdate,
 } from "../../shared/client-policy";
 import { releaseUpdate } from "../../shared/client-policy-rules";
+import { signInMessages } from "../../shared/sign-in-states";
 import type { ServiceReleaseNotes } from "../../shared/client-release";
 import type { ApiGroups } from "../../shared/api-keys-api";
 import type { ModelCatalog } from "../../shared/model-catalog-api";
@@ -36,7 +41,6 @@ import {
   activeGroupIds,
   apiGroupsFor,
   catalogInGroup,
-  imagesFor,
 } from "../account/api-groups";
 import { apiProviderOf } from "../../shared/api-keys-api";
 import { preference } from "../../shared/settings-extras";
@@ -53,6 +57,7 @@ export interface AccountLifecycle {
     account: PublicAccount,
     token: string,
     remote?: RemoteHost,
+    current?: AccountOperationCurrent,
   ): Promise<void>;
   /** Stops everything using the profile and signs out. */
   deactivate(): Promise<void>;
@@ -109,6 +114,7 @@ export class RemoteHost {
   constructor(
     private ctx: AppContext,
     readonly backend: RemoteBackend,
+    private offlineStartup = false,
   ) {}
   /**
    * Follows the service while the account is open: a session the service
@@ -120,7 +126,9 @@ export class RemoteHost {
       if (this.ready && this.ctx.remote === this)
         this.ctx.push({ type: "auth-issue", issue });
     };
-    this.session.onSignedOut = (reason) => void this.signOut(reason);
+    this.session.onSignedOut = (reason) => {
+      void this.signOut(reason).catch(() => console.error("Account sign-out could not be confirmed."));
+    };
     this.bootstrap.onChange((bootstrap) => {
       if (bootstrap && this.ready && this.ctx.remote === this)
         this.ctx.push({ type: "service-changed" });
@@ -149,16 +157,29 @@ export class RemoteHost {
     return remoteRequestLimits(this.ctx.dataRoot, accountId);
   }
   /** Opens the key vault, stores this device's key and reads the plan's models into the settings. */
-  async prepare(credentials: ProviderCredentials) {
+  async prepare(credentials: ProviderCredentials, callerCurrent?: AccountOperationCurrent) {
+    let diagnosticPhase = "host.credentials_initialize";
+    try {
+    const store = this.ctx.store, generation = this.ctx.accountActivationIdentity;
+    const current = () => (!callerCurrent || callerCurrent()) &&
+      this.ctx.store === store && this.ctx.accountActivationIdentity === generation;
+    assertAccountOperationCurrent(current);
     // The plan's device key and model list replace the operator's providers.
-    await credentials.initialize([placeholderProvider(this.accounts)]);
-    this.backend.preferredGroups = this.groupsInUse();
-    const provider = await this.backend.prepare(credentials);
-    const store = this.ctx.store;
+    await credentials.initialize([placeholderProvider(this.accounts)], current);
+    assertAccountOperationCurrent(current);
+    if (this.offlineStartup) return;
+    diagnosticPhase = "host.backend_prepare";
+    const provider = await this.backend.prepare(credentials, current);
+    assertAccountOperationCurrent(current);
+    diagnosticPhase = "host.groups_in_use";
+    this.backend.preferGroups(this.groupsInUse());
     store.settings.providers = [provider];
     store.settings.activeProviderId = provider.id;
+    diagnosticPhase = "host.follow_group";
     this.followGroup();
+    diagnosticPhase = "host.store_flush";
     store.flush();
+    } catch (error) { noteActivationPhase(error, diagnosticPhase); throw error; }
   }
   /** A device key that could not be stored encrypted is handed over at start. */
   sessionKey(providerId: string) {
@@ -170,7 +191,7 @@ export class RemoteHost {
   }
   /** Why no model can be used (balance, plan or key), in plain English. */
   get unavailableReason() {
-    return this.backend.problem?.message;
+    return this.offlineStartup ? signInMessages.unavailable : this.backend.problem?.message;
   }
   /**
    * The account as the window shows it: the plan's label from the
@@ -185,17 +206,19 @@ export class RemoteHost {
    * in use (sidebar → API); null without one.
    */
   modelCatalog(): ModelCatalog | null {
-    // The bootstrap is read with the plan's models only: a catalog older than a
-    // minute is read again in the background, so a placement the administrator
-    // saved reaches the menus without signing in again.
+    // The bootstrap is read with the plan's models only: a catalog older
+    // than a minute is read again in the background, so a placement the
+    // administrator saved reaches the menus without signing in again
+    // (owner, 2026-10-03: a model moved to More models stayed in the menu).
     if (this.ready && Date.now() - this.modelsReadAt > catalogMaxAgeMs) {
       this.modelsReadAt = Date.now();
       const before = JSON.stringify(this.backend.catalog);
+      const wasOffline = this.offlineStartup;
       void this.refreshModels().then(
         () => {
           if (
             this.ctx.remote === this &&
-            JSON.stringify(this.backend.catalog) !== before
+            (wasOffline || JSON.stringify(this.backend.catalog) !== before)
           )
             this.ctx.push({ type: "service-changed" });
         },
@@ -221,39 +244,9 @@ export class RemoteHost {
         this.backend.catalog,
         this.backend.serviceGroups(),
         preference(this.ctx.store.settings, "apiGroups"),
-        preference(this.ctx.store.settings, "imageModel"),
       ),
       ...(origin ? { origin } : {}),
     };
-  }
-  /**
-   * The image model every picture is made with: the one chosen on the API
-   * page while the drawing group serves it, else the group's first; "" when
-   * the account has no drawing group (each request keeps its own model).
-   */
-  imageModel(): string {
-    return (
-      imagesFor(
-        this.backend.catalog,
-        this.backend.serviceGroups(),
-        preference(this.ctx.store.settings, "imageModel"),
-      )?.selected ?? ""
-    );
-  }
-  /** Makes every picture with this model of the drawing group. */
-  useImageModel(model: string): ApiGroups {
-    const images = imagesFor(
-      this.backend.catalog,
-      this.backend.serviceGroups(),
-      model,
-    );
-    if (!images?.models.some((item) => item.id === model))
-      throw new Error("That image model isn't available to your account.");
-    const { store } = this.ctx;
-    store.settings.imageModel = model;
-    store.flush();
-    this.ctx.settingsChanged();
-    return this.apiGroups();
   }
   /** The ids of the groups in use, one per provider. */
   private groupsInUse() {
@@ -266,7 +259,7 @@ export class RemoteHost {
    * Uses a group's models for its provider: remembered in the settings, the
    * provider's default model follows, and the window hears of both.
    */
-  useGroup(providerId: string, id: number): ApiGroups {
+  async useGroup(providerId: string, id: number): Promise<ApiGroups> {
     const group = this.backend.serviceGroups().find((item) => item.id === id);
     if (
       !group ||
@@ -274,22 +267,58 @@ export class RemoteHost {
       apiProviderOf(group.platform).id !== providerId
     )
       throw new Error("That group isn't available to your account.");
-    const { store } = this.ctx;
-    store.settings.apiGroups = {
-      ...preference(store.settings, "apiGroups"),
-      [providerId]: id,
-    };
+    const { store, accountActivationIdentity: activation } = this.ctx;
+    const current = () => this.ctx.remote === this && this.ctx.store === store &&
+      this.ctx.accountActivationIdentity === activation && !this.ctx.accountRetiring;
+    assertAccountOperationCurrent(current);
+    await store.persistApiPreferences((settings) => ({
+      apiGroups: { ...preference(settings, "apiGroups"), [providerId]: id },
+    }), current);
+    assertAccountOperationCurrent(current);
     this.backend.preferGroups(this.groupsInUse());
+    const provider = this.backend.provider;
+    if (!provider) throw Error("The active model provider is unavailable.");
+    store.settings.providers = [provider];
     this.followGroup();
-    store.flush();
+    await this.updateRunningRoutes(provider);
+    assertAccountOperationCurrent(current);
     this.ctx.settingsChanged();
     return this.apiGroups();
+  }
+  private async updateRunningRoutes(provider: Provider, keysChanged = false) {
+    const { engine } = this.ctx;
+    const refreshedKeys = keysChanged
+      ? { apiKey: this.sessionKey(provider.id), groupKeys: this.groupSessionKeys(provider.id) }
+      : undefined;
+    await Promise.all((engine.peers?.all() ?? [engine]).map((peer) =>
+      peer.providerId === provider.id && !peer.intentionalStop
+        ? peer.gateway?.setProviderRouting(provider, refreshedKeys)
+        : undefined,
+    ));
   }
   /** The provider's default model is one the group in use serves. */
   private followGroup() {
     const provider = this.ctx.store.settings.providers[0];
-    const defaultModel = this.modelCatalog()?.defaultModel;
+    const defaultModel = catalogInGroup(
+      this.backend.catalog,
+      this.backend.serviceGroups(),
+      preference(this.ctx.store.settings, "apiGroups"),
+    )?.defaultModel;
     if (provider && defaultModel) provider.model = defaultModel;
+  }
+  /** Cached only: unlike modelCatalog(), never starts a refresh. */
+  modelEfforts(providerId: string, model: string): string[] | undefined {
+    if (providerId !== this.backend.provider?.id) return undefined;
+    const catalog = catalogInGroup(
+      this.backend.catalog,
+      this.backend.serviceGroups(),
+      preference(this.ctx.store.settings, "apiGroups"),
+    );
+    const items = catalog?.items.filter((item) => item.id === model);
+    if (!items || items.length !== 1) return undefined;
+    const efforts = items[0].efforts;
+    if (efforts === undefined) return [];
+    return validGatewayEfforts(efforts) ? [...efforts] : undefined;
   }
   /** The catalog's context window and compaction threshold for a model of this account. */
   modelLimits(
@@ -325,21 +354,35 @@ export class RemoteHost {
   }
   private async readModels() {
     this.modelsReadAt = Date.now();
-    const before = this.ctx.store.settings.providers[0]?.protocol;
-    this.backend.preferredGroups = this.groupsInUse();
-    const provider = await this.backend.prepare(this.ctx.credentials);
-    if (this.ctx.remote !== this) return;
+    const { store, engine, credentials, accountActivationIdentity: activation } = this.ctx;
+    const current = () => this.ctx.remote === this && this.ctx.store === store &&
+      this.ctx.engine === engine && this.ctx.credentials === credentials &&
+      this.ctx.accountActivationIdentity === activation && !this.ctx.accountRetiring;
+    const before = store.settings.providers[0];
+    const registrations = this.backend.registrations;
+    const provider = await this.backend.prepare(credentials, current);
+    assertAccountOperationCurrent(current);
+    this.offlineStartup = false;
+    this.backend.preferGroups(this.groupsInUse());
     // A group whose models could not be read is read again ten seconds on
     // (the next menu read), not a minute.
     if (this.backend.unreadGroups)
       this.modelsReadAt = Date.now() - catalogMaxAgeMs + 10_000;
-    const { store, engine } = this.ctx;
     store.settings.providers = [provider];
     store.settings.activeProviderId = provider.id;
+    this.followGroup();
     store.flush();
     engine.unavailableReason = this.unavailableReason;
-    // The provider child keeps its protocol; a changed plan platform restarts it at the next send.
-    if (provider.protocol !== before && !engine.isBusy()) await engine.stop();
+    const beforeKeys = before?.routes?.map(({ keyId }) => keyId) ?? [];
+    const nextKeys = provider.routes?.map(({ keyId }) => keyId) ?? [];
+    const keysChanged = registrations !== this.backend.registrations || beforeKeys.length !== nextKeys.length ||
+      nextKeys.some((id) => !beforeKeys.includes(id));
+    if (provider.protocol !== before?.protocol && !engine.isBusy()) {
+      await engine.stop(current);
+      assertAccountOperationCurrent(current);
+    }
+    await this.updateRunningRoutes(provider, keysChanged);
+    assertAccountOperationCurrent(current);
   }
   /**
    * After the gateway refused the device key: issues it again and hands it
@@ -347,17 +390,32 @@ export class RemoteHost {
    * `provision_failed` and rethrown.
    */
   async reprovision() {
+    const store = this.ctx.store, engine = this.ctx.engine, generation = this.ctx.accountActivationIdentity;
+    const gateway = engine.gateway, stopped = engine.intentionalStop, credentials = this.ctx.credentials;
+    const current = () => this.ctx.remote === this && this.ctx.store === store &&
+      this.ctx.engine === engine && engine.gateway === gateway && engine.intentionalStop === stopped &&
+      this.ctx.credentials === credentials && this.ctx.accountActivationIdentity === generation && !this.ctx.accountRetiring;
+    assertAccountOperationCurrent(current);
     try {
       return await this.backend.reprovision(async (key, groupKeys) => {
-        if (this.ctx.remote !== this || !this.backend.provider) return;
-        await this.ctx.engine.updateProviderKey(
-          this.backend.provider.id,
-          key,
-          this.backend.keyInVault,
-          groupKeys,
-        );
-      });
+        assertAccountOperationCurrent(current);
+        const provider = this.backend.provider;
+        if (!provider) throw Error("The provider configuration is not available to update its key.");
+        if (this.backend.keyInVault && !gateway) {
+          if (!credentials) throw Error("Provider credential storage is not available.");
+          // A stopped/cold engine has no child to persist the new key. Keep the
+          // same vault format and authority; future start reads this exact root.
+          const providers = [provider, ...Object.keys(groupKeys).map(id => ({ ...provider, id, routes: [] }))];
+          await credentials.setKeys({ [provider.id]: key, ...groupKeys }, providers, current);
+          assertAccountOperationCurrent(current);
+        }
+        // Memory-backed reprovision already updated backend.sessionKey, which
+        // future start reads. Running children/peers are updated without starting one.
+        await engine.updateProviderKey(provider.id, key, this.backend.keyInVault, groupKeys, current);
+        assertAccountOperationCurrent(current);
+      }, current);
     } catch (error) {
+      assertAccountOperationCurrent(current);
       recordDiagnostic(this.ctx, provisionFailure(error));
       throw error;
     }
@@ -416,15 +474,30 @@ export class RemoteHost {
   async signOut(reason: SignedOutReason, message = signedOutMessages[reason]) {
     if (!this.ready || this.ctx.remote !== this || this.signingOut) return;
     this.signingOut = true;
+    const retiredStore = this.ctx.store;
+    const retiredGeneration = this.ctx.accountActivationIdentity;
     this.session.onSignedOut = undefined;
     this.session.onAuthIssue = undefined;
     this.session.end();
     // The account menu then offers "Sign in again" for it.
     this.accounts.markEnded(this.session.accountId);
+    let retirementPhase = retiredGeneration;
     try {
-      await this.ctx.deactivate();
+      // Desktop deactivation enters its generation synchronously, before its
+      // first await. That phase may clear this Store, but not become a new one.
+      const deactivating = this.ctx.deactivate();
+      retirementPhase = this.ctx.accountActivationIdentity;
+      await deactivating;
     } finally {
-      this.ctx.push({ type: "signed-out", reason, message });
+      if (retirementPhase != null && this.ctx.accountActivationIdentity === retirementPhase &&
+          (this.ctx.store == null || this.ctx.store === retiredStore) &&
+          (this.ctx.remote == null || this.ctx.remote === this)) {
+        this.accounts.signedOutReason = reason;
+        try { this.ctx.push({ type: "signed-out", reason, message }); }
+        catch { console.error("Account sign-out notification was not delivered."); }
+      }
+      // Host-only key: a late old completion can never authorize a new UI.
+      accountForcedSignedOut(retiredStore, retiredGeneration);
     }
   }
   /** The device key leaves the vault on sign-out; the service returns it at the next sign-in. */
@@ -450,31 +523,70 @@ export async function activateRemote(
   lifecycle: AccountLifecycle,
   session: RemoteSession,
   account: PublicAccount,
+  callerCurrent?: AccountOperationCurrent,
+  onPhase?: () => void,
+  offline?: true,
 ) {
-  const remote = new RemoteHost(
-    ctx,
-    new RemoteBackend(accounts, session, ctx.dataRoot),
-  );
+  assertAccountOperationCurrent(callerCurrent);
+  const remote = new RemoteHost(ctx, new RemoteBackend(accounts, session, ctx.dataRoot), offline);
   remote.watch();
+  const pending = lifecycle.activate(account, "", remote, callerCurrent);
+  void pending.catch(() => {}); // Preserve observation if a synchronous callback supersedes this attempt.
+  const generation = ctx.accountActivationIdentity, store = ctx.store;
+  const current = () => (!callerCurrent || callerCurrent()) &&
+    ctx.accountActivationIdentity === generation && ctx.store === store;
+  onPhase?.();
   try {
-    await lifecycle.activate(account, "", remote);
+    await pending;
+    assertAccountOperationCurrent(current);
   } catch (error) {
-    await lifecycle.deactivate();
-    // Device limit, no plan, device keys off, too many attempts: in words.
+    assertAccountOperationCurrent(current);
+    const cleanup = lifecycle.deactivate();
+    const retiredGeneration = ctx.accountActivationIdentity;
+    onPhase?.();
+    const retiredStore = ctx.store, retiredOwner = ctx.activeAccount?.id, retiredRemote = ctx.remote;
+    try { await cleanup; }
+    catch (cleanupError) {
+      const owned = () => (!callerCurrent || callerCurrent()) &&
+        ctx.accountActivationIdentity === retiredGeneration && ctx.store === retiredStore &&
+        (ctx.activeAccount === undefined || ctx.activeAccount.id === retiredOwner) &&
+        (ctx.remote === undefined || ctx.remote === retiredRemote);
+      assertAccountOperationCurrent(owned);
+      const phase = activationFailurePhase(error);
+      console.error("Account activation cleanup was not confirmed.", {
+        phase, code: "ACTIVATION_CLEANUP_UNCONFIRMED", storePresent: !!ctx.store,
+        accountPresent: !!ctx.activeAccount, leaseCurrent: true,
+        setup: safeActivationFailureSummary(error), cleanup: safeActivationFailureSummary(cleanupError),
+        setupPhases: activationFailureTrail(error), cleanupPhases: activationFailureTrail(cleanupError),
+        setupCode: activationFailureCode(error), cleanupCode: activationFailureCode(cleanupError),
+        setupPrior: activationPriorFailure(error), cleanupPrior: activationPriorFailure(cleanupError),
+      });
+      throw new ActivationCleanupUnconfirmed(phase, owned, error, cleanupError);
+    }
+    assertAccountOperationCurrent(() => (!callerCurrent || callerCurrent()) &&
+      ctx.accountActivationIdentity === retiredGeneration && !ctx.activeAccount && !ctx.store);
+    // Store clearing belongs to this verified deactivation, not a new account.
+    onPhase?.();
     throw signInError(error);
   }
+  assertAccountOperationCurrent(current);
+  if (ctx.accountRetiring !== false || ctx.activeAccount?.id !== account.id || ctx.remote !== remote)
+    throw Error("The account did not finish opening.");
   remote.ready = true;
   lifecycle.ready?.();
-  return ctx.activeAccount!;
+  assertAccountOperationCurrent(current);
+  if (ctx.activeAccount?.id !== account.id || ctx.remote !== remote)
+    throw Error("The account changed while signing in.");
+  return ctx.activeAccount;
 }
 
-/** Opens the Sub2API account saved at the last sign-in, if its session is still valid. */
+/** Opens the saved Sub2API account on desktop startup. */
 export async function restoreRemoteAccount(
   ctx: AppContext,
   accounts: RemoteAccounts,
   lifecycle: AccountLifecycle,
 ) {
-  const restored = await accounts.restore();
+  const restored = await accounts.restore(undefined, "startup");
   if (restored)
     await activateRemote(
       ctx,
@@ -482,6 +594,9 @@ export async function restoreRemoteAccount(
       lifecycle,
       restored.session,
       restored.account,
+      undefined,
+      undefined,
+      restored.offline,
     );
 }
 

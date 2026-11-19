@@ -8,8 +8,9 @@ export type AgentCellState =
 type AgentState = Exclude<AgentCellState, "ghost" | "stalled">;
 
 /**
- * The most cells drawn: one clipped row of 36, or, wrapping in a card, rows of
- * 35 up to 8 rows; more agents share the cells in proportion.
+ * The most cells drawn (live claude.ai bundle, 2026-10-15, c1c1ec7b9): one
+ * clipped row of 36, or, wrapping in a card, rows of 35 up to 8 rows; more
+ * agents share the cells in proportion.
  */
 export const MAX_AGENT_CELLS = 36;
 export const WRAP_ROW_CELLS = 35;

@@ -3,9 +3,9 @@ import { siteName, sourceHost } from "../../citations/citations";
 import { SiteIcon } from "../../citations/SiteIcon";
 
 /**
- * The Sources page: one row per page, its site icon, its title and its site; a
- * tap opens it through the native link confirmation. Titles come from web pages
- * and are shown as text only.
+ * The Sources page (chat-transcript.md §4.5 `Sources`): one row per page,
+ * its site icon, its title and its site; a tap opens it through the native
+ * link confirmation. Titles come from web pages and are shown as text only.
  */
 export function SourcesList({
   sources,

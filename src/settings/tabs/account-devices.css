@@ -10,7 +10,7 @@
   line-height: 20px;
 }
 .settings-account .account-local-devices th {
-  /* Live Account tables: 32px header, 13px/17px/500 secondary. */
+  /* Live Account tables (2026-10-19): 32px header, 13px/17px/500 secondary. */
   box-sizing: border-box;
   height: 32px;
   padding: 0 12px 0 0;

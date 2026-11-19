@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 /**
- * Cowork's row while a dynamic workflow runs: three coral dots, "Running
- * workflow…", a dot and the time as "1m 3s". The workflow's own progress lives
- * in the side panel, so this row is all the transcript shows.
+ * Cowork's row while a dynamic workflow runs (R-0846, S-0008): three coral dots,
+ * "Running workflow…", a dot and the time as "1m 3s". The workflow's own
+ * progress lives in the side panel, so this row is all the transcript shows.
  */
 export function RunningWorkflow({ startedAt }: { startedAt: number }) {
   const [now, setNow] = useState(Date.now);

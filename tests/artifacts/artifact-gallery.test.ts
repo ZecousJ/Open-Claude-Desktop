@@ -69,7 +69,7 @@ test("types follow what the viewer shows and search matches every word", () => {
   assert.equal(matchesQuery("Card", a("html"), "  "), true);
 });
 
-test("the page lists artifacts newest first under the templates (Group by: None)", () => {
+test("the page lists artifacts newest first under the templates (Group by: None, live claude.ai 2026-10-21)", () => {
   const artifacts: Artifact[] = [
     {
       id: "a",
@@ -98,7 +98,7 @@ test("the page lists artifacts newest first under the templates (Group by: None)
       onOpenArtifact() {},
       onCreate() {},
       onComment: noop,
-      authorName: "Ada",
+      authorName: "Zecous",
       onShareRequestConsumed() {},
       onDuplicate: noop,
       onPin: noop,
@@ -116,13 +116,13 @@ test("the page lists artifacts newest first under the templates (Group by: None)
   assert.match(html, /aria-label="Group by: None"/);
   assert.match(html, /class="artifacts-tool artifacts-new" aria-label="New"/);
   assert.match(html, /Edited just now/);
-  // The live header: All / Yours / Shared with you tabs, then search, grid,
-  // type filter.
+  // The live header (2026-09-29): All / Yours / Shared with you tabs, then search, grid, type filter.
   assert.match(html, /role="tab" aria-selected="true"[^>]*tabindex="0">All</);
   assert.match(html, />Shared with you</);
   assert.match(html, /aria-label="Filter by type: All types"/);
-  // The templates create a document, presentation or design here. The heading
-  // names the section and the tiles end in the strip's 40px tail.
+  // The templates create a document, presentation or design here.
+  // The heading names the section (live claude.ai, 2026-10-21) and the
+  // tiles end in the strip's 40px tail.
   assert.match(
     html,
     /<section class="artifacts-make" aria-labelledby="([^"]+)"><h2 id="\1">Make something new<\/h2>/,
@@ -157,7 +157,7 @@ test("library first-use copy, ObjectShapes and both empty-state variants match t
     html,
     /Take apps, games, templates, and tools from thought to reality\./,
   );
-  assert.match(html, /width="96" height="96" viewBox="0 0 96 96"/);
+  assert.match(html, /width="96" height="96" viewBox="0 0 500 500"/);
   assert.match(html, />New artifact</);
   assert.doesNotMatch(html, /class="artifacts-owner-tabs"/);
   const first = renderToStaticMarkup(

@@ -1,8 +1,10 @@
-/* Claude's Browser tool rows. The rows are the connector rows
-   (mcp-tool-view.css). Measured from The opened body reads 14px/20px, its text
-   starting 10px in, the error in the danger colour and the arguments as "key:
-   value" with the key in mono. 111×62, radius 6, a 1px #3a3a38 rim,
-   cover-cropped, at the row's right end. */
+/* Claude's Browser tool rows (R8-G, fidelity/observations/browser-tool-rows.md).
+   The rows are the connector rows (mcp-tool-view.css). Measured from
+   R-0816 (2x ÷2): the opened body reads 14px/20px, its text starting 10px
+   in, the error in the danger colour and the arguments as "key: value"
+   with the key in mono. The screenshot is the picture of R-0873 (2x ÷2):
+   111×62, radius 6, a 1px #3a3a38 rim, cover-cropped, at the row's right
+   end. */
 .browser-tool-shots {
   margin-left: auto;
 }
@@ -59,7 +61,7 @@
     Consolas,
     monospace;
 }
-/* A failed row's title is red, as its error. */
+/* R-0816: a failed row's title is red, as its error. */
 .browser-tool[data-phase="failed"] .mcp-tool-title {
   color: var(--danger);
 }

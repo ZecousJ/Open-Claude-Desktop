@@ -31,8 +31,9 @@
   bottom: calc(100% + 4px);
   transform: translateX(-50%);
   z-index: 30;
-  /* The chrome tooltip's look (ui/tooltip.css): tooltip-bg #20201f, no border,
-     shadow-panel-sm, 24px tall with 3px above and below a 13/18 label. */
+  /* The chrome tooltip's look (ui/tooltip.css): tooltip-bg #20201f, no
+     border, shadow-panel-sm, 24px tall with 3px above and below a 13/18
+     label (live claude.ai bundle, 2026-10-16, shared-frame-6654oR3-). */
   box-sizing: border-box;
   height: 24px;
   padding: 3px 8px;
@@ -42,14 +43,15 @@
   white-space: nowrap;
   pointer-events: none;
   font:
-    13px/18px -apple-system,
+    13px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   opacity: 0;
   visibility: hidden;
-  /* Fades and grows from 98% over 120ms on the snap curve, in and out, from the
-     side facing the button, as the chrome tooltip does. Reduced motion: at
-     once. */
+  /* Fades and grows from 98% over 120ms on the snap curve, in and out,
+     from the side facing the button, as the chrome tooltip does
+     (ui/tooltip.css; desktop bundle 2.31226.1). Reduced motion: at once. */
   scale: 0.98;
   transform-origin: 50% 100%;
   transition:
@@ -100,13 +102,13 @@
 .mode-chat .message-actions .small-action:active {
   background: var(--fill-ghost-selected);
 }
-/* Every toolbar button (a reply's, a prompt's, in all three modes) presses like
-   the original's ghost icon button over 60ms and springs back
-   (--press-release). The reference design no longer shrinks every button to
-   97.5%: a button pulls in by a fixed inset per side, its height / 32 held to
-   0.5-1.5px (no smaller than 80%), so a 24px toolbar button presses to 1 - 2 x
-   0.75 / 24 = 93.75%. Written against --press-scale (0.975) so reduced motion
-   (1) still means no scale. */
+/* Every toolbar button (a reply's, a prompt's, in all three modes) presses
+   like the original's ghost icon button over 60ms and springs back
+   (--press-release). The live claude.ai bundle (2026-10-12) no longer
+   shrinks every button to 97.5%: a button pulls in by a fixed inset per
+   side, its height / 32 held to 0.5-1.5px (no smaller than 80%), so a 24px
+   toolbar button presses to 1 - 2 x 0.75 / 24 = 93.75%. Written against
+   --press-scale (0.975) so reduced motion (1) still means no scale. */
 :is(.message-actions, .user-message-actions)
   .small-action:not(:disabled, [aria-disabled="true"]):active {
   scale: calc(1 - (1 - var(--press-scale)) * 2.5);
@@ -129,7 +131,8 @@
   .small-action:hover:not([aria-pressed="true"], :disabled) {
   color: var(--text);
 }
-/* Both filled thumbs use ghost selected, not legacy accent/danger ink. */
+/* Both filled thumbs use ghost selected, not legacy accent/danger ink
+   (live claude.ai bundle, 2026-10-14, shared-2-ATjXCy8a.js). */
 :root
   :is(.mode-chat, .mode-cowork)
   .message-actions
@@ -162,7 +165,8 @@
   gap: 0;
   color: #858580;
   font:
-    11px/16px -apple-system,
+    11px/16px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -198,7 +202,8 @@
   white-space: nowrap;
   color: #999993;
   font:
-    12px/18px -apple-system,
+    12px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -207,9 +212,10 @@
 .user-message-actions {
   gap: 0;
 }
-/* The row hangs 8px under the bubble and goes 60ms after the pointer leaves the
-   message; a hidden row takes no pointer, so crossing the gap lost it. The gap
-   belongs to the row, so the pointer stays on the message all the way down. */
+/* The row hangs 8px under the bubble and goes 60ms after the pointer leaves
+   the message; a hidden row takes no pointer, so crossing the gap lost it
+   (owner, 2026-10-21: the buttons could not be reached). The gap belongs to
+   the row, so the pointer stays on the message all the way down. */
 .user-message-actions::before {
   content: "";
   position: absolute;
@@ -220,7 +226,7 @@
 }
 .user-message-actions .reply-time {
   margin-right: 6.3px;
-  /* 70px wide, 11px. */
+  /* R-0496 "7 minutes ago": 70px wide, 11px. */
   font-size: 11px;
 }
 /* R-0494 (2.629 px/CSS): the edit box is as wide as its longest line plus the
@@ -233,9 +239,10 @@
   max-width: min(626px, 85%);
   padding: 13px 16px;
   background: transparent;
-  /* The reference design card ring is a 1px inner ring in --cds-border (10% of
-     the text colour), and focus draws --cds-focus-shadow: a 1px page-colour
-     inset, a 1px accent (blue-450) ring and a 6px halo of blue-600 at 60%. */
+  /* Live claude.ai bundle, 2026-10-16, c6a992d55-DtPVsf7Q.css: the card ring
+     is a 1px inner ring in --cds-border (10% of the text colour), and focus
+     draws --cds-focus-shadow: a 1px page-colour inset, a 1px accent
+     (blue-450) ring and a 6px halo of blue-600 at 60%. */
   box-shadow: inset 0 0 0 1px var(--cds-border);
 }
 :is(.mode-chat, .mode-cowork) .user-message.is-editing:focus-within {
@@ -253,7 +260,8 @@
   border: 0;
   outline: 0;
   resize: none;
-  /* The box grows with its text up to min(40svh, 24rem), then scrolls. */
+  /* The box grows with its text up to min(40svh, 24rem), then scrolls (live
+     claude.ai bundle, 2026-10-16, shared-2: max-h-[min(40svh,24rem)]). */
   max-height: min(40svh, 24rem);
   overflow-y: auto;
   background: transparent;
@@ -303,7 +311,9 @@
 .user-edit-actions .save-message:hover:not(:disabled) {
   background: #fff;
 }
-/* Light: Cancel reads the secondary text and Save is the primary fill. */
+/* Light: Cancel reads the secondary text and Save is the primary fill
+   (live claude.ai bundle, 2026-10-16, rules.json: --cds-text-secondary,
+   --cds-fill-primary). */
 :root[data-theme="light"] .user-edit-actions button {
   color: var(--text-secondary);
 }
@@ -337,7 +347,7 @@
 .grouped-activity-card > .command-activity {
   margin: 0;
 }
-/* Inner row text starts 12.5px in, 11.5px down. */
+/* normalized-command-group-001 (1x): inner row text starts 12.5px in, 11.5px down. */
 .grouped-activity-card > .command-activity > summary {
   width: 100%;
   min-height: 35px;
@@ -352,9 +362,11 @@
 .grouped-activity-card > * + * {
   border-top: 1px solid #262625;
 }
-/* Connector rows inside a group are plain rows like the command rows; a failed
-   one is red text, no box or icon. A Browser tool row (BrowserToolView) sits in
-   its own wrapper, which takes the same rules. */
+/* R-0816 (Code, "Used 2 tools (1 failed)"): connector rows inside a group are
+   plain rows like the command rows; a failed one is red text, no box or icon.
+   A Browser tool row (BrowserToolView) sits in its own wrapper, which takes
+   the same rules (owner, 2026-10-09: its label sat flush left and its opened
+   body was a frame in the card). */
 :is(.grouped-activity-card, .grouped-activity-card > .browser-tool)
   > :is(.mcp-tool-activity, .dynamic-tool-activity) {
   margin: 0;
@@ -395,7 +407,8 @@
   padding: 7px 12px;
   color: #6a6a68;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -427,7 +440,8 @@
   color: #858580;
   text-align: left;
   font:
-    14px/20px -apple-system,
+    14px/20px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -439,8 +453,8 @@
   font-weight: 400;
   color: #c3c2bc;
 }
-/* R-0937 has no hover capture; the tool rows' is the analogue: the label
-   brightens to #cbcac5 and no fill appears. */
+/* R-0937 has no hover capture; the tool rows' (R-0728) is the analogue: the
+   label brightens to #cbcac5 and no fill appears. */
 .generated-file-row:is(:hover, :focus-visible):not(:disabled),
 .generated-file-row:is(:hover, :focus-visible):not(:disabled) strong {
   color: #cbcac5;
@@ -500,8 +514,9 @@
   outline-offset: -1px;
   box-shadow: none;
 }
-/* A comment sent from an artifact: the prompt bubble as a bordered card (radius
-   12) with the comment, then a rule and "View thread ›" 14px at the right. */
+/* A comment sent from an artifact (R-1022, W1920 1x light): the prompt
+   bubble as a bordered card (radius 12) with the comment, then a rule and
+   "View thread ›" 14px at the right. */
 .user-message.comment-message {
   border: 1px solid #333331;
   border-radius: 12px;
@@ -631,11 +646,12 @@
   inset: 0;
 }
 
-/* Connection lost / No reply yet under a running reply: 8px under the reply and
-   8px in; a 12px-round card on #151515 with a 1px inset rim of white at 10%,
-   12px 16px inside, 8px gaps; the 20px info glyph in #c3c2b7; 14/20 sans in
-   #f0efec; Check now 28px high, 10px sides, 7px round, white at 10%, reaching
-   4px past the line. The light colours are provisional. */
+/* Connection lost / No reply yet under a running reply (live claude.ai,
+   2026-09-29, dark): 8px under the reply and 8px in; a 12px-round card on
+   #151515 with a 1px inset rim of white at 10%, 12px 16px inside, 8px gaps;
+   the 20px info glyph in #c3c2b7; 14/20 sans in #f0efec; Check now 28px high,
+   10px sides, 7px round, white at 10%, reaching 4px past the line. The
+   light colours are provisional (no light capture). */
 .turn-connection-notice {
   margin-top: 8px;
   padding-left: 8px;
@@ -713,7 +729,9 @@
 }
 
 /* A refused, too long or failed memory change: the warning strip, 8px wider
-   than the text each side. */
+   than the text each side (live claude.ai bundle, 2026-10-16, c52c099b5:
+   "-mx-sm rounded-card bg-warning px-sm py-xs"; bg-warning is the warning
+   Banner's fill, auth-issue.css). */
 .memory-tool-warning > summary {
   margin-inline: -8px;
   padding: 4px 8px;

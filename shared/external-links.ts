@@ -1,8 +1,8 @@
 /**
  * Which links may leave the app and which remote images may load under the
- * administrator's policy. The main process enforces these in
- * `electron/external-links.ts`; the window uses the same rules to say so before
- * asking.
+ * administrator's policy (package WP1). The main process enforces these in
+ * `electron/external-links.ts`; the window uses the same rules to say so
+ * before asking.
  */
 import { type ClientPolicy } from "./client-policy";
 import { administratorUrls, urlListed } from "./client-policy-rules";

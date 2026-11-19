@@ -34,9 +34,10 @@ export function useSessionRail(
   useEffect(() => {
     const element = main.current;
     if (!code || !element) return;
-    // The new width applies in the frame the size changed in (a resize observer
-    // runs after layout and before paint): a pane opening would otherwise show
-    // the rail beside it for a frame on the old width and the transcript jumps.
+    // The new width applies in the frame the size changed in (a resize
+    // observer runs after layout and before paint): a pane opening would
+    // otherwise show the rail beside it for a frame on the old width and
+    // the transcript jumps (owner, 2026-10-22).
     const observer = new ResizeObserver(() =>
       flushSync(() => setWidth(element.offsetWidth)),
     );

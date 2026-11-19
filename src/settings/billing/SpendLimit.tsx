@@ -7,7 +7,8 @@ import "./spend-limit.css";
 
 /**
  * "$20" for whole amounts, "$20.50" otherwise, and the dollar sign in every
- * language. `digits` fixes the decimals, as for this month's spend.
+ * language (live claude.ai bundle, 2026-10-16, c2738e478 `preferWholeNumber`
+ * and `narrowSymbol`). `digits` fixes the decimals, as for this month's spend.
  */
 function money(value: number, digits?: number) {
   const places = digits ?? (Number.isInteger(value) ? 0 : 2);
@@ -20,7 +21,7 @@ function money(value: number, digits?: number) {
   }).format(value);
 }
 
-/** The block's line. */
+/** The block's line (live claude.ai bundle, 2026-10-14, c71860c77 Xr). */
 export function spendLimitLine(limit: SpendLimit) {
   if (limit.limitUsd === null)
     return formatText("{used} this month · No spend limit", {
@@ -99,7 +100,7 @@ export function SpendLimitBlock({
   );
 }
 
-/** "Set monthly spend limit". */
+/** "Set monthly spend limit" (live claude.ai bundle, 2026-10-14, ce86a71c0). */
 function SpendLimitDialog({
   current,
   onClose,

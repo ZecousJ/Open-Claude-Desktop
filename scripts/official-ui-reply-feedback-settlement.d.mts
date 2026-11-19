@@ -1,0 +1,15 @@
+export const replyFeedbackSettlementRevision: string;
+export const replyFeedbackSettlementTarget: string;
+export const replyFeedbackSettlementOriginalSha256: string;
+export const replyFeedbackSettlementInputSha256: string;
+export const replyFeedbackSettlementOutputSha256: string;
+export const replyFeedbackSettlementBefore: string;
+export const replyFeedbackSettlementAfter: string;
+export const replyFeedbackSettlementPrivacyStart: string;
+export const replyFeedbackSettlementPrivacyEnd: string;
+export const replyFeedbackSettlementPrivacyAfter: string;
+export const replyFeedbackSettlementLifecycleRules: Array<{ name: string; before: string; after: string }>;
+export type ReplyFeedbackSettlementManifest = { revision: string; modules: Array<{ file: string; originalSha256: string; inputSha256: string; outputSha256: string }> };
+export function deriveOfficialReplyFeedbackSettlementModule(file: string, source: string): string;
+export function applyOfficialReplyFeedbackSettlement(directory: string): ReplyFeedbackSettlementManifest;
+export function verifyOfficialReplyFeedbackSettlementManifest(manifest: unknown, files: Array<{ path: string; sha256: string }>, expectedOutputSha256: string | undefined): void;

@@ -62,7 +62,23 @@ func (c *Component) downloadFile(g *gin.Context) {
 		response.ErrorFrom(g, infraerrors.Unauthorized("UNAUTHORIZED", "Sign in first."))
 		return
 	}
-	info, f, err := c.OpenFile(g.Request.Context(), userID, g.Param("id"))
+	ctx, id := g.Request.Context(), g.Param("id")
+	file, err := c.File(ctx, userID, id)
+	if err != nil {
+		httpError(g, err)
+		return
+	}
+	if file.ObjectStorage && c.objects != nil {
+		address, err := c.downloadURL(ctx, userID, file, true)
+		if err != nil {
+			httpError(g, err)
+			return
+		}
+		g.Header("Cache-Control", "private, no-store")
+		g.Redirect(http.StatusTemporaryRedirect, address)
+		return
+	}
+	info, f, err := c.OpenFile(ctx, userID, id)
 	if err != nil {
 		httpError(g, err)
 		return
@@ -77,8 +93,41 @@ func (c *Component) downloadFile(g *gin.Context) {
 // ExportFormat names the export archive's layout.
 const ExportFormat = "claudex-web-export"
 
-// GET /api/v1/claudex/web/downloads/export: the user's whole account as a
-// zip archive, streamed:
+type exportConversationDates struct {
+	start *time.Time
+	end   *time.Time
+}
+
+func parseExportDate(query url.Values, key string) (*time.Time, error) {
+	values, exists := query[key]
+	if !exists {
+		return nil, nil
+	}
+	if len(values) != 1 {
+		return nil, badRequest("%s must be provided only once.", key)
+	}
+	date, err := time.Parse(time.RFC3339, values[0])
+	if err != nil {
+		return nil, badRequest("%s must be an RFC3339 timestamp.", key)
+	}
+	return &date, nil
+}
+
+func (dates exportConversationDates) includes(createdAt *int64) bool {
+	if dates.start == nil && dates.end == nil {
+		return true
+	}
+	if createdAt == nil {
+		return false
+	}
+	created := time.UnixMilli(*createdAt)
+	return (dates.start == nil || !created.Before(*dates.start)) &&
+		(dates.end == nil || created.Before(*dates.end))
+}
+
+// GET /api/v1/claudex/web/downloads/export: the user's account as a streamed
+// ZIP archive. Optional conversation dates are inclusive at the start and
+// exclusive at the end.
 //
 //	manifest.json                    format, version, time, counts
 //	settings.json                    the settings document (null when none)
@@ -93,11 +142,26 @@ func (c *Component) export(g *gin.Context) {
 		response.ErrorFrom(g, infraerrors.Unauthorized("UNAUTHORIZED", "Sign in first."))
 		return
 	}
-	ctx := g.Request.Context()
-	if err := c.store.ok(); err != nil {
+	query, err := url.ParseQuery(g.Request.URL.RawQuery)
+	if err != nil {
+		httpError(g, badRequest("The export query is not valid."))
+		return
+	}
+	start, err := parseExportDate(query, "conversations_start_date")
+	if err != nil {
 		httpError(g, err)
 		return
 	}
+	end, err := parseExportDate(query, "conversations_end_date")
+	if err != nil {
+		httpError(g, err)
+		return
+	}
+	if start != nil && end != nil && start.After(*end) {
+		httpError(g, badRequest("The conversation start date must be on or before the end date."))
+		return
+	}
+	ctx := g.Request.Context()
 	// Read the first rows before any byte is written, so an unavailable
 	// database still gets a JSON error.
 	settings, err := c.store.getSettings(ctx, userID)
@@ -108,22 +172,14 @@ func (c *Component) export(g *gin.Context) {
 	downloadHeaders(g, "claudex-export-"+c.now().Format("2006-01-02")+".zip")
 	g.Writer.Header().Set("Content-Type", "application/zip")
 	g.Status(http.StatusOK)
-	if err := c.WriteExport(ctx, userID, settings, g.Writer); err != nil {
+	if err := c.writeExport(ctx, userID, settings, exportConversationDates{start: start, end: end}, g.Writer); err != nil {
 		// The status is already sent; the archive is left incomplete, which
 		// the zip reader reports.
 		slogWarn("webstore: export failed", err)
 	}
 }
 
-// WriteExport writes the export archive of the user to w (settings as read
-// by the caller, nil to read them here).
-func (c *Component) WriteExport(ctx context.Context, userID int64, settings json.RawMessage, w io.Writer) error {
-	if settings == nil {
-		var err error
-		if settings, err = c.store.getSettings(ctx, userID); err != nil {
-			return err
-		}
-	}
+func (c *Component) writeExport(ctx context.Context, userID int64, settings json.RawMessage, dates exportConversationDates, w io.Writer) error {
 	zw := zip.NewWriter(w)
 	now := c.now()
 	put := func(name string, v any) error {
@@ -167,13 +223,14 @@ func (c *Component) WriteExport(ctx context.Context, userID int64, settings json
 		for _, row := range rows {
 			var doc struct {
 				Conversation struct {
-					ID string `json:"id"`
+					ID        string `json:"id"`
+					CreatedAt *int64 `json:"createdAt"`
 				} `json:"conversation"`
 			}
-			if json.Unmarshal(row.Doc, &doc) != nil || !docID.MatchString(doc.Conversation.ID) {
+			if json.Unmarshal(row.Doc, &doc) != nil || !docID.MatchString(doc.Conversation.ID) || !dates.includes(doc.Conversation.CreatedAt) {
 				continue
 			}
-			full, err := c.loadConversation(ctx, userID, doc.Conversation.ID)
+			full, err := c.assembleConversation(ctx, userID, doc.Conversation.ID, row.Doc)
 			if err != nil {
 				return err
 			}

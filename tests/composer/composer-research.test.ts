@@ -93,7 +93,7 @@ test("Research's row shows its state and when it can't be turned on", () => {
   assert.match(on, /class="composer-add-research"[^>]*aria-checked="true"/);
   assert.match(on, /composer-add-check/);
   const off = menu({ onResearch: noop, researchAvailable: false });
-  // Disabled, with the reason as its hover text.
+  // Disabled, with the reason as its hover text (desktop bundle 2.31226.1).
   assert.match(off, /class="composer-add-research"[^>]*disabled=""/);
   assert.match(off, /Enable a search integration to use research/);
 });

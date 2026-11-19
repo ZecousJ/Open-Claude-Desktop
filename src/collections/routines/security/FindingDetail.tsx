@@ -30,10 +30,11 @@ function Section({ title, text }: { title: string; text: string }) {
 }
 
 /**
- * One finding in full: Triage (or Restore once triaged) and Export finding at
- * the top; then Details, Evidence, Impact, Reproduction steps and Recommended
- * fix, and the fields. A finding's text is what the review wrote, so it is not
- * put through the interface translation.
+ * One finding in full (the original's finding page, desktop bundle
+ * 2.31226.1): Triage (or Restore once triaged) and Export finding at the
+ * top; then Details, Evidence, Impact, Reproduction steps and Recommended
+ * fix, and the fields. A finding's text is what the review wrote, so it is
+ * not put through the interface translation.
  */
 export function FindingDetail({
   finding,

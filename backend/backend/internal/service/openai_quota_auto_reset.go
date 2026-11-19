@@ -125,7 +125,7 @@ func NewOpenAIQuotaAutoResetService(
 	}
 }
 
-func (s *OpenAIQuotaAutoResetService) Start() {
+func (s *OpenAIQuotaAutoResetService) Start(runCompensationScan bool) {
 	if s == nil || s.accountRepo == nil || s.quota == nil || s.idempotency == nil {
 		return
 	}
@@ -135,8 +135,10 @@ func (s *OpenAIQuotaAutoResetService) Start() {
 			s.wg.Add(1)
 			go s.runWorker()
 		}
-		s.wg.Add(1)
-		go s.runScanner()
+		if runCompensationScan {
+			s.wg.Add(1)
+			go s.runScanner()
+		}
 	})
 }
 

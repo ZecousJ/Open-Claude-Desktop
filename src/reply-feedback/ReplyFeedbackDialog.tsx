@@ -33,12 +33,13 @@ export function feedbackSubmittable(comment: string, categories: string[]) {
 }
 
 /**
- * The reply feedback dialog: a 520px card with a 22px title and no close
- * button, the issue type as one menu-backed field (thumbs down only), the
- * details under a muted label, an italic note and Cancel and Submit. The
- * wording of the note is Claudex's own: feedback goes to the administrator. The
- * rating itself was already stored; this adds what the person writes and, when
- * the service allows it and the box is ticked, the conversation.
+ * The reply feedback dialog (live claude.ai, 2026-09-30): a 520px card with
+ * a 22px title and no close button, the issue type as one menu-backed field
+ * (thumbs down only), the details under a muted label, an italic note and
+ * Cancel and Submit. The wording of the note is Claudex's own: feedback goes
+ * to the administrator. The rating itself was already stored; this adds what
+ * the person writes and, when the service allows it and the box is ticked,
+ * the conversation.
  */
 export function ReplyFeedbackDialog({
   conversationId,

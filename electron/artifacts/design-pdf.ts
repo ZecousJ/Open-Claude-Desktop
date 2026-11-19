@@ -92,7 +92,7 @@ async function bounded<T>(operation: Promise<T>) {
   }
 }
 
-// .
+// (desktop package 2.37337.1, index.chunk-BWk6pVUt.js:207579).
 export function attachDesignPdf(
   window: BrowserWindow,
   chromeUrl: string,

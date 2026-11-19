@@ -1,8 +1,9 @@
 /**
- * An HTML artifact that loads its own stylesheets and scripts from files beside
- * it (index.html with style.css and game.js) runs as one document: the preview
- * frame has no folder to load them from, so each one the conversation made is
- * put inline. Addresses with a scheme or `//`, and files not found, stay as
+ * An HTML artifact that loads its own stylesheets and scripts from files
+ * beside it (index.html with style.css and game.js) runs as one document:
+ * the preview frame has no folder to load them from, so each one the
+ * conversation made is put inline (owner, 2026-10-22: such a game opened as
+ * bare text). Addresses with a scheme or `//`, and files not found, stay as
  * they are.
  */
 
@@ -55,7 +56,8 @@ export function inlineLocalAssets(
   };
   // A deferred (or async) script runs once the page is parsed; inline, that
   // attribute means nothing, so it moves to the end of the body instead, in
-  // order.
+  // order (owner, 2026-10-23: a deferred script.js read #speed before it
+  // existed).
   const later: string[] = [];
   const inlined = html
     .replace(/<link\b[^>]*>/gi, (tag) => {

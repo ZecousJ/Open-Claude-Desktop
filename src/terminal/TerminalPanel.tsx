@@ -20,10 +20,8 @@ export function TerminalPanel({
   onClose,
 }: {
   conversationId: string;
-  /**
-   * Keeps a dragged width per account; without one it lasts only while the
-   * panel is open.
-   */
+  /** Keeps a dragged width per account (R-0887); without one it lasts
+   * only while the panel is open. */
   accountId?: string;
   /**
    * Attach selection as context: puts the selected text in this

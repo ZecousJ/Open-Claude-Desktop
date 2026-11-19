@@ -77,6 +77,9 @@ func gatewayRouter(t *testing.T, c *Component, keys map[string]*service.APIKey) 
 	v1.POST("/chat/completions", ok)
 	v1.POST("/messages", ok)
 	v1.POST("/messages/count_tokens", ok)
+	v1.POST("/images/generations", ok)
+	v1.POST(gatewayhook.ClaudexImageGenerations, ok)
+	v1.POST(gatewayhook.ClaudexImageEdits, ok)
 	v1.GET("/models", ok)
 	v1.GET("/audio/realtime/transcriptions", ok)
 	root := r.Group("", auth)
@@ -201,6 +204,26 @@ func TestPrecheckDictationIsCheckedAsItsBilledModel(t *testing.T) {
 	fs.setCounter(7, 11, guardNow.Add(-time.Hour), opusResets, 0)
 	fs.setCounter(3, 11, guardNow.Add(-time.Hour), guardNow.Add(4*time.Hour), 5)
 	rec = wsHandshake(r, path, "sk-device")
+	require.Equal(t, http.StatusTooManyRequests, rec.Code)
+	require.Contains(t, rec.Body.String(), "You've reached your session limit")
+}
+
+func TestPrecheckAutomaticImagesDefersModelRules(t *testing.T) {
+	c, fs, r := opusSetup(t)
+	const model = "gpt-image-2.5"
+	const body = `{"model":"gpt-image-2.5","prompt":"draw"}`
+	fs.addRule(Rule{ID: 6, GroupID: ptr(int64(4)), Kind: KindModels, Label: model, ModelPatterns: []string{model}, WindowSeconds: 3600, LimitUSD: 1, Enabled: true})
+	fs.setCounter(6, 11, guardNow.Add(-time.Minute), guardNow.Add(59*time.Minute), 1.1)
+	c.rules.invalidate()
+	for _, path := range []string{gatewayhook.ClaudexImageGenerations, gatewayhook.ClaudexImageEdits} {
+		require.Equal(t, http.StatusOK, send(r, http.MethodPost, "/v1"+path, "sk-user", body).Code)
+		require.Equal(t, http.StatusOK, send(r, http.MethodPost, "/v1"+path, "sk-user", `{"prompt":"draw"}`).Code)
+	}
+	require.Equal(t, http.StatusTooManyRequests, send(r, http.MethodPost, "/v1/images/generations", "sk-user", body).Code)
+	require.Error(t, c.PrecheckTurn(context.Background(), 11, 79, ptr(int64(4)), []string{model}))
+	require.NoError(t, c.PrecheckTurn(context.Background(), 11, 79, ptr(int64(4)), []string{"gpt-image-2"}))
+	fs.setCounter(3, 11, guardNow.Add(-time.Hour), guardNow.Add(4*time.Hour), 5)
+	rec := send(r, http.MethodPost, "/v1"+gatewayhook.ClaudexImageGenerations, "sk-user", body)
 	require.Equal(t, http.StatusTooManyRequests, rec.Code)
 	require.Contains(t, rec.Body.String(), "You've reached your session limit")
 }

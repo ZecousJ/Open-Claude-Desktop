@@ -4,7 +4,7 @@ import type { Conversation } from "../../shared/types";
 import { sessionExport } from "../../shared/session-export";
 import { createZip } from "../workspace/zip";
 
-/** Local transcript export. */
+/** Local transcript export (desktop 2.37337.1, heavyWorkWorker.js:31954,32058). */
 export function exportSessionArchive(
   conversation: Conversation,
   downloads: string,

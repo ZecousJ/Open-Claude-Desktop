@@ -348,8 +348,9 @@ export function filesPanelView(kit: FilesPanelViewKit) {
     ];
   };
 
-  // The tree's toggle leads the bar, or comes before the bar's end buttons when
-  // the tree is on the right.
+  // The tree's toggle leads the bar, or comes before the bar's end buttons
+  // when the tree is on the right (live claude.ai bundle, 2026-10-21,
+  // cccc2cf0a: the trailing toggle).
   const treeToggle = (
     <button
       type="button"

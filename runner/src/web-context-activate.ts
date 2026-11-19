@@ -1,19 +1,31 @@
 import { stageSession } from "./session-stage";
+import { organizationPluginSources } from "./organization-plugin-sources";
 import { routineSessionInput } from "../../electron/routines/routine-session";
 import { gitHubTools } from "./github-tools";
+import { persistSessionPullRequest } from "./session-git";
 import { autoFixFacts } from "../../electron/git/pr-autofix";
 import fs from "node:fs";
 import path from "node:path";
-import type { PublicAccount } from "../../shared/types";
+import type { AppEvent, Conversation, PublicAccount } from "../../shared/types";
 import { webHost } from "../../shared/host";
 import { connectorAllowed } from "../../shared/client-policy-rules";
+import { cloudCodeConnectorInventory } from "../../electron/official-ui/api/cloud-code-connectors";
 import { notAvailableOnWeb } from "../../shared/web-bridge-methods";
 import { webErrorCodes } from "../../shared/web-protocol";
 import { Accounts } from "../../electron/account/accounts";
 import { ArtifactLibrary } from "../../electron/artifacts/artifact-library";
 import { ArtifactShares } from "../../electron/artifacts/artifact-shares";
 import { BackgroundHistory } from "../../electron/conversations/background-history";
+import {
+  ConnectorClients,
+  connectorRequestHeaders,
+  savedConnectorHeaders,
+} from "../../electron/connectors/connector-clients";
 import { Engine } from "../../electron/engine/engine";
+import { CodeRunAdmissionError } from "../../electron/engine/code-send-start";
+import { webCallScope } from "./electron-shim";
+import { callError } from "./dispatcher-support";
+import { registerRemoteConnectorSkills } from "../../electron/connectors/remote-skills";
 import { ProviderCredentials } from "../../electron/engine/provider-credentials";
 import { ReplyFeedback } from "../../electron/conversations/reply-feedback";
 import {
@@ -22,8 +34,10 @@ import {
 } from "../../electron/remote/host-wiring";
 import { remoteAccountId } from "../../electron/sub2api/identity-support";
 import { CloudStore } from "./cloud-store";
+import { discardIncognitoUploads } from "../../electron/workspace/incognito-upload";
 import { parseWebKey, WebRemoteHost, type WebKey } from "./web-remote-host";
 import { attachmentsFolder, pruneAttachments } from "./attachments";
+import { queuedCodeAttachmentIds } from "./official-code-queue";
 import { Scheduler } from "../../electron/routines/scheduler";
 import { engineRoutineSummary } from "../../electron/routines/routine-summary";
 import { ConnectorOAuth } from "./connector-oauth";
@@ -38,17 +52,17 @@ import { nextWakeAt, routineRunModel } from "../../shared/routines";
 import { preference } from "../../shared/settings-extras";
 import { noWorkingTree } from "./sandbox-git";
 import { routineRunMails } from "../../electron/routines/routine-mail";
+import { isOwnedCloudCodeSession } from "../../electron/official-ui/api/code-session-ownership";
 import {
   prepareCodexCache,
   pruneIdleSpaceCaches,
 } from "../../electron/engine/codex-cache";
-import type { WebAppContext } from "./web-app-context";
-import type { RegisterHandlers } from "./web-app-context";
+import type { WebAppContext, WebContextOpenInput } from "./web-app-context";
+import { browserNotificationSettings } from "../../shared/official-notification-preferences";
 
 export async function activate(
   this: WebAppContext,
-  accessToken: string,
-  register: RegisterHandlers,
+  { accessToken, register, accountSettingsReady, shellReady }: WebContextOpenInput,
 ) {
   const runtime = this.runtime;
   const profile = path.join(this.dataRoot, "profile");
@@ -60,26 +74,27 @@ export async function activate(
       { code: webErrorCodes.badRequest },
     );
   await runtime.prepareUserData?.(this.userId, profile);
+  discardIncognitoUploads(profile, this.selectedAttachments);
   pruneIdleSpaceCaches(profile, new Set());
   const codexCache = prepareCodexCache(profile, profile);
-  this.store = await CloudStore.open({
-    root: profile,
-    userId: this.userId,
-    transport: runtime.transport,
-    log: this.log,
-  });
-  const attachments = attachmentsFolder(profile);
-  try {
-    pruneAttachments(profile, this.store.conversations, []);
-  } catch {
-    // Old drafts stay until next time.
-  }
   const account: PublicAccount = {
     id: remoteAccountId(runtime.serviceUrl, me.id),
     email: me.email,
     name: me.username || me.email.split("@")[0] || me.email,
     remote: true,
   };
+  this.store = await CloudStore.openAccount({
+    root: profile,
+    userId: this.userId,
+    transport: runtime.transport,
+    log: this.log,
+  }, (settings) => accountSettingsReady?.({
+    accountId: account.id,
+    settings: browserNotificationSettings(settings),
+  }));
+  const history = this.store.loadHistory();
+  void history.catch(() => {});
+  const attachments = attachmentsFolder(profile);
   // The first time, the name is the account's (as a desktop profile starts).
   if (this.store.fresh || !this.store.settings.name)
     this.store.settings.name = account.name;
@@ -133,42 +148,58 @@ export async function activate(
   const integrations = path.join(profile, "integrations");
   fs.mkdirSync(integrations, { recursive: true, mode: 0o700 });
   this.integrationTokens = new ConnectorTokens(integrations);
-  const guard =
-    this.runtime.connectorGuard ?? connectorUrlGuard({ level: "full" });
-  this.connectors = {
-    assertUrl: guard,
-    fetch: connectorFetch({ level: "full" }, guard),
-    getToken: (name) => this.connectorTokens.get(name),
-    setToken: (name, token) => this.connectorTokens.set(name, token),
-  };
+  const connectorNetwork = this.runtime.connectorNetwork ?? { level: "full" as const };
+  const guard = connectorUrlGuard(connectorNetwork);
+  const connectorStore = this.store;
+  const connectorActivation = this.officialSessionIdentity();
+  const connectorTokens = this.connectorTokens;
+  const fetchConnector = connectorFetch(connectorNetwork);
+  const connectorAccountCurrent = () =>
+    !this.accountRetiring && this.activeAccount?.id === account.id &&
+    this.store === connectorStore && this.connectors === connectors &&
+    this.officialSessionIdentity() === connectorActivation;
   const oauth = new ConnectorOAuth(
     profile,
-    runtime.serviceUrl,
-    this.connectors.fetch!,
-    this.connectorTokens,
-    () => this.mcpConfig.update(this.store.settings.mcpServers),
+    runtime.publicUrl ?? runtime.serviceUrl,
+    fetchConnector,
+    connectorTokens,
+    () => { if (connectorAccountCurrent()) this.mcpConfig.authorizationChanged(); },
     (name, resource) => {
-      const server = this.store.settings.mcpServers[name] as
-        { url?: string } | undefined;
+      const server = connectorStore.settings.mcpServers[name] as
+        { url?: string; enabled?: boolean } | undefined;
       return (
-        server?.url === resource &&
+        connectorAccountCurrent() && server?.url === resource && server.enabled !== false &&
         connectorAllowed(this.policy(), name, server)
       );
     },
   );
-  this.connectors.beginLogin = async (name, resource, returnUrl) => {
-    const { ConnectorClients } =
-      await import("../../electron/connectors/connector-clients");
+  const getConnectorToken = (name: string) => {
+    const resource = (connectorStore.settings.mcpServers[name] as { url?: string } | undefined)?.url;
+    const status = resource && oauth.status(name, resource);
+    if (status !== "reconnect" && status !== "disconnected") return connectorTokens.get(name);
+  };
+  const connectors: WebAppContext["connectors"] = {
+    assertUrl: guard,
+    fetch: fetchConnector,
+    getToken: getConnectorToken,
+    setToken: (name, token) => {
+      const resource = (connectorStore.settings.mcpServers[name] as { url?: string } | undefined)?.url;
+      if (token && resource) oauth.forget(name, resource);
+      connectorTokens.set(name, token);
+    },
+  };
+  this.connectors = connectors;
+  connectors.beginLogin = async (name, resource, returnUrl) => {
     const address = await oauth.begin(
       name,
       resource,
       returnUrl,
-      new ConnectorClients(this.store.root).get(name, resource),
+      new ConnectorClients(connectorStore.root).get(name, resource),
     );
-    await this.connectors.assertUrl(address);
+    await connectors.assertUrl(address);
     return address;
   };
-  this.connectors.completeLogin = (state, code) => oauth.complete(state, code);
+  connectors.completeLogin = (state, code, issuer, expectedName) => oauth.complete(state, code, issuer, expectedName);
   this.connectorOAuth = oauth;
   // The sandbox's network follows the user's Capabilities settings.
   const reportNetwork = () =>
@@ -185,17 +216,36 @@ export async function activate(
     codexCache,
     attachments,
     projects,
+    organizationPluginSources: organizationPluginSources(profile),
   });
+  const markCodeUnread = (event: Extract<AppEvent, { type: "conversation" }>) => {
+    const { conversation, settledCodeTurnId } = event;
+    const turn = conversation.turns.at(-1);
+    if (this.accountRetiring || !settledCodeTurnId || turn?.id !== settledCodeTurnId ||
+        conversation.archived || turn.compaction || !isOwnedCloudCodeSession(conversation, account.id) ||
+        (turn.status !== "completed" && turn.status !== "failed")) return;
+    const stored = this.store.conversations.find((row) =>
+      row.id === conversation.id && row.createdAt === conversation.createdAt,
+    );
+    if (!stored) return;
+    const patch = { unread: true, readStateRevision: (stored.readStateRevision ?? 0) + 1 };
+    Object.assign(stored, patch);
+    Object.assign(conversation, patch);
+    this.store.flush();
+    return { type: "code-read-state", conversationId: conversation.id, ...patch } satisfies AppEvent;
+  };
   this.engine = new Engine(
     this.store,
     binary,
     (id) => host.sessionKey(id),
     (event) => {
+      const readState = event.type === "conversation" ? markCodeUnread(event) : undefined;
       if (event.type === "conversation") {
         this.usageTurns.observe(event.conversation);
         this.scheduler?.observeConversation(event.conversation);
       }
       this.push(event);
+      if (readState) this.push(readState);
     },
     this.providerServiceScript,
     this.credentials.vaultKey,
@@ -206,28 +256,93 @@ export async function activate(
       this.refusalListeners.emit(refusal);
     },
   );
+  if (runtime.codeRunCapacity) {
+    const capacity = runtime.codeRunCapacity;
+    this.engine.admitCodeRun = async (conversation, start) => {
+      if (webCallScope.getStore()?.consumeGoRunSlot?.()) return;
+      try {
+        return await capacity.acquire({
+          userId: this.userId,
+          conversation,
+          start,
+          subscribe: (listener) => this.onEvent(listener),
+        });
+      } catch (error) {
+        if (start.cancelledBeforeDispatch) throw error;
+        const result = callError(error);
+        throw new CodeRunAdmissionError(result.message, result.code);
+      }
+    };
+  }
   // A cloud Code session's GitHub tools (push, pull requests, issues),
   // also in the repository spaces' engines.
+  const githubStore = this.store;
+  const githubActivation = this.officialSessionIdentity();
+  const githubSessionCurrent = (conversation: Conversation) =>
+    !this.accountRetiring &&
+    this.activeAccount?.id === account.id &&
+    this.officialSessionIdentity() === githubActivation &&
+    this.store === githubStore &&
+    githubStore.conversations.includes(conversation) &&
+    isOwnedCloudCodeSession(conversation, account.id);
   const github = gitHubTools({
     userId: this.userId,
     transport: runtime.transport,
     // The branch and git state each session records after a turn.
     workingTree: () => this.services.workingTree,
+    automaticPullRequests: {
+      settings(conversation) {
+        return githubSessionCurrent(conversation)
+          ? githubStore.settings
+          : { prAutoCreate: false };
+      },
+      async save(conversation, pr) {
+        await persistSessionPullRequest(
+          githubStore,
+          conversation,
+          pr,
+          () => githubSessionCurrent(conversation),
+        );
+      },
+    },
   });
   this.engine.extensions.add(github);
   const { locationMetadataExtension } =
     await import("../../electron/account/location-metadata");
+  const locationStore = this.store;
   const location = locationMetadataExtension(
-    () => this.store.settings,
+    () => locationStore.settings,
     () => runtime.transport.request("location.get", this.userId, {}),
   );
   this.engine.extensions.add(location.extension);
+  this.engine.peerExtensions.push(location.extension);
   void location.prepare();
   this.engine.peerExtensions.push(github);
   this.engine.connectorHeaders = (name) => {
-    const token = this.connectorTokens.get(name);
-    return token ? { Authorization: `Bearer ${token}` } : undefined;
+    const resource = (connectorStore.settings.mcpServers[name] as
+      { url?: string } | undefined)?.url;
+    if (!resource) return undefined;
+    const token = getConnectorToken(name);
+    return connectorRequestHeaders(savedConnectorHeaders(profile, name, resource), token);
   };
+  this.engine.connectorAuthorizationRejected = (name, url, token) => {
+    if (connectorAccountCurrent()) oauth.rejectAccess(name, url, token);
+  };
+  this.engine.connectorAuthStatus = (name, url) => {
+    if (connectorAccountCurrent()) return oauth.status(name, url);
+  };
+  const skillStore = this.store;
+  const skillEngine = this.engine;
+  const skillHost = this.connectors;
+  skillEngine.remoteConnectorSkill = registerRemoteConnectorSkills({
+    store: skillStore,
+    current: () => !this.accountRetiring && this.store === skillStore &&
+      this.engine === skillEngine && this.connectors === skillHost,
+    activation: () => this.officialSessionIdentity(),
+    policy: () => this.policy(),
+    headers: (name) => skillEngine.connectorHeaders?.(name),
+    fetch: skillHost.fetch,
+  }).resolve;
   this.engine.unavailableReason = host.unavailableReason ?? prepareError;
   this.engine.sandboxNetwork = runtime.sandboxNetwork === true;
   this.engine.capabilityTipHost = (runtime.host ?? webHost).capabilities;
@@ -285,8 +400,26 @@ export async function activate(
     return autoFixFacts(response.pullRequest);
   };
   register(this);
+  this.preparedListeners.emit();
+  await (shellReady ? Promise.race([history, shellReady(this)]) : history);
+  if (this.accountRetiring) throw new Error("The session has ended.");
+  try {
+    pruneAttachments(profile, this.store.conversations, queuedCodeAttachmentIds(profile, account.id, this.store.conversations));
+  } catch {
+    // Old drafts stay until next time.
+  }
+  oauth.resume();
   this.startScheduler(profile);
-  this.activatedListeners.emit(this.activeAccount);
+  this.codeAutoArchive.start();
+  if (this.store.conversations.some((conversation) => {
+    const binding = conversation.chatDeviceBinding;
+    const turn = conversation.turns.at(-1);
+    return conversation.mode === "cowork" && !conversation.archived && !conversation.incognito &&
+      binding?.version === 1 && binding.accountScope === String(this.userId) &&
+      binding.organizationId === null &&
+      (turn?.status === "inProgress" || (turn?.status === "interrupted" && turn.stopReason === "restart"));
+  })) this.chatDeviceController.schedule();
+  this.finishAccountActivation(this.activeAccount);
 }
 
 /** Settings → Capabilities: what the user chose for their sandbox's network. */
@@ -308,18 +441,34 @@ export function userNetwork(this: WebAppContext): UserNetwork {
  */
 export function startScheduler(this: WebAppContext, profile: string) {
   const scheduler = new Scheduler(profile, {
+    startupGraceMs: 60_000,
     summarize: engineRoutineSummary(this.engine, () => this.store.settings),
     isBusy: () => this.busy(),
     policy: () => this.policy(),
     run: async (saved) => {
-      const task = routineRunModel(saved, this.store.settings, "remote");
+      const { store, engine } = this;
+      const activation = this.officialSessionIdentity();
+      const current = () => !this.closedFlag && !this.signedOut &&
+        this.store === store && this.engine === engine && this.officialSessionIdentity() === activation;
+      const task = routineRunModel(saved, store.settings, "remote");
       const can = (this.runtime.host ?? webHost).capabilities;
       if (task.mode === "cowork" ? !can.cloudCowork : !can.cloudCode)
         throw new Error(
           `${task.mode === "cowork" ? "Cowork" : "Code"} tasks aren't available on this service yet.`,
         );
-      const input = routineSessionInput(task, this.store.settings);
-      if (task.mode !== "code") return this.engine.send(input);
+      const input = routineSessionInput(task, store.settings);
+      if (task.mode !== "code") return engine.send(input, undefined, false, { current, interactive: false });
+      if (task.codeConnectorSelections) {
+        const configured = store.settings.mcpServers;
+        const inventory = cloudCodeConnectorInventory(configured);
+        const selected = new Map(task.codeConnectorSelections.map(({ key, url }) => [key, url]));
+        if (task.codeConnectorSelections.some(({ key, url }) => !inventory.some((row) =>
+          row.key === key && row.url === url && connectorAllowed(this.policy(), key, configured[key]))))
+          throw Error("A connector selected for this task is unavailable. Edit the task and try again.");
+        input.connectorOverrides = Object.fromEntries(Object.keys(configured)
+          .filter((key) => !selected.has(key))
+          .map((key) => [key, false]));
+      }
       // A Code task runs as a cloud session: its own space, its repository
       // cloned in the first turn, its cloud environment (as a session the
       // browser starts, session-stage.ts).
@@ -331,17 +480,17 @@ export function startScheduler(this: WebAppContext, profile: string) {
             ? { cloudEnvironmentId: task.cloudEnvironmentId }
             : {}),
         },
-        { repository: task.repository },
+        { repository: task.repository, repositories: task.repositories },
       );
       type SendInput = Parameters<Engine["send"]>[0];
       const [staged, extra] = args as [
         SendInput,
         { setup?: SendInput["setup"] }?,
       ];
-      return this.engine.send({
+      return engine.send({
         ...staged,
         ...(extra?.setup ? { setup: extra.setup } : {}),
-      });
+      }, undefined, false, { current, interactive: false });
     },
     onChange: (schedules) => {
       this.push({ type: "schedules", schedules });

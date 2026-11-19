@@ -1,4 +1,4 @@
-/* Desktop app → Developer, measured from R-设置-Developer-顶部-深色. */
+/* Desktop app → Developer, measured from R-设置-Developer-顶部-深色 (2026-09-24). */
 .settings-page:has(.developer-settings) {
   padding-bottom: 34px;
 }
@@ -41,7 +41,7 @@
   font-size: 14px;
   line-height: 20px;
 }
-/* Administrator policy notes. */
+/* Administrator policy notes (no capture: the original has no managed state). */
 .developer-mcp-blocked {
   margin-left: auto;
   color: var(--text-secondary);
@@ -159,8 +159,9 @@
   line-height: 18px;
 }
 
-/* Light: a dark monitor with a white pointer, Edit config black, Developer docs
-   white on a #e5e5e5 rim, the card #fcfcfa on a #e5e5e3 rim. */
+/* Light (R-1427-1440 at 1x, R-1428, R-1434): a dark monitor with a white
+   pointer, Edit config black, Developer docs white on a #e5e5e5 rim, the
+   card #fcfcfa on a #e5e5e3 rim. */
 :root[data-theme="light"] .developer-mcp-illustration {
   color: #141413;
 }
@@ -198,8 +199,9 @@
   background: #fcfcfa;
 }
 
-/* Light status chips and errors: the grey chip of the Customize badges and the
-   light-theme green and red text used elsewhere. */
+/* Light status chips and errors: the grey chip of the Customize badges and
+   the light-theme green and red text used elsewhere (no capture of a
+   connected server's status chip). */
 :root[data-theme="light"] .developer-mcp-state {
   background: #efefed;
   color: #5e5e5c;
@@ -214,9 +216,10 @@
   color: #b9403b;
 }
 
-/* The servers as a list beside the chosen server's details: a bordered box, a
-   192px list with a rule on its right, the detail padded 8px 20px. The chosen
-   row takes the Settings page list's open-page fill. */
+/* The servers as a list beside the chosen server's details (desktop bundle
+   2.31226.1): a bordered box, a 192px list with a rule on its right, the
+   detail padded 8px 20px. The chosen row takes the Settings page list's
+   open-page fill. */
 .developer-mcp-split {
   display: flex;
   min-height: 214px;

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { dialog, shell } from "electron";
+import { dialog, shell, type BrowserWindow } from "electron";
 import { linkOpens } from "../../shared/external-links";
 import type { AppContext } from "../app/app-context";
 import { nativeTranslator } from "../app/native-i18n";
@@ -12,9 +12,14 @@ export class PreviewLinkRouter {
   private ready = new Set<number>();
   private pending = new Map<
     string,
-    { windowId: number; url: string; timer: NodeJS.Timeout }
+    {
+      windowId: number;
+      url: string;
+      timer: NodeJS.Timeout;
+      open(url: string): Promise<void>;
+      settle(opened: boolean): void;
+    }
   >();
-  private generation = 0;
 
   constructor(
     private ctx: AppContext,
@@ -26,79 +31,94 @@ export class PreviewLinkRouter {
     else {
       this.ready.delete(windowId);
       for (const [id, request] of this.pending)
-        if (request.windowId === windowId) {
-          clearTimeout(request.timer);
-          this.pending.delete(id);
-        }
+        if (request.windowId === windowId) this.take(id)?.settle(false);
     }
   }
 
-  async request(url: string) {
-    const window = this.ctx.appWindows.focused() ?? this.ctx.appWindows.main();
-    if (!window || !linkOpens(url, this.ctx.policy())) return;
+  async request(url: string, options?: {
+    window: BrowserWindow;
+    notify(requestId: string, url: string): void;
+    open(url: string): Promise<void>;
+  }) {
+    const window = options?.window ?? this.ctx.appWindows.focused() ?? this.ctx.appWindows.main();
+    if (!window || options?.window.isDestroyed() || !linkOpens(url, this.ctx.policy())) return false;
+    const windowId = window.webContents.id;
     if (
       [...this.pending.values()].some(
-        (request) => request.windowId === window.webContents.id,
+        (request) => request.windowId === windowId,
       )
     )
-      return;
+      return false;
     const requestId = randomUUID();
-    const timer = setTimeout(() => this.pending.delete(requestId), 120_000);
+    const timer = setTimeout(() => this.take(requestId)?.settle(false), 120_000);
     timer.unref?.();
-    this.pending.set(requestId, {
-      windowId: window.webContents.id,
-      url,
-      timer,
+    const completion = new Promise<boolean>((settle) => {
+      this.pending.set(requestId, {
+        windowId, url, timer, settle,
+        open: options?.open ?? ((address) => shell.openExternal(address)),
+      });
     });
-    if (!this.ready.has(window.webContents.id)) {
-      const generation = this.generation;
-      let allow = false;
+    if (!this.ready.has(windowId)) {
       try {
+        let allow = false;
         if (this.confirmNative) allow = await this.confirmNative(url);
         else {
           await new Promise((resolve) => setTimeout(resolve, 500));
-          if (generation !== this.generation || window.isDestroyed()) return;
-          const translate = await nativeTranslator(
-            preference(this.ctx.store.settings, "locale"),
-          );
-          const result = await dialog.showMessageBox(window, {
-            type: "question",
-            message: translate("Open this link in your browser?"),
-            detail: previewLinkLabel(url, false),
-            buttons: [translate("Cancel"), translate("Open")],
-            defaultId: 0,
-            cancelId: 0,
-          });
-          allow = result.response === 1;
+          if (this.pending.has(requestId) && !window.isDestroyed()) {
+            const translate = await nativeTranslator(
+              preference(this.ctx.store.settings, "locale"),
+            );
+            if (this.pending.has(requestId) && !window.isDestroyed()) {
+              const result = await dialog.showMessageBox(window, {
+                type: "question",
+                message: translate("Open this link in your browser?"),
+                detail: previewLinkLabel(url, false),
+                buttons: [translate("Cancel"), translate("Open")],
+                defaultId: 0,
+                cancelId: 0,
+              });
+              allow = result.response === 1;
+            }
+          }
         }
-        if (generation === this.generation)
-          await this.resolve(window.webContents.id, requestId, allow);
+        await this.resolve(windowId, requestId, allow);
       } finally {
-        clearTimeout(timer);
-        this.pending.delete(requestId);
+        this.take(requestId)?.settle(false);
       }
-      return;
-    }
-    this.ctx.appWindows.send(window, {
+    } else if (options) options.notify(requestId, url);
+    else this.ctx.appWindows.send(window, {
       type: "routed-link-confirm",
       requestId,
       url,
     });
+    return completion;
+  }
+
+  private take(requestId: string) {
+    const request = this.pending.get(requestId);
+    if (!request) return;
+    this.pending.delete(requestId);
+    clearTimeout(request.timer);
+    return request;
   }
 
   async resolve(windowId: number, requestId: string, allow: boolean) {
     const request = this.pending.get(requestId);
     if (!request || request.windowId !== windowId) return;
-    this.pending.delete(requestId);
-    clearTimeout(request.timer);
-    if (allow && linkOpens(request.url, this.ctx.policy()))
-      await shell.openExternal(request.url);
+    this.take(requestId);
+    let opened = false;
+    try {
+      if (allow && linkOpens(request.url, this.ctx.policy())) {
+        await request.open(request.url);
+        opened = true;
+      }
+    } finally {
+      request.settle(opened);
+    }
   }
 
   dispose() {
-    this.generation++;
-    for (const request of this.pending.values()) clearTimeout(request.timer);
-    this.pending.clear();
+    for (const id of this.pending.keys()) this.take(id)?.settle(false);
     this.ready.clear();
   }
 }

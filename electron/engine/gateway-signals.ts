@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { GeneratedImageEvent } from "../../server/image-observer";
+import type { GeneratedImageEvent, ImageRequestEvent } from "../../server/image-observer";
 import { recordItemLifecycle } from "../../shared/activity";
 import type { WebSourcesEvent } from "../../shared/gateway-signals";
 import type { ToolDescriptionEvent } from "../../shared/tool-description";
@@ -25,7 +25,7 @@ export interface GatewaySignalHost {
     itemId: string,
     patch: ItemPatch,
   ): Turn | undefined;
-  changed(c: Conversation): void;
+  changed(c: Conversation, durable?: boolean): void;
   gatewaySignal(signal: GatewaySignalEvent, target: GatewaySignalContext): void;
   /** An engine on another computer (SSH) keeps no pictures here. */
   remote(): boolean;
@@ -41,10 +41,8 @@ export interface GatewaySignalHost {
  * on its item, or waits until the turn ends and is placed then.
  */
 export class GatewaySignals {
-  /** Pictures the image tool made in a thread's running turn (captureGeneratedImage). */
-  private generatedImages = new Map<string, Item[]>();
-  /** Where each captured picture was made: the turn's last item then. */
-  private generatedImageAfter = new Map<string, string>();
+  private generatedImages = new WeakMap<Turn, { item: Item; after?: string }[]>();
+  private imageRequests = new Map<string, { threadId: string; turn: Turn }>();
   /**
    * Web searches the gateway reported that Codex has no item for (a model
    * the gateway searches for upstream, Claude's server-side search):
@@ -109,6 +107,7 @@ export class GatewaySignals {
   ) {
     const fields: Partial<Item> = {
       searchTool: event.tool,
+      status: event.status,
       ...(event.sources.length ? { sources: event.sources } : {}),
     };
     if (event.tool === "web_search") {
@@ -117,7 +116,8 @@ export class GatewaySignals {
         types: ["webSearch"],
       });
       // No item yet: Codex may still send one (an OpenAI hosted search), or
-      // never. The turn's end decides.
+      // never (a search the gateway ran upstream, owner 2026-10-02: a Claude
+      // reply that searched showed no search). The turn's end decides.
       if (!found) {
         const list = this.orphanSearches.get(event.threadId) ?? [];
         if (list.length < 50) list.push(event);
@@ -146,23 +146,36 @@ export class GatewaySignals {
     this.host.changed(c);
     return turn;
   }
-  /**
-   * At a turn's end, each web search the gateway reported without a Codex
-   * item becomes a finished search item, placed before the turn's reply.
-   */
-  /**
-   * A picture the image tool made: saved where Codex keeps them
-   * ($CODEX_HOME/generated_images, which the Image card reads), and given an
-   * imageGeneration item at the turn's end unless Codex reported one
-   * (server/image-observer.ts).
-   */
-  generatedImage(event: GeneratedImageEvent) {
-    if (this.host.remote()) return;
-    // A picture from the image endpoint names no thread: the one turn
-    // running in this engine takes it.
+  /** Image API callers without turn metadata use the turn running when the request begins. */
+  imageRequest(event: ImageRequestEvent) {
+    if (event.kind === "finished") {
+      this.imageRequests.delete(event.id);
+      return;
+    }
     const threadId = event.threadId ?? this.host.runningThread();
     if (!threadId) return;
-    if (!this.host.target(threadId).conversation) return;
+    const turn = this.host.target(threadId).conversation?.turns.at(-1);
+    if (turn?.status === "inProgress") this.imageRequests.set(event.id, { threadId, turn });
+  }
+
+  clearImageRequests() {
+    this.imageRequests.clear();
+  }
+
+  /** A saved picture belongs to its original turn even if the turn already completed. */
+  generatedImage(event: GeneratedImageEvent) {
+    if (this.host.remote()) return;
+    const binding = event.requestId ? this.imageRequests.get(event.requestId) : undefined;
+    if (event.requestId && !binding) return;
+    const threadId = binding?.threadId ?? event.threadId ?? this.host.runningThread();
+    if (!threadId) return;
+    const c = this.host.target(threadId).conversation;
+    if (!c) return;
+    const turn = binding?.turn ?? (event.turnId
+      ? c.turns.find((turn) => turn.id === event.turnId)
+      : c.turns.at(-1));
+    if (!turn || (binding && !c.turns.includes(turn))) return;
+    if (!binding && !event.turnId && turn.status !== "inProgress") return;
     const safe = (value: string) =>
       value.replace(/[^\w.-]/g, "_").slice(0, 120);
     try {
@@ -175,33 +188,35 @@ export class GatewaySignals {
       fs.writeFileSync(savedPath, Buffer.from(event.base64, "base64"), {
         mode: 0o600,
       });
-      const list = this.generatedImages.get(threadId) ?? [];
-      const last = this.host
-        .target(threadId)
-        .conversation?.turns.at(-1)
-        ?.items.at(-1);
-      if (last && list.length < 20)
-        this.generatedImageAfter.set(event.callId, last.id);
+      const list = this.generatedImages.get(turn) ?? [];
       if (list.length < 20)
         list.push({
-          id: event.callId,
-          type: "imageGeneration",
-          status: "completed",
-          lifecycleStatus: "completed",
-          savedPath,
-          ...(event.revisedPrompt
-            ? { revisedPrompt: event.revisedPrompt }
-            : {}),
+          item: {
+            id: event.callId,
+            type: "imageGeneration",
+            status: "completed",
+            lifecycleStatus: "completed",
+            gatewayFallback: true,
+            savedPath,
+            ...(event.revisedPrompt ? { revisedPrompt: event.revisedPrompt } : {}),
+          },
+          after: turn.status === "inProgress" ? turn.items.at(-1)?.id : undefined,
         });
-      this.generatedImages.set(threadId, list);
+      this.generatedImages.set(turn, list);
+      if (turn.status !== "inProgress") {
+        const count = turn.items.length;
+        this.settleGeneratedImages(turn);
+        if (turn.items.length !== count) this.host.changed(c, true);
+      }
     } catch {
       /* The picture is lost as before; the reply goes on. */
     }
   }
   /**
-   * The model began writing a file (apply_patch): the change shows in progress
-   * at once, not when the whole file is written. Codex's item has the call's id
-   * and takes its place; one Codex never reports leaves when the turn ends.
+   * The model began writing a file (apply_patch): the change shows in
+   * progress at once, not when the whole file is written (owner,
+   * 2026-10-03). Codex's item has the call's id and takes its place; one
+   * Codex never reports leaves when the turn ends.
    */
   private earlyCalls = new Map<string, Set<string>>();
   toolStart(event: ToolStartEvent) {
@@ -232,11 +247,12 @@ export class GatewaySignals {
       turn.items = turn.items.filter((item) => !early.has(item.id));
   }
   /** The turn ends: pictures Codex did not report join it before the reply. */
-  settleGeneratedImages(threadId: string, turn: Turn) {
-    const list = this.generatedImages.get(threadId);
-    this.generatedImages.delete(threadId);
-    // A picture the reply also hands over as a file (the image script saved it
-    // in the workspace) shows once, as that file.
+  settleGeneratedImages(turn: Turn) {
+    const list = this.generatedImages.get(turn);
+    this.generatedImages.delete(turn);
+    // A picture the reply also hands over as a file (the image script saved
+    // it in the workspace) shows once, as that file (owner, 2026-10-04: the
+    // same pictures showed at the top and again at the end).
     const shared = new Set(
       turn.items.flatMap((value) =>
         (value.generatedFiles ?? []).flatMap((file) =>
@@ -246,9 +262,7 @@ export class GatewaySignals {
     );
     // Pictures made at the same point keep their order.
     const placed = new Set<string>();
-    for (const item of list ?? []) {
-      const after = this.generatedImageAfter.get(item.id);
-      this.generatedImageAfter.delete(item.id);
+    for (const { item, after } of list ?? []) {
       if (turn.items.some((value) => value.id === item.id)) continue;
       if (shared.size && item.savedPath) {
         try {
@@ -300,6 +314,7 @@ export class GatewaySignals {
         ...(event.sources.length ? { sources: event.sources } : {}),
         status: event.status,
         lifecycleStatus: event.status,
+        gatewayFallback: true,
       };
       const reply = turn.items.findIndex(
         (value) => value.type === "agentMessage",

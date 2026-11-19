@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { setImmediate as nextTurn } from "node:timers/promises";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Project } from "../../shared/types";
@@ -18,6 +19,7 @@ import { KnowledgeList } from "../../src/collections/projects/KnowledgeList";
 import { webRemoteRunnerMethods } from "../../shared/web-bridge-methods";
 import { openPolicy } from "../../shared/client-policy";
 import { knowledgeFileMatches } from "../../src/collections/projects/knowledge-tree";
+import { ConnectorClients } from "../../electron/connectors/connector-clients";
 
 const project: Project = {
   id: "p1",
@@ -36,11 +38,11 @@ const source: KnowledgeRepositorySource = {
 };
 const name = "owner/repo/docs/notes.md";
 
-function fixture(context: import("node:test").TestContext) {
+async function fixture(context: import("node:test").TestContext) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-sources-"));
   context.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new ProjectKnowledgeStore(root, () => [project]);
-  store.add(project.id, [{ name, data: Buffer.from("old") }]);
+  await store.add(project.id, [{ name, data: Buffer.from("old") }]);
   store.setSource(project.id, name, source);
   return {
     root,
@@ -84,7 +86,7 @@ const github =
   };
 
 test("GitHub sources persist branch and selection, refresh at the branch head, and keep metadata out of context", async (context) => {
-  const { root, store, content } = fixture(context);
+  const { root, store, content } = await fixture(context);
   assert.deepEqual(
     new ProjectKnowledgeStore(root, () => [project]).list(project.id).files[0]
       .source,
@@ -105,7 +107,7 @@ test("GitHub sources persist branch and selection, refresh at the branch head, a
 });
 
 test("failed sync retains last good bytes, persists failure, and can retry; removed upstream files fail safely", async (context) => {
-  const { root, store, content } = fixture(context);
+  const { root, store, content } = await fixture(context);
   const failed = await syncKnowledgeRepositoryFile(
     store,
     project.id,
@@ -144,7 +146,7 @@ test("failed sync retains last good bytes, persists failure, and can retry; remo
 });
 
 test("sync never resurrects a removed source; replacing it with an upload removes the sync association", async (context) => {
-  const { store } = fixture(context);
+  const { store } = await fixture(context);
   let release!: () => void;
   const waiting = new Promise<void>((resolve) => {
     release = resolve;
@@ -160,11 +162,33 @@ test("sync never resurrects a removed source; replacing it with an upload remove
   store.remove(project.id, name);
   release();
   assert.deepEqual((await pending).files, []);
-  store.add(project.id, [{ name, data: Buffer.from("uploaded") }]);
+  await store.add(project.id, [{ name, data: Buffer.from("uploaded") }]);
   assert.equal(store.list(project.id).files[0].source, undefined);
   await assert.rejects(
     syncKnowledgeRepositoryFile(store, project.id, name, github("other")),
   );
+});
+
+test("removal during a source file write prevents the refresh from resurrecting it", async (context) => {
+  const { store, root } = await fixture(context);
+  const refresh = syncKnowledgeRepositoryFile(
+    store,
+    project.id,
+    name,
+    github("x".repeat(12_000_000)),
+  );
+  let settled = false;
+  const finish = () => { settled = true; };
+  void refresh.then(finish, finish);
+  const temporary = path.join(store.folder(project.id), path.dirname(name), ".notes.md.tmp");
+  while (!settled && !fs.existsSync(temporary)) await nextTurn();
+  assert.equal(settled, false, "the event loop can handle removal while the source write is pending");
+  store.remove(project.id, name);
+  const other = new ProjectKnowledgeStore(root, () => [project]);
+  const replacement = other.add(project.id, [{ name, data: Buffer.from("replacement") }]);
+  assert.deepEqual((await refresh).files, []);
+  assert.equal((await replacement).files[0].source, undefined);
+  assert.equal(fs.readFileSync(path.join(other.folder(project.id), name), "utf8"), "replacement");
 });
 
 test("synced rows show the live idle, syncing and failure copy, not internal storage folders", () => {
@@ -184,12 +208,12 @@ test("synced rows show the live idle, syncing and failure copy, not internal sto
       }),
     );
     assert.match(html, new RegExp(text.replaceAll(".", "\\.")));
-    assert.match(html, /data-icon="Link"/);
+    assert.match(html, /data-anthropicon="Link"/);
     assert.doesNotMatch(html, /Open folder/);
   }
 });
 
-function driveFixture() {
+function driveFixture(root = os.tmpdir()) {
   const calls: { name: string; arguments: Record<string, string> }[] = [];
   let text = "Drive document";
   let failed = false;
@@ -198,7 +222,7 @@ function driveFixture() {
     enabled: true,
   };
   const ctx = {
-    store: { settings: { mcpServers: { "Google Drive": config } } },
+    store: { root, settings: { mcpServers: { "Google Drive": config } } },
     policy: () => ({}),
   } as unknown as Pick<AppContext, "store" | "policy" | "connectors">;
   const file = {
@@ -251,8 +275,8 @@ function driveFixture() {
 }
 
 test("connected Drive search/fetch imports real context, persists the source, syncs and retries", async (context) => {
-  const { store } = fixture(context);
-  const drive = driveFixture();
+  const { store } = await fixture(context);
+  const drive = driveFixture(store.root);
   assert.deepEqual(await drive.drive.connectors(), ["Google Drive"]);
   assert.deepEqual(await drive.drive.search("Google Drive", "roadmap"), [
     drive.file,
@@ -291,8 +315,8 @@ test("connected Drive search/fetch imports real context, persists the source, sy
 });
 
 test("Drive honors disabled connectors, tool allowlists, policy, URL validation and project ownership", async (context) => {
-  const { store } = fixture(context);
-  const drive = driveFixture();
+  const { store } = await fixture(context);
+  const drive = driveFixture(store.root);
   drive.config.enabled = false;
   assert.deepEqual(await drive.drive.connectors(), []);
   await assert.rejects(drive.drive.search("Google Drive", "test"));
@@ -331,17 +355,24 @@ test("source methods are served by the runner for web projects", () => {
   }
 });
 
-test("web Drive calls use the user's guarded connector transport and bearer token", async () => {
-  const fixture = driveFixture();
+test("web Drive calls use the user's guarded connector transport and credentials", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "drive-credentials-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const fixture = driveFixture(root);
+  new ConnectorClients(root).set(
+    "Google Drive",
+    { headers: { "x-tenant-id": "private-tenant" } },
+    "https://drive.example/mcp",
+  );
   const urls: string[] = [];
-  const forwarded: { url: string; method: string; token: string | null }[] = [];
+  const forwarded: { url: string; method: string; headers: Headers }[] = [];
   let denied = false;
   const fetcher: typeof fetch = async (input, init) => {
     const message = JSON.parse(String(init?.body));
     forwarded.push({
       url: String(input),
       method: message.method,
-      token: new Headers(init?.headers).get("authorization"),
+      headers: new Headers(init?.headers),
     });
     if (message.method === "notifications/initialized")
       return new Response(null, { status: 202 });
@@ -399,7 +430,8 @@ test("web Drive calls use the user's guarded connector transport and bearer toke
     forwarded.every(
       (call) =>
         call.url === "https://drive.example/mcp" &&
-        call.token === "Bearer private-token",
+        call.headers.get("authorization") === "Bearer private-token" &&
+        call.headers.get("x-tenant-id") === "private-tenant",
     ),
   );
 });
@@ -433,7 +465,7 @@ test("Drive search and selection match the visible title even when storage names
 });
 
 test("MCP resources: servers with resources are listed, filtered, resolved, added and synced", async (context) => {
-  const { store } = fixture(context);
+  const { store } = await fixture(context);
   let text = "Resource body";
   const reads: string[] = [];
   const configs: Record<string, Record<string, unknown>> = {
@@ -443,7 +475,7 @@ test("MCP resources: servers with resources are listed, filtered, resolved, adde
     Local: { command: "node", enabled: true },
   };
   const ctx = {
-    store: { settings: { mcpServers: configs } },
+    store: { root: store.root, settings: { mcpServers: configs } },
     policy: () => ({}),
   } as unknown as Pick<AppContext, "store" | "policy" | "connectors">;
   const connect: typeof withArtifactConnector = async (config, run) =>

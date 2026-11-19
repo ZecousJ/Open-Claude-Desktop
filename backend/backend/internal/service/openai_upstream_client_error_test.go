@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/Wei-Shaw/sub2api/internal/model"
@@ -43,6 +44,34 @@ func newOpenAIUpstreamErrorResponse(statusCode int, body string) *http.Response 
 
 func newOpenAIUpstreamErrorTestAccount() *Account {
 	return &Account{ID: 1, Platform: PlatformOpenAI, Type: AccountTypeOAuth, Name: "acct"}
+}
+
+func TestHandleErrorResponse_AfterHeartbeatTerminatesResponsesStream(t *testing.T) {
+	c, rec := newOpenAIUpstreamErrorTestContext(t)
+	c.Header("Content-Type", "text/event-stream")
+	_, err := c.Writer.WriteString(": keepalive\n\n")
+	require.NoError(t, err)
+	c.Writer.Flush()
+	svc := &OpenAIGatewayService{cfg: &config.Config{}}
+	_, err = svc.handleErrorResponse(context.Background(), newOpenAIUpstreamErrorResponse(400, openAIInvalidFunctionParametersBody), c, newOpenAIUpstreamErrorTestAccount(), nil)
+	require.Error(t, err)
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Equal(t, "text/event-stream", rec.Result().Header.Get("Content-Type"))
+	require.Equal(t, 1, strings.Count(rec.Body.String(), "event: response.failed\n"))
+	var terminal []byte
+	forEachOpenAISSEFrame(rec.Body.String(), func(eventType string, payload []byte) {
+		if eventType == "response.failed" {
+			terminal = append([]byte(nil), payload...)
+		}
+	})
+	require.Equal(t, "invalid_function_parameters", gjson.GetBytes(terminal, "response.error.code").String())
+	require.Equal(t, "input[8].tools[1].tools[2].parameters", gjson.GetBytes(terminal, "response.error.param").String())
+	require.True(t, gjson.GetBytes(terminal, "sequence_number").Exists())
+	require.Positive(t, gjson.GetBytes(terminal, "response.created_at").Int())
+	failures := GetOpsStreamErrors(c)
+	require.Len(t, failures, 1)
+	require.Equal(t, http.StatusBadRequest, failures[0].IntendedStatus)
+	require.True(t, failures[0].CountTowardsSLA)
 }
 
 type modelNotFoundManagedAccountRepo struct{ AccountRepository }
@@ -354,6 +383,76 @@ func TestWriteOpenAIUpstreamClientError_PayloadShape(t *testing.T) {
 				require.Equal(t, tc.wantParam, gjson.Get(body, "error.param").String())
 			}
 			require.NotContains(t, body, "secret123", "原始 body 里的敏感串不得泄漏")
+		})
+	}
+}
+
+func TestOpenAIResponsesHTTPRejectionOverSSE(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, openAIInvalidFunctionParametersBody)
+	}))
+	defer upstream.Close()
+	router := gin.New()
+	router.POST("/v1/responses", func(c *gin.Context) {
+		c.Header("Content-Type", "text/event-stream")
+		_, _ = c.Writer.WriteString(": keepalive\n\n")
+		c.Writer.Flush()
+		resp, err := http.Get(upstream.URL)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+		defer resp.Body.Close()
+		svc := &OpenAIGatewayService{cfg: &config.Config{}}
+		_, _ = svc.handleErrorResponse(c.Request.Context(), resp, c, newOpenAIUpstreamErrorTestAccount(), nil)
+	})
+	gateway := httptest.NewServer(router)
+	defer gateway.Close()
+	resp, err := gateway.Client().Post(gateway.URL+"/v1/responses", "application/json", strings.NewReader(`{"stream":true}`))
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Equal(t, "text/event-stream", resp.Header.Get("Content-Type"))
+	require.Equal(t, 1, strings.Count(string(body), "event: response.failed\n"))
+	require.NotContains(t, string(body), "\n\n{\"error\"")
+	var terminal []byte
+	forEachOpenAISSEFrame(string(body), func(typ string, data []byte) {
+		require.Equal(t, "response.failed", typ)
+		terminal = append([]byte(nil), data...)
+	})
+	require.Equal(t, "invalid_function_parameters", gjson.GetBytes(terminal, "response.error.code").String())
+}
+
+func TestOpenAIErrorResponsesAfterManagedKeepalive(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		run  func(*gin.Context)
+	}{
+		{"generic", func(c *gin.Context) {
+			writeOpenAIErrorResponse(c, 502, gin.H{"error": gin.H{"type": "upstream_error", "message": "unavailable"}})
+		}},
+		{"passthrough", func(c *gin.Context) { writeOpenAIPassthroughErrorEnvelope(c, 400, nil, "invalid tool result") }},
+		{"policy", func(c *gin.Context) {
+			svc := &OpenAIGatewayService{cfg: &config.Config{}}
+			_, _ = svc.handleErrorResponse(context.Background(), newOpenAIUpstreamErrorResponse(400, `{"error":{"code":"cyber_policy","message":"policy rejected"}}`), c, newOpenAIUpstreamErrorTestAccount(), nil)
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c, rec := newOpenAIUpstreamErrorTestContext(t)
+			stop := startOpenAISSEKeepalive(c, time.Hour)
+			defer stop()
+			value, _ := c.Get(openAICompactSSEKeepaliveKey)
+			require.True(t, value.(*openAICompactSSEKeepalive).beat())
+			tc.run(c)
+			require.Equal(t, http.StatusOK, rec.Code)
+			require.Equal(t, "text/event-stream", rec.Result().Header.Get("Content-Type"))
+			require.Equal(t, 1, strings.Count(rec.Body.String(), "event: response.failed\n"))
+			require.Len(t, GetOpsStreamErrors(c), 1)
+			require.True(t, IsResponseCommitted(c))
 		})
 	}
 }

@@ -18,7 +18,7 @@ export function environmentUsage(conversations: Conversation[]) {
   return used;
 }
 
-/** The picker follows environment usage. */
+/** The picker follows environment usage (live claude.ai bundle, 2026-10-14, cc43287c9). */
 export function orderRecentEnvironments<Row extends { id: string }>(
   rows: Row[],
   conversations: Conversation[],

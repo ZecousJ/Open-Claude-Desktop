@@ -16,12 +16,21 @@ import {
   type McpHandlers,
   type McpTool,
 } from "./mcp-server";
-import { SitePermissions, siteKey } from "./site-permissions";
+import {
+  SitePermissions,
+  siteKey,
+  type SiteDecision,
+} from "./site-permissions";
 import {
   pageTools,
   scriptTool,
   devServerTools,
+  publicBrowserToolsInstructions,
+  publicPageTools,
+  publicPreviewTool,
+  urlPreviewTool,
 } from "./browser-tool-definitions";
+import { navigationAllowed } from "./navigation-guard";
 import { schemas, ToolName, ToolError, ok, failed } from "./browser-tool-args";
 import {
   siteQuestion,
@@ -40,6 +49,16 @@ export const browserMcpServerName = "claudex_browser";
 export const browserMcpTokenEnv = "CLAUDEX_BROWSER_MCP_TOKEN";
 /** The approval form's one field: "once" or "always". */
 export const approvalDecisionField = "decision";
+const publicWebsiteRequired =
+  "Browser tools in SSH sessions can only use public websites.";
+
+function publicAddressAllowed(url: string) {
+  return navigationAllowed(url || "about:blank", {
+    fileRoots: [],
+    blockedDomains: [],
+    publicHostsOnly: true,
+  }).allow;
+}
 
 // ---------------------------------------------------------------------------
 // What the tools use
@@ -68,6 +87,7 @@ export type BrowserDriver = Pick<
 /** The Browser panel calls the tools make (`BrowserHost`, R8-A). */
 export interface BrowserToolsHost {
   state(conversationId: string): BrowserState;
+  agentPageAvailable?(conversationId: string, tabId?: string): boolean;
   navigate(
     conversationId: string,
     input: string,
@@ -79,7 +99,10 @@ export interface BrowserToolsHost {
   back(conversationId: string): void;
   forward(conversationId: string): void;
   reload(conversationId: string): void;
-  setViewport(conversationId: string, viewport: BrowserViewport): Promise<void>;
+  setViewport(
+    conversationId: string,
+    viewport: BrowserViewport,
+  ): Promise<boolean | void>;
   answerDialog(
     conversationId: string,
     tabId: string,
@@ -104,13 +127,15 @@ export interface BrowserToolsService {
 
 export interface BrowserToolsDeps {
   siteRisk?(url: string): Promise<SiteRisk>;
+  previewServers?(conversationId: string): DevServersPort | undefined;
+  publicHostsOnly?(conversationId: string): boolean;
   /** The account's Browser service (created on first use). */
   service(): Promise<BrowserToolsService>;
   permissions: SitePermissions;
   /** The administrator's Browser policy now (defaults filled in). */
   policy(): BrowserPolicy;
   /** Browser tools on in Settings and allowed by the administrator. */
-  toolsAvailable(): boolean;
+  toolsAvailable(conversationId: string): boolean;
   /** "Always allow" may be offered (policy approvalsAlwaysAllow). */
   alwaysAllowOffered(): boolean;
   /** A scheduled task runs the conversation: nobody can approve anything. */
@@ -121,7 +146,10 @@ export interface BrowserToolsDeps {
   folderOf?(conversationId: string): string | undefined;
   /** How long `navigate` waits for a page (30 s). */
   loadTimeoutMs?: number;
-  /** Claude opened a page: the session's window shows its Browser panel. */
+  /**
+   * Claude opened a page: the session's window shows its Browser panel
+   * (live desktop: "If the Browser pane isn't open yet, this opens it").
+   */
   reveal?(conversationId: string): void;
   sleep?(ms: number): Promise<void>;
 }
@@ -153,17 +181,27 @@ export class BrowserTools implements McpHandlers {
 
   constructor(public deps: BrowserToolsDeps) {}
 
-  tools(): McpTool[] {
+  tools(conversationId?: string): McpTool[] {
     const policy = this.deps.policy();
+    const publicOnly =
+      conversationId !== undefined &&
+      this.deps.publicHostsOnly?.(conversationId);
     return [
-      ...pageTools,
+      ...(publicOnly ? publicPageTools : pageTools),
       ...(policy.allowScript === false ? [] : [scriptTool]),
-      ...(policy.devServers === false ? [] : devServerTools),
+      ...(publicOnly
+        ? [publicPreviewTool]
+        : policy.devServers === false
+          ? [urlPreviewTool]
+          : devServerTools),
     ];
   }
 
-  instructions() {
-    return browserToolsInstructions;
+  instructions(conversationId?: string) {
+    return conversationId !== undefined &&
+      this.deps.publicHostsOnly?.(conversationId)
+      ? publicBrowserToolsInstructions
+      : browserToolsInstructions;
   }
 
   async call(
@@ -172,7 +210,7 @@ export class BrowserTools implements McpHandlers {
     call: McpCallContext,
   ): Promise<McpCallResult> {
     const id = call.conversationId;
-    if (!this.deps.toolsAvailable())
+    if (!this.deps.toolsAvailable(id))
       return failed("Browser tools are turned off.");
     if (!this.deps.codeConversation(id))
       return failed("The browser is only in Code sessions on this computer.");
@@ -201,12 +239,34 @@ export class BrowserTools implements McpHandlers {
   // -------------------------------------------------------------------------
   // Pages and sites
 
+  tabAvailable(host: BrowserToolsHost, id: string, tab: BrowserTabState) {
+    return (
+      !this.deps.publicHostsOnly?.(id) ||
+      (publicAddressAllowed(tab.url) &&
+        host.agentPageAvailable?.(id, tab.id) !== false)
+    );
+  }
+
+  assertPageAvailable(host: BrowserToolsHost, id: string, tabId?: string) {
+    if (
+      this.deps.publicHostsOnly?.(id) &&
+      host.agentPageAvailable?.(id, tabId) === false
+    )
+      throw new ToolError(publicWebsiteRequired);
+  }
+
+  private siteDecision(id: string, url: string): SiteDecision {
+    if (this.deps.publicHostsOnly?.(id) && !publicAddressAllowed(url))
+      return { access: "deny", origin: "", message: publicWebsiteRequired };
+    return this.deps.permissions.decide(id, url);
+  }
+
   assertExecution(id: string, call?: McpCallContext) {
     const expected = call && this.routineCalls.get(call);
     const routine = this.deps.permissions.routine(id);
     if (
       (expected && (routine?.taskId !== expected || !routine.active)) ||
-      !this.deps.toolsAvailable() ||
+      !this.deps.toolsAvailable(id) ||
       !this.deps.codeConversation(id) ||
       this.deps.permissions.routine(id)?.active === false
     )
@@ -216,7 +276,7 @@ export class BrowserTools implements McpHandlers {
   }
   assertNavigation(id: string, url: string, call?: McpCallContext) {
     this.assertExecution(id, call);
-    const decision = this.deps.permissions.decide(id, url);
+    const decision = this.siteDecision(id, url);
     if (decision.access === "deny") throw new ToolError(decision.message);
     const once =
       call &&
@@ -231,7 +291,13 @@ export class BrowserTools implements McpHandlers {
       throw new ToolError("Browser approval is required again.");
   }
   knownTab(host: BrowserToolsHost, id: string, tab: string) {
-    if (!host.state(id).tabs.some((value) => value.id === tab))
+    if (
+      !host
+        .state(id)
+        .tabs.some(
+          (value) => value.id === tab && this.tabAvailable(host, id, value),
+        )
+    )
       throw new ToolError(`There's no tab ${tab}. Use tabs_list.`);
   }
 
@@ -241,8 +307,11 @@ export class BrowserTools implements McpHandlers {
     call: McpCallContext,
     tabId?: string,
   ) {
-    if (tabId) this.knownTab(service.host, call.conversationId, tabId);
-    const page = service.host.driver(call.conversationId, tabId);
+    const id = call.conversationId;
+    const host = service.host;
+    if (tabId) this.knownTab(host, id, tabId);
+    this.assertPageAvailable(host, id, tabId);
+    const page = host.driver(id, tabId);
     if (!page.url)
       throw new ToolError("The tab is blank. Open a page with navigate first.");
     if (page.state.error)
@@ -252,28 +321,19 @@ export class BrowserTools implements McpHandlers {
     if (page.state.crashed)
       throw new ToolError("The page crashed. Reload it with navigate.");
     const approvedGrant = await this.ensureSite(call, page.url);
-    // A page in the hidden parking window (panel closed, window in the
-    // background) never has focus, so clicks would not focus fields and
-    // typing would go nowhere; the page is told it has focus.
-    await page.driver
-      .send("Emulation.setFocusEmulationEnabled", { enabled: true })
-      .catch(() => {});
     const check = () => {
-      this.assertExecution(call.conversationId, call);
-      const current = service.host.driver(call.conversationId, page.tabId);
-      const decision = this.deps.permissions.decide(
-        call.conversationId,
-        current.url,
-      );
+      this.assertExecution(id, call);
+      this.assertPageAvailable(host, id, page.tabId);
+      const current = host.driver(id, page.tabId);
+      const decision = this.siteDecision(id, current.url);
       if (
-        !this.deps.toolsAvailable() ||
-        !this.deps.codeConversation(call.conversationId) ||
+        !this.deps.toolsAvailable(id) ||
+        !this.deps.codeConversation(id) ||
         decision.access === "deny" ||
         siteKey(current.url).kind !== siteKey(page.url).kind ||
         new URL(current.url).origin !== new URL(page.url).origin ||
-        (this.deps.permissions.routine(call.conversationId) &&
-          approvedGrant !==
-            this.deps.permissions.routine(call.conversationId)?.revision)
+        (this.deps.permissions.routine(id) &&
+          approvedGrant !== this.deps.permissions.routine(id)?.revision)
       )
         throw new ToolError(
           decision.access === "deny"
@@ -281,6 +341,11 @@ export class BrowserTools implements McpHandlers {
             : "Browser approval is required again.",
         );
     };
+    check();
+    // Clicks and typing need focus even when the panel is parked.
+    await page.driver
+      .send("Emulation.setFocusEmulationEnabled", { enabled: true })
+      .catch(() => {});
     // No re-elicitation after an approval is revoked during a call. Read
     // results are discarded; multi-step actions recheck before each driver call.
     const driver = new Proxy(page.driver, {
@@ -305,7 +370,7 @@ export class BrowserTools implements McpHandlers {
    */
   private async ensureSite(call: McpCallContext, url: string) {
     const id = call.conversationId;
-    const decision = this.deps.permissions.decide(id, url);
+    const decision = this.siteDecision(id, url);
     const risk =
       /^https?:/.test(url) &&
       decision.access !== "deny" &&
@@ -321,9 +386,9 @@ export class BrowserTools implements McpHandlers {
       );
     // Risk checks are asynchronous: a revocation or owner change while they
     // run must take effect before any page action.
-    const current = this.deps.permissions.decide(id, url);
+    const current = this.siteDecision(id, url);
     this.assertExecution(id, call);
-    if (!this.deps.toolsAvailable() || !this.deps.codeConversation(id))
+    if (!this.deps.toolsAvailable(id) || !this.deps.codeConversation(id))
       throw new ToolError(
         "Browser tools are unavailable in this conversation.",
       );
@@ -373,9 +438,9 @@ export class BrowserTools implements McpHandlers {
           if (answer.action !== "accept")
             return `The person didn't allow Claudex to use ${decision.origin}.`;
           if (
-            !this.deps.toolsAvailable() ||
+            !this.deps.toolsAvailable(id) ||
             !this.deps.codeConversation(id) ||
-            this.deps.permissions.decide(id, url).access === "deny"
+            this.siteDecision(id, url).access === "deny"
           )
             return "Browser tools are unavailable in this conversation.";
           const always =
@@ -393,7 +458,7 @@ export class BrowserTools implements McpHandlers {
     const refusal = await pending;
     if (refusal) throw new ToolError(refusal);
     // The site may have been turned off meanwhile (policy).
-    const again = this.deps.permissions.decide(id, url);
+    const again = this.siteDecision(id, url);
     if (again.access === "deny") throw new ToolError(again.message);
     return this.siteChecked(call, url);
   }
@@ -434,31 +499,33 @@ export class BrowserTools implements McpHandlers {
     const host = service.host;
     const word = args.url.trim().toLowerCase();
     if (word === "back" || word === "forward" || word === "reload") {
-      if (this.deps.permissions.routine(id)) {
-        if (word !== "reload")
-          throw new ToolError(
-            "Use an approved website address to navigate this scheduled run.",
-          );
-        const tab = host
-          .state(id)
-          .tabs.find(
-            (value) => value.id === (args.tabId ?? host.state(id).activeTabId),
-          );
-        this.assertNavigation(id, tab?.url ?? "", call);
-      }
       const state = host.state(id);
+      const tab = args.tabId ?? state.activeTabId;
+      const routine = this.deps.permissions.routine(id);
+      if (routine && word !== "reload")
+        throw new ToolError(
+          "Use an approved website address to navigate this scheduled run.",
+        );
+      if (this.deps.publicHostsOnly?.(id) || routine) {
+        this.assertPageAvailable(host, id, tab);
+        this.assertNavigation(
+          id,
+          state.tabs.find((value) => value.id === tab)?.url ?? "",
+          call,
+        );
+      }
       if (args.tabId && args.tabId !== state.activeTabId)
         host.selectTab(id, args.tabId);
       if (word === "back") host.back(id);
       else if (word === "forward") host.forward(id);
       else host.reload(id);
-      const tab = host.state(id).activeTabId!;
-      await this.waitForLoad(host, id, tab);
+      const active = host.state(id).activeTabId!;
+      await this.waitForLoad(host, id, active);
       return ok(
         this.pageSummary(
           host,
           id,
-          tab,
+          active,
           word === "reload" ? "Reloaded" : "Now on",
           call,
         ),
@@ -466,12 +533,19 @@ export class BrowserTools implements McpHandlers {
     }
     if (args.tabId) this.knownTab(host, id, args.tabId);
     const url = await this.addressFor(call, args.url);
-    this.assertExecution(id, call);
     this.assertNavigation(id, url, call);
-    const result = host.navigate(id, url, args.tabId);
-    if (!result.ok) throw new ToolError(result.message);
+    const state = host.state(id);
+    const active = state.tabs.find((value) => value.id === state.activeTabId);
+    let tab: string;
+    if (!args.tabId && active && !this.tabAvailable(host, id, active)) {
+      tab = host.newTab(id, url, true);
+    } else {
+      if (args.tabId) this.knownTab(host, id, args.tabId);
+      const result = host.navigate(id, url, args.tabId);
+      if (!result.ok) throw new ToolError(result.message);
+      tab = args.tabId ?? host.state(id).activeTabId!;
+    }
     this.deps.reveal?.(id);
-    const tab = args.tabId ?? host.state(id).activeTabId!;
     await this.waitForLoad(host, id, tab);
     return ok(this.pageSummary(host, id, tab, "Opened", call));
   }
@@ -509,6 +583,7 @@ export class BrowserTools implements McpHandlers {
   ) {
     const tab = host.state(id).tabs.find((value) => value.id === tabId);
     if (!tab) return `${verb} the page.`;
+    this.assertPageAvailable(host, id, tabId);
     this.assertNavigation(id, tab.url, call);
     if (tab.error)
       return `${tab.error.url || tab.url} couldn't be loaded: ${tab.error.description} (${tabId}).`;
@@ -532,10 +607,18 @@ export class BrowserTools implements McpHandlers {
   // -------------------------------------------------------------------------
   // Dev servers
 
-  devServers(service: BrowserToolsService): DevServersPort {
-    const port = service.devServers();
-    if (!port || this.deps.policy().devServers === false)
+  devServers(
+    service: BrowserToolsService,
+    conversationId: string,
+  ): DevServersPort {
+    if (
+      this.deps.publicHostsOnly?.(conversationId) ||
+      this.deps.policy().devServers === false
+    )
       throw new ToolError("Dev servers aren't available here.");
+    const port =
+      this.deps.previewServers?.(conversationId) ?? service.devServers();
+    if (!port) throw new ToolError("Dev servers aren't available here.");
     return port;
   }
 
@@ -545,7 +628,7 @@ export class BrowserTools implements McpHandlers {
     name: string,
   ): Promise<McpCallResult> {
     const id = call.conversationId;
-    const port = this.devServers(service);
+    const port = this.devServers(service, id);
     if (this.deps.unattended(id))
       throw new ToolError("Dev servers can't be started from scheduled tasks.");
     if (port.needsApproval?.(id, name) && !call.canElicit)

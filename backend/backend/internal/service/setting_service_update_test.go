@@ -739,6 +739,25 @@ func TestSettingService_LoadForwardedClientIPSettingsMigration(t *testing.T) {
 	}
 }
 
+func TestGatewayLoadsAndRefreshesForwardedClientIPSettings(t *testing.T) {
+	repo := &forwardedIPMigrationRepoStub{values: map[string]string{
+		SettingKeyAPIKeyACLTrustForwardedIP: "false",
+	}}
+	cfg := &config.Config{Server: config.ServerConfig{Role: config.ServerRoleModelGateway}}
+	svc := NewSettingService(repo, cfg)
+	require.NoError(t, svc.LoadForwardedClientIPSettings(t.Context()))
+	require.False(t, cfg.TrustForwardedIPForAPIKeyACL())
+	require.Empty(t, repo.updates)
+
+	repo.values[SettingKeyAPIKeyACLTrustForwardedIP] = "true"
+	repo.values[SettingKeyForwardedClientIPHeaders] = `["x-cdn-ip"]`
+	ops := &OpsService{settingRepo: repo, cfg: cfg}
+	require.NoError(t, ops.RefreshRuntimeSettings(t.Context()))
+	require.True(t, cfg.TrustForwardedIPForAPIKeyACL())
+	require.Equal(t, []string{"X-Cdn-Ip"}, cfg.ForwardedClientIPSettings().Headers)
+	require.Empty(t, repo.updates)
+}
+
 func TestSettingService_LoadForwardedClientIPSettingsLoadsHeaders(t *testing.T) {
 	repo := &forwardedIPMigrationRepoStub{values: map[string]string{
 		SettingKeyAPIKeyACLTrustForwardedIP: "true",

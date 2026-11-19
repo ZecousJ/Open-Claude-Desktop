@@ -21,13 +21,15 @@ export function controlPath(runtimeDir: string, hostId: string) {
 /** The options every ssh process of a host gets (before "--"). */
 export function baseSshArgs(
   host: Pick<SshHost, "port" | "identityFile" | "forwardAgent">,
+  login?: "trace" | "opening",
 ): string[] {
   return [
     "-T",
     "-e",
     "none",
     "-o",
-    "BatchMode=no",
+    login === "opening" ? "BatchMode=yes" : "BatchMode=no",
+    ...(login === "opening" ? ["-o", "PreferredAuthentications=publickey"] : []),
     "-o",
     "ConnectTimeout=15",
     "-o",
@@ -37,7 +39,7 @@ export function baseSshArgs(
     "-o",
     "StrictHostKeyChecking=ask",
     "-o",
-    "LogLevel=ERROR",
+    login ? "LogLevel=DEBUG1" : "LogLevel=ERROR",
     "-o",
     `ForwardAgent=${host.forwardAgent ? "yes" : "no"}`,
     "-o",
@@ -85,6 +87,8 @@ export function errorMessage(
       return "OpenSSH isn't installed on this computer.";
     case "auth-failed":
       return `Couldn't sign in to ${label}. Check your SSH key, ssh-agent or password.`;
+    case "auth-key-rejected":
+      return `${label} didn't accept the SSH key offered by this computer.`;
     case "host-key-changed":
       return `The host key for ${label} has changed. If you trust the change, remove the old key from your known_hosts file and try again.`;
     case "host-unreachable":
@@ -109,6 +113,7 @@ export function errorMessage(
 
 export function sshTechnicalDetails(stderr: string) {
   return stripVTControlCharacters(stderr)
+    .replace(/^debug\d+:[^\n]*\n?/gim, "")
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
     .slice(0, 8192)
     .trim();
@@ -174,6 +179,11 @@ export function classifySshError(
   if (local) return local;
   const diagnostic = classifySshDiagnostic(stderr);
   if (diagnostic) return diagnostic;
+  const offer = stderr.lastIndexOf("Offering public key:");
+  if (offer >= 0 && /Permission denied \([^)]+\)/i.test(stderr) &&
+      !/Server accepts key:|Authenticated to |signing failed/i.test(stderr) &&
+      !/Next authentication method: (?!publickey\b)/i.test(stderr.slice(offer)))
+    return "auth-key-rejected";
   if (
     /Permission denied|Too many authentication failures|Authentication failed|Host key verification failed|No more authentication methods/i.test(
       stderr,

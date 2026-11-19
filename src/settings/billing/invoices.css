@@ -1,5 +1,6 @@
-/* Settings → Billing → Invoices: a full-width table, py-2 cells, medium header
-   weight, Load more centred 8px under it; muted statuses for refunded and ended
+/* Settings → Billing → Invoices (live claude.ai bundle, 2026-10-14,
+   cbbbe68ed vc): a full-width table, py-2 cells, medium header weight,
+   Load more centred 8px under it; muted statuses for refunded and ended
    orders; the detail's document frame 70vh tall. */
 .billing-invoices {
   overflow-x: auto;

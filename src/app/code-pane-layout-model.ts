@@ -365,8 +365,10 @@ export type CodeDivider = {
 export function codeNodeMinimum(node: CodeNode, axis: CodeAxis): number {
   const minimum =
     axis === "row" ? codePaneConfig.minWidth : codePaneConfig.minHeight;
-  // The conversation keeps its 320px column by running on under the next card,
-  // so across a row its tile may shrink to the base minimum.
+  // The conversation keeps its 320px column by running on under the next
+  // card, so across a row its tile may shrink to the base minimum (live
+  // claude.ai bundle, 2026-10-21, cf53e1812 O with overflowMinReachable:
+  // minTileBasePx 100; ca67f2c9d anchors the 320px shell).
   if (node.kind === "tile")
     return axis === "row" && node.tileId === "chat"
       ? codePaneConfig.minBase

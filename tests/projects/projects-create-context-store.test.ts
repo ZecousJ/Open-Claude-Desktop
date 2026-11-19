@@ -28,9 +28,9 @@ const file = (name = "notes.txt", text = "hello") => ({
   data: new Uint8Array(Buffer.from(text)),
 });
 
-test("all context is validated in staging and becomes readable only at commit", (t) => {
+test("all context is validated in staging and becomes readable only at commit", async (t) => {
   const { parent, root } = disk(t),
-    prepared = prepareProjectContext(root, project, {
+    prepared = await prepareProjectContext(root, project, {
       files: [file()],
       text: "Unicode 中 context",
     });
@@ -45,18 +45,18 @@ test("all context is validated in staging and becomes readable only at commit", 
       .sort(),
     ["notes.txt", "project-context.txt"],
   );
-  assert.equal(store.read(project.id, "notes.txt").kind, "text");
+  assert.equal((await store.read(project.id, "notes.txt")).kind, "text");
   assert.deepEqual(fs.readdirSync(parent), ["account"]);
   prepared.rollback();
   prepared.rollback();
   assert.equal(fs.existsSync(path.join(root, "projects", project.id)), false);
 });
-test("empty context is a valid isolated transaction and rollback before commit leaves nothing published", (t) => {
+test("empty context is a valid isolated transaction and rollback before commit leaves nothing published", async (t) => {
   const { parent, root } = disk(t);
-  const first = prepareProjectContext(root, project, { files: [] });
+  const first = await prepareProjectContext(root, project, { files: [] });
   first.rollback();
   assert.deepEqual(fs.readdirSync(parent), ["account"]);
-  const second = prepareProjectContext(root, project, {
+  const second = await prepareProjectContext(root, project, {
     files: [],
     text: "   ",
   });
@@ -68,7 +68,7 @@ test("empty context is a valid isolated transaction and rollback before commit l
   );
   second.rollback();
 });
-test("invalid UTF8, unsupported files, collisions, traversal, file count and size failures publish nothing", (t) => {
+test("invalid UTF8, unsupported files, collisions, traversal, file count and size failures publish nothing", async (t) => {
   const { parent, root } = disk(t);
   const invalid = [
     { files: [{ name: "bad.txt", data: new Uint8Array([0xff]) }] },
@@ -85,11 +85,11 @@ test("invalid UTF8, unsupported files, collisions, traversal, file count and siz
     },
   ];
   for (const input of invalid) {
-    assert.throws(() => prepareProjectContext(root, project, input));
+    await assert.rejects(() => prepareProjectContext(root, project, input));
     assert.equal(fs.existsSync(path.join(root, "projects", project.id)), false);
     assert.deepEqual(fs.readdirSync(parent), ["account"]);
   }
-  assert.throws(() =>
+  await assert.rejects(() =>
     prepareProjectContext(
       root,
       { ...project, id: "../escape" },
@@ -97,14 +97,14 @@ test("invalid UTF8, unsupported files, collisions, traversal, file count and siz
     ),
   );
 });
-test("existing context and symlink destinations are never replaced", (t) => {
+test("existing context and symlink destinations are never replaced", async (t) => {
   const { root, parent } = disk(t),
     external = path.join(parent, "external");
   fs.mkdirSync(external);
   fs.writeFileSync(path.join(external, "kept.txt"), "keep");
   fs.mkdirSync(path.join(root, "projects"));
   fs.symlinkSync(external, path.join(root, "projects", project.id), "dir");
-  const prepared = prepareProjectContext(root, project, { files: [file()] });
+  const prepared = await prepareProjectContext(root, project, { files: [file()] });
   assert.throws(() => prepared.commit(), /already exists/);
   prepared.rollback();
   assert.equal(
@@ -113,21 +113,21 @@ test("existing context and symlink destinations are never replaced", (t) => {
   );
   fs.unlinkSync(path.join(root, "projects", project.id));
   fs.mkdirSync(path.join(root, "projects", project.id));
-  assert.throws(
-    () => prepareProjectContext(root, project, { files: [] }).commit(),
+  await assert.rejects(
+    async () => (await prepareProjectContext(root, project, { files: [] })).commit(),
     /already exists/,
   );
   fs.rmdirSync(path.join(root, "projects", project.id));
   fs.rmdirSync(path.join(root, "projects"));
   fs.symlinkSync(external, path.join(root, "projects"), "dir");
-  const link = prepareProjectContext(root, project, { files: [file()] });
+  const link = await prepareProjectContext(root, project, { files: [file()] });
   assert.throws(() => link.commit());
   link.rollback();
   assert.deepEqual(fs.readdirSync(external), ["kept.txt"]);
 });
-test("rollback preserves foreign files and replaced destinations", (t) => {
+test("rollback preserves foreign files and replaced destinations", async (t) => {
   const { root } = disk(t),
-    prepared = prepareProjectContext(root, project, { files: [file()] });
+    prepared = await prepareProjectContext(root, project, { files: [file()] });
   prepared.commit();
   const target = path.join(root, "projects", project.id),
     knowledge = path.join(target, "knowledge");
@@ -139,7 +139,7 @@ test("rollback preserves foreign files and replaced destinations", (t) => {
   );
   assert.equal(fs.existsSync(path.join(knowledge, "notes.txt")), false);
   const other = { ...project, id: "replacement" };
-  const replaced = prepareProjectContext(root, other, { files: [file()] });
+  const replaced = await prepareProjectContext(root, other, { files: [file()] });
   replaced.commit();
   const old = path.join(root, "projects", other.id);
   fs.renameSync(old, old + "-moved");
@@ -149,9 +149,9 @@ test("rollback preserves foreign files and replaced destinations", (t) => {
   assert.equal(fs.readFileSync(path.join(old, "new.txt"), "utf8"), "new owner");
 });
 
-test("rollback never follows a replaced knowledge parent symlink", (t) => {
+test("rollback never follows a replaced knowledge parent symlink", async (t) => {
   const { root, parent } = disk(t);
-  const prepared = prepareProjectContext(root, project, { files: [file()] });
+  const prepared = await prepareProjectContext(root, project, { files: [file()] });
   prepared.commit();
   const knowledge = path.join(root, "projects", project.id, "knowledge");
   const moved = path.join(parent, "moved-knowledge");
@@ -161,13 +161,13 @@ test("rollback never follows a replaced knowledge parent symlink", (t) => {
   assert.equal(fs.readFileSync(path.join(moved, "notes.txt"), "utf8"), "hello");
 });
 
-test("a whole-batch total quota failure cleans staging and publishes no valid partial files", (t) => {
+test("a whole-batch total quota failure cleans staging and publishes no valid partial files", async (t) => {
   const { root, parent } = disk(t);
-  const bytes = new Uint8Array(knowledgeFileLimit);
-  assert.throws(
+  const bytes = new Uint8Array(knowledgeFileLimit).fill(97);
+  await assert.rejects(
     () =>
       prepareProjectContext(root, project, {
-        files: Array.from({ length: 11 }, (_, index) => ({
+        files: Array.from({ length: 4 }, (_, index) => ({
           name: `${index}.txt`,
           data: bytes,
         })),
@@ -178,9 +178,9 @@ test("a whole-batch total quota failure cleans staging and publishes no valid pa
   assert.deepEqual(fs.readdirSync(parent), ["account"]);
 });
 
-test("rollback preserves an owned path whose contents were subsequently edited", (t) => {
+test("rollback preserves an owned path whose contents were subsequently edited", async (t) => {
   const { root } = disk(t);
-  const prepared = prepareProjectContext(root, project, { files: [file()] });
+  const prepared = await prepareProjectContext(root, project, { files: [file()] });
   prepared.commit();
   const target = path.join(
     root,

@@ -10,8 +10,6 @@ from provider_imagegen.validation import (
     validate_count,
     validate_edit_files,
     validate_input_fidelity,
-    validate_model_background,
-    validate_model_input_fidelity,
     validate_moderation,
     validate_output_format,
     validate_quality,
@@ -23,7 +21,6 @@ from provider_imagegen.validation import (
 def normalized_common_options(args: Namespace) -> dict:
     output_format = validate_output_format(args.output_format)
     background = validate_background(args.background)
-    background = validate_model_background(args.model, background)
     validate_transparency(background, output_format)
     return {
         "model": args.model,
@@ -57,8 +54,7 @@ def build_edit_parts(args: Namespace, prompt: str) -> tuple[list[tuple[str, str]
 def common_fields(args: Namespace, prompt: str) -> list[tuple[str, str]]:
     options = normalized_common_options(args)
     options["prompt"] = prompt
-    input_fidelity = validate_input_fidelity(args.input_fidelity)
-    options["input_fidelity"] = validate_model_input_fidelity(args.model, input_fidelity)
+    options["input_fidelity"] = validate_input_fidelity(args.input_fidelity)
     normalized = remove_empty_values(options)
     return [(key, str(value)) for key, value in normalized.items()]
 

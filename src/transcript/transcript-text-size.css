@@ -1,13 +1,13 @@
 /*
- * Settings → Claude Code → Appearance → Transcript text size
- * (src/transcript-text-size.ts). The document carries the choice as
- * data-chat-text-size; a Code prompt, a reply and the queued messages carry
- * data-text-size ("sm", "lg", none for Medium). Medium keeps the sizes Code
- * was measured at (14px on 20px lines).
+ * Settings → Claude Code → Appearance → Transcript text size (live
+ * claude.ai bundle, 2026-10-12; src/transcript-text-size.ts). The document
+ * carries the choice as data-chat-text-size; a Code prompt, a reply and the
+ * queued messages carry data-text-size ("sm", "lg", none for Medium).
+ * Medium keeps the sizes Code was measured at (14px on 20px lines).
  *
  * --transcript-text/--transcript-line: the transcript's own rows (tool rows,
  *   questions, file paths): 13, 14 or 15px on 1.42857, 1.42857 or 1.46667
- *   lines.
+ *   lines (the bundle's --chat-body and --chat-leading).
  * --message-text/--message-line: a prompt's and a reply's text, and the
  *   queued messages: 13/19 for Small, 15/22 for Large (the messages'
  *   body and prose sizes at the density Code is drawn in).
@@ -66,12 +66,12 @@
 }
 
 /*
- * Chat and Cowork follow the same choice: the message rules key off
- * data-text-size wherever a prompt or reply sits, and Cowork sessions render
- * in the same transcript as Code. Their messages are drawn at the comfortable
- * density, so Small and Large take that density's message sizes, and Medium
- * keeps the measured ones:
- *   reply    Medium 15/22 (Chat), 17/24 (Cowork);
+ * Chat and Cowork follow the same choice (live claude.ai bundle, 2026-10-12:
+ * the message rules key off data-text-size wherever a prompt or reply sits,
+ * and Cowork sessions render in the same transcript as Code). Their
+ * messages are drawn at the comfortable density, so Small and Large take
+ * that density's message sizes, and Medium keeps the measured ones:
+ *   reply    Medium 15/22 (Chat, live 2026-10-16), 17/24 (Cowork);
  *            Small 15/22; Large 18/27
  *            (the prose size and leading at sm and lg);
  *   prompt   Chat's bubble Medium 15/20; Small 14/20; Large 16/24 (the
@@ -114,7 +114,8 @@
   font-size: var(--message-text);
   line-height: var(--message-line);
 }
-/* Prose heading scale. */
+/* Prose heading scale (live claude.ai bundle, 2026-10-14,
+   c6a992d55-D8h3Fpj5.css). */
 .mode-chat .assistant-message[data-text-size] .markdown h1 {
   font-size: 1.75em;
   line-height: 1.25;

@@ -1,0 +1,25 @@
+[Unit]
+Description=Claudex model gateway
+After=network-online.target postgresql.service redis-server.service
+Requires=postgresql.service redis-server.service
+
+[Service]
+User=claudex
+Group=claudex
+WorkingDirectory=/opt/claudex
+EnvironmentFile=/etc/claudex/claudex.env
+EnvironmentFile=/etc/claudex/model-gateway.env
+ExecStart=/opt/claudex/sub2api-model-gateway
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=150
+MemoryMax=450M
+LimitNOFILE=100000
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/claudex/data/model-gateway
+
+[Install]
+WantedBy=multi-user.target

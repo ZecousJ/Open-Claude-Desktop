@@ -1,13 +1,13 @@
 import { parseUnifiedDiff, type DiffFile } from "./diff-model";
 
 /*
- * A line diff of two texts, for comparing two versions of a file (the version
- * switcher's "Compare with current"). The edits are found with Myers' algorithm
- * and written as a unified diff that the shared parser (diff-model.ts) turns
- * into numbered hunks, so the rows, the word emphasis and the counts are the
- * Changes panel's own. Like the original's compare, it gives up on texts that
- * differ too much ("Too large to compare"): more than 1000 changed lines or
- * about 250ms.
+ * A line diff of two texts, for comparing two versions of a file (the
+ * version switcher's "Compare with current"). The edits are found with
+ * Myers' algorithm and written as a unified diff that the shared parser
+ * (diff-model.ts) turns into numbered hunks, so the rows, the word emphasis
+ * and the counts are the Changes panel's own. Like the original's compare
+ * (desktop bundle 2.31226.1), it gives up on texts that differ too much
+ * ("Too large to compare"): more than 1000 changed lines or about 250ms.
  */
 
 /** The original's limit on changed lines before a compare is refused. */

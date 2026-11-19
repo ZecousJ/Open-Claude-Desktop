@@ -25,7 +25,7 @@ import {
   type ClientPolicy,
 } from "../../shared/client-policy";
 import type { AppEvent } from "../../shared/types";
-import { servicePolicyWire } from "../../scripts/preview/fixtures/policy-data";
+import { servicePolicyWire } from "../../scripts/fidelity/fixtures/policy-data";
 import {
   MockSub2Api,
   fakeCipher,
@@ -359,7 +359,7 @@ test("offline: the cached policy, else only MCP editing held back; Bypass is alw
   }
 });
 
-test("offline: computer use waits for the service even when the cache allowed it", async () => {
+test("offline policy preserves Computer Use action limits", async () => {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-cu-"));
   try {
     const unreachable = async () => {
@@ -376,13 +376,13 @@ test("offline: computer use waits for the service even when the cache allowed it
         max_actions_per_turn: 50,
       },
     };
-    // Nothing cached: the offline policy never offers computer use.
+    // Without a cache, the app controls availability and full control is limited.
     const fresh = new ServerPolicySource({
       load: unreachable,
       cache: new PolicyCache(profile),
       settings,
     });
-    assert.equal(fresh.current().computerUse?.enabled, false);
+    assert.equal(fresh.current().computerUse?.allowFullControl, false);
     assert.equal(fresh.current().sshRemote, true, "SSH stays usable offline");
     assert.equal(fresh.current().codexRuntimeMirror, null);
 
@@ -392,7 +392,7 @@ test("offline: computer use waits for the service even when the cache allowed it
       settings,
     }).accept(allowed);
 
-    // Restarted offline: the cached policy applies, computer use waits.
+    // Restarted offline: the cached limits still apply.
     let answer: unknown;
     const restarted = new ServerPolicySource({
       load: async () => {
@@ -407,21 +407,17 @@ test("offline: computer use waits for the service even when the cache allowed it
       cache: new PolicyCache(profile),
       settings,
     });
-    assert.deepEqual(restarted.current().computerUse, {
-      enabled: false,
-      allowFullControl: false,
-      deniedApps: ["com.apple.Terminal"],
-      maxActionsPerTurn: 50,
-    });
+    const freshLimits = { allowFullControl: false, deniedApps: ["com.apple.Terminal"], maxActionsPerTurn: 50 };
+    assert.deepEqual(restarted.current().computerUse, freshLimits);
     assert.equal(
       restarted.current().sshRemote,
       false,
       "the rest applies as kept",
     );
-    // The service answers: computer use is back.
+    // Refreshing leaves those same limits in place.
     answer = allowed;
     await restarted.refresh(true);
-    assert.equal(restarted.current().computerUse?.enabled, true);
+    assert.deepEqual(restarted.current().computerUse, freshLimits);
   } finally {
     fs.rmSync(profile, { recursive: true, force: true });
   }

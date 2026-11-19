@@ -31,6 +31,7 @@ type Phase =
   | "unavailable"
   | "no_email";
 
+// (live claude.ai bundle, 2026-10-14, cc408eae6-CNTekrOx.js)
 export function ActionVerificationDialog() {
   useT();
   const active = useSyncExternalStore(
@@ -58,7 +59,7 @@ export function ActionVerificationDialog() {
   }, [expiresAt, now, phase]);
   if (!active) return null;
   // The minutes the code has left, rounded up (live bundle, 2026-10-16,
-  // Math.max(1, Math.ceil((expiresAt - now) / 6e4))).
+  // cc408eae6: Math.max(1, Math.ceil((expiresAt - now) / 6e4))).
   const minutesLeft = Math.max(1, Math.ceil((expiresAt - now) / 60_000));
   const seconds = Math.max(0, Math.ceil((resendAt - now) / 1000));
   const close = () => actionVerificationStore.close();

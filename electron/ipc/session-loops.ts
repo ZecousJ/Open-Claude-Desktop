@@ -10,7 +10,7 @@ const input = z.object({
   recurring: z.boolean().optional(),
 });
 
-// CronCreate/CronDelete/CronList session ownership.
+// CronCreate/CronDelete/CronList session ownership (desktop 2.37337.1, index.chunk-BWk6pVUt.js).
 export function registerSessionLoopHandlers(
   handle: IpcHandle,
   ctx: AppContext,

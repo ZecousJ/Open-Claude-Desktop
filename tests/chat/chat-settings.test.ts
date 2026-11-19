@@ -246,7 +246,7 @@ test("General font picker retains the four official choices, previews each face 
     ];
     assert.deepEqual(
       options.map((option) => option.querySelector("span")?.textContent),
-      ["Serif", "Sans", "System", "OpenDyslexic"],
+      ["Claudex Serif", "Claudex Sans", "System", "OpenDyslexic"],
     );
     assert.equal(options[0].getAttribute("aria-selected"), "true");
     assert.ok(options.every((option) => !option.hasAttribute("aria-disabled")));
@@ -261,7 +261,7 @@ test("General font picker retains the four official choices, previews each face 
     assert.equal(env.document.querySelector('[role="listbox"]'), null);
     assert.equal(
       env.document.querySelector('[aria-label="Chat font"]')?.textContent,
-      "Sans",
+      "Claudex Sans",
     );
     assert.equal(env.style('[aria-label="Chat font"]').height, "32px");
     assert.equal(

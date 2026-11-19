@@ -17,7 +17,8 @@ const attachment = (name = "notes.txt"): Attachment => ({
   size: 1,
 });
 
-// Compact files and circular actions.
+// Compact files and circular actions (live claude.ai bundle, 2026-10-14,
+// c04e7453f-Cg2yRCdu.js: E, se, I and L).
 test("mini attachments show compact names, previews, uploading and removable errors", () => {
   const html = renderToStaticMarkup(
     createElement(MiniComposerAttachments, {
@@ -86,7 +87,7 @@ test("a draft's action is the brand ArrowUp Start task button, busy while it sta
   const ready = render({});
   assert.match(ready, /class="send-button"/);
   assert.match(ready, /aria-label="Start task"/);
-  assert.match(ready, /data-icon="ArrowUp"/);
+  assert.match(ready, /data-anthropicon="ArrowUp"/);
   assert.doesNotMatch(ready, /Send message|width:32px/);
   assert.match(render({ hasContent: false }), /disabled=""/);
   const busy = render({ busy: true, disabled: true });

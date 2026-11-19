@@ -20,9 +20,10 @@
   height: 32px;
   border-radius: 7px;
 }
-/* Hovering either segment gives the whole group the ghost fill, 200ms like the
-   segments' own faces. The Code footer's group draws none
-   (code-composer-footer.css). */
+/* Hovering either segment gives the whole group the ghost fill (the
+   capture's #2f2f2f; the original's dictation group, desktop bundle
+   2.31226.1 static CSS/JS), 200ms like the segments' own faces. The Code
+   footer's group draws none (code-composer-footer.css). */
 .cowork-voice-controls {
   transition: background-color var(--motion-base) var(--ease-standard);
 }

@@ -5,7 +5,7 @@ import { t, useT } from "../../i18n";
 import { Modal } from "../../ui/Controls";
 import { KnowledgeList } from "./KnowledgeList";
 
-// GitHub project's picker copy.
+// GitHub project's picker copy (live claude.ai bundle, 2026-10-14, c23f22bfb-Bq6uLUoL.js).
 export function KnowledgeGitHubDialog({
   projectId,
   repositories,

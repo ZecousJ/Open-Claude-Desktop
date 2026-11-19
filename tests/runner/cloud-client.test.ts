@@ -22,7 +22,7 @@ interface Sent {
   body: string;
 }
 
-function setup(route: (sent: Sent) => Response) {
+function setup(route: (sent: Sent) => Response | Promise<Response>) {
   const clock = new FakeClock();
   const sent: Sent[] = [];
   const sockets: FakeSocket[] = [];
@@ -120,9 +120,9 @@ test("the snapshot keeps the event number Go answered", async () => {
   assert.equal(eventSeq, 41);
 });
 
-test("the event stream takes a ticket with the web headers, says hello and delivers events", async () => {
+test("the native event stream takes a bearer ticket, says hello and delivers events", async () => {
   const t = setup((sent) =>
-    sent.url.endsWith("/auth/events-ticket")
+    sent.url.endsWith("/mobile/events-ticket")
       ? json({
           code: 0,
           data: {
@@ -137,9 +137,8 @@ test("the event stream takes a ticket with the web headers, says hello and deliv
   t.client.start();
   await flush();
   const ticket = t.sent[0];
-  assert.equal(ticket.url, `${origin}${webPaths.auth}events-ticket`);
-  assert.equal(ticket.headers.get("X-Claudex-Web"), "1");
-  assert.equal(ticket.headers.get("Origin"), origin);
+  assert.equal(ticket.url, `${origin}/api/v1/claudex/mobile/events-ticket`);
+  assert.equal(ticket.headers.get("X-Claudex-Web-Tab"), "tab-desktop-1");
   assert.equal(ticket.headers.get("Authorization"), "Bearer at-1");
   assert.deepEqual(JSON.parse(ticket.body), { tabId: "tab-desktop-1" });
 
@@ -178,4 +177,66 @@ test("a signed-out close ends the cloud session and stops the stream", async () 
   socket.drop(4008);
   assert.deepEqual(t.signedOut, ["revoked"]);
   assert.equal(t.client.connected, false);
+});
+
+
+test("concurrent snapshots share a read, but later snapshots always reach the service", async () => {
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let reads = 0;
+  const t = setup(async () => {
+    reads++;
+    await held;
+    return json({ ok: true, value: { conversations: [{ id: "c", title: "fresh" }] } });
+  });
+  const a = t.client.snapshot(), b = t.client.snapshot();
+  await flush();
+  release();
+  const [first, second] = await Promise.all([a, b]);
+  assert.equal(reads, 1);
+  first.snapshot.conversations[0].title = "local edit";
+  assert.equal(second.snapshot.conversations[0].title, "fresh");
+  await t.client.snapshot();
+  assert.equal(reads, 2);
+});
+
+test("a snapshot after a write does not join a read started before that write", async () => {
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let reads = 0;
+  const t = setup(async request => {
+    if (!request.url.endsWith("/snapshot")) return json({ ok: true, value: null });
+    const number = ++reads;
+    if (number === 1) await held;
+    return json({ ok: true, value: { conversations: [], revision: number } });
+  });
+  const first = t.client.snapshot();
+  await flush();
+  await t.client.call("updateConversation", ["c", { title: "updated" }]);
+  const second = await t.client.snapshot();
+  assert.equal((second.snapshot as any).revision, 2);
+  release();await first;
+});
+
+
+test("a pushed update ends snapshot sharing before listeners request current state", async () => {
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let reads = 0;
+  const t = setup(async request => {
+    if (request.url.endsWith("/mobile/events-ticket")) return json({ code: 0, data: {
+      ticket: "q3Zb8m1Yc0Xh2Kp9Lr4Tn6Vw7Sd5Fg0Jk1Hl2Mz3Nx_", expires_in: 30,
+    } });
+    const number = ++reads;
+    if (number === 1) await held;
+    return json({ ok: true, value: { conversations: [], revision: number } });
+  });
+  t.client.start();await flush();
+  const socket = t.sockets[0];socket.open();
+  socket.receive({ t: "ready", v: 1, seq: 0, resumed: false });
+  const first = t.client.snapshot();await flush();
+  socket.receive({ t: "event", seq: 1, event: { type: "settings", settings: {} } });
+  const next = await t.client.snapshot();
+  assert.equal((next.snapshot as any).revision, 2);
+  release();await first;t.client.stop();
 });

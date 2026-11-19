@@ -134,7 +134,7 @@ test("a stale link offers Update link", () => {
   assert.match(html, />Update link</);
 });
 
-test("while shared the Usage Policy note gives way to the link", () => {
+test("while shared the Usage Policy note gives way to the link (live claude.ai)", () => {
   assert.match(view({}), /Usage Policy/);
   assert.doesNotMatch(view({ share }), /Usage Policy|third-party content/);
   // Private stops the link at once: no confirmation step.
@@ -200,7 +200,7 @@ test("Chat's Copy link works before anything is shared, unless sharing is off", 
     await import("../../src/conversation/ChatSharePopover");
   // Still reading the share: wait.
   assert.equal(copyAllowed(undefined, true), false);
-  // Nothing shared: Copy link makes an invited-only link.
+  // Nothing shared: Copy link makes an invited-only link (live claude.ai).
   assert.equal(copyAllowed(null, true), true);
   assert.equal(copyAllowed(null, false), false);
   // A live link copies; one taken down by the administrator does not.

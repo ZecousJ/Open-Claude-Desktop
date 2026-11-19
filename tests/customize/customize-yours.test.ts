@@ -7,6 +7,8 @@ import { HostContext } from "../../src/host/HostContext";
 import { hostFor, type HostSurface } from "../../shared/host";
 import { defaultSettings } from "../../electron/store/store";
 import type { CustomizeSkill } from "../../shared/collections-api";
+import paperAirplane from "../../src/ui/pictograms/ObjectPaperAirplane";
+import puzzle from "../../src/ui/pictograms/ObjectPuzzle";
 import { setLocale } from "../../src/i18n";
 import { startDomTranslation } from "../../src/i18n/dom";
 
@@ -18,6 +20,17 @@ const bundled = (name: string, editedAt: number): CustomizeSkill => ({
   enabled: true,
   own: false,
   editedAt,
+});
+
+test("Yours pictograms preserve the observed source paths and paper-plane clipping", () => {
+  assert.equal(paperAirplane.highlight.length, 1);
+  assert.equal(paperAirplane.line.length, 1);
+  assert.equal(paperAirplane.clip, "M41 41h417.47v417.45H41z");
+  assert.equal(paperAirplane.line[0].fillRule, "evenodd");
+  assert.match(paperAirplane.highlight[0], /^m248\.78 342\.979/);
+  assert.equal(puzzle.highlight.length, 1);
+  assert.equal(puzzle.line.length, 2);
+  assert.match(puzzle.highlight[0], /^m74\.734 450\.204/);
 });
 
 async function renderYours(
@@ -141,7 +154,7 @@ test("Yours keeps the current view segment and gives empty cards and rows explic
       assert.ok(document.querySelector('button[aria-label="View zeta"]'));
       assert.equal(
         document.querySelectorAll(
-          '.customize-yours .customize-row-tile [data-icon="Scroll"]',
+          '.customize-yours .customize-row-tile [data-anthropicon="Scroll"]',
         ).length,
         2,
       );

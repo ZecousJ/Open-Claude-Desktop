@@ -8,8 +8,8 @@ import { attachmentKind, type ClientPolicy } from "../../shared/client-policy";
 import { attachmentRefusal } from "../../shared/client-policy-rules";
 
 /**
- * Files behind the composer: pasted or dropped attachments kept in the
- * account's folder, image thumbnails, and the `@` file list.
+ * Files behind the composer (package WP4a): pasted or dropped attachments
+ * kept in the account's folder, image thumbnails, and the `@` file list.
  */
 
 /** Folders `@` never walks into: dependencies, build output, VCS data. */

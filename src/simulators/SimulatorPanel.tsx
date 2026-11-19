@@ -132,12 +132,13 @@ export const message = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
 /**
- * The iOS Simulator and Android Emulator panes: the setup steps while Xcode or
- * the Android SDK isn't ready, then "Attach a simulator" with the devices that
- * are booted or would boot, the one-time "Let Claudex use this simulator?" and
- * the device itself. Claudex draws the device as a picture of its screen taken
- * about three times a second (not the original's live stream) and sends clicks,
- * drags and keys to it.
+ * The iOS Simulator and Android Emulator panes (desktop bundle 2.31226.1):
+ * the setup steps while Xcode or the Android SDK isn't ready, then
+ * "Attach a simulator" with the devices that are booted or would boot, the
+ * one-time "Let Claudex use this simulator?" and the device itself. Claudex
+ * draws the device as a picture of its screen taken about three times a
+ * second (not the original's live stream) and sends clicks, drags and keys
+ * to it.
  */
 export function SimulatorPanel({
   kind,
@@ -172,7 +173,8 @@ export function SimulatorPanel({
   const [screen, setScreen] = useState<SimulatorScreen | null>(null);
   const [problem, setProblem] = useState<string>();
   const [annotating, setAnnotating] = useState<SimulatorAnnotateCapture>();
-  // The attached simulator was shut down.
+  // The attached simulator was shut down (live claude.ai bundle, 2026-10-12:
+  // "This simulator was shut down. Attach it again to start it."; iOS only).
   const [wasShutDown, setWasShutDown] = useState(false);
   const label = simulatorKindLabel[kind];
   const noun = simulatorNoun[kind];

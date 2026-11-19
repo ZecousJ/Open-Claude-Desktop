@@ -2,12 +2,17 @@ import type { Item } from "../../shared/types";
 import { sanitizeDescription } from "../../shared/tool-description";
 
 /**
- * How a command row words the model's own description (R7). The model writes an
- * imperative sentence ("List repository files"); Chat shows it as is while the
- * command runs and a Code row in the present progressive, in the past tense
- * once it has finished, and as "Failed to …" when it failed. Only the first
- * word changes, and only when it is a known command verb: anything else keeps
- * the model's wording rather than guessing.
+ * How a command row words the model's own description (R7). The model writes
+ * an imperative sentence ("List repository files"); Chat shows it as is
+ * while the command runs (R-0734, R-0787) and a Code row in the present
+ * progressive ("Listing repository files", live claude.ai bundle,
+ * 2026-10-16, c52b02f3f L), in the past tense once it has
+ * finished ("Listed repository files", "Showed uncommitted changes",
+ * "Checked greet against README", R-0786), and as "Failed to …" when it
+ * failed ("Failed to run a shell that exits with code 7",
+ * R-Code-失败命令-完成折叠). Only the first word changes, and only when it is
+ * a known command verb: anything else keeps the model's wording rather than
+ * guessing.
  */
 export type CommandState = "running" | "completed" | "failed" | "interrupted";
 
@@ -97,7 +102,7 @@ const regular = new Set(
   ).split(" "),
 );
 
-/** Present participles that the -ing rules below get wrong. */
+/** Present participles that the -ing rules below get wrong (c52b02f3f A, plus Claudex's own verbs). */
 const progressiveIrregular: Record<string, string> = {
   admit: "admitting",
   begin: "beginning",
@@ -114,7 +119,7 @@ const progressiveIrregular: Record<string, string> = {
   unzip: "unzipping",
 };
 
-/** The -ing form of a lower-case verb. */
+/** The -ing form of a lower-case verb (c52b02f3f M). */
 function progressive(verb: string) {
   if (Object.hasOwn(progressiveIrregular, verb))
     return progressiveIrregular[verb];

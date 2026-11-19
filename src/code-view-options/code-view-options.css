@@ -1,4 +1,4 @@
-/* View options draws its rows' glyphs on every surface. */
+/* View options draws its rows' glyphs on every surface (R-0643: 16px glyphs). */
 .menu.code-view-options .menu-icon {
   display: grid;
   width: 16px;

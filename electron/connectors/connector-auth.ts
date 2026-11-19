@@ -9,21 +9,48 @@ import { ConnectorTokens, connectorFetch } from "../../runner/src/connectors";
 import { connectorAllowed } from "../../shared/client-policy-rules";
 
 const tokens = new Map<string, ConnectorTokens>();
+interface DesktopAuthSession {
+  oauth: ConnectorOAuth;
+  callback: string;
+  server: http.Server;
+}
+const runtimeUpdates = new WeakMap<AppContext["engine"], Set<string>>();
+
+function syncConnectorRuntime(ctx: AppContext, current: () => boolean, name: string) {
+  const { engine, store } = ctx;
+  const pending = runtimeUpdates.get(engine);
+  if (pending) {
+    pending.add(name);
+    return;
+  }
+  const names = new Set([name]);
+  const promise = Promise.resolve().then(async () => {
+    while (current() && names.size) {
+      while (current() && engine.isBusy())
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!current()) return;
+      const changed = [...names];
+      names.clear();
+      const provider = store.settings.providers.find(
+        (entry) => entry.id === store.settings.activeProviderId,
+      );
+      if (provider)
+        await engine.ensure(provider, { current, interactive: false }).catch(() => {});
+      if (current()) for (const name of changed) ctx.refreshOfficialConnector?.(name);
+    }
+  }).finally(() => runtimeUpdates.delete(engine));
+  runtimeUpdates.set(engine, names);
+  void promise.catch(() => {});
+}
+interface PendingDesktopAuthSession {
+  current(): boolean;
+  promise: Promise<DesktopAuthSession>;
+  session?: DesktopAuthSession;
+}
 interface DesktopAuthState {
   generation: number;
-  sessions: Map<
-    string,
-    {
-      current(): boolean;
-      promise: Promise<{
-        oauth: ConnectorOAuth;
-        callback: string;
-        server: http.Server;
-      }>;
-    }
-  >;
+  sessions: Map<string, PendingDesktopAuthSession>;
   servers: Set<http.Server>;
-  oauth: Set<ConnectorOAuth>;
 }
 const contexts = new WeakMap<AppContext, DesktopAuthState>();
 function authState(ctx: AppContext) {
@@ -33,15 +60,13 @@ function authState(ctx: AppContext) {
     generation: 0,
     sessions: new Map(),
     servers: new Set(),
-    oauth: new Set(),
   };
   const owned = state;
   contexts.set(ctx, state);
   ctx.onAccountDeactivating?.(async () => {
     owned.generation++;
+    for (const entry of owned.sessions.values()) entry.session?.oauth.close();
     owned.sessions.clear();
-    for (const oauth of owned.oauth) oauth.close();
-    owned.oauth.clear();
     await Promise.all(
       [...owned.servers].map(
         (server) =>
@@ -61,11 +86,13 @@ function desktopAuthLease(ctx: AppContext) {
   const store = ctx.store,
     engine = ctx.engine,
     remote = ctx.remote,
-    accountId = ctx.activeAccount?.id;
+    accountId = ctx.activeAccount?.id,
+    activation = ctx.accountActivationIdentity;
   const origin = remote?.accounts.baseUrl ?? "local";
   const current = () =>
     (ctx.remote?.accounts.baseUrl ?? "local") === origin &&
     !!accountId &&
+    ctx.accountActivationIdentity === activation &&
     state.generation === generation &&
     ctx.activeAccount?.id === accountId &&
     ctx.store === store &&
@@ -110,13 +137,16 @@ export function desktopConnectorHeaders(
   return token ? { Authorization: `Bearer ${token}` } : undefined;
 }
 
-export function forgetDesktopConnectorToken(
-  profile: string,
+export async function forgetDesktopConnectorToken(
+  ctx: AppContext,
   name: string,
   resource?: string,
+  assertOperation: () => void = () => {},
 ) {
-  if (resource && fs.existsSync(authProfile(profile, resource)))
-    profileTokens(authProfile(profile, resource)).set(name, undefined);
+  if (!resource || !fs.existsSync(authProfile(ctx.store.root, resource))) return;
+  const { oauth } = await desktopConnectorSession(ctx, resource);
+  assertOperation();
+  oauth.forget(name, resource);
 }
 
 async function desktopConnectorSession(ctx: AppContext, resource: string) {
@@ -124,8 +154,9 @@ async function desktopConnectorSession(ctx: AppContext, resource: string) {
   const profile = lease.store.root;
   const root = authProfile(profile, resource);
   fs.mkdirSync(root, { recursive: true, mode: 0o700 });
-  let entry = lease.state.sessions.get(root);
+  let entry = lease.state.sessions.get(resource);
   if (entry && !entry.current()) {
+    entry.session?.oauth.close();
     void entry.promise
       .then(({ oauth, server }) => {
         oauth.close();
@@ -136,11 +167,7 @@ async function desktopConnectorSession(ctx: AppContext, resource: string) {
     entry = undefined;
   }
   if (!entry) {
-    const pending = new Promise<{
-      oauth: ConnectorOAuth;
-      callback: string;
-      server: http.Server;
-    }>((resolve, reject) => {
+    const pending = new Promise<DesktopAuthSession>((resolve, reject) => {
       let oauth: ConnectorOAuth;
       const server = http.createServer((request, response) => {
         let url: URL;
@@ -152,36 +179,53 @@ async function desktopConnectorSession(ctx: AppContext, resource: string) {
         }
         const state = url.searchParams.get("state");
         const code = url.searchParams.get("code");
+        const error = url.searchParams.get("error");
         if (
           request.method !== "GET" ||
           url.pathname !== "/callback" ||
           !state ||
-          !code
+          (!code && !error) ||
+          !lease.current()
         ) {
           response.writeHead(400).end();
           return;
         }
-        if (!lease.current()) {
+        const name = oauth.pendingName(state);
+        if (name === undefined) {
           response.writeHead(400).end();
           return;
         }
+        const finish = (error?: "access_denied" | "callback_failed") => {
+          if (response.destroyed) return;
+          if (!lease.current()) {
+            response.writeHead(400).end();
+            return;
+          }
+          if (ctx.notifyOfficialConnectorAuthentication?.(name, state, error) || error) {
+            const message = error === "access_denied"
+              ? "Connector sign-in canceled. You can close this window."
+              : error
+                ? "Connector sign-in failed. Return to Claudex to try again."
+                : "Connector sign-in complete. You can close this window.";
+            response.writeHead(200, {
+              "Content-Type": "text/plain; charset=utf-8",
+              "Cache-Control": "no-store",
+            }).end(message);
+            return;
+          }
+          response.writeHead(302, {
+            Location: `claudex://settings/connectors?connector=${encodeURIComponent(`installed:${name}`)}`,
+            "Cache-Control": "no-store",
+          }).end();
+        };
+        if (error) {
+          if (!oauth.cancel(state, name)) response.writeHead(400).end();
+          else finish(error === "access_denied" ? error : "callback_failed");
+          return;
+        }
         void oauth
-          .complete(state, code)
-          .then((connected) => {
-            if (!lease.current()) {
-              if (!response.destroyed) response.writeHead(400).end();
-              return;
-            }
-            response
-              .writeHead(302, {
-                Location: `claudex://settings/connectors?connector=${encodeURIComponent(`installed:${connected}`)}`,
-                "Cache-Control": "no-store",
-              })
-              .end();
-          })
-          .catch(() => {
-            if (!response.destroyed) response.writeHead(400).end();
-          });
+          .complete(state, code ?? "", url.searchParams.get("iss") ?? undefined, name)
+          .then(() => finish(), () => finish("callback_failed"));
       });
       lease.state.servers.add(server);
       server.once("close", () => {
@@ -213,9 +257,8 @@ async function desktopConnectorSession(ctx: AppContext, resource: string) {
           origin,
           connectorFetch({ level: "full" }),
           profileTokens(root),
-          () => {
-            if (lease.current())
-              ctx.mcpConfig?.update(lease.store.settings.mcpServers);
+          (name) => {
+            if (lease.current()) syncConnectorRuntime(ctx, lease.current, name);
           },
           (serverName, url) => {
             if (!lease.current()) return false;
@@ -227,17 +270,22 @@ async function desktopConnectorSession(ctx: AppContext, resource: string) {
             );
           },
         );
-        lease.state.oauth.add(oauth);
         resolve({ oauth, callback: `${origin}/callback`, server });
       });
     });
     entry = { current: lease.current, promise: pending };
-    lease.state.sessions.set(root, entry);
+    lease.state.sessions.set(resource, entry);
     const ownedEntry = entry;
-    void pending.catch(() => {
-      if (lease.state.sessions.get(root) === ownedEntry)
-        lease.state.sessions.delete(root);
-    });
+    void pending.then(
+      (session) => {
+        if (ownedEntry.current()) ownedEntry.session = session;
+        else session.oauth.close();
+      },
+      () => {
+        if (lease.state.sessions.get(resource) === ownedEntry)
+          lease.state.sessions.delete(resource);
+      },
+    );
   }
   try {
     const result = await entry.promise;
@@ -252,12 +300,13 @@ async function desktopConnectorSession(ctx: AppContext, resource: string) {
 export async function resumeDesktopConnectorAuth(ctx: AppContext) {
   const lease = desktopAuthLease(ctx);
   const clients = new ConnectorClients(lease.store.root);
-  await Promise.all(
+  await Promise.allSettled(
     Object.entries(lease.store.settings.mcpServers).map(async ([name, raw]) => {
       const server = raw as { display_name?: string; url?: string } | undefined;
       if (
         server?.url &&
-        (server.display_name || clients.get(name, server.url))
+        (server.display_name || clients.get(name, server.url) ||
+          fs.existsSync(authProfile(lease.store.root, server.url)))
       ) {
         await desktopConnectorSession(ctx, server.url);
         lease.assertCurrent();
@@ -265,6 +314,43 @@ export async function resumeDesktopConnectorAuth(ctx: AppContext) {
     }),
   );
   lease.assertCurrent();
+}
+
+export function desktopConnectorAuthStatus(
+  ctx: AppContext,
+  name: string,
+  resource: string,
+) {
+  const state = contexts.get(ctx);
+  const entry = state?.sessions.get(resource);
+  if (!entry?.current() || !entry.session) return;
+  return entry.session.oauth.status(name, resource) ??
+    (desktopConnectorHeaders(ctx.store.root, name, resource) ? "connected" : undefined);
+}
+
+export async function revokeDesktopConnectorAuth(
+  ctx: AppContext,
+  name: string,
+  resource: string,
+  assertTarget: () => void,
+) {
+  assertTarget();
+  if (!fs.existsSync(authProfile(ctx.store.root, resource))) return false;
+  const { oauth } = await desktopConnectorSession(ctx, resource);
+  assertTarget();
+  await oauth.revoke(name, resource, { legacyOAuth: true });
+  return true;
+}
+
+export function desktopConnectorAuthRejected(
+  ctx: AppContext,
+  name: string,
+  resource: string,
+  bearer: string,
+) {
+  if (ctx.accountRetiring) return;
+  const entry = contexts.get(ctx)?.sessions.get(resource);
+  if (entry?.current()) entry.session?.oauth.rejectAccess(name, resource, bearer);
 }
 
 export async function desktopConnectorLogin(

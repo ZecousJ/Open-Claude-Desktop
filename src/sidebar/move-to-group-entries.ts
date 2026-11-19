@@ -1,10 +1,11 @@
 import type { MenuEntry } from "../ui/Menu";
 
 /**
- * The Move to group submenu: a radio row per group (the current one checked), a
- * rule and Ungrouped when the conversation is in a group, then New group… (a
- * rule before it only when Ungrouped is not shown). The first nine rows are
- * numbered, and their digits pick them.
+ * The Move to group submenu: a radio row per group (the current one
+ * checked), a rule and Ungrouped when the conversation is in a group, then
+ * New group… (a rule before it only when Ungrouped is not shown). The first
+ * nine rows are numbered, and their digits pick them (desktop bundle
+ * 2.31226.1: the submenu's onKeyDownCapture).
  */
 export function moveToGroupEntries({
   groups,

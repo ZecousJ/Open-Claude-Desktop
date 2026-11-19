@@ -1,11 +1,12 @@
 /*
- * What the terminal tabs remember besides the terminals themselves (which live
- * in the main process): the order each was opened in and the name a tab was
- * given. After the original's tab strip: a tab shows its name when it has one,
- * else "Terminal" while it is the only one and "Terminal N" with several, N
- * being the number it got when it was opened, so closing one renames none of
- * the others. Kept for the life of the window; a terminal reopened in a new
- * window numbers from the order the main process lists them.
+ * What the terminal tabs remember besides the terminals themselves (which
+ * live in the main process): the order each was opened in and the name a
+ * tab was given. After the original's tab strip (desktop bundle 2.31226.1):
+ * a tab shows its name when it has one, else "Terminal" while it is the only
+ * one and "Terminal N" with several, N being the number it got when it was
+ * opened, so closing one renames none of the others. Kept for the life of
+ * the window; a terminal reopened in a new window numbers from the order the
+ * main process lists them.
  */
 const lastNumber = new Map<string, number>();
 const numbers = new Map<string, number>();

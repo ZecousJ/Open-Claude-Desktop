@@ -1,8 +1,9 @@
 /**
- * Which section of the Changes panel a file belongs to: generated files
- * (lockfiles, generated folders and suffixes, minified and map files, build
- * output), build files (Bazel), test files, and the rest. The checks run in
- * that order, so a generated test helper is generated.
+ * Which section of the Changes panel a file belongs to (live claude.ai
+ * bundle, 2026-10-14: "Separate test, build, and generated files"):
+ * generated files (lockfiles, generated folders and suffixes, minified and
+ * map files, build output), build files (Bazel), test files, and the rest.
+ * The checks run in that order, so a generated test helper is generated.
  */
 export type FileKind = "source" | "test" | "build" | "generated";
 

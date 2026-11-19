@@ -51,7 +51,7 @@ import { ConnectorHeaderSlot } from "./connector-header-slot";
 export type Tab = "skills" | "connectors" | "plugins";
 export type View = "yours" | "discover";
 export type ConnectorType = "all" | "local" | "remote";
-/** The connector table's status filter. */
+/** The connector table's status filter (desktop bundle 2.31226.1: All, Connected, Not connected). */
 export type ConnectorStatus = "all" | "connected" | "disconnected";
 export type OpenMenu = {
   kind: "add" | "filter" | "sort" | "row";
@@ -60,14 +60,15 @@ export type OpenMenu = {
 };
 
 /**
- * Customize: the person's skills and the skills included with Claudex, and the
- * MCP connectors this computer runs. Discover also browses the original's
+ * Customize (R-1102–R-1151, R-Customize-主页, light R-1284/R-1285): the
+ * person's skills and the skills included with Claudex, and the MCP
+ * connectors this computer runs. Discover also browses the original's
  * directory (New, Most installed, categories, Show all). The connector
- * catalogue merges genuine service publications and delegates mutations to the
- * same controller as Settings. What needs this computer (uploading a folder,
- * Show in folder, Create with Claudex in a local Code chat, adding connectors
- * in the configuration file) is offered only where the host has it
- * (customizeOffers): not in the web app.
+ * catalogue merges genuine service publications and delegates mutations
+ * to the same controller as Settings. What needs this
+ * computer (uploading a folder, Show in folder, Create with Claudex in a
+ * local Code chat, adding connectors in the configuration file) is offered
+ * only where the host has it (customizeOffers): not in the web app.
  */
 interface CustomizePageProps {
   settings: Settings;

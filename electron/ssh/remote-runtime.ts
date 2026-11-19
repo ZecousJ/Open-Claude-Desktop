@@ -14,7 +14,8 @@
  *      time and checked against the manifest) is uploaded over the
  *      connection in chunks, resuming a partial upload, and its size and
  *      sha512 are checked again on the host. The host never downloads
- *      anything itself.
+ *      anything itself (owner, 2026-10-08: prepare the runtime here and
+ *      send it; a host may have no internet, and npm from it is slow).
  * The host then unpacks only package/vendor/<triple>, checks the engine
  * runs and moves it into place in one rename. `run/install.lock` (an atomic
  * mkdir, taken over after 10 minutes) keeps two installs apart.

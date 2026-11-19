@@ -49,7 +49,8 @@ export async function skillImportNotification(
   };
 }
 
-// Keep failures reviewable without rolling back successful uploads.
+// Keep failures reviewable without rolling back successful uploads
+// (live claude.ai bundle, 2026-10-14, index.chunk-Cr5NCWCa).
 export function importSkillFiles(
   folder: string,
   files: SkillImportFile[],

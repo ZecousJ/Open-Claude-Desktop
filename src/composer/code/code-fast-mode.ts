@@ -26,9 +26,9 @@ export function isFastTier(
 }
 
 /**
- * The Fast mode row of the Code model menu. It turns on only when the catalog
- * has a fast tier of the current model (or the current model is one); otherwise
- * it stays disabled with the reason.
+ * The Fast mode row of the Code model menu (R-0357, R-0389). It turns on
+ * only when the catalog has a fast tier of the current model (or the
+ * current model is one); otherwise it stays disabled with the reason.
  */
 export function fastModeState(
   catalog: ModelCatalog | null | undefined,
@@ -44,7 +44,9 @@ export function fastModeState(
 }
 
 /**
- * Whether any model has a fast tier: the shortcut list shows ⌥⌘F only then.
+ * Whether any model has a fast tier: the shortcut list shows ⌥⌘F only then
+ * (live claude.ai bundle, 2026-10-12: "Toggle fast mode" when some model
+ * supports it).
  */
 export function catalogHasFastTier(catalog: ModelCatalog | null | undefined) {
   const list = items(catalog);

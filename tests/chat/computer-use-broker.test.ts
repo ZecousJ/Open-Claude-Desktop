@@ -1,4 +1,7 @@
 import test from "node:test";
+import { chatComputerUseHost } from "../../electron/official-ui/api/chat-computer-use";
+import { deepCreate, registryFor } from "../../electron/official-ui/api/timeline";
+import { fromBinary, toBinary } from "@bufbuild/protobuf";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -72,7 +75,6 @@ function harness(overrides: Partial<BrokerDeps> = {}): Harness {
     opened: [],
     clipboard: { text: "before" },
     policy: {
-      enabled: true,
       allowFullControl: true,
       deniedApps: [],
       maxActionsPerTurn: null,
@@ -173,12 +175,16 @@ const textOf = (result: ComputerUseToolResult) =>
     .map((item) => (item.type === "text" ? item.text : `[${item.type}]`))
     .join("\n");
 
-/** Answers the next access request with `allow` (ids) or "deny". */
-async function answerNext(h: Harness, allow: string[] | "deny") {
+async function nextRequest(h: Harness) {
   for (let i = 0; i < 50 && !h.requests.length; i++)
     await new Promise((resolve) => setTimeout(resolve, 5));
   const request = h.requests.shift();
   assert.ok(request, "an access request was sent");
+  return request;
+}
+
+async function answerNext(h: Harness, allow: string[] | "deny") {
+  const request = await nextRequest(h);
   h.broker.answer(request.id, allow === "deny" ? "deny" : { allow, deny: [] });
   return request;
 }
@@ -222,6 +228,52 @@ test("activity preview captures only the active conversation's granted app", asy
   await h.broker.dispose();
 });
 
+test("revoking one session's app hides its live frame and withholds a pending capture", async () => {
+  const h = harness();
+  await grant(h, ["TextEdit"], ["com.apple.TextEdit"]);
+  const other = h.call(
+    "request_access",
+    { apps: ["TextEdit"], reason: "Read the test editor" },
+    "c2",
+  );
+  await answerNext(h, ["com.apple.TextEdit"]);
+  await other;
+  await h.call("get_app_state", { app: "TextEdit" });
+  assert.ok(await h.broker.preview("c1"));
+
+  const original = h.broker.deps.driver.call;
+  let complete: ((value: ComputerUseToolResult) => void) | undefined;
+  h.broker.deps.driver.call = () =>
+    new Promise((resolve) => {
+      complete = resolve;
+    });
+  const pending = h.call("get_app_state", { app: "TextEdit" });
+  for (let i = 0; i < 50 && !complete; i++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.ok(complete);
+
+  await h.broker.revokeGrant("c1", "com.apple.TextEdit");
+  assert.equal(h.broker.currentActivity(), null);
+  assert.equal(await h.broker.preview("c1"), null);
+  complete({
+    content: [{ type: "image", mimeType: "image/png", data: "UE5HREFUQQ==" }],
+  });
+  const result = await pending;
+  assert.equal(result.isError, true);
+  assert.ok(result.content.every((item) => item.type !== "image"));
+
+  h.broker.deps.driver.call = original;
+  assert.equal(
+    (await h.call("get_app_state", { app: "TextEdit" })).isError,
+    true,
+  );
+  assert.equal(
+    (await h.call("get_app_state", { app: "TextEdit" }, "c2")).isError,
+    undefined,
+  );
+  await h.broker.dispose();
+});
+
 test("a capture completing after Stop never reaches the renderer", async () => {
   let complete: ((value: ComputerUseToolResult) => void) | undefined;
   let capturing: (() => void) | undefined;
@@ -257,15 +309,11 @@ test("a capture completing after Stop never reaches the renderer", async () => {
 
 test("every layer can turn computer use off", async () => {
   const h = harness();
-  h.policy.enabled = false;
-  assert.match(textOf(await h.call("list_apps")), /administrator/);
-  h.policy.enabled = true;
   h.settings.enabled = false;
   assert.match(textOf(await h.call("list_apps")), /turned off in Settings/);
   h.settings.enabled = true;
   h.conversation.mode = "chat";
-  assert.match(textOf(await h.call("list_apps")), /Code and Cowork/);
-  h.conversation.mode = "code";
+  assert.match(textOf(await h.call("list_apps")), /TextEdit/);
   h.conversation.remote = true;
   assert.match(textOf(await h.call("list_apps")), /this computer/);
   h.conversation.remote = false;
@@ -576,6 +624,21 @@ test("the end of a turn withdraws a waiting request", async () => {
   assert.equal(h.resolved.length, 1);
 });
 
+test("a request from a previous turn cannot grant access in the current turn", async () => {
+  const h = harness();
+  const pending = h.call("request_access", { apps: ["TextEdit"], reason: "Read the draft" });
+  for (let i = 0; i < 50 && !h.requests.length; i++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.ok(h.requests[0]);
+  h.conversation.turnId = "t2";
+  assert.throws(
+    () => h.broker.answer(h.requests[0].id, { allow: ["com.apple.TextEdit"], deny: [] }),
+    /no longer current/,
+  );
+  assert.match(textOf(await pending), /didn't allow/);
+  assert.match(textOf(await h.call("list_granted_applications")), /No apps are granted/);
+});
+
 test("full control: asks unless the setting says so, hides others, releases at turn end", async () => {
   const h = harness();
   assert.match(
@@ -632,12 +695,12 @@ test("full control with the Full control setting needs no card; the policy can f
   );
 });
 
-test("losing the policy mid-way gives the screen back", async () => {
+test("revoking full control mid-way gives the screen back", async () => {
   const h = harness();
   await grant(h, ["TextEdit"], ["com.apple.TextEdit"]);
   h.settings.mode = "fullControl";
   await h.call("request_full_control", { reason: "x" });
-  h.policy.enabled = false;
+  h.policy.allowFullControl = false;
   await h.broker.settingsChanged();
   assert.equal(h.control.at(-1), "end:true");
 });
@@ -823,4 +886,39 @@ test("request_access can ask for the clipboard, which then works without full co
   assert.equal(h.clipboard.text, "summary");
   assert.match(textOf(await h.call("read_clipboard")), /needs full control/);
   await h.broker.dispose();
+});
+
+test("desktop Chat grants only the apps on the pending Computer Use card", async () => {
+  const h = harness();
+  h.conversation.mode = "chat";
+  const host = chatComputerUseHost({
+    requests: async (conversationId) => h.broker.requests().filter(request => request.conversationId === conversationId),
+    answer: async (id, decision) => h.broker.answer(id, decision),
+    translator: async () => (message) => message,
+  });
+  try {
+    const operation = h.call("request_access", { apps: ["TextEdit"], reason: "Edit the draft" });
+    await nextRequest(h);
+    const updateSchema = registryFor("build/official-ui").getMessage("anthropic.bard.api.v1alpha.ConversationUpdate")!;
+    const update = deepCreate(updateSchema, { elicitations: await host.list("c1") });
+    const decoded = fromBinary(updateSchema, toBinary(updateSchema, update)) as unknown as {
+      elicitations: Awaited<ReturnType<typeof host.list>>;
+    };
+    const [card] = decoded.elicitations;
+    assert.match(card.request.description, /TextEdit/);
+    assert.match(card.request.description, /Edit the draft/);
+    const click = {
+      elicitationId: card.id,
+      askNonce: card.request.askNonce,
+      response: { verdict: 1, approvalOption: 1 },
+    };
+    await assert.rejects(host.respond("c2", click), /no longer current/);
+    await assert.rejects(host.respond("c1", { ...click, askNonce: "other" }), /does not match/);
+    assert.equal(await host.respond("c1", click), true);
+    assert.match(textOf(await operation), /TextEdit/);
+    assert.deepEqual(await host.list("c1"), []);
+    await assert.rejects(host.respond("c1", click), /no longer current/);
+  } finally {
+    await h.broker.dispose();
+  }
 });

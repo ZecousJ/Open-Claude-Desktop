@@ -16,7 +16,7 @@ import {
 } from "./code-effort-field";
 
 // Measured Ultracode front: starts ~290ms after the change, then slows with a
-// ~1s time constant; see code-effort-field.ts.
+// ~1s time constant (2097af56, R-0330); see code-effort-field.ts.
 const frontEase = exponentialEasing(3600, 1000);
 
 /**

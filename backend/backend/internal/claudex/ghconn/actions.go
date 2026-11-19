@@ -31,25 +31,28 @@ const ReasonGitHubRefused = "CLAUDEX_GITHUB_REFUSED"
 
 // apiRequest is the body of "github.api".
 type apiRequest struct {
-	ThreadID   string   `json:"threadId,omitempty"`
-	CheckRunID int      `json:"checkRunId,omitempty"`
-	CommentID  int      `json:"commentId,omitempty"`
-	CommitSHA  string   `json:"commitSha,omitempty"`
-	Line       int      `json:"line,omitempty"`
-	StartLine  int      `json:"startLine,omitempty"`
-	Side       string   `json:"side,omitempty"`
-	Event      string   `json:"event,omitempty"`
-	Branch     string   `json:"branch,omitempty"`
-	Path       string   `json:"path,omitempty"`
-	URL        string   `json:"url"`
-	Action     string   `json:"action"`
-	Title      string   `json:"title,omitempty"`
-	Body       string   `json:"body,omitempty"`
-	Head       string   `json:"head,omitempty"`
-	Base       string   `json:"base,omitempty"`
-	Draft      bool     `json:"draft,omitempty"`
-	Number     int      `json:"number,omitempty"`
-	Labels     []string `json:"labels,omitempty"`
+	ThreadID              string   `json:"threadId,omitempty"`
+	CheckRunID            int      `json:"checkRunId,omitempty"`
+	CommentID             int      `json:"commentId,omitempty"`
+	CommitSHA             string   `json:"commitSha,omitempty"`
+	Line                  int      `json:"line,omitempty"`
+	StartLine             int      `json:"startLine,omitempty"`
+	Side                  string   `json:"side,omitempty"`
+	Event                 string   `json:"event,omitempty"`
+	Branch                string   `json:"branch,omitempty"`
+	Path                  string   `json:"path,omitempty"`
+	URL                   string   `json:"url"`
+	Action                string   `json:"action"`
+	Title                 string   `json:"title,omitempty"`
+	Body                  string   `json:"body,omitempty"`
+	Head                  string   `json:"head,omitempty"`
+	HeadRepository        string   `json:"headRepository,omitempty"`
+	IncludeCIStatus       bool     `json:"includeCiStatus,omitempty"`
+	IncludeReviewDecision bool     `json:"includeReviewDecision,omitempty"`
+	Base                  string   `json:"base,omitempty"`
+	Draft                 bool     `json:"draft,omitempty"`
+	Number                int      `json:"number,omitempty"`
+	Labels                []string `json:"labels,omitempty"`
 }
 
 // The limits of what the model may send.
@@ -114,6 +117,40 @@ func (c *Component) serveAPI(ctx context.Context, userID int64, body json.RawMes
 	switch req.Action {
 	case "pr.autoFixFacts":
 		return c.serveAutoFixFacts(ctx, userID, token, ref.Owner, ref.Name, req.Number)
+	case "pr.hostedStatus":
+		return c.serveHostedPullStatus(ctx, userID, token, ref.Owner, ref.Name, req)
+	case "pr.byHead":
+		if req.Base != "" {
+			headRepo, valid := pullHeadRepository(req.HeadRepository)
+			if !valid || req.Head == "" || !validRef(req.Head) || !validRef(req.Base) {
+				return nil, infraerrors.BadRequest(ReasonBadRepo, "Name valid base and head branches.")
+			}
+			return c.findOpenPullRequest(ctx, userID, token, base, headRepo, req.Head, req.Base)
+		}
+		headOwner := ref.Owner
+		if req.HeadRepository != "" {
+			headRepo, valid := pullHeadRepository(req.HeadRepository)
+			if !valid {
+				return nil, infraerrors.BadRequest(ReasonBadRepo, "Name a valid head repository.")
+			}
+			headOwner = headRepo.Owner
+		}
+		return c.findPullRequestByHead(ctx, userID, token, base, headOwner, req.Head)
+	case "repository.branchExists":
+		if req.Branch == "" || !validRef(req.Branch) {
+			return nil, infraerrors.BadRequest(ReasonBadRepo, "Name a valid branch.")
+		}
+		err := c.gh.get(ctx, token, base+"/branches/"+url.PathEscape(req.Branch), nil, nil)
+		if err == errNotFound {
+			if _, repoErr := c.gh.repo(ctx, token, ref.Owner, ref.Name); repoErr != nil {
+				return nil, c.mapUpstream(ctx, userID, repoErr)
+			}
+			return map[string]bool{"exists": false}, nil
+		}
+		if err != nil {
+			return nil, c.mapUpstream(ctx, userID, err)
+		}
+		return map[string]bool{"exists": true}, nil
 	case "pr.files", "pr.timeline", "pr.comments", "pr.checks", "pr.annotations", "pr.rerun", "pr.comment", "pr.reply", "pr.review", "pr.threads", "pr.resolve", "pr.threadReply":
 		return c.serveReview(ctx, userID, token, base, req)
 	case "repository.tree", "repository.file":
@@ -125,9 +162,49 @@ func (c *Component) serveAPI(ctx context.Context, userID int64, body json.RawMes
 			return nil, c.mapUpstream(ctx, userID, err)
 		}
 		return out, nil
+	case "repository.compare":
+		if req.Base == "" || req.Head == "" || !validRef(req.Base) || !validRef(req.Head) {
+			return nil, infraerrors.BadRequest(ReasonBadRepo, "Name valid base and head refs.")
+		}
+		endpoint := base + "/compare/" + url.PathEscape(req.Base) + "..." + url.PathEscape(req.Head)
+		if err = c.gh.get(ctx, token, endpoint, nil, &out); err != nil {
+			return nil, c.mapUpstream(ctx, userID, err)
+		}
+		return out, nil
+	case "repository.forkBases":
+		var repo struct {
+			Parent struct {
+				FullName string `json:"full_name"`
+			} `json:"parent"`
+			Source struct {
+				FullName string `json:"full_name"`
+			} `json:"source"`
+		}
+		if err := c.gh.get(ctx, token, base, nil, &repo); err != nil {
+			return nil, c.mapUpstream(ctx, userID, err)
+		}
+		return []string{repo.Parent.FullName, repo.Source.FullName}, nil
 	case "pr.create":
-		if title == "" || !validRef(req.Head) || req.Head == "" || !validRef(req.Base) {
+		branch, head := req.Head, req.Head
+		headRepo := ref
+		if req.HeadRepository != "" {
+			var valid bool
+			headRepo, valid = pullHeadRepository(req.HeadRepository)
+			if !valid {
+				return nil, infraerrors.BadRequest(ReasonBadRepo, "Name a valid head repository.")
+			}
+			if !strings.EqualFold(ref.FullName(), headRepo.FullName()) {
+				head = headRepo.Owner + ":" + branch
+			}
+		}
+		if (title == "" && req.HeadRepository == "") || branch == "" || !validRef(branch) || !validRef(req.Base) {
 			return nil, infraerrors.BadRequest(ReasonBadRepo, "A pull request needs a title and valid branch names.")
+		}
+		if title == "" {
+			title, err = c.pullRequestHeadTitle(ctx, token, headRepo, branch)
+			if err != nil {
+				return nil, c.mapUpstream(ctx, userID, err)
+			}
 		}
 		baseBranch := req.Base
 		if baseBranch == "" {
@@ -137,9 +214,13 @@ func (c *Component) serveAPI(ctx context.Context, userID int64, body json.RawMes
 			}
 			baseBranch = repo.DefaultBranch
 		}
-		err = c.gh.send(ctx, token, http.MethodPost, base+"/pulls", map[string]any{
-			"title": title, "body": req.Body, "head": req.Head, "base": baseBranch, "draft": req.Draft,
-		}, &out)
+		payload := map[string]any{
+			"title": title, "body": req.Body, "head": head, "base": baseBranch, "draft": req.Draft,
+		}
+		if head != branch && strings.EqualFold(ref.Owner, headRepo.Owner) {
+			payload["head_repo"] = headRepo.Name
+		}
+		err = c.gh.send(ctx, token, http.MethodPost, base+"/pulls", payload, &out)
 	case "issue.create":
 		if title == "" {
 			return nil, infraerrors.BadRequest(ReasonBadRepo, "An issue needs a title.")
@@ -180,12 +261,92 @@ func (c *Component) serveAPI(ctx context.Context, userID int64, body json.RawMes
 	if err != nil {
 		var refused errRefused
 		if ok := asRefused(err, &refused); ok {
-			return nil, infraerrors.BadRequest(ReasonGitHubRefused, "GitHub refused it: "+refused.message)
+			answer := infraerrors.BadRequest(ReasonGitHubRefused, "GitHub refused it: "+refused.message)
+			if req.Action == "pr.create" && req.HeadRepository != "" {
+				answer = answer.WithMetadata(map[string]string{"status": strconv.Itoa(refused.status)})
+			}
+			return nil, answer
 		}
 		return nil, c.mapUpstream(ctx, userID, err)
 	}
 	slog.Info("claudex github: action done", "user_id", userID, "repository", ref.FullName(), "action", req.Action)
 	return summarizeIssue(out), nil
+}
+
+func pullHeadRepository(fullName string) (RepoRef, bool) {
+	owner, name, ok := strings.Cut(fullName, "/")
+	return RepoRef{Owner: owner, Name: name}, ok && validOwner(owner) && validName(name)
+}
+
+func (c *Component) pullRequestHeadTitle(ctx context.Context, token string, repo RepoRef, head string) (string, error) {
+	var commit struct {
+		Commit struct {
+			Message string `json:"message"`
+		} `json:"commit"`
+	}
+	endpoint := "/repos/" + url.PathEscape(repo.Owner) + "/" + url.PathEscape(repo.Name) + "/commits/" + url.PathEscape(head)
+	if err := c.gh.get(ctx, token, endpoint, nil, &commit); err != nil {
+		return "", err
+	}
+	title, _, _ := strings.Cut(strings.TrimSpace(commit.Commit.Message), "\n")
+	title = strings.TrimSpace(title)
+	if title == "" {
+		return head, nil
+	}
+	if len(title) > maxTitleLength {
+		title = strings.TrimSpace(strings.ToValidUTF8(title[:maxTitleLength], ""))
+	}
+	return title, nil
+}
+
+func (c *Component) findOpenPullRequest(ctx context.Context, userID int64, token, path string, repo RepoRef, head, base string) (any, error) {
+	query := url.Values{"head": {repo.Owner + ":" + head}, "base": {base}, "state": {"open"}, "per_page": {"100"}}
+	var rows []map[string]any
+	if err := c.gh.get(ctx, token, path+"/pulls", query, &rows); err != nil {
+		return nil, c.mapUpstream(ctx, userID, err)
+	}
+	for _, row := range rows {
+		pr := summarizeIssue(row)
+		if pr["state"] == "open" && pr["head_ref"] == head && pr["base_ref"] == base {
+			if from, ok := pr["head_repository"].(string); ok && strings.EqualFold(from, repo.FullName()) {
+				return map[string]any{"pull_request": pr}, nil
+			}
+		}
+	}
+	return map[string]any{"pull_request": nil}, nil
+}
+
+func (c *Component) findPullRequestByHead(ctx context.Context, userID int64, token, base, owner, head string) (any, error) {
+	if head == "" || !validRef(head) {
+		return nil, infraerrors.BadRequest(ReasonBadRepo, "Name a valid head branch.")
+	}
+	query := url.Values{
+		"head": {owner + ":" + head}, "state": {"all"},
+		"sort": {"created"}, "direction": {"desc"}, "per_page": {"1"},
+	}
+	type pull struct {
+		Number int    `json:"number"`
+		State  string `json:"state"`
+	}
+	var latest []pull
+	if err := c.gh.get(ctx, token, base+"/pulls", query, &latest); err != nil {
+		return nil, c.mapUpstream(ctx, userID, err)
+	}
+	if len(latest) == 0 {
+		return map[string]int{}, nil
+	}
+	// A head can have pull requests against several base branches.
+	if latest[0].State == "closed" {
+		query.Set("state", "open")
+		var open []pull
+		if err := c.gh.get(ctx, token, base+"/pulls", query, &open); err != nil {
+			return nil, c.mapUpstream(ctx, userID, err)
+		}
+		if len(open) != 0 {
+			return map[string]int{"number": open[0].Number}, nil
+		}
+	}
+	return map[string]int{"number": latest[0].Number}, nil
 }
 
 func repositoryReadEndpoint(base string, req apiRequest) (string, url.Values, error) {
@@ -215,7 +376,7 @@ func repositoryReadEndpoint(base string, req apiRequest) (string, url.Values, er
 // comment.
 func summarizeIssue(v map[string]any) map[string]any {
 	out := map[string]any{}
-	for _, k := range []string{"number", "html_url", "title", "state", "body", "draft", "merged", "comments", "created_at"} {
+	for _, k := range []string{"number", "html_url", "title", "state", "body", "draft", "merged", "comments", "created_at", "additions", "deletions", "mergeable", "mergeable_state"} {
 		if x, ok := v[k]; ok && x != nil {
 			out[k] = x
 		}
@@ -230,6 +391,15 @@ func summarizeIssue(v map[string]any) map[string]any {
 		if ref, ok := head["ref"].(string); ok && ref != "" {
 			out["head_ref"] = ref
 		}
+		if repo, ok := head["repo"].(map[string]any); ok && repo["full_name"] != nil {
+			out["head_repository"] = repo["full_name"]
+		}
+		if head["sha"] != nil {
+			out["head_sha"] = head["sha"]
+		}
+	}
+	if base, ok := v["base"].(map[string]any); ok && base["ref"] != nil {
+		out["base_ref"] = base["ref"]
 	}
 	if list, ok := v["comments_list"]; ok {
 		out["comments_list"] = list
@@ -252,7 +422,10 @@ func summarizeComments(list []map[string]any) []map[string]any {
 // errRefused is GitHub's 422 (validation) with its message, which names
 // what is wrong ("A pull request already exists", "No commits between …")
 // and never a token.
-type errRefused struct{ message string }
+type errRefused struct {
+	message string
+	status  int
+}
 
 func (e errRefused) Error() string { return "ghconn: GitHub refused: " + e.message }
 
@@ -290,7 +463,7 @@ func (c *client) sendTo(ctx context.Context, token, method, address string, payl
 	if err != nil {
 		return errUpstream{}
 	}
-	defer func() { _ = resp.Body.Close() }()
+	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, maxAPIBody))
 	switch {
 	case resp.StatusCode == http.StatusUnauthorized:
@@ -318,7 +491,7 @@ func (c *client) sendTo(ctx context.Context, token, method, address string, payl
 		if len(msg) > 500 {
 			msg = msg[:500]
 		}
-		return errRefused{message: msg}
+		return errRefused{message: msg, status: resp.StatusCode}
 	case resp.StatusCode < 200 || resp.StatusCode > 299:
 		return errUpstream{status: resp.StatusCode}
 	}

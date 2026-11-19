@@ -29,12 +29,16 @@ const (
 
 // RegisterUserRoutes implements core.UserRouter (/api/v1/claudex; JWT with the
 // H9b check, backend-mode guard, panel rate limit, X-Claudex-* validation,
-// audit log). The raw device id is only ever read from X-Claudex-Device-Id.
+// audit log).
 func (c *Component) RegisterUserRoutes(g *gin.RouterGroup) {
 	g.POST("/devices", c.env.RateLimitPerUser("devices.register", registerPerUserLimit, time.Minute), c.postDevice)
 	g.GET("/devices", c.getMyDevices)
 	g.DELETE("/devices/current", c.deleteCurrentDevice)
 	g.DELETE("/devices/:id", c.deleteMyDevice)
+	g.GET("/signing-devices", c.signingDeviceRoute(c.getSigningDevices))
+	g.POST("/signing-devices", c.signingDeviceRoute(c.postSigningDevice))
+	g.PATCH("/signing-devices/:id", c.signingDeviceRoute(c.patchSigningDevice))
+	g.DELETE("/signing-devices/:id", c.signingDeviceRoute(c.deleteSigningDevice))
 }
 
 // RegisterAdminRoutes implements core.AdminRouter (/api/v1/admin/claudex,

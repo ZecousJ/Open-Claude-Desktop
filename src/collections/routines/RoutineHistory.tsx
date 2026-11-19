@@ -1,7 +1,7 @@
 import { t, useLocale } from "../../i18n";
 import { fullTime } from "../../ui/RelativeTime";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Spinner } from "../../ui/Spinner";
 import { Menu } from "../../ui/Menu";
 import { type Routine, type RoutineRunPage } from "../../../shared/routines";
@@ -25,10 +25,9 @@ export const skippedRunReason = (run: RoutineRun) =>
         ? "Other scheduled tasks were already running."
         : "Scheduled tasks only run while your computer is awake and online.";
 
-/**
- * A run's valid destination remains usable when its read receipt fails. The
- * official row has an href plus a separate onSessionOpen callback.
- */
+/** A run's valid destination remains usable when its read receipt fails.
+ * The official row has an href plus a separate onSessionOpen callback
+ * (ccd3f68fe-CamBxzX6.js:3954–3980,4100–4111). */
 export function openRoutineRun(
   routineId: string,
   run: RoutineRun,
@@ -437,7 +436,7 @@ export function RoutineHistory({
                   })
                 }
               >
-                <AppIcon name="Filter" size={16} />
+                <Anthropicon name="Filter" size={16} />
               </button>
             </div>
           )}
@@ -520,7 +519,7 @@ export function RoutineHistory({
                 {emptyRunAction.running ? (
                   <Spinner inheritColor size={16} className="spin" />
                 ) : (
-                  <AppIcon name="Play" size={16} />
+                  <Anthropicon name="Play" size={16} />
                 )}
                 {t("Run now")}
               </button>

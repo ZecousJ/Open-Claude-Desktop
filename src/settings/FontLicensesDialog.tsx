@@ -18,11 +18,24 @@ export const sourceSerifLicenseNotice = [
   "This license is available with a FAQ at: https://openfontlicense.org",
 ].join("\n");
 
+/** main.tsx sets this only after both reference font families loaded. A
+ * host's ability to supply font files is not evidence that they loaded. */
+export function hasLoadedReferenceFonts(
+  root?: Pick<HTMLElement, "dataset">,
+): boolean {
+  const documentRoot =
+    root ??
+    (typeof document === "undefined" ? undefined : document.documentElement);
+  return documentRoot?.dataset.referenceFonts === "true";
+}
+
 /** Actual license information for the interface choices; local reference
  * fonts and operating-system fonts are not presented as shipped fonts. */
 export function FontLicensesContent({
+  referenceFonts,
   onError,
 }: {
+  referenceFonts: boolean;
   onError: (error: unknown) => void;
 }) {
   return (
@@ -60,6 +73,12 @@ export function FontLicensesContent({
         </pre>
       </Section>
       <p>System fonts are supplied by your operating system.</p>
+      {referenceFonts && (
+        <p>
+          Reference fonts are loaded from your own desktop installation and are
+          not distributed with Claudex.
+        </p>
+      )}
     </div>
   );
 }
@@ -71,9 +90,23 @@ export function FontLicensesDialog({
   onClose: () => void;
   onError: (error: unknown) => void;
 }) {
+  const [referenceFonts, setReferenceFonts] = useState(() =>
+    hasLoadedReferenceFonts(),
+  );
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => setReferenceFonts(hasLoadedReferenceFonts(root));
+    const observer = new MutationObserver(update);
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["data-reference-fonts"],
+    });
+    update();
+    return () => observer.disconnect();
+  }, []);
   return (
     <SettingsModal title="Font licenses" onClose={onClose}>
-      <FontLicensesContent onError={onError} />
+      <FontLicensesContent referenceFonts={referenceFonts} onError={onError} />
     </SettingsModal>
   );
 }

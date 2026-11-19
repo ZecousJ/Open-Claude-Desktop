@@ -126,7 +126,7 @@ test("#35 Learn more keyboard dismissal returns to its parent and Keyboard short
       ...main()!.querySelectorAll<HTMLButtonElement>("button"),
     ].find(
       (button) =>
-        button.querySelector("span:not([data-icon])")?.textContent ===
+        button.querySelector("span:not([data-anthropicon])")?.textContent ===
         "Learn more",
     )!;
     let focusReturns = 0;

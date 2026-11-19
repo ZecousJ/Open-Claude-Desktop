@@ -1,10 +1,11 @@
 /**
- * Asking before Claude uses a device: the first time a session wants to drive a
- * simulator or emulator, a dialog names the device and what Claude will do, and
- * only Allow lets it. The answer is kept for that device: an allowed device
- * stays allowed (until the person takes it back in the pane), and a refusal or
- * an unanswered dialog is not asked again for ten minutes, so a model that
- * keeps trying does not keep interrupting. Only one dialog is open at a time.
+ * Asking before Claude uses a device (desktop bundle 2.31226.1): the first
+ * time a session wants to drive a simulator or emulator, a dialog names the
+ * device and what Claude will do, and only Allow lets it. The answer is kept
+ * for that device: an allowed device stays allowed (until the person takes
+ * it back in the pane), and a refusal or an unanswered dialog is not asked
+ * again for ten minutes, so a model that keeps trying does not keep
+ * interrupting. Only one dialog is open at a time.
  */
 import {
   consentText,

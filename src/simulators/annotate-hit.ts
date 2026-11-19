@@ -253,8 +253,8 @@ export function handleAt(
 }
 
 /**
- * Shift while drawing or dragging an end: lines and arrows snap to 45° steps,
- * rectangles and ellipses to squares and circles.
+ * Shift while drawing or dragging an end (live bundle): lines and arrows
+ * snap to 45° steps, rectangles and ellipses to squares and circles.
  */
 export function constrainPoint(
   kind: Mark["kind"],
@@ -422,7 +422,7 @@ export function markCenter(mark: Mark, measure: MeasureText): Point {
   };
 }
 
-/** A mark moves until its middle reaches the picture's edge. */
+/** Live bundle: a mark moves until its middle reaches the picture's edge. */
 export function clampMove(
   mark: Mark,
   dx: number,
@@ -439,13 +439,11 @@ export function clampMove(
   };
 }
 
-/*
- * ---------------------------------------------------------------------------
- * Redacting by text: with Redact, a click without a drag on a word the picture
- * shows covers that word, 2px out, revealed left to right over 200ms (ease-out
- * cubic).
- * -------------------------------------------------------------------------
- */
+/* ---------------------------------------------------------------------------
+ * Redacting by text (live bundle): with Redact, a click without a drag on a
+ * word the picture shows covers that word, 2px out, revealed left to right
+ * over 200ms (ease-out cubic).
+ * ------------------------------------------------------------------------- */
 
 /** The smallest word box under `point`, in the picture's pixels. */
 export function textTargetAt(targets: Box[], point: Point): Box | null {

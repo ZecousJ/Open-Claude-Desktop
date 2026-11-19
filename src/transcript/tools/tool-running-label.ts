@@ -1,7 +1,7 @@
 import type { Item } from "../../../shared/types";
 import { formatText } from "../../i18n";
 
-/** Running tool copy. */
+/** Running tool copy (live claude.ai bundle, 2026-10-14, shared-10-C9_UFbV-). */
 const labels: Record<string, string> = {
   Glob: "Looking for files…",
   Grep: "Searching files…",

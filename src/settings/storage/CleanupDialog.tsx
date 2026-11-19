@@ -27,18 +27,19 @@ type Preview =
 
 const windows: StorageCleanupWindow[] = [30, 60, 90];
 
-/** The run's notice when it can't start. */
+/** The run's notice when it can't start (lt in the live bundle). */
 const errorNotice = (code: string) =>
   code === "already-running"
     ? "A cleanup is still finishing. Try again in a moment."
     : "Cleanup isn’t available right now.";
 
 /**
- * Free up space… and Clean up inactive sessions…: pick how long inactive, see
- * how many and how much, tick that it can't be undone, then delete, with
- * progress and Stop. Clean up inactive sessions removes the inactive sessions'
- * worktrees (their uncommitted work with them; the sessions stay), or, with
- * "Also delete…" ticked, deletes the sessions and their worktrees.
+ * Free up space… and Clean up inactive sessions… (dt, mt and At in the live
+ * claude.ai bundle, 2026-10-12): pick how long inactive, see how many and
+ * how much, tick that it can't be undone, then delete, with progress and
+ * Stop. Clean up inactive sessions removes the inactive sessions'
+ * worktrees (their uncommitted work with them; the sessions stay), or,
+ * with "Also delete…" ticked, deletes the sessions and their worktrees.
  */
 export function CleanupDialog({
   kind,
@@ -287,7 +288,7 @@ export function CleanupDialog({
                 ? "Removing {done} of {total}…"
                 : "Deleting {done} of {total}…",
               {
-                // Announced in tenths, not at every step.
+                // Announced in tenths, not at every step (pt in the live bundle).
                 done: Math.min(
                   progress.done,
                   Math.floor(
@@ -331,7 +332,7 @@ export function CleanupDialog({
               : undefined
           }
           onKeyDown={(event) => {
-            // A held key doesn't confirm again.
+            // A held key doesn't confirm again (ft in the live bundle).
             if (event.repeat && (event.key === "Enter" || event.key === " "))
               event.preventDefault();
           }}

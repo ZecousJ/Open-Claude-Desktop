@@ -7,7 +7,7 @@ import {
 import { formatText, t } from "../../i18n";
 import "./connector-url-editor.css";
 
-// Submission URL configuration.
+// Submission URL configuration (live claude.ai bundle, 2026-10-14, ca00fcdfd-okHyn2P0.js:12386).
 export default function ConnectorUrlEditor({
   input,
   disabled,

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import {
   apiKeyNameProblem,
@@ -5,15 +6,29 @@ import {
   keyUsageBatch,
   withKeyCosts,
   groupRatesFrom,
-  apiKeysMethods,
-  isDeviceKey,
   type ApiGroups,
   type ApiKey,
 } from "../../shared/api-keys-api";
+import { assertAccountOperationCurrent } from "../account/operation-lease";
 import type { AppContext, IpcHandle } from "../app/app-context";
+import type { RemoteKey } from "../sub2api/client";
 import { requestJson } from "../sub2api/http";
 
 const noAccount = "API keys belong to a Claudex account. Sign in to use them.";
+
+function wireKey(item: RemoteKey) {
+  return {
+    id: item.id,
+    name: item.name,
+    key: item.key,
+    group_id: item.groupId,
+    status: item.status,
+    created_at:
+      item.createdAt == null ? null : new Date(item.createdAt).toISOString(),
+    last_used_at:
+      item.lastUsedAt == null ? null : new Date(item.lastUsedAt).toISOString(),
+  };
+}
 
 /**
  * The API page (shared/api-keys-api.ts). The keys are the account's own
@@ -28,79 +43,73 @@ export function registerApiKeyHandlers(handle: IpcHandle, ctx: AppContext) {
   // gets its key when the page opens: the page shows the groups as last read
   // at once, then asks again with `fresh`, and the bootstrap lists the
   // missing key and the backend's load registers again (at most every 30 s).
-  let checkedAt = 0;
+  const checkedAt = new WeakMap<NonNullable<AppContext["remote"]>, number>();
+  const operation = (remote: NonNullable<AppContext["remote"]>) => {
+    const { store, accountActivationIdentity: activation } = ctx;
+    const current = () =>
+      ctx.remote === remote &&
+      remote.ready &&
+      !ctx.accountRetiring &&
+      ctx.store === store &&
+      ctx.accountActivationIdentity === activation;
+    const check = () => assertAccountOperationCurrent(current);
+    check();
+    return { backend: remote.backend, current, check };
+  };
+  const service = () => {
+    const remote = ctx.remote;
+    if (!remote?.ready) throw Error(noAccount);
+    return operation(remote);
+  };
   handle("apiGroups", async (rawFresh: unknown): Promise<ApiGroups> => {
     const remote = ctx.remote;
     if (!remote?.ready) return empty;
-    if (rawFresh === true && Date.now() - checkedAt > 30_000) {
-      checkedAt = Date.now();
+    const { check } = operation(remote);
+    const now = Date.now();
+    if (rawFresh === true && now - (checkedAt.get(remote) ?? 0) > 30_000) {
+      checkedAt.set(remote, now);
       await remote.refreshModels().catch(() => {});
     }
-    return remote.ready ? remote.apiGroups() : empty;
+    check();
+    return remote.apiGroups();
   });
   handle(
     "setApiGroup",
-    (rawProvider: unknown, rawGroup: unknown): ApiGroups => {
+    async (rawProvider: unknown, rawGroup: unknown): Promise<ApiGroups> => {
       const provider = z.string().min(1).max(40).parse(rawProvider);
       const id = z.number().int().positive().parse(rawGroup);
       const remote = ctx.remote;
       if (!remote?.ready) throw Error(noAccount);
-      return remote.useGroup(provider, id);
+      const { check } = operation(remote);
+      const groups = await remote.useGroup(provider, id);
+      check();
+      return groups;
     },
   );
 
-  handle("setImageModel", (rawModel: unknown): ApiGroups => {
-    const model = z
-      .string()
-      .min(1)
-      .max(200)
-      .regex(/^[\w.:/-]+$/)
-      .parse(rawModel);
-    const remote = ctx.remote;
-    if (!remote?.ready) throw Error(noAccount);
-    return remote.useImageModel(model);
-  });
-  // Every picture is made with the model chosen here (the gateway's request
-  // options carry it to the engines, also the spaces' on a runner).
-  ctx.onAccountActivated(() => {
-    ctx.engine.imageModel = () =>
-      ctx.remote?.ready ? ctx.remote.imageModel() : "";
-  });
-
-  const service = () => {
-    const backend = ctx.remote?.ready ? ctx.remote.backend : undefined;
-    if (!backend) throw Error(noAccount);
-    return backend;
-  };
   /** The account's own keys, with the group names the service lists. */
-  const list = async (): Promise<ApiKey[]> => {
-    const backend = service();
+  const list = async (
+    { backend, current, check }: ReturnType<typeof service>,
+    details: boolean,
+  ): Promise<ApiKey[]> => {
     return backend.session.authorized(async (token) => {
+      check();
       const groups = new Map(
-        (await backend.client.availableGroups(token).catch(() => [])).map(
-          (group) => [group.id, group.name] as const,
-        ),
+        (details
+          ? await backend.client.availableGroups(token).catch(() => [])
+          : []
+        ).map((group) => [group.id, group.name] as const),
       );
-      const raw: unknown[] = [];
+      check();
+      const raw: RemoteKey[] = [];
       for (let page = 1, pages = 1; page <= pages; page++) {
         const read = await backend.client.listKeys(token, "", page);
+        check();
         pages = read.pages;
-        for (const item of read.items)
-          raw.push({
-            id: item.id,
-            name: item.name,
-            key: item.key,
-            group_id: item.groupId,
-            status: item.status,
-            created_at: item.createdAt
-              ? new Date(item.createdAt).toISOString()
-              : null,
-            last_used_at: item.lastUsedAt
-              ? new Date(item.lastUsedAt).toISOString()
-              : null,
-          });
+        raw.push(...read.items);
       }
-      const keys = apiKeysFrom(raw, groups);
+      const keys = apiKeysFrom(raw.map(wireKey), groups);
+      if (!details) return keys;
       // The charges are a convenience: the keys show without them.
       try {
         const stats: Record<string, unknown> = {};
@@ -118,34 +127,39 @@ export function registerApiKeyHandlers(handle: IpcHandle, ctx: AppContext) {
               token,
             },
           )) as { stats?: Record<string, unknown> } | undefined;
-          // requestJson already unwraps the service's {code, data} envelope.
+          check();
+          // requestJson already unwraps the service's {code, data} envelope
+          // (owner, 2026-10-10: reading data.stats here left every key at $0.00).
           Object.assign(stats, body?.stats);
         }
         return withKeyCosts(keys, stats);
       } catch {
+        check();
         return keys;
       }
-    });
+    }, current);
   };
-  handle("apiKeys", list);
+  handle("apiKeys", () => list(service(), true));
   handle("groupRates", async (): Promise<Record<number, number>> => {
-    const backend = service();
+    const { backend, current, check } = service();
     const get = (path: string) =>
       backend.session
-        .authorized((token) =>
-          requestJson(fetch, `${backend.accounts.baseUrl}/api/v1${path}`, {
-            token,
-          }),
-        )
+        .authorized((token) => {
+          check();
+          return requestJson(
+            fetch,
+            `${backend.accounts.baseUrl}/api/v1${path}`,
+            { token },
+          );
+        }, current)
         .then((body) =>
-          body && typeof body === "object" && "data" in body
-            ? (body as { data: unknown }).data
-            : body,
+          body && typeof body === "object" && "data" in body ? body.data : body,
         );
     const [available, own] = await Promise.all([
       get("/groups/available"),
       get("/groups/rates").catch(() => undefined),
     ]);
+    check();
     return groupRatesFrom(available, own);
   });
   handle("createApiKey", async (raw: unknown): Promise<ApiKey> => {
@@ -154,25 +168,38 @@ export function registerApiKeyHandlers(handle: IpcHandle, ctx: AppContext) {
       .parse(raw);
     const problem = apiKeyNameProblem(input.name);
     if (problem) throw Error(problem);
-    const backend = service();
-    const created = await backend.session.authorized((token) =>
-      backend.client.createKey(token, input.name.trim(), input.groupId),
+    const { backend, current, check } = service();
+    const idempotencyKey = randomUUID();
+    const created = await backend.session.authorized((token) => {
+      check();
+      return backend.client.createKey(
+        token,
+        input.name.trim(),
+        input.groupId,
+        idempotencyKey,
+      );
+    }, current);
+    check();
+    const groups = new Map(
+      backend.serviceGroups().map(({ id, name }) => [id, name]),
     );
-    const made = (await list()).find((key) => key.id === created.id);
+    const [made] = apiKeysFrom([wireKey(created)], groups);
     if (!made) throw Error("The key was created but could not be read back.");
     return made;
   });
   handle("deleteApiKey", async (raw: unknown) => {
     const id = z.number().int().positive().parse(raw);
-    const backend = service();
+    const account = service();
     // Only the account's own keys: a device key's deletion would cut the
     // app or the web off the service.
-    if (!(await list()).some((key) => key.id === id && !isDeviceKey(key.name)))
+    const keys = await list(account, false);
+    account.check();
+    if (!keys.some((key) => key.id === id))
       throw Error("That key isn't in your list any more.");
-    await backend.session.authorized((token) =>
-      backend.client.deleteKey(token, id),
-    );
+    await account.backend.session.authorized((token) => {
+      account.check();
+      return account.backend.client.deleteKey(token, id);
+    }, account.current);
+    account.check();
   });
-  // Keeps this list and the bridge's in step.
-  void apiKeysMethods;
 }

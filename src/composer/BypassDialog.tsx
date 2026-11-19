@@ -4,8 +4,8 @@ import { useDialogOverlay } from "../ui/dialog-stack";
 import { helpUrl } from "../../shared/help-links";
 
 /**
- * Confirmation before Code runs with full access in a folder. Cancel starts
- * focused; Escape cancels; Tab stays inside the dialog.
+ * Confirmation before Code runs with full access in a folder (R-0376).
+ * Cancel starts focused; Escape cancels; Tab stays inside the dialog.
  */
 export function BypassDialog({
   folder,
@@ -56,7 +56,8 @@ export function BypassDialog({
         <small>
           You won’t be asked again for this workspace. Read our{" "}
           <a
-            // Claudex's own security page.
+            // Claudex's own security page (live claude.ai bundle,
+            // 2026-10-16, c73f45bc3: the dialog links a security guide).
             href={helpUrl("code-security")}
             onClick={(event) => {
               event.preventDefault();

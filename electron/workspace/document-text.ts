@@ -8,9 +8,28 @@
 import fs from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
+import { DOMParser } from "@xmldom/xmldom";
+import { epubText } from "./document-epub";
 
 /** The most text a document gives the model; the rest is cut with a note. */
 export const maxDocumentChars = 400_000;
+
+type ReadOptions =
+  { mode: "model" } | { mode: "complete"; signal?: AbortSignal };
+type DocumentReader = (data: Buffer, options: ReadOptions) => Promise<string>;
+
+function section(
+  title: string,
+  text: string,
+  placeholder: string,
+  options: ReadOptions,
+) {
+  return text
+    ? `## ${title}\n${text}`
+    : options.mode === "model"
+      ? `## ${title}\n${placeholder}`
+      : "";
+}
 
 const entities: Record<string, string> = {
   amp: "&",
@@ -31,40 +50,116 @@ function decode(text: string) {
   });
 }
 
-/** The text runs of an Office XML part, a paragraph per line. */
-function xmlText(xml: string, run: string, paragraph: string) {
-  const out: string[] = [];
-  const paragraphs = xml.split(new RegExp(`</${paragraph}>`));
-  const runs = new RegExp(`<${run}(?:\\s[^>]*)?>([^<]*)</${run}>`, "g");
-  for (const part of paragraphs) {
-    let line = "";
-    for (const match of part.matchAll(runs)) line += decode(match[1]!);
-    if (line.trim()) out.push(line);
-  }
-  return out.join("\n");
-}
-
 const numbered = (name: string) => Number(/(\d+)\.xml$/.exec(name)?.[1] ?? 0);
 
-async function pptxText(data: Buffer) {
+function officeXml(source: string) {
+  const invalid = () => {
+    throw Error("Invalid Office markup.");
+  };
+  return new DOMParser({
+    errorHandler: { error: invalid, fatalError: invalid },
+  }).parseFromString(source, "application/xml");
+}
+
+function archiveTarget(part: string, href: string) {
+  const target = decodeURIComponent(href);
+  return target.startsWith("/")
+    ? target.slice(1)
+    : path.posix.join(path.posix.dirname(part), target);
+}
+
+async function officeRelationships(zip: JSZip, part: string) {
+  const rels = path.posix.join(
+    path.posix.dirname(part),
+    "_rels",
+    path.posix.basename(part) + ".rels",
+  );
+  const source = await zip.file(rels)?.async("string");
+  return source
+    ? Array.from(officeXml(source).getElementsByTagNameNS("*", "Relationship"))
+    : [];
+}
+
+function relationshipId(element: Element) {
+  return Array.from(element.attributes).find(
+    (attribute) => attribute.namespaceURI && attribute.localName === "id",
+  )?.value;
+}
+
+async function relationshipTargets(zip: JSZip, part: string) {
+  return new Map(
+    (await officeRelationships(zip, part)).map((relationship) => [
+      relationship.getAttribute("Id"),
+      relationship.getAttribute("Target"),
+    ]),
+  );
+}
+
+function slideText(source: string, notes = false) {
+  const document = officeXml(source);
+  if (notes) {
+    for (const shape of Array.from(
+      document.getElementsByTagNameNS("*", "sp"),
+    )) {
+      const placeholder = shape.getElementsByTagNameNS("*", "ph").item(0);
+      if (placeholder?.getAttribute("type") === "sldNum")
+        shape.parentNode?.removeChild(shape);
+    }
+  }
+  return Array.from(document.getElementsByTagNameNS("*", "p"), (paragraph) =>
+    Array.from(
+      paragraph.getElementsByTagNameNS("*", "t"),
+      (run) => run.textContent ?? "",
+    ).join(""),
+  )
+    .filter((line) => line.trim())
+    .join("\n");
+}
+
+async function pptxText(data: Buffer, options: ReadOptions) {
   const zip = await JSZip.loadAsync(data);
-  const slides = Object.keys(zip.files)
-    .filter((name) => /^ppt\/slides\/slide\d+\.xml$/.test(name))
-    .sort((a, b) => numbered(a) - numbered(b));
+  const presentation = "ppt/presentation.xml";
+  const source = await zip.file(presentation)?.async("string");
+  const targets = await relationshipTargets(zip, presentation);
+  const slides = source
+    ? Array.from(
+        officeXml(source).getElementsByTagNameNS("*", "sldId"),
+        (slide) => {
+          const target = targets.get(relationshipId(slide) ?? "");
+          if (!target) throw Error("Missing presentation slide.");
+          return archiveTarget(presentation, target);
+        },
+      )
+    : Object.keys(zip.files)
+        .filter((name) => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+        .sort((a, b) => numbered(a) - numbered(b));
   const parts: string[] = [];
   for (const [index, name] of slides.entries()) {
-    const text = xmlText(await zip.file(name)!.async("string"), "a:t", "a:p");
-    const notesName = `ppt/notesSlides/notesSlide${numbered(name)}.xml`;
-    const notesFile = zip.file(notesName);
-    const notes = notesFile
-      ? xmlText(await notesFile.async("string"), "a:t", "a:p")
-          // A notes page repeats the slide number as its only text.
-          .replace(/^\d+$/m, "")
-          .trim()
+    if (options.mode === "complete") options.signal?.throwIfAborted();
+    const slide = zip.file(name);
+    if (!slide) throw Error("Missing presentation slide.");
+    const text = slideText(await slide.async("string"));
+    const noteTarget = (await officeRelationships(zip, name))
+      .find((entry) => entry.getAttribute("Type")?.endsWith("/notesSlide"))
+      ?.getAttribute("Target");
+    const notesFile = noteTarget
+      ? zip.file(archiveTarget(name, noteTarget))
+      : source
+        ? null
+        : zip.file(`ppt/notesSlides/notesSlide${numbered(name)}.xml`);
+    if (noteTarget && !notesFile) throw Error("Missing presentation notes.");
+    let notes = notesFile
+      ? slideText(await notesFile.async("string"), true)
       : "";
-    parts.push(
-      `## Slide ${index + 1}\n${text || "(no text)"}${notes ? `\n\nNotes:\n${notes}` : ""}`,
-    );
+    if (!source) notes = notes.replace(/^\d+$/m, "").trim();
+    const body = [
+      text || (options.mode === "model" && notes ? "(no text)" : ""),
+      notes && `Notes:\n${notes}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    const part = section(`Slide ${index + 1}`, body, "(no text)", options);
+    if (part) parts.push(part);
   }
   return parts.join("\n\n");
 }
@@ -83,71 +178,85 @@ function column(ref: string) {
   return n - 1;
 }
 
-async function xlsxText(data: Buffer) {
+async function xlsxText(data: Buffer, options: ReadOptions) {
   const zip = await JSZip.loadAsync(data);
-  const shared: string[] = [];
   const sharedFile = zip.file("xl/sharedStrings.xml");
-  if (sharedFile)
-    for (const si of (await sharedFile.async("string")).split("</si>")) {
-      let text = "";
-      for (const m of si.matchAll(/<t(?:\s[^>]*)?>([^<]*)<\/t>/g))
-        text += decode(m[1]!);
-      shared.push(text);
-    }
-  shared.pop();
-  // Sheet names in workbook order, matched to their files by relationship.
-  const workbook = (await zip.file("xl/workbook.xml")?.async("string")) ?? "";
-  const rels =
-    (await zip.file("xl/_rels/workbook.xml.rels")?.async("string")) ?? "";
-  const targets = new Map<string, string>();
-  for (const m of rels.matchAll(/<Relationship\b[^>]*>/g)) {
-    const id = /Id="([^"]+)"/.exec(m[0])?.[1];
-    const target = /Target="([^"]+)"/.exec(m[0])?.[1];
-    if (id && target)
-      targets.set(
-        id,
-        target.startsWith("/") ? target.slice(1) : `xl/${target}`,
-      );
-  }
-  const sheets = [...workbook.matchAll(/<sheet\b[^>]*>/g)].map((m) => ({
-    name: decode(/name="([^"]*)"/.exec(m[0])?.[1] ?? "Sheet"),
-    file: targets.get(/r:id="([^"]+)"/.exec(m[0])?.[1] ?? "") ?? "",
-  }));
+  const runText = (xml: string) =>
+    Array.from(
+      xml.matchAll(/<(?:[\w.-]+:)?t(?:\s[^>]*)?>([^<]*)<\/(?:[\w.-]+:)?t>/g),
+      (run) => decode(run[1]!),
+    ).join("");
+  const shared = sharedFile
+    ? Array.from(
+        (await sharedFile.async("string")).matchAll(
+          /<(?:[\w.-]+:)?si\b[^>]*?(?:\/>|>([\s\S]*?)<\/(?:[\w.-]+:)?si>)/g,
+        ),
+        (item) => runText(item[1] ?? ""),
+      )
+    : [];
+  const workbook = "xl/workbook.xml";
+  const source = await zip.file(workbook)?.async("string");
+  if (!source) throw Error("Missing workbook.");
+  const targets = await relationshipTargets(zip, workbook);
+  const sheets = Array.from(
+    officeXml(source).getElementsByTagNameNS("*", "sheet"),
+  );
   const parts: string[] = [];
   for (const sheet of sheets) {
-    const xml = await zip.file(sheet.file)?.async("string");
-    if (!xml) continue;
+    if (options.mode === "complete") options.signal?.throwIfAborted();
+    const target = targets.get(relationshipId(sheet) ?? "");
+    const xml =
+      target &&
+      (await zip.file(archiveTarget(workbook, target))?.async("string"));
+    if (!xml) {
+      if (options.mode === "complete") throw Error("Missing workbook sheet.");
+      continue;
+    }
     const rows: string[] = [];
-    for (const row of xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)) {
+    for (const row of xml.matchAll(
+      /<(?:[\w.-]+:)?row\b[^>]*?(?:\/>|>([\s\S]*?)<\/(?:[\w.-]+:)?row>)/g,
+    )) {
       const cells: string[] = [];
-      for (const cell of row[1]!.matchAll(
-        /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g,
+      for (const cell of (row[1] ?? "").matchAll(
+        /<(?:[\w.-]+:)?c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/(?:[\w.-]+:)?c>)/g,
       )) {
         const attrs = cell[1]!;
         const body = cell[2] ?? "";
-        const ref = /r="([A-Z]+)\d+"/.exec(attrs)?.[1];
-        const type = /t="([^"]+)"/.exec(attrs)?.[1];
-        const value = /<v>([^<]*)<\/v>/.exec(body)?.[1];
+        const ref = /\br=["']([A-Z]+)\d+["']/.exec(attrs)?.[1];
+        const type = /\bt=["']([^"']+)["']/.exec(attrs)?.[1];
+        const value = /<(?:[\w.-]+:)?v>([^<]*)<\/(?:[\w.-]+:)?v>/.exec(
+          body,
+        )?.[1];
         let text = "";
         if (type === "s" && value !== undefined)
           text = shared[Number(value)] ?? "";
-        else if (type === "inlineStr")
-          text = [...body.matchAll(/<t(?:\s[^>]*)?>([^<]*)<\/t>/g)]
-            .map((m) => decode(m[1]!))
-            .join("");
-        else if (value !== undefined) text = decode(value);
+        else if (type === "inlineStr") text = runText(body);
+        else if (value) text = decode(value);
+        else {
+          const formula =
+            /<(?:[\w.-]+:)?f(?:\s[^>]*)?>([^<]+)<\/(?:[\w.-]+:)?f>/.exec(
+              body,
+            )?.[1];
+          if (formula) text = "=" + decode(formula);
+        }
         const at = ref ? column(ref) : cells.length;
         while (cells.length < at) cells.push("");
         cells[at] = text.replace(/[\t\n\r]+/g, " ");
       }
       if (cells.some((c) => c.trim())) rows.push(cells.join("\t"));
     }
-    parts.push(`## Sheet: ${sheet.name}\n${rows.join("\n") || "(empty)"}`);
+    const part = section(
+      `Sheet: ${sheet.getAttribute("name") ?? "Sheet"}`,
+      rows.join("\n"),
+      "(empty)",
+      options,
+    );
+    if (part) parts.push(part);
   }
   return parts.join("\n\n");
 }
 
-async function pdfText(data: Buffer) {
+async function pdfText(data: Buffer, options: ReadOptions) {
   // The worker's code in this process: pdf.js looks for it on globalThis
   // before it tries to load a worker file, which a bundle doesn't have.
   const worker: unknown =
@@ -160,10 +269,12 @@ async function pdfText(data: Buffer) {
     // Only the text is read: no font warnings in the log.
     verbosity: 0,
   });
-  const doc = await task.promise;
   const pages: string[] = [];
+  let chars = 0;
   try {
+    const doc = await task.promise;
     for (let n = 1; n <= doc.numPages; n++) {
+      if (options.mode === "complete") options.signal?.throwIfAborted();
       const page = await doc.getPage(n);
       const content = await page.getTextContent();
       let text = "";
@@ -174,8 +285,10 @@ async function pdfText(data: Buffer) {
         text += item.str ?? "";
         if (item.hasEOL) text += "\n";
       }
-      pages.push(`## Page ${n}\n${text.trim() || "(no text)"}`);
-      if (pages.join("").length > maxDocumentChars) break;
+      const part = section(`Page ${n}`, text.trim(), "(no text)", options);
+      if (part) pages.push(part);
+      chars += part.length;
+      if (options.mode === "model" && chars > maxDocumentChars) break;
     }
   } finally {
     await task.destroy();
@@ -183,15 +296,30 @@ async function pdfText(data: Buffer) {
   return pages.join("\n\n");
 }
 
-const readers: Record<string, (data: Buffer) => Promise<string>> = {
+const readers: Record<string, DocumentReader> = {
   pptx: pptxText,
   docx: docxText,
   xlsx: xlsxText,
   pdf: pdfText,
 };
 
+export function completeDocumentTextData(
+  data: Buffer,
+  extension: string,
+  signal?: AbortSignal,
+) {
+  signal?.throwIfAborted();
+  if (extension === "epub") return epubText(data, signal);
+  const read = readers[extension];
+  if (!read) throw Error("Unsupported document format.");
+  return read(data, { mode: "complete", signal });
+}
+
 /** The document's text, cut at `maxDocumentChars`; throws a plain sentence when it can't be read. */
-export async function documentText(file: string, name = file): Promise<string> {
+export async function documentTextData(
+  data: Buffer,
+  name: string,
+): Promise<string> {
   const extension = path.extname(name).slice(1).toLowerCase();
   const read = readers[extension];
   if (!read)
@@ -200,7 +328,7 @@ export async function documentText(file: string, name = file): Promise<string> {
     );
   let text: string;
   try {
-    text = await read(fs.readFileSync(file));
+    text = await read(data, { mode: "model" });
   } catch {
     throw new Error(
       `${path.basename(name)} couldn't be read. It may be damaged or protected with a password.`,
@@ -211,4 +339,20 @@ export async function documentText(file: string, name = file): Promise<string> {
   return text.length > maxDocumentChars
     ? `${text.slice(0, maxDocumentChars)}\n\n(The rest of the document was cut: it is longer than Claudex reads at once.)`
     : text;
+}
+
+export async function documentText(file: string, name = file): Promise<string> {
+  if (!readers[path.extname(name).slice(1).toLowerCase()])
+    throw new Error(
+      `${path.basename(name)} isn't a document Claudex can read.`,
+    );
+  let data: Buffer;
+  try {
+    data = fs.readFileSync(file);
+  } catch {
+    throw new Error(
+      `${path.basename(name)} couldn't be read. It may be damaged or protected with a password.`,
+    );
+  }
+  return documentTextData(data, name);
 }

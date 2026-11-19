@@ -8,7 +8,7 @@ import ts from "typescript";
 import postcss from "postcss";
 import { parse as selectors, type Selector } from "css-what";
 import { useAppearance } from "../../src/settings/useAppearance";
-import { fixtureSettings } from "../../scripts/preview/app-fixture";
+import { fixtureSettings } from "../../scripts/fidelity/app-fixture";
 import type { Settings } from "../../shared/types";
 import { routineDom } from "../support/routine-dom";
 

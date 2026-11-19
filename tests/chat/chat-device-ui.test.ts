@@ -23,7 +23,7 @@ import { searchLocalConversations } from "../../electron/conversations/history-s
 import { conversationsToMove } from "../../electron/cloud/migrate";
 import { emitPrivateDeviceEvent } from "../../electron/remote-control/device-public-projection";
 import { isDeviceExecutionCopy } from "../../shared/chat-devices-api";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 import { useChatDevices } from "../../src/composer/ChatDeviceMenu";
 
 const device = {

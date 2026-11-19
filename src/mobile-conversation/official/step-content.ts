@@ -10,8 +10,9 @@ export type StepOutput =
   | { type: "label"; label: string };
 
 /**
- * What the ToolContent page shows for a step: its Request and its Response, or
- * that it failed with nothing returned. Everything here is shown as text only.
+ * What the ToolContent page shows for a step (chat-transcript.md §4.5,
+ * D/ujo.java): its Request and its Response, or that it failed with nothing
+ * returned. Everything here is shown as text only.
  */
 export interface StepContent {
   request?: string;

@@ -21,7 +21,8 @@
   box-shadow: 0 10px 30px #0006;
   color: #e4e2df;
   font:
-    13px/18px -apple-system,
+    13px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
 }
@@ -148,7 +149,7 @@
   pointer-events: none;
 }
 /* After a click and arrow keys the thumb carries a 1px blue-grey ring in both
-   themes; no ring around the track. */
+   themes (R-0365: ~#58728b at the thumb's edge); no ring around the track. */
 .code-effort-track:focus-visible .code-effort-thumb {
   box-shadow:
     0 0 0 1px #58728b,
@@ -187,8 +188,9 @@
   background: #9e9e9e;
   transition: background-color 850ms linear;
 }
-/* A level the model does not take: its dot is dimmed like every disabled
-   control, and the thumb never stops there. */
+/* A level the model does not take (catalog efforts; not captured): its dot
+   is dimmed like every disabled control (--opacity-disabled), and the thumb never stops
+   there. */
 .code-effort-dot[data-unsupported="true"] {
   opacity: var(--opacity-disabled);
 }
@@ -223,9 +225,10 @@
   width: 18px;
   height: 22px;
 }
-/* Ultracode point field: 3px cells on a 4px pitch, drawn by CodeEffortField on
-   a canvas that also carries the steady brightness profile. A soft front mask
-   sweeps from the thumb to the track start. */
+/* Ultracode point field (R-0330, R-0361, 2097af56): 3px cells on a 4px
+   pitch, drawn by CodeEffortField on a canvas that also carries the steady
+   brightness profile. A soft front mask sweeps from the thumb to the track
+   start. */
 .code-effort-ultra-grid {
   position: absolute;
   z-index: 1;
@@ -292,8 +295,8 @@
   }
 }
 
-/* Light theme: the bare track is #e6e6e6, the fill #b4b4b4, dots #a0a0a0 and,
-   inside the fill, #808080. */
+/* Light theme (R-0365 light captures): the bare track is #e6e6e6, the fill
+   #b4b4b4, dots #a0a0a0 and, inside the fill, #808080. */
 :root[data-theme="light"] .code-effort-track {
   background: #e6e6e6;
 }

@@ -1,6 +1,6 @@
 import type { Item } from "./types";
 
-/** Served captions. */
+/** Served captions (live claude.ai bundle, 2026-10-14, shared-10-C9_UFbV-.js). */
 export function toolGroupCaption(items: Item[]) {
   let group: Item["display_group"];
   for (const item of items) {

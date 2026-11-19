@@ -47,7 +47,7 @@ type Words = {
   inPlace?: boolean;
 };
 
-/** Each row's words. */
+/** Each row's words (live claude.ai bundle, 2026-10-14). */
 function wordsOf(step: NextStep): Words {
   switch (step.id) {
     case "waiting-session":
@@ -135,12 +135,13 @@ function wordsOf(step: NextStep): Words {
 }
 
 /**
- * Next steps under the Code home's composer: a 320px card of up to three rows —
- * a session waiting on you, Turn on Worktree when another session runs in the
- * chosen folder, a session that stopped on an error, uncommitted work on a
- * branch. A row opens the session, turns Worktree on ("Worktree is on" with a
- * check) or writes the prompt into the composer; its × dismisses it until what
- * it is about changes.
+ * Next steps under the Code home's composer (live claude.ai bundle,
+ * 2026-10-14: the start card's list, "start-card-setup"): a 320px card of
+ * up to three rows — a session waiting on you, Turn on Worktree when
+ * another session runs in the chosen folder, a session that stopped on an
+ * error, uncommitted work on a branch. A row opens the session, turns
+ * Worktree on ("Worktree is on" with a check) or writes the prompt into the
+ * composer; its × dismisses it until what it is about changes.
  */
 export default function NextSteps({
   cwd,

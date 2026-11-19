@@ -1,11 +1,14 @@
 /*
  * Computer use (R10-U). Settings → System → Computer use is measured from
- * R-1399-DesktopSystem设置长页-02/03 (2.0 image px per CSS px); the access card,
- * the activity line above the composer and the tool rows have no capture of the
- * original and follow the approval card and tool rows they sit with.
+ * R-1399-DesktopSystem设置长页-02/03 (2.0 image px per CSS px); the access
+ * card, the activity line above the composer and the tool rows have no
+ * capture of the original and follow the approval card and tool rows they
+ * sit with (provisional; fidelity/observations/computer-use.md).
  */
 
-/* Settings: "Computer use" and a neutral Badge, gap 8. */
+/* Settings: "Computer use" and a neutral Badge, gap 8 (live claude.ai
+   bundle, 2026-10-14, shared-frame Badge: 18px tall, 6px sides, 11px
+   medium, alpha-1 under text-secondary). */
 .cu-section > h2 {
   display: flex;
   align-items: center;
@@ -216,10 +219,11 @@
 .cu-access-reason > span {
   color: #8f8e8b;
 }
-/* The access card: the Interactive glyph and a semibold secondary title, the
-   rest indented 28px under it (ms-7); the apps in one bordered list (divide-y
-   rounded border bg-surface-1), each row 10px in with a 20px icon (radius 4)
-   and the proposed level as a Badge: accent for View only and Click only,
+/* The access card (live claude.ai bundle, 2026-10-14, c0b9fcb09 rt/ye):
+   the Interactive glyph and a semibold secondary title, the rest indented
+   28px under it (ms-7); the apps in one bordered list (divide-y rounded
+   border bg-surface-1), each row 10px in with a 20px icon (radius 4) and
+   the proposed level as a Badge: accent for View only and Click only,
    neutral for All. */
 .cu-access-head {
   display: flex;
@@ -228,7 +232,7 @@
   margin-bottom: 4px;
   color: var(--text-secondary);
 }
-.cu-access-head > .app-icon {
+.cu-access-head > .anthropicon {
   flex: none;
 }
 .cu-access-title {
@@ -310,16 +314,16 @@
   font-size: 12px;
   line-height: 16px;
 }
-/* Full control asked for in background mode: the 16px glyph 2px down, the
-   question in semibold primary text, 12px above the buttons, both indented
-   28px. */
+/* Full control asked for in background mode (c0b9fcb09 Ze): the 16px glyph
+   2px down, the question in semibold primary text, 12px above the
+   buttons, both indented 28px. */
 .cu-takeover-head {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 12px;
 }
-.cu-takeover-head > .app-icon {
+.cu-takeover-head > .anthropicon {
   flex: none;
   margin-top: 2px;
   color: var(--text-secondary);
@@ -341,7 +345,7 @@
   font-size: 12px;
   line-height: 16px;
 }
-.cu-access-warning > .app-icon {
+.cu-access-warning > .anthropicon {
   flex: none;
   margin-top: 2px;
 }
@@ -384,9 +388,10 @@
   font-size: 12px;
 }
 
-/* While Claudex drives apps: a strip with a 20% clay rule below, surface-1
-   under a 15% clay wash, 16px sides and 8px above and below, a pulsing 8px clay
-   dot, the label in 14px semibold clay, and a secondary xs Stop at the end. */
+/* While Claudex drives apps (live claude.ai bundle, 2026-10-14, c378379ec
+   Q): a strip with a 20% clay rule below, surface-1 under a 15% clay wash,
+   16px sides and 8px above and below, a pulsing 8px clay dot, the label in
+   14px semibold clay, and a secondary xs Stop at the end. */
 .cu-activity {
   position: relative;
   display: flex;
@@ -551,7 +556,9 @@
   background: #f5f5f3;
 }
 
-/* "Turn on computer use?". */
+/* "Turn on computer use?" (live claude.ai bundle, 2026-10-14, cf958f08d:
+   text-secondary body, flex-col gap-3 pt-1; "Keep in mind:" semibold mb-1.5;
+   a disc list ps-5 gap-1). */
 .cu-enable-body {
   display: flex;
   flex-direction: column;
@@ -577,7 +584,8 @@
 .cu-enable-permissions {
   margin: 0;
 }
-/* The permission status badge and Open System Settings. */
+/* The permission status badge and Open System Settings (c71860c77 Gn:
+   flex items-center gap-2; a danger badge when denied). */
 .cu-permission-control {
   display: inline-flex;
   align-items: center;
@@ -587,7 +595,8 @@
   background: color-mix(in srgb, var(--danger) 16%, transparent);
   color: var(--danger);
 }
-/* "Background computer use" with its Beta badge after the title. */
+/* "Background computer use" with its Beta badge after the title (c0b9fcb09
+   We: flex items-center gap-2). */
 .cu-intro-dialog .modal-title-with-icon {
   display: flex;
   align-items: center;

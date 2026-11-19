@@ -442,11 +442,15 @@ func ProvideOllamaCloudUsageService(
 	svc := NewOllamaCloudUsageService(accountRepo, httpUpstream, settingService, encryptor, keyConfigured)
 	svc.lockCache = lockCache
 	svc.db = db
-	svc.Start()
+	svc.start(cfg.RunsControlPlane())
 	return svc
 }
 
 func (s *OllamaCloudUsageService) Start() {
+	s.start(true)
+}
+
+func (s *OllamaCloudUsageService) start(runPeriodicRefresh bool) {
 	if s == nil {
 		return
 	}
@@ -456,9 +460,12 @@ func (s *OllamaCloudUsageService) Start() {
 		return
 	}
 	s.started = true
-	s.wg.Add(2)
+	if runPeriodicRefresh {
+		s.wg.Add(1)
+		go s.runLoop()
+	}
+	s.wg.Add(1)
 	s.mu.Unlock()
-	go s.runLoop()
 	go s.probeLoop()
 }
 

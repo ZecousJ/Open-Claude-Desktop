@@ -1,8 +1,9 @@
 /**
- * Removes a replaced Claudex release's installers from R2. Run it after the
- * newer version is published (docs/releasing.md):
+ * Removes a replaced Claudex release's installers from R2 (owner,
+ * 2026-10-02: R2 keeps the published version only; DC6 caches it). Run it
+ * after the newer version is published (docs/ota.md):
  *
- * npx tsx scripts/release/prune.ts --version 0.0.4 [--delete]
+ *   npx tsx scripts/release/prune.ts --version 0.0.4 [--delete]
  *
  * Dry run by default: prints the object keys. `--delete` deletes them and
  * checks each is gone, with credentials only from the environment:

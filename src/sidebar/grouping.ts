@@ -11,9 +11,10 @@ import {
 import { shownFolder } from "../../shared/session-folder";
 
 /**
- * Group by in the recent list's filter menu. Chat offers Date, Type, Unread and
- * Custom groups; Code offers Date, Folder and Custom groups. State is not
- * offered: Claudex has no remote session states to group by.
+ * Group by in the recent list's filter menu (R-0031 Group by submenu,
+ * R-Code-Recents筛选-Group-by). Chat offers Date, Type, Unread and Custom
+ * groups; Code offers Date, Folder and Custom groups. State is not offered:
+ * Claudex has no remote session states to group by.
  */
 export type GroupBy =
   "none" | "date" | "type" | "unread" | "folder" | "custom" | "state";
@@ -32,8 +33,10 @@ export const effectiveGroupBy = (mode: Mode, by: GroupBy): GroupBy =>
 const day = 86_400_000;
 
 /**
- * The day groups of Group by Date: Today, Yesterday, the five days before as a
- * short date ("Oct 10"), and Older.
+ * The day groups of Group by Date: Today, Yesterday, the five days before as
+ * a short date ("Oct 10"), and Older (desktop bundle 2.31226.1: the
+ * sidebar's seven day buckets, dates formatted with month short and day
+ * numeric in the interface language).
  */
 function dateBucket(time: number, now: number) {
   const start = new Date(now);
@@ -160,8 +163,10 @@ export function setConversationGroups(next: ConversationGroups) {
   return next;
 }
 
-// Groups this window keeps showing while they are empty: one just made with New
-// group…, and one whose conversation was just moved elsewhere.
+// Groups this window keeps showing while they are empty: one just made with
+// New group…, and one whose conversation was just moved elsewhere (live
+// claude.ai bundle, 2026-10-12: the sidebar's groups kept while empty, held
+// in memory only, so a new window shows them per Show empty groups).
 const keptWhileEmpty = new Set<string>();
 
 /** Keeps a group's heading in this window when nothing is left in it. */
@@ -182,12 +187,12 @@ export function addedGroupId(
 }
 
 /**
- * Which custom groups with no row in the list still get their heading, with the
- * "Drag or move sessions here" line under it: Chat and Cowork always show every
- * group; Code shows an empty one when Show empty groups is on, or while this
- * window keeps it. `listed` holds the groups that have a row in the whole
- * filtered list, so a group whose rows are only past Show more is not drawn as
- * empty.
+ * Which custom groups with no row in the list still get their heading, with
+ * the "Drag or move sessions here" line under it (live claude.ai bundle,
+ * 2026-10-12): Chat and Cowork always show every group; Code shows an empty
+ * one when Show empty groups is on, or while this window keeps it. `listed`
+ * holds the groups that have a row in the whole filtered list, so a group
+ * whose rows are only past Show more is not drawn as empty.
  */
 export function emptyGroupsShown(
   mode: Mode,

@@ -200,10 +200,13 @@ export function untrustedRootsFromLayers(layers: unknown): string[] {
 }
 
 /**
- * Trusted Codex projects on SSH hosts, kept on this computer. The SSH launcher
- * writes the host's config.toml at every start, so the host's `projects` table
- * is made from this file each time (Engine.start) and the trust survives
- * restarts.
+ * Trusted Codex projects on SSH hosts, kept on this computer (the official
+ * remote trust store, live claude.ai bundle, 2026-10-12: desktop
+ * index.chunk-B8ah0lMt.js:3517-3543 checks and saves a remote target's
+ * trust locally, `ssh:<host>:<path>` in index.chunk-Cyt2WTko.js
+ * :157367-157397). The SSH launcher writes the host's config.toml at every
+ * start, so the host's `projects` table is made from this file each time
+ * (Engine.start) and the trust survives restarts.
  */
 export class SshWorkspaceTrustStore {
   constructor(private readonly file: string) {}

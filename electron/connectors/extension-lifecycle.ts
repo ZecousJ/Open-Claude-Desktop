@@ -19,6 +19,7 @@ import { changed } from "./extension-lifecycle-support";
 import { configurationUnavailable } from "./extension-lifecycle-support";
 import { text } from "./extension-lifecycle-support";
 import { object } from "./extension-lifecycle-support";
+import { extensionMcpTemplate } from "./extension-lifecycle-support";
 import * as extensionLifecycleEdit from "./extension-lifecycle-edit";
 import { installMethods } from "./install-methods";
 
@@ -32,6 +33,7 @@ export interface ExtensionLifecycleOwner {
 export interface ExtensionLifecycleOptions {
   owner(): ExtensionLifecycleOwner;
   cipher: StorageCipher;
+  systemDirs?(): Record<string, string>;
   /** True only after Engine has actually installed runtimeConfig as its resolver. */
   runtimeConfiguration(entry?: Record<string, unknown>): boolean;
   /** Atomically publish durable account settings, or throw with prior servers retained. */
@@ -95,6 +97,7 @@ export class ExtensionLifecycle {
     id: string,
     create = false,
     version = this.entry(owner, id).claudex_extension_settings,
+    packagePath?: string,
   ) {
     const directory = path.join(owner.root, "desktop-extension-settings");
     if (create) fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -110,7 +113,7 @@ export class ExtensionLifecycle {
       throw Error(configurationUnavailable);
     const file = path.join(
       directory,
-      `${this.settingsPrefix(owner, id)}-${version}.enc`,
+      `${this.settingsPrefix(owner, id, packagePath)}-${version}.enc`,
     );
     try {
       if (!fs.lstatSync(file).isFile()) throw Error(unavailable);
@@ -119,9 +122,9 @@ export class ExtensionLifecycle {
     }
     return file;
   }
-  settingsPrefix(owner: ExtensionLifecycleOwner, id: string) {
+  settingsPrefix(owner: ExtensionLifecycleOwner, id: string, packagePath?: string) {
     return digest(
-      JSON.stringify([id, this.entry(owner, id).claudex_extension]),
+      JSON.stringify([id, packagePath ?? this.entry(owner, id).claudex_extension]),
     );
   }
   private encrypted(owner: ExtensionLifecycleOwner, id: string) {
@@ -131,7 +134,8 @@ export class ExtensionLifecycle {
     try {
       const stat = fs.statSync(file);
       if (stat.size > 128 * 1024) throw Error(unavailable);
-      return fs.readFileSync(file);
+      const value = fs.readFileSync(file);
+      return this.options.cipher.recognizes?.(value) === false ? undefined : value;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
       return undefined;
@@ -167,8 +171,8 @@ export class ExtensionLifecycle {
       const field = object(raw);
       if (
         !/^[a-zA-Z0-9_-]{1,64}$/.test(key) ||
-        !["string", "number", "boolean"].includes(field.type) ||
-        field.multiple === true ||
+        !["string", "number", "boolean", "directory", "file"].includes(field.type) ||
+        (field.multiple === true && !["directory", "file"].includes(field.type)) ||
         (field.sensitive === true && field.type !== "string") ||
         ["__proto__", "constructor", "prototype"].includes(key)
       ) {
@@ -178,6 +182,7 @@ export class ExtensionLifecycle {
       fields.push({
         key,
         type: field.type,
+        ...(field.multiple === true ? { multiple: true } : {}),
         title: text(field.title, 200) ?? key,
         description: text(field.description),
         required: field.required === true,
@@ -330,12 +335,17 @@ export class ExtensionLifecycle {
     const directory = this.directory(owner, entry);
     const { manifest } = this.manifest(directory);
     if (this.uninstalling.get(owner.scope)?.has(name)) return undefined;
-    if (manifest.name !== name) throw Error(unavailable);
-    if (
-      !Object.keys(object(manifest.user_config)).length &&
-      raw.claudex_extension_settings === undefined
-    )
-      return raw;
+    if (manifest.name !== (entry.claudex_extension_manifest_name ?? name)) throw Error(unavailable);
+    const runtime = (values: Record<string, ExtensionValue>) => {
+      const configured = this.expanded(directory, manifest, values);
+      if (object(manifest.server).type === "uv") {
+        configured.command = typeof raw.claudex_extension_uv === "string" ? raw.claudex_extension_uv : "uv";
+        return { ...configured, cwd: directory };
+      }
+      return configured;
+    };
+    if (!Object.keys(object(manifest.user_config)).length && raw.claudex_extension_settings === undefined)
+      return { ...raw, ...runtime({}) };
     if (!this.options.runtimeConfiguration(entry))
       throw Error(configurationUnavailable);
     // Disabled or pending configuration packages never reach app-server startup.
@@ -343,7 +353,7 @@ export class ExtensionLifecycle {
     if (!this.encrypted(owner, name)) throw Error(configurationUnavailable);
     const values = this.validate(manifest, this.values(owner, name));
     const { claudex_extension_settings: _, ...rest } = raw;
-    return { ...rest, ...this.expanded(directory, manifest, values) };
+    return { ...rest, ...runtime(values) };
   }
 }
 
@@ -351,6 +361,7 @@ export interface ExtensionLifecycle {
   details: OmitThisParameter<typeof extensionLifecycleEdit.details>;
   validate: OmitThisParameter<typeof extensionLifecycleEdit.validate>;
   expanded: OmitThisParameter<typeof extensionLifecycleEdit.expanded>;
+  prepareUpgrade: OmitThisParameter<typeof extensionLifecycleEdit.prepareUpgrade>;
   save: OmitThisParameter<typeof extensionLifecycleEdit.save>;
   uninstall: OmitThisParameter<typeof extensionLifecycleEdit.uninstall>;
 }
@@ -374,14 +385,14 @@ export function registerDesktopExtensionHandlers(
 
 /** Installation keeps schema-based packages disabled until configuration is saved.
  * No sensitive value is ever put in the MCP configuration file. */
-export function prepareDesktopExtensionEntry(folder: string) {
+export function prepareDesktopExtensionEntry(folder: string, serverName?: string) {
   const file = path.join(folder, "manifest.json");
   const stat = fs.lstatSync(file);
   if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 256 * 1024)
     throw Error(unavailable);
   const manifest = object(JSON.parse(fs.readFileSync(file, "utf8")));
-  const name = idSchema.parse(manifest.name);
-  const config = object(object(manifest.server).mcp_config);
+  const name = idSchema.parse(serverName ?? manifest.name);
+  const config = extensionMcpTemplate(manifest);
   if (typeof config.command !== "string")
     throw Error("Couldn’t install the extension. Try again.");
   const fields = object(manifest.user_config);
@@ -391,8 +402,8 @@ export function prepareDesktopExtensionEntry(folder: string) {
     Object.entries(fields).some(
       ([key, field]) =>
         !/^[a-zA-Z0-9_-]{1,64}$/.test(key) ||
-        !["string", "number", "boolean"].includes(object(field).type) ||
-        object(field).multiple === true ||
+        !["string", "number", "boolean", "directory", "file"].includes(object(field).type) ||
+        (object(field).multiple === true && !["directory", "file"].includes(object(field).type)) ||
         (object(field).sensitive === true && object(field).type !== "string") ||
         ["__proto__", "constructor", "prototype"].includes(key),
     )
@@ -401,7 +412,8 @@ export function prepareDesktopExtensionEntry(folder: string) {
   const replace = (value: string) => {
     const replaced = value.replace(/\$\{([^}]+)\}/g, (_, key: string) => {
       if (key === "__dirname") return folder;
-      if (key === "pathSeparator") return path.sep;
+      if (key === "pathSeparator" || key === "/") return path.sep;
+      if (["HOME", "DESKTOP", "DOCUMENTS", "DOWNLOADS"].includes(key)) return `\${${key}}`;
       if (
         pending &&
         key.startsWith("user_config.") &&
@@ -411,7 +423,7 @@ export function prepareDesktopExtensionEntry(folder: string) {
       throw Error(configurationUnavailable);
     });
     if (
-      replaced.replace(/\$\{user_config\.[a-zA-Z0-9_-]+\}/g, "").includes("${")
+      replaced.replace(/\$\{(?:user_config\.[a-zA-Z0-9_-]+|HOME|DESKTOP|DOCUMENTS|DOWNLOADS)\}/g, "").includes("${")
     )
       throw Error(configurationUnavailable);
     return replaced;

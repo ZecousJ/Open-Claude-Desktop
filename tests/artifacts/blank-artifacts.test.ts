@@ -12,15 +12,22 @@ import {
   resolveBlankArtifactFile,
 } from "../../electron/artifacts/blank-artifact-files";
 import {
+  blankArtifactCreateInFlightCode,
+  blankArtifactCreateUnconfirmedCode,
   blankArtifactFiles,
   blankArtifactInitialContent,
   blankArtifactOpeningContext,
   type CreatedBlankArtifact,
+  type SaveBlankArtifactResult,
 } from "../../shared/blank-artifacts";
 import { artifactOutputKinds } from "../../shared/artifact-output";
 import type { AppContext } from "../../electron/app/app-context";
 import { webMethodKind } from "../../shared/web-bridge-methods";
 import { CloudRouter } from "../../electron/cloud/cloud-router";
+import {
+  parseConversationDoc,
+  type ConversationDoc,
+} from "../../shared/web-docs";
 
 const deferred = () => {
   let resolve!: () => void, reject!: (e: unknown) => void;
@@ -54,6 +61,7 @@ function setup(
   const create = (
     kind: (typeof artifactOutputKinds)[number] = "docs",
     requestId = randomUUID(),
+    retryInFlight?: true,
   ) =>
     calls.get("createBlankArtifact")!({
       requestId,
@@ -61,6 +69,7 @@ function setup(
       name: `Untitled ${kind}`,
       providerId: "default",
       model: "model",
+      ...(retryInFlight ? { retryInFlight } : {}),
     }) as Promise<CreatedBlankArtifact>;
   const read = (result: CreatedBlankArtifact) =>
     calls.get("readBlankArtifact")!({
@@ -71,7 +80,7 @@ function setup(
     result: CreatedBlankArtifact,
     content: string,
     expectedRevision = result.document.revision,
-  ) =>
+  ): Promise<SaveBlankArtifactResult> =>
     calls.get("saveBlankArtifact")!({
       conversationId: result.conversation.id,
       artifactId: result.document.artifact.id,
@@ -145,6 +154,49 @@ test("actual file save uses revision CAS, detects the agent's edit and never ove
     reason: "generating",
   });
 });
+test("a pending Design save acknowledges its own revision after another editor saves", async (t) => {
+  const gate = deferred();
+  let durability = Promise.resolve();
+  const s = setup(
+    t,
+    (root) =>
+      new (class extends Store {
+        settled() {
+          return durability;
+        }
+      })(root),
+  );
+  const value = await s.create("design");
+  const firstContent = '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>';
+  const secondContent =
+    '<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>';
+  durability = gate.promise;
+  let acknowledged = false;
+  const first = s.save(value, firstContent).then((receipt) => {
+    acknowledged = true;
+    return receipt;
+  });
+  const applied = s.read(value);
+  assert.equal(applied.content, firstContent);
+  const second = s.save(value, secondContent, applied.revision);
+  await Promise.resolve();
+  assert.equal(acknowledged, false);
+  gate.resolve();
+
+  const [firstReceipt, secondReceipt] = await Promise.all([first, second]);
+  assert.equal(firstReceipt.status, "saved");
+  assert.deepEqual(firstReceipt.document, applied);
+  assert.equal(secondReceipt.status, "saved");
+  assert.equal(secondReceipt.document.content, secondContent);
+  assert.deepEqual(
+    await s.save(value, firstContent, firstReceipt.document.revision),
+    {
+      status: "conflict",
+      currentRevision: secondReceipt.document.revision,
+    },
+  );
+  assert.equal(s.read(value).content, secondContent);
+});
 test("same request single-flights until the real store acknowledgement, and failure cannot return a rolled-back pair", async (t) => {
   const gate = deferred();
   let fail = true;
@@ -188,6 +240,106 @@ test("same request single-flights until the real store acknowledgement, and fail
   const again = await s.create("docs", id);
   assert.equal(again.document.artifact.id, retried.document.artifact.id);
   assert.equal(s.store.conversations.length, 1);
+});
+test("keyed Design refuses a concurrent retry and reconfirms the same durable pair after a lost acknowledgement", async (t) => {
+  const writing = deferred(),
+    release = deferred();
+  const rows = new Map<string, ConversationDoc>();
+  const s = setup(t, (root) => {
+    const store = new CloudStore({
+      root,
+      userId: 91,
+      log: () => {},
+      transport: {
+        async request(op, _userId, body) {
+          if (op === "store.conversations.put") {
+            assert.ok(body && typeof body === "object" && "doc" in body);
+            const doc = parseConversationDoc(JSON.stringify(body.doc));
+            const first = !rows.has(doc.conversation.id);
+            rows.set(doc.conversation.id, doc);
+            if (first) {
+              writing.resolve();
+              await release.promise;
+              throw new Error("Acknowledgement was lost");
+            }
+          }
+          return {};
+        },
+      },
+    });
+    t.after(() => {
+      release.resolve();
+      return store.close();
+    });
+    return store;
+  });
+  const id = randomUUID();
+  const unconfirmed = assert.rejects(s.create("design", id, true), {
+    code: blankArtifactCreateUnconfirmedCode,
+  });
+  await writing.promise;
+  const durable = rows.get(id)?.conversation;
+  assert.ok(durable?.blankArtifact);
+  const file = path.join(durable.cwd!, "design.svg");
+  assert.equal(
+    fs.readFileSync(file, "utf8"),
+    blankArtifactInitialContent("design"),
+  );
+  await assert.rejects(s.create("design", id, true), {
+    code: blankArtifactCreateInFlightCode,
+  });
+  await assert.rejects(
+    s.calls.get("createBlankArtifact")!({
+      requestId: id,
+      kind: "design",
+      name: "Untitled design",
+      providerId: "default",
+      model: "unavailable",
+      retryInFlight: true,
+    }),
+    /can’t use this model/,
+  );
+  release.resolve();
+  await unconfirmed;
+  assert.equal(
+    s.store.conversation(id).blankArtifact?.id,
+    durable.blankArtifact.id,
+  );
+  const edited = '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>';
+  fs.writeFileSync(file, edited);
+  const retried = await s.create("design", id, true);
+  assert.equal(retried.conversation.id, id);
+  assert.equal(retried.document.artifact.id, durable.blankArtifact.id);
+  assert.equal(retried.document.content, edited);
+  assert.equal(s.read(retried).content, edited);
+  assert.equal(s.store.conversations.length, 1);
+  assert.equal(rows.size, 1);
+  assert.equal(
+    rows.get(id)?.conversation.blankArtifact?.id,
+    durable.blankArtifact.id,
+  );
+  assert.deepEqual(await s.create("design", id, true), retried);
+});
+test("keyed Design creation does not ask callers to retry an unavailable file", async (t) => {
+  const s = setup(
+    t,
+    (root) =>
+      new (class extends Store {
+        override async confirmConversationMetadata() {
+          throw new Error("Confirmation unavailable");
+        }
+      })(root),
+  );
+  const id = randomUUID();
+  await assert.rejects(s.create("design", id, true), {
+    code: blankArtifactCreateUnconfirmedCode,
+  });
+  const file = resolveBlankArtifactFile(
+    s.ctx.engine.defaultWorkspace,
+    s.store.conversation(id),
+  ).file;
+  fs.unlinkSync(file);
+  await assert.rejects(s.create("design", id, true), { code: "ENOENT" });
 });
 test("a real CloudStore successful retry clears prior failed writes and scopes files to that runner workspace", async (t) => {
   let fail = true;
@@ -316,11 +468,19 @@ test("opening context points both editor and engine to the canonical same file, 
   assert.equal(value.conversation.turns.length, 0);
 });
 test("desktop router creates on the actual cloud runner and routes subsequent file calls by the new conversation", async () => {
-  const conversation = { id: randomUUID(), turns: [] } as never;
+  const conversation = { id: randomUUID(), turns: [] };
+  const input = {
+    requestId: conversation.id,
+    kind: "design",
+    name: "Untitled",
+    providerId: "default",
+    model: "default-model",
+  };
   const calls: string[] = [];
   const client = {
-    call: async (method: string) => {
+    call: async (method: string, args?: unknown[]) => {
       calls.push(method);
+      if (method === "createBlankArtifact") assert.deepEqual(args, [input]);
       return method === "createBlankArtifact" ? { conversation } : "real";
     },
     snapshot: async () => {
@@ -335,7 +495,7 @@ test("desktop router creates on the actual cloud runner and routes subsequent fi
   let local = 0;
   await router.route("createBlankArtifact", () => {
     local++;
-  })({});
+  })({ ...input, retryInFlight: true });
   assert.equal(local, 0);
   assert.equal(
     await router.route("readBlankArtifact", () => {
@@ -344,6 +504,14 @@ test("desktop router creates on the actual cloud runner and routes subsequent fi
     "real",
   );
   assert.equal(local, 0);
+  const noCloud = new CloudRouter({
+    client: () => undefined,
+    push: () => {},
+    attachmentBytes: async () => undefined,
+  });
+  await noCloud.route("createBlankArtifact", (args) => {
+    assert.deepEqual(args, { ...input, retryInFlight: true });
+  })({ ...input, retryInFlight: true });
   assert.deepEqual(calls, ["createBlankArtifact", "readBlankArtifact"]);
   const gate = deferred();
   const old = {
@@ -449,7 +617,8 @@ test("the real Engine's first Chat send uses that same editable file while the v
 });
 
 test("new paired runner IDs keep their owning file route when an older snapshot settles after creation", async () => {
-  const { fixtureSnapshot } = await import("../../scripts/preview/app-fixture");
+  const { fixtureSnapshot } =
+    await import("../../scripts/fidelity/app-fixture");
   const snapshot = fixtureSnapshot({ history: "empty" }),
     gate = deferred(),
     id = randomUUID();
@@ -534,7 +703,7 @@ test("the real web runner guard accepts ID/content protocols and rejects browser
 });
 test("preview fixture uses the same paired idle/read/CAS contract rather than a rendered pretend editor", async () => {
   const { createFixtureDesktop } =
-    await import("../../scripts/preview/app-fixture");
+    await import("../../scripts/fidelity/app-fixture");
   const api = createFixtureDesktop(
     { history: "empty" },
     new URLSearchParams("fonts=system"),

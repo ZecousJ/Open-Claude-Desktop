@@ -2,6 +2,7 @@ import type { ClientPolicy } from "../../shared/client-policy";
 import type { SshHost } from "../../shared/ssh-api";
 import { effectiveConfig } from "./ssh-config";
 
+// (desktop 2.37337.1, index.chunk-BWk6pVUt.js, xFr / DFr)
 export function sshHostAllowed(
   hostname: string,
   allowlist?: readonly string[],

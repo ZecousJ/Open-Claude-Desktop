@@ -2,13 +2,17 @@ import { useSyncExternalStore } from "react";
 import { prefersReducedMotion } from "./usePresence";
 
 /*
- * The window's notices (the corner toasts), after the original's toaster: each
- * stays 6 seconds (a shorter time is raised to that), at most three show,
- * newest in front, and the same message again counts up on the toast already
- * shown ("(×2)") instead of stacking a copy. A fourth is kept, hidden, until
- * one in front goes. Hovering the stack holds every timer. A dismissed toast
- * stays 200ms for its exit. A danger toast given no time stays 6.5 seconds, and
- * a counted toast the person closes keeps the same message away for 30 seconds.
+ * The window's notices (the corner toasts), after the original's toaster
+ * (desktop bundle 2.31226.1, Base UI toasts): each stays 6 seconds (a
+ * shorter time is raised to that), at most three show, newest in front,
+ * and the same message again counts up on the toast already shown
+ * ("(×2)") instead of stacking a copy. A fourth is kept, hidden, until one
+ * in front goes (Base UI marks it `limited`; its countdown starts then,
+ * live claude.ai bundle, 2026-10-16, vendor-base-ui and shared-l-p-m-6).
+ * Hovering the stack holds every timer. A dismissed toast stays 200ms for its exit. A danger toast given
+ * no time stays 6.5 seconds, and a counted toast the person closes keeps
+ * the same message away for 30 seconds (live claude.ai bundle, 2026-10-14,
+ * shared-l-p-m-6 iM, aM/oM).
  */
 
 export const TOAST_TIMEOUT_MS = 6000;

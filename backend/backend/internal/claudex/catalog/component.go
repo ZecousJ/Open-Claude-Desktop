@@ -109,6 +109,7 @@ func (c *Component) Name() string { return core.NameCatalog }
 func (c *Component) RegisterUserRoutes(g *gin.RouterGroup) {
 	g.GET("/models", c.getModels)
 	c.registerDirectoryRoutes(g)
+	c.registerPluginOrganizationRoutes(g)
 }
 
 // RegisterAdminRoutes implements core.AdminRouter (/api/v1/admin/claudex,

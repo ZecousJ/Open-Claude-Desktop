@@ -5,10 +5,11 @@ import { reducedMotion } from "./page-fade";
 export const swipeSlop = 10;
 
 /**
- * Whether a finger that moved `along` px towards the closing side (positive to
- * the left) and `across` px the other way starts dragging the sheet: past the
- * slop, towards the closing side, and more that way than across. The live
- * claude.ai bundle's phone sheet gives up on any other gesture.
+ * Whether a finger that moved `along` px towards the closing side (positive
+ * to the left) and `across` px the other way starts dragging the sheet: past
+ * the slop, towards the closing side, and more that way than across. The
+ * live claude.ai bundle's phone sheet (2026-10-12) gives up on any other
+ * gesture.
  */
 export const swipeStarts = (along: number, across: number) =>
   Math.max(Math.abs(along), Math.abs(across)) < swipeSlop
@@ -16,19 +17,21 @@ export const swipeStarts = (along: number, across: number) =>
     : along > 0 && Math.abs(across) <= along;
 
 /**
- * Whether a drag let go after `along` px in `elapsed` ms closes a sheet `width`
- * px wide: past a third of it, or faster than 0.5 px/ms.
+ * Whether a drag let go after `along` px in `elapsed` ms closes a sheet
+ * `width` px wide: past a third of it, or faster than 0.5 px/ms (the live
+ * claude.ai bundle's phone sheet, 2026-10-12).
  */
 export const swipeCloses = (along: number, elapsed: number, width: number) =>
   along > width / 3 || along / Math.max(1, elapsed) > 0.5;
 
-/** The phone sheet's duration and ease-out. */
+/** The phone sheet's duration and ease-out (live claude.ai bundle, 2026-10-12). */
 const sheetMotion = "transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)";
 
 /**
- * On a phone the sidebar is a full-screen sheet; a swipe to the left takes it
- * away and shows the conversation again. The sheet follows the finger once the
- * gesture is clearly sideways; a short or slow swipe springs back.
+ * On a phone the sidebar is a full-screen sheet; a swipe to the left takes
+ * it away and shows the conversation again (owner, 2026-10-03). The sheet
+ * follows the finger once the gesture is clearly sideways; a short or slow
+ * swipe springs back.
  */
 export function useSwipeClose(
   ref: RefObject<HTMLElement | null>,

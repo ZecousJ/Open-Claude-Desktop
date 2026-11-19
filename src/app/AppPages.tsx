@@ -21,7 +21,9 @@ import { useSplitPanes } from "../split-view/useSplitPanes";
 import { lazyPiece } from "../ui/lazy-piece";
 import { SpinOffSlot } from "../cowork/SpinOffSlot";
 import { surface } from "../../shared/host";
-// A Code session with its panes open is the tiled workspace on both hosts.
+// A Code session with its panes open is the tiled workspace on both hosts
+// (live claude.ai Code, 2026-10-21: the conversation and the panes are
+// cards side by side, 12px apart, each with its own edge).
 const NativeCodeLayout = lazyPiece(
   () => import("./CodeWorkspaceLayout"),
   "CodeWorkspaceLayout",

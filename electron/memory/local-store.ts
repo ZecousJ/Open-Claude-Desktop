@@ -11,6 +11,7 @@ import { z } from "zod";
 import type { MemoryPrefs } from "../../shared/memory-api";
 import {
   MemoryConflictError,
+  MemoryControlsConflictError,
   type MemoryStore,
   type SaveDocInput,
 } from "./store";
@@ -26,6 +27,7 @@ import {
   type MemoryScope,
   type MemorySnapshot,
 } from "./types";
+import { cleanControls } from "./controls";
 
 export const localMemoryFile = "memory.json";
 
@@ -36,6 +38,9 @@ const scope = z
 const time = z.number().int().nonnegative();
 const fileSchema = z.object({
   version: z.literal(1),
+  epoch: z.number().int().nonnegative().default(0),
+  versions: z.record(z.string(), z.number().int().nonnegative()).default({}),
+  resets: z.record(z.string(), z.number().int().nonnegative()).default({}),
   prefs: z
     .object({ searchChats: z.boolean(), generate: z.boolean() })
     .nullable(),
@@ -67,6 +72,9 @@ type MemoryFile = z.infer<typeof fileSchema>;
 
 const emptyFile = (): MemoryFile => ({
   version: 1,
+  epoch: 0,
+  versions: {},
+  resets: {},
   prefs: null,
   docs: [],
   edits: [],
@@ -121,14 +129,22 @@ export class LocalMemoryStore implements MemoryStore {
       limits: memoryLimits,
       docs: this.data.docs.map((doc) => ({ ...doc }) as MemoryDocRecord),
       edits: this.data.edits.map((edit) => ({ ...edit }) as MemoryEditRecord),
+      emptyControlsVersion: `v1:${this.data.epoch}:0:0`,
+      controlsVersions: Object.fromEntries(
+        Object.keys(this.data.versions).map((scope) => [
+          scope,
+          this.controlsVersion(scope),
+        ]),
+      ),
     };
   }
   async load() {
     this.data = this.read();
     return this.current();
   }
-  async setPrefs(prefs: Partial<MemoryPrefs>) {
-    const base = this.data.prefs ?? { searchChats: false, generate: false };
+  async setPrefs(prefs: Partial<MemoryPrefs>, defaults?: MemoryPrefs) {
+    this.data = this.read();
+    const base = this.data.prefs ?? defaults ?? { searchChats: false, generate: false };
     this.write({
       ...this.data,
       prefs: {
@@ -146,12 +162,60 @@ export class LocalMemoryStore implements MemoryStore {
     if (extra) scopes.add(extra);
     return scopes.size;
   }
+  private controlsVersion(scope: string) {
+    return `v1:${this.data.epoch}:${this.data.resets[scope] ?? 0}:${this.data.versions[scope] ?? 0}`;
+  }
+  private checkControls(scope: MemoryScope, base: string) {
+    const current = this.controlsVersion(scope);
+    if (base !== current) {
+      const a = base.split(":");
+      const b = current.split(":");
+      throw new MemoryControlsConflictError(a[1] !== b[1] || a[2] !== b[2]);
+    }
+  }
+  async replaceControls(
+    scope: MemoryScope,
+    raw: string[],
+    baseVersion: string,
+  ) {
+    this.data = this.read();
+    const controls = cleanControls(raw, memoryLimits);
+    this.checkControls(scope, baseVersion);
+    if (controls.length && this.scopes(scope) > memoryLimits.scopes)
+      throw new Error(memoryMessages.full);
+    const edits = controls.map((text) => ({
+      id: randomUUID(),
+      scope,
+      text,
+      createdAt: this.now(),
+    }));
+    this.write({
+      ...this.data,
+      versions: {
+        ...this.data.versions,
+        [scope]: (this.data.versions[scope] ?? 0) + 1,
+      },
+      edits: [
+        ...this.data.edits.filter((edit) => edit.scope !== scope),
+        ...edits,
+      ],
+    });
+    return {
+      edits: edits.map((edit) => ({ ...edit })),
+      version: this.controlsVersion(scope),
+    };
+  }
   async saveDoc(
     scope: MemoryScope,
     input: SaveDocInput,
+    checkBeforeWrite?: () => void,
   ): Promise<MemoryDocRecord> {
+    this.data = this.read();
+    checkBeforeWrite?.();
     if (utf8Bytes(input.content) > memoryLimits.docBytes)
       throw new Error(memoryMessages.tooLarge);
+    if (input.baseControlsVersion !== undefined)
+      this.checkControls(scope, input.baseControlsVersion);
     const existing = this.data.docs.find((doc) => doc.scope === scope);
     if ((existing?.revision ?? 0) !== input.baseRevision)
       throw new MemoryConflictError(existing?.revision ?? 0);
@@ -189,10 +253,17 @@ export class LocalMemoryStore implements MemoryStore {
       ...this.data,
       docs: [...this.data.docs.filter((item) => item.scope !== scope), doc],
       edits: this.data.edits.filter((edit) => !folded.has(edit.id)),
+      versions: folded.size
+        ? {
+            ...this.data.versions,
+            [scope]: (this.data.versions[scope] ?? 0) + 1,
+          }
+        : this.data.versions,
     });
     return { ...doc };
   }
   async addEdit(scope: MemoryScope, raw: string): Promise<MemoryEditRecord> {
+    this.data = this.read();
     const text = cleanEdit(raw);
     if (!text) throw new Error(memoryMessages.emptyEdit);
     if ([...text].length > memoryLimits.editChars)
@@ -209,19 +280,43 @@ export class LocalMemoryStore implements MemoryStore {
       text,
       createdAt: this.now(),
     };
-    this.write({ ...this.data, edits: [...this.data.edits, edit] });
+    this.write({
+      ...this.data,
+      edits: [...this.data.edits, edit],
+      versions: {
+        ...this.data.versions,
+        [scope]: (this.data.versions[scope] ?? 0) + 1,
+      },
+    });
     return { ...edit };
   }
   async removeEdit(id: string) {
-    if (!this.data.edits.some((edit) => edit.id === id)) return;
+    this.data = this.read();
+    const existing = this.data.edits.find((edit) => edit.id === id);
+    if (!existing) return;
     this.write({
       ...this.data,
       edits: this.data.edits.filter((edit) => edit.id !== id),
+      versions: {
+        ...this.data.versions,
+        [existing.scope]: (this.data.versions[existing.scope] ?? 0) + 1,
+      },
     });
   }
   async reset(scope?: MemoryScope) {
+    this.data = this.read();
     this.write({
       ...this.data,
+      epoch: scope ? this.data.epoch : this.data.epoch + 1,
+      versions: scope
+        ? {
+            ...this.data.versions,
+            [scope]: (this.data.versions[scope] ?? 0) + 1,
+          }
+        : {},
+      resets: scope
+        ? { ...this.data.resets, [scope]: (this.data.resets[scope] ?? 0) + 1 }
+        : {},
       docs: scope ? this.data.docs.filter((doc) => doc.scope !== scope) : [],
       edits: scope
         ? this.data.edits.filter((edit) => edit.scope !== scope)

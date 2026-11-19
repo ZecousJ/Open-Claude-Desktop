@@ -3,7 +3,7 @@ import type { HistorySearchHit } from "../../../shared/history-search";
 import type { Conversation, Mode } from "../../../shared/types";
 import type { HistoryTab } from "./history-rows";
 
-/** Debounced host search with retry; Code uses titles. */
+/** Debounced host search with retry; Code uses titles (live claude.ai bundle, 2026-10-14, c03be4f3b). */
 export function useHistorySearch(
   input: string | null,
   mode: Mode,

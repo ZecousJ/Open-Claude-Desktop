@@ -15,6 +15,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -54,6 +55,8 @@ type SiteOptions struct {
 	// CLAUDEX_WEB_APP_DIR), so the web app can be updated without a new
 	// server binary.
 	AppDir string
+	// UserContentOrigin is the separate origin of the original document viewer.
+	UserContentOrigin string
 	// SetupMode is the first-run setup wizard: "/" goes to /admin/setup and
 	// the web app is off.
 	SetupMode bool
@@ -239,7 +242,52 @@ func (s *SiteServer) serveApp(c *gin.Context, reqPath string) {
 		notFound(c)
 		return
 	}
+	if reqPath == "/official-frame.html" {
+		// The frame must come from the app build, not a site override or SPA fallback.
+		document, err := fs.ReadFile(s.app.files, "official-frame.html")
+		if err != nil {
+			notFound(c)
+			return
+		}
+		middleware.AllowOfficialWebFrame(c, officialPreviewOrigin(s.opts.UserContentOrigin, c.Request))
+		c.Header("Cache-Control", "no-cache")
+		c.Data(http.StatusOK, "text/html; charset=utf-8", replaceNoncePlaceholder(document, middleware.GetNonceFromContext(c)))
+		c.Abort()
+		return
+	}
+	if reqPath == "/official-status-preview.html" {
+		document, err := fs.ReadFile(s.app.files, "official-status-preview.html")
+		if err != nil {
+			notFound(c)
+			return
+		}
+		c.Header("Content-Security-Policy", "sandbox allow-scripts; frame-ancestors 'self'")
+		c.Header("X-Frame-Options", "SAMEORIGIN")
+		c.Header("Cache-Control", "no-cache")
+		c.Data(http.StatusOK, "text/html; charset=utf-8", document)
+		c.Abort()
+		return
+	}
 	s.serveZone(c, s.app, reqPath)
+}
+
+func officialPreviewOrigin(origin string, request *http.Request) string {
+	preview, err := url.Parse(origin)
+	if err != nil || preview.Hostname() == "" || origin != preview.Scheme+"://"+preview.Host || strings.ContainsAny(origin, " \t\r\n;*") {
+		return ""
+	}
+	appHost := (&url.URL{Host: request.Host}).Hostname()
+	if strings.EqualFold(preview.Hostname(), appHost) {
+		return ""
+	}
+	if preview.Scheme == "https" {
+		return origin
+	}
+	loopback := func(host string) bool { return host == "localhost" || host == "127.0.0.1" || host == "::1" }
+	if preview.Scheme == "http" && request.TLS == nil && loopback(appHost) && loopback(preview.Hostname()) {
+		return origin
+	}
+	return ""
 }
 
 func (s *SiteServer) webAppEnabled(c *gin.Context) bool {
@@ -278,21 +326,25 @@ func (s *SiteServer) serveZone(c *gin.Context, z *spaZone, reqPath string) {
 	s.serveIndex(c, z)
 }
 
-// serveIndex answers the zone's index.html with its config script (nonce
-// from SecurityHeaders), cached per zone with an ETag.
+// serveIndex caches the zone's rendered index template in memory. A response
+// with a request-specific CSP nonce always sends a matching HTML body.
 func (s *SiteServer) serveIndex(c *gin.Context, z *spaZone) {
 	if z == nil {
 		notFound(c)
 		return
 	}
 	nonce := middleware.GetNonceFromContext(c)
+	if nonce != "" {
+		c.Header("Cache-Control", "no-store")
+	} else {
+		c.Header("Cache-Control", "no-cache")
+	}
 	z.base() // a new build on disk drops the rendered page
 	cached := z.cache.Get()
 	if cached == nil {
 		rendered, configJSON, ok := s.render(c, z)
 		if !ok {
-			// Serve without caching; the next request tries the settings again.
-			c.Header("Cache-Control", "no-cache")
+			// The next request tries the settings again.
 			c.Data(http.StatusOK, "text/html; charset=utf-8", replaceNoncePlaceholder(rendered, nonce))
 			c.Abort()
 			return
@@ -303,15 +355,14 @@ func (s *SiteServer) serveIndex(c *gin.Context, z *spaZone) {
 			cached = fresh
 		}
 	}
-	if cached.ETag != "" && c.GetHeader("If-None-Match") == cached.ETag {
-		c.Status(http.StatusNotModified)
-		c.Abort()
-		return
-	}
-	if cached.ETag != "" {
+	if nonce == "" && cached.ETag != "" {
 		c.Header("ETag", cached.ETag)
+		if c.GetHeader("If-None-Match") == cached.ETag {
+			c.Status(http.StatusNotModified)
+			c.Abort()
+			return
+		}
 	}
-	c.Header("Cache-Control", "no-cache") // Must revalidate
 	c.Data(http.StatusOK, "text/html; charset=utf-8", replaceNoncePlaceholder(cached.Content, nonce))
 	c.Abort()
 }

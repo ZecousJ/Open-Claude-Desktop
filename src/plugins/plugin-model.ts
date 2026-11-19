@@ -76,7 +76,8 @@ export interface PluginFilter {
   sort?: "name";
 }
 
-// Empty lines.
+// Empty lines (live claude.ai bundle, 2026-10-14, cc141fa17-DYWLAlde.js,
+// c109e6946-S_p1IpG2.js; personal marketplaces: c99ed1520-PqlzH3ps).
 export function pluginEmptyMessage(
   filter: PluginFilter,
   personal: boolean,
@@ -133,9 +134,11 @@ export function pluginErrorText(error: unknown): string {
 }
 
 /**
- * Why adding a marketplace failed, in the original's sentences for the reasons
- * it names rather than the runtime's own words; any other reason keeps the
- * runtime's sentence, and an empty one is "Failed to add marketplace.".
+ * Why adding a marketplace failed, in the original's sentences for the
+ * reasons it names (live claude.ai bundle, 2026-10-16, caeab6b9d: the
+ * MARKETPLACE_ERROR codes) rather than the runtime's own words; any other
+ * reason keeps the runtime's sentence, and an empty one is "Failed to add
+ * marketplace.".
  */
 export function marketplaceAddError(error: unknown): string {
   const text = pluginErrorText(error);

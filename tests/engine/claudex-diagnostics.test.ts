@@ -751,6 +751,23 @@ test("the diagnostics IPC follows the signed-in account and deletes the queue wh
   const queued = JSON.parse(fs.readFileSync(file, "utf8"));
   assert.equal(queued.diagnostics.length, 1);
   assert.equal(queued.feedback.length, 1);
+  ratings.emit({
+    conversationId: "conversation-a",
+    turnId: "turn-1",
+    rating: "up",
+    localOnly: true,
+  });
+  assert.equal(JSON.parse(fs.readFileSync(file, "utf8")).feedback.length, 1);
+  ratings.emit({
+    conversationId: "conversation-a",
+    turnId: "turn-1",
+    rating: "down",
+    localOnly: true,
+  });
+  assert.equal(JSON.parse(fs.readFileSync(file, "utf8")).feedback.length, 1);
+  ratings.emit({ conversationId: "conversation-a", turnId: "turn-1", rating: null });
+  ratings.emit({ conversationId: "conversation-a", turnId: "turn-1", rating: "up", localOnly: true });
+  assert.equal(JSON.parse(fs.readFileSync(file, "utf8")).feedback.length, 0);
   assert.deepEqual(
     await handlers.get("submitReplyFeedback")!({
       conversationId: "conversation-a",
@@ -767,6 +784,18 @@ test("the diagnostics IPC follows the signed-in account and deletes the queue wh
     }),
     /Only completed replies/,
   );
+  const saved = { ...store.conversations[0].turns[0], id: "saved-turn" };
+  store.conversations[0].savedBranches = [{
+    id: "saved", providerId: "sub2api", model: "gpt-5.5", visited: 1,
+    turns: [saved, { ...saved, id: "unfinished", status: "inProgress" }],
+  }];
+  assert.deepEqual(await handlers.get("submitReplyFeedback")!({
+    conversationId: "conversation-a", turnId: "saved-turn", rating: "down",
+  }), { sent: false, queued: true });
+  await assert.rejects(handlers.get("submitReplyFeedback")!({
+    conversationId: "conversation-a", turnId: "unfinished", rating: "down",
+  }), /Only completed replies/);
+  ratings.emit({ conversationId: "conversation-a", turnId: "saved-turn", rating: null });
 
   // Deleting the conversation takes its unsent feedback along.
   await assert.rejects(

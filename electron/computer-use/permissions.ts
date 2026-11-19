@@ -34,6 +34,13 @@ export class PermissionMonitor {
   private screenAtLaunch =
     process.platform === "darwin" ? screenStatus() : "granted";
   private asked = new Set<ComputerUsePermissionKind>();
+  private driverAccessibilityDenied = false;
+
+  constructor(private driverApp?: string) {}
+
+  reportDriverAccessibilityDenied() {
+    this.driverAccessibilityDenied = true;
+  }
 
   current(): ComputerUsePermissions {
     if (process.platform !== "darwin")
@@ -43,12 +50,13 @@ export class PermissionMonitor {
         screen: "granted",
       };
     const trusted = systemPreferences.isTrustedAccessibilityClient(false);
+    const driverDenied = this.driverAccessibilityDenied && this.driverApp;
     const screen = screenStatus();
     return {
       platform: "darwin",
-      accessibility: trusted
+      accessibility: trusted && !driverDenied
         ? "granted"
-        : this.asked.has("accessibility")
+        : driverDenied || this.asked.has("accessibility")
           ? "denied"
           : "not-determined",
       screen:
@@ -68,8 +76,10 @@ export class PermissionMonitor {
   async request(kind: ComputerUsePermissionKind) {
     if (process.platform !== "darwin") return this.current();
     this.asked.add(kind);
-    if (kind === "accessibility")
-      systemPreferences.isTrustedAccessibilityClient(true);
+    if (kind === "accessibility") {
+      if (!this.driverAccessibilityDenied || !this.driverApp)
+        systemPreferences.isTrustedAccessibilityClient(true);
+    }
     else
       await desktopCapturer
         .getSources({
@@ -83,6 +93,13 @@ export class PermissionMonitor {
 
   async open(kind: ComputerUsePermissionKind) {
     if (process.platform !== "darwin") return;
+    if (kind === "accessibility" && this.driverAccessibilityDenied && this.driverApp) {
+      const error = await shell.openPath(this.driverApp);
+      if (!error) {
+        this.driverAccessibilityDenied = false;
+        return;
+      }
+    }
     await shell.openExternal(panes[kind]);
   }
 }

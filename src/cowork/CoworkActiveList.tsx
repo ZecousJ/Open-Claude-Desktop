@@ -9,7 +9,7 @@ import { taskStatus, type TaskStatus } from "./task-status";
 
 export const activeListLimit = 5;
 
-// Home rows use a status glyph, not the panel's tiles.
+// Home rows use a status glyph, not the panel's tiles (live claude.ai bundle, 2026-10-14, shared-20-BCaQhdKH.js).
 function HomeTaskStatus({
   status,
   conversation,
@@ -88,7 +88,7 @@ export function CoworkActiveList({
     (c) => c.unread || isRunning(c) || waiting.has(c.id),
   );
   const heading = pinned ? (active ? "Pinned or active" : "Pinned") : "Active";
-  // Five rows, inset rules, and heading variants.
+  // Five rows, inset rules, and heading variants (live claude.ai bundle, 2026-10-14, shared-23-RHw-hr47.js).
   return (
     <section className="cowork-active" aria-label={formatText(heading)}>
       <div className="cowork-active-head">

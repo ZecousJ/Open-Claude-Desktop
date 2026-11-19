@@ -33,9 +33,10 @@ const FolderInstructions = lazyPiece(
 );
 
 /**
- * An output's row name as the original writes it: the file name without its
- * extension, dashes and underscores as spaces, and the extension in capitals
- * after it.
+ * An output's row name as the original writes it (R-0928): the file name
+ * without its extension, dashes and underscores as spaces
+ * ("R-0928-synthetic-output.txt" → "R 0928 synthetic output"), and the
+ * extension in capitals after it.
  */
 export function outputLabel(filename: string) {
   const dot = filename.lastIndexOf(".");
@@ -47,8 +48,9 @@ export function outputLabel(filename: string) {
 }
 
 /**
- * The collapsed Progress heading's count; nothing while the task is still
- * going.
+ * The collapsed Progress heading's count (desktop bundle 2.31226.1: "{count}
+ * of {count}", shown only once every step is done); nothing while the task
+ * is still going.
  */
 export function planDoneCount(plan: { status: string }[]) {
   return plan.length > 0 && plan.every((step) => step.status === "completed")
@@ -57,7 +59,8 @@ export function planDoneCount(plan: { status: string }[]) {
 }
 
 /**
- * The empty Progress picture: two done rings and an open one, joined by dashes.
+ * The empty Progress picture (R-0879): two done rings and an open one,
+ * joined by dashes.
  */
 function ProgressPlaceholder() {
   return (
@@ -74,8 +77,9 @@ function ProgressPlaceholder() {
 }
 
 /**
- * The empty Outputs picture: a sheet with three upright bars over a rule, shown
- * where the task has no folder yet.
+ * The empty Outputs picture (desktop bundle 2.31226.1, session-artifacts
+ * 63x43): a sheet with three upright bars over a rule, shown where the task
+ * has no folder yet.
  */
 function ArtifactsPlaceholder() {
   return (
@@ -119,12 +123,13 @@ export function folderOf(folders: string[], sourcePath: string | undefined) {
 }
 
 /**
- * Cowork's Activity panel: a card in the window's top right corner, as tall as
- * its content, with Progress (the task's steps, Codex's turn/plan/updated), the
- * working folder with the files the task produced, and Context (the connectors
- * it used). Each part shows only what the conversation really has. One folder
- * is a section of its own named for it; several share one "Working folders"
- * section with a collapsible group each.
+ * Cowork's Activity panel (R-0853, R-0879, R-0928; earlier S-0008): a card
+ * in the window's top right corner, as tall as its content, with Progress
+ * (the task's steps, Codex's turn/plan/updated), the working folder with the
+ * files the task produced, and Context (the connectors it used). Each part
+ * shows only what the conversation really has. One folder is a section of
+ * its own named for it; several share one "Working folders" section with a
+ * collapsible group each (desktop bundle 2.31226.1).
  */
 export function ProgressPanel({
   conversation,
@@ -155,8 +160,8 @@ export function ProgressPanel({
       },
   );
   const folder = conversation.cwd;
-  // Outputs the running turn produced that were not opened yet: the folder
-  // opens by itself once per turn and marks them.
+  // Outputs the running turn produced that were not opened yet (R-0928):
+  // the folder opens by itself once per turn and marks them.
   const app = useContext(AppContext);
   const services = useConversationServices();
   const [downloading, setDownloading] = useState(false);
@@ -412,7 +417,8 @@ export function ProgressPanel({
                   </button>
                   {folderActions(index, byFolder[index])}
                 </div>
-                {/* A group with no files is its heading alone. */}
+                {/* A group with no files is its heading alone (live
+                    claude.ai bundle, 2026-10-12). */}
                 {shown && index === 0 && instructionsRow}
                 {shown &&
                   byFolder[index].length > 0 &&
@@ -435,7 +441,8 @@ export function ProgressPanel({
             <p className="progress-muted">
               Track tools and referenced files used in this task.
             </p>
-            {/* Under an empty Context, inside its padding. */}
+            {/* Under an empty Context, inside its padding (live claude.ai
+                bundle, 2026-10-21, ce5658dc8: Ku holds the suggestions). */}
             <Suspense fallback={null}>
               <SuggestedConnectors />
             </Suspense>

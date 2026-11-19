@@ -156,9 +156,7 @@ function changeKind(change: { kind?: unknown }) {
     : (change.kind as { type?: string } | undefined)?.type;
 }
 
-/**
- * "Allow Claudex to edit app.js?" — write for new files, delete for removals.
- */
+/** "Allow Claudex to edit app.js?" — write for new files, delete for removals (R-0805). */
 export function fileChangeTitle(item: Item | undefined, grantRoot?: string) {
   const changes = item?.changes ?? [];
   if (!changes.length)
@@ -178,7 +176,7 @@ export function fileChangeTitle(item: Item | undefined, grantRoot?: string) {
 
 /**
  * "Allow Claudex to run {command}?" with the whole command on one line; the
- * card clamps the title to two lines.
+ * card clamps the title to two lines (live claude.ai bundle, 2026-10-14).
  */
 export function commandTitle(params: any) {
   const command =

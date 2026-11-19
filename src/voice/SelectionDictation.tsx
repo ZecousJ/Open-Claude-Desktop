@@ -1,4 +1,3 @@
-import { Reply } from "lucide-react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -12,7 +11,10 @@ import type { SpeechEngine } from "./useSpeechEngine";
 import "./selection-dictation.css";
 import "./comment-dictation.css";
 
-/** Reply editor. */
+const replyPath =
+  "m8.79 3.21q-.16-.17-.16-.41q0-.24.16-.41q.17-.16.41-.16q.24 0 .41.16l3.2 3.2q.17.18.16.41q-.01.23-.16.4q-.15.17-.41.17h-4q-.71 0-1.33.27q-.62.27-1.09.74q-.47.47-.74 1.09q-.27.62-.27 1.33v2.4q0 .24-.16.41q-.17.16-.41.16q-.24 0-.41-.16q-.16-.17-.16-.41v-2.4q0-.95.35-1.77q.36-.83.99-1.46q.63-.63 1.46-.99q.82-.35 1.77-.35h2.62zm.82 6.4q-.17.16-.41.16q-.24 0-.41-.16q-.16-.17-.16-.41q0-.24.16-.41l3.2-3.2l.82.82z";
+
+/** Reply editor (live claude.ai bundle, 2026-10-14, cc970fefe-DKWvZ4j5, cb1afaa4b-BvLfaAzp, cdf69fdd3-DpoW_Yf7). */
 export function SelectionDictation({
   selection,
   engine,
@@ -192,7 +194,16 @@ export function SelectionDictation({
               disabled={!value.trim()}
               onClick={() => save()}
             >
-              <Reply size={16} strokeWidth={1.75} aria-hidden="true" />
+              <svg
+                width={16}
+                height={16}
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+                style={{ transform: "scaleX(-1)" }}
+              >
+                <path d={replyPath} />
+              </svg>
             </button>
           )}
           {saveHint.tooltip}

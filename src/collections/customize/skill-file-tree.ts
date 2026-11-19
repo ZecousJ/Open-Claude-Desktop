@@ -37,7 +37,7 @@ export function skillFileTree(paths: string[]): SkillFileFolder {
   return root;
 }
 
-/** The observed bundle editor's column limits. */
+/** The observed bundle editor's column limits (cebfd6d34-DgRib-xc.js:215). */
 export const skillFileListWidth = { default: 244, min: 160, max: 520 };
 export function clampSkillFileListWidth(
   value: number,

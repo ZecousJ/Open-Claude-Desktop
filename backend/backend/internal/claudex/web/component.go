@@ -185,13 +185,22 @@ func (c *Component) OnSessionsRevoked(ctx context.Context, userID int64, reason 
 	if err != nil {
 		return err
 	}
-	c.dropFamilies(ctx, families)
-	return c.store.revokeAllNative(ctx, userID, now)
+	c.dropFamilies(ctx, userID, families)
+	families, err = c.store.revokeAllNative(ctx, userID, now, c.revokedUntil(now))
+	if err != nil {
+		return err
+	}
+	c.dropFamilies(ctx, userID, families)
+	return nil
 }
 
-// dropFamilies deletes the refresh tokens of ended sessions (best effort:
-// the session row and claudex_revoked_sessions already refuse them).
-func (c *Component) dropFamilies(ctx context.Context, families []string) {
+// dropFamilies invalidates local access checks and deletes the refresh tokens of ended sessions.
+func (c *Component) dropFamilies(ctx context.Context, userID int64, families []string) {
+	if guard := c.env.Peers.Sessions; guard != nil {
+		for _, family := range families {
+			guard.InvalidateSession(userID, family)
+		}
+	}
 	if c.env.AuthService == nil {
 		return
 	}

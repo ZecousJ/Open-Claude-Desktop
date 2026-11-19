@@ -1,12 +1,14 @@
 /*
  * The Code session's queued messages above the composer: the original's
- * QueuedMessageBar. Values are the bundle's Tailwind classes at the compact
- * density Claudex draws Code in: 4px spacing unit, 24px controls (20px for the
- * small ones), 6px control radius, 12px side padding, 14px/20px body text and
- * 13px/17px footnote text, the card's 10px radius and the --alpha-1 tint the
- * branch row (pull-request-bar.css) uses. The body text follows Settings →
- * Transcript text size; the buttons keep their own size
- * (transcript-text-size.css). Loaded with the first queued message.
+ * QueuedMessageBar (live claude.ai bundle, 2026-10-12; the owner chose it
+ * over the transcript bubbles of R-0832). Values are the bundle's Tailwind
+ * classes at the compact density Claudex draws Code in: 4px spacing unit,
+ * 24px controls (20px for the small ones), 6px control radius, 12px side
+ * padding, 14px/20px body text and 13px/17px footnote text, the card's 10px
+ * radius and the --alpha-1 tint the branch row (pull-request-bar.css) uses.
+ * The body text follows Settings → Transcript text size; the buttons keep
+ * their own size (transcript-text-size.css). Loaded with the first queued
+ * message.
  */
 
 /* One message: a 40px band, 8px inside and 12px at the sides, 5px between

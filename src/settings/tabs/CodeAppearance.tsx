@@ -13,10 +13,11 @@ import { CodeThemeSelect } from "../CodeThemeSelect";
 import type { TabProps } from "../context";
 
 /**
- * Claude Code → Code appearance, the original's two theme pickers with a diff
- * preview under each. The installed highlight.js GitHub assets provide the two
- * additional supported palettes; the original renderer palettes remain the
- * Claudex defaults.
+ * Claude Code → Code appearance, the original's two theme pickers with a
+ * diff preview under each (R-1530, R-1361 at 1x: 32px fields, the preview
+ * 12px below, 19px lines, a removed and an added line). The installed
+ * highlight.js GitHub assets provide the two additional supported palettes;
+ * the original renderer palettes remain the Claudex defaults.
  */
 export function CodeThemePickers({
   settings,

@@ -9,6 +9,13 @@
   gap: 4px;
   padding: 0 4px;
 }
+/* Light theme: the card as the Changes pane's beside it (changes-panel.css);
+   the shell was still the dark #191919 of 92-reference-panels.css. */
+:root[data-theme="light"] .work-panel.files-panel {
+  border-color: #e4e2dc;
+  background: #fff;
+  color: #3d3d3a;
+}
 .work-panel.files-panel > header .changes-icon-button[aria-pressed="true"] {
   background: #032042;
   color: #6da7ec;
@@ -59,8 +66,9 @@
 .files-tree-edge {
   inset-inline-start: -6px;
 }
-/* The tree on the pane's right (File tree position): it comes after the open
-   files with its rule on its start side, and its handles mirror. */
+/* The tree on the pane's right (File tree position): it comes after the
+   open files with its rule on its start side, and its handles mirror
+   (live claude.ai Code, 2026-10-21: the tree 1031..1271 at 1280 wide). */
 .files-body.tree-right {
   flex-direction: row-reverse;
 }
@@ -76,9 +84,10 @@
   inset-inline-start: auto;
   inset-inline-end: -6px;
 }
-/* The web's bar: 32px with 4px inside, "Files" 13/19 in the secondary ink, then
-   the 24px ghost buttons 2px apart, radius 6; the pressed tree toggle is its
-   glyph in the accent ink alone. */
+/* The web's bar (live claude.ai Code, 2026-10-21): 32px with 4px inside,
+   "Files" 13/19 in the secondary ink, then the 24px ghost buttons 2px
+   apart, radius 6; the pressed tree toggle is its glyph in the accent ink
+   alone. */
 .app.web .work-panel.files-panel > header {
   height: 32px;
   min-height: 32px;
@@ -153,7 +162,8 @@
 .files-filter-box > button:hover {
   color: var(--text-primary);
 }
-/* Content results. */
+/* Content results (live claude.ai bundle, 2026-10-14, cccc2cf0a-ClzhdM48.js:
+   px-lg py-1 text-body text-muted; compact 24px rows; text-code/footnote). */
 .files-search-note {
   display: flex;
   justify-content: center;

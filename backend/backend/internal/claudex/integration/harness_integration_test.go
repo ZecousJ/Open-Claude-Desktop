@@ -390,7 +390,7 @@ func (u *upstream) proxy(c *gin.Context) {
 	}
 }
 
-// ---- the realtime transcription service (stand-in) ----
+// ---- the realtime transcription service (hiwonder stand-in) ----
 
 type fakeASR struct {
 	srv   *httptest.Server

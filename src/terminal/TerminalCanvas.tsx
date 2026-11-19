@@ -85,9 +85,9 @@ export function TerminalCanvas({
     let live = true,
       ready = false;
     const queued: Extract<AppEvent, { type: "terminal-output" }>[] = [];
-    // 7.0 x 15.0 cells (39 characters in 271.5px, 7 rows in 89px), #ebebed text
-    // on the panel's #1a1a1a, and a solid #4397f9 block cursor that blinks
-    // every 600ms (terminal-panel.css).
+    // Cell and colours from R-0882 (2x): 7.0 x 15.0 cells (39 characters in
+    // 271.5px, 7 rows in 89px), #ebebed text on the panel's #1a1a1a, and a
+    // solid #4397f9 block cursor that blinks every 600ms (terminal-panel.css).
     const start = selectionHandler.current.prefs;
     const terminal = new Terminal({
       cursorBlink: start.cursorBlink,

@@ -1,3 +1,4 @@
+import { discardIncognitoUploads } from "../../electron/workspace/incognito-upload";
 import type { EnvironmentRef } from "../../shared/types";
 import { webHost } from "../../shared/host";
 import { Sub2ApiClient } from "../../electron/sub2api/client";
@@ -5,6 +6,7 @@ import { inCodeWorkspace } from "./code-workspace";
 import { pruneIdleSpaceCaches } from "../../electron/engine/codex-cache";
 import { Me } from "./web-app-support";
 import type { WebAppContext } from "./web-app-context";
+import { closeOfficialCodeTerminals } from "./official-code-terminals";
 
 export async function codeEmailStatus(this: WebAppContext) {
   if (
@@ -64,6 +66,7 @@ export function reclaimCaches(this: WebAppContext) {
 export async function close(this: WebAppContext) {
   if (this.closedFlag) return;
   this.closedFlag = true;
+  await closeOfficialCodeTerminals(this);
   this.codeEmails.stop();
   this.deviceController?.dispose();
   this.connectorOAuth?.close();
@@ -72,7 +75,12 @@ export async function close(this: WebAppContext) {
   this.usageTurns.clear();
   this.scheduler?.stop();
   await this.scheduler?.settle();
-  await this.engine?.stop().catch(() => {});
+  try {
+    await this.engine?.stop();
+    if (this.store) discardIncognitoUploads(this.store.root, this.selectedAttachments);
+  } catch (error) {
+    this.log(`Could not retire temporary Chat attachments: ${error instanceof Error ? error.message : String(error)}`);
+  }
   await this.store?.close().catch(() => {});
   this.artifactPreviews.clear();
   this.selectedAttachments.clear();

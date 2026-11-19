@@ -172,7 +172,7 @@ test("badges expose review identity and use the exact connector, extension and p
       createElement(CommunityExplainer, { kind }),
     );
     assert.ok(html.includes(communityExplainers[kind]));
-    assert.match(html, /\/help\/connector-review/);
+    assert.match(html, /https:\/\/claudex.zecous.cn\/help\/connector-review/);
     assert.match(html, /Learn more<\/a>\./);
   }
 });

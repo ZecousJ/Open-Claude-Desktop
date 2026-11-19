@@ -1,22 +1,29 @@
+import "../../shared/code-rewind";
+import { codeAgentOwner, recordCodeAgentEvent } from "./code-agent-threads";
 import {
   captureGeneratedFiles,
   captureOutputFiles,
   codeOutputTypes,
 } from "../artifacts/generated-files";
 import {
+  clearTurnRetry,
   finishTurn,
   itemIsRunning,
   recordItemLifecycle,
   recordMcpProgress,
   recordTurnUsage,
 } from "../../shared/activity";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import {
   safeguardFallbackModel,
   safeguardFlagged,
 } from "../../shared/safeguard-fallback";
-import { agentThreadIds, applyAgentUsage } from "../../shared/workflow-usage";
+import { agentItems, agentThreadIds, applyAgentUsage, ownsWorkflowAgent } from "../../shared/workflow-usage";
 import { peerMessage } from "../../shared/agent-messages";
+import { recordCodeHelperReport } from "./code-helper-reports";
+import { nativeCoworkSearchIntents } from "./official-cowork-send";
 import {
   isContextLimitError,
   isLengthLimitError,
@@ -25,6 +32,7 @@ import {
   retryCause,
 } from "../../shared/turn-errors";
 import { preference } from "../../shared/settings-extras";
+import { hasLocalBrowserExecution } from "../../shared/browser-execution-eligibility";
 import type { Conversation, Item, Turn } from "../../shared/types";
 import {
   threadTokenUsage,
@@ -33,6 +41,10 @@ import {
 import { streamedItem, replaceOrAppend } from "./turn-items";
 import { maxCommandOutputLength } from "./engine-support";
 import type { Engine } from "./engine";
+import { recordConnectorAuthRejection, rejectedConnectorTool } from "../connectors/connector-auth-rejection";
+import { codeInterruptInFlight, codeSendStartFor } from "./code-send-start";
+
+const retryPartial = new WeakMap<Turn, Item[]>();
 
 /** Applies a Codex app-server notification to the conversation that owns its thread. */
 export function notification(this: Engine, msg: any) {
@@ -97,7 +109,10 @@ export function notification(this: Engine, msg: any) {
   }
   const id = this.routes.get(params?.threadId);
   if (!id) {
-    // Child agent threads are not routed; only their token usage is tracked, on the parent.
+    const parent = typeof params?.threadId === "string" ? this.parentForAgent(params.threadId) : undefined;
+    const owner = parent && codeAgentOwner(parent, params.threadId);
+    if (parent && owner && recordCodeAgentEvent(owner, params.threadId, method, params))
+      this.changed(parent);
     if (
       method === "thread/tokenUsage/updated" &&
       typeof params?.threadId === "string"
@@ -106,6 +121,22 @@ export function notification(this: Engine, msg: any) {
         params.threadId,
         params.tokenUsage?.total?.totalTokens,
       );
+    if (method === "turn/completed" && typeof params?.threadId === "string") {
+      const parent = this.parentForAgent(params.threadId);
+      const status = params.turn?.status === "completed" ? "completed" :
+        params.turn?.status === "interrupted" ? "interrupted" :
+        params.turn?.status === "failed" ? "errored" : undefined;
+      if (parent && status) {
+        for (const turn of parent.turns)
+          for (const item of turn.items)
+            if (ownsWorkflowAgent(item, params.threadId))
+              item.agentsStates = {
+                ...item.agentsStates,
+                [params.threadId]: { status, message: item.agentsStates?.[params.threadId]?.message ?? null },
+              };
+        this.changed(parent, true);
+      }
+    }
     return;
   }
   // A conversation deleted while its agent was still talking: late
@@ -118,22 +149,37 @@ export function notification(this: Engine, msg: any) {
   }
   // Inactive native threads may still emit late usage/item notifications.
   if (conversation.threadId !== params.threadId) return;
+  // Retry errors, summaries and MCP tools must identify their exact turn.
   const turn =
-    conversation.turns.find((t) => t.id === params.turnId) ??
-    conversation.turns.at(-1);
+    method === "thread/tokenUsage/updated" ||
+    (method === "error" && params.willRetry === true) ||
+    method === "item/reasoning/summaryTextDelta" ||
+    method === "item/mcpToolCall/progress" ||
+    ((method === "item/started" || method === "item/completed") &&
+      ["mcpToolCall", "dynamicToolCall"].includes(params?.item?.type))
+      ? typeof params.turnId === "string" && params.turnId.trim()
+        ? conversation.turns.find((t) => t.id === params.turnId)
+        : undefined
+      : (conversation.turns.find((t) => t.id === params.turnId) ??
+        conversation.turns.at(-1));
   if (!turn) return;
+  const wasRunning = turn.status === "inProgress";
+  const completedExactTurn = method === "turn/completed" && params.turn?.id === turn.id;
+  const wasRetrying = turn.streamRetry;
   if (!this.applyTurnEvent(conversation, turn, method, params)) return;
   if (method === "turn/completed") {
     void this.capabilityTips.afterTurn(conversation, turn);
     void this.sessionAssistance.afterTurn(conversation, turn);
-    if (
-      turn.status === "failed" &&
-      (safeguardFlagged(params.turn?.error) ||
-        (this.lastRefusal &&
-          this.lastRefusal.at >= turn.createdAt &&
-          safeguardFlagged(this.lastRefusal)))
-    )
+    const flagged = this.lastRefusal;
+    if (wasRunning && turn === conversation.turns.at(-1) && turn.status === "failed" &&
+        (safeguardFlagged(params.turn?.error) ||
+          (flagged?.threadId && flagged.threadId === conversation.threadId &&
+            flagged.at >= turn.createdAt && safeguardFlagged(flagged)))) {
+      turn.refusedPrompt ??= { model: conversation.model };
+      if (flagged && safeguardFlagged(flagged) && flagged.threadId === conversation.threadId)
+        this.lastRefusal = undefined;
       void this.retrySafeguard(conversation, turn);
+    }
     void this.titleOffers.afterTurn(conversation, turn);
     if (
       conversation.mode === "code" &&
@@ -146,14 +192,41 @@ export function notification(this: Engine, msg: any) {
       };
     }
     this.signals.settleOrphanSearches(params.threadId, turn);
-    this.signals.settleGeneratedImages(params.threadId, turn);
+    this.signals.settleGeneratedImages(turn);
     this.signals.settleEarlyCalls(params.threadId, turn);
     this.extensions.turnCompleted(conversation, turn, () =>
       this.changed(conversation, true),
     );
   }
   conversation.updatedAt = Date.now();
-  this.changed(conversation, method === "turn/completed");
+  const settledCodeTurnId = method === "turn/completed" &&
+    conversation.mode === "code" && wasRunning && turn.status !== "inProgress"
+    ? turn.id
+    : undefined;
+  this.changed(
+    conversation,
+    method === "turn/completed" ||
+      (conversation.mode === "code" && wasRetrying !== turn.streamRetry),
+    settledCodeTurnId,
+  );
+  if (wasRunning && completedExactTurn && this.owns(conversation)) {
+    const parent = recordCodeHelperReport(this.store.conversations, conversation, turn);
+    if (parent) {
+      const destination = this.owns(parent) ? this : this.elsewhereFor(parent.id);
+      destination?.changed(parent, true);
+      this.store.flush();
+    }
+  }
+  // Publish generated Chat outputs through a full write even when a quick
+  // follow-up completed between the runner's streaming saves.
+  if (
+    method === "turn/completed" &&
+    conversation.mode === "chat" &&
+    !conversation.incognito &&
+    (turn.research?.report || turn.researchReportRevision || turn.items.some((item) =>
+      item.type === "imageGeneration" || item.generatedFiles?.length))
+  )
+    this.store.flush();
 }
 
 export async function retrySafeguard(
@@ -193,6 +266,7 @@ export async function retrySafeguard(
   )
     return;
   try {
+    const nativeSearch = nativeCoworkSearchIntents.get(turn);
     await this.send(
       {
         conversationId: conversation.id,
@@ -203,14 +277,16 @@ export async function retrySafeguard(
         attachments: turn.attachments,
         projectId: conversation.projectId,
         cwd: conversation.cwd,
+        ...(nativeSearch === false ? { webSearch: false } : {}),
       },
       turn.id,
       false,
-      { safeguardRetry: true },
+      { safeguardRetry: true, ...(nativeSearch !== undefined ? { nativeCowork: true } : {}) },
     );
     const retried = conversation.turns.at(-1);
     if (retried && retried !== turn) {
       retried.switchedTo = model;
+      if (turn.refusedPrompt) retried.refusedPrompt = { ...turn.refusedPrompt };
       this.changed(conversation, true);
     }
   } catch {
@@ -236,22 +312,115 @@ export function applyTurnEvent(
   method: string,
   params: any,
 ): boolean {
-  // Any new output means a reconnect that was in progress has succeeded.
-  if (method.startsWith("item/")) {
-    delete turn.reconnecting;
-    delete turn.reconnectCause;
+  // Reject malformed and late summary fragments before changing any turn state.
+  if (method === "item/reasoning/summaryTextDelta") {
+    const index = params?.summaryIndex;
+    if (
+      turn.status !== "inProgress" ||
+      typeof params?.turnId !== "string" ||
+      !params.turnId.trim() ||
+      params.turnId !== turn.id ||
+      typeof params.itemId !== "string" ||
+      !params.itemId.trim() ||
+      typeof params.delta !== "string" ||
+      !Number.isSafeInteger(index) ||
+      index < 0 ||
+      // Bound sparse/out-of-order indices to avoid unbounded allocation.
+      index >= 1024
+    )
+      return false;
+    let item = turn.items.find((value) => value.id === params.itemId);
+    if (item && (item.type !== "reasoning" || !itemIsRunning(item)))
+      return false;
+    if (!item) {
+      item = {
+        id: params.itemId,
+        type: "reasoning",
+        summary: [],
+        lifecycleStatus: "inProgress",
+        startedAt: Date.now(),
+      };
+      turn.items.push(item);
+    }
+    if (!Array.isArray(item.summary)) item.summary = [];
+    // Keep the array dense, even when a later section arrives first.
+    while (item.summary.length <= index) item.summary.push("");
+    // Old out-of-order streams persisted sparse holes as null. Never stringify
+    // malformed or absent sections into the visible public summary.
+    item.summary[index] =
+      (typeof item.summary[index] === "string" ? item.summary[index] : "") +
+      params.delta;
+    clearTurnRetry(turn);
+    return true;
+  }
+  if (method === "item/mcpToolCall/progress") {
+    if (
+      typeof params?.turnId !== "string" ||
+      params.turnId !== turn.id ||
+      !recordMcpProgress(turn, params.itemId, params.message)
+    )
+      return false;
+    clearTurnRetry(turn);
+    return true;
+  }
+  // Invalid or stale tool snapshots cannot reset reconnect state either.
+  if (
+    (method === "item/started" || method === "item/completed") &&
+    ["mcpToolCall", "dynamicToolCall"].includes(params?.item?.type)
+  ) {
+    const item = params.item;
+    const previous = turn.items.find((value) => value.id === item.id);
+    if (
+      typeof params.turnId !== "string" ||
+      params.turnId !== turn.id ||
+      typeof item.id !== "string" ||
+      !item.id.trim() ||
+      (previous && previous.type !== item.type) ||
+      (method === "item/started" &&
+        (turn.status !== "inProgress" ||
+          (previous && !itemIsRunning(previous))))
+    )
+      return false;
   }
   switch (method) {
     case "turn/started":
+      if (turn.compactionUncertain) {
+        delete turn.compactionUncertain;
+        delete turn.error;
+      }
       turn.id = params.turn.id;
+      codeSendStartFor(conversation, turn)?.start.promoted(turn.id);
       return true;
     case "turn/completed":
+      if (params.turn.status === "interrupted" && turn.id === params.turn.id) {
+        const partial = retryPartial.get(turn);
+        if (partial && !turn.items.some((item) => item.type === "agentMessage" && itemIsRunning(item) && item.text))
+          turn.items.push(...partial);
+      }
+      if (turn.id === params.turn.id) retryPartial.delete(turn);
+      if (turn.compactionUncertain) {
+        delete turn.compactionUncertain;
+        delete turn.error;
+      }
+      if (
+        params.turn.status === "interrupted" &&
+        turn.id === params.turn.id &&
+        codeInterruptInFlight(turn)
+      )
+        turn.userStopped = true;
+      const completedTurnMatches = turn.id === params.turn.id;
       turn.id = params.turn.id;
       if (typeof params.turn.postTurnSummary?.is_noteworthy === "boolean")
         turn.postTurnSummary = {
           is_noteworthy: params.turn.postTurnSummary.is_noteworthy,
         };
+      if (completedTurnMatches && params.turn.status === "failed" && safeguardFlagged(params.turn.error))
+        turn.refusedPrompt = { model: conversation.model };
       finishTurn(turn, params.turn.status);
+      if (turn.status === "completed" && turn.usageHold?.window === "five_hour") {
+        delete turn.usageHold;
+        delete turn.stopReason;
+      }
       const message = params.turn.error?.message;
       if (turn.research && params.turn.error?.code === "model_access") {
         turn.research.error = "model_access";
@@ -266,7 +435,7 @@ export function applyTurnEvent(
       ]
         .filter((value) => typeof value === "string")
         .join(" ");
-      turn.error = this.refusalText(turn, message) ?? turn.error;
+      turn.error = this.refusalText(turn, message, conversation.threadId) ?? turn.error;
       if (
         params.turn.stopReason === "usage_limit" ||
         params.turn.stop_reason === "usage_limit"
@@ -274,8 +443,6 @@ export function applyTurnEvent(
         turn.stopReason = "usage_limit";
         turn.usageHold ??= { resetsAt: null };
       }
-      delete turn.reconnecting;
-      delete turn.reconnectCause;
       if (isContextLimitError(limit)) {
         turn.status = "failed";
         turn.stopReason = "conversation_length_limit";
@@ -293,16 +460,34 @@ export function applyTurnEvent(
         if (steer.turnId === turn.id) this.steers.delete(id);
       return true;
     case "item/started":
-    case "item/completed":
-      return this.applyItemEvent(
+    case "item/completed": {
+      const item: Item = params.item;
+      const written = method === "item/completed" && item.type === "fileChange" &&
+        item.status === "completed" && conversation.mode === "code" &&
+        !this.launcher && !conversation.archived && !conversation.deviceChatOrigin &&
+        hasLocalBrowserExecution(conversation) && params.turnId === turn.id &&
+        turn.status === "inProgress" && turn === conversation.turns.at(-1) &&
+        !turn.items.some((previous) => previous.id === item.id && previous.lifecycleStatus === "completed");
+      const accepted = this.applyItemEvent(
         conversation,
         turn,
         params.threadId,
         params.item,
         method === "item/completed",
       );
+      if (accepted && written) {
+        const paths = (turn.items.find((recorded) => recorded.id === item.id)?.generatedFiles ?? [])
+          .filter((file) => file.operation !== "delete")
+          .map((file) => file.path);
+        if (paths.length) this.emit({ type: "code-files-written", conversationId: conversation.id, paths });
+      }
+      if (accepted && params.item.type !== "userMessage" && params.turnId === turn.id)
+        clearTurnRetry(turn);
+      return accepted;
+    }
     case "item/agentMessage/delta":
     case "item/plan/delta": {
+      if (method === "item/agentMessage/delta" && params.delta) retryPartial.delete(turn);
       const item = streamedItem(turn, params.itemId, () => ({
         id: params.itemId,
         type: method === "item/plan/delta" ? "plan" : "agentMessage",
@@ -310,14 +495,16 @@ export function applyTurnEvent(
         lifecycleStatus: turn.status,
       }));
       item.text = (item.text ?? "") + params.delta;
+      if (params.turnId === turn.id) clearTurnRetry(turn);
       return true;
     }
     case "item/commandExecution/outputDelta": {
       const item = turn.items.find((value) => value.id === params.itemId);
-      if (item)
-        item.aggregatedOutput = (
-          (item.aggregatedOutput ?? "") + params.delta
-        ).slice(-maxCommandOutputLength);
+      if (!item) return false;
+      item.aggregatedOutput = (
+        (item.aggregatedOutput ?? "") + params.delta
+      ).slice(-maxCommandOutputLength);
+      if (params.turnId === turn.id) clearTurnRetry(turn);
       return true;
     }
     // A file the model is still writing (codex-model-catalog.ts): its row
@@ -335,54 +522,75 @@ export function applyTurnEvent(
       }));
       if (item.type !== "fileChange" || !itemIsRunning(item)) return false;
       item.changes = params.changes;
+      if (params.turnId === turn.id) clearTurnRetry(turn);
       return true;
     }
-    case "item/reasoning/summaryTextDelta": {
-      const item = streamedItem(turn, params.itemId, () => ({
-        id: params.itemId,
-        type: "reasoning",
-        summary: [],
-        lifecycleStatus: turn.status,
-        startedAt: Date.now(),
-      }));
-      const index = params.summaryIndex ?? 0;
-      item.summary ??= [];
-      item.summary[index] = (item.summary[index] ?? "") + params.delta;
-      return true;
-    }
-    case "item/mcpToolCall/progress":
-      return (
-        typeof params.itemId === "string" &&
-        typeof params.message === "string" &&
-        recordMcpProgress(turn, params.itemId, params.message)
-      );
-    case "turn/plan/updated":
+    case "turn/plan/updated": {
+      if (conversation.mode === "code") {
+        if (turn.status !== "inProgress" || params.turnId !== turn.id)
+          return false;
+        const { plan, explanation } = params;
+        const previous = turn.items.filter((item) => item.type === "taskPlan").at(-1);
+        if (
+          previous &&
+          previous.explanation === explanation &&
+          isDeepStrictEqual(previous.plan, plan)
+        )
+          return false;
+        turn.items.push({
+          id: `plan-${randomUUID()}`,
+          type: "taskPlan",
+          plan,
+          explanation,
+          lifecycleStatus: "completed",
+        });
+        clearTurnRetry(turn);
+        return true;
+      }
       replaceOrAppend(turn, {
         id: `plan-${turn.id}`,
         type: "taskPlan",
         plan: params.plan,
       });
+      if (params.turnId === turn.id) clearTurnRetry(turn);
       return true;
+    }
     case "turn/diff/updated":
       replaceOrAppend(turn, {
         id: `diff-${turn.id}`,
         type: "diff",
         text: params.diff,
       });
+      if (params.turnId === turn.id) clearTurnRetry(turn);
       return true;
     case "thread/tokenUsage/updated": {
-      conversation.usage = params.tokenUsage?.total;
-      // E0: the full report (latest request, context window) for the window.
       const usage = threadTokenUsage(params.tokenUsage);
-      if (usage) conversation.tokenUsage = usage;
+      if (!usage) return false;
+      turn.contextUsage = usage.last;
+      const turnIndex = conversation.turns.indexOf(turn);
+      if (!conversation.turns.some((entry, index) => index > turnIndex && entry.contextUsage)) {
+        conversation.usage = usage.total;
+        conversation.tokenUsage = {
+          ...usage,
+          model: turn.contextUsageModel ?? conversation.model,
+        };
+      }
       recordTurnUsage(turn, params.tokenUsage);
       return true;
     }
     case "error":
       // A retried stream drop shows as Reconnecting until output resumes.
-      if (params.willRetry) {
-        turn.reconnecting =
-          reconnectAttempt(params.error?.message) ?? "retrying";
+      if (params.willRetry === true) {
+        if (turn.status !== "inProgress" || params.turnId !== turn.id)
+          return false;
+        const partial = turn.items.filter(
+          (item) => item.type === "agentMessage" && itemIsRunning(item) && item.text,
+        );
+        if (partial.length) retryPartial.set(turn, partial);
+        turn.items = turn.items.filter(
+          (item) => item.type !== "agentMessage" || !itemIsRunning(item),
+        );
+        const attempt = reconnectAttempt(params.error?.message);
         const cause = retryCause(
           [
             params.error?.message,
@@ -394,12 +602,16 @@ export function applyTurnEvent(
             .filter(Boolean)
             .join(" "),
         );
+        turn.reconnecting = attempt
+          ? `${attempt.attempt}/${attempt.maxRetries}`
+          : "retrying";
         if (cause) turn.reconnectCause = cause;
         else delete turn.reconnectCause;
+        if (attempt) turn.streamRetry = { ...attempt, ...(cause && { cause }) };
+        else delete turn.streamRetry;
       } else {
-        delete turn.reconnecting;
-        delete turn.reconnectCause;
-        turn.error = this.refusalText(turn, params.error?.message);
+        clearTurnRetry(turn);
+        turn.error = this.refusalText(turn, params.error?.message, conversation.threadId);
         const reason = [params.error?.message, params.error?.code].join(" ");
         if (isContextLimitError(reason))
           turn.stopReason = "conversation_length_limit";
@@ -427,7 +639,12 @@ export function applyItemEvent(
   if (item.type === "userMessage")
     return this.recordSteer(turn, item, completed);
   const previous = turn.items.find((value) => value.id === item.id);
-  let incoming = { ...item };
+  let incoming = { ...item, ...(previous?.agentThreads ? { agentThreads: previous.agentThreads } : {}) };
+  if (incoming.type === "contextCompaction") {
+    const before = previous?.compactionTokens?.before ?? conversation.tokenUsage?.last.totalTokens;
+    const after = completed ? turn.contextUsage?.totalTokens : undefined;
+    incoming.compactionTokens = { before, after };
+  }
   this.signals.reported(threadId, item.id);
   if (incoming.type === "subAgentActivity")
     this.attachPendingPrompt(threadId, incoming);
@@ -448,6 +665,21 @@ export function applyItemEvent(
       conversation.cwd ?? path.join(this.spaceRoot, "workspace"),
       conversation.incognito ? undefined : this.blobs,
     );
+  const rejected = completed ? rejectedConnectorTool(incoming) : undefined;
+  if (rejected) {
+    const config = this.store.settings.mcpServers[rejected] as { url?: unknown } | undefined;
+    if (typeof config?.url === "string") {
+      incoming.mcpAuthRejectionUrl = config.url;
+      recordConnectorAuthRejection(this.store, rejected, config.url);
+      if (this.connectorAuthorizationRejected && this.startedMcpServers) {
+        const started = JSON.parse(this.startedMcpServers)[rejected];
+        const authorization = started?.http_headers?.Authorization;
+        const token = typeof authorization === "string" && /^Bearer (.+)$/i.exec(authorization)?.[1];
+        if (started?.url === config.url && token)
+          this.connectorAuthorizationRejected(rejected, config.url, token);
+      }
+    }
+  }
   recordItemLifecycle(turn, incoming, completed);
   for (const agentId of agentThreadIds(incoming))
     this.agentRoutes.set(agentId, conversation.id);
@@ -512,6 +744,11 @@ export function recordSteer(
     clientId,
     text: steer.text,
     attachments: steer.attachments,
+    ...(steer.officialCoworkEventId ? { officialCoworkEventId: steer.officialCoworkEventId } : {}),
+    ...(steer.officialCode ? {
+      officialCodeEventId: steer.officialCode.eventId,
+      officialCodeInputHash: steer.officialCode.inputHash,
+    } : {}),
   };
   recordItemLifecycle(turn, message, completed);
   if (completed) this.steers.delete(clientId);

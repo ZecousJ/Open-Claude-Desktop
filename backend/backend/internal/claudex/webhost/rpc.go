@@ -176,6 +176,7 @@ func (c *Component) rpc(g *gin.Context) {
 	defer c.gate.leave(who.userID)
 
 	ctx := g.Request.Context()
+	callCtx := ctx
 	rc, err := c.reg.pick(ctx, who.userID)
 	if err != nil {
 		rpcFail(g, err)
@@ -188,17 +189,35 @@ func (c *Component) rpc(g *gin.Context) {
 	var ru *run
 	var fresh bool
 	if engineStartingMethods[method] {
-		conv, mode := runTarget(method, req.Args)
-		ru, fresh, err = c.runs.begin(ctx, who.userID, conv, mode, rc.id)
+		target := runTarget(method, req.Args)
+		if target.nativeSend {
+			if ctx.Err() != nil {
+				g.Abort()
+				return
+			}
+			// The client can lose its acknowledgment while the Runner is still accepting the send.
+			callCtx = context.WithoutCancel(ctx)
+		}
+		ru, fresh, err = c.runs.begin(callCtx, who.userID, target.conversation, target.mode, rc.id)
 		if err != nil {
 			rpcFail(g, err)
 			return
 		}
 	}
 	user := webproto.LinkUser{ID: who.userID, TabID: who.tabID, AccessToken: who.token.raw}
-	res, callErr := rc.call(ctx, user, method, req.Args, c.callTimeout)
+	if (method == "officialUiRead" || method == "officialUiAction") && who.token.claims.SessionID != "" {
+		user.WebSession = &webproto.LinkWebSession{ID: who.token.claims.SessionID}
+		if !who.token.claims.IssuedAt.IsZero() {
+			user.WebSession.IssuedAt = who.token.claims.IssuedAt.Unix()
+		}
+	}
+	res, callErr := rc.call(callCtx, user, method, req.Args, c.callTimeout)
 	if ru != nil {
 		c.runs.after(ru, fresh, res, callErr)
+	}
+	if ctx.Err() != nil {
+		g.Abort()
+		return
 	}
 	if callErr != nil {
 		if errors.Is(callErr, context.Canceled) {

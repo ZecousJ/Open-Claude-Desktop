@@ -1,0 +1,20 @@
+{
+  "name": "zecousai",
+  "productName": "ZecousAI",
+  "version": "1.0.31",
+  "private": true,
+  "description": "ZecousAI 1.0.31: installs Claudex and removes ZecousAI",
+  "author": "Zecous",
+  "license": "Apache-2.0",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "^19.0.0",
+    "electron": "44.4.3",
+    "electron-builder": "^26.0.12",
+    "electron-winstaller": "^5.4.0",
+    "esbuild": "^0.28.0"
+  }
+}

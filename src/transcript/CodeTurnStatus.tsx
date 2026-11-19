@@ -64,7 +64,7 @@ export function CodeSpinner() {
   );
 }
 
-/** The spinner's largest frame, left still when a Code reply ends. */
+/** The spinner's largest frame, left still when a Code reply ends (R-0831, R-0646). */
 export function CodeEndStar() {
   return (
     <svg
@@ -80,13 +80,13 @@ export function CodeEndStar() {
 }
 
 /**
- * Seconds of model reasoning, from local item observation times. A reasoning
- * item that streams no summary (GPT models through Codex) is observed only once
- * the model has finished thinking, so its own start and end are the same moment
- * and read "Thought for 0s". Such a span (under a second) therefore starts
- * where the model went quiet: at the end of the item before it in `context`
- * (the whole turn when given), else at `origin` (the turn's start), else at its
- * own start.
+ * Seconds of model reasoning, from local item observation times. A
+ * reasoning item that streams no summary (GPT models through Codex) is
+ * observed only once the model has finished thinking, so its own start and
+ * end are the same moment and read "Thought for 0s" (owner, 2026-10-09). Such
+ * a span (under a second) therefore starts where the model went quiet: at
+ * the end of the item before it in `context` (the whole turn when given),
+ * else at `origin` (the turn's start), else at its own start.
  */
 export function thoughtSeconds(
   items: Item[],
@@ -103,7 +103,7 @@ export function thoughtSeconds(
   const total = spans.reduce((sum, item) => {
     const start = item.startedAt as number;
     const own = (item.completedAt as number) - start;
-    // Reasoning watched as it streamed keeps its own span.
+    // Reasoning watched as it streamed keeps its own span (R-0746: 27s).
     if (own >= 1000) return sum + own;
     // The latest end before this item started, among the items before it.
     let quiet: number | undefined;
@@ -123,8 +123,9 @@ export function thoughtSeconds(
 const THOUGHT_NOTICE_MS = 3000;
 /*
  * The thinking label moves on as the turn runs: "Still thinking…" from 15s,
- * "Thinking more…" from 30s, "Thinking some more…" from 45s and "Almost done
- * thinking…" from a minute.
+ * "Thinking more…" from 30s, "Thinking some more…" from 45s and "Almost
+ * done thinking…" from a minute (source: desktop bundle 2.31226.1 static JS;
+ * the 30-minute guess from the single 36m 49s capture is retired).
  */
 export const STILL_THINKING_SECONDS = 15;
 export const THINKING_MORE_SECONDS = 30;
@@ -156,7 +157,10 @@ export interface CodeStatusPhase {
 }
 
 export interface CodeStatus {
-  /** The running tool's word, leading the line before its own timer. */
+  /**
+   * The running tool's word, leading the line before its own timer
+   * ("Starting preview 2s · 5.1k tokens", live desktop 2.42304.2).
+   */
   leading?: string;
   /** Timer, tokens and running tasks: shown steady. */
   meta: string[];
@@ -173,10 +177,10 @@ export type SettledTasks = {
 };
 
 /**
- * The task segment: "{count} background {noun} {status}" for the first of
- * completed, failed, stopped and running that has any, then "{count} failed"
- * and the others after commas; nothing when there are none. A plain number is
- * completed.
+ * The task segment (live claude.ai bundle, 2026-10-15, c1c1ec7b9 `LK`):
+ * "{count} background {noun} {status}" for the first of completed, failed,
+ * stopped and running that has any, then "{count} failed" and the others
+ * after commas; nothing when there are none. A plain number is completed.
  */
 export function taskSummary(running: number, finished: number | SettledTasks) {
   return taskSummaryParts(running, finished)
@@ -220,9 +224,10 @@ export function taskSummaryParts(
 /**
  * Tokens of what is still being written. The model reports its usage when a
  * response ends, so while it writes a file or a long reply the count would
- * stand still; until the report comes the line counts the text streamed so far,
- * about four characters a token for Latin text and one and a half for other
- * scripts, as the live desktop's count also moves while a file is written.
+ * stand still (owner, 2026-10-22: "93 tokens" for a minute); until the
+ * report comes the line counts the text streamed so far, about four
+ * characters a token for Latin text and one and a half for other scripts,
+ * as the live desktop's count also moves while a file is written.
  */
 export function streamingTokens(items: Item[]) {
   let latin = 0;
@@ -251,7 +256,8 @@ export function codeStatusMeta(
   runningTasks = 0,
   finishedTasks: number | SettledTasks = 0,
 ) {
-  // A running tool's own time stands in for the turn's.
+  // A running tool's own time stands in for the turn's (live desktop
+  // 2.42304.2: "Starting preview 2s · 5.1k tokens" a minute into the turn).
   const tool = runningTool(turn.items);
   const since =
     tool && typeof tool.startedAt === "number"
@@ -259,8 +265,8 @@ export function codeStatusMeta(
       : turn.createdAt;
   const seconds = Math.max(0, Math.floor((now - since) / 1000));
   const tokens = (turn.outputTokens ?? 0) + streamingTokens(turn.items);
-  // The elapsed counter first appeared at 2s ("2s · Waiting for Claude…");
-  // longer turns read "4m 53s" and "36m 49s", tokens "4.0k tokens".
+  // The elapsed counter first appeared at 2s ("2s · Waiting for Claude…"); longer
+  // turns read "4m 53s" and "36m 49s", tokens "4.0k tokens" (R-0807, R-0808).
   return {
     elapsed: seconds >= 2 ? formatElapsed(seconds) : undefined,
     tokens: tokens > 0 ? formatTokens(tokens) : undefined,
@@ -277,7 +283,8 @@ export function codeStatus(
   finishedTasks: number | SettledTasks = 0,
 ): CodeStatus {
   const phase = turnActivity(turn, awaitingApproval);
-  // Pending input keeps its label and background task segment.
+  // Pending input keeps its label and background task segment (live claude.ai
+  // bundle, 2026-10-14, c1c1ec7b9-DdxFmCQ2).
   if (phase === "approval" && !stopping) {
     const tasks = taskSummary(runningTasks, finishedTasks);
     return {
@@ -309,18 +316,23 @@ export function codeStatus(
     thought != null &&
     thought >= 1 &&
     now - reasoningEnded < THOUGHT_NOTICE_MS;
-  // While the reply text streams the line carries only the timer and the token
-  // count; "Thinking…" belongs to the 5s frame before any text. A cloud
-  // session's start (Turn.setup) is the original's "starting" phase; Claudex
-  // says it is waiting for Claudex instead.
+  // While the reply text streams the line carries only the timer and the
+  // token count ("34s · 794 tokens", "54s · 1.6k tokens": R-0808 captures
+  // 01, 03 and 04); "Thinking…" belongs to the 5s frame before any text.
+  // A cloud session's start (Turn.setup) is the original's "starting" phase
+  // ("Starting session…", live claude.ai bundle, 2026-10-12); Claudex says
+  // it is waiting for Claudex instead (owner, 2026-10-15).
   const starting = turn.setup?.steps.some(
     (step) => step.status === "running" || step.status === "pending",
   );
-  // A dropped stream Codex retries, and a /compact turn, read as the original's
-  // status line does. The headline names the cause when it is known (sign-in,
-  // rate limit, busy server), else the lost connection.
+  // A dropped stream Codex retries, and a /compact turn, read as the
+  // original's status line does (live claude.ai bundle, 2026-10-14: the
+  // error's short headline, then "Retrying ({attempt}/{maxRetries})";
+  // "Compacting session…"). The headline names the cause when it is known
+  // (sign-in, rate limit, busy server), else the lost connection.
   const retry = turn.reconnecting?.match(/^(\d+)\/(\d+)$/);
-  // The headline is the failure's own; a plain dropped stream is the
+  // The headline is the failure's own ("Rate limit reached · Retrying (2/5)",
+  // live bundle, 2026-10-16, c1c1ec7b9); a plain dropped stream is the
   // connection.
   const cause = turn.reconnectCause
     ? t(retryCauseHeadlines[turn.reconnectCause])
@@ -357,7 +369,8 @@ export function codeStatus(
                   : phase === "streaming" || phase === "tools"
                     ? undefined
                     : // A plain "Thinking" after the timer, without the
-                      // older line's "Still thinking…" steps.
+                      // older line's "Still thinking…" steps (live desktop
+                      // 2.42304.2: "4s · Thinking").
                       "Thinking";
   const tool = phase === "tools" ? runningTool(turn.items) : undefined;
   const leading =
@@ -427,7 +440,9 @@ export function CodeTurnStatus({
     const timer = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(timer);
   }, [active, turn.createdAt]);
-  // The token count climbs to each new figure rather than jumping.
+  // The token count climbs to each new figure rather than jumping (live
+  // desktop 2.42304.2: "476 → 477 → 486 → 500 … 545 tokens" within a
+  // half second as the reply streams).
   const tokenCount = useSmoothedCount(
     active ? (turn.outputTokens ?? 0) + streamingTokens(turn.items) : 0,
     turn.id,
@@ -438,9 +453,9 @@ export function CodeTurnStatus({
       backgroundTasks,
       onOpenBackground ? finishedTasks : 0,
     );
-    // A finished reply ends bare: the still mark after it is gone from the live
-    // desktop. Only a blue "1 running task" badge stays; tasks that only
-    // finished get the same badge.
+    // A finished reply ends bare: the still mark after it is gone from the
+    // live desktop (owner, 2026-10-22). Only a blue "1 running task" badge
+    // stays (R-0646 capture); tasks that only finished get the same badge.
     if (!label) return null;
     // Tasks that only settled read as a plain line, secondary until hovered,
     // with a failed count in red; only running tasks get the blue badge.

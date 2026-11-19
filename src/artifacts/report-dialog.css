@@ -1,8 +1,8 @@
 /*
- * Report artifact dialog: the Publish artifact dialog's frame
- * (publish-dialog.css) with the original's report form: a reason list, name,
- * email and notes fields. The fields take the app's own input look
- * (00-foundation.css); only the spacing is set here.
+ * Report artifact dialog (R-1055): the Publish artifact dialog's frame
+ * (publish-dialog.css) with the original's report form (desktop bundle
+ * 2.31226.1): a reason list, name, email and notes fields. The fields take the
+ * app's own input look (00-foundation.css); only the spacing is set here.
  */
 .report-dialog-field {
   display: grid;
@@ -25,8 +25,9 @@
   font-size: 14px;
   line-height: 20px;
 }
-/* "Opt out of training on this report": the label and the switch on one row,
-   apart; the switch is the settings switch. */
+/* "Opt out of training on this report": the label and the switch on one
+   row, apart (the live form's "flex justify-between", live claude.ai bundle,
+   2026-10-12); the switch is the settings switch. */
 .report-dialog-switch {
   display: flex;
   justify-content: space-between;

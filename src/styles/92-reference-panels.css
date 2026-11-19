@@ -1,4 +1,5 @@
-/* The side panels' shell beside the conversation. Moved from the end of
+/* The side panels' shell beside the conversation (package WP5b; the file
+   viewer's own rules stay with WP6). Moved from the end of
    92-reference-pages.css and loaded right after it. */
 .work-panel,
 .artifact-panel {
@@ -29,14 +30,16 @@
   padding: 25px 12px;
 }
 
-/* A tool panel is a card pinned to the window top, 8px from the top, right and
-   bottom edges; the conversation column, title bar included, ends at the card's
-   left edge. Widths there: Changes 537, Terminal and Plan 299, Background tasks
-   and an Agent's transcript 282. In a narrower column the cards keep a share of
-   it: Terminal 280 (49.5%), Changes 322 (60.4% − 20px, which is 537 at 922).
-   The width lives on the workspace so the card, the column and its title bar
-   share it; the Background rail's dragged width arrives as
-   --background-panel-width. */
+/* A tool panel is a card pinned to the window top, 8px from the top, right
+   and bottom edges; the conversation column, title bar included, ends at
+   the card's left edge (R-0874, R-0882, R-0646, R-Code-Plan面板, R-0786; 2x,
+   1164px window). Widths there: Changes 537, Terminal and Plan 299,
+   Background tasks and an Agent's transcript 282. In a narrower column the
+   cards keep a share of it (R-0628, R-0629: W969 at 1.2 zoom, a 566px
+   column): Terminal 280 (49.5%), Changes 322 (60.4% − 20px, which is 537
+   at 922). The width lives on the
+   workspace so the card, the column and its title bar share it; the
+   Background rail's dragged width arrives as --background-panel-width. */
 .workspace:has(> .chat-layout > .work-panel) {
   --tool-panel-width: min(299px, 49.5%);
 }
@@ -79,13 +82,13 @@
   margin-right: calc(var(--tool-panel-width) + 8px);
 }
 /* With a panel open the title bar's buttons end 24px (⋮ centre) before the
-   card. */
+   card (R-0874: ⋮ at 595 for a card from 619). */
 .workspace:has(> .chat-layout > .work-panel) > .chat-header {
   padding-right: 12px;
 }
 /* The terminal expanded covers the whole conversation column, 8px from the
-   sidebar edge. The column keeps its width underneath, so the transcript does
-   not reflow. */
+   sidebar edge (R-0882 全宽展开: 250→1156). The column keeps its width
+   underneath, so the transcript does not reflow. */
 .workspace > .chat-layout > .work-panel.terminal-panel.expanded {
   left: 8px;
   width: auto;
@@ -106,8 +109,8 @@
   -webkit-app-region: no-drag;
 }
 
-/* Title bar panel toggles: 26×25 buttons 30px apart; the open panel's toggle is
-   #0b1f40 with a #83a3d7 icon. */
+/* Title bar panel toggles (R-0876/R-0877, 2x): 26×25 buttons 30px apart;
+   the open panel's toggle is #0b1f40 with a #83a3d7 icon. */
 .header-actions .icon-button.panel-toggle {
   width: 26px;
   margin-right: -3px;
@@ -126,8 +129,8 @@
   color: #2f5ea8;
 }
 
-/* Changes with the Browser under it: two cards of the same height, 10px apart
-   (8–520 and 530–1041 in a 1049 window). */
+/* Changes with the Browser under it (R-Code-Browser面板, 2x): two cards of
+   the same height, 10px apart (8–520 and 530–1041 in a 1049 window). */
 .workspace > .chat-layout:has(> .browser-panel.split) > .changes-panel {
   bottom: calc(50% + 5px);
 }

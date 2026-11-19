@@ -16,8 +16,9 @@ import type { DiffFinding, FindingStatus } from "../review/diff-findings";
 import { threadElementId } from "./useReviewThreads";
 
 /**
- * What a file's header says beside its name: a binary file, only whitespace
- * moved, or the executable bit changed.
+ * What a file's header says beside its name (live claude.ai bundle,
+ * 2026-10-14): a binary file, only whitespace moved, or the executable bit
+ * changed.
  */
 export function fileBadge(file: DiffFile) {
   if (file.binary) return "Binary file";
@@ -36,7 +37,7 @@ export function renamedFrom(file: DiffFile) {
     : file.oldPath;
 }
 
-/** The small `</>` file glyph in the Changes list and section headers. */
+/** The small `</>` file glyph in the Changes list and section headers (R-0874). */
 export function FileGlyph() {
   return (
     <svg
@@ -197,7 +198,8 @@ export function ChangedFileSection({
             {t("View image")}
           </button>
         )}
-        {/* Open file shows while the header is hovered or focused. */}
+        {/* Open file shows while the header is hovered or focused (live
+            desktop 2.42304.2: a ghost ArrowUpRight at the header's end). */}
         {onOpenFile && (
           <button
             type="button"

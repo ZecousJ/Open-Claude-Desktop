@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Suspense } from "react";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { lazyPiece } from "../../ui/lazy-piece";
 import type { MenuPosition } from "../../ui/Menu";
 import { permissionGlyphs12 } from "../permission-glyphs-12";
@@ -31,8 +31,8 @@ const choices: {
   description: string;
   glyph: keyof typeof permissionGlyphs12;
 }[] = [
-  // The original's order: Manual, Accept edits, Plan, then Auto and Bypass
-  // permissions where offered.
+  // The original's order (live claude.ai bundle, 2026-10-14): Manual,
+  // Accept edits, Plan, then Auto and Bypass permissions where offered.
   {
     id: "manual",
     title: "Manual",
@@ -89,10 +89,10 @@ export function offeredPermissionChoices(
 
 /**
  * The observed web Code selector offers the runner's three decision modes:
- * Auto, then the remote "default" that the live bundle names Accept edits, then
- * Plan. A mode kept from elsewhere (Manual, Bypass) that the trigger shows
- * keeps its own checked row after them, so the trigger always has a row to
- * match.
+ * Auto, then the remote "default" that the live bundle names Accept edits,
+ * then Plan (live claude.ai bundle, 2026-10-16, shared-8 xG, fd and dX). A
+ * mode kept from elsewhere (Manual, Bypass) that the trigger shows keeps its
+ * own checked row after them, so the trigger always has a row to match.
  */
 export function webCodePermissionChoices<T extends { id: PermissionChoice }>(
   offered: T[],
@@ -158,8 +158,9 @@ export function CodePermissionPicker({
   useEffect(() => {
     if (!web) void loadBypassDialog().catch(() => {});
   }, [web]);
-  // The preference, with its default (on): the raw value is undefined until the
-  // setting is saved once, which read as "off" while Settings showed it on.
+  // The preference, with its default (on): the raw value is undefined until
+  // the setting is saved once, which read as "off" while Settings showed it
+  // on (owner, 2026-10-20).
   const allowBypass = app
     ? preference(app.snapshot.settings, "allowBypassPermissions")
     : undefined;
@@ -189,8 +190,8 @@ export function CodePermissionPicker({
       trigger.current?.focus();
     }
   }, [openRequest]);
-  // The trigger's tooltip names Mod+Shift+M; nothing shows what the original
-  // does with it, so it opens the menu.
+  // The trigger's tooltip names Mod+Shift+M (R-0345: "Mode  Ctrl+Shift+M");
+  // nothing shows what the original does with it, so it opens the menu.
   useEffect(() => {
     const shortcut = (event: globalThis.KeyboardEvent) => {
       if (
@@ -225,9 +226,10 @@ export function CodePermissionPicker({
         : sandbox === "read-only"
           ? "manual"
           : "auto";
-  // Bypass chosen while a turn runs turns on with the next turn (a turn keeps
-  // the mode it started in): the row says so until this turn ends, and a notice
-  // says it once.
+  // Bypass chosen while a turn runs turns on with the next turn (a turn
+  // keeps the mode it started in): the row says so until this turn ends,
+  // and a notice says it once (live claude.ai bundle, 2026-10-12: Bypass
+  // kept for after the turn).
   const [bypassKept, setBypassKept] = useState(false);
   if (bypassKept && !turnRunning) setBypassKept(false);
   const bypassWaits = bypassKept && selected === "bypass";
@@ -279,7 +281,7 @@ export function CodePermissionPicker({
       setConfirming(cwd);
     }
   };
-  // Codex full access: no sandbox and no approval requests.
+  // Codex full access: no sandbox and no approval requests (R-0376).
   const bypass = (folder: string) => {
     keepBypass();
     onChange({
@@ -326,8 +328,9 @@ export function CodePermissionPicker({
     });
   return (
     <div ref={anchor} className="popover-anchor code-permission-anchor">
-      {/* The original's trigger: a ghost button with the mode's glyph, its name
-         and a 12px caret; its tooltip is the mode's description. */}
+      {/* The original's trigger (live claude.ai bundle, 2026-10-14): a
+          ghost button with the mode's glyph, its name and a 12px caret; its
+          tooltip is the mode's description. */}
       <WithTooltip
         label={current.description}
         shortcut={["shift", "mod", "M"]}
@@ -350,10 +353,21 @@ export function CodePermissionPicker({
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
           >
-            {nativePermissionGlyph && <PermissionGlyph name={current.glyph} />}
+            {nativePermissionGlyph && (
+              <svg
+                className="code-permission-glyph"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d={permissionGlyphs12[current.glyph]} />
+              </svg>
+            )}
             <span>{current.title}</span>
             <span className="code-permission-caret">
-              <AppIcon name="CaretDownSmall" />
+              <Anthropicon name="CaretDownSmall" />
             </span>
           </button>
         )}
@@ -390,17 +404,5 @@ export function CodePermissionPicker({
         </Suspense>
       )}
     </div>
-  );
-}
-
-function PermissionGlyph({ name }: { name: keyof typeof permissionGlyphs12 }) {
-  const Icon = permissionGlyphs12[name];
-  return (
-    <Icon
-      className="code-permission-glyph"
-      size={12}
-      strokeWidth={2}
-      aria-hidden="true"
-    />
   );
 }

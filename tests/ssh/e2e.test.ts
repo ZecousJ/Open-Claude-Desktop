@@ -62,6 +62,13 @@ import {
   connectionRunner,
   rpcRunner,
 } from "../../electron/ssh/remote-workspace";
+import {
+  createRemoteSessionWorktree,
+  probeRemoteSessionWorktree,
+  remoteWorktreeWorkspaceFor,
+  removeRemoteSessionWorktree,
+  restoreRemoteSessionWorktree,
+} from "../../electron/git/remote-code-worktree";
 import { workingTreeChanges } from "../../electron/git/working-tree";
 import { TerminalController } from "../../electron/terminal/terminal-controller";
 import { deviceId } from "../../electron/sub2api/provision";
@@ -487,6 +494,50 @@ describe(
         assert.match(run, /ForwardAgent=no .*ForwardX11=no/);
       assert.equal(runs.filter((r) => / -M /.test(` ${r} `)).length, 1);
       assert.ok(runs.filter((r) => r.includes("ControlMaster=no")).length >= 2);
+    });
+
+    test("a saved SSH host owns and restores a managed Code worktree", async () => {
+      answer = prompt =>
+        prompt.kind === "hostkey" && prompt.fingerprint === E.fingerprint ? "yes" : null;
+      assert.deepEqual(await service.connect(dev.id), { state: "ready" });
+      const connection = service.connection(dev.id);
+      const repository = (await onHost(connection, `
+        set -eu
+        repo=$(mktemp -d /tmp/cx-managed-worktree.XXXXXX)
+        cd "$repo"
+        git init -q -b main
+        mkdir app
+        printf 'base\\n' > app/version
+        git add app
+        git commit -qm base
+        git switch -qc selected
+        printf 'selected\\n' > app/version
+        git commit -qam selected
+        git update-ref refs/remotes/origin/selected HEAD
+        git switch -q main
+        git branch -D selected >/dev/null
+        printf '%s\\n' "$repo"
+      `)).trim();
+      const workspace = remoteWorktreeWorkspaceFor(
+        { engines: () => [], ssh: () => service },
+        { kind: "ssh", hostId: dev.id },
+      );
+      const { worktree, cwd } = await createRemoteSessionWorktree(
+        workspace, `${repository}/app`, { startBranch: "origin/selected" },
+      );
+      assert.equal(cwd, `${worktree.path}/app`);
+      assert.equal(fs.existsSync(worktree.path), false);
+      assert.equal(await workspace.git(cwd, ["show", "HEAD:app/version"]), "selected\n");
+      assert.equal(await workspace.git(repository, ["branch", "--show-current"]), "main\n");
+      assert.equal(await workspace.git(repository, ["status", "--porcelain"]), "");
+      await workspace.run({ argv: ["touch", `${cwd}/dirty`] });
+      assert.deepEqual((await probeRemoteSessionWorktree(workspace, worktree)).changes, ["?? app/dirty"]);
+      assert.equal(await removeRemoteSessionWorktree(workspace, worktree), "kept");
+      assert.equal(await removeRemoteSessionWorktree(workspace, worktree, true), "deleted");
+      assert.equal(await workspace.isDirectory(worktree.path), false);
+      await restoreRemoteSessionWorktree(workspace, worktree, cwd);
+      assert.equal(await workspace.git(cwd, ["branch", "--show-current"]), worktree.branch + "\n");
+      assert.equal(await workspace.isDirectory(cwd), true);
     });
 
     test("the runtime is uploaded from this computer when the host can't download it", async (t) => {

@@ -5,9 +5,11 @@ import { formatText, useT } from "../i18n";
 import "./sign-in.css";
 
 /**
- * "Choose an account": a body-size medium heading, a row per account (avatar,
- * name, the email under it when they differ, and an X that removes the account
- * from this device), "Use another account" under them.
+ * "Choose an account" (live claude.ai bundle, 2026-10-12, the signed-out
+ * login page's remembered accounts): a body-size medium heading, a row per
+ * account (avatar, name, the email under it when they differ, and an X
+ * that removes the account from this device), "Use another account" under
+ * them.
  */
 export function AccountChooser({
   accounts,

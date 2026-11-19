@@ -4,6 +4,7 @@ import type { AppContext } from "../app/app-context";
 import type { KnowledgeMcpResource } from "../../shared/collections-api";
 import { connectorAllowed } from "../../shared/client-policy-rules";
 import { withArtifactConnector } from "../artifacts/artifact-tools";
+import { savedConnectorHeaders } from "../connectors/connector-clients";
 import {
   KnowledgeSourceError,
   knowledgeFailureState,
@@ -17,9 +18,10 @@ import {
   ProjectKnowledgeStore,
 } from "./project-knowledge";
 
-// MCP resources as project knowledge: each connected remote MCP server that
-// lists resources gets a submenu; a resource, or a URL the server resolves, is
-// read with resources/read and kept as a synced file.
+// MCP resources as project knowledge (live claude.ai bundle, 2026-10-14,
+// cdeaafbfc-DGmcZisj.js Hn/Un/Nn): each connected remote MCP server that
+// lists resources gets a submenu; a resource, or a URL the server resolves,
+// is read with resources/read and kept as a synced file.
 export const mcpResourceFailure = "Failed to add MCP resource";
 export const mcpResolveFailure =
   "Failed to resolve URL. Make sure the MCP server supports this URL.";
@@ -100,6 +102,11 @@ export class ProjectKnowledgeMcp {
         this.connect(config, action, {
           fetch: request,
           token: this.context.connectors?.getToken?.(server),
+          headers: savedConnectorHeaders(
+            this.context.store.root,
+            server,
+            config.url,
+          ),
           remoteOnly: Boolean(this.context.connectors),
         }),
     );
@@ -230,17 +237,20 @@ export class ProjectKnowledgeMcp {
       .replace(/^\.+/, "_")
       .slice(0, 100);
     const name = `${folder}/${hash}/${mcpResourceFileName(checked)}`;
-    store.add(projectId, [{ name, data }]);
-    return store.setSource(projectId, name, {
-      provider: "mcp",
-      server,
-      uri: checked.uri,
-      name: checked.name,
-      ...(checked.title ? { title: checked.title } : {}),
-      ...(checked.mimeType ? { mimeType: checked.mimeType } : {}),
-      status: "idle",
-      lastSyncedAt: Date.now(),
-    });
+    return store.add(projectId, [{
+      name,
+      data,
+      source: {
+        provider: "mcp",
+        server,
+        uri: checked.uri,
+        name: checked.name,
+        ...(checked.title ? { title: checked.title } : {}),
+        ...(checked.mimeType ? { mimeType: checked.mimeType } : {}),
+        status: "idle",
+        lastSyncedAt: Date.now(),
+      },
+    }]);
   }
 
   async sync(store: ProjectKnowledgeStore, projectId: string, name: string) {
@@ -256,18 +266,17 @@ export class ProjectKnowledgeMcp {
         uri: source.uri,
         name: source.name,
       });
-      const current = store
-        .list(projectId)
-        .files.find((file) => file.name === name)?.source;
-      if (JSON.stringify(current) !== JSON.stringify(source))
-        return store.list(projectId);
-      store.add(projectId, [{ name, data }]);
-      return store.setSource(projectId, name, {
-        ...source,
-        status: "idle",
-        failure: undefined,
-        lastSyncedAt: Date.now(),
-      });
+      return await store.add(projectId, [{
+        name,
+        data,
+        expectedSource: source,
+        source: {
+          ...source,
+          status: "idle",
+          failure: undefined,
+          lastSyncedAt: Date.now(),
+        },
+      }]);
     } catch (error) {
       const current = store
         .list(projectId)

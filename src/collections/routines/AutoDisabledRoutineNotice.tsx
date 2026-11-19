@@ -90,14 +90,14 @@ export function AutoDisabledRoutineNotice({
   )
     return null;
   // Scheduler.run only produces this folder-access reason for a Code task
-  // executing on this computer. Remote/SSH records do not prove a local folder
-  // or GitHub OAuth failure.
+  // executing on this computer. Remote/SSH records do not prove a local
+  // folder or GitHub OAuth failure (O16 cd3378dac:1788–1820).
   const localWorkspace =
     routine.executionLocation !== "remote" &&
     routine.environment?.kind !== "ssh" &&
     Boolean(routine.cwd);
   // Code detail does not offer Re-enable once the single scheduled time has
-  // passed. Editing supplies a new time.
+  // passed (O16 cd3378dac:999–1018,1797–1804). Editing supplies a new time.
   const expiredOnce = onceAt !== undefined && onceAt <= now;
   const recover = async () => {
     if (

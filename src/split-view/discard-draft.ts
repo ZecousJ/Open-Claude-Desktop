@@ -5,10 +5,12 @@ import { closePane } from "./split-actions";
 import { splitState } from "./split-state";
 
 /**
- * Closing a split pane that holds an unsent new-session draft asks first. Keep
- * editing (or Escape) leaves the pane; Start session sends the draft from the
- * pane, which stays; Discard drops the draft and closes the pane. A pane with a
- * session, or with nothing typed or attached, closes at once.
+ * Closing a split pane that holds an unsent new-session draft asks first
+ * (live claude.ai bundle, 2026-10-12: "Discard draft?" with Keep editing,
+ * Start session and Discard). Keep editing (or Escape) leaves the pane;
+ * Start session sends the draft from the pane, which stays; Discard drops
+ * the draft and closes the pane. A pane with a session, or with nothing
+ * typed or attached, closes at once.
  */
 export type DraftCloseChoice = "cancel" | "start" | "discard";
 

@@ -36,7 +36,7 @@ export const reconnectMessage =
 /**
  * The bootstrap says the account has no group Claudex can use
  * (CLAUDEX_NO_PLAN). Such an account still signs in and runs on its balance
- * alone; its device holds no key.
+ * alone (owner decision, 2026-10-12); its device holds no key.
  */
 export function withoutPlan(boot: ClaudexBootstrap | undefined) {
   return (

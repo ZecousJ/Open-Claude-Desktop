@@ -32,7 +32,7 @@ export function OfficialCodeReplyActions({ turn }: { turn: Turn }) {
   );
 }
 
-/** "Scroll to bottom" after the arrow: Code's pill. */
+/** "Scroll to bottom" after the arrow: Code's pill (D/yb8.java:725-760). */
 export function OfficialScrollLabel() {
   useT();
   return <span className="scroll-bottom-label">{t("Scroll to bottom")}</span>;

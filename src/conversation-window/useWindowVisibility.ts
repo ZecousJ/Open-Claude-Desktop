@@ -35,12 +35,13 @@ export function watchVisibility(
 }
 
 /**
- * A separate conversation window tells the main process whether the person can
- * see it (R2): a reply that finishes while its window is on screen is not
- * marked unread in the main window's sidebar, and no notification is raised for
- * it. Minimizing and hiding are reported by the main process itself; the page
- * reports what only it knows (the document became hidden or visible, the window
- * gained focus) and that it stopped showing the conversation when it unmounts.
+ * A separate conversation window tells the main process whether the person
+ * can see it (R2): a reply that finishes while its window is on screen is
+ * not marked unread in the main window's sidebar (R-0038), and no
+ * notification is raised for it. Minimizing and hiding are reported by the
+ * main process itself; the page reports what only it knows (the document
+ * became hidden or visible, the window gained focus) and that it stopped
+ * showing the conversation when it unmounts.
  */
 export function useWindowVisibility(
   report: ((visible: boolean) => Promise<void>) | undefined,

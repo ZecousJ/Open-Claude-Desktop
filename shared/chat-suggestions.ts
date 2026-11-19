@@ -72,7 +72,7 @@ export const emptyPacing = (): NextStepPacing => ({
   open: {},
 });
 
-// .
+// (live claude.ai bundle, 2026-10-14, c0783ec14-FMloPyZ8.js).
 export function nextStepSuppressed(
   state: NextStepPacing,
   toolUseId: string,

@@ -1,7 +1,6 @@
-/**
- * Stable searchable submenu placement. Retain the largest measured height until
- * close; a flipped end-aligned popup keeps its bottom edge when filtering
- * removes rows.
+/** Stable searchable submenu placement (shared-frame-B1JORnF0 xC/YS).
+ * Retain the largest measured height until close; a flipped end-aligned
+ * popup keeps its bottom edge when filtering removes rows.
  */
 export function dictationLanguagePosition({
   trigger,

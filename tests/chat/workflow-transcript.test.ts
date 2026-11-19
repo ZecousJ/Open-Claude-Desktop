@@ -118,7 +118,7 @@ test("multiple unphased child tasks in one turn stay separate Agent cards", () =
       onJumpToLatest() {},
     }),
   );
-  // Code shows each agent as its own one-line row.
+  // Code shows each agent as its own one-line row (R-0786, G-17).
   assert.equal((html.match(/class="code-agent-row"/g) ?? []).length, 2);
   assert.doesNotMatch(html, /class="workflow-card"/);
 });

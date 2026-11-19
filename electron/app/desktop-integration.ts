@@ -19,7 +19,7 @@ import type {
   Schedule,
   Settings,
 } from "../../shared/types";
-import { preference, preferenceDefaults } from "../../shared/settings-extras";
+import { preference, preferenceDefaults, type SettingsPreferences } from "../../shared/settings-extras";
 import { ProjectPromptCounts } from "../projects/project-prompt-counts";
 import { systemPresence } from "./system-presence";
 import { KeepAwakeNoticeTracker } from "./keep-awake-notice";
@@ -44,6 +44,8 @@ interface Options {
   ) => void;
   window: () => BrowserWindow | undefined;
   settings: () => Settings | undefined;
+  devicePreferences?: () => SettingsPreferences;
+  remoteServing?: () => boolean;
   conversations: () => Conversation[];
   command: (
     command: AppCommand,
@@ -119,17 +121,28 @@ export interface IntegrationWindows {
  * starts Quick Entry by the Option double tap instead.
  */
 export function quickAccessShortcut(saved: string | undefined) {
-  return (
-    saved ??
-    (process.platform === "darwin"
-      ? ""
-      : preferenceDefaults.quickAccessShortcut)
-  );
+  return process.platform === "darwin"
+    ? ""
+    : saved ?? preferenceDefaults.quickAccessShortcut;
+}
+
+export function desktopShortcuts(settings?: SettingsPreferences) {
+  const quick = settings && process.platform === "darwin"
+    ? preference(settings, "quickEntryShortcut")
+    : "off";
+  const voice = settings && quickEntryDictationSupported()
+    ? preference(settings, "quickEntryDictationShortcut")
+    : "off";
+  const access = preference(settings ?? {}, "legacyQuickEntryEnabled")
+    ? quickAccessShortcut(settings?.quickAccessShortcut)
+    : "";
+  return { access, quick, voice };
 }
 
 export class DesktopIntegration {
   turns = new TurnWatcher();
   work = new CodeWorkTracker();
+  manualCodeKeepAwake = new Set<string>();
   schedules: Schedule[] = [];
   scheduledAttention = new Map<string, Notice>();
   scheduledAttentionTimer?: NodeJS.Timeout;
@@ -163,12 +176,14 @@ export class DesktopIntegration {
   rendererNotifications = new Set<Notification>();
   /** The Dock bounce asking for attention (macOS), until nothing waits. */
   private bounce?: number;
-  private flashing = false;
+  private flashing?: BrowserWindow;
   tray?: Tray;
   shortcuts = new Set<string>();
+  private capsLockShortcut?: "capslock" | "double-tap-capslock";
+  private capsLockChangedAt?: number;
   private accessMonitor = new QuickAccessMonitor(
     () => {
-      const settings = this.options.settings();
+      const settings = this.options.settings() ?? this.options.devicePreferences?.();
       if (
         settings &&
         preference(settings, "quickEntryShortcut") === "double-tap-option"
@@ -176,13 +191,18 @@ export class DesktopIntegration {
         this.openQuickEntry();
     },
     (action) => {
-      const settings = this.options.settings();
-      if (
-        settings &&
-        quickEntryDictationSupported() &&
-        preference(settings, "quickEntryDictationShortcut") === "capslock"
-      )
+      if (!this.options.settings() || !quickEntryDictationSupported()) return;
+      if (this.capsLockShortcut === "capslock")
         this.options.quickEntryDictation?.(action);
+      else if (this.capsLockShortcut === "double-tap-capslock") {
+        const previous = this.capsLockChangedAt;
+        const now = this.now();
+        this.capsLockChangedAt = now;
+        if (previous !== undefined && now - previous < 600) {
+          this.capsLockChangedAt = undefined;
+          this.options.quickEntryDictation?.("start");
+        }
+      }
     },
   );
   ready = false;
@@ -302,19 +322,28 @@ export class DesktopIntegration {
     } else {
       const window = this.options.window();
       if (window && !window.isDestroyed()) {
+        if (this.flashing !== window) this.stopAttention();
         window.flashFrame(true);
-        this.flashing = true;
+        this.flashing = window;
       }
     }
   }
   stopAttention() {
     if (this.bounce !== undefined) app.dock?.cancelBounce(this.bounce);
     this.bounce = undefined;
-    if (this.flashing) {
-      const window = this.options.window();
-      if (window && !window.isDestroyed()) window.flashFrame(false);
-      this.flashing = false;
+    if (this.flashing && !this.flashing.isDestroyed()) this.flashing.flashFrame(false);
+    this.flashing = undefined;
+  }
+  refreshNotificationSignals() {
+    this.updateBadge();
+    const settings = this.options.settings();
+    if (settings && preference(settings, "drawAttention")) {
+      for (const { kind } of this.waiting.values()) {
+        const effect = kind && this.effect(kind);
+        if (effect && (effect.banner || effect.badge)) return;
+      }
     }
+    this.stopAttention();
   }
   /** What a kind of notice does under the current settings. */
   effect(kind: NotificationKind) {
@@ -338,34 +367,41 @@ export class DesktopIntegration {
   }
   dockMenuKey = "";
   translation?: { locale: string; translate: (text: string) => string };
-  /** Applies the current account's settings; with none, everything is switched off. */
-  apply() {
+  /** Applies account settings and the desktop preferences available while signed out. */
+  apply(options: {
+    preserveShortcuts?: boolean;
+    observe?: (stage: "integration-keepawake" | "integration-tray" | "integration-shortcuts" | "integration-shortcuts-preserved" | "integration-monitor") => void;
+  } = {}) {
     if (!this.ready) return;
     const settings = this.options.settings();
+    this.refreshNotificationSignals();
+    options.observe?.("integration-keepawake");
     this.updateKeepAwake();
-    // The tray icon and the Quick Entry shortcut belong to the app, not to an
-    // account: they stand from the start and while signed out, on the local
-    // defaults (the desktop client creates the tray when the app is ready,
-    // menuBarEnabled true; the shortcut brings the window forward until
-    // someone is signed in).
-    this.updateTray(
-      settings ? preference(settings, "menuBar") : preferenceDefaults.menuBar,
-    );
-    const access = settings
-      ? preference(settings, "quickEntryShortcut")
-      : "off";
+    const desktop = settings ?? this.options.devicePreferences?.();
+    options.observe?.("integration-tray");
+    this.updateTray(preference(desktop ?? {}, "menuBar"));
+    const { access, quick, voice } = desktopShortcuts(desktop);
     const accelerator =
-      access === "off" || access === "double-tap-option" ? "" : access;
-    const voice =
-      settings && quickEntryDictationSupported()
-        ? preference(settings, "quickEntryDictationShortcut")
-        : "off";
-    this.updateShortcuts(
-      [quickAccessShortcut(settings?.quickAccessShortcut), accelerator],
-      voice === "off" || voice === "capslock" ? "" : voice,
+      quick === "off" || quick === "double-tap-option" ? "" : quick;
+    const capsLock = settings && (voice === "capslock" || voice === "double-tap-capslock")
+      ? voice
+      : undefined;
+    // Stop the previous account's voice shortcut before attempting registration.
+    if (!settings) {
+      this.capsLockShortcut = undefined;
+      this.capsLockChangedAt = undefined;
+      this.accessMonitor.setEnabled(false);
+    }
+    options.observe?.(settings && options.preserveShortcuts ? "integration-shortcuts-preserved" : "integration-shortcuts");
+    if (!(settings && options.preserveShortcuts)) this.updateShortcuts(
+      [access, accelerator],
+      !settings || voice === "off" || capsLock ? "" : voice,
     );
-    this.accessMonitor.setEnabled(
-      access === "double-tap-option" || voice === "capslock",
+    if (this.capsLockShortcut !== capsLock) this.capsLockChangedAt = undefined;
+    this.capsLockShortcut = capsLock;
+    options.observe?.("integration-monitor");
+    if (desktop) this.accessMonitor.setEnabled(
+      quick === "double-tap-option" || capsLock !== undefined,
     );
   }
   stop() {
@@ -378,7 +414,10 @@ export class DesktopIntegration {
     this.keepAwakeTimer = undefined;
     if (this.blocker !== undefined) powerSaveBlocker.stop(this.blocker);
     this.blocker = undefined;
+    this.manualCodeKeepAwake.clear();
     this.accessMonitor.setEnabled(false);
+    this.capsLockShortcut = undefined;
+    this.capsLockChangedAt = undefined;
     this.updateShortcuts([]);
   }
   reset() {
@@ -391,6 +430,7 @@ export class DesktopIntegration {
     this.scheduledAttention.clear();
     this.turns.reset();
     this.work.reset();
+    this.manualCodeKeepAwake.clear();
     this.awakeNotices.release(false);
     this.codeHold = false;
     this.schedules = [];
@@ -405,7 +445,8 @@ export class DesktopIntegration {
   }
   static trayIconPath(resources: string | undefined, dirname: string) {
     // macOS menu bar icons are template images: the knot in black with its
-    // alpha, which the system recolours.
+    // alpha, which the system recolours (owner, 2026-10-20; "Template" in
+    // the name marks it, and @2x sits beside it).
     if (process.platform === "darwin")
       return resources
         ? path.join(resources, "tray-iconTemplate.png")

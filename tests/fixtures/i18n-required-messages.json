@@ -201,6 +201,7 @@
   "Save the artifact changes before sending this message.",
   "This draft is too long to move. Shorten it or copy it first.",
   "This artifact is being updated. Try again when the reply finishes.",
+  "This knowledge base can't be reached right now.",
   "Choose a PNG, JPEG, GIF or WebP image smaller than 1 MB.",
   "Voice mode needs dictation and a window that can read aloud.",
   "Project no longer exists.",

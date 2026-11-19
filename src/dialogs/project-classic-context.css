@@ -1,5 +1,6 @@
-/* Classic creation. This sheet loads only with the project editor. */
-/* The popover surface
+/* Classic creation: O16 ca5811b6a and live 1280px form, 2026-10-19.
+   This sheet loads only with the project editor. */
+/* Live claude.ai /projects, 2026-10-21 (1280 wide): the popover surface
    with a 1px white-10% rim over 0 4px 8px ink 8% and 0 12px 28px -2px black
    24%; the 32px header row ends level with its 28px title, the close
    button 16px from the dialog's end with a 20px X in the primary ink. */
@@ -32,7 +33,7 @@
   border-radius: 8px;
   color: var(--text);
 }
-.modal:has(.prj-editor.classic) > header > .icon-button > .app-icon {
+.modal:has(.prj-editor.classic) > header > .icon-button > .anthropicon {
   font-size: 20px !important;
 }
 .prj-editor.classic {
@@ -118,7 +119,7 @@
   line-height: 20px;
 }
 /* Its plus is the original's leading icon, 4px into the padding. */
-.prj-context-add > .app-icon {
+.prj-context-add > .anthropicon {
   margin-inline-start: -4px;
   font-size: 16px !important;
 }

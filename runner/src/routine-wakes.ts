@@ -1,32 +1,31 @@
 import fs from "node:fs";
 import path from "node:path";
 import { nextWakeAt } from "../../shared/routines";
+import { writeOfficialStateFile } from "./official-ui-receipts";
 
 /** setTimeout's longest delay (about 24.8 days); a later wake re-arms itself. */
 const maxDelayMs = 2 ** 31 - 1;
 /** After a wake that failed (the service is down): try again in two minutes. */
 export const wakeRetryMs = 2 * 60_000;
+const codeArchiveWakeFile = "code-auto-archive-wake.json";
+
+export type AccountWake = { routine: boolean; codeArchive: boolean };
 
 export interface RoutineWakesOptions {
   /** The runner's state folder (`<stateDir>/users/<id>/profile/schedules.json`). */
   stateDir: string;
-  /** Opens the user's context so its scheduler starts what is due. */
-  wake(userId: number): Promise<void>;
+  wake(userId: number, due: AccountWake): Promise<void>;
   now?: () => number;
   log?: (message: string) => void;
 }
 
-/**
- * Wakes users whose scheduled tasks are due while no page of theirs is open.
- * The tasks live in the user's own profile (electron/scheduler.ts); this only
- * remembers when each user is next due. It learns that at start from the
- * `schedules.json` files, and afterwards from the contexts (`set`, whenever a
- * user's schedule changes). A due user is woken once: their context then runs
- * the task and reports the next time.
- */
+/** Wakes account work even when the user has no page open. The account
+ * reports separate due times for scheduled tasks and Code PR checks. */
 export class RoutineWakes {
   private next = new Map<number, number>();
+  private codeArchive = new Map<number, number>();
   private timers = new Map<number, NodeJS.Timeout>();
+  private firing = new Set<number>();
   private stopped = false;
   private readonly now: () => number;
 
@@ -46,35 +45,71 @@ export class RoutineWakes {
     for (const name of names) {
       const id = Number(name);
       if (!Number.isSafeInteger(id) || id <= 0) continue;
+      const profile = path.join(users, name, "profile");
       try {
         const data: unknown = JSON.parse(
-          fs.readFileSync(
-            path.join(users, name, "profile", "schedules.json"),
-            "utf8",
-          ),
+          fs.readFileSync(path.join(profile, "schedules.json"), "utf8"),
         );
-        if (Array.isArray(data)) this.set(id, nextWakeAt(data));
+        const at = Array.isArray(data) ? nextWakeAt(data) : undefined;
+        if (at !== undefined) this.next.set(id, at);
       } catch {
         // No schedules, or an unreadable file (the context reports it).
       }
+      try {
+        const at: unknown = JSON.parse(
+          fs.readFileSync(path.join(profile, codeArchiveWakeFile), "utf8"),
+        );
+        if (typeof at === "number" && Number.isFinite(at))
+          this.codeArchive.set(id, at);
+      } catch {
+        // Accounts without watched pull requests have no archive wake.
+      }
+      this.reschedule(id);
     }
   }
 
   /** The user's next due time (undefined: nothing is scheduled). */
   set(userId: number, at: number | undefined) {
-    clearTimeout(this.timers.get(userId));
-    this.timers.delete(userId);
+    if (at === undefined) this.next.delete(userId);
+    else this.next.set(userId, at);
+    this.reschedule(userId);
+  }
+
+  setCodeArchive(userId: number, at: number | undefined) {
+    const file = path.join(
+      this.options.stateDir,
+      "users",
+      String(userId),
+      "profile",
+      codeArchiveWakeFile,
+    );
     if (at === undefined) {
-      this.next.delete(userId);
-      return;
+      fs.rmSync(file, { force: true });
+      this.codeArchive.delete(userId);
+    } else {
+      writeOfficialStateFile(file, at);
+      this.codeArchive.set(userId, at);
     }
-    this.next.set(userId, at);
-    this.arm(userId, Math.max(0, at - this.now()));
+    this.reschedule(userId);
   }
 
   /** When a user is next due (tests and diagnostics). */
   dueAt(userId: number) {
-    return this.next.get(userId);
+    const routine = this.next.get(userId);
+    const codeArchive = this.codeArchive.get(userId);
+    return routine === undefined
+      ? codeArchive
+      : codeArchive === undefined
+        ? routine
+        : Math.min(routine, codeArchive);
+  }
+
+  private reschedule(userId: number) {
+    clearTimeout(this.timers.get(userId));
+    this.timers.delete(userId);
+    const at = this.dueAt(userId);
+    if (at !== undefined && !this.firing.has(userId))
+      this.arm(userId, Math.max(0, at - this.now()));
   }
 
   stop() {
@@ -88,7 +123,7 @@ export class RoutineWakes {
     const timer = setTimeout(
       () => {
         this.timers.delete(userId);
-        const at = this.next.get(userId);
+        const at = this.dueAt(userId);
         if (at === undefined) return;
         // Too far ahead for one timer: arm again for what is left.
         if (at - this.now() > 0) return this.arm(userId, at - this.now());
@@ -101,21 +136,22 @@ export class RoutineWakes {
   }
 
   private async fire(userId: number) {
+    this.firing.add(userId);
     try {
-      await this.options.wake(userId);
+      const now = this.now();
+      await this.options.wake(userId, {
+        routine: (this.next.get(userId) ?? Infinity) <= now,
+        codeArchive: (this.codeArchive.get(userId) ?? Infinity) <= now,
+      });
     } catch (error) {
       this.options.log?.(
-        `claudex-runner: waking user ${userId} for a scheduled task failed: ${error instanceof Error ? error.message : String(error)}`,
+        `claudex-runner: waking user ${userId} failed: ${error instanceof Error ? error.message : String(error)}`,
       );
-      // Still due: try again soon, unless the context reported a newer time.
-      if (!this.timers.has(userId) && this.next.has(userId))
-        this.arm(userId, wakeRetryMs);
-      return;
+    } finally {
+      this.firing.delete(userId);
+      const at = this.dueAt(userId);
+      if (at !== undefined)
+        this.arm(userId, at <= this.now() ? wakeRetryMs : at - this.now());
     }
-    // The context runs the due task and reports the next time through `set`.
-    // Should it not (its scheduler was busy), look again shortly.
-    const at = this.next.get(userId);
-    if (at !== undefined && at <= this.now() && !this.timers.has(userId))
-      this.arm(userId, wakeRetryMs);
   }
 }

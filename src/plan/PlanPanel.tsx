@@ -23,7 +23,7 @@ export function latestPlan(conversation: Conversation): PlanStep[] | undefined {
   }
 }
 
-/** Dashed ring, spinning arc, struck check. */
+/** Status glyphs traced from R-Code-Plan面板: dashed ring, spinning arc, struck check. */
 export function PlanStatusIcon({ status }: { status: PlanStep["status"] }) {
   const common = {
     className: "plan-step-icon",
@@ -79,7 +79,7 @@ export function PlanStatusIcon({ status }: { status: PlanStep["status"] }) {
   );
 }
 
-/** Code "Plan" side panel listing the agent's tasks. */
+/** Code "Plan" side panel listing the agent's tasks (R-Code-Plan面板-运行中 / 第三阶段). */
 export function PlanPanel({
   conversation,
   onClose,

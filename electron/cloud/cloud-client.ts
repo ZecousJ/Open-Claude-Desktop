@@ -9,13 +9,20 @@
  * token, which the relay accepts like a web session's (P2).
  */
 import type { AppEvent, Snapshot } from "../../shared/types";
+import { desktopAttachmentObject, readAttachmentObject } from "../../shared/attachment-object";
+import {
+  knowledgeFileLimit,
+  knowledgeFileLimitMessage,
+} from "../../shared/collections-api";
 import {
   parseTicketResponse,
-  webAuthRoutes,
+  rpcRequest,
+  webErrorCodes,
   webHeaders,
-  webPaths,
+  webLimits,
 } from "../../shared/web-protocol";
-import { encodeCall } from "../../shared/web-client/codec";
+import { officialCodeUserSettingsOrganization } from "../../shared/official-code-user-settings";
+import { encodeCall, upload } from "../../shared/web-client/codec";
 import type { SocketFactory, Timers } from "../../shared/web-client/env";
 import {
   apiError,
@@ -44,7 +51,7 @@ export interface CloudSession {
 }
 
 export interface CloudClientOptions {
-  /** The Claudex service's origin, e.g. "https://claudex.example.com". */
+  /** The Claudex service's origin, e.g. "https://claudex.zecous.cn". */
   baseUrl: string;
   /** The signed-in account's session; undefined while signed out. */
   session(): CloudSession | undefined;
@@ -98,6 +105,9 @@ export class CloudClient {
       get current() {
         return options.session();
       },
+      get activationIdentity() {
+        return options.session();
+      },
       accessToken: async () => {
         const session = options.session();
         if (!session)
@@ -129,6 +139,7 @@ export class CloudClient {
       auth,
       this.tabId,
     );
+    this.hub.subscribe(() => this.transport.invalidateSnapshotRead());
     this.stream = new EventStream(
       {
         origin: this.origin,
@@ -160,22 +171,19 @@ export class CloudClient {
   }
 
   /**
-   * A one-time events ticket (`auth/events-ticket`). The route sits beside
-   * the web sign-in routes, so it takes the web app's CSRF headers.
+   * A one-time events ticket issued to the signed-in native client.
    */
   private async ticket() {
     const send = async (token: string) => {
       let response: Response;
       try {
         response = await (this.options.fetch ?? fetch)(
-          new URL(`${webPaths.auth}${webAuthRoutes.eventsTicket}`, this.origin),
+          new URL("/api/v1/claudex/mobile/events-ticket", this.origin),
           {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
-              Origin: this.origin,
-              [webHeaders.web]: "1",
               [webHeaders.tab]: this.tabId,
             },
             body: JSON.stringify({ tabId: this.tabId }),
@@ -207,6 +215,7 @@ export class CloudClient {
   /** Closes the event stream and forgets what it knew (signed out). */
   stop() {
     this.stream.stop();
+    this.transport.invalidateSnapshotRead();
     this.loaded = false;
     this.loadedSeq = undefined;
     this.pushed = undefined;
@@ -231,7 +240,96 @@ export class CloudClient {
 
   /** One bridge call on the user's runner. */
   async call(method: string, args: unknown[] = []): Promise<unknown> {
-    return this.transport.call(method, await encodeCall(args, this.transport));
+    const request = args[0];
+    if (method === "addAttachmentData" && args.length === 2 &&
+        typeof request === "string" && args[1] instanceof Uint8Array) {
+      const current = this.transport.captureActivation();
+      const id = await upload(this.transport, args[1], { name: request }, current);
+      current();
+      return this.transport.call(method, JSON.stringify(rpcRequest([request, { $upload: id }])), undefined, current);
+    }
+    if (method === "turnAttachment" && args.length === 2 ||
+        method === "readGeneratedFile" && args.length === 1) {
+      const current = this.transport.captureActivation();
+      const requestBody = (direct: boolean) =>
+        JSON.stringify(rpcRequest(direct ? [...args, desktopAttachmentObject] : args));
+      try {
+        const value = await this.transport.call(method, requestBody(true), undefined, current);
+        current();
+        if (!value || typeof value !== "object" || !("attachmentObject" in value))
+          return value;
+        const object = value.attachmentObject;
+        if (!object || typeof object !== "object" ||
+            !("url" in object) || typeof object.url !== "string" ||
+            !("size" in object) || typeof object.size !== "number" ||
+            !Number.isSafeInteger(object.size) || object.size <= 0 || object.size > 32 * 1024 * 1024)
+          throw Error("Invalid attachment object.");
+        const data = await readAttachmentObject(object.url, object.size);
+        current();
+        if (method === "readGeneratedFile") return Buffer.from(data).toString("base64");
+        if ("name" in value && typeof value.name === "string" &&
+            "mime" in value && typeof value.mime === "string")
+          return { name: value.name, mime: value.mime, data };
+        throw Error("Invalid attachment metadata.");
+      } catch {
+        current();
+        return this.transport.call(method, requestBody(false), undefined, current);
+      }
+    }
+    if (method === "officialUiAction" && args.length === 1 && request && typeof request === "object" &&
+        "method" in request && request.method === "PUT" &&
+        "path" in request && typeof request.path === "string" && officialCodeUserSettingsOrganization(request.path))
+      return this.transport.call(method, JSON.stringify(rpcRequest(args)));
+    const file = args[1];
+    if (
+      method !== "addProjectKnowledgeText" ||
+      !file ||
+      typeof file !== "object" ||
+      !("text" in file) ||
+      typeof file.text !== "string"
+    )
+      return this.transport.call(
+        method,
+        await encodeCall(args, this.transport),
+      );
+
+    const session = this.options.session();
+    const assertCurrent = () => {
+      if (this.options.session() !== session)
+        throw new Error("The account changed during this request.");
+    };
+    const bytes = Buffer.byteLength(file.text, "utf8");
+    if (bytes > knowledgeFileLimit)
+      throw bridgeError(knowledgeFileLimitMessage, webErrorCodes.tooLarge);
+    let body =
+      bytes < webLimits.rpcBodyBytes
+        ? await encodeCall(args, this.transport)
+        : undefined;
+    if (
+      body === undefined ||
+      Buffer.byteLength(body) > webLimits.rpcBodyBytes
+    ) {
+      const name =
+        "name" in file && typeof file.name === "string" ? file.name : undefined;
+      const id = await upload(
+        this.transport,
+        Buffer.from(file.text, "utf8"),
+        { name, type: "text/plain" },
+        assertCurrent,
+      );
+      body = await encodeCall(
+        [args[0], { ...file, text: { $upload: id } }],
+        this.transport,
+      );
+    }
+    const value = await this.transport.call(
+      method,
+      body,
+      undefined,
+      assertCurrent,
+    );
+    assertCurrent();
+    return value;
   }
 
   /**

@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/engine/skill-invocation.ts",
+    "../electron/engine/engine-send.ts",
+    "chat/f039-skill-invocation-engine.test.ts",
+    "official-ui-f039-skill-original.test.ts"
+  ]
+}

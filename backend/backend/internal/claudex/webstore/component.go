@@ -3,15 +3,15 @@
 // JSONB row each, live transcript and saved branches), artifacts with their
 // last versions, and files (bytes on disk) under a per-user quota.
 //
-// The runner that serves a user is the only writer: its CloudStore sends
+// The runner that serves a user writes personal data. Its CloudStore sends
 // store.* requests over the runner link, and the relay (W-RELAY,
 // internal/claudex/webhost) hands them to ServeRunnerOp after checking the
 // user is routed to that runner. Browser uploads come in through the relay's
-// chunked uploads route (BeginUpload, WriteUpload). The browser itself only
-// reads: a file download and the account export (RegisterUserRoutes).
+// chunked uploads route (BeginUpload, WriteUpload). Browser routes manage
+// organization projects and serve personal file downloads and exports.
 //
-// Tenant isolation: every query is scoped by the user id (see store.go);
-// another user's rows are indistinguishable from missing ones.
+// Personal data is scoped by user ID. Organization project access uses the
+// actor's current organization membership and project grants.
 package webstore
 
 import (
@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/claudex/attachmentstore"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/core"
 
 	"github.com/gin-gonic/gin"
@@ -29,10 +30,11 @@ import (
 
 // Component is the web-store component.
 type Component struct {
-	env   *core.Env
-	store *store
-	blobs blobs
-	quota *core.JSONSetting[quotaView]
+	env     *core.Env
+	store   *store
+	blobs   blobs
+	objects *attachmentstore.Store
+	quota   *core.JSONSetting[quotaView]
 	// limits replaces the setting in tests.
 	limits func(context.Context) Limits
 
@@ -46,11 +48,16 @@ func New(env *core.Env) *Component {
 	if env != nil {
 		db = env.DB
 	}
+	objects, err := attachmentstore.FromEnvironment()
+	if err != nil {
+		slog.Error("claudex webstore: attachment objects unavailable", "error", err)
+	}
 	return &Component{
-		env:   env,
-		store: &store{db: db},
-		blobs: blobs{root: defaultDir()},
-		quota: newQuotaSetting(env),
+		env:     env,
+		store:   &store{db: db},
+		blobs:   blobs{root: defaultDir()},
+		objects: objects,
+		quota:   newQuotaSetting(env),
 	}
 }
 
@@ -74,6 +81,7 @@ const (
 func (c *Component) RegisterUserRoutes(g *gin.RouterGroup) {
 	g.GET(RouteFileDownload, c.downloadFile)
 	g.GET(RouteExport, c.heavy(), c.export)
+	c.registerProjectOrganizationRoutes(g)
 }
 
 func (c *Component) heavy() gin.HandlerFunc {

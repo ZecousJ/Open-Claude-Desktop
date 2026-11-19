@@ -314,10 +314,8 @@ export class ArtifactLibrary {
     this.save();
     return { artifact, library: this.list() };
   }
-  /**
-   * Shared-link imports keep their identity when refreshed. Imported code
-   * carries no tool grants.
-   */
+  /** Shared-link imports keep their identity when refreshed (desktop 2.37337.1,
+   * index.chunk-BWk6pVUt.js:243290,243368). Imported code carries no tool grants. */
   importShared(token: string, raw: unknown, refresh = false) {
     z.string()
       .regex(/^[A-Za-z0-9_-]{20,64}$/)

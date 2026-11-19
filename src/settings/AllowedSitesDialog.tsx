@@ -11,10 +11,10 @@ import { SettingsModal } from "./controls";
 import "./allowed-sites.css";
 
 /**
- * Allowed sites: the sites added with "Always allow this site" or typed here,
- * each with a trash button, and Clear all. Local development addresses never
- * ask, so they are listed as built in. Settings and the browser panel's ⋯ menu
- * open the same dialog.
+ * Allowed sites (desktop bundle 2.31226.1): the sites added with "Always
+ * allow this site" or typed here, each with a trash button, and Clear all.
+ * Local development addresses never ask, so they are listed as built in.
+ * Settings and the browser panel's ⋯ menu open the same dialog.
  */
 export function AllowedSitesDialog(props: AllowedSitesProps) {
   return (

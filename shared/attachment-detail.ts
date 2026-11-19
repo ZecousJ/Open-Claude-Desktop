@@ -1,6 +1,7 @@
 /**
  * What an attachment tile in the composer says about a text file and how it
- * names it.
+ * names it (R-0243, R-1093 captures: "8 lines" under the name, a long name
+ * cut in the middle).
  */
 
 /** Lines in a text file: a final line break does not start another one. */

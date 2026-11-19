@@ -27,6 +27,8 @@ import { requestJson, Sub2ApiError, type Fetch } from "./http";
 export const memoryErrorCodes = Object.freeze({
   disabled: "CLAUDEX_MEMORY_DISABLED",
   conflict: "CLAUDEX_MEMORY_CONFLICT",
+  controlsConflict: "CLAUDEX_MEMORY_CONTROLS_CONFLICT",
+  controlsReset: "CLAUDEX_MEMORY_CONTROLS_RESET",
   tooLarge: "CLAUDEX_MEMORY_TOO_LARGE",
   limit: "CLAUDEX_MEMORY_LIMIT",
   badScope: "CLAUDEX_MEMORY_BAD_SCOPE",
@@ -90,7 +92,10 @@ const limits = z.object({
   edit_chars: z.number().int().positive(),
   scopes: z.number().int().positive(),
 });
+const controlsVersion = z.string().min(1).max(200);
 const view = z.object({
+  controls_versions: z.record(z.string(), controlsVersion).optional(),
+  empty_controls_version: controlsVersion.optional(),
   ...statusShape,
   limits: limits.optional(),
   docs: z.array(doc).max(1000),
@@ -192,6 +197,8 @@ export function parseMemoryView(data: unknown): MemorySnapshot {
     limits: limitsOf(value.limits),
     docs: value.docs.map(docOf),
     edits: value.edits.map(editOf),
+    controlsVersions: value.controls_versions,
+    emptyControlsVersion: value.empty_controls_version,
   };
 }
 
@@ -263,6 +270,7 @@ export class ClaudexMemory {
       source: MemorySource;
       baseRevision: number;
       editsUpto?: number;
+      baseControlsVersion?: string;
     },
   ): Promise<MemoryDocRecord> {
     return docOf(
@@ -277,6 +285,9 @@ export class ClaudexMemory {
               content: input.content,
               source: input.source,
               base_revision: input.baseRevision,
+              ...(input.baseControlsVersion !== undefined
+                ? { base_controls_version: input.baseControlsVersion }
+                : {}),
               ...(input.editsUpto !== undefined
                 ? { edits_upto: input.editsUpto }
                 : {}),
@@ -285,6 +296,35 @@ export class ClaudexMemory {
         ),
       ),
     );
+  }
+  async replaceControls(
+    token: string,
+    scope: MemoryScope,
+    controls: string[],
+    baseVersion: string,
+  ) {
+    const value = parse(
+      z.object({
+        edits: z.array(edit).max(memoryLimits.editsPerScope),
+        controls_version: controlsVersion,
+      }),
+      await this.call(
+        token,
+        `/claudex/memory/controls/${encodeURIComponent(scope)}`,
+        {
+          method: "PUT",
+          body: { controls, base_controls_version: baseVersion },
+        },
+      ).catch((error) => {
+        if (memoryMissing(error))
+          throw new Error(
+            "This server does not support atomic memory controls yet.",
+          );
+        throw error;
+      }),
+    );
+    if (value.edits.some((edit) => edit.scope !== scope)) malformed();
+    return { edits: value.edits.map(editOf), version: value.controls_version };
   }
   async deleteDoc(token: string, scope: MemoryScope) {
     await this.call(

@@ -1,12 +1,13 @@
 /*
- * The row under the Cowork home composer and its menus. The composer's left
- * edge is x=383: the open chip spans 391–505 × 569–593 (#272727) with its 13px
- * label from x=400, so the row is inset 8px and each chip pads its label by
- * 9px; labels are 18px apart. The menu opens 6px below the chip, at its left
+ * The row under the Cowork home composer and its menus (R-Cowork-项目文件夹菜单,
+ * R-Cowork-首页-新建; 2x PNG, ÷2). The composer's left edge is x=383: the open
+ * chip spans 391–505 × 569–593 (#272727) with its 13px label from x=400, so
+ * the row is inset 8px and each chip pads its label by 9px; labels are 18px
+ * apart (17.5 in the capture). The menu opens 6px below the chip, at its left
  * edge: 327px wide, #202020 with a 1px #363636 rim; a 40px search row over a
- * rule (glyph at 409, text at 432), then 32px rows (49px with a path line) with
- * 20px icons (glyph 407–423) and names from x=434, 14px #f7f6f4 names and 13px
- * #908f8d paths.
+ * rule (glyph at 409, text at 432), then 32px rows (49px with a path line)
+ * with 20px icons (glyph 407–423) and names from x=434, 14px #f7f6f4 names
+ * and 13px #908f8d paths.
  */
 .cowork-options.cowork-options {
   position: relative;
@@ -138,10 +139,10 @@
   font-size: 13px;
   line-height: 18px;
 }
-/* Current projects-only picker: 258px shell, 250x32 options, input166x32 beside
-   the 32px Filter control. Folder menus retain the legacy geometry above. The
-   shell's rim is inset rather than taking width away from its 4px content
-   padding. */
+/* Current projects-only picker: 258px shell, 250x32 options, input166x32
+   beside the 32px Filter control (live 2026-10-16). Folder menus retain
+   the legacy geometry above. The shell's rim is inset rather than taking
+   width away from its 4px content padding. */
 .project-picker.cowork-menu {
   position: fixed;
   top: auto;
@@ -168,7 +169,7 @@
   padding: 0 12px;
   color: var(--text-muted);
 }
-.project-picker-search > .app-icon {
+.project-picker-search > .anthropicon {
   flex: none;
 }
 .project-picker-search input {
@@ -260,7 +261,8 @@
   width: 100%;
   margin: 0;
 }
-/* Permission menu: the Code permission menu's measures. */
+/* Permission menu (no capture of Cowork's own): the Code permission menu's
+   measures (R-0333: 278.5px wide, 13px names over 12px descriptions). */
 .cowork-permission-menu {
   width: 280px;
   padding: 4px 0;
@@ -313,14 +315,15 @@
 }
 
 /*
- * Output menu. The menu opens 6.5px under the Output chip, level with its left
- * edge: 323px wide, 4px above the first row, 32px rows. A 20px tile (radius 5)
- * sits 13.5px in from the menu's edge with the 14px label 8.5px after it; Beta
- * is a 17.5px #2b2b2b pill 9px after the label with 12px #c8c7c2 text. The rule
- * is inset 13.5px, 4px under the Design row and 4.5px above Artifact, whose
- * #8f8e8a note starts 124.5px in. Tiles: Docs #242c37 / #3b6aba, Slides #372f22
- * / #a6855a, Design #2d2b38 / #766ba4. Greyed formats keep the capture's
- * colours at the Menu's disabled opacity (0.4, src/ui/menu.css).
+ * Output menu (R-Cowork-Output菜单-深色, 2x ÷2). The menu opens 6.5px under
+ * the Output chip, level with its left edge: 323px wide, 4px above the first
+ * row, 32px rows. A 20px tile (radius 5) sits 13.5px in from the menu's edge
+ * with the 14px label 8.5px after it; Beta is a 17.5px #2b2b2b pill 9px after
+ * the label with 12px #c8c7c2 text. The rule is inset 13.5px, 4px under the
+ * Design row and 4.5px above Artifact, whose #8f8e8a note starts 124.5px in.
+ * Tiles: Docs #242c37 / #3b6aba, Slides #372f22 / #a6855a, Design
+ * #2d2b38 / #766ba4. Greyed formats keep the capture's colours at the
+ * Menu's disabled opacity (0.4, src/ui/menu.css).
  */
 .cowork-output-menu.cowork-menu {
   width: 323px;
@@ -387,8 +390,9 @@
   color: #85837d;
 }
 
-/* A chosen project or folder: a #272727 chip, its 16px glyph 10px in, 14px
-   #fdfbfc name 6.5px after it, a 12px grey chevron 10px from the right edge. */
+/* A chosen project or folder (R-0412; 2x ÷2): a #272727 chip, its 16px
+   glyph 10px in, 14px #fdfbfc name 6.5px after it, a 12px grey chevron
+   10px from the right edge. */
 .cowork-options.cowork-options > button.cowork-place-chosen {
   display: inline-flex;
   align-items: center;

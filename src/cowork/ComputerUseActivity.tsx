@@ -22,7 +22,8 @@ export function computerUseItems(conversation: Conversation) {
     );
 }
 
-// Live and historical frames share a collapsible card.
+// Live and historical frames share a collapsible card (live claude.ai bundle,
+// 2026-10-14, ce5658dc8-Dez48Sxz.js Qa; cb34f9f5d-c8u0NVZO.js).
 export function ComputerUseActivity({
   conversation,
 }: {

@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { useTooltip } from "../../ui/Tooltip";
 
 /**
- * A model row's one-line description; when the line is cut, hovering it shows
- * the whole description in the app's tooltip.
+ * A model row's one-line description; when the line is cut, hovering it
+ * shows the whole description in the app's tooltip (owner, 2026-10-03).
  */
 export function ModelDescription({ text }: { text: string }) {
   const line = useRef<HTMLElement>(null);

@@ -111,8 +111,8 @@
 .chat-home > h1 {
   letter-spacing: -0.5px;
 }
-/* The greeting's line box starts 25% of the window height plus 60px (48px
-   header, 12px margin) down; ours is 4.5px taller, so 57.5px. */
+/* Live claude.ai (2026-09-29): the greeting's line box starts 25% of the window
+   height plus 60px (48px header, 12px margin) down; ours is 4.5px taller, so 57.5px. */
 @media (min-width: 1101px) and (min-height: 711px) {
   .chat-main .chat-home {
     padding-top: max(
@@ -128,8 +128,9 @@
     height: 36px;
   }
 }
-/* The toolbar inside the home composer measures the same at W1164, so these
-   follow the window down to 700px rather than the 1101px above. */
+/* The toolbar inside the home composer measures the same at W1164 (885 CSS
+   px wide: R-0236, R-0224 put the + at 23.6px from the box, as at 1351), so
+   these follow the window down to 700px rather than the 1101px above. */
 @media (min-width: 700px) and (min-height: 711px) {
   .chat-main .chat-home .composer-left .icon-button svg {
     width: 20px;
@@ -147,13 +148,19 @@
 
 /* Optional local font faces are read from an existing Claude installation, never distributed. */
 :root[data-reference-fonts="true"] {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Claudex Reference Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 :root[data-reference-fonts="true"] .chat-home > h1,
 :root[data-reference-fonts="true"] .customize-inner > h1,
 :root[data-reference-fonts="true"] .customize-feature h3 {
   font-family:
-    "Claudex Serif", Georgia, "PingFang SC", "Microsoft YaHei", serif;
+    "Claudex Reference Serif", "Claudex Serif", Georgia, "PingFang SC",
+    "Microsoft YaHei", serif;
   font-optical-sizing: auto;
 }
 :root[data-reference-fonts="true"] .chat-home > h1 {

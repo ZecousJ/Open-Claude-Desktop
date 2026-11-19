@@ -1,5 +1,5 @@
 import { t } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { openImageGroup } from "../lightbox/open";
 
 export interface MiniComposerFile {
@@ -9,7 +9,7 @@ export interface MiniComposerFile {
   preview?: string;
 }
 
-// Compact chips.
+// Compact chips (live claude.ai bundle, 2026-10-14, c04e7453f-Cg2yRCdu.js).
 export function MiniComposerAttachments({
   files,
   onRemove,
@@ -57,7 +57,7 @@ export function MiniComposerAttachments({
             aria-label={t("Remove file")}
             onClick={() => onRemove(file.id)}
           >
-            <AppIcon name="X" />
+            <Anthropicon name="X" />
           </button>
         </div>
       ))}

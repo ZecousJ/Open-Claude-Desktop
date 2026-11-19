@@ -4,9 +4,10 @@ import type { BrowserTabState } from "../../shared/browser";
 import { tabTitle } from "./browser-model";
 
 /**
- * The card's first row, left side. One tab shows as its title; with several,
- * each is a button, the open one brighter, with a × to close it. A right click
- * offers Close tab / Close other tabs.
+ * The card's first row, left side (R-Code-Browser单面板: "New tab" then
+ * "+"). One tab shows as its title; with several, each is a button, the
+ * open one brighter, with a × to close it (several tabs are not captured:
+ * visual-provisional). A right click offers Close tab / Close other tabs.
  */
 export function BrowserTabStrip({
   tabs,

@@ -1,8 +1,8 @@
 /**
- * A small in-process stand-in for the Claudex service: the Sub2API user API and
- * gateway (shaped after responses recorded from an unmodified local instance;
- * no Sub2API code is used, only the HTTP contract is imitated) and the Claudex
- * routes of the design.
+ * A small in-process stand-in for the Claudex service: the Sub2API user API
+ * and gateway (shaped after responses recorded from an unmodified local
+ * instance; no Sub2API code is used, only the HTTP contract is imitated) and
+ * the Claudex routes of the design (FINAL-claudex-backend-design.md §2).
  *
  * `options.claudex = false` is an older Sub2API without the Claudex module:
  * every Claudex route, `/claudex/release` included, answers 404.
@@ -1382,8 +1382,9 @@ export class MockSub2Api {
   }
 
   /**
-   * An account without a plan group still registers: the device row has no key,
-   * and every key it held is deleted.
+   * An account without a plan group still registers (owner decision,
+   * 2026-10-12: balance only): the device row has no key, and every key it
+   * held is deleted.
    */
   private registerWithoutPlan(
     request: MockRequest,

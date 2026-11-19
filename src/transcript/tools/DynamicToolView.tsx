@@ -1,5 +1,5 @@
 import { Square, ChevronRight } from "../../ui/glyphs";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { ToolStepDetails } from "./ToolStepDetails";
 import type { Item } from "../../../shared/types";
 import { itemIsRunning } from "../../../shared/activity";
@@ -44,7 +44,7 @@ export function DynamicToolView({
   needsInput?: boolean;
 }) {
   if (!needsInput && isWebFetch(item)) return <WebFetchRow item={item} />;
-  // Claudex's own memory tool reads as memory, not as a raw call.
+  // Claudex's own memory tool reads as memory, not as a raw call (R-0777).
   if (!needsInput && isMemoryTool(item))
     return (
       <Suspense fallback={null}>
@@ -86,7 +86,7 @@ export function DynamicToolView({
           {running ? (
             <ActivityMark phase="tools" />
           ) : failed ? (
-            <AppIcon name="WarningCircle" size={15} />
+            <Anthropicon name="WarningCircle" size={15} />
           ) : stopped ? (
             <Square size={13} />
           ) : null}

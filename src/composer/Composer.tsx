@@ -26,6 +26,7 @@ import type {
 } from "../../shared/types";
 import type { Artifact } from "../ui/ArtifactTypes";
 import { chatEffortsFor, modelLabel } from "./model/code-model-choices";
+import type { KnowledgeProps } from "../knowledge/knowledge-props";
 import { cloudCodeUnavailable } from "./code-cloud";
 import {
   currentCodeRepository,
@@ -137,7 +138,7 @@ export const SkillTokenMirror = lazyPiece(
   { silent: true },
 );
 
-/** What Bash mode says to a file, folder or card. */
+/** What Bash mode says to a file, folder or card (desktop bundle 2.31226.1). */
 export const bashRefusal =
   "Bash mode is on, so nothing was added. Press Backspace in the empty message box to return to chat, then try again.";
 export const BashModePill = lazyPiece(
@@ -152,7 +153,7 @@ export const BashModePill = lazyPiece(
 let composerBooted = false;
 
 type ComposerProps = {
-  /** Incognito chat: no Chat/Cowork switch. */
+  /** Incognito chat: no Chat/Cowork switch (R-0003). */
   incognito?: boolean;
   skillTokens?: SkillToken[];
   setSkillTokens?: (tokens: SkillToken[]) => void;
@@ -172,7 +173,7 @@ type ComposerProps = {
   mode: Mode;
   /** The chosen project; null takes the conversation out of its project. */
   onProject: (id: string | null) => void;
-  /** With a name, creates a project of that name and selects it. */
+  /** With a name, creates a project of that name and selects it (R-0228). */
   onCreateProject: (name?: string) => void;
   /** Home picker: opens the project editor with an optional initial name. */
   onNewProject?: (name?: string) => void;
@@ -181,7 +182,7 @@ type ComposerProps = {
   onOpenUsage: () => void;
   /** /status: the open session's Session info card. */
   onStatus?: () => void;
-  /** No Code session yet: the first-run placeholder. */
+  /** No Code session yet: the first-run placeholder (live claude.ai bundle). */
   firstRun?: boolean;
   /** /rename, /export, /diff and /help for the open session. */
   onRenameSession?: (title: string) => void;
@@ -206,11 +207,13 @@ type ComposerProps = {
   webSearch: boolean;
   webSearchAvailable: boolean;
   onWebSearch: () => void;
-  /** Research mode; left out where Research isn't offered. */
+  /** Research mode (R-0263, R-0285); left out where Research isn't offered. */
   research?: boolean;
   researchAvailable?: boolean;
   researchUnavailableReason?: string;
   onResearch?: () => void;
+  /** Knowledge bases (shared/knowledge-api.ts); left out where none are offered. */
+  knowledge?: KnowledgeProps;
   draftIdentity: string;
   setMode: (mode: Mode) => void;
   providerId: string;
@@ -245,14 +248,14 @@ type ComposerProps = {
   report: (error: unknown) => void;
   notify: (message: string) => void;
   setSettingsOpen: (open: boolean) => void;
-  /** Pending approvals docked above the composer. */
+  /** Pending approvals docked above the composer (R-0805). */
   dock?: ReactNode;
   /** The Code session's branch row, between the dock and the composer. */
   branchRow?: ReactNode;
   /**
    * The conversation's queued messages (Code: QueuedMessageBar; Chat and
-   * Cowork: ChatComposerQueuedMessages), between the dock and the branch row as
-   * the reference design orders them.
+   * Cowork: ChatComposerQueuedMessages), between the dock and the branch row
+   * as the live claude.ai bundle (2026-10-12) orders them.
    */
   queuedBar?: ReactNode;
 };
@@ -312,6 +315,7 @@ export function Composer({
   researchAvailable = false,
   researchUnavailableReason,
   onResearch,
+  knowledge,
   draftIdentity,
   mode,
   setMode,
@@ -690,6 +694,7 @@ export function Composer({
     toolbar,
     coworkTask,
     researchChip,
+    knowledgeChip,
     chinVoice,
     modelPicker,
     taskPermissionPicker,
@@ -717,6 +722,7 @@ export function Composer({
     incognito,
     incognitoControls,
     interrupt,
+    knowledge,
     mode,
     model,
     modelMenu,
@@ -829,6 +835,7 @@ export function Composer({
     inputRow,
     interrupt,
     issuesOpen,
+    knowledgeChip,
     linearIssuesOpen,
     mention,
     mentionOpen,

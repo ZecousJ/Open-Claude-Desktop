@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import postcss from "postcss";
 
-// Badge variant pro, size sm: bg-tint-violet text-pro, h-control-nested 18px,
-// rounded-chip a quarter of it, px-sm 6px, caption 11/17 medium.
+// Badge variant pro, size sm (live claude.ai bundle, 2026-10-16): bg-tint-violet
+// text-pro, h-control-nested 18px, rounded-chip a quarter of it, px-sm 6px,
+// caption 11/17 medium.
 test("the bash pill is the violet pro badge", async () => {
   const css = postcss.parse(
     await readFile(

@@ -22,6 +22,7 @@ import {
   CompletionUnavailableError,
 } from "../../electron/memory/completion";
 import { LocalMemoryStore } from "../../electron/memory/local-store";
+import { Melange, type MelangeSnapshot } from "../../electron/memory/melange";
 import {
   alreadyContains,
   dedupeLines,
@@ -56,6 +57,61 @@ import { chat, turn } from "../support/memory-fixtures";
 const projectId = "1b4e28ba-2fa1-11d2-883f-0016d3cca427";
 const structured = (body: string) =>
   `## Work context\n${body}\n\n## Personal context\nLives in Porto.`;
+
+test("Melange synthesis consumes new redacted history by scope without rereading migrated Classic history", async (t) => {
+  const conversations = [chat("migrated", "Migrated fact", [["Has a dog", "OK"]])];
+  const env = await setup(t, { conversations });
+  assert.equal((await env.synthesizer.run()).status, "done");
+  env.synthesizer.stop();
+  await env.service.setPrefs({ generate: false });
+  let snapshot: MelangeSnapshot = {
+    revision: 1,
+    state: {
+      mode: "melange",
+      files: [],
+      switchImport: { id: projectId, status: "ok", ts: new Date().toISOString(), created: 1, appended: 0, rejected: 0 },
+    },
+  };
+  const prompts: string[] = [];
+  const melange = new Melange({
+    store: {
+      load: async () => structuredClone(snapshot),
+      save: async (revision, state) => {
+        assert.equal(revision, snapshot.revision);
+        return snapshot = { revision: revision + 1, state };
+      },
+    },
+    isCurrent: () => true,
+    complete: async ({ input }) => {
+      prompts.push(input);
+      const path = input.includes('"kind":"project"') ? `projects/${projectId}/notes.md` : "topics/notes.md";
+      return JSON.stringify({ write: [{ path, content: "Lasting fact" }], delete: [], rejected: null, text: "Saved" });
+    },
+  });
+  conversations.push(
+    chat("general", "General conversation", [["Prefers tea. api key is sk-abcdefghijklmnop", "OK"]]),
+    chat("project", "Project conversation", [["Uses Go", "OK"]], { projectId }),
+    chat("private", "Private conversation", [["Private fact", "OK"]], { incognito: true }),
+    chat("code", "Code conversation", [["Code fact", "OK"]], { mode: "code" }),
+  );
+  const task = new MemorySynthesizer({
+    root: env.root,
+    service: env.service,
+    conversations: () => conversations,
+    melange: async () => melange,
+    complete: async () => assert.fail("Unexpected Classic completion"),
+  });
+  const result = await task.run();
+  assert.equal(result.conversations, 2);
+  assert.match(prompts[0], /Prefers tea.*\[redacted\]/);
+  assert.match(prompts[1], /Uses Go/);
+  assert.doesNotMatch(prompts.join("\n"), /sk-abc|Private fact|Code fact|Has a dog/);
+  assert.doesNotMatch(prompts[0], /Uses Go/);
+  assert.doesNotMatch(prompts[1], /Prefers tea/);
+  assert.deepEqual(snapshot.state?.files.map(({ path }) => path), ["topics/notes.md", `projects/${projectId}/notes.md`]);
+  assert.equal((await task.run()).status, "nothing");
+  assert.equal(prompts.length, 2);
+});
 
 // -------------------------------------------------------------- digests
 
@@ -304,6 +360,7 @@ test("small title checks can cap the completer's output without enabling tools o
       body = JSON.parse(String(init?.body));
       return sse([
         { type: "response.output_text.delta", delta: '{"proposedTitle":null}' },
+        { type: "response.completed", response: { output: [] } },
       ]);
     },
   );
@@ -381,8 +438,27 @@ test("the completer falls back to the completed text, retries once without reaso
     async () => sse([]),
   );
   await assert.rejects(empty({ instructions: "a", input: "b" }), {
-    message: "The model gave no answer.",
+    message: "The model response ended before completion.",
   });
+});
+
+test("the completer rejects an unfinished response even when the streamed text is a valid memory document", async () => {
+  const target = async () => ({ url: "http://x/v1", token: "t", model: "m" });
+  const delta = {
+    type: "response.output_text.delta",
+    delta: structured("Partial notes."),
+  };
+  const prompt = { instructions: "a", input: "b" };
+  await assert.rejects(
+    gatewayCompleter(target, async () => sse([delta]))(prompt),
+    /ended before completion/,
+  );
+  await assert.rejects(
+    gatewayCompleter(target, async () =>
+      sse([delta, { type: "response.incomplete" }]),
+    )(prompt),
+    /was incomplete/,
+  );
 });
 
 test("without a gateway nothing is sent", async () => {

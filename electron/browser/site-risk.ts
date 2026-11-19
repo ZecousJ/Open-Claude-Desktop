@@ -20,10 +20,12 @@ export function privateNetworkHost(host: string) {
 export type SiteRisk = "financial" | "high-risk" | "blocked" | undefined;
 
 /**
- * What the browser panel knows about a site before the agent goes there: a
- * private-network host counts as high risk and a bank as financial. The
- * original also posts every URL to its vendor's classification service;
- * Claudex sends no address anywhere, so "blocked" is never decided here.
+ * What the browser panel knows about a site before the agent goes there:
+ * a private-network host counts as high risk and a bank as financial. The
+ * original also posts every URL to its vendor's classification service
+ * (desktop 2.37337.1, index.chunk-BWk6pVUt.js:131542); Claudex sends no
+ * address anywhere (owner, 2026-10-20: no vendor calls, and a browsing
+ * history is nobody else's), so "blocked" is never decided here.
  */
 export class SiteRiskChecks {
   private cache = new Map<string, { expires: number; risk: SiteRisk }>();

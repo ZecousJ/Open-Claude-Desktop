@@ -5,7 +5,7 @@ import type { EngineLauncher } from "../engine/engine-types";
 import type { AskpassSession } from "./askpass";
 import { type SshConnection } from "./connection";
 import { errorMessage } from "./connection-support";
-import { workspaceTrustScript } from "./remote-scripts";
+import { shQuote, workspaceTrustScript } from "./remote-scripts";
 import { parseRemoteTrust } from "../workspace/workspace-trust";
 import { checkCustomSsh, findSsh, supportsControlMaster } from "./ssh-binary";
 import {
@@ -15,6 +15,7 @@ import {
 } from "./ssh-launcher-support";
 import * as sshLauncherForwards from "./ssh-launcher-forwards";
 import { installMethods } from "./install-methods";
+import { connectionRunner } from "./remote-workspace";
 
 export class SshLauncher implements EngineLauncher {
   get sshHost() {
@@ -31,8 +32,37 @@ export class SshLauncher implements EngineLauncher {
   platform: NodeJS.Platform = "linux";
   private readonly localPlatform: NodeJS.Platform;
   forward: { port: number; gateway: number } | undefined;
+  browserForward: { port: number; localPort: number } | undefined;
   runtime: LauncherRuntime | undefined;
   currentEngine: string | undefined;
+  get remoteExecutionId() {
+    return this.currentEngine;
+  }
+
+  terminalProcessExecutor() {
+    const connection = this.options.ssh()?.existing(this.options.hostId);
+    if (!connection?.live()) return;
+    const run = connectionRunner(connection);
+    return async (argv: string[]) => {
+      const result = await run({ argv, timeoutMs: 5000, maxOutput: 4096 });
+      if (result.code !== 0) throw Error("Remote terminal process cleanup failed.");
+    };
+  }
+
+  async remoteExecutionEnded(id: string): Promise<boolean> {
+    if (!/^e[0-9a-f]{16}$/.test(id)) return false;
+    const ssh = this.options.ssh(), hostId = this.options.hostId;
+    const connection = ssh?.existing(hostId);
+    const runtime = this.runtime ?? ssh?.runtime?.(hostId);
+    if (!connection?.live() || !runtime) return false;
+    const layout = await runtime.ensure();
+    const result = await connection.exec([
+      `pid=$(cat ${shQuote(layout.run + "/" + id + ".pid")} 2>/dev/null)`,
+      'case "$pid" in ""|*[!0-9]*) exit 1 ;; esac',
+      'test "$pid" -gt 1 && ! kill -0 "$pid" 2>/dev/null',
+    ].join("\n"));
+    return result.code === 0;
+  }
   closing = false;
   askpassSession: AskpassSession | undefined;
 
@@ -57,10 +87,11 @@ export class SshLauncher implements EngineLauncher {
   }
 
   /**
-   * Where a conversation started without a folder runs: the host's Default
-   * folder, else the signed-in user's home, read when the connection probed the
-   * host. A host not connected yet is connected first (without prompts);
-   * undefined when that is not possible.
+   * Where a conversation started without a folder runs (owner, 2026-10-08:
+   * no folder means the host's top folder): the host's Default folder, else
+   * the signed-in user's home, read when the connection probed the host. A
+   * host not connected yet is connected first (without prompts); undefined
+   * when that is not possible.
    */
   async defaultCwd(): Promise<string | undefined> {
     const service = this.service();
@@ -149,8 +180,11 @@ export class SshLauncher implements EngineLauncher {
   }
 
   /**
-   * Codex's trust of a folder on the host: the folder's real path, its Codex
-   * project root and the `.codex` files that load once the root is trusted.
+   * Codex's trust of a folder on the host (the official remote trust check,
+   * live claude.ai bundle, 2026-10-12: desktop index.chunk-B8ah0lMt.js
+   * :1656-1677 reads the host's settings to list what trusting allows): the
+   * folder's real path, its Codex project root and the `.codex` files that
+   * load once the root is trusted.
    */
   async workspaceTrust(
     folder: string,
@@ -189,13 +223,13 @@ export class SshLauncher implements EngineLauncher {
   }
 
   /** Codex answered: the host is ready, and engines left from earlier runs end. */
-  started(): void {
+  started(keepExecutions: string[] = []): void {
     const connection = this.options.ssh()?.existing(this.options.hostId);
     if (connection) this.report(connection, { state: "ready" });
     const runtime = this.runtime;
     const id = this.currentEngine;
     if (runtime && id)
-      void runtime.cleanup([id]).catch(() => {
+      void runtime.cleanup([id, ...keepExecutions]).catch(() => {
         // Cleaning up is best effort; the next start tries again.
       });
   }
@@ -207,6 +241,7 @@ export class SshLauncher implements EngineLauncher {
    */
   exited(): void {
     if (this.closing) return;
+    void this.closeForward();
     this.askpassSession?.close();
     this.askpassSession = undefined;
     const connection = this.options.ssh()?.existing(this.options.hostId);
@@ -226,6 +261,14 @@ export class SshLauncher implements EngineLauncher {
         });
     }, this.options.exitGraceMs ?? 500);
     timer.unref?.();
+  }
+
+  browserUrl(input: string) {
+    const url = new URL(input);
+    if (!this.browserForward || this.browserForward.localPort !== Number(url.port)) return;
+    url.hostname = "127.0.0.1";
+    url.port = String(this.browserForward.port);
+    return url.href;
   }
 
   /** The engine stopped on purpose: the forward goes too. */

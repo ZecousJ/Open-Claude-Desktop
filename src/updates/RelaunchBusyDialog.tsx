@@ -3,11 +3,12 @@ import { Modal } from "../ui/Controls";
 import { formatText, t } from "../i18n";
 
 /**
- * Relaunching while a task runs asks first: Cancel, Wait for Claudex (relaunch
- * by itself once everything is idle) and Update anyway. While waiting, only
- * Cancel is left and the text says so, after a small spinner. With one session
- * running its title is a text link that opens it ("Untitled session" without a
- * title).
+ * Relaunching while a task runs asks first (live claude.ai bundle,
+ * 2026-10-13, shared-6 NU: the "still working" dialog): Cancel, Wait for
+ * Claudex (relaunch by itself once everything is idle) and Update anyway.
+ * While waiting, only Cancel is left and the text says so, after a small
+ * spinner. With one session running its title is a text link that opens it
+ * ("Untitled session" without a title).
  */
 export function RelaunchBusyDialog({
   count,

@@ -1,9 +1,10 @@
 import type { Conversation } from "./types";
 
 /**
- * Credentials that look like the real thing, found before a session is shared.
- * Only well-known shapes, so ordinary text and code do not raise it; sharing
- * goes ahead either way.
+ * Credentials that look like the real thing, found before a session is
+ * shared (live claude.ai bundle, 2026-10-16, c50a441b7: scanSecrets and
+ * "This session may include secure credentials."). Only well-known shapes,
+ * so ordinary text and code do not raise it; sharing goes ahead either way.
  */
 const shapes: [string, RegExp][] = [
   ["api_key", /\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,}/],

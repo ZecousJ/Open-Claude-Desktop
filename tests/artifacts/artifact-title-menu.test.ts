@@ -113,7 +113,7 @@ test("title menu follows rename, duplicate, window and report capabilities", asy
     );
     assert.equal(item("share").disabled, true);
     assert.ok(item("permissions"));
-    assert.ok(item("permissions").querySelector("[data-icon='Lock']"));
+    assert.ok(item("permissions").querySelector("[data-anthropicon='Lock']"));
     assert.equal(item("chat").getAttribute("role"), "menuitemcheckbox");
     assert.equal(item("chat").getAttribute("aria-checked"), "true");
     const order = [

@@ -60,11 +60,11 @@ test("scheduled cards put timing and icon states in the footer", () => {
     /Runs at: /,
   );
   const paused = card({ enabled: false });
-  assert.match(paused, /routine-card-footer.*data-icon="Pause".*Paused/);
+  assert.match(paused, /routine-card-footer.*data-anthropicon="Pause".*Paused/);
   assert.doesNotMatch(paused, /Next run: /);
   assert.match(
     card({ enabled: false, repeat: { kind: "once", at: 1 }, lastRunAt: 2 }),
-    /data-icon="Check".*Ran/,
+    /data-anthropicon="Check".*Ran/,
   );
   assert.match(
     card({ enabled: false, endedReason: "auto_disabled_repo_access" }),

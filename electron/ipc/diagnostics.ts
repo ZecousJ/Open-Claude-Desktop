@@ -11,6 +11,7 @@ import type {
   ReportingStatus,
 } from "../../shared/diagnostics-api";
 import { preference } from "../../shared/settings-extras";
+import { completedReply } from "../../shared/branches";
 import type { AppContext, IpcHandle } from "../app/app-context";
 import { DiagnosticsReporter, FetchedBootstrap } from "../support/diagnostics";
 import { reporterClient } from "../support/diagnostics-support";
@@ -132,7 +133,7 @@ export function crashReport(error: unknown, source: string): DiagnosticInput {
   };
 }
 
-/** A process that ended unexpectedly. */
+/** A process that ended unexpectedly (`render-process-gone`, `child-process-gone`). */
 export function processGoneReport(
   kind: string,
   details: { reason?: unknown; exitCode?: unknown; type?: unknown },
@@ -337,9 +338,9 @@ export function registerDiagnosticsHandlers(
       if (event.engine.state === "starting") mcpReported.clear();
     }
   });
-  ctx.onReplyRated(({ conversationId, turnId, rating }) =>
-    current()?.rated(conversation(conversationId), turnId, rating),
-  );
+  ctx.onReplyRated(({ conversationId, turnId, rating, localOnly }) => {
+    if (!localOnly) current()?.rated(conversation(conversationId), turnId, rating);
+  });
   setInterval(() => {
     checkMcpStartup();
     void current()
@@ -363,8 +364,8 @@ export function registerDiagnosticsHandlers(
       const active = current();
       if (!active) return { sent: false };
       const found = conversation(input.conversationId);
-      const turn = found?.turns.find((item) => item.id === input.turnId);
-      if (!found || turn?.status !== "completed")
+      const turn = found && completedReply(found, input.turnId);
+      if (!found || !turn)
         throw Error("Only completed replies can be rated.");
       return active.submitFeedback(found, input);
     },

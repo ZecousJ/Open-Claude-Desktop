@@ -8,7 +8,7 @@ import {
   type FolderAccessChoice,
 } from "./useFolderAccess";
 
-// Non-modal folder request.
+// Non-modal folder request (live claude.ai bundle, 2026-10-14, ca44d5dae-DpdemcoK.js).
 export function FolderAccessDialog({
   folder,
   paths,

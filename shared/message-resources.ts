@@ -190,7 +190,7 @@ export function resourceDownloadName(link: McpResourceLink, mimeType?: string) {
   return `${(match ? name.slice(0, -match[0].length) : name).trim() || "resource"}.${suffix}`;
 }
 
-// .
+// (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js).
 export function electionInfoSource(items: Item[]) {
   for (const item of items) {
     if (

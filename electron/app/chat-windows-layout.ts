@@ -16,22 +16,11 @@ import { readChatWindowState } from "./chat-windows-support";
 import { writeChatWindowState } from "./chat-windows-support";
 import { clampToDisplays } from "./chat-windows-support";
 import type { ChatWindows } from "./chat-windows";
+import { clampLayoutToDisplays } from "./session-popouts";
 
 export function takeRestorableLayout(this: ChatWindows) {
   const layout = this.sessions.take();
-  if (!layout) return null;
-  const clamp = <T extends { bounds?: Rectangle }>(entry: T): T => ({
-    ...entry,
-    ...(entry.bounds
-      ? { bounds: clampToDisplays(entry.bounds, this.host.workAreas()) }
-      : {}),
-  });
-  return {
-    ...layout,
-    popouts: layout.popouts.map(clamp),
-    panes: layout.panes.map(clamp),
-    projects: layout.projects?.map(clamp),
-  };
+  return layout ? clampLayoutToDisplays(layout, this.host.workAreas()) : null;
 }
 
 export async function restoreLayout(this: ChatWindows) {

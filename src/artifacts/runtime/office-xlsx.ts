@@ -23,13 +23,14 @@ import {
 /* ---------------------------------------------------------------- xlsx */
 
 /*
- * Drawn as the original's spreadsheet viewer draws a workbook: a white sheet in
- * every theme; the cells take the file's fonts, fills, borders, alignment,
- * number formats, column widths and row heights. Its conversions: a point of
- * type is 1.2px (lines 1.4 times that), a point of row height 1.3px (default
- * 16pt), a column of width w is floor((256w + 21) / 256 × 6) × 1.17px (default
- * 76.05px). Grid lines are hair (0.5px) #d8d9e5, borders thin and hair 0.5px,
- * medium 1.5px, thick 3px. Text is #282b3e by default, 4px in from the cell's
+ * Drawn as the original's spreadsheet viewer draws a workbook (claude.ai's
+ * "Mondrian" viewer, 2026-10-01): a white sheet in every theme; the cells
+ * take the file's fonts, fills, borders, alignment, number formats, column
+ * widths and row heights. Its conversions: a point of type is 1.2px (lines
+ * 1.4 times that), a point of row height 1.3px (default 16pt), a column of
+ * width w is floor((256w + 21) / 256 × 6) × 1.17px (default 76.05px).
+ * Grid lines are hair (0.5px) #d8d9e5, borders thin and hair 0.5px, medium
+ * 1.5px, thick 3px. Text is #282b3e by default, 4px in from the cell's
  * sides, at its foot unless aligned. Headers are 18px tall and 25px wide,
  * Calibri 11 #282b3e on #f5f5f5 with medium #d8d9e5 rims.
  */

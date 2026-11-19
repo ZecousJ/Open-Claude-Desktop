@@ -38,7 +38,7 @@ test("Code home has the real Ant feedback glyph and a disabled session-aware act
   );
   assert.match(html, /aria-label="Send feedback"/);
   assert.match(html, /disabled=""/);
-  assert.match(html, /data-icon="Ant"/);
+  assert.ok(html.includes(String.fromCharCode(57350)));
   assert.match(html, /Open a session to send feedback/);
 });
 

@@ -47,11 +47,11 @@ import { skillMenu, RemoveSkill } from "./SkillRow";
 export { skillsLabels as searchLabels } from "./desktop-labels";
 
 /**
- * Skills: what the agent runtime has loaded, grouped by source. Add creates a
- * skill or uploads a folder with a SKILL.md; each row's menu turns it on or
- * off, shows it in its folder, and deletes the skills you added. Discover lists
- * the marketplaces' plugins as Customize → Discover does, with the Claudex
- * directory's curated blocks.
+ * Skills (R-1513–R-1520): what the agent runtime has loaded, grouped by
+ * source. Add creates a skill or uploads a folder with a SKILL.md; each
+ * row's menu turns it on or off, shows it in its folder, and deletes the
+ * skills you added. Discover (R-1518) lists the marketplaces' plugins as
+ * Customize → Discover does, with the Claudex directory's curated blocks.
  */
 export function SkillsTab({
   onError,
@@ -96,10 +96,10 @@ export function SkillsTab({
     onError,
     routeKey: JSON.stringify({ view, query, category, marketplace }),
   });
-  // A skill's own page: replaces the list until Your skills.
+  // A skill's own page (R-1515): replaces the list until Your skills.
   const [openPath, setOpenPath] = useState<string>();
   const [removing, setRemoving] = useState<ListedSkill>();
-  // Duplicate or Rename.
+  // Duplicate or Rename (live claude.ai bundle, 2026-10-12).
   const [naming, setNaming] = useState<{
     kind: "duplicate" | "rename";
     skill: ListedSkill;
@@ -109,7 +109,7 @@ export function SkillsTab({
     void action()
       .then(() => listed.reload())
       .catch(onError);
-  // Upload skill opens the Upload a skill page.
+  // Upload skill opens the Upload a skill page (R-1130).
   const [uploading, setUploading] = useState(false);
   const upload = () => setUploading(true);
   const groups = groupSkills(listed.value ?? [], query)
@@ -128,7 +128,7 @@ export function SkillsTab({
     }))
     .filter((group) => group.skills.length);
   const empty = listed.value !== undefined && !groupSkills(listed.value).length;
-  // The callout stays until the person has a skill of their own.
+  // R-1513: the callout stays until the person has a skill of their own.
   const noneOwn =
     listed.value !== undefined &&
     !groupSkills(listed.value).some((group) => group.scope === "user");
@@ -357,7 +357,7 @@ export function SkillsTab({
           anchor={addButton}
           onClose={() => setAdd(false)}
           entries={[
-            // The original's four entries, in its order, with its icons.
+            // R-1516: the original's four entries, in its order, with its icons.
             ...(folders
               ? [{ label: "Upload skill", icon: Upload, onSelect: upload }]
               : []),
@@ -414,8 +414,9 @@ export function SkillsTab({
         />
       )}
       {view === "yours" && noneOwn && !query.trim() && (
-        // The callout of Customize → Yours, with Discover skills. The live card
-        // is the one Customize → Yours shows: the 64px paper airplane.
+        // R-1513: the callout of Customize → Yours, with Discover skills.
+        // The live card is the one Customize → Yours shows (live claude.ai
+        // Settings → Skills, 2026-10-21): the 64px paper airplane.
         <section className="customize-callout customize-yours-callout">
           <div>
             <h3>Add your first skills</h3>

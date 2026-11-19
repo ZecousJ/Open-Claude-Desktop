@@ -1,3 +1,7 @@
+import {
+  codeAgentOwner,
+  parseCodeAgentThread,
+} from "../engine/code-agent-threads";
 import { z } from "zod";
 import type { BrowserWindow } from "electron";
 import type { Engine } from "../engine/engine";
@@ -8,7 +12,11 @@ import type {
   Item,
   PublicAccount,
 } from "../../shared/types";
-import { agentThreadIds, ownsWorkflowAgent } from "../../shared/workflow-usage";
+import {
+  agentItems,
+  agentThreadIds,
+  ownsWorkflowAgent,
+} from "../../shared/workflow-usage";
 import { recordAgentsStopped } from "../../shared/agent-messages";
 import {
   createWorkflowExtension,
@@ -23,8 +31,11 @@ import {
 import { describeChildThread, describeActivity } from "./workflow-rollout";
 type Handle = (name: string, fn: (...args: any[]) => any) => void;
 export interface Context {
+  current?(): boolean;
   readonly store: Store;
   readonly engine: Engine;
+  engineFor?(conversationId: string): Engine;
+  readonly activeAccount?: PublicAccount;
   readonly window?: BrowserWindow;
   /** Sends an event to every app window (the main and separate ones, R2). */
   push?(event: AppEvent): void;
@@ -40,31 +51,44 @@ export const id = z.string().min(1).max(500);
 function containsAgent(item: Item, agentId: string) {
   return ownsWorkflowAgent(item, agentId);
 }
+function ownsChildSession(context: Context, conversation: Conversation) {
+  const authors = conversation.sessionAuthors;
+  return !authors || (authors.ownerAccountUuid === context.activeAccount?.id &&
+    authors.viewerAccountUuid === context.activeAccount?.id);
+}
 export async function stopWorkflowAgent(
   context: Context,
   conversationId: string,
   agentId: string,
 ): Promise<Conversation> {
-  const conversation = context.store.conversation(conversationId);
-  if (
-    !conversation.turns.some((turn) =>
-      turn.items.some((item) => containsAgent(item, agentId)),
-    )
-  )
+  if (context.current?.() === false) throw Error("The account changed.");
+  const store = context.store;
+  const conversation = store.conversation(conversationId);
+  if (!ownsChildSession(context, conversation)) throw Error("Agent session not found.");
+  if (!agentItems(conversation.turns).some((item) => containsAgent(item, agentId)))
     throw Error("Agent is not part of this conversation.");
-  if (!context.engine.rpc || context.engine.state.state !== "ready")
-    throw Error("Codex is not connected.");
-  const response = await context.engine.rpc.call("thread/read", {
-    threadId: agentId,
-    includeTurns: true,
-  });
+  const engineFor = () =>
+    context.engineFor?.(conversationId) ?? context.engine.elsewhereFor?.(conversationId) ?? context.engine;
+  const engine = engineFor();
+  const rpc = engine.rpc;
+  if (!rpc || engine.state.state !== "ready") throw Error("Codex is not connected.");
+  const current = () => {
+    if (context.current?.() === false || context.store !== store || engineFor() !== engine ||
+        engine.rpc !== rpc || !store.conversations.includes(conversation) ||
+        !ownsChildSession(context, conversation))
+      throw Error("The account or agent connection changed.");
+  };
+  const response = await rpc.call("thread/read", { threadId: agentId, includeTurns: true });
+  current();
+  if (response?.thread?.id !== agentId) throw Error("Agent transcript is unavailable.");
   const last = response?.thread?.turns?.at(-1);
   if (last?.status === "inProgress") {
-    await context.engine.rpc.call("turn/interrupt", {
+    await rpc.call("turn/interrupt", {
       threadId: agentId,
       turnId: last.id,
     });
-    context.engine.gateway?.abortThread(agentId);
+    current();
+    engine.gateway?.abortThread(agentId);
   }
   const status =
     last?.status === "completed"
@@ -72,28 +96,27 @@ export async function stopWorkflowAgent(
       : last?.status === "failed"
         ? "errored"
         : "interrupted";
-  for (const turn of conversation.turns)
-    for (const item of turn.items)
-      if (containsAgent(item, agentId)) {
-        item.agentsStates = {
-          ...item.agentsStates,
-          [agentId]: {
-            status,
-            message: status === "interrupted" ? "Stopped by user" : null,
-          },
+  for (const item of agentItems(conversation.turns))
+    if (containsAgent(item, agentId)) {
+      item.agentsStates = {
+        ...item.agentsStates,
+        [agentId]: {
+          status,
+          message: status === "interrupted" ? "Stopped by user" : null,
+        },
+      };
+      const began = Number(response?.thread?.createdAt);
+      if (Number.isFinite(began) && began > 0) {
+        item.agentStartedAt = {
+          ...item.agentStartedAt,
+          [agentId]: Math.round(began * 1000),
         };
-        const began = Number(response?.thread?.createdAt);
-        if (Number.isFinite(began) && began > 0) {
-          item.agentStartedAt = {
-            ...item.agentStartedAt,
-            [agentId]: Math.round(began * 1000),
-          };
-          item.agentDurationMs = {
-            ...item.agentDurationMs,
-            [agentId]: Math.max(0, Date.now() - began * 1000),
-          };
-        }
+        item.agentDurationMs = {
+          ...item.agentDurationMs,
+          [agentId]: Math.max(0, Date.now() - began * 1000),
+        };
       }
+    }
   if (status === "interrupted") recordAgentsStopped(conversation);
   context.store.flush();
   send(context, {
@@ -106,24 +129,39 @@ export async function refreshWorkflowAgents(
   context: Context,
   conversationId: string,
 ): Promise<Conversation> {
-  const conversation = context.store.conversation(conversationId);
+  if (context.current?.() === false) throw Error("The account changed.");
+  const store = context.store;
+  const conversation = store.conversation(conversationId);
+  if (!ownsChildSession(context, conversation)) throw Error("Agent session not found.");
   const ids = [
     ...new Set(
       conversation.turns.flatMap((turn) => turn.items.flatMap(agentThreadIds)),
     ),
   ].slice(0, 32);
   if (!ids.length) return structuredClone(conversation);
-  if (!context.engine.rpc || context.engine.state.state !== "ready")
-    throw Error("Codex is not connected.");
+  const engineFor = () =>
+    context.engineFor?.(conversationId) ?? context.engine.elsewhereFor?.(conversationId) ?? context.engine;
+  const engine = engineFor();
+  const rpc = engine.rpc;
+  if (!rpc || engine.state.state !== "ready") throw Error("Codex is not connected.");
+  const current = () => {
+    if (context.current?.() === false || context.store !== store || engineFor() !== engine ||
+        engine.rpc !== rpc || !store.conversations.includes(conversation) ||
+        !ownsChildSession(context, conversation))
+      throw Error("The account or agent connection changed.");
+  };
   let changed = false;
   for (const agentId of ids) {
-    const result = await context.engine.rpc.call("thread/read", {
+    const result = await rpc.call("thread/read", {
       threadId: agentId,
       includeTurns: true,
     });
-    const thread = result?.thread,
-      last = thread?.turns?.at(-1);
-    if (thread?.id === agentId) await describeChildThread(context, thread);
+    current();
+    const thread = result?.thread;
+    if (thread?.id !== agentId) continue;
+    await describeChildThread({ store, engine }, thread);
+    current();
+    const last = thread.turns?.at(-1);
     const status =
       thread?.status?.type === "active"
         ? "running"
@@ -186,7 +224,7 @@ export async function refreshWorkflowAgents(
         }
   }
   if (changed) {
-    context.store.flush();
+    store.flush();
     send(context, {
       type: "conversation",
       conversation: structuredClone(conversation),
@@ -199,21 +237,45 @@ export async function readWorkflowAgent(
   conversationId: string,
   agentId: string,
 ) {
+  if (context.current?.() === false) throw Error("The account changed.");
   const conversation = context.store.conversation(conversationId);
+  if (!ownsChildSession(context, conversation)) throw Error("Agent session not found.");
+  const store = context.store;
+  const engineFor = () =>
+    context.engineFor?.(conversationId) ?? context.engine.elsewhereFor?.(conversationId) ?? context.engine;
+  const engine = engineFor();
+  const sameAccount = () => {
+    if (context.current?.() === false || context.store !== store || engineFor() !== engine ||
+        !store.conversations.includes(conversation) || !ownsChildSession(context, conversation))
+      throw Error("The account or agent connection changed.");
+  };
   const owner = conversation.turns.find((turn) =>
     turn.items.some((item) => containsAgent(item, agentId)),
   );
   if (!owner) throw Error("Agent is not part of this conversation.");
-  if (!context.engine.rpc || context.engine.state.state !== "ready")
-    throw Error("Codex is not connected.");
-  const result = await context.engine.rpc.call("thread/read", {
+  if (!engine.rpc || engine.state.state !== "ready") {
+    if (conversation.mode !== "code" || !conversation.cwd || conversation.incognito ||
+        conversation.cloudHosted || conversation.linkedToComputer ||
+        conversation.environment?.kind === "ssh" || !engine.owns(conversation))
+      throw Error("Codex is not connected.");
+    const provider = store.settings.providers.find(entry => entry.id === conversation.providerId);
+    if (!provider) throw Error("The model service is unavailable.");
+    await engine.ensure(provider, { interactive: false, current: () => { sameAccount(); return true; } });
+    sameAccount();
+  }
+  const rpc = engine.rpc;
+  if (!rpc || engine.state.state !== "ready") throw Error("Codex is not connected.");
+  const current = () => { sameAccount(); if (engine.rpc !== rpc) throw Error("The agent connection changed."); };
+  const result = await rpc.call("thread/read", {
     threadId: agentId,
     includeTurns: true,
   });
+  current();
   if (result?.thread?.id !== agentId)
     throw Error("Agent transcript is unavailable.");
   // R7: the model's descriptions of the child's shell commands.
-  await describeChildThread(context, result.thread);
+  await describeChildThread({ store, engine }, result.thread);
+  current();
   const source =
     owner.items.find(
       (item) =>
@@ -233,6 +295,55 @@ export async function readWorkflowAgent(
     prompt,
   );
 }
+export async function readCodeAgent(
+  context: Context,
+  conversationId: string,
+  agentId: string,
+) {
+  if (context.current?.() === false) throw Error("The account changed.");
+  const conversation = context.store.conversation(conversationId);
+  const owner = codeAgentOwner(conversation, agentId);
+  if (!owner) throw Error("Agent is not part of this conversation.");
+  const accountEngine = context.engine;
+  const engine = accountEngine.elsewhereFor(conversationId) ?? accountEngine;
+  const rpc = engine.rpc;
+  if (!rpc || engine.state.state !== "ready") {
+    const saved = owner.agentThreads?.[agentId];
+    if (saved) return structuredClone(saved);
+    throw Error("Codex is not connected.");
+  }
+  const result = await rpc.call("thread/read", {
+    threadId: agentId,
+    includeTurns: true,
+  });
+  if (
+    context.current?.() === false ||
+    context.engine !== accountEngine ||
+    engine.rpc !== rpc ||
+    context.store.conversation(conversationId) !== conversation
+  )
+    throw Error("The agent connection changed.");
+  const thread = parseCodeAgentThread(result?.thread);
+  if (thread.id !== agentId) throw Error("Agent transcript is unavailable.");
+  const previous = new Map(
+    agentItems(owner.agentThreads?.[agentId]?.turns ?? []).map((item) => [
+      item.id,
+      item,
+    ]),
+  );
+  for (const item of agentItems(thread.turns)) {
+    const children = previous.get(item.id)?.agentThreads;
+    if (children) item.agentThreads = children;
+  }
+  owner.agentThreads = { ...owner.agentThreads, [agentId]: thread };
+  context.store.flush();
+  send(context, {
+    type: "conversation",
+    conversation: structuredClone(conversation),
+  });
+  return structuredClone(thread);
+}
+
 /**
  * Keeps the descriptions of child agents' commands for the signed-in
  * account (R7-B): the store hooks into the account's engine when the
@@ -272,16 +383,22 @@ function registerWorkflowRuns(
   let remove: (() => void) | undefined;
   const add = () => {
     remove?.();
-    const engine = context.engine;
+    const { engine, store } = context;
     if (engine.extensions.has(workflowExtensionId)) return;
     const extension = createWorkflowExtension({
       engine,
-      root: () => context.store.root,
-      settings: () => context.store.settings,
+      root: () => store.root,
+      settings: () => store.settings,
       policy: () => engine.policy(),
+      modelEfforts: (providerId, model) => engine.modelEfforts(providerId, model),
     });
     runs = extension.runs;
-    remove = engine.extensions.add(extension);
+    const release = engine.extensions.add(extension);
+    engine.peerExtensions.push(extension);
+    remove = () => {
+      release();
+      engine.peerExtensions = engine.peerExtensions.filter((entry) => entry !== extension);
+    };
   };
   if (context.onAccountActivated) context.onAccountActivated(add);
   else add();
@@ -312,6 +429,9 @@ export function registerWorkflowHandlers(handle: Handle, context: Context) {
   );
   handle("stopWorkflowAgent", (rawConversation: unknown, rawAgent: unknown) =>
     stopWorkflowAgent(context, id.parse(rawConversation), id.parse(rawAgent)),
+  );
+  handle("readCodeAgent", (rawConversation: unknown, rawAgent: unknown) =>
+    readCodeAgent(context, id.parse(rawConversation), id.parse(rawAgent)),
   );
   handle("readWorkflowAgent", (rawConversation: unknown, rawAgent: unknown) =>
     readWorkflowAgent(context, id.parse(rawConversation), id.parse(rawAgent)),

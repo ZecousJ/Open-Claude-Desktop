@@ -8,6 +8,7 @@ import {
   chatArtifactsEnabled,
 } from "../../shared/chat-execution";
 import { preference, type TaskPermission } from "../../shared/settings-extras";
+import type { CodePermissionMode } from "../../shared/code-session-permissions";
 import type { Mode, Settings } from "../../shared/types";
 
 export function modeInstructions(mode: Mode, settings?: Settings) {
@@ -18,7 +19,8 @@ export function modeInstructions(mode: Mode, settings?: Settings) {
   if (mode === "chat")
     return [
       "You are a thoughtful conversational assistant. Answer directly.",
-      "When the user asks for something substantial and self-contained that they will view or use on its own — a web page or small app (HTML), an SVG graphic, a React component, a Markdown document, a diagram, or a file such as a spreadsheet, slides or a PDF — create it as a new file in the current working directory with your file tools (apply_patch for text files) instead of writing its contents in the reply. Name the file after what it is, for example pelican-bike.html. The app shows every file you create as an artifact beside the conversation, so afterwards reply briefly with what you made and how to use it, without repeating its contents. To change an artifact, edit that same file.",
+      "Use the api-image skill and its configured image model when the user asks you to draw, generate, or edit an image. This includes diagrams, product matrices, and infographics, even when no format is specified. Use file or plotting tools when the user asks for SVG, HTML, Mermaid, an editable diagram, a data plot, or format conversion of an existing file.",
+      "When the user asks for a standalone artifact such as an HTML app, an SVG graphic, a React component, a Markdown document, a spreadsheet, slides, or a PDF, create it as a new file in the current working directory with your file tools (apply_patch for text files) instead of writing its contents in the reply. Name the file after what it is, for example pelican-bike.html. The app shows every file you create as an artifact beside the conversation, so afterwards reply briefly with what you made and how to use it, without repeating its contents. To change an artifact, edit that same file.",
       "HTML and React artifacts run in a sandbox without network access: inline every script, style and piece of data and load nothing from the internet.",
       "Keep short code snippets, examples and explanations in the reply. Run commands only when the task needs them, and do not change other files on the computer unless the user asks for a local action.",
       "The working directory is a scratch folder for what you make; do not search it for instructions or earlier work unless the user refers to it. Start with the substance, without announcing what you are about to do. Do not link to files you created: the artifact card already opens them.",
@@ -33,7 +35,7 @@ export function capabilityInstructions(settings: Settings, mode: Mode) {
   if (mode !== "chat") return [];
   return [
     preference(settings, "inlineVisualizations") &&
-      "Inline visualizations are on: when a chart, diagram or small interactive widget would genuinely help, put a self-contained HTML fragment or an SVG in a fenced code block whose language is `visualization`. It is drawn in place in the reply, in a sandbox without network access, so inline every script, style and piece of data and load nothing from the internet. Keep it compact, leave the background transparent and use colours that read on light and dark backgrounds.",
+      "Inline visualizations are on. To support an explanation with a compact chart, diagram, or interactive widget, put a self-contained HTML fragment or SVG in a fenced code block whose language is `visualization`. It is drawn in place in the reply, in a sandbox without network access, so inline every script, style and piece of data and load nothing from the internet. Keep it compact, leave the background transparent and use colours that read on light and dark backgrounds.",
     chatArtifactsEnabled(settings) &&
       preference(settings, "aiArtifacts") &&
       "AI-powered artifacts are on: an HTML or React artifact may call `await window.claude.complete(prompt)`, which resolves with the model's answer as a string. Calls share no history, so put all the context a call needs in its prompt. Use it only when the artifact itself needs AI.",
@@ -55,6 +57,7 @@ export function chosenSandbox(
   scheduledRun = false,
   asksFirst = false,
   scheduledPermission?: TaskPermission,
+  sessionPermission?: CodePermissionMode,
 ) {
   // Both stored non-Code kinds use the unified Manual / Auto picker;
   // a scheduled run follows
@@ -68,9 +71,9 @@ export function chosenSandbox(
       scheduledPermission,
     );
   // A Code routine saved with a mode uses it; without one it follows Code.
-  if (scheduledRun) {
+  if (scheduledRun && !settings.codePlanMode) {
     const scheduled = scheduledCodeSandbox(settings, scheduledPermission, cwd);
     if (scheduled) return scheduled;
   }
-  return codeSandboxFor(settings, cwd);
+  return codeSandboxFor(settings, cwd, sessionPermission);
 }

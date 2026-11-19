@@ -12,6 +12,7 @@ import test, { after, before } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { build } from "esbuild";
@@ -28,6 +29,7 @@ import {
   privateRuntimeDir,
 } from "../../electron/ssh/connection";
 import { SshHostStore } from "../../electron/ssh/host-store";
+import { BrowserMcpServer } from "../../electron/browser/mcp-server";
 import { SshLauncher } from "../../electron/ssh/ssh-launcher";
 import {
   WRAPPER_EXIT,
@@ -42,7 +44,7 @@ import {
   sshWorkspaceTrustFile,
 } from "../../electron/workspace/workspace-trust";
 import type { SshServiceApi } from "../../electron/ipc/ssh";
-import { FAKE_KEY, MODEL, MockResponses } from "../spikes/harness";
+import { FAKE_KEY, MODEL, MockResponses, findTool } from "../spikes/harness";
 
 const posix = process.platform !== "win32";
 const temp = (prefix = "cx-s3-") =>
@@ -285,7 +287,7 @@ class TestSshService implements SshServiceApi {
   }
 }
 
-function setup(platform: NodeJS.Platform) {
+function setup(platform: NodeJS.Platform, browserPort?: number) {
   const dataRoot = temp();
   const profile = path.join(dataRoot, "profile");
   const store = new Store(profile);
@@ -345,6 +347,7 @@ function setup(platform: NodeJS.Platform) {
         dataRoot,
         platform,
         exitGraceMs: 50,
+        browserPort: () => browserPort,
         runtime: () => ({
           ensure: async () => layout,
           cleanup: async (ids) => {
@@ -480,6 +483,69 @@ for (const platform of ["darwin", "win32"] as const)
     }
   });
 
+test("a cut SSH turn continues once after the old process exits and the remote history confirms the cut", async () => {
+  if (!posix) return;
+  const env = setup("darwin");
+  const previousScript = mock.script;
+  let release!: () => void;
+  const hold = new Promise<void>((resolve) => { release = resolve; });
+  const prompts: string[] = [];
+  mock.script = async (body) => {
+    const latest = JSON.stringify(body.input.filter((item: { role?: string }) => item.role === "user").at(-1));
+    const coding = findTool(body, (name) => name === "exec_command");
+    if (coding && latest?.includes("F090 original cut input")) {
+      prompts.push("original");
+      await hold;
+    }
+    if (coding && latest?.includes("Code was restarted on the remote host")) prompts.push("continuation");
+    return previousScript(body, mock.requests.length - 1);
+  };
+  try {
+    const first = await env.local.send({
+      text: "F090 original cut input",
+      mode: "code",
+      cwd: path.join(fakeHome, "code", "app"),
+      attachments: [],
+      providerId: "p",
+      model: MODEL,
+      environment: env.environment,
+    });
+    await until(() => prompts.length > 0, "the remote model accepted the original input");
+    const conversation = env.conversationOf(first.id);
+    const remote = env.registry.forConversation(first.id);
+    assert.equal(await remote.resumeSshCodeCut(conversation, () => true), false);
+    const executionId = remote.launcher?.remoteExecutionId;
+    assert.ok(executionId);
+    const pid = Number(fs.readFileSync(path.join(env.layout.run, executionId + ".pid"), "utf8"));
+    process.kill(pid, "SIGKILL");
+    await until(() => conversation.turns[0].sshCut?.executionId === executionId, "persisted cut");
+    assert.equal(conversation.turns[0].status, "interrupted");
+    await until(() => env.service.existing(env.host.id)?.status.state === "error", "remote engine exited");
+    await env.service.connect(env.host.id);
+    const unrelated = await env.local.send({
+      text: "F090 other session after the cut",
+      mode: "code",
+      cwd: path.join(fakeHome, "code", "app"),
+      attachments: [],
+      providerId: "p",
+      model: MODEL,
+      environment: env.environment,
+    });
+    assert.equal((await completed(env, unrelated.id)).status, "completed");
+    assert.ok(env.cleaned.at(-1)?.includes(executionId));
+    assert.equal(await remote.resumeSshCodeCut(conversation, () => true), true);
+    const continued = await completed(env, first.id);
+    assert.equal(continued.autoContinuation, true);
+    assert.equal(continued.officialCodeEventId, conversation.turns[0].sshCut?.continuationId);
+    assert.equal(await remote.resumeSshCodeCut(conversation, () => true), false);
+    assert.deepEqual(prompts, ["original", "continuation"]);
+  } finally {
+    release();
+    mock.script = previousScript;
+    await env.close();
+  }
+});
+
 test("a message written while the host reconnects waits and is sent once when it is back", async () => {
   if (!posix) return;
   const env = setup("win32");
@@ -586,3 +652,71 @@ test("a forward the host refuses fails the send and shows on the connection", as
     await env.close();
   }
 });
+
+
+for (const platform of ["darwin", "win32"] as const) {
+  test(`SSH Browser forwards preserve MCP authorization and close with the engine (${platform})`, async () => {
+    if (!posix) return;
+    const token = "browser-fixture-token-with-sufficient-length";
+    const calls: string[] = [];
+    const browser = new BrowserMcpServer({
+      token,
+      handlers: {
+        tools: () => [{ name: "navigate", description: "Open page", inputSchema: { type: "object" } }],
+        call: async (_name, _args, call) => {
+          calls.push(call.conversationId);
+          return { content: [{ type: "text", text: "opened public page" }] };
+        },
+      },
+    });
+    await browser.start();
+    const env = setup(platform, browser.port);
+    try {
+      const conversation = await env.local.send({
+        text: "hello browser transport",
+        mode: "code",
+        cwd: path.join(fakeHome, "code", "app"),
+        attachments: [], providerId: "p", model: MODEL, environment: env.environment,
+      });
+      assert.equal((await completed(env, conversation.id)).status, "completed");
+      const launcher = env.registry.running(conversation.id)?.launcher;
+      assert.ok(launcher instanceof SshLauncher);
+      const hostUrl = browser.url(conversation.id)!;
+      const remoteUrl = launcher.browserUrl(hostUrl)!;
+      assert.notEqual(remoteUrl, hostUrl);
+      const headers = { Authorization: `Bearer ${token}`, Host: new URL(hostUrl).host, "Content-Type": "application/json", Accept: "application/json, text/event-stream" };
+      const initialize = { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "ssh-browser-fixture", version: "1" } } };
+      const send = (url: string, extra: Record<string, string> = {}, body: unknown = initialize) => new Promise<Response>((resolve, reject) => {
+        const request = http.request(url, { method: "POST", agent: false, headers: { ...headers, ...extra } }, (response) => {
+          const chunks: Buffer[] = [];
+          response.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+          response.on("end", () => resolve(new Response(Buffer.concat(chunks), {
+            status: response.statusCode,
+            headers: Object.fromEntries(Object.entries(response.headers).flatMap(([key, value]) => typeof value === "string" ? [[key, value]] : [])),
+          })));
+          response.on("error", reject);
+        });
+        request.on("error", reject);
+        request.end(JSON.stringify(body));
+      });
+      assert.equal((await send(remoteUrl, { Authorization: "Bearer wrong" })).status, 401);
+      assert.equal((await send(remoteUrl, { Host: new URL(remoteUrl).host })).status, 403);
+      assert.equal((await send(remoteUrl, { Origin: "https://example.com" })).status, 403);
+      assert.equal((await send(new URL("/mcp/unknown", remoteUrl).href)).status, 404);
+      const initialized = await send(remoteUrl);
+      assert.equal(initialized.status, 200);
+      const session = initialized.headers.get("mcp-session-id")!;
+      assert.ok(session);
+      const result = await send(remoteUrl, { "Mcp-Session-Id": session }, { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "navigate", arguments: { url: "https://example.com" } } });
+      assert.equal(result.status, 200);
+      assert.match(await result.text(), /opened public page/);
+      assert.deepEqual(calls, [conversation.id]);
+      await env.registry.stopRemote(env.host.id);
+      assert.equal(launcher.browserUrl(hostUrl), undefined);
+      await assert.rejects(() => send(remoteUrl));
+    } finally {
+      await env.close();
+      await browser.close();
+    }
+  });
+}

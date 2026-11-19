@@ -16,6 +16,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/Wei-Shaw/sub2api/internal/util/responseheaders"
 	"github.com/gin-gonic/gin"
+	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 )
 
@@ -181,6 +182,7 @@ func (s *OpenAIGatewayService) sendCCUpstreamRequest(
 	bearerToken string,
 	userAgent string,
 	grokCacheIdentity string,
+	firstOutput ...ccFirstOutputBudget,
 ) (*http.Response, error) {
 	// DeepSeek thinking mode 要求历史 assistant 回传 reasoning_content。
 	// Responses→CC 回退在加密-only / 缺 reasoning item 且缓存未命中时会漏掉该
@@ -188,9 +190,20 @@ func (s *OpenAIGatewayService) sendCCUpstreamRequest(
 	// passed back to the API"。在共用出站点补空格占位，真实明文不覆盖。
 	body = ensureDeepSeekChatReasoningPlaceholders(account, body)
 	upstreamCtx, releaseUpstreamCtx := detachUpstreamContext(ctx)
+	var headerGuard *openAIFirstOutputHeaderGuard
+	var budget ccFirstOutputBudget
+	if len(firstOutput) > 0 && firstOutput[0].timeout > 0 {
+		budget = firstOutput[0]
+		upstreamCtx, headerGuard = newOpenAIFirstOutputHeaderGuard(upstreamCtx, releaseUpstreamCtx, budget.startTime.Add(budget.timeout))
+	}
 	upstreamReq, err := http.NewRequestWithContext(upstreamCtx, http.MethodPost, targetURL, bytes.NewReader(body))
-	releaseUpstreamCtx()
+	if headerGuard == nil {
+		releaseUpstreamCtx()
+	}
 	if err != nil {
+		if headerGuard != nil {
+			headerGuard.close()
+		}
 		return nil, fmt.Errorf("build upstream request: %w", err)
 	}
 	// 记录本次实际选择的协议端点，供错误日志和用量日志在没有
@@ -240,7 +253,23 @@ func (s *OpenAIGatewayService) sendCCUpstreamRequest(
 	}
 	resp, err := s.doOpenAIUpstream(upstreamReq, proxyURL, account)
 	if err != nil {
+		if headerGuard != nil {
+			timedOut := headerGuard.stopHeaderWait()
+			headerGuard.close()
+			if resp != nil && resp.Body != nil {
+				_ = resp.Body.Close()
+			}
+			if timedOut && ctx.Err() == nil {
+				return nil, s.newOpenAIFirstOutputTimeoutError(ctx, c, account, opsUpstreamProxyID(account), opsUpstreamProxyName(account), budget.startTime, budget.model, budget.effort, budget.timeout, "response_headers", nil)
+			}
+		}
 		return nil, s.handleOpenAIUpstreamTransportError(ctx, c, account, err, false)
+	}
+	if headerGuard != nil {
+		resp.Body = &ccFirstOutputBody{
+			openAIRequestContextReadCloser: &openAIRequestContextReadCloser{ReadCloser: resp.Body, cleanup: headerGuard.close},
+			guard:                          headerGuard, budget: budget,
+		}
 	}
 	return resp, nil
 }
@@ -253,8 +282,9 @@ type ccStreamScanState struct {
 	// FirstTokenMs 为首个实际输出 chunk（排除 usage-only chunk）的到达时延。
 	FirstTokenMs *int
 	// SawDone 表示上游发出了 [DONE] 哨兵。
-	SawDone bool
-	// Err 为 scanner 读错误（客户端 context 取消不属于此类，会原样带出）。
+	SawDone      bool
+	ErrorPayload []byte
+	// Err 为上游错误帧或 scanner 读错误（context 取消也会原样带出）。
 	// 非 nil 时调用方必须跳过 finalize 并返回 usage-incomplete 错误，避免
 	// 把上游截断伪装成正常收尾。
 	Err error
@@ -274,7 +304,11 @@ func (s *OpenAIGatewayService) scanCCStream(
 ) ccStreamScanState {
 	var st ccStreamScanState
 
-	scanner := s.newUpstreamSSEScanner(resp.Body)
+	var reader io.Reader = resp.Body
+	if s.cfg != nil && s.cfg.Gateway.StreamDataIntervalTimeout > 0 {
+		reader = &ccStreamIdleReader{body: resp.Body, timeout: time.Duration(s.cfg.Gateway.StreamDataIntervalTimeout) * time.Second}
+	}
+	scanner := s.newUpstreamSSEScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Text()
 		payload, ok := extractOpenAISSEDataLine(line)
@@ -298,6 +332,23 @@ func (s *OpenAIGatewayService) scanCCStream(
 
 		if u := extractCCStreamUsage(payload); u != nil {
 			st.Usage = *u
+		}
+		if gjson.Get(payload, "error").IsObject() || gjson.Get(payload, "type").String() == "response.failed" {
+			st.ErrorPayload = []byte(payload)
+			message := extractOpenAISSEErrorMessage(st.ErrorPayload)
+			if message == "" {
+				message = "Upstream chat completion stream failed"
+			}
+			st.Err = errors.New(message)
+			break
+		}
+		// Refusals must remain non-retryable even though the legacy bridge does
+		// not have a Responses refusal content-part converter. Otherwise an
+		// explicit refusal could be mistaken for an empty successful response.
+		if gjson.Get(payload, "choices.0.delta.refusal").String() != "" {
+			st.ErrorPayload = ccPolicyFailurePayload()
+			st.Err = errors.New(extractOpenAISSEErrorMessage(st.ErrorPayload))
+			break
 		}
 
 		var chunk apicompat.ChatCompletionsChunk

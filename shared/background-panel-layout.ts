@@ -1,7 +1,5 @@
-/**
- * The default rail is 282px at a 1164px window, so the narrowest gesture stop
- * sits below it.
- */
+/** The default rail is 282px at a 1164px window (R-0646, R-0786), so the
+ * narrowest gesture stop sits below it. */
 export const minimumBackgroundPanelWidth = 260;
 export const defaultBackgroundPanelWidth = 282;
 export const maximumBackgroundPanelWidth = 620;

@@ -1,10 +1,11 @@
 /*
- * Upload a skill. "← Your skills" 14px; the 20px semibold title 40px under it
- * and a 14px muted line 32px under that; "Skill file" 14px medium 48px lower; a
- * 116px dashed drop zone (radius 8) 19px under the label with a centred upload
- * glyph and 14px line; 12px format rules; a 52px Security scan row (radius 8)
- * with a 12px muted note at the right; 30px Upload / Cancel with a 12px hint.
- * Dark follows the Customize page colours.
+ * Upload a skill (R-1130, W1920 1x light; R-1130 W602 for the narrow
+ * column). "← Your skills" 14px; the 20px semibold title 40px under it and
+ * a 14px muted line 32px under that; "Skill file" 14px medium 48px lower;
+ * a 116px dashed drop zone (radius 8) 19px under the label with a centred
+ * upload glyph and 14px line; 12px format rules; a 52px Security scan row
+ * (radius 8) with a 12px muted note at the right; 30px Upload / Cancel with
+ * a 12px hint. Dark follows the Customize page colours.
  */
 .upload-skill {
   display: flex;
@@ -34,7 +35,8 @@
   font-size: 14px;
   line-height: 20px;
 }
-/* The title block sits 3px lower under the back link than in Settings. */
+/* R-1130 at 1920 (the Customize page): the title block sits 3px lower under
+   the back link than in Settings (R-1152). */
 .customize-column .upload-skill h1 {
   margin-top: 14px;
 }
@@ -72,9 +74,10 @@
   outline-offset: 1px;
 }
 /*
- * A chosen file: a 58px card (radius 12, 1px #e5e5e3 on #fcfcfa) with a 16px
- * file glyph 16px in, the name 14px medium 10px after it, the size 12px muted
- * after the name and a 16px cross 28px from the right edge.
+ * A chosen file (R-1153 invalid-zip and busy-spinner captures, 1x light): a
+ * 58px card (radius 12, 1px #e5e5e3 on #fcfcfa) with a 16px file glyph 16px
+ * in, the name 14px medium 10px after it, the size 12px muted after the
+ * name and a 16px cross 28px from the right edge.
  */
 .upload-skill-files {
   display: grid;
@@ -133,10 +136,10 @@
   cursor: default;
 }
 /*
- * Per-file progress after Upload: a 12px status at the row's end (the row's
- * size note gives way to it), Added in the success colour, a taken name or a
- * failure in the error red, and Replace / Skip / Try again as small text
- * buttons.
+ * Per-file progress after Upload (desktop bundle 2.31226.1, no capture): a
+ * 12px status at the row's end (the row's size note gives way to it), Added
+ * in the success colour, a taken name or a failure in the error red, and
+ * Replace / Skip / Try again as small text buttons.
  */
 .upload-skill-files li .upload-skill-status {
   display: inline-flex;
@@ -215,8 +218,9 @@
   background: color-mix(in srgb, var(--success) 18%, transparent);
 }
 /*
- * The error banner: 44px, radius 10, 1px #cda2a9 on #fad6d6, a 16px warning
- * triangle 17px in, 14px text 10px after it and a 16px cross at the right. The
+ * The error banner (R-1594; R-1153 "Invalid zip file", 1x light): 44px,
+ * radius 10, 1px #cda2a9 on #fad6d6, a 16px warning triangle 17px in, 14px
+ * text 10px after it and a 16px cross at the right. Dark has no capture: the
  * same red at dark values (the developer error red #e5877b).
  */
 .upload-skill-banner {
@@ -270,7 +274,8 @@
   color: #e6e6e3;
   font-size: 14px;
 }
-/* The Preview card. */
+/* The Preview card (R-1153 busy capture: 52px with the name alone, 101px
+   with a two-line description; 16px inside, 8px between name and text). */
 .upload-skill-preview {
   display: flex;
   flex-direction: column;
@@ -332,8 +337,8 @@
   color: #d5d4d0;
   cursor: default;
 }
-/* Uploading: the label steps aside for a centred spinner, the button keeps its
-   70px and its colour, and Cancel dims. */
+/* Uploading (R-1603): the label steps aside for a centred spinner, the
+   button keeps its 70px and its colour, and Cancel dims. */
 .upload-skill-primary.busy:disabled {
   background: #f5f5f3;
   color: #141413;
@@ -374,8 +379,8 @@
   border-color: #9a9a97;
   background: #f5f5f3;
 }
-/* The cards read #fcfcfa with a #e5e5e3 rim; the file glyph #444442, the size
-   #7b7c77. */
+/* R-1153 (1x light): the cards read #fcfcfa with a #e5e5e3 rim; the file
+   glyph #444442, the size #7b7c77. */
 :root[data-theme="light"] .upload-skill-card,
 :root[data-theme="light"] .upload-skill-files li {
   border-color: #e5e5e3;
@@ -410,8 +415,8 @@
 :root[data-theme="light"] .upload-skill-primary.busy:disabled {
   background: #141413;
 }
-/* The lead line reads #3d3d3b at its darkest; the format rules and the hint
-   under the buttons #73746f / #777775. */
+/* R-1130 (1x light): the lead line reads #3d3d3b at its darkest; the format
+   rules and the hint under the buttons #73746f / #777775. */
 :root[data-theme="light"] .upload-skill-lead {
   color: #3d3d3a;
 }
@@ -424,8 +429,8 @@
   box-shadow: inset 0 0 0 1px #e6e6e6;
   background: #fff;
 }
-/* In Settings: 56px between the top band and the back link's text, and the page
-   runs 12px from the frame's sides. */
+/* In Settings (R-1152/R-1153 at 602): 56px between the top band and the
+   back link's text, and the page runs 12px from the frame's sides. */
 .settings-list-page .upload-skill {
   padding-top: 42px;
 }

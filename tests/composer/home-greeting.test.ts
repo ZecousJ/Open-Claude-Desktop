@@ -17,22 +17,22 @@ test("Home greeting follows the local time of day", () => {
 });
 
 test("Home greeting offers every captured sentence at the right hours", () => {
-  assert.deepEqual(greetingChoices("Ada", 19), [
-    "Good evening, Ada",
-    "Back at it, Ada",
+  assert.deepEqual(greetingChoices("Zecous", 19), [
+    "Good evening, Zecous",
+    "Back at it, Zecous",
     "Let’s noodle",
     "Evening, how are things?",
     "Evening thoughts",
   ]);
-  assert.deepEqual(greetingChoices("Ada", 9), [
-    "Good morning, Ada",
-    "Back at it, Ada",
+  assert.deepEqual(greetingChoices("Zecous", 9), [
+    "Good morning, Zecous",
+    "Back at it, Zecous",
     "Let’s noodle",
   ]);
-  assert.deepEqual(greetingChoices("Ada", 14), [
-    "Good afternoon, Ada",
-    "Afternoon, Ada",
-    "Back at it, Ada",
+  assert.deepEqual(greetingChoices("Zecous", 14), [
+    "Good afternoon, Zecous",
+    "Afternoon, Zecous",
+    "Back at it, Zecous",
     "Let’s noodle",
   ]);
   assert.deepEqual(greetingChoices(" ", 14), [
@@ -44,9 +44,9 @@ test("Home greeting offers every captured sentence at the right hours", () => {
 test("Home greeting picks each sentence for its share of rolls", () => {
   const seen = new Set<string>();
   for (let roll = 0; roll < 1; roll += 0.01)
-    seen.add(homeGreeting("Ada", 21, roll));
-  assert.deepEqual([...seen].sort(), greetingChoices("Ada", 21).sort());
-  assert.equal(homeGreeting("Ada", 19, 0), "Good evening, Ada");
-  assert.equal(homeGreeting("Ada", 19, 0.999), "Evening thoughts");
+    seen.add(homeGreeting("Zecous", 21, roll));
+  assert.deepEqual([...seen].sort(), greetingChoices("Zecous", 21).sort());
+  assert.equal(homeGreeting("Zecous", 19, 0), "Good evening, Zecous");
+  assert.equal(homeGreeting("Zecous", 19, 0.999), "Evening thoughts");
   assert.equal(homeGreeting("  ", 9, 0.1), "Good morning");
 });

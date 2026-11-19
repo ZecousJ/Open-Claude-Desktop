@@ -1,8 +1,8 @@
 /**
- * Settings → General → Appearance → Transcript text size: the stored choice,
- * its validation, the Settings row, the data-text-size attribute on Code's
- * prompts, replies and queued messages, and the sizes the stylesheets give each
- * choice.
+ * Settings → General → Appearance → Transcript text size (live
+ * claude.ai bundle, 2026-10-12): the stored choice, its validation, the
+ * Settings row, the data-text-size attribute on Code's prompts, replies
+ * and queued messages, and the sizes the stylesheets give each choice.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

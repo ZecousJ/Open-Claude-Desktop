@@ -20,6 +20,7 @@ import { AppContext, type AppController } from "../../src/app/AppContext";
 import { ProjectKnowledge } from "../../src/collections/projects/ProjectKnowledge";
 import { KnowledgePreviewDialog } from "../../src/collections/projects/KnowledgePreview";
 import { routineDom } from "../support/routine-dom";
+import { imageSizeFixtures } from "../fixtures/official-image-size-data";
 
 const project = (id = "p1"): Project => ({
   id,
@@ -30,22 +31,23 @@ const project = (id = "p1"): Project => ({
 });
 const text =
   "<script>window.knowledgeExecuted = true</script>\n<svg onload='alert(1)'>unsafe as markup</svg>\n第二行";
-function disk(t: TestContext) {
+async function disk(t: TestContext) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-b23-knowledge-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const store = new ProjectKnowledgeStore(root, () => [
     project(),
     project("p2"),
   ]);
-  store.add("p1", [{ name: "notes.html", data: Buffer.from(text) }]);
-  store.add("p2", [
+  await store.add("p1", [{ name: "notes.html", data: Buffer.from(text) }]);
+  await store.add("p2", [
     { name: "private.txt", data: Buffer.from("other project") },
   ]);
   return { root, store };
 }
-async function settle() {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20));
+async function settle(t: TestContext, check: () => void) {
+  await t.waitFor(async () => {
+    await act(async () => {});
+    check();
   });
 }
 async function ui(
@@ -139,9 +141,9 @@ async function ui(
   };
 }
 
-test("bounded file reads use actual project/account folders and reject links, traversal and non-members", (t) => {
-  const { root, store } = disk(t);
-  assert.deepEqual(store.read("p1", "notes.html"), {
+test("bounded file reads use actual project/account folders and reject links, traversal and non-members", async (t) => {
+  const { root, store } = await disk(t);
+  assert.deepEqual(await store.read("p1", "notes.html"), {
     name: "notes.html",
     bytes: Buffer.byteLength(text),
     kind: "text",
@@ -150,36 +152,37 @@ test("bounded file reads use actual project/account folders and reject links, tr
   for (const [id, name] of [
     ["p1", "../p2/knowledge/private.txt"],
     ["p1", "private.txt"],
+    ["p1", "NOTES.HTML"],
     ["deleted", "notes.html"],
     ["p1", "notes.html/../notes.html"],
     ["p1", "notes.html\\x"],
   ])
-    assert.throws(() => store.read(id, name));
+    await assert.rejects(store.read(id, name));
   const outside = path.join(root, "outside.txt");
   fs.writeFileSync(outside, "must stay outside");
   fs.symlinkSync(outside, path.join(store.folder("p1"), "link.txt"));
-  assert.throws(() => store.read("p1", "link.txt"));
+  await assert.rejects(store.read("p1", "link.txt"));
   fs.symlinkSync(
     store.folder("p2"),
     path.join(store.folder("p1"), "linked-dir"),
   );
-  assert.throws(() => store.read("p1", "linked-dir/private.txt"));
+  await assert.rejects(store.read("p1", "linked-dir/private.txt"));
   const isolated = new ProjectKnowledgeStore(
     path.join(root, "different-account"),
     () => [project()],
   );
-  assert.throws(() => isolated.read("p1", "notes.html"));
+  await assert.rejects(isolated.read("p1", "notes.html"));
   fs.renameSync(store.folder("p1"), `${store.folder("p1")}-real`);
   fs.symlinkSync(`${store.folder("p1")}-real`, store.folder("p1"));
-  assert.throws(() => store.read("p1", "notes.html"));
+  await assert.rejects(store.read("p1", "notes.html"));
 });
 
-test("reads distinguish bounded PDFs, unsupported types/encoding and over-limit disk files", (t) => {
-  const { store } = disk(t),
+test("reads distinguish bounded PDFs, unsupported types/encoding and over-limit disk files", async (t) => {
+  const { store } = await disk(t),
     folder = store.folder("p1");
   const pdf = Buffer.from("%PDF-1.7\nexample bounded bytes");
-  store.add("p1", [{ name: "paper.pdf", data: pdf }]);
-  assert.deepEqual(store.read("p1", "paper.pdf"), {
+  await store.add("p1", [{ name: "paper.pdf", data: pdf }]);
+  assert.deepEqual(await store.read("p1", "paper.pdf"), {
     name: "paper.pdf",
     bytes: pdf.length,
     kind: "pdf",
@@ -191,7 +194,7 @@ test("reads distinguish bounded PDFs, unsupported types/encoding and over-limit 
     ["broken.pdf", Buffer.from("not PDF"), "invalid-pdf"],
   ] as const) {
     fs.writeFileSync(path.join(folder, name), bytes);
-    assert.deepEqual(store.read("p1", name), {
+    assert.deepEqual(await store.read("p1", name), {
       name,
       bytes: bytes.length,
       kind: "unsupported",
@@ -202,7 +205,7 @@ test("reads distinguish bounded PDFs, unsupported types/encoding and over-limit 
     fd = fs.openSync(large, "w");
   fs.ftruncateSync(fd, knowledgeFileLimit + 1);
   fs.closeSync(fd);
-  assert.deepEqual(store.read("p1", "large.txt"), {
+  assert.deepEqual(await store.read("p1", "large.txt"), {
     name: "large.txt",
     bytes: knowledgeFileLimit + 1,
     kind: "unsupported",
@@ -211,27 +214,27 @@ test("reads distinguish bounded PDFs, unsupported types/encoding and over-limit 
 });
 
 test("normal rendered rows open a loading content viewer and display HTML/SVG as inert text; Back returns to context", async (t) => {
-  const { store } = disk(t);
+  const { store } = await disk(t);
   let release!: () => void;
   const waiting = new Promise<void>((resolve) => {
     release = resolve;
   });
-  const env = await ui(store, async (id, name) => {
-    await waiting;
-    return store.read(id, name);
-  });
+  const preview = waiting.then(() => store.read("p1", "notes.html"));
+  const env = await ui(store, () => preview);
   try {
     const row = env.document.querySelector('button[aria-label="notes.html"]');
     assert.equal(row?.tagName, "BUTTON");
     assert.equal(row?.getAttribute("aria-haspopup"), "dialog");
     await env.event(row!, "click");
-    await settle();
-    assert.deepEqual(env.calls, [["p1", "notes.html"]]);
+    await settle(t, () => assert.deepEqual(env.calls, [["p1", "notes.html"]]));
     assert.match(
       env.document.querySelector('[role="dialog"]')?.textContent ?? "",
       /Loading file/,
     );
-    await act(async () => release());
+    await act(async () => {
+      release();
+      await preview;
+    });
     assert.equal(
       env.document.querySelector(".prj-knowledge-preview-text")?.textContent,
       text,
@@ -264,7 +267,7 @@ test("normal rendered rows open a loading content viewer and display HTML/SVG as
 });
 
 test("rendered viewer retries a real failed disk read and closes on Escape", async (t) => {
-  const { store } = disk(t);
+  const { store } = await disk(t);
   let attempts = 0;
   const env = await ui(store, async (id, name) => {
     attempts++;
@@ -272,17 +275,16 @@ test("rendered viewer retries a real failed disk read and closes on Escape", asy
   });
   try {
     await env.click('button[aria-label="notes.html"]');
-    await settle();
-    assert.match(
+    await settle(t, () => assert.match(
       env.document.querySelector('[role="alert"]')?.textContent ?? "",
       /Failed to load file/,
-    );
+    ));
     const retry = [...env.document.querySelectorAll("button")].find(
       (button) => button.textContent === "Retry",
     )!;
     await env.event(retry, "click");
     assert.equal(attempts, 2);
-    assert.equal(env.document.querySelector("pre")?.textContent, text);
+    await settle(t, () => assert.equal(env.document.querySelector("pre")?.textContent, text));
     await env.event(env.document, "keydown", { key: "Escape" });
     assert.equal(env.document.querySelector('[role="dialog"]'), null);
     assert.deepEqual(env.errors, []);
@@ -291,10 +293,18 @@ test("rendered viewer retries a real failed disk read and closes on Escape", asy
   }
 });
 
-test("actual preview downloads preserve UTF-8 bytes and a retired owner cannot reuse Download", async (t) => {
-  const { store } = disk(t),
-    env = await ui(store);
-  const downloads: Promise<{ name: string; text: string }>[] = [];
+test("project previews download original text, image and ZIP bytes for the current owner", async (t) => {
+  const { store } = await disk(t);
+  const image = imageSizeFixtures[0];
+  const files = [
+    { name: "notes.html", bytes: Buffer.from(`\ufeff${text}`) },
+    { name: image.name, bytes: Buffer.from(image.base64, "base64") },
+    { name: "table.csv", bytes: Buffer.from("\ufeffName,Value\nAlpha,1\n", "utf16le") },
+    { name: "archive.zip", bytes: Buffer.from("504b0506000000000000000000000000000000000000", "hex") },
+  ];
+  await store.add("p1", files.map(({ name, bytes }) => ({ name, data: bytes })));
+  const env = await ui(store);
+  const downloads: Promise<{ name: string; bytes: Buffer }>[] = [];
   const prototype = env.window.HTMLAnchorElement.prototype;
   const originalClick = prototype.click;
   prototype.click = function () {
@@ -302,23 +312,43 @@ test("actual preview downloads preserve UTF-8 bytes and a retired owner cannot r
     downloads.push(
       fetch(this.href).then(async (response) => ({
         name,
-        text: await response.text(),
+        bytes: Buffer.from(await response.arrayBuffer()),
       })),
     );
   };
   try {
-    await env.click('button[aria-label="notes.html"]');
-    await settle();
-    const download = [...env.document.querySelectorAll("button")].find(
-      (button) => button.textContent === "Download file",
-    )!;
-    await env.event(download, "click");
-    assert.deepEqual(await Promise.all(downloads), [
-      { name: "notes.html", text },
-    ]);
-    env.reference.current = { ...env.owner, accountId: "retired-account" };
-    await env.event(download, "click");
-    assert.equal(downloads.length, 1);
+    for (const file of files) {
+      await env.click(`button[aria-label="${file.name}"]`);
+      await settle(t, () => assert.ok(
+        [...env.document.querySelectorAll("button")].some(
+          (button) => button.textContent === "Download file",
+        ),
+      ));
+      if (file.name === image.name) {
+        assert.equal(
+          env.document.querySelector(`img[alt="${image.name}"]`)?.getAttribute("src"),
+          `data:image/png;base64,${image.base64}`,
+        );
+      }
+      if (file.name === "archive.zip")
+        assert.match(env.document.querySelector('[role="dialog"]')?.textContent ?? "", /No preview/);
+      if (file.name === "table.csv")
+        assert.deepEqual(
+          [...env.document.querySelectorAll("td")].map(cell => cell.textContent),
+          ["Alpha", "1"],
+        );
+      const download = [...env.document.querySelectorAll("button")].find(
+        (button) => button.textContent === "Download file",
+      )!;
+      await env.event(download, "click");
+      if (file.name === "archive.zip") {
+        env.reference.current = { ...env.owner, accountId: "retired-account" };
+        await env.event(download, "click");
+      } else {
+        await env.event(env.document, "keydown", { key: "Escape" });
+      }
+    }
+    assert.deepEqual(await Promise.all(downloads), files);
   } finally {
     prototype.click = originalClick;
     await env.clean();
@@ -326,7 +356,7 @@ test("actual preview downloads preserve UTF-8 bytes and a retired owner cannot r
 });
 
 test("an editable preview has a Remove button that takes the file out; a read-only one has none", async (t) => {
-  const { store } = disk(t);
+  const { store } = await disk(t);
   const file = store.list("p1").files[0];
   const env = await routineDom(
     { readProjectKnowledge: async (id, name) => store.read(id, name) },
@@ -344,6 +374,11 @@ test("an editable preview has a Remove button that takes the file out; a read-on
           onRemove: editable ? () => removed.push(file.name) : undefined,
         }),
       );
+      await settle(t, () => assert.ok(
+        [...env.document.querySelectorAll("button")].some(
+          (button) => button.textContent === "Download file",
+        ),
+      ));
       const remove = [...env.document.querySelectorAll("button")].find(
         (button) => button.textContent === "Remove",
       );
@@ -357,7 +392,7 @@ test("an editable preview has a Remove button that takes the file out; a read-on
 });
 
 test("rendered unsupported preview preserves the context and exposes no executable frame or download", async (t) => {
-  const { store } = disk(t);
+  const { store } = await disk(t);
   fs.writeFileSync(
     path.join(store.folder("p1"), "external.exe"),
     "actual unsupported bytes",
@@ -378,10 +413,10 @@ test("rendered unsupported preview preserves the context and exposes no executab
         onClose() {},
       }),
     );
-    assert.match(
+    await settle(t, () => assert.match(
       env.document.querySelector('[role="dialog"]')?.textContent ?? "",
       /No preview/,
-    );
+    ));
     assert.equal(env.document.querySelector("iframe"), null);
     assert.ok(
       ![...env.document.querySelectorAll("button")].some(
@@ -402,19 +437,16 @@ for (const retirement of [
   "deleted",
 ] as const)
   test(`delayed rendered preview is discarded on ${retirement} retirement`, async (t) => {
-    const { store } = disk(t);
+    const { store } = await disk(t);
     let release!: () => void;
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
-    const env = await ui(store, async (id, name) => {
-      await gate;
-      return store.read(id, name);
-    });
+    const preview = gate.then(() => store.read("p1", "notes.html"));
+    const env = await ui(store, () => preview);
     try {
       await env.click('button[aria-label="notes.html"]');
-      await settle();
-      assert.equal(env.calls.length, 1);
+      await settle(t, () => assert.equal(env.calls.length, 1));
       if (retirement === "account")
         env.reference.current = { ...env.owner, accountId: "other-account" };
       if (retirement === "controller")
@@ -427,7 +459,10 @@ for (const retirement of [
           snapshot: { projects: [] },
         } as unknown as AppController;
       if (retirement === "project") await env.render("p2");
-      await act(async () => release());
+      await act(async () => {
+        release();
+        await preview;
+      });
       assert.equal(
         env.document.querySelector(".prj-knowledge-preview-text"),
         null,
@@ -521,7 +556,7 @@ async function provider(t: TestContext) {
 
 for (const kind of ["gdrive", "mcp"] as const)
   test(`${kind} real HTTP provider sync separates auth, denial, missing and retryable failures and recovers cached data`, async (t) => {
-    const { store } = disk(t),
+    const { store } = await disk(t),
       remote = await provider(t);
     const source =
       kind === "gdrive"
@@ -547,7 +582,7 @@ for (const kind of ["gdrive", "mcp"] as const)
           });
     const file = added.files.find((file) => file.source?.provider === kind)!;
     assert.equal(
-      (store.read("p1", file.name) as KnowledgePreview & { kind: "text" }).text,
+      ((await store.read("p1", file.name)) as KnowledgePreview & { kind: "text" }).text,
       "provider original",
     );
     for (const [status, failure, state] of [
@@ -565,7 +600,7 @@ for (const kind of ["gdrive", "mcp"] as const)
       assert.equal(result.status, state);
       assert.equal(result.lastSyncedAt, file.source!.lastSyncedAt);
       assert.equal(
-        (store.read("p1", file.name) as KnowledgePreview & { kind: "text" })
+        ((await store.read("p1", file.name)) as KnowledgePreview & { kind: "text" })
           .text,
         "provider original",
       );
@@ -578,7 +613,7 @@ for (const kind of ["gdrive", "mcp"] as const)
     assert.equal(recovered.status, "idle");
     assert.equal(recovered.failure, undefined);
     assert.equal(
-      (store.read("p1", file.name) as KnowledgePreview & { kind: "text" }).text,
+      ((await store.read("p1", file.name)) as KnowledgePreview & { kind: "text" }).text,
       "provider recovered",
     );
     assert.ok(
@@ -618,9 +653,9 @@ test("MCP URL resolution reports actual denied/missing/auth outcomes and retains
 });
 
 test("GitHub sync uses actual tree/blob provider paths, preserves bytes on explicit HTTP access loss and recovers", async (t) => {
-  const { store } = disk(t),
+  const { store } = await disk(t),
     name = "owner/repo/docs.md";
-  store.add("p1", [{ name, data: Buffer.from("cached github") }]);
+  await store.add("p1", [{ name, data: Buffer.from("cached github") }]);
   store.setSource("p1", name, {
     provider: "github",
     repository: "owner/repo",
@@ -673,7 +708,7 @@ test("GitHub sync uses actual tree/blob provider paths, preserves bytes on expli
     ).files.find((file) => file.name === name)!.source!;
     assert.equal(result.failure, failure);
     assert.equal(
-      (store.read("p1", name) as KnowledgePreview & { kind: "text" }).text,
+      ((await store.read("p1", name)) as KnowledgePreview & { kind: "text" }).text,
       "cached github",
     );
   }
@@ -703,9 +738,9 @@ test("GitHub sync uses actual tree/blob provider paths, preserves bytes on expli
 });
 
 test("rendered linked rows distinguish provider failures, reserve sync for retryable failures, and keep cached previews", async (t) => {
-  const { store } = disk(t),
+  const { store } = await disk(t),
     name = "linked.md";
-  store.add("p1", [{ name, data: Buffer.from("cached source content") }]);
+  await store.add("p1", [{ name, data: Buffer.from("cached source content") }]);
   const reasons = [
     ["reconnect", "Reconnect source to sync"],
     ["forbidden", "Source access denied"],
@@ -730,11 +765,10 @@ test("rendered linked rows distinguish provider failures, reserve sync for retry
         new RegExp(copy),
       );
       await env.click('button[aria-label="Page"]');
-      await settle();
-      assert.equal(
+      await settle(t, () => assert.equal(
         env.document.querySelector("pre")?.textContent,
         "cached source content",
-      );
+      ));
       await env.click('button[aria-label="Back to context"]');
       await env.click('button[aria-label="More options for Page"]');
       const menu = env.document.querySelector('[role="menu"]')!;

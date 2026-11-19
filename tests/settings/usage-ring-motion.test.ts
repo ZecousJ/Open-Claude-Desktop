@@ -15,7 +15,7 @@ test("the ring's bands are the original's: 75, 90 and the limit", () => {
     [0, 74, 75, 89, 90, 99, 100].map(ringBand),
     [0, 0, 1, 1, 2, 2, 3],
   );
-  // Each beat lasts as its last pulse ends.
+  // Each beat lasts as its last pulse ends (c5afb3665: W, U).
   assert.deepEqual(beatMs, { 1: 2300, 2: 1450, 3: 2450 });
 });
 

@@ -20,7 +20,7 @@ import {
 
 /**
  * A summary with its file names brighter than the verbs: "Read" #8a8a88,
- * "README.md" #f3f3f3; "Editing" then "app.js".
+ * "README.md" #f3f3f3 (R-0786); "Editing" then "app.js" (R-0805).
  */
 export function ToolSummaryText({ items }: { items: Item[] }) {
   const parts = toolSummaryParts(items);
@@ -88,17 +88,19 @@ function useGitOperations() {
 }
 
 /**
- * A command row's title: the model's own description first, as written while
- * running, past tense when done, "Failed to …" when it failed. A git commit,
- * push, branch or pull request reads as that ("Pushed to main"). Otherwise
- * "Ran", "Running" or "Failed to run" and the command's short form in code
- * ("Ran git status"), or "a command" when it has none. Reads, searches and
- * listings are named from Codex's parsed actions; a stopped command says so.
+ * A command row's title (live claude.ai bundle, 2026-10-14, the shell row):
+ * the model's own description first, as written while running, past tense
+ * when done, "Failed to …" when it failed. A git commit, push, branch or
+ * pull request reads as that ("Pushed to main"). Otherwise "Ran", "Running"
+ * or "Failed to run" and the command's short form in code ("Ran git
+ * status"), or "a command" when it has none. Reads, searches and listings
+ * are named from Codex's parsed actions; a stopped command says so.
  */
 export function commandLabel(item: Item) {
   const state = commandState(item);
-  // Polling a background terminal reads as "Reading task output ›"; Codex
-  // reports that call as an interaction with the running process.
+  // Polling a background terminal reads as "Reading task output ›" (R-0821,
+  // claude-current-reference: the row above the status line); Codex reports
+  // that call as an interaction with the running process.
   if (
     item.source === "unifiedExecInteraction" &&
     state !== "failed" &&
@@ -118,7 +120,7 @@ export function commandLabel(item: Item) {
         </>
       );
   }
-  // Reads, searches and listings are named from Codex's parsed actions.
+  // Reads, searches and listings are named from Codex's parsed actions (R-0800, R-0826).
   if (commandKind(item) !== "command" && state !== "failed")
     return <ToolSummaryText items={[item]} />;
   const subject = commandSubject(
@@ -139,8 +141,9 @@ export function commandLabel(item: Item) {
 }
 
 /**
- * A background command's row: "Background command started" and what it is, the
- * model's description or the command's short form.
+ * A background command's row (live claude.ai bundle, 2026-10-14, the
+ * background task entry): "Background command started" and what it is,
+ * the model's description or the command's short form.
  */
 export function backgroundLabel(item: Item) {
   const subject =
@@ -152,9 +155,9 @@ export function backgroundLabel(item: Item) {
 }
 
 /**
- * Code-mode command disclosure: summary row, "Bash" card, `$` source box, plain
- * output. A command Codex still lists as a background terminal becomes a row
- * that opens the Background tasks panel.
+ * Code-mode command disclosure: summary row, "Bash" card, `$` source box,
+ * plain output. A command Codex still lists as a background terminal
+ * becomes a row that opens the Background tasks panel (R-0646, R-0793).
  */
 export function CodeCommandActivity({
   item,

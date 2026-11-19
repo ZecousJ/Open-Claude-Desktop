@@ -4,9 +4,11 @@ import {
   inBandCapabilityTip,
 } from "../../shared/capability-tips";
 import type { CapabilityTip } from "../../shared/chat-suggestions";
+import { isDrawingModel } from "../../shared/model-catalog-api";
 import type { Completer } from "../memory/completion";
 
-// Nn/cr: in-band tool results win over the optional judge.
+// Nn/cr: in-band tool results win over the optional judge (live claude.ai
+// bundle, 2026-10-14, c0c371a67-DnJIbmz9.js).
 export class CapabilityTipJudge {
   private pending = new Map<string, AbortController>();
 
@@ -20,6 +22,7 @@ export class CapabilityTipJudge {
   async afterTurn(conversation: Conversation, turn: Turn) {
     if (
       conversation.mode !== "chat" ||
+      isDrawingModel(conversation.model) ||
       conversation.incognito ||
       conversation.archived ||
       turn.status !== "completed" ||

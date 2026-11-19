@@ -205,10 +205,15 @@ test("once, deny, session-only and unconfigured requests never create SSH grants
     });
     env.engine.approve(session.id, approvalResponse(session, "always"));
     const unknown = env.request("unknown");
-    env.engine.approve(unknown.id, {
-      action: "accept",
-      _meta: { persist: "always" },
-    });
+    assert.throws(
+      () =>
+        env.engine.approve(unknown.id, {
+          action: "accept",
+          _meta: { persist: "always" },
+        }),
+      /Choose Allow once or Deny/,
+    );
+    env.engine.approve(unknown.id, approvalResponse(unknown, "once"));
     assert.deepEqual(env.grants.list(), []);
     assert.ok(env.responses.every(({ result }) => result._meta === null));
   } finally {

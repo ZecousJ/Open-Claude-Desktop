@@ -1,10 +1,11 @@
 import {
   knowledgeExtensions,
+  knowledgeFileLimitMiB,
   type ProjectKnowledge,
 } from "../../../shared/collections-api";
 import { formatText, t } from "../../i18n";
 
-/** Why the knowledge area refuses everything once the project is full. */
+/** Why the knowledge area refuses everything once the project is full (live claude.ai bundle, 2026-10-12). */
 export const capacityReason =
   "Project knowledge at capacity. Remove an existing file in order to add to knowledge";
 
@@ -59,7 +60,12 @@ export interface DroppedFile {
   type: string;
 }
 
-/** Which dropped files go to the project and what to say about the rest. */
+/**
+ * Which dropped files go to the project and what to say about the rest
+ * (live claude.ai bundle, 2026-10-12: the drop is sorted first, each
+ * rejection is reported once, and the accepted files upload within the
+ * project's remaining capacity).
+ */
 export function sortKnowledgeDrop<T extends DroppedFile>(
   files: readonly T[],
   knowledge: Pick<ProjectKnowledge, "bytes" | "limit" | "fileLimit">,
@@ -85,8 +91,9 @@ export function sortKnowledgeDrop<T extends DroppedFile>(
     }
     if (file.size > knowledge.fileLimit) {
       notices.add(
-        formatText("{name} is too large. Project files can be up to 10 MB.", {
+        formatText("{name} is too large. Project files can be up to {limit} MB.", {
           name: file.name,
+          limit: knowledgeFileLimitMiB,
         }),
       );
       continue;

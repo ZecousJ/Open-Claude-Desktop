@@ -1,10 +1,12 @@
 import { parseSecurityReport } from "./security-review-parse"; /**
  * Security review routines: a routine that reviews a folder's branch for
  * vulnerabilities on a schedule and keeps what it finds as a list with a
- * status. The fields, statuses and exports follow the original's Security scan
- * findings; the scan itself is a Code run of the routine, so the model reports
- * in a fixed format (`securityReviewInstructions`) that `parseSecurityReport`
- * reads back and `applyScan` merges into the list.
+ * status. The fields, statuses and exports follow the original's Security
+ * scan findings (desktop bundle 2.31226.1, the security chunk: severities,
+ * Open / Fixed / Dismissed, the dismissal reasons, "Recommended fix",
+ * Markdown and CSV export); the scan itself is a Code run of the routine, so
+ * the model reports in a fixed format (`securityReviewInstructions`) that
+ * `parseSecurityReport` reads back and `applyScan` merges into the list.
  */
 
 export const severities = ["critical", "high", "medium", "low"] as const;

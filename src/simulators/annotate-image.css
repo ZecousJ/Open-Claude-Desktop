@@ -1,11 +1,12 @@
 /*
- * Annotate (AnnotateImage.tsx), after the reference design ("Annotate image"):
- * the window under 62.5% black with 16px of room (40px from 768px up); the
- * picture at most min(40rem, 100vw - 2rem) wide and the height less 4rem, with
- * 5px corners; a floating bar centred 24px above the bottom (10px in from the
- * sides) holding 4px-spaced groups split by 16px dividers; swatches 14px,
- * ringed 2px in the text colour when chosen and 1px otherwise. The bar's panel
- * is the control bar's raised surface (.sim-pill) with the menus' 10px corners.
+ * Annotate (AnnotateImage.tsx), after the live claude.ai bundle, 2026-10-12
+ * ("Annotate image"): the window under 62.5% black with 16px of room (40px
+ * from 768px up); the picture at most min(40rem, 100vw - 2rem) wide and the
+ * height less 4rem, with 5px corners; a floating bar centred 24px above the
+ * bottom (10px in from the sides) holding 4px-spaced groups split by 16px
+ * dividers; swatches 14px, ringed 2px in the text colour when chosen and
+ * 1px otherwise. The bar's panel is the control bar's raised surface
+ * (.sim-pill) with the menus' 10px corners.
  */
 .annotate-overlay {
   position: fixed;
@@ -48,7 +49,8 @@
   cursor: crosshair;
   touch-action: none;
 }
-/* The label being typed: bare text on the picture, kept on its lines. */
+/* The label being typed: bare text on the picture, kept on its lines
+   (live bundle: no frame, `white-space: pre`, at least 40px wide). */
 .annotate-text-field {
   position: absolute;
   margin: 0;
@@ -86,7 +88,8 @@
   pointer-events: auto;
   transition: opacity 120ms var(--ease-snap);
 }
-/* Hidden while a mark is drawn or dragged. */
+/* Hidden while a mark is drawn or dragged (live bundle: out in 60ms, back
+   in 120ms, both on the snap curve). */
 .annotate-bar.concealed {
   opacity: 0;
   pointer-events: none;

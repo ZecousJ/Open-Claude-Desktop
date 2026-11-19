@@ -103,7 +103,7 @@ export { cloudCodeUnavailable } from "./code-cloud";
 
 /**
  * The sandbox's network level under an environment's name, as the live
- * environment lists say it.
+ * environment lists say it (live claude.ai bundle, 2026-10-12).
  */
 export const networkLabels: Record<CloudNetworkLevel, string> = {
   none: "No network access",
@@ -114,9 +114,9 @@ export const networkLabels: Record<CloudNetworkLevel, string> = {
 
 /** The chip's tooltip while the service has no GitHub app. */
 export const githubUnavailable = "GitHub isn't set up on this service";
-/** A remembered repository while GitHub is not connected. */
+/** A remembered repository while GitHub is not connected (live claude.ai bundle, 2026-10-12). */
 export const githubDisconnected = "Connect GitHub to use this repository";
-/** The Add trigger's name once a repository is chosen. */
+/** The Add trigger's name once a repository is chosen (live claude.ai bundle, 2026-10-12). */
 export const addRepositoryLabel = "Add repository";
 
 export type Open =
@@ -127,16 +127,18 @@ export type Open =
   | { menu: "add"; left: number };
 
 /**
- * The web Code home's chips above the composer (ref-web-code-home, W-UI-design
- * §5.2): the cloud environment ("Default", cloud icon), then a pill per chosen
- * repository (its name and its branch, and a × once there are two or more) and
- * the Add trigger: "Select repository…" before any, a + named "Add repository"
- * after. They are the desktop's workspace chips and open menus 6px above them.
- * The environment menu lists the runner's environments, each with its network
- * level; the repository menus are the service's GitHub connection
- * (RepositoryMenu.tsx). The choice goes to code-repository.ts, which the
- * composer sends with the new session and the browser remembers for the next
- * visit.
+ * The web Code home's chips above the composer (ref-web-code-home,
+ * W-UI-design §5.2): the cloud environment ("Default", cloud icon), then a
+ * pill per chosen repository (its name and its branch, and a × once there
+ * are two or more) and the Add trigger: "Select repository…" before any,
+ * a + named "Add repository" after (live claude.ai bundle, 2026-10-12: the
+ * repository cluster's pills and its Add combobox). They are the desktop's
+ * workspace chips (workspace-bar.css, R-0338) and open menus 6px above them
+ * (R-0341). The environment menu lists the runner's environments, each with
+ * its network level; the repository menus are the service's GitHub
+ * connection (RepositoryMenu.tsx). The choice goes to code-repository.ts,
+ * which the composer sends with the new session and the browser remembers
+ * for the next visit.
  */
 export function CloudWorkspaceBar({
   webDraft = false,
@@ -254,8 +256,9 @@ export function CloudWorkspaceBar({
 
   const leftOf = (anchor: RefObject<HTMLElement | null>) =>
     (anchor.current?.offsetLeft ?? 0) - (bar.current?.offsetLeft ?? 0);
-  // Sending without a repository opens the repository menu: the list, or
-  // Connect GitHub when the account has none.
+  // Sending without a repository opens the repository menu (Composer.tsx;
+  // live claude.ai bundle, 2026-10-12): the list, or Connect GitHub when
+  // the account has none.
   useEffect(
     () =>
       onRepositoryPickerRequest(() =>
@@ -307,7 +310,8 @@ export function CloudWorkspaceBar({
     setCodeRepositoryBranch(target, branch);
   };
 
-  // Cloud profiles select independently of their editing gears.
+  // Cloud profiles select independently of their editing gears
+  // (live claude.ai bundle, 2026-10-14, c689113eb).
   const environments = cloud.environments;
   const desktopEnvironmentEntries = codeEnvironmentMenu({
     hosts: ssh.hosts,
@@ -430,8 +434,10 @@ export function CloudWorkspaceBar({
         },
       }))
     : [];
-  // A cloud environment is a row only once a session used it or it was picked;
-  // the web home is otherwise just Choose environment.
+  // A cloud environment is a row only once a session used it or it was picked
+  // (live claude.ai bundle, 2026-10-16, cc43287c9: the remote-environment
+  // filter `ro.has(id) || id === picked`); the web home is otherwise just
+  // Choose environment.
   const usedEnvironments = environmentUsage(app?.listed ?? []);
   const recentEnvironments = orderRecentEnvironments(
     [

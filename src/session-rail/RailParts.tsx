@@ -21,7 +21,7 @@ import { railCardTitles, useRailCardOpen, type RailCardId } from "./rail-store";
 import "./session-rail.css";
 import { shownFolder } from "../../shared/session-folder";
 
-/** A rail glyph at its size. */
+/** An Anthropicons glyph at its outlined size. */
 export function RailIcon({
   name,
   className,
@@ -29,14 +29,18 @@ export function RailIcon({
   name: RailGlyph;
   className?: string;
 }) {
-  const { icon: Icon, size } = railGlyphs[name];
+  const glyph = railGlyphs[name];
   return (
-    <Icon
+    <svg
       className={className}
-      size={size}
-      strokeWidth={1.75}
+      width={glyph.size}
+      height={glyph.size}
+      viewBox={`0 0 ${glyph.size} ${glyph.size}`}
+      fill="currentColor"
       aria-hidden="true"
-    />
+    >
+      <path d={glyph.d} />
+    </svg>
   );
 }
 
@@ -50,10 +54,11 @@ export interface CardChrome {
 }
 
 /**
- * A rail card: a heading button with the title, the caret (turned when open)
- * and the folded summary at the end; a six-dot grip replaces the summary while
- * the heading row is hovered and drags the card (6px before it moves);
- * right-click opens the cards menu. Folding is kept per session.
+ * A rail card (live claude.ai bundle, 2026-10-14): a heading button with the
+ * title, the caret (turned when open) and the folded summary at the end; a
+ * six-dot grip replaces the summary while the heading row is hovered and
+ * drags the card (6px before it moves); right-click opens the cards menu.
+ * Folding is kept per session.
  */
 export function RailCard({
   chrome,
@@ -207,7 +212,7 @@ function homeShort(path: string) {
   );
 }
 
-/** Folder controls and extra rows. */
+/** Folder controls and extra rows (live claude.ai bundle, 2026-10-14, cf74bc599 FO). */
 export function SessionFolders({
   conversation,
 }: {

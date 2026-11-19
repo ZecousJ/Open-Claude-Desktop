@@ -25,26 +25,19 @@ import { CardsSkeleton } from "../../ui/Skeleton";
 type OpenMenu =
   | { kind: "group"; rect: DOMRect; provider: ApiProvider }
   | { kind: "models"; rect: DOMRect; provider: ApiProvider; group: ApiGroup }
-  | { kind: "key"; rect: DOMRect; key: ApiKey }
-  | { kind: "image"; rect: DOMRect };
+  | { kind: "key"; rect: DOMRect; key: ApiKey };
 
 /** Each menu's width. */
-const menuWidths = { group: 200, models: 260, key: 168, image: 200 } as const;
+const menuWidths = { group: 200, models: 260, key: 168 } as const;
 
-/**
- * Image generation as a provider card: OpenAI's mark, the drawing group's
- * models, and the one every picture is made with where the others show their
- * group.
- */
 function imagesCard(images: NonNullable<ApiGroups["images"]>): ApiProvider {
-  const chosen = images.models.find((model) => model.id === images.selected);
   return {
     id: "images",
     name: t("Image generation"),
     groups: [
       {
         id: images.groupId,
-        name: chosen?.name ?? images.selected,
+        name: t("Automatic selection"),
         models: images.models.length,
         modelList: images.models,
         primary: false,
@@ -74,6 +67,7 @@ const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
  * menu; a part's title is a history page's group heading.
  */
 export function ApiPage() {
+  useT();
   const app = useApp();
   const [groups, setGroups] = useState<ApiGroups>();
   const [rates, setRates] = useState<Record<number, number>>({});
@@ -138,15 +132,6 @@ export function ApiPage() {
     }
   }
 
-  /** Every picture is made with this image model from now on. */
-  async function useImageModel(model: string) {
-    try {
-      setGroups(await api.setImageModel(model));
-    } catch (error) {
-      report(error);
-    }
-  }
-
   async function copy(key: ApiKey) {
     try {
       await api.copyText(key.key);
@@ -180,35 +165,29 @@ export function ApiPage() {
             })),
           ]
         : [{ label: t("No models"), disabled: true }]
-      : open.kind === "image"
-        ? (groups?.images?.models ?? []).map((model) => ({
-            label: model.name,
-            title: model.id,
-            checked: model.id === groups?.images?.selected,
-            onSelect: () => void useImageModel(model.id),
+      : open.kind === "group"
+        ? open.provider.groups.map((group) => ({
+            label: group.name,
+            title: plural(group.models, "model"),
+            ...(rates[group.id] !== undefined
+              ? { badge: rateText(rates[group.id]!) }
+              : {}),
+            checked: group.id === open.provider.selected,
+            onSelect: () => void useGroup(open.provider.id, group.id),
           }))
-        : open.kind === "group"
-          ? open.provider.groups.map((group) => ({
-              label: group.name,
-              title: plural(group.models, "model"),
-              ...(rates[group.id] !== undefined
-                ? { badge: rateText(rates[group.id]!) }
-                : {}),
-              checked: group.id === open.provider.selected,
-              onSelect: () => void useGroup(open.provider.id, group.id),
-            }))
-          : [
-              { label: "Copy key", onSelect: () => void copy(open.key) },
-              { separator: true },
-              {
-                label: "Delete key",
-                danger: true,
-                onSelect: () => remove(open.key),
-              },
-            ];
+        : [
+            { label: "Copy key", onSelect: () => void copy(open.key) },
+            { separator: true },
+            {
+              label: "Delete key",
+              danger: true,
+              onSelect: () => remove(open.key),
+            },
+          ];
 
   const loading = !groups || !keys;
-  const signedOut = !loading && !groups.groups.length;
+  const signedOut = !loading && !groups.groups.length && !groups.images;
+  const imageProvider = groups?.images && imagesCard(groups.images);
 
   return (
     <div className="routines-view api-view">
@@ -281,13 +260,12 @@ export function ApiPage() {
                     }}
                   />
                 ))}
-                {groups.images && (
+                {imageProvider && (
                   <ProviderCard
                     key="images"
                     logo="openai"
-                    provider={imagesCard(groups.images)}
+                    provider={imageProvider}
                     rates={rates}
-                    menuOpen={menu?.kind === "image"}
                     modelsOpen={
                       menu?.kind === "models" && menu.provider.id === "images"
                     }
@@ -296,15 +274,8 @@ export function ApiPage() {
                       setMenu({
                         kind: "models",
                         rect: button.getBoundingClientRect(),
-                        provider: imagesCard(groups.images!),
+                        provider: imageProvider,
                         group,
-                      });
-                    }}
-                    onMenu={(button) => {
-                      groupAnchor.current = button;
-                      setMenu({
-                        kind: "image",
-                        rect: button.getBoundingClientRect(),
                       });
                     }}
                   />
@@ -378,9 +349,7 @@ export function ApiPage() {
               ? `${menu.provider.name} group`
               : menu.kind === "models"
                 ? `${menu.provider.name} models`
-                : menu.kind === "image"
-                  ? "Image generation model"
-                  : `${menu.key.name} actions`
+                : `${menu.key.name} actions`
           }
           width={menuWidths[menu.kind]}
           position={{
@@ -403,7 +372,8 @@ export function ApiPage() {
           rates={rates}
           onClose={() => setCreating(false)}
           onCreated={(key) => {
-            setKeys((list) => [key, ...(list ?? [])]);
+            const groupName = key.groupName || groups.groups.find(({ id }) => id === key.groupId)?.name || "";
+            setKeys((list) => [{ ...key, groupName }, ...(list ?? [])]);
             setCreating(false);
             void copy(key);
           }}
@@ -435,9 +405,9 @@ function ProviderCard({
   /** The mark it shows when not its provider's own. */
   logo?: string;
   rates: Record<number, number>;
-  menuOpen: boolean;
+  menuOpen?: boolean;
   modelsOpen: boolean;
-  onMenu: (button: HTMLButtonElement) => void;
+  onMenu?: (button: HTMLButtonElement) => void;
   onModels: (button: HTMLButtonElement, group: ApiGroup) => void;
 }) {
   const chosen = provider.groups.find(
@@ -468,25 +438,38 @@ function ProviderCard({
             <span className="routine-card-description">No groups yet</span>
           )}
         </span>
-        <button
-          type="button"
-          className={`routines-sort api-group-select ${menuOpen ? "menu-open" : ""}`}
-          aria-label={`${provider.name} group`}
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          disabled={!chosen}
-          onClick={(event) => onMenu(event.currentTarget)}
-        >
-          <b>{chosen ? chosen.name : "None"}</b>
-          {chosen && <RateBadge rate={rates[chosen.id]} />}
-          <ChevronDown size={16} strokeWidth={1.6} />
-        </button>
+        {onMenu ? (
+          <button
+            type="button"
+            className={`routines-sort api-group-select ${menuOpen ? "menu-open" : ""}`}
+            aria-label={`${provider.name} group`}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            disabled={!chosen}
+            onClick={(event) => onMenu(event.currentTarget)}
+          >
+            <b>{chosen ? chosen.name : "None"}</b>
+            {chosen && <RateBadge rate={rates[chosen.id]} />}
+            <ChevronDown size={16} strokeWidth={1.6} />
+          </button>
+        ) : (
+          chosen && (
+            <span className="api-group-select api-group-status">
+              <b>{chosen.name}</b>
+              <RateBadge rate={rates[chosen.id]} />
+            </span>
+          )
+        )}
       </div>
     </li>
   );
 }
 
-/** One key as a row of the keys list. Clicking the key copies it. */
+/**
+ * One key as a row of the keys list (laid out after the owner's reference,
+ * 2026-10-02: name over the masked key, the group, when it was made and last
+ * used, its menu). Clicking the key copies it.
+ */
 function KeyRow({
   item,
   rates,
@@ -550,10 +533,10 @@ function KeyRow({
 }
 
 /**
- * Where requests with these keys go, one copyable address per protocol:
- * OpenAI-compatible clients take the service's address with /v1, Anthropic
- * clients the address alone. Each row is named by the protocol it speaks, with
- * no vendor logo.
+ * Where requests with these keys go, one copyable address per protocol
+ * (owner, 2026-10-02): OpenAI-compatible clients take the service's address
+ * with /v1, Anthropic clients the address alone. Each row is named by the
+ * protocol it speaks, with no vendor logo (owner, 2026-10-02).
  */
 function RequestUrl({ origin: serviceOrigin }: { origin?: string }) {
   useT();

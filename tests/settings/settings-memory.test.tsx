@@ -136,7 +136,7 @@ test("Learn more is the administrator's memory link, else the original's article
   });
   assert.equal(
     memoryLearnMore(links([{ label: "Usage policy", url: "https://a" }])),
-    "/help/memory",
+    "https://claudex.zecous.cn/help/memory",
   );
   assert.equal(
     memoryLearnMore(
@@ -156,13 +156,13 @@ test("Learn more is the administrator's memory link, else the original's article
         },
       ]),
     ),
-    "/help/memory",
+    "https://claudex.zecous.cn/help/memory",
   );
 });
 
 test("a service without memory shows the switches off and disabled, and why", () => {
   assert.equal(memoryView(undefined).kind, "loading");
-  // The original's two switches stay, off and disabled.
+  // R-1453, UI first: the original's two switches stay, off and disabled.
   const unsupported = page(status({ available: false, reason: "unsupported" }));
   assert.match(unsupported, /Memory isn&#x27;t available on this server yet\./);
   assert.equal(switches(unsupported).length, 2);
@@ -226,7 +226,7 @@ test("offline shows the cached switches read-only with the note", () => {
 
 test("Generate on adds the memory and Import rows; reset is in Turn off memory", () => {
   const html = page(status({ prefs: on, global: doc }));
-  // One row that opens the memory.
+  // Live claude.ai bundle (2026-10-12): one row that opens the memory.
   assert.match(html, /<button type="button" class="memory-manage">/);
   assert.match(html, /View and manage memory/);
   assert.match(html, /Updated <span class="reply-time">3 hours ago<\/span>/);
@@ -267,7 +267,7 @@ test("Manage memory shows the memory read-only with the edit field and Manage ed
       onClose={() => {}}
     />,
   );
-  // The lg popup, title and description.
+  // Live claude.ai bundle (2026-10-12): the lg popup, title and description.
   assert.match(html, /class="modal [^"]*manage-memory-modal/);
   assert.match(html, /<h2[^>]*>Manage memory<\/h2>/);
   assert.match(html, /Here’s what Claudex remembers about you!/);
@@ -419,8 +419,8 @@ test("Import memory's result page is Manage memory's view, updating while the im
 });
 
 test("Import dialog", () => {
-  // The live import modal: two numbered steps, the prompt to copy in its box
-  // with Copy, the paste field, Cancel and the add button.
+  // The live import modal (2026-10-12): two numbered steps, the prompt to
+  // copy in its box with Copy, the paste field, Cancel and the add button.
   const importing = dialog(<MemoryImportDialog onClose={() => {}} />);
   assert.match(importing, /Import memory/);
   assert.match(
@@ -434,7 +434,7 @@ test("Import dialog", () => {
   assert.match(importing, /I&#x27;m moving to another AI assistant/);
   assert.match(
     importing,
-    /<svg[^>]*data-icon="Copy"[^>]*>.*?<\/svg>Copy<\/button>/,
+    /<svg[^>]*data-anthropicon="Copy"[^>]*>.*?<\/svg>Copy<\/button>/,
   );
   assert.match(
     importing,

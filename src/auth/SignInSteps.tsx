@@ -240,7 +240,8 @@ export function signInCard(kit: SignInKit): ReactNode {
     const note = privacyNote(policy);
     card = (
       <>
-        {/* Back to the chooser. */}
+        {/* Back to the chooser (live claude.ai bundle, 2026-10-12: a small
+            ghost "All accounts" with an arrow, at the start of the card). */}
         {accounts.length > 0 && !adding && (
           <button
             type="button"
@@ -439,7 +440,8 @@ export function signInCard(kit: SignInKit): ReactNode {
             autoComplete: "one-time-code",
           })}
           {feedback}
-          {/* The original's login code submits with "Verify email address". */}
+          {/* The original's login code submits with "Verify email address"
+              (live claude.ai bundle, 2026-10-14, c19e49841: tlKrHGv0l3). */}
           {primary("Verify email address", codeIncomplete)}
         </form>
       </>
@@ -447,7 +449,8 @@ export function signInCard(kit: SignInKit): ReactNode {
   } else if (step === "twoFactor")
     card = (
       <>
-        {/* The original's second-factor heading. */}
+        {/* The original's second-factor heading (live claude.ai bundle,
+            2026-10-14, c7bab91e0: centred, text-primary font-medium). */}
         <p className="signin-mfa-heading">Confirm it’s you</p>
         <p className="signin-text">
           Enter the 6-digit code from your authenticator app

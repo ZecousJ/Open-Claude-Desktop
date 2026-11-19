@@ -1,8 +1,9 @@
 /**
- * What a pull request's state means on screen: the state its glyph shows, the
- * CI chip, whether the branch row offers Merge or Mark ready, why auto-merge
- * can't be changed, and the words for GitHub's refusals. Pure, so the window,
- * the sidebar and the main process read it alike.
+ * What a pull request's state means on screen (live claude.ai bundle,
+ * 2026-10-12): the state its glyph shows, the CI chip, whether the branch
+ * row offers Merge or Mark ready, why auto-merge can't be changed, and the
+ * words for GitHub's refusals. Pure, so the window, the sidebar and the
+ * main process read it alike.
  */
 import type {
   GitHubProblem,
@@ -63,8 +64,8 @@ export function pullRequestRowLabel(
 }
 
 /**
- * The CI chip's state: "unavailable" when the request has no checks, or when a
- * merged or closed one's checks never finished.
+ * The CI chip's state (cb1afaa4b `Ka`): "unavailable" when the request has
+ * no checks, or when a merged or closed one's checks never finished.
  */
 export type CiStatus = Exclude<PullRequestChecks, "none"> | "unavailable";
 
@@ -77,7 +78,7 @@ export function ciStatus(
   return pr.checks;
 }
 
-/** The CI chip's name for readers and its tooltip. */
+/** The CI chip's name for readers and its tooltip (cb1afaa4b `aa`). */
 export const ciLabels: Record<CiStatus, string> = {
   passed: "CI: all checks passed",
   failed: "CI: checks failing",
@@ -87,8 +88,9 @@ export const ciLabels: Record<CiStatus, string> = {
 };
 
 /**
- * The CI chip's name with its counts: failing checks and skipped checks are
- * counted; every other state, or a state without counts, reads as `ciLabels`.
+ * The CI chip's name with its counts (live claude.ai bundle, 2026-10-12,
+ * cb1afaa4b `Ra`): failing checks and skipped checks are counted; every
+ * other state, or a state without counts, reads as `ciLabels`.
  */
 export function ciChipLabel(
   status: CiStatus,
@@ -158,9 +160,9 @@ export function checksFromCounts(
 }
 
 /**
- * Whether the row offers Merge: an open request that is approved, whose checks
- * all passed, that the account may merge, without auto-merge or a merge queue
- * (GitHub merges those itself).
+ * Whether the row offers Merge (cb1afaa4b `Po`): an open request that is
+ * approved, whose checks all passed, that the account may merge, without
+ * auto-merge or a merge queue (GitHub merges those itself).
  */
 export function offersMerge(pr: GitHubPullRequest | undefined) {
   return Boolean(
@@ -173,7 +175,7 @@ export function offersMerge(pr: GitHubPullRequest | undefined) {
   );
 }
 
-/** Why a fresh read stops a merge. */
+/** Why a fresh read stops a merge (cb1afaa4b `No`). */
 export type MergeHold =
   | "queued"
   | "merged"
@@ -199,7 +201,7 @@ export function mergeHold(pr: GitHubPullRequest): MergeHold | undefined {
   return undefined;
 }
 
-/** What the row says when a merge is held back. */
+/** What the row says when a merge is held back (cb1afaa4b `jo`). */
 export function mergeHoldMessage(hold: MergeHold, base?: string) {
   switch (hold) {
     case "armed":
@@ -216,8 +218,8 @@ export function mergeHoldMessage(hold: MergeHold, base?: string) {
 }
 
 /**
- * Why Auto-merge when ready can't be turned on here: a draft, a request GitHub
- * would merge right away, or an SSH session.
+ * Why Auto-merge when ready can't be turned on here (cf6ae6197 `uo`/`lo`):
+ * a draft, a request GitHub would merge right away, or an SSH session.
  */
 export function autoMergeBlock(
   pr: GitHubPullRequest,
@@ -235,7 +237,7 @@ export function autoMergeBlock(
   return undefined;
 }
 
-/** GitHub's and `gh`'s refusals by their words. */
+/** GitHub's and `gh`'s refusals by their words (cf6ae6197 `Ja`). */
 const reasonPatterns: [PullRequestActionReason, RegExp][] = [
   ["rate_limited", /rate limit|abuse detection/i],
   ["pr_closed", /is already merged|Pull request is closed/i],
@@ -273,7 +275,7 @@ export function actionReason(text: string): PullRequestActionReason {
   return "unknown";
 }
 
-/** GitHub's own words, cut to 200 characters at a word. */
+/** GitHub's own words, cut to 200 characters at a word (cf6ae6197 `io`). */
 export function actionDetail(text: string): string | undefined {
   const line = text
     .trim()
@@ -289,7 +291,7 @@ export function actionDetail(text: string): string | undefined {
   return `${space > 0 ? cut.slice(0, space) : cut}…`;
 }
 
-/** Auto-merge's refusals in the original's words. */
+/** Auto-merge's refusals in the original's words (cf6ae6197 `$a`/`eo`). */
 const autoMergeMessages: Partial<Record<PullRequestActionReason, string>> = {
   repo_disallows_auto_merge:
     "This repository doesn’t allow auto-merge. An admin can turn on Allow auto-merge in the repository settings on GitHub.",
@@ -337,7 +339,7 @@ export function actionFailureMessage(
     : "Couldn’t change auto-merge from here.";
 }
 
-/** What a change that went through announces. */
+/** What a change that went through announces (c219730b0). */
 export const actionAnnouncements = {
   merged: "Pull request merged.",
   queued: "Added to the merge queue.",
@@ -348,8 +350,8 @@ export const actionAnnouncements = {
 } as const;
 
 /**
- * The row's warning when GitHub couldn't be asked: the last state shown may be
- * out of date.
+ * The row's warning when GitHub couldn't be asked (cb1afaa4b `dc`): the
+ * last state shown may be out of date.
  */
 export function problemWarning(problem: GitHubProblem) {
   switch (problem) {
@@ -365,8 +367,8 @@ export function problemWarning(problem: GitHubProblem) {
 }
 
 /**
- * Ask Claude to fix a request's conflicts: merge the base branch in, resolve
- * and push.
+ * Ask Claude to fix a request's conflicts (c5220dfc1 `Ll`): merge the base
+ * branch in, resolve and push.
  */
 export function conflictFixPrompt(number: number, url: string) {
   return `PR #${number} (${url}) has merge conflicts with its base branch. Merge the base branch in, resolve the conflicts, and push.`;

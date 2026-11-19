@@ -214,7 +214,7 @@ test("the usage week resets at the configured local weekday and hour", () => {
     // Monday before the reset hour still belongs to the previous week.
     const mondayMorning = new Date(2026, 8, 28, 8).getTime();
     assert.deepEqual(weeklyWindow(mondayMorning, 1, 17), week);
-    // That week is 169 hours.
+    // US daylight saving ends on Sunday 2026-11-01: that week is 169 hours.
     const autumn = weeklyWindow(new Date(2026, 9, 30, 12).getTime(), 1, 17);
     assert.equal(autumn.start, Date.UTC(2026, 9, 27, 0));
     assert.equal(autumn.end, Date.UTC(2026, 10, 3, 1));

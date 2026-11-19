@@ -1,8 +1,9 @@
-// bubblewrap sandbox driver: the `single` mode of the web runner. One sandbox
-// per user for Chat; the sandbox has its own user, pid, net, ipc, uts and
-// cgroup namespaces, sees only the system directories read-only plus the
-// user's codex-home and workspace, and reaches the outside world only through
-// Unix sockets the runner binds in (model gateway and egress proxy).
+// bubblewrap sandbox driver (W-BWRAP): the `single` mode of the web runner
+// on DC6 (W-RUN 10.1, plan Q28). One sandbox per user for Chat; the sandbox
+// has its own user, pid, net, ipc, uts and cgroup namespaces, sees only the
+// system directories read-only plus the user's codex-home and workspace, and
+// reaches the outside world only through Unix sockets the runner binds in
+// (model gateway, and the egress proxy when W-EGRESS provides one).
 //
 // Isolation is namespace-based, weaker than gVisor: the runner caps network
 // at `trusted` (maxNetworkLevel) and single mode stays allowlist-only.
@@ -269,8 +270,8 @@ export function writeIdentityFiles(spec: SandboxSpec, home: string) {
 /**
  * Optional cgroup limits through a transient systemd scope
  * (`options.cgroup = "systemd-run"`); needs a user systemd manager with
- * delegated memory/pids/cpu controllers (Ubuntu 24.04 with systemd has it;
- * elsewhere enable lingering for the runner user).
+ * delegated memory/pids/cpu controllers (WSL2 Ubuntu 24.04 with systemd has
+ * it; on DC6 enable lingering for the runner user).
  */
 export function limitPrefix(
   limits: SandboxLimits | undefined,

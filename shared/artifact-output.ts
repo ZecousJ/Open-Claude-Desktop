@@ -1,7 +1,5 @@
-/**
- * Code's start intent. Selecting it creates no artifact or message; the first
- * send creates ordinary files.
- */
+/** Code's start intent (O14/cc43287c9 _f/startedAsArtifactType). Selecting
+ * it creates no artifact or message; the first send creates ordinary files. */
 export const artifactOutputKinds = [
   "docs",
   "slides",

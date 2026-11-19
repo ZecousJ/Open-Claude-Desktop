@@ -409,7 +409,7 @@ test("Settings shows Computer use only while it is available", () => {
     resetComputerUseForTests({
       ...baseState,
       available: false,
-      reason: "policy",
+      reason: "driver",
     });
     assert.equal(render(), "");
     resetComputerUseForTests(baseState);

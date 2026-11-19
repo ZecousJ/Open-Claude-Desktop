@@ -8,14 +8,23 @@ import type {
 } from "../../shared/chat-devices-api";
 import { portableChatDeviceConversation } from "../../shared/chat-device-context";
 import { approvalPrefix } from "./chat-devices-support";
-import type { ChatDeviceController } from "./chat-devices";
+import type { ChatDeviceController, OfficialCoworkDeviceSend } from "./chat-devices";
 import type { Opened } from "./chat-devices";
+
+const deviceSpaceId = (id: string) =>
+  `device-chat-${createHash("sha256").update(id).digest("hex").slice(0, 32)}`;
 
 export async function submit(
   this: ChatDeviceController,
   input: ChatDeviceSendInput,
   logicalId: string,
+  officialCowork?: OfficialCoworkDeviceSend,
 ) {
+  const check = () => {
+    if (officialCowork && !officialCowork.current())
+      throw Error("The Cowork account changed before the device operation.");
+  };
+  check();
   const known = this.host.conversations().find((c) => c.id === logicalId);
   let conversation = known
     ? this.target(logicalId)
@@ -23,7 +32,11 @@ export async function submit(
         ...input.options,
         id: logicalId,
         mode: input.mode,
-        title: input.text.trim().slice(0, 100),
+        title: officialCowork?.title || input.text.trim().slice(0, 100),
+        ...(officialCowork ? {
+          environment: { kind: "space", spaceId: deviceSpaceId(logicalId) },
+          sessionAuthors: { ownerAccountUuid: officialCowork.owner, viewerAccountUuid: officialCowork.owner },
+        } : {}),
         providerId: input.providerId,
         model: input.model,
         createdAt: Date.now(),
@@ -42,6 +55,8 @@ export async function submit(
     throw new Error("This conversation is already responding.");
   await this.elected(input.deviceId, input.mode, input.taskPermission);
   const attachments = await this.transfers(input.attachments);
+  check();
+  const existingBinding = binding;
   if (!binding) {
     const source = portableChatDeviceConversation(conversation);
     const opened = (await this.call(
@@ -53,6 +68,7 @@ export async function submit(
         providerId: input.providerId,
         model: input.model,
       },
+      check,
     )) as Opened;
     if (
       !opened?.conversation?.id ||
@@ -84,9 +100,8 @@ export async function submit(
     }
   }
   let result: Opened;
-  await this.call(binding, "chatDeviceActivate", {
-    remoteConversationId: binding.remoteConversationId,
-  });
+  if (!officialCowork || !existingBinding)
+    await this.call(binding, "chatDeviceActivate", { remoteConversationId: binding.remoteConversationId }, check);
   try {
     result = (await this.call(binding, "chatDeviceSend", {
       logicalConversationId: logicalId,
@@ -98,19 +113,25 @@ export async function submit(
       taskPermission: input.taskPermission,
       attachments,
       options: input.options,
-    })) as Opened;
+    }, check)) as Opened;
   } catch (error) {
     // A dropped response is not permission to resend. Confirm the bounded
     // device receipt before deciding whether the actual message started.
     const opened = (await this.call(binding, "chatDeviceOpen", {
       remoteConversationId: binding.remoteConversationId,
-    }).catch(() => undefined)) as Opened | undefined;
+    }, check).catch(() => undefined)) as Opened | undefined;
     if (
       opened?.conversation.deviceChatOrigin?.lastRequestId !== input.requestId
     )
       throw error;
     result = opened;
   }
+  check();
+  const turn = result.conversation.turns.at(-1);
+  if (officialCowork && (result.conversation.deviceChatOrigin?.lastRequestId !== input.requestId ||
+      !turn || turn.prompt !== input.text || turn.id.startsWith("pending-") ||
+      conversation.turns.some(prior => prior.id === turn.id)))
+    throw Error("The selected computer could not confirm the Cowork message.");
   return this.receive(
     conversation,
     { ...binding, permission: input.taskPermission },
@@ -118,6 +139,7 @@ export async function submit(
     input.attachments
       .map((file) => this.host.attachment(file.id)!)
       .filter(Boolean),
+    officialCowork ? { eventId: input.requestId, check } : undefined,
   );
 }
 
@@ -127,6 +149,7 @@ export async function receive(
   binding: ChatDeviceBinding,
   opened: Opened,
   sentAttachments?: Attachment[],
+  official?: { eventId: string; check(): void },
 ) {
   this.current();
   const remote = opened?.conversation;
@@ -139,7 +162,7 @@ export async function receive(
   )
     throw new Error("The computer returned a different Chat binding.");
   // Runtime ids and local paths do not become executable cloud state.
-  const spaceId = `device-chat-${createHash("sha256").update(previous.id).digest("hex").slice(0, 32)}`;
+  const spaceId = deviceSpaceId(previous.id);
   const next: Conversation = {
     ...remote,
     id: previous.id,
@@ -147,6 +170,7 @@ export async function receive(
     pinned: previous.pinned,
     archived: previous.archived,
     projectId: previous.projectId,
+    sessionAuthors: previous.sessionAuthors,
     environment: { kind: "space", spaceId },
     cwd: path.join(this.host.root, "spaces", spaceId, "workspace"),
     chatDeviceBinding: {
@@ -164,7 +188,10 @@ export async function receive(
   delete next.linkedComputerName;
   for (const [index, turn] of next.turns.entries()) {
     const prior = previous.turns.find((value) => value.id === turn.id);
-    if (prior) turn.attachments = structuredClone(prior.attachments ?? []);
+    if (prior) {
+      turn.attachments = structuredClone(prior.attachments ?? []);
+      if (prior.officialCodeEventId) turn.officialCodeEventId = prior.officialCodeEventId;
+    }
     else if (sentAttachments && index === next.turns.length - 1) {
       if (
         (turn.attachments?.length ?? 0) !== sentAttachments.length ||
@@ -174,6 +201,7 @@ export async function receive(
       )
         throw new Error("The computer returned different attachments.");
       turn.attachments = structuredClone(sentAttachments);
+      if (official) turn.officialCodeEventId = official.eventId;
     } else if (turn.attachments?.length)
       throw new Error(
         "The conversation's attachments could not be transferred completely.",
@@ -286,6 +314,7 @@ export async function receive(
         }
       }
   this.current();
+  official?.check();
   if (JSON.stringify(next) !== JSON.stringify(previous)) {
     try {
       await this.host.save(next, { retainOnFailure: true });
@@ -297,6 +326,7 @@ export async function receive(
       this.schedule();
     }
     this.current();
+    official?.check();
     this.host.push({ type: "conversation", conversation: next });
   }
   const existing = new Set<string>();

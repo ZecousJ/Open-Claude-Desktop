@@ -26,6 +26,7 @@ import { within } from "./sandbox/driver";
 export interface SandboxGitInput {
   driver: SandboxDriver;
   userId: number | string;
+  spaceId?: string;
   /** The user's store root (`<root>/workspace`, `<root>/codex-home`). */
   storeRoot: string;
   /** Runner-private directory (`<stateRoot>/<sandbox id>`). */
@@ -107,7 +108,9 @@ export function sandboxWorkingTree(input: SandboxGitInput): WorkingTreeHost {
   };
   const prepare = () => {
     if (launcher) return launcher;
-    const id = `git-${String(input.userId).replace(/[^A-Za-z0-9_.-]/g, "_")}`;
+    const id = ["git", input.userId, ...(input.spaceId ? [input.spaceId] : [])]
+      .join("-")
+      .replace(/[^A-Za-z0-9_.-]/g, "_");
     fs.mkdirSync(home, { recursive: true, mode: 0o700 });
     fs.mkdirSync(workspace, { recursive: true, mode: 0o700 });
     launcher = input.driver.prepare({
@@ -132,7 +135,7 @@ export function sandboxWorkingTree(input: SandboxGitInput): WorkingTreeHost {
     }).binary;
     return launcher;
   };
-  const runner: GitRunner = async (cwd, args, okCodes = [0]) => {
+  const read: GitRunner = async (cwd, args, okCodes = [0]) => {
     if (!inWorkspace(cwd))
       throw new Error("This folder is outside the session workspace.");
     const { stdout, code } = await run(
@@ -149,6 +152,12 @@ export function sandboxWorkingTree(input: SandboxGitInput): WorkingTreeHost {
     if (!okCodes.includes(code))
       throw new Error(`git ${args[0] ?? ""} failed (${code}).`);
     return stdout;
+  };
+  let pending = Promise.resolve();
+  const runner: GitRunner = (cwd, args, okCodes) => {
+    const result = pending.then(() => read(cwd, args, okCodes));
+    pending = result.then(() => {}, () => {});
+    return result;
   };
   /** A path git named, when it lies in the workspace. */
   const inside = (top: string, file: string) => {

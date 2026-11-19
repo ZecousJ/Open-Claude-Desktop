@@ -5,10 +5,8 @@ import { taskRailContext, taskRailSessionSource } from "./task-rail-context";
 
 export type TaskRailView = "tasks" | "activity";
 
-/**
- * The source rail keeps its user view state above the current session. Routing
- * can hide it without choosing Close.
- */
+/** The source rail keeps its user view state above the current session
+ * (O16 c1f04f7e1:2148–2164). Routing can hide it without choosing Close. */
 export function useTaskRail(app: AppController, host: HostInfo) {
   const bridge = typeof window === "undefined" ? undefined : window.desktop;
   const owner = useMemo(

@@ -9,15 +9,22 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/internal/claudex/attachmentstore"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webproto"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/webstore"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 
 	"github.com/gin-gonic/gin"
 )
+
+type directUploadStore interface {
+	BeginDirectUpload(context.Context, int64, string, string, int64, string) (webstore.FileInfo, *attachmentstore.Upload, error)
+	CompleteDirectUpload(context.Context, int64, string) (webstore.FileInfo, error)
+}
 
 // Uploads (web plan §1.2): the browser sends bytes larger than an RPC body
 // holds in 1 MiB chunks into the user's webstore file area; the call then
@@ -113,15 +120,37 @@ func (c *Component) beginUpload(g *gin.Context) {
 		return
 	}
 	var in struct {
-		Name   string `json:"name"`
-		Size   int64  `json:"size"`
-		Type   string `json:"type"`
-		SHA256 string `json:"sha256"`
+		Name    string `json:"name"`
+		Size    int64  `json:"size"`
+		Type    string `json:"type"`
+		SHA256  string `json:"sha256"`
+		Private bool   `json:"private"`
+		Direct  bool   `json:"direct"`
 	}
 	dec := json.NewDecoder(http.MaxBytesReader(g.Writer, g.Request.Body, 8<<10))
 	if err := dec.Decode(&in); err != nil || in.Size < 0 || (in.SHA256 != "" && !shaPattern.MatchString(in.SHA256)) {
 		rpcFail(g, errBadUpload)
 		return
+	}
+	if in.Private {
+		id, err := c.privateUploads.begin(who.userID, in.Size, in.SHA256)
+		if err != nil {
+			rpcFail(g, errBadUpload)
+			return
+		}
+		rpcOK(g, gin.H{"id": id, "private": true})
+		return
+	}
+	if direct, available := up.(directUploadStore); in.Direct && available {
+		info, upload, err := direct.BeginDirectUpload(g.Request.Context(), who.userID, in.Name, in.Type, in.Size, in.SHA256)
+		if err != nil {
+			uploadError(g, err)
+			return
+		}
+		if upload != nil {
+			rpcOK(g, gin.H{"id": info.ID, "upload": upload})
+			return
+		}
 	}
 	info, err := up.BeginUpload(g.Request.Context(), who.userID, in.Name, in.Type, in.Size)
 	if err != nil {
@@ -156,6 +185,15 @@ func (c *Component) uploadChunk(g *gin.Context) {
 		}
 		return
 	}
+	if strings.HasPrefix(id, privateUploadPrefix) {
+		received, complete, err := c.privateUploads.write(who.userID, id, index*webproto.UploadChunkBytes, data)
+		if err != nil {
+			rpcFail(g, errBadUpload)
+			return
+		}
+		rpcOK(g, gin.H{"id": id, "received": received, "complete": complete})
+		return
+	}
 	info, err := up.WriteUpload(g.Request.Context(), who.userID, id, index*webproto.UploadChunkBytes, data)
 	if err != nil {
 		uploadError(g, err)
@@ -175,11 +213,32 @@ func (c *Component) completeUpload(g *gin.Context) {
 		rpcFail(g, errBadUpload)
 		return
 	}
+	if strings.HasPrefix(id, privateUploadPrefix) {
+		size, err := c.privateUploads.finish(who.userID, id)
+		if err != nil {
+			rpcFail(g, errBadUpload)
+			return
+		}
+		rpcOK(g, gin.H{"id": id, "size": size})
+		return
+	}
 	ctx := g.Request.Context()
 	info, err := up.File(ctx, who.userID, id)
 	if err != nil {
 		uploadError(g, err)
 		return
+	}
+	if info.ObjectStorage {
+		direct, ok := up.(directUploadStore)
+		if !ok {
+			rpcFail(g, errUploadsOff)
+			return
+		}
+		info, err = direct.CompleteDirectUpload(ctx, who.userID, id)
+		if err != nil {
+			uploadError(g, err)
+			return
+		}
 	}
 	if !info.Complete {
 		rpcFail(g, errIncomplete)

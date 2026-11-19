@@ -1,4 +1,4 @@
-/** Native overlay. */
+/** Native overlay (desktop 2.37337.1, index.chunk-BWk6pVUt.js). */
 export function indicatorHtml(
   _appName?: string,
   label = "Claudex is using your computer",

@@ -14,7 +14,7 @@ import { ArtifactSelection, sameArtifact } from "./artifact-context";
 
 export { fileCardName };
 import { Menu, type MenuPosition } from "../ui/Menu";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { downloadArtifact, savedMessage } from "./artifact-actions";
 
 export interface FileCardKind {
@@ -26,22 +26,22 @@ const extension = (name: string) =>
   /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? "";
 
 /**
- * What a generated file's card says under its name. Its tile is the original's
- * sheet for the file (sheetLookOf).
+ * What a generated file's card says under its name (R-0941, R-0956, live
+ * claude.ai). Its tile is the original's sheet for the file (sheetLookOf).
  */
 export function fileCardKind(name: string): FileCardKind {
   const ext = extension(name);
   const upper = ext.toUpperCase();
   const tagged = (kind: string) => (upper ? `${kind} · ${upper}` : kind);
   if (ext === "pdf") return { label: tagged("Document") };
-  // A picture reads "Image · PNG" on a violet tile.
+  // live claude.ai (2026-09-30): a picture reads "Image · PNG" on a violet tile.
   if (
     ["png", "jpg", "jpeg", "gif", "webp", "bmp", "avif", "heic"].includes(ext)
   )
     return { label: tagged("Image") };
   if (["doc", "docx", "rtf", "odt"].includes(ext))
     return { label: tagged("Document") };
-  // A CSV card reads "Table · CSV".
+  // live claude.ai: a CSV card reads "Table · CSV".
   if (["csv", "tsv"].includes(ext)) return { label: tagged("Table") };
   if (["xls", "xlsx", "ods"].includes(ext))
     return { label: tagged("Spreadsheet") };
@@ -91,10 +91,10 @@ export const showFileReason =
   "Claudex keeps its own copy of this file: download it to use it elsewhere";
 
 /**
- * A file the reply wrote, other than an HTML or SVG artifact: the file's sheet,
- * the name, the kind and a Download split button. The card opens the file
- * viewer. The ⌄ menu is the original's "Show in Finder" row, greyed: the file
- * lives in Claudex's own store.
+ * A file the reply wrote, other than an HTML or SVG artifact (R-0941,
+ * R-0942, R-0956; the original's sheet card): the file's sheet, the name,
+ * the kind and a Download split button. The card opens the file viewer. The ⌄ menu is the original's
+ * "Show in Finder" row, greyed: the file lives in Claudex's own store.
  */
 export function GeneratedFileCard({
   file,
@@ -122,8 +122,8 @@ export function GeneratedFileCard({
     sameArtifactWrite(selected, artifact);
   const [menu, setMenu] = useState<MenuPosition>();
   const more = useRef<HTMLButtonElement>(null);
-  // A local Code session's file is on disk in its folder: Show in Finder and
-  // Copy path work there.
+  // A local Code session's file is on disk in its folder: Show in Finder
+  // and Copy path work there (live claude.ai bundle, 2026-10-15, c18ab0d94).
   const app = useContext(AppContext);
   const conversationId = useContext(ArtifactConversation);
   const conversation = app?.snapshot.conversations.find(
@@ -181,7 +181,7 @@ export function GeneratedFileCard({
       <div className="generated-file-download">
         {!file.tooLarge && (
           <button onClick={save}>
-            <AppIcon name="Download" />
+            <Anthropicon name="Download" />
             <span className="generated-file-download-label">Download</span>
           </button>
         )}
@@ -257,8 +257,8 @@ export function GeneratedFileCard({
 }
 
 /**
- * Download all under two or more file cards: saves each file in turn, one save
- * dialog after another; cancelling one skips it.
+ * Download all under two or more file cards (R-0956): saves each file in
+ * turn, one save dialog after another; cancelling one skips it.
  */
 export function DownloadAllButton({
   files,

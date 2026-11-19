@@ -7,27 +7,28 @@ import {
 } from "./chunk-status";
 
 /**
- * How one lazily loaded piece recovers when its script does not arrive, after
- * the original's inline chunk recovery:
+ * How one lazily loaded piece recovers when its script does not arrive,
+ * after the original's inline chunk recovery (live claude.ai bundle,
+ * 2026-10-12, shared-l-p-m-5 `Xx`, rendered by shared-l-p-m-3 `xb`):
  *
  * - the first failure retries once on its own, quietly (the piece's loading
  *   state stays), waiting for the network to come back and the window to be
  *   visible, and at least 3 s after either;
- * - when that retry fails, or is still out after 3 s, the piece says "Couldn’t
- *   load this." with Retry; a retry that fails too says "Couldn’t load this.
- *   Reload the page to continue." with Reload;
- * - a file a newer build removed says "Claude was updated. Reload to continue."
- *   with Reload; a stylesheet, or something the script needs, that failed goes
- *   straight to Reload (a retry would fail the same way);
- * - offline for 2 s while waiting, it says "You’re offline." and carries on by
- *   itself once the network is back;
- * - a failure that is not a load failure (the piece's own code threw) is not
- *   this piece's to recover: it goes to the nearest error boundary.
+ * - when that retry fails, or is still out after 3 s, the piece says
+ *   "Couldn’t load this." with Retry; a retry that fails too says
+ *   "Couldn’t load this. Reload the page to continue." with Reload;
+ * - a file a newer build removed says "Claude was updated. Reload to
+ *   continue." with Reload; a stylesheet, or something the script needs,
+ *   that failed goes straight to Reload (a retry would fail the same way);
+ * - offline for 2 s while waiting, it says "You’re offline." and carries on
+ *   by itself once the network is back;
+ * - a failure that is not a load failure (the piece's own code threw) is
+ *   not this piece's to recover: it goes to the nearest error boundary.
  *
- * A retry first asks for the script again; a browser that remembers the failed
- * import is then sent the same file under a fresh address (`?cb=r1`), as the
- * original does, and the piece is taken from it only when it has the expected
- * export.
+ * A retry first asks for the script again; a browser that remembers the
+ * failed import is then sent the same file under a fresh address
+ * (`?cb=r1`), as the original does, and the piece is taken from it only
+ * when it has the expected export.
  */
 
 export type PiecePhase =
@@ -98,7 +99,7 @@ export function reloadsPage(state: ChunkErrorState): boolean {
   );
 }
 
-/** Timings from the original. */
+/** Timings from the original (live claude.ai bundle, 2026-10-12). */
 export const RECOVERY_TIMINGS = {
   /** A retry still out after this shows Retry. */
   showRetryMs: 3000,

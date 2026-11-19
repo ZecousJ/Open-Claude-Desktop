@@ -30,6 +30,7 @@ import {
   type DeviceRegistrationRequest,
 } from "../../shared/claudex-contract";
 import { notAvailableOnWeb } from "../../shared/web-bridge-methods";
+import { assertAccountOperationCurrent, type AccountOperationCurrent } from "../../electron/account/operation-lease";
 import type { AppContext } from "../../electron/app/app-context";
 import type {
   ProviderCredentials,
@@ -169,12 +170,21 @@ export class WebSession extends RemoteSession {
   }
   override async authorized<T>(
     call: (accessToken: string) => Promise<T>,
+    current?: AccountOperationCurrent,
   ): Promise<T> {
+    const run = async (token: string) => {
+      assertAccountOperationCurrent(current);
+      const answer = await call(token);
+      assertAccountOperationCurrent(current);
+      return answer;
+    };
+    assertAccountOperationCurrent(current);
     const first = this.current;
     if (!first) throw expired();
     try {
-      return await call(first);
+      return await run(first);
     } catch (error) {
+      assertAccountOperationCurrent(current);
       if (!(error instanceof Sub2ApiError) || error.status !== 401) throw error;
       if (error.code === claudexErrorCodes.sessionRevoked) {
         // Only the client that sent this token signed out (one desktop or
@@ -182,7 +192,7 @@ export class WebSession extends RemoteSession {
         // client carries on. Signing the whole user out is the service's
         // call (revoke-all reaches the runner as its own sign-out).
         if (this.current === first) this.current = "";
-        else if (this.current) return await call(this.current);
+        else if (this.current) return await run(this.current);
         throw error;
       }
       // A newer call may have brought a fresh token meanwhile.
@@ -191,7 +201,7 @@ export class WebSession extends RemoteSession {
         this.current &&
         this.current !== first
       )
-        return await call(this.current);
+        return await run(this.current);
       throw error;
     }
   }

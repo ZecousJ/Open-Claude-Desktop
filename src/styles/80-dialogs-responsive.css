@@ -3,7 +3,8 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  /* The original's dialog backdrop: 50% black in dark, 40% in light, no blur. */
+  /* The original's dialog backdrop (desktop bundle 2.31226.1): 50% black in
+     dark, 40% in light, no blur. */
   background: #00000080;
   display: flex;
   align-items: center;
@@ -12,7 +13,8 @@
   padding: 24px;
   animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
 }
-/* 570 wide in a 602 window): 16px from the window's edges on a narrow one. */
+/* R-1607 (Create a skill at 602: 570 wide in a 602 window): 16px from the
+   window's edges on a narrow one. */
 @media (max-width: 640px) {
   .overlay {
     padding: 16px;
@@ -21,10 +23,11 @@
 :root[data-theme="light"] .overlay {
   background: #0006;
 }
-/* Dialogs, measured from R-1289 (Windows 1x, Edit details and Delete project):
-   520 wide with 24px padding, a 22px semibold title level with the close
-   button, 32px buttons 8px apart on the right. The corners are the original's
-   rounded-card, 12px. */
+/* Dialogs, measured from R-1289 (Windows 1x, Edit details and Delete
+   project): 520 wide with 24px padding, a 22px semibold title level with the
+   close button, 32px buttons 8px apart on the right. The corners are the
+   original's rounded-card, 12px (live claude.ai bundle, 2026-10-16, the
+   dialog popup takes the popover panel's radius: shared-frame-6654oR3- xg). */
 .modal {
   width: 520px;
   max-width: 100%;
@@ -38,10 +41,10 @@
   box-shadow: 0 24px 80px #0005;
   animation: dialog-in var(--motion-base, 200ms) var(--ease-out, ease-out);
 }
-/* Dark dialogs: the title, labels, typed text and button text all read near
-   white (title #fefdf9 and fields #fcfcfc at their brightest, "Use a folder"
-   #fbfaf8, Cancel #f9f9f7) and the placeholders #949492, where the page text is
-   #c6c6c6. */
+/* Dark dialogs (R-0186-0187 and R-0190-0195, W1164 jpg): the title, labels,
+   typed text and button text all read near white (title #fefdf9 and fields
+   #fcfcfc at their brightest, "Use a folder" #fbfaf8, Cancel #f9f9f7) and the
+   placeholders #949492, where the page text is #c6c6c6. */
 :root:not([data-theme="light"]) .modal {
   color: #faf9f5;
 }
@@ -53,13 +56,13 @@
 :root:not([data-theme="light"]) .modal textarea::placeholder {
   color: #929290;
 }
-/* Light dialogs: pure white, no rim, a tight shadow that darkens the 39% scrim
-   by 15% at the edge and is gone 24px out. */
+/* Light dialogs (R-1199, R-1198 at 1x): pure white, no rim, a tight shadow
+   that darkens the 39% scrim by 15% at the edge and is gone 24px out. */
 :root[data-theme="light"] .modal {
   border-color: transparent;
   background: #fff;
   box-shadow: 0 4px 16px rgb(0 0 0 / 26%);
-  /* The title reads black and the body #3c3c3c at their darkest. */
+  /* R-1199: the title reads black and the body #3c3c3c at their darkest. */
   color: #141413;
 }
 :root[data-theme="light"] .modal .confirm-body {
@@ -75,14 +78,15 @@
   gap: 15px;
   margin: 0 -6px 9px 0;
 }
-/* A sub-view's back button and title, 8px apart. */
+/* A sub-view's back button and title, 8px apart (live claude.ai bundle,
+   2026-10-12: the Publish dialog's "flex items-center gap-2" header). */
 .modal-back-title {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
-/* 22px semibold. */
+/* "Edit details" is 118px wide in R-1289: 22px semibold. */
 .modal h2 {
   font-size: 22px;
   font-weight: 600;
@@ -121,7 +125,7 @@
 .modal textarea {
   background: var(--bg);
 }
-/* 14px semibold labels, 32px fields, 14px text 12px in. */
+/* R-1289 Edit details: 14px semibold labels, 32px fields, 14px text 12px in. */
 .modal form > label {
   font-size: 14px;
   font-weight: 600;
@@ -140,8 +144,8 @@
 .modal label > textarea {
   padding: 7px 11px;
 }
-/* The confirmation: 400 wide, radius 12, a 15px title straight above the
-   explanation, no close button. */
+/* The confirmation (R-1289 Delete project): 400 wide, radius 12, a 15px
+   title straight above the explanation, no close button. */
 .modal.confirm {
   width: 400px;
   padding: 22px 24px 24px;
@@ -250,10 +254,11 @@
   text-overflow: ellipsis;
 }
 /*
- * The window's notice: a 360×44 box with a 1px border (#373735 dark, #d6d6d4
- * light) on #20201e / #fff, 12px corners, a 20px info circle 15px in, 14px
- * semibold text 48px in and a close cross centred 23px from the right edge.
- * Placed in the corner like the limit notice; the width follows that box.
+ * The window's notice (R-0400, "Appearance set to Dark/Light", 1 px = 1 CSS
+ * px): a 360×44 box with a 1px border (#373735 dark, #d6d6d4 light) on
+ * #20201e / #fff, 12px corners, a 20px info circle 15px in, 14px semibold
+ * text 48px in and a close cross centred 23px from the right edge. Placed in
+ * the corner like the limit notice (R-0314); the width follows that box.
  */
 .toast {
   position: fixed;
@@ -269,7 +274,7 @@
   box-sizing: border-box;
   width: 360px;
   max-width: calc(100vw - 32px);
-  /* The live toast: px-lg py-md, text-body font-normal. */
+  /* The live toast (shared-l-p-m-6 Vj): px-lg py-md, text-body font-normal. */
   padding: 8px 12px;
   color: var(--text);
   font-size: 13px;
@@ -291,8 +296,9 @@
   overflow-wrap: anywhere;
 }
 /* A toast with a button (Undo after a drag unpins): a small secondary button
-   under the text, 8px below it, for every kind of toast, filled like the rename
-   dialog's Cancel. */
+   under the text, 8px below it, for every kind of toast (live claude.ai
+   bundle, 2026-10-16, shared-l-p-m-6: the action sits in the text column in
+   a mt-pad-md box), filled like the rename dialog's Cancel. */
 .toast-text > .toast-action {
   display: block;
   margin-top: 8px;
@@ -306,7 +312,7 @@
   font-size: 13px;
   font-weight: 500;
 }
-/* CDS TextLink inheritColor. */
+/* CDS TextLink inheritColor (live claude.ai bundle, 2026-10-14, shared-frame-B1JORnF0). */
 .toast-inline-link {
   display: inline;
   padding: 0;
@@ -353,18 +359,20 @@
   color: inherit;
 }
 /* The dismiss cross takes the ghost button's hover fill and the shared focus
-   ring. */
+   ring (the original's toast close: hover:bg-fill-ghost-hover,
+   focus-visible:shadow-focus, 60ms; desktop bundle 2.31226.1). */
 .toast-close:hover {
   background: var(--fill-ghost-hover);
 }
 /*
- * The stack of notices (src/ui/Toaster.tsx), after the original's toaster: the
- * stack sits where the single notice did and takes the front toast's height.
- * Toast n (0 in front) is 14px·n higher and scaled 1 − 0.04·n from its bottom
- * edge; the ones behind are cut to the front's height with their content
- * hidden. A new toast rises from below (its own height) as it fades in; a
- * dismissed one shrinks to 85% as it fades out; the others slide to their new
- * places. All 200ms on the out curve.
+ * The stack of notices (src/ui/Toaster.tsx), after the original's toaster
+ * (desktop bundle 2.31226.1): the stack sits where the single notice did and
+ * takes the front toast's height. Toast n (0 in front) is 14px·n higher
+ * and scaled 1 − 0.04·n from its bottom edge; the ones behind are cut to
+ * the front's height with their content hidden. A new toast rises from
+ * below (its own height) as it fades in; a dismissed one shrinks to 85% as
+ * it fades out; the others slide to their new places. All 200ms on the out
+ * curve.
  */
 .toast-stack {
   position: fixed;
@@ -483,12 +491,14 @@
   }
 }
 /*
- * Dialog motion: the panel fades and grows from 98% over 200ms on the out
- * curve, the backdrop fades over the same 200ms, and both run backwards on
- * close. A closing dialog stays on screen as `[data-state="closed"]`
- * (src/ui/usePresence.ts). Each dialog family puts these on its own backdrop
- * and panel. The scrim fades its colour rather than its opacity, so the panel
- * inside is not faded twice; `scale` leaves a panel's own transform alone.
+ * Dialog motion (desktop bundle 2.31226.1, the Dialog popup and backdrop):
+ * the panel fades and grows from 98% over 200ms on the out curve, the
+ * backdrop fades over the same 200ms, and both run backwards on close.
+ * A closing dialog stays on screen as `[data-state="closed"]`
+ * (src/ui/usePresence.ts). Each dialog family puts these on its own
+ * backdrop and panel. The scrim fades its colour rather than its opacity,
+ * so the panel inside is not faded twice; `scale` leaves a panel's own
+ * transform alone.
  */
 @keyframes dialog-in {
   from {
@@ -522,11 +532,13 @@
     forwards;
 }
 /*
- * A dialog opened over another: the parent's panel blurs 2px and takes the
- * backdrop's shade once more, over the same 200ms, and the child's backdrop
- * stays clear, so the window is shaded once (src/ui/dialog-stack.ts). Reduced
- * motion makes it instant, as the original's `motion-reduce:transition-none` on
- * the popup.
+ * A dialog opened over another (desktop bundle 2.31226.1): the parent's
+ * panel blurs 2px and takes the backdrop's shade once more (the original
+ * lays a backdrop-coloured ::after over it, 50% black in dark, 40% in
+ * light; --dialog-covered-dim multiplies the panel by the rest), over the
+ * same 200ms, and the child's backdrop stays clear, so the window is shaded
+ * once (src/ui/dialog-stack.ts). Reduced motion makes it instant, as the
+ * original's `motion-reduce:transition-none` on the popup.
  */
 :root {
   --dialog-covered-dim: 0.5;
@@ -559,6 +571,7 @@
   .bypass-backdrop,
   .cowork-access-backdrop,
   .language-overlay,
+  .zecous-migration-overlay,
   .announcement-overlay
 )[data-state="closed"] {
   pointer-events: none;
@@ -570,6 +583,7 @@
     .bypass-backdrop,
     .cowork-access-backdrop,
     .language-overlay,
+    .zecous-migration-overlay,
     .announcement-overlay
   )[data-state="closed"]
   > * {
@@ -583,6 +597,7 @@
     .bypass-backdrop,
     .cowork-access-backdrop,
     .language-overlay,
+    .zecous-migration-overlay,
     .announcement-overlay
   ),
   :is(
@@ -591,6 +606,7 @@
       .bypass-backdrop,
       .cowork-access-backdrop,
       .language-overlay,
+      .zecous-migration-overlay,
       .announcement-overlay
     )
     > * {
@@ -604,6 +620,7 @@
     .bypass-backdrop,
     .cowork-access-backdrop,
     .language-overlay,
+    .zecous-migration-overlay,
     .announcement-overlay
   ),
 :root[data-motion="reduced"]
@@ -613,6 +630,7 @@
     .bypass-backdrop,
     .cowork-access-backdrop,
     .language-overlay,
+    .zecous-migration-overlay,
     .announcement-overlay
   )
   > * {
@@ -738,7 +756,7 @@
 .toast-description {
   display: block;
 }
-/* Action-bearing error toast. */
+/* Action-bearing error toast (live claude.ai bundle, 2026-10-14, shared-l-p-m-6-wOTANBr6). */
 .toast[data-variant="warning"] {
   grid-template-columns: 20px minmax(0, 1fr) 24px;
   align-items: start;
@@ -767,8 +785,10 @@
 :root[data-theme="light"] .toast[data-variant="warning"] .toast-action {
   background: #ffffff1a;
 }
-/* The danger toast: red-800 under a red-700 ring with red-300 text in dark,
-   red-100 under red-250 with red-600 text in light. */
+/* The danger toast (live claude.ai bundle, 2026-10-16, shared-l-p-m-6 Ij:
+   shadow-ring-danger over bg-danger, text-danger, WarningCircle): red-800
+   under a red-700 ring with red-300 text in dark, red-100 under red-250 with
+   red-600 text in light (c6a992d55). */
 .toast[data-variant="danger"] {
   padding: 8px 12px;
   border: 0;

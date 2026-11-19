@@ -1,7 +1,8 @@
 /**
- * Settings → Claude Code → Pull requests → Branch prefix: 1–40 letters,
- * numbers, ".", "_" or "-", starting with a letter or number, no "..", not
- * ending in "." or ".lock"; and not a name protected branches use.
+ * Settings → Claude Code → Pull requests → Branch prefix (live claude.ai
+ * bundle, 2026-10-14): 1–40 letters, numbers, ".", "_" or "-", starting
+ * with a letter or number, no "..", not ending in "." or ".lock"; and not a
+ * name protected branches use.
  */
 const shape = /^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$/;
 const reserved = new Set(["main", "master", "staging", "warm"]);

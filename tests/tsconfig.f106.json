@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.f105.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/ipc/workspace-trust.ts",
+    "../electron/engine/engine-history.ts",
+    "../electron/store/store.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "../electron/official-ui/native/history-transfer-capabilities.ts",
+    "official-ui-code-history.test.ts",
+    "official-ui-code-history-chain.test.ts",
+    "official-ui-code-rewind.test.ts",
+    "official-ui-code-fork-receipts.test.ts",
+    "official-ui-code-history-original-preload.test.ts",
+    "official-ui-history-transfer-capabilities.test.ts",
+    "chat/f106-code-history-engine.test.ts",
+    "engine/code-fork.e2e.test.ts",
+    "chat/code-fork-files.test.ts",
+    "chat/f106-cli-resume-runtime.test.ts",
+    "chat/rewind-lease-inert.test.ts"
+  ]
+}

@@ -32,8 +32,9 @@ function ownExtension(artifact: Artifact) {
 }
 
 /**
- * The extension the original gives each kind of artifact when it adds one to a
- * project.
+ * The extension the original gives each kind of artifact when it adds one to
+ * a project (live claude.ai bundle, 2026-10-12: the artifact type's own
+ * extension: html, svg, md, mermaid, tsx, csv, tsv, txt).
  */
 function extensionFor(artifact: Artifact) {
   const own = ownExtension(artifact);

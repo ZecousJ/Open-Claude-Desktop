@@ -1,11 +1,14 @@
 import { createElement, useEffect, useState, type ReactNode } from "react";
 
 /**
- * The @pierre/trees "complete" icon set, loaded when first needed so it stays
- * out of the first load. A name matches the set's file names first, then its
- * extensions from the longest ("a.test.ts" tries "test.ts", then "ts");
- * anything else gets the set's default file. Colours come from the set's
- * palette, one for each theme. 16px, the "sm" size.
+ * A file's type icon, as live claude.ai draws one in a turn's edits card
+ * (2026-10-13, cda289f76): the @pierre/trees "complete" icon set (Apache-2.0,
+ * its licence travels inside file-icons.json; cc84ca73d-C5zlQoRC includes
+ * the official Markdown/PDF/Slides/Word variants), loaded when first needed so
+ * it stays out of the first load. A name matches the set's file names first,
+ * then its extensions from the longest ("a.test.ts" tries "test.ts", then
+ * "ts"); anything else gets the set's default file. Colours come from the
+ * set's palette, one for each theme. 16px, the "sm" size.
  */
 type Node = [string, Record<string, string>, Node[]?];
 type IconSet = {

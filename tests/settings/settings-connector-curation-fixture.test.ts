@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { collectionsFixture } from "../../scripts/preview/fixtures/collections";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { collectionsFixture } from "../../scripts/fidelity/fixtures/collections";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import {
   directoryConnectors,
   isApprovedDirectoryEntries,

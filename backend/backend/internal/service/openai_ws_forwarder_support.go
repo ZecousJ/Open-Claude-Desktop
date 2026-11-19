@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	coderws "github.com/coder/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -222,6 +223,27 @@ func normalizeOpenAIWSTerminalEvent(eventType string) string {
 	}
 }
 
+func openAIWSHasSemanticOutput(eventType string, payload []byte) bool {
+	if !strings.HasPrefix(eventType, "response.") || isOpenAIWSTerminalEvent(eventType) {
+		return false
+	}
+	if strings.HasSuffix(eventType, ".delta") {
+		return openAIStreamDataStartsVisibleOutput(string(payload), eventType)
+	}
+	return openAIStreamDataStartsClientOutput(string(payload), eventType)
+}
+
+func openAIWSCompletionIsEmpty(eventType string, payload []byte, usage *OpenAIUsage, generate, semanticOutputSeen bool) bool {
+	return generate && !semanticOutputSeen && (eventType == "response.completed" || eventType == "response.done") &&
+		openAIResponsesCompletionIsEmpty(payload, usage)
+}
+
+func openAIWSEmptyCompletionCloseError(c *gin.Context) error {
+	setOpsUpstreamError(c, http.StatusBadGateway, openAIResponsesEmptyCompletedMessage, "")
+	MarkOpsStreamFailure(c, "upstream_error", openAISilentRefusalErrorCode, openAIResponsesEmptyCompletedMessage, http.StatusBadGateway)
+	return NewOpenAIWSClientCloseError(coderws.StatusTryAgainLater, openAIResponsesEmptyCompletedMessage, nil)
+}
+
 // markOpenAIWSClientVisibleFailure records only terminal/error protocol events
 // that were delivered to the client. Callers invoke it only after any hidden
 // failover/recovery decision and a successful downstream write.
@@ -418,15 +440,6 @@ func replaceOpenAIWSMessageModel(message []byte, fromModel, toModel string) []by
 		}
 	}
 	return updated
-}
-
-func populateOpenAIUsageFromResponseJSON(body []byte, usage *OpenAIUsage) {
-	if usage == nil || len(body) == 0 {
-		return
-	}
-	if parsed, ok := extractOpenAIUsageFromJSONBytes(body); ok {
-		*usage = parsed
-	}
 }
 
 func getOpenAIGroupIDFromContext(c *gin.Context) int64 {

@@ -5,7 +5,8 @@ import { t } from "../../i18n";
 import { Button, Row, Section } from "../controls";
 
 /**
- * Settings → Account → Passkey. Claudex's passkeys sign the account in instead
+ * Settings → Account → Passkey (live claude.ai, 2026-10-21: "Passkey", its
+ * state and Set up passkey). Claudex's passkeys sign the account in instead
  * of its password, so the row says that; the service asks for the password
  * before it makes one, then the browser's own passkey prompt follows. Only
  * where the service and this browser offer passkeys (the web).

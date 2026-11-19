@@ -1,11 +1,12 @@
 import type { TerminalSessionInfo } from "../../shared/types";
 
 /**
- * Closing a terminal tab while a command runs in it: Close terminal and Close
- * other terminals first ask which tabs are busy; a tab with a running command
- * is closed only after "Close terminal?" / "Close other terminals?" is
- * confirmed, and one without closes at once. The question goes away by itself
- * when the commands it asks about end, or their tabs are gone.
+ * Closing a terminal tab while a command runs in it (live claude.ai bundle,
+ * 2026-10-12): Close terminal and Close other terminals first ask which
+ * tabs are busy; a tab with a running command is closed only after "Close
+ * terminal?" / "Close other terminals?" is confirmed, and one without
+ * closes at once. The question goes away by itself when the commands it
+ * asks about end, or their tabs are gone.
  */
 export type PendingClose =
   | { kind: "close"; id: string }

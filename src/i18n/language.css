@@ -1,11 +1,11 @@
 /*
- * The language dialog (src/i18n), after claude.ai's "Choose your language": a
- * wide rounded dialog, its title and close button over a hairline, then three
- * columns of 12px-cornered choices with the language's own name (16/24, weight
- * 500) over its English name (14/20, muted); the chosen one has a blue-tinted
- * fill and a tick in the toggled-on blue. The tint reuses the only captured
- * blue of the app (the title bar's toggled-on chip, #83a3d7 on #0b1f40; light
- * #2f5ea8 on #dce7f8).
+ * The language dialog (src/i18n), after claude.ai's "Choose your language"
+ * (captured dark, 2026-09-30): a wide rounded dialog, its title and close
+ * button over a hairline, then three columns of 12px-cornered choices with the
+ * language's own name (16/24, weight 500) over its English name (14/20,
+ * muted); the chosen one has a blue-tinted fill and a tick in the toggled-on
+ * blue. The tint reuses the only captured blue of the app (the title bar's
+ * toggled-on chip, #83a3d7 on #0b1f40; light #2f5ea8 on #dce7f8).
  */
 .language-overlay {
   position: fixed;
@@ -16,7 +16,8 @@
   padding: 16px;
   background: rgb(0 0 0 / 50%);
   backdrop-filter: blur(2px);
-  /* Motion: the dialog's, 200ms in and out. */
+  /* Motion: the dialog's (80-dialogs-responsive.css, desktop bundle
+     2.31226.1), 200ms in and out. */
   animation: scrim-in var(--motion-base, 200ms) var(--ease-out, ease-out);
 }
 .language-overlay > .language-dialog {

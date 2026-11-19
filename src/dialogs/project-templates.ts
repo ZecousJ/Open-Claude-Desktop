@@ -1,4 +1,4 @@
-// Student templates.
+// Student templates (live claude.ai bundle, 2026-10-14, cd9282f83-CpkAIgb2.js).
 export const projectTemplates = [
   {
     title: "Study project",

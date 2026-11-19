@@ -31,7 +31,8 @@ const valueOf = (body: unknown) => {
 const approvalId = (device: string, id: string | number) =>
   `cowork-device:${device}:${JSON.stringify(id)}`;
 
-// The bound computer owns execution; the cloud retains the task's identity.
+// The bound computer owns execution; the cloud retains the task's identity
+// (live claude.ai bundle, 2026-10-14, ca51bd650-DSmgVHhx.js).
 export class CoworkDevices {
   private tasks = new Map<string, Conversation>();
   /**
@@ -51,7 +52,7 @@ export class CoworkDevices {
   private pollTimer?: unknown;
 
   constructor(
-    private transport: Pick<WebTransport, "json">,
+    private transport: Pick<WebTransport, "json"> & Partial<Pick<WebTransport, "captureActivation">>,
     private emit: (event: AppEvent) => void,
     private trust?: BrowserDeviceTrustClient,
     private timers = {
@@ -100,9 +101,11 @@ export class CoworkDevices {
    * computer (electron/remote-control/device-trust-store.ts remote()).
    */
   async trustState(): Promise<DeviceTrustState> {
+    const current = this.transport.captureActivation?.();
     const online = (await this.list()).filter(
       (device) => device.online !== false,
     );
+    current?.();
     const answers = await Promise.allSettled(
       online.map(async (device) => ({
         device,
@@ -113,6 +116,7 @@ export class CoworkDevices {
         )) as DeviceTrustState,
       })),
     );
+    current?.();
     const read = answers.flatMap((answer) =>
       answer.status === "fulfilled" ? [answer.value] : [],
     );
@@ -145,31 +149,41 @@ export class CoworkDevices {
   async setTrustRequired(required: boolean): Promise<DeviceTrustState> {
     if (!required)
       throw new Error("Turn off Require trusted devices on each computer.");
+    const current = this.transport.captureActivation?.();
     const online = (await this.list()).filter(
       (device) => device.online !== false,
     );
+    current?.();
     await Promise.all(
       online.map((device) => this.rpc(device.id, "deviceTrustRequire", [true])),
     );
+    current?.();
     return this.trustState();
   }
 
   async revokeTrusted(id: string): Promise<DeviceTrustState> {
     const at = id.indexOf(":");
     if (at <= 0) throw new Error("This trusted device no longer exists.");
+    const current = this.transport.captureActivation?.();
     await this.rpc(id.slice(0, at), "deviceTrustRevoke", [id.slice(at + 1)]);
+    current?.();
     return this.trustState();
   }
 
-  private async rpc(device: string, method: DeviceMethod, args: unknown[]) {
-    if (this.trust)
-      return this.trust.call(
-        (action, values) => this.rawRpc(device, action, values),
-        device,
-        method,
-        args,
-      );
-    return this.rawRpc(device, method, args);
+  async rpc(device: string, method: DeviceMethod, args: unknown[]) {
+    const current = this.transport.captureActivation?.();
+    current?.();
+    const call = async (action: DeviceMethod, values: unknown[]) => {
+      current?.();
+      const result = await this.rawRpc(device, action, values);
+      current?.();
+      return result;
+    };
+    const result = this.trust
+      ? await this.trust.call(call, device, method, args)
+      : await call(method, args);
+    current?.();
+    return result;
   }
 
   private async rawRpc(device: string, method: DeviceMethod, args: unknown[]) {
@@ -283,6 +297,7 @@ export class CoworkDevices {
    * the account's own list doesn't already hold.
    */
   private async sessions(own: Conversation[]) {
+    const generation = this.generation;
     const known = new Set(own.map((conversation) => conversation.id));
     const online = this.devices.filter((device) => device.online !== false);
     const answers = await Promise.allSettled(
@@ -295,6 +310,7 @@ export class CoworkDevices {
         )) as DeviceConversationSummary[],
       })),
     );
+    if (generation !== this.generation) return [];
     const listed = new Map<string, Conversation>();
     for (const answer of answers) {
       if (answer.status !== "fulfilled" || !Array.isArray(answer.value.list))
@@ -360,6 +376,11 @@ export class CoworkDevices {
     // ("Conversation not found").
     if (method === "updateConversation" && this.owns(id))
       return this.updateListed(this.listed.get(id as string)!, args[1]);
+    // Scheduled prompts and loops (the rail's Background tasks, polled every
+    // second) live in the cloud's sessions; a computer offers none of its
+    // own, so asking the service only answered "Conversation not found".
+    if (method === "listSessionLoops" && this.owns(id)) return [];
+    if (method === "stopSessionLoop" && this.owns(id)) return false;
     if (method === "codeGitStatus" && this.owns(id))
       return {
         state: "no-folder",
@@ -401,6 +422,7 @@ export class CoworkDevices {
     patch: Partial<Conversation> | undefined,
   ) {
     if (typeof patch?.model === "string" && patch.model !== task.model) {
+      const current = this.transport.captureActivation?.();
       if (!task.linkedComputerId || !task.linkedComputerOnline)
         throw new Error("Waiting for your computer");
       const offered = (await this.rpc(
@@ -408,6 +430,7 @@ export class CoworkDevices {
         "listModels",
         [],
       )) as { models?: { providerId: string; id: string }[] } | undefined;
+      current?.();
       const choice = offered?.models?.find((item) => item.id === patch.model);
       if (!choice)
         throw new Error("This account cannot use the selected model.");
@@ -418,6 +441,7 @@ export class CoworkDevices {
           model: choice.id,
         },
       ]);
+      current?.();
       return (await this.open(task)) ?? task;
     }
     const { model: _model, providerId: _provider, ...rest } = patch ?? {};
@@ -463,9 +487,11 @@ export class CoworkDevices {
   }
 
   refresh() {
-    return (this.refreshing ??= this.update().finally(() => {
-      this.refreshing = undefined;
-    }));
+    if (this.refreshing) return this.refreshing;
+    const pending = this.update().finally(() => {
+      if (this.refreshing === pending) this.refreshing = undefined;
+    });
+    return (this.refreshing = pending);
   }
 
   private async update() {
@@ -614,6 +640,7 @@ export class CoworkDevices {
 
   clear() {
     this.generation++;
+    this.refreshing = undefined;
     if (this.pollTimer !== undefined) this.timers.clear(this.pollTimer);
     this.pollTimer = undefined;
     this.tasks.clear();

@@ -110,7 +110,7 @@ const catalog: Record<string, string> = {
   Max: "अधिकतम",
   "More models": "और मॉडल",
   "Image generation": "इमेज जनरेशन",
-  "Image generation model": "इमेज जनरेशन मॉडल",
+  "Automatic selection": "स्वचालित चयन",
   "Select model": "मॉडल चुनें",
   "Incognito chats stay out of your history and search.":
     "इनकॉग्निटो चैट आपके इतिहास और खोज में नहीं दिखतीं।",
@@ -1322,16 +1322,38 @@ const catalog: Record<string, string> = {
   "Review yesterday's commits and flag anything concerning.":
     "कल के कमिट की समीक्षा करें और चिंता वाली किसी भी बात को फ़्लैग करें।",
   "System health check": "सिस्टम हेल्थ जाँच",
+  "Monitor infrastructure and services for errors, outages, and performance issues.":
+    "त्रुटियों, आउटेज और परफ़ॉर्मेंस समस्याओं के लिए इंफ़्रास्ट्रक्चर और सेवाओं की निगरानी करें।",
   "Issue triage": "Issue ट्रायाज",
+  "Review and categorize incoming issues, bugs, and feature requests.":
+    "आने वाले issue, बग और फ़ीचर अनुरोधों की समीक्षा करें और उन्हें श्रेणियों में बाँटें।",
   "PR review digest": "PR समीक्षा डाइजेस्ट",
+  "Overview of open PRs, review status, and what needs attention.":
+    "खुले PR, समीक्षा की स्थिति और किन पर ध्यान देना है, इसका अवलोकन।",
   "Dependency update check": "डिपेंडेंसी अपडेट जाँच",
+  "Scan for outdated packages, security patches, and breaking changes.":
+    "पुराने पैकेज, सुरक्षा पैच और ब्रेकिंग बदलावों के लिए स्कैन करें।",
   "Flaky test tracker": "फ़्लेकी टेस्ट ट्रैकर",
+  "Find tests that pass and fail intermittently across recent CI runs.":
+    "हाल के CI रन में कभी पास और कभी फ़ेल होने वाले टेस्ट खोजें।",
   "Daily briefing": "रोज़ की ब्रीफ़िंग",
+  "What needs your attention today across calendar, email, and messages.":
+    "कैलेंडर, ईमेल और संदेशों में आज किन चीज़ों पर आपका ध्यान चाहिए।",
   "Inbox triage": "इनबॉक्स ट्रायाज",
+  "Categorize your inbox and draft replies to anything urgent.":
+    "अपने इनबॉक्स को श्रेणियों में बाँटें और ज़रूरी संदेशों के जवाब का ड्राफ़्ट बनाएँ।",
   "Meeting prep": "मीटिंग की तैयारी",
+  "A short brief before each meeting on your calendar, covering attendees, context, and agenda.":
+    "आपके कैलेंडर की हर मीटिंग से पहले एक छोटा ब्रीफ़, जिसमें प्रतिभागी, संदर्भ और एजेंडा शामिल हों।",
   "Weekly review": "साप्ताहिक समीक्षा",
+  "A Friday summary of what happened this week.":
+    "इस हफ़्ते क्या हुआ, इसका शुक्रवार का सारांश।",
   "Content ideas": "कंटेंट आइडिया",
+  "Draft a few post ideas each week from the latest news in your industry.":
+    "आपके उद्योग की ताज़ा खबरों से हर हफ़्ते कुछ पोस्ट आइडिया का ड्राफ़्ट बनाएँ।",
   "Monitor a topic": "किसी विषय पर नज़र रखें",
+  "Watch for news or mentions of a topic, competitor, or keyword.":
+    "किसी विषय, प्रतिस्पर्धी या कीवर्ड की खबरों या उल्लेखों पर नज़र रखें।",
   Frequency: "आवृत्ति",
   "Add a model connection in Settings first.":
     "पहले सेटिंग में मॉडल कनेक्शन जोड़ें।",
@@ -1444,6 +1466,7 @@ const catalog: Record<string, string> = {
   Write: "लिखें",
   "Thought for {n}s": "{n} सेकंड सोचा",
   "Waiting for your response": "आपके उत्तर की प्रतीक्षा है",
+  "ran a command": "एक कमांड चलाई",
   "ran {n} commands": "{n} कमांड चलाईं",
   "read a file": "एक फ़ाइल पढ़ी",
   "read {n} files": "{n} फ़ाइलें पढ़ीं",
@@ -1453,6 +1476,7 @@ const catalog: Record<string, string> = {
   "created {n} files": "{n} फ़ाइलें बनाईं",
   "edited a file": "एक फ़ाइल संपादित की",
   "edited {n} files": "{n} फ़ाइलें संपादित कीं",
+  "used a tool": "एक टूल इस्तेमाल किया",
   "used {n} tools": "{n} टूल इस्तेमाल किए",
   "searched the web": "वेब पर खोजा",
   "shared files": "फ़ाइलें साझा कीं",
@@ -1607,6 +1631,7 @@ const catalog: Record<string, string> = {
   "Only you can open this link": "केवल आप इस लिंक को खोल सकते हैं",
   Copied: "कॉपी किया गया",
   "Local workspace": "लोकल वर्कस्पेस",
+  "Starting up…": "शुरू हो रहा है…",
   "Started an agent": "एक एजेंट शुरू किया",
   "Messaged an agent": "एक एजेंट को संदेश भेजा",
   "Resumed an agent": "एक एजेंट फिर से शुरू किया",
@@ -2001,6 +2026,8 @@ const catalog: Record<string, string> = {
   "memory settings": "मेमोरी सेटिंग",
   "Claudex hasn't written any memory from your chats yet. Your reflection shows here once it has.":
     "Claudex ने अभी तक आपकी चैट से कोई मेमोरी नहीं लिखी है। लिखने के बाद आपका चिंतन यहाँ दिखेगा।",
+  "For this reflection to work, you'll need to enable memory in":
+    "इस चिंतन के काम करने के लिए आपको मेमोरी चालू करनी होगी:",
   "Based on your conversations in Claudex chat.":
     "Claudex चैट में आपकी बातचीत के आधार पर।",
   "Core skills library for Claudex Code: TDD, debugging, collaboration patterns, and proven techniques.":
@@ -2941,7 +2968,26 @@ const catalog: Record<string, string> = {
     "OpenAI-संगत क्लाइंट यह पता इस्तेमाल करते हैं; Anthropic क्लाइंट इसे /v1 के बिना इस्तेमाल करते हैं।",
   Rate: "दर",
   "Click a model to copy its ID": "किसी मॉडल पर क्लिक करके उसकी ID कॉपी करें",
+  "ZecousAI users have all moved to the new Claudex":
+    "ZecousAI के सभी उपयोगकर्ता नए Claudex पर आ गए हैं",
+  "Claudex is the fully upgraded ZecousAI platform, built to give you fuller and steadier service. Since September 4, OpenAI has been degrading and rate-limiting its models, and availability has dropped, so for ZecousAI users we have decided:":
+    "Claudex पूरी तरह उन्नत ZecousAI प्लेटफ़ॉर्म है, जो ज़्यादा पूरी और स्थिर सेवा देने के लिए बना है। 4 सितंबर से OpenAI अपने मॉडलों की गुणवत्ता घटा रहा है और सीमाएँ लगा रहा है, जिससे उपलब्धता कम हुई है, इसलिए ZecousAI उपयोगकर्ताओं के लिए हमने यह तय किया है:",
+  "If you had any ZecousAI subscription on September 4, or started one after September 4, the subscription time you had left from September 4 on is turned into balance in proportion to its length and added to your Claudex balance.":
+    "अगर 4 सितंबर को आपके पास कोई ZecousAI सदस्यता थी, या आपने 4 सितंबर के बाद शुरू की, तो 4 सितंबर से बची सदस्यता अवधि को अनुपात में बैलेंस में बदलकर आपके Claudex बैलेंस में जोड़ा जाता है।",
+  "If you had a ZecousAI balance on September 4, that day's balance is turned into balance and added to your Claudex balance (requests from September 4 on are not charged).":
+    "अगर 4 सितंबर को आपके पास ZecousAI बैलेंस था, तो उस दिन का बैलेंस बदलकर आपके Claudex बैलेंस में जोड़ा जाता है (4 सितंबर से के अनुरोधों का शुल्क नहीं लिया जाता)।",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's official 1:1, so what you can use does not change.":
+    "आपका ZecousAI बैलेंस Claudex में कम दिख सकता है। Claudex ¥1 = $1 की नई दर से रिचार्ज करता है और इसके मॉडल गुणक ZecousAI के आधिकारिक 1:1 से काफ़ी कम हैं, इसलिए आपका उपयोग नहीं बदलता।",
+  "Moving adds {amount} to your Claudex balance ({balance} from your balance, {subscription} from your subscriptions).":
+    "स्थानांतरण से आपके Claudex बैलेंस में {amount} जुड़ेंगे (बैलेंस से {balance}, सदस्यताओं से {subscription})।",
+  "Once you confirm, your ZecousAI subscription and balance are cleared and moved to Claudex. If you use the API, switch your request address and create new keys in the API tab at the top left.":
+    "पुष्टि करने के बाद आपकी ZecousAI सदस्यता और बैलेंस खाली होकर Claudex में चले जाते हैं। अगर आप API इस्तेमाल करते हैं, तो ऊपर बाईं ओर API टैब में अनुरोध पता बदलें और नई कुंजियाँ बनाएँ।",
+  "Confirm move": "स्थानांतरण की पुष्टि करें",
   "Moving…": "स्थानांतरित हो रहा है…",
+  "The move didn't go through. Try again.":
+    "स्थानांतरण पूरा नहीं हुआ। फिर से कोशिश करें।",
+  "Moved: {amount} added to your Claudex balance.":
+    "स्थानांतरित: आपके Claudex बैलेंस में {amount} जोड़े गए।",
   "All changes": "सभी बदलाव",
   "1 file": "1 फ़ाइल",
   "Sync with the web": "वेब के साथ सिंक करें",
@@ -3785,7 +3831,7 @@ const catalog: Record<string, string> = {
   "Compare the alternatives": "विकल्पों की तुलना करें",
   "Set goals for the quarter": "तिमाही के लक्ष्य तय करें",
   "Plan a hard meeting": "कठिन बैठक की योजना बनाएँ",
-  "Plan my week": "मेरा हफ़्ता प्लान करें",
+  "Plan my week": "मेरे हफ़्ते की योजना बनाएँ",
   "Think through a choice": "किसी चुनाव पर सोच-विचार करें",
   "Plan meals and shopping": "भोजन और खरीदारी की योजना बनाएँ",
   "Sketch a trip": "यात्रा का खाका बनाएँ",
@@ -3793,6 +3839,7 @@ const catalog: Record<string, string> = {
   "Give me a puzzle": "मुझे कोई पहेली दें",
   "Tell me something unexpected": "कुछ अनपेक्षित बताएँ",
   "Debate a big question": "किसी बड़े सवाल पर बहस करें",
+  "Play a word game": "शब्दों का खेल खेलें",
   "Try a thought experiment": "कोई विचार-प्रयोग आज़माएँ",
   "Read my draft for clarity, tone and structure, then rewrite it so it flows while keeping my voice. Here it is:\n\n":
     "मेरे ड्राफ़्ट को स्पष्टता, लहजे और ढाँचे के लिहाज़ से पढ़ें, फिर उसे इस तरह दोबारा लिखें कि वह सहज बहे और मेरी अपनी आवाज़ बनी रहे। ड्राफ़्ट यह है:\n\n",
@@ -4199,8 +4246,48 @@ const catalog: Record<string, string> = {
   "Refresh list": "सूची रीफ़्रेश करें",
   "Couldn’t load branches.": "ब्रांच लोड नहीं हो सकीं।",
   "No branches match": "कोई ब्रांच मेल नहीं खाती",
+  "Pick a task, any task": "कोई भी काम चुनें",
+  "Tidy up and get organized": "साफ़-सफ़ाई करें और व्यवस्थित हों",
+  "Plan for what’s ahead": "आगे की योजना बनाएँ",
+  "Turn messy data into action": "बिखरे डेटा को काम में बदलें",
   "Customize with plugins": "प्लगिन से कस्टमाइज़ करें",
   "On {deviceName}": "{deviceName} पर",
+  "Optimize my week": "मेरा हफ़्ता बेहतर बनाएँ",
+  "Help me plan and optimize my week. I have my Google Calendar open and ready for you to review and edit.\n\nFirst, review my calendar and show me a summary:\n- Total meetings\n- Busiest days\n- Where I have gaps of 2+ hours\n\nBefore proposing changes, ask me about:\n- What I’m trying to accomplish this week\n- How much focus time I need and for what\n- Any deadlines or commitments not on my calendar\n- Which types of meetings I should decline or shorten\n- Personal commitments or boundaries I want to protect\n\nThen show me your top 3-5 proposed changes with explanations:\n- Focus blocks to add\n- Meetings to decline or reschedule\n- Time conflicts to resolve\n\nStart with the highest-impact changes first. Once I approve each change, make the edits directly in my calendar one at a time.":
+    "मेरे हफ़्ते की योजना बनाने और उसे बेहतर करने में मदद करें। मेरा Google Calendar खुला है और आपके देखने व बदलाव करने के लिए तैयार है।\n\nपहले, मेरा कैलेंडर देखें और मुझे एक सारांश दिखाएँ:\n- कुल मीटिंग\n- सबसे व्यस्त दिन\n- जहाँ मेरे पास 2+ घंटे का खाली समय है\n\nबदलाव सुझाने से पहले, मुझसे पूछें:\n- इस हफ़्ते मैं क्या पूरा करना चाहता हूँ\n- मुझे कितना फ़ोकस टाइम चाहिए और किस काम के लिए\n- कोई डेडलाइन या प्रतिबद्धता जो मेरे कैलेंडर में नहीं है\n- किस तरह की मीटिंग मुझे मना करनी या छोटी करनी चाहिए\n- निजी प्रतिबद्धताएँ या सीमाएँ जिन्हें मैं बचाए रखना चाहता हूँ\n\nफिर अपने 3-5 सबसे अहम सुझाए गए बदलाव कारणों के साथ दिखाएँ:\n- जोड़ने के लिए फ़ोकस ब्लॉक\n- मना करने या दोबारा शेड्यूल करने के लिए मीटिंग\n- सुलझाने के लिए समय के टकराव\n\nसबसे ज़्यादा असर वाले बदलावों से शुरू करें। हर बदलाव को मेरी मंज़ूरी मिलने के बाद, एक-एक करके सीधे मेरे कैलेंडर में बदलाव करें।",
+  "Organize my screenshots": "मेरे स्क्रीनशॉट व्यवस्थित करें",
+  "Help me organize recent screenshots on my Desktop.\n\nFirst, scan my Desktop and count how many screenshots/images are there. Show me:\n- Total count\n- Date range (oldest to newest)\n\nThen, focus only on screenshots from the last 14 days. For each one:\n- Identify what it shows\n- Suggest a descriptive filename\n- Propose which folder it belongs in (or if it can be deleted)\n\nGroup similar screenshots together. Show me the plan before making any changes.\n\nAfter I approve, start by organizing just 10 files as a preview. If there are more than 10 files, check in with me before continuing with the rest.":
+    "मेरे Desktop पर हाल के स्क्रीनशॉट व्यवस्थित करने में मदद करें।\n\nपहले, मेरा Desktop स्कैन करें और गिनें कि वहाँ कितने स्क्रीनशॉट/इमेज हैं। मुझे दिखाएँ:\n- कुल संख्या\n- तारीख की सीमा (सबसे पुराने से सबसे नए तक)\n\nफिर, सिर्फ़ पिछले 14 दिनों के स्क्रीनशॉट पर ध्यान दें। हर एक के लिए:\n- पहचानें कि उसमें क्या दिख रहा है\n- एक साफ़ बताने वाला फ़ाइल नाम सुझाएँ\n- सुझाएँ कि वह किस फ़ोल्डर में जाना चाहिए (या क्या उसे हटाया जा सकता है)\n\nमिलते-जुलते स्क्रीनशॉट को एक साथ समूह में रखें। कोई भी बदलाव करने से पहले मुझे योजना दिखाएँ।\n\nमेरी मंज़ूरी के बाद, प्रीव्यू के तौर पर पहले सिर्फ़ 10 फ़ाइलें व्यवस्थित करें। अगर 10 से ज़्यादा फ़ाइलें हैं, तो बाकी पर आगे बढ़ने से पहले मुझसे पूछ लें।",
+  "Find insights in files": "फ़ाइलों में इनसाइट खोजें",
+  "Help me find patterns and insights across [my voice memos / meeting transcripts / documents / journal entries / specify folder]. I have messy, unstructured files and want to understand what themes are emerging.\n\nFirst, scan the folder and show me a summary:\n- Total files\n- Date range (oldest to newest)\n- Types of content\n\nBefore analyzing, ask me:\n- What I’m hoping to discover (recurring themes, contradictions, evolution of thinking, action items, or something else)\n- Whether certain files or time periods should be prioritized\n- What format would be most useful for the final analysis\n\nIf there are more than 20 files, start by analyzing just the 10 most recent files.\n\nShow me the top 3-5 patterns you found with 2-3 specific examples for each pattern. Once I confirm you’re on the right track, analyze the remaining files.":
+    "[मेरे वॉइस मेमो / मीटिंग ट्रांसक्रिप्ट / डॉक्यूमेंट / डायरी एंट्री / फ़ोल्डर बताएँ] में पैटर्न और इनसाइट खोजने में मदद करें। मेरे पास बिखरी, बिना ढाँचे वाली फ़ाइलें हैं और मैं समझना चाहता हूँ कि उनमें कौन-सी थीम उभर रही हैं।\n\nपहले, फ़ोल्डर स्कैन करें और मुझे एक सारांश दिखाएँ:\n- कुल फ़ाइलें\n- तारीख की सीमा (सबसे पुरानी से सबसे नई तक)\n- कंटेंट के प्रकार\n\nविश्लेषण से पहले, मुझसे पूछें:\n- मैं क्या खोजना चाहता हूँ (बार-बार आने वाली थीम, विरोधाभास, सोच में बदलाव, करने वाले काम, या कुछ और)\n- क्या कुछ फ़ाइलों या समय-अवधियों को प्राथमिकता देनी चाहिए\n- अंतिम विश्लेषण के लिए कौन-सा फ़ॉर्मेट सबसे उपयोगी होगा\n\nअगर 20 से ज़्यादा फ़ाइलें हैं, तो पहले सिर्फ़ 10 सबसे नई फ़ाइलों का विश्लेषण करें।\n\nआपको मिले 3-5 सबसे अहम पैटर्न दिखाएँ, हर पैटर्न के साथ 2-3 ठोस उदाहरण। जब मैं पुष्टि कर दूँ कि आप सही दिशा में हैं, तब बाकी फ़ाइलों का विश्लेषण करें।",
+  "Clean up my Downloads folder": "मेरा Downloads फ़ोल्डर साफ़ करें",
+  "Help me organize my Downloads folder.\n\nFirst, scan and show me a summary:\n- Total files and total size\n- Files older than 30 days\n- Largest files taking up space\n\nBefore organizing, ask me:\n- What categories or folder structure would be most useful\n- Whether I want to delete or archive old files\n- If there are specific file types I want to prioritize (documents, images, installers, etc.)\n\nThen focus only on files older than 30 days first. Show me a proposed plan for these old files:\n- Categories to create\n- Files to delete (installers, duplicates, temp files)\n- Files to keep with where they should go\n\nAfter I approve, organize the first 15 old files as a preview. If there are more files, check in before continuing.":
+    "मेरा Downloads फ़ोल्डर व्यवस्थित करने में मदद करें।\n\nपहले, स्कैन करें और मुझे एक सारांश दिखाएँ:\n- कुल फ़ाइलें और कुल साइज़\n- 30 दिन से पुरानी फ़ाइलें\n- सबसे ज़्यादा जगह लेने वाली फ़ाइलें\n\nव्यवस्थित करने से पहले, मुझसे पूछें:\n- कौन-सी कैटेगरी या फ़ोल्डर संरचना सबसे उपयोगी होगी\n- क्या मैं पुरानी फ़ाइलें हटाना चाहता हूँ या आर्काइव करना\n- क्या कोई खास फ़ाइल प्रकार हैं जिन्हें मैं प्राथमिकता देना चाहता हूँ (डॉक्यूमेंट, इमेज, इंस्टॉलर वगैरह)\n\nफिर पहले सिर्फ़ 30 दिन से पुरानी फ़ाइलों पर ध्यान दें। इन पुरानी फ़ाइलों के लिए एक प्रस्तावित योजना दिखाएँ:\n- बनाने के लिए कैटेगरी\n- हटाने के लिए फ़ाइलें (इंस्टॉलर, डुप्लिकेट, अस्थायी फ़ाइलें)\n- रखने के लिए फ़ाइलें और वे कहाँ जानी चाहिए\n\nमेरी मंज़ूरी के बाद, प्रीव्यू के तौर पर पहली 15 पुरानी फ़ाइलें व्यवस्थित करें। अगर और फ़ाइलें हैं, तो आगे बढ़ने से पहले मुझसे पूछ लें।",
+  "Organize photos by event/date":
+    "फ़ोटो को इवेंट/तारीख के हिसाब से व्यवस्थित करें",
+  "Help me organize photos on my [Desktop/Downloads/specify location].\n\nFirst, scan the folder and show me a summary:\n- Total photos\n- Date range (oldest to newest)\n- Rough size breakdown\n\nBefore organizing, ask me:\n- How I’d like them organized (by date, by event, by person)\n- Whether there are specific events or time periods I should know about\n- What folder structure would work best\n- If any photos can be deleted (duplicates, blurry ones, screenshots)\n\nFocus only on photos from the last 3 months first. Show me a proposed plan with examples from 3-4 different groups so I can show you how I’d organize them.\n\nAfter I approve, organize just 20 photos as a preview. If there are more than 20, check in before continuing with the rest.":
+    "[Desktop/Downloads/जगह बताएँ] में मौजूद फ़ोटो व्यवस्थित करने में मदद करें।\n\nपहले, फ़ोल्डर स्कैन करें और मुझे एक सारांश दिखाएँ:\n- कुल फ़ोटो\n- तारीख की सीमा (सबसे पुरानी से सबसे नई तक)\n- साइज़ का मोटा-मोटा ब्योरा\n\nव्यवस्थित करने से पहले, मुझसे पूछें:\n- मैं उन्हें कैसे व्यवस्थित करना चाहता हूँ (तारीख, इवेंट या व्यक्ति के हिसाब से)\n- क्या कोई खास इवेंट या समय-अवधि है जिसके बारे में आपको पता होना चाहिए\n- कौन-सी फ़ोल्डर संरचना सबसे अच्छी रहेगी\n- क्या कोई फ़ोटो हटाई जा सकती है (डुप्लिकेट, धुंधली, स्क्रीनशॉट)\n\nपहले सिर्फ़ पिछले 3 महीनों की फ़ोटो पर ध्यान दें। 3-4 अलग-अलग समूहों के उदाहरणों के साथ एक प्रस्तावित योजना दिखाएँ, ताकि मैं बता सकूँ कि मैं उन्हें कैसे व्यवस्थित करूँगा।\n\nमेरी मंज़ूरी के बाद, प्रीव्यू के तौर पर सिर्फ़ 20 फ़ोटो व्यवस्थित करें। अगर 20 से ज़्यादा हैं, तो बाकी पर आगे बढ़ने से पहले मुझसे पूछ लें।",
+  "Help me organize and clean up my email inbox.\n\nFirst, scan my inbox and show me a summary:\n- Total unread emails\n- Emails older than 30 days\n- The main senders or types of emails\n\nBefore organizing, ask me:\n- What categories or folders I want to create\n- Which types of emails I want to archive or delete\n- Whether there are specific senders I want to prioritize or filter\n- Any email patterns I want to address (newsletters, promotions, etc.)\n\nFocus only on emails older than 30 days first — these are easiest to clean up. Show me a proposed plan:\n- Which emails to archive\n- Which to delete\n- Which need action\n\nIf there are more than 50 old emails, start with a batch of 20 so I can check your approach. Once I approve, process that batch.":
+    "मेरे ईमेल इनबॉक्स को व्यवस्थित और साफ़ करने में मदद करें।\n\nपहले, मेरा इनबॉक्स स्कैन करें और मुझे एक सारांश दिखाएँ:\n- कुल बिना पढ़े ईमेल\n- 30 दिन से पुराने ईमेल\n- मुख्य भेजने वाले या ईमेल के प्रकार\n\nव्यवस्थित करने से पहले, मुझसे पूछें:\n- मैं कौन-सी कैटेगरी या फ़ोल्डर बनाना चाहता हूँ\n- मैं किस तरह के ईमेल आर्काइव करना या हटाना चाहता हूँ\n- क्या कोई खास भेजने वाले हैं जिन्हें मैं प्राथमिकता देना या फ़िल्टर करना चाहता हूँ\n- ईमेल के कौन-से पैटर्न मैं संभालना चाहता हूँ (न्यूज़लेटर, प्रमोशन वगैरह)\n\nपहले सिर्फ़ 30 दिन से पुराने ईमेल पर ध्यान दें — इन्हें साफ़ करना सबसे आसान है। एक प्रस्तावित योजना दिखाएँ:\n- कौन-से ईमेल आर्काइव करने हैं\n- कौन-से हटाने हैं\n- किन पर कार्रवाई करनी है\n\nअगर 50 से ज़्यादा पुराने ईमेल हैं, तो 20 के एक बैच से शुरू करें ताकि मैं आपका तरीका जाँच सकूँ। मेरी मंज़ूरी के बाद, उस बैच को प्रोसेस करें।",
+  "Prep for my next meeting": "मेरी अगली मीटिंग की तैयारी करें",
+  "I have a meeting with [a company] [tomorrow].\n\nBefore researching, ask me:\n- What the meeting is about\n- What I already know about them\n- What I’m trying to accomplish\n- What would be most useful to know going in\n\nThen research them and show me what you found:\n- Company overview\n- Recent news (last 3 months)\n- Key people I’ll be meeting with\n- Their LinkedIn for recent updates\n\nShow me an outline of the one-pager with the 3-5 most important points before writing the full doc. Once I approve, create the final one-pager.":
+    "मेरी [कल] [एक कंपनी] के साथ मीटिंग है।\n\nरिसर्च करने से पहले, मुझसे पूछें:\n- मीटिंग किस बारे में है\n- मैं उनके बारे में पहले से क्या जानता हूँ\n- मैं क्या हासिल करना चाहता हूँ\n- मीटिंग से पहले क्या जानना सबसे उपयोगी होगा\n\nफिर उनके बारे में रिसर्च करें और मुझे दिखाएँ कि आपको क्या मिला:\n- कंपनी का परिचय\n- हाल की ख़बरें (पिछले 3 महीने)\n- मुख्य लोग जिनसे मैं मिलूँगा\n- हाल के अपडेट के लिए उनका LinkedIn\n\nपूरा डॉक्यूमेंट लिखने से पहले, 3-5 सबसे अहम बिंदुओं के साथ एक-पेज ब्रीफ़ की रूपरेखा दिखाएँ। मेरी मंज़ूरी के बाद, अंतिम एक-पेज ब्रीफ़ बनाएँ।",
+  "Plan my next vacation": "मेरी अगली छुट्टी की योजना बनाएँ",
+  "Help me plan my next vacation.\n\nBefore researching, ask me:\n- Where I’m thinking of going (or if I’m open to suggestions)\n- When I want to travel and for how long\n- What my budget is\n- What kind of trip I’m looking for (relaxing, adventure, cultural, food-focused, etc.)\n\nThen research the top 3 destinations that fit my criteria and show me a comparison:\n- Estimated costs\n- Best time to visit\n- What makes each unique\n\nOnce I pick my top choice, research that destination in detail:\n- Check current flight prices\n- Find 3-4 accommodation options\n- Suggest a day-by-day outline\n\nShow me this proposed itinerary with estimated costs before creating the final trip plan.":
+    "मेरी अगली छुट्टी की योजना बनाने में मदद करें।\n\nरिसर्च करने से पहले, मुझसे पूछें:\n- मैं कहाँ जाने की सोच रहा हूँ (या क्या मैं सुझावों के लिए खुला हूँ)\n- मैं कब और कितने समय के लिए यात्रा करना चाहता हूँ\n- मेरा बजट कितना है\n- मैं किस तरह की यात्रा चाहता हूँ (आरामदेह, रोमांचक, सांस्कृतिक, खान-पान वाली वगैरह)\n\nफिर मेरी शर्तों पर सबसे ज़्यादा खरी उतरने वाली 3 जगहों पर रिसर्च करें और मुझे तुलना दिखाएँ:\n- अनुमानित ख़र्च\n- घूमने का सबसे अच्छा समय\n- हर जगह को क्या ख़ास बनाता है\n\nजब मैं अपनी पहली पसंद चुन लूँ, तो उस जगह पर विस्तार से रिसर्च करें:\n- फ़्लाइट की मौजूदा कीमतें देखें\n- रहने के 3-4 विकल्प खोजें\n- दिन-ब-दिन की रूपरेखा सुझाएँ\n\nअंतिम यात्रा योजना बनाने से पहले, अनुमानित ख़र्च के साथ यह प्रस्तावित यात्रा कार्यक्रम दिखाएँ।",
+  "Prepare for a job interview": "नौकरी के इंटरव्यू की तैयारी करें",
+  "I have a job interview coming up for [role] at [company].\n\nBefore researching, ask me:\n- What the role is and what level\n- What I already know about the company\n- What I’m most nervous or uncertain about\n- If I have the job description or any interview details\n\nThen research the company and role, and show me what I found:\n- Company overview and recent news (last 6 months)\n- What this role typically involves\n- Common interview questions for this type of role\n- The interview team on LinkedIn (if you have names)\n\nShow me an outline covering these 3-5 topics before creating the full prep doc:\n- Key points about the company to mention\n- How my background connects to what they need\n- Questions I should ask them\n- 3-4 likely interview questions with suggested talking points\n\nOnce I approve, create a complete interview prep guide I can review before the interview.":
+    "जल्द ही [कंपनी] में [पद] के लिए मेरा नौकरी का इंटरव्यू है।\n\nरिसर्च करने से पहले, मुझसे पूछें:\n- पद क्या है और किस स्तर का है\n- मैं कंपनी के बारे में पहले से क्या जानता हूँ\n- मुझे किस बात की सबसे ज़्यादा घबराहट या अनिश्चितता है\n- क्या मेरे पास जॉब डिस्क्रिप्शन या इंटरव्यू की कोई जानकारी है\n\nफिर कंपनी और पद के बारे में रिसर्च करें और मुझे दिखाएँ कि आपको क्या मिला:\n- कंपनी का परिचय और हाल की ख़बरें (पिछले 6 महीने)\n- इस पद में आमतौर पर क्या काम होता है\n- इस तरह के पद के लिए आम इंटरव्यू सवाल\n- LinkedIn पर इंटरव्यू टीम (अगर आपके पास नाम हैं)\n\nपूरा तैयारी डॉक्यूमेंट बनाने से पहले, इन 3-5 विषयों को कवर करने वाली रूपरेखा दिखाएँ:\n- कंपनी के बारे में ज़िक्र करने लायक मुख्य बातें\n- मेरा अनुभव उनकी ज़रूरतों से कैसे जुड़ता है\n- मुझे उनसे कौन-से सवाल पूछने चाहिए\n- 3-4 संभावित इंटरव्यू सवाल और जवाब के सुझाए गए बिंदु\n\nमेरी मंज़ूरी के बाद, इंटरव्यू की तैयारी की एक पूरी गाइड बनाएँ जिसे मैं इंटरव्यू से पहले देख सकूँ।",
+  "Catch me up on Slack": "Slack पर छूटी बातें बताएँ",
+  "Help me catch up on what I’ve missed in Slack.\n\nBefore reading, ask me:\n- Which channels or DMs I should focus on (or check everything)\n- How far back to look (since yesterday, last week, specific date)\n- What I’m most concerned about missing (decisions, @mentions, urgent items, project updates)\n- Whether there are specific topics or people to prioritize\n\nThen scan those channels and show me a summary:\n- Total unread messages\n- Breakdown by channel\n\nFocus on messages that @mention me, contain decisions, or are marked urgent first.\n\nShow me the top 5 most important updates with context and links to the threads. If there are more than 30 unread messages total, start with these top 5 and ask if you should summarize more.":
+    "Slack पर मुझसे जो छूट गया है, उसे पकड़ने में मदद करें।\n\nपढ़ने से पहले, मुझसे पूछें:\n- मुझे किन चैनलों या DM पर ध्यान देना चाहिए (या सब कुछ देखना है)\n- कितना पीछे तक देखना है (कल से, पिछले हफ़्ते से, किसी खास तारीख से)\n- मुझे किस चीज़ के छूट जाने की सबसे ज़्यादा चिंता है (फ़ैसले, @मेंशन, ज़रूरी मामले, प्रोजेक्ट अपडेट)\n- क्या किसी खास विषय या व्यक्ति को प्राथमिकता देनी है\n\nफिर उन चैनलों को स्कैन करें और मुझे एक सारांश दिखाएँ:\n- कुल बिना पढ़े मैसेज\n- चैनल के हिसाब से ब्योरा\n\nपहले उन मैसेज पर ध्यान दें जिनमें मुझे @मेंशन किया गया है, जिनमें फ़ैसले हैं, या जिन्हें ज़रूरी बताया गया है।\n\nसंदर्भ और थ्रेड के लिंक के साथ 5 सबसे अहम अपडेट दिखाएँ। अगर कुल बिना पढ़े मैसेज 30 से ज़्यादा हैं, तो इन 5 से शुरू करें और पूछें कि क्या और सारांश बनाना है।",
+  "Turn voice memos into a doc": "वॉइस मेमो को डॉक्यूमेंट में बदलें",
+  "Help me turn my voice memos into an organized document. I have [voice memos / audio recordings] in [specify location] that I want transcribed and organized.\n\nFirst, scan the folder and show me:\n- How many audio files\n- Total duration\n- Date range\n\nBefore transcribing, ask me:\n- What these recordings are about\n- How I’d like them organized (chronologically, by topic, by theme)\n- Whether I want verbatim transcripts or cleaned-up summaries\n- What the final document should be (meeting notes, journal entries, ideas list, etc.)\n\nIf there are more than 5 recordings, start by transcribing just the 3 most recent ones. Show me the transcribed content and proposed organization structure.\n\nOnce I approve the approach, transcribe and organize the remaining recordings.":
+    "मेरे वॉइस मेमो को एक व्यवस्थित डॉक्यूमेंट में बदलने में मदद करें। मेरे पास [जगह बताएँ] में [वॉइस मेमो / ऑडियो रिकॉर्डिंग] हैं जिन्हें मैं ट्रांसक्राइब और व्यवस्थित करवाना चाहता हूँ।\n\nपहले, फ़ोल्डर स्कैन करें और मुझे दिखाएँ:\n- कितनी ऑडियो फ़ाइलें हैं\n- कुल अवधि\n- तारीख की सीमा\n\nट्रांसक्राइब करने से पहले, मुझसे पूछें:\n- ये रिकॉर्डिंग किस बारे में हैं\n- मैं उन्हें कैसे व्यवस्थित करना चाहता हूँ (समय के क्रम में, विषय के हिसाब से, थीम के हिसाब से)\n- क्या मुझे शब्दशः ट्रांसक्रिप्ट चाहिए या साफ़ किए गए सारांश\n- अंतिम डॉक्यूमेंट क्या होना चाहिए (मीटिंग नोट्स, डायरी एंट्री, आइडिया की सूची वगैरह)\n\nअगर 5 से ज़्यादा रिकॉर्डिंग हैं, तो पहले सिर्फ़ 3 सबसे नई रिकॉर्डिंग ट्रांसक्राइब करें। ट्रांसक्राइब किया गया कंटेंट और प्रस्तावित संरचना मुझे दिखाएँ।\n\nजब मैं इस तरीके को मंज़ूरी दे दूँ, तब बाकी रिकॉर्डिंग ट्रांसक्राइब और व्यवस्थित करें।",
+  "Pull data into a spreadsheet": "डेटा को स्प्रेडशीट में लाएँ",
+  "I’m on a page with [job listings / products / directory entries] I want to extract.\n\nFirst, scan the page and show me what you see:\n- How many items total\n- What fields are available (title, price, location, description, etc.)\n\nBefore extracting, ask me:\n- Which fields I want in the spreadsheet\n- If there are any I should skip\n\nThen show me a preview with the first 3-5 items extracted so I can confirm the format looks right.\n\nIf there are more than 20 items on this page, extract them in batches of 10. If there are multiple pages, just do the first page and check with you before continuing.":
+    "मैं एक ऐसे पेज पर हूँ जिस पर [नौकरी की लिस्टिंग / प्रोडक्ट / डायरेक्टरी एंट्री] हैं जिन्हें मैं निकालना चाहता हूँ।\n\nपहले, पेज स्कैन करें और मुझे बताएँ कि आपको क्या दिख रहा है:\n- कुल कितने आइटम हैं\n- कौन-से फ़ील्ड उपलब्ध हैं (शीर्षक, कीमत, जगह, विवरण वगैरह)\n\nनिकालने से पहले, मुझसे पूछें:\n- मुझे स्प्रेडशीट में कौन-से फ़ील्ड चाहिए\n- क्या कोई फ़ील्ड छोड़ने हैं\n\nफिर पहले 3-5 निकाले गए आइटम का प्रीव्यू दिखाएँ ताकि मैं पुष्टि कर सकूँ कि फ़ॉर्मेट सही है।\n\nअगर इस पेज पर 20 से ज़्यादा आइटम हैं, तो उन्हें 10-10 के बैच में निकालें। अगर कई पेज हैं, तो सिर्फ़ पहला पेज करें और आगे बढ़ने से पहले पूछ लें।",
   "Show empty groups": "खाली समूह दिखाएँ",
   "Drag or move sessions here": "सत्रों को यहाँ खींचें या ले जाएँ",
   "“{groupName}” will be removed. Nothing is in it.":
@@ -4560,6 +4647,7 @@ const catalog: Record<string, string> = {
   "Started Claudex Code": "Claudex Code शुरू हो गया",
   "Start Claudex Code": "Claudex Code शुरू करें",
   "In progress": "प्रगति में",
+  "Starting session…": "सत्र शुरू किया जा रहा है…",
   "Unable to connect to repository": "रिपॉज़िटरी से कनेक्ट नहीं हो सका",
   "Claudex couldn’t reach GitHub to fetch your repository. Try again in a moment.":
     "Claudex आपकी रिपॉज़िटरी लाने के लिए GitHub तक नहीं पहुँच सका। कुछ देर बाद फिर से कोशिश करें।",
@@ -4837,8 +4925,8 @@ const catalog: Record<string, string> = {
     "फ़ोल्डर प्रोजेक्ट नॉलेज में नहीं जोड़े जा सकते।",
   "{name} can't be added: project files can be text files or PDFs.":
     "{name} नहीं जोड़ी जा सकती: प्रोजेक्ट फ़ाइलें टेक्स्ट फ़ाइलें या PDF हो सकती हैं।",
-  "{name} is too large. Project files can be up to 10 MB.":
-    "{name} बहुत बड़ी है। प्रोजेक्ट फ़ाइलें 10 MB तक हो सकती हैं।",
+  "{name} is too large. Project files can be up to {limit} MB.":
+    "{name} बहुत बड़ी है। प्रोजेक्ट फ़ाइलें {limit} MB तक हो सकती हैं।",
   "This project no longer exists.": "यह प्रोजेक्ट अब मौजूद नहीं है।",
   "Trust this workspace?": "क्या इस वर्कस्पेस पर भरोसा करें?",
   "Codex may read, write, or execute files in this folder. Only proceed if you trust this workspace.":
@@ -5207,6 +5295,8 @@ const catalog: Record<string, string> = {
   "We’ll use this to verify your account":
     "हम इसका इस्तेमाल आपके खाते की पुष्टि करने के लिए करेंगे",
   "Enter your birthdate": "अपनी जन्मतिथि दर्ज करें",
+  "I agree to ZecousAI’s {terms} and {aup}.":
+    "मैं ZecousAI की {terms} और {aup} से सहमत हूँ।",
   "Terms of Service": "सेवा की शर्तें",
   "Acceptable Use Policy": "स्वीकार्य उपयोग नीति",
   "Enter your name to continue": "जारी रखने के लिए अपना नाम दर्ज करें",
@@ -6871,6 +6961,44 @@ const catalog: Record<string, string> = {
   "Create an interactive app that ": "एक इंटरैक्टिव ऐप बनाएँ जो ",
   "Turn this idea into a diagram, chart, or visual: ":
     "इस विचार को आरेख, चार्ट या दृश्य में बदलें: ",
+  "Template Creator": "टेम्प्लेट निर्माता",
+  "Deck Checker": "प्रस्तुति जाँचकर्ता",
+  "DCF Valuation": "DCF मूल्यांकन",
+  "Earnings Analysis": "आय विश्लेषण",
+  "All Finance Skills": "सभी वित्तीय स्किल",
+  "Company Profile": "कंपनी प्रोफ़ाइल",
+  "Pitch Deck": "पिच प्रस्तुति",
+  "Initiating Coverage": "कवरेज की शुरुआत",
+  "Competitive Analysis": "प्रतिस्पर्धी विश्लेषण",
+  "3-Statement Model": "तीन वित्तीय विवरणों का मॉडल",
+  "Comps Analysis": "तुलनीय कंपनियों का विश्लेषण",
+  "Datapack Builder": "डेटा पैक निर्माता",
+  "Enable skill to continue": "जारी रखने के लिए स्किल सक्षम करें",
+  "The skill “{skillName}” needs to be enabled to use this prompt. Enable it now?":
+    "इस प्रॉम्प्ट के लिए “{skillName}” स्किल सक्षम होनी चाहिए। अभी सक्षम करें?",
+  "Enable skill": "स्किल सक्षम करें",
+  "Create a reusable skill from our firm's template using anthropic-ppt-template-creator. Extract layouts, placeholders, and formatting standards. [attach firm_brand_template.pptx]":
+    "anthropic-ppt-template-creator से हमारी कंपनी के टेम्प्लेट से दोबारा उपयोग योग्य स्किल बनाएँ। लेआउट, प्लेसहोल्डर और फ़ॉर्मैट मानक निकालें। [firm_brand_template.pptx संलग्न करें]",
+  "QC the attached management presentation using anthropic-fsi-deck-checker. Check for number consistency, data-narrative alignment, and formatting issues. [attach ProjectBravo_Mgmt_Presentation.pptx]":
+    "anthropic-fsi-deck-checker से संलग्न प्रबंधन प्रस्तुति की गुणवत्ता जाँचें। संख्याओं की संगति, डेटा और विवरण का मेल तथा फ़ॉर्मैट की समस्याएँ जाँचें। [ProjectBravo_Mgmt_Presentation.pptx संलग्न करें]",
+  "Create a DCF model for [ServiceNow] using anthropic-fsi-dcf-model-builder. Include 5-year projections, WACC calculation, terminal value via exit multiple, and sensitivity on discount rate and growth.":
+    "anthropic-fsi-dcf-model-builder से [ServiceNow] का DCF मॉडल बनाएँ। 5-वर्षीय अनुमान, WACC गणना, एग्ज़िट मल्टिपल से टर्मिनल मूल्य तथा छूट दर और वृद्धि की संवेदनशीलता शामिल करें।",
+  "Create an earnings update for [CrowdStrike]'s Q3 FY2025 results using anthropic-fsi-earnings-analysis. Cover beat/miss vs. consensus, key drivers, guidance changes, and updated thesis.":
+    "anthropic-fsi-earnings-analysis से [CrowdStrike] के Q3 FY2025 परिणामों की आय अपडेट बनाएँ। आम सहमति से अंतर, मुख्य कारक, मार्गदर्शन में बदलाव और संशोधित निवेश तर्क शामिल करें।",
+  "Create a single-slide strip profile for [Snowflake] using anthropic-fsi-strip-profile. Include business overview, key metrics, valuation multiples, stock chart, and top shareholders.":
+    "anthropic-fsi-strip-profile से [Snowflake] की एक-स्लाइड संक्षिप्त प्रोफ़ाइल बनाएँ। व्यवसाय का अवलोकन, मुख्य मेट्रिक्स, मूल्यांकन मल्टिपल, शेयर चार्ट और प्रमुख शेयरधारक शामिल करें।",
+  "Populate the attached pitch deck template with data from the Excel file using anthropic-fsi-pitch-deck. Map financials to appropriate slides and maintain formatting. [attach template.pptx and financials.xlsx]":
+    "anthropic-fsi-pitch-deck से संलग्न पिच प्रस्तुति टेम्प्लेट में Excel का डेटा भरें। वित्तीय डेटा उचित स्लाइडों से जोड़ें और फ़ॉर्मैट बनाए रखें। [template.pptx और financials.xlsx संलग्न करें]",
+  "Creating company research on [MongoDB] using anthropic-fsi-initiating-coverage. Start with Task 1 covering business model, competitive positioning, and key investment thesis points.":
+    "anthropic-fsi-initiating-coverage से [MongoDB] पर कंपनी शोध तैयार करें। व्यवसाय मॉडल, प्रतिस्पर्धी स्थिति और मुख्य निवेश तर्कों वाले कार्य 1 से शुरू करें।",
+  "Create a competitive landscape analysis for [Datadog] using anthropic-fsi-competitive-analysis. Include a 2x2 positioning matrix against Splunk, Dynatrace, New Relic, and Elastic, with competitive moats and strategic implications.":
+    "anthropic-fsi-competitive-analysis से [Datadog] के प्रतिस्पर्धी परिदृश्य का विश्लेषण बनाएँ। Splunk, Dynatrace, New Relic और Elastic की तुलना में 2x2 स्थिति मैट्रिक्स, प्रतिस्पर्धी बढ़त और रणनीतिक प्रभाव शामिल करें।",
+  "Build an integrated 3-statement model using anthropic-fsi-3-statements. Populate the attached template with [Salesforce]'s FY2022-2024 historicals from their 10-K and project through FY2027. [attach template.xlsx and CRM 10-K.pdf]":
+    "anthropic-fsi-3-statements से तीन वित्तीय विवरणों का एकीकृत मॉडल बनाएँ। संलग्न टेम्प्लेट में [Salesforce] के 10-K से FY2022–2024 का ऐतिहासिक डेटा भरें और FY2027 तक अनुमान लगाएँ। [template.xlsx और CRM 10-K.pdf संलग्न करें]",
+  "Build a comps analysis for [Shopify] using anthropic-fsi-comps-analysis. Include 10 peers with EV/Revenue, EV/EBITDA, and P/E on LTM and NTM basis, plus implied valuation ranges.":
+    "anthropic-fsi-comps-analysis से [Shopify] का तुलनीय कंपनी विश्लेषण बनाएँ। LTM और NTM आधार पर EV/राजस्व, EV/EBITDA और P/E वाले 10 समकक्ष तथा निहित मूल्यांकन सीमाएँ शामिल करें।",
+  "Build a data pack for our IC using anthropic-fsi-datapack-builder. Standardize financials from the attached CIM including ARR growth, net retention, and rule of 40 metrics. [attach ProjectAlpha_CIM.pdf]":
+    "anthropic-fsi-datapack-builder से हमारी निवेश समिति के लिए डेटा पैक बनाएँ। संलग्न CIM के वित्तीय डेटा को मानकीकृत करें, जिसमें ARR वृद्धि, शुद्ध प्रतिधारण और 40 के नियम के मेट्रिक्स हों। [ProjectAlpha_CIM.pdf संलग्न करें]",
   "Get this as a document you can edit and share.":
     "इसे ऐसे दस्तावेज़ के रूप में पाएं जिसे आप एडिट और शेयर कर सकते हैं।",
   "Create a document": "दस्तावेज़ बनाएं",
@@ -7342,11 +7470,565 @@ const catalog: Record<string, string> = {
   file: "फ़ाइल",
   "Couldn’t fetch the file. This connector is no longer available.":
     "फ़ाइल प्राप्त नहीं हो सकी। यह कनेक्टर अब उपलब्ध नहीं है।",
+  "Hey Claudex, could you {prompt}? Use any connector that would be helpful, and get started once you’ve gathered enough info.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Claudex, क्या आप {prompt} में मदद कर सकते हैं? उपयोगी कनेक्टर इस्तेमाल करें और पर्याप्त जानकारी मिलने पर शुरू करें।\n\nयदि उचित हो, तो कुछ ऐसा बनाएँ जिसे हम साथ देख सकें—जैसे दृश्य, चेकलिस्ट या इंटरैक्टिव सामग्री।",
+  "Hey Claudex, could you help me {prompt}? Start researching right away, and use any tools you think would help. Let me know if you need any other context.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive.":
+    "Claudex, क्या आप {prompt} में मेरी मदद कर सकते हैं? तुरंत शोध शुरू करें और उपयोगी टूल इस्तेमाल करें। अन्य संदर्भ चाहिए तो बताएँ।\n\nयदि उचित हो, तो कुछ ऐसा बनाएँ जिसे हम साथ देख सकें—जैसे दृश्य, चेकलिस्ट या इंटरैक्टिव सामग्री।",
+  "Hi Claudex! Could you {prompt}? If you need more information from me, ask me 1-2 key questions right away. If you think I should give you more context or upload anything to help you do a better job, let me know. Use any tools you have access to—like Google Drive, web search, etc.—if they’ll help.\n\nIf it makes sense, create something we can look at together—like a visual, a checklist, or something interactive. Thanks for your help!":
+    "नमस्ते Claudex! क्या आप {prompt} में मदद कर सकते हैं? अधिक जानकारी चाहिए तो तुरंत 1–2 मुख्य सवाल पूछें। बेहतर काम के लिए अधिक संदर्भ या कोई फ़ाइल चाहिए तो बताएँ। उपलब्ध उपयोगी टूल, जैसे Google Drive, वेब खोज आदि इस्तेमाल करें।\n\nयदि उचित हो, तो कुछ ऐसा बनाएँ जिसे हम साथ देख सकें—जैसे दृश्य, चेकलिस्ट या इंटरैक्टिव सामग्री। मदद के लिए धन्यवाद!",
+  "Help me pick the right career for me":
+    "मेरे लिए सही करियर चुनने में मदद करें",
+  "Choose a career path based on my astrology":
+    "मेरी ज्योतिष के आधार पर करियर चुनें",
+  "Give me a work persona based on my favorite books":
+    "मेरी पसंदीदा किताबों से कार्य व्यक्तित्व बनाएँ",
+  "Help me role play a talk with my boss": "बॉस से बातचीत का अभ्यास कराएँ",
+  "Give me pointers on being a better manager":
+    "बेहतर प्रबंधक बनने के सुझाव दें",
+  "Write a job description for my dream life":
+    "मेरे सपनों के जीवन के लिए नौकरी विवरण लिखें",
+  "Update my resume or LinkedIn": "मेरा बायोडाटा या LinkedIn अपडेट करें",
+  "Develop my professional skills": "मेरे पेशेवर कौशल विकसित करें",
+  "Navigate workplace challenges": "कार्यस्थल की चुनौतियाँ संभालें",
+  "Plan my career growth": "मेरे करियर विकास की योजना बनाएँ",
+  "Improve my work-life balance": "मेरे काम और जीवन का संतुलन सुधारें",
+  "Network more effectively": "अधिक प्रभावी नेटवर्किंग करें",
+  "Request a raise or promotion": "वेतन वृद्धि या पदोन्नति माँगें",
+  "Create effective cover letters": "प्रभावी कवर लेटर बनाएँ",
+  "Identify transferable skills": "हस्तांतरणीय कौशल पहचानें",
+  "Analyze industry trends": "उद्योग रुझानों का विश्लेषण करें",
+  "Practice salary negotiations": "वेतन बातचीत का अभ्यास करें",
+  "Build my personal brand": "मेरा निजी ब्रांड बनाएँ",
+  "Handle difficult colleagues": "कठिन सहकर्मियों से निपटें",
+  "Develop leadership abilities": "नेतृत्व क्षमता विकसित करें",
+  "Manage workplace stress": "कार्यस्थल तनाव का प्रबंधन करें",
+  "Explore career transitions": "करियर बदलाव जानें",
+  "Draft professional emails": "पेशेवर ईमेल का मसौदा बनाएँ",
+  "Prepare presentations": "प्रस्तुतियाँ तैयार करें",
+  "Build team communication": "टीम संचार बनाएँ",
+  "Improve public speaking": "सार्वजनिक भाषण सुधारें",
+  "Track professional accomplishments": "पेशेवर उपलब्धियाँ दर्ज करें",
+  "Handle performance reviews": "प्रदर्शन समीक्षाएँ संभालें",
+  "Understand workplace politics": "कार्यस्थल की राजनीति समझें",
+  "Create workplace boundaries": "कार्यस्थल सीमाएँ बनाएँ",
+  "Find mentorship opportunities": "मार्गदर्शन के अवसर खोजें",
+  "Manage remote work": "दूरस्थ काम प्रबंधित करें",
+  "Develop executive presence": "कार्यकारी व्यक्तित्व विकसित करें",
+  "Handle workplace feedback": "कार्यस्थल प्रतिक्रिया संभालें",
+  "Analyze job descriptions": "नौकरी विवरणों का विश्लेषण करें",
+  "Create professional goals": "पेशेवर लक्ष्य बनाएँ",
+  "Plan continuing education": "सतत शिक्षा की योजना बनाएँ",
+  "Strengthen workplace relationships": "कार्यस्थल रिश्ते मज़बूत करें",
+  "Improve technical skills": "तकनीकी कौशल सुधारें",
+  "Manage project timelines": "परियोजना समयरेखाएँ प्रबंधित करें",
+  "Handle workplace conflicts": "कार्यस्थल विवाद संभालें",
+  "Prepare for promotions": "पदोन्नति की तैयारी करें",
+  "Balance multiple projects": "कई परियोजनाओं में संतुलन बनाएँ",
+  "Summarize my top projects this quarter":
+    "इस तिमाही की मेरी मुख्य परियोजनाओं का सारांश दें",
+  "Analyze my writing style based on my docs":
+    "मेरे दस्तावेज़ों से मेरी लेखन शैली का विश्लेषण करें",
+  "Give me a TLDR on the new docs I’ve been given access to":
+    "मुझे नए मिले दस्तावेज़ों का संक्षिप्त सारांश दें",
+  "Identify what my top 3 priorities should be today":
+    "आज की मेरी शीर्ष तीन प्राथमिकताएँ पहचानें",
+  "Find which of my ideas have gained the most traction at work":
+    "काम पर सबसे अधिक समर्थन पाने वाले मेरे विचार खोजें",
+  "Tell me how my project focus has evolved over time":
+    "मेरी परियोजनाओं का केंद्र समय के साथ कैसे बदला बताएँ",
+  "Locate documents that represent pivotal moments in my thinking":
+    "मेरी सोच के निर्णायक मोड़ दिखाने वाले दस्तावेज़ खोजें",
+  "Surface unexpected connections across my different documents":
+    "मेरे अलग-अलग दस्तावेज़ों के अप्रत्याशित संबंध दिखाएँ",
+  "Identify and visualize my most brilliant moments from my documents":
+    "मेरे दस्तावेज़ों से मेरे बेहतरीन क्षण पहचानकर दिखाएँ",
+  "Look at my docs and tell me what kind of genre writer I could be":
+    "मेरे दस्तावेज़ देखकर बताएँ मैं किस शैली का लेखक बन सकता हूँ",
+  "Reveal blind spots in my knowledge base": "मेरे ज्ञान की कमियाँ उजागर करें",
+  "What idea themes consistently appear across all my documents?":
+    "मेरे सभी दस्तावेज़ों में कौन से विचार बार-बार आते हैं?",
+  "Look at how my calendar has shifted this month compared to last":
+    "पिछले माह से इस माह मेरे कैलेंडर में बदलाव देखें",
+  "Show me insights about my meeting attendance patterns":
+    "बैठकों में मेरी उपस्थिति के पैटर्न की जानकारी दें",
+  "Tell me which recurring meetings take up most of my time":
+    "कौन सी नियमित बैठकें मेरा सबसे अधिक समय लेती हैं बताएँ",
+  "Analyze if my actual meetings align with my stated priorities":
+    "जाँचें कि मेरी वास्तविक बैठकें बताई प्राथमिकताओं से मेल खाती हैं या नहीं",
+  "Analyze my calendar for meeting optimization":
+    "बैठकें बेहतर करने के लिए मेरा कैलेंडर जाँचें",
+  "Tell me what my calendar reveals about my work-life balance":
+    "मेरा कैलेंडर काम और जीवन के संतुलन के बारे में क्या बताता है बताएँ",
+  "Identify how my calendar habits reflect my personal priorities":
+    "मेरी कैलेंडर आदतें निजी प्राथमिकताओं को कैसे दिखाती हैं पहचानें",
+  "Show me how my seasonal patterns affect my scheduling and energy":
+    "मेरे मौसमी पैटर्न समय-सारणी और ऊर्जा को कैसे प्रभावित करते हैं दिखाएँ",
+  "Reflect on my calendar as if I was 100 years old looking back at this time":
+    "100 वर्ष की उम्र से इस समय को याद करते हुए मेरा कैलेंडर देखें",
+  "Give me tips on how to organize my calendar":
+    "कैलेंडर व्यवस्थित करने के सुझाव दें",
+  "Transform my calendar into a fantasy quest journal":
+    "मेरे कैलेंडर को काल्पनिक रोमांच की डायरी में बदलें",
+  "Turn my calendar events into a poetic ‘day in the life’ narrative":
+    "मेरे कैलेंडर कार्यक्रमों को काव्यात्मक दिनचर्या की कहानी में बदलें",
+  "Predict my next stress point by analyzing my calendar density patterns":
+    "कैलेंडर की व्यस्तता से मेरे अगले तनाव बिंदु का अनुमान दें",
+  "Create a visual guide for calendar management based on my ennegram":
+    "मेरे एनीग्राम पर आधारित कैलेंडर प्रबंधन का दृश्य मार्गदर्शन बनाएँ",
+  "Visualize where my time truly goes each week":
+    "हर सप्ताह मेरा समय वास्तव में कहाँ जाता है दिखाएँ",
+  "Analyze my email communication style":
+    "मेरी ईमेल संचार शैली का विश्लेषण करें",
+  "Tell me how I can optimize my inbox": "अपना इनबॉक्स बेहतर कैसे करूँ बताएँ",
+  "Pull out important points from my latest work emails":
+    "मेरे नवीनतम कार्य ईमेल से महत्वपूर्ण बातें निकालें",
+  "Tell me which emails I subscribe to usually go unread":
+    "मेरे कौन से सदस्यता ईमेल अक्सर बिना पढ़े रहते हैं बताएँ",
+  "Tell me about my email organization habits":
+    "मेरी ईमेल व्यवस्थित करने की आदतें बताएँ",
+  "See what emotional themes emerge from my email conversations":
+    "मेरी ईमेल बातचीत में उभरते भावनात्मक विषय देखें",
+  "Let me know how I can be more persuasive in my emails":
+    "अपने ईमेल में अधिक प्रभावशाली कैसे बनूँ बताएँ",
+  "Show me any tricks that can help me manage email":
+    "ईमेल प्रबंधन की तरकीबें दिखाएँ",
+  "Write a pretend 1-page newspaper based on my integrations?":
+    "मेरे इंटीग्रेशन पर आधारित एक पन्ने का काल्पनिक अखबार लिखें",
+  "If my email inbox was a reality TV show, who would be voted off the island first?":
+    "अगर मेरा इनबॉक्स रियलिटी शो होता तो पहले कौन बाहर होता?",
+  "Create a diplomatic response to my most challenging recent email thread":
+    "मेरी हाल की सबसे कठिन ईमेल शृंखला का कूटनीतिक जवाब लिखें",
+  "Generate a ‘personal brand statement’ based on how I communicate in email":
+    "मेरे ईमेल संचार से निजी ब्रांड वक्तव्य बनाएँ",
+  "Casually look through my work integrations to find people who seem to support my career growth":
+    "मेरे कार्य इंटीग्रेशन देखकर करियर विकास के समर्थक खोजें",
+  "Look through my emails and tell me where I’m avoiding something important":
+    "मेरे ईमेल देखकर बताएँ मैं किस महत्वपूर्ण बात से बच रहा हूँ",
+  "Create ‘missed connections’ personal ads based on my most interesting email exchanges":
+    "मेरे सबसे दिलचस्प ईमेल आदान-प्रदान से “छूटी मुलाकात” के निजी विज्ञापन बनाएँ",
+  "Have a philosophical discussion": "दार्शनिक चर्चा करें",
+  "Learn something unexpected": "कुछ अप्रत्याशित सीखें",
+  "Solve an interesting problem": "रोचक समस्या हल करें",
+  "Discover a new perspective": "नया दृष्टिकोण खोजें",
+  "Play a word game together": "साथ में शब्दों का खेल खेलें",
+  "Debate an ethical dilemma": "नैतिक दुविधा पर बहस करें",
+  "Explore a fascinating concept": "रोचक अवधारणा जानें",
+  "Explore thought experiments": "वैचारिक प्रयोग जानें",
+  "Explore cognitive biases": "संज्ञानात्मक पूर्वाग्रह जानें",
+  "Explore language evolution": "भाषा का विकास जानें",
+  "Explore mathematical paradoxes": "गणितीय विरोधाभास जानें",
+  "Explore psychological phenomena": "मनोवैज्ञानिक घटनाएँ जानें",
+  "Explore architectural concepts": "वास्तुशिल्प अवधारणाएँ जानें",
+  "Explore memory techniques": "स्मृति तकनीकें जानें",
+  "Explore logical fallacies": "तार्किक भ्रांतियाँ जानें",
+  "Explore ancient wisdom": "प्राचीन ज्ञान जानें",
+  "Discuss future technologies": "भविष्य की तकनीकों पर चर्चा करें",
+  "Discuss creative thinking techniques":
+    "रचनात्मक सोच की तकनीकों पर चर्चा करें",
+  "Discuss art interpretation": "कला की व्याख्या पर चर्चा करें",
+  "Discuss space exploration questions":
+    "अंतरिक्ष अन्वेषण के प्रश्नों पर चर्चा करें",
+  "Discuss musical innovations": "संगीत नवाचारों पर चर्चा करें",
+  "Discuss food science": "खाद्य विज्ञान पर चर्चा करें",
+  "Discuss symbolic communication": "प्रतीकात्मक संचार पर चर्चा करें",
+  "Discuss social dynamics": "सामाजिक गतिशीलता पर चर्चा करें",
+  "Analyze historical turning points": "ऐतिहासिक मोड़ों का विश्लेषण करें",
+  "Analyze decision-making frameworks": "निर्णय ढाँचों का विश्लेषण करें",
+  "Analyze literary themes": "साहित्यिक विषयों का विश्लेषण करें",
+  "Analyze game theory applications":
+    "गेम थ्योरी के अनुप्रयोगों का विश्लेषण करें",
+  "Consider alternate histories": "वैकल्पिक इतिहास पर विचार करें",
+  "Consider economic theories": "आर्थिक सिद्धांतों पर विचार करें",
+  "Consider environmental solutions": "पर्यावरण समाधानों पर विचार करें",
+  "Consider innovation patterns": "नवाचार पैटर्न पर विचार करें",
+  "Create a fictional scenario": "काल्पनिक परिदृश्य बनाएँ",
+  "Investigate scientific mysteries": "वैज्ञानिक रहस्यों की जाँच करें",
+  "Examine nature phenomena": "प्राकृतिक घटनाएँ जाँचें",
+  "Help me reflect on an experience": "किसी अनुभव पर चिंतन करने में मदद करें",
+  "Help me work through a decision": "किसी निर्णय पर विचार करने में मदद करें",
+  "Transform my personal goals into an actionable plan":
+    "मेरे निजी लक्ष्यों को कार्ययोजना में बदलें",
+  "Roleplay difficult conversations I need to prepare for":
+    "तैयार करने वाली कठिन बातचीत का रोलप्ले करें",
+  "Guide me through a decision-making framework for a life choice":
+    "जीवन के चुनाव के लिए निर्णय ढाँचे से मार्गदर्शन दें",
+  "Plan my day or week": "मेरे दिन या सप्ताह की योजना बनाएँ",
+  "Help with decision making": "निर्णय लेने में मदद करें",
+  "Generate gift or travel ideas": "उपहार या यात्रा के विचार दें",
+  "Improve my habits": "मेरी आदतें सुधारें",
+  "Manage my time better": "मेरा समय बेहतर ढंग से प्रबंधित करें",
+  "Organize my living space": "मेरे रहने की जगह व्यवस्थित करें",
+  "Improve sleep habits": "नींद की आदतें सुधारें",
+  "Build better relationships": "बेहतर रिश्ते बनाएँ",
+  "Manage personal stress": "निजी तनाव का प्रबंधन करें",
+  "Explore productivity systems": "उत्पादकता प्रणालियाँ जानें",
+  "Improve communication skills": "संचार कौशल सुधारें",
+  "Handle difficult conversations": "कठिन बातचीत संभालें",
+  "Organize digital files": "डिजिटल फ़ाइलें व्यवस्थित करें",
+  "Balance social commitments": "सामाजिक प्रतिबद्धताओं में संतुलन बनाएँ",
+  "Track personal goals": "निजी लक्ष्यों की प्रगति देखें",
+  "Improve financial literacy": "वित्तीय साक्षरता सुधारें",
+  "Manage household tasks": "घर के काम प्रबंधित करें",
+  "Improve time management": "समय प्रबंधन सुधारें",
+  "Create a routine for a goal": "लक्ष्य के लिए दिनचर्या बनाएँ",
+  "Create a personal development plan": "व्यक्तिगत विकास योजना बनाएँ",
+  "Create a personal budget": "निजी बजट बनाएँ",
+  "Create family activities": "पारिवारिक गतिविधियाँ बनाएँ",
+  "Create reading lists": "पठन सूचियाँ बनाएँ",
+  "Create cleaning routines": "सफ़ाई दिनचर्या बनाएँ",
+  "Create morning routines": "सुबह की दिनचर्या बनाएँ",
+  "Create family traditions": "पारिवारिक परंपराएँ बनाएँ",
+  "Create personal boundaries": "व्यक्तिगत सीमाएँ बनाएँ",
+  "Develop exercise routines": "व्यायाम दिनचर्या विकसित करें",
+  "Develop mindfulness practices": "माइंडफ़ुलनेस अभ्यास विकसित करें",
+  "Develop personal hobbies": "व्यक्तिगत शौक विकसित करें",
+  "Develop self-care practices": "आत्म-देखभाल अभ्यास विकसित करें",
+  "Develop parenting strategies": "पालन-पोषण रणनीतियाँ विकसित करें",
+  "Plan healthy meals": "स्वस्थ भोजन की योजना बनाएँ",
+  "Plan special celebrations": "विशेष समारोहों की योजना बनाएँ",
+  "Plan home improvements": "घर के सुधारों की योजना बनाएँ",
+  "Plan educational pursuits": "शैक्षिक प्रयासों की योजना बनाएँ",
+  "Plan retirement activities": "सेवानिवृत्ति गतिविधियों की योजना बनाएँ",
+  "Help me identify my creative style": "मेरी रचनात्मक शैली पहचानें",
+  "Quiz me on how to give good design feedback in a crit":
+    "डिज़ाइन समीक्षा में अच्छी प्रतिक्रिया देने पर मेरी परीक्षा लें",
+  "Design a chracter profile based on my creative super power":
+    "मेरी रचनात्मक महाशक्ति पर चरित्र प्रोफ़ाइल बनाएँ",
+  "Generate a list of powerful words to use in a client presentation":
+    "ग्राहक प्रस्तुति के लिए प्रभावशाली शब्दों की सूची बनाएँ",
+  "Reimagine this everyday object for a radically different culture":
+    "बिल्कुल अलग संस्कृति के लिए इस रोज़मर्रा की वस्तु की पुनः कल्पना करें",
+  "Design an experience that changes how people perceive time":
+    "समय की अनुभूति बदलने वाला अनुभव डिज़ाइन करें",
+  "Create something inspired by the most beautiful mistake":
+    "सबसे खूबसूरत गलती से प्रेरित कुछ बनाएँ",
+  "Design an interactive installation based on my personal values":
+    "मेरे मूल्यों पर आधारित इंटरैक्टिव इंस्टॉलेशन डिज़ाइन करें",
+  "Create a visual language for emotions that have no names":
+    "बेनाम भावनाओं के लिए दृश्य भाषा बनाएँ",
+  "Design something that bridges ancient techniques and futuristic concepts":
+    "प्राचीन तकनीकों और भविष्य की अवधारणाओं को जोड़ता डिज़ाइन बनाएँ",
+  "Design an experience that transforms digital connections into physical ones":
+    "डिजिटल संबंधों को भौतिक संबंधों में बदलने वाला अनुभव बनाएँ",
+  "Outline an ideation workshop that will blow away my creative team":
+    "मेरी रचनात्मक टीम को चकित करने वाली विचार कार्यशाला की रूपरेखा दें",
+  "Help me design a creative offsite that will be legendary":
+    "यादगार रचनात्मक ऑफ़साइट डिज़ाइन करने में मदद करें",
+  "Analyze my design aesthetic from examples":
+    "उदाहरणों से मेरे डिज़ाइन सौंदर्यबोध का विश्लेषण करें",
+  "Test my eye for detail with examples":
+    "उदाहरणों से मेरी बारीकी की नज़र परखें",
+  "Quiz me on design principles and theory":
+    "डिज़ाइन सिद्धांतों पर मेरी परीक्षा लें",
+  "Transform my concept into a detailed design specification":
+    "मेरी अवधारणा को विस्तृत डिज़ाइन विनिर्देश में बदलें",
+  "Help me make something more user-friendly":
+    "किसी चीज़ को अधिक उपयोगकर्ता-अनुकूल बनाने में मदद करें",
+  "Brainstorm creative concepts": "रचनात्मक अवधारणाएँ सुझाएँ",
+  "Generate design inspiration from history": "इतिहास से डिज़ाइन प्रेरणा पाएँ",
+  "Translate a brief into design items": "ब्रीफ़ को डिज़ाइन आइटम में बदलें",
+  "Research good typography systems": "अच्छे टाइपोग्राफ़ी सिस्टम पर शोध करें",
+  "Generate illustration ideas": "चित्रण के विचार दें",
+  "Generate packaging concepts": "पैकेजिंग अवधारणाएँ सुझाएँ",
+  "Generate animation concepts": "एनिमेशन अवधारणाएँ सुझाएँ",
+  "Create a style guide": "शैली मार्गदर्शिका बनाएँ",
+  "Create on-trend color palettes": "प्रचलित रंग पैलेट बनाएँ",
+  "Create mood boards": "मूड बोर्ड बनाएँ",
+  "Create logo variations": "लोगो के रूपांतर बनाएँ",
+  "Create social media templates": "सोशल मीडिया टेम्पलेट बनाएँ",
+  "Create website structures": "वेबसाइट संरचनाएँ बनाएँ",
+  "Create portfolio presentations": "पोर्टफ़ोलियो प्रस्तुतियाँ बनाएँ",
+  "Create content strategies": "सामग्री रणनीतियाँ बनाएँ",
+  "Develop brand personas": "ब्रांड पर्सोना विकसित करें",
+  "Develop storytelling frameworks": "कहानी सुनाने के ढाँचे विकसित करें",
+  "Develop naming conventions": "नामकरण परंपराएँ विकसित करें",
+  "Develop marketing campaigns": "विपणन अभियान विकसित करें",
+  "Develop product narratives": "उत्पाद कथाएँ विकसित करें",
+  "Develop editorial calendars": "संपादकीय कैलेंडर विकसित करें",
+  "Plan milestones for a creative project":
+    "रचनात्मक परियोजना के पड़ावों की योजना बनाएँ",
+  "Plan friction-free user experience flows":
+    "सहज उपयोगकर्ता अनुभव प्रवाह की योजना बनाएँ",
+  "Plan content calendars": "सामग्री कैलेंडर की योजना बनाएँ",
+  "Plan a creative brainstorm with clients":
+    "ग्राहकों के साथ रचनात्मक विचार-मंथन की योजना बनाएँ",
+  "Plan videogame storyboards": "वीडियो गेम स्टोरीबोर्ड की योजना बनाएँ",
+  "Plan photography shoots": "फ़ोटोग्राफ़ी शूट की योजना बनाएँ",
+  "Write a solid creative brief": "मज़बूत रचनात्मक ब्रीफ़ लिखें",
+  "Write compelling copy": "प्रभावशाली कॉपी लिखें",
+  "Write creative prompts for LLMs": "LLM के लिए रचनात्मक प्रॉम्प्ट लिखें",
+  "Design a presentation layout": "प्रस्तुति लेआउट डिज़ाइन करें",
+  "Design email newsletters": "ईमेल न्यूज़लेटर डिज़ाइन करें",
+  "Design event materials": "कार्यक्रम सामग्री डिज़ाइन करें",
+  "Generate character concepts for fiction":
+    "कथा के लिए चरित्र अवधारणाएँ सुझाएँ",
+  "Test my negotiation tactics with scenarios":
+    "परिस्थितियों से मेरी बातचीत रणनीति परखें",
+  "Quiz me on my business skills": "मेरे व्यावसायिक कौशल की परीक्षा लें",
+  "Help me develop and hone a strategy":
+    "रणनीति विकसित और बेहतर करने में मदद करें",
+  "Map the unexpected connections between unrelated market trends":
+    "असंबंधित बाज़ार रुझानों के अप्रत्याशित संबंध दिखाएँ",
+  "Reimagine my business as if it were founded 100 years in the future":
+    "मेरे व्यवसाय को 100 वर्ष बाद स्थापित मानकर पुनः कल्पना करें",
+  "Design a strategy game based on my business challenges":
+    "मेरी व्यावसायिक चुनौतियों पर रणनीति खेल बनाएँ",
+  "Develop a business ecosystem inspired by my personal passions":
+    "मेरे जुनून से प्रेरित व्यावसायिक इकोसिस्टम विकसित करें",
+  "Create a business model canvas that breaks every conventional rule":
+    "सभी परंपराएँ तोड़ने वाला बिज़नेस मॉडल कैनवस बनाएँ",
+  "Design a strategy inspired by patterns found in nature":
+    "प्रकृति के पैटर्न से प्रेरित रणनीति बनाएँ",
+  "Analyze market opportunities": "बाज़ार अवसरों का विश्लेषण करें",
+  "Improve operational efficiency": "परिचालन दक्षता सुधारें",
+  "Draft a pitch or proposal": "पिच या प्रस्ताव का मसौदा बनाएँ",
+  "Build financial projections": "वित्तीय अनुमान बनाएँ",
+  "Conduct competitor analysis": "प्रतिस्पर्धी विश्लेषण करें",
+  "Analyze business metrics": "व्यावसायिक मेट्रिक का विश्लेषण करें",
+  "Analyze great investment pitches": "उत्कृष्ट निवेश पिच का विश्लेषण करें",
+  "Research top go-to-market strategies":
+    "सर्वोत्तम बाज़ार प्रवेश रणनीतियों पर शोध करें",
+  "Develop a business plan": "व्यवसाय योजना विकसित करें",
+  "Develop pricing strategies": "मूल्य निर्धारण रणनीतियाँ विकसित करें",
+  "Develop KPI dashboards": "KPI डैशबोर्ड विकसित करें",
+  "Develop stakeholder communications": "हितधारक संचार विकसित करें",
+  "Develop risk assessments": "जोखिम आकलन विकसित करें",
+  "Develop client proposals": "ग्राहक प्रस्ताव विकसित करें",
+  "Develop brand positioning": "ब्रांड पोज़िशनिंग विकसित करें",
+  "Develop sustainability initiatives": "स्थिरता पहल विकसित करें",
+  "Develop distribution strategies": "वितरण रणनीतियाँ विकसित करें",
+  "Create a marketing strategy": "विपणन रणनीति बनाएँ",
+  "Create customer personas": "ग्राहक पर्सोना बनाएँ",
+  "Create sales presentations": "बिक्री प्रस्तुतियाँ बनाएँ",
+  "Create business processes": "व्यावसायिक प्रक्रियाएँ बनाएँ",
+  "Create strategic partnerships": "रणनीतिक साझेदारियाँ बनाएँ",
+  "Create recruiting strategies": "भर्ती रणनीतियाँ बनाएँ",
+  "Create vendor evaluations": "विक्रेता मूल्यांकन बनाएँ",
+  "Create business pivots": "व्यावसायिक बदलाव बनाएँ",
+  "Create revenue forecasts": "राजस्व पूर्वानुमान बनाएँ",
+  "Create customer journeys": "ग्राहक यात्राएँ बनाएँ",
+  "Plan product launches": "उत्पाद लॉन्च की योजना बनाएँ",
+  "Plan market research": "बाज़ार शोध की योजना बनाएँ",
+  "Plan organizational structure": "संगठनात्मक संरचना की योजना बनाएँ",
+  "Plan budget allocations": "बजट आवंटन की योजना बनाएँ",
+  "Plan business scaling strategies":
+    "व्यवसाय विस्तार रणनीतियों की योजना बनाएँ",
+  "Plan expansion opportunities": "विस्तार अवसरों की योजना बनाएँ",
+  "Plan business acquisitions": "व्यवसाय अधिग्रहण की योजना बनाएँ",
+  "Design growth frameworks": "विकास ढाँचे डिज़ाइन करें",
+  "Craft a manifesto that captures the essence of my boldest ideas":
+    "मेरे साहसी विचारों का सार समेटने वाला घोषणापत्र लिखें",
+  "Help me develop my unique voice as a writer":
+    "लेखक के रूप में मेरी अनूठी शैली विकसित करें",
+  "Help me identify my writing weaknesses": "लेखन में मेरी कमज़ोरियाँ पहचानें",
+  "Create a piece that blends two completely different writing styles":
+    "दो बिल्कुल अलग लेखन शैलियाँ मिलाकर रचना बनाएँ",
+  "Reimagine a piece of my writing as an edge-of-your-seat thriller":
+    "मेरी रचना को रोमांचक थ्रिलर में बदलें",
+  "Compare my writing style to famous authors":
+    "मेरी लेखन शैली की प्रसिद्ध लेखकों से तुलना करें",
+  "Craft something that reads differently depending on the reader’s mood":
+    "पाठक के मूड से अलग अर्थ देने वाली रचना लिखें",
+  "Write something in the voice of my favorite historical figure":
+    "मेरे पसंदीदा ऐतिहासिक व्यक्ति की शैली में लिखें",
+  "Help me develop a unique voice for an audience":
+    "दर्शकों के लिए अनूठी लेखन शैली विकसित करें",
+  "Edit my content": "मेरी सामग्री संपादित करें",
+  "Brainstorm creative ideas": "रचनात्मक विचार सुझाएँ",
+  "Research topics for my writing": "मेरे लेखन के विषयों पर शोध करें",
+  "Improve my writing style": "मेरी लेखन शैली सुधारें",
+  "Draft an outline for my project": "मेरी परियोजना की रूपरेखा लिखें",
+  "Create a content strategy": "सामग्री रणनीति बनाएँ",
+  "Create engaging headlines": "आकर्षक शीर्षक बनाएँ",
+  "Create social media posts": "सोशल मीडिया पोस्ट बनाएँ",
+  "Create blog article series": "ब्लॉग लेखों की शृंखला बनाएँ",
+  "Create interview questions": "साक्षात्कार प्रश्न बनाएँ",
+  "Create persuasive arguments": "प्रभावशाली तर्क बनाएँ",
+  "Create user documentation": "उपयोगकर्ता दस्तावेज़ बनाएँ",
+  "Create presentation scripts": "प्रस्तुति स्क्रिप्ट बनाएँ",
+  "Create FAQ resources": "अक्सर पूछे जाने वाले प्रश्नों के संसाधन बनाएँ",
+  "Create technical explanations": "तकनीकी स्पष्टीकरण बनाएँ",
+  "Develop character profiles": "चरित्र प्रोफ़ाइल विकसित करें",
+  "Develop content calendars": "सामग्री कैलेंडर विकसित करें",
+  "Develop brand voice guides": "ब्रांड शैली मार्गदर्शिकाएँ विकसित करें",
+  "Develop podcast scripts": "पॉडकास्ट स्क्रिप्ट विकसित करें",
+  "Develop content templates": "सामग्री टेम्पलेट विकसित करें",
+  "Develop content briefs": "सामग्री ब्रीफ़ विकसित करें",
+  "Develop instructional content": "शिक्षण सामग्री विकसित करें",
+  "Develop editorial guidelines": "संपादकीय दिशानिर्देश विकसित करें",
+  "Draft email newsletters": "ईमेल न्यूज़लेटर लिखें",
+  "Write compelling CTAs": "प्रभावी कॉल टू एक्शन लिखें",
+  "Write product descriptions": "उत्पाद विवरण लिखें",
+  "Write video scripts": "वीडियो स्क्रिप्ट लिखें",
+  "Write executive summaries": "कार्यकारी सारांश लिखें",
+  "Write case studies": "केस स्टडी लिखें",
+  "Write speech drafts": "भाषण के मसौदे लिखें",
+  "Write marketing copy": "विपणन कॉपी लिखें",
+  "Write grant proposals": "अनुदान प्रस्ताव लिखें",
+  "Write event descriptions": "कार्यक्रम विवरण लिखें",
+  "Design a learning challenge that pushes my creative boundaries":
+    "मेरी रचनात्मक सीमाएँ बढ़ाने की सीखने की चुनौती बनाएँ",
+  "Explain a concept in simple terms": "अवधारणा सरल शब्दों में समझाएँ",
+  "Help me understand a complex topic from scratch":
+    "जटिल विषय को शुरुआत से समझने में मदद करें",
+  "Create a curriculum inspired by my favorite cultural movement":
+    "मेरे पसंदीदा सांस्कृतिक आंदोलन से प्रेरित पाठ्यक्रम बनाएँ",
+  "Develop a learning approach that embraces beautiful contradictions":
+    "सुंदर विरोधाभासों को अपनाने की सीखने की विधि बनाएँ",
+  "Transform a dry subject into something fascinating":
+    "नीरस विषय को रोचक बनाएँ",
+  "Develop a learning framework based on my personal heroes":
+    "मेरे आदर्शों पर आधारित सीखने का ढाँचा बनाएँ",
+  "Create a knowledge map that reveals surprising patterns in what I know":
+    "मेरे ज्ञान में आश्चर्यजनक पैटर्न दिखाने वाला मानचित्र बनाएँ",
+  "Transform these notes into a structured summary":
+    "इन नोट्स को व्यवस्थित सारांश में बदलें",
+  "Help me make sense of these ideas": "इन विचारों को समझने में मदद करें",
+  "Find patterns in my research": "मेरे शोध में पैटर्न खोजें",
+  "Explain a complex topic simply": "जटिल विषय सरलता से समझाएँ",
+  "Create a study plan": "अध्ययन योजना बनाएँ",
+  "Design a lesson or curriculum": "पाठ या पाठ्यक्रम डिज़ाइन करें",
+  "Compare learning resources": "सीखने के संसाधनों की तुलना करें",
+  "Find the best books on a subject": "किसी विषय की सर्वोत्तम किताबें खोजें",
+  "Prepare for an exam or interview": "परीक्षा या साक्षात्कार की तैयारी करें",
+  "Create effective flashcards": "प्रभावी फ़्लैशकार्ड बनाएँ",
+  "Develop learning objectives": "सीखने के लक्ष्य विकसित करें",
+  "Summarize my academic papers": "मेरे अकादमिक शोधपत्रों का सारांश दें",
+  "Create assessment questions": "मूल्यांकन प्रश्न बनाएँ",
+  "Develop research methodologies": "शोध पद्धतियाँ विकसित करें",
+  "Create learning timelines": "सीखने की समयरेखाएँ बनाएँ",
+  "Design educational activities": "शैक्षिक गतिविधियाँ डिज़ाइन करें",
+  "Develop concept maps": "अवधारणा मानचित्र विकसित करें",
+  "Create good lecture notes": "अच्छे व्याख्यान नोट्स बनाएँ",
+  "Design presentation visuals": "प्रस्तुति के दृश्य डिज़ाइन करें",
+  "Develop learning frameworks": "सीखने के ढाँचे विकसित करें",
+  "Create annotated bibliographies": "टिप्पणी युक्त ग्रंथसूचियाँ बनाएँ",
+  "Design learning journals": "सीखने की डायरी डिज़ाइन करें",
+  "Develop discussion prompts": "चर्चा के विषय विकसित करें",
+  "Create educational games": "शैक्षिक खेल बनाएँ",
+  "Develop teaching strategies": "शिक्षण रणनीतियाँ विकसित करें",
+  "Create educational rubrics": "शैक्षिक मूल्यांकन मानदंड बनाएँ",
+  "Design learning modules": "सीखने के मॉड्यूल डिज़ाइन करें",
+  "Develop critical analyses": "आलोचनात्मक विश्लेषण विकसित करें",
+  "Design research questions": "शोध प्रश्न डिज़ाइन करें",
+  "Develop reflection exercises": "चिंतन अभ्यास विकसित करें",
+  "Create study summaries": "अध्ययन सारांश बनाएँ",
+  "Design learning portfolios": "सीखने के पोर्टफ़ोलियो डिज़ाइन करें",
+  "Create feedback for student work": "छात्रों के काम पर प्रतिक्रिया दें",
+  "Design learning challenges": "सीखने की चुनौतियाँ डिज़ाइन करें",
+  "Find credible sources for my research":
+    "मेरे शोध के लिए विश्वसनीय स्रोत खोजें",
+  "Provide evidence-based insights for my topic":
+    "मेरे विषय पर प्रमाण आधारित जानकारी दें",
+  "Look over my code and give me tips": "मेरा कोड देखकर सुझाव दें",
+  "Vibe code with me": "मेरे साथ वाइब कोडिंग करें",
+  "Quiz me on python code": "Python कोड पर मेरी परीक्षा लें",
+  "Evaluate my coding style based on a snippet":
+    "कोड अंश से मेरी प्रोग्रामिंग शैली का आकलन करें",
+  "Tell me what programming paradigm suits my thinking style":
+    "मेरी सोच के अनुकूल प्रोग्रामिंग प्रतिमान बताएँ",
+  "Assess my approach to debugging problems": "मेरे डिबगिंग तरीके का आकलन करें",
+  "Challenge me with increasingly difficult coding puzzles":
+    "बढ़ती कठिनाई की कोड पहेलियों से चुनौती दें",
+  "Help me develop a personal learning roadmap for coding":
+    "मेरे लिए कोडिंग सीखने का रोडमैप बनाएँ",
+  "Help me turn a screenshot into working code":
+    "स्क्रीनशॉट को काम करने वाले कोड में बदलें",
+  "Design a game that teaches coding concepts through storytelling":
+    "कहानियों से कोडिंग सिखाने वाला खेल डिज़ाइन करें",
+  "Invent a coding language based on my favorite hobby":
+    "मेरे पसंदीदा शौक पर आधारित प्रोग्रामिंग भाषा बनाएँ",
+  "Design a digital pet that grows based on my coding habits":
+    "मेरी कोडिंग आदतों से बढ़ने वाला डिजिटल पालतू बनाएँ",
+  "Create a coding Easter egg that would make my team smile":
+    "टीम को मुस्कुराने वाला कोड ईस्टर एग बनाएँ",
+  "Build an app based on my idea": "मेरे विचार से ऐप बनाएँ",
+  "Debug my code and give me tips": "मेरा कोड डिबग करके सुझाव दें",
+  "Design a software architecture": "सॉफ़्टवेयर आर्किटेक्चर डिज़ाइन करें",
+  "Explain a programming concept": "प्रोग्रामिंग अवधारणा समझाएँ",
+  "Plan a development roadmap": "विकास रोडमैप की योजना बनाएँ",
+  "Write unit test cases": "यूनिट टेस्ट लिखें",
+  "Create API documentation": "API दस्तावेज़ बनाएँ",
+  "Design database schemas": "डेटाबेस स्कीमा डिज़ाइन करें",
+  "Develop coding standards": "कोडिंग मानक विकसित करें",
+  "Develop code reviews to speed me up":
+    "मेरी गति बढ़ाने वाली कोड समीक्षाएँ विकसित करें",
+  "Create technical specifications": "तकनीकी विनिर्देश बनाएँ",
+  "Design UI/UX wireframes": "UI/UX वायरफ़्रेम डिज़ाइन करें",
+  "Develop deployment strategies": "परिनियोजन रणनीतियाँ बनाएँ",
+  "Create refactoring plans": "रीफ़ैक्टरिंग योजनाएँ बनाएँ",
+  "Design microservices": "माइक्रोसर्विस डिज़ाइन करें",
+  "Develop algorithm solutions": "एल्गोरिदम समाधान विकसित करें",
+  "Create security protocols": "सुरक्षा प्रोटोकॉल बनाएँ",
+  "Design feature flags": "फ़ीचर फ़्लैग डिज़ाइन करें",
+  "Develop performance benchmarks": "प्रदर्शन बेंचमार्क विकसित करें",
+  "Create debugging workflows": "डिबगिंग वर्कफ़्लो बनाएँ",
+  "Design data structures": "डेटा संरचनाएँ डिज़ाइन करें",
+  "Develop integration strategies": "एकीकरण रणनीतियाँ बनाएँ",
+  "Create dependency maps": "निर्भरता मानचित्र बनाएँ",
+  "Design error handling": "त्रुटि प्रबंधन डिज़ाइन करें",
+  "Develop CI/CD pipelines": "CI/CD पाइपलाइन विकसित करें",
+  "Create technical diagrams": "तकनीकी आरेख बनाएँ",
+  "Design scalability plans": "स्केलेबिलिटी योजनाएँ डिज़ाइन करें",
+  "Develop project estimates": "परियोजना अनुमान विकसित करें",
+  "Create code snippets": "कोड स्निपेट बनाएँ",
+  "Design logging systems": "लॉगिंग सिस्टम डिज़ाइन करें",
+  "Develop technical debt analysis": "तकनीकी ऋण का विश्लेषण करें",
+  "Create monitoring solutions": "निगरानी समाधान बनाएँ",
   "From Calendar": "Calendar से",
   "From Gmail": "Gmail से",
   "From Drive": "Drive से",
   Integration: "इंटीग्रेशन",
   "Choose a valid connector.": "मान्य कनेक्टर चुनें।",
+  "Research how to write documentation that people will actually want to read":
+    "ऐसे दस्तावेज़ लिखने के तरीके खोजें जिन्हें लोग पढ़ना चाहें",
+  "Find the best way to explain our product to new users, use my docs as needed":
+    "ज़रूरत पर मेरे दस्तावेज़ों से नए उपयोगकर्ताओं को उत्पाद समझाने का सर्वोत्तम तरीका खोजें",
+  "Navigate the maze of healthcare compliance requirements":
+    "स्वास्थ्य सेवा के जटिल अनुपालन नियम समझें",
+  "Find the best tools for managing remote team communication":
+    "दूरस्थ टीम के संचार प्रबंधन के सर्वोत्तम टूल खोजें",
+  "Go deep on the secret behind companies with amazing customer service":
+    "बेहतरीन ग्राहक सेवा वाली कंपनियों के रहस्य गहराई से जानें",
+  "Discover fresh angles on my writing based on my docs":
+    "मेरे दस्तावेज़ों से लेखन के नए दृष्टिकोण खोजें",
+  "Dive deep on what travel trends will be for the next five years":
+    "अगले पाँच वर्षों के यात्रा रुझानों का गहन अध्ययन करें",
+  "Understand what’s happening with tariffs right now":
+    "अभी सीमा शुल्क में क्या हो रहा है समझें",
+  "Find the weird science behind everyday products people love":
+    "लोकप्रिय रोज़मर्रा के उत्पादों के पीछे का अनोखा विज्ञान खोजें",
+  "Research and deliver findings relevant to me as a time-traveler from 2050":
+    "2050 से आए समय यात्री के रूप में मेरे लिए प्रासंगिक शोध प्रस्तुत करें",
+  "Find the most compelling stories about an important topic from my docs":
+    "मेरे दस्तावेज़ों में महत्वपूर्ण विषय की सबसे रोचक कहानियाँ खोजें",
+  "Determine my main competitors based on my docs and show me what my competitors are doing differently this year":
+    "मेरे दस्तावेज़ों से प्रमुख प्रतिस्पर्धी और इस वर्ष उनके अलग तरीके पहचानें",
+  "Identify the most important performance differences between the latest accelerators from nvidia, google, and amazon?":
+    "Nvidia, Google और Amazon के नवीनतम एक्सेलरेटर के प्रमुख प्रदर्शन अंतर पहचानें",
+  "Extract the most actionable insights from my meeting notes that I’m not acting on":
+    "मेरी बैठक टिप्पणियों से उपयोगी सुझाव निकालें जिन पर मैंने अमल नहीं किया",
+  "Come up with novel ideas for projects based on my docs":
+    "मेरे दस्तावेज़ों से परियोजनाओं के नए विचार दें",
+  "Map the evolution of sleep research in the past decade":
+    "पिछले दशक में नींद संबंधी शोध का विकास दिखाएँ",
+  "Identify emerging patterns in human and machine relationships":
+    "मानव और मशीन संबंधों में उभरते पैटर्न पहचानें",
+  "Compare researchers’ disagreements about climate solutions":
+    "जलवायु समाधानों पर शोधकर्ताओं की असहमतियों की तुलना करें",
+  "Examine how fermentation discoveries changed ancient diets":
+    "किण्वन की खोज ने प्राचीन आहार कैसे बदले जाँचें",
+  "Find how humans realized teeth need cleaning":
+    "मनुष्यों ने दाँत साफ़ करने की ज़रूरत कैसे समझी खोजें",
+  "Explore why we even developed singing (is it just happy noises?)":
+    "हमने गाना क्यों विकसित किया (क्या बस खुशी की आवाज़ें हैं?)",
+  "Track invention of the idea of “free time” - when did that start?":
+    "“खाली समय” की अवधारणा की शुरुआत कब हुई खोजें",
+  "Research how money became a thing": "पैसे की शुरुआत कैसे हुई शोध करें",
+  "Discover how humans figured out “those mushrooms = bad idea”":
+    "मनुष्यों ने “वे मशरूम = बुरा विचार” कैसे जाना खोजें",
+  "Investigate when we realized trees could talk (chemically)":
+    "हमने कब जाना कि पेड़ रासायनिक रूप से बात करते हैं जाँचें",
   "Google Calendar": "Google Calendar",
   Gmail: "Gmail",
   "Loading artifact…": "आर्टिफ़ैक्ट लोड हो रहा है…",
@@ -8481,6 +9163,8 @@ const catalog: Record<string, string> = {
   "Failed to check for updates: {error}": "更新の確認に失敗しました: {error}",
   "Claudex is working in {count} sessions. Quitting now will interrupt that work.":
     "Claudex {count} सत्रों में काम कर रहा है। अभी छोड़ने पर यह काम बाधित हो जाएगा।",
+  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking claudex.zecous.cn — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from claudex.zecous.cn.":
+    "Claudex अपडेट सर्वर तक नहीं पहुँच सका। अगर आप कार्य नेटवर्क पर हैं, तो कोई फ़ायरवॉल या प्रॉक्सी claudex.zecous.cn को ब्लॉक कर रहा हो सकता है — अपनी IT टीम से इसे अनुमति देने को कहें। अन्यथा, अपना कनेक्शन जाँचें और फिर से कोशिश करें, या claudex.zecous.cn से नवीनतम संस्करण डाउनलोड करें।",
   "Microsoft Office": "Microsoft Office",
   "Get the add-in": "ऐड-इन प्राप्त करें",
   "Diagnostic Report": "निदान रिपोर्ट",
@@ -9052,6 +9736,8 @@ const catalog: Record<string, string> = {
   "Claudex Serif": "Claudex Serif",
   "An independent desktop client.": "एक स्वतंत्र डेस्कटॉप क्लाइंट।",
   "Internal only": "केवल आंतरिक",
+  "Your ZecousAI balance may look smaller in Claudex. Claudex tops up at a new rate of ¥1 to $1, and its model rates are much lower than ZecousAI's previous 1:1, so what you can use does not change.":
+    "आपका ZecousAI बैलेंस Claudex में कम दिख सकता है। Claudex ¥1 = $1 की नई दर से रिचार्ज करता है और इसके मॉडल गुणक ZecousAI के आधिकारिक 1:1 से काफ़ी कम हैं, इसलिए आपका उपयोग नहीं बदलता।",
   "Make sure you trust a plugin before installing or using it. Uploaded plugins are not controlled by Claudex, and Claudex cannot verify that they will work as intended. See each plugin’s homepage for more information.":
     "इंस्टॉल करने या इस्तेमाल करने से पहले सुनिश्चित करें कि आप प्लगइन पर भरोसा करते हैं। अपलोड किए गए प्लगइन Claudex के नियंत्रण में नहीं होते और Claudex उनके अपेक्षित रूप से काम करने की पुष्टि नहीं कर सकता। अधिक जानकारी के लिए हर प्लगइन का होमपेज देखें।",
   "Community marketplace": "समुदाय बाज़ार",
@@ -9098,6 +9784,8 @@ const catalog: Record<string, string> = {
   "Remote Control is off": "रिमोट कंट्रोल बंद है",
   "Remote Control couldn’t turn off": "रिमोट कंट्रोल बंद नहीं हो सका",
   "Remote Control couldn’t connect": "रिमोट कंट्रोल कनेक्ट नहीं हो सका",
+  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or claudex.zecous.cn.":
+    "सेशन साफ़ होने के बाद दोबारा कनेक्ट नहीं हुआ। फ़ोन या claudex.zecous.cn से यह सेशन जारी रखने के लिए इसे फिर चालू करें।",
   "Claudex Code stopped, so Remote Control turned off with it.":
     "Claudex Code बंद हुआ, इसलिए रिमोट कंट्रोल भी बंद हो गया।",
   "Sign in again. Remote Control retries with your next message.":
@@ -10149,6 +10837,7 @@ const catalog: Record<string, string> = {
   "This removes your feedback, including any conversation excerpt sent with it. It does not delete your chat.":
     "इससे आपकी प्रतिक्रिया हट जाती है, उसके साथ भेजा गया बातचीत का अंश भी। आपकी चैट नहीं हटती।",
   "from {name}": "{name} से",
+  // Customize directory categories (2026-10-20).
   "Developer tools": "डेवलपर टूल",
   Creativity: "रचनात्मकता",
   "Education & research": "शिक्षा और अनुसंधान",
@@ -10156,6 +10845,7 @@ const catalog: Record<string, string> = {
   Communication: "संचार",
   "Scientific research": "वैज्ञानिक अनुसंधान",
   Security: "सुरक्षा",
+  // Usage popover (2026-10-20).
   "Balance and usage": "शेष राशि और उपयोग",
   "Last 7 days": "पिछले 7 दिन",
   "Turn on Allow bypass permissions mode in Settings to use it.":
@@ -10176,11 +10866,15 @@ const catalog: Record<string, string> = {
   "Delete {count}": "{count} को हटाएं",
   "Ask your administrator for the installer.":
     "इंस्टॉलर के लिए अपने व्यवस्थापक से पूछें।",
+  // Add menu failure sentence (2026-10-20)
   "Design systems couldn’t be loaded. Refresh to try again.":
     "डिज़ाइन सिस्टम लोड नहीं हो सके। पेज रीफ़्रेश करके फिर से कोशिश करें।",
+  // Skip all approvals connector list (2026-10-20)
   "Already allowed": "पहले से अनुमत",
+  // Attachment drop notice (2026-10-20)
   "Folders can't be attached. Drop files instead.":
     "फ़ोल्डर संलग्न नहीं किए जा सकते। इसके बजाय फ़ाइलें छोड़ें।",
+  // Attachment refusals, the live sentences (2026-10-20)
   "“{fileName}” is {fileSize}, over the {sizeLimit} MB limit. Choose a smaller file.":
     "“{fileName}” {fileSize} का है, जो {sizeLimit} MB की सीमा से ज़्यादा है। कोई छोटी फ़ाइल चुनें।",
   "“{fileName}” can’t be attached in this chat yet — this file type isn’t supported here. You can paste its contents into the message instead.":
@@ -10191,6 +10885,7 @@ const catalog: Record<string, string> = {
     "{name} संलग्न नहीं किया जा सकता: आपके एडमिनिस्ट्रेटर इस फ़ाइल प्रकार की अनुमति नहीं देते।",
   "Your administrator has turned off attachments.":
     "आपके एडमिनिस्ट्रेटर ने अटैचमेंट बंद कर दिए हैं।",
+  // /copy (2026-10-20)
   "Copy Claudex’s latest reply, or /copy 2 or higher for an earlier one":
     "Claudex का नवीनतम उत्तर कॉपी करें, या पहले के उत्तर के लिए /copy 2 या उससे अधिक का उपयोग करें",
   "Claudex is still replying. Send /copy when the reply is done.":
@@ -10199,6 +10894,7 @@ const catalog: Record<string, string> = {
   "Reply copied to clipboard.": "उत्तर क्लिपबोर्ड पर कॉपी किया गया।",
   "Couldn’t copy the reply to the clipboard. Try again.":
     "उत्तर क्लिपबोर्ड पर कॉपी नहीं हो सका। फिर से कोशिश करें।",
+  // Slash command notices (2026-10-20)
   "/{name} can't be run here.": "/{name} यहाँ नहीं चलाया जा सकता।",
   "Plan mode is not available in this Windows permission menu.":
     "इस Windows अनुमति मेनू में प्लान मोड उपलब्ध नहीं है।",
@@ -10383,6 +11079,7 @@ const catalog: Record<string, string> = {
   "Rename chat": "चैट का नाम बदलें",
   "Rename task": "कार्य का नाम बदलें",
   "Project name is required": "प्रोजेक्ट का नाम आवश्यक है",
+  // Notices and focus reminders (menus-overlays toasts).
   "You’ve hit your limit for Claudex messages. Limits will reset at {time}.":
     "आप Claudex संदेशों की सीमा तक पहुँच गए हैं। सीमाएँ {time} पर रीसेट होंगी।",
   "You’re sending messages too quickly. Try again at {time}.":
@@ -10399,6 +11096,7 @@ const catalog: Record<string, string> = {
   "It’s your quiet hours until {time}. You set this time limit in Settings → Time and focus.":
     "{time} तक आपके शांत घंटे हैं। यह समय सीमा आपने सेटिंग्स → समय और फ़ोकस में तय की थी।",
   "{x} hr": "{x} घंटे",
+  // Search palette (menus-overlays).
   "Past hour": "पिछला घंटा",
   "Search mode": "खोज मोड",
   "Actions mode": "कार्रवाई मोड",
@@ -10424,6 +11122,7 @@ const catalog: Record<string, string> = {
     "आप Claudex संदेशों की अपनी सीमा तक पहुँच गए हैं। सीमाएँ {at} पर रीसेट होंगी।",
   "Too many requests right now. Try again at {at}.":
     "अभी बहुत ज़्यादा अनुरोध हैं। {at} पर फिर से कोशिश करें।",
+  // SSH connection banner (host in the sentence)
   "Connecting to {host}…": "{host} से कनेक्ट हो रहा है…",
   "Setting up Claudex on {host}…": "{host} पर Claudex सेट अप हो रहा है…",
   "Reconnecting to {host}…": "{host} से फिर कनेक्ट हो रहा है…",
@@ -10432,7 +11131,9 @@ const catalog: Record<string, string> = {
   "Can’t reach {host}: {reason}": "{host} तक नहीं पहुँचा जा सका: {reason}",
   "Not connected to {host}.": "{host} से कनेक्ट नहीं है।",
   "this host": "यह होस्ट",
+  // Quick Entry input placeholder
   "What can I help you with today?": "आज मैं आपकी कैसे मदद कर सकता हूँ?",
+  // Update menu, update dialogs and update notices
   "Check for Updates…": "अपडेट जाँचें…",
   "Checking for Updates…": "अपडेट जाँचे जा रहे हैं…",
   "Downloading Update…": "अपडेट डाउनलोड हो रहा है…",
@@ -10465,6 +11166,7 @@ const catalog: Record<string, string> = {
   "Your administrator no longer supports this version. Install Claudex {version}.":
     "आपके एडमिन अब इस संस्करण का समर्थन नहीं करते। Claudex {version} इंस्टॉल करें।",
   "Claudex {version} is available.": "Claudex {version} उपलब्ध है।",
+  // What's new section titles
   "release-section|New": "नया",
   "release-section|Improved": "बेहतर किया गया",
   "release-section|Fixed": "ठीक किया गया",
@@ -10684,6 +11386,8 @@ const catalog: Record<string, string> = {
     "यह ड्राफ़्ट इतना लंबा है कि इसे स्थानांतरित नहीं किया जा सकता। पहले इसे छोटा करें या कॉपी करें।",
   "This artifact is being updated. Try again when the reply finishes.":
     "यह आर्टिफ़ैक्ट अपडेट हो रहा है। उत्तर पूरा होने पर फिर से प्रयास करें।",
+  "This knowledge base can't be reached right now.":
+    "यह ज्ञान आधार अभी उपलब्ध नहीं है।",
   "Choose a PNG, JPEG, GIF or WebP image smaller than 1 MB.":
     "1 MB से छोटी PNG, JPEG, GIF या WebP छवि चुनें।",
   "Voice mode needs dictation and a window that can read aloud.":
@@ -10936,192 +11640,8 @@ const catalog: Record<string, string> = {
   "Started preview": "प्रीव्यू शुरू किया",
   "Couldn’t start preview": "प्रीव्यू शुरू नहीं हो सका",
   "status|Thinking": "सोच रहा है",
-  "Compare the leading note-taking apps for a small team and recommend one":
-    "छोटी टीम के लिए प्रमुख नोट ऐप्स की तुलना करें और एक की सिफ़ारिश करें",
-  "Find out what makes onboarding emails work and sum up the patterns":
-    "जानें कि अच्छे ऑनबोर्डिंग ईमेल में क्या खास होता है और पैटर्न का सार दें",
-  "Look into how other cities run successful bike-share programs":
-    "पता करें कि दूसरे शहर बाइक-शेयरिंग को कैसे सफलतापूर्वक चलाते हैं",
-  "Gather the latest evidence on four-day work weeks and weigh it up":
-    "चार दिन के कार्य-सप्ताह पर नए प्रमाण इकट्ठा करें और उन्हें परखें",
-  "Survey open-source tools for monitoring a small web service":
-    "छोटी वेब सेवा की निगरानी के लिए ओपन-सोर्स टूल्स की पड़ताल करें",
-  "Research how to price a new subscription product fairly":
-    "नए सब्सक्रिप्शन प्रोडक्ट की उचित कीमत तय करने का तरीका खोजें",
-  "Explain how a hash map works and build a tiny one in Python":
-    "हैश मैप कैसे काम करता है समझाएँ और Python में एक छोटा बनाएँ",
-  "Write a script that renames photos by the date they were taken":
-    "एक स्क्रिप्ट लिखें जो फ़ोटो को खींचने की तारीख के हिसाब से नया नाम दे",
-  "Review a function I paste for bugs and readability":
-    "मेरे पेस्ट किए फ़ंक्शन में बग और पठनीयता की समस्याएँ जाँचें",
-  "Turn a messy shell one-liner into a readable, commented script":
-    "उलझे शेल वन-लाइनर को टिप्पणियों वाली पढ़ने योग्य स्क्रिप्ट में बदलें",
-  "Design a database schema for a small library app":
-    "एक छोटे लाइब्रेरी ऐप के लिए डेटाबेस स्कीमा डिज़ाइन करें",
-  "Build a simple to-do list page with HTML, CSS and JavaScript":
-    "HTML, CSS और JavaScript से एक सरल टू-डू सूची पेज बनाएँ",
-  "Teach me the basics of statistics with everyday examples":
-    "रोज़मर्रा के उदाहरणों से मुझे सांख्यिकी की बुनियादी बातें सिखाएँ",
-  "Make a two-week plan for learning everyday Spanish phrases":
-    "रोज़मर्रा के स्पेनिश वाक्यांश सीखने की दो हफ़्ते की योजना बनाएँ",
-  "Quiz me on the main events of the French Revolution":
-    "फ़्रांसीसी क्रांति की मुख्य घटनाओं पर मुझसे प्रश्न पूछें",
-  "Explain how vaccines train the immune system, step by step":
-    "क़दम-दर-क़दम समझाएँ कि टीके प्रतिरक्षा प्रणाली को कैसे प्रशिक्षित करते हैं",
-  "Help me understand compound interest with a worked example":
-    "हल किए गए उदाहरण से चक्रवृद्धि ब्याज समझने में मेरी मदद करें",
-  "Summarize a classic book I name, chapter by chapter":
-    "मेरी चुनी हुई एक क्लासिक किताब का अध्याय-दर-अध्याय सार दें",
-  "Draft a friendly announcement for a team offsite":
-    "टीम आउटिंग के लिए एक दोस्ताना घोषणा का मसौदा लिखें",
-  "Tighten a paragraph I paste so it says more with fewer words":
-    "मेरे पेस्ट किए अनुच्छेद को कसें ताकि कम शब्दों में ज़्यादा कहे",
-  "Write three subject lines for a newsletter about our latest release":
-    "हमारी नई रिलीज़ वाले न्यूज़लेटर के लिए तीन विषय-पंक्तियाँ लिखें",
-  "Outline a blog post about lessons from a project that failed":
-    "एक असफल प्रोजेक्ट से मिले सबक़ पर ब्लॉग पोस्ट की रूपरेखा बनाएँ",
-  "Turn my bullet points into a short, clear project update":
-    "मेरे बिंदुओं को छोटे, साफ़ प्रोजेक्ट अपडेट में बदलें",
-  "Write a thank-you note to a mentor": "किसी मेंटर को धन्यवाद पत्र लिखें",
-  "Map the strengths and weaknesses of entering a new market":
-    "नए बाज़ार में उतरने की ताक़तें और कमज़ोरियाँ सामने रखें",
-  "Build a simple pricing comparison against three competitors":
-    "तीन प्रतिस्पर्धियों के साथ कीमतों की सरल तुलना बनाएँ",
-  "Draft quarterly goals with measurable results for a small team":
-    "छोटी टीम के लिए मापने योग्य नतीजों वाले तिमाही लक्ष्य लिखें",
-  "List the risks in a product launch plan and how to reduce them":
-    "प्रोडक्ट लॉन्च योजना के जोखिम और उन्हें घटाने के तरीके बताएँ",
-  "Sketch a one-page business plan for a neighborhood café":
-    "मोहल्ले के एक कैफ़े के लिए एक पेज की बिज़नेस योजना बनाएँ",
-  "Prepare talking points for a budget review meeting":
-    "बजट समीक्षा बैठक के लिए बोलने के मुख्य बिंदु तैयार करें",
-  "Suggest colors and fonts for a calm meditation app":
-    "एक शांत ध्यान ऐप के लिए रंग और फ़ॉन्ट सुझाएँ",
-  "Brainstorm names and taglines for a home-baking business":
-    "घर से बेकिंग के कारोबार के लिए नाम और टैगलाइन सोचें",
-  "Design a simple logo concept as an SVG":
-    "SVG में एक सरल लोगो का खाका डिज़ाइन करें",
-  "Plan a mood board for a beach-themed birthday party":
-    "समुद्र-तट थीम वाली जन्मदिन पार्टी के लिए मूड बोर्ड की योजना बनाएँ",
-  "Write a short story that starts with a lost umbrella":
-    "एक खोई हुई छतरी से शुरू होने वाली छोटी कहानी लिखें",
-  "Lay out a poster for a community clean-up day":
-    "मोहल्ले के सफ़ाई दिवस के लिए पोस्टर का लेआउट बनाएँ",
-  "Plan a week of quick, healthy dinners with a shopping list":
-    "खरीदारी सूची के साथ एक हफ़्ते के झटपट, सेहतमंद डिनर की योजना बनाएँ",
-  "Help me make a monthly budget I can actually stick to":
-    "ऐसा मासिक बजट बनाने में मदद करें जिस पर मैं सच में टिक सकूँ",
-  "Plan a relaxed three-day trip to a city I choose":
-    "मेरे चुने शहर की आरामदेह तीन दिन की यात्रा की योजना बनाएँ",
-  "Suggest a beginner workout I can do at home":
-    "घर पर करने लायक़ शुरुआती कसरत सुझाएँ",
-  "Help me sort out a cluttered closet in one weekend":
-    "एक सप्ताहांत में बिखरी अलमारी को व्यवस्थित करने में मदद करें",
-  "Come up with gift ideas for a friend who loves hiking":
-    "पैदल यात्रा पसंद करने वाली दोस्त के लिए उपहार के सुझाव दें",
-  "Help me prepare answers to common interview questions":
-    "आम इंटरव्यू सवालों के जवाब तैयार करने में मदद करें",
-  "Review my resume summary and make it sharper":
-    "मेरे रिज़्यूमे का सारांश देखें और उसे और धारदार बनाएँ",
-  "Plan how to ask my manager for a raise":
-    "मैनेजर से वेतन बढ़ाने की बात कैसे करूँ, इसकी योजना बनाएँ",
-  "Explore careers for someone who loves both data and people":
-    "डेटा और लोगों दोनों में रुचि रखने वाले व्यक्ति के लिए करियर खोजें",
-  "Draft a polite message turning down a job offer":
-    "नौकरी का प्रस्ताव विनम्रता से ठुकराने वाला संदेश लिखें",
-  "Set goals for my first 90 days in a new role":
-    "नई भूमिका के पहले 90 दिनों के लिए लक्ष्य तय करें",
-  "Tell me something surprising about octopuses":
-    "ऑक्टोपस के बारे में कोई चौंकाने वाली बात बताएँ",
-  "Teach me a card trick I can learn in five minutes":
-    "पाँच मिनट में सीखी जा सकने वाली ताश की एक जादूगरी सिखाएँ",
-  "Invent a game I can play with things around the house":
-    "घर की चीज़ों से खेला जा सकने वाला एक खेल ईजाद करें",
-  "Explain a famous paradox in plain words":
-    "किसी मशहूर विरोधाभास को सरल शब्दों में समझाएँ",
-  "Recommend a hobby after asking me a few questions":
-    "मुझसे कुछ सवाल पूछकर कोई शौक़ सुझाएँ",
-  "Write a riddle and let me guess the answer":
-    "एक पहेली पूछें और मुझे जवाब बूझने दें",
-  "Summarize the most recent document in my Drive":
-    "मेरी Drive के सबसे नए दस्तावेज़ का सार दें",
-  "Find my notes on an upcoming project in Drive and pull out the action items":
-    "Drive में आने वाले प्रोजेक्ट पर मेरे नोट्स ढूँढें और काम के बिंदु निकालें",
-  "Turn a spreadsheet in my Drive into a short written summary":
-    "मेरी Drive की एक स्प्रेडशीट को छोटे लिखित सार में बदलें",
-  "Check my recent Drive documents for anything waiting on me":
-    "देखें कि मेरे हाल के Drive दस्तावेज़ों में कुछ मेरा इंतज़ार तो नहीं कर रहा",
-  "Look at my calendar and plan focus time for this week":
-    "मेरा कैलेंडर देखकर इस हफ़्ते फ़ोकस का समय तय करें",
-  "Prepare me for my next meeting with a short briefing":
-    "छोटी ब्रीफ़िंग से मुझे अगली बैठक के लिए तैयार करें",
-  "Find an hour this week for a planning session":
-    "इस हफ़्ते योजना-सत्र के लिए एक घंटा ढूँढें",
-  "Sum up how much of last week went to meetings":
-    "बताएँ कि पिछले हफ़्ते का कितना समय बैठकों में गया",
-  "Summarize the unread emails in my inbox":
-    "मेरे इनबॉक्स के अपठित ईमेल का सार दें",
-  "Draft replies to emails that have waited more than two days":
-    "दो दिन से ज़्यादा से इंतज़ार कर रहे ईमेल के जवाबों का मसौदा लिखें",
-  "Find emails about upcoming travel and list the details":
-    "आने वाली यात्राओं से जुड़े ईमेल ढूँढें और विवरण सूचीबद्ध करें",
-  "Combine my email, calendar and Drive into a briefing for today":
-    "मेरे ईमेल, कैलेंडर और Drive को मिलाकर आज की ब्रीफ़िंग बनाएँ",
-  "Hey Claudex, could you {prompt}? Use the connectors that help, and start once you have what you need.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Claudex, यह काम कर देंगे: {prompt}? जो कनेक्टर मदद करें उनका इस्तेमाल करें, और ज़रूरी जानकारी मिलते ही शुरू करें।\n\nअगर ठीक लगे, तो कुछ ऐसा बनाएँ जिसे हम साथ देख सकें, जैसे चार्ट, चेकलिस्ट या छोटा इंटरैक्टिव पेज।",
-  "Hey Claudex, could you help me {prompt}? Start researching straight away with any tools that help, and tell me if you need more context.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page.":
-    "Claudex, इसमें मेरी मदद करेंगे: {prompt}? मददगार टूल्स के साथ तुरंत खोजबीन शुरू करें, और ज़्यादा संदर्भ चाहिए तो बताएँ।\n\nअगर ठीक लगे, तो कुछ ऐसा बनाएँ जिसे हम साथ देख सकें, जैसे चार्ट, चेकलिस्ट या छोटा इंटरैक्टिव पेज।",
-  "Hi Claudex! Could you {prompt}? If something important is missing, ask me one or two questions first, and tell me if a file or more context would help. Use any tools you have, such as web search or connected files, when they help.\n\nWhere it helps, make something we can look at together, such as a chart, a checklist or a small interactive page. Thanks!":
-    "नमस्ते Claudex! क्या आप यह कर सकते हैं: {prompt}? अगर कोई ज़रूरी जानकारी छूटी हो, तो पहले मुझसे एक-दो सवाल पूछें, और बताएँ कि कोई फ़ाइल या ज़्यादा संदर्भ मदद करेगा या नहीं। ज़रूरत हो तो अपने टूल्स, जैसे वेब सर्च या जुड़ी फ़ाइलें, इस्तेमाल करें।\n\nअगर ठीक लगे, तो कुछ ऐसा बनाएँ जिसे हम साथ देख सकें, जैसे चार्ट, चेकलिस्ट या छोटा इंटरैक्टिव पेज। धन्यवाद!",
-  "Start with something small": "छोटे काम से शुरुआत",
-  "Help me plan my week. Ask what is on my plate and what matters most, then lay out a day-by-day plan with time for focused work and room for surprises.":
-    "मेरा हफ़्ता प्लान करने में मदद करें। पूछें कि मेरे पास क्या-क्या काम है और सबसे ज़रूरी क्या है, फिर ध्यान से काम करने के समय और अचानक आने वाले कामों की गुंजाइश के साथ दिन-ब-दिन योजना बनाएँ।",
-  "Sort my screenshots": "मेरे स्क्रीनशॉट छाँटें",
-  "Go through the screenshots in my selected folder and sort them into subfolders by topic. Propose the folder names and show me the plan before moving anything.":
-    "मेरे चुने फ़ोल्डर के स्क्रीनशॉट देखें और उन्हें विषय के हिसाब से सब-फ़ोल्डरों में बाँटें। फ़ोल्डरों के नाम सुझाएँ और कुछ भी हटाने से पहले मुझे योजना दिखाएँ।",
-  "Spot patterns in my files": "मेरी फ़ाइलों में पैटर्न खोजें",
-  "Read the documents in my selected folder and tell me what stands out: recurring themes, open questions and anything that looks out of date. Fit it on one page.":
-    "मेरे चुने फ़ोल्डर के दस्तावेज़ पढ़ें और बताएँ कि क्या ख़ास दिखता है: बार-बार आने वाले विषय, खुले सवाल और जो पुराना लगे। सब एक पेज में रखें।",
-  "Clear the clutter": "बिखराव समेटें",
-  "Tidy my Downloads folder": "मेरा डाउनलोड फ़ोल्डर व्यवस्थित करें",
-  "Look through my Downloads folder and suggest what to keep, file away or delete. Group similar files, point out large or duplicate ones, and wait for my go-ahead before changing anything.":
-    "मेरा डाउनलोड फ़ोल्डर देखें और सुझाएँ कि क्या रखना, सँभालकर रखना या हटाना है। मिलती-जुलती फ़ाइलें एक साथ रखें, बड़ी या दोहराई गई फ़ाइलें बताएँ, और मेरी मंज़ूरी से पहले कुछ न बदलें।",
-  "Group photos by date": "तारीख़ के हिसाब से फ़ोटो समूहित करें",
-  "Organize the photos in my selected folder into folders by year and month, using the date each one was taken. Show me the plan first and never delete a photo.":
-    "मेरे चुने फ़ोल्डर की फ़ोटो को खींचने की तारीख़ के हिसाब से साल और महीने के फ़ोल्डरों में रखें। पहले योजना दिखाएँ और कोई फ़ोटो कभी न हटाएँ।",
-  "Get my inbox under control": "मेरा इनबॉक्स क़ाबू में करें",
-  "Help me get my inbox under control. Group what is waiting by urgency, draft short replies for the quick ones, and list what needs a decision from me.":
-    "मेरा इनबॉक्स क़ाबू में करने में मदद करें। बचे ईमेल को ज़रूरत के हिसाब से समूहित करें, जल्दी वाले ईमेल के छोटे जवाब लिखें, और जिन पर मुझे फ़ैसला करना है उनकी सूची बनाएँ।",
-  "Get ready for what’s next": "आगे के लिए तैयार रहें",
-  "Prepare for my next meeting": "अगली बैठक की तैयारी करें",
-  "Help me prepare for my next meeting. Ask who it is with and what it is about, then gather the relevant notes and files and give me a short briefing with questions to raise.":
-    "अगली बैठक की तैयारी में मदद करें। पूछें कि बैठक किसके साथ और किस बारे में है, फिर ज़रूरी नोट्स और फ़ाइलें जुटाकर उठाने लायक़ सवालों के साथ छोटी ब्रीफ़िंग दें।",
-  "Plan a getaway": "एक छोटी यात्रा प्लान करें",
-  "Help me plan a short trip. Ask about my dates, budget and the kind of places I enjoy, then suggest a day-by-day plan and a packing list.":
-    "एक छोटी यात्रा प्लान करने में मदद करें। मेरी तारीख़ें, बजट और पसंदीदा जगहों के बारे में पूछें, फिर दिन-ब-दिन योजना और सामान की सूची सुझाएँ।",
-  "Get ready for an interview": "इंटरव्यू की तैयारी करें",
-  "Help me get ready for a job interview. Ask about the role and the company, go over likely questions with me, help me shape my answers and suggest questions I can ask them.":
-    "नौकरी के इंटरव्यू की तैयारी में मदद करें। भूमिका और कंपनी के बारे में पूछें, संभावित सवालों पर मेरे साथ अभ्यास करें, जवाब निखारने में मदद करें और मेरे पूछने लायक़ सवाल सुझाएँ।",
-  "Make sense of scattered information": "बिखरी जानकारी समझें",
-  "Catch me up on team chat": "टीम चैट में जो छूटा उसे बताएँ",
-  "Catch me up on what I missed in my team’s chat. Summarize the main discussions and decisions, point out anything that mentions me, and list what I should reply to.":
-    "टीम चैट में मुझसे जो छूट गया, वह बताएँ। मुख्य चर्चाओं और फ़ैसलों का सार दें, जहाँ मेरा ज़िक्र है वह बताएँ, और जिनका मुझे जवाब देना है उनकी सूची बनाएँ।",
-  "Turn voice notes into a document": "वॉइस नोट्स से दस्तावेज़ बनाएँ",
-  "Turn the voice notes in my selected folder into a tidy document. Transcribe them, group related points under headings and list any action items at the end.":
-    "मेरे चुने फ़ोल्डर के वॉइस नोट्स को एक साफ़ दस्तावेज़ में बदलें। उन्हें लिखें, जुड़े बिंदुओं को शीर्षकों के नीचे रखें और अंत में करने वाले कामों की सूची दें।",
-  "Collect figures into a spreadsheet": "आँकड़े एक स्प्रेडशीट में इकट्ठा करें",
-  "Pull the figures scattered across the files in my selected folder into one spreadsheet. Show me the columns you plan to use before you start, and note where each value came from.":
-    "मेरे चुने फ़ोल्डर की फ़ाइलों में बिखरे आँकड़ों को एक स्प्रेडशीट में इकट्ठा करें। शुरू करने से पहले जिन कॉलमों का इस्तेमाल करेंगे वे दिखाएँ, और हर मान का स्रोत लिखें।",
-  "Connect to a Claudex service": "किसी Claudex सेवा से जुड़ें",
-  "Enter the address of the service you sign in to.":
-    "उस सेवा का पता दर्ज करें जिसमें आप साइन इन करते हैं।",
-  "Service address": "सेवा का पता",
-  "No Claudex service answered at this address. Check it and try again.":
-    "इस पते पर किसी Claudex सेवा ने जवाब नहीं दिया। जाँचकर फिर से कोशिश करें।",
-  "Claudex couldn't reach the update server. If you're on a work network, a firewall or proxy may be blocking it — ask your IT team to allow it. Otherwise, check your connection and try again, or download the latest version from your Claudex service's website.":
-    "Claudex अपडेट सर्वर तक नहीं पहुँच सका। अगर आप कार्य नेटवर्क पर हैं, तो कोई फ़ायरवॉल या प्रॉक्सी इसे रोक रहा हो सकता है — अपनी IT टीम से इसे अनुमति देने को कहें। नहीं तो अपना कनेक्शन जाँचकर फिर कोशिश करें, या अपनी Claudex सेवा की वेबसाइट से नया संस्करण डाउनलोड करें।",
-  "It didn’t reconnect after the session was cleared. Turn it back on to keep using this session from your phone or the web.":
-    "सेशन साफ़ होने के बाद दोबारा कनेक्ट नहीं हुआ। फ़ोन या वेब से यह सेशन इस्तेमाल करते रहने के लिए इसे फिर से चालू करें।",
-  "I agree to the {terms} and {aup}.": "मैं {terms} और {aup} से सहमत हूँ।",
 };
+// Preserve the native error contract while reusing the translated recovery advice.
+catalog["The Claudex service is unreachable. Check your connection."] =
+  catalog["Couldn’t reach the service. Check your connection, then try again."];
 export default catalog;

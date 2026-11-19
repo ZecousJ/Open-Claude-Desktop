@@ -1,5 +1,5 @@
 /**
- * The interface packs on disk (docs/releasing.md):
+ * The interface packs on disk (docs/desktop-ui-hot-update.md):
  * `<userData>/ui-packs/<version>/` holds a verified pack's files and its
  * manifest; `state.json` records which version the windows run (`active`),
  * which one they should run next (`target`), and versions that failed to
@@ -203,7 +203,7 @@ export class UiPackStore {
     return this.runnable(this.state.active) ? this.state.active : bundledUi;
   }
 
-  // : a page load gets the new interface.
+  // (live claude.ai bundle, 2026-10-14, index.chunk-BWk6pVUt.js): a page load gets the new interface.
   pageVersion() {
     return this.pending ? this.activate() : this.current();
   }

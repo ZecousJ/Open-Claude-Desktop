@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.f084.json",
+  "include": [
+    "../electron/pdf-worker.d.ts",
+    "../electron/engine/engine-handoff.ts",
+    "../electron/official-ui/native/code-sessions.ts",
+    "official-ui-code-stop.test.ts",
+    "official-ui-code-stop-staging.test.ts",
+    "official-ui-code-sessions.test.ts",
+    "engine/code-interrupt.test.ts",
+    "engine/code-start-interrupt.test.ts",
+    "engine/interrupt-source-identity.test.ts",
+    "f014-stop-unavailable.test.ts",
+    "official-ui-interrupt-turn-cas.test.ts"
+  ]
+}

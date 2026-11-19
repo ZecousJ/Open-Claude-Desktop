@@ -58,3 +58,18 @@ test("a newer token from another client is used after a revoke", async () => {
   assert.equal(value, "phone");
   assert.equal(signedOut(), 0);
 });
+
+test("a retired operation cannot retry with another client's token", async () => {
+  const { s } = session();
+  s.setAccessToken("desktop");
+  let active = true;
+  const seen: string[] = [];
+  await assert.rejects(s.authorized(async (token) => {
+    seen.push(token);
+    active = false;
+    s.setAccessToken("phone");
+    throw revoked();
+  }, () => active), /account changed/i);
+  assert.deepEqual(seen, ["desktop"]);
+  assert.equal(await s.authorized(async (token) => token), "phone");
+});

@@ -14,7 +14,7 @@
  *    can show a branch and `@` files before the first message starts Codex.
  *
  * Nothing here ever touches this computer's files with a host's path.
- * The commands read only; they run without Codex's sandbox, like the
+ * The commands run without Codex's sandbox, like the
  * Changes panel's local `git` (on macOS hosts `git` is an xcrun shim that
  * fails inside it), and without the gateway token or API keys in their
  * environment.
@@ -44,7 +44,7 @@ import {
   type GitRunner,
   type TreeEntry,
 } from "../git/working-tree";
-import { shQuote } from "./remote-scripts";
+import { folderCheckScript, listDirectoryScript, parseDirectoryListing, parseFolderCheck, shQuote } from "./remote-scripts";
 
 /** One command on the host. */
 export interface RemoteCommand {
@@ -71,6 +71,12 @@ export type RemoteRunner = (command: RemoteCommand) => Promise<RemoteResult>;
 /** The host could not be asked (not connected, connection lost). */
 export class RemoteUnavailableError extends Error {
   readonly transport = true;
+}
+
+export class RemoteFileReadError extends Error {
+  constructor(readonly code: number | null) {
+    super(readRefusal(code));
+  }
 }
 
 const DEFAULT_TIMEOUT = 30_000;
@@ -195,7 +201,11 @@ export const READ_FILE_SCRIPT = [
   `d=$(cd -- "$(dirname -- "$2")" 2>/dev/null && pwd -P) || exit 4`,
   `t=$d/$(basename -- "$2")`,
   `if [ "$root" != / ]; then case $d/ in "$root"/*) ;; *) exit 5 ;; esac; fi`,
-  `if [ -L "$t" ]; then exit 6; fi`,
+  `if [ -L "$t" ]; then`,
+  `  [ "$4" = follow ] || exit 6`,
+  `  t=$(realpath -- "$t" 2>/dev/null) || exit 4`,
+  `  if [ "$root" != / ]; then case $t in "$root"/*) ;; *) exit 5 ;; esac; fi`,
+  `fi`,
   `[ -e "$t" ] || exit 4`,
   `[ -f "$t" ] || exit 6`,
   `s=$(wc -c < "$t" | tr -d ' ') || exit 7`,
@@ -293,17 +303,29 @@ export class RemoteWorkspace implements WorkspaceFs {
     this.environment = { kind: "ssh", hostId };
   }
 
-  private run(command: RemoteCommand) {
+  run(command: RemoteCommand) {
     return this.runner()(command);
   }
 
-  readonly git: GitRunner = async (cwd, args, okCodes = [0]) => {
-    const result = await this.run({
+  gitCommand(
+    cwd: string,
+    args: string[],
+    options?: Pick<RemoteCommand, "timeoutMs" | "maxOutput">,
+  ) {
+    return this.run({
       argv: ["git", ...safeGitConfig, ...args],
       cwd: checkHostPath(cwd),
       env: gitEnvironment,
-      maxOutput: GIT_OUTPUT,
+      ...options,
     });
+  }
+
+  readonly git: GitRunner = async (cwd, args, okCodes = [0], maxOutput) => {
+    const result = await this.gitCommand(cwd, args, {
+      maxOutput: maxOutput === undefined ? GIT_OUTPUT : maxOutput + 1,
+    });
+    if (maxOutput !== undefined && Buffer.byteLength(result.stdout) > maxOutput)
+      throw new Error("Git output exceeded its size limit.");
     if (result.code !== null && okCodes.includes(result.code))
       return result.stdout;
     throw Object.assign(
@@ -361,6 +383,21 @@ export class RemoteWorkspace implements WorkspaceFs {
     return result.code === 0;
   }
 
+  async resolveDirectory(folder: string) {
+    const result = await this.run({
+      argv: shell(folderCheckScript(checkHostPath(folder)), []),
+    });
+    const resolved = result.code === 0 && parseFolderCheck(result.stdout);
+    if (!resolved) throw Error("Choose a directory to add to this Code session.");
+    return resolved;
+  }
+
+  async homeDirectory() {
+    const result = await this.run({ argv: shell(`printf '%s' "$HOME"`, []) });
+    if (result.code !== 0) throw new RemoteFileReadError(result.code);
+    return checkHostPath(result.stdout);
+  }
+
   /** Every file and folder under `root`, relative (links are left out). */
   async listFolder(root: string): Promise<MentionFile[]> {
     const result = await this.run({
@@ -368,13 +405,30 @@ export class RemoteWorkspace implements WorkspaceFs {
       maxOutput: LISTING_BYTES + 1024,
       timeoutMs: 30_000,
     });
-    if (result.code === 3)
-      throw new Error("The conversation folder is no longer available.");
+    if (result.code !== 0) throw new RemoteFileReadError(result.code);
     return parseFolderListing(result.stdout);
   }
 
+  async listDirectoryInside(root: string, directory: string) {
+    return this.readDirectory(listDirectoryScript(checkHostPath(directory), checkHostPath(root)));
+  }
+
+  async listDirectory(directory: string) {
+    return this.readDirectory(listDirectoryScript(checkHostPath(directory)));
+  }
+
+  private async readDirectory(script: string) {
+    const result = await this.run({
+      argv: shell(script, []),
+    });
+    if (result.code !== 0) throw new RemoteFileReadError(result.code);
+    const listing = parseDirectoryListing(result.stdout);
+    if (!listing) throw new RemoteFileReadError(null);
+    return listing;
+  }
+
   mentionFiles(root: string, query: string) {
-    return mentionFilesWith(`ssh:${this.hostId}\0${root}`, query, () =>
+    return mentionFilesWith(`${this.environment.kind}:${this.hostId}\0${root}`, query, () =>
       this.listFolder(root),
     );
   }
@@ -391,6 +445,7 @@ export class RemoteWorkspace implements WorkspaceFs {
     cwd: string,
     file: string,
     maxBytes: number,
+    options?: { followLinks: true },
   ): Promise<Buffer> => {
     const limit = Math.max(0, Math.floor(maxBytes));
     const result = await this.run({
@@ -398,12 +453,13 @@ export class RemoteWorkspace implements WorkspaceFs {
         checkHostPath(cwd),
         checkHostPath(file),
         String(limit),
+        options?.followLinks ? "follow" : "",
       ]),
       maxOutput: Math.ceil(limit * 1.4) + 4096,
       timeoutMs: 60_000,
     });
     if (result.code === 8) throw new FileTooLargeError();
-    if (result.code !== 0) throw new Error(readRefusal(result.code));
+    if (result.code !== 0) throw new RemoteFileReadError(result.code);
     const newline = result.stdout.indexOf("\n");
     const size = Number(
       /^size=(\d+)$/.exec(result.stdout.slice(0, newline))?.[1] ?? NaN,

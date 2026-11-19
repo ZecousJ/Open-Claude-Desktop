@@ -1,3 +1,5 @@
+import { parseInlineAttachmentDisplays } from "./inline-attachment-display";
+import {parsePersistedCompletionQuotes} from "./completion-quotes";
 import type { Conversation, ConversationBranch, Turn } from "./types";
 import {
   webLimits,
@@ -80,8 +82,13 @@ function checkTurn(value: unknown, what: string): Turn {
   const turn = object(value, what);
   docId(turn.id, `${what}.id`);
   string(turn.prompt, `${what}.prompt`, true);
+  if(turn.completionQuotes!==undefined)parsePersistedCompletionQuotes(turn.prompt,turn.completionQuotes);
   if (!Array.isArray(turn.attachments))
     fail(`${what}.attachments must be an array`);
+  if ("inlineAttachmentDisplays" in turn) {
+    try { turn.inlineAttachmentDisplays = parseInlineAttachmentDisplays(turn.inlineAttachmentDisplays, turn.attachments.map((file, index) => string(object(file, `${what}.attachments[${index}]`).id, "attachment.id"))); }
+    catch { turn.inlineAttachmentDisplays = []; }
+  }
   if (!Array.isArray(turn.items)) fail(`${what}.items must be an array`);
   turn.items.forEach((item, index) => {
     const row = object(item, `${what}.items[${index}]`);
@@ -90,6 +97,8 @@ function checkTurn(value: unknown, what: string): Turn {
   });
   oneOf(turn.status, turnStatuses, `${what}.status`);
   integer(turn.createdAt, `${what}.createdAt`);
+  if (turn.codeUltracode !== undefined)
+    boolean(turn.codeUltracode, `${what}.codeUltracode`);
   return turn as unknown as Turn;
 }
 
@@ -106,6 +115,10 @@ function checkMeta(value: unknown): ConversationMeta {
   integer(meta.createdAt, "conversation.createdAt");
   integer(meta.updatedAt, "conversation.updatedAt");
   if (meta.incognito === true) fail("incognito conversations are never stored");
+  if (meta.codeUltracode !== undefined) {
+    if (meta.mode !== "code") fail("Ultracode belongs to Code");
+    boolean(meta.codeUltracode, "conversation.codeUltracode");
+  }
   if (meta.savedBranches !== undefined) {
     if (!Array.isArray(meta.savedBranches))
       fail("conversation.savedBranches must be an array");

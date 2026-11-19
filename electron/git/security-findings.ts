@@ -105,11 +105,12 @@ function validState(value: unknown): SecurityFindingsState {
 }
 
 /**
- * The findings of the security-review routines, one file per account. A
- * routine's runs are read when its list is asked for: each completed run's
- * answer is read as a report once (shared/security-review.ts) and merged, so
- * the list needs nothing running in the background and a run's findings arrive
- * the next time the list is opened.
+ * The findings of the security-review routines, one file per account
+ * (`security-findings.json`, written whole like the other collection
+ * files). A routine's runs are read when its list is asked for: each
+ * completed run's answer is read as a report once (shared/security-review.ts)
+ * and merged, so the list needs nothing running in the background and a
+ * run's findings arrive the next time the list is opened.
  */
 export class SecurityFindingsStore {
   private readonly filename: string;

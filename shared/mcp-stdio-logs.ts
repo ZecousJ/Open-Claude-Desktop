@@ -4,6 +4,7 @@ export const mcpStdioFiles = 5;
 export interface McpStdioLogSnapshot {
   source: "stdio-stderr";
   availability: "pending" | "available" | "unsupported" | "unavailable";
+  failed?: boolean;
   lines: string[];
   truncated: boolean;
 }

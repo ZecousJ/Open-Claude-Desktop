@@ -15,11 +15,9 @@ import {
 } from "./blank-artifact-model";
 import { t } from "../i18n";
 import "./blank-artifact.css";
-import {
-  SlidesEditor,
-  DesignEditor,
-  DashboardEditor,
-} from "./BlankDesignEditors";
+import { SlidesEditor, DashboardEditor } from "./BlankDesignEditors";
+import { DesignEditor } from "./DesignEditor";
+import { Tool } from "./BlankArtifactTool";
 export interface Props {
   artifact: Artifact;
   kind: ArtifactOutputKind;
@@ -139,33 +137,6 @@ const escapeText = (value: string) =>
     .replaceAll('"', "&quot;");
 export const table =
   "<table><tbody><tr><td><p><br></p></td><td><p><br></p></td></tr><tr><td><p><br></p></td><td><p><br></p></td></tr></tbody></table><p><br></p>";
-export function Tool({
-  label,
-  children,
-  onClick,
-  disabled,
-  pressed,
-}: {
-  label: string;
-  children: ReactNode;
-  onClick(): void;
-  disabled?: boolean;
-  pressed?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={t(label)}
-      title={t(label)}
-      aria-pressed={pressed}
-      disabled={disabled}
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
 export function imageFile(
   input: HTMLInputElement | null,
   onImage: (html: string) => void,

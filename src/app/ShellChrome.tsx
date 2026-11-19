@@ -21,8 +21,9 @@ const KeyboardShortcutsDialog = lazyPiece(
 );
 
 /**
- * The web Code draft has its title and no version-update nudge. The native Code
- * host retains its release-note entry; Chat keeps the incognito action.
+ * The web Code draft has its title and no version-update nudge. The native
+ * Code host retains its release-note entry; Chat keeps the incognito action.
+ * Reference: shared-19-B3wmJeb_:16480 and cb63ed069-i9uLMqQi:4394,4574.
  */
 export function HomeCornerActions() {
   const app = useApp();

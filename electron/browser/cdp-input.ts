@@ -50,7 +50,7 @@ export async function screenshot(
   const capture = async (format: "png" | "jpeg") =>
     String(
       (
-        await this.send("Page.captureScreenshot", {
+        await this.captureScreenshot({
           format,
           ...(format === "jpeg" ? { quality: 80 } : {}),
           clip: { ...clipRect, scale: scale / ratio },
@@ -296,6 +296,7 @@ export async function setViewport(
   this: CdpDriver,
   viewport: BrowserViewport,
   desktopUserAgent: string,
+  scale?: number,
 ) {
   await this.ready();
   if (typeof viewport === "object") {
@@ -303,6 +304,7 @@ export async function setViewport(
       ...viewport,
       deviceScaleFactor: 1,
       mobile: false,
+      ...(scale === undefined ? {} : { scale }),
     });
     await this.send("Emulation.setTouchEmulationEnabled", { enabled: false });
     await this.send("Emulation.setUserAgentOverride", {

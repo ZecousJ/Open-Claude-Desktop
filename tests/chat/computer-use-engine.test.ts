@@ -216,7 +216,7 @@ test("a Code or Cowork thread gets the adapter, the guidance once per thread, an
   }
 });
 
-test("Chat, a conversation computer use is off for, and an SSH conversation get no adapter", async () => {
+test("An enabled local Chat gets the adapter and an SSH conversation does not", async () => {
   const env = setup();
   try {
     let on = false;
@@ -248,10 +248,10 @@ test("Chat, a conversation computer use is off for, and an SSH conversation get 
     };
     assert.equal(computerUseServerFor(remote, deps), undefined);
     const chat = {
-      conversation: { id: "c", mode: "code" } as Conversation,
+      conversation: { id: "c", mode: "chat" } as Conversation,
       mode: "chat" as const,
     };
-    assert.equal(computerUseServerFor(chat, deps), undefined);
+    assert.equal(computerUseServerFor(chat, deps)?.name, "computer-use");
     // Signed out: no service, no adapter.
     assert.equal(
       computerUseServerFor(

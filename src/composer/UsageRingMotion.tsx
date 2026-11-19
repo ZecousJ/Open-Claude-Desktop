@@ -3,11 +3,12 @@ import { prefersReducedMotion } from "../ui/usePresence";
 import "./usage-ring-motion.css";
 
 /**
- * The usage ring's motion, as the original's. Once per reset window the arc
- * draws itself in (later it fades in quietly); crossing into warning (75%),
+ * The usage ring's motion, as the original's (live claude.ai bundle,
+ * 2026-10-14, c5afb3665: ue and he). Once per reset window the arc draws
+ * itself in (later it fades in quietly); crossing into warning (75%),
  * critical (90%) or the limit beats once per window, remembered in
- * localStorage; a reply that starts streaming at 15% or more sends a shimmer
- * round the ring. Nothing moves with reduced motion.
+ * localStorage; a reply that starts streaming at 15% or more sends a
+ * shimmer round the ring. Nothing moves with reduced motion.
  */
 export type RingBand = 0 | 1 | 2 | 3;
 

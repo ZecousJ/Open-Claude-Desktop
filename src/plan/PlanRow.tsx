@@ -7,9 +7,10 @@ import { AppContext } from "../app/AppContext";
 import { requestPlanReveal } from "./plan-reveal";
 
 /**
- * A task-list update in the Code transcript; the list itself lives in the Plan
- * panel. The row reads as the original's TodoWrite row: "Updating todos" while
- * it is written, "Updated todos" after, "Cleared todos" for an empty list.
+ * A task-list update in the Code transcript; the list itself lives in the
+ * Plan panel. The row reads as the original's TodoWrite row (live claude.ai
+ * bundle, 2026-10-14, the Code tool verbs): "Updating todos" while it is
+ * written, "Updated todos" after, "Cleared todos" for an empty list.
  */
 export function PlanRow({ item, onOpen }: { item: Item; onOpen: () => void }) {
   const t = useT();

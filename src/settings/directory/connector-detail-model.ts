@@ -61,10 +61,8 @@ export function relatedConnectors(
 export const connectorDetailPath = (id: string) =>
   `/customize/connectors/id/${encodeURIComponent(id)}`;
 
-/**
- * Names are sorted, capped at18 until expanded, then arranged in one, two (6+)
- * or three (11+) columns.
- */
+/** O16 cc141fa17-Cwdexeml Qt: names are sorted, capped at18 until expanded,
+ * then arranged in one, two (6+) or three (11+) columns. */
 export function connectorToolNames(tools: readonly string[], expanded = false) {
   const sorted = [...tools].sort((a, b) =>
     a.toLowerCase().localeCompare(b.toLowerCase()),

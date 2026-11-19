@@ -17,7 +17,15 @@ export function ProjectIcon({ project }: { project: Project }) {
     projectIcons.Projects;
   return (
     <span className="prj-settings-icon" data-color={project.color}>
-      <icon.icon size={16} strokeWidth={1.75} aria-hidden="true" />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d={icon.d} />
+      </svg>
     </span>
   );
 }
@@ -116,7 +124,15 @@ export function ProjectIconPicker({
                   })
                 }
               >
-                <icon.icon size={16} strokeWidth={1.75} aria-hidden="true" />
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d={icon.d} />
+                </svg>
               </button>
             ))}
             {!icons.length && <p>{t("No icons match your search")}</p>}
@@ -159,7 +175,7 @@ export function ProjectIconPicker({
   );
 }
 
-// General and Advanced.
+// General and Advanced (live claude.ai bundle, 2026-10-14, c57eefbba-Z8dldrXK.js).
 export function ProjectSettingsDialog({
   project,
   providers,

@@ -2,10 +2,10 @@ import type { Settings } from "../../shared/types";
 import { preference } from "../../shared/settings-extras";
 
 /**
- * Opens a pull request's page: in the default browser when Settings → Claude
- * Code → Open pull requests in browser is on, else the way the window opens
- * links (the built-in browser when it takes links, else the default one after
- * the usual question).
+ * Opens a pull request's page (live claude.ai bundle, 2026-10-12): in the
+ * default browser when Settings → Claude Code → Open pull requests in
+ * browser is on, else the way the window opens links (the built-in browser
+ * when it takes links, else the default one after the usual question).
  */
 export function openPullRequest(
   url: string,

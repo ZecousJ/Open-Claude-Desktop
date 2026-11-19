@@ -1,9 +1,11 @@
 /**
- * The words a picture shows, so Redact can cover one with a single click.
- * Brightness edges are grouped into pieces; pieces too tall, hollow outlines
- * and long straight runs (frames, rules) are dropped; what is left is closed
- * across gaps of up to 3 pixels into word boxes, kept when they look like text:
- * 6–64 pixels high, dense enough in edges and crossing them often enough along
+ * The words a picture shows, so Redact can cover one with a single click
+ * (live claude.ai bundle, 2026-10-12: the annotation editor looks for text
+ * targets once Redact is chosen, without any OCR). Brightness edges are
+ * grouped into pieces; pieces too tall, hollow outlines and long straight
+ * runs (frames, rules) are dropped; what is left is closed across gaps of
+ * up to 3 pixels into word boxes, kept when they look like text: 6–64
+ * pixels high, dense enough in edges and crossing them often enough along
  * each row. Boxes are in the picture's own pixels.
  */
 import type { Box } from "./annotate-sketch";

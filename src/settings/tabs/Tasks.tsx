@@ -17,7 +17,7 @@ const TrustedFoldersDialog = lazyPiece(
   "TrustedFoldersDialog",
 );
 
-/** Hub Tasks group. */
+/** Hub Tasks group (live claude.ai bundle, 2026-10-14, c0db37792-9AZ9M5rK, cabd7b1c1-C1LrCDQZ). */
 export function TasksSection({
   settings,
   save,

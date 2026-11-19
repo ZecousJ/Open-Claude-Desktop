@@ -68,7 +68,7 @@ test("without a session the sign-in screen gets the service's policy", async () 
     promoCode: false,
     captchaRequired: false,
     emailDomains: [],
-    // Nothing more is offered unless the service says so.
+    // Package LOGIN: nothing more is offered unless the service says so.
     passwordReset: false,
     emailCodeLogin: false,
     passkey: false,
@@ -212,6 +212,7 @@ test("sign-in failures read as the sign-in page's sentences, codes kept", async 
     assert.equal(error.code, "INVALID_CREDENTIALS");
     return true;
   });
+  // (live claude.ai bundle, 2026-10-14, c029a409d-B6xY2mgY.js)
   tab.routes.unshift(() =>
     json({ code: 400, message: "Something specific", reason: "ODD_CASE" }, 400),
   );

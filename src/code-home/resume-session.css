@@ -1,4 +1,5 @@
-/* cc43287c9's 2xl popup, h-8 rows, px-sm, gap-md and caption/body tokens. */
+/* cc43287c9's 2xl popup, h-8 rows, px-sm, gap-md and caption/body tokens
+   (live claude.ai bundle, 2026-10-14, cc43287c9). */
 .resume-session-dialog {
   width: min(64rem, calc(100vw - 32px));
 }

@@ -1,9 +1,10 @@
 /*
- * File cards for the other files a reply wrote: the sheet card (sheet-card.css)
- * with a Download button. On the desktop it is split, its ⌄ the original app's
- * "Show in Finder"; the web has the one Download. Cards stand 8px apart.
- * Download all is a 32px #2d2d2d button (radius 8) with a download glyph, under
- * the last card.
+ * File cards for the other files a reply wrote: the sheet card
+ * (sheet-card.css) with a Download button. On the desktop it is split, its
+ * ⌄ the original app's "Show in Finder" (R-0956: a 33px chevron part behind
+ * a rule); the web has the one Download. Cards stand 8px apart. Download
+ * all is a 32px #2d2d2d button (radius 8) with a download glyph, under the
+ * last card (R-0956).
  */
 .generated-file-card.file-document-card {
   margin-bottom: 8px;

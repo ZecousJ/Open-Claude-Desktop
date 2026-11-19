@@ -1,6 +1,7 @@
-/* The limit-hit dialog: the original's non-upgrade body: mt-2 text-sm mb-5
-   sentence, a benefit list (gap-2.5 mb-1 text-secondary, text-sm) and
-   full-width buttons in a column 8px apart, the quiet one underlined. */
+/* The limit-hit dialog: the original's non-upgrade body (live claude.ai
+   bundle 2026-10-14, c267d3c1f): mt-2 text-sm mb-5 sentence, a benefit
+   list (gap-2.5 mb-1 text-secondary, text-sm) and full-width buttons in a
+   column 8px apart, the quiet one underlined. */
 .limit-reached .limit-reached-body {
   margin: 8px 0 20px;
   font-size: 14px;

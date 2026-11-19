@@ -7,7 +7,7 @@ import { Modal } from "../ui/Controls";
 import { chooseRemoteFolder, selectHost } from "./actions";
 import { saveSshHost, useSshHosts } from "./useSshHosts";
 
-/** Safe initial focus and provenance. */
+/** Safe initial focus and provenance (live claude.ai bundle, 2026-10-14, c3f9f1667-By41brQy, c11959232-CiUz9ooX). */
 export function SshLinkDialog({
   target,
   onClose,

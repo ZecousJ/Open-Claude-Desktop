@@ -92,7 +92,7 @@ export function NewKeyDialog({
                     ] as const),
               )}
               onChange={setGroup}
-              // Each group's provider mark.
+              // Each group's provider mark (owner, 2026-10-14).
               icon={(id) => {
                 const item = groups.groups.find((g) => String(g.id) === id);
                 return item ? (
@@ -102,7 +102,7 @@ export function NewKeyDialog({
                   />
                 ) : null;
               }}
-              // Group names and their rates read whole.
+              // Group names and their rates read whole (owner, 2026-10-03).
               minMenuWidth={220}
             />
           </div>

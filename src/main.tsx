@@ -11,6 +11,7 @@ import "./composer/composer-add-menu.css";
 import "./policy/policy.css";
 import "./collections/collections.css";
 import { AuthGate } from "./app/AuthGate";
+import { App } from "./app/App";
 import { installRepeatGuard } from "./ui/repeat-guard";
 import { surface } from "../shared/host";
 import { parseWebRoute } from "./web/routes";
@@ -34,6 +35,7 @@ import "./transcript/transcript-states.css";
 import "./conversation/conversation-title.css";
 import "./boot/boot.css";
 import { lazyPiece } from "./ui/lazy-piece";
+import { loadReferenceFonts } from "./boot/reference-fonts";
 import { installEditCommands } from "./transcript/edit-commands";
 
 if (surface === "desktop") installEditCommands(document, window.desktop);
@@ -93,6 +95,7 @@ async function start() {
     await import("./cowork/native-chat-activity.css");
   }
   await loadSlots();
+  await loadReferenceFonts(window.desktop?.referenceFonts);
   if (generation !== renderer.generation) return;
   installRepeatGuard();
   renderer.root ??= createRoot(document.getElementById("root")!);
@@ -107,7 +110,7 @@ async function start() {
           <DownloadsPage />
         </Suspense>
       ) : (
-        <AuthGate />
+        <AuthGate renderApp={App} />
       )}
     </React.StrictMode>,
   );

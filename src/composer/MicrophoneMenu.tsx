@@ -17,7 +17,7 @@ import {
   useComposerMenuSheet,
 } from "./menu-sheet";
 import { DictationLevels } from "../voice/DictationLevels";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { useLocale, useT } from "../i18n";
 import { DictationLanguageMenu } from "./DictationLanguageMenu";
 import { dictationLanguages } from "./dictation-languages";
@@ -58,8 +58,9 @@ export async function inputDevices(): Promise<MicrophoneDevice[]> {
 }
 
 /**
- * The chosen input's level while the menu is open. Only where recording is
- * already allowed, so opening the menu never asks for the microphone.
+ * The chosen input's level while the menu is open (the original's menu
+ * meter, live claude.ai bundle, 2026-10-14, shared-8-D8y0BqdN). Only where
+ * recording is already allowed, so opening the menu never asks for the microphone.
  */
 function useInputLevel(
   deviceId: string,
@@ -104,10 +105,11 @@ function useInputLevel(
 }
 
 /**
- * The ⌄ after the microphone opens this: a "Microphone" heading over the
- * computer's inputs, the chosen one ticked (the system default at first), then
- * Language › and a "Hold to record" switch below a rule. The choices are used
- * by dictation (src/DictationButton.tsx).
+ * The ⌄ after the microphone opens this (R-0404 Code footer, R-0286 Chat):
+ * a "Microphone" heading over the computer's inputs, the chosen one ticked
+ * (the system default at first), then Language › and a "Hold to record" switch
+ * below a rule (live claude.ai bundle, 2026-10-16, c47a58ae1).
+ * The choices are used by dictation (src/DictationButton.tsx).
  */
 export function MicrophoneMenu({
   anchor,
@@ -252,7 +254,7 @@ export function MicrophoneMenu({
       <span>{t("Language")}</span>
       <span className="microphone-language-value">
         {languageLabel}
-        <AppIcon name="CaretRight" size={12} />
+        <Anthropicon name="CaretRight" size={12} />
       </span>
     </button>
   );
@@ -270,7 +272,7 @@ export function MicrophoneMenu({
       >
         {idle && (
           <div role="presentation" className="microphone-status">
-            <AppIcon name="Microphone" size={16} />
+            <Anthropicon name="Microphone" size={16} />
             <span className="sr-only">{t("Microphone")}</span>
           </div>
         )}

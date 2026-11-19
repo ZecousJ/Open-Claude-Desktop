@@ -154,7 +154,7 @@ test("a draft that was closed meanwhile gets nothing", async () => {
   assert.equal(state.focused, 0);
 });
 
-test("the terminal menu shows its keys for the platform", () => {
+test("the terminal menu shows its keys for the platform (live claude.ai bundle, 2026-10-12)", () => {
   const shortcuts = (entries: MenuEntry[]) =>
     entries.flatMap((entry) =>
       "label" in entry ? [[entry.label, entry.shortcut?.join("+")]] : [],

@@ -1,14 +1,15 @@
 import { ArrowUpRight } from "../ui/glyphs";
 import { t } from "../i18n";
 
-// The default shortcut's keys, drawn as keycaps.
-const shortcutKeys = {
-  macos: ["⌥ Option", "Space"],
-  windows: ["Ctrl", "Alt", "Space"],
-  linux: ["Ctrl", "Alt", "Space"],
+// Kept with the app rather than fetched from the web; the menu bar
+// picture is left out, as it shows another app's icon.
+const keyboardArt = {
+  macos: new URL("./art/keyboard-macos.svg", import.meta.url).href,
+  windows: new URL("./art/keyboard-windows.svg", import.meta.url).href,
+  linux: new URL("./art/keyboard-linux.svg", import.meta.url).href,
 };
 
-/** Quick Entry's onboarding step: the shortcut and a way to try it. */
+/** Cr (live claude.ai bundle, 2026-10-14, cc20c35ef-BQMTespy). */
 export default function QuickEntryOnboarding({
   platform,
   onSettings,
@@ -43,26 +44,19 @@ export default function QuickEntryOnboarding({
         <ArrowUpRight size={16} />
       </button>
       <div className="onboarding-quick-illustrations">
-        <div
-          className="onboarding-quick-keys"
-          role="img"
-          aria-label={t(
+        <img
+          loading="lazy"
+          src={keyboardArt[system]}
+          width={222}
+          height={129}
+          alt={t(
             platform === "darwin"
               ? "Keyboard shortcut on macOS"
               : platform === "linux"
                 ? "Keyboard shortcut"
                 : "Keyboard shortcut on Windows",
           )}
-        >
-          {shortcutKeys[system].map((key, index) => (
-            <kbd
-              key={key}
-              data-wide={index === shortcutKeys[system].length - 1}
-            >
-              {key}
-            </kbd>
-          ))}
-        </div>
+        />
       </div>
       <div className="onboarding-quick-actions">
         <button type="button" className="secondary" onClick={onContinue}>

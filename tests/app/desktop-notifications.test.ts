@@ -1,13 +1,18 @@
 /**
  * Notifications, attention and keep-awake (electron/attention-rules.ts,
- * electron/desktop-integration.ts), after the original's notification service.
- * Electron is replaced by a fake module that records the banners.
+ * electron/desktop-integration.ts), after the original's notification
+ * service (live claude.ai desktop bundle, 2026-10-12). Electron is replaced
+ * by a fake module that records the banners.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { registerHooks } from "node:module";
 import { EventEmitter } from "node:events";
-import type { WebContents } from "electron";
+import type { BrowserWindow, WebContents } from "electron";
+import type { AdapterContext } from "../../electron/official-ui/api/context";
 import type {
   Approval,
   Conversation,
@@ -40,6 +45,10 @@ const dock = {
   cancelled: [] as number[],
   badges: [] as string[],
 };
+type Invocation = (event: unknown, ...args: unknown[]) => unknown;
+const invokes = new Map<string, Invocation>();
+const windowOwners = new WeakMap<object, FakeOfficialWindow>();
+const openedSettings: string[] = [];
 (globalThis as any).__fakeNotifyElectron = {
   app: {
     on: () => {},
@@ -55,6 +64,16 @@ const dock = {
       setMenu: () => {},
     },
   },
+  BrowserWindow: {
+    fromWebContents: (sender: object) => windowOwners.get(sender),
+  },
+  ipcMain: {
+    handle: (channel: string, invoke: Invocation) =>
+      invokes.set(channel, invoke),
+    removeHandler: (channel: string) => invokes.delete(channel),
+    on: () => {},
+    removeListener: () => {},
+  },
   globalShortcut: { register: () => true, unregister: () => {} },
   Menu: { buildFromTemplate: (items: unknown[]) => items },
   nativeImage: { createFromPath: () => ({ resize: () => ({}) }) },
@@ -67,6 +86,9 @@ const dock = {
     getSystemIdleState: () => "active",
   },
   powerSaveBlocker: { start: () => 1, stop: () => {} },
+  shell: {
+    openExternal: async (url: string) => void openedSettings.push(url),
+  },
   Tray: class {},
 };
 const names = Object.keys((globalThis as any).__fakeNotifyElectron);
@@ -100,6 +122,9 @@ const {
 } = await import("../../electron/engine/attention-rules");
 const { DesktopIntegration } =
   await import("../../electron/app/desktop-integration");
+const { NativeHost } = await import("../../electron/official-ui/native/host");
+const { registerDesktopNotifications } =
+  await import("../../electron/official-ui/native/desktop-notifications");
 const { defaultSettings } = await import("../../electron/store/store");
 const { sameMenuState, initialMenuState } =
   await import("../../shared/menu-state");
@@ -547,8 +572,8 @@ test("renderer notifications dispatch both actions once with their tag, token an
       { type: "button", text: "Allow" },
       { type: "button", text: "Deny" },
     ]);
-    banner.listeners.get("action")?.({}, index);
-    banner.listeners.get("action")?.({}, index);
+    banner.listeners.get("action")?.({ actionIndex: index });
+    banner.listeners.get("action")?.({ actionIndex: index });
     banner.listeners.get("click")?.();
     assert.equal(banner.closed, true);
     const event = events.at(-1) as any;
@@ -579,13 +604,13 @@ test("replaced, closed and signed-out renderer banners cannot act on another req
     events.push(event),
   );
   assert.equal(old.closed, true);
-  old.listeners.get("action")?.({}, 0);
+  old.listeners.get("action")?.({ actionIndex: 0 });
   old.listeners.get("click")?.();
   const current = FakeNotification.all.at(-1)!;
-  current.listeners.get("action")?.({}, 5);
+  current.listeners.get("action")?.({ actionIndex: 5 });
   assert.equal(events.length, 0);
   current.close();
-  current.listeners.get("action")?.({}, 0);
+  current.listeners.get("action")?.({ actionIndex: 0 });
   current.listeners.get("click")?.();
   integration.showNotification(
     { title: "Claudex", body: "Complete" },
@@ -615,11 +640,238 @@ test("without native actions a renderer banner still opens its conversation", ()
   );
   const banner = FakeNotification.all.at(-1)!;
   assert.deepEqual(banner.options.actions, []);
-  banner.listeners.get("action")?.({}, 0);
+  banner.listeners.get("action")?.({ actionIndex: 0 });
   banner.listeners.get("click")?.();
   banner.listeners.get("click")?.();
   assert.deepEqual(opened, ["c-code"]);
   integration.reset();
+});
+
+test("Windows notifications with two IDs in the tag still show and replace the existing banner", () => {
+  const { integration } = setup({ window: false, viewing: [] });
+  const platform = Object.getOwnPropertyDescriptor(process, "platform")!;
+  const channel = "chan_4781639e-0148-43d6-865b-58e2b5244f4c";
+  const thread = "cd11c015-6c79-4dc3-9a99-b90e49e2fe26";
+  const input = {
+    title: "Project",
+    body: "New message",
+    tag: `channel-thread-${channel}-${thread}`,
+  };
+  const context = {
+    current: () => true,
+    activate: () => {},
+    groupId: `group-${channel}`,
+  };
+  Object.defineProperty(process, "platform", { value: "win32" });
+  try {
+    integration.showNotification(input, () => {}, context);
+    integration.showNotification(input, () => {}, context);
+    const [previous, current] = FakeNotification.all;
+    assert.equal(previous.closed, true);
+    assert.equal(current.shownCount, 1);
+    assert.equal(current.options.id, undefined);
+    assert.equal(current.options.groupId, context.groupId);
+  } finally {
+    Object.defineProperty(process, "platform", platform);
+    integration.reset();
+    integration.stop();
+  }
+});
+
+const officialOrigin = "http://fixture.invalid";
+const nativeChannel = (domain: string, operation: string) =>
+  `fixture_$_claude.web_$_${domain}_$_${operation}`;
+
+class FakeOfficialWindow extends EventEmitter {
+  events: unknown[][] = [];
+  activation: string[] = [];
+  current = true;
+  webContents = Object.assign(new EventEmitter(), {
+    mainFrame: { url: officialOrigin + "/new" },
+    send: (...event: unknown[]) => this.events.push(event),
+    isDestroyed: () => false,
+  });
+  constructor() {
+    super();
+    windowOwners.set(this.webContents, this);
+  }
+  isDestroyed() {
+    return false;
+  }
+  isFocused() {
+    return false;
+  }
+  isMinimized() {
+    return true;
+  }
+  restore() {
+    this.activation.push("restore");
+  }
+  show() {
+    this.activation.push("show");
+  }
+  focus() {
+    this.activation.push("focus");
+  }
+  async invoke(operation: string, ...args: unknown[]) {
+    const invoke = invokes.get(
+      nativeChannel("DesktopNotifications", operation),
+    );
+    assert.ok(invoke);
+    return invoke(
+      { sender: this.webContents, senderFrame: this.webContents.mainFrame },
+      ...args,
+    );
+  }
+}
+
+test("official notification IPC shows native banners and targets clicks and actions to the calling window", async (t) => {
+  const { integration } = setup(
+    { window: false, viewing: [] },
+    {
+      notificationLevels: { permission: "banner", idle: "banner" },
+    },
+  );
+  integration.supportsNotificationActions = () => true;
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "official-notification-"));
+  fs.mkdirSync(path.join(root, "data"));
+  fs.writeFileSync(
+    path.join(root, "data/native-ipc-contract.json"),
+    JSON.stringify({
+      invokes: [
+        "openNotificationSettings",
+        "showNotification",
+        "showNotificationWithActions",
+        "supportsNotificationActions",
+        "setProjectPromptsWaiting",
+      ].map((operation) => ({
+        channel: nativeChannel("DesktopNotifications", operation),
+      })),
+      sync: [],
+    }),
+  );
+  const host = new NativeHost(officialOrigin, {
+    root,
+    account: () => undefined,
+    onEvent: () => () => {},
+    isCurrent: () => true,
+    log: () => {},
+  } as unknown as AdapterContext);
+  registerDesktopNotifications(host, integration);
+  host.start();
+  t.after(() => {
+    host.dispose();
+    integration.reset();
+    integration.stop();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  const first = new FakeOfficialWindow(),
+    other = new FakeOfficialWindow();
+  for (const window of [first, other])
+    host.attach(window as unknown as BrowserWindow, {
+      origin: officialOrigin,
+      current: () => window.current,
+    });
+
+  const route = "/epitaxy?channel=chan_sample#message";
+  await first.invoke(
+    "showNotification",
+    "Project",
+    "Complete",
+    "complete",
+    route,
+    "remote_turn_complete",
+    {
+      sessionId: "session_1",
+      sessionGroupingId: "chan_sample",
+    },
+  );
+  const [plain] = FakeNotification.all;
+  assert.equal(plain.shownCount, 1);
+  assert.equal(plain.options.groupId, "group-chan_sample");
+  assert.equal(plain.options.silent, true);
+  assert.equal(await other.invoke("supportsNotificationActions"), true);
+  plain.listeners.get("click")?.();
+  assert.deepEqual(first.events, [
+    [nativeChannel("Navigation", "navigate"), route],
+  ]);
+  assert.deepEqual(first.activation, ["restore", "show", "focus"]);
+  assert.deepEqual(other.events, []);
+
+  const prompt = {
+    title: "Project",
+    body: "One approval waiting",
+    tag: "project-input",
+    token: "request_1",
+    actions: [
+      { id: "allow", title: "Allow" },
+      { id: "deny", title: "Deny" },
+    ],
+    navigateTo: route,
+    notificationType: "remote_requires_action",
+  };
+  await first.invoke("showNotificationWithActions", prompt);
+  const selected = FakeNotification.all.at(-1)!;
+  assert.deepEqual(selected.options.actions, [
+    { type: "button", text: "Allow" },
+    { type: "button", text: "Deny" },
+  ]);
+  await first.invoke("setProjectPromptsWaiting", 4);
+  await other.invoke("setProjectPromptsWaiting", 2);
+  if (process.platform === "darwin") assert.equal(dock.badges.at(-1), "4");
+  await assert.rejects(other.invoke("setProjectPromptsWaiting", 1000));
+  selected.listeners.get("action")?.({ actionIndex: 1 });
+  selected.listeners.get("action")?.({ actionIndex: 1 });
+  assert.equal(first.events.length, 2);
+  const [channel] = first.events[1];
+  const press = first.events[1][1] as unknown;
+  assert.equal(
+    channel,
+    nativeChannel("DesktopNotifications", "notificationAction"),
+  );
+  assert.ok(press && typeof press === "object" && "sinceShownMs" in press);
+  const { sinceShownMs, ...action } = press;
+  assert.ok(typeof sinceShownMs === "number" && sinceShownMs >= 0);
+  assert.deepEqual(action, {
+    tag: prompt.tag,
+    token: prompt.token,
+    actionId: "deny",
+  });
+  assert.deepEqual(other.events, []);
+
+  await assert.rejects(
+    first.invoke(
+      "showNotification",
+      "Project",
+      "Complete",
+      "bad-route",
+      "//external.invalid",
+      undefined,
+      undefined,
+    ),
+    /Invalid notification destination/,
+  );
+  await first.invoke("showNotificationWithActions", {
+    ...prompt,
+    token: "request_2",
+  });
+  const retired = FakeNotification.all.at(-1)!;
+  first.current = false;
+  retired.listeners.get("action")?.({ actionIndex: 0 });
+  retired.listeners.get("click")?.();
+  assert.equal(first.events.length, 2);
+  assert.equal(first.activation.length, 3);
+  assert.deepEqual(other.events, []);
+
+  await other.invoke("openNotificationSettings");
+  assert.deepEqual(
+    openedSettings,
+    process.platform === "darwin"
+      ? ["x-apple.systempreferences:com.apple.Notifications-Settings.extension"]
+      : process.platform === "win32"
+        ? ["ms-settings:notifications"]
+        : [],
+  );
 });
 
 test("project prompts contribute to the permission badge and clear on reset", () => {
@@ -650,6 +902,25 @@ test("the Dock bounces until nothing waits", () => {
   );
   integration.observeApprovalResolved(1);
   if (process.platform === "darwin") assert.deepEqual(dock.cancelled, [1]);
+});
+
+test("changing a waiting request's notification level refreshes its badge and attention", () => {
+  const { integration } = setup({ window: false, viewing: [] }, {
+    notificationLevels: { permission: "badge", question: "off" },
+  });
+  const settings = integration.options.settings()!;
+  integration.observeApproval(approval("item/commandExecution/requestApproval", {}, 1));
+  if (process.platform === "darwin") {
+    assert.equal(dock.badges.at(-1), "1");
+    assert.deepEqual(dock.bounces, ["critical"]);
+  }
+  settings.notificationLevels = { permission: "off", question: "off" };
+  integration.apply();
+  assert.equal(integration.waiting.size, 1);
+  if (process.platform === "darwin") {
+    assert.equal(dock.badges.at(-1), "");
+    assert.deepEqual(dock.cancelled, [1]);
+  }
 });
 
 test("a finished turn's banner goes when its session is opened", () => {
@@ -766,7 +1037,7 @@ test("resolved scheduled approvals and reset do not deliver held notices", (t) =
   assert.equal(FakeNotification.all.length, 0);
 });
 
-test("by default every local kind is a banner without a Dock badge", () => {
+test("the desktop picker defaults to a banner and badge for a blocking request", () => {
   const focus = { window: false, viewing: [] as string[] };
   const { integration, conversations } = setup(focus, {
     notifyCode: undefined,
@@ -777,7 +1048,7 @@ test("by default every local kind is a banner without a Dock badge", () => {
     approval("item/commandExecution/requestApproval", {}, 1),
   );
   assert.equal(FakeNotification.all.length, 1);
-  assert.deepEqual(dock.badges, []);
+  assert.deepEqual(dock.badges, process.platform === "darwin" ? ["1"] : []);
   // A Cowork task's end is a banner too; a Chat reply's waits for Response
   // completions, off by default.
   conversations.push(
@@ -830,12 +1101,12 @@ test("the old switches carry over until a level is chosen", () => {
   });
   assert.equal(levels.levelRowsShown(before), true);
   assert.equal(levels.attentionIdle(before), true);
-  // Never turned off: banners, and the rows stay hidden as in the original.
+  // A missing level follows the desktop picker's Banners default.
   assert.deepEqual(levels.notificationLevels({}), {});
   assert.equal(levels.levelRowsShown({}), false);
   assert.deepEqual(levels.levelEffect({}, "permission"), {
     banner: true,
-    badge: false,
+    badge: true,
   });
   // Choosing a level stores the carried-over ones with it.
   const patch = levels.levelPatch(before, "question", "banner");
@@ -850,7 +1121,7 @@ test("the old switches carry over until a level is chosen", () => {
       { ...before, notificationLevels: { idle: "banner" } },
       "permission",
     ),
-    { banner: true, badge: false },
+    { banner: true, badge: true },
   );
   assert.deepEqual(levels.freezeLevels({ notifyCode: false }), {
     notificationLevels: { permission: "off", question: "off" },

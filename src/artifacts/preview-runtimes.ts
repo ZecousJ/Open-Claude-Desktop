@@ -10,7 +10,7 @@ import {
   reactDocument,
 } from "./preview-document";
 
-// Each runtime is its own lazily loaded chunk.
+// Each runtime is its own lazily loaded chunk (see scripts/vite-preview-runtimes.ts).
 const loaders = {
   react: () => import("virtual:preview-runtime/react"),
   mermaid: () => import("virtual:preview-runtime/mermaid"),

@@ -1,10 +1,10 @@
 import type { RoutineBrowserGrant } from "./routine-browser";
 /**
- * Routines: the repeat rule, description and model choice a scheduled task
- * keeps next to the fields in `shared/types.ts`. The local scheduler
- * (`electron/scheduler.ts`) stores them with the task; a task saved before
- * routines has no rule and keeps its hourly/daily/weekly anchor, which
- * `repeatOf` describes in the same terms.
+ * Routines (package WP7): the repeat rule, description and model choice a
+ * scheduled task keeps next to the fields in `shared/types.ts`. The local
+ * scheduler (`electron/scheduler.ts`) stores them with the task; a task
+ * saved before routines has no rule and keeps its hourly/daily/weekly
+ * anchor, which `repeatOf` describes in the same terms.
  */
 import type {
   Schedule,
@@ -29,7 +29,8 @@ export type RoutineRepeat =
   | { kind: "cron"; expression: string }
   /**
    * One run at an exact moment (`at`, milliseconds since the epoch: the same
-   * instant on every device), after which the routine switches itself off.
+   * instant on every device), after which the routine switches itself off
+   * (live claude.ai "One-time"; Android "Once").
    */
   | { kind: "once"; at: number };
 export type RepeatKind = RoutineRepeat["kind"];
@@ -50,6 +51,10 @@ export interface RoutineAllowed {
 }
 
 export interface RoutineFields {
+  useWorktree?: boolean;
+  sourceBranch?: string;
+  codePermissionMode?: "inherit" | "acceptEdits" | "plan";
+  effort?: import("./types").CodeEffort;
   /** Backend-owned: ordinary saves cannot create or replace Browser approvals. */
   browserGrant?: RoutineBrowserGrant;
   browserGrantRevision?: number;
@@ -67,8 +72,8 @@ export interface RoutineFields {
   /**
    * The permission mode its runs use: Manual asks the person for each action
    * (the run waits for an answer), Auto lets Codex's reviewer decide, Skip all
-   * approvals never asks. A routine without one keeps what it always did: full
-   * access for Cowork, the Code setting for Code.
+   * approvals never asks. A routine without one keeps what it always did:
+   * full access for Cowork, the Code setting for Code (owner, 2026-10-12).
    */
   permission?: TaskPermission;
   /** Approvals kept for this routine's later runs (Manual and Auto only). */
@@ -79,13 +84,15 @@ export interface RoutineFields {
    */
   defaultModel?: boolean;
   /**
-   * What starts it besides Run now: its schedule (unless switched off), a call
-   * to its fire address, an event of a GitHub repository. Missing: its
-   * schedule alone.
+   * What starts it besides Run now: its schedule (unless switched off), a
+   * call to its fire address, an event of a GitHub repository
+   * (shared/routine-triggers.ts). Missing: its schedule alone.
    */
   triggers?: import("./routine-triggers").RoutineTriggers;
   /** Web Code: the repository each run's cloud session starts with. */
   repository?: import("./host").RepositoryRef;
+  repositories?: import("./host").RepositoryRef[];
+  codeConnectorSelections?: { key: string; url: string }[];
   /** Web Code: the cloud environment its runs use. */
   cloudEnvironmentId?: string;
   /**
@@ -211,7 +218,7 @@ export interface RoutineSchedulePreview {
   timeZone?: string;
 }
 
-/** Unavailable model notices. */
+/** Unavailable model notices (live claude.ai bundle, 2026-10-14, cdbc75b4b-1Ujhww_J.js). */
 export const unavailableRoutineModel = {
   local:
     "This task’s model is no longer available. It runs on your default model until you choose another.",
@@ -260,7 +267,7 @@ export const repeatKinds: Exclude<RepeatKind, "cron">[] = [
   "monthly",
 ];
 
-/** Local names. */
+/** Local names (live claude.ai bundle, 2026-10-14, shared-2-ATjXCy8a.js). */
 export function localRoutineName(name: string): string {
   return name
     .trim()
@@ -281,7 +288,7 @@ export const weekdayNames = [
   "Saturday",
 ];
 
-/** Names a routine cannot take. */
+/** Names a routine cannot take (desktop bundle 2.31226.1: they are the original's own pages). */
 const reservedNames = ["new", "new-local"];
 export const routineNameReserved =
   "This name is reserved. Choose a different name.";
@@ -310,7 +317,7 @@ export function routineNameProblem(
 }
 
 /** Shown where a routine cannot be created or run while the policy says so. */
-/** The service turned scheduled tasks off. */
+/** The service turned scheduled tasks off (live claude.ai bundle, 2026-10-14: 01hrY0u9+L, for the account rather than an organization). */
 export const routinesOffMessage =
   "Scheduled tasks aren’t turned on for your account.";
 export const routineLimitMessage = (limit: number) =>
@@ -534,7 +541,7 @@ export function routineSections<T extends RunState>(tasks: T[]) {
   return sections;
 }
 
-/** New tasks ask by default. */
+/** New tasks ask by default (live claude.ai bundle, 2026-10-14, c97b955f1-DnH50wWB.js). */
 export const defaultRoutinePermission: TaskPermission = "default";
 
 /** The permission mode a routine's runs use. */

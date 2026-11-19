@@ -1,11 +1,11 @@
 import { useContext, useState } from "react";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import type { TaskConnectionHold } from "../../../shared/task-connection-hold";
 import { taskConnectionHoldMessage } from "../../../shared/task-connection-hold";
 import { formatText, t } from "../../i18n";
 import { AppContext } from "../../app/AppContext";
 
-// Sign-in recovery.
+// Sign-in recovery (live claude.ai bundle, 2026-10-14, c3a5facd2-DNmdDDX7.js).
 export function ConnectionHold({
   hold,
   onRun,
@@ -42,7 +42,7 @@ export function ConnectionHold({
   };
   return (
     <div className="routine-connection-hold" role="status">
-      <AppIcon name="Warning" size={16} aria-hidden="true" />
+      <Anthropicon name="Warning" size={16} aria-hidden="true" />
       <div className="routine-connection-hold-copy">
         <p>{t(taskConnectionHoldMessage)}</p>
         {hold.url && (

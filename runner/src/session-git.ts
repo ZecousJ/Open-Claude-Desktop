@@ -33,7 +33,7 @@ import type {
   SessionPullRequestState,
   Turn,
 } from "../../shared/types";
-import type { StoreTransport } from "./cloud-store";
+import type { CloudStore, StoreTransport } from "./cloud-store";
 
 /** What `git` said about a session's folder. */
 export interface GitFacts {
@@ -47,8 +47,9 @@ export interface GitFacts {
 
 /**
  * Reads the folder: branch, uncommitted changes and whether HEAD has commits
- * the remote lacks. `pushed` is the last commit the GitHub push tool sent.
- * Undefined when the folder is not a repository.
+ * the remote lacks. `pushed` is the last commit the GitHub push tool sent
+ * (the folder's own remote-tracking refs do not move when the runner pushes
+ * from outside the sandbox). Undefined when the folder is not a repository.
  */
 export async function readGitFacts(
   cwd: string,
@@ -242,6 +243,26 @@ export function recordPullRequest(
   conversation.pullRequests = list.slice(-20);
 }
 
+export function persistSessionPullRequest(
+  store: Pick<CloudStore, "commitOfficialCodeMutation">,
+  conversation: Conversation,
+  pr: Omit<SessionPullRequest, "checkedAt">,
+  current: () => boolean,
+) {
+  return store.commitOfficialCodeMutation(
+    conversation,
+    () => {
+      const staged = {
+        ...conversation,
+        pullRequests: conversation.pullRequests?.slice(),
+      };
+      recordPullRequest(staged, pr);
+      return { pullRequests: staged.pullRequests };
+    },
+    current,
+  );
+}
+
 /** The pull request GitHub's answer to `pr.create` / `pr.get` describes. */
 export function pullRequestFromApi(
   api: unknown,
@@ -271,6 +292,24 @@ export function pullRequestFromApi(
 /** The GitHub repository address a pull request address belongs to. */
 const repositoryUrlOf = (prUrl: string) => prUrl.replace(/\/pull\/\d+.*$/, "");
 
+export async function readSessionPullRequest(
+  transport: Pick<StoreTransport, "request">,
+  userId: number,
+  ref: { url: string; number: number },
+) {
+  try {
+    const answer = await transport.request("github.api", userId, {
+      url: repositoryUrlOf(ref.url),
+      action: "pr.get",
+      number: ref.number,
+    });
+    const pr = pullRequestFromApi(answer);
+    if (pr?.number === ref.number) return pr;
+  } catch {
+    // GitHub or the service is unavailable: the last state stands.
+  }
+}
+
 /** Reads the state of every pull request that can still change. */
 export async function refreshPullRequests(
   conversation: Conversation,
@@ -282,19 +321,9 @@ export async function refreshPullRequests(
   for (const pr of (conversation.pullRequests ?? []).filter(
     pullRequestIsLive,
   )) {
-    let answer: unknown;
-    try {
-      answer = await transport.request("github.api", userId, {
-        url: repositoryUrlOf(pr.url),
-        action: "pr.get",
-        number: pr.number,
-      });
-    } catch {
-      // GitHub or the service is unavailable: the last state stands.
-      continue;
-    }
-    const next = pullRequestFromApi(answer, pr);
+    const next = await readSessionPullRequest(transport, userId, pr);
     if (!next) continue;
+    if (!conversation.pullRequests?.includes(pr)) continue;
     if (next.state !== pr.state || (next.title ?? "") !== (pr.title ?? ""))
       changed = true;
     const { checkedAt: _old, ...rest } = pr;
@@ -338,17 +367,7 @@ export async function adoptTaggedPullRequests(
           pr.repository.toLowerCase() === ref.repository.toLowerCase(),
       );
       if (known) continue;
-      let answer: unknown;
-      try {
-        answer = await transport.request("github.api", userId, {
-          url: repositoryUrlOf(ref.url),
-          action: "pr.get",
-          number: ref.number,
-        });
-      } catch {
-        continue;
-      }
-      const pr = pullRequestFromApi(answer, { repository: ref.repository });
+      const pr = await readSessionPullRequest(transport, userId, ref);
       if (!pr) continue;
       recordPullRequest(conversation, pr, now);
       added = true;

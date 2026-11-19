@@ -44,7 +44,8 @@ test("files a command wrote during the turn are handed over; scripts, hidden fol
   }
 });
 
-// A Code turn hands over the documents it made, not its pages or data.
+// A Code turn hands over the documents it made, not its pages or data
+// (owner, 2026-10-08: a Word report written by a script had no card).
 test("a Code turn hands over only documents", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "claudex-outputs-"));
   try {

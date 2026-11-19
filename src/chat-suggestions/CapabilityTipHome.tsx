@@ -14,7 +14,7 @@ import {
 import "./chat-suggestions.css";
 import "./capability-tip-home.css";
 
-// mn/hn line layout.
+// mn/hn line layout (live claude.ai bundle, 2026-10-14, c0c371a67-DnJIbmz9.js).
 export default function CapabilityTipHome() {
   const app = useApp();
   const t = useT();

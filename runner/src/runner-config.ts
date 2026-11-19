@@ -11,6 +11,14 @@ export interface RunnerConfig {
   publicUrl?: string;
   token: string;
   stateDir: string;
+  /** Optional experimental, read-only official Web bundle. */
+  officialUiRoot?: string;
+  /** Separately gated, experimental text-only official Web actions. */
+  officialUiActions?: boolean;
+  /** Manual memory controls only; does not enable generation. */
+  officialUiMemoryControls?: boolean;
+  /** Cosmetic response font only; independent of text/model actions. */
+  officialUiAppearanceSettings?: boolean;
   driver: "bwrap" | "runsc" | "none";
   cgroup: "none" | "systemd-run";
   /** gVisor (driver runsc): the unpacked sandbox image and how runsc runs. */
@@ -50,6 +58,15 @@ export function parseConfig(
   env: NodeJS.ProcessEnv,
   base: string = here(),
 ): RunnerConfig {
+  const officialUiRoot = env.CLAUDEX_RUNNER_OFFICIAL_UI_ROOT ? path.resolve(env.CLAUDEX_RUNNER_OFFICIAL_UI_ROOT) : undefined;
+  if (officialUiRoot && (!fs.existsSync(path.join(officialUiRoot, "data", "conversation-protocol.json")) || !fs.existsSync(path.join(officialUiRoot, "data", "bootstrap-defaults.json"))))
+    throw Error("CLAUDEX_RUNNER_OFFICIAL_UI_ROOT must name an assembled official UI bundle.");
+  const officialUiAppearanceSettings = env.CLAUDEX_RUNNER_OFFICIAL_UI_APPEARANCE_SETTINGS === "1";
+  if(officialUiAppearanceSettings && !officialUiRoot)throw Error("Official appearance settings require an official UI bundle.");
+  const officialUiActions = env.CLAUDEX_RUNNER_OFFICIAL_UI_ACTIONS === "1";
+  if (officialUiActions && !officialUiRoot) throw Error("Official Web actions require an official UI bundle.");
+  const officialUiMemoryControls = env.CLAUDEX_RUNNER_OFFICIAL_UI_MEMORY_CONTROLS === "1";
+  if (officialUiMemoryControls && !officialUiRoot) throw Error("Official memory controls require an official UI bundle.");
   const serviceUrl = (env.CLAUDEX_RUNNER_SERVICE_URL ?? "").replace(/\/+$/, "");
   let parsed: URL;
   try {
@@ -125,6 +142,10 @@ export function parseConfig(
       .map((value) => new URL(value).hostname),
   );
   return {
+    ...(officialUiRoot ? { officialUiRoot } : {}),
+    ...(officialUiActions ? { officialUiActions } : {}),
+    ...(officialUiMemoryControls ? { officialUiMemoryControls } : {}),
+    ...(officialUiAppearanceSettings ? {officialUiAppearanceSettings} : {}),
     serviceUrl,
     ...(publicUrl ? { publicUrl } : {}),
     token,

@@ -76,6 +76,8 @@ export interface MemorySnapshot {
   limits: MemoryLimits;
   docs: MemoryDocRecord[];
   edits: MemoryEditRecord[];
+  controlsVersions?: Record<string, string>;
+  emptyControlsVersion?: string;
 }
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

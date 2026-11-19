@@ -1,4 +1,4 @@
-// .
+// (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js).
 export function exceedsCodeSizeLimit(code: string) {
   return new TextEncoder().encode(code.trimEnd()).length > 204_800;
 }

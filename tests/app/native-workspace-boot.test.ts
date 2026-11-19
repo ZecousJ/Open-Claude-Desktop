@@ -11,7 +11,7 @@ import { BootShell } from "../../src/boot/BootShell";
 import { BootErrorPage } from "../../src/boot/BootErrorPage";
 import { ChatLoadError } from "../../src/app/ChatLoadError";
 import { Star } from "../../src/ui/Star";
-import { fixtureSnapshot } from "../../scripts/preview/app-fixture";
+import { fixtureSnapshot } from "../../scripts/fidelity/app-fixture";
 import type { Snapshot } from "../../shared/types";
 import { routineDom } from "../support/routine-dom";
 import { readSource } from "../support/read-source";

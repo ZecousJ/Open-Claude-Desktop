@@ -2,11 +2,12 @@ import { createContext, useSyncExternalStore } from "react";
 import type { AppEvent } from "../../shared/types";
 
 /**
- * Run in terminal on a Code transcript's shell code block: the command runs in
- * a terminal tab of the session's own (opened in the background), its output
- * shows under the block while it runs, Cancel interrupts it, and Open in
- * terminal shows that tab. The output is what the shell printed between its
- * command marks (electron/terminal-shell-integration.ts: OSC 133 C … D).
+ * Run in terminal on a Code transcript's shell code block (live claude.ai
+ * bundle, 2026-10-15, c19e90103 `gf`/`pf`): the command runs in a terminal
+ * tab of the session's own (opened in the background), its output shows
+ * under the block while it runs, Cancel interrupts it, and Open in terminal
+ * shows that tab. The output is what the shell printed between its command
+ * marks (electron/terminal-shell-integration.ts: OSC 133 C … D).
  */
 
 export interface CodeRun {

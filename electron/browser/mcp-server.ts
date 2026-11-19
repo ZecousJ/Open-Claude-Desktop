@@ -1,3 +1,4 @@
+import { listenOnLoopback } from "../loopback-ports";
 /**
  * The Browser tools' MCP server (R8 design 3.1 and 6.4): the subset of the
  * MCP streamable HTTP transport Codex 0.144.1 uses (tests/spikes, SP-1),
@@ -160,13 +161,7 @@ export class BrowserMcpServer {
   async start() {
     if (this.closed) throw new Error("The Browser tools server is closed.");
     if (this.listening) return;
-    await new Promise<void>((resolve, reject) => {
-      this.server.once("error", reject);
-      this.server.listen(0, "127.0.0.1", () => {
-        this.server.off("error", reject);
-        resolve();
-      });
-    });
+    await listenOnLoopback(this.server);
     this.listening = true;
     // The app (or the runner) keeps the process alive; a tools server left
     // listening by a context that never closed must not.

@@ -1,9 +1,10 @@
 /**
- * Continue in cloud: the plan read from a real checkout, the work saved as a
- * commit without touching the folder's index or branches, the upload to the
- * session's own ref with a leased credential that never reaches argv or the
- * person's folder, the run's steps and retries, and the router that gives the
- * upload its lease only with the cloud on.
+ * Continue in cloud (live claude.ai bundle, 2026-10-12): the plan read
+ * from a real checkout, the work saved as a commit without touching the
+ * folder's index or branches, the upload to the session's own ref with a
+ * leased credential that never reaches argv or the person's folder, the
+ * run's steps and retries, and the router that gives the upload its lease
+ * only with the cloud on.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

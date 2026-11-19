@@ -7,9 +7,10 @@ import { scopeEntries, scopeText, type BranchList } from "./diff-scope";
 import "./diff-scope.css";
 
 /**
- * The Changes header's diff scope: "{base} → working tree" as a ghost button
- * whose menu picks All changes, Uncommitted changes, another base branch or one
- * commit. The branches are asked for each time the menu opens.
+ * The Changes header's diff scope (live claude.ai bundle, 2026-10-12,
+ * cccc2cf0a cv): "{base} → working tree" as a ghost button whose menu picks
+ * All changes, Uncommitted changes, another base branch or one commit. The
+ * branches are asked for each time the menu opens.
  */
 export function DiffScopeMenu({
   conversationId,

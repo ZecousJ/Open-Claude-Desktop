@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import type {
   AppEvent,
   Conversation,
@@ -15,6 +16,7 @@ import {
   localShells,
   TerminalSessions,
   type TerminalShell,
+  type TerminalStartOptions,
 } from "./terminal-sessions";
 import {
   integrateLocalShell,
@@ -22,6 +24,7 @@ import {
   writeShellIntegration,
 } from "./terminal-shell-integration";
 import { checkHostPath, remoteShell } from "../ssh/remote-workspace";
+import { localTerminalProcess } from "./terminal-process";
 
 /**
  * Account-scoped lifecycle and conversation authorization for interactive
@@ -34,10 +37,13 @@ import { checkHostPath, remoteShell } from "../ssh/remote-workspace";
  */
 export class TerminalController {
   private sessions = new Map<Engine, TerminalSessions>();
+  private retired = false;
   /** Each host connection's login shell, asked once. */
   private shells = new WeakMap<CodexRPC, Promise<string>>();
   /** First tabs being opened, so two calls at once share one tab. */
   private opening = new Map<string, Promise<TerminalSessionInfo>>();
+  /** Authorized landing terminals live only for this account activation. */
+  private drafts = new Map<string, Conversation>();
   constructor(
     private store: Store,
     private engine: Engine,
@@ -45,8 +51,13 @@ export class TerminalController {
     private platform = process.platform,
   ) {}
 
+  private assertActive() {
+    if (this.retired) throw Error("The terminal account changed.");
+  }
+
   private conversation(id: string): Conversation {
-    const conversation = this.store.conversation(id);
+    this.assertActive();
+    const conversation = this.drafts.get(id) ?? this.store.conversation(id);
     if (conversation.archived)
       throw Error("Archived conversations cannot open a terminal.");
     return conversation;
@@ -80,21 +91,28 @@ export class TerminalController {
       if (!provider) throw Error("No model connection is available.");
       await engine.ensure(provider);
     }
+    this.assertActive();
     const rpc = engine.rpc;
     if (!rpc) throw Error("Codex is not connected.");
     // Tabs of an SSH connection that ended (the host's engine restarted).
     for (const [other, stale] of this.sessions)
       if (other !== engine && this.remote(other) && stale.rpc !== other.rpc) {
-        stale.reset();
+        void stale.reset("connection");
         this.sessions.delete(other);
       }
     let sessions = this.sessions.get(engine);
     if (sessions?.rpc !== rpc) {
-      sessions?.reset();
+      void sessions?.reset("connection");
       sessions = new TerminalSessions(
         rpc,
-        this.emit,
+        (event) => {
+          if (event.type === "terminal-exit")
+            this.drafts.delete(event.conversationId);
+          this.emit(event);
+        },
         this.remote(engine) ? this.platformOf(engine) : this.platform,
+        this.remote(engine) ? engine.launcher?.terminalProcessExecutor?.() : localTerminalProcess,
+        this.remote(engine) ? undefined : rpc.processId,
       );
       this.sessions.set(engine, sessions);
     }
@@ -131,6 +149,7 @@ export class TerminalController {
     conversation: Conversation,
     manager: TerminalSessions,
     shellId?: string,
+    options?: TerminalStartOptions,
   ): TerminalSessionInfo {
     const cwd =
       conversation.cwd ?? path.join(this.store.root, "terminal-workspace");
@@ -142,6 +161,7 @@ export class TerminalController {
       cwd,
       this.readOnly(conversation, this.platform),
       this.localShell(shellId),
+      options,
     );
   }
   /**
@@ -186,6 +206,7 @@ export class TerminalController {
   private async createRemote(
     conversation: Conversation,
     manager: TerminalSessions,
+    options?: TerminalStartOptions,
   ): Promise<TerminalSessionInfo> {
     const engine = this.engineOf(conversation);
     const label =
@@ -205,8 +226,10 @@ export class TerminalController {
       this.shells.set(manager.rpc, shell);
     }
     const program = await shell;
+    this.assertActive();
     const terminal = integrateRemoteShell({
       command: [program, "-i"],
+      id: program,
       title: `${program.split("/").at(-1) || "sh"} — ${label}`,
     });
     return manager.start(
@@ -214,16 +237,19 @@ export class TerminalController {
       cwd,
       this.readOnly(conversation, this.platformOf(engine)),
       terminal,
+      options,
     );
   }
   private async open(
     conversation: Conversation,
     manager: TerminalSessions,
     shellId?: string,
+    options?: TerminalStartOptions,
   ) {
+    this.assertActive();
     return conversation.environment?.kind === "ssh"
-      ? this.createRemote(conversation, manager)
-      : this.create(conversation, manager, shellId);
+      ? this.createRemote(conversation, manager, options)
+      : this.create(conversation, manager, shellId, options);
   }
   async list(id: string) {
     const conversation = this.conversation(id);
@@ -245,9 +271,45 @@ export class TerminalController {
     await opening;
     return manager.list(conversation.id);
   }
-  async start(id: string, shellId?: string) {
+  async start(id: string, shellId?: string, options?: TerminalStartOptions) {
     const conversation = this.conversation(id);
-    return this.open(conversation, await this.manager(conversation), shellId);
+    return this.open(conversation, await this.manager(conversation), shellId, options);
+  }
+  async startDraft(
+    cwd: string,
+    shellId?: string,
+    size?: TerminalSessionInfo["size"],
+  ) {
+    // The IPC boundary authorizes cwd before calling this method. No model
+    // thread, persisted chat, or network model request is created here.
+    const id = `terminal-draft-${randomUUID()}`;
+    const context: Conversation = {
+      id,
+      title: "Terminal draft",
+      mode: "code",
+      cwd,
+      providerId: this.store.settings.activeProviderId,
+      model: "",
+      pinned: false,
+      archived: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      turns: [],
+    };
+    this.drafts.set(id, context);
+    try {
+      const manager = await this.manager(context);
+      if (this.drafts.get(id) !== context)
+        throw Error("The terminal account changed while starting.");
+      const terminal = await this.open(context, manager, shellId, {
+        size,
+        discardOnExit: true,
+      });
+      return { ownerId: id, terminal };
+    } catch (error) {
+      this.drafts.delete(id);
+      throw error;
+    }
   }
   write(conversationId: string, id: string, deltaBase64: string) {
     const conversation = this.conversation(conversationId);
@@ -271,9 +333,9 @@ export class TerminalController {
     }
     return sessions.busy(conversation.id);
   }
-  close(conversationId: string, id: string) {
+  async close(conversationId: string, id: string) {
     const conversation = this.conversation(conversationId);
-    return this.current(conversation).close(conversation.id, id);
+    await this.current(conversation).close(conversation.id, id);
   }
   async closeConversation(conversationId: string) {
     await Promise.allSettled(
@@ -282,8 +344,11 @@ export class TerminalController {
       ),
     );
   }
-  reset() {
-    for (const sessions of this.sessions.values()) sessions.reset();
+  async reset() {
+    this.retired = true;
+    const retired = [...this.sessions.values()];
     this.sessions.clear();
+    this.drafts.clear();
+    await Promise.allSettled(retired.map(sessions => sessions.reset()));
   }
 }

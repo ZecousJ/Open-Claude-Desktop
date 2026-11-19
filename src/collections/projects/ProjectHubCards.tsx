@@ -10,7 +10,7 @@ import type { Project } from "../../../shared/types";
 import type { ProjectKnowledge as Knowledge } from "../../../shared/collections-api";
 import type { Routine } from "../../../shared/routines";
 import { formatText, t, useLocale } from "../../i18n";
-import { AppIcon } from "../../ui/app-icon";
+import { Anthropicon } from "../../ui/anthropicons";
 import { Modal } from "../../ui/Controls";
 import { ProjectKnowledge } from "./ProjectKnowledge";
 import { ProjectMemory } from "../../memory/ProjectMemory";
@@ -18,10 +18,8 @@ import { useMemory } from "../../memory/useMemory";
 import { showsProjectMemory } from "../../memory/project-memory";
 import "./project-hub-cards.css";
 
-/**
- * QuietProjectRail: transparent rows, with populated counts inline. The
- * existing project operations supply their opened content.
- */
+/** QuietProjectRail (1016 cfe1b8ada): transparent rows, with populated counts
+ * inline. The existing project operations supply their opened content. */
 export function ProjectHubCards({
   project,
   tasks,
@@ -127,7 +125,7 @@ export function ProjectHubCards({
           )}
           onClick={onInstructions}
         >
-          <AppIcon name="Note" size={20} />
+          <Anthropicon name="Note" size={20} />
           <span>
             <span className="prj-hub-card-title">{t("Instructions")}</span>
             <span
@@ -165,7 +163,7 @@ export function ProjectHubCards({
           aria-label={t("Show context")}
           onClick={(event) => open("context", event.currentTarget)}
         >
-          <AppIcon name="Files" size={20} />
+          <Anthropicon name="Files" size={20} />
           <span>
             <span className="prj-hub-card-title">{t("Context")}</span>
             <span
@@ -203,7 +201,7 @@ export function ProjectHubCards({
           aria-label={t("Scheduled tasks")}
           onClick={(event) => open("scheduled", event.currentTarget)}
         >
-          <AppIcon name="Clock" size={20} />
+          <Anthropicon name="Clock" size={20} />
           <span>
             <span className="prj-hub-card-title">{t("Scheduled")}</span>
             <span

@@ -6,7 +6,7 @@
  * key and protocol, exactly as before.
  */
 import type { Protocol, Provider, ProviderRoute } from "./types";
-import type { ServiceCatalog } from "./model-catalog-api";
+import { isDrawingModel, type ServiceCatalog } from "./model-catalog-api";
 
 /** The key vault entry of a group's device key, next to the provider's own. */
 export function groupKeyId(providerId: string, groupId: number) {
@@ -20,6 +20,13 @@ export function routeForModel(
 ): ProviderRoute | undefined {
   if (!model || !provider.routes?.length) return undefined;
   return provider.routes.find((route) => route.models.includes(model));
+}
+
+export function routeForAutomaticImages(provider: Pick<Provider, "routes">) {
+  return (
+    provider.routes?.find((route) => route.drawing) ??
+    provider.routes?.find((route) => route.models.some(isDrawingModel))
+  );
 }
 
 /** How the gateway talks to the service for a model. */
@@ -59,12 +66,9 @@ export interface GroupModels {
 }
 
 /**
- * Which group serves each model, when several list it: the group in use
- * (`preferred`, chosen on the API page) when it lists the model, else the
- * group the service's catalog names for it (when that group lists it), else
- * the plan group, else the smallest group id. Returns the models of all
- * groups (the plan group's first) and the routes with the models each one
- * serves.
+ * GPT image models use a dedicated drawing group when one lists them.
+ * Among eligible groups, the model follows the group in use, the catalog's
+ * group, the plan group, or the group with the smallest ID, in that order.
  */
 export function mergeGroupModels(
   groups: GroupModels[],
@@ -74,6 +78,11 @@ export function mergeGroupModels(
   const preferredIds = typeof preferred === "number" ? [preferred] : preferred;
   const ordered = [...groups].sort(
     (a, b) => Number(b.primary) - Number(a.primary) || a.groupId - b.groupId,
+  );
+  const drawingGroups = new Set(
+    ordered.filter(
+      (group) => group.models.length > 0 && group.models.every(isDrawingModel),
+    ),
   );
   const tagged = new Map<string, number>();
   for (const item of catalog?.items ?? [])
@@ -86,11 +95,15 @@ export function mergeGroupModels(
       if (owner.has(model)) continue;
       const listing = ordered.filter((g) => g.models.includes(model));
       const named = tagged.get(model);
+      const drawing = isDrawingModel(model)
+        ? listing.filter((g) => drawingGroups.has(g))
+        : [];
+      const candidates = drawing.length ? drawing : listing;
       const chosen =
-        listing.find((g) => preferredIds.includes(g.groupId)) ??
-        listing.find((g) => g.groupId === named) ??
-        listing.find((g) => g.primary) ??
-        listing[0]!;
+        candidates.find((g) => preferredIds.includes(g.groupId)) ??
+        candidates.find((g) => g.groupId === named) ??
+        candidates.find((g) => g.primary) ??
+        candidates[0]!;
       owner.set(model, chosen.groupId);
       models.push(model);
     }
@@ -100,6 +113,7 @@ export function mergeGroupModels(
     protocol: group.protocol,
     keyId: group.keyId,
     primary: group.primary,
+    ...(drawingGroups.has(group) ? { drawing: true } : {}),
     models: models.filter((model) => owner.get(model) === group.groupId),
   }));
   return { models, routes };

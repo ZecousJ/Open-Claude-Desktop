@@ -233,6 +233,7 @@ export function chatSandboxSpec(input: {
   egressSocket?: string;
   /** Extra read-only directories (e.g. staged attachments). */
   readOnly?: string[];
+  accountSkills?: SandboxMount;
   limits?: SandboxLimits;
   options?: Record<string, string | undefined>;
 }): SandboxSpec {
@@ -257,6 +258,7 @@ export function chatSandboxSpec(input: {
       { host: home, writable: true },
       ...(input.codexCache ? [{ host: input.codexCache, writable: true }] : []),
       ...(input.readOnly ?? []).map((host) => ({ host, writable: false })),
+      ...(input.accountSkills ? [input.accountSkills] : []),
     ],
     codexCache: input.codexCache,
     cwd: workspace,

@@ -36,23 +36,23 @@ import {
 export type { LightboxImage } from "./lightbox-model";
 
 /*
- * The image lightbox, after the original's: the window under 80% black with a
- * 40px blur, the picture centred at up to 70% of the height, and for several
- * pictures a carousel of 75vw slides 32px apart that slides 300ms between them,
- * its neighbours at 40% (70% on hover), with ‹ "{current} of {total}" › at the
- * bottom. Arrows, Home and End move, Escape or a click beside the picture
- * closes.
+ * The image lightbox, after the original's (desktop bundle 2.31226.1): the
+ * window under 80% black with a 40px blur, the picture centred at up to 70%
+ * of the height, and for several pictures a carousel of 75vw slides 32px
+ * apart that slides 300ms between them, its neighbours at 40% (70% on
+ * hover), with ‹ "{current} of {total}" › at the bottom. Arrows, Home and
+ * End move, Escape or a click beside the picture closes.
  *
- * Zoom: a click on the picture (or Enter on it) zooms it around the pointer to
- * its natural size, ctrl + wheel zooms in steps, a drag or the wheel pans; a
- * click beside it zooms back out first. A picture with a caption shows it at
- * the bottom left over a fade.
+ * Zoom (live claude.ai bundle, 2026-10-13): a click on the picture (or Enter
+ * on it) zooms it around the pointer to its natural size, ctrl + wheel zooms
+ * in steps, a drag or the wheel pans; a click beside it zooms back out first.
+ * A picture with a caption shows it at the bottom left over a fade.
  *
- * Opened from a thumbnail, the picture grows out of it with a view transition
- * (350ms on the snap curve, its inset, corner and shadow following) and shrinks
- * back into it on close (250ms) while the thumbnail is still on screen. Without
- * a thumbnail, without view transitions or with reduced motion, the lightbox
- * fades in and out instead.
+ * Opened from a thumbnail, the picture grows out of it with a view
+ * transition (350ms on the snap curve, its inset, corner and shadow
+ * following) and shrinks back into it on close (250ms) while the thumbnail
+ * is still on screen. Without a thumbnail, without view transitions or with
+ * reduced motion, the lightbox fades in and out instead.
  */
 
 const MORPH_NAME = "lightbox-image";

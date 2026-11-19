@@ -91,13 +91,14 @@ export function usePagedList<T>(
 }
 
 /**
- * The menus of the web Code home's repository chips, in the frame of the Cowork
- * "Project or folder" menu (cowork-options.css: a search row over a rule, 32px
- * rows with a 20px icon, a name and a grey second line, a blue check on the
- * chosen row), opening 6px above the chip as the workspace menus do. The
- * original's repository menu was not captured; the frame follows that closest
- * capture, and its words, empty and error states and the footer actions follow
- * the live picker.
+ * The menus of the web Code home's repository chips, in the frame of the
+ * Cowork "Project or folder" menu (cowork-options.css: a search row over a
+ * rule, 32px rows with a 20px icon, a name and a grey second line, a blue
+ * check on the chosen row), opening 6px above the chip as the workspace
+ * menus do (R-0341). The original's repository menu was not captured; the
+ * frame follows that closest capture, and its words, empty and error states
+ * and the footer actions follow the live picker (live claude.ai bundle,
+ * 2026-10-12).
  */
 export function Frame({
   label,

@@ -41,9 +41,9 @@ export function finishedTerminalId(conversationId: string, processId: string) {
 /**
  * Display-only task history, isolated in the active account profile: which
  * finished tasks the user cleared from the Background tasks panel, and the
- * background terminals that ended (stopped from the panel, or gone from Codex's
- * list on their own), so the panel can keep them under Finished. Nothing here
- * is sent anywhere.
+ * background terminals that ended (stopped from the panel, or gone from
+ * Codex's list on their own), so the panel can keep them under Finished
+ * (R-0654/R-0655). Nothing here is sent anywhere.
  */
 export class BackgroundHistory {
   private filename: string;

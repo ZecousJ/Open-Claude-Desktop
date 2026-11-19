@@ -50,7 +50,7 @@ test("native Chat Search is a labelled button with the current platform shortcut
       "true",
     );
     assert.equal(
-      button.querySelector(".app-icon")?.getAttribute("data-icon"),
+      button.querySelector(".anthropicon")?.getAttribute("data-anthropicon"),
       "Search",
     );
   }
@@ -144,7 +144,7 @@ test("native Chat rail follows the source slots and keeps its live region inside
   );
   assert.match(
     css,
-    // Every desktop platform.
+    // Every desktop platform (owner, 2026-10-20: Windows and Linux like macOS).
     /\.app:not\(\.web\)\.mode-chat \.sidebar-body\s*\{\s*padding-top: 4px;/,
   );
   assert.match(
@@ -320,7 +320,10 @@ test("native pinned Chat keeps its type icon while activity stays after the titl
     const document = activityMarkup(activityRow({ ...patch, pinned: true }));
     const row = document.querySelector("button.conversation-link")!;
     assert.equal(row.classList.contains("plain-recent"), false);
-    assert.equal(row.firstElementChild?.getAttribute("data-icon"), "ChatMode");
+    assert.equal(
+      row.firstElementChild?.getAttribute("data-anthropicon"),
+      "ChatMode",
+    );
     assert.equal(row.children[1].className, "row-title-slot");
     const leading = [...row.children].filter((child) =>
       child.classList.contains("row-status"),
@@ -440,7 +443,7 @@ test("native Code retains its type, trailing activity and accessible status meta
     activityRow({ mode: "code", pinned: true, turns: [runningTurn] }),
   );
   const row = document.querySelector("button.conversation-link")!;
-  assert.equal(row.firstElementChild?.getAttribute("data-icon"), "Code");
+  assert.equal(row.firstElementChild?.getAttribute("data-anthropicon"), "Code");
   assert.ok(row.querySelector(".row-status-trailing .thread-dot.working"));
   assert.equal(row.querySelectorAll(".row-status").length, 1);
   assert.equal(
@@ -472,7 +475,7 @@ test("web Chat and Code keep real links, pinned kinds and their existing trailin
           conversation,projects:[],selected:true,actions:{onOpen:noop,onTogglePin:noop,onRename:noop,onMoveToProject:noop,onToggleArchive:noop,onDelete:noop,onToggleUnread:noop,onOpenIn:noop},onKeyboardPin:noop,draggable:false,dragControl:{click:()=>false,pointerDown:noop,pointerMove:noop,pointerUp:noop,pointerCancel:noop,lostCapture:noop},onNewGroup:noop
         }))).document;
         const row = document.querySelector(".conversation-link");
-        return {mode,tag:row.tagName,href:row.getAttribute("href"),current:row.getAttribute("aria-current"),kind:row.firstElementChild.getAttribute("data-icon"),working:!!row.querySelector(".row-status-trailing .thread-dot.working"),statuses:row.querySelectorAll(".row-status").length};
+        return {mode,tag:row.tagName,href:row.getAttribute("href"),current:row.getAttribute("aria-current"),kind:row.firstElementChild.getAttribute("data-anthropicon"),working:!!row.querySelector(".row-status-trailing .thread-dot.working"),statuses:row.querySelectorAll(".row-status").length};
       });
       process.stdout.write(JSON.stringify(rows));
     `,

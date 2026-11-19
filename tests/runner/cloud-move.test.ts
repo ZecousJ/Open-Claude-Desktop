@@ -42,14 +42,15 @@ function profile() {
 
 test("Chat and Cowork conversations move oldest first, with their project and history", async () => {
   const root = profile();
-  const project = {
+  const project: Project = {
     id: "p1",
     name: "Notes",
     description: "",
     instructions: "Be brief",
+    template: { type: "student", subtype: "study" },
     cwd: "/Users/me/notes",
     createdAt: 5,
-  } as Project;
+  };
   const store = {
     root,
     projects: [project],
@@ -66,6 +67,7 @@ test("Chat and Cowork conversations move oldest first, with their project and hi
       }),
       conversation("code", { mode: "code" }),
       conversation("secret", { incognito: true }),
+      conversation("shared-project", { projectOrganizationId: "org", projectId: "shared", threadId: threadA }),
       conversation("busy", {
         turns: [{ id: "t", status: "inProgress", items: [] } as never],
       }),
@@ -96,6 +98,7 @@ test("Chat and Cowork conversations move oldest first, with their project and hi
     name: "Notes",
     description: "",
     instructions: "Be brief",
+    template: { type: "student", subtype: "study" },
     createdAt: 5,
   });
   assert.equal(sent[0].rollouts.length, 0);
@@ -215,6 +218,7 @@ test("the runner keeps a moved conversation in its own space, with its history",
       name: "Notes",
       description: "",
       instructions: "",
+      template: { type: "student", subtype: "study" },
       createdAt: 1,
     },
     rollouts: [{ name: rolloutA, data: new TextEncoder().encode("{}\n") }],
@@ -235,6 +239,7 @@ test("the runner keeps a moved conversation in its own space, with its history",
     r.store.projects.map((p) => p.id),
     ["p1"],
   );
+  assert.deepEqual(r.store.projects[0].template, { type: "student", subtype: "study" });
   assert.equal(r.pushed[0].type, "conversation");
   assert.equal(r.store.flushed, 1);
 

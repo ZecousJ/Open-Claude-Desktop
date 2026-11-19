@@ -569,8 +569,8 @@ func TestUsageLogRepositoryUsageAggregatesFilterNativeCompactionV2(t *testing.T)
 
 func TestShouldUsePreaggregatedTrendRejectsNativeCompactionV2Filter(t *testing.T) {
 	nativeCompactionV2 := true
-	require.True(t, shouldUsePreaggregatedTrend("day", 0, 0, 0, 0, "", nil, nil, nil, "", nil, nil))
-	require.False(t, shouldUsePreaggregatedTrend("day", 0, 0, 0, 0, "", nil, nil, nil, "", nil, &nativeCompactionV2))
+	require.True(t, shouldUsePreaggregatedTrend("day", usagestats.UsageLogFilters{}))
+	require.False(t, shouldUsePreaggregatedTrend("day", usagestats.UsageLogFilters{NativeCompactionV2: &nativeCompactionV2}))
 }
 
 func TestUsageLogRepositoryGetModelStatsWithFiltersRequestTypePriority(t *testing.T) {

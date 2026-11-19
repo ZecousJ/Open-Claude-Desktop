@@ -1,4 +1,4 @@
-// Package legacypw verifies password hashes imported from another service
+// Package legacypw verifies password hashes imported from the ZecousAI service
 // (package ZMIG), so migrated users sign in with their existing passwords.
 //
 // Sub2API stores standard bcrypt ("$2a$"/"$2b$"/"$2y$"). Imported users may
@@ -157,7 +157,7 @@ func verifyBcryptSHA256(password, stored string, version int) bool {
 	var digest []byte
 	if version == 2 {
 		mac := hmac.New(sha256.New, []byte(salt))
-		_, _ = mac.Write([]byte(password))
+		mac.Write([]byte(password))
 		digest = mac.Sum(nil)
 	} else {
 		sum := sha256.Sum256([]byte(password))

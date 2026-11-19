@@ -1,8 +1,8 @@
 /*
- * View image: the figures side by side from the small breakpoint (one column
- * when only one side exists), 12px apart; a caption of the label in
- * text-secondary and the size in muted tabular footnote, over a 320px frame on
- * surface-1 with the card ring.
+ * View image (live claude.ai bundle, 2026-10-14): the figures side by side
+ * from the small breakpoint (one column when only one side exists), 12px
+ * apart; a caption of the label in text-secondary and the size in muted
+ * tabular footnote, over a 320px frame on surface-1 with the card ring.
  */
 .image-compare-grid {
   display: grid;

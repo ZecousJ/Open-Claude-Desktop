@@ -6,7 +6,7 @@ import { FolderIcon } from "../../ui/icons";
 import { formatText } from "../../i18n";
 import { Button, SettingsModal } from "../controls";
 
-/** What trusting a folder means, under the row and in its dialog. */
+/** What trusting a folder means, under the row and in its dialog (desktop bundle 2.31226.1). */
 export const trustedFoldersNote =
   "When you trust a folder on this device, you allow Claudex to use it and the folders inside it. Trusting a folder doesn’t add it to new tasks. When you add one to a task, you may be asked to allow it again.";
 

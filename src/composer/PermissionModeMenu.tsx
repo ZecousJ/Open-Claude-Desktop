@@ -16,14 +16,23 @@ export type ModeRow = {
 };
 
 function Glyph({ name }: { name: keyof typeof permissionGlyphs20 }) {
-  const Icon = permissionGlyphs20[name];
-  return <Icon size={20} strokeWidth={1.5} aria-hidden="true" />;
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d={permissionGlyphs20[name]} />
+    </svg>
+  );
 }
 
 /**
- * The permission picker's menu: one row per mode with its 20px glyph and a
- * radio check, its description in a tooltip at the row's end; no caption.
- * Loaded when first opened.
+ * The permission picker's menu (live claude.ai bundle, 2026-10-14): one row
+ * per mode with its 20px glyph and a radio check, its description in a
+ * tooltip at the row's end; no caption. Loaded when first opened.
  */
 export default function PermissionModeMenu({
   rows,

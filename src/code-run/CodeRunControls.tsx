@@ -56,7 +56,7 @@ export function CodeRunButton({
   );
 }
 
-/** The run's output under the block, with Open in terminal. */
+/** The run's output under the block, with Open in terminal (c19e90103 `pf`). */
 export function CodeRunOutput({ code }: { code: string }) {
   const host = useContext(CodeRunContext);
   const run = useCodeRun(host ? runKey(host.conversationId, code) : "");

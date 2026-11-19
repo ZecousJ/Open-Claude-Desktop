@@ -11,8 +11,10 @@ import { ReasonTooltip, WithTooltip } from "../ui/Tooltip";
 import { CheckGlyph, PrStateGlyph } from "./PrStateGlyph";
 
 /**
- * A popover of the branch row: it opens above its button, and a press outside
- * or Escape closes it.
+ * A popover of the branch row (live claude.ai bundle, 2026-10-12: the CI
+ * chip's "CI monitoring" panel and the conflict glyph's "Ask Claude to
+ * fix"): it opens above its button, and a press outside or Escape closes
+ * it.
  */
 function useBarPopover() {
   const [open, setOpen] = useState(false);
@@ -21,7 +23,7 @@ function useBarPopover() {
   return { open, setOpen, box };
 }
 
-/** The CI dot: 6px green or red, a spinner while running. */
+/** The CI dot (cb1afaa4b `ia`): 6px green or red, a spinner while running. */
 export function CiDot({ status }: { status: CiStatus }) {
   if (status === "pending")
     return (
@@ -32,12 +34,12 @@ export function CiDot({ status }: { status: CiStatus }) {
         aria-hidden="true"
       />
     );
-  // Skipped and unavailable: no dot.
+  // Skipped and unavailable: no dot (cb1afaa4b `da`, `Gr`).
   if (status === "skipped" || status === "unavailable") return null;
   return <i className="pr-dot" data-checks={status} aria-hidden="true" />;
 }
 
-/** One row of the counts: icon, state, count; none at 0. */
+/** One row of the counts (cb1afaa4b `Da`): icon, state, count; none at 0. */
 function CountRow({
   icon,
   label,
@@ -59,7 +61,7 @@ function CountRow({
   );
 }
 
-/** The 6px ring of a check that never ran. */
+/** The 6px ring of a check that never ran (c219730b0 `Kt`). */
 const ring = (
   <span className="pr-ci-ring" aria-hidden="true">
     <i />
@@ -100,8 +102,8 @@ function Counts({ counts }: { counts: PullRequestCheckCounts | undefined }) {
 }
 
 /**
- * A switch row of the panel: the xs switch, the label, and under it a hint, or
- * why it can't be changed.
+ * A switch row of the panel (cb1afaa4b `wa`): the xs switch, the label, and
+ * under it a hint, or why it can't be changed.
  */
 function SwitchRow({
   label,
@@ -146,13 +148,13 @@ function SwitchRow({
 }
 
 /**
- * The CI chip and its "CI monitoring" panel: the dot, "CI" and a caret; the
- * panel counts the head commit's checks by state, opens GitHub's checks page,
- * and holds the request's switches: Auto-fix CI and Address comments (a local
- * session is woken when checks fail or review comments arrive,
- * electron/pr-autofix.ts), Auto-merge when ready (GitHub merges once the
- * required checks and reviews pass) and Auto-archive on merge or close for this
- * session.
+ * The CI chip and its "CI monitoring" panel (cb1afaa4b `ka`/`Sa`): the dot,
+ * "CI" and a caret; the panel counts the head commit's checks by state,
+ * opens GitHub's checks page, and holds the request's switches: Auto-fix
+ * CI and Address comments (a local session is woken when checks fail or
+ * review comments arrive, electron/pr-autofix.ts), Auto-merge when ready
+ * (GitHub merges once the required checks and reviews pass) and Auto-archive
+ * on merge or close for this session.
  */
 export function CiChip({
   pr,
@@ -267,9 +269,9 @@ export function CiChip({
 }
 
 /**
- * The conflict glyph's popover: the glyph is a button; its panel says the
- * request conflicts with its base branch and asks Claude to merge the base in,
- * resolve and push.
+ * The conflict glyph's popover (c219730b0 `Yt`, source "pr_bar"): the
+ * glyph is a button; its panel says the request conflicts with its base
+ * branch and asks Claude to merge the base in, resolve and push.
  */
 export function ConflictFix({
   label,

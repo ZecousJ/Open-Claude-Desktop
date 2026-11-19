@@ -14,8 +14,8 @@ export function ActivityMark({
 }: {
   phase?: "thinking" | "tools";
 }) {
-  // the status row's three dots, drawn together and apart while the model
-  // thinks, turning over while a tool runs.
+  // Live claude.ai (2026-09-29): the status row's three dots, drawn
+  // together and apart while the model thinks, turning over while a tool runs.
   return (
     <span className="activity-mark clay" data-phase={phase} aria-hidden="true">
       <ClayMark motion={phase === "tools" ? "tumble" : "breathe"} />
@@ -27,12 +27,13 @@ export function ActivityMark({
 const LABEL_SWAP_MS = 600;
 
 /**
- * Status text that swaps in place. A new label fades in over 250ms while the
- * old one fades out over 150ms in the same spot; the quiet variant (a step's
- * own row) rises 6px into place over 240ms while the old one drops 4px away
- * over 180ms. `afterMark`: the working mark beside the label is leaving, so the
- * new label waits 210ms for it. A running label shimmers (ShimmerText); the
- * first label shows without a swap.
+ * Status text that swaps in place (the original's turn status layers;
+ * source: desktop bundle 2.31226.1 static CSS/JS). A new label fades in over
+ * 250ms while the old one fades out over 150ms in the same spot; the quiet
+ * variant (a step's own row) rises 6px into place over 240ms while the old
+ * one drops 4px away over 180ms. `afterMark`: the working mark beside the
+ * label is leaving, so the new label waits 210ms for it. A running label
+ * shimmers (ShimmerText); the first label shows without a swap.
  */
 export function ActivityLabel({
   phase,
@@ -115,7 +116,7 @@ export function ActivityElapsed({ startedAt }: { startedAt: number }) {
     return () => window.clearInterval(timer);
   }, [startedAt]);
   const seconds = Math.max(0, Math.floor((now - startedAt) / 1000));
-  // Over a minute the reference reads "3m 40s", like Code's status line.
+  // Over a minute the reference reads "3m 40s" (S-0008), like Code's status line.
   return seconds >= 5 ? (
     <span className="activity-elapsed" aria-hidden="true">
       {formatElapsed(seconds)}
@@ -124,10 +125,10 @@ export function ActivityElapsed({ startedAt }: { startedAt: number }) {
 }
 
 /*
- * Chat and Cowork's thinking verb: one of 16 words, drawn at random, and
- * swapped for a different random one every 8 s while any turn is working. The
- * word is shared by every status row on the page, and resets when the last one
- * stops.
+ * Chat and Cowork's thinking verb (live claude.ai bundle, 2026-10-14,
+ * shared-13-CALRr8Bn yU): one of 16 words, drawn at random, and swapped for a
+ * different random one every 8 s while any turn is working. The word is shared
+ * by every status row on the page, and resets when the last one stops.
  */
 export const THINKING_VERBS = [
   "Thinking",
@@ -149,8 +150,8 @@ export const THINKING_VERBS = [
 ] as const;
 
 /*
- * The words beside the clay mark: the chat word's place in its list, modulo 15,
- * picks one.
+ * The words beside the clay mark (live claude.ai bundle, 2026-10-14,
+ * shared-13 n5): the chat word's place in its list, modulo 15, picks one.
  */
 export const CLAY_VERBS = [
   "Thinking",
@@ -290,7 +291,7 @@ export function TurnActivity({
   awaitingApproval: boolean;
   /**
    * A Cowork task says "Waiting for Claudex…" until its first item arrives,
-   * with no timer.
+   * with no timer (R-0845, R-0406 say "Starting up…"; owner, 2026-10-15).
    */
   startingUp?: boolean;
 }) {
@@ -328,7 +329,7 @@ export function TurnActivity({
   );
 }
 
-/** Before any tool output, Chat shows the working dots beside the verb. */
+/** Before any tool output, Chat shows the working dots beside the verb (live claude.ai, "Fathoming"). */
 export function PreToolActivity({
   label,
   startedAt,
@@ -339,7 +340,10 @@ export function PreToolActivity({
   /** Without it no elapsed time shows. */
   startedAt?: number;
   shimmer?: boolean;
-  /** What a screen reader hears in place of the changing word. */
+  /**
+   * What a screen reader hears in place of the changing word ("Claudex is
+   * thinking", live claude.ai bundle, 2026-10-14, shared-13 O3).
+   */
   announcement?: string;
 }) {
   return (

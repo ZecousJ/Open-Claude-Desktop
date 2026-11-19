@@ -1,10 +1,11 @@
 /**
  * A failed assert.equal / deepEqual between DOM nodes (linkedom) makes Node
  * render a diff of both nodes' whole object graphs: tens of GB in seconds,
- * synchronously, so neither --test-timeout nor --max-old-space-size stops it.
- * Loaded with css-stub.mjs, this makes every equality assertion with a node (or
- * an array of nodes) on either side compare by identity and fail with a short
- * description such as `<button#id.class>`, never a diff of the nodes.
+ * synchronously, so neither --test-timeout nor --max-old-space-size stops it
+ * (2026-10-20: it filled a 32 GB Mac). Loaded with css-stub.mjs, this makes
+ * every equality assertion with a node (or an array of nodes) on either side
+ * compare by identity and fail with a short description such as
+ * `<button#id.class>`, never a diff of the nodes.
  */
 import { syncBuiltinESMExports } from "node:module";
 import assert from "node:assert";

@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { tooltipOrigin, tooltipPosition } from "../../src/ui/tooltip-position";
 
-// A button in the composer's chin sits a few pixels over the window's foot: its
-// "below" tooltip, kept inside the window, would lie on the button and take the
-// click meant for it. It goes above the button instead, growing from its foot.
+// A button in the composer's chin sits a few pixels over the window's foot:
+// its "below" tooltip, kept inside the window, would lie on the button and
+// take the click meant for it (owner, 2026-10-20: the folder button could
+// not be clicked). It goes above the button instead, growing from its foot.
 test("a tooltip clamped onto its button flips to the other side", () => {
   const anchor = { left: 100, right: 124, top: 770, bottom: 794 };
   const size = { width: 120, height: 24 };

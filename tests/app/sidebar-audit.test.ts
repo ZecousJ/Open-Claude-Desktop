@@ -29,7 +29,8 @@ test("unified navigation is independent of the task execution capability", () =>
         nav.shown.map((item) => item.id),
         ["projects", "artifacts", "api", "status"],
       );
-      // Customize and Scheduled live in More; Dispatch has no row.
+      // Customize and Scheduled live in More; Dispatch has no row (owner,
+      // 2026-10-22).
       assert.deepEqual(
         nav.inMore.map((item) => item.id),
         ["scheduled", "customize"],
@@ -40,7 +41,7 @@ test("unified navigation is independent of the task execution capability", () =>
 });
 
 test("API and Service status stay on the sidebar even with legacy saved navigation preferences", () => {
-  // Both sit on the sidebar in every mode.
+  // Owner, 2026-10-20: both sit on the sidebar in every mode.
   assert.deepEqual(defaultHiddenNavItems, ["dispatch"]);
   for (const mode of ["chat", "cowork", "code"] as const) {
     for (const hidden of [

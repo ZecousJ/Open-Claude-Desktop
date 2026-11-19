@@ -1,7 +1,8 @@
 /**
- * Balance only: Go answers `key.get` for an account without a plan group with a
- * registration that carries no key (webhost/backends.go webKeyFrom). The runner
- * reads it and opens the account with no models instead of failing the sign-in.
+ * Balance only (owner decision, 2026-10-12): Go answers `key.get` for an
+ * account without a plan group with a registration that carries no key
+ * (webhost/backends.go webKeyFrom). The runner reads it and opens the account
+ * with no models instead of failing the sign-in.
  */
 import test from "node:test";
 import assert from "node:assert/strict";

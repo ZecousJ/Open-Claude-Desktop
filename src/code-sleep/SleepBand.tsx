@@ -34,13 +34,14 @@ const resumeText: Record<Resume, string> = {
 };
 
 /**
- * The sleep band above a Code session's composer: "Your computer went to sleep
- * while Claude was working." with whether the session picked up, and up to two
- * buttons in this order: Keep computer awake (when the computer may still sleep
- * while coding; then Staying awake), Continue (only when it couldn't pick up;
- * Continue here beside the cloud), Continue in cloud (a local session that can
- * move there). Dismissible. It wears the frame of the notices above the
- * composer (NoticeView).
+ * The sleep band above a Code session's composer (live claude.ai bundle,
+ * 2026-10-13, the keep-awake rework): "Your computer went to sleep while
+ * Claude was working." with whether the session picked up, and up to two
+ * buttons in this order: Keep computer awake (when the computer may still
+ * sleep while coding; then Staying awake), Continue (only when it couldn't
+ * pick up; Continue here beside the cloud), Continue in cloud (a local
+ * session that can move there). Dismissible. It wears the frame of the
+ * notices above the composer (NoticeView).
  */
 export function SleepBand({
   conversation,
@@ -156,8 +157,9 @@ export function SleepBand({
   if (!slept) return null;
   const resume = sleepResume(conversation, slept, before.current, now);
   if (!resume && !continuing) return null;
-  // Keep computer awake writes only while-working; the battery choice is the
-  // person's own, made in Settings, so it is not offered or changed here.
+  // Keep computer awake writes only while-working (live claude.ai bundle,
+  // 2026-10-16, cf74bc599 Mw: `i("while_working", true)`); the battery choice
+  // is the person's own, made in Settings, so it is not offered or changed here.
   const keepAwakeOffered =
     keepAwakeRework &&
     (keptAwake || !preference(settings, "keepAwakeWhileCoding"));

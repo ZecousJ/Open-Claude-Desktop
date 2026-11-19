@@ -13,8 +13,8 @@ import type { AddressInfo } from "node:net";
 
 let installed = false;
 /**
- * Also makes `process.platform` read "linux": the runner only runs on Linux,
- * and desktop domains take macOS-only paths at registration.
+ * Also makes `process.platform` read "linux": the runner only runs on Linux
+ * (DC6, WSL2), and desktop domains take macOS-only paths at registration.
  */
 export function useElectronShim() {
   if (installed) return;
@@ -105,9 +105,24 @@ export function memoryWebstore(pageSize = 2): MemoryWebstore {
         case "store.projects.put":
           u.projects.set(body.project.id, clone(body));
           return {};
-        case "store.projects.delete":
-          u.projects.delete(body.id);
-          return {};
+        case "store.projects.delete": {
+          const existed = u.projects.delete(body.id);
+          if (!body.deleteChats) return {};
+          const deletedConversationIds: string[] = [];
+          if (existed) {
+            for (const [id, { doc }] of u.conversations) {
+              if (doc.conversation.projectId !== body.id) continue;
+              if (doc.conversation.mode === "code") {
+                delete doc.conversation.projectId;
+              } else {
+                u.conversations.delete(id);
+                u.turns.delete(id);
+                deletedConversationIds.push(id);
+              }
+            }
+          }
+          return { deletedConversationIds };
+        }
         case "store.conversations.list": {
           const { items, next } = page(
             [...u.conversations.values()].sort(
@@ -121,7 +136,24 @@ export function memoryWebstore(pageSize = 2): MemoryWebstore {
           u.conversations.set(body.doc.conversation.id, clone(body));
           if (!u.turns.has(body.doc.conversation.id))
             u.turns.set(body.doc.conversation.id, new Map());
-          return {};
+          return { revision: 1 };
+        case "store.conversations.rewind": {
+          const { doc, position, keep, targetTurnId, retained } = body;
+          const id = doc.conversation.id;
+          const session = u.conversations.get(id)?.doc.conversation;
+          const turns = u.turns.get(id);
+          if (!session || !turns || session.mode !== "code" || session.archived ||
+              session.createdAt !== doc.conversation.createdAt ||
+              turns.get(`|${targetTurnId}`)?.ordinal !== keep)
+            throw new Error("The Code rewind boundary no longer exists.");
+          for (const [key, turn] of turns)
+            if (turn.branchId === null && turn.ordinal >= keep) turns.delete(key);
+          if (retained) turns.set(`|${targetTurnId}`, clone(retained));
+          u.conversations.set(id, clone({ doc, position }));
+          return { revision: 1 };
+        }
+        case "store.conversations.get":
+          return clone(u.conversations.get(body.id) ?? { doc: null });
         case "store.conversations.delete":
           u.conversations.delete(body.id);
           u.turns.delete(body.id);

@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { ArrowUpDown } from "../ui/glyphs";
 import type { Mode } from "../../shared/types";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { Menu, type MenuEntry, type MenuPosition } from "../ui/Menu";
 import { useTooltip } from "../ui/Tooltip";
 import { defaultFilter, type ListFilter } from "./listFilter";
@@ -26,8 +26,8 @@ const activityOptions: Option<"activity">[] = [
   ["all", "All"],
 ];
 // Chat: Date, Type, Unread, Custom groups; Code: Date, Folder, State, Custom
-// groups. Code's State is shown but disabled: Claudex has no remote session
-// states to group by.
+// groups (R-0031, R-Code-Recents筛选-Group-by). Code's State is shown but
+// disabled: Claudex has no remote session states to group by.
 const chatGroupOptions: Option<"groupBy">[] = [
   ["date", "Date"],
   ["type", "Type"],
@@ -47,8 +47,8 @@ const codeGroupOptions: Option<"groupBy">[] = [
   ["folder", "Folder"],
   ["custom", "Custom groups"],
 ];
-// All environments above a divider, then each environment. Cloud, Remote
-// Control and Slack are not offered.
+// Code, R-Code-Recents筛选-Environment: All environments above a divider,
+// then each environment. Cloud, Remote Control and Slack are not offered.
 const environmentOptions: Option<"environment">[] = [
   ["local", "Local"],
   ["ssh", "SSH"],
@@ -60,7 +60,7 @@ export const unavailableReasons = {
   slack: "Slack sessions aren't available in Claudex yet",
   state: "Session states aren't available in Claudex yet",
 };
-// Local, Cloud, Remote Control, SSH, Slack.
+// The captured order: Local, Cloud, Remote Control, SSH, Slack.
 const environmentRows: (Option<"environment"> | [undefined, string, string])[] =
   [
     environmentOptions[0],
@@ -164,7 +164,8 @@ export function historyFilterEntries(
     ],
   };
   // Once anything differs from the defaults the menu ends with a way back:
-  // Clear filters in Code, Reset to defaults in Chat.
+  // Clear filters in Code, Reset to defaults in Chat (desktop bundle
+  // 2.31226.1).
   const reset: MenuEntry[] = isDefaultFilter(value)
     ? []
     : [
@@ -179,8 +180,9 @@ export function historyFilterEntries(
         },
       ];
   const views: MenuEntry[] = [
-    // Code's menu offers Show empty groups above Show PR status while the list
-    // is grouped by custom group; the check toggles and the menu stays open.
+    // Live claude.ai bundle, 2026-10-12: Code's menu offers Show empty
+    // groups above Show PR status while the list is grouped by custom
+    // group; the check toggles and the menu stays open.
     ...(emptyGroups && value.groupBy === "custom"
       ? [
           {
@@ -195,8 +197,9 @@ export function historyFilterEntries(
           },
         ]
       : []),
-    // The sidebar's rows show their pull request's state while this is checked
-    // (on by default); it toggles and the menu stays open. The History page's
+    // Live claude.ai bundle, 2026-10-12 (shared-20): the sidebar's rows
+    // show their pull request's state while this is checked (on by
+    // default); it toggles and the menu stays open. The History page's
     // list has no PR glyphs, so its menu leaves it out.
     ...(mode === "code" && prStatus
       ? [
@@ -238,10 +241,10 @@ export function historyFilterEntries(
 
 /**
  * Every choice, sort included, is the default one. Show empty groups counts
- * only while it is offered, that is while the list is grouped by custom group,
- * which already differs from the default, so it is not compared on its own.
- * Show PR status is how the rows look, not which rows show, and Clear filters
- * leaves it.
+ * only while it is offered, that is while the list is grouped by custom
+ * group, which already differs from the default (live claude.ai bundle,
+ * 2026-10-12), so it is not compared on its own. Show PR status is how the
+ * rows look, not which rows show, and Clear filters leaves it.
  */
 export function isDefaultFilter(value: ListFilter) {
   return (Object.keys(defaultFilter) as (keyof ListFilter)[]).every(
@@ -255,17 +258,19 @@ export function isDefaultFilter(value: ListFilter) {
 /**
  * The recent list's filter menu. Chat shows Type, Status and Last activity;
  * Code shows Status and Environment, groups, sorts and ends with Show PR
- * status. Both group (Custom groups included) and sort. Entries without a
- * Claudex backend (Cloud, Remote Control and Slack environments, State
- * grouping) are shown disabled with the reason as a tooltip.
+ * status (R-Code-Recents筛选菜单). Both group (Custom groups included) and
+ * sort. Entries without a Claudex backend (Cloud, Remote Control and Slack
+ * environments, State grouping) are shown disabled with the reason as a
+ * tooltip.
  */
 export function HistoryFilter({
   mode,
   value,
   onChange,
   className = "",
-  // The icon font's Filter, 16px, on every surface.
-  icon = <AppIcon name="Filter" size={16} />,
+  // The icon font's Filter, 16px, on every surface (live claude.ai bundle,
+  // 2026-10-20; desktop bundle 2.37337.1, shared-21-DExJa6Im.js).
+  icon = <Anthropicon name="Filter" size={16} />,
   buttonLabel,
   emptyGroups,
   prStatus,
@@ -274,7 +279,7 @@ export function HistoryFilter({
   mode: Mode;
   value: ListFilter;
   onChange: (value: ListFilter) => void;
-  /** The button's accessible name where it differs from the menu's. */
+  /** The button's accessible name where it differs from the menu's (the sidebar's, R-0069 AX). */
   buttonLabel?: string;
   /** The list can show empty custom groups: Code offers Show empty groups. */
   emptyGroups?: boolean;
@@ -288,8 +293,8 @@ export function HistoryFilter({
 }) {
   const [position, setPosition] = useState<MenuPosition>();
   const anchor = useRef<HTMLButtonElement>(null);
-  // The tooltip says what the button is called; the History page's button is
-  // plain Filter.
+  // The tooltip says what the button is called (desktop bundle 2.31226.1:
+  // the same text as its label); the History page's button is plain Filter.
   const tip = useTooltip(buttonLabel ?? "Filter", {
     disabled: Boolean(position),
   });
@@ -335,8 +340,8 @@ export function HistoryFilter({
 }
 
 /**
- * Sort, beside Filter while the Chats and tasks page searches: the filter
- * menu's Sort by choices behind their own ↑↓ button.
+ * Sort, beside Filter while the Chats and tasks page searches (R-1317): the
+ * filter menu's Sort by choices behind their own ↑↓ button.
  */
 export function HistorySort({
   value,

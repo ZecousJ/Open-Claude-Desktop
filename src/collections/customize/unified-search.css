@@ -1,6 +1,7 @@
-/* Customize's unified search: the results heading, sections as Customize's own
-   with their count, a footnote-sized muted note, and Show more / Show fewer as
-   a quiet text button under a section. */
+/* Customize's unified search (live claude.ai bundle, 2026-10-14,
+   ccea1f474): the results heading, sections as Customize's own with their
+   count, a footnote-sized muted note, and Show more / Show fewer as a
+   quiet text button under a section. */
 .unified-search {
   display: flex;
   flex-direction: column;

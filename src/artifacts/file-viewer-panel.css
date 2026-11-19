@@ -1,9 +1,9 @@
 /*
  * The file viewer panel's own rules, split from file-viewer.css: they load with
  * the viewer (FileViewer.tsx and the pieces it shows), off the first load, as
- * the original's viewer styles arrive with its chunk. Rules that the
- * conversation, the cards or a later global stylesheet also touch stay in
- * file-viewer.css.
+ * the original's viewer styles arrive with its chunk (desktop bundle
+ * 2.31226.1). Rules that the conversation, the cards or a later global
+ * stylesheet also touch stay in file-viewer.css.
  */
 .file-view-mode button {
   width: 26px;
@@ -14,7 +14,8 @@
   border-radius: 5px;
   color: #858580;
 }
-/* Strip tabs: w-35 ps/pe-[12px], border-alpha-1, bg-surface-3. */
+/* Strip tabs: w-35 ps/pe-[12px], border-alpha-1, bg-surface-3 (live
+   claude.ai bundle, 2026-10-14, cfe7c4b3b-DAHNPZv8.js:890,938). */
 .artifact-frame-tabs {
   display: flex;
   align-items: stretch;
@@ -69,7 +70,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.artifact-frame-tab .app-icon {
+.artifact-frame-tab .anthropicon {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
@@ -103,7 +104,8 @@
 :root[data-theme="light"] .artifact-frame-tab:not([data-selected]):hover {
   background: hsl(from #0b0b0b h s l / 5%);
 }
-/* CDS md spinner, 16px / 1.75px. */
+/* CDS md spinner, 16px / 1.75px (live claude.ai bundle, 2026-10-14,
+   shared-frame-B1JORnF0.js:3073). */
 .artifact-frame-loading {
   line-height: 0;
 }
@@ -160,7 +162,7 @@
   background: #3a3a37;
 }
 /* The panel's divider (src/ui/ResizeHandle.tsx, resize-handle.css), its
- 12px grab area centred on the panel's edge. */
+   12px grab area centred on the panel's edge. */
 .file-viewer-resize {
   left: -7px;
 }
@@ -213,7 +215,7 @@
 :root[data-theme="light"] .file-view-mode button:hover {
   color: #2e2e2e;
 }
-/* More options: a white sheet with a #e5e5e5 rim. */
+/* More options (R-1077, light): a white sheet with a #e5e5e5 rim. */
 :root[data-theme="light"] .file-copy-anchor > .file-viewer-menu {
   border-color: #e5e5e5;
   background: #fff;
@@ -243,14 +245,15 @@
   min-width: 8px;
 }
 /* Switch between artifacts (artifacts/ArtifactSwitcher.tsx), after the
- original: a ghost list button before the title; while its list is open the
- title reads "Switch between artifacts". The list is a column of cards under
- the header, 4px apart: each 8px 16px 8px 12px, at most 288px wide, radius 8,
- a hairline in the strong border colour and a soft 8px drop shadow; the name
- on up to two lines over "N versions · type". A card slides in from 12px up
- over 300ms, 35ms after the one above; hovering it turns its text primary and
- its rim accent, and the artifact on screen has the accent rim and a 1px
- accent ring. */
+   original (desktop bundle 2.31226.1): a ghost list button before the
+   title; while its list is open the title reads "Switch between
+   artifacts". The list is a column of cards under the header, 4px apart:
+   each 8px 16px 8px 12px, at most 288px wide, radius 8, a hairline in the
+   strong border colour and a soft 8px drop shadow; the name on up to two
+   lines over "N versions · type". A card slides in from 12px up over 300ms,
+   35ms after the one above; hovering it turns its text primary and its
+   rim accent, and the artifact on screen has the accent rim and a 1px
+   accent ring. */
 .artifact-switch-anchor {
   position: relative;
   flex: none;
@@ -343,8 +346,8 @@
   color: var(--text-secondary);
 }
 /* The version switcher: "v{n} · Latest" as a small ghost button after the
- title; its menu lists the versions newest first, the newest marked
- Latest, the one on screen checked. */
+   title; its menu lists the versions newest first, the newest marked
+   Latest, the one on screen checked. */
 .artifact-version-anchor {
   position: relative;
   flex: none;
@@ -472,7 +475,8 @@
   background: #183d69;
   color: #68a8fa;
 }
-/* CDS ghost/xs. */
+/* CDS ghost/xs (live claude.ai bundle, 2026-10-14,
+   c667b4aab-DaXkbQLY.js:729; shared-frame-B1JORnF0.js:3719). */
 .artifact-restore-button {
   display: inline-flex;
   flex-shrink: 0;
@@ -626,8 +630,8 @@
   line-height: 16px;
   color: #7f7f78;
 }
-/* Comment filter: 130px under the filter button, 24px rows, a fixed page scope
- and a Show resolved checkbox. */
+/* Comment filter (R-1020, W1202 at 1x): 130px under the filter button,
+   24px rows, a fixed page scope and a Show resolved checkbox. */
 .artifact-comments-list .artifact-filter-menu {
   top: 38px;
   right: 36px;
@@ -669,7 +673,8 @@
 .artifact-title-menu > [role="menuitemcheckbox"] > .artifact-menu-checkbox {
   margin-left: auto;
 }
-/* gap-sm px-md py-sm text-footnote. */
+/* gap-sm px-md py-sm text-footnote (live claude.ai bundle,
+   2026-10-14, c547ae5e3-GTYn8RRi.js). */
 .artifact-storage-lines {
   display: flex;
   flex-direction: column;
@@ -707,8 +712,8 @@
   margin: 0;
   color: inherit;
 }
-/* Draft: a 33px marker whose pointed corner is the clicked point, and 39px to
- its right a 300px box with 11px padding. */
+/* Draft (R-1017/R-1018, W1202 at 1x): a 33px marker whose pointed corner is
+   the clicked point, and 39px to its right a 300px box with 11px padding. */
 .artifact-comment-draft-anchor {
   position: absolute;
   pointer-events: none;
@@ -815,7 +820,7 @@
   cursor: default;
 }
 /* A saved comment keeps the draft marker's shape, its point on the spot
- (visual provisional: the reference shows only the draft's marker). */
+   (visual provisional: the reference shows only the draft's marker). */
 .artifact-comment-pin {
   position: absolute;
   width: 24px;
@@ -845,11 +850,11 @@
   padding: 4px;
   font-size: 11px;
 }
-/* Comment motion, after the original's: a comment card comes in from 6px up
- over 280ms on the standard curve; the one a pin jumps to rings once, an
- accent outline that grows from 0 to 6px out as it fades (1.3s); a draft's
- avatar lands, its circle opening from 4px across 200ms under an accent veil
- that fades. */
+/* Comment motion, after the original's (desktop bundle 2.31226.1): a
+   comment card comes in from 6px up over 280ms on the standard curve; the
+   one a pin jumps to rings once, an accent outline that grows from 0 to
+   6px out as it fades (1.3s); a draft's avatar lands, its circle opening
+   from 4px across 200ms under an accent veil that fades. */
 .artifact-comments-list article {
   outline: 2px solid transparent;
   animation: artifact-comment-in 280ms var(--ease-standard);
@@ -914,7 +919,7 @@
 .artifact-export-entry > button[aria-expanded="true"] {
   background: #313131;
 }
-/* Switch artifact: the count 6px before the arrow. */
+/* Switch artifact (R-1050, W1920 at 1x): the count 6px before the arrow. */
 .artifact-submenu-count {
   margin-left: auto;
   color: var(--text-muted, #8f8e8a);
@@ -939,7 +944,7 @@
   flex-shrink: 0;
   color: #5d95dc;
 }
-.artifact-export-submenu .app-icon {
+.artifact-export-submenu .anthropicon {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
@@ -953,9 +958,10 @@
   border-radius: 9px;
   background: #202020;
 }
-/* Export card: gap-md, gap-sm, gap-xs, text-heading-semibold, text-body,
- bg-neutral; Card uses p-lg and rounded-card; the export/share popup uses
- w-[435px] and max-w-[calc(var(--host-clear-width,100vw)-24px)]. */
+/* Export card (live claude.ai bundle, 2026-10-14, frame-shell-chrome-B45f-YAC):
+   gap-md, gap-sm, gap-xs, text-heading-semibold, text-body, bg-neutral;
+   Card uses p-lg and rounded-card (shared-frame-BjUcQ1Qc); the export/share
+   popup uses w-[435px] and max-w-[calc(var(--host-clear-width,100vw)-24px)]. */
 .artifact-title-menu .artifact-export-submenu[data-export-nudge] {
   width: 435px;
   max-width: calc(100vw - 24px);
@@ -1062,8 +1068,8 @@
 .artifact-title-menu .artifact-menu-delete {
   color: #bb827a;
 }
-/* No capture shows a greyed row; the shared Menu's disabled look (opacity 0.4,
- src/ui/menu.css) is the analogue. */
+/* R-1056: no capture shows a greyed row; the shared Menu's disabled look
+   (opacity 0.4, src/ui/menu.css) is the analogue. */
 .artifact-title-menu button:disabled {
   color: inherit;
   opacity: 0.4;
@@ -1104,8 +1110,8 @@
   background: #404040;
 }
 /* Share sizes to its label like Publish beside it: the fixed 74px was the
- English "Share" with a glyph this button doesn't have, and left a long empty
- end after a short label such as 分享. */
+   English "Share" with a glyph this button doesn't have, and left a long
+   empty end after a short label such as 分享 (owner, 2026-10-22). */
 .artifact-collaboration .artifact-share-button {
   width: auto;
   height: var(--artifact-share-height, 28px);
@@ -1117,8 +1123,8 @@
   color: #1f1f1e;
   font-size: 13px;
 }
-/* Existing full-page web controls. Embedded and native panels keep the measured
- legacy defaults above. */
+/* Existing full-page web controls, from official-details-menus-states.txt:15.
+   Embedded and native panels keep the measured legacy defaults above. */
 .artifact-collaboration-header[data-standalone] {
   --artifact-comment-height: 24px;
   --artifact-comment-main-width: 24px;
@@ -1129,7 +1135,7 @@
   --artifact-share-height: 24px;
   --artifact-share-radius: 6px;
 }
-/* Official standalone /artifact page. */
+/* Official standalone /artifact page, official-details-menus-states.txt:13–16. */
 .artifact-panel.artifact-collaboration[data-standalone]
   > .artifact-collaboration-header {
   box-sizing: border-box;
@@ -1155,8 +1161,8 @@
   height: 49px;
   min-height: 49px;
 }
-/* Expanded header: no Close, Share stays white and ends 12px from the edge; the
- title button starts 10px in. */
+/* Expanded header (R-1000/R-1002/R-1006, W1202 at 1x): no Close, Share stays
+   white and ends 12px from the edge; the title button starts 10px in. */
 .artifact-collaboration[data-expanded="true"] > .artifact-collaboration-header {
   padding-left: 16px;
   padding-right: 12px;
@@ -1173,7 +1179,7 @@
   height: 28px;
   color: #c9c8c2;
 }
-/* Chat: 64px, the 12px Claude star 6px in, 4px to the label. */
+/* Chat (R-1000, W1202 at 1x): 64px, the 12px Claude star 6px in, 4px to the label. */
 .artifact-collaboration .artifact-chat-group > .artifact-chat-button {
   gap: 4px;
   padding: 0 10px 0 6px;
@@ -1186,7 +1192,7 @@
   background: #404040;
 }
 /* Expanded, the title menu keeps a 6px gap under the lower title button and
- lines up with it. */
+   lines up with it (R-1000/R-1007: button x10–184 y12–36, menu from y42). */
 .artifact-collaboration[data-expanded="true"] .artifact-title-menu {
   top: 42px;
   left: 10px;
@@ -1203,7 +1209,7 @@
   min-width: 124px;
   width: 124px;
 }
-/* Version history popup. */
+/* Version history popup (live claude.ai bundle, 2026-10-14, c547ae5e3-GTYn8RRi:916). */
 .artifact-title-menu .artifact-export-submenu[data-versions] {
   width: max-content;
   min-width: 280px;
@@ -1295,14 +1301,14 @@
 .artifact-collaboration .artifact-title-input::selection {
   background: #48505f;
 }
-/* The muted dark selection was sampled on the dark panel; in light the app's
- own selection colour keeps the dark text legible. */
+/* The muted dark selection was sampled on the dark panel; in light the
+   app's own selection colour (R-0525) keeps the dark text legible. */
 :root[data-theme="light"]
   .artifact-collaboration
   .artifact-title-input::selection {
   background: rgb(78 126 179 / 0.6);
 }
-/* More options: menu x1512–1664, y51–123, 32px rows, no icons. */
+/* More options (file-viewer-controls-001 @27.5s): menu x1512–1664, y51–123, 32px rows, no icons. */
 .file-copy-anchor {
   position: relative;
   display: flex;
@@ -1329,7 +1335,9 @@
 .file-copy-anchor > .file-viewer-menu button:focus-visible {
   background: #313131;
 }
-/* Publish artifact with "Content already published" or "Unpublished" under it. */
+/* Publish artifact with "Content already published" or "Unpublished" under
+   it (live claude.ai bundle, 2026-10-12: whitespace-normal flex-col, the
+   note text-footnote text-muted). */
 .file-viewer-menu-label {
   display: flex;
   flex-direction: column;
@@ -1431,9 +1439,9 @@
   line-height: calc(var(--document-body, 15px) * 1.6);
 }
 /* The document's headings and tables are sized in em of its text, so they
- follow Transcript text size with it: h1 1.75em on 1.15 lines and h2 1.35em on
- 1.25, both weight 500, h1 tracked -0.012em; h3 1.125em and h4 1em at 600;
- tables 0.9375em on 1.5. */
+   follow Transcript text size with it (live claude.ai bundle, 2026-10-12):
+   h1 1.75em on 1.15 lines and h2 1.35em on 1.25, both weight 500, h1
+   tracked -0.012em; h3 1.125em and h4 1em at 600; tables 0.9375em on 1.5. */
 .is-document .markdown-document-column > .markdown h1 {
   font-size: 1.75em;
   font-weight: 500;
@@ -1458,9 +1466,10 @@
   line-height: 1.5;
 }
 /*
- * The contents rail (artifacts/MarkdownRail.tsx), Sticky
- * at the page's top, 20px from its start edge; the column 12px down and as tall
- * as the page allows, fading in after 120ms over 180ms.
+ * The contents rail (artifacts/MarkdownRail.tsx), live claude.ai bundle,
+ * 2026-10-12: sticky at the page's top, 20px from its start edge; the
+ * column 12px down and as tall as the page allows, fading in after 120ms
+ * over 180ms.
  */
 .markdown-rail {
   position: sticky;
@@ -1501,8 +1510,8 @@
   pointer-events: auto;
 }
 /* 8px rows of 18px × 2px ticks drawn from the start: 14px for the top level,
- 9px set in 3px for the next, 6px set in 6px for the third. Disabled ink,
- muted once read, the current one full length, 3px tall, in the accent. */
+   9px set in 3px for the next, 6px set in 6px for the third. Disabled ink,
+   muted once read, the current one full length, 3px tall, in the accent. */
 .markdown-rail-ticks {
   box-sizing: border-box;
   display: flex;
@@ -1572,9 +1581,9 @@
   --markdown-rail-accent: #184f95;
 }
 /* The headings as a list: a popover card 4px before the ticks, as wide as
- the gutter less 16px (240–272px), 8px corners, 5px 4px inside; it fades
- over 150ms with no slide. Rows are 22px, 13px type, 6px corners, a tick
- then the text (10px and 20px further in for the lower levels). */
+   the gutter less 16px (240–272px), 8px corners, 5px 4px inside; it fades
+   over 150ms with no slide. Rows are 22px, 13px type, 6px corners, a tick
+   then the text (10px and 20px further in for the lower levels). */
 .markdown-rail-outline {
   position: absolute;
   top: 0;
@@ -1701,7 +1710,7 @@ li[data-level="2"] .markdown-rail-label {
   padding-inline-start: 20px;
 }
 /* A heading jumped to lands with its background fading from the accent
- tint over 1.6s. */
+   tint over 1.6s. */
 .artifact-markdown-preview :is(h1, h2, h3, h4, h5, h6):focus {
   outline: none;
 }
@@ -1718,7 +1727,7 @@ li[data-level="2"] .markdown-rail-label {
   }
 }
 /* Reduced motion: the rail appears at once, the list without a fade, the
- rail scrolls at once; no landed flash. */
+   rail scrolls at once; no landed flash. */
 @media (prefers-reduced-motion: reduce) {
   .markdown-rail-nav,
   .artifact-markdown-preview [data-landed] {
@@ -1774,7 +1783,7 @@ li[data-level="2"] .markdown-rail-label {
   outline-offset: -2px;
 }
 /* View full screen (the lightbox): a round button in the corner that shows
- while the picture is hovered or the button has focus. */
+   while the picture is hovered or the button has focus. */
 .artifact-image-full-screen {
   position: absolute;
   z-index: 1;
@@ -1821,7 +1830,8 @@ li[data-level="2"] .markdown-rail-label {
   border-collapse: separate;
   border-spacing: 0;
   font:
-    13px/18px -apple-system,
+    13px/18px "Claudex Reference Sans",
+    -apple-system,
     "Segoe UI",
     sans-serif;
   font-variant-numeric: tabular-nums;
@@ -1849,12 +1859,13 @@ li[data-level="2"] .markdown-rail-label {
   margin: 0;
   text-align: left;
 }
-/* No preview: a column centred in the panel, gap-md (16px) and p-lg (16px); a
- 48px round badge (bg-fill-control = alpha-2, text-secondary) holding the 24px
- File glyph; "No preview" in text-body (14/20) semibold text-primary over the
- reason in text-footnote (13/17) text-secondary, gap-xs (8px); then a
- secondary "sm" button (28px, 7px radius, 10px padding, 16px icon, 6px gap,
- text-body, fill-secondary with a border ring). */
+/* No preview (live claude.ai bundle, 2026-10-13, c2eed10ca R, comfortable
+   density): a column centred in the panel, gap-md (16px) and p-lg (16px);
+   a 48px round badge (bg-fill-control = alpha-2, text-secondary) holding the
+   24px File glyph; "No preview" in text-body (14/20) semibold text-primary
+   over the reason in text-footnote (13/17) text-secondary, gap-xs (8px); then
+   a secondary "sm" button (28px, 7px radius, 10px padding, 16px icon, 6px
+   gap, text-body, fill-secondary with a border ring). */
 .file-preview-none {
   flex-direction: column;
   align-items: center;
@@ -1915,10 +1926,11 @@ li[data-level="2"] .markdown-rail-label {
 .file-preview-none-download svg {
   flex: none;
 }
-/* Preview runtime error, after the original's card: 20px in from the preview's
- bottom and sides, a 300px card with a 12px radius, 20px padding, 14px text,
- the error in a 6px-radius box with 16px padding in 12px monospace, the button
- at the right 16px below, and a Dismiss X 8px from the top right corner. */
+/* Preview runtime error (R-1036), after the original's card (desktop bundle
+   2.31226.1): 20px in from the preview's bottom and sides, a 300px card with
+   a 12px radius, 20px padding, 14px text, the error in a 6px-radius box with
+   16px padding in 12px monospace, the button at the right 16px below, and a
+   Dismiss X 8px from the top right corner. */
 .artifact-runtime-error-anchor {
   position: absolute;
   left: 20px;
@@ -2016,7 +2028,8 @@ li[data-level="2"] .markdown-rail-label {
   color: var(--surface);
 }
 
-/* Comment mode: the comment half turns deep blue with a light blue icon. */
+/* Comment mode (R-1013/R-1016, W1202 at 1x): the comment half turns deep blue
+   with a light blue icon. */
 .artifact-collaboration .artifact-comment-buttons button.is-active,
 .artifact-collaboration .artifact-comment-buttons button.is-active:hover {
   background: #0a2243;
@@ -2049,10 +2062,10 @@ li[data-level="2"] .markdown-rail-label {
 }
 
 /*
- * Light theme of the Artifact panel's header: the comment pair is white with a
- * #e6e6e6 rim and rule and a #2c2c2c glyph, and Share is #262624 with white
- * text, also while its popover is open. The card is the sheet card
- * (artifacts/sheet-card.css).
+ * Light theme of the Artifact panel's header (R-1042, R-1058, W1920 at 1x,
+ * JPG): the comment pair is white with a #e6e6e6 rim and rule and a #2c2c2c
+ * glyph, and Share is #262624 with white text, also while its popover is
+ * open (R-1042). The card is the sheet card (artifacts/sheet-card.css).
  */
 :root[data-theme="light"] .artifact-collaboration .artifact-comment-buttons {
   border: 1px solid #e6e6e6;
@@ -2083,9 +2096,9 @@ li[data-level="2"] .markdown-rail-label {
 }
 
 /*
- * Light theme of the comments panel and its filter: a white card with a soft
- * shadow and black text; the filter menu white with a #d0d0d0 rim, "This page"
- * #919191, a blue tick and a #e6e6e6 rule.
+ * Light theme of the comments panel and its filter (R-1058, R-1059, W1920 at
+ * 1x, JPG): a white card with a soft shadow and black text; the filter menu
+ * white with a #d0d0d0 rim, "This page" #919191, a blue tick and a #e6e6e6 rule.
  */
 :root[data-theme="light"] .artifact-comments-list {
   border-color: #e7e6e4;
@@ -2140,7 +2153,7 @@ li[data-level="2"] .markdown-rail-label {
   border-color: #3a7fd5;
 }
 
-/* 679: neutral xs viewing pill, only when inspecting an older version. */
+/* c547ae5e3:679: neutral xs viewing pill, only when inspecting an older version. */
 .artifact-viewing-version {
   display: inline-flex;
   align-items: center;

@@ -6,10 +6,10 @@ import type { RewindScope } from "../../shared/rewind-files";
 import { formatText } from "../i18n";
 
 /**
- * Rewind to here / `/rewind`: removes a message and what follows (the last
- * message when none is named) and puts that message back in the composer.
- * Refused while Claude works or while the composer holds a draft ("Send or
- * clear your draft first").
+ * Rewind to here / `/rewind` (desktop bundle 2.31226.1): removes a message
+ * and what follows (the last message when none is named) and puts that
+ * message back in the composer. Refused while Claude works or while the
+ * composer holds a draft ("Send or clear your draft first").
  */
 export async function rewindConversation(app: AppController, turnId?: string) {
   const { active } = app;

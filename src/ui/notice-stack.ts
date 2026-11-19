@@ -3,11 +3,13 @@ import { errorToastBottom } from "./useErrorToastClearance";
 
 /*
  * The corner notices (the toast stack, the limit and connection notices, the
- * error notice, the focus reminders) share one corner. The original keeps them
- * apart with a safe-area registry: each notice registers, the viewport rises
- * above the registered ones and above a composer near the bottom. Here a
- * notice that registers gets `--notice-lift`, the distance its resting `bottom:
- * 16px` rises by; the stylesheets add it to that bottom.
+ * error notice, the focus reminders) share one corner. The original keeps
+ * them apart with a safe-area registry: each notice registers, the viewport
+ * rises above the registered ones and above a composer near the bottom
+ * (--toast-clearance, bottom: max(…, clearance) + 1rem; live claude.ai
+ * bundle, 2026-10-16, shared-l-p-m-5 Ad and shared-l-p-m-6 cg). Here a
+ * notice that registers gets `--notice-lift`, the distance its resting
+ * `bottom: 16px` rises by; the stylesheets add it to that bottom.
  */
 
 const gap = 8;

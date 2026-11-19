@@ -1,6 +1,12 @@
 /**
- * The sleep band's judgement. The main process says when the computer slept
- * (`slept` events); a window judges the sessions it shows.
+ * The sleep band's judgement (live claude.ai bundle, 2026-10-12: a local
+ * Code session the computer's sleep interrupted shows "Your computer went
+ * to sleep and paused this session." with Continue here and Continue in
+ * cloud; since the keep-awake rework the band says whether Claude will
+ * pick up, picked up or couldn't, offers Keep computer awake, and gives a
+ * running session 75 seconds after waking). The main
+ * process says when the computer slept (`slept` events); a window judges
+ * the sessions it shows.
  */
 import type { Conversation, Turn } from "../../shared/types";
 
@@ -37,12 +43,13 @@ export function settleSleep(conversationId: string, slept: Slept) {
 }
 
 /**
- * What became of the session after waking: its last turn was running when the
- * computer slept; it picked up once it shows progress over what it showed when
- * the window learned of the sleep (`before`) or finished; it could not when it
- * ended in an error or showed nothing new for `resumeWindowMs` after waking.
- * Null when the sleep did not catch the session working, or its band was
- * settled.
+ * What became of the session after waking (live bundle: `expected` "will
+ * pick up", `resumed` "picked up", `needed` "couldn't pick up" with
+ * Continue): its last turn was running when the computer slept; it picked
+ * up once it shows progress over what it showed when the window learned of
+ * the sleep (`before`) or finished; it could not when it ended in an error
+ * or showed nothing new for `resumeWindowMs` after waking. Null when the
+ * sleep did not catch the session working, or its band was settled.
  */
 export type Resume = "expected" | "resumed" | "needed";
 export const resumeWindowMs = 75_000;
@@ -71,11 +78,11 @@ export function sleepResume(
   return now - slept.wakeAt >= resumeWindowMs ? "needed" : "expected";
 }
 
-/** What Claudex is told by Continue. */
+/** What Claudex is told by Continue (live desktop bundle's words). */
 export const continuePrompt =
   "My computer went to sleep while you were working. Please continue from where you left off.";
 
-/** Legacy interrupted band, before the keep-awake rework. */
+/** Legacy interrupted band, before the keep-awake rework (live claude.ai bundle, 2026-10-14, cf74bc599-BRpV2M4z.js). */
 export function sleepTitle(keepAwakeRework: boolean, cloud: boolean) {
   return keepAwakeRework
     ? "Your computer went to sleep while Claudex was working."

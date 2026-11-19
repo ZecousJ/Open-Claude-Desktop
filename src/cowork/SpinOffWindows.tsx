@@ -5,7 +5,7 @@ import { api } from "../desktop-api";
 import { formatText } from "../i18n";
 import { Modal } from "../ui/Controls";
 import { WithTooltip } from "../ui/Tooltip";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { draftPreview } from "../split-view/discard-draft";
 import { StatusDot } from "../sidebar/StatusDot";
 import { rowStatus } from "../sidebar/row-status";
@@ -30,17 +30,19 @@ import { MiniSessionView } from "./MiniSessionView";
 import "./spin-off-windows.css";
 
 /**
- * The task windows: a row at the bottom right of the Cowork page, newest at the
- * right, as many expanded (416px) as fit beside the others collapsed (256px),
- * the most recently raised first. Each is a card with a header (its name;
- * "From: {title}" on a spun-off draft while expanded; once its task started,
- * the task's status; a Cowork badge, Maximize once its task started, Minimize /
- * Expand, Close) over the compact task composer (MiniTaskComposer) or, once the
- * task started, its live view (MiniSessionView). Start task spins the task off
- * the conversation after the reply the window was opened on, or starts a quick
- * task, without leaving the page; the window then follows the task until it is
- * maximized (opened) or closed. Closing a draft with something in it asks first
- * ("Discard draft?").
+ * The task windows (live claude.ai bundle, 2026-10-12: MiniComposeWindow,
+ * c6eb5f8cf Wn, in the row shared-21 Xv): a row at the bottom right of the
+ * Cowork page, newest at the right, as many expanded (416px) as fit beside
+ * the others collapsed (256px), the most recently raised first. Each is a
+ * card with a header (its name; "From: {title}" on a spun-off draft while
+ * expanded; once its task started, the task's status; a Cowork badge,
+ * Maximize once its task started, Minimize / Expand, Close) over the
+ * compact task composer (MiniTaskComposer) or, once the task started, its
+ * live view (MiniSessionView). Start task spins the task off the
+ * conversation after the reply the window was opened on, or starts a quick
+ * task, without leaving the page; the window then follows the task until it
+ * is maximized (opened) or closed. Closing a draft with something in it
+ * asks first ("Discard draft?").
  */
 export default function SpinOffWindows() {
   const app = useApp();
@@ -305,7 +307,7 @@ function SpinOffCard({
                   aria-label="Maximize"
                   onClick={maximize}
                 >
-                  <AppIcon name="ArrowOutSquare" />
+                  <Anthropicon name="ArrowOutSquare" />
                 </button>
               )}
             </WithTooltip>
@@ -324,7 +326,7 @@ function SpinOffCard({
                     expanded ? "spin-off-minus down" : "spin-off-minus up"
                   }
                 >
-                  <AppIcon name="Minus" />
+                  <Anthropicon name="Minus" />
                 </span>
               </button>
             )}
@@ -338,7 +340,7 @@ function SpinOffCard({
                 aria-label={closeLabel}
                 onClick={close}
               >
-                <AppIcon name="X" />
+                <Anthropicon name="X" />
               </button>
             )}
           </WithTooltip>

@@ -17,6 +17,8 @@ import {
   type MemoryWebstore,
 } from "./runner-core-support.test.ts";
 import { MockSub2Api, fakeCipher } from "../support/sub2api-mock";
+import type { Conversation } from "../../shared/types";
+import { splitConversation } from "../../shared/web-docs";
 import type { RunnerFrame } from "../../shared/web-runner-frames";
 
 // The provider service each engine and model read starts, as the runner
@@ -77,6 +79,7 @@ before(async () => {
   mock = new MockSub2Api({
     users,
     userApiKeys: false,
+    registrationThrottle: false,
     groups: [group],
     subscriptions: [
       {
@@ -373,4 +376,106 @@ test("a signed-out user's context closes and its data is written", async () => {
   assert.equal(snapshot.settings.theme, "light");
   assert.equal(snapshot.settings.prAutoFix, true);
   assert.notEqual(dispatcher.context(22), ctx);
+});
+
+test("cold history serves a selected chat and signs out while an unrelated chat is held", async (t) => {
+  const previous = dispatcher.context(22)!;
+  const conversations: Conversation[] = Array.from({ length: 10 }, (_, index) => ({
+    id: `cold-${index}`,
+    title: `Chat ${index}`,
+    mode: "chat",
+    providerId: "sub2api",
+    model: "gpt-5.5",
+    pinned: false,
+    archived: false,
+    createdAt: 1,
+    updatedAt: 2,
+    turns: [{
+      id: `turn-${index}`,
+      prompt: `Message ${index}`,
+      items: [],
+      attachments: [],
+      status: "inProgress",
+      createdAt: 1,
+    }],
+  }));
+  await dispatcher.closeContext(previous);
+  const user = { id: previous.userId, accessToken: tokens.get(previous.userId)! };
+  for (const [position, conversation] of conversations.entries()) {
+    const { doc, turns } = splitConversation(conversation);
+    await web.request("store.conversations.put", user.id, { doc, position });
+    await web.request("store.turns.put", user.id, { turns });
+  }
+  const link = dispatcher.options.link;
+  const requested: string[] = [];
+  const holdFirstChat = () => {
+    let release = () => {};
+    let hold: Promise<void> | undefined = new Promise<void>((resolve) => { release = resolve; });
+    dispatcher.options.link = {
+      ...link,
+      async request(op, userId, body) {
+        if (op === "store.turns.list" && body && typeof body === "object" &&
+            "conversationId" in body && typeof body.conversationId === "string") {
+          requested.push(body.conversationId);
+          if (body.conversationId === "cold-0" && hold) {
+            const pending = hold;
+            hold = undefined;
+            await pending;
+          }
+        }
+        return link.request(op, userId, body);
+      },
+    };
+    t.after(release);
+    return release;
+  };
+  t.after(() => { dispatcher.options.link = link; });
+
+  web.log.length = 0;
+  const release = holdFirstChat();
+  const full = dispatcher.contextFor({ user });
+  const shell = await dispatcher.shellContextFor({ user });
+  assert.equal(dispatcher.context(user.id), undefined);
+  assert.ok(dispatcher.isShellContextCurrent(shell));
+  assert.deepEqual(shell.store.conversationInventory()?.map(({ title }) => title), conversations.map(({ title }) => title));
+  assert.ok(shell.services.memory?.service);
+  let readinessTimeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const readiness = Promise.all([
+      value(user.id, "clientPolicy"),
+      value(user.id, "voiceAvailability"),
+    ]);
+    const result = await Promise.race([
+      readiness,
+      new Promise<never>((_, reject) => {
+        readinessTimeout = setTimeout(() => reject(new Error("Startup reads waited for unrelated history")), 3000);
+      }),
+    ]);
+    assert.equal(result.length, 2);
+    assert.equal(shell.store.historyLoaded, false);
+  } finally {
+    clearTimeout(readinessTimeout);
+  }
+  const selected = await shell.store.readConversation("cold-9");
+  assert.equal(selected?.turns[0]?.prompt, "Message 9");
+  assert.equal(selected?.turns[0]?.stopReason, "restart");
+  assert.deepEqual(shell.store.conversations, []);
+  assert.equal(web.log.some(({ op, userId }) => userId === user.id && (op.endsWith(".put") || op.endsWith(".delete"))), false);
+  release();
+  assert.equal(await full, shell);
+  assert.equal(shell.store.historyLoaded, true);
+  assert.deepEqual(shell.store.conversation("cold-9").turns, selected?.turns);
+  assert.equal(requested.filter((id) => id === "cold-9").length, 1);
+
+  await dispatcher.closeContext(shell);
+  const releaseRetired = holdFirstChat();
+  const retiredFull = assert.rejects(dispatcher.contextFor({ user }), /session has ended/i);
+  const retired = await dispatcher.shellContextFor({ user });
+  await dispatcher.signedOut({ t: "user-signed-out", userId: user.id, reason: "revoked" });
+  await retiredFull;
+  assert.equal(dispatcher.isShellContextCurrent(retired), false);
+  const replacement = await dispatcher.contextFor({ user });
+  assert.equal(replacement.store.conversations.length, conversations.length);
+  assert.notEqual(replacement, retired);
+  releaseRetired();
 });

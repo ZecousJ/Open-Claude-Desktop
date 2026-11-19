@@ -19,6 +19,7 @@ import type { Item, Turn } from "../../shared/types";
 import type { Citation, WebSource } from "../../shared/research";
 import { cleanCitations, cleanWebSource } from "../../shared/gateway-signals";
 import { sourceKey } from "../../shared/research";
+import { projectWebCitationText } from "../../shared/web-citation-text";
 
 /** Opens a citation marker; the group number and `markerClose` follow. */
 export const markerOpen = "";
@@ -103,8 +104,8 @@ export function siteName(host: string): string {
 }
 
 /**
- * A chip's label: the first page's title, else its site's name, and how many
- * other pages the chip holds.
+ * A chip's label (live claude.ai, 2026-09-30): the first page's title, else
+ * its site's name, and how many other pages the chip holds.
  */
 export function chipLabel(group: CitationGroup) {
   const first = group.sources[0];
@@ -198,16 +199,17 @@ function editsFor(text: string, citations: Citation[], inline: boolean) {
   return edits;
 }
 
-// Where a chip may sit: a cited span that ends inside a word moves on to the
-// end of the word; in a paragraph of full-width text (no spaces to stop at) to
-// the end of the sentence.
+// Where a chip may sit (source: desktop bundle 2.31226.1, its citation
+// placement; refined in the live claude.ai bundle, 2026-10-12): a cited span
+// that ends inside a word moves on to the end of the word; in a paragraph of
+// full-width text (no spaces to stop at) to the end of the sentence.
 const sentenceMark = /[。、！？，．；：｡､]/u;
 const closingMark = /[\p{Pe}\p{Pf}]/u;
 const trailingMark = /(?!\*)[\p{Pe}\p{Pf}\p{Po}\p{M}]/u;
 const markupStart = /[`[<$"']|:\/\/|www\./i;
-// A full-width comma, point or colon between digits ("1，000", "3．5") is part of
-// a number, not the end of a clause; so is one between a Latin letter and a
-// digit ("A：1").
+// A full-width comma, point or colon between digits ("1，000", "3．5") is
+// part of a number, not the end of a clause; so is one between a Latin
+// letter and a digit ("A：1") (live claude.ai bundle, 2026-10-12).
 const digit = /\p{N}/u;
 const numberMark = /[，．：、､]/u;
 const tightMark = /[，．：]/u;
@@ -282,7 +284,7 @@ function cellEnd(text: string, pipe: number, skipDelimiter: boolean) {
  * A chip that lands on a table cell's edge (at the start of a cell, in the
  * spaces before its closing pipe, or at the start of the line after a row)
  * belongs to the cell before it, so it moves back to the end of that cell's
- * text. Anywhere else `at` is kept.
+ * text (live claude.ai bundle, 2026-10-12). Anywhere else `at` is kept.
  */
 function tableCellPlace(text: string, at: number) {
   const before = text[at - 1];
@@ -377,12 +379,19 @@ export function citationRender(
   item: Pick<Item, "text" | "citations">,
   known: Map<string, WebSource> = new Map(),
 ): CitationRender | undefined {
-  const text = typeof item.text === "string" ? item.text : "";
-  if (!text) return;
-  const recorded = cleanCitations(item.citations, text.length);
+  const original = typeof item.text === "string" ? item.text : "";
+  if (!original) return;
+  const projected = projectWebCitationText(original);
+  const text = projected.text;
+  const plain = text === original ? undefined : { text, groups: [] };
+  const recorded = cleanCitations(item.citations, original.length).map(citation => ({
+    ...citation,
+    start: projected.displayOffset(citation.start),
+    end: projected.displayOffset(citation.end),
+  }));
   const inline = !recorded.length;
   const citations = inline ? xaiInlineCitations(text) : recorded;
-  if (!citations.length) return;
+  if (!citations.length) return plain;
   const fences = fencedRanges(text);
   const inFence = (at: number) =>
     fences.some(([start, end]) => at > start && at < end);
@@ -442,7 +451,7 @@ export function citationRender(
     groups.push({ sources });
     at = slot.end;
   }
-  if (!groups.length) return;
+  if (!groups.length) return plain;
   out += text.slice(at).replace(markerChars, "");
   return { text: out, groups };
 }

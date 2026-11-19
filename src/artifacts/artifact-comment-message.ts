@@ -1,8 +1,7 @@
 /**
  * A comment sent to Claude from an artifact (ArtifactHost's
- * sendArtifactComment): `Comment on artifact
- * "<name>":\n<comment>\n\n<context>`. The transcript shows only the comment, as
- * a card with View thread.
+ * sendArtifactComment): `Comment on artifact "<name>":\n<comment>\n\n<context>`.
+ * The transcript shows only the comment, as a card with View thread (R-1022).
  */
 export function artifactComment(prompt: string) {
   const match =

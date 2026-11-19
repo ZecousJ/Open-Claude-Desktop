@@ -1,5 +1,5 @@
 import { t, tc } from "../i18n";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { ArtifactFrameTabs } from "./ArtifactSwitcher";
 import { isEditEndKey } from "../ui/ime";
 import { ChevronDown } from "../ui/glyphs";
@@ -329,7 +329,7 @@ export function ArtifactCollaborationHeader({
             onHome();
           }}
         >
-          <AppIcon name="Home" size={16} />
+          <Anthropicon name="Home" size={16} />
         </a>
       )}
       {switchList.length > 1 && !renaming ? (

@@ -213,7 +213,7 @@ func (h *hubs) attach(t *tabConn, lastSeq *int64) (resumed bool, ok bool) {
 	for _, r := range replaced {
 		r.kill(websocket.StatusNormalClosure, tabCloseReplaced)
 	}
-	h.c.presenceChanged(t.userID)
+	h.presenceChanged(t.userID)
 	return resumed, true
 }
 
@@ -223,13 +223,16 @@ func (h *hubs) detach(t *tabConn) {
 	if u == nil {
 		return
 	}
+	rc := h.c.reg.current(context.Background(), t.userID)
 	u.mu.Lock()
-	_, had := u.tabs[t]
+	defer u.mu.Unlock()
+	if _, connected := u.tabs[t]; !connected {
+		return
+	}
 	delete(u.tabs, t)
 	u.active = h.c.now()
-	u.mu.Unlock()
-	if had {
-		h.c.presenceChanged(t.userID)
+	if rc != nil {
+		u.sendPresence(rc, t.id, false)
 	}
 }
 
@@ -257,52 +260,54 @@ func (h *hubs) sendSnapshot(t *tabConn, snapshot json.RawMessage) bool {
 	return true
 }
 
-type presenceState struct {
-	userID  int64
-	tabs    int
-	focused bool
-}
-
-// presence returns the user's tab count and whether one is focused, and
-// whether that differs from what was last reported to the runner.
-func (h *hubs) presence(userID int64, markSent bool) (presenceState, bool) {
+func (h *hubs) presenceChanged(userID int64) {
 	u := h.get(userID, false)
 	if u == nil {
-		return presenceState{userID: userID}, false
+		return
+	}
+	rc := h.c.reg.current(context.Background(), userID)
+	if rc == nil {
+		return
 	}
 	u.mu.Lock()
 	defer u.mu.Unlock()
-	p := presenceState{userID: userID, tabs: len(u.tabs)}
-	for t := range u.tabs {
-		if v, f := t.state(); v && f {
-			p.focused = true
-		}
-	}
-	changed := !u.sentOnce || p.tabs != u.sentTabs || p.focused != u.sentFocus
-	if markSent {
-		u.sentOnce, u.sentTabs, u.sentFocus = true, p.tabs, p.focused
-	}
-	return p, changed
+	u.sendPresence(rc, "", false)
 }
 
-// presenceFor lists the presence of the users with tabs assigned to runnerID.
-func (h *hubs) presenceFor(runnerID string) []presenceState {
+// sendPresence queues presence while holding the hub lock so a detach and a
+// subsequent attach for the same tab are delivered in order.
+func (u *userHub) sendPresence(rc *runnerConn, detachedTabID string, initial bool) {
+	tabs, focused := len(u.tabs), false
+	for t := range u.tabs {
+		if v, f := t.state(); v && f {
+			focused = true
+			break
+		}
+	}
+	if initial || detachedTabID != "" || !u.sentOnce || tabs != u.sentTabs || focused != u.sentFocus {
+		u.sentOnce, u.sentTabs, u.sentFocus = true, tabs, focused
+		rc.send(webproto.GoFrame{T: "presence", UserID: u.userID, Tabs: &tabs, Focused: &focused, DetachedTabID: detachedTabID})
+	}
+}
+
+func (h *hubs) runnerAttached(rc *runnerConn) {
 	h.mu.Lock()
-	ids := make([]int64, 0, len(h.m))
-	for id := range h.m {
-		ids = append(ids, id)
+	users := make([]*userHub, 0, len(h.m))
+	for _, u := range h.m {
+		users = append(users, u)
 	}
 	h.mu.Unlock()
-	var out []presenceState
-	for _, id := range ids {
-		if h.c.reg.assignment(context.Background(), id) != runnerID {
+	for _, u := range users {
+		if h.c.reg.current(context.Background(), u.userID) != rc {
 			continue
 		}
-		if p, _ := h.presence(id, true); p.tabs > 0 {
-			out = append(out, p)
+		u.mu.Lock()
+		if len(u.tabs) > 0 {
+			u.sendPresence(rc, "", true)
 		}
+		u.mu.Unlock()
+		h.publish(u.userID, json.RawMessage(`{"type":"resync"}`))
 	}
-	return out
 }
 
 // tabsOf returns the user's connected tabs.

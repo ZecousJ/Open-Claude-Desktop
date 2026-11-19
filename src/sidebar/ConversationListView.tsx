@@ -13,7 +13,7 @@ import {
 import { Collapsible } from "../ui/Collapsible";
 import { Suspense } from "react";
 import { surface } from "../../shared/host";
-import { AppIcon } from "../ui/app-icon";
+import { Anthropicon } from "../ui/anthropicons";
 import { CodeListMenu } from "./CodeListMenu";
 import { HistoryFilter } from "./HistoryFilter";
 import { codeListGroups } from "./code-list-view";
@@ -192,7 +192,8 @@ export function conversationListView(kit: ConversationListViewKit) {
       }}
     >
       {/* With nothing pinned (and no drag or pin tip under way) the section
-         folds to nothing. */}
+          folds to nothing (live claude.ai bundle, 2026-10-16: data-stub,
+          inert, df-pin-section-reveal at height 0). */}
       <div
         className="pinned-section"
         data-drop-section="pinned"
@@ -258,7 +259,7 @@ export function conversationListView(kit: ConversationListViewKit) {
               aria-label="View all"
               onClick={() => onPageChange("history")}
             >
-              <AppIcon name="ArrowUpRight" size={16} />
+              <Anthropicon name="ArrowUpRight" size={16} />
             </button>
           )}
           {surface !== "web" && mode !== "code" && onSearch && (
@@ -267,7 +268,7 @@ export function conversationListView(kit: ConversationListViewKit) {
               aria-label="Search"
               onClick={onSearch}
             >
-              <AppIcon name="Search" />
+              <Anthropicon name="Search" />
             </button>
           )}
           <CodeRecentSortSlot collapsed={mode === "code"}>
@@ -291,14 +292,15 @@ export function conversationListView(kit: ConversationListViewKit) {
               />
             )}
           </CodeRecentSortSlot>
-          {/* "+" starts a session from the heading on every surface. */}
+          {/* "+" starts a session from the heading on every surface (live
+              claude.ai, 2026-10-21: Recents · New session). */}
           {mode === "code" && app && (
             <button
               className="code-recents-new"
               aria-label="New session"
               onClick={() => app.newChat("code")}
             >
-              <AppIcon name="Plus" size={16} />
+              <Anthropicon name="Plus" size={16} />
             </button>
           )}
         </SectionLabel>
@@ -335,7 +337,8 @@ export function conversationListView(kit: ConversationListViewKit) {
                   {group.rows.map(renderRow)}
                 </div>
               );
-            // Code's headings show and hide their rows at once.
+            // Code's headings show and hide their rows at once (live
+            // claude.ai bundle, 2026-10-12: a shut group renders no rows).
             const toggle =
               mode === "code"
                 ? {
@@ -343,7 +346,9 @@ export function conversationListView(kit: ConversationListViewKit) {
                     onToggle: () => toggleGroup(group.key),
                   }
                 : {};
-            // A custom group (and Ungrouped) takes a dragged row.
+            // A custom group (and Ungrouped) takes a dragged row (live
+            // claude.ai bundle, 2026-10-12: data-group-list on the group's
+            // section, ringed in the accent while a release would land there).
             const dropGroup =
               currentCodeList || groupBy === "custom"
                 ? group.key === "ungrouped"
@@ -410,7 +415,8 @@ export function conversationListView(kit: ConversationListViewKit) {
                 {!toggle.collapsed &&
                   group.rows.length === 0 &&
                   group.key.startsWith("group:") && (
-                    // An empty custom group says how to fill it.
+                    // An empty custom group says how to fill it (live
+                    // claude.ai bundle, 2026-10-12: the empty group hint).
                     <p className="row-group-hint" data-drag-shift="">
                       Drag or move sessions here
                     </p>

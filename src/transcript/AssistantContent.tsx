@@ -8,6 +8,7 @@ import { AskingRows } from "../code-tools/AskingRows";
 import { CodeTurnChanges } from "../code-tools/CodeFileChange";
 import { ChatTurnContent } from "./ChatTurnContent";
 import { TurnOutcome } from "./TurnOutcome";
+import { useTranscriptSlots } from "./transcript-slots";
 import { catalogDefaultEffort } from "../composer/model/code-model-choices";
 import { CodeTurnStatus } from "./CodeTurnStatus";
 import {
@@ -125,6 +126,7 @@ export function AssistantContent({
   setEditRequest,
   turn,
 }: AssistantContentProps) {
+  const { StoppedReply } = useTranscriptSlots();
   return (
     <div className="assistant-content">
       {mode === "code" ? (
@@ -176,6 +178,7 @@ export function AssistantContent({
         />
       )}
       <TurnOutcome
+        StoppedReply={StoppedReply}
         turn={turn}
         effort={
           conversation.effort ??
@@ -221,8 +224,8 @@ export function AssistantContent({
           onOpenBackground={onToggleBackground ?? onOpenWorkflow}
         />
       )}
-      {/* Code ends with its still star, not a toolbar; earlier replies keep
-         their toolbar. */}
+      {/* Code ends with its still star, not a toolbar (R-0831);
+                      earlier replies keep their toolbar (R-0638). */}
       {mode === "code" &&
         !latest &&
         !compaction &&
@@ -249,7 +252,8 @@ export function AssistantContent({
             turn={turn}
             busy={sending || running}
             // Cowork is merged into Chat: a unified Chat reply has Chat's
-            // Retry.
+            // Retry (live claude.ai, 2026-10-20: Copy, Read aloud, the two
+            // ratings, Retry).
             versions={
               mode === "chat" || (mode === "cowork" && chatPresentation)
             }

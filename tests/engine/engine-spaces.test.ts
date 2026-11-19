@@ -12,8 +12,12 @@ import os from "node:os";
 import path from "node:path";
 import { Engine } from "../../electron/engine/engine";
 import { sameEnvironment } from "../../electron/engine/engine-types";
+import { CodexRPC } from "../../electron/engine/rpc";
+import { registerWorkflowHandlers } from "../../electron/ipc/workflow";
 import { Store } from "../../electron/store/store";
 import { openPolicy } from "../../shared/client-policy";
+import type { AppEvent, Approval, Conversation } from "../../shared/types";
+import { tasksFromTurn } from "../../shared/workflow-model";
 
 function setup(maxSpaces = 3) {
   const peers: any[] = [];
@@ -113,7 +117,7 @@ test("spaces compare by id", () => {
   assert.equal(sameEnvironment(undefined, { kind: "local" }), true);
 });
 
-function spaceEngine(environment?: { kind: "space"; spaceId: string }) {
+function spaceEngine(environment?: { kind: "space"; spaceId: string }, emit: (event: AppEvent) => void = () => {}) {
   const root = fs.realpathSync(
     fs.mkdtempSync(path.join(os.tmpdir(), "claudex-space-engine-")),
   );
@@ -122,7 +126,7 @@ function spaceEngine(environment?: { kind: "space"; spaceId: string }) {
     store,
     "unused",
     () => "",
-    () => {},
+    emit,
     undefined,
     undefined,
     undefined,
@@ -170,4 +174,101 @@ test("a space's approval ids carry the space, so engines' requests never collide
   assert.equal(id, "space:c-9:number:0");
   assert.equal((engine as any).requestIdOf(id), 0);
   assert.equal((spaceEngine().engine as any).approvalId(0), 0);
+});
+
+test("an approved hosted Workflow starts in its space and settles when the space stops", { timeout: 5000 }, async (t) => {
+  let request!: (approval: Approval) => void;
+  const requested = new Promise<Approval>((resolve) => { request = resolve; });
+  const { engine, store } = spaceEngine(undefined, (event) => {
+    if (event.type === "approval") request(event.approval);
+  });
+  const root = path.dirname(store.root);
+  const spaceRoot = path.join(root, "space");
+  const registry = new EngineRegistry(() => engine);
+  const unbind = registry.bind({
+    ssh: () => undefined,
+    dataRoot: root,
+    onEvent: () => () => {},
+    space: () => ({ binary: "unused", root: spaceRoot }),
+  });
+  t.after(async () => {
+    await registry.stopRemote();
+    unbind();
+    store.flush();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  store.settings.workflows = { enabled: true };
+  registerWorkflowHandlers(() => {}, { store, engine });
+  const environment = space("code");
+  const peer = registry.forEnvironment(environment);
+  const cwd = peer.defaultWorkspace;
+  fs.mkdirSync(cwd, { recursive: true });
+  const conversation: Conversation = {
+    id: "hosted-code",
+    threadId: "hosted-parent",
+    title: "Hosted Code",
+    mode: "code",
+    providerId: "default",
+    model: "m",
+    environment,
+    cwd,
+    archived: false,
+    pinned: false,
+    createdAt: 1,
+    updatedAt: 1,
+    turns: [{ id: "hosted-turn", prompt: "review", status: "inProgress", attachments: [], items: [], createdAt: 1 }],
+  };
+  store.conversations.push(conversation);
+  let childStarted!: () => void;
+  const started = new Promise<void>((resolve) => { childStarted = resolve; });
+  const calls: Array<{ method: string; params: Record<string, unknown> }> = [];
+  peer.ensure = async () => {};
+  const rpc = new CodexRPC();
+  peer.rpc = rpc;
+  let toolResult: unknown;
+  rpc.respond = (_id, result) => { toolResult = result; };
+  rpc.call = async (method, params) => {
+    calls.push({ method, params });
+    if (method === "thread/start") return { thread: { id: "space-child" } };
+    if (method === "turn/start") {
+      setImmediate(childStarted);
+      return { turn: { id: "child-turn" } };
+    }
+    throw Error(`Unexpected request: ${method}`);
+  };
+  const turn = conversation.turns[0];
+  const running = peer.answerDynamicTool({
+    id: 1,
+    params: {
+      threadId: conversation.threadId,
+      turnId: turn.id,
+      callId: "workflow-call",
+      tool: "Workflow",
+      arguments: {
+        script: "export const meta = { name: 'peer-review', description: 'Review in the hosted session' }; return await agent('Review the project');",
+      },
+    },
+  }, conversation.id);
+  const approval = await Promise.race([requested, running.then(() => assert.fail(JSON.stringify(toolResult)))]);
+  assert.equal(engine.ownApprovals.length, 0);
+  assert.equal(engine.approvals[0], approval);
+  assert.equal(peer.ownApprovals[0], approval);
+  engine.approve(approval.id, { action: "accept", content: { decision: "once" } });
+  await Promise.race([started, running.then(() => assert.fail(JSON.stringify(toolResult)))]);
+  assert.deepEqual(calls.map(({ method }) => method), ["thread/start", "turn/start"]);
+  assert.equal(calls[0].params.cwd, cwd);
+  assert.equal(calls[0].params.approvalPolicy, "never");
+  const [task] = tasksFromTurn(turn, conversation);
+  assert.equal(task.status, "running");
+  assert.equal(task.agents[0].id, "space-child");
+  assert.ok(task.runId);
+  await registry.stopRemote();
+  await running;
+  assert.equal(turn.status, "interrupted");
+  const [stopped] = tasksFromTurn(turn, conversation);
+  assert.equal(stopped.status, "stopped");
+  assert.equal(stopped.agents[0].status, "interrupted");
+  const result = JSON.parse(fs.readFileSync(path.join(store.root, "workflow-runs", task.runId, "result.json"), "utf8"));
+  assert.equal(result.ok, false);
+  assert.equal(result.error, "The workflow was stopped.");
 });

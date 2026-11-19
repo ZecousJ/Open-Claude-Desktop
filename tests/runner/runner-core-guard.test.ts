@@ -73,6 +73,17 @@ test("arguments that name a place on the host are refused", () => {
   );
 });
 
+test("directory form data can describe a remote repository or tool schema", () => {
+  assert.doesNotThrow(() => guardCall("saveDirectorySubmission", [
+    { original: { listing: { path: "plugins/example" }, tool: { path: "argument" } } },
+    false,
+  ]));
+  assert.throws(() => guardCall("saveDirectorySubmission", [
+    { cwd: "/etc", original: {} },
+    false,
+  ]), { code: "CLAUDEX_WEB_BAD_REQUEST" });
+});
+
 test("send starts only the modes the web offers", () => {
   const send = (mode: string) => [
     { text: "x", mode, attachments: [], providerId: "sub2api", model: "m" },

@@ -21,6 +21,40 @@ func TestApplyMigrations_NilDB(t *testing.T) {
 	require.Contains(t, err.Error(), "nil sql db")
 }
 
+func TestModelGatewayRequiresAppliedMigrations(t *testing.T) {
+	const content = "SELECT 1;"
+	const filename = "001_initial.sql"
+	sum := sha256.Sum256([]byte(content))
+	files := fstest.MapFS{filename: {Data: []byte(content)}}
+	for _, tc := range []struct {
+		name string
+		hash string
+		want string
+	}{
+		{name: "ready", hash: hex.EncodeToString(sum[:])},
+		{name: "pending", want: "must be applied by the full server"},
+		{name: "different schema", hash: "wrong", want: "checksum mismatch"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+			rows := sqlmock.NewRows([]string{"filename", "checksum"})
+			if tc.hash != "" {
+				rows.AddRow(filename, tc.hash)
+			}
+			mock.ExpectQuery("^SELECT filename, checksum FROM schema_migrations$").WillReturnRows(rows)
+			err = verifyAppliedMigrations(context.Background(), db, files)
+			if tc.want == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tc.want)
+			}
+			require.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}
+
 func TestApplyMigrations_DelegatesToApplyMigrationsFS(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)

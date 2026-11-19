@@ -106,7 +106,7 @@ COPY --from=frontend-builder /app/backend/internal/web/dist ./internal/web/dist
 ARG CLAUDEX_REV=0
 ARG GIT_COMMIT=unknown
 ARG BUILD_DATE=
-ARG SOURCE_URL=https://github.com/ZecousJ/Open-Claude-Desktop
+ARG SOURCE_URL=https://github.com/ZecousJ/claudex
 RUN --mount=type=cache,id=claudex-server-gomod,target=/go/pkg/mod \
     --mount=type=cache,id=claudex-server-gobuild,target=/root/.cache/go-build \
     set -eu; \
@@ -153,7 +153,7 @@ FROM ${POSTGRES_IMAGE} AS pg-client
 FROM ${ALPINE_IMAGE}
 
 ARG GIT_COMMIT=unknown
-ARG SOURCE_URL=https://github.com/ZecousJ/Open-Claude-Desktop
+ARG SOURCE_URL=https://github.com/ZecousJ/claudex
 LABEL org.opencontainers.image.title="Claudex server" \
       org.opencontainers.image.description="Claudex server: a modified version of Sub2API with the Claudex extensions (LGPL-3.0). Source: backend/ of the source repository at the revision below." \
       org.opencontainers.image.source="${SOURCE_URL}" \

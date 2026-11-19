@@ -14,6 +14,7 @@ import {
   frameHeading,
   initialStep,
   opensOnWelcome,
+  prefilledEmail,
   statePage,
   type AuthField,
   type AuthStep,
@@ -31,7 +32,6 @@ import {
   lastLoginMethod,
 } from "./signin-env";
 import { SignInFrame, Welcome, StateCard } from "./SignInFrame";
-import { ServiceAddressCard } from "./ServiceAddressCard";
 import { signInCard, type SignInValues } from "./SignInSteps";
 import { useSignInPageState } from "./useSignInPageState";
 
@@ -74,7 +74,7 @@ export default function SignInPage({
   status?: AuthStatus;
   /** Why the status could not be read. */
   loadError?: string;
-  /** The step the web address asks for. */
+  /** The step the web address asks for (`/register`, `/forgot-password`, `/reset-password`). */
   startMode?: StartMode;
   /** The emailed reset link's email and token (`/reset-password`). */
   resetLink?: { email: string; token: string };
@@ -84,26 +84,18 @@ export default function SignInPage({
   onRetry: () => void;
 }) {
   if (!status) {
-    const page = loadError ? statePage("unavailable", loadError) : undefined;
-    // The desktop names nothing while it loads: the welcome screen may come.
-    const heading = page || web ? frameHeading(page) : undefined;
+    if (!loadError) return null;
+    const page = statePage("unavailable", loadError);
+    const heading = frameHeading(page);
     return (
       <SignInFrame
         title={heading?.title ?? ""}
         subtitle={heading?.subtitle ?? ""}
       >
-        {page ? (
-          <StateCard page={page} onAction={onRetry} />
-        ) : (
-          <p className="signin-text signin-loading" role="status">
-            Loading…
-          </p>
-        )}
+        <StateCard page={page} onAction={onRetry} />
       </SignInFrame>
     );
   }
-  if (status.serviceConfigured === false)
-    return <ServiceAddressCard onChosen={onRetry} />;
   return (
     <SignInFlow
       status={status}
@@ -195,11 +187,12 @@ function SignInFlow({
   const [state, setState] = useState<StatePage>();
   // "Your session ended…" above the card until the next try.
   const [showNotice, setShowNotice] = useState(Boolean(signedOut));
-  // The desktop opens on its welcome screen.
+  // The desktop opens on its welcome screen (live claude.ai bundle, 2026-10-12).
   const [welcoming, setWelcoming] = useState(
-    () => !pendingLink && opensOnWelcome(status),
+    () => !pendingLink && !signedOut && !status.browserAccounts?.adding && opensOnWelcome(status),
   );
-  // The pending verification step ran out: only "Start again" is offered.
+  // The pending verification step ran out: only "Start again" is offered
+  // (live claude.ai bundle, 2026-10-12, the MFA step's expired challenge).
   const [expired, setExpired] = useState(false);
   // The request waiting for the connection, and which wait it is.
   const [offline, setOffline] = useState<OfflineWait>();
@@ -228,6 +221,24 @@ function SignInFlow({
   );
   const focus = useRef<HTMLInputElement>(null);
 
+  // After moving from ZecousAI the page starts with the email it knew (OTA).
+  useEffect(() => {
+    let live = true;
+    Promise.resolve()
+      .then(() => window.desktop.signInEmailHint?.())
+      .then(
+        (hint) =>
+          live &&
+          setValues((current) => ({
+            ...current,
+            email: prefilledEmail(current.email, hint),
+          })),
+      )
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
   // The web offers the desktop app when the administrator published one.
   useEffect(() => {
     if (!web) return;
@@ -279,8 +290,9 @@ function SignInFlow({
     setError(text);
   }
   /**
-   * Runs a request of the form. With `wait`, an offline browser holds it until
-   * the connection returns and the form says so.
+   * Runs a request of the form. With `wait`, an offline browser holds it
+   * until the connection returns and the form says so (live claude.ai
+   * bundle, 2026-10-12).
    */
   async function run(task: () => Promise<void>, wait?: OfflineWait) {
     if (busy) return;

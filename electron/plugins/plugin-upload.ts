@@ -19,7 +19,7 @@ import { duplicatePluginFiles, personalMarketplace } from "./plugin-copy";
 import { skillName } from "../skills/skill-folder";
 import type { PluginRpc } from "./plugins";
 
-/** Archive upload. */
+/** Archive upload (live claude.ai bundle, 2026-10-14, c76f00e40-B1RzVuyC). */
 export class PluginUploads {
   private pending = new Set<Promise<PluginUploadResult>>();
   private closing = false;

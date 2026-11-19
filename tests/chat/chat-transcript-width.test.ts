@@ -22,7 +22,7 @@ import type { ComposerField } from "../../src/composer/composer-field";
 import {
   createFixtureDesktop,
   fixtureSnapshot,
-} from "../../scripts/preview/app-fixture";
+} from "../../scripts/fidelity/app-fixture";
 import { readSource } from "../support/read-source";
 
 registerHooks({

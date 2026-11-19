@@ -3,7 +3,7 @@ import { formatText, useT } from "../i18n";
 import { Modal } from "../ui/Controls";
 import { artifactToolReadiness } from "../../shared/artifact-tool-readiness";
 
-/** Safe-default confirmation. */
+/** Safe-default confirmation (desktop 2.37337.1, index.chunk-BWk6pVUt.js:244603). */
 export function ArtifactScheduledTaskDialog({
   artifact,
   task,

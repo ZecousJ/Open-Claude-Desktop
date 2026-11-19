@@ -77,7 +77,11 @@ export function SearchSortButton({
   );
 }
 
-/** The tab-style filter. */
+/**
+ * The tab-style filter (live claude.ai bundle, 2026-10-12: a tab list named
+ * "Filter by" whose tabs control the list below; the arrow keys move between
+ * the tabs and Enter or Space picks one, focus alone does not).
+ */
 export function HistoryTabs({
   id,
   mode,

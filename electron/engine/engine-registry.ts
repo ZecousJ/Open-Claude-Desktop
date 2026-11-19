@@ -29,6 +29,7 @@ import type { Engine } from "./engine";
 import type { EngineLauncher, EnginePeers } from "./engine-types";
 import { SshLauncher } from "../ssh/ssh-launcher";
 import { Outbox, isOutboxTurn, waitingNote } from "../ssh/outbox";
+import { remoteWorktreeWorkspaceFor } from "../git/remote-code-worktree";
 
 /** What the registry needs from the app (AppContext, or a test's stand-in). */
 export interface EngineRegistryBinding {
@@ -38,6 +39,7 @@ export interface EngineRegistryBinding {
   readonly dataRoot: string;
   /** The administrator's Codex runtime mirror. */
   mirror?(): string | null | undefined;
+  browserPort?(): number | undefined;
   /** Refuses a folder the person did not choose in its environment. */
   allowedFolder?(
     folder: string | undefined,
@@ -49,6 +51,7 @@ export interface EngineRegistryBinding {
   onAccountDeactivating?(cb: () => void | Promise<void>): () => void;
   /** Replaces the SSH launcher (tests). */
   launcher?(hostId: string): EngineLauncher;
+  wslLauncher?(distro: string, accountRoot: string): EngineLauncher;
   /**
    * An isolated space's sandbox (docs/cloud-sync.md, the cloud runner): the
    * command that starts Codex in it and the folder of its codex-home and
@@ -77,7 +80,9 @@ const DEFAULT_MAX_SPACES = 3;
 const keyOf = (environment: Exclude<EnvironmentRef, { kind: "local" }>) =>
   environment.kind === "ssh"
     ? environment.hostId
-    : `space:${environment.spaceId}`;
+    : environment.kind === "wsl"
+      ? `wsl:${environment.distro.toLowerCase()}`
+      : `space:${environment.spaceId}`;
 
 /** The registry that routes a local engine's conversations (see `bind`). */
 const registries = new WeakMap<Engine, EngineRegistry>();
@@ -172,6 +177,23 @@ export class EngineRegistry {
     return this.remote.get(keyOf(environment));
   }
 
+  worktreeWorkspace(environment: Extract<EnvironmentRef, { kind: "ssh" | "wsl" }>) {
+    return remoteWorktreeWorkspaceFor({
+      engines: () => this.all(),
+      ssh: () => this.binding?.ssh(),
+    }, environment);
+  }
+
+  async connectWorktreeHost(environment: Extract<EnvironmentRef, { kind: "ssh" }>, interactive: boolean) {
+    const ssh = this.binding?.ssh();
+    if (!ssh?.allowed()) throw Error("SSH connections aren't available.");
+    const existing = ssh.existing(environment.hostId)?.status.state;
+    if (existing === "ready" || existing === "starting" || existing === "installing") return;
+    const status = await ssh.connect(environment.hostId, interactive);
+    if (status.state !== "ready")
+      throw Error(status.state === "error" ? status.message : "The SSH worktree host is unavailable.");
+  }
+
   /** The engine of an environment; an SSH host's is created when needed. */
   forEnvironment(environment?: EnvironmentRef): Engine {
     const local = this.attach();
@@ -184,6 +206,16 @@ export class EngineRegistry {
     }
     if (environment.kind === "space")
       return this.startSpace(local, environment);
+    if (environment.kind === "wsl") {
+      const launcher = this.binding?.wslLauncher?.(environment.distro, local.store.root);
+      if (!launcher) throw Error("WSL Code is unavailable on this host.");
+      const engine = local.createPeer({ environment, launcher });
+      registries.set(engine, this);
+      const key = keyOf(environment);
+      this.remote.set(key, engine);
+      this.armIdle(key);
+      return engine;
+    }
     const binding = this.binding;
     if (!binding || !binding.ssh())
       throw new Error("SSH connections aren't available.");
@@ -195,12 +227,14 @@ export class EngineRegistry {
         ssh: () => this.binding?.ssh(),
         dataRoot: binding.dataRoot,
         mirror: () => this.binding?.mirror?.(),
+        browserPort: () => this.binding?.browserPort?.(),
       });
     const engine = local.createPeer({
       environment: { kind: "ssh", hostId },
       launcher,
       outbox: this.outboxFor(local),
     });
+    registries.set(engine, this);
     this.remote.set(hostId, engine);
     this.armIdle(hostId);
     return engine;

@@ -20,7 +20,7 @@ export function knowledgeFileMatches(file: KnowledgeFile, query: string) {
   );
 }
 
-// Folder-first natural sorting and filtered expansion.
+// Folder-first natural sorting and filtered expansion (live claude.ai bundle, 2026-10-14, c05da8077-CLXz-Ia2.js).
 export function groupKnowledge(files: KnowledgeFile[]): KnowledgeNode[] {
   const root: KnowledgeNode[] = [];
   for (const file of files) {

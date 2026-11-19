@@ -1,4 +1,5 @@
-/* Local dialog classes and CDS values. */
+/* Local dialog classes and CDS values (live claude.ai bundle, 2026-10-14,
+   c97b955f1-DnH50wWB.js:5190–5350; ion c6a992d55-DaJWceKc.css). */
 .routine-editor-dialog {
   --routine-primary: #f0efec;
   --routine-muted: #898781;
@@ -25,7 +26,8 @@
   gap: 6px;
   margin: 0;
 }
-/* A field's problem sits 8px under its input, as the live CDS field's gap. */
+/* A field's problem sits 8px under its input, as the live CDS field's gap
+   (the label keeps the captured 6px). */
 .routine-editor-dialog .routine-field > .routine-problem {
   margin-top: 2px;
 }
@@ -68,8 +70,8 @@
     0 0 0 1px #2a78d6,
     0 0 6px 1px #cde2fb;
 }
-/* A required field left empty once Create is pressed: the danger fill's ring,
-   red when focused too. */
+/* A required field left empty once Create is pressed: the danger fill's
+   ring, red when focused too (live claude.ai, 2026-10-21, CDS field). */
 .routine-editor-dialog .routine-field > input[aria-invalid="true"],
 .routine-editor-dialog .routine-instructions.invalid:not(:focus-within) {
   box-shadow: inset 0 0 0 1px var(--field-invalid);

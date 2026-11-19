@@ -23,6 +23,20 @@ export type McpLog = {
 export class McpHttpServer {
   log: McpLog[] = [];
   elicitationAnswers: Json[] = [];
+  elicitation: Json = {
+    message: "Allow the spike tool to continue?",
+    requestedSchema: {
+      type: "object",
+      properties: {
+        choice: {
+          type: "string",
+          title: "Choice",
+          enum: ["allow_once", "deny"],
+        },
+      },
+      required: ["choice"],
+    },
+  };
   private server = http.createServer((req, res) => this.handle(req, res));
   private waiting = new Map<string, (result: Json) => void>();
   private sessions = 0;
@@ -31,6 +45,7 @@ export class McpHttpServer {
   constructor(
     readonly token: string,
     readonly toolPrefix = "probe",
+    readonly echoAnnotations?: { readOnlyHint: boolean },
   ) {}
   async start() {
     await new Promise<void>((r) => this.server.listen(0, "127.0.0.1", r));
@@ -48,6 +63,7 @@ export class McpHttpServer {
       {
         name: `${p}_echo`,
         description: "Echo a marker back (spike fixture).",
+        ...(this.echoAnnotations ? { annotations: this.echoAnnotations } : {}),
         inputSchema: {
           type: "object",
           properties: { text: { type: "string" } },
@@ -166,24 +182,11 @@ export class McpHttpServer {
         jsonrpc: "2.0",
         id: elicitId,
         method: "elicitation/create",
-        params: {
-          message: "Allow the spike tool to continue?",
-          requestedSchema: {
-            type: "object",
-            properties: {
-              choice: {
-                type: "string",
-                title: "Choice",
-                enum: ["allow_once", "deny"],
-              },
-            },
-            required: ["choice"],
-          },
-        },
+        params: this.elicitation,
       })}\n\n`,
     );
     const timeout = new Promise<Json>((r) =>
-      setTimeout(() => r({ timeout: true }), 20_000),
+      setTimeout(() => r({ timeout: true }), 20_000).unref(),
     );
     const result = await Promise.race([answer, timeout]);
     this.waiting.delete(elicitId);

@@ -2,7 +2,7 @@ import { inlineScript, scriptJson } from "./preview-document";
 
 export const mermaidResultType = "claudex-markdown-mermaid";
 
-// .
+// (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js).
 export function markdownMermaidDocument(
   runtime: { source: string },
   code: string,

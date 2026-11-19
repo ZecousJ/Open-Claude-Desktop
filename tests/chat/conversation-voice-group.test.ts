@@ -64,11 +64,11 @@ test("web reply voice group names its real waveform/caret and uses 16px/12px gly
     group.querySelector(".voice-mode-main > svg")?.getAttribute("width"),
     "16",
   );
-  assert.equal(
+  assert.match(
     group
-      .querySelector('.voice-mode-chevron [data-icon="CaretDown"]')
-      ?.getAttribute("width"),
-    "12",
+      .querySelector('.voice-mode-chevron [data-anthropicon="CaretDown"]')
+      ?.getAttribute("style") ?? "",
+    /font-size:calc\(12px/,
   );
 });
 

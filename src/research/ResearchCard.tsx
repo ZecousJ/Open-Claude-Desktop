@@ -28,7 +28,7 @@ export const researchStartingMessages = [
   "Warming up the engines...",
 ];
 
-/** State copy. */
+/** State copy (live claude.ai bundle, 2026-10-14, c4cedde1a-kzLnDSk3). */
 export function researchCardText(
   research: ResearchState,
   _now = Date.now(),
@@ -37,7 +37,7 @@ export function researchCardText(
   const count = research.sourceCount;
   const sources =
     count === 1 ? t("1 source") : formatText("{count} sources", { count });
-  // Model access is a failed Research subtitle.
+  // Model access is a failed Research subtitle (live claude.ai bundle, 2026-10-14, c4cedde1a-kzLnDSk3).
   if (research.state === "failed" && research.error === "model_access")
     return {
       title: t("Something went wrong"),

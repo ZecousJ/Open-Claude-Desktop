@@ -4,10 +4,8 @@ import { AppContext } from "../app/AppContext";
 import { Modal } from "../ui/Controls";
 import { t } from "../i18n";
 
-/**
- * Current official Edit details: name + description, separate from Settings.
- * Passes both current values to the editor.
- */
+/** Current official Edit details: name + description, separate from Settings.
+ * c17beaa76-C1HHrhad:1724–1744 passes both current values to the editor. */
 export function ProjectDetailsDialog({
   project,
   onClose,

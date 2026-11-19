@@ -1,5 +1,6 @@
 /**
- * Share from a sidebar row: the row opens the session, and its title bar, which
+ * Share from a sidebar row (live claude.ai, 2026-10-21: a Code session's
+ * row menu has Share): the row opens the session, and its title bar, which
  * owns the share dialog, takes the request once it is on screen.
  */
 let pending: string | null = null;

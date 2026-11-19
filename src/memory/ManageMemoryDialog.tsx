@@ -28,11 +28,12 @@ import { memoryError } from "./useMemory";
 import "./manage-memory.css";
 
 /*
- * the memory in a 460px box, read-only, with a round pencil at its foot that
- * opens "Tell Claude what to remember or forget"; under the box "Manage edits"
- * with their count, which lists them to remove one by one or all at once. While
- * a change is saved the box shows "Updating memory..." and the dialog cannot
- * close.
+ * Manage memory, as the live claude.ai bundle draws it (2026-10-12: the
+ * memory modal and its MemoryPreviewContent): the memory in a 460px box,
+ * read-only, with a round pencil at its foot that opens "Tell Claude what
+ * to remember or forget"; under the box "Manage edits" with their count,
+ * which lists them to remove one by one or all at once. While a change is
+ * saved the box shows "Updating memory..." and the dialog cannot close.
  */
 
 /** The box's height (FULL_SYNTHESIS_BOX_HEIGHT) and the edits view's. */
@@ -122,20 +123,30 @@ export async function applyMemoryEdits(
  * `readOnly` (offline, memory unavailable) shows the memory and edits
  * without the field or the remove buttons.
  */
-export function ManageMemoryDialog({
-  scope,
-  readOnly = false,
-  initial,
-  onClose,
-  onChanged,
-}: {
+type ManageMemoryDialogProps = {
   scope: MemoryScopeRef;
   readOnly?: boolean;
   initial?: MemoryDocView | null;
   onClose: () => void;
   /** An edit went through. */
   onChanged?: () => void;
-}) {
+};
+
+export function ManageMemoryDialog(props: ManageMemoryDialogProps) {
+  const key =
+    props.scope.kind === "global"
+      ? "global"
+      : `project:${props.scope.projectId}`;
+  return <ScopedManageMemoryDialog key={key} {...props} />;
+}
+
+function ScopedManageMemoryDialog({
+  scope,
+  readOnly = false,
+  initial,
+  onClose,
+  onChanged,
+}: ManageMemoryDialogProps) {
   useT();
   const [load, setLoad] = useState<Load>(
     initial === undefined
@@ -145,27 +156,34 @@ export function ManageMemoryDialog({
   const [view, setView] = useState<"synthesis" | "edits">("synthesis");
   const [updating, setUpdating] = useState(false);
   const live = useRef(true);
+  const reads = useRef(0);
   useEffect(() => {
     live.current = true;
-    const read = () =>
+    let active = true;
+    const read = () => {
+      const request = ++reads.current;
       void window.desktop
         .memoryDoc(scope)
         .then((doc) => {
-          if (live.current) setLoad({ state: "ready", doc });
+          if (active && request === reads.current)
+            setLoad({ state: "ready", doc });
         })
         .catch((cause) => {
-          if (!live.current) return;
+          if (!active || request !== reads.current) return;
           // The original's memory query reports the failure as a toast and
           // draws no dialog.
           showToast(memoryError(cause));
           onClose();
         });
+    };
     if (initial === undefined) read();
     const off = window.desktop.onEvent((event) => {
       if (event.type === "memory-changed") read();
     });
     return () => {
+      active = false;
       live.current = false;
+      reads.current++;
       off();
     };
   }, []);
@@ -183,6 +201,7 @@ export function ManageMemoryDialog({
       if (!live.current) return;
       setUpdating(false);
       if (next === undefined) return;
+      reads.current++;
       setLoad({ state: "ready", doc: next });
       onChanged?.();
     });

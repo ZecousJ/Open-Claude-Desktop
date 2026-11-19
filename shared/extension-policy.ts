@@ -1,5 +1,6 @@
 import type { ClientPolicy } from "./client-policy";
 
+// (live claude.ai bundle, 2026-10-14, c71860c77-xHdlpCO8)
 export function extensionPolicyNotice(
   policy: Pick<
     ClientPolicy,

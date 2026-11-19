@@ -15,17 +15,18 @@ const PlanApprovalCard = lazyPiece(
 const MAX_GHOSTS = 2;
 
 /**
- * Cards docked above the open conversation's composer: pending Codex requests
- * first, then computer use's access requests and its activity line (R10), else
- * the approve card for a finished plan.
+ * Cards docked above the open conversation's composer: pending Codex
+ * requests first (R-0805), then computer use's access requests and its
+ * activity line (R10), else the approve card for a finished plan.
  *
- * Only the first request is a card; up to two more peek out above it as ghosts,
- * each 6px higher, 3% narrower and 25% fainter than the one before. Answering
- * the first promotes the next from the first ghost's place (220ms
+ * Only the first request is a card; up to two more peek out above it as
+ * ghosts, each 6px higher, 3% narrower and 25% fainter than the one before.
+ * Answering the first promotes the next from the first ghost's place (220ms
  * ease-out-cubic) while the ghosts behind it step forward. Requests already
- * waiting when a conversation opens are shown in place, without the promotion.
- * Answering the front card from the keyboard hands focus to the next card, or
- * back to the composer (focus-handoff.ts).
+ * waiting when a conversation opens are shown in place, without the
+ * promotion (desktop bundle 2.31226.1). Answering the front card from the
+ * keyboard hands focus to the next card, or back to the composer
+ * (focus-handoff.ts).
  */
 export function ComposerDock({
   conversation,

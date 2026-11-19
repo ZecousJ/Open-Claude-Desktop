@@ -26,6 +26,7 @@ import { isOpenableUrl } from "../../shared/web-protocol";
 export interface WebCallScope {
   userId: number;
   tabId?: string;
+  consumeGoRunSlot?(): boolean;
   /** Opens `url` in the user's tabs (the calling tab first). */
   openUrl(url: string): void;
 }

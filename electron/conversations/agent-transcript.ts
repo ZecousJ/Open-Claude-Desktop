@@ -66,6 +66,8 @@ export function projectAgentTranscript(
           : "completed";
   return {
     model,
+    ...(Number.isFinite(Number(thread?.createdAt)) && Number(thread.createdAt) > 0
+      ? { createdAt: Number(thread.createdAt) * 1000 } : {}),
     context: parentPrompt.slice(0, 100_000),
     items: safe,
     truncated: items.length > 500,

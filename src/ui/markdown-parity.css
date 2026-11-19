@@ -1,4 +1,4 @@
-/* . */
+/* (live claude.ai bundle, 2026-10-14, shared-11-AyO4lbEo.js, shared-10-C9_UFbV-.js). */
 .code-size-notice {
   display: inline-flex;
   align-items: center;
@@ -6,7 +6,12 @@
   padding: 8px;
   width: 100%;
   max-height: 48px;
-  font-family: var(--cds-font-sans, system-ui, sans-serif);
+  font-family: var(
+    --cds-font-sans,
+    "Claudex Reference Sans",
+    system-ui,
+    sans-serif
+  );
   font-size: 12px;
   line-height: 16px;
   background: var(--cds-bg-accent, #032042);
@@ -88,7 +93,12 @@
   height: 36px;
   padding-inline: 8px;
   text-align: start;
-  font-family: var(--cds-font-sans, system-ui, sans-serif);
+  font-family: var(
+    --cds-font-sans,
+    "Claudex Reference Sans",
+    system-ui,
+    sans-serif
+  );
   border: 0.5px solid var(--cds-border-strong, rgb(255 255 255 / 20%));
   border-radius: 8px;
   background: var(--cds-surface-3, #20201f);

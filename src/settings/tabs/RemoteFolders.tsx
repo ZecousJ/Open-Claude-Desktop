@@ -15,7 +15,8 @@ export const remoteFoldersNote =
 
 /**
  * Settings → General → Control from your phone → Folders for your phone: the
- * folders a phone may start Code sessions in.
+ * folders a phone may start Code sessions in (the live bundle's "Add a
+ * folder to Remote Control"; "Choose a directory, not the filesystem root.").
  */
 export function RemoteFoldersRow({
   settings,

@@ -1,5 +1,9 @@
 import type { AgentPromptEvent } from "../../server/agent-prompt-observer";
-import { agentThreadIds, ownsWorkflowAgent } from "../../shared/workflow-usage";
+import {
+  agentItems,
+  agentThreadIds,
+  ownsWorkflowAgent,
+} from "../../shared/workflow-usage";
 import type {
   Conversation,
   EnvironmentRef,
@@ -47,10 +51,9 @@ export function indexAgentRoutes(this: Engine) {
   this.agentRoutes.clear();
   for (const conversation of this.store.conversations)
     if (this.owns(conversation))
-      for (const turn of conversation.turns)
-        for (const item of turn.items)
-          for (const agentId of agentThreadIds(item))
-            this.agentRoutes.set(agentId, conversation.id);
+      for (const item of agentItems(conversation.turns))
+        for (const agentId of agentThreadIds(item))
+          this.agentRoutes.set(agentId, conversation.id);
 }
 
 /** The conversation that spawned a child thread, if it still records that child. */
@@ -62,8 +65,8 @@ export function parentForAgent(
     this.store.conversations.find(
       (conversation) =>
         conversation.id === conversationId &&
-        conversation.turns.some((turn) =>
-          turn.items.some((item) => ownsWorkflowAgent(item, id)),
+        agentItems(conversation.turns).some((item) =>
+          ownsWorkflowAgent(item, id),
         ),
     );
   const known = ownerOf(this.agentRoutes.get(id));

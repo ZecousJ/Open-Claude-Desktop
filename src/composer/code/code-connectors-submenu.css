@@ -37,7 +37,7 @@
   flex: 0 0 25.5px;
   overflow: visible;
 }
-.code-add-submenu button > svg[data-icon="Connectors"] {
+.code-add-submenu button > svg[data-anthropicon="Connectors"] {
   flex-basis: 14.5px;
   width: 14.5px;
   height: 14.5px;
@@ -71,7 +71,7 @@
 :root[data-theme="light"] .code-add-submenu-separator {
   background: #d2d0ca;
 }
-/* Off in light: the Chat "+" menu's switch. */
+/* Off in light: the Chat "+" menu's switch (composer-add-menu.css). */
 :root[data-theme="light"] .code-connector-switch:not([data-enabled="true"]) {
   background: #c9c7c1;
 }

@@ -30,7 +30,8 @@
   width: 46px;
   color: var(--text-secondary);
   border-radius: 0;
-  /* Native caption buttons change at once. */
+  /* Native caption buttons change at once (the original's chrome buttons set
+     transition-duration 0s, desktop bundle 2.31226.1). */
   transition: none;
 }
 /* The ghost hover: the opaque --surface-hover it replaces, on the page. */

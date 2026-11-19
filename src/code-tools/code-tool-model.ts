@@ -7,9 +7,10 @@ import {
 import { formatText, listSeparator, spaced, t, tf } from "../i18n";
 
 /**
- * Code transcript tool rows: consecutive tool calls fold into one summary row.
- * Labels come from what Codex reports (parsed command actions, tool names),
- * never invented prose.
+ * Code transcript tool rows: consecutive tool calls fold into one summary
+ * row ("Ran 3 commands (1 failed)", "Read 2 files", "Ran a command, used a
+ * tool" — R-0730, R-0794, R-0800, R-0826). Labels come from what Codex
+ * reports (parsed command actions, tool names), never invented prose.
  */
 type Action =
   | { type: "read"; name?: string; path?: string }
@@ -51,9 +52,7 @@ export function toolKind(item: Item): ToolKind | undefined {
   if (item.type === "webSearch") return "web";
 }
 
-/**
- * A file change that only adds files: summarised as "created", not "edited".
- */
+/** A file change that only adds files: summarised as "created", not "edited" (R-0794). */
 function createsFiles(item: Item) {
   const changes = item.changes ?? [];
   return (
@@ -149,7 +148,7 @@ const failedNote = (phrase: Part, bad: number): Part =>
     ? { ...phrase, verb: phrase.verb + spaced(tf("({n} failed)", { n: bad })) }
     : phrase;
 
-/** One phrase of a summary; `name` is a trailing file name shown brighter. */
+/** One phrase of a summary; `name` is a trailing file name shown brighter (R-0786, R-0805). */
 interface Part {
   verb: string;
   name?: string;
@@ -159,7 +158,7 @@ function part(
   kind: ToolKind,
   items: Item[],
   running: boolean,
-  /** Only a lone call, or the call running now, names its file. */
+  /** Only a lone call, or the call running now, names its file (R-0794: "edited a file"). */
   named: boolean,
 ): Part {
   // Each phrase is the catalog's ("read {n} files" → "读取了 {n} 个文件").
@@ -170,7 +169,7 @@ function part(
   });
   const n = items.length;
   if (kind === "read") {
-    // Reads count files, not calls: "read 3 files".
+    // Reads count files, not calls: "read 3 files" (R-0786).
     const names = readNames(items);
     const count = Math.max(names.length, n);
     return names.length === 1 && count === 1
@@ -201,8 +200,9 @@ function part(
             : `created ${names.length || n} files`,
         );
   }
-  // A lone search, listing or web search names its subject as the original's
-  // row does.
+  // A lone search, listing or web search names its subject as the
+  // original's row does (live claude.ai bundle, 2026-10-14: "Searched" and
+  // the pattern, "Listed" and the path, "Searched web" and the query).
   if (named && n === 1 && kind === "search") {
     const query = searchQueries(items)[0];
     if (query)
@@ -245,7 +245,7 @@ function part(
       `${running ? "listing" : "listed"} ${n === 1 ? "files" : `files ${n} times`}`,
     );
   if (kind === "tool") {
-    // "Used 2 tools (1 failed)".
+    // "Used 2 tools (1 failed)" (R-0816-0837 capture).
     const bad = items.filter(failed).length;
     const label = `${running ? "using" : "used"} ${plural(n, "tool")}`;
     return failedNote(text(label), bad && !running ? bad : 0);
@@ -260,9 +260,9 @@ function part(
 }
 
 /*
- * In a summary a listing counts as a command: "Ran 3 commands (1 failed), read
- * 3 files" covers ls and git diff. A single listing row still says "Listed
- * files".
+ * In a summary a listing counts as a command: "Ran 3 commands (1 failed),
+ * read 3 files" covers ls and git diff (R-0786). A single listing row still
+ * says "Listed files".
  */
 const summaryKind = (item: Item) => {
   const kind = toolKind(item);
@@ -271,7 +271,7 @@ const summaryKind = (item: Item) => {
 
 /**
  * Summary of one or more folded tool calls. Kinds appear in the order they
- * first ran.
+ * first ran ("Read 2 files, ran a command", R-0805 @10–13.5s).
  */
 export function toolSummaryParts(items: Item[]): Part[] {
   const running = items.some(itemIsRunning);
@@ -281,8 +281,8 @@ export function toolSummaryParts(items: Item[]): Part[] {
       running || items.length === 1 ? toolKind(item) : summaryKind(item);
     if (kind) byKind.set(kind, [...(byKind.get(kind) ?? []), item]);
   }
-  // While running, the row names what is happening now: the running command's
-  // own description when the model wrote one, else its kind.
+  // While running, the row names what is happening now: the running
+  // command's own description when the model wrote one (R-0787), else its kind.
   const latest = running ? items.filter(itemIsRunning).at(-1)! : undefined;
   const described = latest && commandDescriptionText(latest, "running", true);
   if (described) return [{ verb: described }];
@@ -318,8 +318,9 @@ export type CodeSegment =
 /**
  * Folds consecutive tool calls. Reasoning between them does not split a run;
  * messages, file edits, plans and agents do. The Thinking and Verbose
- * transcript views (`fold: false`) fold nothing: every tool call is its own row
- * and the reasoning between them stays, in order.
+ * transcript views (`fold: false`) fold nothing: every tool call is its own
+ * row and the reasoning between them stays, in order (live claude.ai
+ * bundle, 2026-10-12: those views list the entries unfolded).
  */
 export function codeSegments(
   items: Item[],
@@ -349,7 +350,7 @@ export function codeSegments(
   return out;
 }
 
-/** Status-line elapsed time: "9s", "4m 53s", "1h 2m". */
+/** Status-line elapsed time: "9s", "4m 53s", "1h 2m" (R-0807). */
 export function formatElapsed(seconds: number) {
   const s = Math.max(0, Math.floor(seconds));
   if (s < 60) return `${s}s`;
@@ -357,7 +358,7 @@ export function formatElapsed(seconds: number) {
   return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
 }
 
-/** Status-line tokens: "46 tokens", "4.0k tokens". */
+/** Status-line tokens: "46 tokens", "4.0k tokens" (R-0808). */
 export function formatTokens(tokens: number) {
   if (tokens < 1000) return `${tokens} ${tokens === 1 ? "token" : "tokens"}`;
   if (tokens < 1_000_000) return `${(tokens / 1000).toFixed(1)}k tokens`;

@@ -49,7 +49,7 @@ const routineCalls = new Set([
   "deleteRoutineMigration",
 ]);
 
-/** Local/remote task backends. */
+/** Local/remote task backends (live claude.ai bundle, 2026-10-14, c97b955f1-DnH50wWB.js). */
 export class CloudRoutines {
   private handlers = new Map<string, Handler>();
   private local: Routine[] = [];

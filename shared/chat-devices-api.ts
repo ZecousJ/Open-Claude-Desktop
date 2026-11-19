@@ -19,6 +19,7 @@ export interface ChatDeviceOptions {
   thinkingMode?: "standard" | "extended";
   connectorOverrides?: Record<string, boolean>;
   connectorToolOverrides?: import("./conversation-tools").ConversationToolOverrides;
+  knowledgeBases?: string[];
 }
 export interface ChatDeviceBinding {
   version: 1;

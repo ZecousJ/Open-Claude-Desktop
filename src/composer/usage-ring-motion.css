@@ -1,5 +1,6 @@
-/* The usage ring's motion, as the original's. Its CDS timings are the claude.ai
-   theme's, scoped to the ring. */
+/* The usage ring's motion, as the original's (live claude.ai bundle,
+   2026-10-14, c5afb3665-BYy3vq4c.css, copied as is). Its CDS timings are
+   the claude.ai theme's, scoped to the ring. */
 .urm {
   --cds-dur-fast: 60ms;
   --cds-dur-snap: 0.12s;

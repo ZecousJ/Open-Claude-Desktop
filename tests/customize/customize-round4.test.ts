@@ -17,7 +17,7 @@ import {
   skillFileTree,
   clampSkillFileListWidth,
 } from "../../src/collections/customize/skill-file-tree";
-import { createFixtureDesktop } from "../../scripts/preview/app-fixture";
+import { createFixtureDesktop } from "../../scripts/fidelity/app-fixture";
 
 async function mounted(
   node: ReactNode,
@@ -292,8 +292,11 @@ test("installed skill page has real routes, a data heading, dynamic files and ge
           ?.textContent,
         "You",
       );
-      assert.ok(
-        document.querySelector('.installed-skill-icon [data-icon="Scroll"]'),
+      assert.equal(
+        document
+          .querySelector('.installed-skill-icon [data-anthropicon="Scroll"]')
+          ?.textContent?.codePointAt(0),
+        57554,
       );
       assert.equal(
         document.querySelector(".installed-skill-back")?.getAttribute("href"),

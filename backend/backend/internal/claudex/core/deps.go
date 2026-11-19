@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/internal/claudex/gatewayhook"
 	claudexhook "github.com/Wei-Shaw/sub2api/internal/claudex/hook"
 	"github.com/Wei-Shaw/sub2api/internal/config"
@@ -27,21 +28,24 @@ import (
 // through these services so the upstream caches stay consistent; DB is for
 // the Claudex tables (claudex_*).
 type Deps struct {
-	SettingRepo    service.SettingRepository
-	SettingService *service.SettingService
-	AuthService    *service.AuthService
-	UpdateService  *service.UpdateService
-	BuildInfo      service.BuildInfo
-	DB             *sql.DB
-	Redis          *redis.Client
-	Config         *config.Config
-	APIKeys        *service.APIKeyService
-	Subscriptions  *service.SubscriptionService
-	Admin          service.AdminService
-	Users          *service.UserService
-	UserRepo       service.UserRepository
-	GroupRepo      service.GroupRepository
-	Channels       *service.ChannelService
+	SettingRepo      service.SettingRepository
+	SettingService   *service.SettingService
+	AuthService      *service.AuthService
+	UpdateService    *service.UpdateService
+	BuildInfo        service.BuildInfo
+	DB               *sql.DB
+	EntClient        *ent.Client
+	Redis            *redis.Client
+	Config           *config.Config
+	APIKeys          *service.APIKeyService
+	Subscriptions    *service.SubscriptionService
+	Admin            service.AdminService
+	Users            *service.UserService
+	UserRepo         service.UserRepository
+	RedeemCodeRepo   service.RedeemCodeRepository
+	MigrationBalance service.MigrationBalanceRepository
+	GroupRepo        service.GroupRepository
+	Channels         *service.ChannelService
 	// Gateway lists a group's models as /v1/models does (the catalog).
 	Gateway       *service.GatewayService
 	BillingCache  *service.BillingCacheService
@@ -153,6 +157,7 @@ type SessionGuard interface {
 	// user) or the session id was revoked, CheckFailed when the state cannot
 	// be read and nothing is cached (the request then fails with 503).
 	Check(ctx context.Context, userID int64, issuedAt time.Time, sessionID string) claudexhook.SessionState
+	InvalidateSession(userID int64, sessionID string)
 }
 
 // ReleaseInfo evaluates the desktop release for a client (B1). The module
@@ -182,7 +187,7 @@ type ReleaseState struct {
 	Enforced                                             bool   // = enforce_minimum_on_gateway
 	DownloadURL, SHA256, ReleaseNotesURL, ReleaseNotesMD string
 	PublishedAt                                          *time.Time
-	// UI is the desktop interface pack (docs/releasing.md), nil
+	// UI is the desktop interface pack (docs/desktop-ui-hot-update.md), nil
 	// when none is published.
 	UI *UIPack
 	// AppPack is this platform's app files without the installer, nil when
