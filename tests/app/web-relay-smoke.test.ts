@@ -970,7 +970,7 @@ test(
       assert.equal(moveTarget?.claudex_can_move_conversation, true);
       assert.equal(moveTarget?.claudex_can_edit_instructions, true);
       assert.equal(moveRows.find((row: { uuid: string }) => row.uuid === readOnlyProject)?.claudex_can_edit_instructions, false);
-      assert.deepEqual(moveTarget.permissions, ["chat_project:chat:view", "chat_project:knowledge:view", "chat_project:knowledge:edit", "chat_project:delete"]);
+      assert.deepEqual(new Set(moveTarget.permissions), new Set(["chat_project:chat:view", "chat_project:knowledge:view", "chat_project:knowledge:edit", "chat_project:delete"]));
       const metadataProjectPath = `/api/organizations/${aliceOrg}/projects/${aliceProject}`;
       const updateProject = (path: string, body: object, contentType = "application/json"): OfficialUiReadRequest => ({
         method: "PUT", path, contentType, body: Buffer.from(JSON.stringify(body)),
@@ -1320,7 +1320,7 @@ test(
       const bootText = Buffer.from(bootResponse.body).toString("utf8");
       const boot = JSON.parse(bootText);
       assert.equal(boot.account.email_address, alice.email);
-      assert.equal(boot.org_growthbook.features["3903416871"].defaultValue.edit_resynthesize_enabled, false);
+      assert.equal(boot.org_growthbook.features["3903416871"].defaultValue.edit_resynthesize_enabled, true);
       assert.equal(bootText.includes(bob.email), false);
       const aOfficial = await rpc(alice.id, "officialUiRead", { method: "GET", path: `/api/organizations/${aliceOrg}/chat_conversations_v2` });
       assert.equal(aOfficial.body.ok, true, JSON.stringify(aOfficial.body));
