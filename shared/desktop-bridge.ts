@@ -64,6 +64,7 @@ export const coreMethods = bridgeMethods<Omit<CoreDesktopAPI, "onEvent">>({
   resumeSession: true,
   authStatus: true,
   setupLocalProvider: true,
+  discoverLocalModels: true,
   registerAccount: true,
   loginAccount: true,
   logoutAccount: true,

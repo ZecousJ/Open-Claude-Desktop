@@ -1,6 +1,6 @@
 import { desktopPreferences } from "../store/desktop-preferences";
 import { savedAccountUiPort } from "../official-ui/account-browser-storage";
-import { isRetiredOfficialWindow, officialUiEnabled } from "../official-ui/window";
+import { isRetiredOfficialWindow } from "../official-ui/window";
 import { readState } from "../official-ui/api/state";
 import { inAdapterScope, newAdapterScope } from "../official-ui/api/scope";
 import { officialScheduledTaskModes } from "../official-ui/scheduled-task-preferences";
@@ -272,7 +272,7 @@ export async function activateAccount(
   }
   if (!hasSettings) {
     activationStore.settings.name = account.name;
-    if (officialUiEnabled()) activationStore.settings.theme = "system";
+    activationStore.settings.theme = "system";
     activationStore.flush();
   }
   if (!host && !mainState.operatorConfig && first) {
@@ -440,7 +440,7 @@ export async function activateAccount(
     summarize: (...args) => { check(); return summarize(...args); },
     computerAccess: () => current() && activationStore.settings.computerAccess !== false,
     enabledModes: () =>
-      current() && officialUiEnabled()
+      current()
         ? officialScheduledTaskModes(scheduledTaskScope)
         : undefined,
     isBusy: () => !current() || ownedEngine.isBusy() || mainState.shuttingDown,
@@ -553,7 +553,6 @@ export async function activateAccount(
   activationPhase = "activation_listeners";
   activatedListeners.emit(mainState.activeAccount);
   check();
-  if (!officialUiEnabled()) shapeMainWindow(true);
   check();
   deviceLink.refresh();
   } catch (error) {

@@ -30,8 +30,6 @@ import { lazyPiece } from "../ui/lazy-piece";
 import { Toaster } from "../ui/Toaster";
 
 const web = surface === "web";
-const officialDesktopSignIn = surface === "desktop" && typeof location !== "undefined" &&
-  new URLSearchParams(location.search).get("official-sign-in") === "1";
 
 /**
  * The signed-out pages and their stylesheet load on demand (package LOGIN):
@@ -85,7 +83,7 @@ class WindowBoundary extends Component<
 
 export type AuthenticatedAppProps = ComponentProps<typeof App>;
 export type AuthGateProps = {
-  renderApp: (props: AuthenticatedAppProps) => ReactNode;
+  renderApp?: (props: AuthenticatedAppProps) => ReactNode;
   startWithPendingPolicy?: boolean;
   subscribeAccountSwitch?: (listener: () => void) => () => void;
 };
@@ -215,8 +213,8 @@ function Gate({ renderApp: RenderApp, startWithPendingPolicy, subscribeAccountSw
         />
       </Suspense>
     );
-  if (officialDesktopSignIn && signedIn) return <BootShell native />;
-  if (status?.account) {
+  if (signedIn && !RenderApp) return <BootShell native />;
+  if (status?.account && RenderApp) {
     // Signing out forgets the account's unsent drafts and its choices kept
     // on this device (forget-account-data.ts).
     const signOut = async () => {

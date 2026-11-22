@@ -256,9 +256,12 @@ export async function showOfficialRecoveryWindow(allowed: () => boolean = () => 
     mainState.accountRetirement.accountActivationIdentity === generation && mainState.store === store &&
     mainState.activeAccount?.id === account;
   if (!current()) return;
-  const { createWindow } = await import("../app/main-window");
-  if (!current()) return;
-  await createWindow({ stage: { current } });
+  if (account) await createOfficialWindow();
+  else {
+    const { createWindow } = await import("../app/main-window");
+    if (!current()) return;
+    await createWindow({ stage: { current } });
+  }
   if (!current()) return;
   for (const runtime of retiredRuntimes) {
     await runtime.responsesDone;
@@ -402,10 +405,6 @@ const documentPreview = createDocumentPreviewService({
 export function prepareOfficialUiQuit() {
   retireQuickEntry();
   windowManager?.destroy();
-}
-
-export function officialUiEnabled() {
-  return app.isPackaged || process.env.CLAUDEX_OFFICIAL_UI === "1";
 }
 
 /**

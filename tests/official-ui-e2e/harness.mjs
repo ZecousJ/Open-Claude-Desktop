@@ -84,7 +84,6 @@ export class Client {
         cwd: root,
         env: {
           ...process.env,
-          CLAUDEX_OFFICIAL_UI: "1",
           CLAUDEX_OFFICIAL_UI_DEBUG: "1",
           CLAUDEX_OFFICIAL_UI_E2E: "1",
           CLAUDEX_DATA_DIR: profile,

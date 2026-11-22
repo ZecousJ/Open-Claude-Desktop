@@ -57,6 +57,7 @@ export const webCoreMethodKinds: {
   // Web sign-in session (W-AUTH): Go endpoints under /api/v1/claudex/web/auth.
   authStatus: "remote-go",
   setupLocalProvider: "absent",
+  discoverLocalModels: "absent",
   registerAccount: "remote-go",
   loginAccount: "remote-go",
   logoutAccount: "remote-go",

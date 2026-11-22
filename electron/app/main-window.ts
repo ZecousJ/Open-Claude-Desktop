@@ -1,6 +1,6 @@
 import { bindStagedDocument, stagedDocumentCurrent } from "./staged-document-lease";
 import { OfficialWindowCreationCancelled } from "../official-ui/staged-window";
-import { createOfficialWindow, officialAppWindows, notifyOfficialZoomChanged, officialUiEnabled, isRetiredOfficialWindow, openOfficialDeepLink, showOfficialRecoveryWindow } from "../official-ui/window";
+import { createOfficialWindow, officialAppWindows, notifyOfficialZoomChanged, isRetiredOfficialWindow, openOfficialDeepLink, showOfficialRecoveryWindow } from "../official-ui/window";
 import { takeStealthWindow } from "../updates/stealth-window";
 import { microphoneRequestAllowed } from "../voice/microphone-permission";
 import { refreshAppMenu } from "./app-menu";
@@ -38,8 +38,6 @@ import {
 } from "../main";
 import { registerAppWindow, loadRenderer } from "./app-window-registry";
 
-const classicRecoveryWindows = new WeakSet<BrowserWindow>();
-
 export function bindPendingDeepLink() {
   const pending = mainState.pendingDeepLink;
   const activation = mainState.accountRetirement.accountActivationIdentity;
@@ -59,10 +57,7 @@ export async function deliverPendingDeepLink() {
     mainState.pendingDeepLink = undefined;
     return true;
   };
-  if (await openOfficialDeepLink(win, pending.link, take)) return;
-  if (officialUiEnabled() && !classicRecoveryWindows.has(win)) return;
-  if (stagedDocumentCurrent(win) && take())
-    sendTo(win, { type: "deep-link", link: pending.link });
+  await openOfficialDeepLink(win, pending.link, take);
 }
 
 /** Zooms every app window to a level, remembers it and refreshes the menu. */
@@ -98,7 +93,7 @@ export async function showMainWindow() {
     return;
   }
   if (!mainState.window || mainState.window.isDestroyed()) {
-    if (officialUiEnabled() && mainState.activeAccount) await createOfficialWindow();
+    if (mainState.activeAccount) await createOfficialWindow();
     else await createWindow();
     return;
   }
@@ -142,7 +137,7 @@ export async function createWindow(options: { stage?: { current(): boolean } } =
   const previousMain = mainState.window;
   const documentStore = mainState.store;
   const documentAccount = mainState.activeAccount?.id;
-  const officialSignIn = !documentAccount && officialUiEnabled();
+  if (documentAccount) throw new OfficialWindowCreationCancelled();
   const documentGeneration = mainState.accountRetirement?.accountActivationIdentity;
   const documentCurrent = () => documentGeneration != null && mainState.store === documentStore &&
     mainState.activeAccount?.id === documentAccount &&
@@ -277,19 +272,14 @@ export async function createWindow(options: { stage?: { current(): boolean } } =
   });
   const connector = mainState.pendingConnectorLink;
   if (!options.stage) mainState.pendingConnectorLink = undefined;
-  const deepLink = bindPendingDeepLink();
   const emailLink = !mainState.activeAccount
     ? mainState.pendingEmailLink
     : undefined;
   if (!options.stage) mainState.pendingEmailLink = undefined;
   const query: Record<string, string> | undefined = emailLink
       ? { "email-link": emailLink }
-      : connector
-        ? { connector }
-        : deepLink
-          ? { deeplink: deepLink.href }
-          : undefined;
-  await loadRenderer(win, officialSignIn ? { ...query, "official-sign-in": "1" } : query);
+      : connector ? { connector } : undefined;
+  await loadRenderer(win, query);
   if (options.stage && !documentAccount) {
     checkStage();
     await waitForSignIn(win.webContents);
@@ -302,7 +292,6 @@ export async function createWindow(options: { stage?: { current(): boolean } } =
     committed = true;
     if (emailLink && mainState.pendingEmailLink === emailLink) mainState.pendingEmailLink = undefined;
     else if (connector && mainState.pendingConnectorLink === connector) mainState.pendingConnectorLink = undefined;
-    classicRecoveryWindows.add(win);
     if (saved?.maximized) win.maximize();
     if (saved?.fullScreen) win.setFullScreen(true);
     mainState.signInShape = !!signInRestoreBounds;
@@ -310,8 +299,6 @@ export async function createWindow(options: { stage?: { current(): boolean } } =
     win.show();
     if (previousMain && isRetiredOfficialWindow(previousMain)) previousMain.hide();
   }
-  if (!emailLink && !connector && deepLink && mainState.pendingDeepLink === deepLink)
-    mainState.pendingDeepLink = undefined;
   if (stealthWindow?.minimized) win.minimize();
   else if (stealthWindow?.visible) win.showInactive();
   return win;

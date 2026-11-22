@@ -1,7 +1,7 @@
 import { stagedDocumentCurrent } from "../electron/app/staged-document-lease";
-/** Actual classic createWindow with inert direct dependencies; no Electron or auth. */
 import test from "node:test";
 import assert from "node:assert/strict";
+import { OfficialWindowCreationCancelled } from "../electron/official-ui/staged-window";
 import fs from "node:fs";
 import {EventEmitter} from "node:events";
 import {registerHooks} from "node:module";
@@ -30,18 +30,20 @@ Object.assign(mocks["../main"],{appWindowRoles:roles,mainWindowFile:()=>"/not-re
 Object.assign(mocks["./main-window-state"],{mainWindowPlacement:()=>({}),minMainWindowSize:{width:1,height:1},readMainWindowState:()=>({maximized:true,fullScreen:true}),trackMainWindow:noop,signInWindowSize:{width:600,height:600}});
 Object.assign(mocks["./main-window-chrome"],{mainWindowChrome:()=>({})});
 Object.assign(mocks["./app-window-registry"],{registerAppWindow:(win:FakeWindow)=>{roles.set(win,{kind:"main"});win.once("closed",()=>roles.delete(win));},loadRenderer:async(_win:any,value:any)=>{query=value;await load;}});
+Object.assign(mocks["./sign-in-handoff"],{waitForSignIn:async()=>{}});
+Object.assign(mocks["../official-ui/window"],{isRetiredOfficialWindow:()=>false});
 Object.assign(mocks["../updates/stealth-window"],{takeStealthWindow:()=>undefined});
 (globalThis as any).__classicRecoveryMocks=mocks;
 registerHooks({resolve(specifier,context,next){if(context.parentURL?.endsWith("/electron/app/main-window.ts")&&mocks[specifier])return{shortCircuit:true,url:"data:text/javascript,"+encodeURIComponent(`const m=globalThis.__classicRecoveryMocks[${JSON.stringify(specifier)}];`+Object.keys(mocks[specifier]).map(n=>`export const ${n}=m.${n};`).join(""))};return next(specifier,context);}});
 const{createWindow,deliverPendingDeepLink}=await import("../electron/app/main-window");
 function deferred(){let resolve!:()=>void,reject!:(e:Error)=>void;const promise=new Promise<void>((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
 function reset(){roles.clear();load=undefined;query=undefined;state.activeAccount=undefined;state.signInShape=false;state.pendingConnectorLink=undefined;state.pendingDeepLink=undefined;state.pendingEmailLink=undefined;state.window=new FakeWindow();return state.window;}
-test("staged classic stays hidden including maximize/fullscreen until successful load and exact main commit",async()=>{
+test("staged sign-in stays hidden including maximize/fullscreen until successful load and exact main commit",async()=>{
  const old=reset(),wait=deferred();load=wait.promise;const pending=createWindow({stage:{current:()=>true}});const candidate=made.at(-1)!;
  assert.equal(state.window,old);assert.equal(candidate.visible,false);assert.equal(candidate.maxCalls,0);assert.equal(candidate.fullCalls,0);
  wait.resolve();assert.equal(await pending,candidate);assert.equal(state.window,candidate);assert.equal(candidate.visible,true);assert.equal(candidate.maxCalls,1);assert.equal(candidate.fullCalls,1);
 });
-test("stale classic candidate does not clear links or replace new main; own bridge role revoked even if destroy fails",async()=>{
+test("stale sign-in candidate preserves pending links and revokes its bridge role",async()=>{
  const old=reset(),wait=deferred();load=wait.promise;state.pendingEmailLink="old-link";let current=true;
  const pending=createWindow({stage:{current:()=>current}}),candidate=made.at(-1)!;candidate.failDestroy=true;
  assert.deepEqual(query,{"email-link":"old-link"});assert.equal(state.pendingEmailLink,"old-link");
@@ -82,23 +84,17 @@ test("a signed-out launch link stays queued until a window for the first activat
     officialDelivery = async () => false;
   }
 });
-test("the signed-in classic replacement receives the link in its boot URL", async () => {
+test("a signed-in account cannot reopen the sign-in renderer as a workspace", async () => {
   reset();
   const href = "claudex://new?q=draft";
   state.pendingDeepLink = { href, link: { kind: "new", mode: "chat", prompt: "draft" } };
   const signIn = await createWindow();
   assert.equal(query, undefined);
   state.activeAccount = { id: "first" };
-  const wait = deferred();
-  load = wait.promise;
-  const opening = createWindow({ stage: { current: () => true } });
+  await assert.rejects(createWindow({ stage: { current: () => true } }), OfficialWindowCreationCancelled);
   assert.equal(state.window, signIn);
-  assert.deepEqual(query, { deeplink: href });
+  assert.equal(query, undefined);
   assert.equal(state.pendingDeepLink?.href, href);
-  wait.resolve();
-  const signedIn = await opening;
-  assert.equal(state.window, signedIn);
-  assert.equal(state.pendingDeepLink, undefined);
 });
 test("account changes supersede a desktop link still resolving on the old activation", async () => {
   reset();

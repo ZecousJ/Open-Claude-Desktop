@@ -46,6 +46,7 @@ Object.assign(mocks.electron, {
     }),
     getPath: () => "/inert-not-read",
     getVersion: () => "fixture",
+    getLoginItemSettings: () => ({ wasOpenedAtLogin: false }),
     isPackaged: false,
     quit: () => {
       quits++;
@@ -69,6 +70,7 @@ Object.assign(mocks["../main"], {
       return noop;
     },
   },
+  deactivatingListeners: { add: noop },
   lifecycle: {},
   ctx: {},
   artifactPreviews: {},
@@ -76,7 +78,6 @@ Object.assign(mocks["../main"], {
   emailLinkWindows: {},
 });
 Object.assign(mocks["../official-ui/window"], {
-  officialUiEnabled: () => true,
   officialUiE2e: () => false,
   createOfficialWindow: async () => {
     return createOperation();
@@ -90,9 +91,12 @@ Object.assign(mocks["../account/accounts"], { Accounts: class {} });
 Object.assign(mocks["../account/remote-mode"], {
   remoteAccountsFor: () => ({ baseUrl: "https://fixture.invalid", file: { load: () => undefined } }),
 });
+Object.assign(mocks["./local-provider"], { restoreLocalProvider: async () => {} });
+Object.assign(mocks["./main-window"], { deliverPendingDeepLink: async () => {} });
 for (const [specifier, names] of Object.entries({
   "../support/support-log": ["installSupportLogging"],
   "./app-menu": ["installAppMenu"],
+  "./main-window": ["bindPendingDeepLink"],
   "./find-in-page-main": ["startFindInPage"],
   "./main-window-state": ["readMainWindowState"],
   "../updates/launch": ["prepareLaunch", "startAppUpdates"],

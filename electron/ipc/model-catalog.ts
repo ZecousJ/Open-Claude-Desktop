@@ -1,5 +1,6 @@
 import { isConversationModel, type ModelCatalog } from "../../shared/model-catalog-api";
 import { localEdition } from "../app/edition";
+import { refreshLocalModels } from "../app/local-provider";
 import { refreshAccountState } from "./usage";
 import type { AppContext, IpcHandle } from "../app/app-context";
 
@@ -39,6 +40,10 @@ export function registerModelCatalogHandlers(
     return catalog ? { ...catalog, desktopVersion: ctx.appVersion } : null;
   });
   handle("refreshModels", async () => {
+    if (localEdition) {
+      await refreshLocalModels();
+      return { settings: ctx.windowSettings(), reason: ctx.engine.unavailableReason };
+    }
     const remote = ctx.remote;
     if (!remote) return null;
     // No usable model, or a refusal held from an empty balance: read the

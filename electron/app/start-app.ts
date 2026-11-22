@@ -61,9 +61,7 @@ import {
 import {
   createOfficialWindow,
   officialAppWindows,
-  showOfficialRecoveryWindow,
   officialUiE2e,
-  officialUiEnabled,
   officialUiRoot,
   prepareOfficialUiQuit,
   requestOfficialSupportBundle,
@@ -167,8 +165,7 @@ export function startApp() {
     try {
       const savedWindow = readMainWindowState(mainWindowFile());
       mainState.zoomLevel = savedWindow?.zoomLevel ?? 0;
-      if (officialUiEnabled())
-        for (const port of savedAccountUiPorts(app.getPath("userData"))) reserveLoopbackPort(port);
+      for (const port of savedAccountUiPorts(app.getPath("userData"))) reserveLoopbackPort(port);
       if (!localEdition && app.isPackaged && !officialUiE2e() && !process.env.CLAUDEX_DATA_DIR)
         app.setAsDefaultProtocolClient("claudex");
       protocol.handle("claudex-preview", (request) =>
@@ -188,7 +185,7 @@ export function startApp() {
         desktopCredentials.root,
       );
       mainState.remoteAccounts = remoteAccounts;
-      const savedSession = officialUiEnabled() && !officialUiE2e()
+      const savedSession = !officialUiE2e()
         ? remoteAccounts?.file.load()
         : undefined;
       const restoredVisibility = savedSession && savedSession.baseUrl === remoteAccounts?.baseUrl
@@ -232,9 +229,7 @@ export function startApp() {
           mainState.pendingDeepLink = undefined;
       });
       activatedListeners.add(() => {
-        const pending = bindPendingDeepLink();
-        const official = officialUiEnabled();
-        if (!official && !pending) return;
+        bindPendingDeepLink();
         const signIn = mainState.window;
         const account = mainState.activeAccount;
         const store = mainState.store;
@@ -246,24 +241,17 @@ export function startApp() {
           mainState.accountRetirement.accountActivationIdentity === generation &&
           mainState.accountRetirement.accountRetiring === false;
         void finishOfficialWindowActivation({
-          create: () => official ? createOfficialWindow() : createWindow({ stage: { current } }),
+          create: () => createOfficialWindow(),
           previous: signIn,
           main: () => mainState.window,
           current,
           close: (win) => win.close(),
           reportFailure: () => {
-            if (!official) {
-              console.warn("The desktop link window could not be opened.");
-              return;
-            }
             console.error("Official interface could not be opened.");
             dialog.showErrorBox(
               "Claudex couldn't open the interface",
               "The interface could not be loaded. Please try again.",
             );
-            void showOfficialRecoveryWindow().then(deliverDeepLink).catch(() => {
-              console.error("The classic interface recovery could not be confirmed.");
-            });
           },
         }).then(deliverDeepLink);
       });
@@ -296,7 +284,7 @@ export function startApp() {
           hostedUiUrl(page) ?? (uiPacksActive() ? uiPageUrl(page) : undefined),
       );
       if (!localEdition) startIdleRefresh(() => !!mainState.engine?.isBusy());
-      if (officialUiEnabled() && mainState.activeAccount) {
+      if (mainState.activeAccount) {
         const startupAccount = mainState.activeAccount;
         const startupStore = mainState.store;
         const startupGeneration =

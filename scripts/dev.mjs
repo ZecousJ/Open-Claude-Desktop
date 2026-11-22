@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { createServer } from "vite";
 import { build } from "esbuild";
 import electron from "electron";
+import "./prepare-workspace-ui.mjs";
 import "./build-quick-access.mjs";
 import "./build-notification-authorization.mjs";
 await build({

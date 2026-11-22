@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, type FormEvent } from "react";
+import { useId, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import type { AuthStatus, Protocol } from "../../shared/types";
 import { useT } from "../i18n";
 import { KnotShape } from "../ui/Star";
@@ -16,6 +16,9 @@ export function LocalProviderSetup({
   const [baseUrl, setBaseUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("");
+  const [models, setModels] = useState<string[]>([]);
+  const modelOptions = useId();
+  const discovery = useRef<{ loaded: boolean }>({ loaded: false });
   const [protocol, setProtocol] = useState<Protocol>("responses");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +30,25 @@ export function LocalProviderSetup({
       if (event.type === "local-setup-theme") root.dataset.theme = event.theme;
     });
   }, [theme]);
+
+  function resetDiscovery() {
+    discovery.current = { loaded: false };
+    setModels([]);
+  }
+
+  async function discover() {
+    const read = discovery.current;
+    if (read.loaded || !/^https?:\/\//i.test(baseUrl.trim()) || !apiKey.trim()) return;
+    read.loaded = true;
+    try {
+      const ids = await window.desktop.discoverLocalModels({ baseUrl, apiKey, protocol });
+      if (discovery.current !== read) return;
+      setModels(ids);
+      setModel(current => current || ids[0] || "");
+    } catch {
+      read.loaded = false;
+    }
+  }
 
   async function connect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,14 +81,21 @@ export function LocalProviderSetup({
     >
       <form onSubmit={connect} className="local-provider-form">
         <label>{t("Request URL")}
-          <input className="signin-input" type="url" autoComplete="url" value={baseUrl} onChange={event => setBaseUrl(event.target.value)} placeholder="https://example.com/v1" required />
+          <input className="signin-input" type="url" autoComplete="url" value={baseUrl}
+            onChange={event => { setBaseUrl(event.target.value); resetDiscovery(); }}
+            onBlur={() => void discover()} placeholder="https://example.com/v1" required />
         </label>
         <label>{t("API key")}
-          <input className="signin-input" type="password" value={apiKey} onChange={event => setApiKey(event.target.value)} autoComplete="new-password" required />
+          <input className="signin-input" type="password" value={apiKey}
+            onChange={event => { setApiKey(event.target.value); resetDiscovery(); }}
+            onBlur={() => void discover()} autoComplete="new-password" required />
         </label>
         <div className="local-provider-model">
           <label>{t("Model")}
-            <input className="signin-input" value={model} onChange={event => setModel(event.target.value)} placeholder="model-id" required />
+            <input className="signin-input" list={modelOptions} value={model}
+              onChange={event => setModel(event.target.value)}
+              onFocus={() => void discover()} placeholder="model-id" />
+            <datalist id={modelOptions}>{models.map(id => <option key={id} value={id} />)}</datalist>
           </label>
           <label>{t("API protocol")}
             <select className="signin-input" value={protocol} onChange={event => setProtocol(event.target.value === "chat" ? "chat" : "responses")}>

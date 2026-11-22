@@ -35,7 +35,6 @@ if (process.argv[1] && path.resolve(process.argv[1])===self) {
   const cwd=path.resolve(path.dirname(self),'..');
   const env=acceptanceEnvironment(fs.readFileSync('/etc/environment','utf8'),process.env);
   env.CLAUDEX_DATA_DIR=path.join(cwd,'.runtime/native-live-profile');
-  env.CLAUDEX_OFFICIAL_UI='1';
   env.CLAUDEX_ACCEPTANCE_NETWORK_DIAGNOSTICS='1';
   env.CLAUDEX_SUB2API_URL='https://claudex.zecous.cn';
   env.CLAUDEX_WEB_API='https://claudex.zecous.cn';

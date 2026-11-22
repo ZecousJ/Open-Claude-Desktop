@@ -1338,6 +1338,7 @@ export interface CoreDesktopAPI {
   ): Promise<{ results: import("./history-search").HistorySearchHit[] }>;
   authStatus(): Promise<AuthStatus>;
   setupLocalProvider(input: { baseUrl: string; apiKey: string; model: string; protocol: Protocol }): Promise<AuthStatus>;
+  discoverLocalModels(input: { baseUrl: string; apiKey: string; protocol: Protocol }): Promise<string[]>;
   registerAccount(
     email: string,
     password: string,

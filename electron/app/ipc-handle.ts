@@ -51,6 +51,7 @@ export function handle(name: string, fn: (...args: any[]) => any) {
           !new Set([
             "authStatus",
             "setupLocalProvider",
+            "discoverLocalModels",
             "switchAccount",
             "cancelAddAccount",
             "forgetBrowserAccount",

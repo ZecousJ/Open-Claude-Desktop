@@ -142,7 +142,7 @@ test("desktop sign-in hands off to the native window without loading the workspa
       },
     }],
   });
-  const dom = new JSDOM('<div id="root"></div>', { url: "http://localhost/?official-sign-in=1" });
+  const dom = new JSDOM('<div id="root"></div>', { url: "http://localhost/" });
   const previous = { window: globalThis.window, document: globalThis.document,
     history: globalThis.history, location: globalThis.location };
   Object.assign(globalThis, { window: dom.window, document: dom.window.document,
@@ -155,9 +155,7 @@ test("desktop sign-in hands off to the native window without loading the workspa
     onEvent: () => () => {},
   };
   const root = createRoot(dom.window.document.getElementById("root")!);
-  await act(async () => root.render(React.createElement(AuthGate, {
-    renderApp: () => React.createElement("div", { id: "workspace" }),
-  })));
+  await act(async () => root.render(React.createElement(AuthGate)));
   assert.ok(dom.window.document.getElementById("native-loading"));
   assert.equal(dom.window.document.getElementById("sign-in"), null);
   await act(async () => resolve({ signedOutReason: "session-expired" }));
