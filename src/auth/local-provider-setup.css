@@ -30,17 +30,26 @@
 }
 .local-provider-model {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
+}
+.local-provider-model-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.local-provider-model-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.local-provider-discover {
+  font-size: 13px;
 }
 .local-provider-form .signin-primary { margin-top: 4px; }
 
 .local-provider-form select {
   color-scheme: inherit;
-}
-
-@media (max-width: 380px) {
-  .local-provider-model {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

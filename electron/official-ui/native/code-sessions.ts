@@ -2970,6 +2970,13 @@ export function registerExperimentalCodeSessions(host: NativeHost, isDetectedFol
       const allowed = new Set(["title", "titleSource", "isStarred"]);
       if (Object.keys(options).some((key) => !allowed.has(key)))
         throw new Error("This Code session update is not supported yet.");
+      // The renderer sends this marker when its starred-session cache starts empty.
+      if (id === "local_star-sync-notice" && options.isStarred === false &&
+          Object.keys(options).length === 1) {
+        if (ctx.readOnly || ctx.isCurrent?.() === false)
+          throw Error("Local Code session updates are unavailable.");
+        return;
+      }
       if (
         options.titleSource !== undefined &&
         options.titleSource !== "user" && options.titleSource !== "auto"

@@ -549,6 +549,24 @@ test("opening existing local history clears unread without resending an interrup
   assert.equal(calls.length,1);
 });
 
+test("an empty starred-session cache probe needs no stored Code session", async () => {
+  const handlers = new Map<string, (...args: any[]) => any>();
+  let reads = 0;
+  registerExperimentalCodeSessions({
+    ctx: {
+      localLoadConversation: async () => { reads++; return undefined; },
+      onEvent: () => () => {},
+    },
+    on(name: string, fn: (...args: any[]) => any) { handlers.set(name, fn); },
+    emit() {},
+  } as never);
+  const update = handlers.get("LocalSessions.updateSession")!;
+  await update("local_star-sync-notice", { isStarred: false });
+  assert.equal(reads, 0);
+  await assert.rejects(update("local_missing", { isStarred: false }), /Code session not found/);
+  assert.equal(reads, 1);
+});
+
 test("the landing page starts in its authorized scratch folder with empty connector maps and keeps its optimistic session id", async () => {
   const handlers = new Map<string, (...args: any[]) => any>();
   const rawId = "2f3a06f5-a30a-46a0-a914-5021272f6c23";

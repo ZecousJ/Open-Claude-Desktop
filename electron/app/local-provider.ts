@@ -33,20 +33,18 @@ function normalizeProvider(input: z.infer<typeof providerInput>) {
 }
 
 async function availableModels(baseUrl: string, apiKey: string): Promise<string[]> {
-  try {
-    const response = await fetch(baseUrl + "/models", {
-      headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
-      redirect: "error",
-      signal: AbortSignal.timeout(3500),
-    });
-    if (!response.ok) return [];
-    const catalog = modelList.safeParse(await response.json());
-    if (catalog.success)
-      return [...new Set(catalog.data.data.map((item) => item.id))];
-  } catch {
-    // A proxy can serve completions without providing a model inventory.
-  }
-  return [];
+  const response = await fetch(baseUrl + "/models", {
+    headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
+    redirect: "error",
+    signal: AbortSignal.timeout(3500),
+  }).catch(() => { throw Error("Could not fetch models from this channel."); });
+  if (response.status === 401 || response.status === 403)
+    throw Error("The channel rejected the API key.");
+  if (response.status === 404 || response.status === 405) return [];
+  if (!response.ok) throw Error("Could not fetch models from this channel.");
+  const catalog = modelList.safeParse(await response.json().catch(() => undefined));
+  if (!catalog.success) throw Error("Could not fetch models from this channel.");
+  return [...new Set(catalog.data.data.map((item) => item.id))];
 }
 
 function setupTheme() {
@@ -114,7 +112,7 @@ export function registerLocalProvider(handle: (method: string, handler: (input?:
     if (mainState.activeAccount) throw Error("Close the active connection before changing it.");
     const input = connection.parse(raw);
     const { baseUrl, protocol } = normalizeProvider(input);
-    const models = await availableModels(baseUrl, input.apiKey);
+    const models = await availableModels(baseUrl, input.apiKey).catch(() => []);
     const model = input.model || models[0];
     if (!model) throw Error("Enter a model ID when the channel does not list models.");
     const provider: Provider = {
