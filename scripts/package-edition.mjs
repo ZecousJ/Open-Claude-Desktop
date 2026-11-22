@@ -26,8 +26,13 @@ const platform = target === "darwin" ? "--mac" : target === "win32" ? "--win" : 
 const format = target === "darwin" ? "dmg" : target === "win32" ? "nsis" : "tar.gz";
 const title = edition === "local" ? "Claudex Local" : "Claudex Self-Hosted";
 const artifactPrefix = title.replaceAll(" ", "-");
+const macIdentity = env.CLAUDEX_MAC_SIGNING_IDENTITY?.replace(
+  /^(Developer ID Application|Apple Development|Mac Developer):\s*/,
+  "",
+);
 const options = target === "darwin" ? [
   "-c.dmg.artifactName=" + artifactPrefix + "-${version}-${arch}.dmg",
+  ...(macIdentity ? ["-c.mac.identity=" + macIdentity] : []),
 ] : target === "win32" ? [
   "-c.nsis.artifactName=" + artifactPrefix + "-Setup-${version}-${arch}.exe",
   ...(process.platform === "win32" ? [] : ["-c.win.signAndEditExecutable=false"]),

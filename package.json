@@ -166,6 +166,10 @@
       ],
       "category": "public.app-category.productivity",
       "identity": null,
+      "signIgnore": [
+        "/Contents/Resources/official-(ui|usercontent)/",
+        "/Resources/[^/]+\\.lproj/locale\\.pak$"
+      ],
       "extendInfo": {
         "NSMicrophoneUsageDescription": "Claudex uses the microphone only while you record a dictation for the message composer."
       },

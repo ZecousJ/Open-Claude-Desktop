@@ -21,12 +21,6 @@ export default function signMacRelease({ electronPlatformName, appOutDir, packag
     file,
   );
 
-  const frameworks = path.join(contents, "Frameworks");
-  for (const name of fs.readdirSync(frameworks)) {
-    if (name.endsWith(".framework") || name.endsWith(".app"))
-      sign(path.join(frameworks, name), "--deep", "--preserve-metadata=identifier,entitlements,flags");
-  }
-
   const driver = path.join(contents, "Resources", "computer-use");
   const manifestPath = path.join(driver, "manifest.json");
   if (fs.existsSync(manifestPath)) {
@@ -38,8 +32,7 @@ export default function signMacRelease({ electronPlatformName, appOutDir, packag
       manifest.installedFiles[name] = createHash("sha256").update(fs.readFileSync(path.join(driver, name))).digest("hex");
     manifest.executableSha256 = manifest.installedFiles[manifest.executable];
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+    sign(app, "--identifier", packager.appInfo.id);
   }
-
-  sign(app, "--identifier", packager.appInfo.id);
   codesign(["--verify", "--deep", "--strict"], app);
 }
