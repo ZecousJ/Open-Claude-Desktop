@@ -79,8 +79,9 @@ const (
 	HeaderClient = "X-Claudex-Client"
 	// EventSeqHeader answers the snapshot call with the user's last event
 	// number the snapshot already holds.
-	EventSeqHeader = "X-Claudex-Event-Seq"
-	ClientName     = "web"
+	EventSeqHeader    = "X-Claudex-Event-Seq"
+	SnapshotTagHeader = "X-Claudex-Snapshot-Tag"
+	ClientName        = "web"
 	// RefreshCookie is the HttpOnly refresh cookie, Path=PathAuth.
 	RefreshCookie = "__Secure-claudex_web_rt"
 	// EventsSubprotocol is what the events socket selects.

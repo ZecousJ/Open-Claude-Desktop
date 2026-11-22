@@ -41,6 +41,22 @@ const vendorMarks = new Set([
   "deepseek",
 ]);
 const emptyRead = { value: undefined, error: "", pending: true };
+
+function ApiBalance({ balance, onReload }) {
+  const intl = useIntl();
+  const amount = balance.value?.balance;
+  return jsx(SettingsSection, {
+    title: message("Balance", "claudex-api-balance"),
+    children: Number.isFinite(amount)
+      ? jsx("span", {
+          className: "text-heading-semibold text-primary tabular-nums",
+          children: intl.formatNumber(amount, { style: "currency", currency: "USD" }),
+        })
+      : balance.error
+        ? jsx(Failure, { retry: onReload, children: balance.error })
+        : jsx(Skeleton, { width: 88, height: 24 }),
+  });
+}
 const keyNameLimit = 100;
 const keyStatus = {
   inactive: "Disabled",
@@ -211,6 +227,22 @@ function ModelRow({ leading, label, rate, count, select }) {
         className: "flex min-w-0 items-center justify-end gap-xs",
         children: [count, select],
       }),
+    }),
+  });
+}
+
+function ModelRowsSkeleton() {
+  return jsx(SettingsNest, {
+    padding: "none",
+    children: jsx("ul", {
+      className: "divide-y divide-alpha-1",
+      "aria-hidden": true,
+      children: [0, 1, 2].map((index) => jsx(ModelRow, {
+        leading: jsx(Skeleton, { width: 20, height: 20 }),
+        label: jsx(Skeleton, { width: 72, height: 16 }),
+        count: jsx(Skeleton, { width: 64, height: 20 }),
+        select: jsx(Skeleton, { width: 144, height: 32 }),
+      }, index)),
     }),
   });
 }
@@ -879,6 +911,7 @@ export function HostApiPanel({ refreshBootstrap }) {
   const [groups, setGroups] = useState(emptyRead);
   const [rates, setRates] = useState(emptyRead);
   const [keys, setKeys] = useState(emptyRead);
+  const [balance, setBalance] = useState(emptyRead);
   const [creating, setCreating] = useState(false);
   const [selectionPending, setSelectionPending] = useState(false);
   const [revoking, setRevoking] = useState(null);
@@ -937,10 +970,14 @@ export function HostApiPanel({ refreshBootstrap }) {
   useEffect(() => {
     const controller = new AbortController();
     session.current = controller;
+    const refreshBalance = () => void load("balance", setBalance, controller).catch(() => {});
+    refreshBalance();
     void loadGroups(controller);
     void load("rates", setRates, controller).catch(() => {});
     void load("keys", setKeys, controller).catch(() => {});
+    window.addEventListener("focus", refreshBalance);
     return () => {
+      window.removeEventListener("focus", refreshBalance);
       controller.abort();
       session.current = null;
     };
@@ -1056,6 +1093,10 @@ export function HostApiPanel({ refreshBootstrap }) {
                 rel: "stylesheet",
                 href: "/assets/v1/claudex-host-api.css",
               }),
+              jsx(ApiBalance, {
+                balance,
+                onReload: () => void load("balance", setBalance).catch(() => {}),
+              }),
               jsxs(SettingsSection, {
                 id: "api-providers",
                 title: message("Models", "claudex-api-models"),
@@ -1075,7 +1116,7 @@ export function HostApiPanel({ refreshBootstrap }) {
                       retry: () => void load("rates", setRates).catch(() => {}),
                       children: rates.error,
                     }),
-                  !data && groups.pending && jsx(Skeleton.Rows, { rows: 3 }),
+                  !data && groups.pending && jsx(ModelRowsSkeleton, {}),
                   data &&
                     (data.providers.length > 0 || data.images) &&
                     jsx(SettingsNest, {

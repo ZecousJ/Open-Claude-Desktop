@@ -47,8 +47,11 @@ export interface TransportAuth {
 }
 
 export type TransportEnv = Pick<WebEnv, "fetch" | "timers">;
+type ResponseMeta = { eventSeq?: number; snapshotTag?: string };
+type SnapshotValue = { tag: string; value: unknown };
 
 export class WebTransport {
+  private lastSnapshot?: SnapshotValue & { activation: object; body: string };
   private snapshotRead?: {
     activation: object;
     body: string;
@@ -68,6 +71,8 @@ export class WebTransport {
   captureActivation(): () => void {
     const scoped = "activationIdentity" in this.auth;
     const opening = this.auth.activationIdentity;
+    if (this.lastSnapshot && this.lastSnapshot.activation !== opening)
+      this.lastSnapshot = undefined;
     return () => {
       if (!scoped) return;
       if (opening === undefined) throw bridgeError(messages.sessionExpired, "UNAUTHORIZED");
@@ -184,9 +189,20 @@ export class WebTransport {
     if (method === "snapshot" && owner && !signal) {
       let pending = this.snapshotRead;
       if (!pending || pending.activation !== owner || pending.body !== body) {
-        const responseMeta: { eventSeq?: number } = {};
-        const result = this.rpc(method, body, responseMeta, checkActivation)
-          .then(value => ({ value, eventSeq: responseMeta.eventSeq }))
+        const responseMeta: ResponseMeta = {};
+        const previous = this.lastSnapshot;
+        const cached = previous?.activation === owner && previous.body === body
+          ? previous
+          : undefined;
+        const result = this.rpc(method, body, responseMeta, checkActivation, undefined, { cached })
+          .then((value) => {
+            if (this.snapshotRead?.result === result) {
+              this.lastSnapshot = responseMeta.snapshotTag
+                ? { activation: owner, body, tag: responseMeta.snapshotTag, value }
+                : undefined;
+            }
+            return { value, eventSeq: responseMeta.eventSeq };
+          })
           .finally(() => {
             if (this.snapshotRead?.result === result) this.invalidateSnapshotRead();
           });
@@ -198,6 +214,8 @@ export class WebTransport {
       if (meta) meta.eventSeq = answer.eventSeq;
       return structuredClone(answer.value);
     }
+    if (method === "conversationTurns" || method === "snapshot")
+      return this.rpc(method, body, meta, current, signal);
     this.invalidateSnapshotRead();
     if (method !== "readProjectKnowledge")
       return this.rpc(method, body, meta, current, signal)
@@ -264,9 +282,10 @@ export class WebTransport {
   private async rpc(
     method: string,
     body: string,
-    meta?: { eventSeq?: number },
+    meta?: ResponseMeta,
     assertCurrent?: () => void,
     signal?: AbortSignal,
+    snapshot?: { cached?: SnapshotValue },
   ): Promise<unknown> {
     if (new TextEncoder().encode(body).byteLength > webLimits.rpcBodyBytes)
       throw bridgeError(messages.tooLarge, webErrorCodes.tooLarge);
@@ -276,21 +295,29 @@ export class WebTransport {
       clientTimeoutMs,
     );
     try {
+      const headers = new Headers({ "Content-Type": "application/json" });
+      if (snapshot) headers.set(webHeaders.snapshotTag, snapshot.cached?.tag ?? "new");
       const response = await this.fetch(
         `${webPaths.rpc}${encodeURIComponent(method)}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body,
           signal: signal ? AbortSignal.any([signal, abort.signal]) : abort.signal,
         },
         assertCurrent,
       );
-      const json = await readJson(response);
       assertCurrent?.();
+      const tag = response.headers.get(webHeaders.snapshotTag);
+      if (snapshot && meta && tag && /^[0-9a-f]{64}$/.test(tag))
+        meta.snapshotTag = tag;
       const seq = response.headers.get(webHeaders.eventSeq);
       if (meta && seq !== null && /^\d+$/.test(seq))
         meta.eventSeq = Number(seq);
+      if (response.status === 204 && snapshot?.cached && tag === snapshot.cached.tag)
+        return snapshot.cached.value;
+      const json = await readJson(response);
+      assertCurrent?.();
       let outcome;
       try {
         outcome = parseRpcResponse(response.status, json);

@@ -2,7 +2,7 @@ import {
   historySearchInput,
   historySearchResult,
 } from "../../shared/history-search";
-import { slimConversation } from "../../shared/conversation-slim";
+import { conversationIndexRow, slimConversation } from "../../shared/conversation-slim";
 import { z } from "zod";
 import type { Settings, Snapshot } from "../../shared/types";
 import { webHost } from "../../shared/host";
@@ -64,14 +64,18 @@ export function registerCoreHandlers(this: WebAppContext, handle: IpcHandle) {
       .parse(raw);
     return this.runtime.captureArtifactScreenshot!(html);
   });
-  handle("snapshot", async (): Promise<Snapshot> => {
+  handle("snapshot", async (view?: unknown): Promise<Snapshot> => {
     await this.chatDeviceController.refresh();
-    const snapshot = this.snapshot();
+    const catalog = typeof view === "object" && view !== null &&
+      "conversationHistory" in view && view.conversationHistory === "on-demand";
+    const recent = catalog && "conversationScope" in view && view.conversationScope === "recent";
+    const deviceApprovals = this.chatDeviceController.pendingApprovals();
+    const snapshot = this.snapshot(catalog, recent ? deviceApprovals : undefined);
     return {
       ...snapshot,
       approvals: [
         ...snapshot.approvals,
-        ...this.chatDeviceController.pendingApprovals(),
+        ...deviceApprovals,
       ],
     };
   });
@@ -126,8 +130,23 @@ export function registerCoreHandlers(this: WebAppContext, handle: IpcHandle) {
   );
 }
 
-export function snapshot(this: WebAppContext): Snapshot {
+export function snapshot(this: WebAppContext, catalog = false, recentApprovals?: Snapshot["approvals"]): Snapshot {
   const host = this.runtime.host ?? webHost;
+  const approvals = this.engine.approvals;
+  let conversations = this.store.conversations;
+  if (recentApprovals) {
+    const pending = new Set([...approvals, ...recentApprovals].map(approval => approval.conversationId));
+    const latest = conversations
+      .filter(conversation => !conversation.archived && !conversation.pinned)
+      .sort((a, b) => (b.updatedAt || b.createdAt) - (a.updatedAt || a.createdAt))
+      .slice(0, 30);
+    const visible = new Set(latest.map(conversation => conversation.id));
+    conversations = conversations.filter(conversation =>
+      visible.has(conversation.id) || pending.has(conversation.id) ||
+      (conversation.pinned && !conversation.archived) ||
+      conversation.turns.some(turn => turn.status === "inProgress"),
+    );
+  }
   return {
     inlineAttachmentDisplayVersion: 1,
     artifactShares: this.artifactShares.list(),
@@ -136,10 +155,10 @@ export function snapshot(this: WebAppContext): Snapshot {
     replyFeedback: this.replyFeedback.all(),
     settings: this.windowSettings(),
     // Over the network: commands' long texts follow when a chat opens.
-    conversations: this.store.conversations.map(slimConversation),
+    conversations: conversations.map(catalog ? conversationIndexRow : slimConversation),
     projects: this.store.projects,
     engine: this.engine.state,
-    approvals: this.engine.approvals,
+    approvals,
     platform: process.platform,
     modelUnavailable: this.engine.unavailableReason,
     host: { ...host, capabilities: { ...host.capabilities, nativeSendReceipts: true } },

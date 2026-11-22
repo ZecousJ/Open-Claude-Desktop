@@ -16,6 +16,7 @@ import {
 } from "../../shared/collections-api";
 import {
   parseTicketResponse,
+  snapshotCatalogRequest,
   rpcRequest,
   webErrorCodes,
   webHeaders,
@@ -346,7 +347,7 @@ export class CloudClient {
     const meta: { eventSeq?: number } = {};
     const snapshot = (await this.transport.call(
       "snapshot",
-      await encodeCall([], this.transport),
+      await encodeCall([snapshotCatalogRequest], this.transport),
       meta,
     )) as Snapshot;
     this.loaded = true;

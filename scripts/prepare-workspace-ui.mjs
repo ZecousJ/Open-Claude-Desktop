@@ -7,16 +7,17 @@ import { pipeline } from "node:stream/promises";
 
 const output = "build";
 const resources = ["official-ui", "official-usercontent"];
-const asset = "claudex-workspace-production-0.0.55.tar.gz";
-const publishedRelease = "v0.0.56-local";
-const digest = "586b71b1af12ed488b7530072bb79d88fefe24e739e87b5a718b6ad67fb66b67";
+const asset = "claudex-workspace-20261122.tar.gz";
+const publishedRelease = "workspace-20261122";
+const digest = "a22faf0276d8d85e109fd654c25079fc0df8469acd1cfc62107498eeba7bc1df";
 const buildId = "79979f1379";
-const assembledAt = "2026-11-18T10:30:15.548Z";
+const assembledAt = "2026-11-21T17:56:48.468Z";
+const previousAssembly = "2026-11-18T10:30:15.548Z";
 
-function hasWorkspace(directory) {
+function hasWorkspace(directory, assembly = assembledAt) {
   try {
     const manifest = JSON.parse(fs.readFileSync(path.join(directory, "official-ui", "manifest.json"), "utf8"));
-    return manifest.buildId === buildId && manifest.generatedAt === assembledAt &&
+    return manifest.buildId === buildId && manifest.generatedAt === assembly &&
       fs.existsSync(path.join(directory, "official-ui", "ui", "index.html")) &&
       fs.existsSync(path.join(directory, "official-usercontent", "manifest.json"));
   } catch {
@@ -26,7 +27,8 @@ function hasWorkspace(directory) {
 
 async function prepare() {
   if (hasWorkspace(output)) return;
-  if (resources.some(directory => fs.existsSync(path.join(output, directory))))
+  const replacePrevious = hasWorkspace(output, previousAssembly);
+  if (!replacePrevious && resources.some(directory => fs.existsSync(path.join(output, directory))))
     throw Error("Move the existing build/official-ui and build/official-usercontent directories before installing the published workspace.");
 
   fs.mkdirSync(output, { recursive: true });
@@ -50,6 +52,12 @@ async function prepare() {
       env: { ...process.env, COPYFILE_DISABLE: "1" },
     });
     if (!hasWorkspace(stage)) throw Error("The workspace archive does not contain the published workspace.");
+    if (replacePrevious) {
+      const previous = path.join(stage, "previous");
+      fs.mkdirSync(previous);
+      for (const directory of resources)
+        fs.renameSync(path.join(output, directory), path.join(previous, directory));
+    }
     for (const directory of resources)
       fs.renameSync(path.join(stage, directory), path.join(output, directory));
   } finally {

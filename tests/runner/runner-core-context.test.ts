@@ -17,7 +17,7 @@ import {
   type MemoryWebstore,
 } from "./runner-core-support.test.ts";
 import { MockSub2Api, fakeCipher } from "../support/sub2api-mock";
-import type { Conversation } from "../../shared/types";
+import type { Conversation, Snapshot } from "../../shared/types";
 import { splitConversation } from "../../shared/web-docs";
 import type { RunnerFrame } from "../../shared/web-runner-frames";
 
@@ -380,16 +380,16 @@ test("a signed-out user's context closes and its data is written", async () => {
 
 test("cold history serves a selected chat and signs out while an unrelated chat is held", async (t) => {
   const previous = dispatcher.context(22)!;
-  const conversations: Conversation[] = Array.from({ length: 10 }, (_, index) => ({
+  const conversations: Conversation[] = Array.from({ length: 35 }, (_, index) => ({
     id: `cold-${index}`,
     title: `Chat ${index}`,
     mode: "chat",
     providerId: "sub2api",
     model: "gpt-5.5",
-    pinned: false,
+    pinned: index === 0,
     archived: false,
     createdAt: 1,
-    updatedAt: 2,
+    updatedAt: index + 2,
     turns: [{
       id: `turn-${index}`,
       prompt: `Message ${index}`,
@@ -466,6 +466,22 @@ test("cold history serves a selected chat and signs out while an unrelated chat 
   assert.equal(shell.store.historyLoaded, true);
   assert.deepEqual(shell.store.conversation("cold-9").turns, selected?.turns);
   assert.equal(requested.filter((id) => id === "cold-9").length, 1);
+  const active = shell.store.conversation("cold-1");
+  active.turns[0].status = "inProgress";
+  const recent: Snapshot = await value(user.id, "snapshot", {
+    conversationHistory: "on-demand",
+    conversationScope: "recent",
+  });
+  assert.equal(recent.conversations.length, 32);
+  assert.equal(recent.conversations.find(({ id }) => id === "cold-0")?.pinned, true);
+  assert.equal(recent.conversations.find(({ id }) => id === "cold-1")?.turns[0].status, "inProgress");
+  assert.equal(recent.conversations.some(({ id }) => id === "cold-2"), false);
+  assert.ok(recent.conversations.every(({ turns }) => turns.every(({ prompt }) => prompt === "")));
+  const history = await value(user.id, "conversationTurns", "cold-2");
+  assert.equal(history.turns[0].prompt, "Message 2");
+  const catalog: Snapshot = await value(user.id, "snapshot", { conversationHistory: "on-demand" });
+  assert.equal(catalog.conversations.length, conversations.length);
+  active.turns[0].status = "interrupted";
 
   await dispatcher.closeContext(shell);
   const releaseRetired = holdFirstChat();

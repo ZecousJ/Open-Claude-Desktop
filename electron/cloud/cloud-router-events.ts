@@ -200,8 +200,6 @@ export function cloudEvent(this: CloudRouter, event: AppEvent) {
       this.deps.push(event);
       return;
     case "stream-connection":
-      // Back after a gap: read the cloud's state again.
-      if (event.connected) this.deps.push({ type: "resync" });
       return;
     default:
       // Settings, policy, usage and the rest are this app's own.

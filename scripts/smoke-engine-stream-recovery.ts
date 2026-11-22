@@ -45,6 +45,7 @@ let handlerError: unknown;
 let activeStop: { closed: boolean } | undefined;
 let partialVisible = false;
 const requests: Json[] = [];
+const exhaustedAttempts: number[] = [];
 const flatten = (tools: Json[], namespace?: string): Json[] =>
   tools.flatMap((t) =>
     t.type === "namespace"
@@ -224,6 +225,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     attempts++;
+    if (scenario === "exhaust") exhaustedAttempts.push(performance.now());
     if (scenario === "fatal") {
       event(res, "response.failed", {
         response: {
@@ -239,8 +241,9 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     if (
-      ["recover", "tool", "rate", "eof", "socket-reset"].includes(scenario) &&
-      attempts > 1
+      (["recover", "tool", "rate", "eof", "socket-reset"].includes(scenario) &&
+        attempts > 1) ||
+      (scenario === "delayed-recovery" && attempts === 4)
     ) {
       success(res, [message("STREAM_RECOVERED_OK")]);
       return;
@@ -448,7 +451,7 @@ try {
     assert.equal(resetTurn.status, "completed", resetTurn.error);
     assert.equal(store.conversation(resetId).turns.length, 1);
     assert.equal(requests.length - startActiveReset, 2);
-    assert.ok(reconnects.slice(reconnectStart).includes("1/2"));
+    assert.ok(reconnects.slice(reconnectStart).includes("1/5"));
     assert.equal(
       resetTurn.items.filter(
         (i) =>
@@ -470,10 +473,20 @@ try {
     console.log(
       "PASS two active shell tools complete exactly once after socket reset",
     );
+    const delayed = await run("delayed-recovery", "chat");
+    assert.equal((await settled(delayed)).status, "completed");
+    assert.equal(attempts, 4);
+    assert.equal(store.conversation(delayed).turns.length, 1);
+    console.log("PASS Chat recovers after three consecutive stream failures");
     const exhausted = await run("exhaust");
     assert.equal((await settled(exhausted)).status, "failed");
-    assert.equal(attempts, 3);
-    console.log("PASS repeated failure stops after two retries");
+    assert.equal(attempts, 6);
+    const delays = exhaustedAttempts.slice(1).map((time, index) =>
+      Math.round(time - exhaustedAttempts[index]));
+    console.log("Native stream retry intervals (ms):", delays.join(", "));
+    assert.equal(delays.length, 5);
+    assert.ok(delays[4] > delays[0] && delays[4] >= 1_000, delays.join(", "));
+    console.log("PASS repeated failure backs off and stops after five retries");
     const fatal = await run("fatal");
     assert.equal((await settled(fatal)).status, "failed");
     assert.equal(attempts, 1);

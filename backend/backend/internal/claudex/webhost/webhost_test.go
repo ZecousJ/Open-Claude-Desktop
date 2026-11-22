@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -918,4 +919,81 @@ func TestSnapshotSaysTheLastEventItHolds(t *testing.T) {
 	require.NotNil(t, u)
 	require.Len(t, u.ring, 2, "both events came in before the result")
 
+}
+
+func TestSnapshotValidatorOnlySuppressesIdenticalPayload(t *testing.T) {
+	h := newHost(t)
+	var revision atomic.Int64
+	fr, err := h.dialRunner(localToken, []string{"snapshot"}, func(webproto.GoFrame) (any, *webproto.RPCError, bool) {
+		return map[string]any{"revision": revision.Load(), "text": strings.Repeat("test content", 10_000)}, nil, true
+	})
+	require.NoError(t, err)
+
+	call := func(validator string) (*http.Response, []byte) {
+		t.Helper()
+		req, err := http.NewRequest(http.MethodPost, h.srv.URL+webproto.PathRPC+"snapshot", strings.NewReader(`{"args":[]}`))
+		require.NoError(t, err)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+tokenOf(userA))
+		req.Header.Set(webproto.SnapshotTagHeader, validator)
+		res, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer res.Body.Close()
+		var data bytes.Buffer
+		_, err = data.ReadFrom(res.Body)
+		require.NoError(t, err)
+		return res, data.Bytes()
+	}
+
+	first, data := call("new")
+	require.Equal(t, http.StatusOK, first.StatusCode)
+	require.NotEmpty(t, data)
+	tag := first.Header.Get(webproto.SnapshotTagHeader)
+	require.Len(t, tag, 64)
+
+	fr.event(userA, map[string]any{"type": "one"})
+	same, data := call(tag)
+	require.Equal(t, http.StatusNoContent, same.StatusCode)
+	require.Empty(t, data)
+	require.Equal(t, tag, same.Header.Get(webproto.SnapshotTagHeader))
+	require.Equal(t, "no-store", same.Header.Get("Cache-Control"))
+	require.NotEqual(t, first.Header.Get(webproto.EventSeqHeader), same.Header.Get(webproto.EventSeqHeader))
+
+	revision.Add(1)
+	changed, data := call(tag)
+	require.Equal(t, http.StatusOK, changed.StatusCode)
+	require.NotEmpty(t, data)
+	require.NotEqual(t, tag, changed.Header.Get(webproto.SnapshotTagHeader))
+
+	legacy, data := call("")
+	require.Equal(t, http.StatusOK, legacy.StatusCode)
+	require.NotEmpty(t, data)
+	require.Empty(t, legacy.Header.Get(webproto.SnapshotTagHeader))
+}
+
+func TestConversationIndexOmitsHistoryButPreservesOnDemandReads(t *testing.T) {
+	h := newHost(t)
+	prompt := strings.Repeat("conversation payload ", 5000)
+	turn := map[string]any{"id": "last", "createdAt": 121, "status": "completed", "prompt": prompt,
+		"items": []any{map[string]any{"type": "assistantMessage", "text": prompt}}, "attachments": []any{}}
+	fr, err := h.dialRunner(localToken, []string{"snapshot", "conversationTurns"}, func(f webproto.GoFrame) (any, *webproto.RPCError, bool) {
+		if f.Method == "conversationTurns" {
+			return map[string]any{"turns": []any{turn}}, nil, true
+		}
+		chat := map[string]any{"id": "chat", "title": "Project notes", "turns": []any{turn},
+			"savedBranches": []any{map[string]any{"turns": []any{turn}}}}
+		return map[string]any{"conversations": []any{chat}}, nil, true
+	})
+	require.NoError(t, err)
+	status, legacy := h.rpc(userA, "snapshot")
+	require.Equal(t, http.StatusOK, status)
+	require.Contains(t, string(legacy.Value), prompt)
+	status, index := h.rpc(userA, "snapshot", map[string]string{"conversationHistory": "on-demand"})
+	require.Equal(t, http.StatusOK, status)
+	require.Less(t, len(index.Value), 400)
+	require.JSONEq(t, `{"conversations":[{"id":"chat","title":"Project notes","slim":true,"turns":[{"id":"last","createdAt":121,"status":"completed","prompt":"","items":[],"attachments":[]}]}]}`, string(index.Value))
+	require.JSONEq(t, `[{"conversationHistory":"on-demand"}]`, string(fr.framesOf("call")[1].Args))
+	status, history := h.rpc(userA, "conversationTurns", "chat")
+	require.Equal(t, http.StatusOK, status)
+	require.Contains(t, string(history.Value), prompt)
 }

@@ -143,7 +143,7 @@ test("the native event stream takes a bearer ticket, says hello and delivers eve
   assert.deepEqual(JSON.parse(ticket.body), { tabId: "tab-desktop-1" });
 
   const [socket] = t.sockets;
-  assert.equal(socket.url, "wss://claudex.example.com" + webPaths.events);
+  assert.equal(socket.url, "wss://claudex.example.com" + webPaths.events + "?snapshot=on-demand");
   assert.ok(socket.protocols.includes("claudex.v1"));
   socket.open();
   assert.equal(socket.frames()[0].t, "hello");

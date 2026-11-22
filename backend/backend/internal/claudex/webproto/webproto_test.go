@@ -188,7 +188,7 @@ func TestConstantsMatchTheSharedSample(t *testing.T) {
 			"passkeyBegin": AuthPasskeyBegin, "passkeyFinish": AuthPasskeyFinish,
 			"accounts": AuthAccounts,
 		}, c.AuthRoutes},
-		{"headers", map[string]string{"web": HeaderWeb, "tab": HeaderTab, "client": HeaderClient, "eventSeq": EventSeqHeader}, c.Headers},
+		{"headers", map[string]string{"web": HeaderWeb, "tab": HeaderTab, "client": HeaderClient, "eventSeq": EventSeqHeader, "snapshotTag": SnapshotTagHeader}, c.Headers},
 		{"clientName", ClientName, c.ClientName},
 		{"refreshCookie", RefreshCookie, c.RefreshCookie},
 		{"eventsSubprotocol", EventsSubprotocol, c.EventsSubprotocol},

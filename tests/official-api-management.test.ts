@@ -17,6 +17,7 @@ function fixture() {
   let deletions = 0;
   const unused = async () => { throw Error("Unexpected request outside the API management surface."); };
   const api: ApiManagement = {
+    balance: async () => 0,
     apiKeys: async () => key ? [key] : [],
     createApiKey: async () => {
       throw Object.assign(Error("Verify your email to continue."), {
@@ -46,6 +47,9 @@ test("API keys are masked in the list and copied only on explicit request", asyn
   assert.equal((await request(prefix + "keys/1/copy")).status, 404);
   assert.deepEqual(await (await request(prefix + "keys/1/copy", { method: "POST" })).json(), { key: firstKey.key });
   assert.deepEqual(await (await request(prefix + "rates")).json(), { 4: 0 });
+  const balance = await request(prefix + "balance");
+  assert.equal(balance.headers.get("Cache-Control"), "no-store");
+  assert.deepEqual(await balance.json(), { balance: 0 });
   assert.equal((await request(prefix + "keys/1", { method: "DELETE" })).status, 204);
   assert.equal((await request(prefix + "keys/1/copy", { method: "POST" })).status, 404);
 });
@@ -70,4 +74,10 @@ test("a retired frame cannot disclose a key or revoke through the new activation
   await assert.rejects(request(prefix + "keys/1/copy", { method: "POST" }), { name: "AbortError" });
   await assert.rejects(request(prefix + "keys/1", { method: "DELETE" }), { name: "AbortError" });
   assert.equal(deletions(), 0);
+});
+
+test("an in-flight balance from a retired account is refused", async () => {
+  const { api, request, retire } = fixture();
+  api.balance = async () => { retire(); return 10; };
+  await assert.rejects(request(prefix + "balance"), { name: "AbortError" });
 });

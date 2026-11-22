@@ -633,12 +633,20 @@ function adapterContext(root: string, ownerRuntime?: ActivationRuntime): Adapter
     },
     get apiManagement(): ApiManagement | undefined {
       const runtime = currentRuntime;
-      if (!ctx.remote?.ready || !runtime?.lease.current()) return undefined;
+      const remote = ctx.remote;
+      if (!remote?.ready || !runtime?.lease.current()) return undefined;
       const call = <Name extends keyof ApiManagement>(name: Name, ...args: Parameters<ApiManagement[Name]>) => {
         if (!runtime.lease.current()) throw new DOMException("The active account changed.", "AbortError");
         return localCall(name, ...args) as ReturnType<ApiManagement[Name]>;
       };
       return {
+        balance: async () => {
+          const { client, session } = remote.backend;
+          const current = () => runtime.lease.current() && ctx.remote === remote;
+          const profile = await session.authorized((token) => client.profile(token), current);
+          if (!current()) throw new DOMException("The active account changed.", "AbortError");
+          return profile.balance;
+        },
         apiGroups: (fresh) => call("apiGroups", fresh),
         groupRates: () => call("groupRates"),
         apiKeys: () => call("apiKeys"),
@@ -779,6 +787,7 @@ function adapterContext(root: string, ownerRuntime?: ActivationRuntime): Adapter
         ...found,
         turns: read.turns,
         savedBranches: read.savedBranches ?? found.savedBranches,
+        slim: false,
       };
     },
     warmCodeSession: async (expected) => {
@@ -866,6 +875,7 @@ function adapterContext(root: string, ownerRuntime?: ActivationRuntime): Adapter
         ...found,
         turns: read.turns,
         savedBranches: read.savedBranches ?? found.savedBranches,
+        slim: false,
       };
     },
     snapshot: (fresh) => readSnapshot(!!fresh),

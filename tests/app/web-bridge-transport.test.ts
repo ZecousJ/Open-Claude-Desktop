@@ -279,6 +279,21 @@ test("the first snapshot is asked for at sign-in and the window's first call tak
   assert.equal(asked, 1);
 });
 
+test("official startup reads a recent snapshot and leaves the complete directory available", async (t) => {
+  const { bridge, early, calls } = await signedInBridge(
+    () => ({ conversations: [], settings: {}, approvals: [] }),
+    { prefetchSnapshot: false },
+  );
+  t.after(() => bridge.dispose());
+  assert.deepEqual(early, []);
+  await bridge.recentSnapshot();
+  await bridge.api.snapshot();
+  assert.deepEqual(calls.filter(call => call.method === "snapshot").map(call => call.args), [
+    [{ conversationHistory: "on-demand", conversationScope: "recent" }],
+    [{ conversationHistory: "on-demand" }],
+  ]);
+});
+
 test("the same read asked for twice at once is one request", async () => {
   const { bridge, calls } = await signedInBridge(() => ({ items: [] }));
   await Promise.all([bridge.api.modelCatalog(), bridge.api.modelCatalog()]);
@@ -331,6 +346,7 @@ test("a REST settings write separates pending snapshot reads", async () => {
   const transport = new WebTransport({
     timers: { setTimeout: clock.setTimeout, clearTimeout: clock.clear, setInterval: clock.setInterval, clearInterval: clock.clear },
     fetch: async url => {
+      if (String(url).endsWith("/conversationTurns")) return json({ ok: true, value: { turns: [] } });
       if (!String(url).endsWith("/snapshot")) return json({ saved: true });
       const revision = ++reads;
       if (revision === 1) await held;
@@ -339,7 +355,49 @@ test("a REST settings write separates pending snapshot reads", async () => {
   }, { activationIdentity: {}, accessToken: async () => "account-token", refresh: async () => null, expire() {} }, "tab");
   const first = transport.call("snapshot", '{"args":[]}');
   await flush();
+  await transport.call("conversationTurns", '{"args":["chat-1"]}');
+  const beforeWrite = transport.call("snapshot", '{"args":[]}');
+  await flush();
+  assert.equal(reads, 1);
   await transport.json("/profile", { method: "PUT", body: "{}" });
   assert.deepEqual(await transport.call("snapshot", '{"args":[]}'), { revision: 2 });
-  release();await first;
+  release();
+  assert.deepEqual(await first, await beforeWrite);
+});
+
+test("repeated snapshots omit an unchanged body and still carry the current event sequence", async () => {
+  const { WebTransport } = await import("../../shared/web-client/transport");
+  const { FakeClock } = await import("./web-bridge-fakes.test");
+  const clock = new FakeClock();
+  let owner = {};
+  let read = 0;
+  const tags = ["a".repeat(64), "b".repeat(64)];
+  const requestTags: Array<string | null> = [];
+  const transport = new WebTransport({
+    timers: { setTimeout: clock.setTimeout, clearTimeout: clock.clear, setInterval: clock.setInterval, clearInterval: clock.clear },
+    fetch: async (_url, init) => {
+      const validator = new Headers(init?.headers).get("X-Claudex-Snapshot-Tag");
+      requestTags.push(validator);
+      read++;
+      const tag = tags[read < 3 ? 0 : 1];
+      const headers = { "X-Claudex-Snapshot-Tag": tag, "X-Claudex-Event-Seq": String(read) };
+      return validator === tag
+        ? new Response(null, { status: 204, headers })
+        : Response.json({ ok: true, value: { revision: read } }, { headers });
+    },
+  }, { get activationIdentity() { return owner; }, accessToken: async () => "account-token", refresh: async () => null, expire() {} }, "tab");
+
+  const body = '{"args":[]}';
+  const meta: { eventSeq?: number } = {};
+  const first = await transport.call("snapshot", body);
+  assert.deepEqual(first, { revision: 1 });
+  const same = await transport.call("snapshot", body, meta);
+  assert.deepEqual(same, { revision: 1 });
+  assert.notEqual(same, first);
+  assert.equal(meta.eventSeq, 2);
+  assert.deepEqual(await transport.call("snapshot", body), { revision: 3 });
+
+  owner = {};
+  assert.deepEqual(await transport.call("snapshot", body), { revision: 4 });
+  assert.deepEqual(requestTags, ["new", tags[0], tags[0], "new"]);
 });

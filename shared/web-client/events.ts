@@ -165,7 +165,7 @@ export class EventStream {
   private url() {
     const origin = new URL(this.env.origin);
     const scheme = origin.protocol === "https:" ? "wss:" : "ws:";
-    return `${scheme}//${origin.host}${webPaths.events}`;
+    return `${scheme}//${origin.host}${webPaths.events}?snapshot=on-demand`;
   }
 
   private async connect() {

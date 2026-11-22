@@ -513,7 +513,9 @@ export function OfficialWebSurface({
         sessionMarker,
         startupIdentity,
         dictation: dictation.host,
-        apiManagement: !sharedChat && chatActionMode === "engine-chat" ? bridge.api : undefined,
+        apiManagement: !sharedChat && chatActionMode === "engine-chat"
+          ? { ...bridge.api, balance: accountOperation(bridge.readApiBalance) }
+          : undefined,
         serviceStatus: !sharedChat ? accountOperation(bridge.api.serviceStatus) : undefined,
         notificationPreferences,
         requestNotificationPermission: notificationPreferences

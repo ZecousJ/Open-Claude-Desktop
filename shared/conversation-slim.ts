@@ -72,3 +72,22 @@ export function slimConversation(conversation: Conversation): Conversation {
     slim: true,
   };
 }
+
+/** Keep the row state and turn identities until the selected transcript is loaded. */
+export function conversationIndexRow(conversation: Conversation): Conversation {
+  if (!conversation.turns.length && !conversation.savedBranches?.length) return conversation;
+  const { savedBranches, ...row } = conversation;
+  void savedBranches;
+  return {
+    ...row,
+    slim: true,
+    turns: conversation.turns.map(({ id, createdAt, status }) => ({
+      id,
+      createdAt,
+      status,
+      prompt: "",
+      items: [],
+      attachments: [],
+    })),
+  };
+}

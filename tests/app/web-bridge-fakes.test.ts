@@ -416,13 +416,13 @@ export function rpcService(
 /** A bridge in a fake tab, signed in through the refresh cookie. */
 export async function signedInBridge(
   handler: (method: string, args: unknown[]) => unknown = () => null,
-  options: { browser?: FakeBrowser; clock?: FakeClock } = {},
+  options: { browser?: FakeBrowser; clock?: FakeClock; prefetchSnapshot?: boolean } = {},
 ) {
   const browser = options.browser ?? new FakeBrowser();
   const tab = fakeTab(browser, options.clock);
   const service = authService(tab, browser);
   const calls = rpcService(tab, service, handler);
-  const bridge = createWebBridge(tab.env);
+  const bridge = createWebBridge(tab.env, { prefetchSnapshot: options.prefetchSnapshot });
   const events: AppEvent[] = [];
   bridge.api.onEvent((event) => events.push(event));
   const status = await bridge.api.authStatus();

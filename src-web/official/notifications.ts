@@ -25,7 +25,8 @@ async function route(conversation: Conversation, owner: string | undefined) {
 
 export function subscribeOfficialNotifications(
   bridge: {
-    api: Pick<WebBridge["api"], "snapshot" | "listSchedules">;
+    api: Pick<WebBridge["api"], "listSchedules">;
+    recentSnapshot: WebBridge["recentSnapshot"];
     officialUiEvents: WebBridge["officialUiEvents"];
   },
   owner: () => string | undefined,
@@ -42,7 +43,7 @@ export function subscribeOfficialNotifications(
   const read = () => {
     const version = ++readVersion;
     const currentRead = () => live() && version === readVersion;
-    void bridge.api.snapshot().then(next => {
+    void bridge.recentSnapshot().then(next => {
       if (!currentRead()) return;
       settings ??= next.settings;
       for (const conversation of next.conversations)

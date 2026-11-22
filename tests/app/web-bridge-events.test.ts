@@ -49,7 +49,7 @@ test("same-account reactivation retires an already queued stream callback", asyn
 
 test("the stream opens with a one-time ticket in the sub-protocols, never the URL", async () => {
   const { tab, socket, bridge } = await connected();
-  assert.equal(socket.url, "wss://claudex.example/api/v1/claudex/web/events");
+  assert.equal(socket.url, "wss://claudex.example/api/v1/claudex/web/events?snapshot=on-demand");
   assert.equal(socket.protocols[0], "claudex.v1");
   assert.match(socket.protocols[1]!, /^ticket\.[A-Za-z0-9_-]{43}$/);
   const ticket = tab.requests.find((r) =>

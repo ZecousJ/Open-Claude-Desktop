@@ -1,5 +1,5 @@
 import { localEdition } from "./edition";
-import { registerLocalProvider } from "./local-provider";
+import { refreshLocalModels, registerLocalProvider } from "./local-provider";
 import { desktopPreferences } from "../store/desktop-preferences";
 import {isDeepStrictEqual} from 'node:util';
 import {localeSaveStage,localeSaveFailure} from '../official-ui/api/locale-save-diagnostics';
@@ -373,6 +373,7 @@ export function register() {
   });
   // Every other call, domain by domain (electron/ipc/index.ts).
   registerIpc(handle, ctx, {
+    refreshLocalModels: localEdition ? refreshLocalModels : undefined,
     dispatchOfficialLayout: dispatchOfficialLayoutCommand,
     mcpLogs: { read: (name) => nativeExtensions.read(name) },
     prepareExtensionUpgrade: (id, manifest, target) =>

@@ -1,6 +1,4 @@
 import { isConversationModel, type ModelCatalog } from "../../shared/model-catalog-api";
-import { localEdition } from "../app/edition";
-import { refreshLocalModels } from "../app/local-provider";
 import { refreshAccountState } from "./usage";
 import type { AppContext, IpcHandle } from "../app/app-context";
 
@@ -30,17 +28,18 @@ function localModelCatalog(ctx: AppContext): ModelCatalog | null {
 export function registerModelCatalogHandlers(
   handle: IpcHandle,
   ctx: AppContext,
+  refreshLocalModels?: () => Promise<void>,
 ) {
   // The Claudex service's catalog, already met with the models the gateway
   // lists for this device's key; null for local accounts and older services
   // (menus then list the provider's models).
   handle("modelCatalog", (): ModelCatalog | null => {
-    if (localEdition) return localModelCatalog(ctx);
+    if (refreshLocalModels) return localModelCatalog(ctx);
     const catalog = (ctx.remote?.ready && ctx.remote.modelCatalog()) || null;
     return catalog ? { ...catalog, desktopVersion: ctx.appVersion } : null;
   });
   handle("refreshModels", async () => {
-    if (localEdition) {
+    if (refreshLocalModels) {
       await refreshLocalModels();
       return { settings: ctx.windowSettings(), reason: ctx.engine.unavailableReason };
     }

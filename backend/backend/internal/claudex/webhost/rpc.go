@@ -2,6 +2,8 @@ package webhost
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -176,6 +178,7 @@ func (c *Component) rpc(g *gin.Context) {
 	defer c.gate.leave(who.userID)
 
 	ctx := g.Request.Context()
+	catalog := method == "snapshot" && snapshotCatalogRequested(req.Args)
 	callCtx := ctx
 	rc, err := c.reg.pick(ctx, who.userID)
 	if err != nil {
@@ -242,9 +245,27 @@ func (c *Component) rpc(g *gin.Context) {
 		return
 	}
 	if method == "snapshot" {
+		if catalog && out.OK {
+			value, err := snapshotCatalog(out.Value)
+			if err != nil {
+				rpcFail(g, errRunnerUnavailable)
+				return
+			}
+			out.Value = value
+		}
 		// The events the snapshot already holds: a tab whose stream comes
 		// up at this number missed nothing and need not read it again.
 		g.Header(webproto.EventSeqHeader, strconv.FormatInt(res.HubSeq, 10))
+		if validator := g.GetHeader(webproto.SnapshotTagHeader); out.OK && validator != "" {
+			sum := sha256.Sum256(out.Value)
+			tag := hex.EncodeToString(sum[:])
+			g.Header(webproto.SnapshotTagHeader, tag)
+			if tag == validator {
+				g.Header("Cache-Control", "no-store")
+				g.Status(http.StatusNoContent)
+				return
+			}
+		}
 	}
 	g.Header("Cache-Control", "no-store")
 	g.JSON(http.StatusOK, out)

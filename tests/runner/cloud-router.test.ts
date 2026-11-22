@@ -469,7 +469,7 @@ test("cloud events about conversations reach the window; the app's own kinds do 
   t.router.cloudEvent({ type: "stream-connection", connected: true });
   assert.deepEqual(
     t.pushed.map((e) => e.type),
-    ["conversation", "resync"],
+    ["conversation"],
   );
   assert.ok(t.router.isCloudConversation("c-9"));
 });

@@ -13,6 +13,7 @@
  * signs the window out when the service ends the session.
  */
 import type { AppEvent, DesktopAPI, Snapshot } from "../../shared/types";
+import { recentSnapshotRequest, snapshotCatalogRequest } from "../../shared/web-protocol";
 import { isOfficialUiAction, isOfficialUiLargeResponse, isOfficialUiCompletionSubmission, officialUiActionPath, officialUiRequestLimit, officialSkillUploadKind, officialChatUploadOrganization, officialUiSegmentedRequestLimit, type OfficialUiReadRequest, type OfficialUiReadResponse, type OfficialUiWireRequest } from "../../shared/official-ui-web";
 import { officialCoworkMemory } from "../../shared/official-cowork-memory";
 import { officialCodeUserSettingsMaxBytes, officialCodeUserSettingsOrganization } from "../../shared/official-code-user-settings";
@@ -48,7 +49,7 @@ import { createPasskeyMethods } from "./account-passkeys";
 import { createUsageStatsMethods } from "./usage-stats";
 import { createServiceStatusMethods } from "./service-status";
 import { createKnowledgeMethods } from "./knowledge";
-import { createApiKeyMethods } from "./api-keys";
+import { createApiKeyMethods, readApiBalance } from "./api-keys";
 import { createWebProductFeedback } from "./product-feedback";
 import { createGitHubMethods } from "../../shared/web-client/github";
 import { apiError, apiValue, readJson } from "../../shared/web-client/errors";
@@ -95,6 +96,8 @@ export interface WebBridge {
   officialUiAction(request: OfficialUiReadRequest, transfer?: UploadTransfer): Promise<OfficialUiReadResponse>;
   readSharedChat(token: string): Promise<SharedChatContent>;
   releaseOfficialCodeTerminal(request: OfficialUiReadRequest): void;
+  recentSnapshot(): Promise<Snapshot>;
+  readApiBalance(): Promise<number>;
   /** Stops a timeline as soon as this tab leaves the account that opened it. */
   officialUiEvents(listener: (event: AppEvent) => void): () => void;
   dispose(): void;
@@ -120,7 +123,10 @@ type ShowDispatchNotice = (
 
 export function createWebBridge(
   env: WebEnv,
-  { dispatchNotice }: { dispatchNotice?: ShowDispatchNotice } = {},
+  { dispatchNotice, prefetchSnapshot = true }: {
+    dispatchNotice?: ShowDispatchNotice;
+    prefetchSnapshot?: boolean;
+  } = {},
 ): WebBridge {
   const tabId = env.randomId();
   const hub = new EventHub();
@@ -291,7 +297,7 @@ export function createWebBridge(
   type Fetched = { value: unknown; eventSeq?: number };
   const fetchSnapshot = async (current = transport.captureActivation()): Promise<Fetched> => {
     const meta: { eventSeq?: number } = {};
-    const value = await send("snapshot", [], current, meta);
+    const value = await send("snapshot", [snapshotCatalogRequest], current, meta);
     return { value, eventSeq: meta.eventSeq };
   };
   // The first snapshot is asked for as soon as the session is known, while
@@ -315,8 +321,10 @@ export function createWebBridge(
     early = undefined;
     if (session) {
       stream.start();
-      early = fetchSnapshot();
-      early.catch(() => {});
+      if (prefetchSnapshot) {
+        early = fetchSnapshot();
+        early.catch(() => {});
+      }
     }
   });
 
@@ -553,6 +561,7 @@ export function createWebBridge(
     kinds,
     officialUiRead: (request) => officialCall("officialUiRead", request),
     officialUiAction: (request, transfer) => officialCall("officialUiAction", request, transfer),
+    readApiBalance: () => readApiBalance(transport),
     async readSharedChat(token) {
       if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) throw Error("Invalid shared chat token.");
       const value = await transport.json(`/api/v1/claudex/sharing/shared-with-me/${token}`);
@@ -563,6 +572,12 @@ export function createWebBridge(
     releaseOfficialCodeTerminal(request) {
       const token = auth.current?.accessToken;
       if (token) transport.keepaliveRpc("officialUiAction", JSON.stringify(rpcRequest([request])), token);
+    },
+    async recentSnapshot() {
+      const current = transport.captureActivation();
+      const result = await send("snapshot", [recentSnapshotRequest], current);
+      current();
+      return webSnapshot(result as Snapshot, env.platformHint);
     },
     officialUiEvents,
     dispose() {

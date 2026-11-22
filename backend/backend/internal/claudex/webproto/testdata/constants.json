@@ -35,7 +35,8 @@
     "web": "X-Claudex-Web",
     "tab": "X-Claudex-Web-Tab",
     "client": "X-Claudex-Client",
-    "eventSeq": "X-Claudex-Event-Seq"
+    "eventSeq": "X-Claudex-Event-Seq",
+    "snapshotTag": "X-Claudex-Snapshot-Tag"
   },
   "clientName": "web",
   "refreshCookie": "__Secure-claudex_web_rt",

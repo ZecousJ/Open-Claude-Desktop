@@ -92,6 +92,12 @@ export const webGoMethodRoutes = {
   forgetBrowserAccount: webAuthRoutes.logout,
 } as const;
 
+export const snapshotCatalogRequest = { conversationHistory: "on-demand" } as const;
+export const recentSnapshotRequest = {
+  ...snapshotCatalogRequest,
+  conversationScope: "recent",
+} as const;
+
 export const webHeaders = {
   /** "1" on cookie endpoints (forces a CORS preflight; CSRF guard). */
   web: "X-Claudex-Web",
@@ -101,6 +107,7 @@ export const webHeaders = {
   client: "X-Claudex-Client",
   /** On the snapshot's answer: the last event number it already holds. */
   eventSeq: "X-Claudex-Event-Seq",
+  snapshotTag: "X-Claudex-Snapshot-Tag",
 } as const;
 
 export const webClientName = "web";

@@ -7,7 +7,9 @@ const prefix = "/api/claudex/api-management/";
 export const apiManagementBodyLimit = 4096;
 export const isApiManagementPath = (path: string) => path.startsWith(prefix);
 
-export type ApiManagement = ApiKeysAPI & Pick<AccountProfileAPI, "sendActionVerification" | "confirmActionVerification">;
+export type ApiManagement = ApiKeysAPI & Pick<AccountProfileAPI, "sendActionVerification" | "confirmActionVerification"> & {
+  balance(): Promise<number>;
+};
 
 const idSchema = z.number().int().positive();
 const group = z.strictObject({ providerId: z.string().min(1).max(40), groupId: idSchema });
@@ -44,6 +46,7 @@ export async function executeApiManagement(
     if (method === "GET" && target === "groups" && (!url.search || url.search === "?fresh=1"))
       return ok(await api.apiGroups(url.search !== ""));
     if (url.search) return apiManagementFailure("Invalid API request.", 400);
+    if (method === "GET" && target === "balance") return ok({ balance: await api.balance() });
     if (method === "GET" && target === "rates") return ok(await api.groupRates());
     if (method === "GET" && target === "keys") return ok((await api.apiKeys()).map(masked));
     if (method === "POST" && target === "groups") {

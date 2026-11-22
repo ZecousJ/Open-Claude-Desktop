@@ -218,19 +218,19 @@ test("official Web events deliver Code and scheduled notices and clear them on a
   };
   let receive = (_event: Event) => {};
   const close = subscribeOfficialNotifications({
+    recentSnapshot: async () => ({
+      settings: { ...defaultSettings, notifyCodeUpdates: true, notifyCodePermissions: true, notifySchedules: true },
+      artifactLibrary: { version: 1, copies: [], pinned: [] },
+      dismissedBackgroundTasks: [],
+      artifactShares: [],
+      approvals: [],
+      projects: [],
+      conversations: [code],
+      replyFeedback: {},
+      engine: { state: "ready" },
+      platform: "linux",
+    }),
     api: {
-      snapshot: async () => ({
-        settings: { ...defaultSettings, notifyCodeUpdates: true, notifyCodePermissions: true, notifySchedules: true },
-        artifactLibrary: { version: 1, copies: [], pinned: [] },
-        dismissedBackgroundTasks: [],
-        artifactShares: [],
-        approvals: [],
-        projects: [],
-        conversations: [code],
-        replyFeedback: {},
-        engine: { state: "ready" },
-        platform: "linux",
-      }),
       listSchedules: async () => [],
     },
     officialUiEvents: listener => {

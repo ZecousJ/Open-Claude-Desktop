@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en" data-surface="web">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <title>Claudex</title>
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link
+      rel="preload"
+      href="/assets/v1/c66fc489e-2VcCjn5t.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <style>
+      @font-face {
+        font-family: anthropic-serif;
+        src: url(/assets/v1/c66fc489e-2VcCjn5t.woff2) format("woff2");
+        font-weight: 300 800;
+        font-style: normal;
+        font-display: block;
+      }
+      html {
+        --boot-bg: #faf9f5;
+        --workspace-bg: #fff;
+        --rail-bg: #fafafa;
+        --composer-bg: #fff;
+        --composer-border: #dedede;
+        --boot-text: #000000e6;
+        color-scheme: light dark;
+        background: var(--boot-bg);
+      }
+      @media (prefers-color-scheme: dark) {
+        html {
+          --boot-bg: #111111;
+          --workspace-bg: #191919;
+        }
+      }
+      html[data-theme="light"] {
+        --workspace-bg: #fff;
+        --rail-bg: #fafafa;
+        --composer-bg: #fff;
+        --composer-border: #dedede;
+        --boot-text: #000000e6;
+        color-scheme: light;
+      }
+      html[data-theme="dark"] {
+        --workspace-bg: #191919;
+        color-scheme: dark;
+      }
+      html[data-official-workspace] {
+        --boot-bg: var(--workspace-bg);
+      }
+      body {
+        margin: 0;
+      }
+      #official-home-boot {
+        display: none;
+      }
+      html[data-official-home-boot] #official-home-boot {
+        position: fixed;
+        z-index: 1;
+        inset: 0;
+        display: flex;
+        background: transparent;
+        color: var(--boot-text);
+        pointer-events: none;
+      }
+      #official-home-boot-rail {
+        flex: 0 0 var(--boot-sidebar-width, 288px);
+        box-sizing: border-box;
+        padding: 11px 44px;
+        border-inline-end: 1px solid var(--composer-border);
+        background: var(--rail-bg);
+      }
+      #official-home-boot-wordmark {
+        display: inline-block;
+        font-family: anthropic-serif, serif;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1;
+        margin-left: -0.1em;
+        font-optical-sizing: auto;
+        font-variation-settings: "wght" 500;
+        font-feature-settings:
+          "ss01" 1,
+          "dlig" 1;
+      }
+      #official-home-boot-main {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+      }
+      .official-boot-line {
+        display: block;
+        height: 12px;
+        border-radius: 4px;
+        background: color-mix(in srgb, var(--boot-text) 9%, transparent);
+      }
+      #official-boot-navigation {
+        margin-top: 38px;
+        display: grid;
+        gap: 24px;
+      }
+      #official-boot-navigation span:nth-child(2n) {
+        width: 72%;
+      }
+      #official-boot-navigation span:nth-child(2n + 1) {
+        width: 56%;
+      }
+      #official-boot-chat-header,
+      #official-boot-chat-body {
+        display: none;
+      }
+      #official-home-boot-composer {
+        position: absolute;
+        --boot-home-headroom: max(28vh + 0.56875rem, 12rem);
+        inset-block-start: calc(
+          45px + var(--boot-home-headroom) + 0.75rem + 1.2 *
+            clamp(1.5rem, 1.15rem + 1vw, 2rem) + 1.5rem
+        );
+        inset-inline: max(1rem, calc((100% - 41rem) / 2));
+        box-sizing: border-box;
+        height: 6.4375rem;
+        border: 1px solid var(--composer-border);
+        border-radius: 1rem;
+        background: var(--composer-bg);
+      }
+      @media (min-height: 900px) {
+        #official-home-boot-composer {
+          --boot-home-headroom: calc(32vh + 0.56875rem);
+        }
+      }
+      html[data-official-boot-route="chat"] #official-home-boot-composer {
+        inset-block-start: auto;
+        inset-block-end: calc(40px + env(safe-area-inset-bottom, 0px));
+        inset-inline: max(1rem, calc((100% - 48rem) / 2));
+        height: 44px;
+      }
+      html[data-official-boot-route="chat"] #official-boot-chat-header {
+        position: absolute;
+        inset: 0 0 auto;
+        display: flex;
+        align-items: center;
+        height: 45px;
+        padding-inline: 24px;
+        box-sizing: border-box;
+        border-bottom: 1px solid var(--composer-border);
+        background: var(--workspace-bg);
+      }
+      #official-boot-chat-header span {
+        width: 96px;
+      }
+      html[data-official-boot-route="chat"] #official-boot-chat-body {
+        position: absolute;
+        inset: 45px 0 var(--boot-content-bottom, 84px);
+        display: grid;
+        align-content: start;
+        gap: 16px;
+        overflow: hidden;
+        padding: 48px max(1rem, calc((100% - 48rem) / 2)) 0;
+        background: var(--workspace-bg);
+      }
+      #official-boot-chat-body span:first-child {
+        width: 30%;
+        height: 32px;
+        justify-self: end;
+        margin-bottom: 32px;
+      }
+      #official-boot-chat-body span:nth-child(2) {
+        width: 75%;
+      }
+      #official-boot-chat-body span:nth-child(3) {
+        width: 55%;
+      }
+      html[data-official-boot-ready~="sidebar"] #official-home-boot-rail,
+      html[data-official-boot-ready~="header"] #official-boot-chat-header,
+      html[data-official-boot-ready~="content"] #official-boot-chat-body,
+      html[data-official-boot-ready~="composer"] #official-home-boot-composer {
+        visibility: hidden;
+      }
+      @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) {
+          --rail-bg: #1f1f1f;
+          --composer-bg: #303030;
+          --composer-border: #3d3d3d;
+          --boot-text: #ffffffed;
+        }
+      }
+      html[data-theme="dark"] {
+        --rail-bg: #1f1f1f;
+        --composer-bg: #303030;
+        --composer-border: #3d3d3d;
+        --boot-text: #ffffffed;
+      }
+      html[data-official-home-boot][data-boot-sidebar-collapsed]
+        #official-home-boot-rail {
+        display: none;
+      }
+      @media (max-width: 700px) {
+        #official-home-boot-rail {
+          display: none;
+        }
+      }
+    </style>
+    <script nonce="__CSP_NONCE_VALUE__">
+      (() => {
+        try {
+          const account =
+            sessionStorage.getItem("claudex-web-account") ??
+            localStorage.getItem("claudex-web-last-account");
+          if (
+            !account ||
+            account === "-" ||
+            sessionStorage.getItem("claudex-web-adding") ||
+            /^\/(?:login|register|reset-password|sign-in)(?:\/|$)/.test(
+              location.pathname,
+            )
+          )
+            return;
+          const root = document.documentElement;
+          root.dataset.officialWorkspace = "";
+          const mode = new URLSearchParams(location.search).get("mode");
+          const home = /^\/(?:new\/?)?$/.test(location.pathname);
+          const chat = /^\/chat\/[a-zA-Z0-9_-]+\/?$/.test(location.pathname);
+          if ((home || chat) && (!mode || mode === "chat")) {
+            root.dataset.officialHomeBoot = "";
+            root.dataset.officialBootRoute = chat ? "chat" : "new";
+          }
+          const owner = localStorage.getItem(
+            "claudex:official-owner:" + encodeURIComponent(account),
+          );
+          if (!owner) return;
+          const prefix = "claudex:official:" + encodeURIComponent(owner) + ":";
+          const locale = localStorage.getItem(prefix + "spa:account-locale");
+          const meta = document.querySelector('meta[name="i18n-catalogs"]');
+          const version = meta?.dataset.i18nCatalogs
+            ?.split(",")
+            .map((value) => /^([\w-]+):([\w-]+)\.([\w-]+)$/.exec(value))
+            .find((value) => value?.[1] === locale);
+          if (version && locale !== "en-US") {
+            const urls = [
+              "/i18n/" +
+                (meta.dataset.i18nCut ?? "") +
+                locale +
+                ".json?v=" +
+                version[2],
+              "/i18n/dynamic/" + locale + ".json?v=" + version[3],
+            ];
+            const responses = Object.fromEntries(
+              urls.map((url) => [
+                url,
+                fetch(url, { cache: "force-cache" }).catch(() => Response.error()),
+              ]),
+            );
+            const bodies = Object.fromEntries(
+              urls.map((url) => {
+                const body = responses[url].then((response) =>
+                  response.ok ? response.clone().json() : undefined,
+                );
+                void body.catch(() => {});
+                return [url, body];
+              }),
+            );
+            window.__claudexLocalePreload = { locale, responses, bodies };
+          }
+          const raw = localStorage.getItem(prefix + "LSS-userThemeMode");
+          let theme = raw;
+          try {
+            theme = JSON.parse(raw ?? "null");
+          } catch {}
+          if (theme && typeof theme === "object" && "value" in theme)
+            theme = theme.value;
+          if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+          const sidebar = JSON.parse(
+            localStorage.getItem(prefix + "dframe-store"),
+          )?.state;
+          if (sidebar?.collapsed) root.dataset.bootSidebarCollapsed = "";
+          if (Number.isFinite(sidebar?.sidebarWidth))
+            root.style.setProperty(
+              "--boot-sidebar-width",
+              sidebar.sidebarWidth + "px",
+            );
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="official-home-boot" aria-hidden="true" inert>
+      <div id="official-home-boot-rail">
+        <span id="official-home-boot-wordmark">Claudex</span>
+        <div id="official-boot-navigation">
+          <span class="official-boot-line"></span
+          ><span class="official-boot-line"></span>
+          <span class="official-boot-line"></span
+          ><span class="official-boot-line"></span>
+          <span class="official-boot-line"></span
+          ><span class="official-boot-line"></span>
+        </div>
+      </div>
+      <div id="official-home-boot-main">
+        <div id="official-boot-chat-header">
+          <span class="official-boot-line"></span>
+        </div>
+        <div id="official-boot-chat-body">
+          <span class="official-boot-line"></span
+          ><span class="official-boot-line"></span
+          ><span class="official-boot-line"></span>
+        </div>
+        <div id="official-home-boot-composer"></div>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src-web/official/entry.ts"></script>
+  </body>
+</html>

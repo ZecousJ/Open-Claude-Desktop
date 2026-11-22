@@ -316,8 +316,7 @@ export async function start(this: Engine, provider: Provider, hostCurrent?: () =
         // The gateway can switch upstreams only before it emits output. Once
         // a stream starts, let Codex recover its current sampling request with
         // the existing tool history; never resend the whole user turn here.
-        // Two attempts keep repeated outages bounded and Stop cancellable.
-        stream_max_retries: 2,
+        stream_max_retries: 5,
         supports_websockets: false,
       },
       web_search: "disabled",

@@ -80,6 +80,7 @@ export function registerIpc(
     publishExtensionServers?: Parameters<typeof registerSettingsDesktopHandlers>[3];
     prepareExtensionMaintenance?: Parameters<typeof registerSettingsDesktopHandlers>[4];
     dispatchOfficialLayout?: Parameters<typeof registerWindowsHandlers>[3];
+    refreshLocalModels?: Parameters<typeof registerModelCatalogHandlers>[2];
   },
 ) {
   registerOfficialFileHandlers(handle, ctx);
@@ -180,7 +181,7 @@ export function registerIpc(
   registerCodeEmailHandlers(handle, ctx);
   // Service data (C2, C4, C5, C6, C7).
   registerPolicyHandlers(handle, ctx);
-  registerModelCatalogHandlers(handle, ctx);
+  registerModelCatalogHandlers(handle, ctx, options?.refreshLocalModels);
   registerUsageHandlers(handle, ctx);
   registerBillingHandlers(handle, ctx);
   registerTranscriptionHandlers(handle, {

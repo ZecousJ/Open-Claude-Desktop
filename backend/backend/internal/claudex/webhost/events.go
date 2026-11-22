@@ -55,7 +55,7 @@ func (c *Component) events(g *gin.Context) {
 		return
 	}
 	conn.SetReadLimit(eventsReadLimit)
-	c.serveTab(g.Request.Context(), conn, ticket)
+	c.serveTab(g.Request.Context(), conn, ticket, g.Query("snapshot") == "on-demand")
 }
 
 // refuse sends an error frame and closes.
@@ -99,7 +99,7 @@ func (c *Component) admit(ctx context.Context, userID int64) (websocket.StatusCo
 	return 0, "", "", true
 }
 
-func (c *Component) serveTab(ctx context.Context, conn *websocket.Conn, ticket string) {
+func (c *Component) serveTab(ctx context.Context, conn *websocket.Conn, ticket string, catalog bool) {
 	hctx, cancel := context.WithTimeout(ctx, eventsHelloTimeout)
 	typ, data, err := conn.Read(hctx)
 	cancel()
@@ -135,7 +135,7 @@ func (c *Component) serveTab(ctx context.Context, conn *websocket.Conn, ticket s
 	defer c.hubs.detach(t)
 	// The tab lost events: send the whole state when the runner can give it
 	// (the tab resyncs by itself otherwise).
-	if !resumed && hello.LastSeq != nil {
+	if !catalog && !resumed && hello.LastSeq != nil {
 		go c.pushSnapshot(t)
 	}
 

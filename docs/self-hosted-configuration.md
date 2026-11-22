@@ -182,13 +182,25 @@ WantedBy=multi-user.target
 
 桌面端的服务地址依次采用应用数据目录的 `backend/sub2api.json`、运行时的 `CLAUDEX_SUB2API_URL`、构建时的 `CLAUDEX_SUB2API_URL`。地址填 Claudex 服务端根地址。升级后仍连旧服务时，核对本机覆盖文件。 [地址配置实现](../server/sub2api-config.ts)
 
-Web 版由同一个 Claudex 服务端提供页面和 API。执行 `npm run build:web` 后，将以下内容合并到 `deploy/claudex-server/compose.local.yml`。挂载路径以生产 Compose 所在目录为基准。
+Web 页面和 API 由同一个 Claudex 服务端提供。文档预览使用独立的 HTTPS 源。构建时填入预览域名，构建脚本会自动准备工作区资源。
+
+```sh
+VITE_CLAUDEX_OFFICIAL_USERCONTENT_ORIGIN=https://preview.example.net npm run build:web
+npm run build:runner
+CLAUDEX_USERCONTENT_ROOT="$PWD/build/official-usercontent" \
+CLAUDEX_USERCONTENT_PARENT_ORIGIN=https://claudex.example.com \
+CLAUDEX_USERCONTENT_ORIGIN=https://preview.example.net \
+node dist-runner/official-usercontent.mjs
+```
+
+将预览域名的 HTTPS 请求代理到预览服务的默认监听地址 `127.0.0.1:4350`。在服务端 Compose 中设置同一个预览源，并挂载 Web 产物。挂载路径以生产 Compose 所在目录为基准。
 
 ```yaml
 services:
   claudex-server:
     environment:
       CLAUDEX_WEB_APP_DIR: /app/claudex-web
+      CLAUDEX_USERCONTENT_ORIGIN: https://preview.example.net
     volumes:
       - ../../dist-web:/app/claudex-web:ro
 ```

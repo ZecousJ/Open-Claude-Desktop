@@ -98,7 +98,7 @@ npm run package:full -- darwin arm64
 
 在 Windows 上额外安装 Go。Windows PowerShell 用 `$env:CLAUDEX_SUB2API_URL = "https://claudex.example.com"` 设置服务地址，再运行 `npm run package:full -- win32 x64`。Linux 使用 `npm run package:full -- linux x64`。macOS 构建生成 DMG。各平台的构建产物位于 `release/full/`。桌面打包脚本使用 Release 中对应的工作区资源。
 
-启用 Web 客户端时运行 `npm run build:web`。把 `dist-web/` 只读挂载到同一个 Claudex 服务端，并设置 `CLAUDEX_WEB_APP_DIR`。Web 页面和 API 使用同一个 HTTPS 源，管理控制台仍使用 `/admin`。 [Web 挂载与客户端地址覆盖](self-hosted-configuration.md#客户端与网页版)
+启用 Web 客户端时，为附件和文档预览配置独立 HTTPS 域名，再构建和挂载 `dist-web/`。Web 页面和 API 使用同一个 HTTPS 源，管理控制台仍使用 `/admin`。 [Web 挂载与预览服务](self-hosted-configuration.md#客户端与网页版)
 
 ## 6. 验收和运维
 

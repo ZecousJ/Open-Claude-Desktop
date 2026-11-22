@@ -24,6 +24,7 @@ const dispatchPath = "/cowork/agent";
 const dispatchToasts = new Set<number>();
 const dispatchNotices = new Set<Notification>();
 const bridge = createWebBridge(browserEnv(), {
+  prefetchSnapshot: false,
   dispatchNotice(deviceId, event, current) {
     const url = `${dispatchPath}?${new URLSearchParams({ device: deviceId, task: event.conversationId })}`;
     const id = showToast(t(event.body), {

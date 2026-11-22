@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+      html {
+        --frame-bg: #fff;
+        color-scheme: light dark;
+        background: var(--cds-surface-1, var(--frame-bg));
+      }
+      html[data-mode="dark"] { --frame-bg: #191919; }
+      body { margin: 0; }
+    </style>
+    <script nonce="__CSP_NONCE_VALUE__">
+      const hostTheme = window.frameElement?.ownerDocument.documentElement.dataset.theme;
+      document.documentElement.dataset.mode = hostTheme
+        ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+      const sidebarSelector = '[data-claudex-sidebar-ready="true"]';
+      const sidebarRows = [
+        "[data-nav-item]", "[data-row-key]", 'a[href="/new"]',
+        "button[data-row-nav][aria-keyshortcuts]", ".df-bottom-tray",
+        '[data-testid="sidebar-pinned"] [data-sidebar-group-label]',
+        '[data-testid="sidebar-recents"] [data-sidebar-group-label]',
+      ].join(", ");
+      const sidebarMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      const sidebarFadeDuration = 240;
+      const sidebarStarts = new Map();
+      const sidebarAnimations = new WeakMap();
+      const hostFrame = window.frameElement;
+      const hostDocument = hostFrame?.ownerDocument;
+      const hostRoot = hostDocument?.documentElement;
+      let sidebar;
+
+      const sidebarRowKey = (row) => {
+        const nav = row.getAttribute("data-nav-item");
+        if (nav) return "nav:" + nav;
+        const item = row.getAttribute("data-row-key");
+        if (item) return "row:" + item;
+        if (row.matches(".df-bottom-tray")) return "footer";
+        if (row.matches("a")) return "new-chat";
+        const shortcut = row.getAttribute("aria-keyshortcuts");
+        if (shortcut) return "shortcut:" + shortcut;
+        const group = row.querySelector("[data-group-name]")?.textContent;
+        if (group) return "group:" + group;
+      };
+
+      const revealSidebar = () => {
+        if (document.hidden || hostFrame?.hasAttribute("inert")) return;
+        if (hostRoot?.hasAttribute("data-official-home-boot") &&
+            hostDocument.getElementById("official-home-boot-rail")?.checkVisibility({ visibilityProperty: true })) return;
+        sidebar = document.querySelector(sidebarSelector);
+        if (!sidebar) return;
+        const now = performance.now();
+        for (const row of sidebar.querySelectorAll(sidebarRows)) {
+          const key = sidebarRowKey(row);
+          const previous = sidebarAnimations.get(row);
+          if (!key || previous?.key === key || !row.checkVisibility({ visibilityProperty: true })) continue;
+          previous?.animation?.cancel();
+          // Record the first visible batch before the browser paints it.
+          const started = sidebarStarts.get(key) ?? (sidebarMotion.matches ? -Infinity : now);
+          sidebarStarts.set(key, started);
+          let animation;
+          if (!sidebarMotion.matches && now - started < sidebarFadeDuration) {
+            animation = row.animate([{ opacity: 0 }, {}], {
+              id: "claudex-sidebar-reveal", duration: sidebarFadeDuration,
+              easing: "ease-out", fill: "backwards",
+            });
+            animation.startTime = started;
+          }
+          sidebarAnimations.set(row, { key, animation });
+        }
+      };
+      new MutationObserver((changes) => {
+        if (!sidebar?.isConnected || changes.some(({ target }) => sidebar.contains(target))) revealSidebar();
+      }).observe(document.documentElement, {
+        childList: true, subtree: true, attributes: true,
+        attributeFilter: ["data-nav-item", "data-row-key", "hidden"],
+      });
+      if (hostRoot) {
+        const revealWhenUncovered = new MutationObserver(revealSidebar);
+        revealWhenUncovered.observe(hostRoot, {
+          attributes: true, attributeFilter: ["data-official-home-boot", "data-official-boot-ready", "data-boot-sidebar-collapsed"],
+        });
+        revealWhenUncovered.observe(hostFrame, { attributes: true, attributeFilter: ["inert"] });
+        window.addEventListener("pagehide", () => revealWhenUncovered.disconnect(), { once: true });
+      }
+      document.addEventListener("visibilitychange", revealSidebar);
+      sidebarMotion.addEventListener("change", () => {
+        if (sidebarMotion.matches) {
+          for (const row of sidebar?.querySelectorAll(sidebarRows) ?? [])
+            sidebarAnimations.get(row)?.animation?.cancel();
+        }
+      });
+    </script>
+    <script type="module" src="/src-web/official/entry.ts"></script>
+  </head>
+  <body></body>
+</html>

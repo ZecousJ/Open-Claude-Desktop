@@ -148,3 +148,13 @@ export function createApiKeyMethods(
     },
   };
 }
+
+export async function readApiBalance(transport: Pick<WebTransport, "json" | "captureActivation">): Promise<number> {
+  const current = transport.captureActivation();
+  const profile = data(await transport.json("/api/v1/user/profile"));
+  current();
+  if (!profile || typeof profile !== "object" || !("balance" in profile) ||
+      typeof profile.balance !== "number" || !Number.isFinite(profile.balance))
+    throw Error("Balance is unavailable.");
+  return profile.balance;
+}
