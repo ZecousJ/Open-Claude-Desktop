@@ -2,7 +2,7 @@
   "name": "claudex-desktop",
   "productName": "Claudex",
   "desktopName": "claudex.desktop",
-  "version": "0.0.58",
+  "version": "0.0.60",
   "private": true,
   "description": "Claude-inspired desktop workspace powered by the open-source Codex agent",
   "author": "Claudex contributors",
@@ -133,6 +133,14 @@
       {
         "from": "dist-server",
         "to": "provider-service"
+      },
+      {
+        "from": "build/chrome-native-host",
+        "to": "chrome-native-host"
+      },
+      {
+        "from": "chrome-extension",
+        "to": "chrome-extension"
       },
       {
         "from": "build/icon.iconset/icon_32x32.png",

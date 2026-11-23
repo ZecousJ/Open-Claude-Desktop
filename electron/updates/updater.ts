@@ -156,6 +156,7 @@ export class AppUpdater {
     const staged = readStaged(this.dir);
     if (
       !staged ||
+      staged.kind === "win-nsis" ||
       (this.options.maxVersion &&
         compareVersions(staged.version, this.options.maxVersion) > 0) ||
       compareVersions(staged.version, this.options.currentVersion) <= 0
@@ -355,6 +356,15 @@ export class AppUpdater {
               ? `Claudex ${plan.version} was published without a checksum, so it can't be verified.`
               : `Claudex ${plan.version} has no installer for this computer.`,
         });
+      return { status: this.status(), plan };
+    }
+    if (plan.kind === "win-nsis") {
+      this.set({
+        phase: "error",
+        version: plan.version,
+        checkedAt,
+        error: `Claudex ${plan.version} requires the Windows installer. Download it from claudex.zecous.cn/downloads.`,
+      });
       return { status: this.status(), plan };
     }
     const ready = this.staged();

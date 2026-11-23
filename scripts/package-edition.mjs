@@ -21,6 +21,7 @@ run("scripts/prepare-workspace-ui.mjs", []);
 run(require.resolve("typescript/bin/tsc"), ["--noEmit"]);
 run(fileURLToPath(new URL("../node_modules/vite/bin/vite.js", import.meta.url)), ["build"]);
 run("scripts/build.mjs", []);
+run("scripts/build-chrome-native-host.mjs", []);
 run("scripts/prepare-runtime.mjs", [target, arch]);
 const platform = target === "darwin" ? "--mac" : target === "win32" ? "--win" : "--linux";
 const format = target === "darwin" ? "dmg" : target === "win32" ? "nsis" : "tar.gz";

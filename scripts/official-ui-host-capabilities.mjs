@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 
-export const hostCapabilityRevision = "claudex-skill-capabilities-v9";
+export const hostCapabilityRevision = "claudex-skill-capabilities-v10";
 // Pinned 79979f1379 bytes AFTER the pinned host-auth routing and existing branding stages.
 export const hostCapabilityInputHashes = {
   "cc20c35ef-BByxoJKF.js":
@@ -49,6 +49,25 @@ export const hostCapabilityOriginalHashes = {
 const digest = (text) => createHash("sha256").update(text).digest("hex");
 
 export const hostCapabilityRules = [
+  {
+    file: "cc20c35ef-BByxoJKF.js",
+    name: "open-claudex-chrome-setup-from-install-hub",
+    before: `          n
+            ? {
+                label: e.formatMessage({ defaultMessage: "Install", id: "ubmFc8" }),
+                href: "https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn",
+              }
+            : {
+                label: e.formatMessage({ defaultMessage: "Upgrade", id: "0h/lPMeYkq" }),
+                href: "/upgrade?from=install_hub",
+                isExternal: !1,
+              },`,
+    after: `          {
+            label: e.formatMessage({ defaultMessage: "Install", id: "ubmFc8" }),
+            href: "/settings/desktop",
+            isExternal: !1,
+          },`,
+  },
   {
     file: "cc20c35ef-BByxoJKF.js",
     name: "omit-unavailable-terminal-illustration",

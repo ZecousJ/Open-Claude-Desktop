@@ -1153,12 +1153,43 @@ test("a cached Windows app pack becomes ready only once extraction and version v
   });
   assert.equal(calls.length, 1);
   const launch = encodedScript(calls[0].args);
-  assert.match(launch, /conhost\.exe' -Argument '--headless /);
+  assert.match(launch, /Document\.Application\.ShellExecute/);
+  assert.match(launch, /Test-Path -LiteralPath \$ready/);
+  assert.match(launch, /-Ready /);
   assert.ok(launch.includes(ready.prepared));
+
+  await assert.rejects(
+    startInstall({
+      dir,
+      staged: ready,
+      relaunch: true,
+      pid: 77,
+      currentVersion: options.currentVersion,
+      execPath: path.join(installDir, "Claudex.exe"),
+      platform: "win32",
+      spawnImpl: fakeSpawn(calls, 1),
+    }),
+    /helper couldn't start/,
+  );
+  assert.equal(calls.length, 2);
+  assert.deepEqual(updater.staged(), ready);
 
   fs.rmSync(ready.prepared, { recursive: true });
   assert.equal(updater.staged(), undefined);
   assert.equal(updater.status().phase, "idle");
+});
+
+test("an incompatible Windows release stays available for manual installation", async (t) => {
+  const { dir, options, staged } = await appPackFixture(t, "0.0.3");
+  writeStaged(dir, { ...staged, kind: "win-nsis" });
+  const updater = new AppUpdater({
+    ...options,
+    installed: async () => undefined,
+    download: async () => assert.fail("the full installer is a manual update"),
+  });
+  assert.equal(updater.staged(), undefined);
+  assert.match((await updater.check()).status.error ?? "", /requires the Windows installer/);
+  assert.equal(updater.staged(), undefined);
 });
 
 test("a Windows app pack with the wrong version is never ready", async (t) => {

@@ -130,7 +130,8 @@ export const windowsAppPackScript = `param(
   [string]$ExeName,
   [string]$TaskName,
   [string]$Prepared,
-  [string]$CurrentVersion
+  [string]$CurrentVersion,
+  [string]$Ready
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -162,11 +163,15 @@ $lock = $null
 $installed = $false
 $err = ''
 try {
+  if ($Ready) { [System.IO.File]::WriteAllText($Ready, 'ready') }
   try { Wait-Process -Id $ProcessId -Timeout 120 -ErrorAction SilentlyContinue } catch {}
   $lock = Retry { [System.IO.File]::Open($lockFile, 'OpenOrCreate', 'ReadWrite', 'None') }
   $record = Read-Record $Staged
-  if ($record.kind -ne 'win-app' -or $record.version -ne $Version -or $record.prepared -ne $Prepared -or $record.sourceVersion -ne $CurrentVersion) { return }
-  if (-not (Test-Path -LiteralPath $Prepared) -and -not (Test-Path -LiteralPath $new)) { return }
+  if ($record.kind -ne 'win-app' -or $record.version -ne $Version -or $record.prepared -ne $Prepared -or $record.sourceVersion -ne $CurrentVersion -or
+      (-not (Test-Path -LiteralPath $Prepared) -and -not (Test-Path -LiteralPath $new))) {
+    Reopen
+    return
+  }
   $receipt = Read-Record $Result
   $attempts = [int]$record.attempts + 1
   if ($receipt.version -eq $Version -and $receipt.prepared -eq $Prepared) { $attempts = [int]$receipt.attempts + 1 }
@@ -229,6 +234,7 @@ export interface ApplyArguments {
   exeName?: string;
   prepared?: string;
   currentVersion?: string;
+  readyFile?: string;
 }
 
 /** The program and arguments that run the macOS helper script. */
@@ -305,6 +311,7 @@ export function windowsApplyCommand(
       args.stagedRecord,
       "-ExeName",
       args.exeName ?? "Claudex.exe",
+      ...(args.readyFile ? ["-Ready", args.readyFile] : []),
     ],
     systemRoot,
   );
@@ -324,6 +331,30 @@ export function windowsHiddenCommand(
 function windowsArgument(value: string) {
   if (value && !/[\s"]/.test(value)) return value;
   return `"${value.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/, "$1$1")}"`;
+}
+
+export function windowsExplorerLaunchCommand(
+  helper: { command: string; args: string[] },
+  readyFile: string,
+  systemRoot?: string,
+) {
+  const quoted = (value: string) => `'${value.replace(/'/g, "''")}'`;
+  const script = [
+    "$ErrorActionPreference = 'Stop'",
+    "$shell = New-Object -ComObject Shell.Application",
+    "$hwnd = 0",
+    "$desktop = $shell.Windows().FindWindowSW(0, 0, 8, [ref]$hwnd, 1)",
+    'if (!$desktop) { throw "The Windows desktop is unavailable." }',
+    `$desktop.Document.Application.ShellExecute(${quoted(helper.command)}, ${quoted(helper.args.map(windowsArgument).join(" "))}, '', 'open', 0)`,
+    `$ready = ${quoted(readyFile)}`,
+    "$deadline = [DateTime]::UtcNow.AddSeconds(8)",
+    "while (!(Test-Path -LiteralPath $ready) -and [DateTime]::UtcNow -lt $deadline) { Start-Sleep -Milliseconds 100 }",
+    'if (!(Test-Path -LiteralPath $ready)) { throw "The Windows update helper did not start." }',
+  ].join("\n");
+  return windowsPowerShellCommand(
+    ["-EncodedCommand", Buffer.from(script, "utf16le").toString("base64")],
+    systemRoot,
+  );
 }
 
 /**

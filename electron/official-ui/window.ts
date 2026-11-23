@@ -37,6 +37,7 @@ import { quickEntryDictationSupported } from "../app/quick-access";
 import { officialNativeQuickAccessAvailable } from "../app/official-native-quick-access";
 import { computerUseFeatures } from "./native/computer-use";
 import { browserPolicyOf } from "../../shared/client-policy";
+import { webHost } from "../../shared/external-links";
 import { codeLimitAutoResumeFor } from "../engine/code-limit-auto-resume";
 import { chromeExtensionControls } from "../browser/chrome-extension-registration";
 import { applyZoom } from "../app/window-zoom";
@@ -2001,6 +2002,11 @@ export async function createOfficialWindow(options: {
                 },
               },
             };
+          if (target.origin !== origin && webHost(target.href)) {
+            void localCall("openExternal", target.href).catch((error) =>
+              console.error("Could not open external link:", error),
+            );
+          }
         } catch {}
         return { action: "deny" };
       },

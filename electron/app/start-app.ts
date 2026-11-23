@@ -34,6 +34,7 @@ import { takeStealthWindow } from "../updates/stealth-window";
 import { startFindInPage } from "./find-in-page-main";
 import {
   cancelRelaunchToUpdate,
+  prepareWindowsUpdateForQuit,
   setUpdateQuitInProgress,
 } from "../updates/launch";
 import {
@@ -400,6 +401,18 @@ export function startApp() {
           }
           return;
         }
+      }
+      try {
+        await prepareWindowsUpdateForQuit();
+      } catch (error) {
+        mainState.shuttingDown = false;
+        cancelRelaunchToUpdate();
+        setUpdateQuitInProgress(false);
+        dialog.showErrorBox(
+          "Claudex couldn't restart to update",
+          error instanceof Error ? error.message : String(error),
+        );
+        return;
       }
       mainState.quitting = true;
       // Every step has a time limit and the whole shutdown 15 s, so a hung

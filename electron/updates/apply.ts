@@ -23,6 +23,7 @@ import {
   windowsApplyScript,
   windowsHiddenCommand,
   windowsAppPackScript,
+  windowsExplorerLaunchCommand,
   windowsTaskLaunchCommand,
 } from "./scripts";
 import { preparedWindowsAppPack } from "./windows-pack";
@@ -66,6 +67,11 @@ export async function startInstall(options: InstallOptions) {
   const { dir, staged } = options;
   const platform = options.platform ?? process.platform;
   const target = installTarget(options.execPath, platform);
+  const unique = randomUUID();
+  const readyFile =
+    staged.kind === "win-app"
+      ? path.join(dir, `install-update-${unique}.ready`)
+      : undefined;
   if (staged.kind === "win-app") {
     if (
       !staged.prepared ||
@@ -95,10 +101,10 @@ export async function startInstall(options: InstallOptions) {
     exeName: path.win32.basename(options.execPath),
     prepared: staged.kind === "win-app" ? staged.prepared : undefined,
     currentVersion: options.currentVersion,
+    readyFile,
   };
   let command: { command: string; args: string[] };
   const windows = staged.kind === "win-nsis" || staged.kind === "win-app";
-  const unique = windows ? randomUUID() : undefined;
   const systemRoot = (options.env ?? process.env).SystemRoot;
   if (staged.kind === "mac-zip") {
     const script = path.join(dir, "install-update.sh");
@@ -125,6 +131,26 @@ export async function startInstall(options: InstallOptions) {
     "a",
     0o600,
   );
+  if (readyFile) {
+    const launch = windowsExplorerLaunchCommand(command, readyFile, systemRoot);
+    try {
+      const code = await new Promise<number | null>((resolve, reject) => {
+        const child = (options.spawnImpl ?? spawn)(launch.command, launch.args, {
+          stdio: ["ignore", "ignore", "pipe"],
+          windowsHide: true,
+          signal: AbortSignal.timeout(12_000),
+        });
+        child.stderr?.on("data", (chunk: Buffer) => fs.writeSync(stderr, chunk));
+        child.once("error", reject);
+        child.once("close", resolve);
+      });
+      if (code !== 0) throw new Error("The Windows update helper couldn't start.");
+    } finally {
+      fs.closeSync(stderr);
+      fs.rmSync(readyFile, { force: true });
+    }
+    return;
+  }
   // Windows: through a scheduled task, so the helper outlives Claudex's job
   // (scripts.ts windowsTaskLaunchCommand); started directly only when the
   // Task Scheduler can't take it.

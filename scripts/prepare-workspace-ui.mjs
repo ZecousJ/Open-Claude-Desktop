@@ -7,12 +7,12 @@ import { pipeline } from "node:stream/promises";
 
 const output = "build";
 const resources = ["official-ui", "official-usercontent"];
-const asset = "claudex-workspace-20261122.tar.gz";
-const publishedRelease = "workspace-20261122";
-const digest = "a22faf0276d8d85e109fd654c25079fc0df8469acd1cfc62107498eeba7bc1df";
+const asset = "claudex-workspace-0.0.60.tar.gz";
+const publishedRelease = "workspace-0.0.60";
+const digest = "37e19c0ec3224b8e894c868f39f32a32a8e6768f301c5fed9fbd4de824d3d851";
 const buildId = "79979f1379";
-const assembledAt = "2026-11-21T17:56:48.468Z";
-const previousAssembly = "2026-11-18T10:30:15.548Z";
+const assembledAt = "2026-11-23T01:47:59.165Z";
+const previousAssemblies = ["2026-11-21T17:56:48.468Z", "2026-11-18T10:30:15.548Z"];
 
 function hasWorkspace(directory, assembly = assembledAt) {
   try {
@@ -27,7 +27,7 @@ function hasWorkspace(directory, assembly = assembledAt) {
 
 async function prepare() {
   if (hasWorkspace(output)) return;
-  const replacePrevious = hasWorkspace(output, previousAssembly);
+  const replacePrevious = previousAssemblies.some(assembly => hasWorkspace(output, assembly));
   if (!replacePrevious && resources.some(directory => fs.existsSync(path.join(output, directory))))
     throw Error("Move the existing build/official-ui and build/official-usercontent directories before installing the published workspace.");
 

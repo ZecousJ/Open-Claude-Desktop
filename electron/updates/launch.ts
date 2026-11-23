@@ -532,6 +532,7 @@ export function startAppUpdates(ctx: AppContext) {
       }
       return;
     }
+    if (process.platform === "win32") return;
     const staged = current.staged();
     if (!staged) return;
     installing = true;
@@ -561,6 +562,29 @@ export function startAppUpdates(ctx: AppContext) {
       });
   });
   return updater;
+}
+
+export async function prepareWindowsUpdateForQuit() {
+  if (process.platform !== "win32" || !(updater instanceof AppUpdater))
+    return;
+  const staged = updater.staged();
+  try {
+    if (!staged) {
+      if (relaunchAfterInstall) throw new Error("No update is ready to install.");
+      return;
+    }
+    await startInstall({
+      dir: updater.dir,
+      staged,
+      relaunch: relaunchAfterInstall,
+      pid: process.pid,
+      execPath: process.execPath,
+      currentVersion: app.getVersion(),
+    });
+  } catch (error) {
+    log("the Windows update helper couldn't start", error);
+    if (relaunchAfterInstall) throw error;
+  }
 }
 
 /**
