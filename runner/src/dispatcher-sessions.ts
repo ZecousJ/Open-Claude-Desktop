@@ -3,6 +3,7 @@ import {
   type OfficialCodeFollowupSend,
 } from "../../electron/ipc/conversation-turn-handlers";
 import { randomUUID } from "node:crypto";
+import { officialCoworkFollowupEvent } from "../../electron/engine/official-cowork-send";
 import { desktopAttachmentObject } from "../../shared/attachment-object";
 import { CodeSendStart, officialCodeSendStart } from "../../electron/engine/code-send-start";
 import { decodeWireValue } from "../../shared/web-wire";
@@ -57,7 +58,7 @@ interface ExpectedSession {
   context: WebAppContext;
   identity: unknown;
   codeFollowup?: OfficialCodeFollowupSend;
-  coworkFollowup?: { conversationId: string; current(): boolean };
+  coworkFollowup?: { conversationId: string; eventId: string; current(): boolean };
   coworkCreation?: { conversationId: string; current(): boolean };
   coworkDelete?: { conversationId: string; current(): boolean };
   officialInventory?: boolean;
@@ -266,6 +267,10 @@ async function dispatchSession(
           input.conversationId !== expected.coworkFollowup.conversationId ||
           !expected.coworkFollowup.current())
         throw Error("The Cloud Cowork session changed before dispatch.");
+      args[1] = {
+        ...(args[1] as object | undefined),
+        [officialCoworkFollowupEvent]: expected.coworkFollowup.eventId,
+      };
     }
     if (expected?.codeFollowup) {
       const code = expected.codeFollowup;
