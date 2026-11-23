@@ -247,8 +247,20 @@ export function startApp() {
           main: () => mainState.window,
           current,
           close: (win) => win.close(),
-          reportFailure: () => {
-            console.error("Official interface could not be opened.");
+          reportFailure: (error) => {
+            console.error("Official interface could not be opened:", error);
+            if (localEdition) {
+              const choice = dialog.showMessageBoxSync({
+                type: "error",
+                message: "Claudex couldn't open the interface",
+                buttons: ["Restart Claudex", "Quit"],
+                defaultId: 0,
+                cancelId: 1,
+              });
+              if (choice === 0) app.relaunch();
+              app.quit();
+              return;
+            }
             dialog.showErrorBox(
               "Claudex couldn't open the interface",
               "The interface could not be loaded. Please try again.",

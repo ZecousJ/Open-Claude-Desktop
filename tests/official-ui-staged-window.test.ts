@@ -89,3 +89,19 @@ test("committed window is never destroyed by creation cleanup or a late retireme
   assert.equal(candidate.destroyed, false);
   assert.equal(old.destroyed, false);
 });
+test("current activation failure preserves its diagnostic error and keeps the previous window", async () => {
+  const { finishOfficialWindowActivation } = await import("../electron/official-ui/staged-window");
+  const previous = new Window();
+  const failure = new Error("Window navigation failed");
+  let reported: unknown;
+  await finishOfficialWindowActivation({
+    create: async () => { throw failure; },
+    current: () => true,
+    main: () => previous,
+    previous,
+    close: () => { assert.fail("The previous window must remain available until replacement."); },
+    reportFailure: (error) => { reported = error; },
+  });
+  assert.equal(reported, failure);
+  assert.equal(previous.destroyed, false);
+});

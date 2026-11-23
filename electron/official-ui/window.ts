@@ -2083,7 +2083,7 @@ export async function createOfficialWindow(options: {
     await win.loadURL(origin + startupRoute);
     stage.check();
     if (!hidden) {
-      const result = await contents.executeJavaScript(`new Promise(resolve => {
+      await contents.executeJavaScript(`new Promise(resolve => {
         const root = document.documentElement;
         const ready = () => {
           const result = root.getAttribute("data-boot-ui-ready");
@@ -2095,8 +2095,10 @@ export async function createOfficialWindow(options: {
         };
         const finish = result => {
           observer.disconnect();
-          clearTimeout(timeout);
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve(result)));
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            clearTimeout(timeout);
+            resolve(result);
+          }));
         };
         const observer = new MutationObserver(() => {
           const result = ready();
@@ -2108,7 +2110,6 @@ export async function createOfficialWindow(options: {
         else observer.observe(root, { subtree: true, childList: true, attributes: true,
           attributeFilter: ["data-boot-ui-ready", "data-page-loading", "data-route-skeleton", "data-route-outlet", "contenteditable"] });
       })`);
-      if (result === "timeout") throw Error("Claudex did not finish loading its first screen.");
       stage.check();
       await contents.capturePage(undefined, { stayHidden: true });
       stage.check();

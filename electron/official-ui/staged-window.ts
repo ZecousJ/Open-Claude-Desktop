@@ -73,7 +73,7 @@ export async function finishOfficialWindowActivation<
   main(): W | undefined;
   previous: W | undefined;
   close(window: W): void;
-  reportFailure(): void;
+  reportFailure(error: unknown): void;
 }) {
   try {
     const created = await options.create();
@@ -90,6 +90,6 @@ export async function finishOfficialWindowActivation<
       !(error instanceof OfficialWindowCreationCancelled) &&
       options.current()
     )
-      options.reportFailure();
+      options.reportFailure(error);
   }
 }
