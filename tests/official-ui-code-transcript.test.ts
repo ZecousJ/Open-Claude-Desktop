@@ -44,6 +44,41 @@ test("Code text transcript keeps order, identity and parent links", () => {
   assert.equal(result.rows[1].timestamp, "1970-01-01T00:00:01.000Z");
 });
 
+test("one workflow call keeps its card and receives progress while running", () => {
+  const c = conversation();
+  const turn = c.turns[0];
+  turn.status = "inProgress";
+  turn.items = [{
+    id: "call-a",
+    type: "dynamicToolCall",
+    tool: "Workflow",
+    status: "inProgress",
+    arguments: { name: "audit" },
+  }];
+  const workflowCallIds = () => convertCodeTranscript(c).rows.flatMap(row =>
+    Array.isArray(row.message.content)
+      ? row.message.content.flatMap(block => block.type === "tool_use" && block.name === "Workflow" ? [block.id] : [])
+      : [],
+  );
+  assert.deepEqual(workflowCallIds(), ["turn:tool:call-a"]);
+  turn.items.push({
+    id: "workflow-call-a",
+    type: "collabAgentToolCall",
+    tool: "workflow",
+    status: "inProgress",
+    workflowName: "audit",
+    workflowRunId: "wf_123456",
+    workflowPhases: ["Read"],
+    receiverThreadIds: ["agent-a"],
+    agentsStates: { "agent-a": { status: "running", message: null } },
+  });
+  assert.deepEqual(workflowCallIds(), ["turn:tool:call-a"]);
+  const progress = convertCodeTranscript(c).rows.find(row => row.uuid === "turn:tool:call-a:task_progress");
+  assert.ok(progress);
+  assert.equal(progress.parentUuid, "turn:tool:call-a:task_started");
+  assert.equal(convertCodeTranscript(c).rows.some(row => row.uuid.endsWith(":task_notification")), false);
+});
+
 test("Code history keeps a steered message's accepted ID, image and file reference", () => {
   const c = conversation();
   c.turns[0].items.unshift(

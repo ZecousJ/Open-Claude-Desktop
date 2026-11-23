@@ -126,14 +126,13 @@ test("a settled workflow replays its recorded phases, agent metrics and outcome 
   assert.deepEqual(project(structuredClone(workflowItem)), events);
 });
 
-test("an active workflow does not commit a mutable progress snapshot", () => {
-  assert.deepEqual(
-    project({
+test("a running workflow publishes stable start and progress before settling", () => {
+  const events = project({
       ...workflowItem,
       status: "inProgress",
       workflowStatus: undefined,
       workflowEndedAt: undefined,
-    }),
-    [],
-  );
+    });
+  assert.deepEqual(events.map(event => event.subtype), ["task_started", "task_progress"]);
+  assert.deepEqual(events.map(event => event.uuid), project(workflowItem).slice(0, 2).map(event => event.uuid));
 });

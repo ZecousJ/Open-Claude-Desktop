@@ -651,7 +651,25 @@ export function convertCodeTranscript(
         message: { role: "assistant", content: [] } });
       parentUuid = uuid;
     }
-    for (const item of turn.items) {
+    const workflowRuns = new Map<string, Item>();
+    const workflowCalls = new Set<string>();
+    if (mode === "code") {
+      for (const item of turn.items) {
+        if (item.type === "collabAgentToolCall" && item.tool === "workflow" && item.id.startsWith("workflow-"))
+          workflowRuns.set(item.id.slice("workflow-".length), item);
+        if (item.type === "dynamicToolCall" && item.tool === "Workflow")
+          workflowCalls.add(item.id);
+      }
+    }
+    for (const sourceItem of turn.items) {
+      const callId = sourceItem.type === "dynamicToolCall" && sourceItem.tool === "Workflow"
+        ? sourceItem.id
+        : undefined;
+      const run = callId ? workflowRuns.get(callId) : undefined;
+      const item = run ?? sourceItem;
+      if (sourceItem.type === "collabAgentToolCall" && sourceItem.tool === "workflow" &&
+          sourceItem.id.startsWith("workflow-") && workflowCalls.has(sourceItem.id.slice("workflow-".length)))
+        continue;
       if (item === userShell) continue;
       if (item.type === "worktreeNotice" && item.text) {
         const uuid = `${turn.id}:item:${item.id}`;
@@ -744,7 +762,9 @@ export function convertCodeTranscript(
       const activity = recordedActivity(item, mode);
       if (activity) {
         for (const [index, tool] of activity.entries()) {
-          const toolId = `${turn.id}:activity:${item.id}:${index}`;
+          const toolId = run
+            ? `${turn.id}:tool:${callId}`
+            : `${turn.id}:activity:${item.id}:${index}`;
           const useUuid = `${toolId}:use`;
           rows.push({
             type: "assistant",
@@ -767,6 +787,23 @@ export function convertCodeTranscript(
             },
           });
           parentUuid = useUuid;
+          const workflowEvents = mode === "code" && tool.name === "Workflow"
+            ? codeWorkflowTranscript({ conversation, turn, item, toolId })
+            : [];
+          const appendWorkflowEvent = (event: CodeWorkflowEvent) => {
+            rows.push({
+              ...event,
+              type: "system",
+              parentUuid,
+              sessionId: conversation.id,
+              timestamp: event.timestamp ?? timestamp,
+              isSidechain: false,
+              message: { role: "assistant", content: [] },
+            });
+            parentUuid = event.uuid;
+          };
+          for (const event of workflowEvents)
+            if (event.subtype !== "task_notification") appendWorkflowEvent(event);
           if (tool.running) {
             unsupported.add("running-tool-call");
             continue;
@@ -802,19 +839,8 @@ export function convertCodeTranscript(
               : {}),
           });
           parentUuid = resultUuid;
-          if (mode === "code" && tool.name === "Workflow")
-            for (const event of codeWorkflowTranscript({ conversation, turn, item, toolId })) {
-              rows.push({
-                ...event,
-                type: "system",
-                parentUuid,
-                sessionId: conversation.id,
-                timestamp: event.timestamp ?? timestamp,
-                isSidechain: false,
-                message: { role: "assistant", content: [] },
-              });
-              parentUuid = event.uuid;
-            }
+          for (const event of workflowEvents)
+            if (event.subtype === "task_notification") appendWorkflowEvent(event);
         }
         continue;
       }

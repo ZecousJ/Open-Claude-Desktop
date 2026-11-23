@@ -85,15 +85,9 @@ export function codeWorkflowTranscript({
 }): CodeWorkflowEvent[] {
   if (item.type !== "collabAgentToolCall" || item.tool !== "workflow")
     return [];
-  if (
-    !["completed", "failed", "interrupted"].includes(
-      item.lifecycleStatus ?? item.status ?? "",
-    )
-  )
-    return [];
   const workflow = workflowFromTurn(turn, conversation, [item]);
   const name = storedText(item.workflowName);
-  if (!workflow?.runId || !name || workflow.status === "running") return [];
+  if (!workflow?.runId || !name) return [];
 
   const ids = {
     task_id: workflow.runId,
@@ -106,6 +100,17 @@ export function codeWorkflowTranscript({
     startedAt === undefined
       ? {}
       : { timestamp: new Date(startedAt).toISOString() };
+  const events: CodeWorkflowEvent[] = [
+    {
+      ...ids,
+      ...start,
+      uuid: `${toolId}:task_started`,
+      subtype: "task_started",
+      task_type: "local_workflow",
+      workflow_name: name,
+      description: storedText(item.workflowDescription) ?? name,
+    },
+  ];
   const end =
     endedAt === undefined ? {} : { timestamp: new Date(endedAt).toISOString() };
   const phases = new Map<string, WorkflowPhase>();
@@ -161,17 +166,6 @@ export function codeWorkflowTranscript({
     ];
   });
 
-  const events: CodeWorkflowEvent[] = [
-    {
-      ...ids,
-      ...start,
-      uuid: `${toolId}:task_started`,
-      subtype: "task_started",
-      task_type: "local_workflow",
-      workflow_name: name,
-      description: storedText(item.workflowDescription) ?? name,
-    },
-  ];
   if (phases.size || agents.length)
     events.push({
       ...ids,
@@ -180,6 +174,7 @@ export function codeWorkflowTranscript({
       subtype: "task_progress",
       workflow_progress: [...phases.values(), ...agents],
     });
+  if (workflow.status === "running") return events;
   const usage =
     startedAt !== undefined &&
     endedAt !== undefined &&
