@@ -2,6 +2,8 @@
 
 Claudex 是基于开源 Codex 执行引擎的桌面聊天与开发工作台。用**对话**梳理问题、整理材料或生成文档。切换到 **Code** 后，可以在选定的工作目录里读写文件、执行命令并查看结果。
 
+[立即在线体验](https://claudex.zecous.cn/)
+
 [下载本地版](https://github.com/ZecousJ/Open-Claude-Desktop/releases/latest) · [本地版使用手册](docs/local.md) · [完整版部署手册](docs/self-hosted.md) · [服务参数参考](docs/self-hosted-configuration.md)
 
 ## 使用方式
