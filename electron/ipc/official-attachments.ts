@@ -98,6 +98,25 @@ function restoredImageDigest(file: string, expected: fs.BigIntStats) {
   }
 }
 
+export function readSavedAttachment(root: string, id: string, policy: ReturnType<AppContext["policy"]>) {
+  const directory = fs.realpathSync(path.join(root, "attachments"));
+  const dir = path.join(directory, id);
+  if (fs.realpathSync(dir) !== dir) throw Error("Attachment location changed.");
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  if (entries.length !== 1 || !entries[0].isFile())
+    throw Error("Saved attachment is missing or invalid.");
+  const name = entries[0].name;
+  const file = path.join(dir, name);
+  if (fs.realpathSync(file) !== file) throw Error("Attachment location changed.");
+  const stamp = fs.lstatSync(file, { bigint: true });
+  if (!stamp.isFile()) throw Error("Saved attachment is missing or invalid.");
+  const size = Number(stamp.size);
+  const denied = attachmentRefusal(name, size, policy);
+  if (denied) throw Error(denied);
+  const attachment: Attachment = { id, name, path: file, size, kind: attachmentKind(path.extname(name).slice(1)) };
+  return { attachment, stamp };
+}
+
 export function registerOfficialAttachmentHandlers(
   handle: IpcHandle,
   ctx: AppContext,
@@ -113,33 +132,7 @@ export function registerOfficialAttachmentHandlers(
         .strictObject({ hashImages: z.literal(true) })
         .optional()
         .parse(rawOptions);
-      const root = fs.realpathSync(path.join(ctx.store.root, "attachments"));
-      const restored = ids.map((id) => {
-        const dir = path.join(root, id),
-          real = fs.realpathSync(dir);
-        if (real !== dir) throw Error("Attachment location changed.");
-        const entries = fs.readdirSync(dir, { withFileTypes: true });
-        if (entries.length !== 1 || !entries[0].isFile())
-          throw Error("Saved attachment is missing or invalid.");
-        const name = entries[0].name,
-          file = path.join(dir, name),
-          actual = fs.realpathSync(file);
-        if (actual !== file) throw Error("Attachment location changed.");
-        const stamp = fs.lstatSync(file, { bigint: true });
-        if (!stamp.isFile())
-          throw Error("Saved attachment is missing or invalid.");
-        const size = Number(stamp.size),
-          denied = attachmentRefusal(name, size, ctx.policy());
-        if (denied) throw Error(denied);
-        const attachment: Attachment = {
-          id,
-          name,
-          path: file,
-          size,
-          kind: attachmentKind(path.extname(name).slice(1)),
-        };
-        return { attachment, stamp };
-      });
+      const restored = ids.map(id => readSavedAttachment(ctx.store.root, id, ctx.policy()));
       if (
         options &&
         restored.reduce((total, row) => total + row.attachment.size, 0) >

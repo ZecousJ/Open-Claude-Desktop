@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -81,7 +81,7 @@ test("Cowork follow-up dispatches once and rejects unrelated or unsupported requ
       }
       if (calls === 2) assert.deepEqual(input.skillReferences, [selected]);
       if (calls === 3) {
-        assert.equal(input.attachments.length, 2);
+        assert.deepEqual(input.attachments, imageIds.map(id => ({ id })));
         for (const [index, { id }] of input.attachments.entries()) {
           const attachment = ctx.selectedAttachments.get(id);
           assert.equal(attachment?.name, `image-${index + 1}.png`);
@@ -170,6 +170,14 @@ test("Cowork follow-up dispatches once and rejects unrelated or unsupported requ
       type: "image", source: { type: "base64", media_type: "image/png", data: imageData },
     })),
   ]).toString());
+  const imageIds = ["81704203-1a65-4851-a569-e3bced5104d0", "8149c824-f64c-4da1-a7d7-7fe25612cf2a"];
+  withImages.events[0].payload.file_attachments = imageIds.map((id, index) => {
+    const dir = path.join(root, "attachments", id);
+    const name = `image-${index + 1}.png`;
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, name), Buffer.from(imageData, "base64"));
+    return { file_uuid: id, file_name: name, is_image: true };
+  });
   withImages.events[0].payload.uuid = "b4ff6720-719e-4444-a12b-012c55524ea6";
   upload = Buffer.from(JSON.stringify(withImages));
   const rpc = (method: string, request: object) => officialUiRead(

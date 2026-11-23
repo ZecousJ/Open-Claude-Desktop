@@ -54,8 +54,6 @@ export async function createOfficialCoworkSession(
   try {
     input = creation.parse(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(request.body)));
     if (!input.message.trim() && !input.file_attachments?.length && !input.images?.length) throw Error();
-    const ids = (input.file_attachments ?? []).map((file) => file.file_uuid.toLowerCase());
-    if (ids.length + (input.images?.length ?? 0) > 12 || new Set(ids).size !== ids.length) throw Error();
     const reminder = input.timezone ? new RegExp(`^The user's timezone is ${input.timezone.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\(currently UTC[+-](?:[0-9]|1[0-4])(?::[0-5][0-9])?\\)\\. Times the user mentions are in this timezone unless they say otherwise\\.$`) : undefined;
     if (input.system_reminders?.some((item) => !reminder?.test(item))) throw Error();
   } catch {
@@ -133,6 +131,7 @@ export async function createOfficialCoworkSession(
     if (receipt.kind === "done") return current() ? receipt.answer : json(409, { error: "The account activation changed." });
     if (receipt.kind !== "reserved") return json(409, { error: "This Cowork start could not be confirmed. Check your sessions before retrying." });
     const attachments = [...prepared.documents, ...storeOfficialAttachments(ctx, prepared.imageFiles)];
+    for (const file of prepared.documents) ctx.selectedAttachments.set(file.id, file);
     const conversationId = reservation?.conversationId ?? randomUUID();
     stage = "dispatch";
     if (deviceId) {

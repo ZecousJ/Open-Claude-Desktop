@@ -1,7 +1,7 @@
 import fs from "node:fs";
-import path from "node:path";
 import { z } from "zod";
 import { imageType } from "../../electron/artifacts/generated-blobs";
+import { readSavedAttachment } from "../../electron/ipc/official-attachments";
 import { attachmentRefusal } from "../../shared/client-policy-rules";
 import type { WebAppContext } from "./web-app-context";
 
@@ -40,17 +40,12 @@ export function prepareCoworkAttachments(
   images: z.infer<typeof coworkImageInput>[],
 ) {
   const ids = files.map(file => file.file_uuid.toLowerCase());
-  if (ids.length + images.length > 12 || new Set(ids).size !== ids.length)
+  if (new Set(ids).size !== ids.length)
     throw Error("Invalid Cowork attachment selection.");
   const documents = files.map(({ is_image }, index) => {
-    const id = ids[index];
-    const file = ctx.selectedAttachments.get(id);
-    if (!file || file.id !== id || (file.kind === "image") !== is_image ||
-        attachmentRefusal(file.name, file.size, ctx.policy()))
+    const { attachment: file } = readSavedAttachment(ctx.store.root, ids[index], ctx.policy());
+    if ((file.kind === "image") !== is_image)
       throw Error("Attachment unavailable.");
-    const expected = path.join(fs.realpathSync(path.join(ctx.store.root, "attachments")), file.id, file.name);
-    if (fs.realpathSync(file.path) !== expected || fs.statSync(expected).size !== file.size)
-      throw Error("Attachment changed.");
     return file;
   });
   const imageFiles = images.map(({ base64, media_type }, index) => {
@@ -62,5 +57,13 @@ export function prepareCoworkAttachments(
       throw Error("Invalid image attachment.");
     return { name, data };
   });
+  for (const file of documents) {
+    if (file.kind !== "image" || !imageFiles.some(image => image.data.length === file.size)) continue;
+    const data = fs.readFileSync(file.path);
+    const duplicate = imageFiles.findIndex(image => image.data.equals(data));
+    if (duplicate >= 0) imageFiles.splice(duplicate, 1);
+  }
+  if (documents.length + imageFiles.length > 12)
+    throw Error("Invalid Cowork attachment selection.");
   return { documents, imageFiles };
 }

@@ -343,6 +343,7 @@ export async function submitOfficialCoworkFollowup(
       });
     const attachments = [...prepared.documents, ...storeOfficialAttachments(ctx, prepared.imageFiles)]
       .map(({ id }) => ({ id }));
+    for (const file of prepared.documents) ctx.selectedAttachments.set(file.id, file);
     if (binding) {
       const updated = await ctx.chatDeviceController.send({
         version: 1, accountScope: String(ctx.userId), organizationId: null,
