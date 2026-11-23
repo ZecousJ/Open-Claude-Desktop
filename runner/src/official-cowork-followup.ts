@@ -18,7 +18,9 @@ import {
   type OfficialUiReadResponse,
 } from "../../shared/official-ui-web";
 import { encodeWireValue } from "../../shared/web-wire";
+import { storeOfficialAttachments } from "../../electron/ipc/official-attachments";
 import type { CallFrame, Dispatcher } from "./dispatcher";
+import { coworkFileAttachments, coworkMessageContent, prepareCoworkAttachments, readCoworkContent } from "./official-cowork-attachments";
 import {
   finishOfficialAction,
   readOfficialAction,
@@ -26,7 +28,6 @@ import {
 } from "./official-ui-receipts";
 import type { WebAppContext } from "./web-app-context";
 
-const text = z.object({ type: z.literal("text"), text: z.string() }).strict();
 const modelSetting = z.strictObject({ subtype: z.literal("set_model"), model: z.string().trim().min(1).max(200) });
 const effortSetting = z.strictObject({ subtype: z.literal("apply_flag_settings"), settings: z.strictObject({ effortLevel: codeEffortInput }) });
 const user = z
@@ -36,10 +37,11 @@ const user = z
     session_id: z.string().optional(),
     parent_tool_use_id: z.null().optional(),
     skill_references: skillReferencesSchema.optional(),
+    file_attachments: coworkFileAttachments,
     message: z
       .object({
         role: z.literal("user"),
-        content: z.union([z.string(), z.array(text).min(1).max(128)]),
+        content: coworkMessageContent,
       })
       .strict(),
   })
@@ -208,7 +210,7 @@ export async function submitOfficialCoworkFollowup(
     }
     input = send.parse(body);
   } catch {
-    return json(400, { error: "Send one plain text Cowork message." });
+    return json(400, { error: "Invalid Cowork message or attachments." });
   }
   const events = input.events.map((entry) => entry.payload);
   const event = events.at(-1);
@@ -217,7 +219,7 @@ export async function submitOfficialCoworkFollowup(
     event.type !== "user" ||
     events.slice(0, -1).some((e) => e.type !== "control_request")
   )
-    return json(400, { error: "Send one plain text Cowork message." });
+    return json(400, { error: "Send one Cowork message at a time." });
   const controls = events
     .slice(0, -1)
     .filter((e): e is z.infer<typeof control> => e.type === "control_request");
@@ -251,14 +253,13 @@ export async function submitOfficialCoworkFollowup(
         ? ("standard" as const)
         : ("extended" as const)
       : undefined;
-  const message =
-    typeof event.message.content === "string"
-      ? event.message.content
-      : event.message.content.map((block) => block.text).join("\n");
+  const { message, images } = readCoworkContent(event.message.content);
+  const referencedFiles = event.file_attachments ?? [];
+  const hasAttachments = images.length + referencedFiles.length > 0;
   if (
     !belongs(input.session_id) ||
     !belongs(event.session_id) ||
-    !message.trim() ||
+    (!message.trim() && !hasAttachments) ||
     message.length > 200_000
   )
     return json(400, { error: "Invalid Cowork message." });
@@ -287,7 +288,8 @@ export async function submitOfficialCoworkFollowup(
   const hash = createHash("sha256")
     .update(JSON.stringify([message, effort ?? null, thinkingMode ?? null,
       ...(modelControl ? [{ model }] : []),
-      ...(skillReferences.length ? [skillReferences] : [])]))
+      ...(skillReferences.length ? [skillReferences] : []),
+      ...(hasAttachments ? [{ images, files: referencedFiles.map(file => file.file_uuid.toLowerCase()) }] : [])]))
     .digest("hex");
   const answer = json(200, {
     events: [{ event_id: cloudCodeEventId(`session_${key}`, eventId) }],
@@ -317,6 +319,12 @@ export async function submitOfficialCoworkFollowup(
     conversation.turns.some((turn) => turn.status === "inProgress")
   )
     return json(409, { error: "Wait for the current Cowork turn to finish." });
+  let prepared: ReturnType<typeof prepareCoworkAttachments>;
+  try {
+    prepared = prepareCoworkAttachments(ctx, referencedFiles, images);
+  } catch {
+    return json(400, { error: "A Cowork attachment is unavailable. Select it again." });
+  }
   inFlight.add(conversation);
   try {
     const receipt = reserveOfficialAction(store.root, actionKey, hash);
@@ -333,13 +341,15 @@ export async function submitOfficialCoworkFollowup(
         error:
           "The previous Cowork send could not be confirmed. Reopen the session.",
       });
+    const attachments = [...prepared.documents, ...storeOfficialAttachments(ctx, prepared.imageFiles)]
+      .map(({ id }) => ({ id }));
     if (binding) {
       const updated = await ctx.chatDeviceController.send({
         version: 1, accountScope: String(ctx.userId), organizationId: null,
         requestId: eventId, deviceId: binding.deviceId,
         expectedBindingRevision: binding.revision, conversationId: conversation.id,
         mode: "cowork", providerId: conversation.providerId, model: conversation.model,
-        text: message, taskPermission: binding.permission, attachments: [],
+        text: message, taskPermission: binding.permission, attachments,
         options: { effort, thinkingMode },
       }, { owner: account.id, current: activation });
       const bound = () => activation() && store.conversations.includes(updated) &&
@@ -360,7 +370,7 @@ export async function submitOfficialCoworkFollowup(
             model,
             text: message,
             ...(skillReferences.length ? { skillReferences } : {}),
-            attachments: [],
+            attachments,
             ...(effort === undefined ? {} : { effort }),
             ...(thinkingMode === undefined ? {} : { thinkingMode }),
           },

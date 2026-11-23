@@ -15,6 +15,7 @@ import { isWebTabId } from "../../shared/web-protocol";
 import type { Conversation, Turn } from "../../shared/types";
 import type { CallFrame, Dispatcher } from "./dispatcher";
 import { createOfficialCoworkSession } from "./official-cowork-creation";
+import { coworkFileAttachments, coworkMessageContent, readCoworkContent } from "./official-cowork-attachments";
 import type { WebAppContext } from "./web-app-context";
 
 const warm = z.strictObject({
@@ -29,44 +30,16 @@ const warm = z.strictObject({
     .optional(),
   project_uuid: z.string().uuid().optional(),
 });
-const image = z.strictObject({
-  type: z.literal("image"),
-  source: z.strictObject({
-    type: z.literal("base64"),
-    media_type: z.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]),
-    data: z.string().min(4),
-  }),
-});
 const event = z.strictObject({
   type: z.literal("user"),
   uuid: z.string().uuid(),
   session_id: z.string().optional(),
   parent_tool_use_id: z.null().optional(),
   shouldQuery: z.literal(false).optional(),
-  file_attachments: z
-    .array(
-      z.strictObject({
-        file_uuid: z.string().uuid(),
-        file_name: z.string().min(1).max(500),
-        is_image: z.boolean(),
-      }),
-    )
-    .max(12)
-    .optional(),
+  file_attachments: coworkFileAttachments,
   message: z.strictObject({
     role: z.literal("user"),
-    content: z.union([
-      z.string(),
-      z
-        .array(
-          z.union([
-            z.strictObject({ type: z.literal("text"), text: z.string() }),
-            image,
-          ]),
-        )
-        .min(1)
-        .max(128),
-    ]),
+    content: coworkMessageContent,
   }),
 });
 const control = z.strictObject({
@@ -424,23 +397,7 @@ export async function claimOfficialCoworkWarm(
   if (row.busy) return json(409, { error: "The Cowork start is in progress." });
   row.busy = true;
   try {
-    const blocks =
-      typeof payload.message.content === "string"
-        ? [{ type: "text" as const, text: payload.message.content }]
-        : payload.message.content;
-    const message = blocks
-      .filter(
-        (block): block is { type: "text"; text: string } =>
-          block.type === "text",
-      )
-      .map((block) => block.text)
-      .join("\n");
-    const images = blocks
-      .filter((block): block is z.infer<typeof image> => block.type === "image")
-      .map((block) => ({
-        base64: block.source.data,
-        media_type: block.source.media_type,
-      }));
+    const { message, images } = readCoworkContent(payload.message.content);
     const { title: _title, ...options } = row.input;
     const body = Buffer.from(
       JSON.stringify({

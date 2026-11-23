@@ -1,11 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
-import fs from "node:fs";
-import path from "node:path";
-import { imageType } from "../../electron/artifacts/generated-blobs";
 import { storeOfficialAttachments } from "../../electron/ipc/official-attachments";
 import { loadKnowledgeCatalog } from "../../electron/ipc/knowledge";
-import { attachmentRefusal } from "../../shared/client-policy-rules";
 import { codeEffortInput, codeModelChoice } from "../../electron/ipc/code-model-preferences";
 import { cloudCodeSessionKey, isOwnedCloudCoworkSession } from "../../electron/official-ui/api/cloud-code-history";
 import { organizationUuid } from "../../electron/official-ui/api/context";
@@ -18,6 +14,7 @@ import { encodeWireValue } from "../../shared/web-wire";
 import type { CallFrame, Dispatcher } from "./dispatcher";
 import { finishOfficialAction, readOfficialAction, reserveOfficialAction } from "./official-ui-receipts";
 import { findOfficialCoworkDevice } from "./official-cowork-devices";
+import { coworkFileAttachments, coworkImageInput, prepareCoworkAttachments } from "./official-cowork-attachments";
 import type { WebAppContext } from "./web-app-context";
 
 const creation = z.strictObject({
@@ -36,12 +33,8 @@ const creation = z.strictObject({
   permission_mode: z.enum(["default", "auto", "bypassPermissions"]).optional(),
   timezone: z.string().regex(/^[A-Za-z0-9_+\-/]{1,128}$/).optional(),
   system_reminders: z.array(z.string().max(4096)).max(1).optional(),
-  file_attachments: z.array(z.strictObject({
-    file_uuid: z.string().uuid(), file_name: z.string().min(1).max(500), is_image: z.boolean(),
-  })).max(12).optional(),
-  images: z.array(z.strictObject({
-    base64: z.string().min(4), media_type: z.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]),
-  })).max(12).optional(),
+  file_attachments: coworkFileAttachments,
+  images: z.array(coworkImageInput).max(12).optional(),
 });
 const json = (status: number, value: unknown): OfficialUiReadResponse => ({
   status, contentType: "application/json", body: Buffer.from(JSON.stringify(value)),
@@ -112,24 +105,9 @@ export async function createOfficialCoworkSession(
   }
   if (existing?.kind === "done") return current() ? existing.answer : json(409, { error: "The account activation changed." });
   if (existing) return json(409, { error: "This Cowork start could not be confirmed. Check your sessions before retrying." });
-  let documents: import("../../shared/types").Attachment[];
-  let images: { name: string; data: Buffer }[];
+  let prepared: ReturnType<typeof prepareCoworkAttachments>;
   try {
-    documents = (input.file_attachments ?? []).map(({ file_uuid, is_image }) => {
-      const id = file_uuid.toLowerCase(), file = ctx.selectedAttachments.get(id);
-      if (!file || file.id !== id || (file.kind === "image") !== is_image || attachmentRefusal(file.name, file.size, ctx.policy())) throw Error("Attachment unavailable");
-      const root = fs.realpathSync(path.join(store.root, "attachments"));
-      const expected = path.join(root, file.id, file.name);
-      if (fs.realpathSync(file.path) !== expected || fs.statSync(expected).size !== file.size) throw Error("Attachment changed");
-      return file;
-    });
-    const extensions = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
-    images = (input.images ?? []).map(({ base64, media_type }, index) => {
-      const data = Buffer.from(base64, "base64"), header = data.subarray(0, 6).toString("ascii");
-      const mime = header === "GIF87a" || header === "GIF89a" ? "image/gif" : imageType(data);
-      if (mime !== media_type || data.toString("base64") !== base64) throw Error("Invalid image");
-      return { name: `image-${index + 1}.${extensions[media_type]}`, data };
-    });
+    prepared = prepareCoworkAttachments(ctx, input.file_attachments ?? [], input.images ?? []);
   } catch {
     return json(400, { error: "A Cowork attachment is unavailable. Select it again." });
   }
@@ -154,7 +132,7 @@ export async function createOfficialCoworkSession(
     const receipt = reserveOfficialAction(store.root, key, hash);
     if (receipt.kind === "done") return current() ? receipt.answer : json(409, { error: "The account activation changed." });
     if (receipt.kind !== "reserved") return json(409, { error: "This Cowork start could not be confirmed. Check your sessions before retrying." });
-    const attachments = [...documents, ...storeOfficialAttachments(ctx, images)];
+    const attachments = [...prepared.documents, ...storeOfficialAttachments(ctx, prepared.imageFiles)];
     const conversationId = reservation?.conversationId ?? randomUUID();
     stage = "dispatch";
     if (deviceId) {

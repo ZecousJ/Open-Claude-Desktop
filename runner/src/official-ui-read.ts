@@ -820,6 +820,19 @@ export async function officialUiRead(dispatcher: Dispatcher, frame: CallFrame) {
   if (chatUpload && (!ctx.activeAccount || chatUpload !== organizationUuid(ctx.activeAccount.id)))
     return reject(404, "Organization not found.");
   if (codeFollowup) {
+    if (uploadedBody !== undefined && action && chat.mode === "engine-chat" &&
+        (dispatcher.guard.modes.includes("code") ||
+          codeFollowup.wrapped && dispatcher.guard.modes.includes("cowork"))) {
+      const capabilityLease = request.capabilityLease;
+      if (!chat.accepts(capabilityLease))
+        return reject(409, "A current authenticated capability lease is required.");
+      request.body = await readUpload(
+        { request: (op, user, data) => dispatcher.options.link.request(op, user, data) },
+        frame.user.id, uploadedBody, officialUiRequestLimit("POST", request.path),
+      );
+      if (!chat.accepts(capabilityLease))
+        return reject(409, "The account activation changed.");
+    }
     if (codeFollowup.wrapped && action && chat.mode === "engine-chat" && dispatcher.guard.modes.includes("cowork")) {
       const warm = await claimOfficialCoworkWarm(dispatcher, frame, ctx, codeFollowup.key, request,
         () => !ctx.accountRetiring && chat.accepts(request.capabilityLease));
@@ -838,15 +851,6 @@ export async function officialUiRead(dispatcher: Dispatcher, frame: CallFrame) {
     const capabilityLease = request.capabilityLease;
     if (!chat.accepts(capabilityLease))
       return reject(409, "A current authenticated capability lease is required.");
-    if (uploadedBody !== undefined) {
-      const requestLimit = officialUiRequestLimit("POST", request.path);
-      request.body = await readUpload(
-        { request: (op, user, data) => dispatcher.options.link.request(op, user, data) },
-        frame.user.id, uploadedBody, requestLimit,
-      );
-      if (!chat.accepts(capabilityLease))
-        return reject(409, "The account activation changed.");
-    }
     const identity = ctx.officialSessionIdentity();
     const answer = await submitOfficialCodeFollowup(dispatcher, frame, ctx, codeFollowup, request,
       () => chat.accepts(capabilityLease));

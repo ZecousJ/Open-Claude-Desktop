@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { cloudCodeSessionKey } from "../../electron/official-ui/api/cloud-code-history";
 import { submitOfficialCoworkFollowup } from "../../runner/src/official-cowork-followup";
-import { decodeWireValue } from "../../shared/web-wire";
+import { officialUiRead } from "../../runner/src/official-ui-read";
+import { officialUiCapabilitiesPath } from "../../shared/official-ui-web";
+import { decodeWireValue, encodeWireValue } from "../../shared/web-wire";
+import { openPolicy } from "../../shared/client-policy";
+import type { Attachment } from "../../shared/types";
 
 test("Cowork follow-up dispatches once and rejects unrelated or unsupported requests", async (t) => {
   const root = mkdtempSync(path.join(os.tmpdir(), "cowork-followup-"));
@@ -33,15 +37,35 @@ test("Cowork follow-up dispatches once and rejects unrelated or unsupported requ
     },
   };
   const ctx = {
+    userId: 1,
     activeAccount: { id: owner },
     store,
+    policy: () => openPolicy,
+    selectedAttachments: new Map<string, Attachment>(),
     officialSessionIdentity: () => identity,
+    setAccessToken() {},
     push() {},
   };
   const key = cloudCodeSessionKey(session, owner);
   const uuid = "d4ff6720-719e-4444-a12b-012c55524ea6";
   let calls = 0;
+  let upload = Buffer.alloc(0);
+  const imageData = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aHksAAAAASUVORK5CYII=";
   const dispatcher = {
+    options: { officialUiRoot: root, officialUiActions: true, link: {
+      async request(op: string, user: number, params: { id: string; offset: number; length: number }) {
+        assert.equal(op, "store.files.get");
+        assert.equal(user, ctx.userId);
+        assert.equal(params.id, "fixture-upload");
+        return encodeWireValue({
+          size: upload.length, bytes: upload.subarray(params.offset, params.offset + params.length),
+        });
+      },
+    } },
+    guard: { modes: ["chat", "cowork"] },
+    context: () => ctx,
+    contextFor: async () => ctx,
+    now: () => 1,
     async run(frame: any, expected: any) {
       if (frame.method === "modelCatalog")
         return { items: [{ id: "fixture", efforts: ["high"] }, { id: "second", efforts: ["low"] }] };
@@ -49,13 +73,21 @@ test("Cowork follow-up dispatches once and rejects unrelated or unsupported requ
       const [input] = decodeWireValue(frame.args) as any[];
       assert.equal(input.mode, "cowork");
       assert.equal(input.conversationId, session.id);
-      assert.equal(input.text, calls === 2 ? "Use /fixture after /fixture" : "Hello Cowork");
+      assert.equal(input.text, ["Hello Cowork", "Hello Cowork", "Use /fixture after /fixture", "Compare these images"][calls]);
       if (calls === 1) {
         assert.equal(input.model, "second");
         assert.equal(input.effort, "low");
         assert.equal(input.thinkingMode, "extended");
       }
       if (calls === 2) assert.deepEqual(input.skillReferences, [selected]);
+      if (calls === 3) {
+        assert.equal(input.attachments.length, 2);
+        for (const [index, { id }] of input.attachments.entries()) {
+          const attachment = ctx.selectedAttachments.get(id);
+          assert.equal(attachment?.name, `image-${index + 1}.png`);
+          assert.equal(readFileSync(attachment!.path).toString("base64"), imageData);
+        }
+      }
       calls++;
     },
   };
@@ -132,4 +164,26 @@ test("Cowork follow-up dispatches once and rejects unrelated or unsupported requ
   assert.equal(JSON.parse(Buffer.from(saved.body).toString()).persisted, true);
   assert.equal(session.model, "second");
   assert.equal(calls, 3);
+  const withImages = JSON.parse(body([
+    { type: "text", text: "Compare these images" },
+    ...Array.from({ length: 2 }, () => ({
+      type: "image", source: { type: "base64", media_type: "image/png", data: imageData },
+    })),
+  ]).toString());
+  withImages.events[0].payload.uuid = "b4ff6720-719e-4444-a12b-012c55524ea6";
+  upload = Buffer.from(JSON.stringify(withImages));
+  const rpc = (method: string, request: object) => officialUiRead(
+    dispatcher as never, { method, args: encodeWireValue([request]), user: { id: ctx.userId } } as never,
+  );
+  const capabilities = await rpc("officialUiRead", { method: "GET", path: officialUiCapabilitiesPath });
+  assert.equal(capabilities.status, 200);
+  const { activationLease } = JSON.parse(Buffer.from(capabilities.body).toString());
+  const postImages = () => rpc("officialUiAction", {
+    method: "POST", path: `/v1/code/sessions/session_${key}/events`, contentType: "application/json",
+    capabilityLease: activationLease, body: { $upload: "fixture-upload" },
+  });
+  assert.equal((await postImages()).status, 200);
+  assert.equal((await postImages()).status, 200);
+  assert.equal(calls, 4);
+  assert.equal(ctx.selectedAttachments.size, 2);
 });
