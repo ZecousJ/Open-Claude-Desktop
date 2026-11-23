@@ -3386,7 +3386,9 @@ export function registerExperimentalCodeSessions(host: NativeHost, isDetectedFol
               host.emit("LocalSessions", "onEvent", {
                 type: "message",
                 sessionId: id,
-                message: row,
+                message: row.type === "system" && row.subtype === "task_progress" && "workflow_progress" in row
+                  ? { ...row, uuid: randomUUID() }
+                  : row,
               });
             announced.set(id, seen);
           }

@@ -380,7 +380,7 @@ export async function submitOfficialCoworkFollowup(
       {
         context: ctx,
         identity,
-        coworkFollowup: { conversationId: conversation.id, current },
+        coworkFollowup: { conversationId: conversation.id, eventId, current },
       },
     );
     if (!(binding ? activation() : current()))

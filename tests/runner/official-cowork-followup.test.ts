@@ -81,6 +81,7 @@ test("Cowork follow-up dispatches once and rejects unrelated or unsupported requ
       }
       if (calls === 2) assert.deepEqual(input.skillReferences, [selected]);
       if (calls === 3) {
+        assert.equal(expected.coworkFollowup.eventId, withImages.events[0].payload.uuid);
         assert.deepEqual(input.attachments, imageIds.map(id => ({ id })));
         for (const [index, { id }] of input.attachments.entries()) {
           const attachment = ctx.selectedAttachments.get(id);

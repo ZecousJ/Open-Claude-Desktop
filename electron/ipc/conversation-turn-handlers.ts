@@ -30,7 +30,7 @@ import { projectFolders } from "../../shared/project-folders";
 import type { Context, Handle } from "./conversations";
 import { folderBranchName } from "./official-git";
 import { remoteCodeDirectory } from "../workspace/code-additional-folder";
-import { officialCoworkSend } from "../engine/official-cowork-send";
+import { officialCoworkFollowupEvent, officialCoworkSend } from "../engine/official-cowork-send";
 
 /** What registerConversationTurnHandlers needs from conversations.ts. */
 export interface RegisterConversationTurnHandlersKit {
@@ -81,6 +81,7 @@ export function registerConversationTurnHandlers(
     [officialCodeNewTaskInput]?: { uuid: string; createdAt: number };
     [officialCodeSessionEnvironment]?: CodeSessionEnvironmentSelection;
     [officialCoworkSend]?: true;
+    [officialCoworkFollowupEvent]?: string;
   }) => {
     const lease = versionLease();
     const dispatchDelivery = extra?.[dispatchDeliverySend];
@@ -198,6 +199,7 @@ export function registerConversationTurnHandlers(
       ? folderBranchName.optional().parse(extra?.folderBranch)
       : undefined;
     const codeFollowup = extra?.[officialCodeFollowupSend];
+    const coworkEventId = extra?.[officialCoworkFollowupEvent];
     const codeSendStart = nativeStart ?? codeFollowup?.start ?? remoteCode?.start;
     if (
       codeFollowup &&
@@ -386,6 +388,7 @@ export function registerConversationTurnHandlers(
           ...(slashInput.uuid ? { officialCodeEventId: slashInput.uuid } : {}),
         } : {}),
         ...(codeFollowup ? { officialCodeEventId: codeFollowup.eventId } : {}),
+        ...(coworkEventId ? { officialCodeEventId: coworkEventId } : {}),
         ...(remoteCode ? { officialCodeEventId: remoteCode.eventId } : {}),
         ...(codeFollowup?.inputHash
           ? { officialCodeInputHash: codeFollowup.inputHash }
