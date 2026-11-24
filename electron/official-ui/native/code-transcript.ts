@@ -1066,7 +1066,7 @@ export function convertCodeTranscript(
           uuid: toolUuid,
           parentUuid,
           sessionId: conversation.id,
-          timestamp,
+          timestamp: new Date(item.startedAt ?? turn.createdAt).toISOString(),
           isSidechain: false,
           message: {
             role: "assistant",
@@ -1100,7 +1100,7 @@ export function convertCodeTranscript(
           uuid: resultUuid,
           parentUuid,
           sessionId: conversation.id,
-          timestamp,
+          timestamp: new Date(item.completedAt ?? item.startedAt ?? turn.createdAt).toISOString(),
           isSidechain: false,
           message: {
             role: "user",

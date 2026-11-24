@@ -19,6 +19,13 @@ const child = () =>
     if(msg.method==='close-output'){fs.closeSync(1);return;}
     if(msg.method==='crash'){process.exit(7);return;}
     if(msg.method==='final-output'){const text=JSON.stringify({id:msg.id,result:{ok:true}}); if(process.platform==='win32')process.stdout.write(text,()=>process.exit(0));else process.stdout.end(text);return;}
+    if(msg.method==='unicode-tool'){
+      const frame=Buffer.from(JSON.stringify({method:'item/completed',params:{text:'甲\u2028乙\u2029丙'}})+'\r\n');
+      const split=frame.indexOf(Buffer.from('\u2028'))+1;
+      process.stdout.write(frame.subarray(0,split));
+      setImmediate(()=>process.stdout.write(Buffer.concat([frame.subarray(split),Buffer.from(JSON.stringify({id:msg.id,result:true})+'\n')])));
+      return;
+    }
     if(msg.method==='hang')return;
     const result=msg.method==='large'?{content:'x'.repeat(3*1024*1024)}:{ok:true};
     process.stdout.write(JSON.stringify({id:msg.id,result})+'\n');
@@ -129,6 +136,19 @@ test("an unexpected process exit fails promptly and a replacement accepts reques
     assert.equal(rpc.connected, false);
     await rpc.startWith(child);
     assert.deepEqual(await rpc.call("thread/resume"), { ok: true });
+  } finally {
+    await rpc.stop();
+  }
+});
+
+test("Unicode separators in a browser result preserve the completion notification", async () => {
+  const rpc = new CodexRPC();
+  const messages: unknown[] = [];
+  rpc.on("notification", message => messages.push(message));
+  try {
+    await rpc.startWith(child);
+    assert.equal(await rpc.call("unicode-tool", {}, 5000), true);
+    assert.deepEqual(messages, [{ method: "item/completed", params: { text: "甲\u2028乙\u2029丙" } }]);
   } finally {
     await rpc.stop();
   }

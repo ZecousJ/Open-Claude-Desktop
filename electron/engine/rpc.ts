@@ -1,5 +1,4 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { createInterface } from "node:readline";
 import { EventEmitter } from "node:events";
 import { version as appVersion } from "../../package.json";
 import { withUtf8Locale } from "./locale-env";
@@ -102,11 +101,7 @@ export class CodexRPC extends EventEmitter {
       );
     });
     child.stdout.on("error", () => fail(connectionClosed()));
-    const lines = createInterface({ input: child.stdout });
-    // readline emits a final line without a trailing newline before close.
-    // Waiting for that event keeps the last complete response deliverable.
-    lines.on("close", () => fail(connectionClosed()));
-    lines.on("line", (line) => {
+    const receive = (line: string) => {
       if (this.process !== child || failed) return;
       let msg: any;
       try {
@@ -124,7 +119,29 @@ export class CodexRPC extends EventEmitter {
       this.pending.delete(msg.id);
       if (msg.error) p.reject(new Error(msg.error.message));
       else p.resolve(msg.result);
+    };
+    // JSONL uses LF between records. U+2028 and U+2029 are valid text inside a JSON string.
+    const fragments: string[] = [];
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => {
+      let start = 0;
+      for (let end = chunk.indexOf("\n"); end >= 0; end = chunk.indexOf("\n", start)) {
+        const part = chunk.slice(start, end);
+        if (fragments.length) {
+          fragments.push(part);
+          receive(fragments.join(""));
+          fragments.length = 0;
+        } else receive(part);
+        start = end + 1;
+      }
+      if (start < chunk.length) fragments.push(chunk.slice(start));
     });
+    child.stdout.once("end", () => {
+      if (fragments.length) receive(fragments.join(""));
+      fail(connectionClosed());
+    });
+    child.stdout.once("close", () => fail(connectionClosed()));
+
     // Never forward process logs or provider credentials to the renderer.
     child.stderr.on("data", (chunk) => {
       stderrTail = (stderrTail + chunk.toString()).slice(-4096);
