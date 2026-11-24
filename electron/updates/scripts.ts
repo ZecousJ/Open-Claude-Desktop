@@ -164,7 +164,12 @@ $installed = $false
 $err = ''
 try {
   if ($Ready) { [System.IO.File]::WriteAllText($Ready, 'ready') }
-  try { Wait-Process -Id $ProcessId -Timeout 120 -ErrorAction SilentlyContinue } catch {}
+  # Explorer may start this helper with less privilege than the app. Enumerating
+  # its PID works without opening a synchronization handle to the other process.
+  $wait = [Diagnostics.Stopwatch]::StartNew()
+  while ($wait.Elapsed.TotalSeconds -lt 120 -and (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)) {
+    Start-Sleep -Milliseconds 100
+  }
   $lock = Retry { [System.IO.File]::Open($lockFile, 'OpenOrCreate', 'ReadWrite', 'None') }
   $record = Read-Record $Staged
   if ($record.kind -ne 'win-app' -or $record.version -ne $Version -or $record.prepared -ne $Prepared -or $record.sourceVersion -ne $CurrentVersion -or
@@ -176,7 +181,10 @@ try {
   $attempts = [int]$record.attempts + 1
   if ($receipt.version -eq $Version -and $receipt.prepared -eq $Prepared) { $attempts = [int]$receipt.attempts + 1 }
   try {
-    if (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue) { throw 'Claudex did not quit.' }
+    if (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue) {
+      Write-Result $false 'Claudex did not quit.'
+      return
+    }
     $current = if (Test-Path -LiteralPath $old) { $old } else { $res }
     if ((Read-PackVersion $current) -ne $CurrentVersion) {
       try { Reopen } catch {}
