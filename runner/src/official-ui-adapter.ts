@@ -321,7 +321,7 @@ export function createRunnerOfficialAdapter(host: RunnerOfficialHost, dispatch: 
     get officialCodeUpload() { return options.allowTextActions === true && guard.modes.includes("code"); },
     get officialChatUpload() { return options.allowTextActions === true && host.richQuoteActions === true && (guard.modes.includes("chat") || guard.modes.includes("cowork")); },
     get image() { return host.image; },
-    generatedFileReadMaxBytes: officialUiReadMaxBytes,
+    generatedFileReadMaxBytes: officialUiTransferMaxBytes,
     account: () => host.account(), settings: () => host.settings(), sessionIdentity: () => host.sessionIdentity(),
     stateDirectory: () => host.stateDirectory(), onEvent: (listener: (event: AppEvent) => void) => host.onEvent(listener),
     get connectorAuthPromptAvailable() { return options.allowTextActions ? host.connectorAuthPromptAvailable : undefined; },

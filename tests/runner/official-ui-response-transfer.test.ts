@@ -53,6 +53,29 @@ const hostPlatform = process.platform;
 useElectronShim();
 const { Dispatcher } = await import("../../runner/src/dispatcher");
 
+function uncompressedPng(side: number) {
+  const chunk = (type: string, data: Buffer) => {
+    const content = Buffer.concat([Buffer.from(type), data]);
+    const length = Buffer.alloc(4);
+    length.writeUInt32BE(data.length);
+    const checksum = Buffer.alloc(4);
+    checksum.writeUInt32BE(crc32(content));
+    return Buffer.concat([length, content, checksum]);
+  };
+
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(side);
+  header.writeUInt32BE(side, 4);
+  header[8] = 8;
+  header[9] = 2;
+  return Buffer.concat([
+    Buffer.from("89504e470d0a1a0a", "hex"),
+    chunk("IHDR", header),
+    chunk("IDAT", deflateSync(Buffer.alloc((side * 3 + 1) * side), { level: 0 })),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
 function scannedPdf(size: number) {
   const width = 2048,
     height = Math.floor((size - 2048) / width);
@@ -866,29 +889,8 @@ test("an oversized gzip file needs transfer support and preserves its download h
 test("Code history reads large input images, MCP results, and generated files", async (t) => {
   const f = fixture(t, true, ["code"]);
   const { ctx } = f.contexts[0];
-  const chunk = (type: string, data: Buffer) => {
-    const content = Buffer.concat([Buffer.from(type), data]);
-    const length = Buffer.alloc(4);
-    length.writeUInt32BE(data.length);
-    const checksum = Buffer.alloc(4);
-    checksum.writeUInt32BE(crc32(content));
-    return Buffer.concat([length, content, checksum]);
-  };
-  const png = (side: number) => {
-    const header = Buffer.alloc(13);
-    header.writeUInt32BE(side);
-    header.writeUInt32BE(side, 4);
-    header[8] = 8;
-    header[9] = 2;
-    return Buffer.concat([
-      Buffer.from("89504e470d0a1a0a", "hex"),
-      chunk("IHDR", header),
-      chunk("IDAT", deflateSync(Buffer.alloc((side * 3 + 1) * side), { level: 0 })),
-      chunk("IEND", Buffer.alloc(0)),
-    ]);
-  };
-  const image = png(1040);
-  const toolImage = png(1023).toString("base64");
+  const image = uncompressedPng(1040);
+  const toolImage = uncompressedPng(1023).toString("base64");
   const toolSummary = "Tile is uniformly black.\n".repeat(1000);
   assert.ok(image.toString("base64").length > officialUiReadMaxBytes);
   assert.ok(toolImage.length <= officialUiReadMaxBytes);
@@ -1452,4 +1454,36 @@ test("response chunks are ordered, retriable, and confined to the current contex
   f.contexts[0].ctx.signedOut = false;
   f.contexts[0].rotate();
   assert.equal((await f.read({ method: "GET", path: oldPath })).status, 404);
+});
+
+test("Web Chat previews and downloads a generated PNG larger than one RPC response", async (t) => {
+  const f = fixture(t);
+  const { ctx } = f.contexts[0];
+  const bytes = uncompressedPng(1334);
+  assert.ok(bytes.length > officialUiReadMaxBytes);
+  const cwd = path.join(ctx.store.root, "workspace");
+  fs.mkdirSync(cwd);
+  fs.writeFileSync(path.join(cwd, "full-portrait.png"), bytes);
+  const blobs = new GeneratedBlobs(ctx.store.root);
+  const generatedFiles = captureOutputFiles(cwd, 0, new Set(), blobs);
+  const turn = { id: "turn", prompt: "Photo", createdAt: 1, status: "completed" as const, attachments: [],
+    items: [{ id: "out", type: "outputFiles", generatedFiles }] };
+  const conversation: Conversation = { id: "a232ec81-b062-46df-bf24-b39e96dbe5f3", mode: "chat",
+    title: "Photo", model: "fixture", providerId: "fixture", cwd, createdAt: 1, updatedAt: 1,
+    pinned: false, archived: false, turns: [turn] };
+  ctx.store.conversations = [conversation];
+  ctx.handlers.set("snapshot", () => ({ conversations: [conversation] }));
+  ctx.handlers.set("conversationTurns", () => ({ turns: [turn] }));
+  ctx.handlers.set("readGeneratedFile", digest => blobs.read(String(digest)).toString("base64"));
+  const owner = "owner-1";
+  const { newAdapterScope, inAdapterScope } = await import("../../electron/official-ui/api/scope");
+  const { generatedOutputAttachments } = await import("../../electron/official-ui/api/generated-output-files");
+  const [attachment] = inAdapterScope(newAdapterScope(owner, ctx.store.root, {}), () =>
+    generatedOutputAttachments(organizationUuid(owner), conversation.id, turn, true));
+  const { fetch } = await browserRead(t, f);
+  for (const variant of ["preview", "contents"]) {
+    const response = await fetch(attachment.url.replace(/contents$/, variant));
+    assert.equal(response.status, 200);
+    assert.deepEqual(Buffer.from(await response.arrayBuffer()), bytes);
+  }
 });

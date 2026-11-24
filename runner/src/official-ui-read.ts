@@ -2050,6 +2050,7 @@ export async function officialUiRead(dispatcher: Dispatcher, frame: CallFrame) {
   const identity = ctx.officialSessionIdentity();
   const edit = melangeEdit?.kind === "start" && melangeOwner ? { id: melangeEdit.id, owner: melangeOwner } : undefined;
   const result = entry.run(frame, { method: request.method as OfficialUiReadRequest["method"],
+    ...(request.objectTransfer === true ? { objectTransfer: true as const } : {}),
     path: melangeEdit?.kind === "start" ? `/api/organizations/${melangeEdit.organization}/melange/edit` : request.path,
     ...(request.acceptEncoding === "gzip" ? { acceptEncoding: "gzip" as const } : {}),
     ...(typeof request.bootstrapCatalogRevision === "string" ? { bootstrapCatalogRevision: request.bootstrapCatalogRevision } : {}),
