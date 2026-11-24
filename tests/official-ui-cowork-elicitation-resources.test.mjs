@@ -49,3 +49,35 @@ test("Cowork native elicitation keeps the original form and link controls and re
   assert.equal(answered.at(-1), false);
   assert.match(derive("cc32965c2-BNok1Xiq.js", read("cc32965c2-BNok1Xiq.js")), /nc as claudexElicitationForm, ic as claudexElicitationLink/);
 });
+
+test("browser permission buttons submit the chosen scope without a form submission", (t) => {
+  if (!fs.existsSync(root)) return t.skip("Pinned original resources are unavailable");
+  const file = "cc32965c2-BNok1Xiq.js";
+  const source = derive(file, read(file));
+  const start = source.indexOf("  const approval = g.properties?.decision;");
+  const end = source.indexOf("  return J3($, 78, s, re, fe)", start);
+  assert.ok(start >= 0 && end > start);
+  const element = (type, props) => ({ type, ...props });
+  const render = vm.runInNewContext(`(g, a, T) => { ${source.slice(start, end)} }`, {
+    m: element, i: element, E: "button", mt: "armed", Qo: "card", ns: "summary",
+    M: "Script and origin", se: "decline", t: "request", rs: "", s: 1, tc: undefined,
+    ce: false, ie: false, c: { locale: "en", formatMessage: ({ defaultMessage }) => defaultMessage },
+  });
+  for (const choices of [["once"], ["once", "always"]]) {
+    const decision = { type: "string", enum: choices, enumNames: ["Allow once", "Always allow for this website"].slice(0, choices.length) };
+    const results = [];
+    const draw = (fieldNames) => render({ properties: { decision } }, { fieldNames }, result => results.push(JSON.parse(JSON.stringify(result))));
+    const [summary, actions] = draw(["decision"]).children;
+    assert.equal(summary.children, "Script and origin");
+    const [deny, always, armed] = actions.children;
+    assert.equal(deny, "decline");
+    assert.equal(armed.children.children, "Allow once");
+    armed.children.onClick();
+    if (choices.length === 2) {
+      assert.equal(always.children, "Always allow for this website");
+      always.onClick();
+    } else assert.equal(always, false);
+    assert.deepEqual(results, choices.map(decision => ({ action: "accept", content: { decision } })));
+    assert.equal(draw(["decision", "reason"]), undefined);
+  }
+});

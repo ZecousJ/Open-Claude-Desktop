@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const hostCodeElicitationRevision = "local-code-mcp-elicitation-v3";
+export const hostCodeElicitationRevision = "local-code-mcp-elicitation-v5";
 
 const permissionProjection = `function LP(e, t) {
   return {
@@ -69,6 +69,49 @@ const changes = {
   "cc32965c2-BNok1Xiq.js": [[
     `export { ac as a, Ns as c, lc as i, Ec as n, dc as o, cc as r, Ms as s, Vb as t };`,
     `export { ac as a, Ns as c, lc as i, Ec as n, dc as o, cc as r, Ms as s, Vb as t, nc as claudexElicitationForm, ic as claudexElicitationLink };`,
+  ], [
+    `  return J3($, 78, s, re, fe)`,
+    `  const approval = g.properties?.decision;
+  const choices = approval?.enum;
+  const onceOnly = choices?.length === 1 && choices[0] === "once";
+  const website = choices?.length === 2 && choices[0] === "once" && choices[1] === "always" &&
+    approval.enumNames?.[1] === "Always allow for this website";
+  if (a.fieldNames.length === 1 && a.fieldNames[0] === "decision" &&
+      approval?.type === "string" && (onceOnly || website)) {
+    const name = approval.enumNames?.[0] ?? "Allow once";
+    const label = name === "Run workflow" && c.locale.startsWith("zh") ? "运行工作流"
+      : name === "Allow once" ? c.formatMessage({ defaultMessage: "Allow once", id: "O2tb5K" })
+      : name === "Allow" ? c.formatMessage({ defaultMessage: "Allow", id: "y/bmsG8rnv" }) : name;
+    const button = (decision, text, variant) => m(E, {
+      type: "button", variant, busy: ce, disabled: ie,
+      onClick: () => T({ action: "accept", content: { decision } }),
+      children: text,
+    });
+    const allow = button("once", label, "primary");
+    const always = website && button("always", c.formatMessage({
+      defaultMessage: "Always allow for this website", id: "IqIbyB",
+    }), "secondary");
+    return i(Qo, {
+      queueDepth: s,
+      onKeyDown: tc,
+      children: [m(ns, { children: M }), i("div", {
+        className: "epitaxy-approval-actions flex flex-wrap justify-end gap-x-md gap-y-sm " + rs,
+        children: [se, always, m(mt, { armKey: t, children: allow })],
+      })],
+    });
+  }
+  return J3($, 78, s, re, fe)`,
+  ]],
+  "c73f45bc3-DPTYBg79.js": [[
+    `        ...uv(T || D || d.has("plan"), {
+          icon: na.plan,
+          label: i.formatMessage({ defaultMessage: "Plan", id: "/7CA0v" }),
+          checked: d.has("plan"),
+          checkedRole: "checkbox",
+          onSelect: r,
+        }),
+`,
+    "",
   ]],
   "ca44d5dae-Duwp3Ivb.js": [[
     `import { vL as e } from "./rolldown-runtime-BmbMa3VH.js";`,

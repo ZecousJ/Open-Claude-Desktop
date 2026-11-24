@@ -7,12 +7,12 @@ import { pipeline } from "node:stream/promises";
 
 const output = "build";
 const resources = ["official-ui", "official-usercontent"];
-const asset = "claudex-workspace-0.0.60.tar.gz";
-const publishedRelease = "workspace-0.0.60";
-const digest = "37e19c0ec3224b8e894c868f39f32a32a8e6768f301c5fed9fbd4de824d3d851";
+const asset = "claudex-workspace-0.0.64.tar.gz";
+const publishedRelease = "workspace-0.0.64";
+const digest = "26ced4fd550d71d69e43fe86428662902099abb2800fbbf583be74d0846026b4";
 const buildId = "79979f1379";
-const assembledAt = "2026-11-23T01:47:59.165Z";
-const previousAssemblies = ["2026-11-21T17:56:48.468Z", "2026-11-18T10:30:15.548Z"];
+const assembledAt = "2026-11-24T02:40:00.000Z";
+const previousAssemblies = ["2026-11-23T01:47:59.165Z", "2026-11-21T17:56:48.468Z", "2026-11-18T10:30:15.548Z"];
 
 function hasWorkspace(directory, assembly = assembledAt) {
   try {
