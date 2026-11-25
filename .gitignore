@@ -51,3 +51,19 @@ build/chrome-native-host/
 *.p12
 *.pem
 *.key
+
+# Mobile build artifacts & local IDE state
+mobile/android/.gradle/
+mobile/android/.kotlin/
+mobile/android/**/build/
+mobile/android/local.properties
+mobile/android/*.apk
+mobile/android/*.aab
+mobile/android/*.keystore
+mobile/android/*.jks
+mobile/ios/.build/
+mobile/ios/DerivedData/
+mobile/ios/**/xcuserdata/
+mobile/ios/**/*.xcuserstate
+mobile/ios/*.ipa
+mobile/ios/*.xcarchive

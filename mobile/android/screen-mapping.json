@@ -1,0 +1,202 @@
+[
+  {
+    "id": "01",
+    "title": "新对话",
+    "reference": "01-home.png",
+    "reference_sha256": "1fcb70fbf020b92fb1e7302169e0cc0117cdcbe3fd02e7352e20bfded8248c43",
+    "composable": "ChatSurface",
+    "source": "app/src/main/java/com/claudex/mobile/ChatSurface.kt",
+    "preserved_actions": "菜单/账户、草稿、模型/思考强度、附件、系统听写、发送",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "02",
+    "title": "登录",
+    "reference": "02-login.png",
+    "reference_sha256": "77b243de20c71f15b239efa2b3e8e31b58ff756def11cfa50431f37c72d7547c",
+    "composable": "LoginScreen",
+    "source": "app/src/main/java/com/claudex/mobile/ChatScreens.kt",
+    "preserved_actions": "邮箱先行、现有密码认证、注册、原有服务器挑战",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "03",
+    "title": "邮箱验证",
+    "reference": "03-verify-email.png",
+    "reference_sha256": "99e14c3f2be3d4b2bc0126e5288ae2ab73962435c39087f553e2ce558ced6088",
+    "composable": "VerifyScreen",
+    "source": "app/src/main/java/com/claudex/mobile/ChatScreens.kt",
+    "preserved_actions": "六位验证码、注册密码、2FA、重发冷却、返回/取消",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "04",
+    "title": "侧边栏与历史搜索",
+    "reference": "04-history.png",
+    "reference_sha256": "b87cfdcd11c435c1823a5fdda5802c0091bea940125568544871dd53c5ed29ba",
+    "composable": "SidebarContent",
+    "source": "app/src/main/java/com/claudex/mobile/SidebarScreen.kt",
+    "preserved_actions": "五个侧栏入口、搜索/归档、置顶/最近、重命名/置顶/归档、账户、新对话",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "05",
+    "title": "对话",
+    "reference": "05-conversation.png",
+    "reference_sha256": "4567a1a00c5c5f00bde7f555a5004eac6f8df4d49ffe5fe9d90b1c6b3643eccc",
+    "composable": "ChatSurface",
+    "source": "app/src/main/java/com/claudex/mobile/ChatSurface.kt",
+    "preserved_actions": "完整内容加载/重试、选择/复制、附件、工具、审批、停止、分享",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "06",
+    "title": "模型与思考强度",
+    "reference": "06-model-sheet.png",
+    "reference_sha256": "d5fe74043beabedab1bdf11fdff31a63754bd973086777091a764e5277656cc8",
+    "composable": "ModelSelectorSheet",
+    "source": "app/src/main/java/com/claudex/mobile/ComposerSheets.kt",
+    "preserved_actions": "服务器分配模型、更多模型、允许的思考强度、关闭/完成",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "07",
+    "title": "添加附件",
+    "reference": "07-add-attachment.png",
+    "reference_sha256": "f96fdd0480827a79638410374333d58a3290cedfc79d0d765ea8b8b30f923272",
+    "composable": "AddToChatSheet",
+    "source": "app/src/main/java/com/claudex/mobile/ComposerSheets.kt",
+    "preserved_actions": "原生文件/照片选择、取消/移除、仅发送时上传、大小限制",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "08",
+    "title": "附件预览",
+    "reference": "08-attachment-preview.png",
+    "reference_sha256": "ec91dd742c82d7280750023c42a5727c849c9fcb3452c89bc653191a67dcc340",
+    "composable": "AttachmentScreen",
+    "source": "app/src/main/java/com/claudex/mobile/LibraryScreens.kt",
+    "preserved_actions": "本地PDF分页、图片/文本预览、导出、远程无缓存诚实提示",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "09",
+    "title": "项目",
+    "reference": "09-projects.png",
+    "reference_sha256": "82154b1b331594f86000b5227527b9aec314fb3a0e2920339e11a7a4c17e0bb3",
+    "composable": "WorkScreen",
+    "source": "app/src/main/java/com/claudex/mobile/ProjectScreens.kt",
+    "preserved_actions": "搜索、新建、编辑、打开项目、进入代码",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "10",
+    "title": "项目详情",
+    "reference": "10-project-detail.png",
+    "reference_sha256": "e809f7bec59c28a1cfb22c97190d9c683412d2529eae5b7622238ec962b91ea7",
+    "composable": "ProjectScreen",
+    "source": "app/src/main/java/com/claudex/mobile/ProjectScreens.kt",
+    "preserved_actions": "指令编辑、知识上传/移除确认、项目对话、项目输入框",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "11",
+    "title": "代码",
+    "reference": "11-code-workspace.png",
+    "reference_sha256": "1f9a64dae59a9e405f785f24e1ab6666e5162b40d03f9888164196adc2b7006c",
+    "composable": "CodeScreen",
+    "source": "app/src/main/java/com/claudex/mobile/WorkScreens.kt",
+    "preserved_actions": "云端能力门控、仓库/分支、权限、最近任务、代码发送",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "12",
+    "title": "GitHub仓库选择",
+    "reference": "12-github-picker.png",
+    "reference_sha256": "676c1f3c31a251518d2cf1788bf6df5e5037ea3fae870028ad488e4772bb4a63",
+    "composable": "RepositorySheet",
+    "source": "app/src/main/java/com/claudex/mobile/CodeSheets.kt",
+    "preserved_actions": "连接审核、搜索/分页、仓库、默认/精确分支、不使用仓库",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "13",
+    "title": "后台任务",
+    "reference": "13-background-task.png",
+    "reference_sha256": "6e00a090c9a7577e1a6a30b81689e6ea8b3f52244e8c4b14a1dae459aca5d015",
+    "composable": "TaskScreen",
+    "source": "app/src/main/java/com/claudex/mobile/WorkScreens.kt",
+    "preserved_actions": "实际状态/活动、完整内容加载、审批、刷新、变更、任务对话、停止",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "14",
+    "title": "资料库",
+    "reference": "14-artifact-library.png",
+    "reference_sha256": "172ad90e2ef1a78b97d7287f4ec00e6de72caa7c91d4376f781688073e6a25be",
+    "composable": "LibraryScreen",
+    "source": "app/src/main/java/com/claudex/mobile/ArtifactGallery.kt",
+    "preserved_actions": "搜索、最近/置顶、自适应两列、置顶/副本/来源",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "15",
+    "title": "设置",
+    "reference": "15-settings.png",
+    "reference_sha256": "04efc29b08425e251ec74fbf7ab601894e8e0a43f53eff1b6924eca7b0617c01",
+    "composable": "SettingsScreen",
+    "source": "app/src/main/java/com/claudex/mobile/SettingsScreens.kt",
+    "preserved_actions": "账户卡/三组设置、持久外观、服务器自定义指令、账户/服务/退出",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "16",
+    "title": "套餐用量",
+    "reference": "16-plan-usage.png",
+    "reference_sha256": "e8a25ac13fbb293b7857d6d387da2d2980d3a67a9a0243a06f5e1d49e372d7ca",
+    "composable": "UsageScreen",
+    "source": "app/src/main/java/com/claudex/mobile/SettingsScreens.kt",
+    "preserved_actions": "当前套餐、服务端窗口/重置、账单分页、未支持交易提示",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "17",
+    "title": "服务状态",
+    "reference": "17-service-status.png",
+    "reference_sha256": "8175a0d80f23e521e00019e75e80cf03668eb147ec460f05aab8be5c0e978c41",
+    "composable": "StatusScreen",
+    "source": "app/src/main/java/com/claudex/mobile/ServiceStatusScreen.kt",
+    "preserved_actions": "实际24小时状态、通道/时间格/事件、刷新/错误、示例隔离",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "18",
+    "title": "分享对话",
+    "reference": "18-share-conversation.png",
+    "reference_sha256": "447346cd5dd6001b7987b09da34a8755da7def058ba9567f2bd280ad7c9d550e",
+    "composable": "HostedShareSheet",
+    "source": "app/src/main/java/com/claudex/mobile/ChatScreenChrome.kt",
+    "preserved_actions": "默认仅受邀、明确范围/确认、真实快照URL、复制/邀请/更新/撤销",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "19",
+    "title": "变更审阅",
+    "reference": "19-review-changes.png",
+    "reference_sha256": "63cab0dd5b28edd08ec8f6be69e68bac11910d5b1c9d324295d4e957f090bad7",
+    "composable": "DiffScreen",
+    "source": "app/src/main/java/com/claudex/mobile/WorkScreens.kt",
+    "preserved_actions": "文件下拉、真实增删统计/行号、统一diff、只读、返回任务",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  },
+  {
+    "id": "20",
+    "title": "产物预览",
+    "reference": "20-artifact-preview.png",
+    "reference_sha256": "496553faada47c9efad894354059e2e24db6523a285acee6502b28438ea99957",
+    "composable": "ArtifactScreen",
+    "source": "app/src/main/java/com/claudex/mobile/LibraryScreens.kt",
+    "preserved_actions": "禁脚本/网络预览、源码切换、导出/复制/来源、分享确认",
+    "validation": "Source review and native compilation; device screenshot comparison not performed"
+  }
+]

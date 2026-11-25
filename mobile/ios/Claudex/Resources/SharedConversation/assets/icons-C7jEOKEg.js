@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-NZYk81nU.js";import"./anthropicons-D0copYXQ.js";import{E as t,W as n,i as r}from"./glyphs-BUtHdfvX.js";var i=e();function a(e,t){return function({size:n=t,strokeWidth:r,...a}){return(0,i.jsx)(e,{size:n,...a})}}var o=a(r,16),s=a(n,16),c=a(t,16);export{s as n,c as r,o as t};

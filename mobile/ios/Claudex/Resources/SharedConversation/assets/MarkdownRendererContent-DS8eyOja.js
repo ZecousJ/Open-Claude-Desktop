@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-NZYk81nU.js";import{n as t}from"./react-markdown-Mh0ukxBL.js";import n from"./dist-1zB-uAz3.js";import r from"./remark-gfm-DurGSlld.js";var i=e(),a={reply:[r,n],gfm:[r]};function o({preset:e,remarkPlugins:n,...r}){return(0,i.jsx)(t,{...r,remarkPlugins:e?[...a[e],...n??[]]:n})}export{o as default};

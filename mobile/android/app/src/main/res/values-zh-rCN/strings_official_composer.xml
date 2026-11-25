@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_input_hold_to_talk_new">给 Claudex 发消息，或长按说话</string>
+    <string name="chat_input_hold_to_talk_reply">回复 Claudex 或长按说话</string>
+</resources>

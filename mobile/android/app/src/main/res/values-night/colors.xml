@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg100">#151515</color>
+    <color name="bg300">#0d0d0d</color>
+    <color name="accentMain100">#d97757</color>
+    <color name="text100">#f9f9f7</color>
+    <color name="text300">#c3c2b7</color>
+    <color name="text500">#97958d</color>
+</resources>

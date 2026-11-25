@@ -1,0 +1,13 @@
+{
+  "asset": "app/src/main/res/drawable-nodpi/claudex_knot.png",
+  "sha256": "9586e41c5891d6bb949b3f1ad1ffe1041630af35a9d1499c50de0c9a942ce49d",
+  "source": "Approved FINAL transparent official Claudex knot supplied with design references",
+  "transformation": "None; original PNG bytes retained",
+  "alpha": "RGBA, alpha 0–255",
+  "usage": [
+    "Home greeting",
+    "Sign-in",
+    "Assistant identity",
+    "Launcher icon"
+  ]
+}

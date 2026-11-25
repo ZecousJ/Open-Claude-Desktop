@@ -81,12 +81,14 @@ Claudex 是基于开源 Codex 执行引擎的桌面聊天与开发工作台。�
 | [`src/`](src/) | 桌面对话、Code 和设置界面 |
 | [`electron/`](electron/) | 桌面进程、账号、执行引擎、工作目录与文件操作 |
 | [`src-web/`](src-web/) | Web 客户端和到服务端的桥接 |
+| [`mobile/android/`](mobile/android/) | Android 原生客户端（Kotlin / Jetpack Compose） |
+| [`mobile/ios/`](mobile/ios/) | iOS 原生客户端（SwiftUI / Xcode） |
 | [`runner/`](runner/) | Linux Runner 和任务隔离 |
 | [`backend/`](backend/) | Claudex 服务端与 Sub2API 管理后台 |
 | [`deploy/`](deploy/) | Compose、反向代理、初始化和部署脚本 |
 
 桌面打包时使用随 Release 提供的工作区资源。托管环境中的账号、模型目录、存储地址和运维凭据由部署方配置。
 
-桌面端、Web 和 Runner 使用 Apache-2.0。仓库内的 Sub2API 分支使用 LGPL-3.0。工作区资源和第三方依赖保留各自的许可。 [LICENSE](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · [Sub2API 源码声明](backend/SOURCE_OFFER.md)
+桌面端、Web、移动端（Android / iOS）和 Runner 使用 Apache-2.0。仓库内的 Sub2API 分支使用 LGPL-3.0。工作区资源和第三方依赖保留各自的许可。 [LICENSE](LICENSE) · [第三方许可](THIRD_PARTY_NOTICES.md) · [Sub2API 源码声明](backend/SOURCE_OFFER.md)
 
 友情链接：[LinuxDo 开源社区](https://linux.do/)

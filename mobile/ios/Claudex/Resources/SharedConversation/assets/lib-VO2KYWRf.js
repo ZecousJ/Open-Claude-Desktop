@@ -1,0 +1,1 @@
+import{n as e}from"./lib-DaUKNU-6.js";function t(t,n,r,i){let a,o,s;typeof n==`function`&&typeof r!=`function`?(o=void 0,s=n,a=r):(o=n,s=r,a=i),e(t,o,c,a);function c(e,t){let n=t[t.length-1],r=n?n.children.indexOf(e):void 0;return s(e,r,n)}}export{t};

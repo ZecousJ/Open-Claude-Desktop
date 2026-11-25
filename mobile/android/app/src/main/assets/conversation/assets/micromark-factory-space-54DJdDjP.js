@@ -1,0 +1,1 @@
+import{u as e}from"./micromark-util-character-xu45VsuL.js";function t(t,n,r,i){let a=i?i-1:1/0,o=0;return s;function s(i){return e(i)?(t.enter(r),c(i)):n(i)}function c(i){return e(i)&&o++<a?(t.consume(i),c):(t.exit(r),n(i))}}export{t};

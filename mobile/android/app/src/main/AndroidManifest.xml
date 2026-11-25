@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Composer dictation (in-app speech recogniser with the official recording strip). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Location and calendar tools. The system asks, and a refusal returns no coordinates or events. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <!-- In-app update: hands a downloaded, verified APK to the system installer (the person confirms). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Read-aloud keeps a media notification so the person can stop it from the lock screen. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- A reply can keep being written after the screen turns off. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <queries>
+        <intent><action android:name="android.intent.action.TTS_SERVICE" /></intent>
+        <intent><action android:name="android.speech.RecognitionService" /></intent>
+        <intent><action android:name="android.media.action.IMAGE_CAPTURE" /></intent>
+    </queries>
+    <application android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:theme="@style/Theme.Claudex" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true" android:localeConfig="@xml/locales_config">
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:configChanges="uiMode" android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="claudex" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="claudex.zecous.cn" />
+                <data android:pathPrefix="/chat" />
+                <data android:pathPrefix="/conversation" />
+                <data android:path="/new" />
+                <data android:pathPrefix="/project" />
+                <data android:pathPrefix="/cowork" />
+                <data android:pathPrefix="/code" />
+            </intent-filter>
+        </activity>
+        <service android:name=".SpeechPlaybackService" android:exported="false" android:foregroundServiceType="mediaPlayback" />
+        <receiver android:name=".ApprovalActionReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.claudex.mobile.APPROVAL_ALLOW" />
+                <action android:name="com.claudex.mobile.APPROVAL_DENY" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".ChatWidget" android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/chat_widget_info" />
+        </receiver>
+        <!-- Composer camera tile: the system camera writes the photo into our cache. -->
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.composer" android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/composer_file_paths" />
+        </provider>
+    </application>
+</manifest>

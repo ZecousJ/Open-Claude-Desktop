@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-hePW80VL.js";import{t}from"./react-Cvdyeg_0.js";var n=e(t(),1),r=(0,n.createContext)(void 0);function i(){let e=(0,n.useContext)(r);if(!e)throw Error(`useApp is used outside App.`);return e}export{i as n,r as t};
